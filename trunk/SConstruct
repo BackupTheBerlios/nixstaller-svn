@@ -1,0 +1,43 @@
+import sys
+
+env = Environment(CC = 'g++', CCFLAGS = "-O2", LIBS=Split('main archive z bz2 cdk ncurses'))
+
+# Get current OS...if this != to uname I should fix it :-)
+cur_os = sys.platform.rstrip('1234567890')
+
+env.Append(LIBPATH=['.', 'main/', 'lib/'+cur_os])
+env.Append(CPPPATH=['.', 'main/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
+
+# Builds main lib
+main = env.Library("main/main", ["main/main.cpp"], CCFLAGS='$CCFLAGS -fPIC')
+
+# Builds ncurses front end
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp'))
+
+# configure stuff (only do this when not cleaning)
+if not env.GetOption('clean'):
+     conf = env.Configure()
+     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
+          print 'libz must be installed!'
+          Exit(1)
+     if not conf.CheckLibWithHeader('bz2', ['stdio.h', 'bzlib.h'], 'C++', 'bz_stream s;', 0):
+          print 'libbz2 must be installed!'
+          Exit(1)
+     if not conf.CheckLibWithHeader('archive', 'archive.h', 'C++', 'archive_api_version();', 0):
+          print 'archive must be installed!'
+          Exit(1)
+     if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
+          print 'ncurses must be installed!'
+          Exit(1)
+     if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
+          print 'cdk must be installed!'
+          Exit(1)
+     env = conf.Finish()
+else:
+    # Atleast for me, scons won't clean properly...removing all '.sconsign' files manually seems to help
+    Execute(Delete('main/.sconsign'))
+    Execute(Delete('ncurses/.sconsign'))
+    Execute(Delete('.sconf_temp'))
+
+# Default to all
+Default(ncurses, main, env.Install('lib/'+cur_os, main), env.Install('bin/'+cur_os, ncurses))
