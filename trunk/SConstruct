@@ -32,6 +32,9 @@ if not env.GetOption('clean'):
      if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
           print 'cdk must be installed!'
           Exit(1)
+     if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'ncurses.h', 'C++', ';', 1):
+          print 'acl must be installed!'
+          Exit(1)
      env = conf.Finish()
 else:
     # Atleast for me, scons won't clean properly...removing all '.sconsign' files manually seems to help
