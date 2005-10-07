@@ -1,0 +1,87 @@
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+Welcome
+Welkom
+
+License Agreement
+Licentie Overeenkomst
+
+Select destination directory
+Selecteer bestemmings directory
+
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+OK
+OK
+
+Cancel
+Annuleren
+
+Agree
+Ik ga akkoord
+
+Decline
+Ik ga niet akkoord
+
+Select directory
+Selecteer directory
+
+Exit
+Sluiten
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+This will install %s to the following directory:
+%s zal in de volgende directory worden geïnstalleerd:
+
+Continue?
+Doorgaan?
+
+Installing files....please wait
+Bestanden worden geïnstalleerd...een ogenblik geduld
+
+Install Progress
+Installatie vooruitgang
+
+Status
+Status
+
+Installation of %s complete
+Installatie van %s gereed
+
+Press enter to exit
+Druk op enter om af te sluiten
+
+Enter name of new directory
+Typ de naam van de nieuwe directory
+
+#-----------------------------------------------
+# Bottom label (ncurses only)
+#-----------------------------------------------
+
+Go to next button
+Ga naar volgende knop
+
+Scroll one line up or down
+Ga één regel omhoog of omlaag
+
+Move text left or right
+Beweeg tekst naar links of rechts
+
+Exit program
+Verlaat programma
+
+Highlight previous/next dir
+Ga naar vorige/volgende dir
+
+Activate current button
+Activeer huidige knop
+
+Create new direcotry
+Maak nieuwe directory

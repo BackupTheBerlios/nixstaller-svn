@@ -1,5 +1,7 @@
 #include "ncurs.h"
 
+std::list<char *> StringList;
+
 int ReadDir(const char *dir, char ***list)
 {
     struct dirent *dirStruct;
@@ -38,7 +40,7 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     if (key != 'c') return true; 
     
     mode_t dirMode = (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH);
-    char title[] = "Enter name of new directory";
+    char *title = GetTranslation("Enter name of new directory");
     char label[] = "Dir: ";
 
     /* Create the entry field widget. */
@@ -132,9 +134,11 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     }
 
     // Set bottom label
-    char *botlabel[3] = { "</B/27>TAB<!27!B>: Go to next button\t\t</B/27>UP/DOWN<!27!B>: Scroll one line up or down",
-                          "</B/27>ENTER<!27!B>: Activate current button\t</B/27>LEFT/RIGHT<!27!B>: Move column left or right",
-                          "</B/27>ESC<!27!B>: Exit program" };
+    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>: %s\t\t</B/27>UP/DOWN<!27!B>: %s",
+                                     GetTranslation("Go to next button"), GetTranslation("Scroll one line up or down")),
+                          CreateText("</B/27>ENTER<!27!B>: %s\t</B/27>LEFT/RIGHT<!27!B>: %s",
+                                     GetTranslation("Activate current button"), GetTranslation("Move text left or right")),
+                          CreateText("</B/27>ESC<!27!B>: %s", GetTranslation("Exit program")) };
     SetBottomLabel(botlabel, 3);
 
     /* Set up the viewer title, and the contents to the widget. */
@@ -163,4 +167,28 @@ void SetBottomLabel(char **msg, int count)
     setCDKLabelBackgroundColor(BottomLabel, "</B/3>");
     drawCDKLabel(BottomLabel, 1);
     refreshCDKScreen(CDKScreen);
+}
+
+char *CreateText(const char *s, ...)
+{
+    static char txt[2048]; // Should be enough ;)
+    va_list v;
+    
+    va_start(v, s);
+        vsprintf(txt, s, v);
+    va_end(v);
+    
+    char *output = new char[strlen(txt)+1];
+    strcpy(output, txt);
+    StringList.push_front(output);
+    return output;
+}
+
+void FreeStrings()
+{
+    while(!StringList.empty())
+    {
+        delete [] (*StringList.end());
+        StringList.pop_back();
+    }
 }

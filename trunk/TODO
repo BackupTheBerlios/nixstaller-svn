@@ -1,1 +1,10 @@
+OVERALL
+- Convert to STD?
+
+MAIN
+- Localized strings/language support
+
+NCURSES FRONTEND
 - Correct error handling for widget creation etc 
+- Back button?
+- Select language window

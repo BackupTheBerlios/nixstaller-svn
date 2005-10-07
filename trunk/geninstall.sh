@@ -18,6 +18,7 @@ copytemp()
     if [ -e $CURDIR/release/license ]; then
         cp $CURDIR/release/license $CURDIR/release/tmp/config/
     fi
+    cp $CURDIR/lang/*.lng $CURDIR/release/tmp/config/lang/
     
     # Copy all required libs
     cp $CURDIR/lib/$CURRENT_OS/libc.so.* $CURDIR/release/tmp/lib/$CURRENT_OS/
@@ -39,7 +40,7 @@ echo "Making installer for following OS: $CURRENT_OS"
 
 mkdir -p $CURDIR/release/tmp/lib/$CURRENT_OS
 mkdir -p $CURDIR/release/tmp/frontends/$CURRENT_OS
-mkdir -p $CURDIR/release/tmp/config
+mkdir -p $CURDIR/release/tmp/config/lang
 
 # Check which archive type to use
 ARCH_TYPE=`awk '$1=="archtype"{print $2}' release/install.cfg`

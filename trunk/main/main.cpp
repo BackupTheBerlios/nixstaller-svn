@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
@@ -13,24 +14,6 @@ install_info_s InstallInfo;
 void check()
 {
      printf("lib is functioning\n");
-}
-
-bool MainInit(int argc, char *argv[])
-{
-    if (!ReadConfig()) return false;
-    if (argc < 2) return false;
-    
-    if (getcwd(InstallInfo.arch_name, sizeof(InstallInfo.arch_name)) == 0) strcpy(InstallInfo.arch_name, ".");
-    strcat(InstallInfo.arch_name, "/instarchive.");
-    
-    switch(InstallInfo.archive_type)
-    {
-        case ARCH_GZIP: strcat(InstallInfo.arch_name, "tar.gz"); break;
-        case ARCH_BZIP2: strcat(InstallInfo.arch_name, "tar.bz2"); break;
-    }
-    
-    strcpy(InstallInfo.dest_dir, argv[1]);
-    return true;
 }
 
 // Reads install data from config file
@@ -81,8 +64,8 @@ bool ReadConfig()
         
         char *arg1 = NULL, *arg2 = NULL;
 
-        arg1 = strtok(cfgline, " ,");
-        arg2 = strtok(NULL, " ,");
+        arg1 = strtok(cfgline, " ");
+        arg2 = strtok(NULL, " ");
 
         if (!strcasecmp(arg1, "version")) InstallInfo.version = atoi(arg2);
         else if (!strcasecmp(arg1, "appname"))
@@ -95,7 +78,36 @@ bool ReadConfig()
             if (!strcasecmp(arg2, "gzip")) InstallInfo.archive_type = ARCH_GZIP;
             else if (!strcasecmp(arg2, "bzip2")) InstallInfo.archive_type = ARCH_BZIP2;
         }
+        else if (!strcasecmp(arg1, "languages"))
+        {
+            char *lang = arg2;
+            while (lang)
+            {
+                InstallInfo.languages.push_back(std::string(lang));
+                lang = strtok(NULL, " ");
+            }
+        }
     }
+    return true;
+}
+
+bool MainInit(int argc, char *argv[])
+{
+    if (!ReadConfig()) return false;
+    if (argc < 2) return false;
+    
+    if (getcwd(InstallInfo.arch_name, sizeof(InstallInfo.arch_name)) == 0) strcpy(InstallInfo.arch_name, ".");
+    strcat(InstallInfo.arch_name, "/instarchive.");
+    
+    switch(InstallInfo.archive_type)
+    {
+        case ARCH_GZIP: strcat(InstallInfo.arch_name, "tar.gz"); break;
+        case ARCH_BZIP2: strcat(InstallInfo.arch_name, "tar.bz2"); break;
+    }
+    
+    strcpy(InstallInfo.dest_dir, argv[1]);
+    
+    if (InstallInfo.languages.size() == 0) InstallInfo.languages.push_back("english");
     return true;
 }
 
@@ -154,4 +166,92 @@ float ExtractArchive(char *curfile)
     arch = NULL;
     
     return (status == ARCHIVE_EOF) ? 100 : -1;
+}
+
+bool ReadLang()
+{
+    char filename[64];
+    sprintf(filename, "config/lang/%s.lng", InstallInfo.cur_lang.c_str());
+    FILE *langfile = fopen(filename, "r");
+    
+    if (!langfile) return false;
+    
+    char cfgline[1024];
+    int index;
+    std::string engtxt;
+    bool english = true;
+    
+    while(langfile)
+    {
+        index = 0;
+        cfgline[0] = 0;
+        
+        char c = fgetc(langfile);
+        
+        // skip any leading blanks
+        while ((c == ' ') || (c == '\t')) c = fgetc(langfile);
+
+        while ((c != EOF) && (c != '\r') && (c != '\n'))
+        {
+            if (c == '\t')  c = ' ';
+
+            cfgline[index] = c;
+
+            c = fgetc(langfile);
+
+            // skip multiple spaces in input file
+            while ((cfgline[index] == ' ') && (c == ' '))
+                c = fgetc(langfile);
+
+            index++;
+        }
+
+        if (c == '\r') c = fgetc(langfile);
+
+        if (c == EOF)
+        {
+            fclose(langfile);
+            langfile = NULL;
+        }
+
+        cfgline[index] = 0;
+
+        if ((cfgline[0] == '#') || !cfgline[0]) continue;
+        
+        if (english) engtxt = cfgline;
+        else
+        {
+            InstallInfo.translations[engtxt] = new char[strlen(cfgline)+1];
+            strcpy(InstallInfo.translations[engtxt], cfgline);
+        }
+        english = !english;
+    }
+    return true;
+}
+
+// Get C string from C++ string, you need to delete the returned string manually after use
+char *GetCStr(const std::string s)
+{
+    char *str = new char[s.length()+1];
+    s.copy(str, std::string::npos);
+    str[s.length()] = 0;
+    return str;
+}
+
+std::string GetTranslation(std::string &s)
+{
+    std::map<std::string, char *>::iterator p = InstallInfo.translations.find(s);
+    if (p != InstallInfo.translations.end()) return (*p).second;
+    
+    // No translation found
+    return s;
+}
+
+char *GetTranslation(char *s)
+{
+    std::map<std::string, char *>::iterator p = InstallInfo.translations.find(s);
+    if (p != InstallInfo.translations.end()) return (*p).second;
+    
+    // No translation found
+    return s;
 }

@@ -1,5 +1,6 @@
 #include "ncurs.h"
 
+bool SelectLanguage(void);
 bool ShowWelcome(void);
 bool ShowLicense(void);
 bool SelectDir(void);
@@ -12,6 +13,7 @@ CDKLABEL *BottomLabel = NULL;
 
 bool (*Functions[])(void)  =
 {
+    *SelectLanguage,
     *ShowWelcome,
     *ShowLicense,
     *SelectDir,
@@ -44,22 +46,55 @@ int main(int argc, char *argv[])
     if (CDKScreen) destroyCDKScreen(CDKScreen);
     
     endCDK();
+    FreeStrings();
     return 0;
+}
+
+bool SelectLanguage()
+{
+    char title[] = "<C></B/29>Please select a language<!29!B>";
+    char **items = NULL;
+    int count=0;
+    unsigned short used = 0;
+    
+    for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
+        used = CDKallocStrings(&items, const_cast<char*>(p->c_str()), count++, used);
+        
+    sortList(items, count);
+    
+    CDKSCROLL *ScrollList = newCDKScroll(CDKScreen, CENTER, 2, RIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, title, items,
+                                         count, false, A_REVERSE, true, false);
+    setCDKScrollBackgroundColor(ScrollList, "</B/5>");
+    int selection = activateCDKScroll(ScrollList, 0);
+    
+    bool success = false;
+    
+    if (ScrollList->exitType == vNORMAL)
+    {
+        InstallInfo.cur_lang = items[selection];
+        success = ReadLang();
+    }
+        
+    CDKfreeStrings(items);
+    setCDKScrollBackgroundColor(ScrollList, "<!5!B>");
+    destroyCDKScroll(ScrollList);
+    return success;
 }
 
 bool ShowWelcome()
 {
-    char title[] = "<C></B/29>Welcome<!29!B>";
+    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Welcome"));
     char filename[] = "config/welcome";
-    char *buttons[2] = { "OK", "Cancel" };
-    return (ViewFile(filename, buttons, 2, title)==0);
+    char *buttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
+    bool success = (ViewFile(filename, buttons, 2, title)==0);
+    return success;
 }
 
 bool ShowLicense()
 {
-    char title[] = "<C></B/29>License agreement<!29!B>";
+    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("License Agreement"));
     char filename[] = "config/license";
-    char *buttons[2] = { "Agree", "Decline" };
+    char *buttons[2] = { GetTranslation("Agree"), GetTranslation("Decline") };
     
     int ret = ViewFile(filename, buttons, 2, title);
     return (ret==NO_FILE || ret==0);
@@ -67,15 +102,19 @@ bool ShowLicense()
 
 bool SelectDir()
 {
-    char *buttons[] = { "Open dir", "Select dir", "Exit" };
-    char title[] = "<C>Select destination directory";
+    char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Exit") };
+    char *title = CreateText("<C>%s", GetTranslation("Select destination directory"));
     char label[] = "Dir: ";
     char **item = NULL;
     
     // Set bottom label
-    char *botlabel[3] = { "</B/27>TAB<!27!B>: Go to next button\t\t</B/27>UP/DOWN<!27!B>: Highlight previous/next dir",
-                          "</B/27>ENTER<!27!B>: Activate current button\t</B/27>ESC<!27!B>: Exit program",
-                          "</B/27>C<!27!B>: Create new direcotry" };
+    
+    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>: %s\t\t</B/27>UP/DOWN<!27!B>: %s",
+                                     GetTranslation("Go to next button"), GetTranslation("Highlight previous/next dir")),
+                          CreateText("</B/27>ENTER<!27!B>: %s\t</B/27>ESC<!27!B>: %s",
+                                      GetTranslation("Activate current button"), GetTranslation("Exit program")), 
+                          CreateText("</B/27>C<!27!B>: %s", GetTranslation("Create new direcotry")) };
+    
     SetBottomLabel(botlabel, 3);
 
     if (chdir(InstallInfo.dest_dir) != 0)
@@ -133,13 +172,12 @@ bool SelectDir()
         if (ButtonWidget->currentButton == 1)
         {
             char *dtext[3];
-            char *dbuttons[2] = { "OK", "Cancel" };
+            char *dbuttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
             char temp[512];
             
-            sprintf(temp, "This will install %s to the following directory:", InstallInfo.program_name);
-            dtext[0] = copyChar(temp);
+            dtext[0] = CreateText(GetTranslation("This will install %s to the following directory:"), InstallInfo.program_name);
             dtext[1] = InstallInfo.dest_dir;
-            dtext[2] = "Continue?";
+            dtext[2] = GetTranslation("Continue?");
             CDKDIALOG *Diag = newCDKDialog(CDKScreen, CENTER, CENTER, dtext, 3, dbuttons, 2, COLOR_PAIR(2)|A_REVERSE,
                                            true, true, false);
             setCDKDialogBackgroundColor(Diag, "</B/26>");
@@ -189,12 +227,12 @@ bool SelectDir()
 
 bool InstallFiles()
 {
-    char *botlabel[1] = { "Installing files....please wait" };
+    char *botlabel[1] = { GetTranslation("Installing files....please wait") };
     SetBottomLabel(botlabel, 1);
 
     /* Create the histogram. */
-    CDKHISTOGRAM *ProgressBar = newCDKHistogram(CDKScreen, CENTER, 2, 1, 0, HORIZONTAL, "<C></29/B>Install Progress",
-                                                true, false);
+    CDKHISTOGRAM *ProgressBar = newCDKHistogram(CDKScreen, CENTER, 2, 1, 0, HORIZONTAL,
+                                                CreateText("<C></29/B>%s", GetTranslation("Install Progress")), true, false);
 
     /* Set the top left/right characters of the histogram.*/
     setCDKHistogramLLChar(ProgressBar, ACS_LTEE);
@@ -206,7 +244,8 @@ bool InstallFiles()
     setCDKHistogram (ProgressBar, vPERCENT, TOP, A_BOLD, 1, 100, 0, COLOR_PAIR (24) | A_REVERSE | ' ', true);
 
     /* Create the scrolling window. */
-    CDKSWINDOW *InstallOutput = newCDKSwindow (CDKScreen, CENTER, 5, 12, 0, "<C></29/B>Status", 2000, true, false);
+    CDKSWINDOW *InstallOutput = newCDKSwindow(CDKScreen, CENTER, 5, 12, 0,
+                                              CreateText("<C></29/B>%s", GetTranslation("Status")), 2000, true, false);
 
     /* Set the top left/right characters of the scrolling window.*/
     setCDKSwindowULChar(InstallOutput, ACS_LTEE);
@@ -236,11 +275,10 @@ bool InstallFiles()
     
     // Notify user that installation is done
     char *message[2];
-    char *buttons[1] = { "Exit" };
+    char *buttons[1] = { GetTranslation("Exit") };
     char temp[256];
-    sprintf(temp, "Installation of %s complete!", InstallInfo.program_name);
-    message[0] = copyChar(temp);
-    message[1] = "Press enter to exit";
+    message[0] = CreateText(GetTranslation("Installation of %s complete"), InstallInfo.program_name);
+    message[1] = GetTranslation("Press enter to exit");
     CDKDIALOG *FinishDiag = newCDKDialog(CDKScreen, CENTER, CENTER, message, 2, buttons, 1, COLOR_PAIR(2)|A_REVERSE, true,
                                          true, false);
 

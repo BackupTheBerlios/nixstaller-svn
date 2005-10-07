@@ -1,6 +1,8 @@
 #ifndef NCURS_H
 #define NCURS_H
 
+#include <list>
+
 #include <cdk/cdk.h>
 #include "main.h"
 
@@ -10,14 +12,17 @@
 #define DEFAULT_WIDTH       50
 #define DEFAULT_HEIGHT      12
 
-extern int ReadDir(const char *dir, char ***list);
-extern int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
-extern int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
-extern int ViewFile(char *file, char **buttons, int buttoncount, char *title);
-extern void SetBottomLabel(char **msg, int count);
+int ReadDir(const char *dir, char ***list);
+int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
+int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
+int ViewFile(char *file, char **buttons, int buttoncount, char *title);
+void SetBottomLabel(char **msg, int count);
+char *CreateText(const char *s, ...);
+void FreeStrings(void);
 
 extern CDKSCREEN *CDKScreen;
 extern CDKLABEL *BottomLabel;
+extern std::list<char *> StringList; // List of all strings created by CreateText, for easy removal :)
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };
