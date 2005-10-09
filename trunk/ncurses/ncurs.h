@@ -26,4 +26,6 @@ extern std::list<char *> StringList; // List of all strings created by CreateTex
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };
+int GetSpace(char *s1, char *s2);
+
 #endif

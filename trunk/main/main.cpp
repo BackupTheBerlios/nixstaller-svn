@@ -107,7 +107,9 @@ bool MainInit(int argc, char *argv[])
     
     strcpy(InstallInfo.dest_dir, argv[1]);
     
-    if (InstallInfo.languages.size() == 0) InstallInfo.languages.push_back("english");
+    if (InstallInfo.languages.empty() ||
+        (find(InstallInfo.languages.begin(), InstallInfo.languages.end(), "english") == InstallInfo.languages.end()))
+        InstallInfo.languages.push_front("english");
     return true;
 }
 
@@ -170,6 +172,8 @@ float ExtractArchive(char *curfile)
 
 bool ReadLang()
 {
+    if (InstallInfo.cur_lang == "english") return true; // No need to translate...
+    
     char filename[64];
     sprintf(filename, "config/lang/%s.lng", InstallInfo.cur_lang.c_str());
     FILE *langfile = fopen(filename, "r");

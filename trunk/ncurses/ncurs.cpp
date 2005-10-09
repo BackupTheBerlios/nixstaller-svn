@@ -86,8 +86,7 @@ bool ShowWelcome()
     char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Welcome"));
     char filename[] = "config/welcome";
     char *buttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
-    bool success = (ViewFile(filename, buttons, 2, title)==0);
-    return success;
+    return (ViewFile(filename, buttons, 2, title)==0);
 }
 
 bool ShowLicense()
@@ -107,13 +106,21 @@ bool SelectDir()
     char label[] = "Dir: ";
     char **item = NULL;
     
-    // Set bottom label
+    int x1, y1, x2, y2;
+    getbegyx(MainWin, y1, x1);
+    getmaxyx(MainWin, y2, x2);
     
-    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>: %s\t\t</B/27>UP/DOWN<!27!B>: %s",
-                                     GetTranslation("Go to next button"), GetTranslation("Highlight previous/next dir")),
-                          CreateText("</B/27>ENTER<!27!B>: %s\t</B/27>ESC<!27!B>: %s",
-                                      GetTranslation("Activate current button"), GetTranslation("Exit program")), 
-                          CreateText("</B/27>C<!27!B>: %s", GetTranslation("Create new direcotry")) };
+    // Set bottom label
+    const int txtfieldwidth = 28, maxtxtlength = 26;
+    char *botlabel[3] = { CreateText("</B/27>%s<!27!B>\t: %*.*s</B/27>UP/DOWN<!27!B>\t: %s",
+                                     GetTranslation("TAB"), -txtfieldwidth, maxtxtlength, GetTranslation("Go to next button"),
+                                     GetTranslation("Highlight previous/next dir")),
+                          CreateText("</B/27>%s<!27!B>\t: %*.*s</B/27>%s<!27!B>\t: %s",
+                                     GetTranslation("ENTER"), -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Activate current button"),
+                                     GetTranslation("ESC"), GetTranslation("Exit program")),
+                          CreateText("</B/27>C<!27!B>\t: %.*s", maxtxtlength,
+                                     GetTranslation("Create new direcotry")) };
     
     SetBottomLabel(botlabel, 3);
 
