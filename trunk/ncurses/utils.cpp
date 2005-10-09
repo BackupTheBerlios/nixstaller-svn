@@ -134,12 +134,19 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     }
 
     // Set bottom label
-    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>: %s\t\t</B/27>UP/DOWN<!27!B>: %s",
+    const int txtfieldwidth = 24, maxtxtlength = 22;/*
+    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>  : %*.*s</B/27>UP/DOWN<!27!B>   : %s", -txtfieldwidth, maxtxtlength,
                                      GetTranslation("Go to next button"), GetTranslation("Scroll one line up or down")),
-                          CreateText("</B/27>ENTER<!27!B>: %s\t\t</B/27>LEFT/RIGHT<!27!B>: %s",
-                                     GetTranslation("Activate current button"), GetTranslation("Move text left or right")),
-                          CreateText("</B/27>ESC<!27!B>: %s", GetTranslation("Exit program")) };
-    SetBottomLabel(botlabel, 3);
+                          CreateText("</B/27>ENTER<!27!B>: %*.*s</B/27>LEFT/RIGHT<!27!B>: %s", -txtfieldwidth,
+                                     maxtxtlength, GetTranslation("Activate current button"),
+                                     GetTranslation("Move text left or right")),
+                          CreateText("</B/27>ESC<!27!B>  : %.*s", maxtxtlength, GetTranslation("Exit program")) };*/
+    char *botlabel[5] = { CreateText("</B/27>TAB<!27!B>\t\t: %s", GetTranslation("Go to next button")),
+                          CreateText("</B/27>UP/DOWN<!27!B>\t\t: %s", GetTranslation("Scroll one line up or down")),
+                          CreateText("</B/27>ENTER<!27!B>\t\t: %s", GetTranslation("Activate current button")),
+                          CreateText("</B/27>LEFT/RIGHT<!27!B>\t: %s", GetTranslation("Move text left or right")),
+                          CreateText("</B/27>ESC<!27!B>\t\t: %.*s", maxtxtlength, GetTranslation("Exit program")) };
+    SetBottomLabel(botlabel, 5);
 
     /* Set up the viewer title, and the contents to the widget. */
     setCDKViewer(Viewer, title, info, lines, A_REVERSE, true, true, true);
@@ -192,10 +199,3 @@ void FreeStrings()
         StringList.pop_back();
     }
 }
-
-/*char *GetSpace(char *s1, char *s2)
-{
-    
-    for(short s=0;s<((RIGHT-LEFT)+strlen(s1)+strlen(s2));s++)
-    
-};*/

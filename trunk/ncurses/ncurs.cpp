@@ -112,15 +112,11 @@ bool SelectDir()
     
     // Set bottom label
     const int txtfieldwidth = 28, maxtxtlength = 26;
-    char *botlabel[3] = { CreateText("</B/27>%s<!27!B>\t: %*.*s</B/27>UP/DOWN<!27!B>\t: %s",
-                                     GetTranslation("TAB"), -txtfieldwidth, maxtxtlength, GetTranslation("Go to next button"),
-                                     GetTranslation("Highlight previous/next dir")),
-                          CreateText("</B/27>%s<!27!B>\t: %*.*s</B/27>%s<!27!B>\t: %s",
-                                     GetTranslation("ENTER"), -txtfieldwidth, maxtxtlength,
-                                     GetTranslation("Activate current button"),
-                                     GetTranslation("ESC"), GetTranslation("Exit program")),
-                          CreateText("</B/27>C<!27!B>\t: %.*s", maxtxtlength,
-                                     GetTranslation("Create new direcotry")) };
+    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>\t: %*.*s</B/27>UP/DOWN<!27!B>\t: %s", -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Go to next button"), GetTranslation("Highlight previous/next dir")),
+                          CreateText("</B/27>ENTER<!27!B>\t: %*.*s</B/27>ESC<!27!B>\t: %s", -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Activate current button"), GetTranslation("Exit program")),
+                          CreateText("</B/27>C<!27!B>\t: %.*s", maxtxtlength, GetTranslation("Create new direcotry")) };
     
     SetBottomLabel(botlabel, 3);
 
