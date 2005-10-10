@@ -2,6 +2,28 @@
 
 std::list<char *> StringList;
 
+void throwerror(const char *error, ...)
+{
+    static char txt[256];
+    const char *translated = GetTranslation(error);
+    va_list v;
+    
+    va_start(v, error);
+        vsprintf(txt, translated, v);
+    va_end(v);
+
+    if (BottomLabel) destroyCDKLabel(BottomLabel);
+    if (CDKScreen)
+    {
+        destroyCDKScreen(CDKScreen);
+        endCDK();
+    }
+
+    fprintf(stderr, "Error: %s\n", txt);
+    FreeStrings();
+    exit(EXIT_FAILURE);
+}
+
 int ReadDir(const char *dir, char ***list)
 {
     struct dirent *dirStruct;
@@ -66,22 +88,16 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     if (mkdir(newdir, dirMode) != 0)
     {
         /* Create the error message. */
-        char *error[10];
-        char temp[512];
+        char *error[3];
         
-        error[0] = "<C>Could not create the directory";
-        sprintf (temp, "<C>%.256s", newdir);
-        error[1] = copyChar (temp);
-
-        sprintf (temp, "<C>%.256s", strerror (errno));
-        error[2] = copyChar (temp);
+        error[0] = CreateText("<C>%s", GetTranslation("Could not create the directory"));
+        error[1] = CreateText("<C>%.256s", newdir);
+        error[2] = CreateText("<C>%.256s", strerror(errno));
 
         /* Pop up the error message. */
         popupLabel(CDKScreen, error, 3);
 
         /* Clean up and set the error status. */
-        freeChar (error[1]);
-        freeChar (error[2]);
         freeChar(newdir);
         return false;
     }
@@ -121,10 +137,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
                                      A_REVERSE, true, false);
 
     if (Viewer == NULL)
-    {
-        printf ("Oops. Can't seem to create viewer. Is the window too small?\n");
-        return false;
-    }
+        throwerror("Can't create text viewer");
 
     int lines = CDKreadFile(file, &info);
     if (lines == -1)
@@ -134,19 +147,18 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     }
 
     // Set bottom label
-    const int txtfieldwidth = 24, maxtxtlength = 22;/*
-    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>  : %*.*s</B/27>UP/DOWN<!27!B>   : %s", -txtfieldwidth, maxtxtlength,
-                                     GetTranslation("Go to next button"), GetTranslation("Scroll one line up or down")),
-                          CreateText("</B/27>ENTER<!27!B>: %*.*s</B/27>LEFT/RIGHT<!27!B>: %s", -txtfieldwidth,
-                                     maxtxtlength, GetTranslation("Activate current button"),
-                                     GetTranslation("Move text left or right")),
-                          CreateText("</B/27>ESC<!27!B>  : %.*s", maxtxtlength, GetTranslation("Exit program")) };*/
-    char *botlabel[5] = { CreateText("</B/27>TAB<!27!B>\t\t: %s", GetTranslation("Go to next button")),
-                          CreateText("</B/27>UP/DOWN<!27!B>\t\t: %s", GetTranslation("Scroll one line up or down")),
-                          CreateText("</B/27>ENTER<!27!B>\t\t: %s", GetTranslation("Activate current button")),
-                          CreateText("</B/27>LEFT/RIGHT<!27!B>\t: %s", GetTranslation("Move text left or right")),
-                          CreateText("</B/27>ESC<!27!B>\t\t: %.*s", maxtxtlength, GetTranslation("Exit program")) };
-    SetBottomLabel(botlabel, 5);
+    int x1, x2, y1, y2;
+    getbegyx(MainWin, y1, x1);
+    getmaxyx(MainWin, y2, x2);
+    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
+    char *botlabel[4] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Go to next button"), maxtxtlength,
+                                     GetTranslation("Activate current button")),
+                          "</B/27>  ^<!27!B>",
+                          CreateText("</B/27>< <#BU> ><!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Scroll text"), maxtxtlength, GetTranslation("Exit program")),
+                          "</B/27>  v<!27!B>" };
+    SetBottomLabel(botlabel, 4);
 
     /* Set up the viewer title, and the contents to the widget. */
     setCDKViewer(Viewer, title, info, lines, A_REVERSE, true, true, true);
@@ -171,6 +183,8 @@ void SetBottomLabel(char **msg, int count)
         destroyCDKLabel(BottomLabel);
     }
     BottomLabel = newCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
+    if (!BottomLabel)
+        throwerror("Can't create bottom text window");
     setCDKLabelBackgroundColor(BottomLabel, "</B/3>");
     drawCDKLabel(BottomLabel, 1);
     refreshCDKScreen(CDKScreen);

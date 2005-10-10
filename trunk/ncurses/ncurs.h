@@ -12,6 +12,7 @@
 #define DEFAULT_WIDTH       50
 #define DEFAULT_HEIGHT      12
 
+void throwerror(const char *error, ...);
 int ReadDir(const char *dir, char ***list);
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
@@ -20,6 +21,7 @@ void SetBottomLabel(char **msg, int count);
 char *CreateText(const char *s, ...);
 void FreeStrings(void);
 
+extern WINDOW *MainWin;
 extern CDKSCREEN *CDKScreen;
 extern CDKLABEL *BottomLabel;
 extern std::list<char *> StringList; // List of all strings created by CreateText, for easy removal :)

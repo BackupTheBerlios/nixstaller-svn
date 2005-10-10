@@ -52,8 +52,8 @@ Installatie vooruitgang
 Status
 Status
 
-Installation of %s complete
-Installatie van %s gereed
+Installation of %s complete!
+Installatie van %s gereed!
 
 Press enter to exit
 Druk op enter om af te sluiten
@@ -68,11 +68,8 @@ Typ de naam van de nieuwe directory
 Go to next button
 Ga naar volgende knop
 
-Scroll one line up or down
-Ga één regel omhoog of omlaag
-
-Move text left or right
-Beweeg tekst naar links of rechts
+Scroll text
+Beweeg text
 
 Exit program
 Verlaat programma
@@ -85,3 +82,25 @@ Activeer huidige knop
 
 Create new direcotry
 Maak nieuwe directory
+
+#-----------------------------------------------
+# Error messages (ncurses only)
+#-----------------------------------------------
+
+Can't create text viewer
+Kan de viewer niet maken
+
+Can't create bottom text window
+Kan de onderste tekst balk niet maken
+
+Couldn't open directory '%s'
+Kon directory '%s' niet openen
+
+Could not open directory chooser
+Kon de directory kiezer niet openen
+
+Can't create dialog box
+Kon geen venster maken
+
+Could not create the directory
+Kon de directory niet maken

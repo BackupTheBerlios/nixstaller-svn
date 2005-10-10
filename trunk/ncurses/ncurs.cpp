@@ -7,8 +7,8 @@ bool SelectDir(void);
 bool InstallFiles(void);
 bool FinishInstall(void);
 
-WINDOW *MainWin;
-CDKSCREEN *CDKScreen;
+WINDOW *MainWin = NULL;
+CDKSCREEN *CDKScreen = NULL;
 CDKLABEL *BottomLabel = NULL;
 
 bool (*Functions[])(void)  =
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 {
     if (!MainInit(argc, argv))
     {
-        printf("Init failed, aborting\n");
+        printf("Error: %s\n", GetTranslation("Init failed, aborting"));
         return 1;
     }
     
@@ -62,7 +62,7 @@ bool SelectLanguage()
         
     sortList(items, count);
     
-    CDKSCROLL *ScrollList = newCDKScroll(CDKScreen, CENTER, 2, RIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, title, items,
+    CDKSCROLL *ScrollList = newCDKScroll(CDKScreen, CENTER, CENTER, RIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, title, items,
                                          count, false, A_REVERSE, true, false);
     setCDKScrollBackgroundColor(ScrollList, "</B/5>");
     int selection = activateCDKScroll(ScrollList, 0);
@@ -106,30 +106,23 @@ bool SelectDir()
     char label[] = "Dir: ";
     char **item = NULL;
     
-    int x1, y1, x2, y2;
+    // Set bottom label
+    int x1, x2, y1, y2;
     getbegyx(MainWin, y1, x1);
     getmaxyx(MainWin, y2, x2);
-    
-    // Set bottom label
-    const int txtfieldwidth = 28, maxtxtlength = 26;
-    char *botlabel[3] = { CreateText("</B/27>TAB<!27!B>\t: %*.*s</B/27>UP/DOWN<!27!B>\t: %s", -txtfieldwidth, maxtxtlength,
-                                     GetTranslation("Go to next button"), GetTranslation("Highlight previous/next dir")),
-                          CreateText("</B/27>ENTER<!27!B>\t: %*.*s</B/27>ESC<!27!B>\t: %s", -txtfieldwidth, maxtxtlength,
-                                     GetTranslation("Activate current button"), GetTranslation("Exit program")),
-                          CreateText("</B/27>C<!27!B>\t: %.*s", maxtxtlength, GetTranslation("Create new direcotry")) };
-    
-    SetBottomLabel(botlabel, 3);
+    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
+    char *botlabel[4] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Go to next button"), maxtxtlength,
+                                     GetTranslation("Activate current button")),
+                          "</B/27>  ^<!27!B>",
+                          CreateText("</B/27>  <#BU>  <!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Highlight previous/next dir"), maxtxtlength,
+                                     GetTranslation("Exit program")),
+                          "</B/27>  v<!27!B>" };
+    SetBottomLabel(botlabel, 4);
 
     if (chdir(InstallInfo.dest_dir) != 0)
-    {
-        /* Exit CDK. */
-        destroyCDKScreen (CDKScreen);
-        endCDK();
-
-        /* Print out a message and exit. */
-        printf ("Error: Couldn't change to directory %s\n", InstallInfo.dest_dir);
-        exit (EXIT_FAILURE);
-    }
+        throwerror("Couldn't open directory '%s'", InstallInfo.dest_dir);
 
     int count = ReadDir(InstallInfo.dest_dir, &item);
 
@@ -139,15 +132,7 @@ bool SelectDir()
 
     /* Is the scrolling list null? */
     if (FileList == 0)
-    {
-        /* Exit CDK. */
-        destroyCDKScreen (CDKScreen);
-        endCDK();
-
-        /* Print out a message and exit. */
-        printf ("Oops. Could not make scrolling list. Is the window too small?\n");
-        exit (EXIT_FAILURE);
-    }
+        throwerror("Could not open directory chooser");
 
     setCDKAlphalistBackgroundColor(FileList, "</B/5>");
     
@@ -286,16 +271,8 @@ bool InstallFiles()
                                          true, false);
 
     /* Check if we got a null value back. */
-    if (FinishDiag == 0)
-    {
-        /* Shut down Cdk. */
-        destroyCDKScreen(CDKScreen);
-        endCDK();
-
-        /* Spit out a message. */
-        printf ("Oops. Can't seem to create the dialog box. Is the window too small?\n");
-        exit (EXIT_FAILURE);
-    }
+    if (FinishDiag == NULL)
+        throwerror("Can't create dialog box");
 
     setCDKDialogBackgroundColor(FinishDiag, "</B/26>");
     
