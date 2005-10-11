@@ -13,7 +13,7 @@ struct install_info_s
     char program_name[129];
     char arch_name[2048];
     char dest_dir[2048];
-    std::list<std::string> languages;
+    std::list<char *> languages;
     std::string cur_lang;
     std::map<std::string, char *> translations;
     EArchiveType archive_type;

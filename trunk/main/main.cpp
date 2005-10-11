@@ -83,7 +83,9 @@ bool ReadConfig()
             char *lang = arg2;
             while (lang)
             {
-                InstallInfo.languages.push_back(std::string(lang));
+                char *s = new char[strlen(cfgline)+1];
+                strcpy(s, lang);
+                InstallInfo.languages.push_back(s);
                 lang = strtok(NULL, " ");
             }
         }
@@ -109,7 +111,11 @@ bool MainInit(int argc, char *argv[])
     
     if (InstallInfo.languages.empty() ||
         (find(InstallInfo.languages.begin(), InstallInfo.languages.end(), "english") == InstallInfo.languages.end()))
-        InstallInfo.languages.push_front("english");
+    {
+        char *s = new char[8];
+        strcpy(s, "english");
+        InstallInfo.languages.push_front(s);
+    }
     return true;
 }
 

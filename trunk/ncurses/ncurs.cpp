@@ -58,8 +58,8 @@ bool SelectLanguage()
     int count=0;
     unsigned short used = 0;
     
-    for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
-        used = CDKallocStrings(&items, const_cast<char*>(p->c_str()), count++, used);
+    for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
+        used = CDKallocStrings(&items, *p, count++, used);
         
     sortList(items, count);
     
