@@ -113,6 +113,13 @@ bool MainInit(int argc, char *argv[])
     return true;
 }
 
+void MainEnd()
+{
+    // Clear all translations
+    std::map<std::string, char *>::iterator p = InstallInfo.translations.begin();
+    for(;p!=InstallInfo.translations.end();p++) delete [] (*p).second;
+}
+
 // Returns uncompressed file size of a gzipped tar file
 int ArchSize(const char *archname)
 {
@@ -231,15 +238,6 @@ bool ReadLang()
         english = !english;
     }
     return true;
-}
-
-// Get C string from C++ string, you need to delete the returned string manually after use
-char *GetCStr(const std::string s)
-{
-    char *str = new char[s.length()+1];
-    s.copy(str, std::string::npos);
-    str[s.length()] = 0;
-    return str;
 }
 
 std::string GetTranslation(std::string &s)

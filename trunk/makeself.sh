@@ -328,8 +328,11 @@ fi
 # Try to locate a MD5 binary
 OLD_PATH=$PATH
 PATH=${GUESS_MD5_PATH:-"$OLD_PATH:/bin:/usr/bin:/sbin:/usr/local/ssl/bin:/usr/local/bin:/opt/openssl/bin"}
-MD5_PATH=`type -p md5sum`
-MD5_PATH=${MD5_PATH:-`type -p md5`}
+# Modded by Rick...which seem to work better
+#MD5_PATH=`type -p md5sum`
+#MD5_PATH=${MD5_PATH:-`type -p md5`}
+MD5_PATH=`which md5sum`
+MD5_PATH=${MD5_PATH:-`which md5`}
 PATH=$OLD_PATH
 
 if test "$NOMD5" = y; then

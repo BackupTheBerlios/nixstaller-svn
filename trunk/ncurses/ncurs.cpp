@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
     
     endCDK();
     FreeStrings();
+    MainEnd();
     return 0;
 }
 
@@ -265,7 +266,7 @@ bool InstallFiles()
     char *message[2];
     char *buttons[1] = { GetTranslation("Exit") };
     char temp[256];
-    message[0] = CreateText(GetTranslation("Installation of %s complete"), InstallInfo.program_name);
+    message[0] = CreateText(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
     message[1] = GetTranslation("Press enter to exit");
     CDKDIALOG *FinishDiag = newCDKDialog(CDKScreen, CENTER, CENTER, message, 2, buttons, 1, COLOR_PAIR(2)|A_REVERSE, true,
                                          true, false);

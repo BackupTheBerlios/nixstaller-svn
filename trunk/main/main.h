@@ -25,9 +25,11 @@ extern install_info_s InstallInfo;
 
 void check(void);
 bool MainInit(int argc, char *argv[]);
+void MainEnd(void);
 float ExtractArchive(char *curfile);
 bool ReadLang(void);
 std::string GetTranslation(std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
+
 #endif 
