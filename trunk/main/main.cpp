@@ -122,8 +122,17 @@ bool MainInit(int argc, char *argv[])
 void MainEnd()
 {
     // Clear all translations
-    std::map<std::string, char *>::iterator p = InstallInfo.translations.begin();
-    for(;p!=InstallInfo.translations.end();p++) delete [] (*p).second;
+    if (!InstallInfo.translations.empty())
+    {
+        std::map<std::string, char *>::iterator p = InstallInfo.translations.begin();
+        for(;p!=InstallInfo.translations.end();p++) delete [] (*p).second;
+    }
+    
+    if (!InstallInfo.languages.empty())
+    {
+        std::list<char*>::iterator p2 = InstallInfo.languages.begin();
+        for(;p2!=InstallInfo.languages.end();p2++) delete [] *p2;
+    }
 }
 
 // Returns uncompressed file size of a gzipped tar file
@@ -185,6 +194,14 @@ float ExtractArchive(char *curfile)
 
 bool ReadLang()
 {
+    // Clear all translations
+    if (!InstallInfo.translations.empty())
+    {
+        std::map<std::string, char *>::iterator p = InstallInfo.translations.begin();
+        for(;p!=InstallInfo.translations.end();p++) delete [] (*p).second;
+        InstallInfo.translations.erase(InstallInfo.translations.begin(), InstallInfo.translations.end());
+    }
+    
     if (InstallInfo.cur_lang == "english") return true; // No need to translate...
     
     char filename[64];
