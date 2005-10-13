@@ -6,24 +6,46 @@ void EndProg(void);
 
 Fl_Window *MainWindow = NULL;
 Fl_Wizard *Wizard = NULL;
+Fl_Button *pPrevButton = NULL;
 Fl_Button *pNextButton = NULL;
 
-CLangWidget *pLangWidget;
+CLangWidget *pLangWidget = NULL;
+CLicenseWidget *pLicenseWidget = NULL;
 
 std::list<CBaseWidget *> WidgetList;
 
 void LangMenuCB(Fl_Widget *w, void *) { InstallInfo.cur_lang = ((Fl_Menu_*)w)->mvalue()->text; };
+void LicenseCheckCB(Fl_Widget *w, void *) { (((Fl_Button*)w)->value())?pNextButton->activate():pNextButton->deactivate(); };
+void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSelectDirWidget *)p)->OpenDirChooser(); };
 void WizCancelCB(Fl_Widget *, void *) { EndProg(); };
-void WizPrevCB(Fl_Widget *, void *) { Wizard->prev(); };
-void WizNextCB(Fl_Widget *, void *)
+
+void WizPrevCB(Fl_Widget *, void *)
 {
-    if (Wizard->value()==pLangWidget->GetGroup()) { ReadLang(); UpdateLanguage(); }
-    Wizard->next();
-    
     for(std::list<CBaseWidget *>::iterator p=WidgetList.begin();p!=WidgetList.end();p++)
     {
         if ((*p)->GetGroup() == Wizard->value())
-            (*p)->Activate();
+        {
+            if (p == WidgetList.begin()) break;
+            (*p)->Prev();
+            Wizard->prev();
+            (*--p)->Activate();
+            break;
+        }
+    }
+}
+
+void WizNextCB(Fl_Widget *, void *)
+{
+    for(std::list<CBaseWidget *>::iterator p=WidgetList.begin();p!=WidgetList.end();p++)
+    {
+        if ((*p)->GetGroup() == Wizard->value())
+        {
+            if (p == WidgetList.end()) break;
+            (*p)->Next();
+            Wizard->next();
+            (*++p)->Activate();
+            break;
+        }
     }
 };
 
@@ -49,7 +71,9 @@ void CreateMainWindow(char **argv)
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H);
     
     (new Fl_Button(20, (MAIN_WINDOW_H-30), 80, 25, "Cancel"))->callback(WizCancelCB, 0);
-    (new Fl_Button(MAIN_WINDOW_W-200, (MAIN_WINDOW_H-30), 80, 25, "@<-    Back"))->callback(WizPrevCB, 0);
+    pPrevButton = new Fl_Button(MAIN_WINDOW_W-200, (MAIN_WINDOW_H-30), 80, 25, "@<-    Back");
+    pPrevButton->callback(WizPrevCB, 0);
+    pPrevButton->deactivate(); // First screen, no go back button yet
     pNextButton = new Fl_Button(MAIN_WINDOW_W-100, (MAIN_WINDOW_H-30), 80, 25, "Next    @->");
     pNextButton->callback(WizNextCB, 0);
     
@@ -63,7 +87,11 @@ void CreateMainWindow(char **argv)
     group = widget->Create();
     if (group) { Wizard->add(group); WidgetList.push_back(widget); }
 
-    widget = new CLicenseWidget;
+    widget = pLicenseWidget = new CLicenseWidget;
+    group = widget->Create();
+    if (group) { Wizard->add(group); WidgetList.push_back(widget); }
+
+    widget = new CSelectDirWidget;
     group = widget->Create();
     if (group) { Wizard->add(group); WidgetList.push_back(widget); }
 

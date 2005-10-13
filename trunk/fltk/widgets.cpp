@@ -1,9 +1,5 @@
 #include "fltk.h"
 
-extern void LangMenuCB(Fl_Widget *w, void *);
-
-extern Fl_Button *pNextButton;
-
 // -------------------------------------
 // Language selection widget
 // -------------------------------------
@@ -29,6 +25,13 @@ Fl_Group *CLangWidget::Create(void)
     pGroup->end();
     
     return pGroup;
+}
+
+void CLangWidget::Next()
+{
+    pPrevButton->activate();
+    ReadLang();
+    UpdateLanguage();
 }
 
 // -------------------------------------
@@ -67,9 +70,11 @@ Fl_Group *CLicenseWidget::Create(void)
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
     
-    pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "License Agreement");
+    pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License Agreement");
     pDisplay->buffer(buffer);
     
+    pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-240)/2, (MAIN_WINDOW_H-80), 240, 25, "I Agree to this license agreement");
+    pCheckButton->callback(LicenseCheckCB);
     pGroup->end();
     return pGroup;
 }
@@ -81,5 +86,43 @@ void CLicenseWidget::UpdateLang()
 
 void CLicenseWidget::Activate()
 {
-    pNextButton->deactivate();
+    if (!pCheckButton->value()) pNextButton->deactivate();
+}
+
+// -------------------------------------
+// Destination dir selector widget
+// -------------------------------------
+
+Fl_Group *CSelectDirWidget::Create()
+{
+    pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                                      "Select destination directory");
+    pDirChooser->hide();
+    pDirChooser->preview(false);
+    pDirChooser->previewButton->hide();
+    
+    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    pGroup->begin();
+
+    pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
+    pSelDirInput = new Fl_Input(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "path: ");
+    pSelDirInput->value(InstallInfo.dest_dir);
+    pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select directory");
+    pSelDirButton->callback(OpenDirSelWinCB, this);
+    
+    pGroup->end();
+    return pGroup;
+}
+
+void CSelectDirWidget::OpenDirChooser(void)
+{
+    pDirChooser->show();
+    while(pDirChooser->visible()) Fl::wait();
+    
+    if (pDirChooser->value())
+    {
+        strncpy(InstallInfo.dest_dir, pDirChooser->value(), 2047);
+        InstallInfo.dest_dir[2047] = 0;
+        pSelDirInput->value(InstallInfo.dest_dir);
+    }
 }
