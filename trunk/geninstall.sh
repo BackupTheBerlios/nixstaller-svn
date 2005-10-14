@@ -13,6 +13,7 @@ copytemp()
 {
     # Temporarily copy frontends, libs and install config files to install directory
     cp $CURDIR/bin/$CURRENT_OS/ncurs $CURDIR/release/tmp/frontends/$CURRENT_OS/
+    cp $CURDIR/bin/$CURRENT_OS/fltk $CURDIR/release/tmp/frontends/$CURRENT_OS/
     cp $CURDIR/release/welcome $CURDIR/release/tmp/config/
     cp $CURDIR/release/install.cfg $CURDIR/release/tmp/config/
     if [ -e $CURDIR/release/license ]; then

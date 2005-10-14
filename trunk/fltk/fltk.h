@@ -15,6 +15,7 @@
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_File_Chooser.H>
 #include <Fl/Fl_Input.H>
+#include <Fl/Fl_Progress.H>
 
 #define MAIN_WINDOW_W 600
 #define MAIN_WINDOW_H 400
@@ -23,65 +24,67 @@ void LangMenuCB(Fl_Widget *w, void *);
 void LicenseCheckCB(Fl_Widget *w, void *);
 void OpenDirSelWinCB(Fl_Widget *w, void *p);
 void UpdateLanguage(void);
+void EndProg(int exitcode);
 
 extern Fl_Button *pPrevButton;
 extern Fl_Button *pNextButton;
+extern bool InstallFiles;
 
-class CBaseWidget
+class CBaseScreen
 {
 protected:
     Fl_Group *pGroup;
     
 public:
-    CBaseWidget(void) : pGroup(NULL) { };
+    CBaseScreen(void) : pGroup(NULL) { };
     
     virtual Fl_Group *Create(void) = NULL;
     Fl_Group *GetGroup(void) const { return pGroup; };
     virtual void UpdateLang(void) { }; // Called after language is changed
-    virtual void Prev(void) { };
-    virtual void Next(void) { };
+    virtual bool Prev(void) { return true; };
+    virtual bool Next(void) { return true; };
     virtual void Activate(void) { };
 };
 
-class CLangWidget: public CBaseWidget
+class CLangScreen: public CBaseScreen
 {
     Fl_Menu_Item *pMenuItems;
     Fl_Choice *pChoiceMenu;
     
 public:
-    CLangWidget(void) : CBaseWidget(), pMenuItems(NULL), pChoiceMenu(NULL) { };
+    CLangScreen(void) : CBaseScreen(), pMenuItems(NULL), pChoiceMenu(NULL) { };
     
     virtual Fl_Group *Create(void);
-    virtual void Next(void);
+    virtual bool Next(void);
     virtual void Activate(void) { pPrevButton->deactivate(); };
 };
 
-class CWelcomeWidget: public CBaseWidget
+class CWelcomeScreen: public CBaseScreen
 {
     Fl_Text_Display *pDisplay;
     
 public:
-    CWelcomeWidget(void) : CBaseWidget(), pDisplay(NULL) { };
+    CWelcomeScreen(void) : CBaseScreen(), pDisplay(NULL) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
 };
 
-class CLicenseWidget: public CBaseWidget
+class CLicenseScreen: public CBaseScreen
 {
     Fl_Text_Display *pDisplay;
     Fl_Check_Button *pCheckButton;
     
 public:
-    CLicenseWidget(void) : CBaseWidget(), pDisplay(NULL), pCheckButton(NULL) { };
+    CLicenseScreen(void) : CBaseScreen(), pDisplay(NULL), pCheckButton(NULL) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual void Prev(void) { pNextButton->activate(); };
+    virtual bool Prev(void) { pNextButton->activate(); return true; };
     virtual void Activate(void);
 };
 
-class CSelectDirWidget: public CBaseWidget
+class CSelectDirScreen: public CBaseScreen
 {
     Fl_File_Chooser *pDirChooser;
     Fl_Box *pBox;
@@ -89,10 +92,29 @@ class CSelectDirWidget: public CBaseWidget
     Fl_Input *pSelDirInput;
     
 public:
-    CSelectDirWidget(void) : CBaseWidget(), pDirChooser(NULL), pBox(NULL), pSelDirButton(NULL), pSelDirInput(NULL) { };
+    CSelectDirScreen(void) : CBaseScreen(), pDirChooser(NULL), pBox(NULL), pSelDirButton(NULL), pSelDirInput(NULL) { };
     
     virtual Fl_Group *Create(void);
+    virtual void UpdateLang(void);
+    virtual bool Next(void);
     void OpenDirChooser(void);
+};
+
+class CInstallFilesScreen: public CBaseScreen
+{
+    Fl_Progress *pProgress;
+    Fl_Text_Display *pDisplay;
+    Fl_Text_Buffer *pBuffer;
+    short Percent;
+    
+public:
+    CInstallFilesScreen(void) : CBaseScreen(), pProgress(NULL), pDisplay(NULL), pBuffer(NULL), Percent(0) { };
+    
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLang(void);
+    virtual void Activate(void);
+    void Install(void);
+    static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesScreen *)p)->Install(); };
 };
 
 #endif

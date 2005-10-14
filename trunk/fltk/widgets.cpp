@@ -1,10 +1,10 @@
 #include "fltk.h"
 
 // -------------------------------------
-// Language selection widget
+// Language selection screen
 // -------------------------------------
 
-Fl_Group *CLangWidget::Create(void)
+Fl_Group *CLangScreen::Create(void)
 {
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
@@ -27,18 +27,19 @@ Fl_Group *CLangWidget::Create(void)
     return pGroup;
 }
 
-void CLangWidget::Next()
+bool CLangScreen::Next()
 {
     pPrevButton->activate();
     ReadLang();
     UpdateLanguage();
+    return true;
 }
 
 // -------------------------------------
-// Welcome text display widget
+// Welcome text display screen
 // -------------------------------------
 
-Fl_Group *CWelcomeWidget::Create(void)
+Fl_Group *CWelcomeScreen::Create(void)
 {
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
@@ -53,16 +54,16 @@ Fl_Group *CWelcomeWidget::Create(void)
     return pGroup;
 }
 
-void CWelcomeWidget::UpdateLang()
+void CWelcomeScreen::UpdateLang()
 {
     pDisplay->label(GetTranslation("Welcome"));
 }
 
 // -------------------------------------
-// License agreement widget
+// License agreement screen
 // -------------------------------------
 
-Fl_Group *CLicenseWidget::Create(void)
+Fl_Group *CLicenseScreen::Create(void)
 {
     Fl_Text_Buffer *buffer = new Fl_Text_Buffer;
     if (buffer->loadfile("config/license")) return NULL; // No license found
@@ -75,25 +76,27 @@ Fl_Group *CLicenseWidget::Create(void)
     
     pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-240)/2, (MAIN_WINDOW_H-80), 240, 25, "I Agree to this license agreement");
     pCheckButton->callback(LicenseCheckCB);
+    
     pGroup->end();
     return pGroup;
 }
 
-void CLicenseWidget::UpdateLang()
+void CLicenseScreen::UpdateLang()
 {
     pDisplay->label(GetTranslation("License Agreement"));
+    pCheckButton->label(GetTranslation("I Agree to this license agreement"));
 }
 
-void CLicenseWidget::Activate()
+void CLicenseScreen::Activate()
 {
     if (!pCheckButton->value()) pNextButton->deactivate();
 }
 
 // -------------------------------------
-// Destination dir selector widget
+// Destination dir selector screen
 // -------------------------------------
 
-Fl_Group *CSelectDirWidget::Create()
+Fl_Group *CSelectDirScreen::Create()
 {
     pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
                                       "Select destination directory");
@@ -105,7 +108,7 @@ Fl_Group *CSelectDirWidget::Create()
     pGroup->begin();
 
     pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
-    pSelDirInput = new Fl_Input(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "path: ");
+    pSelDirInput = new Fl_Input(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "dir: ");
     pSelDirInput->value(InstallInfo.dest_dir);
     pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select directory");
     pSelDirButton->callback(OpenDirSelWinCB, this);
@@ -114,7 +117,21 @@ Fl_Group *CSelectDirWidget::Create()
     return pGroup;
 }
 
-void CSelectDirWidget::OpenDirChooser(void)
+void CSelectDirScreen::UpdateLang()
+{
+    pDirChooser->label(GetTranslation("Select destination directory"));
+    pBox->label(GetTranslation("Select destination directory"));
+    pSelDirButton->label(GetTranslation("Select directory"));
+}
+
+bool CSelectDirScreen::Next()
+{
+    char temp[128];
+    sprintf(temp, GetTranslation("This will install %s to the following directory:"), InstallInfo.program_name);
+    return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir, GetTranslation("Continue?")));
+}
+
+void CSelectDirScreen::OpenDirChooser(void)
 {
     pDirChooser->show();
     while(pDirChooser->visible()) Fl::wait();
@@ -125,4 +142,63 @@ void CSelectDirWidget::OpenDirChooser(void)
         InstallInfo.dest_dir[2047] = 0;
         pSelDirInput->value(InstallInfo.dest_dir);
     }
+}
+
+// -------------------------------------
+// Install progress screen
+// -------------------------------------
+
+Fl_Group *CInstallFilesScreen::Create()
+{
+    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    pGroup->begin();
+
+    pProgress = new Fl_Progress(50, 60, (MAIN_WINDOW_W-100), 30, "Install progress");
+    pProgress->minimum(0);
+    pProgress->maximum(100);
+    pProgress->value(0);
+    
+    pBuffer = new Fl_Text_Buffer;
+    
+    pDisplay = new Fl_Text_Display(50, 110, (MAIN_WINDOW_W-100), (MAIN_WINDOW_H-170), "Status");
+    pDisplay->buffer(pBuffer);
+    
+    pGroup->end();
+
+    return pGroup;
+}
+
+void CInstallFilesScreen::UpdateLang()
+{
+    pProgress->label(GetTranslation("Install progress"));
+    pDisplay->label(GetTranslation("Status"));
+}
+
+void CInstallFilesScreen::Install()
+{
+    char curfile[256], text[300];
+    Percent = ExtractArchive(curfile);
+        
+    sprintf(text, "Extracting file: %s\n", curfile);
+    pBuffer->append(text);
+    pDisplay->move_down();
+    if (Percent==-1) EndProg(-2);
+    pProgress->value(Percent);
+    pDisplay->show_insert_position();
+    if (Percent==100)
+    {
+        pBuffer->append("Done!\n");
+        pDisplay->move_down();
+        InstallFiles = false;
+        fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
+        EndProg(0);
+    }
+}
+
+void CInstallFilesScreen::Activate()
+{
+    chdir(InstallInfo.dest_dir);
+    InstallFiles = true;
+    pPrevButton->deactivate();
+    pNextButton->deactivate();
 }
