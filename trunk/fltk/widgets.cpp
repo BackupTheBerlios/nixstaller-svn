@@ -98,11 +98,11 @@ void CLicenseScreen::Activate()
 
 Fl_Group *CSelectDirScreen::Create()
 {
-    pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+    /*pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
                                       "Select destination directory");
     pDirChooser->hide();
     pDirChooser->preview(false);
-    pDirChooser->previewButton->hide();
+    pDirChooser->previewButton->hide();*/
     
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
@@ -119,7 +119,13 @@ Fl_Group *CSelectDirScreen::Create()
 
 void CSelectDirScreen::UpdateLang()
 {
+    if (pDirChooser) delete pDirChooser;
+    pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                                      "Select destination directory");
+    pDirChooser->previewButton->hide();
+
     pDirChooser->label(GetTranslation("Select destination directory"));
+    pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
     pBox->label(GetTranslation("Select destination directory"));
     pSelDirButton->label(GetTranslation("Select directory"));
 }
@@ -199,6 +205,7 @@ void CInstallFilesScreen::Activate()
 {
     chdir(InstallInfo.dest_dir);
     InstallFiles = true;
+    Fl::add_idle(CInstallFilesScreen::stat_inst, this);
     pPrevButton->deactivate();
     pNextButton->deactivate();
 }

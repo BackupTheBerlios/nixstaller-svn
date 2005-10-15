@@ -15,11 +15,23 @@ Selecteer bestemmings directory
 # Button names
 #-----------------------------------------------
 
+Next
+Volgende
+
+Back
+Terug
+
 OK
 OK
 
 Cancel
 Annuleren
+
+Yes
+Ja
+
+No
+Nee
 
 Agree
 Ik ga akkoord
@@ -83,7 +95,7 @@ Ga naar vorige/volgende dir
 Activate current button
 Activeer huidige knop
 
-Create new direcotry
+Create new directory
 Maak nieuwe directory
 
 #-----------------------------------------------
@@ -107,3 +119,31 @@ Kon geen venster maken
 
 Could not create the directory
 Kon de directory niet maken
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Voeg toe aan favorieten
+
+All Files (*)
+Alle bestanden (*)
+
+Custom Filter
+Eigen Filter
+
+Favorites
+Favorieten
+
+Filename:
+Bestandsnaam:
+
+File Systems
+Bestands Systemen
+
+Manage Favorites
+Beheer Favorieten
+
+Show:
+Zichtbaar:

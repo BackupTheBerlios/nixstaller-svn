@@ -1,4 +1,5 @@
 #include "fltk.h"
+#include <Fl/x.H>
 
 void CreateMainWindow(char **argv);
 void UpdateLanguage(void);
@@ -75,7 +76,7 @@ int main(int argc, char **argv)
 void CreateMainWindow(char **argv)
 {
     Fl::scheme("plastic");
-    MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H);
+    MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     
     (new Fl_Button(20, (MAIN_WINDOW_H-30), 80, 25, "Cancel"))->callback(WizCancelCB, 0);
     pPrevButton = new Fl_Button(MAIN_WINDOW_W-200, (MAIN_WINDOW_H-30), 80, 25, "@<-    Back");
@@ -104,9 +105,13 @@ void CreateMainWindow(char **argv)
 
     widget = pInstallFilesScreen = new CInstallFilesScreen;
     group = widget->Create();
-    Fl::add_idle(CInstallFilesScreen::stat_inst, widget);
     if (group) { Wizard->add(group); ScreenList.push_back(widget); }
 
+    // HACK: Switch that annoying bell off!
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = 0;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+    
     MainWindow->end();
     MainWindow->show(1, argv);
     Fl::run();
@@ -114,6 +119,24 @@ void CreateMainWindow(char **argv)
 
 void UpdateLanguage()
 {
+    // Translations for FL ASK dialogs
+    fl_yes = GetTranslation("Yes");
+    fl_no = GetTranslation("No");
+    fl_ok = GetTranslation("OK");
+    fl_cancel = GetTranslation("Cancel");
+    
+    // Translations for FLTK's File Chooser
+    Fl_File_Chooser::add_favorites_label = GetTranslation("Add to Favorites");
+    Fl_File_Chooser::all_files_label = GetTranslation("All Files (*)");
+    Fl_File_Chooser::custom_filter_label = GetTranslation("Custom Filter");
+    Fl_File_Chooser::favorites_label = GetTranslation("Favorites");
+    Fl_File_Chooser::filename_label = GetTranslation("Filename:");
+    Fl_File_Chooser::filesystems_label = GetTranslation("File Systems");
+    Fl_File_Chooser::manage_favorites_label = GetTranslation("Manage Favorites");
+    Fl_File_Chooser::new_directory_label = GetTranslation("Enter name of new directory");
+    Fl_File_Chooser::new_directory_tooltip = GetTranslation("Create new directory");
+    Fl_File_Chooser::show_label = GetTranslation("Show:");
+    
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) (*p)->UpdateLang();
 }
 

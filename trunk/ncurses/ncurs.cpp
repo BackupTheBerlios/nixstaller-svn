@@ -112,15 +112,17 @@ bool SelectDir()
     getbegyx(MainWin, y1, x1);
     getmaxyx(MainWin, y2, x2);
     int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
-    char *botlabel[4] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+    char *botlabel[5] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
                                      GetTranslation("Go to next button"), maxtxtlength,
                                      GetTranslation("Activate current button")),
                           "</B/27>  ^<!27!B>",
                           CreateText("</B/27>  <#BU>  <!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
                                      GetTranslation("Highlight previous/next dir"), maxtxtlength,
                                      GetTranslation("Exit program")),
-                          "</B/27>  v<!27!B>" };
-    SetBottomLabel(botlabel, 4);
+                          "</B/27>  v<!27!B>",
+                          CreateText("</B/27>C<!27!B>     : %*.*s", -txtfieldwidth, maxtxtlength,
+                                     GetTranslation("Create new directory")) };
+    SetBottomLabel(botlabel, 5);
 
     if (chdir(InstallInfo.dest_dir) != 0)
         throwerror("Couldn't open directory '%s'", InstallInfo.dest_dir);
