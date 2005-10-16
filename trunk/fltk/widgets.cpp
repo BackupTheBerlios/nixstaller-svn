@@ -122,6 +122,7 @@ void CSelectDirScreen::UpdateLang()
     if (pDirChooser) delete pDirChooser;
     pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
                                       "Select destination directory");
+    pDirChooser->preview(false);
     pDirChooser->previewButton->hide();
 
     pDirChooser->label(GetTranslation("Select destination directory"));

@@ -14,8 +14,8 @@
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_File_Chooser.H>
-#include <Fl/Fl_Input.H>
-#include <Fl/Fl_Progress.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Progress.H>
 
 #define MAIN_WINDOW_W 600
 #define MAIN_WINDOW_H 400

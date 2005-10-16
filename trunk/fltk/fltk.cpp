@@ -1,5 +1,5 @@
 #include "fltk.h"
-#include <Fl/x.H>
+#include <FL/x.H>
 
 void CreateMainWindow(char **argv);
 void UpdateLanguage(void);
