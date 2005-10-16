@@ -7,6 +7,7 @@ void EndProg(void);
 
 Fl_Window *MainWindow = NULL;
 Fl_Wizard *Wizard = NULL;
+Fl_Button *pCancelButton = NULL;
 Fl_Button *pPrevButton = NULL;
 Fl_Button *pNextButton = NULL;
 
@@ -78,11 +79,12 @@ void CreateMainWindow(char **argv)
     Fl::scheme("plastic");
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     
-    (new Fl_Button(20, (MAIN_WINDOW_H-30), 80, 25, "Cancel"))->callback(WizCancelCB, 0);
-    pPrevButton = new Fl_Button(MAIN_WINDOW_W-200, (MAIN_WINDOW_H-30), 80, 25, "@<-    Back");
+    pCancelButton = new Fl_Button(20, (MAIN_WINDOW_H-30), 120, 25, "Cancel");
+    pCancelButton->callback(WizCancelCB, 0);
+    pPrevButton = new Fl_Button(MAIN_WINDOW_W-280, (MAIN_WINDOW_H-30), 120, 25, "@<-    Back");
     pPrevButton->callback(WizPrevCB, 0);
     pPrevButton->deactivate(); // First screen, no go back button yet
-    pNextButton = new Fl_Button(MAIN_WINDOW_W-100, (MAIN_WINDOW_H-30), 80, 25, "Next    @->");
+    pNextButton = new Fl_Button(MAIN_WINDOW_W-140, (MAIN_WINDOW_H-30), 120, 25, "Next    @->");
     pNextButton->callback(WizNextCB, 0);
     
     Wizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
@@ -137,6 +139,12 @@ void UpdateLanguage()
     Fl_File_Chooser::new_directory_tooltip = GetTranslation("Create new directory");
     Fl_File_Chooser::show_label = GetTranslation("Show:");
     
+    // Update main buttons
+    pCancelButton->label(GetTranslation("Cancel"));
+    pPrevButton->label(CreateText("@<-    %s", GetTranslation("Back")));
+    pNextButton->label(CreateText("%s    @->", GetTranslation("Next")));
+    
+    // Update all screens
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) (*p)->UpdateLang();
 }
 

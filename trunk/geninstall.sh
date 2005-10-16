@@ -24,7 +24,7 @@ copytemp()
     # Copy all required libs
     cp $CURDIR/lib/$CURRENT_OS/libc.so.* $CURDIR/release/tmp/lib/$CURRENT_OS/
     cp $CURDIR/lib/$CURRENT_OS/libm.so.* $CURDIR/release/tmp/lib/$CURRENT_OS/
-    cp $CURDIR/lib/$CURRENT_OS/libstdc++.so.* $CURDIR/release/tmp/lib/$CURRENT_OS/
+    #cp $CURDIR/lib/$CURRENT_OS/libstdc++.so.* $CURDIR/release/tmp/lib/$CURRENT_OS/
     
     cp $CURDIR/startupinstaller.sh $CURDIR/release/tmp
 }

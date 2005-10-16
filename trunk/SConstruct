@@ -1,6 +1,6 @@
 import sys
 
-env = Environment(CC = 'g++', CCFLAGS = "-O2 -static-libgcc -v", LIBS=Split('main archive z bz2'))
+env = Environment(CC = 'g++', CCFLAGS = "-O2 -static-libgcc", LIBS=Split('main archive z bz2'))
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')

@@ -10,6 +10,7 @@
 #include "main.h"
 
 install_info_s InstallInfo;
+std::list<char *> StringList;
 
 void check()
 {
@@ -133,6 +134,8 @@ void MainEnd()
         std::list<char*>::iterator p2 = InstallInfo.languages.begin();
         for(;p2!=InstallInfo.languages.end();p2++) delete [] *p2;
     }
+    
+    FreeStrings();
 }
 
 // Returns uncompressed file size of a gzipped tar file
@@ -279,4 +282,28 @@ char *GetTranslation(char *s)
     
     // No translation found
     return s;
+}
+
+char *CreateText(const char *s, ...)
+{
+    static char txt[2048]; // Should be enough ;)
+    va_list v;
+    
+    va_start(v, s);
+        vsprintf(txt, s, v);
+    va_end(v);
+    
+    char *output = new char[strlen(txt)+1];
+    strcpy(output, txt);
+    StringList.push_front(output);
+    return output;
+}
+
+void FreeStrings()
+{
+    while(!StringList.empty())
+    {
+        delete [] (*StringList.end());
+        StringList.pop_back();
+    }
 }

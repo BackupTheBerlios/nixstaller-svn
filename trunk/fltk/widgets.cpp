@@ -74,7 +74,7 @@ Fl_Group *CLicenseScreen::Create(void)
     pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License Agreement");
     pDisplay->buffer(buffer);
     
-    pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-240)/2, (MAIN_WINDOW_H-80), 240, 25, "I Agree to this license agreement");
+    pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-350)/2, (MAIN_WINDOW_H-80), 350, 25, "I Agree to this license agreement");
     pCheckButton->callback(LicenseCheckCB);
     
     pGroup->end();
@@ -98,12 +98,6 @@ void CLicenseScreen::Activate()
 
 Fl_Group *CSelectDirScreen::Create()
 {
-    /*pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                      "Select destination directory");
-    pDirChooser->hide();
-    pDirChooser->preview(false);
-    pDirChooser->previewButton->hide();*/
-    
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
 

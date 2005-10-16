@@ -1,7 +1,5 @@
 #include "ncurs.h"
 
-std::list<char *> StringList;
-
 void throwerror(const char *error, ...)
 {
     static char txt[256];
@@ -188,28 +186,4 @@ void SetBottomLabel(char **msg, int count)
     setCDKLabelBackgroundColor(BottomLabel, "</B/3>");
     drawCDKLabel(BottomLabel, 1);
     refreshCDKScreen(CDKScreen);
-}
-
-char *CreateText(const char *s, ...)
-{
-    static char txt[2048]; // Should be enough ;)
-    va_list v;
-    
-    va_start(v, s);
-        vsprintf(txt, s, v);
-    va_end(v);
-    
-    char *output = new char[strlen(txt)+1];
-    strcpy(output, txt);
-    StringList.push_front(output);
-    return output;
-}
-
-void FreeStrings()
-{
-    while(!StringList.empty())
-    {
-        delete [] (*StringList.end());
-        StringList.pop_back();
-    }
 }

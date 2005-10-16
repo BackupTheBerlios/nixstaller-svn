@@ -22,6 +22,7 @@ struct install_info_s
 };
 
 extern install_info_s InstallInfo;
+extern std::list<char *> StringList; // List of all strings created by CreateText, for easy removal :)
 
 void check(void);
 bool MainInit(int argc, char *argv[]);
@@ -31,5 +32,7 @@ bool ReadLang(void);
 std::string GetTranslation(std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
+char *CreateText(const char *s, ...);
+void FreeStrings(void);
 
 #endif 
