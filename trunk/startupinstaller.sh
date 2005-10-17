@@ -5,8 +5,13 @@
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 
-# Only ncurses for now...
-RUNCOMMAND="./frontends/$CURRENT_OS/fltk $HOME"
+# X Running?
+if [ -z $DISPLAY ]; then
+    # Not running, use ncurses frontend
+    RUNCOMMAND="./frontends/$CURRENT_OS/ncurs $HOME"
+else
+    RUNCOMMAND="./frontends/$CURRENT_OS/fltk $HOME"
+fi
 
-#Incase there are missing libraries, we just the lib path...
+#Incase there are missing libraries, we just change the lib path...
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:./lib/$CURRENT_OS" $RUNCOMMAND

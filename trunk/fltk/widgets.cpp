@@ -44,10 +44,10 @@ Fl_Group *CWelcomeScreen::Create(void)
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
     
-    Fl_Text_Buffer *buffer = new Fl_Text_Buffer;
-    buffer->loadfile("config/welcome");
+    pBuffer = new Fl_Text_Buffer;
+
     pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Welcome");
-    pDisplay->buffer(buffer);
+    pDisplay->buffer(pBuffer);
     
     pGroup->end();
     
@@ -56,6 +56,8 @@ Fl_Group *CWelcomeScreen::Create(void)
 
 void CWelcomeScreen::UpdateLang()
 {
+    HasText = (!pBuffer->loadfile(CreateText("config/lang/%s/welcome", InstallInfo.cur_lang.c_str())) ||
+               !pBuffer->loadfile("config/welcome"));
     pDisplay->label(GetTranslation("Welcome"));
 }
 
@@ -65,14 +67,13 @@ void CWelcomeScreen::UpdateLang()
 
 Fl_Group *CLicenseScreen::Create(void)
 {
-    Fl_Text_Buffer *buffer = new Fl_Text_Buffer;
-    if (buffer->loadfile("config/license")) return NULL; // No license found
-
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
     
+    pBuffer = new Fl_Text_Buffer;
+    
     pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License Agreement");
-    pDisplay->buffer(buffer);
+    pDisplay->buffer(pBuffer);
     
     pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-350)/2, (MAIN_WINDOW_H-80), 350, 25, "I Agree to this license agreement");
     pCheckButton->callback(LicenseCheckCB);
@@ -83,13 +84,19 @@ Fl_Group *CLicenseScreen::Create(void)
 
 void CLicenseScreen::UpdateLang()
 {
+    HasText = (!pBuffer->loadfile(CreateText("config/lang/%s/license", InstallInfo.cur_lang.c_str())) ||
+               !pBuffer->loadfile("config/license"));
+    
     pDisplay->label(GetTranslation("License Agreement"));
     pCheckButton->label(GetTranslation("I Agree to this license agreement"));
 }
 
-void CLicenseScreen::Activate()
+bool CLicenseScreen::Activate()
 {
+    if (!HasText) return false;
+    
     if (!pCheckButton->value()) pNextButton->deactivate();
+    return true;
 }
 
 // -------------------------------------
@@ -196,11 +203,12 @@ void CInstallFilesScreen::Install()
     }
 }
 
-void CInstallFilesScreen::Activate()
+bool CInstallFilesScreen::Activate()
 {
     chdir(InstallInfo.dest_dir);
     InstallFiles = true;
     Fl::add_idle(CInstallFilesScreen::stat_inst, this);
     pPrevButton->deactivate();
     pNextButton->deactivate();
+    return true;
 }

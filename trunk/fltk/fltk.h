@@ -43,7 +43,8 @@ public:
     virtual void UpdateLang(void) { }; // Called after language is changed
     virtual bool Prev(void) { return true; };
     virtual bool Next(void) { return true; };
-    virtual void Activate(void) { };
+    virtual bool Activate(void) { return true; };
+    virtual bool Enabled(void) { return true; };
 };
 
 class CLangScreen: public CBaseScreen
@@ -56,32 +57,37 @@ public:
     
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
-    virtual void Activate(void) { pPrevButton->deactivate(); };
+    virtual bool Activate(void) { pPrevButton->deactivate(); return true; };
 };
 
 class CWelcomeScreen: public CBaseScreen
 {
     Fl_Text_Display *pDisplay;
+    Fl_Text_Buffer *pBuffer;
+    bool HasText;
     
 public:
-    CWelcomeScreen(void) : CBaseScreen(), pDisplay(NULL) { };
+    CWelcomeScreen(void) : CBaseScreen(), pDisplay(NULL), pBuffer(NULL), HasText(false) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
+    virtual bool Activate(void) { return HasText; };
 };
 
 class CLicenseScreen: public CBaseScreen
 {
     Fl_Text_Display *pDisplay;
     Fl_Check_Button *pCheckButton;
+    Fl_Text_Buffer *pBuffer;
+    bool HasText;
     
 public:
-    CLicenseScreen(void) : CBaseScreen(), pDisplay(NULL), pCheckButton(NULL) { };
+    CLicenseScreen(void) : CBaseScreen(), pDisplay(NULL), pCheckButton(NULL), pBuffer(NULL), HasText(false) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual bool Prev(void) { pNextButton->activate(); return true; };
-    virtual void Activate(void);
+    virtual bool Activate(void);
 };
 
 class CSelectDirScreen: public CBaseScreen
@@ -112,7 +118,7 @@ public:
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual void Activate(void);
+    virtual bool Activate(void);
     void Install(void);
     static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesScreen *)p)->Install(); };
 };

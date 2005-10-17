@@ -116,6 +116,7 @@ bool MainInit(int argc, char *argv[])
         char *s = new char[8];
         strcpy(s, "english");
         InstallInfo.languages.push_front(s);
+        InstallInfo.cur_lang = "english";
     }
     return true;
 }
@@ -208,7 +209,7 @@ bool ReadLang()
     if (InstallInfo.cur_lang == "english") return true; // No need to translate...
     
     char filename[64];
-    sprintf(filename, "config/lang/%s.lng", InstallInfo.cur_lang.c_str());
+    sprintf(filename, "config/lang/%s/strings", InstallInfo.cur_lang.c_str());
     FILE *langfile = fopen(filename, "r");
     
     if (!langfile) return false;

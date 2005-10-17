@@ -32,8 +32,12 @@ void WizPrevCB(Fl_Widget *, void *)
             if (p == ScreenList.begin()) break;
             if ((*p)->Prev())
             {
-                Wizard->prev();
-                (*--p)->Activate();
+                do
+                {
+                    Wizard->prev();
+                    if (--p == ScreenList.begin()) break;
+                }
+                while (!(*p)->Activate());
             }
             break;
         }
@@ -49,8 +53,12 @@ void WizNextCB(Fl_Widget *, void *)
             if (p == ScreenList.end()) break;
             if ((*p)->Next())
             {
-                Wizard->next();
-                (*++p)->Activate();
+                do
+                {
+                    Wizard->next();
+                    if (++p == ScreenList.end()) break;
+                }
+                while (!(*p)->Activate());
             }
             break;
         }
