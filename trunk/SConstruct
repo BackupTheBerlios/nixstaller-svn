@@ -6,7 +6,7 @@ env = Environment(CC = 'g++', CCFLAGS = "-O2 -static-libgcc", LIBS=Split('main a
 cur_os = sys.platform.rstrip('1234567890')
 
 env.Append(LIBPATH=['.', 'main/', 'lib/'+cur_os])
-env.Append(CPPPATH=['.', 'main/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
+env.Append(CPPPATH=['.', 'main/', 'include/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
 
 # Builds main lib
 main = env.Library("main/main", ["main/main.cpp"], CCFLAGS='$CCFLAGS -fPIC')
