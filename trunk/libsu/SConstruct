@@ -1,0 +1,51 @@
+env = Environment(CC = 'g++', CCFLAGS = "-O2 -fPIC -g", LIBPATH='/usr/X11R6/lib', CPPPATH=Split('. /usr/X11R6/include /usr/local/include'))
+
+config_header = 'config.h'
+
+# configure stuff (only do this when not cleaning)
+if not env.GetOption('clean'):
+    conf = env.Configure(config_h = config_header)
+    #conf = env.Configure()
+    
+    if conf.CheckLibWithHeader('c', 'sched.h', 'C', 'sched_getscheduler(0);'):
+        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DPOSIX1B_SCHEDULING')
+        
+    conf.CheckFunc('initgroups')
+    
+    conf.CheckCXXHeader(['stdlib.h', 'sys/types.h', 'libutil.h'], "<>")
+    conf.CheckCXXHeader('util.h', "<>")
+    conf.CheckCXXHeader('pty.h', "<>")
+    
+    if conf.CheckLib('util', 'openpty'):
+        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DHAVE_OPENPTY=1')
+        
+    conf.CheckFunc('setgroups')
+    conf.CheckFunc('getgroups')
+    conf.CheckFunc('grantpt')
+    conf.CheckFunc('setpriority')
+    conf.CheckFunc('getpt')
+    conf.CheckFunc('unlockpt')
+    conf.CheckFunc('ptsname')
+    
+    # irix pty stuff
+    conf.CheckFunc('_getpty')
+    
+    if conf.CheckType('ucred', '#include <sys/socket.h>'):
+        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DHAVE_STRUCT_UCRED')
+    
+    conf.CheckFunc('getpeereid')
+    
+    env = conf.Finish()
+else:
+    # Atleast for me, scons won't clean properly...removing all '.sconsign' files manually seems to help
+    Execute(Delete('main/.sconsign'))
+    Execute(Delete('ncurses/.sconsign'))
+    Execute(Delete('fltk/.sconsign'))
+    Execute(Delete('.sconf_temp'))
+    Execute(Delete('.sconsign.dblite'))
+
+# Builds lib
+env.Library("libsu", Split('main.cpp util.cpp'))
+
+# Builds test program
+env.Program("libtest", 'libtest.cpp', LIBPATH=".", LIBS=Split('su util'))
