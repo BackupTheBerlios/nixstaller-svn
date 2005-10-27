@@ -1,10 +1,5 @@
 #include <main.h>
 
-extern void log(const char *txt, ...);
-extern void rewind_log(void);
-extern void close_log(void);
-extern void exit_error(const char *txt, ...);
-
 const char *TermStr = "I'm Done Now :)"; // Lets just hope other program don't output this ;)
 
 int CLibSU::CreatePT()
@@ -128,7 +123,7 @@ int CLibSU::GrantPT()
 
 // UNDONE
 
-#error "No grantpt found on you're system."
+#error "No grantpt found on your system."
 
     // konsole_grantpty only does /dev/pty??
     if (m_szPTYName.left(8) != "/dev/pty")
@@ -232,19 +227,13 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     }
 
     m_iPid = fork();
-    
-    /*asm("mov 1, %eax\n"
-        "int 80h\n"
-        "mov ecx, %pid\n");*/
-        
+           
     if (m_iPid == -1) 
     {
         exit_error("fork(): %s\n ", perror);
         return -1;
     } 
 
-    if (!m_iPid) rewind_log();
-    
     log("Pid: %d\n", m_iPid);
     
     // Parent
@@ -260,23 +249,14 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     if (SetupTTY(slave) < 0)
         exit_error("Couldn't set up TTY\n");
 
-    rewind_log();
-
-/* UNDONE?
-    for(QCStringList::ConstIterator it = d->env.begin();
-        it != d->env.end(); it++)
-    {
-        putenv((*it).data());
-    }
-    unsetenv("KDE_FULL_SESSION");*/
-
     // From now on, terminal output goes through the tty.
 
     std::string path;
-    //if (command.contains('/'))
-        path = command;/* UNDONE?
-    else 
+//    if (command.contains('/'))
+        path = command;
+/*    else 
     {
+        if (FileExists("/usr/local/bin/" + 
         QString file = KStandardDirs::findExe(command);
         if (file.isEmpty()) 
         {
@@ -307,11 +287,8 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     log("\n");
     argp[i] = 0L;
     
-    close_log();
-    
     execv(path.c_str(), (char * const *)argp);
     exit_error("execv(\"%s\"): %s\n", path.c_str(), perror);
-    _exit(1);
     return -1; // Shut up compiler. Never reached.
 }
 
@@ -330,8 +307,6 @@ int CLibSU::SetupTTY(int fd)
 
     // Create a new session.
     setsid();
-
-    rewind_log();
 
     // Open slave. This will make it our controlling terminal
     int slave = open(m_szTTYName.c_str(), O_RDWR);
@@ -535,13 +510,10 @@ int CLibSU::WaitForChild()
             std::string line = ReadLine(false);
             while (!line.empty()) 
             {
-                /*if (!m_Exit.isEmpty() && !qstrnicmp(line, m_Exit, m_Exit.length()))
-                    kill(m_Pid, SIGTERM);*/
-                //if (m_bTerminal) 
-                {
-                    fputs(line.c_str(), stdout);
-                    fputc('\n', stdout);
-                }
+                if (!m_szExit.empty() && (line == m_szExit))
+                    kill(m_iPid, SIGTERM);
+                fputs(line.c_str(), stdout);
+                fputc('\n', stdout);
                 line = ReadLine(false);
             }
         }
@@ -712,27 +684,19 @@ int CLibSU::TalkWithSU(const char *password)
 
 int CLibSU::ExecuteCommand(const char *password, int check)
 {
-/*    if (check)
-        setTerminal(true);*/
-
     std::list<std::string> args;
-    /*if ((m_Scheduler != SchedNormal) || (m_Priority > 50))
-        args += "root";
-    else UNDONE*/
-        args.push_back(m_szUser);
+
+    args.push_back(m_szUser);
     args.push_back("-c");
-    args.push_back(m_szCommand + "; printf \"" + TermStr + "\""); // Add our magic terminate indicator
+    args.push_back(std::string("printf \"") + TermStr + "\"; " + m_szCommand); // Insert our magic terminate indicator to command
     args.push_back("-");
 
-/*    QCString command = __PATH_SU;
-    if (::access(__PATH_SU, X_OK) != 0)
-    {
-       command = QFile::encodeName(KGlobal::dirs()->findExe("su"));
-       if (command.isEmpty())
-          return check ? SuNotFound : -1;
-    } UNDONE */
-    std::string command = "/usr/bin/su";
-    
+    std::string command;
+    if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
+    if (FileExists("/bin/su")) command = "/usr/bin/su";
+
+    if (command.empty()) exit_error("Couldn't find su\n");
+        
     if (Exec(command, args) < 0)
     {
 	return check ? SuNotFound : -1;

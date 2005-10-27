@@ -1,13 +1,15 @@
-#include "main.h"
+#include "libsu.h"
 
 int main()
 {
-    CLibSU LibSU("ls -a", "mama");
-    char passwd[128];
+    char user[128], passwd[128];
+    printf("user: ");
+    scanf("%s", user);
     printf("password: ");
     if (scanf("%s", passwd))
     {
-        LibSU.ExecuteCommand("passwd", 1);
+        CLibSU LibSU("cdrecord --help", user);
+        LibSU.ExecuteCommand(passwd, 1);
         for (short s=0;s<128;s++) passwd[s] = 0; // Clear passwd
     }
     else
