@@ -11,12 +11,6 @@ env.Append(CPPPATH=['.', 'main/', 'include/', 'include/'+cur_os, 'include/'+cur_
 # Builds main lib
 main = env.Library("main/main", ["main/main.cpp"], CCFLAGS='$CCFLAGS -fPIC')
 
-# Builds ncurses frontend
-ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp'), LIBS=Split('$LIBS cdk ncurses'))
-
-# Builds fltk frontend
-fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk Xext X11'))
-
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
      conf = env.Configure()
@@ -35,7 +29,8 @@ if not env.GetOption('clean'):
      if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
           print 'cdk must be installed!'
           Exit(1)
-     if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'ncurses.h', 'C++', ';', 1):
+     #if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'ncurses.h', 'C++', ';', 1):
+     if not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 1):
           print 'acl must be installed!'
           Exit(1)
      env = conf.Finish()
@@ -46,6 +41,12 @@ else:
     Execute(Delete('fltk/.sconsign'))
     Execute(Delete('.sconf_temp'))
     Execute(Delete('.sconsign.dblite'))
+
+# Builds ncurses frontend
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp'), LIBS=Split('$LIBS cdk ncurses'))
+
+# Builds fltk frontend
+fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk Xext X11'))
 
 # Default to all
 Default(fltk, ncurses, main, env.Install('lib/'+cur_os, main), env.Install('bin/'+cur_os, ncurses), env.Install('bin/'+cur_os, fltk))

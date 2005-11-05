@@ -757,7 +757,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 
     std::string command;
     if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
-    if (FileExists("/bin/su")) command = "/bin/su";
+    else if (FileExists("/bin/su")) command = "/bin/su";
 
     if (command.empty())
     {

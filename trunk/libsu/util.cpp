@@ -34,12 +34,6 @@ void log(const char *txt, ...)
 
 bool FileExists(const char *file)
 {
-    FILE *f = fopen(file, "r");
-    if (f)
-    {
-        fclose(f);
-        return true;
-    }
-
-    return false;
+    struct stat st;
+    return (lstat(file, &st) == 0);
 }
