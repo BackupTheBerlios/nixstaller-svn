@@ -1,6 +1,25 @@
 #include <main.h>
+#include <stdarg.h>
 
 const char *TermStr = "I'm Done Now :)"; // Lets just hope other program don't output this ;)
+
+CLibSU::CLibSU(const char *command, const char *user, const char *path,
+               bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szCommand(command), m_szUser(user),
+                                                                               m_szPath(path), m_eError(SU_ERROR_NONE)
+{
+    if (!Disable0Core)
+    {
+        // Set core dump size to 0 because we will have
+        // root's password in memory.
+        struct rlimit rlim;
+        rlim.rlim_cur = rlim.rlim_max = 0;
+        if (setrlimit(RLIMIT_CORE, &rlim))
+        {
+            SetError(SU_ERROR_INTERNAL, "rlimit(): %s\n", strerror(errno));
+            exit(1);
+        }
+    }
+}
 
 int CLibSU::CreatePT()
 {
@@ -27,7 +46,7 @@ int CLibSU::CreatePT()
         return m_iPTYFD;
     }
     m_iPTYFD = -1;
-    exit_error("Opening pty failed.\n");
+    SetError(SU_ERROR_INTERNAL, "Opening pty failed.\n");
     return -1;
 
 #elif defined(HAVE__GETPTY)
@@ -38,7 +57,7 @@ int CLibSU::CreatePT()
         m_iPTYFD = master_fd;
     else{
         m_iPTYFD = -1;
-        exit_error("Opening pty failed. error %d\n", errno);
+        SetError(SU_ERROR_INTERNAL, "Opening pty failed. error %d\n", errno);
     }
     return m_iPTYFD;
 
@@ -96,7 +115,7 @@ linux_out:
 
     // Other systems ??
     m_iPTYFD = -1;
-    exit_error("Unknown system or all methods failed.\n");
+    SetError(SU_ERROR_INTERNAL, "Unknown system or all methods failed.\n");
     return -1;
 
 #endif // HAVE_GETPT && HAVE_PTSNAME
@@ -207,12 +226,36 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
 {
     log("Running '%s'\n", command.c_str());
 
+#if 0
+    // Check if command exists
+    bool fexists = false;
+    std::string tmp_path = m_szPath;
+    while(1)
+    {
+        std::string::size_type pos = tmp_path.find(':');
+        if (FileExists(tmp_path.substr(0, (pos==std::string::npos)?pos:pos) + '/' + m_szCommand))
+        {
+            fexists = true;
+            break;
+        }
+        else log("%s doesn't exist\n", std::string(tmp_path.substr(0, (pos==std::string::npos)?pos:pos) + '/' + m_szCommand).c_str());
+        if (pos == std::string::npos) break;
+        tmp_path.erase(0, pos+1);
+    }
+    
+    if (!fexists)
+    {
+        SetError(SU_ERROR_INTERNAL, "Couldn't find executable\n");
+        return -1;
+    }
+#endif
+
     if (CreatePT() < 0)
         return -1;
         
     if ((GrantPT() < 0) || (UnlockPT() < 0)) 
     {
-        exit_error("Master setup failed.\n");
+        SetError(SU_ERROR_INTERNAL, "Master setup failed.\n");
         return -1;
     }
     
@@ -222,7 +265,7 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     int slave = open(m_szTTYName.c_str(), O_RDWR);
     if (slave < 0) 
     {
-        exit_error("Could not open slave pty.\n");
+        SetError(SU_ERROR_INTERNAL, "Could not open slave pty.\n");
         return -1;
     }
 
@@ -230,7 +273,7 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
            
     if (m_iPid == -1) 
     {
-        exit_error("fork(): %s\n ", perror);
+        SetError(SU_ERROR_INTERNAL, "fork(): %s\n ", perror);
         return -1;
     } 
 
@@ -247,31 +290,19 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     
     // Child
     if (SetupTTY(slave) < 0)
-        exit_error("Couldn't set up TTY\n");
+    {
+        SetError(SU_ERROR_INTERNAL, "Couldn't set up TTY\n");
+        return -1;
+    }
 
     // From now on, terminal output goes through the tty.
-
-    std::string path;
-//    if (command.contains('/'))
-        path = command;
-/*    else 
-    {
-        if (FileExists("/usr/local/bin/" + 
-        QString file = KStandardDirs::findExe(command);
-        if (file.isEmpty()) 
-        {
-            kdError(900) << k_lineinfo << command << " not found\n"; 
-            _exit(1);
-        } 
-        path = QFile::encodeName(file);
-    }*/
 
     char **argp = (char **)malloc((args.size()+2)*sizeof(char *));
     int i = 0;
 
-    argp[i] = new char[path.length()+1];
-    path.copy(argp[i], std::string::npos);
-    argp[i][path.length()] = 0;
+    argp[i] = new char[command.length()+1];
+    command.copy(argp[i], std::string::npos);
+    argp[i][command.length()] = 0;
     i++;
 
     log("args: ");
@@ -287,8 +318,9 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     log("\n");
     argp[i] = 0L;
     
-    execv(path.c_str(), (char * const *)argp);
-    exit_error("execv(\"%s\"): %s\n", path.c_str(), perror);
+    setenv("PATH", m_szPath.c_str(), 1);
+    execv(command.c_str(), (char * const *)argp);
+    SetError(SU_ERROR_EXECUTE, "execv(\"%s\"): %s\n", m_szPath.c_str(), perror);
     return -1; // Shut up compiler. Never reached.
 }
 
@@ -312,7 +344,7 @@ int CLibSU::SetupTTY(int fd)
     int slave = open(m_szTTYName.c_str(), O_RDWR);
     if (slave < 0) 
     {
-        exit_error("Could not open slave side: %s\n", perror);
+        SetError(SU_ERROR_INTERNAL, "Could not open slave side: %s\n", perror);
         return -1;
     }
     close(fd);
@@ -340,13 +372,13 @@ int CLibSU::SetupTTY(int fd)
     struct termios tio;
     if (tcgetattr(0, &tio) < 0) 
     {
-        exit_error("tcgetattr(): %s\n", perror);
+        SetError(SU_ERROR_INTERNAL, "tcgetattr(): %s\n", perror);
         return -1;
     }
     tio.c_oflag &= ~OPOST;
     if (tcsetattr(0, TCSANOW, &tio) < 0) 
     {
-        exit_error("tcsetattr(): %s\n", perror);
+        SetError(SU_ERROR_INTERNAL, "tcsetattr(): %s\n", perror);
         return -1;
     }
 
@@ -377,7 +409,7 @@ std::string CLibSU::ReadLine(bool block)
     int flags = fcntl(m_iPTYFD, F_GETFL);
     if (flags < 0) 
     {
-        exit_error("fcntl(F_GETFL): %s\n", perror);
+        SetError(SU_ERROR_INTERNAL, "fcntl(F_GETFL): %s\n", perror);
         return ret;
     }
     int oflags = flags;
@@ -455,7 +487,7 @@ int CLibSU::WaitSlave()
     int slave = open(m_szTTYName.c_str(), O_RDWR);
     if (slave < 0) 
     {
-        exit_error("Could not open slave tty.\n");
+        SetError(SU_ERROR_INTERNAL, "Could not open slave tty.\n");
         return -1;
     }
 
@@ -469,7 +501,7 @@ int CLibSU::WaitSlave()
 	}
         if (tcgetattr(slave, &tio) < 0) 
         {
-            exit_error("tcgetattr(): %s\n", perror);
+            SetError(SU_ERROR_INTERNAL, "tcgetattr(): %s\n", perror);
             close(slave);
             return -1;
         }
@@ -499,7 +531,7 @@ int CLibSU::WaitForChild()
         {
             if (errno != EINTR) 
             {
-                exit_error("select(): %s\n", perror);
+                SetError(SU_ERROR_INTERNAL, "select(): %s\n", perror);
                 return -1;
             }
             ret = 0;
@@ -512,25 +544,28 @@ int CLibSU::WaitForChild()
             {
                 if (!m_szExit.empty() && (line == m_szExit))
                     kill(m_iPid, SIGTERM);
-                fputs(line.c_str(), stdout);
-                fputc('\n', stdout);
+                if (m_bTerminal)
+                {
+                    fputs(line.c_str(), stdout);
+                    fputc('\n', stdout);
+                }
                 line = ReadLine(false);
             }
         }
 
         ret = CheckPidExited(m_iPid);
-        if (ret == Error)
+        if (ret == PID_ERROR)
         {
             if (errno == ECHILD) retval = 0;
             else retval = 1;
             break;
         }
-        else if (ret == Killed)
+        else if (ret == PID_KILLED)
         {
             retval = 0;
             break;
         }
-        else if (ret == NotExited)
+        else if (ret == PID_NOTEXITED)
         {
             // keep checking
         }
@@ -562,17 +597,32 @@ int CLibSU::CheckPidExited(pid_t pid)
 
     if (ret < 0) 
     {
-        exit_error("waitpid(): %s\n", perror);
-        return Error;
+        SetError(SU_ERROR_INTERNAL, "waitpid(): %s\n", perror);
+        return PID_ERROR;
     }
     if (ret == pid) 
     {
         if (WIFEXITED(state))
             return WEXITSTATUS(state);
-        return Killed;
+        return PID_KILLED;
     }
 
-    return NotExited;
+    return PID_NOTEXITED;
+}
+
+void CLibSU::SetError(CLibSU::ESuErrors errtype, const char *msg, ...)
+{
+    char buffer[1024];
+    va_list v;
+    
+    m_eError = errtype;
+    
+    va_start(v, msg);
+        vsprintf(buffer, msg, v);
+    va_end(v);
+    
+    m_szErrorMsg = buffer;
+    log(buffer);
 }
 
 int CLibSU::TalkWithSU(const char *password)
@@ -585,18 +635,23 @@ int CLibSU::TalkWithSU(const char *password)
     while (true)
     {
         line = ReadLine(); 
-        if (line.empty()) { log("no input left\n");
-            return ( state == WaitTillDone ? notauthorized : error); }
+        
         log("Read Line: %s\nState: %d\n", line.c_str(), state);
 
         switch (state) 
         {
             case WaitForPrompt:
+                if (line.empty())
+                {
+                    SetError(SU_ERROR_INCORRECTUSER, "Incorrect user\n");
+                    return SUCOM_NOTAUTHORIZED;
+                }
+                
                 // In case no password is needed.
                 if (line == TermStr)
                 {
                     UnReadLine(line);
-                    return ok;
+                    return SUCOM_OK;
                 }
 
                 while(WaitMS(m_iPTYFD, 100)>0)
@@ -625,11 +680,14 @@ int CLibSU::TalkWithSU(const char *password)
                 if ((colon == 1) && (line[j] == ':')) 
                 {
                     if (password == 0L)
-                        return killme;
+                    {
+                        SetError(SU_ERROR_INCORRECTPASS, "Incorrect password\n");
+                        return SUCOM_NULLPASS;
+                    }
                     if (!CheckPid(m_iPid))
                     {
-                        exit_error("su has exited while waiting for pwd.\n");
-                        return error;
+                        SetError(SU_ERROR_INTERNAL, "su has exited while waiting for pwd.\n");
+                        return SUCOM_ERROR;
                     }
                     if ((WaitSlave() == 0) && CheckPid(m_iPid))
                     {
@@ -640,7 +698,7 @@ int CLibSU::TalkWithSU(const char *password)
                     }
                     else
                     {
-                        return error;
+                        return SUCOM_ERROR;
                     }
                 }
                 break;
@@ -663,26 +721,32 @@ int CLibSU::TalkWithSU(const char *password)
                 for (i=0; i<s.length(); i++)
                 {
                     if (s[i] != '*')
-                        return error;
+                        return SUCOM_ERROR;
                 }
                 state=WaitTillDone;
                 break;
             }
 
             case WaitTillDone:
+                if (line.empty())
+                {
+                    SetError(SU_ERROR_INCORRECTPASS, "Incorrect password\n");
+                    return SUCOM_NOTAUTHORIZED;
+                }
+
                 // Read till we get our personal terminate string...
                 if (line == TermStr)
                 {
-                    UnReadLine(line);
-                    return ok;
+                    //UnReadLine(line);
+                    return SUCOM_OK;
                 }
                 break;
         }
     }
-    return ok;
+    return SUCOM_OK;
 }
 
-int CLibSU::ExecuteCommand(const char *password, int check)
+bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 {
     std::list<std::string> args;
 
@@ -693,59 +757,53 @@ int CLibSU::ExecuteCommand(const char *password, int check)
 
     std::string command;
     if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
-    if (FileExists("/bin/su")) command = "/usr/bin/su";
+    if (FileExists("/bin/su")) command = "/bin/su";
 
-    if (command.empty()) exit_error("Couldn't find su\n");
-        
+    if (command.empty())
+    {
+        SetError(SU_ERROR_SUNOTFOUND, "Couldn't find su\n");
+        return false;
+    }
+    
     if (Exec(command, args) < 0)
     {
-	return check ? SuNotFound : -1;
+	return false;
     }
     
-    SuErrors ret = (SuErrors) TalkWithSU(password);
+    ESuComErrors ret = (ESuComErrors) TalkWithSU(password);
     log("SU COM: %d\n", ret);
     
-    if (ret == error) 
+    if (ret == SUCOM_ERROR) 
     {
-        if (!check)
-            exit_error("Conversation with su failed\n");
-        return ret;
+        SetError(SU_ERROR_INTERNAL, "Conversation with su failed\n");
+        return false;
     }
     
-    if (check == NeedPassword)
+    if (ret == SUCOM_NULLPASS)
     {
-        if (ret == killme)
-        {
-            if (kill(m_iPid, SIGKILL) < 0) ret=error;
-            else 
-            {
-                int iret = WaitForChild();
-                if (iret < 0) ret=error;
-                else /* nothing */ {} ;
-            }
-        }
-        return ret;
+        if (kill(m_iPid, SIGKILL) >= 0) WaitForChild();
+        return false;
     }
 
-    /*if (m_bErase && password) UNDONE
+    if (removepass && password)
     {
         char *ptr = const_cast<char *>(password);
         for (unsigned i=0; i<strlen(password); i++)
             ptr[i] = '\000';
-    }*/
+    }
 
-    if (ret == notauthorized)
+    if (ret == SUCOM_NOTAUTHORIZED)
     {
         kill(m_iPid, SIGKILL);
         WaitForChild();
-        return SuIncorrectPassword;
+        return false;
     }
 
-    if (check == Install)
+    if (WaitForChild() == 127)
     {
-        WaitForChild();
-        return 0;
+        SetError(SU_ERROR_EXECUTE, "Couldn't execute \'%s\'\n", m_szCommand.c_str());
+        return false;
     }
-
-    return WaitForChild();
+    
+    return true;
 }

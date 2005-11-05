@@ -4,17 +4,18 @@
 
 void log(const char *txt, ...)
 {
+#ifdef ENABLE_LOGGING
     // Ineffcient perhaps, but works for forked processes
 
     FILE *LogFile = NULL;
-    static bool InitLogFile = false;
+    static bool InitLogFile = true;
     static char buffer[1024];
     static va_list v;
     
     if (InitLogFile)
     {
         LogFile = fopen("log.txt", "w"); // Clear file on start
-        InitLogFile = true;
+        InitLogFile = false;
     }
     else
         LogFile = fopen("log.txt", "a");
@@ -28,20 +29,7 @@ void log(const char *txt, ...)
     fprintf(LogFile, buffer);
     fclose(LogFile);
     LogFile = NULL;
-}
-
-void exit_error(const char *txt, ...)
-{
-    static char buffer[1024];
-    static va_list v;
-
-    va_start(v, txt);
-        vsprintf(buffer, txt, v);
-    va_end(v);
-    
-    log(buffer);
-
-    exit(1);
+#endif
 }
 
 bool FileExists(const char *file)

@@ -80,8 +80,7 @@ __END_DECLS
 #endif
 
 void log(const char *txt, ...);
-void exit_error(const char *txt, ...);
 bool FileExists(const char *file);
-inline bool FileExists(const std::string &file) { return true; FileExists(file.c_str()); };
+inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 
 #endif

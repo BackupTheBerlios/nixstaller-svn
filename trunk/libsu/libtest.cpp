@@ -9,8 +9,7 @@ int main()
     if (scanf("%s", passwd))
     {
         CLibSU LibSU("cdrecord --help", user);
-        LibSU.ExecuteCommand(passwd, 1);
-        for (short s=0;s<128;s++) passwd[s] = 0; // Clear passwd
+        printf("ExecuteCommand: %d\n", LibSU.ExecuteCommand(passwd, true));
     }
     else
         printf("\nSorry\n");
