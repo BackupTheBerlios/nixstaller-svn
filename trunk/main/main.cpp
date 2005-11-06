@@ -25,6 +25,9 @@ bool ReadConfig()
     
     char cfgline[256];
     int index;
+    bool handlecompentry = false;
+    bool incompentry = false;
+    compile_entry_s *pCompEntry = NULL;
     
     while(cfgfile)
     {
@@ -63,33 +66,81 @@ bool ReadConfig()
 
         if ((cfgline[0] == '#') || !cfgline[0]) continue;
         
+        char fullline[256];
+        strcpy(fullline, cfgline); // Backup full line
+        
         char *arg1 = NULL, *arg2 = NULL;
 
         arg1 = strtok(cfgline, " ");
         arg2 = strtok(NULL, " ");
 
-        if (!strcasecmp(arg1, "version")) InstallInfo.version = atoi(arg2);
-        else if (!strcasecmp(arg1, "appname"))
+        if (handlecompentry)
         {
-            strncpy(InstallInfo.program_name, arg2, 128);
-            InstallInfo.program_name[128] = 0;
-        }
-        else if (!strcasecmp(arg1, "archtype"))
-        {
-            if (!strcasecmp(arg2, "gzip")) InstallInfo.archive_type = ARCH_GZIP;
-            else if (!strcasecmp(arg2, "bzip2")) InstallInfo.archive_type = ARCH_BZIP2;
-        }
-        else if (!strcasecmp(arg1, "languages"))
-        {
-            char *lang = arg2;
-            while (lang)
+            if (!strcmp(arg1, "["))
             {
-                char *s = new char[strlen(cfgline)+1];
-                strcpy(s, lang);
-                InstallInfo.languages.push_back(s);
-                lang = strtok(NULL, " ");
+                incompentry = true;
+                handlecompentry = false;
+                pCompEntry = new compile_entry_s;
             }
         }
+        else if (incompentry)
+        {
+            if (!strcmp(arg1, "]"))
+            {
+                incompentry = false;
+                InstallInfo.compile_entries.push_back(pCompEntry);
+                pCompEntry = NULL;
+            }
+            else if (!strcasecmp(arg1, "needroot"))
+            {
+                pCompEntry->need_root = !strcasecmp(arg2, "true");
+            }
+            else if (!strcasecmp(arg1, "command"))
+            {
+                std::string s = &fullline[7];
+                if (!s.empty())
+                    pCompEntry->commands.push_back(s);
+            }
+        }
+        else
+        {
+            if (!strcasecmp(arg1, "version")) InstallInfo.version = atoi(arg2);
+            else if (!strcasecmp(arg1, "appname"))
+            {
+                strncpy(InstallInfo.program_name, arg2, 128);
+                InstallInfo.program_name[128] = 0;
+            }
+            else if (!strcasecmp(arg1, "archtype"))
+            {
+                if (!strcasecmp(arg2, "gzip")) InstallInfo.archive_type = ARCH_GZIP;
+                else if (!strcasecmp(arg2, "bzip2")) InstallInfo.archive_type = ARCH_BZIP2;
+            }
+            else if (!strcasecmp(arg1, "insttype"))
+            {
+                if (!strcasecmp(arg2, "simple")) InstallInfo.install_type = INST_SIMPLE;
+                else if (!strcasecmp(arg2, "compile")) InstallInfo.install_type = INST_COMPILE;
+            }
+            else if (!strcasecmp(arg1, "languages"))
+            {
+                char *lang = arg2;
+                while (lang)
+                {
+                    char *s = new char[strlen(cfgline)+1];
+                    strcpy(s, lang);
+                    InstallInfo.languages.push_back(s);
+                    lang = strtok(NULL, " ");
+                }
+            }
+            else if (!strcasecmp(arg1, "compileentry")) handlecompentry = true;
+        }
+    }
+    
+    printf("Comp entries:\n");
+    for (std::list<compile_entry_s *>::iterator p=InstallInfo.compile_entries.begin();p!=InstallInfo.compile_entries.end();p++)
+    {
+        printf("Need root: %d\n", (*p)->need_root);
+        for (std::list<std::string>::iterator p2=(*p)->commands.begin();p2!=(*p)->commands.end();p2++)
+            printf("Command: %s\n", p2->c_str());
     }
     return true;
 }
@@ -123,7 +174,6 @@ bool MainInit(int argc, char *argv[])
 
 void MainEnd()
 {
-    // Clear all translations
     if (!InstallInfo.translations.empty())
     {
         std::map<std::string, char *>::iterator p = InstallInfo.translations.begin();
@@ -132,10 +182,16 @@ void MainEnd()
     
     if (!InstallInfo.languages.empty())
     {
-        std::list<char*>::iterator p2 = InstallInfo.languages.begin();
-        for(;p2!=InstallInfo.languages.end();p2++) delete [] *p2;
+        std::list<char*>::iterator p = InstallInfo.languages.begin();
+        for(;p!=InstallInfo.languages.end();p++) delete [] *p;
     }
     
+    if (!InstallInfo.compile_entries.empty())
+    {
+        std::list<compile_entry_s *>::iterator p = InstallInfo.compile_entries.begin();
+        for(;p!=InstallInfo.compile_entries.end();p++) delete *p;
+    }
+
     FreeStrings();
 }
 

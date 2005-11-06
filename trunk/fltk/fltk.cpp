@@ -13,7 +13,6 @@ Fl_Button *pNextButton = NULL;
 
 CLangScreen *pLangScreen = NULL;
 CLicenseScreen *pLicenseScreen = NULL;
-CInstallFilesScreen *pInstallFilesScreen = NULL;
 
 std::list<CBaseScreen *> ScreenList;
 bool InstallFiles = false;
@@ -113,7 +112,10 @@ void CreateMainWindow(char **argv)
     group = widget->Create();
     if (group) { Wizard->add(group); ScreenList.push_back(widget); }
 
-    widget = pInstallFilesScreen = new CInstallFilesScreen;
+    if (InstallInfo.install_type == INST_SIMPLE)
+        widget = new CSimpleInstallScreen;
+    else if (InstallInfo.install_type == INST_COMPILE)
+        widget = new CCompileInstallScreen;
     group = widget->Create();
     if (group) { Wizard->add(group); ScreenList.push_back(widget); }
 

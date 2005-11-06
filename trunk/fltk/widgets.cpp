@@ -153,10 +153,10 @@ void CSelectDirScreen::OpenDirChooser(void)
 }
 
 // -------------------------------------
-// Install progress screen
+// Base Install screen
 // -------------------------------------
 
-Fl_Group *CInstallFilesScreen::Create()
+Fl_Group *CInstallFilesBase::Create()
 {
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     pGroup->begin();
@@ -176,39 +176,116 @@ Fl_Group *CInstallFilesScreen::Create()
     return pGroup;
 }
 
-void CInstallFilesScreen::UpdateLang()
+bool CInstallFilesBase::Activate()
 {
-    pProgress->label(GetTranslation("Install progress"));
-    pDisplay->label(GetTranslation("Status"));
+    chdir(InstallInfo.dest_dir);
+    InstallFiles = true;
+    Fl::add_idle(CInstallFilesBase::stat_inst, this);
+    pPrevButton->deactivate();
+    pNextButton->deactivate();
+    return true;
 }
 
-void CInstallFilesScreen::Install()
+void CInstallFilesBase::UpdateLang()
+{
+    pProgress->label(GetTranslation("Install progress"));
+    //pDisplay->label(GetTranslation("Status: %s"));
+}
+
+void CInstallFilesBase::AppendText(const char *txt)
+{
+    pBuffer->append(txt);
+    pDisplay->move_down();
+    pDisplay->show_insert_position();
+}
+
+// -------------------------------------
+// Simple Install screen
+// -------------------------------------
+
+bool CSimpleInstallScreen::Activate()
+{
+    CInstallFilesBase::Activate();
+    ChangeStatusText(GetTranslation("Copying files"));
+    return true;
+}
+
+void CSimpleInstallScreen::Install()
 {
     char curfile[256], text[300];
     Percent = ExtractArchive(curfile);
         
     sprintf(text, "Extracting file: %s\n", curfile);
-    pBuffer->append(text);
-    pDisplay->move_down();
+    AppendText(text);
+    
     if (Percent==-1) EndProg(-2);
-    pProgress->value(Percent);
-    pDisplay->show_insert_position();
+    UpdateStatusBar();
+    
     if (Percent==100)
     {
-        pBuffer->append("Done!\n");
-        pDisplay->move_down();
+        AppendText("Done!\n");
+        ChangeStatusText(GetTranslation("Done"));
         InstallFiles = false;
         fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
         EndProg(0);
     }
 }
 
-bool CInstallFilesScreen::Activate()
+// -------------------------------------
+// Compile Install screen
+// -------------------------------------
+
+bool CCompileInstallScreen::Activate()
 {
-    chdir(InstallInfo.dest_dir);
-    InstallFiles = true;
-    Fl::add_idle(CInstallFilesScreen::stat_inst, this);
-    pPrevButton->deactivate();
-    pNextButton->deactivate();
+    CInstallFilesBase::Activate();
+    ChangeStatusText(GetTranslation("Copying files"));
+    SUHandler.SetOutputFunc(SUOutputHandler, this);
+    SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
+    SUHandler.SetUser("someuserhere");
+    SUHandler.SetTerminalOutput(false);
     return true;
+}
+
+void CCompileInstallScreen::Install()
+{
+    if (m_bCompiling)
+    {
+        if ((*m_CurrentIterator)->need_root)
+        {
+            SUHandler.SetCommand(*(*m_CurrentIterator)->commands.begin());
+            SUHandler.ExecuteCommand("theuserspasswdhere");
+        }
+        
+        m_CurrentIterator++;
+        if (m_CurrentIterator == InstallInfo.compile_entries.end())
+        {
+            ChangeStatusText(GetTranslation("Done"));
+            InstallFiles = false;
+            fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
+            //EndProg(0);
+        }
+        
+        if (Percent >= 100) Percent = 0;
+        else Percent += 10;
+    }
+    else
+    {
+        char curfile[256], text[300];
+        Percent = ExtractArchive(curfile);
+        
+        sprintf(text, "Extracting file: %s\n", curfile);
+        AppendText(text);
+    
+        if (Percent==-1) EndProg(-2);
+    
+        if (Percent==100)
+        {
+            m_bCompiling = true;
+            AppendText("Done!\n");
+            ChangeStatusText(GetTranslation("Compiling"));
+            m_CurrentIterator = InstallInfo.compile_entries.begin();
+        }
+    }
+    
+    UpdateStatusBar();
 }

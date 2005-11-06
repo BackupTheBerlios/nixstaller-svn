@@ -106,21 +106,48 @@ public:
     void OpenDirChooser(void);
 };
 
-class CInstallFilesScreen: public CBaseScreen
+class CInstallFilesBase: public CBaseScreen
 {
+protected:
     Fl_Progress *pProgress;
-    Fl_Text_Display *pDisplay;
     Fl_Text_Buffer *pBuffer;
+    Fl_Text_Display *pDisplay;
     short Percent;
+    CLibSU SUHandler;
     
 public:
-    CInstallFilesScreen(void) : CBaseScreen(), pProgress(NULL), pDisplay(NULL), pBuffer(NULL), Percent(0) { };
+    CInstallFilesBase(void) : CBaseScreen(), pProgress(NULL), pDisplay(NULL), pBuffer(NULL), Percent(0) { };
     
     virtual Fl_Group *Create(void);
-    virtual void UpdateLang(void);
     virtual bool Activate(void);
-    void Install(void);
-    static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesScreen *)p)->Install(); };
+    virtual void UpdateLang(void);
+    virtual void Install(void) { };
+    
+    void UpdateStatusBar(void) { pProgress->value(Percent); };
+    void AppendText(const char *txt);
+    void ChangeStatusText(const char *txt) { pDisplay->label(CreateText(GetTranslation("Status: %s"), txt)); };
+    
+    static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesBase *)p)->Install(); };
+    static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesBase *)p)->AppendText(msg); Fl::wait(); };
+};
+
+class CSimpleInstallScreen: public CInstallFilesBase
+{
+public:
+    virtual bool Activate(void);
+    virtual void Install(void);
+};
+
+class CCompileInstallScreen: public CInstallFilesBase
+{
+    bool m_bCompiling;
+    std::list<compile_entry_s *>::iterator m_CurrentIterator;
+    std::list<std::string>::iterator m_CurrentCommandIterator;
+    
+public:
+    CCompileInstallScreen(void) : CInstallFilesBase(), m_bCompiling(false) { };
+    virtual bool Activate(void);
+    virtual void Install(void);
 };
 
 #endif

@@ -16,6 +16,9 @@ public:
     enum ESuErrors { SU_ERROR_NONE, SU_ERROR_SUNOTFOUND, SU_ERROR_INCORRECTUSER, SU_ERROR_INCORRECTPASS, SU_ERROR_EXECUTE,
                      SU_ERROR_INTERNAL };
 
+    typedef void (*TOutputFunc)(const char *s, void *p);
+    
+    CLibSU(bool Disable0Core=false);
     CLibSU(const char *command, const char *user=NULL, const char *path="/bin:/usr/bin", bool Disable0Core=false);
     virtual ~CLibSU(void) { if (m_iPTYFD) close(m_iPTYFD); };
     
@@ -23,10 +26,12 @@ public:
     void SetCommand(const std::string &command) { m_szCommand = command; };
     void SetUser(const char *user) { m_szUser = user; };
     void SetUser(const std::string &user) { m_szUser = user; };
-    /*void SetPath(const char *path) { m_szPath = path; }; UNDONE
-    void SetPath(const std::string &path) { m_szPath = path; };*/
+    void SetPath(const char *path) { m_szPath = path; };
+    void SetPath(const std::string &path) { m_szPath = path; };
     void SetExitString(const char *exit) { m_szExit = exit; };
     void SetExitString(const std::string &exit) { m_szExit = exit; };
+    void SetTerminalOutput(bool t) { m_bTerminal = t; };
+    void SetOutputFunc(TOutputFunc f, void *p=NULL) { m_pOutputFunc = f; m_pCustomData = p; };
     
     ESuErrors GetError(void) { return m_eError; };
     std::string GetErrorMsg(void) { return m_szErrorMsg; };
@@ -46,6 +51,9 @@ private:
     
     ESuErrors m_eError;
     std::string m_szErrorMsg;
+    
+    TOutputFunc m_pOutputFunc;
+    void *m_pCustomData;
     
     int CreatePT(void);
     int GrantPT(void);

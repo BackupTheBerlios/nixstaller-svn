@@ -3,10 +3,29 @@
 
 const char *TermStr = "I'm Done Now :)"; // Lets just hope other program don't output this ;)
 
+CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szUser("root"), m_szPath("/bin:/usr/bin"),
+                                    m_eError(SU_ERROR_NONE), m_pOutputFunc(NULL), m_pCustomData(NULL)
+{
+    if (!Disable0Core)
+    {
+        // Set core dump size to 0 because we will have
+        // root's password in memory.
+        struct rlimit rlim;
+        rlim.rlim_cur = rlim.rlim_max = 0;
+        if (setrlimit(RLIMIT_CORE, &rlim))
+        {
+            SetError(SU_ERROR_INTERNAL, "rlimit(): %s\n", strerror(errno));
+            exit(1);
+        }
+    }
+}
+
 CLibSU::CLibSU(const char *command, const char *user, const char *path,
                bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szCommand(command), m_szUser(user),
-                                                                               m_szPath(path), m_eError(SU_ERROR_NONE)
+                                    m_szPath(path), m_eError(SU_ERROR_NONE), m_pOutputFunc(NULL), m_pCustomData(NULL)
 {
+    if (!user || !user[0]) m_szUser = "root";
+    
     if (!Disable0Core)
     {
         // Set core dump size to 0 because we will have
@@ -547,8 +566,9 @@ int CLibSU::WaitForChild()
                 if (m_bTerminal)
                 {
                     fputs(line.c_str(), stdout);
-                    fputc('\n', stdout);
+                    //fputc('\n', stdout);
                 }
+                if (m_pOutputFunc) (m_pOutputFunc)(line.c_str(), m_pCustomData);
                 line = ReadLine(false);
             }
         }

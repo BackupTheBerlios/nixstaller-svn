@@ -1,12 +1,12 @@
 import sys
 
-env = Environment(CC = 'g++', CCFLAGS = "-O2 -static-libgcc", LIBS=Split('main archive z bz2'))
+env = Environment(CC = 'g++', CCFLAGS = "-O2 -static-libgcc", LIBS=Split('main su archive z bz2 util'))
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')
 
-env.Append(LIBPATH=['.', 'main/', 'lib/'+cur_os])
-env.Append(CPPPATH=['.', 'main/', 'include/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
+env.Append(LIBPATH=['.', 'main/', 'lib/'+cur_os, 'libsu/'])
+env.Append(CPPPATH=['.', 'main/', 'libsu/', 'include/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
 
 # Builds main lib
 main = env.Library("main/main", ["main/main.cpp"], CCFLAGS='$CCFLAGS -fPIC')
@@ -29,8 +29,7 @@ if not env.GetOption('clean'):
      if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
           print 'cdk must be installed!'
           Exit(1)
-     #if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'ncurses.h', 'C++', ';', 1):
-     if not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 1):
+     if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 1):
           print 'acl must be installed!'
           Exit(1)
      env = conf.Finish()

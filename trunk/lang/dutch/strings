@@ -61,11 +61,11 @@ Doorgaan?
 Installing files....please wait
 Bestanden worden geïnstalleerd...een ogenblik geduld
 
-Install Progress
+Install progress
 Installatie vooruitgang
 
-Status
-Status
+Status: %s
+Status: %s
 
 Installation of %s complete!
 Installatie van %s gereed!

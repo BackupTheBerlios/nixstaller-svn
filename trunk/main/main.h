@@ -1,11 +1,22 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include "libsu.h"
+
 #include <string>
 #include <list>
 #include <map>
 
 enum EArchiveType { ARCH_GZIP, ARCH_BZIP2 };
+enum EInstallType { INST_SIMPLE, INST_COMPILE };
+
+struct compile_entry_s
+{
+    bool need_root;
+    std::list<std::string> commands;
+    
+    compile_entry_s(void) : need_root(false) { };
+};
 
 struct install_info_s
 {
@@ -17,8 +28,10 @@ struct install_info_s
     std::string cur_lang;
     std::map<std::string, char *> translations;
     EArchiveType archive_type;
+    EInstallType install_type;
+    std::list<compile_entry_s *> compile_entries;
     
-    install_info_s(void) : version(1), archive_type(ARCH_GZIP) { strcpy(program_name, "foo"); };
+    install_info_s(void) : version(1), archive_type(ARCH_GZIP), install_type(INST_SIMPLE) { strcpy(program_name, "foo"); };
 };
 
 extern install_info_s InstallInfo;
