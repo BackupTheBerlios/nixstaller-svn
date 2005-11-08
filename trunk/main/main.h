@@ -13,7 +13,18 @@ enum EInstallType { INST_SIMPLE, INST_COMPILE };
 struct compile_entry_s
 {
     bool need_root;
-    std::list<std::string> commands;
+    std::string command, description;
+    
+    struct param_entry_s
+    {
+        std::string parameter, defaultval, description;
+        enum EParamType { PTYPE_STRING, PTYPE_LIST, PTYPE_BOOL } param_type;
+        std::list<std::string> options;
+        std::string value;
+        param_entry_s(void) : param_type(PTYPE_BOOL) { };
+    };
+    
+    std::map<std::string, param_entry_s *> parameter_entries;
     
     compile_entry_s(void) : need_root(false) { };
 };
@@ -42,6 +53,7 @@ bool MainInit(int argc, char *argv[]);
 void MainEnd(void);
 float ExtractArchive(char *curfile);
 bool ReadLang(void);
+std::string GetParameters(compile_entry_s *pCompEntry);
 std::string GetTranslation(std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };

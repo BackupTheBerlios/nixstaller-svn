@@ -25,9 +25,11 @@ bool ReadConfig()
     
     char cfgline[256];
     int index;
-    bool handlecompentry = false;
-    bool incompentry = false;
+    bool handlecompentry = false, handleparamentry = false;
+    bool incompentry = false, inparamentry = false;
     compile_entry_s *pCompEntry = NULL;
+    compile_entry_s::param_entry_s *pParamEntry = NULL;
+    std::string ParamName;
     
     while(cfgfile)
     {
@@ -85,21 +87,61 @@ bool ReadConfig()
         }
         else if (incompentry)
         {
-            if (!strcmp(arg1, "]"))
+            if (handleparamentry)
             {
-                incompentry = false;
-                InstallInfo.compile_entries.push_back(pCompEntry);
-                pCompEntry = NULL;
+                if (!strcmp(arg1, "["))
+                {
+                    inparamentry = true;
+                    handleparamentry = false;
+                    pParamEntry = new compile_entry_s::param_entry_s;
+                    ParamName = "";
+                }
             }
-            else if (!strcasecmp(arg1, "needroot"))
+            else if (inparamentry)
             {
-                pCompEntry->need_root = !strcasecmp(arg2, "true");
+                if (!strcmp(arg1, "]"))
+                {
+                    inparamentry = false;
+                    if (!ParamName.empty()) pCompEntry->parameter_entries[ParamName] = pParamEntry;
+                    pParamEntry = NULL;
+                }
+                else if (!arg2); // Following stuff needs atleast second argument
+                else if (!strcasecmp(arg1, "name")) ParamName = &fullline[strlen(arg1)+1];
+                else if (!strcasecmp(arg1, "parameter")) pParamEntry->parameter = &fullline[strlen(arg1)+1];
+                else if (!strcasecmp(arg1, "description")) pParamEntry->description = &fullline[strlen(arg1)+1];
+                else if (!strcasecmp(arg1, "defaultval"))
+                    pParamEntry->defaultval = pParamEntry->value = &fullline[strlen(arg1)+1];
+                else if (!strcasecmp(arg1, "type"))
+                {
+                    if (!strcasecmp(arg2, "string")) pParamEntry->param_type = compile_entry_s::param_entry_s::PTYPE_STRING;
+                    else if (!strcasecmp(arg2, "list")) pParamEntry->param_type = compile_entry_s::param_entry_s::PTYPE_LIST;
+                    else pParamEntry->param_type = compile_entry_s::param_entry_s::PTYPE_BOOL;
+                }
+                else if (!strcasecmp(arg1, "addchoice")) pParamEntry->options.push_back(arg2);
             }
-            else if (!strcasecmp(arg1, "command"))
+            else
             {
-                std::string s = &fullline[7];
-                if (!s.empty())
-                    pCompEntry->commands.push_back(s);
+                if (!strcmp(arg1, "]"))
+                {
+                    incompentry = false;
+                    InstallInfo.compile_entries.push_back(pCompEntry);
+                    pCompEntry = NULL;
+                }
+                else if (!strcasecmp(arg1, "needroot"))
+                {
+                    pCompEntry->need_root = !strcasecmp(arg2, "true");
+                }
+                else if (!strcasecmp(arg1, "command"))
+                {
+                    if (arg2) // If arg2 != NULL then there is more stuff...
+                        pCompEntry->command = &fullline[8];
+                }
+                else if (!strcasecmp(arg1, "description"))
+                {
+                    if (arg2) // If arg2 != NULL then there is more stuff...
+                        pCompEntry->description = &fullline[12];
+                }
+                else if (!strcasecmp(arg1, "addparam")) handleparamentry = true;
             }
         }
         else
@@ -139,8 +181,20 @@ bool ReadConfig()
     for (std::list<compile_entry_s *>::iterator p=InstallInfo.compile_entries.begin();p!=InstallInfo.compile_entries.end();p++)
     {
         printf("Need root: %d\n", (*p)->need_root);
-        for (std::list<std::string>::iterator p2=(*p)->commands.begin();p2!=(*p)->commands.end();p2++)
-            printf("Command: %s\n", p2->c_str());
+        printf("Command: %s\n", (*p)->command.c_str());
+        printf("Description: %s\n", (*p)->description.c_str());
+        printf("Params:\n");
+        for (std::map<std::string, compile_entry_s::param_entry_s *>::iterator
+             p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
+        {
+            printf("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
+                   "Description: %s\n", (*p2).first.c_str(), (*p2).second->param_type, (*p2).second->parameter.c_str(),
+                                        (*p2).second->defaultval.c_str(), (*p2).second->description.c_str());
+            printf("\tOptions: ");
+            for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
+                printf("%s ", p3->c_str());
+            printf("\n");
+        }
     }
     return true;
 }
@@ -189,7 +243,16 @@ void MainEnd()
     if (!InstallInfo.compile_entries.empty())
     {
         std::list<compile_entry_s *>::iterator p = InstallInfo.compile_entries.begin();
-        for(;p!=InstallInfo.compile_entries.end();p++) delete *p;
+        for(;p!=InstallInfo.compile_entries.end();p++)
+        {
+            if (!(*p)->parameter_entries.empty())
+            {
+                for (std::map<std::string, compile_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+                     p2!=(*p)->parameter_entries.end();p2++)
+                    delete (*p2).second;
+            }
+            delete *p;
+        }
     }
 
     FreeStrings();
@@ -323,6 +386,27 @@ bool ReadLang()
     return true;
 }
 
+std::string GetParameters(compile_entry_s *pCompEntry)
+{
+    std::string args;
+    
+    for(std::map<std::string, compile_entry_s::param_entry_s *>::iterator it=pCompEntry->parameter_entries.begin();
+        it!=pCompEntry->parameter_entries.end();it++)
+    {
+        switch (it->second->param_type)
+        {
+            case compile_entry_s::param_entry_s::PTYPE_STRING:
+            case compile_entry_s::param_entry_s::PTYPE_LIST:
+                args += " " + it->second->parameter + it->second->value;
+                break;
+            case compile_entry_s::param_entry_s::PTYPE_BOOL:
+                if (it->second->value == "true") args += " " + it->second->parameter;
+                break;
+        }
+    }
+    return args;
+}
+
 std::string GetTranslation(std::string &s)
 {
     std::map<std::string, char *>::iterator p = InstallInfo.translations.find(s);
@@ -349,6 +433,14 @@ char *CreateText(const char *s, ...)
     va_start(v, s);
         vsprintf(txt, s, v);
     va_end(v);
+    
+    // Check if string was already created
+    if (!StringList.empty())
+    {
+        std::list<char *>::iterator it = find(StringList.begin(), StringList.end(), txt);
+        if (it != StringList.end())
+            return *it;
+    }
     
     char *output = new char[strlen(txt)+1];
     strcpy(output, txt);

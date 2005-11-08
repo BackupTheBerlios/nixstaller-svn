@@ -1,10 +1,15 @@
 OVERALL
-- Convert to STD?
+- Check namespaces for libs? Or other solution
+
 
 MAIN
-- Localized strings/language support
+- Check if all strings from CreateText are really constant
+
 
 NCURSES FRONTEND
 - Correct error handling for widget creation etc 
 - Back button?
-- Select language window
+
+
+FLTK FRONTEND
+- File input box should work

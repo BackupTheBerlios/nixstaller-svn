@@ -15,7 +15,9 @@
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Input.H>
+#include <FL/Fl_Multiline_Output.H>
 #include <FL/Fl_Progress.H>
+#include <FL/Fl_Hold_Browser.H>
 
 #define MAIN_WINDOW_W 600
 #define MAIN_WINDOW_H 400
@@ -104,6 +106,35 @@ public:
     virtual void UpdateLang(void);
     virtual bool Next(void);
     void OpenDirChooser(void);
+};
+
+class CSetParamsScreen: public CBaseScreen
+{
+    Fl_Box *m_pBoxTitle, *m_pDefaultValBox;
+    Fl_Input *m_pParamInput;
+    Fl_Menu_Item *m_pValMenuItems;
+    Fl_Choice *m_pValChoiceMenu;
+    Fl_Hold_Browser *m_pChoiceBrowser;
+    Fl_Multiline_Output *m_pDescriptionOutput;
+    
+    compile_entry_s::param_entry_s *m_pCurrentParamEntry;
+    
+public:
+    CSetParamsScreen(void) : CBaseScreen(), m_pBoxTitle(NULL), m_pDefaultValBox(NULL), m_pParamInput(NULL),
+                             m_pValChoiceMenu(NULL), m_pChoiceBrowser(NULL), m_pDescriptionOutput(NULL),
+                             m_pCurrentParamEntry(NULL) { };
+    
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLang(void);
+    virtual bool Activate(void);
+    //virtual bool Next(void);
+    
+    void SetInput(const char *txt, compile_entry_s *pCompileEntry);
+    void SetValue(const std::string &str);
+    
+    static void ParamBrowserCB(Fl_Widget *w, void *p);
+    static void ValChoiceMenuCB(Fl_Widget *w, void *p);
+    static void ParamInputCB(Fl_Widget *w, void *p);
 };
 
 class CInstallFilesBase: public CBaseScreen

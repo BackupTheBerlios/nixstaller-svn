@@ -11,9 +11,6 @@ Fl_Button *pCancelButton = NULL;
 Fl_Button *pPrevButton = NULL;
 Fl_Button *pNextButton = NULL;
 
-CLangScreen *pLangScreen = NULL;
-CLicenseScreen *pLicenseScreen = NULL;
-
 std::list<CBaseScreen *> ScreenList;
 bool InstallFiles = false;
 
@@ -83,6 +80,10 @@ int main(int argc, char **argv)
 
 void CreateMainWindow(char **argv)
 {
+    #define MCreateWidget(w) { widget = new w; \
+                               group = widget->Create(); \
+                               if (group) { Wizard->add(group); ScreenList.push_back(widget); } }
+
     Fl::scheme("plastic");
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     
@@ -96,28 +97,23 @@ void CreateMainWindow(char **argv)
     
     Wizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
-    CBaseScreen *widget = pLangScreen = new CLangScreen;
-    Fl_Group *group = widget->Create();
-    if (group) { Wizard->add(group); ScreenList.push_back(widget); }
+    CBaseScreen *widget;
+    Fl_Group *group;
     
-    widget = new CWelcomeScreen;
-    group = widget->Create();
-    if (group) { Wizard->add(group); ScreenList.push_back(widget); }
-
-    widget = pLicenseScreen = new CLicenseScreen;
-    group = widget->Create();
-    if (group) { Wizard->add(group); ScreenList.push_back(widget); }
-
-    widget = new CSelectDirScreen;
-    group = widget->Create();
-    if (group) { Wizard->add(group); ScreenList.push_back(widget); }
-
+    MCreateWidget(CLangScreen);
+    MCreateWidget(CWelcomeScreen);
+    MCreateWidget(CLicenseScreen);
+    MCreateWidget(CSelectDirScreen);
+    
     if (InstallInfo.install_type == INST_SIMPLE)
-        widget = new CSimpleInstallScreen;
+    {
+        MCreateWidget(CSimpleInstallScreen);
+    }
     else if (InstallInfo.install_type == INST_COMPILE)
-        widget = new CCompileInstallScreen;
-    group = widget->Create();
-    if (group) { Wizard->add(group); ScreenList.push_back(widget); }
+    {
+        MCreateWidget(CSetParamsScreen);
+        MCreateWidget(CCompileInstallScreen);
+    }
 
     // HACK: Switch that annoying bell off!
     XKeyboardControl XKBControl;

@@ -153,6 +153,144 @@ void CSelectDirScreen::OpenDirChooser(void)
 }
 
 // -------------------------------------
+// Configuring parameters screen
+// -------------------------------------
+
+Fl_Group *CSetParamsScreen::Create()
+{
+    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    pGroup->begin();
+
+    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "Configuring parameters");
+    
+    const int iChoiceW = 250, iDescW = 250, iTotalW = iChoiceW + 10 + iDescW;
+    int x = 40, y = ((MAIN_WINDOW_H-50)/2)-40;
+
+    m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 100, "Parameters");
+    
+    for (std::list<compile_entry_s *>::iterator p=InstallInfo.compile_entries.begin();p!=InstallInfo.compile_entries.end();
+         p++)
+    {
+        short s=0;
+        for (std::map<std::string, compile_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+             p2!=(*p)->parameter_entries.end();p2++, s++)
+            m_pChoiceBrowser->add(p2->first.c_str(), *p);
+    }
+    
+    m_pChoiceBrowser->callback(ParamBrowserCB, this);
+    m_pChoiceBrowser->align(FL_ALIGN_TOP);
+    
+    x += (iChoiceW + 20);
+    m_pDescriptionOutput = new Fl_Multiline_Output(x, y, iDescW, 75, "Description");
+    m_pDescriptionOutput->align(FL_ALIGN_TOP);
+    m_pDescriptionOutput->wrap(1);
+    
+    x=100;
+    y+=120;
+    m_pParamInput = new Fl_Input(x, y, 250, 25, "Value: ");
+    m_pParamInput->callback(ParamInputCB, this);
+    m_pParamInput->when(FL_WHEN_CHANGED);
+    
+    m_pValChoiceMenu = new Fl_Choice(x, y, 150, 25,"Value: ");
+    m_pValChoiceMenu->callback(ValChoiceMenuCB, this);
+
+    x-=50;
+    y+=25;
+    m_pDefaultValBox = new Fl_Box(x, y, 250, 25, "Default: ");
+    
+    pGroup->end();
+    return pGroup;
+}
+
+void CSetParamsScreen::UpdateLang()
+{
+    m_pBoxTitle->label(GetTranslation("Configuring parameters"));
+    m_pChoiceBrowser->label(GetTranslation("Parameters"));
+    m_pParamInput->label(CreateText("%s: ", GetTranslation("Value")));
+    m_pValChoiceMenu->label(CreateText("%s: ", GetTranslation("Value")));
+}
+
+bool CSetParamsScreen::Activate()
+{
+    compile_entry_s *p = *InstallInfo.compile_entries.begin();
+    SetInput(p->parameter_entries.begin()->first.c_str(), p);
+    return true;
+};
+
+void CSetParamsScreen::SetInput(const char *txt, compile_entry_s *pCompileEntry)
+{
+    m_pCurrentParamEntry = pCompileEntry->parameter_entries[txt];
+    if (m_pCurrentParamEntry->param_type == compile_entry_s::param_entry_s::PTYPE_STRING)
+    {
+        m_pValChoiceMenu->hide();
+        m_pParamInput->show();
+        m_pParamInput->value(m_pCurrentParamEntry->value.c_str());
+    }
+    else
+    {
+        short s=0;
+        m_pValChoiceMenu->clear();
+        
+        if (m_pCurrentParamEntry->param_type == compile_entry_s::param_entry_s::PTYPE_BOOL)
+        {
+            m_pValChoiceMenu->add(GetTranslation("Enable"));
+            m_pValChoiceMenu->add(GetTranslation("Disable"));
+            if (m_pCurrentParamEntry->value == "false") m_pValChoiceMenu->value(1);
+            else m_pValChoiceMenu->value(0);
+        }
+        else
+        {
+            for (std::list<std::string>::iterator p=m_pCurrentParamEntry->options.begin();
+                 p!=m_pCurrentParamEntry->options.end();p++,s++)
+            {
+                m_pValChoiceMenu->add(p->c_str());
+                if (*p == m_pCurrentParamEntry->value) m_pValChoiceMenu->value(s);
+            }
+        }
+        m_pParamInput->hide();
+        m_pValChoiceMenu->show();
+    }
+    m_pDescriptionOutput->value(m_pCurrentParamEntry->description.c_str());
+    m_pDefaultValBox->label(CreateText(GetTranslation("Default: %s"), m_pCurrentParamEntry->defaultval.c_str()));
+    printf("Params: %s\n", GetParameters(pCompileEntry).c_str());
+}
+
+void CSetParamsScreen::SetValue(const std::string &str)
+{
+    if (m_pCurrentParamEntry->param_type == compile_entry_s::param_entry_s::PTYPE_BOOL)
+    {
+        if (str == "Enable") m_pCurrentParamEntry->value = "true";
+        else m_pCurrentParamEntry->value = "false";
+    }
+    else
+        m_pCurrentParamEntry->value = str;
+}
+
+void CSetParamsScreen::ParamBrowserCB(Fl_Widget *w, void *p)
+{
+    std::map<std::string, compile_entry_s::param_entry_s *>::iterator it;
+    short s=0, value=((Fl_Hold_Browser*)w)->value();
+    compile_entry_s *pCompileEntry = ((compile_entry_s *)((Fl_Hold_Browser*)w)->data(value));
+
+    for (it=pCompileEntry->parameter_entries.begin(); s<(value-1); it++, s++);
+    
+    printf("Param selection: %s\n", it->first.c_str());
+    ((CSetParamsScreen *)p)->SetInput(it->first.c_str(), pCompileEntry);
+}
+
+void CSetParamsScreen::ValChoiceMenuCB(Fl_Widget *w, void *p)
+{
+    ((CSetParamsScreen *)p)->SetValue(((Fl_Menu_*)w)->mvalue()->text);
+    printf("Value: %s\n", ((Fl_Menu_*)w)->mvalue()->text);
+}
+
+void CSetParamsScreen::ParamInputCB(Fl_Widget *w, void *p)
+{
+    ((CSetParamsScreen *)p)->SetValue(((Fl_Input*)w)->value());
+    printf("Value: %s\n", (((Fl_Input*)w)->value()));
+}
+
+// -------------------------------------
 // Base Install screen
 // -------------------------------------
 
@@ -250,13 +388,39 @@ void CCompileInstallScreen::Install()
 {
     if (m_bCompiling)
     {
+        std::string command = (*m_CurrentIterator)->command + " " + GetParameters(*m_CurrentIterator);
+        
+        AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
+        ChangeStatusText(GetTranslation((*m_CurrentIterator)->description.c_str()));
+
         if ((*m_CurrentIterator)->need_root)
         {
-            SUHandler.SetCommand(*(*m_CurrentIterator)->commands.begin());
+            SUHandler.SetCommand(command);
             SUHandler.ExecuteCommand("theuserspasswdhere");
+        }
+        else
+        {
+            FILE *pPipe = popen((*m_CurrentIterator)->command.c_str(), "r");
+            if (pPipe)
+            {
+                char buf[1024];
+                while(fgets(buf, sizeof(buf), pPipe))
+                {
+                    AppendText(buf);
+                    Fl::wait(); // Update screen
+                }
+                fclose(pPipe);
+            }
+            else
+            {
+                // UNDONE
+            }
         }
         
         m_CurrentIterator++;
+        Percent += (1.0f/(float)InstallInfo.compile_entries.size())*100.0f;
+        UpdateStatusBar();
+        
         if (m_CurrentIterator == InstallInfo.compile_entries.end())
         {
             ChangeStatusText(GetTranslation("Done"));
@@ -264,9 +428,6 @@ void CCompileInstallScreen::Install()
             fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
             //EndProg(0);
         }
-        
-        if (Percent >= 100) Percent = 0;
-        else Percent += 10;
     }
     else
     {
@@ -281,11 +442,11 @@ void CCompileInstallScreen::Install()
         if (Percent==100)
         {
             m_bCompiling = true;
+            Percent = 0;
             AppendText("Done!\n");
-            ChangeStatusText(GetTranslation("Compiling"));
             m_CurrentIterator = InstallInfo.compile_entries.begin();
         }
+        
+        UpdateStatusBar();
     }
-    
-    UpdateStatusBar();
 }
