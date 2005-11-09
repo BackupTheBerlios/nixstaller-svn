@@ -103,7 +103,11 @@ void CreateMainWindow(char **argv)
     MCreateWidget(CLangScreen);
     MCreateWidget(CWelcomeScreen);
     MCreateWidget(CLicenseScreen);
-    MCreateWidget(CSelectDirScreen);
+    
+    if (InstallInfo.need_file_dialog)
+    {
+        MCreateWidget(CSelectDirScreen);
+    }
     
     if (InstallInfo.install_type == INST_SIMPLE)
     {

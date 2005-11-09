@@ -10,7 +10,7 @@
 enum EArchiveType { ARCH_GZIP, ARCH_BZIP2 };
 enum EInstallType { INST_SIMPLE, INST_COMPILE };
 
-struct compile_entry_s
+struct command_entry_s
 {
     bool need_root;
     std::string command, description;
@@ -26,7 +26,7 @@ struct compile_entry_s
     
     std::map<std::string, param_entry_s *> parameter_entries;
     
-    compile_entry_s(void) : need_root(false) { };
+    command_entry_s(void) : need_root(false) { };
 };
 
 struct install_info_s
@@ -40,9 +40,11 @@ struct install_info_s
     std::map<std::string, char *> translations;
     EArchiveType archive_type;
     EInstallType install_type;
-    std::list<compile_entry_s *> compile_entries;
+    std::list<command_entry_s *> command_entries;
+    bool need_file_dialog;
     
-    install_info_s(void) : version(1), archive_type(ARCH_GZIP), install_type(INST_SIMPLE) { strcpy(program_name, "foo"); };
+    install_info_s(void) : version(1), archive_type(ARCH_GZIP), install_type(INST_SIMPLE),
+                           need_file_dialog(true) { strcpy(program_name, "foo"); };
 };
 
 extern install_info_s InstallInfo;
@@ -53,7 +55,7 @@ bool MainInit(int argc, char *argv[]);
 void MainEnd(void);
 float ExtractArchive(char *curfile);
 bool ReadLang(void);
-std::string GetParameters(compile_entry_s *pCompEntry);
+std::string GetParameters(command_entry_s *pCommandEntry);
 std::string GetTranslation(std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };

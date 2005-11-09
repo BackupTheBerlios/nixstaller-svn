@@ -1,9 +1,11 @@
 OVERALL
 - Check namespaces for libs? Or other solution
+- Equalize code style; remove useless initializations, add m_ prefix for class members
 
 
 MAIN
 - Check if all strings from CreateText are really constant
+- Check for NULL pointers in config loading
 
 
 NCURSES FRONTEND
@@ -13,3 +15,5 @@ NCURSES FRONTEND
 
 FLTK FRONTEND
 - File input box should work
+- Make non static CB funcs, static
+- Handle empty/wrong root passwords

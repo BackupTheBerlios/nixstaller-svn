@@ -15,6 +15,7 @@
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Input.H>
+#include <FL/Fl_Secret_Input.H>
 #include <FL/Fl_Multiline_Output.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Hold_Browser.H>
@@ -117,7 +118,7 @@ class CSetParamsScreen: public CBaseScreen
     Fl_Hold_Browser *m_pChoiceBrowser;
     Fl_Multiline_Output *m_pDescriptionOutput;
     
-    compile_entry_s::param_entry_s *m_pCurrentParamEntry;
+    command_entry_s::param_entry_s *m_pCurrentParamEntry;
     
 public:
     CSetParamsScreen(void) : CBaseScreen(), m_pBoxTitle(NULL), m_pDefaultValBox(NULL), m_pParamInput(NULL),
@@ -129,7 +130,7 @@ public:
     virtual bool Activate(void);
     //virtual bool Next(void);
     
-    void SetInput(const char *txt, compile_entry_s *pCompileEntry);
+    void SetInput(const char *txt, command_entry_s *pCommandEntry);
     void SetValue(const std::string &str);
     
     static void ParamBrowserCB(Fl_Widget *w, void *p);
@@ -143,11 +144,21 @@ protected:
     Fl_Progress *pProgress;
     Fl_Text_Buffer *pBuffer;
     Fl_Text_Display *pDisplay;
+    
+    Fl_Window *m_pAskPassWindow;
+    Fl_Box *m_pAskPassBox;
+    Fl_Secret_Input *m_pAskPassInput;
+    Fl_Button *m_pAskPassOKButton, *m_pAskPassCancelButton;
+    
     short Percent;
     CLibSU SUHandler;
+    char *m_szPassword;
+    
+    void ClearPassword(void);
     
 public:
-    CInstallFilesBase(void) : CBaseScreen(), pProgress(NULL), pDisplay(NULL), pBuffer(NULL), Percent(0) { };
+    CInstallFilesBase(void) : CBaseScreen(), pProgress(NULL), pDisplay(NULL), pBuffer(NULL), m_pAskPassWindow(NULL),
+                              m_pAskPassBox(NULL), m_pAskPassInput(NULL), Percent(0), m_szPassword(NULL) { };
     
     virtual Fl_Group *Create(void);
     virtual bool Activate(void);
@@ -157,9 +168,12 @@ public:
     void UpdateStatusBar(void) { pProgress->value(Percent); };
     void AppendText(const char *txt);
     void ChangeStatusText(const char *txt) { pDisplay->label(CreateText(GetTranslation("Status: %s"), txt)); };
+    void SetPassword(bool unset);
     
     static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesBase *)p)->Install(); };
     static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesBase *)p)->AppendText(msg); Fl::wait(); };
+    static void AskPassOKButtonCB(Fl_Widget *w, void *p);
+    static void AskPassCancelButtonCB(Fl_Widget *w, void *p);
 };
 
 class CSimpleInstallScreen: public CInstallFilesBase
@@ -172,7 +186,7 @@ public:
 class CCompileInstallScreen: public CInstallFilesBase
 {
     bool m_bCompiling;
-    std::list<compile_entry_s *>::iterator m_CurrentIterator;
+    std::list<command_entry_s *>::iterator m_CurrentIterator;
     std::list<std::string>::iterator m_CurrentCommandIterator;
     
 public:

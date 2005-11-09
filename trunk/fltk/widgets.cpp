@@ -168,11 +168,11 @@ Fl_Group *CSetParamsScreen::Create()
 
     m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 100, "Parameters");
     
-    for (std::list<compile_entry_s *>::iterator p=InstallInfo.compile_entries.begin();p!=InstallInfo.compile_entries.end();
+    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
          p++)
     {
         short s=0;
-        for (std::map<std::string, compile_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+        for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
              p2!=(*p)->parameter_entries.end();p2++, s++)
             m_pChoiceBrowser->add(p2->first.c_str(), *p);
     }
@@ -212,15 +212,15 @@ void CSetParamsScreen::UpdateLang()
 
 bool CSetParamsScreen::Activate()
 {
-    compile_entry_s *p = *InstallInfo.compile_entries.begin();
+    command_entry_s *p = *InstallInfo.command_entries.begin();
     SetInput(p->parameter_entries.begin()->first.c_str(), p);
     return true;
 };
 
-void CSetParamsScreen::SetInput(const char *txt, compile_entry_s *pCompileEntry)
+void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
 {
-    m_pCurrentParamEntry = pCompileEntry->parameter_entries[txt];
-    if (m_pCurrentParamEntry->param_type == compile_entry_s::param_entry_s::PTYPE_STRING)
+    m_pCurrentParamEntry = pCommandEntry->parameter_entries[txt];
+    if (m_pCurrentParamEntry->param_type == command_entry_s::param_entry_s::PTYPE_STRING)
     {
         m_pValChoiceMenu->hide();
         m_pParamInput->show();
@@ -231,7 +231,7 @@ void CSetParamsScreen::SetInput(const char *txt, compile_entry_s *pCompileEntry)
         short s=0;
         m_pValChoiceMenu->clear();
         
-        if (m_pCurrentParamEntry->param_type == compile_entry_s::param_entry_s::PTYPE_BOOL)
+        if (m_pCurrentParamEntry->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
         {
             m_pValChoiceMenu->add(GetTranslation("Enable"));
             m_pValChoiceMenu->add(GetTranslation("Disable"));
@@ -252,12 +252,12 @@ void CSetParamsScreen::SetInput(const char *txt, compile_entry_s *pCompileEntry)
     }
     m_pDescriptionOutput->value(m_pCurrentParamEntry->description.c_str());
     m_pDefaultValBox->label(CreateText(GetTranslation("Default: %s"), m_pCurrentParamEntry->defaultval.c_str()));
-    printf("Params: %s\n", GetParameters(pCompileEntry).c_str());
+    printf("Params: %s\n", GetParameters(pCommandEntry).c_str());
 }
 
 void CSetParamsScreen::SetValue(const std::string &str)
 {
-    if (m_pCurrentParamEntry->param_type == compile_entry_s::param_entry_s::PTYPE_BOOL)
+    if (m_pCurrentParamEntry->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
     {
         if (str == "Enable") m_pCurrentParamEntry->value = "true";
         else m_pCurrentParamEntry->value = "false";
@@ -268,14 +268,14 @@ void CSetParamsScreen::SetValue(const std::string &str)
 
 void CSetParamsScreen::ParamBrowserCB(Fl_Widget *w, void *p)
 {
-    std::map<std::string, compile_entry_s::param_entry_s *>::iterator it;
+    std::map<std::string, command_entry_s::param_entry_s *>::iterator it;
     short s=0, value=((Fl_Hold_Browser*)w)->value();
-    compile_entry_s *pCompileEntry = ((compile_entry_s *)((Fl_Hold_Browser*)w)->data(value));
+    command_entry_s *pCommandEntry = ((command_entry_s *)((Fl_Hold_Browser*)w)->data(value));
 
-    for (it=pCompileEntry->parameter_entries.begin(); s<(value-1); it++, s++);
+    for (it=pCommandEntry->parameter_entries.begin(); s<(value-1); it++, s++);
     
     printf("Param selection: %s\n", it->first.c_str());
-    ((CSetParamsScreen *)p)->SetInput(it->first.c_str(), pCompileEntry);
+    ((CSetParamsScreen *)p)->SetInput(it->first.c_str(), pCommandEntry);
 }
 
 void CSetParamsScreen::ValChoiceMenuCB(Fl_Widget *w, void *p)
@@ -294,6 +294,14 @@ void CSetParamsScreen::ParamInputCB(Fl_Widget *w, void *p)
 // Base Install screen
 // -------------------------------------
 
+void CInstallFilesBase::ClearPassword()
+{
+    if (!m_szPassword) return;
+    
+    for (int i=0;i<strlen(m_szPassword);i++) m_szPassword[i] = 0;
+    free(m_szPassword);
+}
+
 Fl_Group *CInstallFilesBase::Create()
 {
     pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
@@ -309,6 +317,25 @@ Fl_Group *CInstallFilesBase::Create()
     pDisplay = new Fl_Text_Display(50, 110, (MAIN_WINDOW_W-100), (MAIN_WINDOW_H-170), "Status");
     pDisplay->buffer(pBuffer);
     
+    m_pAskPassWindow = new Fl_Window(400, 190, "Password dialog");
+    m_pAskPassWindow->set_modal();
+    m_pAskPassWindow->begin();
+    
+    m_pAskPassBox = new Fl_Box(10, 20, 370, 40, "This installation requires root(administrator) privileges in order to "
+                                                "continue.\nPlease enter the password of the root user.");
+    m_pAskPassBox->align(FL_ALIGN_WRAP);
+    
+    m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25, "Password: ");
+    m_pAskPassInput->take_focus();
+    
+    m_pAskPassOKButton = new Fl_Button(60, 150, 100, 25, "OK");
+    m_pAskPassOKButton->callback(AskPassOKButtonCB, this);
+    
+    m_pAskPassCancelButton = new Fl_Button(240, 150, 100, 25, "Cancel");
+    m_pAskPassCancelButton->callback(AskPassCancelButtonCB, this);
+    
+    m_pAskPassWindow->end();
+    
     pGroup->end();
 
     return pGroup;
@@ -316,11 +343,28 @@ Fl_Group *CInstallFilesBase::Create()
 
 bool CInstallFilesBase::Activate()
 {
+    // Check if we need root access
+    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
+         it++)
+    {
+        if ((*it)->need_root)
+        {
+            m_pAskPassWindow->hotspot(m_pAskPassOKButton);
+            m_pAskPassWindow->take_focus();
+            m_pAskPassWindow->show();
+
+            while(m_pAskPassWindow->visible()) Fl::wait();
+            
+            break;
+        }
+    }
+
     chdir(InstallInfo.dest_dir);
     InstallFiles = true;
     Fl::add_idle(CInstallFilesBase::stat_inst, this);
     pPrevButton->deactivate();
     pNextButton->deactivate();
+    
     return true;
 }
 
@@ -335,6 +379,43 @@ void CInstallFilesBase::AppendText(const char *txt)
     pBuffer->append(txt);
     pDisplay->move_down();
     pDisplay->show_insert_position();
+}
+
+void CInstallFilesBase::SetPassword(bool unset)
+{
+    ClearPassword();
+    
+    const char *passwd = m_pAskPassInput->value();
+
+    if (!unset)
+        m_szPassword = strdup(passwd);
+
+    if (passwd && passwd[0])
+    {
+        // Can't use FLTK's replace() to delete input field text, since it stores undo info
+        int length = strlen(passwd);
+        
+        char str0[length];
+        for (int i=0;i<length;i++) str0[i] = 0;
+        m_pAskPassInput->value(str0);
+        
+        // Force clean temp inputfield string
+        char *str = const_cast<char *>(passwd);
+        for(int i=0;i<strlen(str);i++) str[i] = 0;
+    }
+    
+    m_pAskPassWindow->hide();
+    m_pAskPassInput->value(NULL);
+}
+
+void CInstallFilesBase::AskPassOKButtonCB(Fl_Widget *w, void *p)
+{
+    ((CInstallFilesBase *)p)->SetPassword(false);
+}
+
+void CInstallFilesBase::AskPassCancelButtonCB(Fl_Widget *w, void *p)
+{
+    ((CInstallFilesBase *)p)->SetPassword(true);
 }
 
 // -------------------------------------
@@ -379,7 +460,7 @@ bool CCompileInstallScreen::Activate()
     ChangeStatusText(GetTranslation("Copying files"));
     SUHandler.SetOutputFunc(SUOutputHandler, this);
     SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
-    SUHandler.SetUser("someuserhere");
+    SUHandler.SetUser("root");
     SUHandler.SetTerminalOutput(false);
     return true;
 }
@@ -396,7 +477,7 @@ void CCompileInstallScreen::Install()
         if ((*m_CurrentIterator)->need_root)
         {
             SUHandler.SetCommand(command);
-            SUHandler.ExecuteCommand("theuserspasswdhere");
+            SUHandler.ExecuteCommand(m_szPassword);
         }
         else
         {
@@ -418,14 +499,17 @@ void CCompileInstallScreen::Install()
         }
         
         m_CurrentIterator++;
-        Percent += (1.0f/(float)InstallInfo.compile_entries.size())*100.0f;
+        Percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         UpdateStatusBar();
         
-        if (m_CurrentIterator == InstallInfo.compile_entries.end())
+        if (m_CurrentIterator == InstallInfo.command_entries.end())
         {
+            Percent = 100;
+            UpdateStatusBar();
             ChangeStatusText(GetTranslation("Done"));
             InstallFiles = false;
             fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
+            ClearPassword();
             //EndProg(0);
         }
     }
@@ -444,7 +528,7 @@ void CCompileInstallScreen::Install()
             m_bCompiling = true;
             Percent = 0;
             AppendText("Done!\n");
-            m_CurrentIterator = InstallInfo.compile_entries.begin();
+            m_CurrentIterator = InstallInfo.command_entries.begin();
         }
         
         UpdateStatusBar();
