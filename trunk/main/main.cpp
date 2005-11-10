@@ -127,25 +127,17 @@ bool ReadConfig()
                     InstallInfo.command_entries.push_back(pCommandEntry);
                     pCommandEntry = NULL;
                 }
-                else if (!strcasecmp(arg1, "needroot"))
-                {
-                    pCommandEntry->need_root = !strcasecmp(arg2, "true");
-                }
-                else if (!strcasecmp(arg1, "command"))
-                {
-                    if (arg2) // If arg2 != NULL then there is more stuff...
-                        pCommandEntry->command = &fullline[8];
-                }
-                else if (!strcasecmp(arg1, "description"))
-                {
-                    if (arg2) // If arg2 != NULL then there is more stuff...
-                        pCommandEntry->description = &fullline[12];
-                }
                 else if (!strcasecmp(arg1, "addparam")) handleparamentry = true;
+                else if (!arg2); // Following stuff needs atleast second argument
+                else if (!strcasecmp(arg1, "needroot")) pCommandEntry->need_root = !strcasecmp(arg2, "true");
+                else if (!strcasecmp(arg1, "command")) pCommandEntry->command = &fullline[8];
+                else if (!strcasecmp(arg1, "description")) pCommandEntry->description = &fullline[12];
             }
         }
         else
         {
+            if (!strcasecmp(arg1, "commandentry")) handlecommandentry = true;
+            else if (!arg2); // Following stuff needs atleast second argument
             if (!strcasecmp(arg1, "version")) InstallInfo.version = atoi(arg2);
             else if (!strcasecmp(arg1, "appname"))
             {
@@ -178,7 +170,6 @@ bool ReadConfig()
                 if (!strcasecmp(arg2, "true")) InstallInfo.need_file_dialog = true;
                 else if (!strcasecmp(arg2, "false")) InstallInfo.need_file_dialog = false;
             }
-            else if (!strcasecmp(arg1, "commandentry")) handlecommandentry = true;
         }
     }
     

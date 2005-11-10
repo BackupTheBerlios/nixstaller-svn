@@ -6,25 +6,25 @@
 
 Fl_Group *CLangScreen::Create(void)
 {
-    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    pGroup->begin();
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
     
-    pMenuItems = new Fl_Menu_Item[InstallInfo.languages.size()+1];
+    m_pMenuItems = new Fl_Menu_Item[InstallInfo.languages.size()+1];
     
     new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Please select a language");
     
     short s=0;
     for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++, s++)
-        pMenuItems[s].text = *p;
+        m_pMenuItems[s].text = *p;
         
-    pMenuItems[s].text = NULL;
-    pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"&Language: ");
-    pChoiceMenu->menu(pMenuItems);
-    pChoiceMenu->callback(LangMenuCB);
+    m_pMenuItems[s].text = NULL;
+    m_pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"&Language: ");
+    m_pChoiceMenu->menu(m_pMenuItems);
+    m_pChoiceMenu->callback(LangMenuCB);
     
-    pGroup->end();
+    m_pGroup->end();
     
-    return pGroup;
+    return m_pGroup;
 }
 
 bool CLangScreen::Next()
@@ -41,24 +41,24 @@ bool CLangScreen::Next()
 
 Fl_Group *CWelcomeScreen::Create(void)
 {
-    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    pGroup->begin();
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
     
-    pBuffer = new Fl_Text_Buffer;
+    m_pBuffer = new Fl_Text_Buffer;
 
-    pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Welcome");
-    pDisplay->buffer(pBuffer);
+    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Welcome");
+    m_pDisplay->buffer(m_pBuffer);
     
-    pGroup->end();
+    m_pGroup->end();
     
-    return pGroup;
+    return m_pGroup;
 }
 
 void CWelcomeScreen::UpdateLang()
 {
-    HasText = (!pBuffer->loadfile(CreateText("config/lang/%s/welcome", InstallInfo.cur_lang.c_str())) ||
-               !pBuffer->loadfile("config/welcome"));
-    pDisplay->label(GetTranslation("Welcome"));
+    m_bHasText = (!m_pBuffer->loadfile(CreateText("config/lang/%s/welcome", InstallInfo.cur_lang.c_str())) ||
+                  !m_pBuffer->loadfile("config/welcome"));
+    m_pDisplay->label(GetTranslation("Welcome"));
 }
 
 // -------------------------------------
@@ -67,35 +67,36 @@ void CWelcomeScreen::UpdateLang()
 
 Fl_Group *CLicenseScreen::Create(void)
 {
-    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    pGroup->begin();
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
     
-    pBuffer = new Fl_Text_Buffer;
+    m_pBuffer = new Fl_Text_Buffer;
     
-    pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License Agreement");
-    pDisplay->buffer(pBuffer);
+    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License Agreement");
+    m_pDisplay->buffer(m_pBuffer);
     
-    pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-350)/2, (MAIN_WINDOW_H-80), 350, 25, "I Agree to this license agreement");
-    pCheckButton->callback(LicenseCheckCB);
+    m_pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-350)/2, (MAIN_WINDOW_H-80), 350, 25,
+                                         "I Agree to this license agreement");
+    m_pCheckButton->callback(LicenseCheckCB);
     
-    pGroup->end();
-    return pGroup;
+    m_pGroup->end();
+    return m_pGroup;
 }
 
 void CLicenseScreen::UpdateLang()
 {
-    HasText = (!pBuffer->loadfile(CreateText("config/lang/%s/license", InstallInfo.cur_lang.c_str())) ||
-               !pBuffer->loadfile("config/license"));
+    m_bHasText = (!m_pBuffer->loadfile(CreateText("config/lang/%s/license", InstallInfo.cur_lang.c_str())) ||
+                  !m_pBuffer->loadfile("config/license"));
     
-    pDisplay->label(GetTranslation("License Agreement"));
-    pCheckButton->label(GetTranslation("I Agree to this license agreement"));
+    m_pDisplay->label(GetTranslation("License Agreement"));
+    m_pCheckButton->label(GetTranslation("I Agree to this license agreement"));
 }
 
 bool CLicenseScreen::Activate()
 {
-    if (!HasText) return false;
+    if (!m_bHasText) return false;
     
-    if (!pCheckButton->value()) pNextButton->deactivate();
+    if (!m_pCheckButton->value()) pNextButton->deactivate();
     return true;
 }
 
@@ -105,31 +106,31 @@ bool CLicenseScreen::Activate()
 
 Fl_Group *CSelectDirScreen::Create()
 {
-    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    pGroup->begin();
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
 
-    pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
-    pSelDirInput = new Fl_Input(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "dir: ");
-    pSelDirInput->value(InstallInfo.dest_dir);
-    pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select directory");
-    pSelDirButton->callback(OpenDirSelWinCB, this);
+    m_pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
+    m_pSelDirInput = new Fl_Output(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "dir: ");
+    m_pSelDirInput->value(InstallInfo.dest_dir);
+    m_pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select directory");
+    m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
-    pGroup->end();
-    return pGroup;
+    m_pGroup->end();
+    return m_pGroup;
 }
 
 void CSelectDirScreen::UpdateLang()
 {
-    if (pDirChooser) delete pDirChooser;
-    pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+    if (m_pDirChooser) delete m_pDirChooser;
+    m_pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
                                       "Select destination directory");
-    pDirChooser->preview(false);
-    pDirChooser->previewButton->hide();
+    m_pDirChooser->preview(false);
+    m_pDirChooser->previewButton->hide();
 
-    pDirChooser->label(GetTranslation("Select destination directory"));
-    pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
-    pBox->label(GetTranslation("Select destination directory"));
-    pSelDirButton->label(GetTranslation("Select directory"));
+    m_pDirChooser->label(GetTranslation("Select destination directory"));
+    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
+    m_pBox->label(GetTranslation("Select destination directory"));
+    m_pSelDirButton->label(GetTranslation("Select directory"));
 }
 
 bool CSelectDirScreen::Next()
@@ -141,14 +142,14 @@ bool CSelectDirScreen::Next()
 
 void CSelectDirScreen::OpenDirChooser(void)
 {
-    pDirChooser->show();
-    while(pDirChooser->visible()) Fl::wait();
+    m_pDirChooser->show();
+    while(m_pDirChooser->visible()) Fl::wait();
     
-    if (pDirChooser->value())
+    if (m_pDirChooser->value())
     {
-        strncpy(InstallInfo.dest_dir, pDirChooser->value(), 2047);
+        strncpy(InstallInfo.dest_dir, m_pDirChooser->value(), 2047);
         InstallInfo.dest_dir[2047] = 0;
-        pSelDirInput->value(InstallInfo.dest_dir);
+        m_pSelDirInput->value(InstallInfo.dest_dir);
     }
 }
 
@@ -158,8 +159,8 @@ void CSelectDirScreen::OpenDirChooser(void)
 
 Fl_Group *CSetParamsScreen::Create()
 {
-    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    pGroup->begin();
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
 
     m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "Configuring parameters");
     
@@ -198,8 +199,8 @@ Fl_Group *CSetParamsScreen::Create()
     y+=25;
     m_pDefaultValBox = new Fl_Box(x, y, 250, 25, "Default: ");
     
-    pGroup->end();
-    return pGroup;
+    m_pGroup->end();
+    return m_pGroup;
 }
 
 void CSetParamsScreen::UpdateLang()
@@ -304,18 +305,18 @@ void CInstallFilesBase::ClearPassword()
 
 Fl_Group *CInstallFilesBase::Create()
 {
-    pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    pGroup->begin();
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
 
-    pProgress = new Fl_Progress(50, 60, (MAIN_WINDOW_W-100), 30, "Install progress");
-    pProgress->minimum(0);
-    pProgress->maximum(100);
-    pProgress->value(0);
+    m_pProgress = new Fl_Progress(50, 60, (MAIN_WINDOW_W-100), 30, "Install progress");
+    m_pProgress->minimum(0);
+    m_pProgress->maximum(100);
+    m_pProgress->value(0);
     
-    pBuffer = new Fl_Text_Buffer;
+    m_pBuffer = new Fl_Text_Buffer;
     
-    pDisplay = new Fl_Text_Display(50, 110, (MAIN_WINDOW_W-100), (MAIN_WINDOW_H-170), "Status");
-    pDisplay->buffer(pBuffer);
+    m_pDisplay = new Fl_Text_Display(50, 110, (MAIN_WINDOW_W-100), (MAIN_WINDOW_H-170), "Status");
+    m_pDisplay->buffer(m_pBuffer);
     
     m_pAskPassWindow = new Fl_Window(400, 190, "Password dialog");
     m_pAskPassWindow->set_modal();
@@ -336,29 +337,58 @@ Fl_Group *CInstallFilesBase::Create()
     
     m_pAskPassWindow->end();
     
-    pGroup->end();
+    m_pGroup->end();
 
-    return pGroup;
+    return m_pGroup;
 }
 
 bool CInstallFilesBase::Activate()
 {
-    // Check if we need root access
-    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
-         it++)
+    if (m_SUHandler.NeedPassword())
     {
-        if ((*it)->need_root)
+        // Check if we need root access
+        for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
+             it!=InstallInfo.command_entries.end(); it++)
         {
-            m_pAskPassWindow->hotspot(m_pAskPassOKButton);
-            m_pAskPassWindow->take_focus();
-            m_pAskPassWindow->show();
+            if ((*it)->need_root)
+            {
+                while(true)
+                {
+                    ClearPassword();
+                
+                    m_pAskPassWindow->hotspot(m_pAskPassOKButton);
+                    m_pAskPassWindow->take_focus();
+                    m_pAskPassWindow->show();
 
-            while(m_pAskPassWindow->visible()) Fl::wait();
+                    while(m_pAskPassWindow->visible()) Fl::wait();
             
-            break;
+                    // Check if password is invalid
+                    if (!m_szPassword)
+                    {
+                        if (fl_ask(GetTranslation("Root access is required to continue.\nAbort installation?")))
+                            EndProg(-1);
+                    }
+                    else
+                    {
+                        if (m_SUHandler.TestSU(m_szPassword))
+                            break;
+                        
+                        // Some error appeared
+                        if (m_SUHandler.GetError() == CLibSU::SU_ERROR_INCORRECTPASS)
+                            fl_alert(GetTranslation("Incorrect password given for root user.\nPlease re-type."));
+                        else
+                        {
+                            fl_alert(GetTranslation("Error: Couldn't use su to gain root access.\n"
+                                                    "Make sure you can use su(adding your user to the wheel group may help."));
+                            EndProg(-1);
+                        }
+                    }
+                }
+                break;
+            }
         }
     }
-
+    
     chdir(InstallInfo.dest_dir);
     InstallFiles = true;
     Fl::add_idle(CInstallFilesBase::stat_inst, this);
@@ -370,15 +400,15 @@ bool CInstallFilesBase::Activate()
 
 void CInstallFilesBase::UpdateLang()
 {
-    pProgress->label(GetTranslation("Install progress"));
-    //pDisplay->label(GetTranslation("Status: %s"));
+    m_pProgress->label(GetTranslation("Install progress"));
+    //m_pDisplay->label(GetTranslation("Status: %s"));
 }
 
 void CInstallFilesBase::AppendText(const char *txt)
 {
-    pBuffer->append(txt);
-    pDisplay->move_down();
-    pDisplay->show_insert_position();
+    m_pBuffer->append(txt);
+    m_pDisplay->move_down();
+    m_pDisplay->show_insert_position();
 }
 
 void CInstallFilesBase::SetPassword(bool unset)
@@ -432,15 +462,15 @@ bool CSimpleInstallScreen::Activate()
 void CSimpleInstallScreen::Install()
 {
     char curfile[256], text[300];
-    Percent = ExtractArchive(curfile);
+    m_sPercent = ExtractArchive(curfile);
         
     sprintf(text, "Extracting file: %s\n", curfile);
     AppendText(text);
     
-    if (Percent==-1) EndProg(-2);
+    if (m_sPercent==-1) EndProg(-2);
     UpdateStatusBar();
     
-    if (Percent==100)
+    if (m_sPercent==100)
     {
         AppendText("Done!\n");
         ChangeStatusText(GetTranslation("Done"));
@@ -458,15 +488,17 @@ bool CCompileInstallScreen::Activate()
 {
     CInstallFilesBase::Activate();
     ChangeStatusText(GetTranslation("Copying files"));
-    SUHandler.SetOutputFunc(SUOutputHandler, this);
-    SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
-    SUHandler.SetUser("root");
-    SUHandler.SetTerminalOutput(false);
+    m_SUHandler.SetOutputFunc(SUOutputHandler, this);
+    m_SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
+    m_SUHandler.SetUser("root");
+    m_SUHandler.SetTerminalOutput(false);
     return true;
 }
 
 void CCompileInstallScreen::Install()
 {
+    bool RootNeedPW = m_SUHandler.NeedPassword();
+    
     if (m_bCompiling)
     {
         std::string command = (*m_CurrentIterator)->command + " " + GetParameters(*m_CurrentIterator);
@@ -474,10 +506,10 @@ void CCompileInstallScreen::Install()
         AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
         ChangeStatusText(GetTranslation((*m_CurrentIterator)->description.c_str()));
 
-        if ((*m_CurrentIterator)->need_root)
+        if (RootNeedPW && (*m_CurrentIterator)->need_root)
         {
-            SUHandler.SetCommand(command);
-            SUHandler.ExecuteCommand(m_szPassword);
+            m_SUHandler.SetCommand(command);
+            m_SUHandler.ExecuteCommand(m_szPassword);
         }
         else
         {
@@ -499,12 +531,12 @@ void CCompileInstallScreen::Install()
         }
         
         m_CurrentIterator++;
-        Percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
+        m_sPercent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         UpdateStatusBar();
         
         if (m_CurrentIterator == InstallInfo.command_entries.end())
         {
-            Percent = 100;
+            m_sPercent = 100;
             UpdateStatusBar();
             ChangeStatusText(GetTranslation("Done"));
             InstallFiles = false;
@@ -516,17 +548,17 @@ void CCompileInstallScreen::Install()
     else
     {
         char curfile[256], text[300];
-        Percent = ExtractArchive(curfile);
+        m_sPercent = ExtractArchive(curfile);
         
         sprintf(text, "Extracting file: %s\n", curfile);
         AppendText(text);
     
-        if (Percent==-1) EndProg(-2);
+        if (m_sPercent==-1) EndProg(-2);
     
-        if (Percent==100)
+        if (m_sPercent==100)
         {
             m_bCompiling = true;
-            Percent = 0;
+            m_sPercent = 0;
             AppendText("Done!\n");
             m_CurrentIterator = InstallInfo.command_entries.begin();
         }

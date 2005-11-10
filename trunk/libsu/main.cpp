@@ -766,6 +766,93 @@ int CLibSU::TalkWithSU(const char *password)
     return SUCOM_OK;
 }
 
+bool CLibSU::NeedPassword()
+{
+    std::list<std::string> args;
+
+    args.push_back(m_szUser);
+    args.push_back("-c");
+    args.push_back(std::string("printf \"") + TermStr + "\""); // Insert our magic terminate indicator to command
+    args.push_back("-");
+
+    std::string command;
+    if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
+    else if (FileExists("/bin/su")) command = "/bin/su";
+
+    if (command.empty())
+    {
+        SetError(SU_ERROR_SUNOTFOUND, "Couldn't find su\n");
+        return false;
+    }
+    
+    if (Exec(command, args) < 0)
+    {
+	return false;
+    }
+    
+    ESuComErrors ret = (ESuComErrors) TalkWithSU(0L);
+    log("SU COM(need pw): %d\n", ret);
+    
+    if (ret == SUCOM_NULLPASS)
+    {
+        if (kill(m_iPid, SIGKILL) >= 0) WaitForChild();
+        return true;
+    }
+
+    WaitForChild();
+    return false;
+}
+
+bool CLibSU::TestSU(const char *password)
+{
+    std::list<std::string> args;
+
+    args.push_back(m_szUser);
+    args.push_back("-c");
+    args.push_back(std::string("printf \"") + TermStr + "\""); // Insert our magic terminate indicator to command
+    args.push_back("-");
+
+    std::string command;
+    if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
+    else if (FileExists("/bin/su")) command = "/bin/su";
+
+    if (command.empty())
+    {
+        SetError(SU_ERROR_SUNOTFOUND, "Couldn't find su\n");
+        return false;
+    }
+    
+    if (Exec(command, args) < 0)
+    {
+	return false;
+    }
+    
+    ESuComErrors ret = (ESuComErrors) TalkWithSU(password);
+    log("SU COM(test): %d\n", ret);
+    
+    if (ret == SUCOM_ERROR) 
+    {
+        SetError(SU_ERROR_INTERNAL, "Conversation with su failed(test)\n");
+        return false;
+    }
+    
+    if (ret == SUCOM_NULLPASS)
+    {
+        if (kill(m_iPid, SIGKILL) >= 0) WaitForChild();
+        return false;
+    }
+
+    if (ret == SUCOM_NOTAUTHORIZED)
+    {
+        kill(m_iPid, SIGKILL);
+        WaitForChild();
+        return false;
+    }
+
+    WaitForChild();
+    return true;
+}
+
 bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 {
     std::list<std::string> args;

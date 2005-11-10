@@ -37,6 +37,8 @@ public:
     std::string GetErrorMsg(void) { return m_szErrorMsg; };
     const char *GetErrorMsgC(void) { return m_szErrorMsg.c_str(); };
     
+    bool NeedPassword(void);
+    bool TestSU(const char *password);
     bool ExecuteCommand(const char *password, bool removepass=false);
 
 private:

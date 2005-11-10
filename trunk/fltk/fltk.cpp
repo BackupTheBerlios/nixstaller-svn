@@ -14,9 +14,6 @@ Fl_Button *pNextButton = NULL;
 std::list<CBaseScreen *> ScreenList;
 bool InstallFiles = false;
 
-void LangMenuCB(Fl_Widget *w, void *) { InstallInfo.cur_lang = ((Fl_Menu_*)w)->mvalue()->text; };
-void LicenseCheckCB(Fl_Widget *w, void *) { (((Fl_Button*)w)->value())?pNextButton->activate():pNextButton->deactivate(); };
-void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSelectDirScreen *)p)->OpenDirChooser(); };
 void WizCancelCB(Fl_Widget *, void *) { EndProg(-1); };
 
 void WizPrevCB(Fl_Widget *, void *)
