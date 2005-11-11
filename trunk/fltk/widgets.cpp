@@ -172,9 +172,8 @@ Fl_Group *CSetParamsScreen::Create()
     for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
          p++)
     {
-        short s=0;
         for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
-             p2!=(*p)->parameter_entries.end();p2++, s++)
+             p2!=(*p)->parameter_entries.end();p2++)
             m_pChoiceBrowser->add(p2->first.c_str(), *p);
     }
     

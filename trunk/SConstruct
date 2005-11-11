@@ -42,7 +42,8 @@ else:
     Execute(Delete('.sconsign.dblite'))
 
 # Builds ncurses frontend
-ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp'), LIBS=Split('$LIBS cdk ncurses'))
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '
+                       'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
 
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk Xext X11'))

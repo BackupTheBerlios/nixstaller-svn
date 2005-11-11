@@ -4,6 +4,7 @@ bool SelectLanguage(void);
 bool ShowWelcome(void);
 bool ShowLicense(void);
 bool SelectDir(void);
+bool ConfParams(void);
 bool InstallFiles(void);
 bool FinishInstall(void);
 
@@ -17,6 +18,7 @@ bool (*Functions[])(void)  =
     *ShowWelcome,
     *ShowLicense,
     *SelectDir,
+    *ConfParams,
     *InstallFiles,
     NULL
 };
@@ -102,6 +104,8 @@ bool ShowLicense()
 
 bool SelectDir()
 {
+    if (!InstallInfo.need_file_dialog) return true;
+    
     char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Exit") };
     char *title = CreateText("<C>%s", GetTranslation("Select destination directory"));
     char label[] = "Dir: ";
@@ -216,9 +220,177 @@ bool SelectDir()
     return success;
 }
 
+bool ConfParams()
+{
+    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
+    char **items;
+    char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
+    int count=0;
+    char *firstdesc = NULL, *firstdef = NULL;
+    unsigned short used = 0;
+    
+    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
+         p++)
+        count += (*p)->parameter_entries.size();
+
+    items = new char*[count+1];
+    short s=0;
+    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
+         p++)
+    {
+        for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+             p2!=(*p)->parameter_entries.end();p2++)
+        {
+            if (!firstdesc)
+            {
+                firstdesc = strdup(p2->second->description.c_str());
+                firstdef = strdup(p2->second->defaultval.c_str());
+            }
+            items[s++] = strdup(p2->first.c_str());
+        }
+    }
+    
+    items[s] = NULL;
+    
+    sortList(items, count);
+    
+    CDKBUTTONBOX *ButtonWidget = newCDKButtonbox(CDKScreen, CENTER, DEFAULT_HEIGHT, 1, 68, 0, 1, 3, buttons, 3,
+                                                 A_REVERSE, true, false);
+    setCDKButtonboxBackgroundColor(ButtonWidget, "</B/5>");
+
+    CDKSCROLL *pScrollList = newCDKScroll(CDKScreen, getbegx(ButtonWidget->win), 2, RIGHT, DEFAULT_HEIGHT-1, 35, title, items,
+                                          count, false, A_REVERSE, true, false);
+    setCDKScrollBackgroundColor(pScrollList, "</B/5>");
+    
+    CDKSWINDOW *pDescWindow = newCDKSwindow(CDKScreen, getbegx(ButtonWidget->win)+35, 2, 5, 34,
+                                            CreateText("<C></B/29>%s<!29!B>", GetTranslation("Description")), 4, true, false);
+    setCDKSwindowBackgroundColor(pDescWindow, "</B/5>");
+    addCDKSwindow(pDescWindow, firstdesc, BOTTOM);
+    
+    CDKSWINDOW *pDefWindow = newCDKSwindow(CDKScreen, getbegx(ButtonWidget->win)+35, 8, 3, 34,
+                                           CreateText("<C></B/29>%s<!29!B>", GetTranslation("Default")), 4, true, false);
+    setCDKSwindowBackgroundColor(pDefWindow, "</B/5>");
+    addCDKSwindow(pDefWindow, firstdef, BOTTOM);
+
+    setCDKScrollLLChar(pScrollList, ACS_LTEE);
+    setCDKScrollLRChar(pScrollList, ACS_BTEE);
+    setCDKScrollURChar(pScrollList, ACS_TTEE);
+    setCDKSwindowULChar(pDescWindow, ACS_TTEE);
+    setCDKSwindowLLChar(pDescWindow, ACS_LTEE);
+    setCDKSwindowLRChar(pDescWindow, ACS_RTEE);
+    setCDKSwindowURChar(pDefWindow, ACS_RTEE);
+    setCDKSwindowLRChar(pDefWindow, ACS_RTEE);
+    setCDKButtonboxULChar(ButtonWidget, ACS_LTEE);
+    setCDKButtonboxURChar(ButtonWidget, ACS_RTEE);
+    
+    drawCDKButtonbox(ButtonWidget, true);
+    drawCDKSwindow(pDescWindow, 1);
+    drawCDKSwindow(pDefWindow, 1);
+    
+    std::pair<CDKSWINDOW *, CDKSWINDOW *> pair(pDescWindow, pDefWindow);
+    setCDKScrollPreProcess(pScrollList, ScrollParamMenuK, &pair);
+
+    bindCDKObject(vSCROLL, pScrollList, KEY_TAB, SwitchButtonK, ButtonWidget);
+    
+    bool success = false;
+    while(1)
+    {
+        int selection = activateCDKScroll(pScrollList, 0);
+    
+        if (pScrollList->exitType == vNORMAL)
+        {
+            for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();
+                 p!=InstallInfo.command_entries.end(); p++)
+            {
+                if ((*p)->parameter_entries.empty()) continue;
+                std::map<std::string, command_entry_s::param_entry_s *>::iterator p2;
+                p2 = (*p)->parameter_entries.find(items[selection]);
+                if (p2 != (*p)->parameter_entries.end())
+                {
+                    if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_STRING)
+                    {
+                        CDKENTRY *entry = newCDKEntry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter new value"),
+                                                      "", A_NORMAL, '.', vMIXED, 40, 0, 256, true, false);
+    
+                        // Draw input box
+                        setCDKEntryBackgroundColor(entry, "</B/26");
+                        const char *newval = (activateCDKEntry(entry, 0));
+                        setCDKEntryBackgroundColor(entry, "<!26!B");
+                        
+                        if ((entry->exitType == vNORMAL) && newval)
+                            p2->second->value = newval;
+                        
+                        // Restore screen
+                        destroyCDKEntry(entry);
+                        refreshCDKScreen(CDKScreen);
+                    }
+                    else
+                    {
+                        char **chitems;
+                        int chcount=0;
+                        if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+                        {
+                            chcount = 2;
+                            chitems = new char*[3];
+                            chitems[0] = GetTranslation("Disable");
+                            chitems[1] = GetTranslation("Enable");
+                            chitems[2] = NULL;
+                        }
+                        else
+                        {
+                            chcount = p2->second->options.size();
+                            chitems = new char*[chcount+1];
+                            s=0;
+                            for (std::list<std::string>::iterator it=p2->second->options.begin();
+                                 it!=p2->second->options.end();it++)
+                                chitems[s++] = strdup(it->c_str());
+                            chitems[s] = NULL;
+                        }
+                        sortList(chitems, chcount);
+                        CDKSCROLL *chScrollList = newCDKScroll(CDKScreen, CENTER, CENTER, RIGHT, 6, 30,
+                                                               GetTranslation("Please choose new value"),
+                                                               chitems, chcount, false, A_REVERSE, true, false);
+                        setCDKScrollBackgroundColor(chScrollList, "</B/26>");
+                        int chsel = activateCDKScroll(chScrollList, 0);
+                        setCDKScrollBackgroundColor(chScrollList, "<!26!B>");
+                        
+                        if (chScrollList->exitType == vNORMAL)
+                            p2->second->value = chitems[chsel];
+                            
+                        if (p2->second->param_type != command_entry_s::param_entry_s::PTYPE_BOOL)
+                            for(s=0;s<chcount;s++) free(chitems[s]);
+                        delete [] chitems;
+                        destroyCDKScroll(chScrollList);
+                        refreshCDKScreen(CDKScreen);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (firstdesc) free(firstdesc);
+    if (firstdef) free(firstdef);
+    
+    for(s=0;s<count;s++) free(items[s]);
+    delete [] items;
+    
+    setCDKScrollBackgroundColor(pScrollList, "<!5!B>");
+    setCDKButtonboxBackgroundColor(ButtonWidget, "<!5!B>");
+    setCDKSwindowBackgroundColor(pDescWindow, "<!5!B>");
+    setCDKSwindowBackgroundColor(pDefWindow, "<!5!B>");
+    
+    destroyCDKButtonbox (ButtonWidget);
+    destroyCDKScroll(pScrollList);
+    destroyCDKSwindow(pDescWindow);
+    destroyCDKSwindow(pDefWindow);
+    
+    return success;
+}
+
 bool InstallFiles()
 {
-    char *botlabel[1] = { GetTranslation("Installing files....please wait") };
+    char *botlabel[1] = { GetTranslation("Installing files...please wait") };
     SetBottomLabel(botlabel, 1);
 
     /* Create the histogram. */

@@ -1,4 +1,5 @@
 #include "ncurs.h"
+#include <sstream>
 
 void throwerror(const char *error, ...)
 {
@@ -47,11 +48,8 @@ int ReadDir(const char *dir, char ***list)
 
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED)
 {
-    CDKALPHALIST *alist = (CDKALPHALIST *) object;
-    
     CDKBUTTONBOX *buttonbox = (CDKBUTTONBOX *)clientData;
     injectCDKButtonbox(buttonbox, key);
-
     return true;
 }
 
@@ -125,6 +123,68 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     freeChar(newdir);
 
     return false;
+}
+
+int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype key)
+{
+    if ((key != KEY_DOWN) && (key != KEY_UP)) return true;
+    if (cdktype != vSCROLL) return true;
+    
+    std::pair<CDKSWINDOW *, CDKSWINDOW *> *pPair = ((std::pair<CDKSWINDOW *, CDKSWINDOW *> *)clientData);
+
+    CDKSCROLL *pScroll = ((CDKSCROLL *)object);
+    CDKSWINDOW *pDescWin = pPair->first;
+    CDKSWINDOW *pDefWin = pPair->second;
+    
+    const int maxlength = 32;
+    
+    int count = 0;
+    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();
+         p!=InstallInfo.command_entries.end(); p++)
+         count += (*p)->parameter_entries.size();
+         
+    int cur = getCDKScrollCurrent(pScroll);
+    char **items = new char*[count+1];
+    getCDKScrollItems(pScroll, items);
+    
+    if ((key == KEY_DOWN) && ((cur+1) < count)) cur++;
+    else if ((key == KEY_UP) && (cur > 0)) cur--;
+    
+    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();
+         p!=InstallInfo.command_entries.end(); p++)
+    {
+        if ((*p)->parameter_entries.empty()) continue;
+        
+        std::map<std::string, command_entry_s::param_entry_s *>::iterator p2;
+        p2 = (*p)->parameter_entries.find(items[cur]);
+        
+        if (p2 != (*p)->parameter_entries.end())
+        {
+            cleanCDKSwindow(pDescWin);
+            cleanCDKSwindow(pDefWin);
+            
+            std::istringstream istr(p2->second->description);
+            std::string line, tmpstr;
+            
+            istr >> line; // Need atleast one word...
+            while(istr >> tmpstr)
+            {
+                if ((line.length() + tmpstr.length() + 1) > maxlength)
+                {
+                    addCDKSwindow(pDescWin, CreateText(line.c_str()), BOTTOM);
+                    line = tmpstr;
+                }
+                else
+                    line += " " + tmpstr;
+            }
+            addCDKSwindow(pDescWin, CreateText(line.c_str()), BOTTOM);
+            addCDKSwindow(pDefWin, CreateText(p2->second->defaultval.c_str()), BOTTOM);
+            break;
+        }
+    }
+    
+    delete [] items;
+    return true;
 }
 
 int ViewFile(char *file, char **buttons, int buttoncount, char *title)

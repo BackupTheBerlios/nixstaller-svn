@@ -9,6 +9,7 @@ MAIN
 NCURSES FRONTEND
 - Correct error handling for widget creation etc 
 - Back button?
+- Bottom label for lang screen
 
 
 FLTK FRONTEND

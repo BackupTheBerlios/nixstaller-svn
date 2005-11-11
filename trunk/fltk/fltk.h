@@ -44,7 +44,6 @@ public:
     virtual bool Prev(void) { return true; };
     virtual bool Next(void) { return true; };
     virtual bool Activate(void) { return true; };
-    virtual bool Enabled(void) { return true; };
 };
 
 class CLangScreen: public CBaseScreen
