@@ -5,27 +5,13 @@
 
 #include <cdk/cdk.h>
 #include "main.h"
+#include "widgets.h"
 
 #define NO_FILE -1
 #define ESCAPE  -2
 
 #define DEFAULT_WIDTH       50
 #define DEFAULT_HEIGHT      12
-
-class CBaseScreen
-{
-public:
-    CBaseScreen(void) { };
-    
-    virtual bool Activate(void) { return true; };
-    virtual bool Next(void) { return true; };
-    virtual bool Prev(void) { return true; };
-};
-
-class CLangScreen: public CBaseScreen
-{
-public:
-};
 
 void throwerror(const char *error, ...);
 int ReadDir(const char *dir, char ***list);
@@ -37,7 +23,8 @@ void SetBottomLabel(char **msg, int count);
 
 extern WINDOW *MainWin;
 extern CDKSCREEN *CDKScreen;
-extern CDKLABEL *BottomLabel;
+//extern CDKLABEL *BottomLabel;
+extern CCDKLabel *BottomLabel;
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };

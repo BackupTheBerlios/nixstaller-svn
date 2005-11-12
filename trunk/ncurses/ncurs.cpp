@@ -10,7 +10,7 @@ bool FinishInstall(void);
 
 WINDOW *MainWin = NULL;
 CDKSCREEN *CDKScreen = NULL;
-CDKLABEL *BottomLabel = NULL;
+CCDKLabel *BottomLabel = NULL;
 
 bool (*Functions[])(void)  =
 {
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     }
     
     // Deinit
-    if (BottomLabel) destroyCDKLabel(BottomLabel);
+    if (BottomLabel) delete BottomLabel;
     if (CDKScreen) destroyCDKScreen(CDKScreen);
     
     endCDK();
@@ -56,31 +56,25 @@ int main(int argc, char *argv[])
 bool SelectLanguage()
 {
     char title[] = "<C></B/29>Please select a language<!29!B>";
-    char **items = NULL;
-    int count=0;
-    unsigned short used = 0;
-    
+
+    CCDKScroll ScrollList(CDKScreen, CENTER, CENTER, DEFAULT_HEIGHT, DEFAULT_WIDTH, RIGHT, title);
+  
     for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
-        used = CDKallocStrings(&items, *p, count++, used);
+        ScrollList.AddItem(*p);
         
-    sortList(items, count);
-    
-    CDKSCROLL *ScrollList = newCDKScroll(CDKScreen, CENTER, CENTER, RIGHT, DEFAULT_HEIGHT, DEFAULT_WIDTH, title, items,
-                                         count, false, A_REVERSE, true, false);
-    setCDKScrollBackgroundColor(ScrollList, "</B/5>");
-    int selection = activateCDKScroll(ScrollList, 0);
+    ScrollList.SetBgColor(5);
+    int selection = ScrollList.Activate();
     
     bool success = false;
     
-    if (ScrollList->exitType == vNORMAL)
+    if (ScrollList.ExitType() == vNORMAL)
     {
-        InstallInfo.cur_lang = items[selection];
+        std::list<char *>::iterator it = InstallInfo.languages.begin();
+        advance(it, selection);
+        InstallInfo.cur_lang = *it;
         success = ReadLang();
     }
         
-    CDKfreeStrings(items);
-    setCDKScrollBackgroundColor(ScrollList, "<!5!B>");
-    destroyCDKScroll(ScrollList);
     return success;
 }
 

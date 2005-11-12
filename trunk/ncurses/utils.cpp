@@ -11,7 +11,8 @@ void throwerror(const char *error, ...)
         vsprintf(txt, translated, v);
     va_end(v);
 
-    if (BottomLabel) destroyCDKLabel(BottomLabel);
+    if (BottomLabel) delete BottomLabel;
+
     if (CDKScreen)
     {
         destroyCDKScreen(CDKScreen);
@@ -237,13 +238,14 @@ void SetBottomLabel(char **msg, int count)
 {
     if (BottomLabel)
     {
-        setCDKLabelBackgroundColor(BottomLabel, "<!3!B>");
-        destroyCDKLabel(BottomLabel);
+        delete BottomLabel;
+        BottomLabel = NULL;
     }
-    BottomLabel = newCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
+
+    BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
     if (!BottomLabel)
         throwerror("Can't create bottom text window");
-    setCDKLabelBackgroundColor(BottomLabel, "</B/3>");
-    drawCDKLabel(BottomLabel, 1);
+    BottomLabel->SetBgColor(3);
+    BottomLabel->Draw();
     refreshCDKScreen(CDKScreen);
 }

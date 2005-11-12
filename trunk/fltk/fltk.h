@@ -37,7 +37,6 @@ protected:
     
 public:
     CBaseScreen(void) : m_pGroup(NULL) { };
-    
     virtual Fl_Group *Create(void) = NULL;
     Fl_Group *GetGroup(void) const { return m_pGroup; };
     virtual void UpdateLang(void) { }; // Called after language is changed
