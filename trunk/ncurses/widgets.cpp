@@ -11,7 +11,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, char **msg, int count, bo
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, bool box,
-                                   bool shadow) : CBaseCDKWidget(box), m_iCount(1)
+                     bool shadow) : CBaseCDKWidget(box), m_iCount(1)
 {
     m_szLabelTxt = new char*[1];
     m_szLabelTxt[0] = strdup(msg.c_str());
@@ -19,7 +19,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, b
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box,
-                                   bool shadow) : CBaseCDKWidget(box), m_iCount(1)
+                     bool shadow) : CBaseCDKWidget(box), m_iCount(1)
 {
     m_szLabelTxt = new char*[1];
     m_szLabelTxt[0] = strdup(msg);
@@ -42,10 +42,26 @@ void CCDKLabel::Destroy(void)
     m_pLabel = NULL;
 }
 
+// CDK Button Box Wrapper
+
+CCDKButtonBox::CCDKButtonBox(CDKSCREEN *pScreen, int x, int y, int h, int w, char *title, int rows, int cols,
+                             char **buttons, int count, chtype hlight, bool box, bool shadow) : CBaseCDKWidget(box)
+{
+    m_pBBox = newCDKButtonbox(pScreen, x, y, h, w, title, rows, cols, buttons, count, hlight, box, shadow);
+}
+
+void CCDKButtonBox::Destroy(void)
+{
+    if (!m_pBBox) return;
+    CBaseCDKWidget::Destroy();
+    destroyCDKButtonbox(m_pBBox);
+    m_pBBox = NULL;
+}
+
 // CDK Scroll Wrapper
 
 CCDKScroll::CCDKScroll(CDKSCREEN *pScreen, int x, int y, int h, int w, int sbpos, char *title, bool box,
-                                    bool numbers, bool shadow) : CBaseCDKWidget(box), m_bHasItem(false)
+                       bool numbers, bool shadow) : CBaseCDKWidget(box), m_bHasItem(false)
 {
     m_szDummyItem = new char*[2];
     m_szDummyItem[0] = "dummy item";
@@ -60,7 +76,7 @@ void CCDKScroll::Destroy(void)
     CBaseCDKWidget::Destroy();
     destroyCDKScroll(m_pScroll);
     delete [] m_szDummyItem;
-    m_pScroll= NULL;
+    m_pScroll = NULL;
 }
 
 void CCDKScroll::AddItem(char *str)
@@ -71,4 +87,21 @@ void CCDKScroll::AddItem(char *str)
         deleteCDKScrollItem(m_pScroll, 0);
     }
     addCDKScrollItem(m_pScroll, str);
+}
+
+// CDK Alphalist Wrapper
+
+CCDKAlphaList::CCDKAlphaList(CDKSCREEN *pScreen, int x, int y, int h, int w, char *title, char *label, char **list, int count,
+                             bool box, bool shadow) : CBaseCDKWidget(box)
+{
+    m_pAList = newCDKAlphalist(pScreen, x, y, h, w, title, label, list, count, '_', A_BLINK, box, shadow);
+}
+
+void CCDKAlphaList::Destroy()
+{
+    if (!m_pAList) return;
+
+    CBaseCDKWidget::Destroy();
+    destroyCDKAlphalist(m_pAList);
+    m_pAList = NULL;
 }

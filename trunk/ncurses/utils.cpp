@@ -1,5 +1,4 @@
 #include "ncurs.h"
-#include <sstream>
 
 void throwerror(const char *error, ...)
 {
@@ -47,7 +46,7 @@ int ReadDir(const char *dir, char ***list)
     return count;
 }
 
-int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED)
+int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key GCC_UNUSED)
 {
     CDKBUTTONBOX *buttonbox = (CDKBUTTONBOX *)clientData;
     injectCDKButtonbox(buttonbox, key);

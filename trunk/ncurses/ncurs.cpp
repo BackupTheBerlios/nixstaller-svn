@@ -98,6 +98,7 @@ bool ShowLicense()
 
 bool SelectDir()
 {
+#if 0
     if (!InstallInfo.need_file_dialog) return true;
     
     char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Exit") };
@@ -110,7 +111,7 @@ bool SelectDir()
     getbegyx(MainWin, y1, x1);
     getmaxyx(MainWin, y2, x2);
     int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
-    char *botlabel[5] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+    /*char *botlabel[5] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
                                      GetTranslation("Go to next button"), maxtxtlength,
                                      GetTranslation("Activate current button")),
                           "</B/27>  ^<!27!B>",
@@ -119,8 +120,11 @@ bool SelectDir()
                                      GetTranslation("Exit program")),
                           "</B/27>  v<!27!B>",
                           CreateText("</B/27>C<!27!B>     : %*.*s", -txtfieldwidth, maxtxtlength,
-                                     GetTranslation("Create new directory")) };
-    SetBottomLabel(botlabel, 5);
+                                     GetTranslation("Create new directory")) };*/
+    CCharListHelper botlabel;
+    botlabel.AddItem(CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+                                GetTranslation("Go to next button"), maxtxtlength, GetTranslation("Activate current button")));
+    SetBottomLabel(botlabel, botlabel.Count());
 
     if (chdir(InstallInfo.dest_dir) != 0)
         throwerror("Couldn't open directory '%s'", InstallInfo.dest_dir);
@@ -212,6 +216,114 @@ bool SelectDir()
     destroyCDKAlphalist(FileList);
 
     return success;
+#else
+    if (!InstallInfo.need_file_dialog) return true;
+    
+    char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Exit") };
+    char *title = CreateText("<C>%s", GetTranslation("Select destination directory"));
+    char label[] = "Dir: ";
+    char **item = NULL;
+    
+    // Set bottom label
+    int x1, x2, y1, y2;
+    getbegyx(MainWin, y1, x1);
+    getmaxyx(MainWin, y2, x2);
+    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
+    CCharListHelper botlabel;
+    
+    botlabel.AddItem(CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+                                GetTranslation("Go to next button"), maxtxtlength, GetTranslation("Activate current button")));
+    botlabel.AddItem("</B/27>  ^<!27!B>");
+    botlabel.AddItem(CreateText("</B/27>  <#BU>  <!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
+                                GetTranslation("Highlight previous/next dir"), maxtxtlength, GetTranslation("Exit program")));
+    botlabel.AddItem("</B/27>  v<!27!B>");
+    botlabel.AddItem(CreateText("</B/27>C<!27!B>     : %*.*s", -txtfieldwidth, maxtxtlength,
+                                GetTranslation("Create new directory")));
+    SetBottomLabel(botlabel, botlabel.Count());
+
+    if (chdir(InstallInfo.dest_dir) != 0)
+        throwerror("Couldn't open directory '%s'", InstallInfo.dest_dir);
+
+    int count = ReadDir(InstallInfo.dest_dir, &item);
+
+    CCDKAlphaList FileList(CDKScreen, CENTER, 2, DEFAULT_HEIGHT-2, DEFAULT_WIDTH, title, label, item, count);
+    FileList.SetBgColor(5);
+    setCDKEntryPreProcess(FileList.GetAList()->entryField, CreateDirK, FileList.GetAList());
+    FileList.GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
+
+    CCDKButtonBox ButtonBox(CDKScreen, CENTER, getbegy(FileList.GetAList()->win)+FileList.GetAList()->boxHeight-1, 1,
+                            49, 0, 1, 3, buttons, 3);
+    ButtonBox.SetBgColor(5);
+    
+    setCDKAlphalistLLChar(FileList.GetAList(), ACS_LTEE);
+    setCDKAlphalistLRChar(FileList.GetAList(), ACS_RTEE);
+    setCDKButtonboxULChar(ButtonBox.GetBBox(), ACS_LTEE);
+    setCDKButtonboxURChar(ButtonBox.GetBBox(), ACS_RTEE);
+    
+    FileList.Draw();
+    ButtonBox.Draw();
+    
+    FileList.Bind(KEY_TAB, SwitchButtonK, ButtonBox.GetBBox()); // Pas TAB through ButtonBox
+
+    /* Activate the scrolling list. */
+    while(true)
+    {
+        // HACK: Give textbox content
+        setCDKEntryValue(FileList.GetAList()->entryField,
+                         chtype2Char(FileList.GetAList()->scrollField->item[FileList.GetAList()->scrollField->currentItem]));
+
+        char *selection = FileList.Activate();
+        if ((FileList.ExitType() != vNORMAL) || (ButtonBox.GetCurrent() == 2)) break;
+        if (ButtonBox.GetCurrent() == 1)
+        {
+            char *dtext[3];
+            char *dbuttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
+            char temp[512];
+            
+            dtext[0] = CreateText(GetTranslation("This will install %s to the following directory:"), InstallInfo.program_name);
+            dtext[1] = InstallInfo.dest_dir;
+            dtext[2] = GetTranslation("Continue?");
+            CDKDIALOG *Diag = newCDKDialog(CDKScreen, CENTER, CENTER, dtext, 3, dbuttons, 2, COLOR_PAIR(2)|A_REVERSE,
+                                           true, true, false);
+            setCDKDialogBackgroundColor(Diag, "</B/26>");
+    
+            /* Activate the dialog box. */
+            int selection = activateCDKDialog(Diag, 0);
+
+            freeChar(dtext[0]);
+            setCDKDialogBackgroundColor(Diag, "<!26!B>");
+            destroyCDKDialog(Diag);
+            refreshCDKScreen(CDKScreen);
+            if (selection==0) break;
+            else continue;
+        }
+        if (!selection || !selection[0]) continue;
+
+        char tmp[2048];
+        strcpy(tmp, InstallInfo.dest_dir);
+        
+        strcat(InstallInfo.dest_dir, "/");
+        strcat(InstallInfo.dest_dir, selection);
+        if (chdir(InstallInfo.dest_dir)) { strcpy(InstallInfo.dest_dir, tmp); continue; }
+        getcwd(InstallInfo.dest_dir, sizeof(InstallInfo.dest_dir));
+        
+        if (item) CDKfreeStrings(item);
+        item = NULL;
+        
+        count = ReadDir(InstallInfo.dest_dir, &item);
+        if (count == NO_FILE) continue;
+        
+        FileList.SetContent(item, count);
+        FileList.Draw();
+    }
+    
+    bool success = ((FileList.ExitType() != vESCAPE_HIT) && (ButtonBox.GetCurrent() == 1));
+    
+    /* Clean up. */
+    CDKfreeStrings(item);
+
+    return success;
+#endif
 }
 
 bool ConfParams()
@@ -220,7 +332,7 @@ bool ConfParams()
     char **items;
     char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
     int count=0;
-    char *firstdesc = NULL, *firstdef = NULL;
+    std::string firstdesc, firstdef;
     unsigned short used = 0;
     
     for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
@@ -235,10 +347,10 @@ bool ConfParams()
         for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
              p2!=(*p)->parameter_entries.end();p2++)
         {
-            if (!firstdesc)
+            if (firstdesc.empty())
             {
-                firstdesc = strdup(p2->second->description.c_str());
-                firstdef = strdup(p2->second->defaultval.c_str());
+                firstdesc = p2->second->description.c_str();
+                firstdef = p2->second->defaultval.c_str();
             }
             items[s++] = strdup(p2->first.c_str());
         }
@@ -259,12 +371,27 @@ bool ConfParams()
     CDKSWINDOW *pDescWindow = newCDKSwindow(CDKScreen, getbegx(ButtonWidget->win)+35, 2, 5, 34,
                                             CreateText("<C></B/29>%s<!29!B>", GetTranslation("Description")), 4, true, false);
     setCDKSwindowBackgroundColor(pDescWindow, "</B/5>");
-    addCDKSwindow(pDescWindow, firstdesc, BOTTOM);
+
+    std::istringstream istr(firstdesc);
+    std::string line, tmpstr;
+            
+    istr >> line; // Need atleast one word...
+    while(istr >> tmpstr)
+    {
+        if ((line.length() + tmpstr.length() + 1) > 32)
+        {
+            addCDKSwindow(pDescWindow, CreateText(line.c_str()), BOTTOM);
+            line = tmpstr;
+        }
+        else
+            line += " " + tmpstr;
+    }
+    addCDKSwindow(pDescWindow, CreateText(line.c_str()), BOTTOM);
     
     CDKSWINDOW *pDefWindow = newCDKSwindow(CDKScreen, getbegx(ButtonWidget->win)+35, 8, 3, 34,
                                            CreateText("<C></B/29>%s<!29!B>", GetTranslation("Default")), 4, true, false);
     setCDKSwindowBackgroundColor(pDefWindow, "</B/5>");
-    addCDKSwindow(pDefWindow, firstdef, BOTTOM);
+    addCDKSwindow(pDefWindow, CreateText(firstdef.c_str()), BOTTOM);
 
     setCDKScrollLLChar(pScrollList, ACS_LTEE);
     setCDKScrollLRChar(pScrollList, ACS_BTEE);
@@ -362,9 +489,6 @@ bool ConfParams()
             }
         }
     }
-    
-    if (firstdesc) free(firstdesc);
-    if (firstdef) free(firstdef);
     
     for(s=0;s<count;s++) free(items[s]);
     delete [] items;
