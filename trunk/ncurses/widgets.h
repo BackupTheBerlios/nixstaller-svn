@@ -25,8 +25,6 @@ class CCDKLabel: public CBaseCDKWidget
     int m_iCount;
     char **m_szLabelTxt;
 
-    void CreateLabel(CDKSCREEN *pScreen, int x, int y, bool shadow);
-
 public:
     CCDKLabel(CDKSCREEN *pScreen, int x, int y, char **msg, int count, bool box, bool shadow=false);
     CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, bool box, bool shadow=false);
@@ -39,6 +37,8 @@ public:
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKLabelBackgroundColor(m_pLabel, CreateText("<!%d!B>", m_sBackColor)); };
     virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vLABEL, m_pLabel, key, function, data); };
+    
+    CDKLABEL *GetLabel(void) { return m_pLabel; };
 };
 
 class CCDKButtonBox: public CBaseCDKWidget
@@ -63,13 +63,11 @@ public:
 
 class CCDKScroll: public CBaseCDKWidget
 {
-    char **m_szDummyItem;
-    bool m_bHasItem;
     CDKSCROLL *m_pScroll;
 
 public:
-    CCDKScroll(CDKSCREEN *pScreen, int x, int y, int h, int w, int sbpos, char *title, bool box=true,
-                     bool numbers=false, bool shadow=false);
+    CCDKScroll(CDKSCREEN *pScreen, int x, int y, int h, int w, int sbpos, char *title, char **list, int lcount,
+               bool box=true, bool numbers=false, bool shadow=false);
     virtual ~CCDKScroll(void) { Destroy(); };
 
     virtual void Draw(void) { drawCDKScroll(m_pScroll, m_bBox); };
@@ -80,10 +78,6 @@ public:
     virtual EExitType ExitType(void) { return m_pScroll->exitType; };
     virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vSCROLL, m_pScroll, key, function, data); };
     
-    void AddItem(const std::string &str) { AddItem(str.c_str()); };
-    void AddItem(char *str);
-    void AddItem(const char *str) { AddItem(const_cast<char *>(str)); };
-
     int Activate(chtype *actions = NULL) { return activateCDKScroll(m_pScroll, actions); };
     CDKSCROLL *GetScroll(void) { return m_pScroll; };
 };
@@ -108,6 +102,99 @@ public:
     char *Activate(chtype *actions = NULL) { return activateCDKAlphalist(m_pAList, actions); };
     CDKALPHALIST *GetAList(void) { return m_pAList; };
     void SetContent(char **list, int count) { setCDKAlphalistContents(m_pAList, list, count); };
+};
+
+class CCharListHelper;
+
+class CCDKDialog: public CBaseCDKWidget
+{
+    CDKDIALOG *m_pDialog;
+    CCharListHelper m_CharList;
+
+public:
+    CCDKDialog(CDKSCREEN *pScreen, int x, int y, char **message, int mcount, char **buttons, int bcount,
+               chtype hlight=COLOR_PAIR(2)|A_REVERSE, bool sep=true, bool box=true, bool shadow=false);
+    CCDKDialog(CDKSCREEN *pScreen, int x, int y, const char *message, char **buttons, int bcount,
+               chtype hlight=COLOR_PAIR(2)|A_REVERSE, bool sep=true, bool box=true, bool shadow=false);
+    CCDKDialog(CDKSCREEN *pScreen, int x, int y, const std::string &message, char **buttons, int bcount,
+               chtype hlight=COLOR_PAIR(2)|A_REVERSE, bool sep=true, bool box=true, bool shadow=false);
+    virtual ~CCDKDialog(void) { Destroy(); };
+    
+    virtual void Draw(void) { drawCDKDialog(m_pDialog, m_bBox); };
+    virtual void Destroy(void);
+    virtual void SetBgColor(int color) { setCDKDialogBackgroundColor(m_pDialog, CreateText("</B/%d>", color));
+                                         m_sBackColor = color; };
+    virtual void UnSetBgColor() { setCDKDialogBackgroundColor(m_pDialog, CreateText("<!%d!B>", m_sBackColor)); };
+    virtual EExitType ExitType(void) { return m_pDialog->exitType; };
+    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vDIALOG, m_pDialog, key, function, data); };
+    
+    int Activate(chtype *actions = NULL) { return activateCDKDialog(m_pDialog, actions); };
+    CDKDIALOG *GetDialog(void) { return m_pDialog; };
+};
+
+class CCDKSWindow: public CBaseCDKWidget
+{
+    CDKSWINDOW *m_pSWindow;
+    
+public:
+    CCDKSWindow(CDKSCREEN *pScreen, int x, int y, int h, int w, char *title, int slines, bool box=true, bool shadow=false);
+    virtual ~CCDKSWindow(void) { Destroy(); };
+    
+    virtual void Draw(void) { drawCDKSwindow(m_pSWindow, m_bBox); };
+    virtual void Destroy(void);
+    virtual void SetBgColor(int color) { setCDKSwindowBackgroundColor(m_pSWindow, CreateText("</B/%d>", color));
+                                         m_sBackColor = color; };
+    virtual void UnSetBgColor() { setCDKSwindowBackgroundColor(m_pSWindow, CreateText("<!%d!B>", m_sBackColor)); };
+    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vSWINDOW, m_pSWindow, key, function, data); };
+    
+    void AddText(const std::string &txt, bool wrap=true, int pos=BOTTOM) { AddText(CreateText(txt.c_str()), wrap, pos); };
+    void AddText(const char *txt, bool wrap=true, int pos=BOTTOM) { AddText(CreateText(txt), wrap, pos); };
+    void AddText(char *str, bool wrap=true, int pos=BOTTOM);
+    
+    CDKSWINDOW *GetSWin(void) { return m_pSWindow; };
+};
+
+class CCDKEntry: public CBaseCDKWidget
+{
+    CDKENTRY *m_pEntry;
+    
+public:
+    CCDKEntry(CDKSCREEN *pScreen, int x, int y, char *title, char *label, int fwidth, int min, int max,
+              EDisplayType DispType=vMIXED, chtype fillch='.', chtype fieldattr=A_NORMAL, bool box=true, bool shadow=false);
+    virtual ~CCDKEntry(void) { Destroy(); };
+    
+    virtual void Draw(void) { drawCDKEntry(m_pEntry, m_bBox); };
+    virtual void Destroy(void);
+    virtual void SetBgColor(int color) { setCDKEntryBackgroundColor(m_pEntry, CreateText("</B/%d>", color));
+                                         m_sBackColor = color; };
+    virtual void UnSetBgColor() { setCDKEntryBackgroundColor(m_pEntry, CreateText("<!%d!B>", m_sBackColor)); };
+    virtual EExitType ExitType(void) { return m_pEntry->exitType; };
+    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vENTRY, m_pEntry, key, function, data); };
+    
+    char *Activate(chtype *actions = NULL) { return activateCDKEntry(m_pEntry, actions); };
+    CDKENTRY *GetEntry(void) { return m_pEntry; };
+};
+
+class CCDKHistogram: public CBaseCDKWidget
+{
+    CDKHISTOGRAM *m_pHistogram;
+    
+public:
+    CCDKHistogram(CDKSCREEN *pScreen, int x, int y, int h, int w, int orient, char *title, bool box=true, bool shadow=false);
+    virtual ~CCDKHistogram(void) { Destroy(); };
+    
+    virtual void Draw(void) { drawCDKHistogram(m_pHistogram, m_bBox); };
+    virtual void Destroy(void);
+    virtual void SetBgColor(int color) { setCDKHistogramBackgroundColor(m_pHistogram, CreateText("</B/%d>", color));
+                                         m_sBackColor = color; };
+    virtual void UnSetBgColor() { setCDKHistogramBackgroundColor(m_pHistogram, CreateText("<!%d!B>", m_sBackColor)); };
+    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vHISTOGRAM, m_pHistogram, key, function,
+                                                                 data); };
+    
+    void SetHistogram(EHistogramDisplayType vtype, int statspos, int min, int max, int cur, chtype fillch,
+                      chtype statattr=A_BOLD);
+    void SetValue(int min, int max, int cur) { setCDKHistogramValue(m_pHistogram, min, max, cur); };
+    CDKHISTOGRAM *GetHistogram(void) { return m_pHistogram; };
 };
 
 #endif

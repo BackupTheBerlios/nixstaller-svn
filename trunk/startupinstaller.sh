@@ -10,7 +10,7 @@ if [ -z $DISPLAY ]; then
     # Not running, use ncurses frontend
     RUNCOMMAND="./frontends/$CURRENT_OS/ncurs $HOME"
 else
-    RUNCOMMAND="./frontends/$CURRENT_OS/fltk $HOME"
+    RUNCOMMAND="./frontends/$CURRENT_OS/ncurs $HOME"
 fi
 
 #Incase there are missing libraries, we just change the lib path...

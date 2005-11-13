@@ -7,7 +7,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, char **msg, int count, bo
 {
     m_szLabelTxt = new char*[m_iCount];
     for (int i=0;i<m_iCount;i++) m_szLabelTxt[i] = strdup(msg[i]);
-    CreateLabel(pScreen, x, y, shadow);
+    m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, bool box,
@@ -15,7 +15,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, b
 {
     m_szLabelTxt = new char*[1];
     m_szLabelTxt[0] = strdup(msg.c_str());
-    CreateLabel(pScreen, x, y, shadow);
+    m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box,
@@ -23,12 +23,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box
 {
     m_szLabelTxt = new char*[1];
     m_szLabelTxt[0] = strdup(msg);
-    CreateLabel(pScreen, x, y, shadow);
-}
-
-void CCDKLabel::CreateLabel(CDKSCREEN *pScreen, int x, int y, bool shadow)
-{
-    m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, m_bBox, shadow);
+    m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
 }
 
 void CCDKLabel::Destroy(void)
@@ -60,13 +55,10 @@ void CCDKButtonBox::Destroy(void)
 
 // CDK Scroll Wrapper
 
-CCDKScroll::CCDKScroll(CDKSCREEN *pScreen, int x, int y, int h, int w, int sbpos, char *title, bool box,
-                       bool numbers, bool shadow) : CBaseCDKWidget(box), m_bHasItem(false)
+CCDKScroll::CCDKScroll(CDKSCREEN *pScreen, int x, int y, int h, int w, int sbpos, char *title, char **list, int lcount,
+                       bool box, bool numbers, bool shadow) : CBaseCDKWidget(box)
 {
-    m_szDummyItem = new char*[2];
-    m_szDummyItem[0] = "dummy item";
-    m_szDummyItem[1] = NULL;
-    m_pScroll = newCDKScroll(CDKScreen, x, y, sbpos, h, w, title, m_szDummyItem, 1, numbers, A_REVERSE, box, shadow);
+    m_pScroll = newCDKScroll(CDKScreen, x, y, sbpos, h, w, title, list, lcount, numbers, A_REVERSE, box, shadow);
 }
 
 void CCDKScroll::Destroy(void)
@@ -75,18 +67,7 @@ void CCDKScroll::Destroy(void)
 
     CBaseCDKWidget::Destroy();
     destroyCDKScroll(m_pScroll);
-    delete [] m_szDummyItem;
     m_pScroll = NULL;
-}
-
-void CCDKScroll::AddItem(char *str)
-{
-    if (!m_bHasItem)
-    {
-        m_bHasItem = true;
-        deleteCDKScrollItem(m_pScroll, 0);
-    }
-    addCDKScrollItem(m_pScroll, str);
 }
 
 // CDK Alphalist Wrapper
@@ -104,4 +85,117 @@ void CCDKAlphaList::Destroy()
     CBaseCDKWidget::Destroy();
     destroyCDKAlphalist(m_pAList);
     m_pAList = NULL;
+}
+
+
+// CDK Dialog Wrapper
+
+CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, char **message, int mcount, char **buttons, int bcount,
+                       chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
+{
+    m_pDialog = newCDKDialog(pScreen, x, y, message, mcount, buttons, bcount, hlight, sep, box, shadow);
+}
+
+CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const char *message, char **buttons, int bcount,
+                       chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
+{
+    m_CharList.AddItem(message);
+    m_pDialog = newCDKDialog(pScreen, x, y, m_CharList, m_CharList.Count(), buttons, bcount, hlight, sep, box, shadow);
+}
+
+CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const std::string &message, char **buttons, int bcount,
+                       chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
+{
+    m_CharList.AddItem(message);
+    m_pDialog = newCDKDialog(pScreen, x, y, m_CharList, m_CharList.Count(), buttons, bcount, hlight, sep, box, shadow);
+}
+
+void CCDKDialog::Destroy()
+{
+    if (!m_pDialog) return;
+
+    CBaseCDKWidget::Destroy();
+    destroyCDKDialog(m_pDialog);
+    m_pDialog = NULL;
+}
+
+// CDK SWindow Wrapper
+
+CCDKSWindow::CCDKSWindow(CDKSCREEN *pScreen, int x, int y, int h, int w, char *title, int slines, bool box,
+                         bool shadow) : CBaseCDKWidget(box)
+{
+    m_pSWindow = newCDKSwindow(pScreen, x, y, h, w, title, slines, box, shadow);
+}
+
+void CCDKSWindow::Destroy()
+{
+    if (!m_pSWindow) return;
+
+    CBaseCDKWidget::Destroy();
+    destroyCDKSwindow(m_pSWindow);
+    m_pSWindow = NULL;
+}
+
+void CCDKSWindow::AddText(char *txt, bool wrap, int pos)
+{
+    if (wrap)
+    {
+        std::istringstream istr(txt);
+        std::string line, tmpstr;
+
+        istr >> line; // Need atleast one word...
+        while(istr >> tmpstr)
+        {
+            if ((line.length() + tmpstr.length() + 1) > (m_pSWindow->boxWidth-2))
+            {
+                addCDKSwindow(m_pSWindow, CreateText(line.c_str()), BOTTOM);
+                line = tmpstr;
+            }
+            else
+                line += " " + tmpstr;
+        }
+        addCDKSwindow(m_pSWindow, CreateText(line.c_str()), pos);
+    }
+    else
+        addCDKSwindow(m_pSWindow, txt, pos);
+}
+
+// CDK Entry Wrapper
+
+CCDKEntry::CCDKEntry(CDKSCREEN *pScreen, int x, int y, char *title, char *label, int fwidth, int min, int max,
+                     EDisplayType DispType, chtype fillch, chtype fieldattr, bool box, bool shadow) : CBaseCDKWidget(box)
+{
+    m_pEntry = newCDKEntry(pScreen, x, y, title, label, fieldattr, fillch, DispType, fwidth, min, max, box, shadow);
+}
+
+void CCDKEntry::Destroy()
+{
+    if (!m_pEntry) return;
+
+    CBaseCDKWidget::Destroy();
+    destroyCDKEntry(m_pEntry);
+    m_pEntry = NULL;
+}
+
+// CDK Entry Wrapper
+
+CCDKHistogram::CCDKHistogram(CDKSCREEN *pScreen, int x, int y, int h, int w, int orient, char *title, bool box,
+                             bool shadow) : CBaseCDKWidget(box)
+{
+    m_pHistogram = newCDKHistogram(pScreen, x, y, h, w, orient, title, box, shadow);
+}
+
+void CCDKHistogram::Destroy()
+{
+    if (!m_pHistogram) return;
+
+    CBaseCDKWidget::Destroy();
+    destroyCDKHistogram(m_pHistogram);
+    m_pHistogram = NULL;
+}
+
+void CCDKHistogram::SetHistogram(EHistogramDisplayType vtype, int statspos, int min, int max, int cur, chtype fillch,
+                                 chtype statattr)
+{
+    setCDKHistogram(m_pHistogram, vtype, statspos, statattr, min, max, cur, fillch, m_bBox);
 }
