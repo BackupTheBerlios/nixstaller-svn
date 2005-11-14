@@ -364,7 +364,7 @@ bool CInstallFilesBase::Activate()
                     // Check if password is invalid
                     if (!m_szPassword)
                     {
-                        if (fl_ask(GetTranslation("Root access is required to continue.\nAbort installation?")))
+                        if (fl_ask(GetTranslation("Root access is required to continue\nAbort installation?")))
                             EndProg(-1);
                     }
                     else

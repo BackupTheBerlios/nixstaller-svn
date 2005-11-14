@@ -19,7 +19,7 @@ void throwerror(const char *error, ...)
     }
 
     fprintf(stderr, "Error: %s\n", txt);
-    FreeStrings();
+    MainEnd();
     exit(EXIT_FAILURE);
 }
 

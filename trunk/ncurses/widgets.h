@@ -151,6 +151,10 @@ public:
     void AddText(const char *txt, bool wrap=true, int pos=BOTTOM) { AddText(CreateText(txt), wrap, pos); };
     void AddText(char *str, bool wrap=true, int pos=BOTTOM);
     
+    int Exec(const char *command, int pos=BOTTOM) { return Exec(CreateText(command), pos); };
+    int Exec(const std::string &command, int pos=BOTTOM) { return Exec(CreateText(command.c_str()), pos); };
+    int Exec(char *command, int pos=BOTTOM) { return execCDKSwindow(m_pSWindow, command, pos); };
+
     CDKSWINDOW *GetSWin(void) { return m_pSWindow; };
 };
 
@@ -171,6 +175,7 @@ public:
     virtual EExitType ExitType(void) { return m_pEntry->exitType; };
     virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vENTRY, m_pEntry, key, function, data); };
     
+    void SetHiddenChar(chtype ch) { setCDKEntryHiddenChar(m_pEntry, ch); };
     char *Activate(chtype *actions = NULL) { return activateCDKEntry(m_pEntry, actions); };
     CDKENTRY *GetEntry(void) { return m_pEntry; };
 };

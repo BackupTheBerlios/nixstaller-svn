@@ -65,4 +65,6 @@ extern WINDOW *MainWin;
 extern CDKSCREEN *CDKScreen;
 extern CCDKLabel *BottomLabel;
 
+inline void PrintInstOutput(const char *msg, void *p) { ((CCDKSWindow *)p)->AddText(msg, false); };
+
 #endif

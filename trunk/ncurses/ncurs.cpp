@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
     if (CDKScreen) destroyCDKScreen(CDKScreen);
     
     endCDK();
-    FreeStrings();
     MainEnd();
     return 0;
 }
@@ -322,7 +321,15 @@ bool ConfParams()
                         int chsel = chScrollList.Activate();
                         
                         if (chScrollList.ExitType() == vNORMAL)
-                            p2->second->value = chitems[chsel];
+                        {
+                            if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+                            {
+                                if (chitems[chsel] == "Enabled") p2->second->value = "true";
+                                else p2->second->value = "false";
+                            }
+                            else
+                                p2->second->value = chitems[chsel];
+                        }
                             
                         chScrollList.Destroy();
                         refreshCDKScreen(CDKScreen);
@@ -365,6 +372,83 @@ bool InstallFiles()
     ProgressBar.Draw();
     refreshCDKScreen(CDKScreen);
     
+    // Check if we need root access
+    char *passwd = NULL;
+    CLibSU SuHandler;
+    SuHandler.SetOutputFunc(PrintInstOutput, &InstallOutput);
+    SuHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
+    SuHandler.SetUser("root");
+    SuHandler.SetTerminalOutput(false);
+    
+    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
+        it!=InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->need_root)
+        {
+            CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter root password"), "", 40, 0, 256, vHMIXED);
+            entry.SetHiddenChar('*');
+            entry.SetBgColor(26);
+            
+            while(1)
+            {
+                char *sz = entry.Activate();
+                        
+                if ((entry.ExitType() != vNORMAL) || !sz)
+                {
+                    char *buttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
+                    CCharListHelper msg;
+    
+                    msg.AddItem(GetTranslation("Root access is required to continue."));
+                    msg.AddItem(GetTranslation("Abort installation?"));
+    
+                    CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, msg.Count(), buttons, 2);
+                    dialog.SetBgColor(26);
+                    int ret = dialog.Activate();
+                    if ((ret == 1) || (dialog.ExitType() != vNORMAL))
+                    {
+                        MainEnd();
+                        exit(-1);
+                    }
+                    refreshCDKScreen(CDKScreen);
+                }
+                else
+                {
+                    if (SuHandler.TestSU(sz))
+                    {
+                        passwd = strdup(sz);
+                        for (short s=0;s<strlen(sz);s++) sz[s] = 0;
+                        break;
+                    }
+                    
+                    for (short s=0;s<strlen(sz);s++) sz[s] = 0;
+                    
+                    // Some error appeared
+                    if (SuHandler.GetError() == CLibSU::SU_ERROR_INCORRECTPASS)
+                    {
+                        char *buttons[2] = { GetTranslation("OK") };
+                        CCharListHelper msg;
+    
+                        msg.AddItem(GetTranslation("Incorrect password given for root user"));
+                        msg.AddItem(GetTranslation("Please re-type"));
+    
+                        CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, msg.Count(), buttons, 1);
+                        dialog.SetBgColor(26);
+                        int ret = dialog.Activate();
+                    }
+                    else
+                    {
+                        throwerror(GetTranslation("Error: Couldn't use su to gain root access.\n"
+                                                  "Make sure you can use su(adding your user to the wheel group may help."));
+                    }
+                }
+            }
+            // Restore screen
+            entry.Destroy();
+            refreshCDKScreen(CDKScreen);
+            break;
+        }
+    }
+    
     short percent = 0;
     while(percent<100)
     {
@@ -387,30 +471,23 @@ bool InstallFiles()
         ProgressBar.Draw();
         percent = 0;
         
-        CLibSU SuHandler;
         bool needrootpw = SuHandler.NeedPassword();
+        
         for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
              it!=InstallInfo.command_entries.end(); it++)
         {
             std::string command = (*it)->command + " " + GetParameters(*it);
-            InstallOutput.AddText(CreateText("\nExecute: %s\n\n", command.c_str()));
+            InstallOutput.AddText(CreateText("\nExecute: %s\n\n", command.c_str()), false);
             
             if (needrootpw && (*it)->need_root)
             {
+                SuHandler.SetCommand(command);
+                if (!SuHandler.ExecuteCommand(passwd))
+                    throwerror(SuHandler.GetErrorMsgC());
             }
             else
             {
-                FILE *pPipe = popen((*it)->command.c_str(), "r");
-                if (pPipe)
-                {
-                    char buf[1024];
-                    while(fgets(buf, sizeof(buf), pPipe))
-                    {
-                        InstallOutput.AddText(buf);
-                    }
-                    fclose(pPipe);
-                }
-                else
+                if (InstallOutput.Exec(command) == -1)
                 {
                     // UNDONE
                 }
@@ -420,6 +497,10 @@ bool InstallFiles()
             ProgressBar.Draw();
         }
     }
+    
+    // Nullify pass...just incase
+    for (short s=0;s<strlen(passwd);s++) passwd[s] = 0;
+    free(passwd);
     
     // Notify user that installation is done
     CCharListHelper message;

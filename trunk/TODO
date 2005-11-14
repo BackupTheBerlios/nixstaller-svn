@@ -1,5 +1,7 @@
 OVERALL
 - Check namespaces for libs? Or other solution
+- Check path with non su commands
+- Check what to do on when command fails
 
 
 MAIN
