@@ -1,6 +1,7 @@
 #ifndef NCURS_H
 #define NCURS_H
 
+#include <vector>
 #include <list>
 #include <sstream>
 

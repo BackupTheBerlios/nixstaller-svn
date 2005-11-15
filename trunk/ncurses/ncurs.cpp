@@ -207,7 +207,7 @@ bool ConfParams()
 {
     char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
     char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
-    std::string firstdesc, firstdef;
+    command_entry_s::param_entry_s *pFirstParam = NULL;
     short s=0;
     CCharListHelper ParamItems;
     
@@ -217,11 +217,7 @@ bool ConfParams()
         for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
              p2!=(*p)->parameter_entries.end();p2++)
         {
-            if (firstdesc.empty())
-            {
-                firstdesc = p2->second->description;
-                firstdef = p2->second->defaultval;
-            }
+            if (!pFirstParam) pFirstParam = p2->second;
             ParamItems.AddItem(p2->first);
         }
     }
@@ -236,12 +232,21 @@ bool ConfParams()
     CCDKSWindow DescWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 2, 5, 34, CreateText("<C></B/29>%s<!29!B>",
                            GetTranslation("Description")), 4);
     DescWindow.SetBgColor(5);
-    DescWindow.AddText(firstdesc);
+    DescWindow.AddText(pFirstParam->description);
     
-    CCDKSWindow DefWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 8, 3, 34, CreateText("<C></B/29>%s<!29!B>",
-                          GetTranslation("Default")), 4);
+    CCDKSWindow DefWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 8, 4, 34, /*CreateText("<C></B/29>%s<!29!B>",
+                          GetTranslation("Default"))*/NULL, 4);
     DefWindow.SetBgColor(5);
-    DefWindow.AddText(firstdef, false);
+    
+    const char *str = pFirstParam->defaultval.c_str();
+    if (pFirstParam->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+    {
+        if (!strcmp(str, "true")) str = GetTranslation("Enabled");
+        else str = GetTranslation("Disabled");
+    }
+    
+    DefWindow.AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Default"), str), false);
+    DefWindow.AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Current"), str), false);
 
     setCDKScrollLLChar(ScrollList.GetScroll(), ACS_LTEE);
     setCDKScrollLRChar(ScrollList.GetScroll(), ACS_BTEE);
@@ -258,8 +263,13 @@ bool ConfParams()
     DescWindow.Draw();
     DefWindow.Draw();
     
-    std::pair<CDKSWINDOW *, CDKSWINDOW *> pair(DescWindow.GetSWin(), DefWindow.GetSWin());
-    setCDKScrollPreProcess(ScrollList.GetScroll(), ScrollParamMenuK, &pair);
+    std::vector<void *> Data(4);
+    Data[0] = &DescWindow;
+    Data[1] = &DefWindow;
+    Data[2] = &ScrollList;
+    Data[3] = &ParamItems;
+    
+    setCDKScrollPreProcess(ScrollList.GetScroll(), ScrollParamMenuK, &Data);
 
     ScrollList.Bind(KEY_TAB, SwitchButtonK, ButtonBox.GetBBox());
     
@@ -306,8 +316,8 @@ bool ConfParams()
                         CCharListHelper chitems;
                         if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
                         {
-                            chitems.AddItem("Disable");
-                            chitems.AddItem("Enable");
+                            chitems.AddItem(GetTranslation("Disable"));
+                            chitems.AddItem(GetTranslation("Enable"));
                         }
                         else
                         {
@@ -324,15 +334,16 @@ bool ConfParams()
                         {
                             if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
                             {
-                                if (chitems[chsel] == "Enabled") p2->second->value = "true";
+                                if (!strcmp(chitems[chsel], GetTranslation("Enable"))) p2->second->value = "true";
                                 else p2->second->value = "false";
+                                printf("val: %s\n", p2->second->value.c_str());
                             }
                             else
                                 p2->second->value = chitems[chsel];
                         }
                             
                         chScrollList.Destroy();
-                        refreshCDKScreen(CDKScreen);
+                        //refreshCDKScreen(CDKScreen);
                     }
                     break;
                 }

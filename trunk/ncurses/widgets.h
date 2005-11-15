@@ -80,6 +80,7 @@ public:
     
     int Activate(chtype *actions = NULL) { return activateCDKScroll(m_pScroll, actions); };
     CDKSCROLL *GetScroll(void) { return m_pScroll; };
+    int GetCurrent(void) { return getCDKScrollCurrent(m_pScroll); };
 };
 
 class CCDKAlphaList: public CBaseCDKWidget
@@ -156,6 +157,7 @@ public:
     int Exec(char *command, int pos=BOTTOM) { return execCDKSwindow(m_pSWindow, command, pos); };
 
     CDKSWINDOW *GetSWin(void) { return m_pSWindow; };
+    void Clear(void) { cleanCDKSwindow(m_pSWindow); };
 };
 
 class CCDKEntry: public CBaseCDKWidget
