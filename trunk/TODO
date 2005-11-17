@@ -2,7 +2,6 @@ OVERALL
 - Check namespaces for libs? Or other solution
 - Check path with non su commands
 - Check what to do on when command fails
-- Skip conf screen when no command entries
 
 
 MAIN
@@ -12,7 +11,7 @@ MAIN
 NCURSES FRONTEND
 - Correct error handling for widget creation etc 
 - Back button?
-- Bottom label for lang screen
+- Bottom label for lang and conf screen
 
 
 FLTK FRONTEND

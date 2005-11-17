@@ -159,6 +159,16 @@ void CSelectDirScreen::OpenDirChooser(void)
 
 Fl_Group *CSetParamsScreen::Create()
 {
+    std::list<command_entry_s *>::iterator p;
+    bool empty = true;
+    
+    for (p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end(); p++)
+    {
+        if (!(*p)->parameter_entries.empty()) { empty = false; break; }
+    }
+    
+    if (empty) return NULL;
+    
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
@@ -169,8 +179,7 @@ Fl_Group *CSetParamsScreen::Create()
 
     m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 100, "Parameters");
     
-    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
-         p++)
+    for (p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end(); p++)
     {
         for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
              p2!=(*p)->parameter_entries.end();p2++)
@@ -500,35 +509,37 @@ void CCompileInstallScreen::Install()
     
     if (m_bCompiling)
     {
-        std::string command = (*m_CurrentIterator)->command + " " + GetParameters(*m_CurrentIterator);
+        if (!(*m_CurrentIterator)->command.empty())
+        {
+            std::string command = (*m_CurrentIterator)->command + " " + GetParameters(*m_CurrentIterator);
         
-        AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
-        ChangeStatusText(GetTranslation((*m_CurrentIterator)->description.c_str()));
+            AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
+            ChangeStatusText(GetTranslation((*m_CurrentIterator)->description.c_str()));
 
-        if (RootNeedPW && (*m_CurrentIterator)->need_root)
-        {
-            m_SUHandler.SetCommand(command);
-            m_SUHandler.ExecuteCommand(m_szPassword);
-        }
-        else
-        {
-            FILE *pPipe = popen((*m_CurrentIterator)->command.c_str(), "r");
-            if (pPipe)
+            if (RootNeedPW && (*m_CurrentIterator)->need_root)
             {
-                char buf[1024];
-                while(fgets(buf, sizeof(buf), pPipe))
-                {
-                    AppendText(buf);
-                    Fl::wait(); // Update screen
-                }
-                fclose(pPipe);
+                m_SUHandler.SetCommand(command);
+                m_SUHandler.ExecuteCommand(m_szPassword);
             }
             else
             {
-                // UNDONE
+                FILE *pPipe = popen((*m_CurrentIterator)->command.c_str(), "r");
+                if (pPipe)
+                {
+                    char buf[1024];
+                    while(fgets(buf, sizeof(buf), pPipe))
+                    {
+                        AppendText(buf);
+                        Fl::wait(); // Update screen
+                    }
+                    fclose(pPipe);
+                }
+                else
+                {
+                    // UNDONE
+                }
             }
         }
-        
         m_CurrentIterator++;
         m_sPercent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         UpdateStatusBar();

@@ -205,12 +205,11 @@ bool SelectDir()
 
 bool ConfParams()
 {
-    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
-    char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
+    if (InstallInfo.install_type == INST_SIMPLE) return true;
+
     command_entry_s::param_entry_s *pFirstParam = NULL;
-    short s=0;
     CCharListHelper ParamItems;
-    
+
     for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
          p++)
     {
@@ -221,7 +220,12 @@ bool ConfParams()
             ParamItems.AddItem(p2->first);
         }
     }
+
+    if (!pFirstParam) return true; // No command entries...no need for this screen
     
+    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
+    char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
+        
     CCDKButtonBox ButtonBox(CDKScreen, CENTER, DEFAULT_HEIGHT, 1, 68, 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
 
@@ -487,9 +491,12 @@ bool InstallFiles()
         for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
              it!=InstallInfo.command_entries.end(); it++)
         {
+            if ((*it)->command.empty()) continue;
             std::string command = (*it)->command + " " + GetParameters(*it);
-            InstallOutput.AddText(CreateText("\nExecute: %s\n\n", command.c_str()), false);
-            
+            InstallOutput.AddText("", false);
+            InstallOutput.AddText(CreateText("Execute: %s", command.c_str()), false);
+            InstallOutput.AddText("", false);
+            InstallOutput.AddText("", false);
             if (needrootpw && (*it)->need_root)
             {
                 SuHandler.SetCommand(command);
@@ -509,10 +516,13 @@ bool InstallFiles()
         }
     }
     
-    // Nullify pass...just incase
-    for (short s=0;s<strlen(passwd);s++) passwd[s] = 0;
-    free(passwd);
-    
+    if (passwd)
+    {
+        // Nullify pass...just incase
+        for (short s=0;s<strlen(passwd);s++) passwd[s] = 0;
+        free(passwd);
+    }
+
     // Notify user that installation is done
     CCharListHelper message;
     char *buttons[1] = { GetTranslation("Exit") };
