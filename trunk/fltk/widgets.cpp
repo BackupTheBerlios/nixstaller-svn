@@ -181,7 +181,7 @@ Fl_Group *CSetParamsScreen::Create()
     
     for (p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end(); p++)
     {
-        for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+        for (std::map<std::string, param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
              p2!=(*p)->parameter_entries.end();p2++)
             m_pChoiceBrowser->add(p2->first.c_str(), *p);
     }
@@ -229,7 +229,8 @@ bool CSetParamsScreen::Activate()
 void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
 {
     m_pCurrentParamEntry = pCommandEntry->parameter_entries[txt];
-    if (m_pCurrentParamEntry->param_type == command_entry_s::param_entry_s::PTYPE_STRING)
+    if ((m_pCurrentParamEntry->param_type == PTYPE_STRING) ||
+        (m_pCurrentParamEntry->param_type == PTYPE_DIR))
     {
         m_pValChoiceMenu->hide();
         m_pParamInput->show();
@@ -240,7 +241,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         short s=0;
         m_pValChoiceMenu->clear();
         
-        if (m_pCurrentParamEntry->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+        if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
         {
             m_pValChoiceMenu->add(GetTranslation("Enable"));
             m_pValChoiceMenu->add(GetTranslation("Disable"));
@@ -266,7 +267,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
 
 void CSetParamsScreen::SetValue(const std::string &str)
 {
-    if (m_pCurrentParamEntry->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+    if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
     {
         if (str == "Enable") m_pCurrentParamEntry->value = "true";
         else m_pCurrentParamEntry->value = "false";
@@ -277,7 +278,7 @@ void CSetParamsScreen::SetValue(const std::string &str)
 
 void CSetParamsScreen::ParamBrowserCB(Fl_Widget *w, void *p)
 {
-    std::map<std::string, command_entry_s::param_entry_s *>::iterator it;
+    std::map<std::string, param_entry_s *>::iterator it;
     short s=0, value=((Fl_Hold_Browser*)w)->value();
     command_entry_s *pCommandEntry = ((command_entry_s *)((Fl_Hold_Browser*)w)->data(value));
 
@@ -358,8 +359,21 @@ bool CInstallFilesBase::Activate()
         for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
              it!=InstallInfo.command_entries.end(); it++)
         {
-            if ((*it)->need_root)
+            if ((*it)->need_root != NO_ROOT)
             {
+                 // Command may need root permission, check if it is so
+                if ((*it)->need_root == DEPENDED_ROOT)
+                {
+                    param_entry_s *p = GetParamVar((*it)->dep_param);
+                    if (p && access(p->value.c_str(), W_OK) != 0)
+                    {
+                        (*it)->need_root = NEED_ROOT;
+                    }
+                    else continue;
+                }
+            
+                if (m_szPassword) continue; // No need to ask pass more than once...
+                
                 while(true)
                 {
                     ClearPassword();
@@ -392,7 +406,6 @@ bool CInstallFilesBase::Activate()
                         }
                     }
                 }
-                break;
             }
         }
     }
@@ -516,7 +529,7 @@ void CCompileInstallScreen::Install()
             AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
             ChangeStatusText(GetTranslation((*m_CurrentIterator)->description.c_str()));
 
-            if (RootNeedPW && (*m_CurrentIterator)->need_root)
+            if (RootNeedPW && (*m_CurrentIterator)->need_root == NEED_ROOT)
             {
                 m_SUHandler.SetCommand(command);
                 m_SUHandler.ExecuteCommand(m_szPassword);
@@ -532,7 +545,7 @@ void CCompileInstallScreen::Install()
                         AppendText(buf);
                         Fl::wait(); // Update screen
                     }
-                    fclose(pPipe);
+                    pclose(pPipe);
                 }
                 else
                 {
@@ -557,22 +570,27 @@ void CCompileInstallScreen::Install()
     }
     else
     {
-        char curfile[256], text[300];
-        m_sPercent = ExtractArchive(curfile);
-        
-        sprintf(text, "Extracting file: %s\n", curfile);
-        AppendText(text);
-    
-        if (m_sPercent==-1) EndProg(-2);
-    
-        if (m_sPercent==100)
+        while(1)
         {
-            m_bCompiling = true;
-            m_sPercent = 0;
-            AppendText("Done!\n");
-            m_CurrentIterator = InstallInfo.command_entries.begin();
-        }
+            char curfile[256], text[300];
+            m_sPercent = ExtractArchive(curfile);
         
-        UpdateStatusBar();
+            sprintf(text, "Extracting file: %s\n", curfile);
+            AppendText(text);
+    
+            if (m_sPercent==-1) EndProg(-2);
+    
+            if (m_sPercent==100)
+            {
+                m_bCompiling = true;
+                m_sPercent = 0;
+                AppendText("Done!\n");
+                m_CurrentIterator = InstallInfo.command_entries.begin();
+                break;
+            }
+        
+            UpdateStatusBar();
+            Fl::wait(); // Update screen
+        }
     }
 }

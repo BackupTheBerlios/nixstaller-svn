@@ -178,6 +178,11 @@ public:
     virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vENTRY, m_pEntry, key, function, data); };
     
     void SetHiddenChar(chtype ch) { setCDKEntryHiddenChar(m_pEntry, ch); };
+    
+    void SetValue(std::string &str) { SetValue(const_cast<char*>(str.c_str())); };
+    void SetValue(const char *str) { SetValue(const_cast<char*>(str)); };
+    void SetValue(char *str) { setCDKEntryValue(m_pEntry, str); };
+    
     char *Activate(chtype *actions = NULL) { return activateCDKEntry(m_pEntry, actions); };
     CDKENTRY *GetEntry(void) { return m_pEntry; };
 };

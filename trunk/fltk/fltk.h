@@ -118,7 +118,7 @@ class CSetParamsScreen: public CBaseScreen
     Fl_Hold_Browser *m_pChoiceBrowser;
     Fl_Multiline_Output *m_pDescriptionOutput;
     
-    command_entry_s::param_entry_s *m_pCurrentParamEntry;
+    param_entry_s *m_pCurrentParamEntry;
     
 public:
     CSetParamsScreen(void) : CBaseScreen(), m_pCurrentParamEntry(NULL) { };

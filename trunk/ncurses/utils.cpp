@@ -58,24 +58,20 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     if (key != 'c') return true; 
     
     mode_t dirMode = (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH);
-    char *title = GetTranslation("Enter name of new directory");
-    char label[] = "Dir: ";
 
-    /* Create the entry field widget. */
-    CDKENTRY *entry = newCDKEntry(CDKScreen, CENTER, CENTER, title, label, A_NORMAL, '.', vMIXED, 40, 0, 256,
-                                  true, false);
+    CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Enter name of new directory"), "", 40, 0, 256);
+    
     // Set illegal chars
-    bindCDKObject (vENTRY, entry, '?', dummyK, 0);
+    entry.Bind('?', dummyK, 0);
             
     // Draw input box
-    setCDKEntryBackgroundColor(entry, "</B/26");
-    char *newdir = copyChar(activateCDKEntry(entry, 0));
-    setCDKEntryBackgroundColor(entry, "<!26!B");
+    entry.SetBgColor(26);
+    char *newdir = copyChar(entry.Activate());
             
-    bool success = ((entry->exitType == vNORMAL) && newdir && newdir[0]);
+    bool success = ((entry.ExitType() == vNORMAL) && newdir && newdir[0]);
     
     // Restore screen
-    destroyCDKEntry(entry);
+    entry.Destroy();
     refreshCDKScreen(CDKScreen);
             
     if (!success) return false;
@@ -83,17 +79,13 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     /* Create the directory. */
     if (mkdir(newdir, dirMode) != 0)
     {
-        /* Create the error message. */
         char *error[3];
-        
         error[0] = CreateText("<C>%s", GetTranslation("Could not create the directory"));
         error[1] = CreateText("<C>%.256s", newdir);
         error[2] = CreateText("<C>%.256s", strerror(errno));
 
-        /* Pop up the error message. */
         popupLabel(CDKScreen, error, 3);
 
-        /* Clean up and set the error status. */
         freeChar(newdir);
         return false;
     }
@@ -147,7 +139,7 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     {
         if ((*p)->parameter_entries.empty()) continue;
 
-        std::map<std::string, command_entry_s::param_entry_s *>::iterator p2;
+        std::map<std::string, param_entry_s *>::iterator p2;
         p2 = (*p)->parameter_entries.find((*items)[cur]);
         
         if (p2 != (*p)->parameter_entries.end())
@@ -157,15 +149,15 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
             
             pDefWin->Clear();
             const char *strdef = p2->second->defaultval.c_str(), *strval = p2->second->value.c_str();
-            if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+            if (p2->second->param_type == PTYPE_BOOL)
             {
                 if (!strcmp(strdef, "true")) strdef = GetTranslation("Enabled");
                 else strdef = GetTranslation("Disabled");
                 if (!strcmp(strval, "true")) strval = GetTranslation("Enabled");
                 else strval = GetTranslation("Disabled");
             }
-            pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Default"), strdef));
-            pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Current"), strval));
+            pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Default"), strdef), false);
+            pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Current"), strval), false);
             break;
         }
     }

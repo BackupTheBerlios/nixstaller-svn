@@ -207,13 +207,13 @@ bool ConfParams()
 {
     if (InstallInfo.install_type == INST_SIMPLE) return true;
 
-    command_entry_s::param_entry_s *pFirstParam = NULL;
+    param_entry_s *pFirstParam = NULL;
     CCharListHelper ParamItems;
 
     for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
          p++)
     {
-        for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+        for (std::map<std::string, param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
              p2!=(*p)->parameter_entries.end();p2++)
         {
             if (!pFirstParam) pFirstParam = p2->second;
@@ -243,7 +243,7 @@ bool ConfParams()
     DefWindow.SetBgColor(5);
     
     const char *str = pFirstParam->defaultval.c_str();
-    if (pFirstParam->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+    if (pFirstParam->param_type == PTYPE_BOOL)
     {
         if (!strcmp(str, "true")) str = GetTranslation("Enabled");
         else str = GetTranslation("Disabled");
@@ -298,14 +298,17 @@ bool ConfParams()
                  p!=InstallInfo.command_entries.end(); p++)
             {
                 if ((*p)->parameter_entries.empty()) continue;
-                std::map<std::string, command_entry_s::param_entry_s *>::iterator p2;
+                std::map<std::string, param_entry_s *>::iterator p2;
                 p2 = (*p)->parameter_entries.find(ParamItems[selection]);
                 if (p2 != (*p)->parameter_entries.end())
                 {
-                    if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_STRING)
+                    if ((p2->second->param_type == PTYPE_STRING) ||
+                        (p2->second->param_type == PTYPE_DIR))
                     {
                         CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter new value"), "", 40, 0, 256);
                         entry.SetBgColor(26);
+                        entry.SetValue(p2->second->value);
+                        
                         const char *newval = entry.Activate();
                         
                         if ((entry.ExitType() == vNORMAL) && newval)
@@ -318,7 +321,7 @@ bool ConfParams()
                     else
                     {
                         CCharListHelper chitems;
-                        if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+                        if (p2->second->param_type == PTYPE_BOOL)
                         {
                             chitems.AddItem(GetTranslation("Disable"));
                             chitems.AddItem(GetTranslation("Enable"));
@@ -336,7 +339,7 @@ bool ConfParams()
                         
                         if (chScrollList.ExitType() == vNORMAL)
                         {
-                            if (p2->second->param_type == command_entry_s::param_entry_s::PTYPE_BOOL)
+                            if (p2->second->param_type == PTYPE_BOOL)
                             {
                                 if (!strcmp(chitems[chsel], GetTranslation("Enable"))) p2->second->value = "true";
                                 else p2->second->value = "false";
@@ -398,8 +401,21 @@ bool InstallFiles()
     for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
         it!=InstallInfo.command_entries.end(); it++)
     {
-        if ((*it)->need_root)
+        if ((*it)->need_root != NO_ROOT)
         {
+            // Command may need root permission, check if it is so
+            if ((*it)->need_root == DEPENDED_ROOT)
+            {
+                param_entry_s *p = GetParamVar((*it)->dep_param);
+                if (p && access(p->value.c_str(), W_OK) != 0)
+                {
+                    (*it)->need_root = NEED_ROOT;
+                }
+                else continue;
+            }
+            
+            if (passwd) continue; // No need to ask pass more than once...
+            
             CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter root password"), "", 40, 0, 256, vHMIXED);
             entry.SetHiddenChar('*');
             entry.SetBgColor(26);
@@ -460,7 +476,6 @@ bool InstallFiles()
             // Restore screen
             entry.Destroy();
             refreshCDKScreen(CDKScreen);
-            break;
         }
     }
     
@@ -497,7 +512,7 @@ bool InstallFiles()
             InstallOutput.AddText(CreateText("Execute: %s", command.c_str()), false);
             InstallOutput.AddText("", false);
             InstallOutput.AddText("", false);
-            if (needrootpw && (*it)->need_root)
+            if (needrootpw && ((*it)->need_root == NEED_ROOT))
             {
                 SuHandler.SetCommand(command);
                 if (!SuHandler.ExecuteCommand(passwd))
@@ -505,9 +520,13 @@ bool InstallFiles()
             }
             else
             {
-                if (InstallOutput.Exec(command) == -1)
+                command += " 2> /dev/null";
+                FILE *pipe = popen(command.c_str(), "r");
+                char term[256];
+                if (pipe)
                 {
-                    // UNDONE
+                    while (fgets(term, sizeof(term), pipe)) InstallOutput.AddText(term, false);
+                    pclose(pipe);
                 }
             }
             percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;

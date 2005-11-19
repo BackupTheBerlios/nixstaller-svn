@@ -9,24 +9,25 @@
 
 enum EArchiveType { ARCH_GZIP, ARCH_BZIP2 };
 enum EInstallType { INST_SIMPLE, INST_COMPILE };
+enum ENeedRoot { NO_ROOT, NEED_ROOT, DEPENDED_ROOT };
+enum EParamType { PTYPE_STRING, PTYPE_DIR, PTYPE_LIST, PTYPE_BOOL };
+
+struct param_entry_s
+{
+    std::string parameter, defaultval, description, varname;
+    std::list<std::string> options;
+    std::string value;
+    EParamType param_type;
+    param_entry_s(void) : param_type(PTYPE_BOOL) { };
+};
 
 struct command_entry_s
 {
-    bool need_root;
+    ENeedRoot need_root;
     std::string command, description;
-    
-    struct param_entry_s
-    {
-        std::string parameter, defaultval, description;
-        enum EParamType { PTYPE_STRING, PTYPE_LIST, PTYPE_BOOL } param_type;
-        std::list<std::string> options;
-        std::string value;
-        param_entry_s(void) : param_type(PTYPE_BOOL) { };
-    };
-    
     std::map<std::string, param_entry_s *> parameter_entries;
-    
-    command_entry_s(void) : need_root(false) { };
+    std::string dep_param;
+    command_entry_s(void) : need_root(NO_ROOT) { };
 };
 
 struct install_info_s
@@ -61,5 +62,6 @@ char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 char *CreateText(const char *s, ...);
 void FreeStrings(void);
+param_entry_s *GetParamVar(const std::string &str);
 
 #endif 

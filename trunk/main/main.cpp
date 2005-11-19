@@ -28,7 +28,7 @@ bool ReadConfig()
     bool handlecommandentry = false, handleparamentry = false;
     bool incommandentry = false, inparamentry = false;
     command_entry_s *pCommandEntry = NULL;
-    command_entry_s::param_entry_s *pParamEntry = NULL;
+    param_entry_s *pParamEntry = NULL;
     std::string ParamName;
     
     while(cfgfile)
@@ -93,7 +93,7 @@ bool ReadConfig()
                 {
                     inparamentry = true;
                     handleparamentry = false;
-                    pParamEntry = new command_entry_s::param_entry_s;
+                    pParamEntry = new param_entry_s;
                     ParamName = "";
                 }
             }
@@ -113,11 +113,13 @@ bool ReadConfig()
                     pParamEntry->defaultval = pParamEntry->value = &fullline[strlen(arg1)+1];
                 else if (!strcasecmp(arg1, "type"))
                 {
-                    if (!strcasecmp(arg2, "string")) pParamEntry->param_type = command_entry_s::param_entry_s::PTYPE_STRING;
-                    else if (!strcasecmp(arg2, "list")) pParamEntry->param_type = command_entry_s::param_entry_s::PTYPE_LIST;
-                    else if (!strcasecmp(arg2, "bool")) pParamEntry->param_type = command_entry_s::param_entry_s::PTYPE_BOOL;
+                    if (!strcasecmp(arg2, "string")) pParamEntry->param_type = PTYPE_STRING;
+                    else if (!strcasecmp(arg2, "dir")) pParamEntry->param_type = PTYPE_DIR;
+                    else if (!strcasecmp(arg2, "list")) pParamEntry->param_type = PTYPE_LIST;
+                    else if (!strcasecmp(arg2, "bool")) pParamEntry->param_type = PTYPE_BOOL;
                 }
                 else if (!strcasecmp(arg1, "addchoice")) pParamEntry->options.push_back(arg2);
+                else if (!strcasecmp(arg1, "varname")) pParamEntry->varname = arg2;
             }
             else
             {
@@ -129,7 +131,20 @@ bool ReadConfig()
                 }
                 else if (!strcasecmp(arg1, "addparam")) handleparamentry = true;
                 else if (!arg2); // Following stuff needs atleast second argument
-                else if (!strcasecmp(arg1, "needroot")) pCommandEntry->need_root = !strcasecmp(arg2, "true");
+                else if (!strcasecmp(arg1, "needroot"))
+                {
+                    if (!strcasecmp(arg2, "true")) pCommandEntry->need_root = NEED_ROOT;
+                    else if (!strcasecmp(arg2, "false")) pCommandEntry->need_root = NO_ROOT;
+                    else if (!strcasecmp(arg2, "dependson"))
+                    {
+                        char *arg3 = strtok(NULL, " ");
+                        if (arg3)
+                        {
+                            pCommandEntry->need_root = DEPENDED_ROOT;
+                            pCommandEntry->dep_param = arg3;
+                        }
+                    }
+                }
                 else if (!strcasecmp(arg1, "command")) pCommandEntry->command = &fullline[8];
                 else if (!strcasecmp(arg1, "description")) pCommandEntry->description = &fullline[12];
             }
@@ -179,13 +194,16 @@ bool ReadConfig()
         printf("Need root: %d\n", (*p)->need_root);
         printf("Command: %s\n", (*p)->command.c_str());
         printf("Description: %s\n", (*p)->description.c_str());
+        printf("Depends on param: %s\n", (*p)->dep_param.c_str());
         printf("Params:\n");
-        for (std::map<std::string, command_entry_s::param_entry_s *>::iterator
+        for (std::map<std::string, param_entry_s *>::iterator
              p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
         {
             printf("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
-                   "Description: %s\n", (*p2).first.c_str(), (*p2).second->param_type, (*p2).second->parameter.c_str(),
-                                        (*p2).second->defaultval.c_str(), (*p2).second->description.c_str());
+                    "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
+                                                        (*p2).second->parameter.c_str(),
+                                                        (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
+                                                        (*p2).second->varname.c_str());
             printf("\tOptions: ");
             for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
                 printf("%s ", p3->c_str());
@@ -243,7 +261,7 @@ void MainEnd()
         {
             if (!(*p)->parameter_entries.empty())
             {
-                for (std::map<std::string, command_entry_s::param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+                for (std::map<std::string, param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
                      p2!=(*p)->parameter_entries.end();p2++)
                     delete (*p2).second;
             }
@@ -386,16 +404,17 @@ std::string GetParameters(command_entry_s *pCommandEntry)
 {
     std::string args;
     
-    for(std::map<std::string, command_entry_s::param_entry_s *>::iterator it=pCommandEntry->parameter_entries.begin();
+    for(std::map<std::string, param_entry_s *>::iterator it=pCommandEntry->parameter_entries.begin();
         it!=pCommandEntry->parameter_entries.end();it++)
     {
         switch (it->second->param_type)
         {
-            case command_entry_s::param_entry_s::PTYPE_STRING:
-            case command_entry_s::param_entry_s::PTYPE_LIST:
+            case PTYPE_STRING:
+            case PTYPE_DIR:
+            case PTYPE_LIST:
                 args += " " + it->second->parameter + it->second->value;
                 break;
-            case command_entry_s::param_entry_s::PTYPE_BOOL:
+            case PTYPE_BOOL:
                 if (it->second->value == "true") args += " " + it->second->parameter;
                 break;
         }
@@ -451,4 +470,18 @@ void FreeStrings()
         delete [] (*StringList.end());
         StringList.pop_back();
     }
+}
+
+param_entry_s *GetParamVar(const std::string &str)
+{
+    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
+         it++)
+    {
+        for (std::map<std::string, param_entry_s *>::iterator it2=(*it)->parameter_entries.begin();
+             it2!=(*it)->parameter_entries.end(); it2++)
+        {
+            if (it2->second->varname == str) return it2->second;
+        }
+    }
+    return NULL;
 }
