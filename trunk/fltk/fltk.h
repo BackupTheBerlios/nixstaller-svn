@@ -168,7 +168,7 @@ public:
     void SetPassword(bool unset);
     
     static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesBase *)p)->Install(); };
-    static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesBase *)p)->AppendText(msg); Fl::wait(); };
+    static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesBase *)p)->AppendText(msg); Fl::flush(); };
     static void AskPassOKButtonCB(Fl_Widget *w, void *p);
     static void AskPassCancelButtonCB(Fl_Widget *w, void *p);
 };

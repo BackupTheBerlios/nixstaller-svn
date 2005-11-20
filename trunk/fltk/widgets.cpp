@@ -412,7 +412,7 @@ bool CInstallFilesBase::Activate()
     
     chdir(InstallInfo.dest_dir);
     InstallFiles = true;
-    Fl::add_idle(CInstallFilesBase::stat_inst, this);
+    //Fl::add_idle(CInstallFilesBase::stat_inst, this);
     pPrevButton->deactivate();
     pNextButton->deactivate();
     
@@ -477,6 +477,7 @@ bool CSimpleInstallScreen::Activate()
 {
     CInstallFilesBase::Activate();
     ChangeStatusText(GetTranslation("Copying files"));
+    Install();
     return true;
 }
 
@@ -513,6 +514,7 @@ bool CCompileInstallScreen::Activate()
     m_SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
     m_SUHandler.SetUser("root");
     m_SUHandler.SetTerminalOutput(false);
+    Install();
     return true;
 }
 
@@ -520,77 +522,71 @@ void CCompileInstallScreen::Install()
 {
     bool RootNeedPW = m_SUHandler.NeedPassword();
     
-    if (m_bCompiling)
+    while(1)
     {
-        if (!(*m_CurrentIterator)->command.empty())
-        {
-            std::string command = (*m_CurrentIterator)->command + " " + GetParameters(*m_CurrentIterator);
-        
-            AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
-            ChangeStatusText(GetTranslation((*m_CurrentIterator)->description.c_str()));
+        char curfile[256], text[300];
+        m_sPercent = ExtractArchive(curfile);
+    
+        sprintf(text, "Extracting file: %s\n", curfile);
+        AppendText(text);
 
-            if (RootNeedPW && (*m_CurrentIterator)->need_root == NEED_ROOT)
+        if (m_sPercent==-1) EndProg(-2);
+
+        if (m_sPercent==100)
+        {
+            m_bCompiling = true;
+            m_sPercent = 0;
+            AppendText("Done!\n");
+            m_CurrentIterator = InstallInfo.command_entries.begin();
+            break;
+        }
+    
+        UpdateStatusBar();
+        Fl::flush(); // Update screen
+    }
+
+    for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
+            it!=InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->command.empty()) continue;
+        
+        std::string command = (*it)->command + " " + GetParameters(*it);
+    
+        AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
+        ChangeStatusText(GetTranslation((*it)->description.c_str()));
+
+        if (RootNeedPW && (*it)->need_root == NEED_ROOT)
+        {
+            m_SUHandler.SetCommand(command);
+            m_SUHandler.ExecuteCommand(m_szPassword);
+        }
+        else
+        {
+            FILE *pPipe = popen((*it)->command.c_str(), "r");
+            if (pPipe)
             {
-                m_SUHandler.SetCommand(command);
-                m_SUHandler.ExecuteCommand(m_szPassword);
+                char buf[1024];
+                while(fgets(buf, sizeof(buf), pPipe))
+                {
+                    AppendText(buf);
+                    Fl::flush(); // Update screen
+                }
+                pclose(pPipe);
             }
             else
             {
-                FILE *pPipe = popen((*m_CurrentIterator)->command.c_str(), "r");
-                if (pPipe)
-                {
-                    char buf[1024];
-                    while(fgets(buf, sizeof(buf), pPipe))
-                    {
-                        AppendText(buf);
-                        Fl::wait(); // Update screen
-                    }
-                    pclose(pPipe);
-                }
-                else
-                {
-                    // UNDONE
-                }
+                // UNDONE
             }
         }
-        m_CurrentIterator++;
         m_sPercent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         UpdateStatusBar();
-        
-        if (m_CurrentIterator == InstallInfo.command_entries.end())
-        {
-            m_sPercent = 100;
-            UpdateStatusBar();
-            ChangeStatusText(GetTranslation("Done"));
-            InstallFiles = false;
-            fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
-            ClearPassword();
-            //EndProg(0);
-        }
     }
-    else
-    {
-        while(1)
-        {
-            char curfile[256], text[300];
-            m_sPercent = ExtractArchive(curfile);
-        
-            sprintf(text, "Extracting file: %s\n", curfile);
-            AppendText(text);
     
-            if (m_sPercent==-1) EndProg(-2);
-    
-            if (m_sPercent==100)
-            {
-                m_bCompiling = true;
-                m_sPercent = 0;
-                AppendText("Done!\n");
-                m_CurrentIterator = InstallInfo.command_entries.begin();
-                break;
-            }
-        
-            UpdateStatusBar();
-            Fl::wait(); // Update screen
-        }
-    }
+    m_sPercent = 100;
+    UpdateStatusBar();
+    ChangeStatusText(GetTranslation("Done"));
+    InstallFiles = false;
+    fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
+    ClearPassword();
+    //EndProg(0);
 }
