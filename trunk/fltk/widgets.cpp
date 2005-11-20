@@ -222,6 +222,7 @@ void CSetParamsScreen::UpdateLang()
 bool CSetParamsScreen::Activate()
 {
     command_entry_s *p = *InstallInfo.command_entries.begin();
+    m_pChoiceBrowser->value(1);
     SetInput(p->parameter_entries.begin()->first.c_str(), p);
     return true;
 };
@@ -261,7 +262,14 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         m_pValChoiceMenu->show();
     }
     m_pDescriptionOutput->value(m_pCurrentParamEntry->description.c_str());
-    m_pDefaultValBox->label(CreateText(GetTranslation("Default: %s"), m_pCurrentParamEntry->defaultval.c_str()));
+    
+    const char *str = m_pCurrentParamEntry->defaultval.c_str();
+    if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
+    {
+        if (m_pCurrentParamEntry->defaultval == "true") str = GetTranslation("Enabled");
+        else str = GetTranslation("Disabled");
+    }
+    m_pDefaultValBox->label(CreateText(GetTranslation("Default: %s"), str));
     printf("Params: %s\n", GetParameters(pCommandEntry).c_str());
 }
 
@@ -410,7 +418,7 @@ bool CInstallFilesBase::Activate()
         }
     }
     
-    chdir(InstallInfo.dest_dir);
+    if (InstallInfo.need_file_dialog) chdir(InstallInfo.dest_dir);
     InstallFiles = true;
     //Fl::add_idle(CInstallFilesBase::stat_inst, this);
     pPrevButton->deactivate();
@@ -427,8 +435,7 @@ void CInstallFilesBase::UpdateLang()
 
 void CInstallFilesBase::AppendText(const char *txt)
 {
-    m_pBuffer->append(txt);
-    m_pDisplay->move_down();
+    m_pDisplay->insert(txt);
     m_pDisplay->show_insert_position();
 }
 
@@ -507,7 +514,7 @@ void CSimpleInstallScreen::Install()
 // -------------------------------------
 
 bool CCompileInstallScreen::Activate()
-{
+{ 
     CInstallFilesBase::Activate();
     ChangeStatusText(GetTranslation("Copying files"));
     m_SUHandler.SetOutputFunc(SUOutputHandler, this);
@@ -542,7 +549,7 @@ void CCompileInstallScreen::Install()
         }
     
         UpdateStatusBar();
-        Fl::flush(); // Update screen
+        Fl::wait(0.0); // Update screen
     }
 
     for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
@@ -562,14 +569,14 @@ void CCompileInstallScreen::Install()
         }
         else
         {
-            FILE *pPipe = popen((*it)->command.c_str(), "r");
+            FILE *pPipe = popen(command.c_str(), "r");
             if (pPipe)
             {
                 char buf[1024];
                 while(fgets(buf, sizeof(buf), pPipe))
                 {
                     AppendText(buf);
-                    Fl::flush(); // Update screen
+                    Fl::wait(0.0); // Update screen
                 }
                 pclose(pPipe);
             }

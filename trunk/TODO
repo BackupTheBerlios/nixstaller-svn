@@ -2,6 +2,9 @@ OVERALL
 - Check namespaces for libs? Or other solution
 - Check path with non su commands
 - Check what to do on when command fails
+- Check status bar for compiling
+- Add install-bin install type
+- Warn user if cancel button is pressed
 
 
 MAIN
@@ -15,3 +18,7 @@ NCURSES FRONTEND
 
 
 FLTK FRONTEND
+- Error messages(like chdir)
+- Make image support?
+- Finish button
+- Update SimpleInstall
