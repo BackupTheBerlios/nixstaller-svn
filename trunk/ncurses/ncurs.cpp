@@ -98,7 +98,7 @@ bool ShowLicense()
 
 bool SelectDir()
 {
-    if (!InstallInfo.need_file_dialog) return true;
+    if (InstallInfo.dest_dir_type != DEST_SELECT) return true;
     
     char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Exit") };
     char *title = CreateText("<C>%s", GetTranslation("Select destination directory"));
@@ -122,8 +122,8 @@ bool SelectDir()
                                 GetTranslation("Create new directory")));
     SetBottomLabel(botlabel, botlabel.Count());
 
-    if (chdir(InstallInfo.dest_dir) != 0)
-        throwerror("Couldn't open directory '%s'", InstallInfo.dest_dir);
+    if (chdir(InstallInfo.dest_dir.c_str()) != 0)
+        throwerror("Couldn't open directory '%s'", InstallInfo.dest_dir.c_str());
 
     int count = ReadDir(InstallInfo.dest_dir, &item);
 
@@ -178,13 +178,14 @@ bool SelectDir()
         }
         if (!selection || !selection[0]) continue;
 
-        char tmp[2048];
-        strcpy(tmp, InstallInfo.dest_dir);
+        std::string dir = InstallInfo.dest_dir;
         
-        strcat(InstallInfo.dest_dir, "/");
-        strcat(InstallInfo.dest_dir, selection);
-        if (chdir(InstallInfo.dest_dir)) { strcpy(InstallInfo.dest_dir, tmp); continue; }
-        getcwd(InstallInfo.dest_dir, sizeof(InstallInfo.dest_dir));
+        dir += "/";
+        dir += selection;
+        if (chdir(dir.c_str())) continue;
+        
+        char str[1024];
+        if (getcwd(str, sizeof(str))) InstallInfo.dest_dir = str;
         
         if (item) CDKfreeStrings(item);
         item = NULL;
@@ -205,8 +206,6 @@ bool SelectDir()
 
 bool ConfParams()
 {
-    if (InstallInfo.install_type == INST_SIMPLE) return true;
-
     param_entry_s *pFirstParam = NULL;
     CCharListHelper ParamItems;
 
@@ -479,6 +478,7 @@ bool InstallFiles()
         }
     }
     
+    bool needrootpw = SuHandler.NeedPassword();
     short percent = 0;
     while(percent<100)
     {
@@ -495,44 +495,39 @@ bool InstallFiles()
         ProgressBar.Draw();
     }
     
-    if (InstallInfo.install_type == INST_COMPILE) // More stuff to come...
+    ProgressBar.SetValue(0, 100, 0);
+    ProgressBar.Draw();
+    percent = 0;
+        
+    for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
+            it!=InstallInfo.command_entries.end(); it++)
     {
-        ProgressBar.SetValue(0, 100, 0);
-        ProgressBar.Draw();
-        percent = 0;
-        
-        bool needrootpw = SuHandler.NeedPassword();
-        
-        for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
-             it!=InstallInfo.command_entries.end(); it++)
+        if ((*it)->command.empty()) continue;
+        std::string command = (*it)->command + " " + GetParameters(*it);
+        InstallOutput.AddText("", false);
+        InstallOutput.AddText(CreateText("Execute: %s", command.c_str()), false);
+        InstallOutput.AddText("", false);
+        InstallOutput.AddText("", false);
+        if (needrootpw && ((*it)->need_root == NEED_ROOT))
         {
-            if ((*it)->command.empty()) continue;
-            std::string command = (*it)->command + " " + GetParameters(*it);
-            InstallOutput.AddText("", false);
-            InstallOutput.AddText(CreateText("Execute: %s", command.c_str()), false);
-            InstallOutput.AddText("", false);
-            InstallOutput.AddText("", false);
-            if (needrootpw && ((*it)->need_root == NEED_ROOT))
-            {
-                SuHandler.SetCommand(command);
-                if (!SuHandler.ExecuteCommand(passwd))
-                    throwerror(SuHandler.GetErrorMsgC());
-            }
-            else
-            {
-                command += " 2> /dev/null";
-                FILE *pipe = popen(command.c_str(), "r");
-                char term[256];
-                if (pipe)
-                {
-                    while (fgets(term, sizeof(term), pipe)) InstallOutput.AddText(term, false);
-                    pclose(pipe);
-                }
-            }
-            percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
-            ProgressBar.SetValue(0, 100, percent);
-            ProgressBar.Draw();
+            SuHandler.SetCommand(command);
+            if (!SuHandler.ExecuteCommand(passwd))
+                throwerror(SuHandler.GetErrorMsgC());
         }
+        else
+        {
+            command += " 2> /dev/null";
+            FILE *pipe = popen(command.c_str(), "r");
+            char term[256];
+            if (pipe)
+            {
+                while (fgets(term, sizeof(term), pipe)) InstallOutput.AddText(term, false);
+                pclose(pipe);
+            }
+        }
+        percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
+        ProgressBar.SetValue(0, 100, percent);
+        ProgressBar.Draw();
     }
     
     if (passwd)

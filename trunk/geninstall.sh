@@ -2,8 +2,7 @@
 
 ARGS="$*"
 CURDIR=$PWD
-ARCH_GZIP="instarchive.tar.gz"
-ARCH_BZIP2="instarchive.tar.bz2"
+ARCH_NAME="instarchive"
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 CONFDIR="$CURDIR/$1"
@@ -88,10 +87,10 @@ cd $CONFDIR/files
 
 case $ARCH_TYPE in
     gzip )
-        tar czf $CONFDIR/tmp/$ARCH_GZIP *
+        tar czf $CONFDIR/tmp/$ARCH_NAME *
         ;;
     bzip2 )
-        tar cjf $CONFDIR/tmp/$ARCH_BZIP2 *
+        tar cjf $CONFDIR/tmp/$ARCH_NAME *
         ;;
     * )
         echo "Error: wrong archive type($ARCH_TYPE)"

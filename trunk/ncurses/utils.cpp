@@ -23,7 +23,7 @@ void throwerror(const char *error, ...)
     exit(EXIT_FAILURE);
 }
 
-int ReadDir(const char *dir, char ***list)
+int ReadDir(std::string &dir, char ***list)
 {
     struct dirent *dirStruct;
     struct stat fileStat;
@@ -31,7 +31,7 @@ int ReadDir(const char *dir, char ***list)
     DIR *dp;
     unsigned used = 0;
    
-    dp = opendir (dir);
+    dp = opendir (dir.c_str());
     if (dp == 0) return NO_FILE;
 
     while ((dirStruct = readdir (dp)) != 0)
@@ -91,16 +91,18 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     }
     
     // Update dir box
-    char tmp[2048];
+    std::string dir;
     char **item = NULL;
     CDKALPHALIST *FileList = (CDKALPHALIST *)clientData;
     
-    strcpy(tmp, InstallInfo.dest_dir);
+    dir = InstallInfo.dest_dir;
         
-    strcat(InstallInfo.dest_dir, "/");
-    strcat(InstallInfo.dest_dir, newdir);
-    if (chdir(InstallInfo.dest_dir)) { strcpy(InstallInfo.dest_dir, tmp); return false; }
-    getcwd(InstallInfo.dest_dir, sizeof(InstallInfo.dest_dir));
+    dir += "/";
+    dir += newdir;
+    if (chdir(dir.c_str())) return false;
+    
+    char tmp[1024];
+    if (getcwd(tmp, sizeof(tmp))) InstallInfo.dest_dir = tmp;
         
     int count = ReadDir(InstallInfo.dest_dir, &item);
     if (count == NO_FILE) return false;

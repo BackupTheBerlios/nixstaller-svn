@@ -136,7 +136,7 @@ public:
     static void ParamInputCB(Fl_Widget *w, void *p);
 };
 
-class CInstallFilesBase: public CBaseScreen
+class CInstallFilesScreen: public CBaseScreen
 {
 protected:
     Fl_Progress *m_pProgress;
@@ -155,41 +155,22 @@ protected:
     void ClearPassword(void);
     
 public:
-    CInstallFilesBase(void) : CBaseScreen(), m_sPercent(0), m_szPassword(NULL) { };
+    CInstallFilesScreen(void) : CBaseScreen(), m_sPercent(0), m_szPassword(NULL) { };
     
     virtual Fl_Group *Create(void);
     virtual bool Activate(void);
     virtual void UpdateLang(void);
-    virtual void Install(void) { };
+    virtual void Install(void);
     
     void UpdateStatusBar(void) { m_pProgress->value(m_sPercent); };
     void AppendText(const char *txt);
     void ChangeStatusText(const char *txt) { m_pDisplay->label(CreateText(GetTranslation("Status: %s"), txt)); };
     void SetPassword(bool unset);
     
-    static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesBase *)p)->Install(); };
-    static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesBase *)p)->AppendText(msg); Fl::flush(); };
+    static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesScreen *)p)->Install(); };
+    static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesScreen *)p)->AppendText(msg); Fl::flush(); };
     static void AskPassOKButtonCB(Fl_Widget *w, void *p);
     static void AskPassCancelButtonCB(Fl_Widget *w, void *p);
-};
-
-class CSimpleInstallScreen: public CInstallFilesBase
-{
-public:
-    virtual bool Activate(void);
-    virtual void Install(void);
-};
-
-class CCompileInstallScreen: public CInstallFilesBase
-{
-    bool m_bCompiling;
-    std::list<command_entry_s *>::iterator m_CurrentIterator;
-    std::list<std::string>::iterator m_CurrentCommandIterator;
-    
-public:
-    CCompileInstallScreen(void) : CInstallFilesBase(), m_bCompiling(false) { };
-    virtual bool Activate(void);
-    virtual void Install(void);
 };
 
 #endif

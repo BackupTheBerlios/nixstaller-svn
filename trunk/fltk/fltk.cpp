@@ -95,20 +95,13 @@ void CreateMainWindow(char **argv)
     MCreateWidget(CWelcomeScreen);
     MCreateWidget(CLicenseScreen);
     
-    if (InstallInfo.need_file_dialog)
+    if (InstallInfo.dest_dir_type == DEST_SELECT)
     {
         MCreateWidget(CSelectDirScreen);
     }
     
-    if (InstallInfo.install_type == INST_SIMPLE)
-    {
-        MCreateWidget(CSimpleInstallScreen);
-    }
-    else if (InstallInfo.install_type == INST_COMPILE)
-    {
-        MCreateWidget(CSetParamsScreen);
-        MCreateWidget(CCompileInstallScreen);
-    }
+    MCreateWidget(CSetParamsScreen);
+    MCreateWidget(CInstallFilesScreen);
 
     // HACK: Switch that annoying bell off!
     XKeyboardControl XKBControl;

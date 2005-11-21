@@ -15,7 +15,7 @@
 #define DEFAULT_HEIGHT      12
 
 void throwerror(const char *error, ...);
-int ReadDir(const char *dir, char ***list);
+int ReadDir(std::string &dir, char ***list);
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int ScrollParamMenuK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);

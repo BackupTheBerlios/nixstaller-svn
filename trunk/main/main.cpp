@@ -164,11 +164,6 @@ bool ReadConfig()
                 if (!strcasecmp(arg2, "gzip")) InstallInfo.archive_type = ARCH_GZIP;
                 else if (!strcasecmp(arg2, "bzip2")) InstallInfo.archive_type = ARCH_BZIP2;
             }
-            else if (!strcasecmp(arg1, "insttype"))
-            {
-                if (!strcasecmp(arg2, "simple")) InstallInfo.install_type = INST_SIMPLE;
-                else if (!strcasecmp(arg2, "compile")) InstallInfo.install_type = INST_COMPILE;
-            }
             else if (!strcasecmp(arg1, "languages"))
             {
                 char *lang = arg2;
@@ -180,10 +175,15 @@ bool ReadConfig()
                     lang = strtok(NULL, " ");
                 }
             }
-            else if (!strcasecmp(arg1, "filedialog"))
+            else if (!strcasecmp(arg1, "installdir"))
             {
-                if (!strcasecmp(arg2, "true")) InstallInfo.need_file_dialog = true;
-                else if (!strcasecmp(arg2, "false")) InstallInfo.need_file_dialog = false;
+                if (!strcasecmp(arg2, "select")) InstallInfo.dest_dir_type = DEST_SELECT;
+                else if (!strcasecmp(arg2, "temp")) InstallInfo.dest_dir_type = DEST_TEMP;
+                else if (!strcasecmp(arg2, "default"))
+                {
+                    char *arg3 = strtok(NULL, " ");
+                    if (arg3) { InstallInfo.dest_dir_type = DEST_DEFAULT; InstallInfo.dest_dir = arg3; }
+                }
             }
         }
     }
@@ -216,18 +216,25 @@ bool ReadConfig()
 bool MainInit(int argc, char *argv[])
 {
     if (!ReadConfig()) return false;
-    if (argc < 2) return false;
     
     if (getcwd(InstallInfo.arch_name, sizeof(InstallInfo.arch_name)) == 0) strcpy(InstallInfo.arch_name, ".");
-    strcat(InstallInfo.arch_name, "/instarchive.");
+    strcat(InstallInfo.arch_name, "/instarchive");
     
-    switch(InstallInfo.archive_type)
+    if (InstallInfo.dest_dir_type == DEST_TEMP)
     {
-        case ARCH_GZIP: strcat(InstallInfo.arch_name, "tar.gz"); break;
-        case ARCH_BZIP2: strcat(InstallInfo.arch_name, "tar.bz2"); break;
+        char dir[1024];
+        if (getcwd(dir, sizeof(dir))) InstallInfo.dest_dir = dir;
+        else
+        {
+            // UNDONE
+        }
     }
-    
-    strcpy(InstallInfo.dest_dir, argv[1]);
+    else if (InstallInfo.dest_dir_type == DEST_SELECT)
+    {
+        const char *env = getenv("HOME");
+        if (env) InstallInfo.dest_dir = env;
+        else InstallInfo.dest_dir = "/";
+    }
     
     if (InstallInfo.languages.empty() ||
         (find(InstallInfo.languages.begin(), InstallInfo.languages.end(), "english") == InstallInfo.languages.end()))

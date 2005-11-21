@@ -8,9 +8,9 @@
 #include <map>
 
 enum EArchiveType { ARCH_GZIP, ARCH_BZIP2 };
-enum EInstallType { INST_SIMPLE, INST_COMPILE };
 enum ENeedRoot { NO_ROOT, NEED_ROOT, DEPENDED_ROOT };
 enum EParamType { PTYPE_STRING, PTYPE_DIR, PTYPE_LIST, PTYPE_BOOL };
+enum EDestDirType { DEST_TEMP, DEST_SELECT, DEST_DEFAULT };
 
 struct param_entry_s
 {
@@ -35,17 +35,15 @@ struct install_info_s
     int version;
     char program_name[129];
     char arch_name[2048];
-    char dest_dir[2048];
+    std::string dest_dir;
     std::list<char *> languages;
     std::string cur_lang;
     std::map<std::string, char *> translations;
     EArchiveType archive_type;
-    EInstallType install_type;
+    EDestDirType dest_dir_type;
     std::list<command_entry_s *> command_entries;
-    bool need_file_dialog;
     
-    install_info_s(void) : version(1), archive_type(ARCH_GZIP), install_type(INST_SIMPLE),
-                           need_file_dialog(true) { strcpy(program_name, "foo"); };
+    install_info_s(void) : version(1), archive_type(ARCH_GZIP), dest_dir_type(DEST_SELECT) { strcpy(program_name, "foo"); };
 };
 
 extern install_info_s InstallInfo;

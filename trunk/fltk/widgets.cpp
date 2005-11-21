@@ -111,7 +111,7 @@ Fl_Group *CSelectDirScreen::Create()
 
     m_pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
     m_pSelDirInput = new Fl_Output(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "dir: ");
-    m_pSelDirInput->value(InstallInfo.dest_dir);
+    m_pSelDirInput->value(InstallInfo.dest_dir.c_str());
     m_pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select directory");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
@@ -122,8 +122,9 @@ Fl_Group *CSelectDirScreen::Create()
 void CSelectDirScreen::UpdateLang()
 {
     if (m_pDirChooser) delete m_pDirChooser;
-    m_pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir, "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                      "Select destination directory");
+    m_pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir.c_str(), "*",
+                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                                        "Select destination directory");
     m_pDirChooser->preview(false);
     m_pDirChooser->previewButton->hide();
 
@@ -137,7 +138,7 @@ bool CSelectDirScreen::Next()
 {
     char temp[128];
     sprintf(temp, GetTranslation("This will install %s to the following directory:"), InstallInfo.program_name);
-    return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir, GetTranslation("Continue?")));
+    return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")));
 }
 
 void CSelectDirScreen::OpenDirChooser(void)
@@ -147,9 +148,8 @@ void CSelectDirScreen::OpenDirChooser(void)
     
     if (m_pDirChooser->value())
     {
-        strncpy(InstallInfo.dest_dir, m_pDirChooser->value(), 2047);
-        InstallInfo.dest_dir[2047] = 0;
-        m_pSelDirInput->value(InstallInfo.dest_dir);
+        InstallInfo.dest_dir = m_pDirChooser->value();
+        m_pSelDirInput->value(InstallInfo.dest_dir.c_str());
     }
 }
 
@@ -221,9 +221,19 @@ void CSetParamsScreen::UpdateLang()
 
 bool CSetParamsScreen::Activate()
 {
-    command_entry_s *p = *InstallInfo.command_entries.begin();
+    // Get first param entry
+    for (std::list<command_entry_s*>::iterator p=InstallInfo.command_entries.begin();
+         p!=InstallInfo.command_entries.end(); p++)
+    {
+        if (!(*p)->parameter_entries.empty())
+        {
+            SetInput((*p)->parameter_entries.begin()->first.c_str(), *p);
+            break;
+        }
+    }
+    
     m_pChoiceBrowser->value(1);
-    SetInput(p->parameter_entries.begin()->first.c_str(), p);
+    
     return true;
 };
 
@@ -312,7 +322,7 @@ void CSetParamsScreen::ParamInputCB(Fl_Widget *w, void *p)
 // Base Install screen
 // -------------------------------------
 
-void CInstallFilesBase::ClearPassword()
+void CInstallFilesScreen::ClearPassword()
 {
     if (!m_szPassword) return;
     
@@ -320,7 +330,7 @@ void CInstallFilesBase::ClearPassword()
     free(m_szPassword);
 }
 
-Fl_Group *CInstallFilesBase::Create()
+Fl_Group *CInstallFilesScreen::Create()
 {
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
@@ -359,7 +369,7 @@ Fl_Group *CInstallFilesBase::Create()
     return m_pGroup;
 }
 
-bool CInstallFilesBase::Activate()
+bool CInstallFilesScreen::Activate()
 {
     if (m_SUHandler.NeedPassword())
     {
@@ -418,28 +428,34 @@ bool CInstallFilesBase::Activate()
         }
     }
     
-    if (InstallInfo.need_file_dialog) chdir(InstallInfo.dest_dir);
+    m_SUHandler.SetOutputFunc(SUOutputHandler, this);
+    m_SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
+    m_SUHandler.SetUser("root");
+    m_SUHandler.SetTerminalOutput(false);
+    
+    if (chdir(InstallInfo.dest_dir.c_str())); // UNDONE
     InstallFiles = true;
     //Fl::add_idle(CInstallFilesBase::stat_inst, this);
     pPrevButton->deactivate();
     pNextButton->deactivate();
     
+    Install();
     return true;
 }
 
-void CInstallFilesBase::UpdateLang()
+void CInstallFilesScreen::UpdateLang()
 {
     m_pProgress->label(GetTranslation("Install progress"));
     //m_pDisplay->label(GetTranslation("Status: %s"));
 }
 
-void CInstallFilesBase::AppendText(const char *txt)
+void CInstallFilesScreen::AppendText(const char *txt)
 {
     m_pDisplay->insert(txt);
     m_pDisplay->show_insert_position();
 }
 
-void CInstallFilesBase::SetPassword(bool unset)
+void CInstallFilesScreen::SetPassword(bool unset)
 {
     ClearPassword();
     
@@ -466,72 +482,25 @@ void CInstallFilesBase::SetPassword(bool unset)
     m_pAskPassInput->value(NULL);
 }
 
-void CInstallFilesBase::AskPassOKButtonCB(Fl_Widget *w, void *p)
+void CInstallFilesScreen::AskPassOKButtonCB(Fl_Widget *w, void *p)
 {
-    ((CInstallFilesBase *)p)->SetPassword(false);
+    ((CInstallFilesScreen *)p)->SetPassword(false);
 }
 
-void CInstallFilesBase::AskPassCancelButtonCB(Fl_Widget *w, void *p)
+void CInstallFilesScreen::AskPassCancelButtonCB(Fl_Widget *w, void *p)
 {
-    ((CInstallFilesBase *)p)->SetPassword(true);
+    ((CInstallFilesScreen *)p)->SetPassword(true);
 }
 
-// -------------------------------------
-// Simple Install screen
-// -------------------------------------
 
-bool CSimpleInstallScreen::Activate()
-{
-    CInstallFilesBase::Activate();
-    ChangeStatusText(GetTranslation("Copying files"));
-    Install();
-    return true;
-}
-
-void CSimpleInstallScreen::Install()
-{
-    char curfile[256], text[300];
-    m_sPercent = ExtractArchive(curfile);
-        
-    sprintf(text, "Extracting file: %s\n", curfile);
-    AppendText(text);
-    
-    if (m_sPercent==-1) EndProg(-2);
-    UpdateStatusBar();
-    
-    if (m_sPercent==100)
-    {
-        AppendText("Done!\n");
-        ChangeStatusText(GetTranslation("Done"));
-        InstallFiles = false;
-        fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
-        EndProg(0);
-    }
-}
-
-// -------------------------------------
-// Compile Install screen
-// -------------------------------------
-
-bool CCompileInstallScreen::Activate()
-{ 
-    CInstallFilesBase::Activate();
-    ChangeStatusText(GetTranslation("Copying files"));
-    m_SUHandler.SetOutputFunc(SUOutputHandler, this);
-    m_SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetTerminalOutput(false);
-    Install();
-    return true;
-}
-
-void CCompileInstallScreen::Install()
+void CInstallFilesScreen::Install()
 {
     bool RootNeedPW = m_SUHandler.NeedPassword();
+    char curfile[256], text[300];
     
+    ChangeStatusText(GetTranslation("Copying files"));
     while(1)
     {
-        char curfile[256], text[300];
         m_sPercent = ExtractArchive(curfile);
     
         sprintf(text, "Extracting file: %s\n", curfile);
@@ -541,10 +510,8 @@ void CCompileInstallScreen::Install()
 
         if (m_sPercent==100)
         {
-            m_bCompiling = true;
             m_sPercent = 0;
             AppendText("Done!\n");
-            m_CurrentIterator = InstallInfo.command_entries.begin();
             break;
         }
     
