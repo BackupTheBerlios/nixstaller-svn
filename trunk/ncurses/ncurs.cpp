@@ -32,16 +32,12 @@ int main(int argc, char *argv[])
     }
     
     // Init
-    MainWin = initscr();
-    CDKScreen = initCDKScreen(MainWin);
+    if (!(MainWin = initscr())) throwerror("Couldn't init ncurses");
+    if (!(CDKScreen = initCDKScreen(MainWin))) throwerror("Couldn't init CDK");
     initCDKColor();
     
     int i=0;
-    while(Functions[i])
-    {
-        if (Functions[i]()) i++;
-        else break;
-    }
+    while(Functions[i] && Functions[i]()) i++;
     
     // Deinit
     if (BottomLabel) delete BottomLabel;
@@ -54,8 +50,26 @@ int main(int argc, char *argv[])
 
 bool SelectLanguage()
 {
+    if (InstallInfo.languages.size() == 1)
+    {
+        InstallInfo.cur_lang = *InstallInfo.languages.begin();
+        if (!ReadLang()) { throwerror("Couldn't load language file for %s", InstallInfo.cur_lang.c_str()); return false; }
+        return true;
+    }
+    
     char title[] = "<C></B/29>Please select a language<!29!B>";
     CCharListHelper LangItems;
+    CCharListHelper botlabel;
+    int x1, x2, y1, y2;
+    getbegyx(MainWin, y1, x1);
+    getmaxyx(MainWin, y2, x2);
+    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
+    
+    botlabel.AddItem("</B/27>  ^<!27!B>");
+    botlabel.AddItem("</B/27>  <#BU>  <!27!B> : Highlight previous/next language\t\t"
+                     "</B/27>ESC<!27!B>   : Exit program");
+    botlabel.AddItem("</B/27>  v<!27!B>");
+    SetBottomLabel(botlabel, botlabel.Count());
     
     for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
         LangItems.AddItem(*p);
@@ -66,16 +80,15 @@ bool SelectLanguage()
     
     int selection = ScrollList.Activate();
     
-    bool success = false;
     if (ScrollList.ExitType() == vNORMAL)
     {
         std::list<char *>::iterator it = InstallInfo.languages.begin();
         advance(it, selection);
         InstallInfo.cur_lang = *it;
-        success = ReadLang();
+        if (!ReadLang()) throwerror("Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
     }
         
-    return success;
+    return true;
 }
 
 bool ShowWelcome()
@@ -83,7 +96,8 @@ bool ShowWelcome()
     char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Welcome"));
     char filename[] = "config/welcome";
     char *buttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
-    return (ViewFile(filename, buttons, 2, title)==0);
+    int ret = ViewFile(filename, buttons, 2, title);
+    return (ret==NO_FILE || ret==0);
 }
 
 bool ShowLicense()
@@ -127,6 +141,8 @@ bool SelectDir()
 
     int count = ReadDir(InstallInfo.dest_dir, &item);
 
+    if (count < 1) throwerror("Couldn't read directory %s", InstallInfo.dest_dir.c_str());
+    
     CCDKAlphaList FileList(CDKScreen, CENTER, 2, DEFAULT_HEIGHT-2, DEFAULT_WIDTH, title, label, item, count);
     FileList.SetBgColor(5);
     setCDKEntryPreProcess(FileList.GetAList()->entryField, CreateDirK, FileList.GetAList());
@@ -224,7 +240,20 @@ bool ConfParams()
     
     char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
     char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
-        
+    CCharListHelper botlabel;
+    int x1, x2, y1, y2;
+    getbegyx(MainWin, y1, x1);
+    getmaxyx(MainWin, y2, x2);
+    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
+    
+    botlabel.AddItem(CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+                     GetTranslation("Go to next button"), maxtxtlength, GetTranslation("Activate current button")));
+    botlabel.AddItem("</B/27>  ^<!27!B>");
+    botlabel.AddItem(CreateText("</B/27>  <#BU>  <!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
+                     GetTranslation("Highlight previous/next parameter"), maxtxtlength, GetTranslation("Exit program")));
+    botlabel.AddItem("</B/27>  v<!27!B>");
+    SetBottomLabel(botlabel, botlabel.Count());
+    
     CCDKButtonBox ButtonBox(CDKScreen, CENTER, DEFAULT_HEIGHT, 1, 68, 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
 

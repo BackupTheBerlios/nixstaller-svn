@@ -236,8 +236,7 @@ bool MainInit(int argc, char *argv[])
         else InstallInfo.dest_dir = "/";
     }
     
-    if (InstallInfo.languages.empty() ||
-        (find(InstallInfo.languages.begin(), InstallInfo.languages.end(), "english") == InstallInfo.languages.end()))
+    if (InstallInfo.languages.empty())
     {
         char *s = new char[8];
         strcpy(s, "english");

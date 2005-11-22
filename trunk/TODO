@@ -3,7 +3,6 @@ OVERALL
 - Check path with non su commands
 - Check what to do on when command fails
 - Check status bar for compiling
-- Add install-bin install type
 - Warn user if cancel button is pressed
 
 
@@ -14,11 +13,9 @@ MAIN
 NCURSES FRONTEND
 - Correct error handling for widget creation etc 
 - Back button?
-- Bottom label for lang and conf screen
 
 
 FLTK FRONTEND
 - Error messages(like chdir)
 - Make image support?
 - Finish button
-- Update SimpleInstall
