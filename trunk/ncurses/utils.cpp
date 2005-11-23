@@ -1,6 +1,6 @@
 #include "ncurs.h"
 
-void throwerror(const char *error, ...)
+void throwerror(bool dialog, const char *error, ...)
 {
     static char txt[256];
     const char *translated = GetTranslation(error);
@@ -10,6 +10,8 @@ void throwerror(const char *error, ...)
         vsprintf(txt, translated, v);
     va_end(v);
 
+    if (dialog) WarningBox(txt);
+    
     if (BottomLabel) delete BottomLabel;
 
     if (CDKScreen)
@@ -18,7 +20,7 @@ void throwerror(const char *error, ...)
         endCDK();
     }
 
-    fprintf(stderr, "Error: %s\n", txt);
+    if (!dialog) { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
     MainEnd();
     exit(EXIT_FAILURE);
 }
@@ -79,14 +81,7 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     /* Create the directory. */
     if (mkdir(newdir, dirMode) != 0)
     {
-        char *error[3];
-        error[0] = CreateText("<C>%s", GetTranslation("Could not create the directory"));
-        error[1] = CreateText("<C>%.256s", newdir);
-        error[2] = CreateText("<C>%.256s", strerror(errno));
-
-        popupLabel(CDKScreen, error, 3);
-
-        freeChar(newdir);
+        WarningBox(CreateText("%s\n%.75s\n%.75s", GetTranslation("Could not create the directory"), newdir, strerror(errno))); 
         return false;
     }
     
@@ -99,7 +94,11 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
         
     dir += "/";
     dir += newdir;
-    if (chdir(dir.c_str())) return false;
+    if (chdir(dir.c_str()))
+    {
+        WarningBox(CreateText("%s\n%s", GetTranslation("Could not change to directory"), strerror(errno)));
+        return false;
+    }
     
     char tmp[1024];
     if (getcwd(tmp, sizeof(tmp))) InstallInfo.dest_dir = tmp;
@@ -125,11 +124,11 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     if ((key != KEY_DOWN) && (key != KEY_UP)) return true;
     if (cdktype != vSCROLL) return true;
     
-    std::vector<void *> *pData = ((std::vector<void *> *)clientData);
-    CCDKSWindow *pDescWin = ((CCDKSWindow *)pData->at(0));
-    CCDKSWindow *pDefWin = ((CCDKSWindow *)pData->at(1));
-    CCDKScroll *pScroll = ((CCDKScroll *)pData->at(2));
-    CCharListHelper *items = ((CCharListHelper *)pData->at(3));
+    void **pData = ((void **)clientData);
+    CCDKSWindow *pDescWin = ((CCDKSWindow *)pData[0]);
+    CCDKSWindow *pDefWin = ((CCDKSWindow *)pData[1]);
+    CCDKScroll *pScroll = ((CCDKScroll *)pData[2]);
+    CCharListHelper *items = ((CCharListHelper *)pData[3]);
 
     int cur = pScroll->GetCurrent();
     
@@ -175,7 +174,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
                                      A_REVERSE, true, false);
 
     if (Viewer == NULL)
-        throwerror("Can't create text viewer");
+        throwerror(false, GetTranslation("Can't create text viewer"));
 
     int lines = CDKreadFile(file, &info);
     if (lines == -1)
@@ -223,8 +222,30 @@ void SetBottomLabel(char **msg, int count)
 
     BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
     if (!BottomLabel)
-        throwerror("Can't create bottom text window");
+        throwerror(false, "Can't create bottom text window");
     BottomLabel->SetBgColor(3);
     BottomLabel->Draw();
     refreshCDKScreen(CDKScreen);
 }
+
+void WarningBox(const char *msg)
+{
+    CCharListHelper message;
+    static char *buttons[1] = { GetTranslation("OK") };
+    
+    // Unwrap text
+    std::string txt = msg;
+    std::string::size_type index = txt.find("\n"), prevind = 0;
+    while (index != std::string::npos)
+    {
+        message.AddItem(txt.substr(prevind, index-1));
+        prevind = index+1;
+        index = txt.find("\n", prevind);
+    }
+    message.AddItem(txt.substr(prevind, index));
+    
+    CCDKDialog Diag(CDKScreen, CENTER, CENTER, message, message.Count(), buttons, 1);
+    Diag.SetBgColor(26);
+    Diag.Activate();
+}
+

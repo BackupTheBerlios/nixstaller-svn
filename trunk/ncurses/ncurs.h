@@ -14,13 +14,14 @@
 #define DEFAULT_WIDTH       50
 #define DEFAULT_HEIGHT      12
 
-void throwerror(const char *error, ...);
+void throwerror(bool dialog, const char *error, ...);
 int ReadDir(std::string &dir, char ***list);
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int ScrollParamMenuK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int ViewFile(char *file, char **buttons, int buttoncount, char *title);
 void SetBottomLabel(char **msg, int count);
+void WarningBox(const char *msg);
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };

@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     }
     
     // Init
-    if (!(MainWin = initscr())) throwerror("Couldn't init ncurses");
-    if (!(CDKScreen = initCDKScreen(MainWin))) throwerror("Couldn't init CDK");
+    if (!(MainWin = initscr())) throwerror(false, GetTranslation("Couldn't init ncurses"));
+    if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, GetTranslation("Couldn't init CDK"));
     initCDKColor();
     
     int i=0;
@@ -53,7 +53,7 @@ bool SelectLanguage()
     if (InstallInfo.languages.size() == 1)
     {
         InstallInfo.cur_lang = *InstallInfo.languages.begin();
-        if (!ReadLang()) { throwerror("Couldn't load language file for %s", InstallInfo.cur_lang.c_str()); return false; }
+        if (!ReadLang()) throwerror(true, GetTranslation("Couldn't load language file for %s"), InstallInfo.cur_lang.c_str());
         return true;
     }
     
@@ -85,7 +85,7 @@ bool SelectLanguage()
         std::list<char *>::iterator it = InstallInfo.languages.begin();
         advance(it, selection);
         InstallInfo.cur_lang = *it;
-        if (!ReadLang()) throwerror("Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
+        if (!ReadLang()) throwerror(true, GetTranslation("Couldn't load language file for %s"), InstallInfo.cur_lang.c_str());
     }
         
     return true;
@@ -137,11 +137,11 @@ bool SelectDir()
     SetBottomLabel(botlabel, botlabel.Count());
 
     if (chdir(InstallInfo.dest_dir.c_str()) != 0)
-        throwerror("Couldn't open directory '%s'", InstallInfo.dest_dir.c_str());
+        throwerror(true, GetTranslation("Couldn't open directory '%s'"), InstallInfo.dest_dir.c_str());
 
     int count = ReadDir(InstallInfo.dest_dir, &item);
 
-    if (count < 1) throwerror("Couldn't read directory %s", InstallInfo.dest_dir.c_str());
+    if (count < 1) throwerror(true, GetTranslation("Couldn't read directory %s"), InstallInfo.dest_dir.c_str());
     
     CCDKAlphaList FileList(CDKScreen, CENTER, 2, DEFAULT_HEIGHT-2, DEFAULT_WIDTH, title, label, item, count);
     FileList.SetBgColor(5);
@@ -198,7 +198,11 @@ bool SelectDir()
         
         dir += "/";
         dir += selection;
-        if (chdir(dir.c_str())) continue;
+        if (chdir(dir.c_str()))
+        {
+            WarningBox(CreateText("%s\n%s", GetTranslation("Could not change to directory"), strerror(errno)));
+            continue;
+        }
         
         char str[1024];
         if (getcwd(str, sizeof(str))) InstallInfo.dest_dir = str;
@@ -207,7 +211,11 @@ bool SelectDir()
         item = NULL;
         
         count = ReadDir(InstallInfo.dest_dir, &item);
-        if (count == NO_FILE) continue;
+        if (count == NO_FILE)
+        {
+            WarningBox(GetTranslation("Could not read directory"));
+            continue;
+        }
         
         FileList.SetContent(item, count);
         FileList.Draw();
@@ -295,12 +303,7 @@ bool ConfParams()
     DescWindow.Draw();
     DefWindow.Draw();
     
-    std::vector<void *> Data(4);
-    Data[0] = &DescWindow;
-    Data[1] = &DefWindow;
-    Data[2] = &ScrollList;
-    Data[3] = &ParamItems;
-    
+    void *Data[4] = { &DescWindow, &DefWindow, &ScrollList, &ParamItems };
     setCDKScrollPreProcess(ScrollList.GetScroll(), ScrollParamMenuK, &Data);
 
     ScrollList.Bind(KEY_TAB, SwitchButtonK, ButtonBox.GetBBox());
@@ -371,14 +374,13 @@ bool ConfParams()
                             {
                                 if (!strcmp(chitems[chsel], GetTranslation("Enable"))) p2->second->value = "true";
                                 else p2->second->value = "false";
-                                printf("val: %s\n", p2->second->value.c_str());
                             }
                             else
                                 p2->second->value = chitems[chsel];
                         }
                             
                         chScrollList.Destroy();
-                        //refreshCDKScreen(CDKScreen);
+                        refreshCDKScreen(CDKScreen);
                     }
                     break;
                 }
@@ -496,8 +498,8 @@ bool InstallFiles()
                     }
                     else
                     {
-                        throwerror(GetTranslation("Error: Couldn't use su to gain root access.\n"
-                                                  "Make sure you can use su(adding your user to the wheel group may help."));
+                        throwerror(true, "%s\n%s", GetTranslation("Error: Couldn't use su to gain root access"),
+                                   GetTranslation("Make sure you can use su(adding your user to the wheel group may help"));
                     }
                 }
             }
@@ -517,7 +519,7 @@ bool InstallFiles()
         sprintf(text, "Extracting file: %s", curfile);
         InstallOutput.AddText(text, false);
         if (percent==100) InstallOutput.AddText("Done!", false);
-        else if (percent==-1) return false;
+        else if (percent==-1) throwerror(true, "Could not extract files");
         InstallOutput.Draw();
         
         ProgressBar.SetValue(0, 100, percent);
@@ -541,7 +543,7 @@ bool InstallFiles()
         {
             SuHandler.SetCommand(command);
             if (!SuHandler.ExecuteCommand(passwd))
-                throwerror(SuHandler.GetErrorMsgC());
+                throwerror(true, GetSUErrorMsg(&SuHandler));
         }
         else
         {
@@ -553,6 +555,7 @@ bool InstallFiles()
                 while (fgets(term, sizeof(term), pipe)) InstallOutput.AddText(term, false);
                 pclose(pipe);
             }
+            else throwerror(true, "Couldn't open pipe");
         }
         percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         ProgressBar.SetValue(0, 100, percent);

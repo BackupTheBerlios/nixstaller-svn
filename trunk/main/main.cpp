@@ -491,3 +491,9 @@ param_entry_s *GetParamVar(const std::string &str)
     }
     return NULL;
 }
+
+const char *GetSUErrorMsg(CLibSU *SUHandler)
+{
+    // UNDONE
+    return SUHandler->GetErrorMsgC();
+}
