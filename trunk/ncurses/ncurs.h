@@ -14,7 +14,6 @@
 #define DEFAULT_WIDTH       50
 #define DEFAULT_HEIGHT      12
 
-void throwerror(bool dialog, const char *error, ...);
 int ReadDir(std::string &dir, char ***list);
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);

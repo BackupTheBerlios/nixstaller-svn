@@ -103,6 +103,8 @@ void CreateMainWindow(char **argv)
     MCreateWidget(CSetParamsScreen);
     MCreateWidget(CInstallFilesScreen);
 
+    (*ScreenList.begin())->Activate();
+    
     // HACK: Switch that annoying bell off!
     XKeyboardControl XKBControl;
     XKBControl.bell_duration = 0;
@@ -147,4 +149,19 @@ void EndProg(int exitcode)
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
     exit(exitcode);
+}
+
+void throwerror(bool dialog, const char *error, ...)
+{
+    static char txt[1024];
+    const char *translated = GetTranslation(error);
+    va_list v;
+    
+    va_start(v, error);
+        vsprintf(txt, translated, v);
+    va_end(v);
+
+    if (dialog) fl_alert(txt);
+    else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
+    EndProg(EXIT_FAILURE);
 }

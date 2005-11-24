@@ -532,7 +532,7 @@ bool InstallFiles()
     percent = 0;
         
     for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
-            it!=InstallInfo.command_entries.end(); it++)
+         it!=InstallInfo.command_entries.end(); it++)
     {
         if ((*it)->command.empty()) continue;
         std::string command = (*it)->command + " " + GetParameters(*it);

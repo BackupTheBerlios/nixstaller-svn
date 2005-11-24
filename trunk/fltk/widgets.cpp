@@ -6,14 +6,6 @@
 
 Fl_Group *CLangScreen::Create(void)
 {
-    // Default to first language if there is just one
-    if (InstallInfo.languages.size() == 1)
-    {
-        InstallInfo.cur_lang = *InstallInfo.languages.begin();
-        ReadLang();
-        return NULL; // No need for language selection
-    }
-    
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
     
@@ -40,6 +32,21 @@ bool CLangScreen::Next()
     pPrevButton->activate();
     ReadLang();
     UpdateLanguage();
+    return true;
+}
+
+bool CLangScreen::Activate()
+{
+    pPrevButton->deactivate();
+    
+    // Default to first language if there is just one
+    if (InstallInfo.languages.size() == 1)
+    {
+        // HACK
+        extern void WizNextCB(Fl_Widget *, void *);
+        WizNextCB(NULL, NULL);
+    }
+    
     return true;
 }
 

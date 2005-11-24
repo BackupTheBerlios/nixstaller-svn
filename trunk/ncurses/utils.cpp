@@ -246,7 +246,7 @@ void WarningBox(const char *msg, ...)
     std::string::size_type index = unwrapped.find("\n"), prevind = 0;
     while (index != std::string::npos)
     {
-        message.AddItem(unwrapped.substr(prevind, index-1));
+        message.AddItem(unwrapped.substr(prevind, (index-prevind)));
         prevind = index+1;
         index = unwrapped.find("\n", prevind);
     }
@@ -255,5 +255,7 @@ void WarningBox(const char *msg, ...)
     CCDKDialog Diag(CDKScreen, CENTER, CENTER, message, message.Count(), buttons, 1);
     Diag.SetBgColor(26);
     Diag.Activate();
+    Diag.Destroy();
+    refreshCDKScreen(CDKScreen);
 }
 

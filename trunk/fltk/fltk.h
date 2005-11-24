@@ -53,7 +53,7 @@ class CLangScreen: public CBaseScreen
 public:
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
-    virtual bool Activate(void) { pPrevButton->deactivate(); return true; };
+    virtual bool Activate(void);
     
     static void LangMenuCB(Fl_Widget *w, void *) { InstallInfo.cur_lang = ((Fl_Menu_*)w)->mvalue()->text; };
 };
