@@ -8,6 +8,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, char **msg, int count, bo
     m_szLabelTxt = new char*[m_iCount];
     for (int i=0;i<m_iCount;i++) m_szLabelTxt[i] = strdup(msg[i]);
     m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
+    if (!m_pLabel) throwerror(false, "Could not create text label");
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, bool box,
@@ -16,6 +17,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, b
     m_szLabelTxt = new char*[1];
     m_szLabelTxt[0] = strdup(msg.c_str());
     m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
+    if (!m_pLabel) throwerror(false, "Could not create text label");
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box,
@@ -24,6 +26,7 @@ CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box
     m_szLabelTxt = new char*[1];
     m_szLabelTxt[0] = strdup(msg);
     m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
+    if (!m_pLabel) throwerror(false, "Could not create text label");
 }
 
 void CCDKLabel::Destroy(void)
@@ -43,6 +46,7 @@ CCDKButtonBox::CCDKButtonBox(CDKSCREEN *pScreen, int x, int y, int h, int w, cha
                              char **buttons, int count, chtype hlight, bool box, bool shadow) : CBaseCDKWidget(box)
 {
     m_pBBox = newCDKButtonbox(pScreen, x, y, h, w, title, rows, cols, buttons, count, hlight, box, shadow);
+    if (!m_pBBox) throwerror(false, "Could not create button box");
 }
 
 void CCDKButtonBox::Destroy(void)
@@ -59,6 +63,7 @@ CCDKScroll::CCDKScroll(CDKSCREEN *pScreen, int x, int y, int h, int w, int sbpos
                        bool box, bool numbers, bool shadow) : CBaseCDKWidget(box)
 {
     m_pScroll = newCDKScroll(CDKScreen, x, y, sbpos, h, w, title, list, lcount, numbers, A_REVERSE, box, shadow);
+    if (!m_pScroll) throwerror(false, "Could not create scroll window");
 }
 
 void CCDKScroll::Destroy(void)
@@ -76,6 +81,7 @@ CCDKAlphaList::CCDKAlphaList(CDKSCREEN *pScreen, int x, int y, int h, int w, cha
                              bool box, bool shadow) : CBaseCDKWidget(box)
 {
     m_pAList = newCDKAlphalist(pScreen, x, y, h, w, title, label, list, count, '_', A_BLINK, box, shadow);
+    if (!m_pAList) throwerror(false, "Could not create alpha list");
 }
 
 void CCDKAlphaList::Destroy()
@@ -94,6 +100,7 @@ CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, char **message, int mco
                        chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
 {
     m_pDialog = newCDKDialog(pScreen, x, y, message, mcount, buttons, bcount, hlight, sep, box, shadow);
+    if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
 
 CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const char *message, char **buttons, int bcount,
@@ -101,6 +108,7 @@ CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const char *message, ch
 {
     m_CharList.AddItem(message);
     m_pDialog = newCDKDialog(pScreen, x, y, m_CharList, m_CharList.Count(), buttons, bcount, hlight, sep, box, shadow);
+    if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
 
 CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const std::string &message, char **buttons, int bcount,
@@ -108,6 +116,7 @@ CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const std::string &mess
 {
     m_CharList.AddItem(message);
     m_pDialog = newCDKDialog(pScreen, x, y, m_CharList, m_CharList.Count(), buttons, bcount, hlight, sep, box, shadow);
+    if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
 
 void CCDKDialog::Destroy()
@@ -125,6 +134,7 @@ CCDKSWindow::CCDKSWindow(CDKSCREEN *pScreen, int x, int y, int h, int w, char *t
                          bool shadow) : CBaseCDKWidget(box)
 {
     m_pSWindow = newCDKSwindow(pScreen, x, y, h, w, title, slines, box, shadow);
+    if (!m_pSWindow) throwerror(false, "Could not create window");
 }
 
 void CCDKSWindow::Destroy()
@@ -166,6 +176,7 @@ CCDKEntry::CCDKEntry(CDKSCREEN *pScreen, int x, int y, char *title, char *label,
                      EDisplayType DispType, chtype fillch, chtype fieldattr, bool box, bool shadow) : CBaseCDKWidget(box)
 {
     m_pEntry = newCDKEntry(pScreen, x, y, title, label, fieldattr, fillch, DispType, fwidth, min, max, box, shadow);
+    if (!m_pEntry) throwerror(false, "Could not create input entry");
 }
 
 void CCDKEntry::Destroy()
@@ -183,6 +194,7 @@ CCDKHistogram::CCDKHistogram(CDKSCREEN *pScreen, int x, int y, int h, int w, int
                              bool shadow) : CBaseCDKWidget(box)
 {
     m_pHistogram = newCDKHistogram(pScreen, x, y, h, w, orient, title, box, shadow);
+    if (!m_pHistogram) throwerror(false, "Could not create histogram");
 }
 
 void CCDKHistogram::Destroy()

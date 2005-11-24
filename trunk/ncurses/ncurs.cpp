@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     }
     
     // Init
-    if (!(MainWin = initscr())) throwerror(false, GetTranslation("Couldn't init ncurses"));
-    if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, GetTranslation("Couldn't init CDK"));
+    if (!(MainWin = initscr())) throwerror(false, "Couldn't init ncurses");
+    if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, "Couldn't init CDK");
     initCDKColor();
     
     int i=0;
@@ -53,7 +53,7 @@ bool SelectLanguage()
     if (InstallInfo.languages.size() == 1)
     {
         InstallInfo.cur_lang = *InstallInfo.languages.begin();
-        if (!ReadLang()) throwerror(true, GetTranslation("Couldn't load language file for %s"), InstallInfo.cur_lang.c_str());
+        if (!ReadLang()) throwerror(true, "Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
         return true;
     }
     
@@ -85,9 +85,10 @@ bool SelectLanguage()
         std::list<char *>::iterator it = InstallInfo.languages.begin();
         advance(it, selection);
         InstallInfo.cur_lang = *it;
-        if (!ReadLang()) throwerror(true, GetTranslation("Couldn't load language file for %s"), InstallInfo.cur_lang.c_str());
+        if (!ReadLang()) throwerror(true, "Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
     }
-        
+    else return false;
+    
     return true;
 }
 
@@ -137,11 +138,11 @@ bool SelectDir()
     SetBottomLabel(botlabel, botlabel.Count());
 
     if (chdir(InstallInfo.dest_dir.c_str()) != 0)
-        throwerror(true, GetTranslation("Couldn't open directory '%s'"), InstallInfo.dest_dir.c_str());
+        throwerror(true, "Couldn't open directory '%s'", InstallInfo.dest_dir.c_str());
 
     int count = ReadDir(InstallInfo.dest_dir, &item);
 
-    if (count < 1) throwerror(true, GetTranslation("Couldn't read directory %s"), InstallInfo.dest_dir.c_str());
+    if (count < 1) throwerror(true, "Couldn't read directory %s", InstallInfo.dest_dir.c_str());
     
     CCDKAlphaList FileList(CDKScreen, CENTER, 2, DEFAULT_HEIGHT-2, DEFAULT_WIDTH, title, label, item, count);
     FileList.SetBgColor(5);
@@ -200,12 +201,13 @@ bool SelectDir()
         dir += selection;
         if (chdir(dir.c_str()))
         {
-            WarningBox(CreateText("%s\n%s", GetTranslation("Could not change to directory"), strerror(errno)));
+            WarningBox("%s\n%s", GetTranslation("Could not change to directory"), strerror(errno));
             continue;
         }
         
         char str[1024];
         if (getcwd(str, sizeof(str))) InstallInfo.dest_dir = str;
+        else { WarningBox("Could not read directory"); continue; }
         
         if (item) CDKfreeStrings(item);
         item = NULL;
@@ -274,8 +276,7 @@ bool ConfParams()
     DescWindow.SetBgColor(5);
     DescWindow.AddText(pFirstParam->description);
     
-    CCDKSWindow DefWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 8, 4, 34, /*CreateText("<C></B/29>%s<!29!B>",
-                          GetTranslation("Default"))*/NULL, 4);
+    CCDKSWindow DefWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 8, 4, 34, NULL, 4);
     DefWindow.SetBgColor(5);
     
     const char *str = pFirstParam->defaultval.c_str();

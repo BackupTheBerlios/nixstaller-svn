@@ -2,7 +2,7 @@
 
 void throwerror(bool dialog, const char *error, ...)
 {
-    static char txt[256];
+    static char txt[1024];
     const char *translated = GetTranslation(error);
     va_list v;
     
@@ -81,7 +81,7 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     /* Create the directory. */
     if (mkdir(newdir, dirMode) != 0)
     {
-        WarningBox(CreateText("%s\n%.75s\n%.75s", GetTranslation("Could not create the directory"), newdir, strerror(errno))); 
+        WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create the directory"), newdir, strerror(errno)); 
         return false;
     }
     
@@ -96,15 +96,16 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     dir += newdir;
     if (chdir(dir.c_str()))
     {
-        WarningBox(CreateText("%s\n%s", GetTranslation("Could not change to directory"), strerror(errno)));
+        WarningBox("%s\n%s", GetTranslation("Could not change to directory"), strerror(errno));
         return false;
     }
     
     char tmp[1024];
     if (getcwd(tmp, sizeof(tmp))) InstallInfo.dest_dir = tmp;
+    else { WarningBox("Could not read directory"); return false; }
         
     int count = ReadDir(InstallInfo.dest_dir, &item);
-    if (count == NO_FILE) return false;
+    if (count == NO_FILE) { WarningBox("Could not read directory"); return false; }
         
     setCDKAlphalist(FileList, item, count, '_', true, false);
     drawCDKAlphalist(FileList, true);
@@ -222,27 +223,34 @@ void SetBottomLabel(char **msg, int count)
 
     BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
     if (!BottomLabel)
-        throwerror(false, "Can't create bottom text window");
+        throwerror(false, "Could not create bottom text window");
     BottomLabel->SetBgColor(3);
     BottomLabel->Draw();
     refreshCDKScreen(CDKScreen);
 }
 
-void WarningBox(const char *msg)
+void WarningBox(const char *msg, ...)
 {
     CCharListHelper message;
     static char *buttons[1] = { GetTranslation("OK") };
+    static char txt[1024];
+    const char *translated = GetTranslation(msg);
+    va_list v;
     
+    va_start(v, msg);
+        vsprintf(txt, translated, v);
+    va_end(v);
+
     // Unwrap text
-    std::string txt = msg;
-    std::string::size_type index = txt.find("\n"), prevind = 0;
+    std::string unwrapped = txt;
+    std::string::size_type index = unwrapped.find("\n"), prevind = 0;
     while (index != std::string::npos)
     {
-        message.AddItem(txt.substr(prevind, index-1));
+        message.AddItem(unwrapped.substr(prevind, index-1));
         prevind = index+1;
-        index = txt.find("\n", prevind);
+        index = unwrapped.find("\n", prevind);
     }
-    message.AddItem(txt.substr(prevind, index));
+    message.AddItem(unwrapped.substr(prevind, index));
     
     CCDKDialog Diag(CDKScreen, CENTER, CENTER, message, message.Count(), buttons, 1);
     Diag.SetBgColor(26);

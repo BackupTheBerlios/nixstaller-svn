@@ -21,7 +21,7 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GC
 int ScrollParamMenuK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
 int ViewFile(char *file, char **buttons, int buttoncount, char *title);
 void SetBottomLabel(char **msg, int count);
-void WarningBox(const char *msg);
+void WarningBox(const char *msg, ...);
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };
