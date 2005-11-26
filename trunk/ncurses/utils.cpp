@@ -102,7 +102,7 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *cl
     
     char tmp[1024];
     if (getcwd(tmp, sizeof(tmp))) InstallInfo.dest_dir = tmp;
-    else { WarningBox("Could not read directory"); return false; }
+    else { WarningBox("Could not read current directory"); return false; }
         
     int count = ReadDir(InstallInfo.dest_dir, &item);
     if (count == NO_FILE) { WarningBox("Could not read directory"); return false; }

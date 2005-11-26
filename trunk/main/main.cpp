@@ -217,17 +217,15 @@ bool MainInit(int argc, char *argv[])
 {
     if (!ReadConfig()) return false;
     
-    if (getcwd(InstallInfo.arch_name, sizeof(InstallInfo.arch_name)) == 0) strcpy(InstallInfo.arch_name, ".");
+    if (getcwd(InstallInfo.arch_name, sizeof(InstallInfo.arch_name)) == 0)
+        throwerror(false, "Could not read current directory");
     strcat(InstallInfo.arch_name, "/instarchive");
     
     if (InstallInfo.dest_dir_type == DEST_TEMP)
     {
         char dir[1024];
         if (getcwd(dir, sizeof(dir))) InstallInfo.dest_dir = dir;
-        else
-        {
-            // UNDONE
-        }
+        else throwerror(false, "Could not read current directory");
     }
     else if (InstallInfo.dest_dir_type == DEST_SELECT)
     {
@@ -492,8 +490,3 @@ param_entry_s *GetParamVar(const std::string &str)
     return NULL;
 }
 
-const char *GetSUErrorMsg(CLibSU *SUHandler)
-{
-    // UNDONE
-    return SUHandler->GetErrorMsgC();
-}

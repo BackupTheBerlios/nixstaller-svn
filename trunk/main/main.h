@@ -62,7 +62,6 @@ inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<ch
 char *CreateText(const char *s, ...);
 void FreeStrings(void);
 param_entry_s *GetParamVar(const std::string &str);
-const char *GetSUErrorMsg(CLibSU *SUHandler);
 void throwerror(bool dialog, const char *error, ...); // Frontend depended, therefor defined in there
 
 #endif 

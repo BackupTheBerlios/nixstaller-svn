@@ -26,7 +26,7 @@ void log(const char *txt, ...)
         vsprintf(buffer, txt, v);
     va_end(v);
     
-    fprintf(LogFile, buffer);
+    fprintf(LogFile, "%s\n", buffer);
     fclose(LogFile);
     LogFile = NULL;
 #endif

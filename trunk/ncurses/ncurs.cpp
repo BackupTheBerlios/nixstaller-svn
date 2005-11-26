@@ -207,7 +207,7 @@ bool SelectDir()
         
         char str[1024];
         if (getcwd(str, sizeof(str))) InstallInfo.dest_dir = str;
-        else { WarningBox("Could not read directory"); continue; }
+        else { WarningBox("Could not read current directory"); continue; }
         
         if (item) CDKfreeStrings(item);
         item = NULL;
@@ -215,7 +215,7 @@ bool SelectDir()
         count = ReadDir(InstallInfo.dest_dir, &item);
         if (count == NO_FILE)
         {
-            WarningBox(GetTranslation("Could not read directory"));
+            WarningBox("Could not read directory");
             continue;
         }
         
@@ -500,7 +500,7 @@ bool InstallFiles()
                     else
                     {
                         throwerror(true, "%s\n%s", GetTranslation("Error: Couldn't use su to gain root access"),
-                                   GetTranslation("Make sure you can use su(adding your user to the wheel group may help"));
+                                   GetTranslation("Make sure you can use su(adding your user to the wheel group may help)"));
                     }
                 }
             }
@@ -520,7 +520,7 @@ bool InstallFiles()
         sprintf(text, "Extracting file: %s", curfile);
         InstallOutput.AddText(text, false);
         if (percent==100) InstallOutput.AddText("Done!", false);
-        else if (percent==-1) throwerror(true, "Could not extract files");
+        else if (percent==-1) throwerror(true, "Error during extracting files");
         InstallOutput.Draw();
         
         ProgressBar.SetValue(0, 100, percent);
@@ -544,7 +544,10 @@ bool InstallFiles()
         {
             SuHandler.SetCommand(command);
             if (!SuHandler.ExecuteCommand(passwd))
-                throwerror(true, GetSUErrorMsg(&SuHandler));
+            {
+                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), SuHandler.GetErrorMsgC());
+                // UNDONE
+            }
         }
         else
         {
@@ -556,7 +559,7 @@ bool InstallFiles()
                 while (fgets(term, sizeof(term), pipe)) InstallOutput.AddText(term, false);
                 pclose(pipe);
             }
-            else throwerror(true, "Couldn't open pipe");
+            else throwerror(true, "Error during command execution: Could not open pipe");
         }
         percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         ProgressBar.SetValue(0, 100, percent);

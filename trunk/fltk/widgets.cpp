@@ -433,9 +433,8 @@ bool CInstallFilesScreen::Activate()
                             fl_alert(GetTranslation("Incorrect password given for root user.\nPlease re-type."));
                         else
                         {
-                            fl_alert(GetTranslation("Error: Couldn't use su to gain root access.\n"
-                                                    "Make sure you can use su(adding your user to the wheel group may help."));
-                            EndProg(-1);
+                            throwerror(true, "%s\n%s", GetTranslation("Error: Couldn't use su to gain root access"),
+                                       GetTranslation("Make sure you can use su(adding your user to the wheel group may help"));
                         }
                     }
                 }
@@ -448,9 +447,10 @@ bool CInstallFilesScreen::Activate()
     m_SUHandler.SetUser("root");
     m_SUHandler.SetTerminalOutput(false);
     
-    if (chdir(InstallInfo.dest_dir.c_str())); // UNDONE
+    if (chdir(InstallInfo.dest_dir.c_str()))
+        throwerror(true, "Couldn't open directory '%s'", InstallInfo.dest_dir.c_str());
+    
     InstallFiles = true;
-    //Fl::add_idle(CInstallFilesBase::stat_inst, this);
     pPrevButton->deactivate();
     pNextButton->deactivate();
     
@@ -521,7 +521,7 @@ void CInstallFilesScreen::Install()
         sprintf(text, "Extracting file: %s\n", curfile);
         AppendText(text);
 
-        if (m_sPercent==-1) EndProg(-2);
+        if (m_sPercent==-1) throwerror(true, "Error during extracting files");
 
         if (m_sPercent==100)
         {
@@ -547,7 +547,11 @@ void CInstallFilesScreen::Install()
         if (RootNeedPW && (*it)->need_root == NEED_ROOT)
         {
             m_SUHandler.SetCommand(command);
-            m_SUHandler.ExecuteCommand(m_szPassword);
+            if (!m_SUHandler.ExecuteCommand(m_szPassword))
+            {
+                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), m_SUHandler.GetErrorMsgC());
+                // UNDONE
+            }
         }
         else
         {
@@ -562,10 +566,7 @@ void CInstallFilesScreen::Install()
                 }
                 pclose(pPipe);
             }
-            else
-            {
-                // UNDONE
-            }
+            else throwerror(true, "Error during command execution: Could not open pipe");
         }
         m_sPercent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         UpdateStatusBar();
