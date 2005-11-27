@@ -156,6 +156,7 @@ public:
     int Exec(const std::string &command, int pos=BOTTOM) { return Exec(CreateText(command.c_str()), pos); };
     int Exec(char *command, int pos=BOTTOM) { return execCDKSwindow(m_pSWindow, command, pos); };
 
+    void Activate(chtype *actions = NULL) { return activateCDKSwindow(m_pSWindow, actions); };
     CDKSWINDOW *GetSWin(void) { return m_pSWindow; };
     void Clear(void) { cleanCDKSwindow(m_pSWindow); };
 };

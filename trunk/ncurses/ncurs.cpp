@@ -37,7 +37,25 @@ int main(int argc, char *argv[])
     initCDKColor();
     
     int i=0;
-    while(Functions[i] && Functions[i]()) i++;
+    while(Functions[i])
+    {
+        if (Functions[i]()) i++;
+        else
+        {
+            char *buttons[2] = { GetTranslation("Yes"), GetTranslation("No") };
+            CCharListHelper msg;
+    
+            msg.AddItem(GetTranslation("This will abort the installation"));
+            msg.AddItem(GetTranslation("Are you sure?"));
+    
+            CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, msg.Count(), buttons, 2);
+            dialog.SetBgColor(26);
+            int ret = dialog.Activate();
+            if ((ret == 0) && (dialog.ExitType() == vNORMAL)) break;
+            dialog.Destroy();
+            refreshCDKScreen(CDKScreen);
+        }
+    }
     
     // Deinit
     if (BottomLabel) delete BottomLabel;
@@ -408,19 +426,20 @@ bool InstallFiles()
     setCDKHistogramLLChar(ProgressBar.GetHistogram(), ACS_LTEE);
     setCDKHistogramLRChar(ProgressBar.GetHistogram(), ACS_RTEE);
     ProgressBar.SetBgColor(5);
-    
     ProgressBar.SetHistogram(vPERCENT, TOP, 0, 100, 0, COLOR_PAIR (24) | A_REVERSE | ' ', A_BOLD);
-
+    
     CCDKSWindow InstallOutput(CDKScreen, CENTER, 5, 12, 0, CreateText("<C></29/B>%s", GetTranslation("Status")), 2000);
 
     setCDKSwindowULChar(InstallOutput.GetSWin(), ACS_LTEE);
     setCDKSwindowURChar(InstallOutput.GetSWin(), ACS_RTEE);
     InstallOutput.SetBgColor(5);
+    InstallOutput.Bind(KEY_ESC, ExitK, NULL);
+    nodelay(WindowOf(InstallOutput.GetSWin()), true);
     
     InstallOutput.Draw();
     ProgressBar.Draw();
     refreshCDKScreen(CDKScreen);
-    
+
     // Check if we need root access
     char *passwd = NULL;
     CLibSU SuHandler;
@@ -487,15 +506,8 @@ bool InstallFiles()
                     // Some error appeared
                     if (SuHandler.GetError() == CLibSU::SU_ERROR_INCORRECTPASS)
                     {
-                        char *buttons[2] = { GetTranslation("OK") };
-                        CCharListHelper msg;
-    
-                        msg.AddItem(GetTranslation("Incorrect password given for root user"));
-                        msg.AddItem(GetTranslation("Please re-type"));
-    
-                        CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, msg.Count(), buttons, 1);
-                        dialog.SetBgColor(26);
-                        int ret = dialog.Activate();
+                        WarningBox("%s\n%s", GetTranslation("Incorrect password given for root user"),
+                                   GetTranslation("Please re-type"));
                     }
                     else
                     {
@@ -530,7 +542,7 @@ bool InstallFiles()
     ProgressBar.SetValue(0, 100, 0);
     ProgressBar.Draw();
     percent = 0;
-        
+
     for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
          it!=InstallInfo.command_entries.end(); it++)
     {
@@ -551,15 +563,74 @@ bool InstallFiles()
         }
         else
         {
+            /*
             command += " 2> /dev/null";
             FILE *pipe = popen(command.c_str(), "r");
-            char term[256];
+            char term[1024];
             if (pipe)
             {
-                while (fgets(term, sizeof(term), pipe)) InstallOutput.AddText(term, false);
+                while (fgets(term, sizeof(term), pipe))
+                {
+                    InstallOutput.AddText(term, false);
+
+                    nodelay(WindowOf(InstallOutput.GetSWin()), true);
+                    //chtype input = getcCDKObject(ObjOf(InstallOutput.GetSWin()));
+                    chtype input = getch();
+                    if (input==KEY_ESC) injectCDKSwindow (InstallOutput.GetSWin(), 'c');
+                    nodelay(WindowOf(InstallOutput.GetSWin()), false);
+                }
                 pclose(pipe);
             }
-            else throwerror(true, "Error during command execution: Could not open pipe");
+            else throwerror(true, "Error during command execution: Could not open pipe");*/
+            int pipefd[2];
+
+            pipe(pipefd);
+            pid_t pid = fork();
+            if (pid == -1) throwerror(true, "Error during command execution: Could not fork process");
+            else if (pid) // Parent process
+            {
+                close(pipefd[1]); // We're not going to write here
+
+                std::string out;
+                char c;
+
+                while(read(pipefd[0], &c, sizeof(c)) > 0)
+                {
+                    out += c;
+                    if (c == '\n')
+                    {
+                        InstallOutput.AddText(out, false);
+                        out.clear();
+                    }
+
+                    chtype input = getch();
+                    if (input!=ERR) injectCDKSwindow(InstallOutput.GetSWin(), input);
+                }
+                close (pipefd[0]);
+
+                int status;
+                waitpid(pid, &status, 0);
+            }
+            else // Child process
+            {
+                // Redirect stdout to pipe
+                close(STDOUT_FILENO);
+                dup (pipefd[1]);
+                
+                close (pipefd[0]); // No need to read here
+
+                //command.insert(0, "\"");
+                command += " 2> /dev/null";
+
+                const char **args = new const char*[4];
+                args[0] = "sh";
+                args[1] = "-c";
+                args[2] = command.c_str();
+                args[3] = NULL;
+
+                execl("/bin/sh", "sh", "-c", command.c_str(), NULL);
+                _exit(1);
+            }
         }
         percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         ProgressBar.SetValue(0, 100, percent);
@@ -584,5 +655,6 @@ bool InstallFiles()
     FinishDiag.SetBgColor(26);
     FinishDiag.Activate();
 
+    InstallOutput.Activate();
     return true;
 }

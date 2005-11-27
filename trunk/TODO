@@ -15,6 +15,5 @@ NCURSES FRONTEND
 
 
 FLTK FRONTEND
-- Error messages(like chdir)
 - Make image support?
 - Finish button

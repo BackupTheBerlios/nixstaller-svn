@@ -4,6 +4,9 @@
 #include <vector>
 #include <list>
 #include <sstream>
+#include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #include <cdk/cdk.h>
 #include "main.h"
@@ -15,9 +18,10 @@
 #define DEFAULT_HEIGHT      12
 
 int ReadDir(std::string &dir, char ***list);
-int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
-int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
-int ScrollParamMenuK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key GCC_UNUSED);
+int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key GCC_UNUSED);
+int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key);
+int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype key);
+int ExitK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key);
 int ViewFile(char *file, char **buttons, int buttoncount, char *title);
 void SetBottomLabel(char **msg, int count);
 void WarningBox(const char *msg, ...);

@@ -14,7 +14,11 @@ Fl_Button *pNextButton = NULL;
 std::list<CBaseScreen *> ScreenList;
 bool InstallFiles = false;
 
-void WizCancelCB(Fl_Widget *, void *) { EndProg(-1); };
+void WizCancelCB(Fl_Widget *, void *)
+{
+    if (fl_ask("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
+        EndProg(-1);
+}
 
 void WizPrevCB(Fl_Widget *, void *)
 {

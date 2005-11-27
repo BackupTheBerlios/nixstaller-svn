@@ -167,6 +167,12 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     return true;
 }
 
+int ExitK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key)
+{
+    WarningBox("Key: %c\n", key);
+    return true;
+}
+
 int ViewFile(char *file, char **buttons, int buttoncount, char *title)
 {
     char *button[2], **info = NULL;
@@ -175,7 +181,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
                                      A_REVERSE, true, false);
 
     if (Viewer == NULL)
-        throwerror(false, GetTranslation("Can't create text viewer"));
+        throwerror(false, "Can't create text viewer");
 
     int lines = CDKreadFile(file, &info);
     if (lines == -1)
@@ -210,6 +216,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     /* Clean up. */
     setCDKViewerBackgroundColor(Viewer, "!5!B");
     destroyCDKViewer(Viewer);
+    refreshCDKScreen(CDKScreen);
     return ret;
 }
 
@@ -258,4 +265,3 @@ void WarningBox(const char *msg, ...)
     Diag.Destroy();
     refreshCDKScreen(CDKScreen);
 }
-
