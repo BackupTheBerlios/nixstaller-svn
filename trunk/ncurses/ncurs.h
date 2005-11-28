@@ -17,6 +17,7 @@
 #define DEFAULT_WIDTH       50
 #define DEFAULT_HEIGHT      12
 
+void EndProg(void);
 int ReadDir(std::string &dir, char ***list);
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key GCC_UNUSED);
 int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key);
@@ -25,6 +26,7 @@ int ExitK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNU
 int ViewFile(char *file, char **buttons, int buttoncount, char *title);
 void SetBottomLabel(char **msg, int count);
 void WarningBox(const char *msg, ...);
+bool YesNoBox(const char *msg, ...);
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };

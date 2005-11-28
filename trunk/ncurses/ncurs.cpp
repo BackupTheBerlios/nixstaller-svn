@@ -533,10 +533,16 @@ bool InstallFiles()
         InstallOutput.AddText(text, false);
         if (percent==100) InstallOutput.AddText("Done!", false);
         else if (percent==-1) throwerror(true, "Error during extracting files");
-        InstallOutput.Draw();
         
         ProgressBar.SetValue(0, 100, percent);
         ProgressBar.Draw();
+
+        chtype input = getch();
+        if (input == KEY_ESC)
+        {
+            if (YesNoBox("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
+                EndProg();
+        }
     }
     
     ProgressBar.SetValue(0, 100, 0);
@@ -563,7 +569,6 @@ bool InstallFiles()
         }
         else
         {
-            /*
             command += " 2> /dev/null";
             FILE *pipe = popen(command.c_str(), "r");
             char term[1024];
@@ -573,15 +578,22 @@ bool InstallFiles()
                 {
                     InstallOutput.AddText(term, false);
 
-                    nodelay(WindowOf(InstallOutput.GetSWin()), true);
-                    //chtype input = getcCDKObject(ObjOf(InstallOutput.GetSWin()));
                     chtype input = getch();
-                    if (input==KEY_ESC) injectCDKSwindow (InstallOutput.GetSWin(), 'c');
-                    nodelay(WindowOf(InstallOutput.GetSWin()), false);
+                    if (input == KEY_ESC) /*injectCDKSwindow(InstallOutput.GetSWin(), input);*/
+                    {
+                        if (YesNoBox("%s\n%s\n%s", GetTranslation("Install commands are still running"),
+                                                   GetTranslation("If you abort now this may lead to a broken installation"),
+                                                   GetTranslation("Are you sure?")))
+                            EndProg();
+                    }
                 }
                 pclose(pipe);
             }
-            else throwerror(true, "Error during command execution: Could not open pipe");*/
+            else throwerror(true, "Error: Could not execute command");
+            
+#if 0
+            // Need to find a good way to safely suspend a process...this code doesn't always work :(
+            
             int pipefd[2];
 
             pipe(pipefd);
@@ -593,23 +605,55 @@ bool InstallFiles()
 
                 std::string out;
                 char c;
+                int compid = -1; // PID of the executed command
 
                 while(read(pipefd[0], &c, sizeof(c)) > 0)
                 {
                     out += c;
                     if (c == '\n')
                     {
-                        InstallOutput.AddText(out, false);
+                        if (compid == -1)
+                        {
+                            compid = atoi(out.c_str());
+                            InstallOutput.AddText(CreateText("pid: %d compid: %d", pid, compid), false);
+                        }
+                        else InstallOutput.AddText(out, false);
                         out.clear();
                     }
 
                     chtype input = getch();
-                    if (input!=ERR) injectCDKSwindow(InstallOutput.GetSWin(), input);
+                    if (input != ERR) /*injectCDKSwindow(InstallOutput.GetSWin(), input);*/
+                    {
+                        if (kill(compid, SIGTSTP) < 0) // Pause command execution
+                            WarningBox("PID Error: %s\n", strerror(errno));
+                        
+                        char *buttons[2] = { GetTranslation("Yes"), GetTranslation("No") };
+                        CCharListHelper msg;
+    
+                        msg.AddItem(GetTranslation("This will abort the installation"));
+                        msg.AddItem(GetTranslation("Are you sure?"));
+    
+                        CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, msg.Count(), buttons, 2);
+                        dialog.SetBgColor(26);
+                        int ret = dialog.Activate();
+                        bool cont = ((ret == 1) || (dialog.ExitType() != vNORMAL));
+
+                        dialog.Destroy();
+                        refreshCDKScreen(CDKScreen);
+
+                        if (!cont)
+                        {
+                            kill(pid, SIGTERM);
+                            EndProg();
+                        }
+
+                        kill(compid, SIGCONT); // Continue command execution
+                    }
                 }
                 close (pipefd[0]);
 
                 int status;
-                waitpid(pid, &status, 0);
+                //waitpid(pid, &status, 0);
             }
             else // Child process
             {
@@ -619,19 +663,15 @@ bool InstallFiles()
                 
                 close (pipefd[0]); // No need to read here
 
-                //command.insert(0, "\"");
-                command += " 2> /dev/null";
-
-                const char **args = new const char*[4];
-                args[0] = "sh";
-                args[1] = "-c";
-                args[2] = command.c_str();
-                args[3] = NULL;
-
+                // Make sure no errors are printed and write pid of new command
+                command += " 2> /dev/null &  echo $!";
                 execl("/bin/sh", "sh", "-c", command.c_str(), NULL);
+                system(CreateText("echo %s", strerror(errno)));
                 _exit(1);
             }
+#endif
         }
+
         percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         ProgressBar.SetValue(0, 100, percent);
         ProgressBar.Draw();

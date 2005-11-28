@@ -4,6 +4,7 @@ OVERALL
 - Check what to do on when command fails
 - Check status bar for compiling
 - Warn user if cancel button is pressed
+- Check exit codes
 
 
 MAIN

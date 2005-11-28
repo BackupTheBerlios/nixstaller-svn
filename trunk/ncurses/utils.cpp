@@ -1,5 +1,19 @@
 #include "ncurs.h"
 
+void EndProg()
+{
+    if (BottomLabel) delete BottomLabel;
+
+    if (CDKScreen)
+    {
+        destroyCDKScreen(CDKScreen);
+        endCDK();
+    }
+
+    MainEnd();
+    exit(0);
+}
+
 void throwerror(bool dialog, const char *error, ...)
 {
     static char txt[1024];
@@ -264,4 +278,35 @@ void WarningBox(const char *msg, ...)
     Diag.Activate();
     Diag.Destroy();
     refreshCDKScreen(CDKScreen);
+}
+
+bool YesNoBox(const char *msg, ...)
+{
+    CCharListHelper message;
+    static char *buttons[] = { GetTranslation("Yes"), GetTranslation("No") };
+    static char txt[1024];
+    const char *translated = GetTranslation(msg);
+    va_list v;
+    
+    va_start(v, msg);
+    vsprintf(txt, translated, v);
+    va_end(v);
+
+    // Unwrap text
+    std::string unwrapped = txt;
+    std::string::size_type index = unwrapped.find("\n"), prevind = 0;
+    while (index != std::string::npos)
+    {
+        message.AddItem(unwrapped.substr(prevind, (index-prevind)));
+        prevind = index+1;
+        index = unwrapped.find("\n", prevind);
+    }
+    message.AddItem(unwrapped.substr(prevind, index));
+    
+    CCDKDialog Diag(CDKScreen, CENTER, CENTER, message, message.Count(), buttons, 2);
+    Diag.SetBgColor(26);
+    bool yes = ((Diag.Activate() == 0) && (Diag.ExitType() == vNORMAL));
+    Diag.Destroy();
+    refreshCDKScreen(CDKScreen);
+    return yes;
 }
