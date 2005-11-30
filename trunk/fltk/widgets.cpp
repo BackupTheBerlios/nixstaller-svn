@@ -513,7 +513,7 @@ void CInstallFilesScreen::Install()
     bool RootNeedPW = m_SUHandler.NeedPassword();
     char curfile[256], text[300];
     
-    ChangeStatusText(GetTranslation("Copying files"));
+    ChangeStatusText(GetTranslation("Extracting files"));
     while(1)
     {
         m_sPercent = ExtractArchive(curfile);
@@ -566,7 +566,11 @@ void CInstallFilesScreen::Install()
                 }
                 pclose(pPipe);
             }
-            else throwerror(true, "Error during command execution: Could not open pipe");
+            else
+            {
+                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), m_SUHandler.GetErrorMsgC());
+                // UNDONE
+            }
         }
         m_sPercent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
         UpdateStatusBar();

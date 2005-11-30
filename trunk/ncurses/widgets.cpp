@@ -3,29 +3,25 @@
 // CDK Label Wrapper
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, char **msg, int count, bool box,
-                                   bool shadow) : CBaseCDKWidget(box), m_iCount(count)
+                                   bool shadow) : CBaseCDKWidget(box)
 {
-    m_szLabelTxt = new char*[m_iCount];
-    for (int i=0;i<m_iCount;i++) m_szLabelTxt[i] = strdup(msg[i]);
-    m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
+    m_pLabel = newCDKLabel(pScreen, x, y, msg, count, box, shadow);
     if (!m_pLabel) throwerror(false, "Could not create text label");
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, bool box,
-                     bool shadow) : CBaseCDKWidget(box), m_iCount(1)
+                     bool shadow) : CBaseCDKWidget(box)
 {
-    m_szLabelTxt = new char*[1];
-    m_szLabelTxt[0] = strdup(msg.c_str());
-    m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
+    char *sz[1] = { const_cast<char*>(msg.c_str()) };
+    m_pLabel = newCDKLabel(pScreen, x, y, sz, 1, box, shadow);
     if (!m_pLabel) throwerror(false, "Could not create text label");
 }
 
 CCDKLabel::CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box,
-                     bool shadow) : CBaseCDKWidget(box), m_iCount(1)
+                     bool shadow) : CBaseCDKWidget(box)
 {
-    m_szLabelTxt = new char*[1];
-    m_szLabelTxt[0] = strdup(msg);
-    m_pLabel = newCDKLabel(pScreen, x, y, m_szLabelTxt, m_iCount, box, shadow);
+    char *sz[1] = { const_cast<char*>(msg) };
+    m_pLabel = newCDKLabel(pScreen, x, y, sz, 1, box, shadow);
     if (!m_pLabel) throwerror(false, "Could not create text label");
 }
 
@@ -35,8 +31,6 @@ void CCDKLabel::Destroy(void)
 
     CBaseCDKWidget::Destroy();
     destroyCDKLabel(m_pLabel);
-    for (int i=0;i<m_iCount;i++) free(m_szLabelTxt[i]);
-    delete [] m_szLabelTxt;
     m_pLabel = NULL;
 }
 
@@ -158,13 +152,13 @@ void CCDKSWindow::AddText(char *txt, bool wrap, int pos)
         {
             if ((line.length() + tmpstr.length() + 1) > (m_pSWindow->boxWidth-2))
             {
-                addCDKSwindow(m_pSWindow, CreateText(line.c_str()), BOTTOM);
+                addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), BOTTOM);
                 line = tmpstr;
             }
             else
                 line += " " + tmpstr;
         }
-        addCDKSwindow(m_pSWindow, CreateText(line.c_str()), pos);
+        addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), pos);
     }
     else
         addCDKSwindow(m_pSWindow, txt, pos);

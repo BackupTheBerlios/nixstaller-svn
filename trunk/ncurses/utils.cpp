@@ -242,10 +242,15 @@ void SetBottomLabel(char **msg, int count)
         BottomLabel = NULL;
     }
 
-    BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
     if (!BottomLabel)
-        throwerror(false, "Could not create bottom text window");
-    BottomLabel->SetBgColor(3);
+    {
+        BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
+        if (!BottomLabel)
+            throwerror(false, "Could not create bottom text window");
+        BottomLabel->SetBgColor(3);
+    }
+    else
+        BottomLabel->SetText(msg, count);
     BottomLabel->Draw();
     refreshCDKScreen(CDKScreen);
 }

@@ -1,14 +1,15 @@
 OVERALL
 - Check namespaces for libs? Or other solution
 - Check path with non su commands
-- Check what to do on when command fails
+- Check what to do when command fails
 - Check status bar for compiling
-- Warn user if cancel button is pressed
 - Check exit codes
+- Post message screen
+- Add dir chooser for dir params
+- Check permissions for inst dir
 
 
 MAIN
-- Check if all strings from CreateText are really constant
 
 
 NCURSES FRONTEND

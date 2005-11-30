@@ -417,9 +417,6 @@ bool ConfParams()
 
 bool InstallFiles()
 {
-    char *botlabel[1] = { GetTranslation("Installing files...please wait") };
-    SetBottomLabel(botlabel, 1);
-
     CCDKHistogram ProgressBar(CDKScreen, CENTER, 2, 1, 0, HORIZONTAL,
                               CreateText("<C></29/B>%s", GetTranslation("Install Progress")));
 
@@ -451,6 +448,7 @@ bool InstallFiles()
     for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
         it!=InstallInfo.command_entries.end(); it++)
     {
+        bool askpass = false;
         if ((*it)->need_root != NO_ROOT)
         {
             // Command may need root permission, check if it is so
@@ -460,12 +458,14 @@ bool InstallFiles()
                 if (p && access(p->value.c_str(), W_OK) != 0)
                 {
                     (*it)->need_root = NEED_ROOT;
+                    if (!askpass) askpass = true;
                 }
-                else continue;
             }
-            
-            if (passwd) continue; // No need to ask pass more than once...
-            
+            else if (!askpass) askpass = true;
+        }
+
+        if (askpass)
+        {
             CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter root password"), "", 40, 0, 256, vHMIXED);
             entry.SetHiddenChar('*');
             entry.SetBgColor(26);
@@ -521,6 +521,9 @@ bool InstallFiles()
             refreshCDKScreen(CDKScreen);
         }
     }
+
+    char *botlabel[1] = { CreateText(GetTranslation("Status: %s"), GetTranslation("Extracting files")) };
+    SetBottomLabel(botlabel, 1);
     
     bool needrootpw = SuHandler.NeedPassword();
     short percent = 0;
@@ -553,6 +556,10 @@ bool InstallFiles()
          it!=InstallInfo.command_entries.end(); it++)
     {
         if ((*it)->command.empty()) continue;
+
+        botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation((*it)->description.c_str()));
+        SetBottomLabel(botlabel, 1);
+
         std::string command = (*it)->command + " " + GetParameters(*it);
         InstallOutput.AddText("", false);
         InstallOutput.AddText(CreateText("Execute: %s", command.c_str()), false);
@@ -576,7 +583,7 @@ bool InstallFiles()
             {
                 while (fgets(term, sizeof(term), pipe))
                 {
-                    InstallOutput.AddText(term, false);
+                    InstallOutput.AddText(term);
 
                     chtype input = getch();
                     if (input == KEY_ESC) /*injectCDKSwindow(InstallOutput.GetSWin(), input);*/
@@ -589,7 +596,11 @@ bool InstallFiles()
                 }
                 pclose(pipe);
             }
-            else throwerror(true, "Error: Could not execute command");
+            else
+            {
+                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), SuHandler.GetErrorMsgC());
+                // UNDONE
+            }
             
 #if 0
             // Need to find a good way to safely suspend a process...this code doesn't always work :(
@@ -676,6 +687,9 @@ bool InstallFiles()
         ProgressBar.SetValue(0, 100, percent);
         ProgressBar.Draw();
     }
+
+    botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation("Done"));
+    SetBottomLabel(botlabel, 1);
     
     if (passwd)
     {

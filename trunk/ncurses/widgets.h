@@ -22,13 +22,11 @@ public:
 class CCDKLabel: public CBaseCDKWidget
 {
     CDKLABEL *m_pLabel;
-    int m_iCount;
-    char **m_szLabelTxt;
 
 public:
-    CCDKLabel(CDKSCREEN *pScreen, int x, int y, char **msg, int count, bool box, bool shadow=false);
-    CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, bool box, bool shadow=false);
-    CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box, bool shadow=false);
+    CCDKLabel(CDKSCREEN *pScreen, int x, int y, char **msg, int count, bool box=true, bool shadow=false);
+    CCDKLabel(CDKSCREEN *pScreen, int x, int y, const std::string &msg, bool box=true, bool shadow=false);
+    CCDKLabel(CDKSCREEN *pScreen, int x, int y, const char *msg, bool box=true, bool shadow=false);
     virtual ~CCDKLabel(void) { Destroy(); };
 
     virtual void Draw(void) { drawCDKLabel(m_pLabel, m_bBox); };
@@ -39,6 +37,10 @@ public:
     virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vLABEL, m_pLabel, key, function, data); };
     
     CDKLABEL *GetLabel(void) { return m_pLabel; };
+    void SetText(char **msg, int count) { setCDKLabelMessage(m_pLabel, msg, count); };
+    void SetText(const std::string &msg) { char *sz[1] = { const_cast<char*>(msg.c_str()) };
+                                           setCDKLabelMessage(m_pLabel, sz, 1); };
+    void SetText(const char *msg) { char *sz[1] = { const_cast<char*>(msg) }; setCDKLabelMessage(m_pLabel, sz, 1); };
 };
 
 class CCDKButtonBox: public CBaseCDKWidget
@@ -148,12 +150,13 @@ public:
     virtual void UnSetBgColor() { setCDKSwindowBackgroundColor(m_pSWindow, CreateText("<!%d!B>", m_sBackColor)); };
     virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vSWINDOW, m_pSWindow, key, function, data); };
     
-    void AddText(const std::string &txt, bool wrap=true, int pos=BOTTOM) { AddText(CreateText(txt.c_str()), wrap, pos); };
-    void AddText(const char *txt, bool wrap=true, int pos=BOTTOM) { AddText(CreateText(txt), wrap, pos); };
+    void AddText(const std::string &txt, bool wrap=true, int pos=BOTTOM) { AddText(const_cast<char *>(txt.c_str()),
+                                                                                   wrap, pos); };
+    void AddText(const char *txt, bool wrap=true, int pos=BOTTOM) { AddText(const_cast<char *>(txt), wrap, pos); };
     void AddText(char *str, bool wrap=true, int pos=BOTTOM);
     
-    int Exec(const char *command, int pos=BOTTOM) { return Exec(CreateText(command), pos); };
-    int Exec(const std::string &command, int pos=BOTTOM) { return Exec(CreateText(command.c_str()), pos); };
+    int Exec(const char *command, int pos=BOTTOM) { return Exec(const_cast<char *>(command), pos); };
+    int Exec(const std::string &command, int pos=BOTTOM) { return Exec(const_cast<char *>(command.c_str()), pos); };
     int Exec(char *command, int pos=BOTTOM) { return execCDKSwindow(m_pSWindow, command, pos); };
 
     void Activate(chtype *actions = NULL) { return activateCDKSwindow(m_pSWindow, actions); };
