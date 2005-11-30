@@ -417,6 +417,7 @@ bool ConfParams()
 
 bool InstallFiles()
 {
+    /*
     CCDKHistogram ProgressBar(CDKScreen, CENTER, 2, 1, 0, HORIZONTAL,
                               CreateText("<C></29/B>%s", GetTranslation("Install Progress")));
 
@@ -436,7 +437,47 @@ bool InstallFiles()
     InstallOutput.Draw();
     ProgressBar.Draw();
     refreshCDKScreen(CDKScreen);
+    */
 
+    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
+    char *buttons[1] = { GetTranslation("Cancel") };
+    CCharListHelper botlabel;
+    
+    botlabel.AddItem(CreateText("</B/27>ESC<!27!B>: %s", GetTranslation("Exit program")));
+    SetBottomLabel(botlabel, botlabel.Count());
+    
+    CCDKButtonBox ButtonBox(CDKScreen, 0, 14, 1, -1, 0, 1, 3, buttons, 1);
+    ButtonBox.SetBgColor(5);
+
+    CCDKSWindow InstallOutput(CDKScreen, 0, 0, 13, getmaxx(ButtonBox.GetBBox()->win)/2,
+                              CreateText("<C></29/B>%s", GetTranslation("Install output")), 2000);
+    InstallOutput.SetBgColor(5);
+    nodelay(WindowOf(InstallOutput.GetSWin()), true);
+
+    int halfx = getmaxx(ButtonBox.GetBBox()->win)/2;
+    CCDKSWindow StatusWindow(CDKScreen, halfx-1, 0, 6, halfx+1, CreateText("<C></B/29>%s<!29!B>", GetTranslation("Status")), 4);
+    StatusWindow.SetBgColor(5);
+    //StatusWindow.AddText(pFirstParam->description);
+    
+    CCDKSWindow ProggWindow(CDKScreen, halfx-1, 7, 7, halfx+1, NULL, 4);
+    ProggWindow.SetBgColor(5);
+    
+    setCDKSwindowLLChar(InstallOutput.GetSWin(), ACS_LTEE);
+    setCDKSwindowLRChar(InstallOutput.GetSWin(), ACS_BTEE);
+    setCDKSwindowURChar(InstallOutput.GetSWin(), ACS_TTEE);
+    setCDKSwindowULChar(StatusWindow.GetSWin(), ACS_TTEE);
+    setCDKSwindowLLChar(StatusWindow.GetSWin(), ACS_LTEE);
+    setCDKSwindowLRChar(StatusWindow.GetSWin(), ACS_RTEE);
+    setCDKSwindowURChar(ProggWindow.GetSWin(), ACS_RTEE);
+    setCDKSwindowLRChar(ProggWindow.GetSWin(), ACS_RTEE);
+    setCDKButtonboxULChar(ButtonBox.GetBBox(), ACS_LTEE);
+    setCDKButtonboxURChar(ButtonBox.GetBBox(), ACS_RTEE);
+    
+    ButtonBox.Draw();
+    StatusWindow.Draw();
+    ProggWindow.Draw();
+    InstallOutput.Draw();
+    
     // Check if we need root access
     char *passwd = NULL;
     CLibSU SuHandler;
@@ -522,9 +563,6 @@ bool InstallFiles()
         }
     }
 
-    char *botlabel[1] = { CreateText(GetTranslation("Status: %s"), GetTranslation("Extracting files")) };
-    SetBottomLabel(botlabel, 1);
-    
     bool needrootpw = SuHandler.NeedPassword();
     short percent = 0;
     while(percent<100)
@@ -537,8 +575,8 @@ bool InstallFiles()
         if (percent==100) InstallOutput.AddText("Done!", false);
         else if (percent==-1) throwerror(true, "Error during extracting files");
         
-        ProgressBar.SetValue(0, 100, percent);
-        ProgressBar.Draw();
+        //ProgressBar.SetValue(0, 100, percent);
+        //ProgressBar.Draw();
 
         chtype input = getch();
         if (input == KEY_ESC)
@@ -548,8 +586,8 @@ bool InstallFiles()
         }
     }
     
-    ProgressBar.SetValue(0, 100, 0);
-    ProgressBar.Draw();
+//    ProgressBar.SetValue(0, 100, 0);
+  //  ProgressBar.Draw();
     percent = 0;
 
     for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
@@ -557,8 +595,8 @@ bool InstallFiles()
     {
         if ((*it)->command.empty()) continue;
 
-        botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation((*it)->description.c_str()));
-        SetBottomLabel(botlabel, 1);
+//        botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation((*it)->description.c_str()));
+  //      SetBottomLabel(botlabel, 1);
 
         std::string command = (*it)->command + " " + GetParameters(*it);
         InstallOutput.AddText("", false);
@@ -684,12 +722,12 @@ bool InstallFiles()
         }
 
         percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
-        ProgressBar.SetValue(0, 100, percent);
-        ProgressBar.Draw();
+//        ProgressBar.SetValue(0, 100, percent);
+  //      ProgressBar.Draw();
     }
 
-    botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation("Done"));
-    SetBottomLabel(botlabel, 1);
+//    botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation("Done"));
+  //  SetBottomLabel(botlabel, 1);
     
     if (passwd)
     {
@@ -700,12 +738,12 @@ bool InstallFiles()
 
     // Notify user that installation is done
     CCharListHelper message;
-    char *buttons[1] = { GetTranslation("Exit") };
+    char *b[1] = { GetTranslation("Exit") };
     
     message.AddItem(CreateText(GetTranslation("Installation of %s complete!"), InstallInfo.program_name));
     message.AddItem(GetTranslation("Press enter to exit"));
     
-    CCDKDialog FinishDiag(CDKScreen, CENTER, CENTER, message, message.Count(), buttons, 1);
+    CCDKDialog FinishDiag(CDKScreen, CENTER, CENTER, message, message.Count(), b, 1);
     FinishDiag.SetBgColor(26);
     FinishDiag.Activate();
 
