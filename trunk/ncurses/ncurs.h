@@ -30,7 +30,7 @@ bool YesNoBox(const char *msg, ...);
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };
-
+                  
 class CCharListHelper
 {
     std::list<char *> m_Items;
@@ -73,5 +73,6 @@ extern CDKSCREEN *CDKScreen;
 extern CCDKLabel *BottomLabel;
 
 inline void PrintInstOutput(const char *msg, void *p) { ((CCDKSWindow *)p)->AddText(msg, false); };
+inline int GetMaxHeight(void) { return getbegy(BottomLabel->GetLabel()->win)-2; };
 
 #endif

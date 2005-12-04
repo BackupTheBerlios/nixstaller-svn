@@ -92,7 +92,7 @@ bool SelectLanguage()
     for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
         LangItems.AddItem(*p);
 
-    CCDKScroll ScrollList(CDKScreen, CENTER, CENTER, DEFAULT_HEIGHT, DEFAULT_WIDTH, RIGHT, title, LangItems,
+    CCDKScroll ScrollList(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, RIGHT, title, LangItems,
                           LangItems.Count());
     ScrollList.SetBgColor(5);
     
@@ -162,14 +162,15 @@ bool SelectDir()
 
     if (count < 1) throwerror(true, "Couldn't read directory %s", InstallInfo.dest_dir.c_str());
     
-    CCDKAlphaList FileList(CDKScreen, CENTER, 2, DEFAULT_HEIGHT-2, DEFAULT_WIDTH, title, label, item, count);
+    CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-3, 1,
+                            49, 0, 1, 3, buttons, 3);
+    ButtonBox.SetBgColor(5);
+
+    CCDKAlphaList FileList(CDKScreen, CENTER, 2, getbegy(ButtonBox.GetBBox()->win)-1, DEFAULT_WIDTH, title, label, item,
+                           count);
     FileList.SetBgColor(5);
     setCDKEntryPreProcess(FileList.GetAList()->entryField, CreateDirK, FileList.GetAList());
     FileList.GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
-
-    CCDKButtonBox ButtonBox(CDKScreen, CENTER, getbegy(FileList.GetAList()->win)+FileList.GetAList()->boxHeight-1, 1,
-                            49, 0, 1, 3, buttons, 3);
-    ButtonBox.SetBgColor(5);
     
     setCDKAlphalistLLChar(FileList.GetAList(), ACS_LTEE);
     setCDKAlphalistLRChar(FileList.GetAList(), ACS_RTEE);
@@ -282,19 +283,21 @@ bool ConfParams()
     botlabel.AddItem("</B/27>  v<!27!B>");
     SetBottomLabel(botlabel, botlabel.Count());
     
-    CCDKButtonBox ButtonBox(CDKScreen, CENTER, DEFAULT_HEIGHT, 1, 68, 0, 1, 3, buttons, 3);
+    CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-3, 1, 68, 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
 
-    CCDKScroll ScrollList(CDKScreen, getbegx(ButtonBox.GetBBox()->win), 2, DEFAULT_HEIGHT-1, 35, RIGHT, title, ParamItems,
-                          ParamItems.Count());
+    CCDKScroll ScrollList(CDKScreen, getbegx(ButtonBox.GetBBox()->win), 2, getbegy(ButtonBox.GetBBox()->win)-1, 35, RIGHT,
+                          title, ParamItems, ParamItems.Count());
     ScrollList.SetBgColor(5);
+
+    const int halfy = getmaxy(ScrollList.GetScroll()->win)/2;
     
-    CCDKSWindow DescWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 2, 5, 34, CreateText("<C></B/29>%s<!29!B>",
+    CCDKSWindow DescWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 2, halfy-1, 34, CreateText("<C></B/29>%s<!29!B>",
                            GetTranslation("Description")), 4);
     DescWindow.SetBgColor(5);
     DescWindow.AddText(pFirstParam->description);
     
-    CCDKSWindow DefWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 8, 4, 34, NULL, 4);
+    CCDKSWindow DefWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, halfy+2, halfy-1, 34, NULL, 4);
     DefWindow.SetBgColor(5);
     
     const char *str = pFirstParam->defaultval.c_str();
@@ -417,28 +420,6 @@ bool ConfParams()
 
 bool InstallFiles()
 {
-    /*
-    CCDKHistogram ProgressBar(CDKScreen, CENTER, 2, 1, 0, HORIZONTAL,
-                              CreateText("<C></29/B>%s", GetTranslation("Install Progress")));
-
-    setCDKHistogramLLChar(ProgressBar.GetHistogram(), ACS_LTEE);
-    setCDKHistogramLRChar(ProgressBar.GetHistogram(), ACS_RTEE);
-    ProgressBar.SetBgColor(5);
-    ProgressBar.SetHistogram(vPERCENT, TOP, 0, 100, 0, COLOR_PAIR (24) | A_REVERSE | ' ', A_BOLD);
-    
-    CCDKSWindow InstallOutput(CDKScreen, CENTER, 5, 12, 0, CreateText("<C></29/B>%s", GetTranslation("Status")), 2000);
-
-    setCDKSwindowULChar(InstallOutput.GetSWin(), ACS_LTEE);
-    setCDKSwindowURChar(InstallOutput.GetSWin(), ACS_RTEE);
-    InstallOutput.SetBgColor(5);
-    InstallOutput.Bind(KEY_ESC, ExitK, NULL);
-    nodelay(WindowOf(InstallOutput.GetSWin()), true);
-    
-    InstallOutput.Draw();
-    ProgressBar.Draw();
-    refreshCDKScreen(CDKScreen);
-    */
-
     char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
     char *buttons[1] = { GetTranslation("Cancel") };
     CCharListHelper botlabel;
@@ -446,37 +427,31 @@ bool InstallFiles()
     botlabel.AddItem(CreateText("</B/27>ESC<!27!B>: %s", GetTranslation("Exit program")));
     SetBottomLabel(botlabel, botlabel.Count());
     
-    CCDKButtonBox ButtonBox(CDKScreen, 0, 14, 1, -1, 0, 1, 3, buttons, 1);
-    ButtonBox.SetBgColor(5);
-
-    CCDKSWindow InstallOutput(CDKScreen, 0, 0, 13, getmaxx(ButtonBox.GetBBox()->win)/2,
+    CCDKSWindow InstallOutput(CDKScreen, 0, 4, getbegy(BottomLabel->GetLabel()->win)-7, -1,
                               CreateText("<C></29/B>%s", GetTranslation("Install output")), 2000);
     InstallOutput.SetBgColor(5);
-    nodelay(WindowOf(InstallOutput.GetSWin()), true);
+    nodelay(WindowOf(InstallOutput.GetSWin()), true); // Make sure input doesn't block
 
-    int halfx = getmaxx(ButtonBox.GetBBox()->win)/2;
-    CCDKSWindow StatusWindow(CDKScreen, halfx-1, 0, 6, halfx+1, CreateText("<C></B/29>%s<!29!B>", GetTranslation("Status")), 4);
-    StatusWindow.SetBgColor(5);
-    //StatusWindow.AddText(pFirstParam->description);
-    
-    CCDKSWindow ProggWindow(CDKScreen, halfx-1, 7, 7, halfx+1, NULL, 4);
+    const int halfx = getmaxx(InstallOutput.GetSWin()->win)/2;
+    const int maxx = getmaxx(InstallOutput.GetSWin()->win);
+
+    CCDKSWindow ProggWindow(CDKScreen, 0, 0, 5, maxx, NULL, 4);
     ProggWindow.SetBgColor(5);
+    ProggWindow.AddText("");
+    ProggWindow.AddText(CreateText("</B/29>%s<!29!B>", GetTranslation("Status:")));
+    ProggWindow.AddText(CreateText("%s (1/%d)", GetTranslation("Extracting Files"), InstallInfo.command_entries.size()+1),
+                        true, BOTTOM, 24);
     
-    setCDKSwindowLLChar(InstallOutput.GetSWin(), ACS_LTEE);
-    setCDKSwindowLRChar(InstallOutput.GetSWin(), ACS_BTEE);
-    setCDKSwindowURChar(InstallOutput.GetSWin(), ACS_TTEE);
-    setCDKSwindowULChar(StatusWindow.GetSWin(), ACS_TTEE);
-    setCDKSwindowLLChar(StatusWindow.GetSWin(), ACS_LTEE);
-    setCDKSwindowLRChar(StatusWindow.GetSWin(), ACS_RTEE);
-    setCDKSwindowURChar(ProggWindow.GetSWin(), ACS_RTEE);
+    CCDKHistogram ProgressBar(CDKScreen, 25, 1, 1, maxx-29, HORIZONTAL,
+                              CreateText("<C></29/B>%s", GetTranslation("Total Progress")), false);
+    ProgressBar.SetBgColor(5);
+    ProgressBar.SetHistogram(vPERCENT, TOP, 0, 100, 0, COLOR_PAIR (24) | A_REVERSE | ' ', A_BOLD);
+    
+    setCDKSwindowLLChar(ProggWindow.GetSWin(), ACS_LTEE);
     setCDKSwindowLRChar(ProggWindow.GetSWin(), ACS_RTEE);
-    setCDKButtonboxULChar(ButtonBox.GetBBox(), ACS_LTEE);
-    setCDKButtonboxURChar(ButtonBox.GetBBox(), ACS_RTEE);
     
-    ButtonBox.Draw();
-    StatusWindow.Draw();
-    ProggWindow.Draw();
     InstallOutput.Draw();
+    ProggWindow.Draw();
     
     // Check if we need root access
     char *passwd = NULL;
@@ -574,9 +549,9 @@ bool InstallFiles()
         InstallOutput.AddText(text, false);
         if (percent==100) InstallOutput.AddText("Done!", false);
         else if (percent==-1) throwerror(true, "Error during extracting files");
-        
-        //ProgressBar.SetValue(0, 100, percent);
-        //ProgressBar.Draw();
+
+        ProgressBar.SetValue(0, 100, percent/(1+InstallInfo.command_entries.size()));
+        ProgressBar.Draw();
 
         chtype input = getch();
         if (input == KEY_ESC)
@@ -586,23 +561,28 @@ bool InstallFiles()
         }
     }
     
-//    ProgressBar.SetValue(0, 100, 0);
-  //  ProgressBar.Draw();
-    percent = 0;
+    percent /= (1+InstallInfo.command_entries.size()); // Convert to overall progress
 
+    short step = 2; // Not 1, because extracting files is also a step
     for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
-         it!=InstallInfo.command_entries.end(); it++)
+         it!=InstallInfo.command_entries.end(); it++, step++)
     {
         if ((*it)->command.empty()) continue;
 
-//        botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation((*it)->description.c_str()));
-  //      SetBottomLabel(botlabel, 1);
+        ProggWindow.Clear();
+        ProggWindow.AddText("");
+        ProggWindow.AddText(CreateText("</B/29>%s<!29!B>", GetTranslation("Status:")));
+        ProggWindow.AddText(CreateText("%s (%d/%d)", GetTranslation((*it)->description.c_str()), step,
+                            InstallInfo.command_entries.size()+1), true, BOTTOM, 24);
 
+        ProgressBar.Draw();
+        
         std::string command = (*it)->command + " " + GetParameters(*it);
-        InstallOutput.AddText("", false);
-        InstallOutput.AddText(CreateText("Execute: %s", command.c_str()), false);
-        InstallOutput.AddText("", false);
-        InstallOutput.AddText("", false);
+        InstallOutput.AddText("");
+        InstallOutput.AddText(CreateText("Execute: %s", command.c_str()));
+        InstallOutput.AddText("");
+        InstallOutput.AddText("");
+        
         if (needrootpw && ((*it)->need_root == NEED_ROOT))
         {
             SuHandler.SetCommand(command);
@@ -721,14 +701,10 @@ bool InstallFiles()
 #endif
         }
 
-        percent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
-//        ProgressBar.SetValue(0, 100, percent);
-  //      ProgressBar.Draw();
+        percent += (1.0f/((float)InstallInfo.command_entries.size()+1.0f))*100.0f;
+        ProgressBar.SetValue(0, 100, percent);
     }
 
-//    botlabel[0] = CreateText(GetTranslation("Status: %s"), GetTranslation("Done"));
-  //  SetBottomLabel(botlabel, 1);
-    
     if (passwd)
     {
         // Nullify pass...just incase

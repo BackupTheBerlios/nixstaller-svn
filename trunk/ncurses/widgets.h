@@ -152,8 +152,9 @@ public:
     
     void AddText(const std::string &txt, bool wrap=true, int pos=BOTTOM) { AddText(const_cast<char *>(txt.c_str()),
                                                                                    wrap, pos); };
-    void AddText(const char *txt, bool wrap=true, int pos=BOTTOM) { AddText(const_cast<char *>(txt), wrap, pos); };
-    void AddText(char *str, bool wrap=true, int pos=BOTTOM);
+    void AddText(const char *txt, bool wrap=true, int pos=BOTTOM,
+                 int maxch=-1) { AddText(const_cast<char *>(txt), wrap, pos, maxch); };
+    void AddText(char *str, bool wrap=true, int pos=BOTTOM, int maxch=-1);
     
     int Exec(const char *command, int pos=BOTTOM) { return Exec(const_cast<char *>(command), pos); };
     int Exec(const std::string &command, int pos=BOTTOM) { return Exec(const_cast<char *>(command.c_str()), pos); };

@@ -191,7 +191,21 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
 {
     char *button[2], **info = NULL;
     
-    CDKVIEWER *Viewer = newCDKViewer(CDKScreen, CENTER, 2, DEFAULT_HEIGHT, DEFAULT_WIDTH, buttons, buttoncount,
+    // Set bottom label
+    int x1, x2, y1, y2;
+    getbegyx(MainWin, y1, x1);
+    getmaxyx(MainWin, y2, x2);
+    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
+    char *botlabel[4] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
+                          GetTranslation("Go to next button"), maxtxtlength,
+                          GetTranslation("Activate current button")),
+                          "</B/27>  ^<!27!B>",
+                          CreateText("</B/27>< <#BU> ><!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
+                          GetTranslation("Scroll text"), maxtxtlength, GetTranslation("Exit program")),
+                          "</B/27>  v<!27!B>" };
+    SetBottomLabel(botlabel, 4);
+
+    CDKVIEWER *Viewer = newCDKViewer(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, buttons, buttoncount,
                                      A_REVERSE, true, false);
 
     if (Viewer == NULL)
@@ -204,30 +218,12 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
         return NO_FILE;
     }
 
-    // Set bottom label
-    int x1, x2, y1, y2;
-    getbegyx(MainWin, y1, x1);
-    getmaxyx(MainWin, y2, x2);
-    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
-    char *botlabel[4] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
-                                     GetTranslation("Go to next button"), maxtxtlength,
-                                     GetTranslation("Activate current button")),
-                          "</B/27>  ^<!27!B>",
-                          CreateText("</B/27>< <#BU> ><!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
-                                     GetTranslation("Scroll text"), maxtxtlength, GetTranslation("Exit program")),
-                          "</B/27>  v<!27!B>" };
-    SetBottomLabel(botlabel, 4);
-
-    /* Set up the viewer title, and the contents to the widget. */
     setCDKViewer(Viewer, title, info, lines, A_REVERSE, true, true, true);
     setCDKViewerBackgroundColor(Viewer, "</B/5");
     
-    /* Activate the viewer widget. */
     int selected = activateCDKViewer (Viewer, (chtype *)NULL);
-
     int ret = (Viewer->exitType == vNORMAL) ? selected : ESCAPE;
     
-    /* Clean up. */
     setCDKViewerBackgroundColor(Viewer, "!5!B");
     destroyCDKViewer(Viewer);
     refreshCDKScreen(CDKScreen);

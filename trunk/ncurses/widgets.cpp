@@ -140,8 +140,10 @@ void CCDKSWindow::Destroy()
     m_pSWindow = NULL;
 }
 
-void CCDKSWindow::AddText(char *txt, bool wrap, int pos)
+void CCDKSWindow::AddText(char *txt, bool wrap, int pos, int maxch)
 {
+    if (maxch == -1) maxch = m_pSWindow->boxWidth-2;
+    
     if (wrap)
     {
         std::istringstream istr(txt);
@@ -150,7 +152,7 @@ void CCDKSWindow::AddText(char *txt, bool wrap, int pos)
         istr >> line; // Need atleast one word...
         while(istr >> tmpstr)
         {
-            if ((line.length() + tmpstr.length() + 1) > (m_pSWindow->boxWidth-2))
+            if ((line.length() + tmpstr.length() + 1) > maxch)
             {
                 addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), BOTTOM);
                 line = tmpstr;
