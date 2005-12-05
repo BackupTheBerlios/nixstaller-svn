@@ -290,14 +290,16 @@ bool ConfParams()
                           title, ParamItems, ParamItems.Count());
     ScrollList.SetBgColor(5);
 
-    const int halfy = getmaxy(ScrollList.GetScroll()->win)/2;
+    const int defh = 3;
     
-    CCDKSWindow DescWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, 2, halfy-1, 34, CreateText("<C></B/29>%s<!29!B>",
+    CCDKSWindow DescWindow(CDKScreen, (getbegx(ScrollList.GetScroll()->win) + getmaxx(ScrollList.GetScroll()->win))-1, 2,
+                           getmaxy(ScrollList.GetScroll()->win)-defh-1, 34, CreateText("<C></B/29>%s<!29!B>",
                            GetTranslation("Description")), 4);
     DescWindow.SetBgColor(5);
     DescWindow.AddText(pFirstParam->description);
     
-    CCDKSWindow DefWindow(CDKScreen, getbegx(ButtonBox.GetBBox()->win)+35, halfy+2, halfy-1, 34, NULL, 4);
+    CCDKSWindow DefWindow(CDKScreen, (getbegx(ScrollList.GetScroll()->win) + getmaxx(ScrollList.GetScroll()->win))-1,
+                          getmaxy(DescWindow.GetSWin()->win), defh, 34, NULL, 4);
     DefWindow.SetBgColor(5);
     
     const char *str = pFirstParam->defaultval.c_str();
