@@ -11,6 +11,7 @@ bool FinishInstall(void);
 WINDOW *MainWin = NULL;
 CDKSCREEN *CDKScreen = NULL;
 CCDKLabel *BottomLabel = NULL;
+CButtonBar ButtonBar;
 
 bool (*Functions[])(void)  =
 {
@@ -56,13 +57,8 @@ int main(int argc, char *argv[])
             refreshCDKScreen(CDKScreen);
         }
     }
-    
-    // Deinit
-    if (BottomLabel) delete BottomLabel;
-    if (CDKScreen) destroyCDKScreen(CDKScreen);
-    
-    endCDK();
-    MainEnd();
+
+    EndProg();
     return 0;
 }
 
@@ -77,17 +73,22 @@ bool SelectLanguage()
     
     char title[] = "<C></B/29>Please select a language<!29!B>";
     CCharListHelper LangItems;
-    CCharListHelper botlabel;
+    /*CCharListHelper botlabel;
     int x1, x2, y1, y2;
     getbegyx(MainWin, y1, x1);
     getmaxyx(MainWin, y2, x2);
     int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
+
     
     botlabel.AddItem("</B/27>  ^<!27!B>");
     botlabel.AddItem("</B/27>  <#BU>  <!27!B> : Highlight previous/next language\t\t"
                      "</B/27>ESC<!27!B>   : Exit program");
     botlabel.AddItem("</B/27>  v<!27!B>");
-    SetBottomLabel(botlabel, botlabel.Count());
+    SetBottomLabel(botlabel, botlabel.Count());*/
+    ButtonBar.Clear();
+    ButtonBar.AddButton("Arrows", "Navigate menu");
+    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.Draw();
     
     for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
         LangItems.AddItem(*p);

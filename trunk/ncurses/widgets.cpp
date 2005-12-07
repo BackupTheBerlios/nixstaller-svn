@@ -207,3 +207,38 @@ void CCDKHistogram::SetHistogram(EHistogramDisplayType vtype, int statspos, int 
 {
     setCDKHistogram(m_pHistogram, vtype, statspos, statattr, min, max, cur, fillch, m_bBox);
 }
+
+// CDK Wrapper Ends here
+
+// Button Bar
+
+void CButtonBar::AddButton(const char *button, const char *desc)
+{
+    std::string txt = std::string(" </B/16>") + GetTranslation(button) + "<!16!B>: </B/8>" + GetTranslation(desc) + "<!8!B> ";
+    if (m_Texts.Count() && (getmaxy(MainWin) < (sizeof(m_Texts[m_Texts.Count()-1]) + txt.length())))
+    {
+        m_Texts.AddItem(m_szCurrentText);
+        m_szCurrentText.clear();
+    }
+    else
+        m_szCurrentText += txt;
+}
+
+void CButtonBar::Draw()
+{
+    if (!m_szCurrentText.empty()) { m_Texts.AddItem(m_szCurrentText); m_szCurrentText.clear(); }
+    if (!m_Texts.Count()) return;
+    
+    if (!m_pLabel)
+    {
+        m_pLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, m_Texts, m_Texts.Count());
+        if (!m_pLabel)
+            throwerror(false, "Could not create bottom text window");
+        m_pLabel->SetBgColor(24);
+    }
+    else
+        m_pLabel->SetText(m_Texts, m_Texts.Count());
+    
+    m_pLabel->Draw();
+    refreshCDKScreen(CDKScreen);
+}

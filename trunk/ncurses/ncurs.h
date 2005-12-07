@@ -45,7 +45,7 @@ public:
      
     operator char**(void) { return GetArray(); };
     char *operator [](int n) { return GetArray()[n]; }
-    
+
     void AddItem(char *str) { m_Items.push_back(strdup(str)); m_bModified = true; };
     void AddItem(const std::string &str) { m_Items.push_back(strdup(str.c_str())); m_bModified = true; };
     void Clear(void) { for(LI it=m_Items.begin();it!=m_Items.end();it++) free(*it); m_Items.clear(); delete [] m_pCList;
@@ -71,8 +71,9 @@ public:
 extern WINDOW *MainWin;
 extern CDKSCREEN *CDKScreen;
 extern CCDKLabel *BottomLabel;
+extern CButtonBar ButtonBar;
 
 inline void PrintInstOutput(const char *msg, void *p) { ((CCDKSWindow *)p)->AddText(msg, false); };
-inline int GetMaxHeight(void) { return getbegy(BottomLabel->GetLabel()->win)-2; };
+inline int GetMaxHeight(void) { return /*getbegy(BottomLabel->GetLabel()->win)-2;*/ getmaxy(MainWin)-4; };
 
 #endif

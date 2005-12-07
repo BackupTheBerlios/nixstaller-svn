@@ -6,6 +6,7 @@ void EndProg()
 
     if (CDKScreen)
     {
+        ButtonBar.Destroy();
         destroyCDKScreen(CDKScreen);
         endCDK();
     }
@@ -30,6 +31,7 @@ void throwerror(bool dialog, const char *error, ...)
 
     if (CDKScreen)
     {
+        ButtonBar.Destroy();
         destroyCDKScreen(CDKScreen);
         endCDK();
     }
@@ -231,22 +233,21 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
 }
 
 void SetBottomLabel(char **msg, int count)
-{
-    if (BottomLabel)
-    {
-        delete BottomLabel;
-        BottomLabel = NULL;
-    }
-
+{return;
+    char *txt[1] = { CreateText("</B/27>TAB<!27!B>: %s </B/27>ENTER<!27!B>: %s </B/27>ARROWS<!27!B>: %s",
+        GetTranslation("Next button"), GetTranslation("Activate button"), GetTranslation("Navigate menu")) };
+    
     if (!BottomLabel)
     {
-        BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
+        //BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
+        BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, txt, 1, false);
         if (!BottomLabel)
             throwerror(false, "Could not create bottom text window");
         BottomLabel->SetBgColor(3);
     }
     else
-        BottomLabel->SetText(msg, count);
+        //BottomLabel->SetText(msg, count);
+        BottomLabel->SetText(txt, count);
     BottomLabel->Draw();
     refreshCDKScreen(CDKScreen);
 }

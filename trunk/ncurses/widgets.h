@@ -1,6 +1,8 @@
 #ifndef CDK_WIDGET_H
 #define CDK_WIDGET_H
 
+// CDK Wrapper Classes
+
 class CBaseCDKWidget
 {
 protected:
@@ -212,6 +214,24 @@ public:
                       chtype statattr=A_BOLD);
     void SetValue(int min, int max, int cur) { setCDKHistogramValue(m_pHistogram, min, max, cur); };
     CDKHISTOGRAM *GetHistogram(void) { return m_pHistogram; };
+};
+
+// CDK Wrapper Ends here
+
+class CButtonBar
+{
+    std::string m_szCurrentText;
+    CCharListHelper m_Texts;
+    CCDKLabel *m_pLabel;
+    
+public:
+    CButtonBar(void) : m_pLabel(NULL) { };
+    ~CButtonBar(void) { Destroy(); };
+    
+    void AddButton(const char *button, const char *desc);
+    void Clear(void) { m_Texts.Clear(); };
+    void Draw(void);
+    void Destroy(void) { delete m_pLabel; m_pLabel = NULL; };
 };
 
 #endif
