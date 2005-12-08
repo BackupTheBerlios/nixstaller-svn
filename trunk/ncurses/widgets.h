@@ -221,17 +221,19 @@ public:
 class CButtonBar
 {
     std::string m_szCurrentText;
+    int m_iCurrTextLength;
     CCharListHelper m_Texts;
     CCDKLabel *m_pLabel;
     
 public:
-    CButtonBar(void) : m_pLabel(NULL) { };
+    CButtonBar(void) : m_iCurrTextLength(0), m_pLabel(NULL) { };
     ~CButtonBar(void) { Destroy(); };
     
     void AddButton(const char *button, const char *desc);
     void Clear(void) { m_Texts.Clear(); };
     void Draw(void);
     void Destroy(void) { delete m_pLabel; m_pLabel = NULL; };
+    CCDKLabel *GetLabel(void) { return m_pLabel; };
 };
 
 #endif

@@ -24,7 +24,6 @@ int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, c
 int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype key);
 int ExitK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key);
 int ViewFile(char *file, char **buttons, int buttoncount, char *title);
-void SetBottomLabel(char **msg, int count);
 void WarningBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
 
@@ -58,7 +57,7 @@ public:
             if (m_pCList) delete [] m_pCList;
             m_pCList=new char*[m_Items.size()+1];
             int i=0;
-            for(LI it=m_Items.begin(); it!=m_Items.end(); it++) m_pCList[i++] = *it;
+            for(LI it=m_Items.begin(); it!=m_Items.end(); it++, i++) m_pCList[i] = *it;
             m_pCList[i] = NULL;
             m_bModified = false;
         }
@@ -70,10 +69,9 @@ public:
 
 extern WINDOW *MainWin;
 extern CDKSCREEN *CDKScreen;
-extern CCDKLabel *BottomLabel;
 extern CButtonBar ButtonBar;
 
 inline void PrintInstOutput(const char *msg, void *p) { ((CCDKSWindow *)p)->AddText(msg, false); };
-inline int GetMaxHeight(void) { return /*getbegy(BottomLabel->GetLabel()->win)-2;*/ getmaxy(MainWin)-4; };
+inline int GetMaxHeight(void) { return getbegy(ButtonBar.GetLabel()->GetLabel()->win)-2; };
 
 #endif

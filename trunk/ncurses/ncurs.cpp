@@ -10,7 +10,6 @@ bool FinishInstall(void);
 
 WINDOW *MainWin = NULL;
 CDKSCREEN *CDKScreen = NULL;
-CCDKLabel *BottomLabel = NULL;
 CButtonBar ButtonBar;
 
 bool (*Functions[])(void)  =
@@ -73,18 +72,7 @@ bool SelectLanguage()
     
     char title[] = "<C></B/29>Please select a language<!29!B>";
     CCharListHelper LangItems;
-    /*CCharListHelper botlabel;
-    int x1, x2, y1, y2;
-    getbegyx(MainWin, y1, x1);
-    getmaxyx(MainWin, y2, x2);
-    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
-
     
-    botlabel.AddItem("</B/27>  ^<!27!B>");
-    botlabel.AddItem("</B/27>  <#BU>  <!27!B> : Highlight previous/next language\t\t"
-                     "</B/27>ESC<!27!B>   : Exit program");
-    botlabel.AddItem("</B/27>  v<!27!B>");
-    SetBottomLabel(botlabel, botlabel.Count());*/
     ButtonBar.Clear();
     ButtonBar.AddButton("Arrows", "Navigate menu");
     ButtonBar.AddButton("ESC", "Exit program");
@@ -139,23 +127,14 @@ bool SelectDir()
     char label[] = "Dir: ";
     char **item = NULL;
     
-    // Set bottom label
-    int x1, x2, y1, y2;
-    getbegyx(MainWin, y1, x1);
-    getmaxyx(MainWin, y2, x2);
-    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
-    CCharListHelper botlabel;
+    ButtonBar.Clear();
+    ButtonBar.AddButton("TAB", "Next button");
+    ButtonBar.AddButton("ENTER", "Activate button");
+    ButtonBar.AddButton("Arrows", "Navigate menu");
+    ButtonBar.AddButton("C", "Create directory");
+    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.Draw();
     
-    botlabel.AddItem(CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
-                                GetTranslation("Go to next button"), maxtxtlength, GetTranslation("Activate current button")));
-    botlabel.AddItem("</B/27>  ^<!27!B>");
-    botlabel.AddItem(CreateText("</B/27>  <#BU>  <!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
-                                GetTranslation("Highlight previous/next dir"), maxtxtlength, GetTranslation("Exit program")));
-    botlabel.AddItem("</B/27>  v<!27!B>");
-    botlabel.AddItem(CreateText("</B/27>C<!27!B>     : %*.*s", -txtfieldwidth, maxtxtlength,
-                                GetTranslation("Create new directory")));
-    SetBottomLabel(botlabel, botlabel.Count());
-
     if (chdir(InstallInfo.dest_dir.c_str()) != 0)
         throwerror(true, "Couldn't open directory '%s'", InstallInfo.dest_dir.c_str());
 
@@ -270,19 +249,13 @@ bool ConfParams()
     
     char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
     char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
-    CCharListHelper botlabel;
-    int x1, x2, y1, y2;
-    getbegyx(MainWin, y1, x1);
-    getmaxyx(MainWin, y2, x2);
-    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
     
-    botlabel.AddItem(CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
-                     GetTranslation("Go to next button"), maxtxtlength, GetTranslation("Activate current button")));
-    botlabel.AddItem("</B/27>  ^<!27!B>");
-    botlabel.AddItem(CreateText("</B/27>  <#BU>  <!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
-                     GetTranslation("Highlight previous/next parameter"), maxtxtlength, GetTranslation("Exit program")));
-    botlabel.AddItem("</B/27>  v<!27!B>");
-    SetBottomLabel(botlabel, botlabel.Count());
+    ButtonBar.Clear();
+    ButtonBar.AddButton("TAB", "Next button");
+    ButtonBar.AddButton("ENTER", "Activate button");
+    ButtonBar.AddButton("Arrows", "Navigate menu");
+    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.Draw();
     
     CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-3, 1, 68, 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
@@ -424,13 +397,12 @@ bool ConfParams()
 bool InstallFiles()
 {
     char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
-    char *buttons[1] = { GetTranslation("Cancel") };
-    CCharListHelper botlabel;
     
-    botlabel.AddItem(CreateText("</B/27>ESC<!27!B>: %s", GetTranslation("Exit program")));
-    SetBottomLabel(botlabel, botlabel.Count());
+    ButtonBar.Clear();
+    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.Draw();
     
-    CCDKSWindow InstallOutput(CDKScreen, 0, 4, getbegy(BottomLabel->GetLabel()->win)-7, -1,
+    CCDKSWindow InstallOutput(CDKScreen, 0, 6, GetMaxHeight()-7, -1,
                               CreateText("<C></29/B>%s", GetTranslation("Install output")), 2000);
     InstallOutput.SetBgColor(5);
     nodelay(WindowOf(InstallOutput.GetSWin()), true); // Make sure input doesn't block
@@ -438,14 +410,14 @@ bool InstallFiles()
     const int halfx = getmaxx(InstallOutput.GetSWin()->win)/2;
     const int maxx = getmaxx(InstallOutput.GetSWin()->win);
 
-    CCDKSWindow ProggWindow(CDKScreen, 0, 0, 5, maxx, NULL, 4);
+    CCDKSWindow ProggWindow(CDKScreen, 0, 2, 5, maxx, NULL, 4);
     ProggWindow.SetBgColor(5);
     ProggWindow.AddText("");
     ProggWindow.AddText(CreateText("</B/29>%s<!29!B>", GetTranslation("Status:")));
     ProggWindow.AddText(CreateText("%s (1/%d)", GetTranslation("Extracting Files"), InstallInfo.command_entries.size()+1),
                         true, BOTTOM, 24);
     
-    CCDKHistogram ProgressBar(CDKScreen, 25, 1, 1, maxx-29, HORIZONTAL,
+    CCDKHistogram ProgressBar(CDKScreen, 25, 3, 1, maxx-29, HORIZONTAL,
                               CreateText("<C></29/B>%s", GetTranslation("Total Progress")), false);
     ProgressBar.SetBgColor(5);
     ProgressBar.SetHistogram(vPERCENT, TOP, 0, 100, 0, COLOR_PAIR (24) | A_REVERSE | ' ', A_BOLD);
@@ -708,6 +680,9 @@ bool InstallFiles()
         ProgressBar.SetValue(0, 100, percent);
     }
 
+    ProgressBar.SetValue(0, 100, 100);
+    ProgressBar.Draw();
+    
     if (passwd)
     {
         // Nullify pass...just incase

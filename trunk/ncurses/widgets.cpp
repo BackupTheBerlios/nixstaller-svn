@@ -215,29 +215,36 @@ void CCDKHistogram::SetHistogram(EHistogramDisplayType vtype, int statspos, int 
 void CButtonBar::AddButton(const char *button, const char *desc)
 {
     std::string txt = std::string(" </B/16>") + GetTranslation(button) + "<!16!B>: </B/8>" + GetTranslation(desc) + "<!8!B> ";
-    if (m_Texts.Count() && (getmaxy(MainWin) < (sizeof(m_Texts[m_Texts.Count()-1]) + txt.length())))
+    const int l = strlen(button) + strlen(desc) + 4; // 4 extra chars: 3 spaces and an ':'
+    if (getmaxx(MainWin) < (m_iCurrTextLength + l))
     {
         m_Texts.AddItem(m_szCurrentText);
-        m_szCurrentText.clear();
+        m_szCurrentText = txt;
+        m_iCurrTextLength = l;
     }
     else
+    {
         m_szCurrentText += txt;
+        m_iCurrTextLength += l;
+    }
 }
 
 void CButtonBar::Draw()
 {
-    if (!m_szCurrentText.empty()) { m_Texts.AddItem(m_szCurrentText); m_szCurrentText.clear(); }
+    if (!m_szCurrentText.empty()) { m_Texts.AddItem(m_szCurrentText); m_szCurrentText.clear(); m_iCurrTextLength = 0; }
     if (!m_Texts.Count()) return;
+
+    if (m_pLabel) delete m_pLabel; // CDK has no propper way to change text...
     
-    if (!m_pLabel)
+    //if (!m_pLabel)
     {
         m_pLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, m_Texts, m_Texts.Count());
         if (!m_pLabel)
-            throwerror(false, "Could not create bottom text window");
+            throwerror(false, "Could not create button bar");
         m_pLabel->SetBgColor(24);
     }
-    else
-        m_pLabel->SetText(m_Texts, m_Texts.Count());
+    /*else
+    m_pLabel->SetText(m_Texts, m_Texts.Count());*/
     
     m_pLabel->Draw();
     refreshCDKScreen(CDKScreen);

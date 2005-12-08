@@ -2,8 +2,6 @@
 
 void EndProg()
 {
-    if (BottomLabel) delete BottomLabel;
-
     if (CDKScreen)
     {
         ButtonBar.Destroy();
@@ -27,8 +25,6 @@ void throwerror(bool dialog, const char *error, ...)
 
     if (dialog) WarningBox(txt);
     
-    if (BottomLabel) delete BottomLabel;
-
     if (CDKScreen)
     {
         ButtonBar.Destroy();
@@ -193,20 +189,13 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
 {
     char *button[2], **info = NULL;
     
-    // Set bottom label
-    int x1, x2, y1, y2;
-    getbegyx(MainWin, y1, x1);
-    getmaxyx(MainWin, y2, x2);
-    int txtfieldwidth = ((x2-x1)-16)/2, maxtxtlength = txtfieldwidth-2;
-    char *botlabel[4] = { CreateText("</B/27>TAB<!27!B>   : %*.*s</B/27>ENTER<!27!B> : %.*s", -txtfieldwidth, maxtxtlength,
-                          GetTranslation("Go to next button"), maxtxtlength,
-                          GetTranslation("Activate current button")),
-                          "</B/27>  ^<!27!B>",
-                          CreateText("</B/27>< <#BU> ><!27!B> : %*.*s</B/27>ESC<!27!B>   : %.*s", -txtfieldwidth, maxtxtlength,
-                          GetTranslation("Scroll text"), maxtxtlength, GetTranslation("Exit program")),
-                          "</B/27>  v<!27!B>" };
-    SetBottomLabel(botlabel, 4);
-
+    ButtonBar.Clear();
+    ButtonBar.AddButton("TAB", "Next button");
+    ButtonBar.AddButton("ENTER", "Activate button");
+    ButtonBar.AddButton("Arrows", "Scroll text");
+    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.Draw();
+    
     CDKVIEWER *Viewer = newCDKViewer(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, buttons, buttoncount,
                                      A_REVERSE, true, false);
 
@@ -230,26 +219,6 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     destroyCDKViewer(Viewer);
     refreshCDKScreen(CDKScreen);
     return ret;
-}
-
-void SetBottomLabel(char **msg, int count)
-{return;
-    char *txt[1] = { CreateText("</B/27>TAB<!27!B>: %s </B/27>ENTER<!27!B>: %s </B/27>ARROWS<!27!B>: %s",
-        GetTranslation("Next button"), GetTranslation("Activate button"), GetTranslation("Navigate menu")) };
-    
-    if (!BottomLabel)
-    {
-        //BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, msg, count, true, false);
-        BottomLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, txt, 1, false);
-        if (!BottomLabel)
-            throwerror(false, "Could not create bottom text window");
-        BottomLabel->SetBgColor(3);
-    }
-    else
-        //BottomLabel->SetText(msg, count);
-        BottomLabel->SetText(txt, count);
-    BottomLabel->Draw();
-    refreshCDKScreen(CDKScreen);
 }
 
 void WarningBox(const char *msg, ...)
