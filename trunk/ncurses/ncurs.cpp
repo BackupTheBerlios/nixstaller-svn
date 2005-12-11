@@ -84,7 +84,10 @@ bool SelectLanguage()
     CCDKScroll ScrollList(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, RIGHT, title, LangItems,
                           LangItems.Count());
     ScrollList.SetBgColor(5);
-    
+
+    CFileDialog FDialog("/home/rick");
+    if (FDialog.Activate()) WarningBox("You choose %s", FDialog.Result());
+
     int selection = ScrollList.Activate();
     
     if (ScrollList.ExitType() == vNORMAL)

@@ -37,7 +37,7 @@ void throwerror(bool dialog, const char *error, ...)
     exit(EXIT_FAILURE);
 }
 
-int ReadDir(std::string &dir, char ***list)
+int ReadDir(const std::string &dir, char ***list)
 {
     struct dirent *dirStruct;
     struct stat fileStat;
@@ -280,4 +280,114 @@ bool YesNoBox(const char *msg, ...)
     Diag.Destroy();
     refreshCDKScreen(CDKScreen);
     return yes;
+}
+
+bool DirDialog(const char *startdir, char *output)
+{
+    char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Exit") };
+    char *title = CreateText("<C>%s", GetTranslation("Select destination directory"));
+    char label[] = "Dir: ";
+    char **item = NULL;
+    
+    ButtonBar.Clear();
+    ButtonBar.AddButton("TAB", "Next button");
+    ButtonBar.AddButton("ENTER", "Activate button");
+    ButtonBar.AddButton("Arrows", "Navigate menu");
+    ButtonBar.AddButton("C", "Create directory");
+    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.Draw();
+    
+    if (chdir(startdir) != 0)
+        throwerror(true, "Couldn't open directory '%s'", startdir);
+
+    int count = ReadDir(startdir, &item);
+
+    if (count < 1) throwerror(true, "Could not read directory %s", startdir);
+    
+    CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-3, 1,
+                            49, 0, 1, 3, buttons, 3);
+    ButtonBox.SetBgColor(5);
+
+    CCDKAlphaList FileList(CDKScreen, CENTER, 2, getbegy(ButtonBox.GetBBox()->win)-1, DEFAULT_WIDTH, title, label, item,
+                           count);
+    FileList.SetBgColor(5);
+    setCDKEntryPreProcess(FileList.GetAList()->entryField, CreateDirK, FileList.GetAList());
+    FileList.GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
+    
+    setCDKAlphalistLLChar(FileList.GetAList(), ACS_LTEE);
+    setCDKAlphalistLRChar(FileList.GetAList(), ACS_RTEE);
+    setCDKButtonboxULChar(ButtonBox.GetBBox(), ACS_LTEE);
+    setCDKButtonboxURChar(ButtonBox.GetBBox(), ACS_RTEE);
+    
+    FileList.Draw();
+    ButtonBox.Draw();
+    
+    FileList.Bind(KEY_TAB, SwitchButtonK, ButtonBox.GetBBox()); // Pas TAB through ButtonBox
+
+    output = const_cast<char*>(startdir);
+    
+    while(true)
+    {
+        // HACK: Give textbox content
+        setCDKEntryValue(FileList.GetAList()->entryField,
+                         chtype2Char(FileList.GetAList()->scrollField->item[FileList.GetAList()->scrollField->currentItem]));
+
+        char *selection = FileList.Activate();
+        if ((FileList.ExitType() != vNORMAL) || (ButtonBox.GetCurrent() == 2)) break;
+        if (ButtonBox.GetCurrent() == 1)
+        {
+            CCharListHelper dtext;
+            char *dbuttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
+            
+            dtext.AddItem(CreateText(GetTranslation("This will install %s to the following directory:"),
+                          InstallInfo.program_name));
+            dtext.AddItem(output);
+            dtext.AddItem(GetTranslation("Continue?"));
+            
+            CCDKDialog Diag(CDKScreen, CENTER, CENTER, dtext, dtext.Count(), dbuttons, 2);
+            Diag.SetBgColor(26);
+    
+            int sel = Diag.Activate();
+
+            Diag.Destroy();
+            refreshCDKScreen(CDKScreen);
+            
+            if (sel==0) break;
+            else continue;
+        }
+        if (!selection || !selection[0]) continue;
+
+        std::string dir = output;
+        
+        dir += "/";
+        dir += selection;
+        if (chdir(dir.c_str()))
+        {
+            WarningBox("%s\n%s", GetTranslation("Could not change to directory"), strerror(errno));
+            continue;
+        }
+        
+        char str[1024];
+        if (getcwd(str, sizeof(str))) output = str;
+        else { WarningBox("Could not read current directory"); continue; }
+        
+        if (item) CDKfreeStrings(item);
+        item = NULL;
+        
+        count = ReadDir(output, &item);
+        if (count == NO_FILE)
+        {
+            WarningBox("Could not read directory");
+            continue;
+        }
+        
+        FileList.SetContent(item, count);
+        FileList.Draw();
+    }
+    
+    bool success = ((FileList.ExitType() != vESCAPE_HIT) && (ButtonBox.GetCurrent() == 1));
+    
+    CDKfreeStrings(item);
+
+    return success;
 }

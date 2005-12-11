@@ -220,20 +220,52 @@ public:
 
 class CButtonBar
 {
-    std::string m_szCurrentText;
-    int m_iCurrTextLength;
-    CCharListHelper m_Texts;
+    struct bar_entry_s
+    {
+        std::string szCurrentText;
+        int iCurTextLength;
+        CCharListHelper Texts;
+
+        bar_entry_s(void) : iCurTextLength(0) { };
+    };
+
+    bar_entry_s *m_pCurrentBarEntry;
+    std::list<bar_entry_s *> m_ButtonBarEntries;
     CCDKLabel *m_pLabel;
     
 public:
-    CButtonBar(void) : m_iCurrTextLength(0), m_pLabel(NULL) { };
+    CButtonBar(void) : m_pCurrentBarEntry(0), m_pLabel(NULL) { };
     ~CButtonBar(void) { Destroy(); };
-    
+
+    void Push(void); // Creates new button bar
+    void Pop(void); // Destroys current bar and sets previous one as current
     void AddButton(const char *button, const char *desc);
-    void Clear(void) { m_Texts.Clear(); };
+    void Clear(void) { if (m_pCurrentBarEntry) m_pCurrentBarEntry->Texts.Clear(); };
     void Draw(void);
     void Destroy(void) { delete m_pLabel; m_pLabel = NULL; };
     CCDKLabel *GetLabel(void) { return m_pLabel; };
+};
+
+class CFileDialog
+{
+    std::string m_szStartDir, m_szDestDir;
+    CCDKAlphaList *m_pFileList;
+    CCDKSWindow *m_pCurDirWin;
+
+    bool ReadDir(const std::string &dir, CCharListHelper *Items);
+    void UpdateCurDirText(void);
+    
+public:
+    CFileDialog(const char *startdir) : m_szStartDir(startdir), m_pFileList(NULL), m_pCurDirWin(NULL) { };
+    ~CFileDialog(void) { Destroy(); };
+
+    bool Activate(void);
+    const char *Result(void) { return m_szDestDir.c_str(); };
+    void Destroy(void) { delete m_pFileList; };
+
+    bool UpdateFileList(const char *dir);
+
+    static int CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key);
 };
 
 #endif
