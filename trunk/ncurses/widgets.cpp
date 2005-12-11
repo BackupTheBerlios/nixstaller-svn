@@ -113,6 +113,15 @@ CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const std::string &mess
     if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
 
+void CCDKDialog::SetButtonBar()
+{
+    ButtonBar.Push();
+    ButtonBar.AddButton("TAB", "Next button");
+    ButtonBar.AddButton("ENTER", "Activate button");
+    ButtonBar.AddButton("ESC", "Cancel");
+    ButtonBar.Draw();
+}
+
 void CCDKDialog::Destroy()
 {
     if (!m_pDialog) return;
@@ -120,6 +129,14 @@ void CCDKDialog::Destroy()
     CBaseCDKWidget::Destroy();
     destroyCDKDialog(m_pDialog);
     m_pDialog = NULL;
+}
+
+int CCDKDialog::Activate(chtype *actions)
+{
+    SetButtonBar();
+    int ret = activateCDKDialog(m_pDialog, actions);
+    ButtonBar.Pop();
+    return ret;
 }
 
 // CDK SWindow Wrapper
@@ -232,11 +249,7 @@ void CButtonBar::Pop()
 
 void CButtonBar::AddButton(const char *button, const char *desc)
 {
-    if (!m_pCurrentBarEntry)
-    {
-        m_pCurrentBarEntry = new bar_entry_s;
-        //m_ButtonBarEntries.push_back(m_pCurrentBarEntry);
-    }
+    if (!m_pCurrentBarEntry) m_pCurrentBarEntry = new bar_entry_s;
     
     std::string txt = std::string(" </B/16>") + GetTranslation(button) + "<!16!B>: </B/8>" + GetTranslation(desc) + "<!8!B> ";
     const int l = strlen(button) + strlen(desc) + 4; // 4 extra chars: 3 spaces and an ':'
@@ -306,6 +319,7 @@ void CFileDialog::UpdateCurDirText()
 
     m_pCurDirWin->Clear();
 
+    // Check if directory fits on screen
     if (maxch < dir.length())
     {
         std::string shortdir;
@@ -330,8 +344,7 @@ void CFileDialog::UpdateCurDirText()
 
 bool CFileDialog::Activate()
 {
-    char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Exit") };
-    char *title = CreateText("<C>%s", GetTranslation("Select destination directory"));
+    char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Cancel") };
     char label[] = "Dir: ";
     char curdir[1024];
     CCharListHelper Items;
@@ -341,7 +354,7 @@ bool CFileDialog::Activate()
     ButtonBar.AddButton("ENTER", "Activate button");
     ButtonBar.AddButton("Arrows", "Navigate menu");
     ButtonBar.AddButton("C", "Create directory");
-    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.AddButton("ESC", "Cancel");
     ButtonBar.Draw();
 
     if (!getcwd(curdir, sizeof(curdir))) throwerror(true, "Could not read current directory");
@@ -358,7 +371,7 @@ bool CFileDialog::Activate()
     m_pCurDirWin->SetBgColor(5);
 
     m_pFileList = new CCDKAlphaList(CDKScreen, CENTER, 2, getbegy(m_pCurDirWin->GetSWin()->win)-1, DEFAULT_WIDTH,
-                                    title, label, Items, Items.Count());
+                                    const_cast<char*>(m_szTitle.c_str()), label, Items, Items.Count());
     m_pFileList->SetBgColor(5);
     setCDKEntryPreProcess(m_pFileList->GetAList()->entryField, CreateDirCB, this);
     m_pFileList->GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
@@ -396,7 +409,9 @@ bool CFileDialog::Activate()
     bool success = ((m_pFileList->ExitType() != vESCAPE_HIT) && (ButtonBox.GetCurrent() == 1));
     
     ButtonBar.Pop();
-    chdir(curdir); // Return back to original directory
+
+    if (m_bRestoreDir)
+        chdir(curdir); // Return back to original directory
     
     return success;
 }
@@ -433,6 +448,14 @@ bool CFileDialog::UpdateFileList(const char *dir)
     setCDKEntryValue(m_pFileList->GetAList()->entryField,
                      chtype2Char(m_pFileList->GetAList()->scrollField->item[m_pFileList->GetAList()->scrollField->currentItem]));
     return true;
+}
+
+void CFileDialog::Destroy(void)
+{
+    delete m_pFileList;
+    delete m_pCurDirWin;
+    m_pFileList = NULL;
+    m_pCurDirWin = NULL;
 }
 
 int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *clientData, chtype key)

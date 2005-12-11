@@ -116,6 +116,8 @@ class CCDKDialog: public CBaseCDKWidget
     CDKDIALOG *m_pDialog;
     CCharListHelper m_CharList;
 
+    void SetButtonBar(void);
+    
 public:
     CCDKDialog(CDKSCREEN *pScreen, int x, int y, char **message, int mcount, char **buttons, int bcount,
                chtype hlight=COLOR_PAIR(2)|A_REVERSE, bool sep=true, bool box=true, bool shadow=false);
@@ -133,7 +135,7 @@ public:
     virtual EExitType ExitType(void) { return m_pDialog->exitType; };
     virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vDIALOG, m_pDialog, key, function, data); };
     
-    int Activate(chtype *actions = NULL) { return activateCDKDialog(m_pDialog, actions); };
+    int Activate(chtype *actions = NULL);
     CDKDIALOG *GetDialog(void) { return m_pDialog; };
 };
 
@@ -248,20 +250,22 @@ public:
 
 class CFileDialog
 {
-    std::string m_szStartDir, m_szDestDir;
+    std::string m_szStartDir, m_szDestDir, m_szTitle;
     CCDKAlphaList *m_pFileList;
     CCDKSWindow *m_pCurDirWin;
+    bool m_bRestoreDir;
 
     bool ReadDir(const std::string &dir, CCharListHelper *Items);
     void UpdateCurDirText(void);
     
 public:
-    CFileDialog(const char *startdir) : m_szStartDir(startdir), m_pFileList(NULL), m_pCurDirWin(NULL) { };
+    CFileDialog(const std::string &s, const std::string &t, bool r) : m_szStartDir(s), m_szTitle(t), m_bRestoreDir(r),
+                                                                      m_pFileList(NULL), m_pCurDirWin(NULL) { };
     ~CFileDialog(void) { Destroy(); };
 
     bool Activate(void);
     const char *Result(void) { return m_szDestDir.c_str(); };
-    void Destroy(void) { delete m_pFileList; };
+    void Destroy(void);
 
     bool UpdateFileList(const char *dir);
 
