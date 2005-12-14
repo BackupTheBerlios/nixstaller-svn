@@ -2,6 +2,9 @@
 
 #include <stdarg.h>
 
+namespace LIBSU
+{
+
 void log(const char *txt, ...)
 {
 #ifdef ENABLE_LOGGING
@@ -36,4 +39,6 @@ bool FileExists(const char *file)
 {
     struct stat st;
     return (lstat(file, &st) == 0);
+}
+
 }

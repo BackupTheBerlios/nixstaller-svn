@@ -35,7 +35,7 @@ struct install_info_s
 {
     int version;
     char program_name[129];
-    char arch_name[2048];
+    std::string own_dir;
     std::string dest_dir;
     std::list<char *> languages;
     std::string cur_lang;
@@ -63,5 +63,9 @@ char *CreateText(const char *s, ...);
 void FreeStrings(void);
 param_entry_s *GetParamVar(const std::string &str);
 void throwerror(bool dialog, const char *error, ...); // Frontend depended, therefor defined in there
+bool FileExists(const char *file);
+inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
+bool WriteAccess(const char *file);
+inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
 
 #endif 

@@ -5,8 +5,6 @@ OVERALL
 - Check status bar for compiling
 - Check exit codes
 - Post message screen
-- Add dir chooser for dir params
-- Check permissions for inst dir
 
 
 MAIN
@@ -19,3 +17,11 @@ NCURSES FRONTEND
 FLTK FRONTEND
 - Make image support?
 - Finish button
+- Add dir chooser for dir params
+
+
+
+----------------------------- LATER ------------------------------------
+
+OVERALL
+- Check permissions for inst dir

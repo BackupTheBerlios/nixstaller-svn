@@ -7,6 +7,8 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 #include <cdk/cdk.h>
 #include "main.h"
@@ -26,6 +28,8 @@ int ExitK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNU
 int ViewFile(char *file, char **buttons, int buttoncount, char *title);
 void WarningBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
+void ExtrThinkFunc(void *p);
+void PrintExtrOutput(const char *msg, void *p);
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };

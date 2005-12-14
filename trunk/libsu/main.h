@@ -68,6 +68,8 @@ extern "C" char *_getpty(int *, int, mode_t, int);
 #endif
 
 
+namespace LIBSU
+{
 
 /*
  * Steven Schultz <sms at to.gd-es.com> tells us :
@@ -82,5 +84,6 @@ __END_DECLS
 void log(const char *txt, ...);
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
+}
 
 #endif

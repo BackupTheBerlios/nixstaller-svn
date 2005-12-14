@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <errno.h>
 #include <archive.h>
@@ -216,17 +217,15 @@ bool ReadConfig()
 bool MainInit(int argc, char *argv[])
 {
     if (!ReadConfig()) return false;
-    
-    if (getcwd(InstallInfo.arch_name, sizeof(InstallInfo.arch_name)) == 0)
+
+    char curdir[1024];
+    if (getcwd(curdir, sizeof(curdir)) == 0)
         throwerror(false, "Could not read current directory");
-    strcat(InstallInfo.arch_name, "/instarchive");
+
+    InstallInfo.own_dir = curdir;
     
     if (InstallInfo.dest_dir_type == DEST_TEMP)
-    {
-        char dir[1024];
-        if (getcwd(dir, sizeof(dir))) InstallInfo.dest_dir = dir;
-        else throwerror(false, "Could not read current directory");
-    }
+        InstallInfo.dest_dir = curdir;
     else if (InstallInfo.dest_dir_type == DEST_SELECT)
     {
         const char *env = getenv("HOME");
@@ -309,13 +308,14 @@ float ExtractArchive(char *curfile)
 
     if (!arch) // Does the file needs to be opened?
     {
-        size = ArchSize(InstallInfo.arch_name);
+        std::string archname = InstallInfo.own_dir + "/instarchive";
+        size = ArchSize(archname.c_str());
         percent = 0.0f;
         
         arch = archive_read_new();
         archive_read_support_compression_all(arch);
         archive_read_support_format_all(arch);
-        archive_read_open_file(arch, InstallInfo.arch_name, 512);
+        archive_read_open_file(arch, archname.c_str(), 512);
     }
     
     int status = archive_read_next_header(arch, &entry);
@@ -490,3 +490,14 @@ param_entry_s *GetParamVar(const std::string &str)
     return NULL;
 }
 
+bool FileExists(const char *file)
+{
+    struct stat st;
+    return (lstat(file, &st) == 0);
+}
+
+bool WriteAccess(const char *file)
+{
+    struct stat st;
+    return ((lstat(file, &st) == 0) && (access(file, W_OK) == 0));
+}

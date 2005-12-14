@@ -1,10 +1,13 @@
 #include <main.h>
 #include <stdarg.h>
 
-const char *TermStr = "I'm Done Now :)"; // Lets just hope other program don't output this ;)
+using namespace LIBSU;
+
+static const char *TermStr = "I'm Done Now :)"; // Lets just hope other program don't output this ;)
 
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szUser("root"), m_szPath("/bin:/usr/bin"),
-                                    m_eError(SU_ERROR_NONE), m_pOutputFunc(NULL), m_pCustomData(NULL)
+                                    m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
+                                    m_pCustomOutputData(NULL)
 {
     if (!Disable0Core)
     {
@@ -22,7 +25,8 @@ CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m
 
 CLibSU::CLibSU(const char *command, const char *user, const char *path,
                bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szCommand(command), m_szUser(user),
-                                    m_szPath(path), m_eError(SU_ERROR_NONE), m_pOutputFunc(NULL), m_pCustomData(NULL)
+                                    m_szPath(path), m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL),
+                                    m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
 {
     if (!user || !user[0]) m_szUser = "root";
     
@@ -544,6 +548,8 @@ int CLibSU::WaitForChild()
 
     while (1) 
     {
+        if (m_pThinkFunc) (m_pThinkFunc)(m_pCustomThinkData);
+
         FD_SET(m_iPTYFD, &fds);
         int ret = select(m_iPTYFD+1, &fds, 0L, 0L, 0L);
         if (ret == -1) 
@@ -568,7 +574,7 @@ int CLibSU::WaitForChild()
                     fputs(line.c_str(), stdout);
                     //fputc('\n', stdout);
                 }
-                if (m_pOutputFunc) (m_pOutputFunc)(line.c_str(), m_pCustomData);
+                if (m_pOutputFunc) (m_pOutputFunc)(line.c_str(), m_pCustomOutputData);
                 line = ReadLine(false);
             }
         }

@@ -398,7 +398,7 @@ bool CInstallFilesScreen::Activate()
                 if ((*it)->need_root == DEPENDED_ROOT)
                 {
                     param_entry_s *p = GetParamVar((*it)->dep_param);
-                    if (p && access(p->value.c_str(), W_OK) != 0)
+                    if (p && !WriteAccess(p->value))
                     {
                         (*it)->need_root = NEED_ROOT;
                     }
@@ -429,7 +429,7 @@ bool CInstallFilesScreen::Activate()
                             break;
                         
                         // Some error appeared
-                        if (m_SUHandler.GetError() == CLibSU::SU_ERROR_INCORRECTPASS)
+                        if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
                             fl_alert(GetTranslation("Incorrect password given for root user.\nPlease re-type."));
                         else
                         {

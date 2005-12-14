@@ -149,7 +149,7 @@ protected:
     Fl_Button *m_pAskPassOKButton, *m_pAskPassCancelButton;
     
     short m_sPercent;
-    CLibSU m_SUHandler;
+    LIBSU::CLibSU m_SUHandler;
     char *m_szPassword;
     
     void ClearPassword(void);

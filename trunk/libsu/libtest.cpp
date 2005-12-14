@@ -1,5 +1,7 @@
 #include "libsu.h"
 
+using namespace LIBSU;
+
 void printout(const char *s, void *p) { printf(s); }
 
 int main()

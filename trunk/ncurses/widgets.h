@@ -253,14 +253,15 @@ class CFileDialog
     std::string m_szStartDir, m_szDestDir, m_szTitle;
     CCDKAlphaList *m_pFileList;
     CCDKSWindow *m_pCurDirWin;
-    bool m_bRestoreDir;
+    bool m_bRestoreDir, m_bNeedWAccess;
 
     bool ReadDir(const std::string &dir, CCharListHelper *Items);
     void UpdateCurDirText(void);
     
 public:
-    CFileDialog(const std::string &s, const std::string &t, bool r) : m_szStartDir(s), m_szTitle(t), m_bRestoreDir(r),
-                                                                      m_pFileList(NULL), m_pCurDirWin(NULL) { };
+    CFileDialog(const std::string &s, const std::string &t, bool r, bool w) : m_szStartDir(s), m_szTitle(t),
+                                                                              m_pFileList(NULL), m_pCurDirWin(NULL),
+                                                                              m_bRestoreDir(r), m_bNeedWAccess(w) { };
     ~CFileDialog(void) { Destroy(); };
 
     bool Activate(void);

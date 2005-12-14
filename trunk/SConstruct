@@ -48,5 +48,8 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cp
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk Xext X11'))
 
+# Build help extracter
+# extr = env.Program('extracter/extracter', ['extracter/extracter.c'])
+
 # Default to all
 Default(fltk, ncurses, main, env.Install('lib/'+cur_os, main), env.Install('bin/'+cur_os, ncurses), env.Install('bin/'+cur_os, fltk))

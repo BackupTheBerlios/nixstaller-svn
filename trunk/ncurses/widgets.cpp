@@ -403,6 +403,12 @@ bool CFileDialog::Activate()
         if (ButtonBox.GetCurrent() == 1) break;
         if (!selection || !selection[0]) continue;
 
+        if (!WriteAccess(selection))
+        {
+            WarningBox("You don't have write access for this directory");
+            continue;
+        }
+        
         UpdateFileList(selection);
     }
     

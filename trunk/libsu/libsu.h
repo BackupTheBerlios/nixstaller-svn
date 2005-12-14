@@ -7,6 +7,9 @@
 #include <list>
 #include <signal.h>
 
+namespace LIBSU
+{
+
 #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
 
 // UNDONE: Check what should be private/protected/public
@@ -16,6 +19,7 @@ public:
     enum ESuErrors { SU_ERROR_NONE, SU_ERROR_SUNOTFOUND, SU_ERROR_INCORRECTUSER, SU_ERROR_INCORRECTPASS, SU_ERROR_EXECUTE,
                      SU_ERROR_INTERNAL };
 
+    typedef void (*TThinkFunc)(void *p);
     typedef void (*TOutputFunc)(const char *s, void *p);
     
     CLibSU(bool Disable0Core=false);
@@ -31,7 +35,8 @@ public:
     void SetExitString(const char *exit) { m_szExit = exit; };
     void SetExitString(const std::string &exit) { m_szExit = exit; };
     void SetTerminalOutput(bool t) { m_bTerminal = t; };
-    void SetOutputFunc(TOutputFunc f, void *p=NULL) { m_pOutputFunc = f; m_pCustomData = p; };
+    void SetThinkFunc(TThinkFunc f, void *p=NULL) { m_pThinkFunc = f; m_pCustomThinkData = p; };
+    void SetOutputFunc(TOutputFunc f, void *p=NULL) { m_pOutputFunc = f; m_pCustomOutputData = p; };
     
     ESuErrors GetError(void) { return m_eError; };
     std::string GetErrorMsg(void) { return m_szErrorMsg; };
@@ -54,8 +59,9 @@ private:
     ESuErrors m_eError;
     std::string m_szErrorMsg;
     
+    TThinkFunc m_pThinkFunc;
     TOutputFunc m_pOutputFunc;
-    void *m_pCustomData;
+    void *m_pCustomThinkData, *m_pCustomOutputData;
     
     int CreatePT(void);
     int GrantPT(void);
@@ -77,6 +83,8 @@ private:
     void SetError(ESuErrors errtype, const char *msg, ...);
     
     int TalkWithSU(const char *password);
+};
+
 };
 
 #endif
