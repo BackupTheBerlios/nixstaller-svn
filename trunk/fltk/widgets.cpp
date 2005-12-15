@@ -359,6 +359,7 @@ Fl_Group *CInstallFilesScreen::Create()
     
     m_pDisplay = new Fl_Text_Display(50, 110, (MAIN_WINDOW_W-100), (MAIN_WINDOW_H-170), "Status");
     m_pDisplay->buffer(m_pBuffer);
+    //m_pDisplay->wrap_mode(true, 60);
     
     m_pAskPassWindow = new Fl_Window(400, 190, "Password dialog");
     m_pAskPassWindow->set_modal();
@@ -467,6 +468,7 @@ void CInstallFilesScreen::UpdateLang()
 void CInstallFilesScreen::AppendText(const char *txt)
 {
     m_pDisplay->insert(txt);
+    m_pDisplay->insert_position(m_pBuffer->length());
     m_pDisplay->show_insert_position();
 }
 
@@ -507,44 +509,50 @@ void CInstallFilesScreen::AskPassCancelButtonCB(Fl_Widget *w, void *p)
     ((CInstallFilesScreen *)p)->SetPassword(true);
 }
 
+void CInstallFilesScreen::ChangeStatusText(const char *txt, int n)
+{
+    // Install entries +1 because it doesn't include extraction
+    m_pDisplay->label(CreateText(GetTranslation("Status: %s (%d/%d)"), txt, n, InstallInfo.command_entries.size()+1));
+}
 
 void CInstallFilesScreen::Install()
 {
-    bool RootNeedPW = m_SUHandler.NeedPassword();
     char curfile[256], text[300];
+    short percent = 0;
     
-    ChangeStatusText(GetTranslation("Extracting files"));
+    ChangeStatusText("Extracting Files", 1);
     while(1)
     {
-        m_sPercent = ExtractArchive(curfile);
+        percent = ExtractArchive(curfile);
     
         sprintf(text, "Extracting file: %s\n", curfile);
         AppendText(text);
 
-        if (m_sPercent==-1) throwerror(true, "Error during extracting files");
+        if (percent == -1) throwerror(true, "Error during extracting files");
 
-        if (m_sPercent==100)
+        if (percent == 100)
         {
-            m_sPercent = 0;
+            percent = 100/(1+InstallInfo.command_entries.size()); // Convert to overall progress
             AppendText("Done!\n");
             break;
         }
     
-        UpdateStatusBar();
+        m_pProgress->value(percent/(1+InstallInfo.command_entries.size()));
         Fl::wait(0.0); // Update screen
     }
 
+    short step = 2; // Not 1, because extracting files is also a step
     for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
-            it!=InstallInfo.command_entries.end(); it++)
+         it!=InstallInfo.command_entries.end(); it++, step++)
     {
         if ((*it)->command.empty()) continue;
         
         std::string command = (*it)->command + " " + GetParameters(*it);
     
         AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
-        ChangeStatusText(GetTranslation((*it)->description.c_str()));
+        ChangeStatusText(GetTranslation((*it)->description.c_str()), step);
 
-        if (RootNeedPW && (*it)->need_root == NEED_ROOT)
+        if ((*it)->need_root == NEED_ROOT)
         {
             m_SUHandler.SetCommand(command);
             if (!m_SUHandler.ExecuteCommand(m_szPassword))
@@ -572,13 +580,13 @@ void CInstallFilesScreen::Install()
                 // UNDONE
             }
         }
-        m_sPercent += (1.0f/(float)InstallInfo.command_entries.size())*100.0f;
-        UpdateStatusBar();
+        
+        percent += (1.0f/((float)InstallInfo.command_entries.size()+1.0f))*100.0f;
+        m_pProgress->value(percent);
     }
-    
-    m_sPercent = 100;
-    UpdateStatusBar();
-    ChangeStatusText(GetTranslation("Done"));
+
+    m_pProgress->value(100);
+    //ChangeStatusText(GetTranslation("Done"));
     InstallFiles = false;
     fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
     ClearPassword();

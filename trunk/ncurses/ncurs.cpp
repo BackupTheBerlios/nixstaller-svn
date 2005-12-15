@@ -656,29 +656,23 @@ bool InstallFiles()
     ButtonBar.AddButton("Enter", "Continue");
     ButtonBar.AddButton("ESC", "Exit program");
     ButtonBar.Draw();
-    
+
+    WarningBox("Installation of %s complete!", InstallInfo.program_name);
+
     InstallOutput.Activate();
-    return true;
+    return (InstallOutput.ExitType() == vNORMAL);
 }
 
 bool FinishInstall()
 {
-    if (FileExists("config/finish"))
+    char *file = CreateText("%s/config/finish", InstallInfo.own_dir.c_str());
+    if (FileExists(file))
     {
-        // ...
+        char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Please read the following text"));
+        char *buttons[1] = { GetTranslation("OK") };
+        ViewFile(file, buttons, 1, title);
+        return true;
     }
-    else
-    {
-        // Notify user that installation is done
-        CCharListHelper message;
-        char *b[1] = { GetTranslation("Exit") };
-        
-        message.AddItem(CreateText(GetTranslation("Installation of %s complete!"), InstallInfo.program_name));
-        message.AddItem(GetTranslation("Press enter to exit"));
-        
-        CCDKDialog FinishDiag(CDKScreen, CENTER, CENTER, message, message.Count(), b, 1);
-        FinishDiag.SetBgColor(26);
-        FinishDiag.Activate();
-    }
+    
     return true;
 }

@@ -22,9 +22,8 @@
 void EndProg(void);
 int ReadDir(const std::string &dir, char ***list);
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key GCC_UNUSED);
-int CreateDirK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key);
 int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype key);
-int ExitK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED, chtype key);
+int ExitK(EObjectType cdktype, void *object, void *clientData, chtype key);
 int ViewFile(char *file, char **buttons, int buttoncount, char *title);
 void WarningBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);

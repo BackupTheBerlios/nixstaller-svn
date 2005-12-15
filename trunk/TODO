@@ -1,13 +1,11 @@
 OVERALL
-- Check namespaces for libs? Or other solution
 - Check path with non su commands
 - Check what to do when command fails
-- Check status bar for compiling
 - Check exit codes
-- Post message screen
 
 
 MAIN
+- Better way for passing current file in ExtractArchive()
 
 
 NCURSES FRONTEND
@@ -18,7 +16,9 @@ FLTK FRONTEND
 - Make image support?
 - Finish button
 - Add dir chooser for dir params
-
+- Check status bar for compiling
+- Post message screen
+- Update exit install stuff
 
 
 ----------------------------- LATER ------------------------------------

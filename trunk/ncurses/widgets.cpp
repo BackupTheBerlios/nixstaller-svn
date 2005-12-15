@@ -374,7 +374,7 @@ bool CFileDialog::Activate()
                                     const_cast<char*>(m_szTitle.c_str()), label, Items, Items.Count());
     m_pFileList->SetBgColor(5);
     setCDKEntryPreProcess(m_pFileList->GetAList()->entryField, CreateDirCB, this);
-    m_pFileList->GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
+    //m_pFileList->GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
 
     setCDKAlphalistLLChar(m_pFileList->GetAList(), ACS_LTEE);
     setCDKAlphalistLRChar(m_pFileList->GetAList(), ACS_RTEE);
@@ -403,6 +403,21 @@ bool CFileDialog::Activate()
         if (ButtonBox.GetCurrent() == 1) break;
         if (!selection || !selection[0]) continue;
 
+        if (!FileExists(selection))
+        {
+            if (YesNoBox("%s\n%s", GetTranslation("Directory does not exist"), GetTranslation("Do you want to create it?")))
+            {
+                if (mkdir(selection, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
+                {
+                    WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create the directory"), selection,
+                               strerror(errno));
+                    continue;
+                }
+            }
+            else
+                continue;
+        }
+        
         if (!WriteAccess(selection))
         {
             WarningBox("You don't have write access for this directory");
