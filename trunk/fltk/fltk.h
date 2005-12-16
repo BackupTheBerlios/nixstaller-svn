@@ -7,6 +7,7 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Wizard.H>
@@ -24,8 +25,8 @@
 #define MAIN_WINDOW_H 400
 
 void UpdateLanguage(void);
-void EndProg(int exitcode);
 
+extern Fl_Button *pCancelButton;
 extern Fl_Button *pPrevButton;
 extern Fl_Button *pNextButton;
 extern bool InstallFiles;
@@ -60,6 +61,8 @@ public:
 
 class CWelcomeScreen: public CBaseScreen
 {
+    Fl_Shared_Image *m_pImage;
+    Fl_Box *m_pImageBox;
     Fl_Text_Display *m_pDisplay;
     Fl_Text_Buffer *m_pBuffer;
     bool m_bHasText;
@@ -117,11 +120,13 @@ class CSetParamsScreen: public CBaseScreen
     Fl_Choice *m_pValChoiceMenu;
     Fl_Hold_Browser *m_pChoiceBrowser;
     Fl_Multiline_Output *m_pDescriptionOutput;
-    
+    Fl_File_Chooser *m_pDirChooser;
+    Fl_Button *m_pSelDirButton;
+    Fl_Output *m_pSelDirInput;
     param_entry_s *m_pCurrentParamEntry;
     
 public:
-    CSetParamsScreen(void) : CBaseScreen(), m_pCurrentParamEntry(NULL) { };
+    CSetParamsScreen(void) : CBaseScreen(), m_pDirChooser(NULL), m_pCurrentParamEntry(NULL) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
@@ -130,10 +135,12 @@ public:
     
     void SetInput(const char *txt, command_entry_s *pCommandEntry);
     void SetValue(const std::string &str);
+    void OpenDirChooser(void);
     
     static void ParamBrowserCB(Fl_Widget *w, void *p);
     static void ValChoiceMenuCB(Fl_Widget *w, void *p);
     static void ParamInputCB(Fl_Widget *w, void *p);
+    static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSetParamsScreen *)p)->OpenDirChooser(); };
 };
 
 class CInstallFilesScreen: public CBaseScreen
@@ -169,6 +176,20 @@ public:
     static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesScreen *)p)->AppendText(msg); Fl::flush(); };
     static void AskPassOKButtonCB(Fl_Widget *w, void *p);
     static void AskPassCancelButtonCB(Fl_Widget *w, void *p);
+};
+
+class CFinishScreen: public CBaseScreen
+{
+    Fl_Text_Display *m_pDisplay;
+    Fl_Text_Buffer *m_pBuffer;
+    bool m_bHasText;
+    
+public:
+    CFinishScreen(void) : CBaseScreen(), m_bHasText(false) { };
+
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLang(void);
+    virtual bool Activate(void);
 };
 
 #endif

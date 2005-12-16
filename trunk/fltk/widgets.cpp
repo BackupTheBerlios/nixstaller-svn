@@ -56,12 +56,40 @@ bool CLangScreen::Activate()
 
 Fl_Group *CWelcomeScreen::Create(void)
 {
+    fl_register_images();
+    
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
+
+    m_pImage = Fl_Shared_Image::get(CreateText("%s/intro.jpg", InstallInfo.own_dir.c_str()));
+    if (m_pImage)
+    {
+        // Scale image (copied from demo code)
+        /*if (m_pImage->w() > m_pImageBox->w() || m_pImage->h() > m_pImageBox->h())
+        {
+            Fl_Image *temp;
+            if (m_pImage->w() > m_pImage->h())
+                temp = m_pImage->copy(m_pImageBox->w(), m_pImageBox->h() * m_pImage->h() / m_pImage->w());
+            else
+                temp = m_pImage->copy(m_pImageBox->w() * m_pImage->w() / m_pImage->h(), m_pImageBox->h());
+
+            m_pImage->release();
+            m_pImage = (Fl_Shared_Image *)temp;
+        }*/
+
+        int w = (m_pImage->w() < (MAIN_WINDOW_W/2)) ? m_pImage->w() : (MAIN_WINDOW_W/2);
+        int h = (m_pImage->h() < (MAIN_WINDOW_H-120)) ? m_pImage->w() : (MAIN_WINDOW_H-120);
+        m_pImageBox = new Fl_Box(40, 60, w, (MAIN_WINDOW_H-120));
+        m_pImageBox->image(m_pImage);
+        m_pImageBox->align(FL_ALIGN_CENTER);
+
+        m_pDisplay = new Fl_Text_Display(m_pImageBox->w() + 60, 60, (MAIN_WINDOW_W-20-m_pImageBox->w()-60),
+                                         (MAIN_WINDOW_H-120), "Welcome");
+    }
+    else
+        m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Welcome");
     
     m_pBuffer = new Fl_Text_Buffer;
-
-    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Welcome");
     m_pDisplay->buffer(m_pBuffer);
     
     m_pGroup->end();
@@ -139,12 +167,11 @@ void CSelectDirScreen::UpdateLang()
     if (m_pDirChooser) delete m_pDirChooser;
     m_pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir.c_str(), "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        "Select destination directory");
+                                        GetTranslation("Select destination directory"));
     m_pDirChooser->preview(false);
     m_pDirChooser->previewButton->hide();
-
-    m_pDirChooser->label(GetTranslation("Select destination directory"));
     m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
+    
     m_pBox->label(GetTranslation("Select destination directory"));
     m_pSelDirButton->label(GetTranslation("Select directory"));
 }
@@ -164,7 +191,7 @@ void CSelectDirScreen::OpenDirChooser(void)
     if (m_pDirChooser->value())
     {
         InstallInfo.dest_dir = m_pDirChooser->value();
-        m_pSelDirInput->value(InstallInfo.dest_dir.c_str());
+        m_pSelDirInput->value(m_pDirChooser->value());
     }
 }
 
@@ -208,16 +235,24 @@ Fl_Group *CSetParamsScreen::Create()
     m_pDescriptionOutput = new Fl_Multiline_Output(x, y, iDescW, 75, "Description");
     m_pDescriptionOutput->align(FL_ALIGN_TOP);
     m_pDescriptionOutput->wrap(1);
-    
+
     x=100;
     y+=120;
+
+    // List of parameter options
     m_pParamInput = new Fl_Input(x, y, 250, 25, "Value: ");
     m_pParamInput->callback(ParamInputCB, this);
     m_pParamInput->when(FL_WHEN_CHANGED);
-    
+
+    // Input field for a parameter
     m_pValChoiceMenu = new Fl_Choice(x, y, 150, 25,"Value: ");
     m_pValChoiceMenu->callback(ValChoiceMenuCB, this);
 
+    // Dir selecter for parameter
+    m_pSelDirInput = new Fl_Output(x, y, 250, 25, "Value: ");
+    m_pSelDirButton = new Fl_Button(x + 300, y, 160, 25, "Select directory");
+    m_pSelDirButton->callback(OpenDirSelWinCB, this);
+    
     x-=50;
     y+=25;
     m_pDefaultValBox = new Fl_Box(x, y, 250, 25, "Default: ");
@@ -232,6 +267,15 @@ void CSetParamsScreen::UpdateLang()
     m_pChoiceBrowser->label(GetTranslation("Parameters"));
     m_pParamInput->label(CreateText("%s: ", GetTranslation("Value")));
     m_pValChoiceMenu->label(CreateText("%s: ", GetTranslation("Value")));
+
+    // Create dir selecter (need to do this when cur language changes!)
+    if (m_pDirChooser) delete m_pDirChooser;
+    m_pDirChooser = new Fl_File_Chooser("~", "*",
+                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                                        GetTranslation("Select new directory"));
+    m_pDirChooser->preview(false);
+    m_pDirChooser->previewButton->hide();
+    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
 }
 
 bool CSetParamsScreen::Activate()
@@ -255,12 +299,21 @@ bool CSetParamsScreen::Activate()
 void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
 {
     m_pCurrentParamEntry = pCommandEntry->parameter_entries[txt];
-    if ((m_pCurrentParamEntry->param_type == PTYPE_STRING) ||
-        (m_pCurrentParamEntry->param_type == PTYPE_DIR))
+    if (m_pCurrentParamEntry->param_type == PTYPE_STRING)
     {
         m_pValChoiceMenu->hide();
+        m_pSelDirButton->hide();
+        m_pSelDirInput->hide();
         m_pParamInput->show();
         m_pParamInput->value(m_pCurrentParamEntry->value.c_str());
+    }
+    else if (m_pCurrentParamEntry->param_type == PTYPE_DIR)
+    {
+        m_pValChoiceMenu->hide();
+        m_pParamInput->hide();
+        m_pSelDirButton->show();
+        m_pSelDirInput->show();
+        m_pSelDirInput->value(m_pCurrentParamEntry->value.c_str());
     }
     else
     {
@@ -284,6 +337,8 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
             }
         }
         m_pParamInput->hide();
+        m_pSelDirButton->hide();
+        m_pSelDirInput->hide();
         m_pValChoiceMenu->show();
     }
     m_pDescriptionOutput->value(m_pCurrentParamEntry->description.c_str());
@@ -307,6 +362,19 @@ void CSetParamsScreen::SetValue(const std::string &str)
     }
     else
         m_pCurrentParamEntry->value = str;
+}
+
+void CSetParamsScreen::OpenDirChooser(void)
+{
+    m_pDirChooser->directory(m_pCurrentParamEntry->value.c_str());
+    m_pDirChooser->show();
+    while(m_pDirChooser->visible()) Fl::wait();
+    
+    if (m_pDirChooser->value())
+    {
+        SetValue(m_pDirChooser->value());
+        m_pSelDirInput->value(m_pDirChooser->value());
+    }
 }
 
 void CSetParamsScreen::ParamBrowserCB(Fl_Widget *w, void *p)
@@ -359,7 +427,7 @@ Fl_Group *CInstallFilesScreen::Create()
     
     m_pDisplay = new Fl_Text_Display(50, 110, (MAIN_WINDOW_W-100), (MAIN_WINDOW_H-170), "Status");
     m_pDisplay->buffer(m_pBuffer);
-    //m_pDisplay->wrap_mode(true, 60);
+    m_pDisplay->wrap_mode(true, 60);
     
     m_pAskPassWindow = new Fl_Window(400, 190, "Password dialog");
     m_pAskPassWindow->set_modal();
@@ -422,7 +490,7 @@ bool CInstallFilesScreen::Activate()
                     if (!m_szPassword)
                     {
                         if (fl_ask(GetTranslation("Root access is required to continue\nAbort installation?")))
-                            EndProg(-1);
+                            EndProg();
                     }
                     else
                     {
@@ -468,8 +536,8 @@ void CInstallFilesScreen::UpdateLang()
 void CInstallFilesScreen::AppendText(const char *txt)
 {
     m_pDisplay->insert(txt);
-    m_pDisplay->insert_position(m_pBuffer->length());
-    m_pDisplay->show_insert_position();
+    // Move curser to last line end last word
+    m_pDisplay->scroll(m_pBuffer->length(), m_pDisplay->word_end(m_pBuffer->length()));
 }
 
 void CInstallFilesScreen::SetPassword(bool unset)
@@ -511,7 +579,7 @@ void CInstallFilesScreen::AskPassCancelButtonCB(Fl_Widget *w, void *p)
 
 void CInstallFilesScreen::ChangeStatusText(const char *txt, int n)
 {
-    // Install entries +1 because it doesn't include extraction
+    // Install entries + 1 because it doesn't include extraction
     m_pDisplay->label(CreateText(GetTranslation("Status: %s (%d/%d)"), txt, n, InstallInfo.command_entries.size()+1));
 }
 
@@ -521,6 +589,7 @@ void CInstallFilesScreen::Install()
     short percent = 0;
     
     ChangeStatusText("Extracting Files", 1);
+    
     while(1)
     {
         percent = ExtractArchive(curfile);
@@ -590,5 +659,47 @@ void CInstallFilesScreen::Install()
     InstallFiles = false;
     fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
     ClearPassword();
-    //EndProg(0);
+    
+    pCancelButton->deactivate();
+    pPrevButton->deactivate();
+    pNextButton->activate();
+
+    // HACK
+    if (!FileExists(InstallInfo.own_dir + "/config/finish"))
+        pNextButton->label(GetTranslation("Finish"));
+}
+
+// -------------------------------------
+// Finish display screen
+// -------------------------------------
+
+Fl_Group *CFinishScreen::Create(void)
+{
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
+    
+    m_pBuffer = new Fl_Text_Buffer;
+
+    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Please read the following text");
+    m_pDisplay->buffer(m_pBuffer);
+    
+    m_pGroup->end();
+    
+    return m_pGroup;
+}
+
+void CFinishScreen::UpdateLang()
+{
+    m_bHasText = (!m_pBuffer->loadfile(CreateText("%s/config/lang/%s/finish", InstallInfo.own_dir.c_str(),
+                   InstallInfo.cur_lang.c_str())) || !m_pBuffer->loadfile(CreateText("%s/config/finish",
+                   InstallInfo.own_dir.c_str())));
+    m_pDisplay->label(GetTranslation("Please read the following text"));
+}
+
+bool CFinishScreen::Activate()
+{
+    if (!m_bHasText)
+        return false;
+
+    pNextButton->label(GetTranslation("Finish"));
 }

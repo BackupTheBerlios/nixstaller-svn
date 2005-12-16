@@ -62,10 +62,13 @@ inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<ch
 char *CreateText(const char *s, ...);
 void FreeStrings(void);
 param_entry_s *GetParamVar(const std::string &str);
-void throwerror(bool dialog, const char *error, ...); // Frontend depended, therefor defined in there
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 bool WriteAccess(const char *file);
 inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
+
+// These functions should be defined for each frontend
+void throwerror(bool dialog, const char *error, ...);
+void EndProg(void);
 
 #endif 

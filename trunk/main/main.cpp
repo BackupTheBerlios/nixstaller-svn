@@ -272,6 +272,11 @@ void MainEnd()
         }
     }
 
+    if (!StringList.empty())
+    {
+        for(std::list<char *>::iterator it=StringList.begin(); it!=StringList.end(); it++) printf("String: %s\n", *it);
+    }
+    
     FreeStrings();
 }
 
@@ -456,9 +461,11 @@ char *CreateText(const char *s, ...)
     // Check if string was already created
     if (!StringList.empty())
     {
-        std::list<char *>::iterator it = find(StringList.begin(), StringList.end(), txt);
-        if (it != StringList.end())
-            return *it;
+        for (std::list<char *>::iterator it = StringList.begin(); it != StringList.end(); it++)
+        {
+            if (!strcmp(*it, txt))
+                return *it;
+        }
     }
     
     char *output = new char[strlen(txt)+1];

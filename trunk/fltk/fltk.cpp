@@ -17,7 +17,7 @@ bool InstallFiles = false;
 void WizCancelCB(Fl_Widget *, void *)
 {
     if (fl_ask("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
-        EndProg(-1);
+        EndProg();
 }
 
 void WizPrevCB(Fl_Widget *, void *)
@@ -50,6 +50,9 @@ void WizNextCB(Fl_Widget *, void *)
                 p++;
                 Wizard->next();
                 while ((p != ScreenList.end()) && (!(*p)->Activate())) { Wizard->next(); p++; }
+
+                if (p == ScreenList.end())
+                    EndProg();
             }
             break;
         }
@@ -106,7 +109,8 @@ void CreateMainWindow(char **argv)
     
     MCreateWidget(CSetParamsScreen);
     MCreateWidget(CInstallFilesScreen);
-
+    MCreateWidget(CFinishScreen);
+    
     (*ScreenList.begin())->Activate();
     
     // HACK: Switch that annoying bell off!
@@ -148,11 +152,11 @@ void UpdateLanguage()
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) (*p)->UpdateLang();
 }
 
-void EndProg(int exitcode)
+void EndProg()
 {
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
-    exit(exitcode);
+    exit(0);
 }
 
 void throwerror(bool dialog, const char *error, ...)
@@ -167,5 +171,8 @@ void throwerror(bool dialog, const char *error, ...)
 
     if (dialog) fl_alert(txt);
     else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
-    EndProg(EXIT_FAILURE);
+    
+    for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
+    MainEnd();
+    exit(1);
 }

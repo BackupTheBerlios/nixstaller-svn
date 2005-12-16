@@ -2,6 +2,7 @@ OVERALL
 - Check path with non su commands
 - Check what to do when command fails
 - Check exit codes
+- Update conf names/descriptions etc when their changed
 
 
 MAIN
@@ -14,10 +15,7 @@ NCURSES FRONTEND
 
 FLTK FRONTEND
 - Make image support?
-- Finish button
 - Add dir chooser for dir params
-- Check status bar for compiling
-- Post message screen
 - Update exit install stuff
 
 

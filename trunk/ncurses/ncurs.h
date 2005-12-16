@@ -19,7 +19,6 @@
 #define DEFAULT_WIDTH       50
 #define DEFAULT_HEIGHT      12
 
-void EndProg(void);
 int ReadDir(const std::string &dir, char ***list);
 int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key GCC_UNUSED);
 int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype key);
