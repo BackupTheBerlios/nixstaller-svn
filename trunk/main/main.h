@@ -35,6 +35,7 @@ struct install_info_s
 {
     int version;
     char program_name[129];
+    std::string intropicname;
     std::string own_dir;
     std::string dest_dir;
     std::list<char *> languages;
@@ -50,9 +51,9 @@ struct install_info_s
 extern install_info_s InstallInfo;
 extern std::list<char *> StringList; // List of all strings created by CreateText, for easy removal :)
 
-void check(void);
 bool MainInit(int argc, char *argv[]);
 void MainEnd(void);
+int ArchSize(const char *archname);
 float ExtractArchive(char *curfile);
 bool ReadLang(void);
 std::string GetParameters(command_entry_s *pCommandEntry);
@@ -61,7 +62,9 @@ char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 char *CreateText(const char *s, ...);
 void FreeStrings(void);
-param_entry_s *GetParamVar(const std::string &str);
+param_entry_s *GetParamVar(std::string str);
+const char *GetParamDefault(param_entry_s *pParam);
+const char *GetParamValue(param_entry_s *pParam);
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 bool WriteAccess(const char *file);

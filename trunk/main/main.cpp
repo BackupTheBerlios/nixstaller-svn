@@ -1,22 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <errno.h>
 #include <archive.h>
 #include <archive_entry.h>
-
 #include "main.h"
 
 install_info_s InstallInfo;
 std::list<char *> StringList;
-
-void check()
-{
-     printf("lib is functioning\n");
-}
 
 // Reads install data from config file
 bool ReadConfig()
@@ -186,6 +173,8 @@ bool ReadConfig()
                     if (arg3) { InstallInfo.dest_dir_type = DEST_DEFAULT; InstallInfo.dest_dir = arg3; }
                 }
             }
+            else if (!strcasecmp(arg1, "intropic"))
+                InstallInfo.intropicname = &fullline[strlen(arg1)+1];
         }
     }
     
@@ -278,29 +267,6 @@ void MainEnd()
     }
     
     FreeStrings();
-}
-
-// Returns uncompressed file size of a gzipped tar file
-int ArchSize(const char *archname)
-{
-    archive *arch;
-    archive_entry *entry;
-    int size = 0;
-
-    arch = archive_read_new();
-    archive_read_support_compression_all(arch);
-    archive_read_support_format_all(arch);
-    archive_read_open_file(arch, archname, 512);
-    
-    while (archive_read_next_header(arch, &entry) == ARCHIVE_OK)
-    {
-        size += archive_entry_size(entry);
-        archive_read_data_skip(arch);
-    }
-    
-    archive_read_finish(arch);
-   
-    return size;
 }
 
 // Extract gzipped tar file. Returns how much percent is done.
@@ -409,102 +375,3 @@ bool ReadLang()
     return true;
 }
 
-std::string GetParameters(command_entry_s *pCommandEntry)
-{
-    std::string args;
-    
-    for(std::map<std::string, param_entry_s *>::iterator it=pCommandEntry->parameter_entries.begin();
-        it!=pCommandEntry->parameter_entries.end();it++)
-    {
-        switch (it->second->param_type)
-        {
-            case PTYPE_STRING:
-            case PTYPE_DIR:
-            case PTYPE_LIST:
-                args += " " + it->second->parameter + it->second->value;
-                break;
-            case PTYPE_BOOL:
-                if (it->second->value == "true") args += " " + it->second->parameter;
-                break;
-        }
-    }
-    return args;
-}
-
-std::string GetTranslation(std::string &s)
-{
-    std::map<std::string, char *>::iterator p = InstallInfo.translations.find(s);
-    if (p != InstallInfo.translations.end()) return (*p).second;
-    
-    // No translation found
-    return s;
-}
-
-char *GetTranslation(char *s)
-{
-    std::map<std::string, char *>::iterator p = InstallInfo.translations.find(s);
-    if (p != InstallInfo.translations.end()) return (*p).second;
-    
-    // No translation found
-    return s;
-}
-
-char *CreateText(const char *s, ...)
-{
-    static char txt[2048]; // Should be enough ;)
-    va_list v;
-    
-    va_start(v, s);
-        vsprintf(txt, s, v);
-    va_end(v);
-    
-    // Check if string was already created
-    if (!StringList.empty())
-    {
-        for (std::list<char *>::iterator it = StringList.begin(); it != StringList.end(); it++)
-        {
-            if (!strcmp(*it, txt))
-                return *it;
-        }
-    }
-    
-    char *output = new char[strlen(txt)+1];
-    strcpy(output, txt);
-    StringList.push_front(output);
-    return output;
-}
-
-void FreeStrings()
-{
-    while(!StringList.empty())
-    {
-        delete [] (*StringList.end());
-        StringList.pop_back();
-    }
-}
-
-param_entry_s *GetParamVar(const std::string &str)
-{
-    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
-         it++)
-    {
-        for (std::map<std::string, param_entry_s *>::iterator it2=(*it)->parameter_entries.begin();
-             it2!=(*it)->parameter_entries.end(); it2++)
-        {
-            if (it2->second->varname == str) return it2->second;
-        }
-    }
-    return NULL;
-}
-
-bool FileExists(const char *file)
-{
-    struct stat st;
-    return (lstat(file, &st) == 0);
-}
-
-bool WriteAccess(const char *file)
-{
-    struct stat st;
-    return ((lstat(file, &st) == 0) && (access(file, W_OK) == 0));
-}

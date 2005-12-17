@@ -56,30 +56,31 @@ bool CLangScreen::Activate()
 
 Fl_Group *CWelcomeScreen::Create(void)
 {
-    fl_register_images();
+    Fl::visual(FL_RGB);
     
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
-    m_pImage = Fl_Shared_Image::get(CreateText("%s/intro.jpg", InstallInfo.own_dir.c_str()));
+    m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
     if (m_pImage)
     {
-        // Scale image (copied from demo code)
-        /*if (m_pImage->w() > m_pImageBox->w() || m_pImage->h() > m_pImageBox->h())
+        m_pImageBox = new Fl_Box(40, 60, 200, (MAIN_WINDOW_H-120));
+        // Scale image if its to big
+        if (m_pImage->w() > m_pImageBox->w() || m_pImage->h() > m_pImageBox->h())
         {
-            Fl_Image *temp;
-            if (m_pImage->w() > m_pImage->h())
-                temp = m_pImage->copy(m_pImageBox->w(), m_pImageBox->h() * m_pImage->h() / m_pImage->w());
-            else
-                temp = m_pImage->copy(m_pImageBox->w() * m_pImage->w() / m_pImage->h(), m_pImageBox->h());
-
+            float fact = (((float)m_pImageBox->w() / (float)m_pImageBox->h())/((float)m_pImage->w() / (float)m_pImage->h()));
+            int w = (int)(float(m_pImage->w()) * fact);
+            int h = (int)(float(m_pImage->h()) * fact);
+            Fl_Image *temp = m_pImage->copy(w, h);
             m_pImage->release();
             m_pImage = (Fl_Shared_Image *)temp;
-        }*/
-
-        int w = (m_pImage->w() < (MAIN_WINDOW_W/2)) ? m_pImage->w() : (MAIN_WINDOW_W/2);
-        int h = (m_pImage->h() < (MAIN_WINDOW_H-120)) ? m_pImage->w() : (MAIN_WINDOW_H-120);
-        m_pImageBox = new Fl_Box(40, 60, w, (MAIN_WINDOW_H-120));
+        }
+        else
+        {
+            // Make box smaller if image was smaller than the box and center the y axis.
+            m_pImageBox->resize(m_pImageBox->x(), 60 + ((m_pImageBox->h() - m_pImage->h())/2), m_pImage->w(), m_pImage->h());
+        }
+        
         m_pImageBox->image(m_pImage);
         m_pImageBox->align(FL_ALIGN_CENTER);
 
@@ -217,9 +218,9 @@ Fl_Group *CSetParamsScreen::Create()
     m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "Configuring parameters");
     
     const int iChoiceW = 250, iDescW = 250, iTotalW = iChoiceW + 10 + iDescW;
-    int x = 40, y = ((MAIN_WINDOW_H-50)/2)-40;
+    int x = 40, y = 120;
 
-    m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 100, "Parameters");
+    m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 145, "Parameters");
     
     for (p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end(); p++)
     {
@@ -232,12 +233,17 @@ Fl_Group *CSetParamsScreen::Create()
     m_pChoiceBrowser->align(FL_ALIGN_TOP);
     
     x += (iChoiceW + 20);
-    m_pDescriptionOutput = new Fl_Multiline_Output(x, y, iDescW, 75, "Description");
+    m_pDescriptionOutput = new Fl_Multiline_Output(x, y, iDescW, 100, "Description");
     m_pDescriptionOutput->align(FL_ALIGN_TOP);
     m_pDescriptionOutput->wrap(1);
 
+    y += 120;
+    m_pDefOutput = new Fl_Output(x, y, iDescW, 25, "Default");
+    m_pDefOutput->align(FL_ALIGN_TOP);
+    m_pDefOutput->value("Test");
+    
     x=100;
-    y+=120;
+    y+=40;//120;
 
     // List of parameter options
     m_pParamInput = new Fl_Input(x, y, 250, 25, "Value: ");
@@ -250,12 +256,8 @@ Fl_Group *CSetParamsScreen::Create()
 
     // Dir selecter for parameter
     m_pSelDirInput = new Fl_Output(x, y, 250, 25, "Value: ");
-    m_pSelDirButton = new Fl_Button(x + 300, y, 160, 25, "Select directory");
+    m_pSelDirButton = new Fl_Button(x + 275, y, 120, 25, "Change");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
-    
-    x-=50;
-    y+=25;
-    m_pDefaultValBox = new Fl_Box(x, y, 250, 25, "Default: ");
     
     m_pGroup->end();
     return m_pGroup;
@@ -341,6 +343,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         m_pSelDirInput->hide();
         m_pValChoiceMenu->show();
     }
+    
     m_pDescriptionOutput->value(m_pCurrentParamEntry->description.c_str());
     
     const char *str = m_pCurrentParamEntry->defaultval.c_str();
@@ -349,7 +352,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         if (m_pCurrentParamEntry->defaultval == "true") str = GetTranslation("Enabled");
         else str = GetTranslation("Disabled");
     }
-    m_pDefaultValBox->label(CreateText(GetTranslation("Default: %s"), str));
+    m_pDefOutput->value(str);
     printf("Params: %s\n", GetParameters(pCommandEntry).c_str());
 }
 

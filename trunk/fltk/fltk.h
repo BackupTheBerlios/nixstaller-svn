@@ -114,12 +114,13 @@ public:
 
 class CSetParamsScreen: public CBaseScreen
 {
-    Fl_Box *m_pBoxTitle, *m_pDefaultValBox;
+    Fl_Box *m_pBoxTitle;
     Fl_Input *m_pParamInput;
     Fl_Menu_Item *m_pValMenuItems;
     Fl_Choice *m_pValChoiceMenu;
     Fl_Hold_Browser *m_pChoiceBrowser;
     Fl_Multiline_Output *m_pDescriptionOutput;
+    Fl_Output *m_pDefOutput;
     Fl_File_Chooser *m_pDirChooser;
     Fl_Button *m_pSelDirButton;
     Fl_Output *m_pSelDirInput;

@@ -248,72 +248,80 @@ bool ConfParams()
                 success = false;
                 break;
             }
-            for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();
-                 p!=InstallInfo.command_entries.end(); p++)
+            
+            param_entry_s *pParam = GetParamVar(ParamItems[selection]);
+            
+            if (pParam->param_type == PTYPE_DIR)
             {
-                if ((*p)->parameter_entries.empty()) continue;
-                std::map<std::string, param_entry_s *>::iterator p2;
-                p2 = (*p)->parameter_entries.find(ParamItems[selection]);
-                if (p2 != (*p)->parameter_entries.end())
+                CFileDialog filedialog(pParam->value, GetTranslation("Select new directory"), true, false);
+                if (filedialog.Activate()) pParam->value = filedialog.Result();
+                filedialog.Destroy();
+                refreshCDKScreen(CDKScreen);
+            }
+            else if (pParam->param_type == PTYPE_STRING)
+            {
+                CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter new value"), "", 40, 0, 256);
+                entry.SetBgColor(26);
+                entry.SetValue(pParam->value);
+                
+                const char *newval = entry.Activate();
+                
+                if ((entry.ExitType() == vNORMAL) && newval)
+                    pParam->value = newval;
+                
+                // Restore screen
+                entry.Destroy();
+                refreshCDKScreen(CDKScreen);
+            }
+            else
+            {
+                CCharListHelper chitems;
+                int cur;
+                
+                if (pParam->param_type == PTYPE_BOOL)
                 {
-                    if (p2->second->param_type == PTYPE_DIR)
+                    chitems.AddItem(GetTranslation("Disable"));
+                    chitems.AddItem(GetTranslation("Enable"));
+                    cur = (pParam->value == "true") ? 1 : 0;
+                }
+                else
+                {
+                    int i = 0;
+                    for (std::list<std::string>::iterator it=pParam->options.begin(); it!=pParam->options.end();it++, i++)
                     {
-                        CFileDialog filedialog(p2->second->value, GetTranslation("Select new directory"), true, false);
-                        if (filedialog.Activate()) p2->second->value = filedialog.Result();
-                        filedialog.Destroy();
-                        refreshCDKScreen(CDKScreen);
+                        chitems.AddItem(*it);
+                        if (*it == pParam->value)
+                            cur = i;
                     }
-                    else if (p2->second->param_type == PTYPE_STRING)
+                }
+                
+                CCDKScroll chScrollList(CDKScreen, CENTER, CENTER, 6, 30, RIGHT,
+                                        GetTranslation("Please choose new value"), chitems, chitems.Count());
+                chScrollList.SetBgColor(26);
+                chScrollList.SetCurrent(cur);
+                
+                int chsel = chScrollList.Activate();
+                
+                if (chScrollList.ExitType() == vNORMAL)
+                {
+                    if (pParam->param_type == PTYPE_BOOL)
                     {
-                        CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter new value"), "", 40, 0, 256);
-                        entry.SetBgColor(26);
-                        entry.SetValue(p2->second->value);
-                        
-                        const char *newval = entry.Activate();
-                        
-                        if ((entry.ExitType() == vNORMAL) && newval)
-                            p2->second->value = newval;
-                        
-                        // Restore screen
-                        entry.Destroy();
-                        refreshCDKScreen(CDKScreen);
+                        if (!strcmp(chitems[chsel], GetTranslation("Enable"))) pParam->value = "true";
+                        else pParam->value = "false";
                     }
                     else
-                    {
-                        CCharListHelper chitems;
-                        if (p2->second->param_type == PTYPE_BOOL)
-                        {
-                            chitems.AddItem(GetTranslation("Disable"));
-                            chitems.AddItem(GetTranslation("Enable"));
-                        }
-                        else
-                        {
-                            for (std::list<std::string>::iterator it=p2->second->options.begin();
-                                 it!=p2->second->options.end();it++)
-                                chitems.AddItem(*it);
-                        }
-                        CCDKScroll chScrollList(CDKScreen, CENTER, CENTER, 6, 30, RIGHT,
-                                                GetTranslation("Please choose new value"), chitems, chitems.Count());
-                        chScrollList.SetBgColor(26);
-                        int chsel = chScrollList.Activate();
-                        
-                        if (chScrollList.ExitType() == vNORMAL)
-                        {
-                            if (p2->second->param_type == PTYPE_BOOL)
-                            {
-                                if (!strcmp(chitems[chsel], GetTranslation("Enable"))) p2->second->value = "true";
-                                else p2->second->value = "false";
-                            }
-                            else
-                                p2->second->value = chitems[chsel];
-                        }
-                            
-                        chScrollList.Destroy();
-                        refreshCDKScreen(CDKScreen);
-                    }
-                    break;
+                        pParam->value = chitems[chsel];
                 }
+                    
+                chScrollList.Destroy();
+                refreshCDKScreen(CDKScreen);
             }
+
+            DefWindow.Clear();
+            DefWindow.AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Default"), GetParamDefault(pParam)),
+                              false);
+            DefWindow.AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Current"), GetParamValue(pParam)),
+                              false);
         }
         else
         {

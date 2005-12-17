@@ -84,33 +84,14 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     if ((key == KEY_DOWN) && ((cur+1) < items->Count())) cur++;
     else if ((key == KEY_UP) && (cur > 0)) cur--;
 
-    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();
-         p!=InstallInfo.command_entries.end(); p++)
-    {
-        if ((*p)->parameter_entries.empty()) continue;
-
-        std::map<std::string, param_entry_s *>::iterator p2;
-        p2 = (*p)->parameter_entries.find((*items)[cur]);
-        
-        if (p2 != (*p)->parameter_entries.end())
-        {
-            pDescWin->Clear();
-            pDescWin->AddText(p2->second->description);
-            
-            pDefWin->Clear();
-            const char *strdef = p2->second->defaultval.c_str(), *strval = p2->second->value.c_str();
-            if (p2->second->param_type == PTYPE_BOOL)
-            {
-                if (!strcmp(strdef, "true")) strdef = GetTranslation("Enabled");
-                else strdef = GetTranslation("Disabled");
-                if (!strcmp(strval, "true")) strval = GetTranslation("Enabled");
-                else strval = GetTranslation("Disabled");
-            }
-            pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Default"), strdef), false);
-            pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Current"), strval), false);
-            break;
-        }
-    }
+    param_entry_s *pParam = GetParamVar((*items)[cur]);
+    
+    pDescWin->Clear();
+    pDescWin->AddText(pParam->description);
+    
+    pDefWin->Clear();
+    pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Default"), GetParamDefault(pParam)), false);
+    pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Current"), GetParamValue(pParam)), false);
     
     return true;
 }

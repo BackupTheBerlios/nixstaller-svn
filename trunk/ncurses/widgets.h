@@ -85,6 +85,7 @@ public:
     int Activate(chtype *actions = NULL) { return activateCDKScroll(m_pScroll, actions); };
     CDKSCROLL *GetScroll(void) { return m_pScroll; };
     int GetCurrent(void) { return getCDKScrollCurrent(m_pScroll); };
+    void SetCurrent(int n) { setCDKScrollCurrent(m_pScroll, n); };
 };
 
 class CCDKAlphaList: public CBaseCDKWidget

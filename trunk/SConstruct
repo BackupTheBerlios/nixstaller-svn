@@ -9,7 +9,7 @@ env.Append(LIBPATH=['.', 'main/', 'lib/'+cur_os, 'libsu/'])
 env.Append(CPPPATH=['.', 'main/', 'libsu/', 'include/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
 
 # Builds main lib
-main = env.Library("main/main", ["main/main.cpp"], CCFLAGS='$CCFLAGS -fPIC')
+main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp'], CCFLAGS='$CCFLAGS -fPIC')
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
@@ -34,7 +34,7 @@ if not env.GetOption('clean'):
           Exit(1)
      env = conf.Finish()
 else:
-    # Atleast for me, scons won't clean properly...removing all '.sconsign' files manually seems to help
+    # Make sure that scons properly cleans everything
     Execute(Delete('main/.sconsign'))
     Execute(Delete('ncurses/.sconsign'))
     Execute(Delete('fltk/.sconsign'))
@@ -46,7 +46,7 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cp
                        'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
 
 # Builds fltk frontend
-fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk fltk_images fltk_png fltk_jpeg Xext X11'))
+fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11'))
 
 # Build help extracter
 # extr = env.Program('extracter/extracter', ['extracter/extracter.c'])
