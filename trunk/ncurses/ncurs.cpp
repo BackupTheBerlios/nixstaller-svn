@@ -249,11 +249,12 @@ bool ConfParams()
                 break;
             }
             
-            param_entry_s *pParam = GetParamVar(ParamItems[selection]);
+            param_entry_s *pParam = GetParamByName(ParamItems[selection]);
             
             if (pParam->param_type == PTYPE_DIR)
             {
-                CFileDialog filedialog(pParam->value, GetTranslation("Select new directory"), true, false);
+                CFileDialog filedialog(pParam->value, CreateText("<C>%s", GetTranslation("Select a directory")),
+                                       true, false);
                 if (filedialog.Activate()) pParam->value = filedialog.Result();
                 filedialog.Destroy();
                 refreshCDKScreen(CDKScreen);
@@ -384,7 +385,7 @@ bool InstallFiles()
             // Command may need root permission, check if it is so
             if ((*it)->need_root == DEPENDED_ROOT)
             {
-                param_entry_s *p = GetParamVar((*it)->dep_param);
+                param_entry_s *p = GetParamByVar((*it)->dep_param);
                 if (p && !WriteAccess(p->value))
                 {
                     (*it)->need_root = NEED_ROOT;
@@ -394,8 +395,6 @@ bool InstallFiles()
             else if (!askpass) askpass = true;
         }
     }
-
-    if (!askpass && !WriteAccess(InstallInfo.dest_dir)) askpass = true;
 
     // Ask root password if one of the command entries need root access and root isn't passwordless
     if (askpass && SuHandler.NeedPassword())
@@ -482,11 +481,10 @@ bool InstallFiles()
     {
         while(percent<100)
         {
-            char curfile[256], text[300];
+            std::string curfile;
             percent = ExtractArchive(curfile);
             
-            sprintf(text, "Extracting file: %s", curfile);
-            InstallOutput.AddText(text, false);
+            InstallOutput.AddText("Extracting file: " + curfile, false);
             if (percent==100) InstallOutput.AddText("Done!", false);
             else if (percent==-1) throwerror(true, "Error during extracting files");
     

@@ -61,7 +61,8 @@ Fl_Group *CWelcomeScreen::Create(void)
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
-    m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
+    //m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
+    m_pImage = Fl_Shared_Image::get("/usr/home/rick/beastie.png");
     if (m_pImage)
     {
         m_pImageBox = new Fl_Box(40, 60, 200, (MAIN_WINDOW_H-120));
@@ -458,57 +459,57 @@ Fl_Group *CInstallFilesScreen::Create()
 
 bool CInstallFilesScreen::Activate()
 {
-    if (m_SUHandler.NeedPassword())
+    // Check if we need root access
+    bool askpass = false;
+    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
+            it!=InstallInfo.command_entries.end(); it++)
     {
-        // Check if we need root access
-        for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
-             it!=InstallInfo.command_entries.end(); it++)
+        if ((*it)->need_root != NO_ROOT)
         {
-            if ((*it)->need_root != NO_ROOT)
+            // Command may need root permission, check if it is so
+            if ((*it)->need_root == DEPENDED_ROOT)
             {
-                 // Command may need root permission, check if it is so
-                if ((*it)->need_root == DEPENDED_ROOT)
+                param_entry_s *p = GetParamByVar((*it)->dep_param);
+                if (p && !WriteAccess(p->value))
                 {
-                    param_entry_s *p = GetParamVar((*it)->dep_param);
-                    if (p && !WriteAccess(p->value))
-                    {
-                        (*it)->need_root = NEED_ROOT;
-                    }
-                    else continue;
+                    (*it)->need_root = NEED_ROOT;
+                    if (!askpass) askpass = true;
                 }
-            
-                if (m_szPassword) continue; // No need to ask pass more than once...
-                
-                while(true)
-                {
-                    ClearPassword();
-                
-                    m_pAskPassWindow->hotspot(m_pAskPassOKButton);
-                    m_pAskPassWindow->take_focus();
-                    m_pAskPassWindow->show();
+            }
+            else if (!askpass) askpass = true;
+        }
+    }
 
-                    while(m_pAskPassWindow->visible()) Fl::wait();
-            
-                    // Check if password is invalid
-                    if (!m_szPassword)
-                    {
-                        if (fl_ask(GetTranslation("Root access is required to continue\nAbort installation?")))
-                            EndProg();
-                    }
-                    else
-                    {
-                        if (m_SUHandler.TestSU(m_szPassword))
-                            break;
-                        
-                        // Some error appeared
-                        if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                            fl_alert(GetTranslation("Incorrect password given for root user.\nPlease re-type."));
-                        else
-                        {
-                            throwerror(true, "%s\n%s", GetTranslation("Error: Couldn't use su to gain root access"),
-                                       GetTranslation("Make sure you can use su(adding your user to the wheel group may help"));
-                        }
-                    }
+    if (askpass && m_SUHandler.NeedPassword())
+    {
+        while(true)
+        {
+            ClearPassword();
+
+            m_pAskPassWindow->hotspot(m_pAskPassOKButton);
+            m_pAskPassWindow->take_focus();
+            m_pAskPassWindow->show();
+
+            while(m_pAskPassWindow->visible()) Fl::wait();
+
+            // Check if password is invalid
+            if (!m_szPassword)
+            {
+                if (fl_ask(GetTranslation("Root access is required to continue\nAbort installation?")))
+                    EndProg();
+            }
+            else
+            {
+                if (m_SUHandler.TestSU(m_szPassword))
+                    break;
+
+                // Some error appeared
+                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                    fl_alert(GetTranslation("Incorrect password given for root user.\nPlease re-type."));
+                else
+                {
+                    throwerror(true, "%s\n%s", GetTranslation("Error: Couldn't use su to gain root access"),
+                                GetTranslation("Make sure you can use su(adding your user to the wheel group may help"));
                 }
             }
         }
@@ -588,7 +589,7 @@ void CInstallFilesScreen::ChangeStatusText(const char *txt, int n)
 
 void CInstallFilesScreen::Install()
 {
-    char curfile[256], text[300];
+    std::string curfile;
     short percent = 0;
     
     ChangeStatusText("Extracting Files", 1);
@@ -596,9 +597,7 @@ void CInstallFilesScreen::Install()
     while(1)
     {
         percent = ExtractArchive(curfile);
-    
-        sprintf(text, "Extracting file: %s\n", curfile);
-        AppendText(text);
+        AppendText("Extracting file: " + curfile + "\n");
 
         if (percent == -1) throwerror(true, "Error during extracting files");
 

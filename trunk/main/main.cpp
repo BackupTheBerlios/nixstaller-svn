@@ -270,7 +270,7 @@ void MainEnd()
 }
 
 // Extract gzipped tar file. Returns how much percent is done.
-float ExtractArchive(char *curfile)
+float ExtractArchive(std::string &curfile)
 {
     static archive *arch = NULL;
     archive_entry *entry = NULL;
@@ -292,7 +292,7 @@ float ExtractArchive(char *curfile)
     int status = archive_read_next_header(arch, &entry);
     if (status == ARCHIVE_OK)
     {
-        strcpy(curfile, archive_entry_pathname(entry));
+        curfile = archive_entry_pathname(entry);
         percent += ((float)archive_entry_size(entry)/(float)size)*100.0f;
         archive_read_extract(arch, entry, (ARCHIVE_EXTRACT_OWNER | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_FFLAGS));
         return percent;

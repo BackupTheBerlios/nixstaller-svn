@@ -101,13 +101,29 @@ void FreeStrings()
     }
 }
 
-param_entry_s *GetParamVar(std::string str)
+param_entry_s *GetParamByName(std::string str)
 {
     for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
          it++)
     {
         if ((*it)->parameter_entries.empty()) continue;
         return ((*it)->parameter_entries.find(str))->second;
+    }
+    return NULL;
+}
+
+param_entry_s *GetParamByVar(std::string str)
+{
+    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
+         it++)
+    {
+        if ((*it)->parameter_entries.empty()) continue;
+        for (std::map<std::string, param_entry_s *>::iterator it2=(*it)->parameter_entries.begin();
+             it2!=(*it)->parameter_entries.end(); it2++)
+        {
+            if (it2->second->varname == str)
+                return it2->second;
+        }
     }
     return NULL;
 }

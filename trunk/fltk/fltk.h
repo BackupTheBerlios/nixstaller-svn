@@ -170,6 +170,7 @@ public:
     virtual void Install(void);
     
     void AppendText(const char *txt);
+    void AppendText(const std::string &txt) { AppendText(txt.c_str()); };
     void ChangeStatusText(const char *txt, int n);
     void SetPassword(bool unset);
     

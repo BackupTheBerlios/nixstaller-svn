@@ -54,7 +54,7 @@ extern std::list<char *> StringList; // List of all strings created by CreateTex
 bool MainInit(int argc, char *argv[]);
 void MainEnd(void);
 int ArchSize(const char *archname);
-float ExtractArchive(char *curfile);
+float ExtractArchive(std::string &curfile);
 bool ReadLang(void);
 std::string GetParameters(command_entry_s *pCommandEntry);
 std::string GetTranslation(std::string &s);
@@ -62,7 +62,8 @@ char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 char *CreateText(const char *s, ...);
 void FreeStrings(void);
-param_entry_s *GetParamVar(std::string str);
+param_entry_s *GetParamByName(std::string str);
+param_entry_s *GetParamByVar(std::string str);
 const char *GetParamDefault(param_entry_s *pParam);
 const char *GetParamValue(param_entry_s *pParam);
 bool FileExists(const char *file);

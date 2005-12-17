@@ -84,7 +84,7 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     if ((key == KEY_DOWN) && ((cur+1) < items->Count())) cur++;
     else if ((key == KEY_UP) && (cur > 0)) cur--;
 
-    param_entry_s *pParam = GetParamVar((*items)[cur]);
+    param_entry_s *pParam = GetParamByName((*items)[cur]);
     
     pDescWin->Clear();
     pDescWin->AddText(pParam->description);
