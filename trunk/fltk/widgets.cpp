@@ -61,8 +61,8 @@ Fl_Group *CWelcomeScreen::Create(void)
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
-    //m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
-    m_pImage = Fl_Shared_Image::get("/usr/home/rick/beastie.png");
+    m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
+    //m_pImage = Fl_Shared_Image::get("/usr/home/rick/beastie.png");
     if (m_pImage)
     {
         m_pImageBox = new Fl_Box(40, 60, 200, (MAIN_WINDOW_H-120));

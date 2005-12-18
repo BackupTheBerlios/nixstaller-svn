@@ -1,7 +1,7 @@
 Notes for netbsd libs:
 
 FLTK:
-configure options: --x-includes=/usr/X11R6/include/ --x-libraries=/usr/X11R6/lib --enable-gl=no
+configure comannd: CPPFLAGS="-I/usr/pkg/include" LDFLAGS="-L/usr/pkg/lib" ./configure --disable-localpng --disable-localjpeg --x-includes=/usr/X11R6/include/ --x-libraries=/usr/X11R6/lib --enable-gl=no
 version used: fltk-1.1.6
 
 CDK:
