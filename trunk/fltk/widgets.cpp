@@ -14,8 +14,8 @@ Fl_Group *CLangScreen::Create(void)
     new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Please select a language");
     
     short s=0;
-    for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++, s++)
-        m_pMenuItems[s].text = *p;
+    for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++, s++)
+        m_pMenuItems[s].text = CreateText(p->c_str());
         
     m_pMenuItems[s].text = NULL;
     m_pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"&Language: ");
@@ -181,7 +181,7 @@ void CSelectDirScreen::UpdateLang()
 bool CSelectDirScreen::Next()
 {
     char temp[128];
-    sprintf(temp, GetTranslation("This will install %s to the following directory:"), InstallInfo.program_name);
+    sprintf(temp, GetTranslation("This will install %s to the following directory:"), InstallInfo.program_name.c_str());
     return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")));
 }
 
@@ -659,7 +659,7 @@ void CInstallFilesScreen::Install()
     m_pProgress->value(100);
     //ChangeStatusText(GetTranslation("Done"));
     InstallFiles = false;
-    fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name);
+    fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());
     ClearPassword();
     
     pCancelButton->deactivate();

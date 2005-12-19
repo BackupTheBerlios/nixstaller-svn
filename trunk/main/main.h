@@ -33,19 +33,19 @@ struct command_entry_s
 
 struct install_info_s
 {
-    int version;
-    char program_name[129];
+    std::string version;
+    std::string program_name;
     std::string intropicname;
     std::string own_dir;
     std::string dest_dir;
-    std::list<char *> languages;
+    std::list<std::string> languages;
     std::string cur_lang;
     std::map<std::string, char *> translations;
     EArchiveType archive_type;
     EDestDirType dest_dir_type;
     std::list<command_entry_s *> command_entries;
     
-    install_info_s(void) : version(1), archive_type(ARCH_GZIP), dest_dir_type(DEST_SELECT) { strcpy(program_name, "foo"); };
+    install_info_s(void) : archive_type(ARCH_GZIP), dest_dir_type(DEST_SELECT) { };
 };
 
 extern install_info_s InstallInfo;
@@ -53,6 +53,7 @@ extern std::list<char *> StringList; // List of all strings created by CreateTex
 
 bool MainInit(int argc, char *argv[]);
 void MainEnd(void);
+bool ReadConfig(void);
 int ArchSize(const char *archname);
 float ExtractArchive(std::string &curfile);
 bool ReadLang(void);

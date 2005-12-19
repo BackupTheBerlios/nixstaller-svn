@@ -79,7 +79,7 @@ bool SelectLanguage()
     ButtonBar.AddButton("ESC", "Exit program");
     ButtonBar.Draw();
     
-    for (std::list<char*>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
+    for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
         LangItems.AddItem(*p);
 
     CCDKScroll ScrollList(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, RIGHT, title, LangItems,
@@ -90,9 +90,9 @@ bool SelectLanguage()
     
     if (ScrollList.ExitType() == vNORMAL)
     {
-        std::list<char *>::iterator it = InstallInfo.languages.begin();
-        advance(it, selection);
-        InstallInfo.cur_lang = *it;
+        //std::list<std::string>::iterator it = InstallInfo.languages.begin();
+        //advance(it, selection);
+        InstallInfo.cur_lang = LangItems[selection];
         if (!ReadLang()) throwerror(true, "Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
     }
     else return false;
@@ -135,7 +135,7 @@ bool SelectDir()
             char *dbuttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
                 
             dtext.AddItem(CreateText(GetTranslation("This will install %s to the following directory:"),
-                        InstallInfo.program_name));
+                          InstallInfo.program_name.c_str()));
             dtext.AddItem(InstallInfo.dest_dir);
             dtext.AddItem(GetTranslation("Continue?"));
                 
@@ -663,7 +663,7 @@ bool InstallFiles()
     ButtonBar.AddButton("ESC", "Exit program");
     ButtonBar.Draw();
 
-    WarningBox("Installation of %s complete!", InstallInfo.program_name);
+    WarningBox("Installation of %s complete!", InstallInfo.program_name.c_str());
 
     InstallOutput.Activate();
     return (InstallOutput.ExitType() == vNORMAL);

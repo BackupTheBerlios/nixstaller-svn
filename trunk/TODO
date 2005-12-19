@@ -6,7 +6,6 @@ OVERALL
 
 
 MAIN
-- Better way for passing current file in ExtractArchive()
 
 
 NCURSES FRONTEND

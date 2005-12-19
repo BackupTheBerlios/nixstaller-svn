@@ -1,207 +1,12 @@
+#include <fstream>
+#include <sstream>
+#include <limits>
 #include <archive.h>
 #include <archive_entry.h>
 #include "main.h"
 
 install_info_s InstallInfo;
 std::list<char *> StringList;
-
-// Reads install data from config file
-bool ReadConfig()
-{
-    FILE *cfgfile = fopen("config/install.cfg", "r");
-    if (!cfgfile) return false;
-    
-    char cfgline[256];
-    int index;
-    bool handlecommandentry = false, handleparamentry = false;
-    bool incommandentry = false, inparamentry = false;
-    command_entry_s *pCommandEntry = NULL;
-    param_entry_s *pParamEntry = NULL;
-    std::string ParamName;
-    
-    while(cfgfile)
-    {
-        index = 0;
-        cfgline[0] = 0;
-        
-        char c = fgetc(cfgfile);
-        
-        // skip any leading blanks
-        while ((c == ' ') || (c == '\t')) c = fgetc(cfgfile);
-
-        while ((c != EOF) && (c != '\r') && (c != '\n'))
-        {
-            if (c == '\t')  c = ' ';
-
-            cfgline[index] = c;
-
-            c = fgetc(cfgfile);
-
-            // skip multiple spaces in input file
-            while ((cfgline[index] == ' ') && (c == ' '))
-                c = fgetc(cfgfile);
-
-            index++;
-        }
-
-        if (c == '\r') c = fgetc(cfgfile);
-
-        if (c == EOF)
-        {
-            fclose(cfgfile);
-            cfgfile = NULL;
-        }
-
-        cfgline[index] = 0;
-
-        if ((cfgline[0] == '#') || !cfgline[0]) continue;
-        
-        char fullline[256];
-        strcpy(fullline, cfgline); // Backup full line
-        
-        char *arg1 = NULL, *arg2 = NULL;
-
-        arg1 = strtok(cfgline, " ");
-        arg2 = strtok(NULL, " ");
-
-        if (handlecommandentry)
-        {
-            if (!strcmp(arg1, "["))
-            {
-                incommandentry = true;
-                handlecommandentry = false;
-                pCommandEntry = new command_entry_s;
-            }
-        }
-        else if (incommandentry)
-        {
-            if (handleparamentry)
-            {
-                if (!strcmp(arg1, "["))
-                {
-                    inparamentry = true;
-                    handleparamentry = false;
-                    pParamEntry = new param_entry_s;
-                    ParamName = "";
-                }
-            }
-            else if (inparamentry)
-            {
-                if (!strcmp(arg1, "]"))
-                {
-                    inparamentry = false;
-                    if (!ParamName.empty()) pCommandEntry->parameter_entries[ParamName] = pParamEntry;
-                    pParamEntry = NULL;
-                }
-                else if (!arg2); // Following stuff needs atleast second argument
-                else if (!strcasecmp(arg1, "name")) ParamName = &fullline[strlen(arg1)+1];
-                else if (!strcasecmp(arg1, "parameter")) pParamEntry->parameter = &fullline[strlen(arg1)+1];
-                else if (!strcasecmp(arg1, "description")) pParamEntry->description = &fullline[strlen(arg1)+1];
-                else if (!strcasecmp(arg1, "defaultval"))
-                    pParamEntry->defaultval = pParamEntry->value = &fullline[strlen(arg1)+1];
-                else if (!strcasecmp(arg1, "type"))
-                {
-                    if (!strcasecmp(arg2, "string")) pParamEntry->param_type = PTYPE_STRING;
-                    else if (!strcasecmp(arg2, "dir")) pParamEntry->param_type = PTYPE_DIR;
-                    else if (!strcasecmp(arg2, "list")) pParamEntry->param_type = PTYPE_LIST;
-                    else if (!strcasecmp(arg2, "bool")) pParamEntry->param_type = PTYPE_BOOL;
-                }
-                else if (!strcasecmp(arg1, "addchoice")) pParamEntry->options.push_back(arg2);
-                else if (!strcasecmp(arg1, "varname")) pParamEntry->varname = arg2;
-            }
-            else
-            {
-                if (!strcmp(arg1, "]"))
-                {
-                    incommandentry = false;
-                    InstallInfo.command_entries.push_back(pCommandEntry);
-                    pCommandEntry = NULL;
-                }
-                else if (!strcasecmp(arg1, "addparam")) handleparamentry = true;
-                else if (!arg2); // Following stuff needs atleast second argument
-                else if (!strcasecmp(arg1, "needroot"))
-                {
-                    if (!strcasecmp(arg2, "true")) pCommandEntry->need_root = NEED_ROOT;
-                    else if (!strcasecmp(arg2, "false")) pCommandEntry->need_root = NO_ROOT;
-                    else if (!strcasecmp(arg2, "dependson"))
-                    {
-                        char *arg3 = strtok(NULL, " ");
-                        if (arg3)
-                        {
-                            pCommandEntry->need_root = DEPENDED_ROOT;
-                            pCommandEntry->dep_param = arg3;
-                        }
-                    }
-                }
-                else if (!strcasecmp(arg1, "command")) pCommandEntry->command = &fullline[8];
-                else if (!strcasecmp(arg1, "description")) pCommandEntry->description = &fullline[12];
-            }
-        }
-        else
-        {
-            if (!strcasecmp(arg1, "commandentry")) handlecommandentry = true;
-            else if (!arg2); // Following stuff needs atleast second argument
-            if (!strcasecmp(arg1, "version")) InstallInfo.version = atoi(arg2);
-            else if (!strcasecmp(arg1, "appname"))
-            {
-                strncpy(InstallInfo.program_name, arg2, 128);
-                InstallInfo.program_name[128] = 0;
-            }
-            else if (!strcasecmp(arg1, "archtype"))
-            {
-                if (!strcasecmp(arg2, "gzip")) InstallInfo.archive_type = ARCH_GZIP;
-                else if (!strcasecmp(arg2, "bzip2")) InstallInfo.archive_type = ARCH_BZIP2;
-            }
-            else if (!strcasecmp(arg1, "languages"))
-            {
-                char *lang = arg2;
-                while (lang)
-                {
-                    char *s = new char[strlen(cfgline)+1];
-                    strcpy(s, lang);
-                    InstallInfo.languages.push_back(s);
-                    lang = strtok(NULL, " ");
-                }
-            }
-            else if (!strcasecmp(arg1, "installdir"))
-            {
-                if (!strcasecmp(arg2, "select")) InstallInfo.dest_dir_type = DEST_SELECT;
-                else if (!strcasecmp(arg2, "temp")) InstallInfo.dest_dir_type = DEST_TEMP;
-                else if (!strcasecmp(arg2, "default"))
-                {
-                    char *arg3 = strtok(NULL, " ");
-                    if (arg3) { InstallInfo.dest_dir_type = DEST_DEFAULT; InstallInfo.dest_dir = arg3; }
-                }
-            }
-            else if (!strcasecmp(arg1, "intropic"))
-                InstallInfo.intropicname = &fullline[strlen(arg1)+1];
-        }
-    }
-    
-    printf("Comp entries:\n");
-    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();p++)
-    {
-        printf("Need root: %d\n", (*p)->need_root);
-        printf("Command: %s\n", (*p)->command.c_str());
-        printf("Description: %s\n", (*p)->description.c_str());
-        printf("Depends on param: %s\n", (*p)->dep_param.c_str());
-        printf("Params:\n");
-        for (std::map<std::string, param_entry_s *>::iterator
-             p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
-        {
-            printf("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
-                    "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
-                                                        (*p2).second->parameter.c_str(),
-                                                        (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
-                                                        (*p2).second->varname.c_str());
-            printf("\tOptions: ");
-            for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
-                printf("%s ", p3->c_str());
-            printf("\n");
-        }
-    }
-    return true;
-}
 
 bool MainInit(int argc, char *argv[])
 {
@@ -240,12 +45,6 @@ void MainEnd()
         for(;p!=InstallInfo.translations.end();p++) delete [] (*p).second;
     }
     
-    if (!InstallInfo.languages.empty())
-    {
-        std::list<char*>::iterator p = InstallInfo.languages.begin();
-        for(;p!=InstallInfo.languages.end();p++) delete [] *p;
-    }
-    
     if (!InstallInfo.command_entries.empty())
     {
         std::list<command_entry_s *>::iterator p = InstallInfo.command_entries.begin();
@@ -260,13 +59,220 @@ void MainEnd()
             delete *p;
         }
     }
-
-    if (!StringList.empty())
-    {
-        for(std::list<char *>::iterator it=StringList.begin(); it!=StringList.end(); it++) printf("String: %s\n", *it);
-    }
     
     FreeStrings();
+}
+
+// Reads install data from config file
+bool ReadConfig()
+{
+    const int maxread = std::numeric_limits<std::streamsize>::max();
+    std::ifstream file("config/install.cfg");
+    std::string str, line, tmp, ParamName;
+    bool incommandentry = false, inparamentry = false;
+    command_entry_s *pCommandEntry = NULL;
+    param_entry_s *pParamEntry = NULL;
+    
+    while(file)
+    {
+        // Read one line at a time...this makes sure that we don't start reading at a new line if the user 'forgot'
+        // to enter a value after the first command/variabele
+        std::getline(file, line);
+        std::istringstream strstrm(line); // Use a stringstream to easily read from this line
+        
+        if (!(strstrm >> str))
+            continue;
+
+        if (str[0] == '#') // Comment, skip
+            continue;
+
+        if (incommandentry)
+        {
+            if (inparamentry)
+            {
+                if (str[0] == ']')
+                {
+                    if (!ParamName.empty())
+                        pCommandEntry->parameter_entries[ParamName] = pParamEntry;
+                    pParamEntry = NULL;
+                    inparamentry = false;
+                }
+                else if (str == "name")
+                {
+                    strstrm >> ParamName;
+                    while (strstrm >> tmp)
+                        ParamName += " " + tmp;
+                }
+                else if (str == "parameter")
+                {
+                    strstrm >> pParamEntry->parameter;
+                    while (strstrm >> tmp)
+                        pParamEntry->parameter += " " + tmp;
+                }
+                else if (str == "description")
+                {
+                    strstrm >> pParamEntry->description;
+                    while (strstrm >> tmp)
+                        pParamEntry->description += " " + tmp;
+                }
+                else if (str == "defaultval")
+                {
+                    strstrm >> pParamEntry->defaultval;
+                    while (strstrm >> tmp)
+                        pParamEntry->defaultval += " " + tmp;
+                    pParamEntry->value = pParamEntry->defaultval;
+                }
+                else if (str == "varname")
+                {
+                    strstrm >> pParamEntry->varname;
+                    while (strstrm >> tmp)
+                        pParamEntry->varname += " " + tmp;
+                }
+                else if (str == "addchoice")
+                {
+                    std::string choice;
+                    if (strstrm >> choice)
+                        pParamEntry->options.push_back(choice);
+                }
+                else if (str == "type")
+                {
+                    std::string type;
+                    strstrm >> type;
+                    if (type == "string")
+                        pParamEntry->param_type = PTYPE_STRING;
+                    else if (type == "dir")
+                        pParamEntry->param_type = PTYPE_DIR;
+                    else if (type == "list")
+                        pParamEntry->param_type = PTYPE_LIST;
+                    else if (type == "bool")
+                        pParamEntry->param_type = PTYPE_BOOL;
+                }
+            }
+            else
+            {
+                if (str[0] == ']')
+                {
+                    InstallInfo.command_entries.push_back(pCommandEntry);
+                    pCommandEntry = NULL;
+                    incommandentry = false;
+                }
+                else if (str == "command")
+                {
+                    strstrm >> pCommandEntry->command;
+                    while (strstrm >> tmp)
+                        pCommandEntry->command += " " + tmp;
+                }
+                else if (str == "description")
+                {
+                    strstrm >> pCommandEntry->description;
+                    while (strstrm >> tmp)
+                        pCommandEntry->description += " " + tmp;
+                }
+                else if (str == "needroot")
+                {
+                    std::string s;
+                    strstrm >> s;
+                    if (s == "true")
+                        pCommandEntry->need_root = NEED_ROOT;
+                    else if (s == "false")
+                        pCommandEntry->need_root = NO_ROOT;
+                    else if (s == "dependson")
+                    {
+                        if (strstrm >> pCommandEntry->dep_param)
+                            pCommandEntry->need_root = DEPENDED_ROOT;
+                    }
+                }
+                else if (str == "addparam")
+                {
+                    file.ignore(maxread, '[');
+                    inparamentry = true;
+                    pParamEntry = new param_entry_s;
+                    ParamName.clear();
+                }
+            }
+        }
+        else
+        {
+            if (str == "appname")
+            {
+                strstrm >> InstallInfo.program_name;
+                while (strstrm >> tmp)
+                    InstallInfo.program_name += " " + tmp;
+            }
+            else if (str == "version")
+                strstrm >> InstallInfo.version;
+            else if (str == "archtype")
+            {
+                std::string type;
+                strstrm >> type;
+                if (type == "gzip")
+                    InstallInfo.archive_type = ARCH_GZIP;
+                else if (type == "bzip2")
+                    InstallInfo.archive_type = ARCH_BZIP2;
+            }
+            else if (str == "installdir")
+            {
+                std::string type;
+                strstrm >> type;
+                if (type == "select")
+                    InstallInfo.dest_dir_type = DEST_SELECT;
+                if (type == "temp")
+                    InstallInfo.dest_dir_type = DEST_TEMP;
+                else if (type == "default")
+                {
+                    if (strstrm >> InstallInfo.dest_dir)
+                        InstallInfo.dest_dir_type = DEST_DEFAULT;
+                }
+            }
+            else if (str == "languages")
+            {
+                std::string lang;
+                while (strstrm >> lang)
+                    InstallInfo.languages.push_back(lang);
+            }
+            else if (str == "commandentry")
+            {
+                file.ignore(maxread, '[');
+                incommandentry = true;
+                pCommandEntry = new command_entry_s;
+            }
+        }
+    }
+
+    printf("appname: %s\n", InstallInfo.program_name.c_str());
+    printf("version: %s\n", InstallInfo.version.c_str());
+    printf("archtype: %d\n", InstallInfo.archive_type);
+    printf("installdir: %s\n", InstallInfo.dest_dir.c_str());
+    printf("dir type: %d\n", InstallInfo.dest_dir_type);
+    printf("languages: ");
+    for (std::list<std::string>::iterator it=InstallInfo.languages.begin(); it!=InstallInfo.languages.end(); it++)
+        printf("%s ", it->c_str());
+    printf("\n");
+
+    printf("Comp entries:\n");
+    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();p++)
+    {
+        printf("Need root: %d\n", (*p)->need_root);
+        printf("Command: %s\n", (*p)->command.c_str());
+        printf("Description: %s\n", (*p)->description.c_str());
+        printf("Depends on param: %s\n", (*p)->dep_param.c_str());
+        printf("Params:\n");
+        for (std::map<std::string, param_entry_s *>::iterator
+             p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
+        {
+            printf("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
+                    "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
+            (*p2).second->parameter.c_str(),
+            (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
+            (*p2).second->varname.c_str());
+            printf("\tOptions: ");
+            for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
+                printf("%s ", p3->c_str());
+            printf("\n");
+        }
+    }
+    
+    return true;
 }
 
 // Extract gzipped tar file. Returns how much percent is done.
@@ -314,64 +320,37 @@ bool ReadLang()
         InstallInfo.translations.erase(InstallInfo.translations.begin(), InstallInfo.translations.end());
     }
     
-    if (InstallInfo.cur_lang == "english") return true; // No need to translate...
-    
-    char filename[64];
-    sprintf(filename, "config/lang/%s/strings", InstallInfo.cur_lang.c_str());
-    FILE *langfile = fopen(filename, "r");
-    
-    if (!langfile) return false;
-    
-    char cfgline[1024];
-    int index;
-    std::string engtxt;
-    bool english = true;
-    
-    while(langfile)
+    if (InstallInfo.cur_lang == "english")
+        return true; // No need to translate...
+
+    std::ifstream file(CreateText("config/lang/%s/strings", InstallInfo.cur_lang.c_str()));
+
+    if (!file)
+        return false;
+
+    std::string line, text, srcmsg;
+    bool atsrc = true;
+    while (file)
     {
-        index = 0;
-        cfgline[0] = 0;
+        file >> text;
+
+        if (text[0] == '#') // Skip comments
+            continue;
         
-        char c = fgetc(langfile);
-        
-        // skip any leading blanks
-        while ((c == ' ') || (c == '\t')) c = fgetc(langfile);
+        std::getline(file, line); // Get the rest of the text
+        text += line;
 
-        while ((c != EOF) && (c != '\r') && (c != '\n'))
-        {
-            if (c == '\t')  c = ' ';
-
-            cfgline[index] = c;
-
-            c = fgetc(langfile);
-
-            // skip multiple spaces in input file
-            while ((cfgline[index] == ' ') && (c == ' '))
-                c = fgetc(langfile);
-
-            index++;
-        }
-
-        if (c == '\r') c = fgetc(langfile);
-
-        if (c == EOF)
-        {
-            fclose(langfile);
-            langfile = NULL;
-        }
-
-        cfgline[index] = 0;
-
-        if ((cfgline[0] == '#') || !cfgline[0]) continue;
-        
-        if (english) engtxt = cfgline;
+        if (atsrc)
+            srcmsg = text;
         else
         {
-            InstallInfo.translations[engtxt] = new char[strlen(cfgline)+1];
-            strcpy(InstallInfo.translations[engtxt], cfgline);
+            InstallInfo.translations[srcmsg] = new char[text.length()+1];
+            text.copy(InstallInfo.translations[srcmsg], std::string::npos);
+            InstallInfo.translations[srcmsg][text.length()] = 0;
         }
-        english = !english;
+
+        atsrc = !atsrc;
     }
+    
     return true;
 }
-

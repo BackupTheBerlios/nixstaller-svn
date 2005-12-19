@@ -84,7 +84,7 @@ void CreateMainWindow(char **argv)
                                group = widget->Create(); \
                                if (group) { Wizard->add(group); ScreenList.push_back(widget); } }
 
-    //Fl::scheme("plastic");
+    Fl::scheme("plastic");
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     
     pCancelButton = new Fl_Button(20, (MAIN_WINDOW_H-30), 120, 25, "Cancel");
