@@ -1,8 +1,5 @@
 OVERALL
 - Check path with non su commands
-- Check what to do when command fails
-- Check exit codes
-- Clean password on errors
 
 
 MAIN
@@ -14,6 +11,7 @@ NCURSES FRONTEND
 
 FLTK FRONTEND
 - Update exit install stuff
+- Fix intro image scaling
 
 
 ----------------------------- LATER ------------------------------------

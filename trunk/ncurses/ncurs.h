@@ -31,41 +31,6 @@ void PrintExtrOutput(const char *msg, void *p);
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };
-                  
-class CCharListHelper
-{
-    std::list<char *> m_Items;
-    char **m_pCList;
-    bool m_bModified;
-    
-    typedef std::list<char *>::iterator LI;
-    
-public:
-    CCharListHelper(void) : m_pCList(NULL), m_bModified(false) { };
-    ~CCharListHelper(void) { Clear(); };
-     
-    operator char**(void) { return GetArray(); };
-    char *operator [](int n) { return GetArray()[n]; }
-
-    void AddItem(char *str) { m_Items.push_back(strdup(str)); m_bModified = true; };
-    void AddItem(const std::string &str) { m_Items.push_back(strdup(str.c_str())); m_bModified = true; };
-    void Clear(void) { for(LI it=m_Items.begin();it!=m_Items.end();it++) free(*it); m_Items.clear(); delete [] m_pCList;
-                       m_pCList = NULL; };
-    int Count(void) { return m_Items.size(); };
-    char **GetArray(void)
-    {
-        if (!m_pCList || m_bModified)
-        {
-            if (m_pCList) delete [] m_pCList;
-            m_pCList=new char*[m_Items.size()+1];
-            int i=0;
-            for(LI it=m_Items.begin(); it!=m_Items.end(); it++, i++) m_pCList[i] = *it;
-            m_pCList[i] = NULL;
-            m_bModified = false;
-        }
-        return m_pCList;
-    };
-};
 
 #include "widgets.h"
 

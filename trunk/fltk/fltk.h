@@ -1,5 +1,7 @@
-#ifndef GLTK_H
-#define GLTK_H
+#ifndef FLTK_H
+#define FLTK_H
+
+#include <sys/wait.h>
 
 #include "main.h"
 
@@ -163,6 +165,7 @@ protected:
     
 public:
     CInstallFilesScreen(void) : CBaseScreen(), m_szPassword(NULL) { };
+    ~CInstallFilesScreen(void) { CleanPasswdString(m_szPassword); };
     
     virtual Fl_Group *Create(void);
     virtual bool Activate(void);
@@ -188,7 +191,7 @@ class CFinishScreen: public CBaseScreen
     
 public:
     CFinishScreen(void) : CBaseScreen(), m_bHasText(false) { };
-
+    
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual bool Activate(void);

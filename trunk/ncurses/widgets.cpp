@@ -100,16 +100,16 @@ CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, char **message, int mco
 CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const char *message, char **buttons, int bcount,
                        chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
 {
-    m_CharList.AddItem(message);
-    m_pDialog = newCDKDialog(pScreen, x, y, m_CharList, m_CharList.Count(), buttons, bcount, hlight, sep, box, shadow);
+    std::vector<char *> vec(1, const_cast<char *>(message));
+    m_pDialog = newCDKDialog(pScreen, x, y, &vec[0], vec.size(), buttons, bcount, hlight, sep, box, shadow);
     if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
 
 CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const std::string &message, char **buttons, int bcount,
                        chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
 {
-    m_CharList.AddItem(message);
-    m_pDialog = newCDKDialog(pScreen, x, y, m_CharList, m_CharList.Count(), buttons, bcount, hlight, sep, box, shadow);
+    std::vector<char *> vec(1, const_cast<char *>(message.c_str()));
+    m_pDialog = newCDKDialog(pScreen, x, y, &vec[0], vec.size(), buttons, bcount, hlight, sep, box, shadow);
     if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
 
@@ -255,7 +255,7 @@ void CButtonBar::AddButton(const char *button, const char *desc)
     const int l = strlen(button) + strlen(desc) + 4; // 4 extra chars: 3 spaces and an ':'
     if ((getmaxx(MainWin)-2) < (m_pCurrentBarEntry->iCurTextLength + l))
     {
-        m_pCurrentBarEntry->Texts.AddItem(m_pCurrentBarEntry->szCurrentText);
+        m_pCurrentBarEntry->Texts.push_back(MakeCString(m_pCurrentBarEntry->szCurrentText));
         m_pCurrentBarEntry->szCurrentText = txt;
         m_pCurrentBarEntry->iCurTextLength = l;
     }
@@ -272,16 +272,16 @@ void CButtonBar::Draw()
     
     if (!m_pCurrentBarEntry->szCurrentText.empty())
     {
-        m_pCurrentBarEntry->Texts.AddItem(m_pCurrentBarEntry->szCurrentText);
+        m_pCurrentBarEntry->Texts.push_back(MakeCString(m_pCurrentBarEntry->szCurrentText));
         m_pCurrentBarEntry->szCurrentText.clear();
         m_pCurrentBarEntry->iCurTextLength = 0;
     }
     
-    if (!m_pCurrentBarEntry->Texts.Count()) return;
+    if (m_pCurrentBarEntry->Texts.empty()) return;
 
     if (m_pLabel) delete m_pLabel; // CDK has no propper way to change text...
     
-    m_pLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, m_pCurrentBarEntry->Texts, m_pCurrentBarEntry->Texts.Count());
+    m_pLabel = new CCDKLabel(CDKScreen, CENTER, BOTTOM, &m_pCurrentBarEntry->Texts[0], m_pCurrentBarEntry->Texts.size());
     if (!m_pLabel)
         throwerror(false, "Could not create button bar");
     m_pLabel->SetBgColor(24);
@@ -292,12 +292,14 @@ void CButtonBar::Draw()
 
 // File select dialog
 
-bool CFileDialog::ReadDir(const std::string &dir, CCharListHelper *Items)
+bool CFileDialog::ReadDir(const std::string &dir)
 {
     struct dirent *dirstruct;
     struct stat filestat;
     DIR *dp;
-    
+
+    ClearDirList();
+
     dp = opendir (dir.c_str());
     if (dp == 0) return false;
 
@@ -305,7 +307,7 @@ bool CFileDialog::ReadDir(const std::string &dir, CCharListHelper *Items)
     {
         if ((lstat(dirstruct->d_name, &filestat) == 0) && (mode2Filetype(filestat.st_mode) == 'd') &&
              (strcmp(dirstruct->d_name, ".")))
-            Items->AddItem(dirstruct->d_name);
+            m_DirItems.push_back(strdup(dirstruct->d_name));
     }
 
     closedir (dp);
@@ -342,12 +344,21 @@ void CFileDialog::UpdateCurDirText()
     else m_pCurDirWin->AddText(prefix + dir);
 }
 
+void CFileDialog::ClearDirList()
+{
+    if (!m_DirItems.empty())
+    {
+        for (std::vector<char *>::iterator it=m_DirItems.begin(); it!=m_DirItems.end(); it++)
+            free(*it);
+        m_DirItems.clear();
+    }
+}
+
 bool CFileDialog::Activate()
 {
     char *buttons[] = { GetTranslation("Open directory"), GetTranslation("Select directory"), GetTranslation("Cancel") };
     char label[] = "Dir: ";
     char curdir[1024];
-    CCharListHelper Items;
     
     ButtonBar.Push();
     ButtonBar.AddButton("TAB", "Next button");
@@ -362,7 +373,7 @@ bool CFileDialog::Activate()
     if (chdir(m_szStartDir.c_str()) != 0)
         throwerror(true, "Couldn't open directory '%s'", m_szStartDir.c_str());
 
-    if (!ReadDir(m_szStartDir, &Items)) throwerror(true, "Could not read directory %s", m_szStartDir.c_str());
+    if (!ReadDir(m_szStartDir)) throwerror(true, "Could not read directory %s", m_szStartDir.c_str());
     
     CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-2, 1, 49, 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
@@ -371,7 +382,7 @@ bool CFileDialog::Activate()
     m_pCurDirWin->SetBgColor(5);
 
     m_pFileList = new CCDKAlphaList(CDKScreen, CENTER, 2, getbegy(m_pCurDirWin->GetSWin()->win)-1, DEFAULT_WIDTH,
-                                    const_cast<char*>(m_szTitle.c_str()), label, Items, Items.Count());
+                                    const_cast<char*>(m_szTitle.c_str()), label, &m_DirItems[0], m_DirItems.size());
     m_pFileList->SetBgColor(5);
     setCDKEntryPreProcess(m_pFileList->GetAList()->entryField, CreateDirCB, this);
     //m_pFileList->GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
@@ -399,29 +410,33 @@ bool CFileDialog::Activate()
                          chtype2Char(m_pFileList->GetAList()->scrollField->item[m_pFileList->GetAList()->scrollField->currentItem]));
 
         char *selection = m_pFileList->Activate();
+
         if ((m_pFileList->ExitType() != vNORMAL) || (ButtonBox.GetCurrent() == 2)) break;
-        if (ButtonBox.GetCurrent() == 1) break;
         if (!selection || !selection[0]) continue;
 
+        if (ButtonBox.GetCurrent() == 1)
+        {
+            if (!WriteAccess(selection))
+            {
+                WarningBox("You don't have write access for this directory");
+                continue;
+            }
+            break;
+        }
+        
         if (!FileExists(selection))
         {
             if (YesNoBox("%s\n%s", GetTranslation("Directory does not exist"), GetTranslation("Do you want to create it?")))
             {
                 if (mkdir(selection, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
                 {
-                    WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create the directory"), selection,
+                    WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create directory"), selection,
                                strerror(errno));
                     continue;
                 }
             }
             else
                 continue;
-        }
-        
-        if (!WriteAccess(selection))
-        {
-            WarningBox("You don't have write access for this directory");
-            continue;
         }
         
         UpdateFileList(selection);
@@ -443,7 +458,6 @@ bool CFileDialog::UpdateFileList(const char *dir)
     struct dirent *dirstruct;
     struct stat filestat;
     DIR *dp;
-    CCharListHelper Items;
     
     newdir += "/";
     newdir += dir;
@@ -458,9 +472,9 @@ bool CFileDialog::UpdateFileList(const char *dir)
     else { WarningBox("Could not read current directory"); return false; }
 
     // Read contents of directory
-    if (!ReadDir(m_szDestDir, &Items)) { WarningBox("Could not read directory"); return false; }
+    if (!ReadDir(m_szDestDir)) { WarningBox("Could not read directory"); return false; }
     
-    m_pFileList->SetContent(Items, Items.Count());
+    m_pFileList->SetContent(&m_DirItems[0], m_DirItems.size());
     m_pFileList->Draw();
     
     UpdateCurDirText();
@@ -477,6 +491,7 @@ void CFileDialog::Destroy(void)
     delete m_pCurDirWin;
     m_pFileList = NULL;
     m_pCurDirWin = NULL;
+    ClearDirList();
 }
 
 int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UNUSED, void *clientData, chtype key)

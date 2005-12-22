@@ -10,7 +10,7 @@ void EndProg()
     }
 
     MainEnd();
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 void throwerror(bool dialog, const char *error, ...)
@@ -77,14 +77,14 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     CCDKSWindow *pDescWin = ((CCDKSWindow *)pData[0]);
     CCDKSWindow *pDefWin = ((CCDKSWindow *)pData[1]);
     CCDKScroll *pScroll = ((CCDKScroll *)pData[2]);
-    CCharListHelper *items = ((CCharListHelper *)pData[3]);
+    std::vector<char *> *items = ((std::vector<char *> *)pData[3]);
 
     int cur = pScroll->GetCurrent();
     
-    if ((key == KEY_DOWN) && ((cur+1) < items->Count())) cur++;
+    if ((key == KEY_DOWN) && ((cur+1) < items->size())) cur++;
     else if ((key == KEY_UP) && (cur > 0)) cur--;
 
-    param_entry_s *pParam = GetParamByName((*items)[cur]);
+    param_entry_s *pParam = GetParamByName(items->at(cur));
     
     pDescWin->Clear();
     pDescWin->AddText(pParam->description);
@@ -139,7 +139,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
 
 void WarningBox(const char *msg, ...)
 {
-    CCharListHelper message;
+    std::vector<char *> message;
     static char *buttons[1] = { GetTranslation("OK") };
     static char txt[1024];
     const char *translated = GetTranslation(msg);
@@ -154,13 +154,13 @@ void WarningBox(const char *msg, ...)
     std::string::size_type index = unwrapped.find("\n"), prevind = 0;
     while (index != std::string::npos)
     {
-        message.AddItem(unwrapped.substr(prevind, (index-prevind)));
+        message.push_back(MakeCString(unwrapped.substr(prevind, (index-prevind))));
         prevind = index+1;
         index = unwrapped.find("\n", prevind);
     }
-    message.AddItem(unwrapped.substr(prevind, index));
+    message.push_back(MakeCString(unwrapped.substr(prevind, index)));
     
-    CCDKDialog Diag(CDKScreen, CENTER, CENTER, message, message.Count(), buttons, 1);
+    CCDKDialog Diag(CDKScreen, CENTER, CENTER, &message[0], message.size(), buttons, 1);
     Diag.SetBgColor(26);
     Diag.Activate();
     Diag.Destroy();
@@ -169,7 +169,7 @@ void WarningBox(const char *msg, ...)
 
 bool YesNoBox(const char *msg, ...)
 {
-    CCharListHelper message;
+    std::vector<char *> message;
     static char *buttons[] = { GetTranslation("Yes"), GetTranslation("No") };
     static char txt[1024];
     const char *translated = GetTranslation(msg);
@@ -184,13 +184,13 @@ bool YesNoBox(const char *msg, ...)
     std::string::size_type index = unwrapped.find("\n"), prevind = 0;
     while (index != std::string::npos)
     {
-        message.AddItem(unwrapped.substr(prevind, (index-prevind)));
+        message.push_back(MakeCString(unwrapped.substr(prevind, (index-prevind))));
         prevind = index+1;
         index = unwrapped.find("\n", prevind);
     }
-    message.AddItem(unwrapped.substr(prevind, index));
+    message.push_back(MakeCString(unwrapped.substr(prevind, index)));
     
-    CCDKDialog Diag(CDKScreen, CENTER, CENTER, message, message.Count(), buttons, 2);
+    CCDKDialog Diag(CDKScreen, CENTER, CENTER, &message[0], message.size(), buttons, 2);
     Diag.SetBgColor(26);
     bool yes = ((Diag.Activate() == 0) && (Diag.ExitType() == vNORMAL));
     Diag.Destroy();

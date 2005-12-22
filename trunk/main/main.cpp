@@ -182,6 +182,15 @@ bool ReadConfig()
                             pCommandEntry->need_root = DEPENDED_ROOT;
                     }
                 }
+                else if (str == "exitonfailure")
+                {
+                    std::string man;
+                    strstrm >> man;
+                    if (man == "true")
+                        pCommandEntry->exit_on_failure = true;
+                    else if (man == "false")
+                        pCommandEntry->exit_on_failure = false;
+                }
                 else if (str == "addparam")
                 {
                     file.ignore(maxread, '[');
@@ -200,7 +209,11 @@ bool ReadConfig()
                     InstallInfo.program_name += " " + tmp;
             }
             else if (str == "version")
+            {
                 strstrm >> InstallInfo.version;
+                while (strstrm >> tmp)
+                    InstallInfo.version += " " + tmp;
+            }
             else if (str == "archtype")
             {
                 std::string type;
@@ -236,6 +249,12 @@ bool ReadConfig()
                 incommandentry = true;
                 pCommandEntry = new command_entry_s;
             }
+            else if (str == "intropic")
+            {
+                strstrm >> InstallInfo.intropicname;
+                while (strstrm >> tmp)
+                    InstallInfo.intropicname += " " + tmp;
+            }
         }
     }
 
@@ -256,15 +275,16 @@ bool ReadConfig()
         printf("Command: %s\n", (*p)->command.c_str());
         printf("Description: %s\n", (*p)->description.c_str());
         printf("Depends on param: %s\n", (*p)->dep_param.c_str());
+        printf("Exit on failure: %d\n", (*p)->exit_on_failure);
         printf("Params:\n");
         for (std::map<std::string, param_entry_s *>::iterator
              p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
         {
             printf("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
                     "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
-            (*p2).second->parameter.c_str(),
-            (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
-            (*p2).second->varname.c_str());
+                    (*p2).second->parameter.c_str(),
+                    (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
+                    (*p2).second->varname.c_str());
             printf("\tOptions: ");
             for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
                 printf("%s ", p3->c_str());

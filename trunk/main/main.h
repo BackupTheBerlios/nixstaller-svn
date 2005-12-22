@@ -28,7 +28,8 @@ struct command_entry_s
     std::string command, description;
     std::map<std::string, param_entry_s *> parameter_entries;
     std::string dep_param;
-    command_entry_s(void) : need_root(NO_ROOT) { };
+    bool exit_on_failure;
+    command_entry_s(void) : need_root(NO_ROOT), exit_on_failure(true) { };
 };
 
 struct install_info_s
@@ -62,6 +63,7 @@ std::string GetTranslation(std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 char *CreateText(const char *s, ...);
+inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
 void FreeStrings(void);
 param_entry_s *GetParamByName(std::string str);
 param_entry_s *GetParamByVar(std::string str);
@@ -71,6 +73,7 @@ bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 bool WriteAccess(const char *file);
 inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
+void CleanPasswdString(char *str);
 
 // These functions should be defined for each frontend
 void throwerror(bool dialog, const char *error, ...);

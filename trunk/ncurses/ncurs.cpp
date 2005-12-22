@@ -44,12 +44,9 @@ int main(int argc, char *argv[])
         else
         {
             char *buttons[2] = { GetTranslation("Yes"), GetTranslation("No") };
-            CCharListHelper msg;
-    
-            msg.AddItem(GetTranslation("This will abort the installation"));
-            msg.AddItem(GetTranslation("Are you sure?"));
-    
-            CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, msg.Count(), buttons, 2);
+            char *msg[2] = { GetTranslation("This will abort the installation"), GetTranslation("Are you sure?") };
+            
+            CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, 2, buttons, 2);
             dialog.SetBgColor(26);
             int ret = dialog.Activate();
             if ((ret == 0) && (dialog.ExitType() == vNORMAL)) break;
@@ -72,7 +69,7 @@ bool SelectLanguage()
     }
     
     char title[] = "<C></B/29>Please select a language<!29!B>";
-    CCharListHelper LangItems;
+    std::vector<char *> LangItems;
     
     ButtonBar.Clear();
     ButtonBar.AddButton("Arrows", "Navigate menu");
@@ -80,18 +77,16 @@ bool SelectLanguage()
     ButtonBar.Draw();
     
     for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
-        LangItems.AddItem(*p);
+        LangItems.push_back(MakeCString(*p));
 
-    CCDKScroll ScrollList(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, RIGHT, title, LangItems,
-                          LangItems.Count());
+    CCDKScroll ScrollList(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, RIGHT, title, &LangItems[0],
+                          LangItems.size());
     ScrollList.SetBgColor(5);
 
     int selection = ScrollList.Activate();
     
     if (ScrollList.ExitType() == vNORMAL)
     {
-        //std::list<std::string>::iterator it = InstallInfo.languages.begin();
-        //advance(it, selection);
         InstallInfo.cur_lang = LangItems[selection];
         if (!ReadLang()) throwerror(true, "Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
     }
@@ -131,15 +126,13 @@ bool SelectDir()
         {
             InstallInfo.dest_dir = FDialog.Result();
             
-            CCharListHelper dtext;
+            char *dtext[3] = { CreateText(GetTranslation("This will install %s to the following directory:"),
+                               InstallInfo.program_name.c_str()),
+                               const_cast<char *>(InstallInfo.dest_dir.c_str()),
+                               GetTranslation("Continue?") };
             char *dbuttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
                 
-            dtext.AddItem(CreateText(GetTranslation("This will install %s to the following directory:"),
-                          InstallInfo.program_name.c_str()));
-            dtext.AddItem(InstallInfo.dest_dir);
-            dtext.AddItem(GetTranslation("Continue?"));
-                
-            CCDKDialog Diag(CDKScreen, CENTER, CENTER, dtext, dtext.Count(), dbuttons, 2);
+            CCDKDialog Diag(CDKScreen, CENTER, CENTER, dtext, 3, dbuttons, 2);
             Diag.SetBgColor(26);
         
             int sel = Diag.Activate();
@@ -157,7 +150,7 @@ bool SelectDir()
 bool ConfParams()
 {
     param_entry_s *pFirstParam = NULL;
-    CCharListHelper ParamItems;
+    std::vector<char *> ParamItems;
 
     for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();
          p++)
@@ -166,7 +159,7 @@ bool ConfParams()
              p2!=(*p)->parameter_entries.end();p2++)
         {
             if (!pFirstParam) pFirstParam = p2->second;
-            ParamItems.AddItem(p2->first);
+            ParamItems.push_back(MakeCString(p2->first));
         }
     }
 
@@ -186,7 +179,7 @@ bool ConfParams()
     ButtonBox.SetBgColor(5);
 
     CCDKScroll ScrollList(CDKScreen, getbegx(ButtonBox.GetBBox()->win), 2, getbegy(ButtonBox.GetBBox()->win)-1, 35, RIGHT,
-                          title, ParamItems, ParamItems.Count());
+                          title, &ParamItems[0], ParamItems.size());
     ScrollList.SetBgColor(5);
 
     const int defh = 3;
@@ -276,13 +269,13 @@ bool ConfParams()
             }
             else
             {
-                CCharListHelper chitems;
+                std::vector<char *> chitems;
                 int cur;
                 
                 if (pParam->param_type == PTYPE_BOOL)
                 {
-                    chitems.AddItem(GetTranslation("Disable"));
-                    chitems.AddItem(GetTranslation("Enable"));
+                    chitems.push_back(GetTranslation("Disable"));
+                    chitems.push_back(GetTranslation("Enable"));
                     cur = (pParam->value == "true") ? 1 : 0;
                 }
                 else
@@ -290,14 +283,14 @@ bool ConfParams()
                     int i = 0;
                     for (std::list<std::string>::iterator it=pParam->options.begin(); it!=pParam->options.end();it++, i++)
                     {
-                        chitems.AddItem(*it);
+                        chitems.push_back(MakeCString(*it));
                         if (*it == pParam->value)
                             cur = i;
                     }
                 }
                 
                 CCDKScroll chScrollList(CDKScreen, CENTER, CENTER, 6, 30, RIGHT,
-                                        GetTranslation("Please choose new value"), chitems, chitems.Count());
+                                        GetTranslation("Please choose new value"), &chitems[0], chitems.size());
                 chScrollList.SetBgColor(26);
                 chScrollList.SetCurrent(cur);
                 
@@ -410,12 +403,10 @@ bool InstallFiles()
             if ((entry.ExitType() != vNORMAL) || !sz)
             {
                 char *buttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
-                CCharListHelper msg;
+                char *msg[2] = { GetTranslation("Root access is required to continue."),
+                                 GetTranslation("Abort installation?") };
 
-                msg.AddItem(GetTranslation("Root access is required to continue."));
-                msg.AddItem(GetTranslation("Abort installation?"));
-
-                CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, msg.Count(), buttons, 2);
+                CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, 2, buttons, 2);
                 dialog.SetBgColor(26);
                 int ret = dialog.Activate();
                 if ((ret == 0) && (dialog.ExitType() == vNORMAL))
@@ -495,7 +486,10 @@ bool InstallFiles()
             if (input == KEY_ESC)
             {
                 if (YesNoBox("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
+                {
+                    CleanPasswdString(passwd);
                     EndProg();
+                }
             }
         }
     }
@@ -530,13 +524,18 @@ bool InstallFiles()
             SuHandler.SetCommand(command);
             if (!SuHandler.ExecuteCommand(passwd))
             {
-                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), SuHandler.GetErrorMsgC());
-                // UNDONE
+                if ((*it)->exit_on_failure)
+                {
+                    CleanPasswdString(passwd);
+                    throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"),
+                               SuHandler.GetErrorMsgC());
+                }
             }
         }
         else
         {
-            command += " 2> /dev/null";
+            // Redirect stderr to stdout, so that errors will be displayed too
+            command += " 2>&1";
             FILE *pipe = popen(command.c_str(), "r");
             char term[1024];
             if (pipe)
@@ -551,15 +550,28 @@ bool InstallFiles()
                         if (YesNoBox("%s\n%s\n%s", GetTranslation("Install commands are still running"),
                                                    GetTranslation("If you abort now this may lead to a broken installation"),
                                                    GetTranslation("Are you sure?")))
+                        {
+                            CleanPasswdString(passwd);
                             EndProg();
+                        }
                     }
                 }
-                pclose(pipe);
+                
+                // Check if command exitted normally and close pipe
+                int state = pclose(pipe);
+                if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
+                {
+                    if ((*it)->exit_on_failure)
+                    {
+                        CleanPasswdString(passwd);
+                        throwerror(true, "Error: Failed to execute install command");
+                    }
+                }
             }
             else
             {
-                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), SuHandler.GetErrorMsgC());
-                // UNDONE
+                CleanPasswdString(passwd);
+                throwerror(true, "Could not execute installation commands (could not open pipe)");
             }
             
 #if 0
@@ -650,17 +662,11 @@ bool InstallFiles()
     ProgressBar.SetValue(0, 100, 100);
     ProgressBar.Draw();
     
-    if (passwd)
-    {
-        // Nullify pass...just incase
-        for (short s=0;s<strlen(passwd);s++) passwd[s] = 0;
-        free(passwd);
-    }
-
+    CleanPasswdString(passwd);
+    
     ButtonBar.Clear();
     ButtonBar.AddButton("Arrows", "Scroll install output");
     ButtonBar.AddButton("Enter", "Continue");
-    ButtonBar.AddButton("ESC", "Exit program");
     ButtonBar.Draw();
 
     WarningBox("Installation of %s complete!", InstallInfo.program_name.c_str());

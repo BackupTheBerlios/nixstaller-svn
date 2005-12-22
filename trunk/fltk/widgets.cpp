@@ -62,10 +62,11 @@ Fl_Group *CWelcomeScreen::Create(void)
     m_pGroup->begin();
 
     m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
-    //m_pImage = Fl_Shared_Image::get("/usr/home/rick/beastie.png");
     if (m_pImage)
     {
-        m_pImageBox = new Fl_Box(40, 60, 200, (MAIN_WINDOW_H-120));
+        m_pImageBox = new Fl_Box(50, 60, 80, (MAIN_WINDOW_H-120));
+        m_pImageBox->box(FL_BORDER_BOX);
+        
         // Scale image if its to big
         if (m_pImage->w() > m_pImageBox->w() || m_pImage->h() > m_pImageBox->h())
         {
@@ -409,14 +410,6 @@ void CSetParamsScreen::ParamInputCB(Fl_Widget *w, void *p)
 // Base Install screen
 // -------------------------------------
 
-void CInstallFilesScreen::ClearPassword()
-{
-    if (!m_szPassword) return;
-    
-    for (int i=0;i<strlen(m_szPassword);i++) m_szPassword[i] = 0;
-    free(m_szPassword);
-}
-
 Fl_Group *CInstallFilesScreen::Create()
 {
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
@@ -484,7 +477,7 @@ bool CInstallFilesScreen::Activate()
     {
         while(true)
         {
-            ClearPassword();
+            CleanPasswdString(m_szPassword);
 
             m_pAskPassWindow->hotspot(m_pAskPassOKButton);
             m_pAskPassWindow->take_focus();
@@ -546,7 +539,7 @@ void CInstallFilesScreen::AppendText(const char *txt)
 
 void CInstallFilesScreen::SetPassword(bool unset)
 {
-    ClearPassword();
+    CleanPasswdString(m_szPassword);
     
     const char *passwd = m_pAskPassInput->value();
 
@@ -599,7 +592,11 @@ void CInstallFilesScreen::Install()
         percent = ExtractArchive(curfile);
         AppendText("Extracting file: " + curfile + "\n");
 
-        if (percent == -1) throwerror(true, "Error during extracting files");
+        if (percent == -1)
+        {
+            CleanPasswdString(m_szPassword);
+            throwerror(true, "Error during extracting files");
+        }
 
         if (percent == 100)
         {
@@ -628,12 +625,18 @@ void CInstallFilesScreen::Install()
             m_SUHandler.SetCommand(command);
             if (!m_SUHandler.ExecuteCommand(m_szPassword))
             {
-                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), m_SUHandler.GetErrorMsgC());
-                // UNDONE
+                if ((*it)->exit_on_failure)
+                {
+                    CleanPasswdString(m_szPassword);
+                    throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"),
+                               m_SUHandler.GetErrorMsgC());
+                }
             }
         }
         else
         {
+            // Redirect stderr to stdout, so that errors will be displayed too
+            command += " 2>&1";
             FILE *pPipe = popen(command.c_str(), "r");
             if (pPipe)
             {
@@ -643,12 +646,22 @@ void CInstallFilesScreen::Install()
                     AppendText(buf);
                     Fl::wait(0.0); // Update screen
                 }
-                pclose(pPipe);
+                
+                // Check if command exitted normally and close pipe
+                int state = pclose(pPipe);
+                if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
+                {
+                    if ((*it)->exit_on_failure)
+                    {
+                        CleanPasswdString(m_szPassword);
+                        throwerror(true, "Error: Failed to execute install command");
+                    }
+                }
             }
             else
             {
-                throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"), m_SUHandler.GetErrorMsgC());
-                // UNDONE
+                CleanPasswdString(m_szPassword);
+                throwerror(true, "Could not execute installation commands (could not open pipe)");
             }
         }
         
@@ -660,7 +673,7 @@ void CInstallFilesScreen::Install()
     //ChangeStatusText(GetTranslation("Done"));
     InstallFiles = false;
     fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());
-    ClearPassword();
+    CleanPasswdString(m_szPassword);
     
     pCancelButton->deactivate();
     pPrevButton->deactivate();

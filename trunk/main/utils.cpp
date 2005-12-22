@@ -94,9 +94,11 @@ char *CreateText(const char *s, ...)
 
 void FreeStrings()
 {
+    printf("freeing %d strings....\n", StringList.size());
     while(!StringList.empty())
     {
-        delete [] (*StringList.end());
+        printf("STRING: %s\n", StringList.back());
+        delete [] StringList.back();
         StringList.pop_back();
     }
 }
@@ -145,7 +147,7 @@ const char *GetParamValue(param_entry_s *pParam)
     if (pParam->param_type == PTYPE_BOOL)
     {
         if (pParam->value == "true")
-                    return GetTranslation("Enabled");
+            return GetTranslation("Enabled");
         else
             return GetTranslation("Disabled");
     }
@@ -164,3 +166,12 @@ bool WriteAccess(const char *file)
     return ((lstat(file, &st) == 0) && (access(file, W_OK) == 0));
 }
 
+// Used for cleaning password strings
+void CleanPasswdString(char *str)
+{
+    if (str)
+    {
+        for (short s=0;s<strlen(str);s++) str[s] = 0;
+        free(str);
+    }
+}

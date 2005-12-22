@@ -110,12 +110,11 @@ public:
     void SetContent(char **list, int count) { setCDKAlphalistContents(m_pAList, list, count); };
 };
 
-class CCharListHelper;
+//class CCharListHelper;
 
 class CCDKDialog: public CBaseCDKWidget
 {
     CDKDIALOG *m_pDialog;
-    CCharListHelper m_CharList;
 
     void SetButtonBar(void);
     
@@ -227,7 +226,7 @@ class CButtonBar
     {
         std::string szCurrentText;
         int iCurTextLength;
-        CCharListHelper Texts;
+        std::vector<char *> Texts;
 
         bar_entry_s(void) : iCurTextLength(0) { };
     };
@@ -243,7 +242,7 @@ public:
     void Push(void); // Creates new button bar
     void Pop(void); // Destroys current bar and sets previous one as current
     void AddButton(const char *button, const char *desc);
-    void Clear(void) { if (m_pCurrentBarEntry) m_pCurrentBarEntry->Texts.Clear(); };
+    void Clear(void) { if (m_pCurrentBarEntry) m_pCurrentBarEntry->Texts.clear(); };
     void Draw(void);
     void Destroy(void) { delete m_pLabel; m_pLabel = NULL; };
     CCDKLabel *GetLabel(void) { return m_pLabel; };
@@ -254,10 +253,12 @@ class CFileDialog
     std::string m_szStartDir, m_szDestDir, m_szTitle;
     CCDKAlphaList *m_pFileList;
     CCDKSWindow *m_pCurDirWin;
+    std::vector<char *> m_DirItems; // Vector of all sub directories in current dir
     bool m_bRestoreDir, m_bNeedWAccess;
 
-    bool ReadDir(const std::string &dir, CCharListHelper *Items);
+    bool ReadDir(const std::string &dir);
     void UpdateCurDirText(void);
+    void ClearDirList(void);
     
 public:
     CFileDialog(const std::string &s, const std::string &t, bool r, bool w) : m_szStartDir(s), m_szTitle(t),

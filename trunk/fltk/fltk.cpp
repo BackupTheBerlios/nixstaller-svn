@@ -158,7 +158,7 @@ void EndProg()
 {
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 void throwerror(bool dialog, const char *error, ...)
@@ -176,5 +176,5 @@ void throwerror(bool dialog, const char *error, ...)
     
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
-    exit(1);
+    exit(EXIT_FAILURE);
 }
