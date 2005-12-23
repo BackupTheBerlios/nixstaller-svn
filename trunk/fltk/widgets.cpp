@@ -64,15 +64,29 @@ Fl_Group *CWelcomeScreen::Create(void)
     m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
     if (m_pImage)
     {
-        m_pImageBox = new Fl_Box(50, 60, 80, (MAIN_WINDOW_H-120));
-        m_pImageBox->box(FL_BORDER_BOX);
-        
+        m_pImageBox = new Fl_Box(40, 60, 165, (MAIN_WINDOW_H-120));
+
         // Scale image if its to big
         if (m_pImage->w() > m_pImageBox->w() || m_pImage->h() > m_pImageBox->h())
         {
-            float fact = (((float)m_pImageBox->w() / (float)m_pImageBox->h())/((float)m_pImage->w() / (float)m_pImage->h()));
-            int w = (int)(float(m_pImage->w()) * fact);
-            int h = (int)(float(m_pImage->h()) * fact);
+            int w, h;
+            float wfact, hfact;
+
+            // Check which scale factor is the biggest and use that one. This makes sure that the image will fit.
+            wfact = (float(m_pImage->w())/float(m_pImageBox->w()));
+            hfact = (float(m_pImage->h())/float(m_pImageBox->h()));
+
+            if (wfact >= hfact)
+            {
+                w = m_pImageBox->w();
+                h = (int)(float(m_pImage->h()) / wfact);
+            }
+            else
+            {
+                w = (int)(float(m_pImage->w()) / hfact);
+                h = m_pImageBox->h();
+            }
+
             Fl_Image *temp = m_pImage->copy(w, h);
             m_pImage->release();
             m_pImage = (Fl_Shared_Image *)temp;
