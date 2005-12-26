@@ -18,11 +18,13 @@ Fl_Group *CLangScreen::Create(void)
         m_pMenuItems[s].text = CreateText(p->c_str());
         
     m_pMenuItems[s].text = NULL;
-    m_pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"&Language: ");
+    m_pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"Language: ");
     m_pChoiceMenu->menu(m_pMenuItems);
     m_pChoiceMenu->callback(LangMenuCB);
     
     m_pGroup->end();
+    
+    InstallInfo.cur_lang = m_pMenuItems[0].text;
     
     return m_pGroup;
 }
@@ -172,7 +174,7 @@ Fl_Group *CSelectDirScreen::Create()
     m_pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
     m_pSelDirInput = new Fl_Output(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "dir: ");
     m_pSelDirInput->value(InstallInfo.dest_dir.c_str());
-    m_pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select directory");
+    m_pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select a directory");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
     m_pGroup->end();
@@ -190,13 +192,13 @@ void CSelectDirScreen::UpdateLang()
     m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
     
     m_pBox->label(GetTranslation("Select destination directory"));
-    m_pSelDirButton->label(GetTranslation("Select directory"));
+    m_pSelDirButton->label(GetTranslation("Select a directory"));
 }
 
 bool CSelectDirScreen::Next()
 {
-    char temp[128];
-    sprintf(temp, GetTranslation("This will install %s to the following directory:"), InstallInfo.program_name.c_str());
+    char *temp = CreateText(GetTranslation("This will install %s to the following directory:"),
+                            InstallInfo.program_name.c_str());
     return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")));
 }
 
@@ -231,7 +233,7 @@ Fl_Group *CSetParamsScreen::Create()
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
-    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "Configuring parameters");
+    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "Configure parameters");
     
     const int iChoiceW = 250, iDescW = 250, iTotalW = iChoiceW + 10 + iDescW;
     int x = 40, y = 120;
@@ -281,16 +283,16 @@ Fl_Group *CSetParamsScreen::Create()
 
 void CSetParamsScreen::UpdateLang()
 {
-    m_pBoxTitle->label(GetTranslation("Configuring parameters"));
+    m_pBoxTitle->label(GetTranslation("Configure parameters"));
     m_pChoiceBrowser->label(GetTranslation("Parameters"));
     m_pParamInput->label(CreateText("%s: ", GetTranslation("Value")));
     m_pValChoiceMenu->label(CreateText("%s: ", GetTranslation("Value")));
 
-    // Create dir selecter (need to do this when cur language changes!)
+    // Create dir selecter (need to do this when the language changes!)
     if (m_pDirChooser) delete m_pDirChooser;
     m_pDirChooser = new Fl_File_Chooser("~", "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        GetTranslation("Select new directory"));
+                                        GetTranslation("Select a directory"));
     m_pDirChooser->preview(false);
     m_pDirChooser->previewButton->hide();
     m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
@@ -360,7 +362,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         m_pValChoiceMenu->show();
     }
     
-    m_pDescriptionOutput->value(m_pCurrentParamEntry->description.c_str());
+    m_pDescriptionOutput->value(GetTranslation(m_pCurrentParamEntry->description.c_str()));
     
     const char *str = m_pCurrentParamEntry->defaultval.c_str();
     if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
@@ -376,7 +378,7 @@ void CSetParamsScreen::SetValue(const std::string &str)
 {
     if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
     {
-        if (str == "Enable") m_pCurrentParamEntry->value = "true";
+        if (str == GetTranslation("Enable")) m_pCurrentParamEntry->value = "true";
         else m_pCurrentParamEntry->value = "false";
     }
     else
@@ -445,7 +447,7 @@ Fl_Group *CInstallFilesScreen::Create()
     m_pAskPassWindow->begin();
     
     m_pAskPassBox = new Fl_Box(10, 20, 370, 40, "This installation requires root(administrator) privileges in order to "
-                                                "continue.\nPlease enter the password of the root user.");
+                                                "continue.\nPlease enter the password of the root user");
     m_pAskPassBox->align(FL_ALIGN_WRAP);
     
     m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25, "Password: ");
@@ -502,7 +504,8 @@ bool CInstallFilesScreen::Activate()
             // Check if password is invalid
             if (!m_szPassword)
             {
-                if (fl_ask(GetTranslation("Root access is required to continue\nAbort installation?")))
+                if (fl_ask("%s\n%s", GetTranslation("Root access is required to continue"),
+                    GetTranslation("Abort installation?")))
                     EndProg();
             }
             else
@@ -512,23 +515,23 @@ bool CInstallFilesScreen::Activate()
 
                 // Some error appeared
                 if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    fl_alert(GetTranslation("Incorrect password given for root user.\nPlease re-type."));
+                    fl_alert("%s\n%s", GetTranslation("Incorrect password given for root user"),
+                             GetTranslation("Please retype"));
                 else
                 {
-                    throwerror(true, "%s\n%s", GetTranslation("Error: Couldn't use su to gain root access"),
-                                GetTranslation("Make sure you can use su(adding your user to the wheel group may help"));
+                    throwerror(true, "%s\n%s", GetTranslation("Could not use su to gain root access"),
+                                GetTranslation("Make sure you can use su(adding the current user to the wheel group may help"));
                 }
             }
         }
     }
     
     m_SUHandler.SetOutputFunc(SUOutputHandler, this);
-    m_SUHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
     m_SUHandler.SetUser("root");
     m_SUHandler.SetTerminalOutput(false);
     
     if (chdir(InstallInfo.dest_dir.c_str()))
-        throwerror(true, "Couldn't open directory '%s'", InstallInfo.dest_dir.c_str());
+        throwerror(true, "Could not open directory '%s'", InstallInfo.dest_dir.c_str());
     
     InstallFiles = true;
     pPrevButton->deactivate();
@@ -540,7 +543,7 @@ bool CInstallFilesScreen::Activate()
 
 void CInstallFilesScreen::UpdateLang()
 {
-    m_pProgress->label(GetTranslation("Install progress"));
+    m_pProgress->label(GetTranslation("Progress"));
     //m_pDisplay->label(GetTranslation("Status: %s"));
 }
 
@@ -591,7 +594,7 @@ void CInstallFilesScreen::AskPassCancelButtonCB(Fl_Widget *w, void *p)
 void CInstallFilesScreen::ChangeStatusText(const char *txt, int n)
 {
     // Install entries + 1 because it doesn't include extraction
-    m_pDisplay->label(CreateText(GetTranslation("Status: %s (%d/%d)"), txt, n, InstallInfo.command_entries.size()+1));
+    m_pDisplay->label(CreateText("%s: %s (%d/%d)", GetTranslation("Status"), txt, n, InstallInfo.command_entries.size()+1));
 }
 
 void CInstallFilesScreen::Install()
@@ -636,13 +639,14 @@ void CInstallFilesScreen::Install()
 
         if ((*it)->need_root == NEED_ROOT)
         {
+            m_SUHandler.SetPath((*it)->path.c_str());
             m_SUHandler.SetCommand(command);
             if (!m_SUHandler.ExecuteCommand(m_szPassword))
             {
                 if ((*it)->exit_on_failure)
                 {
                     CleanPasswdString(m_szPassword);
-                    throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"),
+                    throwerror(true, "%s\n('%s')", GetTranslation("Could not execute command"),
                                m_SUHandler.GetErrorMsgC());
                 }
             }
@@ -651,6 +655,8 @@ void CInstallFilesScreen::Install()
         {
             // Redirect stderr to stdout, so that errors will be displayed too
             command += " 2>&1";
+            
+            setenv("PATH", (*it)->path.c_str(), 1);
             FILE *pPipe = popen(command.c_str(), "r");
             if (pPipe)
             {
@@ -668,7 +674,7 @@ void CInstallFilesScreen::Install()
                     if ((*it)->exit_on_failure)
                     {
                         CleanPasswdString(m_szPassword);
-                        throwerror(true, "Error: Failed to execute install command");
+                        throwerror(true, "Failed to execute install command");
                     }
                 }
             }
@@ -684,7 +690,6 @@ void CInstallFilesScreen::Install()
     }
 
     m_pProgress->value(100);
-    //ChangeStatusText(GetTranslation("Done"));
     InstallFiles = false;
     fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());
     CleanPasswdString(m_szPassword);

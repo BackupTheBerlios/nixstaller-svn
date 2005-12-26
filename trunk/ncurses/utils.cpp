@@ -87,7 +87,7 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     param_entry_s *pParam = GetParamByName(items->at(cur));
     
     pDescWin->Clear();
-    pDescWin->AddText(pParam->description);
+    pDescWin->AddText(GetTranslation(pParam->description));
     
     pDefWin->Clear();
     pDefWin->AddText(CreateText("</B/29>%s:<!29!B> %s", GetTranslation("Default"), GetParamDefault(pParam)), false);
@@ -95,13 +95,6 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     
     return true;
 }
-
-int ExitK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key)
-{
-    WarningBox("Key: %c\n", key);
-    return true;
-}
-
 
 int ViewFile(char *file, char **buttons, int buttoncount, char *title)
 {
@@ -196,6 +189,22 @@ bool YesNoBox(const char *msg, ...)
     Diag.Destroy();
     refreshCDKScreen(CDKScreen);
     return yes;
+}
+
+void InstThinkFunc(void *p)
+{
+    // Key mode is unblocked in InstallFiles()
+    chtype input = getch();
+    if (input == 'c')
+    {
+        if (YesNoBox("%s\n%s\n%s", GetTranslation("Install commands are still running"),
+            GetTranslation("If you abort now this may lead to a broken installation"),
+            GetTranslation("Are you sure?")))
+        {
+            CleanPasswdString((char *)p);
+            EndProg();
+        }
+    }
 }
 
 #if 0

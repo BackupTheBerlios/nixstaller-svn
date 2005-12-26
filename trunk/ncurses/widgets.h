@@ -192,7 +192,7 @@ public:
     void SetValue(const char *str) { SetValue(const_cast<char*>(str)); };
     void SetValue(char *str) { setCDKEntryValue(m_pEntry, str); };
     
-    char *Activate(chtype *actions = NULL) { return activateCDKEntry(m_pEntry, actions); };
+    char *Activate(chtype *actions = NULL);
     CDKENTRY *GetEntry(void) { return m_pEntry; };
 };
 

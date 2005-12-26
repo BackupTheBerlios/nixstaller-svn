@@ -25,22 +25,18 @@ struct param_entry_s
 struct command_entry_s
 {
     ENeedRoot need_root;
-    std::string command, description;
+    std::string command, description, path;
     std::map<std::string, param_entry_s *> parameter_entries;
     std::string dep_param;
     bool exit_on_failure;
-    command_entry_s(void) : need_root(NO_ROOT), exit_on_failure(true) { };
+    command_entry_s(void) : path("/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."), need_root(NO_ROOT),
+                            exit_on_failure(true) { };
 };
 
 struct install_info_s
 {
-    std::string version;
-    std::string program_name;
-    std::string intropicname;
-    std::string own_dir;
-    std::string dest_dir;
+    std::string os, version, program_name, intropicname, own_dir, dest_dir, cur_lang;
     std::list<std::string> languages;
-    std::string cur_lang;
     std::map<std::string, char *> translations;
     EArchiveType archive_type;
     EDestDirType dest_dir_type;

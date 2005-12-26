@@ -1,11 +1,10 @@
-env = Environment(CC = 'g++', CCFLAGS = "-O2 -fPIC -g", LIBPATH='/usr/X11R6/lib', CPPPATH=Split('. /usr/X11R6/include /usr/local/include'))
+env = Environment(CC = 'g++', CCFLAGS = "-O2 -fPIC", CPPPATH=Split('/usr/local/include .'))
 
 config_header = 'config.h'
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
     conf = env.Configure(config_h = config_header)
-    #conf = env.Configure()
     
     if conf.CheckLibWithHeader('c', 'sched.h', 'C', 'sched_getscheduler(0);'):
         conf.env.Append(CPPFLAGS = '$CPPFLAGS -DPOSIX1B_SCHEDULING')
@@ -45,7 +44,7 @@ else:
     Execute(Delete('.sconsign.dblite'))
 
 # Builds lib
-env.Library("libsu", Split('main.cpp util.cpp'))
+env.Library("libsu", Split('main.cpp util.cpp terminal.cpp'))
 
 # Builds test program
 env.Program("libtest", 'libtest.cpp', LIBPATH=".", LIBS=Split('su util'))

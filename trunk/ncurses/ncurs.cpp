@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     }
     
     // Init
-    if (!(MainWin = initscr())) throwerror(false, "Couldn't init ncurses");
-    if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, "Couldn't init CDK");
+    if (!(MainWin = initscr())) throwerror(false, "Could not init ncurses");
+    if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, "Could not init CDK");
     initCDKColor();
     
     int i=0;
@@ -64,7 +64,7 @@ bool SelectLanguage()
     if (InstallInfo.languages.size() == 1)
     {
         InstallInfo.cur_lang = InstallInfo.languages.front();
-        if (!ReadLang()) throwerror(true, "Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
+        if (!ReadLang()) throwerror(true, "Could not load language file for %s", InstallInfo.cur_lang.c_str());
         return true;
     }
     
@@ -88,7 +88,7 @@ bool SelectLanguage()
     if (ScrollList.ExitType() == vNORMAL)
     {
         InstallInfo.cur_lang = LangItems[selection];
-        if (!ReadLang()) throwerror(true, "Couldn't load language file for %s", InstallInfo.cur_lang.c_str());
+        if (!ReadLang()) throwerror(true, "Could not load language file for %s", InstallInfo.cur_lang.c_str());
     }
     else return false;
     
@@ -165,8 +165,8 @@ bool ConfParams()
 
     if (!pFirstParam) return true; // No command entries...no need for this screen
     
-    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
-    char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue install"), GetTranslation("Cancel") };
+    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configure parameters"));
+    char *buttons[3] = { GetTranslation("Edit parameter"), GetTranslation("Continue"), GetTranslation("Cancel") };
     
     ButtonBar.Clear();
     ButtonBar.AddButton("TAB", "Next button");
@@ -329,10 +329,8 @@ bool ConfParams()
 
 bool InstallFiles()
 {
-    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("Configuring parameters"));
-    
     ButtonBar.Clear();
-    ButtonBar.AddButton("ESC", "Exit program");
+    ButtonBar.AddButton("C", "Cancel");
     ButtonBar.Draw();
     
     CCDKSWindow InstallOutput(CDKScreen, 0, 6, GetMaxHeight()-7, -1,
@@ -346,12 +344,12 @@ bool InstallFiles()
     CCDKSWindow ProggWindow(CDKScreen, 0, 2, 5, maxx, NULL, 4);
     ProggWindow.SetBgColor(5);
     ProggWindow.AddText("");
-    ProggWindow.AddText(CreateText("</B/29>%s<!29!B>", GetTranslation("Status:")));
-    ProggWindow.AddText(CreateText("%s (1/%d)", GetTranslation("Extracting Files"), InstallInfo.command_entries.size()+1),
+    ProggWindow.AddText(CreateText("</B/29>%s:<!29!B>", GetTranslation("Status")));
+    ProggWindow.AddText(CreateText("%s (1/%d)", GetTranslation("Extracting files"), InstallInfo.command_entries.size()+1),
                         true, BOTTOM, 24);
     
     CCDKHistogram ProgressBar(CDKScreen, 25, 3, 1, maxx-29, HORIZONTAL,
-                              CreateText("<C></29/B>%s", GetTranslation("Total Progress")), false);
+                              CreateText("<C></29/B>%s", GetTranslation("Progress")), false);
     ProgressBar.SetBgColor(5);
     ProgressBar.SetHistogram(vPERCENT, TOP, 0, 100, 0, COLOR_PAIR (24) | A_REVERSE | ' ', A_BOLD);
     
@@ -364,7 +362,6 @@ bool InstallFiles()
     // Check if we need root access
     char *passwd = NULL;
     LIBSU::CLibSU SuHandler;
-    SuHandler.SetPath("/bin:/usr/bin:/usr/local/bin");
     SuHandler.SetUser("root");
     SuHandler.SetTerminalOutput(false);
 
@@ -392,7 +389,9 @@ bool InstallFiles()
     // Ask root password if one of the command entries need root access and root isn't passwordless
     if (askpass && SuHandler.NeedPassword())
     {
-        CCDKEntry entry(CDKScreen, CENTER, CENTER, GetTranslation("Please enter root password"), "", 40, 0, 256, vHMIXED);
+        CCDKEntry entry(CDKScreen, CENTER, CENTER, CreateText("%s\n%s",
+                        GetTranslation("This installation requires root(administrator) privileges in order to continue"),
+                        GetTranslation("Please enter the password of the root user")), "", 60, 0, 256, vHMIXED);
         entry.SetHiddenChar('*');
         entry.SetBgColor(26);
 
@@ -402,14 +401,8 @@ bool InstallFiles()
 
             if ((entry.ExitType() != vNORMAL) || !sz)
             {
-                char *buttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
-                char *msg[2] = { GetTranslation("Root access is required to continue."),
-                                 GetTranslation("Abort installation?") };
-
-                CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, 2, buttons, 2);
-                dialog.SetBgColor(26);
-                int ret = dialog.Activate();
-                if ((ret == 0) && (dialog.ExitType() == vNORMAL))
+                if (YesNoBox(CreateText("%s\n%s", GetTranslation("Root access is required to continue"),
+                    GetTranslation("Abort installation?"))))
                     EndProg();
                 refreshCDKScreen(CDKScreen);
             }
@@ -428,12 +421,12 @@ bool InstallFiles()
                 if (SuHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
                 {
                     WarningBox("%s\n%s", GetTranslation("Incorrect password given for root user"),
-                                GetTranslation("Please re-type"));
+                                GetTranslation("Please retype"));
                 }
                 else
                 {
-                    throwerror(true, "%s\n%s", GetTranslation("Error: Couldn't use su to gain root access"),
-                                GetTranslation("Make sure you can use su(adding your user to the wheel group may help)"));
+                    throwerror(true, "%s\n%s", GetTranslation("Could not use su to gain root access"),
+                               GetTranslation("Make sure you can use su(adding the current user to the wheel group may help)"));
                 }
             }
         }
@@ -483,7 +476,7 @@ bool InstallFiles()
             ProgressBar.Draw();
     
             chtype input = getch();
-            if (input == KEY_ESC)
+            if (input == 'c')
             {
                 if (YesNoBox("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
                 {
@@ -494,7 +487,7 @@ bool InstallFiles()
         }
     }
 
-    SuHandler.SetThinkFunc(NULL);
+    SuHandler.SetThinkFunc(InstThinkFunc, passwd);
     SuHandler.SetOutputFunc(PrintInstOutput, &InstallOutput);
 
     percent = 100/(1+InstallInfo.command_entries.size()); // Convert to overall progress
@@ -507,7 +500,7 @@ bool InstallFiles()
 
         ProggWindow.Clear();
         ProggWindow.AddText("");
-        ProggWindow.AddText(CreateText("</B/29>%s<!29!B>", GetTranslation("Status:")));
+        ProggWindow.AddText(CreateText("</B/29>%s:<!29!B>", GetTranslation("Status")));
         ProggWindow.AddText(CreateText("%s (%d/%d)", GetTranslation((*it)->description.c_str()), step,
                             InstallInfo.command_entries.size()+1), true, BOTTOM, 24);
 
@@ -521,13 +514,14 @@ bool InstallFiles()
         
         if ((*it)->need_root == NEED_ROOT)
         {
+            SuHandler.SetPath((*it)->path.c_str());
             SuHandler.SetCommand(command);
             if (!SuHandler.ExecuteCommand(passwd))
             {
                 if ((*it)->exit_on_failure)
                 {
                     CleanPasswdString(passwd);
-                    throwerror(true, "%s\n('%s')", GetTranslation("Error: Could not execute command"),
+                    throwerror(true, "%s\n('%s')", GetTranslation("Could not execute command"),
                                SuHandler.GetErrorMsgC());
                 }
             }
@@ -536,6 +530,8 @@ bool InstallFiles()
         {
             // Redirect stderr to stdout, so that errors will be displayed too
             command += " 2>&1";
+            
+            setenv("PATH", (*it)->path.c_str(), 1);
             FILE *pipe = popen(command.c_str(), "r");
             char term[1024];
             if (pipe)
@@ -545,7 +541,7 @@ bool InstallFiles()
                     InstallOutput.AddText(term);
 
                     chtype input = getch();
-                    if (input == KEY_ESC) /*injectCDKSwindow(InstallOutput.GetSWin(), input);*/
+                    if (input == 'c') /*injectCDKSwindow(InstallOutput.GetSWin(), input);*/
                     {
                         if (YesNoBox("%s\n%s\n%s", GetTranslation("Install commands are still running"),
                                                    GetTranslation("If you abort now this may lead to a broken installation"),
@@ -564,7 +560,7 @@ bool InstallFiles()
                     if ((*it)->exit_on_failure)
                     {
                         CleanPasswdString(passwd);
-                        throwerror(true, "Error: Failed to execute install command");
+                        throwerror(true, "Failed to execute install command");
                     }
                 }
             }
@@ -666,7 +662,7 @@ bool InstallFiles()
     
     ButtonBar.Clear();
     ButtonBar.AddButton("Arrows", "Scroll install output");
-    ButtonBar.AddButton("Enter", "Continue");
+    ButtonBar.AddButton("Enter", (FileExists(InstallInfo.own_dir + "/config/finish")) ? "Continue" : "Finish"); // HACK
     ButtonBar.Draw();
 
     WarningBox("Installation of %s complete!", InstallInfo.program_name.c_str());

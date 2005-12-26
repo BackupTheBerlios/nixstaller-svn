@@ -10,8 +10,14 @@ std::list<char *> StringList;
 
 bool MainInit(int argc, char *argv[])
 {
-    if (!ReadConfig()) return false;
+    if (!ReadConfig())
+        return false;
 
+    if (argc < 2)
+        return false;
+    
+    InstallInfo.os = argv[1];
+    
     char curdir[1024];
     if (getcwd(curdir, sizeof(curdir)) == 0)
         throwerror(false, "Could not read current directory");
@@ -184,12 +190,18 @@ bool ReadConfig()
                 }
                 else if (str == "exitonfailure")
                 {
-                    std::string man;
-                    strstrm >> man;
-                    if (man == "true")
+                    std::string ex;
+                    strstrm >> ex;
+                    if (ex == "true")
                         pCommandEntry->exit_on_failure = true;
-                    else if (man == "false")
+                    else if (ex == "false")
                         pCommandEntry->exit_on_failure = false;
+                }
+                else if (str == "path")
+                {
+                    strstrm >> pCommandEntry->path;
+                    while (strstrm >> tmp)
+                        pCommandEntry->path += " " + tmp;
                 }
                 else if (str == "addparam")
                 {
@@ -302,26 +314,58 @@ float ExtractArchive(std::string &curfile)
     archive_entry *entry = NULL;
     static int size;
     static float percent;
+    static std::list<char *> archlist;
 
-    if (!arch) // Does the file needs to be opened?
+    if (!arch) // Does the file need to be opened?
     {
-        std::string archname = InstallInfo.own_dir + "/instarchive";
-        size = ArchSize(archname.c_str());
+        char *archnameall = CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str());
+        char *archnameos = CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str());
+        
+        size = 0;
+        archlist.clear();
+        
+        if (FileExists(archnameall))
+        {
+            size += ArchSize(archnameall);
+            archlist.push_back(archnameall);
+        }
+        if (FileExists(archnameos))
+        {
+            size += ArchSize(archnameos);
+            archlist.push_back(archnameos);
+        }
+        
+        if (archlist.empty())
+            return 100;
+        
         percent = 0.0f;
         
         arch = archive_read_new();
         archive_read_support_compression_all(arch);
         archive_read_support_format_all(arch);
-        archive_read_open_file(arch, archname.c_str(), 512);
+        archive_read_open_file(arch, archlist.back(), 512);
     }
     
     int status = archive_read_next_header(arch, &entry);
+    
+    if ((status == ARCHIVE_EOF) && !archlist.empty())
+    {
+        archlist.pop_back();
+        archive_read_finish(arch);
+        arch = archive_read_new();
+        archive_read_support_compression_all(arch);
+        archive_read_support_format_all(arch);
+        archive_read_open_file(arch, archlist.back(), 512);
+        
+        status = archive_read_next_header(arch, &entry);
+    }
+        
     if (status == ARCHIVE_OK)
     {
         curfile = archive_entry_pathname(entry);
         percent += ((float)archive_entry_size(entry)/(float)size)*100.0f;
         archive_read_extract(arch, entry, (ARCHIVE_EXTRACT_OWNER | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_FFLAGS));
-        return percent;
+        return percent/archlist.size();
     }
     
     archive_read_finish(arch);
@@ -340,9 +384,6 @@ bool ReadLang()
         InstallInfo.translations.erase(InstallInfo.translations.begin(), InstallInfo.translations.end());
     }
     
-    if (InstallInfo.cur_lang == "english")
-        return true; // No need to translate...
-
     std::ifstream file(CreateText("config/lang/%s/strings", InstallInfo.cur_lang.c_str()));
 
     if (!file)
@@ -352,14 +393,13 @@ bool ReadLang()
     bool atsrc = true;
     while (file)
     {
-        file >> text;
-
-        if (text[0] == '#') // Skip comments
-            continue;
-        
+        file >> text; // Skip first whitespace
         std::getline(file, line); // Get the rest of the text
         text += line;
 
+        if (text[0] == '#') 
+            continue;
+        
         if (atsrc)
             srcmsg = text;
         else
@@ -367,6 +407,7 @@ bool ReadLang()
             InstallInfo.translations[srcmsg] = new char[text.length()+1];
             text.copy(InstallInfo.translations[srcmsg], std::string::npos);
             InstallInfo.translations[srcmsg][text.length()] = 0;
+            printf("src: %s\ndest: %s\n", srcmsg.c_str(), text.c_str());
         }
 
         atsrc = !atsrc;

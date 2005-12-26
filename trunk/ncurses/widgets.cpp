@@ -201,6 +201,19 @@ void CCDKEntry::Destroy()
     m_pEntry = NULL;
 }
 
+char *CCDKEntry::Activate(chtype *actions)
+{
+    ButtonBar.Push();
+    ButtonBar.AddButton("ENTER", "OK");
+    ButtonBar.AddButton("ESC", "Cancel");
+    ButtonBar.Draw();
+    
+    char *s = activateCDKEntry(m_pEntry, actions);
+    
+    ButtonBar.Pop();
+    return s;
+}
+
 // CDK Entry Wrapper
 
 CCDKHistogram::CCDKHistogram(CDKSCREEN *pScreen, int x, int y, int h, int w, int orient, char *title, bool box,
@@ -371,9 +384,9 @@ bool CFileDialog::Activate()
     if (!getcwd(curdir, sizeof(curdir))) throwerror(true, "Could not read current directory");
     
     if (chdir(m_szStartDir.c_str()) != 0)
-        throwerror(true, "Couldn't open directory '%s'", m_szStartDir.c_str());
+        throwerror(true, "Could not open directory '%s'", m_szStartDir.c_str());
 
-    if (!ReadDir(m_szStartDir)) throwerror(true, "Could not read directory %s", m_szStartDir.c_str());
+    if (!ReadDir(m_szStartDir)) throwerror(true, "Could not read directory '%s'", m_szStartDir.c_str());
     
     CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-2, 1, 49, 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
@@ -519,7 +532,7 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 
     if (mkdir(newdir, dirMode) != 0)
     {
-        WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create the directory"), newdir, strerror(errno));
+        WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create directory"), newdir, strerror(errno));
         return false;
     }
 

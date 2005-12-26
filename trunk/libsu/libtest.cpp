@@ -6,9 +6,11 @@ void printout(const char *s, void *p) { printf(s); }
 
 int main()
 {
-    char user[128], passwd[128];
+    char command[128], user[128], passwd[128];
+    printf("command: ");
+    scanf("%s", command);
     printf("user: ");
-    scanf("%s", user);
+    scanf("%s", user); // Everyone can see your password...not good
     printf("password: ");
     if (scanf("%s", passwd))
     {

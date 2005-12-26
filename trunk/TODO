@@ -1,5 +1,5 @@
 OVERALL
-- Check path with non su commands
+- License stuff(COPYING file, stuff in source files?, libsu)
 
 
 MAIN
@@ -10,7 +10,7 @@ NCURSES FRONTEND
 
 
 FLTK FRONTEND
-- Update exit install stuff
+- Finish UpdateLanguage functions
 
 
 ----------------------------- LATER ------------------------------------
