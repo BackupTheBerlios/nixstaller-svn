@@ -270,37 +270,37 @@ bool ReadConfig()
         }
     }
 
-    printf("appname: %s\n", InstallInfo.program_name.c_str());
-    printf("version: %s\n", InstallInfo.version.c_str());
-    printf("archtype: %d\n", InstallInfo.archive_type);
-    printf("installdir: %s\n", InstallInfo.dest_dir.c_str());
-    printf("dir type: %d\n", InstallInfo.dest_dir_type);
-    printf("languages: ");
+    debugline("appname: %s\n", InstallInfo.program_name.c_str());
+    debugline("version: %s\n", InstallInfo.version.c_str());
+    debugline("archtype: %d\n", InstallInfo.archive_type);
+    debugline("installdir: %s\n", InstallInfo.dest_dir.c_str());
+    debugline("dir type: %d\n", InstallInfo.dest_dir_type);
+    debugline("languages: ");
     for (std::list<std::string>::iterator it=InstallInfo.languages.begin(); it!=InstallInfo.languages.end(); it++)
-        printf("%s ", it->c_str());
-    printf("\n");
+        debugline("%s ", it->c_str());
+    debugline("\n");
 
-    printf("Comp entries:\n");
+    debugline("Comp entries:\n");
     for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();p++)
     {
-        printf("Need root: %d\n", (*p)->need_root);
-        printf("Command: %s\n", (*p)->command.c_str());
-        printf("Description: %s\n", (*p)->description.c_str());
-        printf("Depends on param: %s\n", (*p)->dep_param.c_str());
-        printf("Exit on failure: %d\n", (*p)->exit_on_failure);
-        printf("Params:\n");
+        debugline("Need root: %d\n", (*p)->need_root);
+        debugline("Command: %s\n", (*p)->command.c_str());
+        debugline("Description: %s\n", (*p)->description.c_str());
+        debugline("Depends on param: %s\n", (*p)->dep_param.c_str());
+        debugline("Exit on failure: %d\n", (*p)->exit_on_failure);
+        debugline("Params:\n");
         for (std::map<std::string, param_entry_s *>::iterator
              p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
         {
-            printf("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
-                    "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
-                    (*p2).second->parameter.c_str(),
-                    (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
-                    (*p2).second->varname.c_str());
-            printf("\tOptions: ");
+            debugline("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
+                      "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
+                      (*p2).second->parameter.c_str(),
+                      (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
+                      (*p2).second->varname.c_str());
+            debugline("\tOptions: ");
             for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
-                printf("%s ", p3->c_str());
-            printf("\n");
+                debugline("%s ", p3->c_str());
+            debugline("\n");
         }
     }
     
@@ -343,19 +343,19 @@ float ExtractArchive(std::string &curfile)
         arch = archive_read_new();
         archive_read_support_compression_all(arch);
         archive_read_support_format_all(arch);
-        archive_read_open_file(arch, archlist.back(), 512);
+        archive_read_open_file(arch, archlist.front(), 512);
     }
     
     int status = archive_read_next_header(arch, &entry);
     
     if ((status == ARCHIVE_EOF) && !archlist.empty())
     {
-        archlist.pop_back();
+        archlist.pop_front();
         archive_read_finish(arch);
         arch = archive_read_new();
         archive_read_support_compression_all(arch);
         archive_read_support_format_all(arch);
-        archive_read_open_file(arch, archlist.back(), 512);
+        archive_read_open_file(arch, archlist.front(), 512);
         
         status = archive_read_next_header(arch, &entry);
     }
@@ -407,7 +407,6 @@ bool ReadLang()
             InstallInfo.translations[srcmsg] = new char[text.length()+1];
             text.copy(InstallInfo.translations[srcmsg], std::string::npos);
             InstallInfo.translations[srcmsg][text.length()] = 0;
-            printf("src: %s\ndest: %s\n", srcmsg.c_str(), text.c_str());
         }
 
         atsrc = !atsrc;

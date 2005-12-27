@@ -6,10 +6,37 @@ Welcome
 Welkom
 
 License Agreement
-Licentie Overeenkomst
+Licentie overeenkomst
 
 Select destination directory
 Selecteer bestemmings directory
+
+Configure parameters
+Parameters instellen
+
+Select a directory
+Selecteer een directory
+
+Please enter new value
+Geef een nieuwe waarde
+
+Please choose new value
+Selecteer een nieuwe waarde
+
+Install output
+Installatie uitvoer
+
+Please read the following text
+Lees de volgende tekst
+
+Enter name of new directory
+Type de naam van de nieuwe directory
+
+This installation requires root(administrator) privileges in order to continue
+Deze installatie heeft root(systeembeheerder) rechten nodig om door te kunnen gaan
+
+Please enter the password of the root user
+Type het wachtwoord van de root gebruiker
 
 #-----------------------------------------------
 # Button names
@@ -19,7 +46,7 @@ Next
 Volgende
 
 Back
-Terug
+Vorige
 
 OK
 OK
@@ -34,19 +61,72 @@ No
 Nee
 
 Agree
-Ik ga akkoord
+Akkoord
 
 Decline
-Ik ga niet akkoord
+Niet akkoord
 
-I Agree to this license agreement
-Ik ga akkoord met deze licentie overeenkomst
+Open directory
+Open directory
 
 Select directory
 Selecteer directory
 
 Exit
 Sluiten
+
+Edit parameter
+Verander parameter
+
+Continue
+Doorgaan
+
+Finish
+Beïndigen
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Default
+Standaard
+
+Current
+Huidig
+
+Description
+Beschrijving
+
+Enabled
+Ingeschakeld
+
+Disabled
+Uitgeschakeld
+
+Enable
+Inschakelen
+
+Disable
+Uitschakelen
+
+Status
+Status
+
+Extracting files
+Bestanden uitpakken
+
+Progress
+Vooruitgang
+
+I Agree to this license agreement
+Ik ga akkoord met deze licentie overeenkomst
+
+Parameters
+Parameters
+
+Value
+Waarde
+
 
 #-----------------------------------------------
 # Messages
@@ -58,92 +138,190 @@ This will install %s to the following directory:
 Continue?
 Doorgaan?
 
-Installing files....please wait
-Bestanden worden geïnstalleerd...een ogenblik geduld
-
-Install progress
-Installatie vooruitgang
-
-Status: %s
-Status: %s
-
 Installation of %s complete!
 Installatie van %s gereed!
 
-Press enter to exit
-Druk op enter om af te sluiten
+Install commands are still running
+Installatie opdrachten zijn nog bezig
 
-Enter name of new directory
-Typ de naam van de nieuwe directory
+If you abort now this may lead to a broken installation
+Als u nu stopt kan dit lijden tot een gebroken installatie
+
+Are you sure?
+Weet u het zeker?
+
+This will abort the installation
+Dit zal de installatie onderbreken
+
+Root access is required to continue
+Root rechten zijn vereist om door te kunnen gaan
+
+Abort installation?
+Installatie onderbreken?
+
+Incorrect password given for root user
+Onjuist wachtwoord gegeven voor root gebruiker
+
+Please retype
+Type het opnieuw in
+
+Directory does not exist
+Directory bestaat niet
+
+Do you want to create it?
+Wil je het aanmaken?
+
 
 #-----------------------------------------------
-# Bottom label (ncurses only)
+# Button bar (ncurses only)
 #-----------------------------------------------
 
-Go to next button
-Ga naar volgende knop
+TAB
+TAB
+
+ENTER
+ENTER
+
+ARROWS
+PIJLEN
+
+ESC
+ESC
+
+Next button
+Volgende knop
+
+Activate button
+Activeer knop
 
 Scroll text
-Beweeg text
+Beweeg tekst
 
 Exit program
-Verlaat programma
+Beïndig programma
 
-Highlight previous/next dir
-Ga naar vorige/volgende dir
+Navigate menu
+Navigeer menu
 
-Activate current button
-Activeer huidige knop
+Scroll install output
+Bekijk installatie uitvoer
 
-Create new directory
-Maak nieuwe directory
+Create directory
+Maak directory
 
 #-----------------------------------------------
 # Error messages (ncurses only)
 #-----------------------------------------------
 
+Error: %s
+Fout: %s
+
 Can't create text viewer
-Kan de viewer niet maken
+Kan geen tekst bekijker maken
 
-Can't create bottom text window
-Kan de onderste tekst balk niet maken
+Could not use su to gain root access
+Kon su niet gebruiken om root rechten te krijgen
 
-Couldn't open directory '%s'
-Kon directory '%s' niet openen
+Make sure you can use su(adding the current user to the wheel group may help)
+Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen)
 
-Could not open directory chooser
-Kon de directory kiezer niet openen
+Could not execute command
+Kon commando niet uitvoeren
 
-Can't create dialog box
-Kon geen venster maken
+Could not create directory
+Kon directory niet maken
 
-Could not create the directory
-Kon de directory niet maken
+Could not change to directory
+Kon niet naar de directory gaan
+
+Could not read current directory
+Could not read current directory
+
+Could not open directory '%s'
+Could not open directory '%s'
+
+Could not read directory '%s'
+Could not read directory '%s'
+
+Could not read directory
+Could not read directory
+
+Could not init ncurses
+Could not init ncurses
+
+Could not init CDK
+Could not init CDK
+
+Could not load language file for %s
+Could not load language file for %s
+
+Error during extracting files
+Error during extracting files
+
+Failed to execute install command
+Failed to execute install command
+
+Could not execute installation commands (could not open pipe)
+Could not execute installation commands (could not open pipe)
+
+Could not create text label
+Could not create text label
+
+Could not create button box
+Could not create button box
+
+Could not create scroll window
+Could not create scroll window
+
+Could not create alpha list
+Could not create alpha list
+
+Could not create dialog window
+Could not create dialog window
+
+Could not create window
+Could not create window
+
+Could not create input entry
+Could not create input entry
+
+Could not create histogram
+Could not create histogram
+
+Could not create button bar
+Could not create button bar
+
+You don't have write access for this directory
+You don't have write access for this directory
+
 
 #-----------------------------------------------
 # FLTK's File Chooser
 #-----------------------------------------------
 
 Add to Favorites
-Voeg toe aan favorieten
+Add to Favorites
 
 All Files (*)
-Alle bestanden (*)
+All Files (*)
 
 Custom Filter
-Eigen Filter
+Custom Filter
 
 Favorites
-Favorieten
+Favorites
 
 Filename:
-Bestandsnaam:
+Filename:
 
 File Systems
-Bestands Systemen
+File Systems
 
 Manage Favorites
-Beheer Favorieten
+Manage Favorites
 
 Show:
-Zichtbaar:
+Show:
+
+Create new directory
+Create new directory

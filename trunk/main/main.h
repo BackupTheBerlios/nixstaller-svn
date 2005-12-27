@@ -75,4 +75,12 @@ void CleanPasswdString(char *str);
 void throwerror(bool dialog, const char *error, ...);
 void EndProg(void);
 
+#define RELEASE /* Enable on a release build */
+
+#ifdef RELEASE
+inline void debugline(const char *, ...) { };
+#else
+#define debugline printf
+#endif
+
 #endif 

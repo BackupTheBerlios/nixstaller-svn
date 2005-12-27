@@ -73,7 +73,7 @@ Select directory
 Select directory
 
 Exit
-Sluiten
+Exit
 
 Edit parameter
 Edit parameter
@@ -142,9 +142,6 @@ Continue?
 Installation of %s complete!
 Installation of %s complete!
 
-Enter name of new directory
-Typ de naam van de nieuwe directory
-
 Install commands are still running
 Install commands are still running
 
@@ -153,9 +150,6 @@ If you abort now this may lead to a broken installation
 
 Are you sure?
 Are you sure?
-
-Init failed, aborting
-Init failed, aborting
 
 This will abort the installation
 This will abort the installation
@@ -171,12 +165,6 @@ Incorrect password given for root user
 
 Please retype
 Please retype
-
-Install commands are still running
-Install commands are still running
-
-If you abort now this may lead to a broken installation
-If you abort now this may lead to a broken installation
 
 Directory does not exist
 Directory does not exist

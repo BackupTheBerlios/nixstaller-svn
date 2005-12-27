@@ -371,7 +371,6 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         else str = GetTranslation("Disabled");
     }
     m_pDefOutput->value(str);
-    printf("Params: %s\n", GetParameters(pCommandEntry).c_str());
 }
 
 void CSetParamsScreen::SetValue(const std::string &str)
@@ -406,20 +405,17 @@ void CSetParamsScreen::ParamBrowserCB(Fl_Widget *w, void *p)
 
     for (it=pCommandEntry->parameter_entries.begin(); s<(value-1); it++, s++);
     
-    printf("Param selection: %s\n", it->first.c_str());
     ((CSetParamsScreen *)p)->SetInput(it->first.c_str(), pCommandEntry);
 }
 
 void CSetParamsScreen::ValChoiceMenuCB(Fl_Widget *w, void *p)
 {
     ((CSetParamsScreen *)p)->SetValue(((Fl_Menu_*)w)->mvalue()->text);
-    printf("Value: %s\n", ((Fl_Menu_*)w)->mvalue()->text);
 }
 
 void CSetParamsScreen::ParamInputCB(Fl_Widget *w, void *p)
 {
     ((CSetParamsScreen *)p)->SetValue(((Fl_Input*)w)->value());
-    printf("Value: %s\n", (((Fl_Input*)w)->value()));
 }
 
 // -------------------------------------

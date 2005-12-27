@@ -55,7 +55,7 @@ std::string GetTranslation(std::string &s)
     if (p != InstallInfo.translations.end()) return (*p).second;
     
     // No translation found
-    printf("WARNING: No translation for %s\n", s.c_str());
+    debugline("WARNING: No translation for %s\n", s.c_str());
     return s;
 }
 
@@ -65,7 +65,7 @@ char *GetTranslation(char *s)
     if (p != InstallInfo.translations.end()) return (*p).second;
     
     // No translation found
-    printf("WARNING: No translation for %s\n", s);
+    debugline("WARNING: No translation for %s\n", s);
     return s;
 }
 
@@ -96,10 +96,10 @@ char *CreateText(const char *s, ...)
 
 void FreeStrings()
 {
-    printf("freeing %d strings....\n", StringList.size());
+    debugline("freeing %d strings....\n", StringList.size());
     while(!StringList.empty())
     {
-        printf("STRING: %s\n", StringList.back());
+        debugline("STRING: %s\n", StringList.back());
         delete [] StringList.back();
         StringList.pop_back();
     }
