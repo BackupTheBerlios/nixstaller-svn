@@ -1,0 +1,168 @@
+<html>
+
+<head>
+  <title>Nixstaller 0.1 documentation</title>
+</head>
+
+<p>
+
+<h1><strong>Nixstaller documentation</strong></h1>
+<hr>
+
+<br><br>
+
+<p>
+<h2>Table of contents</h2>
+<ul>
+   <li><A href="#intro" name="toc-intro">Introduction</A></li>
+   <li><A href="#qstart" name="toc-qstart">Quick start</A></li>
+   <li><A href="#basics" name="toc-first">Basics</A></li>
+   <li><A href="#config" name="toc-config">Configuration files</A></li>
+   <li><A href="create" name="toc-create">Creating an install package</A></li>
+   <li><A href="#compile" name="toc-compile">Compiling nixstaller</A></li>
+   <li><A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A></li>
+</ul>
+</p>
+
+<br>
+
+<p>
+<h2><A href="#toc-intro" name="intro">Introduction</h2></A>
+This document will describe how to use nixstaller to create installers for unix like systems.<br>
+If you can't wait you can read the <A href="#qstart">Quick start section</A>.<br>
+<br>
+<h3>Features</h3>
+Here is a list with the main features. Read further for more info to see what they do and how to use them.<br>
+
+<ul>
+   <li>2 different frontends used for the installer: <A href="http://www.fltk.org">FLTK</A> and <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> using <A href="http://invisible-island.net/cdk/">CDK</A> </li>
+   <li>Support for the following OS'es: Linux, FreeBSD and NetBSD.</li>
+   <li>An installer itself has the following features:</li>
+   <ul>
+      <li>Can be translated(no UTF yet). Dutch and english translations are supplied by default</li>
+      <li>Screen where the user can choose the language</li>
+      <li>Optional intro screen with customizable image and text</li>
+      <li>Optional screen where a user have to accept a license agreement</li>
+      <li>Optional screen where the user has to select a destination directory</li>
+      <li>Optional screen where the user can set parameters used by installation commands</li>
+      <li>Installation progress screen</li>
+      <li>Optional screen which appears when the installation is done</li>
+   </ul>
+   <li>Commands which can be executed after file extraction. The parameters used by these commands can be customized by the end user during installation.</li>
+   <li>Files that come with the installer can be either extracted to a temporary directory, a given directory or a directory specified by the user.</li>
+   <li>Installation files can be compressed with either gzip or bzip2</li>
+   <li>Frontends are almost completly staticly linked. This way the end user doesn't have to worry about missing dependencies for the installer itself.</li>
+ </ul>
+</p>
+
+<p>
+<h2><A href="#toc-qstart" name="qstart">Quick start</h2></A>
+Meh...just read the tutorial :)<br>
+</p>
+
+<p>
+<h2><A href="#toc-first" name="basics">Basics</h2></A>
+In this section the main things will be explained so you can get a idea how to use nixstaller and what it can do.<br>
+
+<p><h3>Installation package</h3>
+The goal of nixstaller is to create a installation package. This package contains the following things:<br>
+<ul>
+   <li>One or more frontends for the installer.</li>
+   <li>A config file which tells what the installer should do.</li>
+   <li>Language files for translations.</li>
+   <li>Some (optional) text files containing the welcome message, the license agreement and a message after the installation is finished.</li>
+   <li>An archive containing the actual files that the installer should use for installation(eg your program and its required files).</li>
+   <li>Optional: an archive containing OS specific files that should be used for installation.</li>
+   <li>A few required libs which couldn't be linked staticly.</li>
+ </ul>
+</p>
+<br>
+From these files will be a self extracting archive made(with the help of <A href="http://www.megastep.org/makeself/">makeself</A>). <br>
+The creation of a package is discussed in section <A href="#create">Creating an install package</A>.
+
+<p>
+<h3>Frontends</h3>
+Currently there are 2 frontends used for the installer: The first is using <A href="http://www.fltk.org">FLTK</A> and the second uses <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> with <A href="http://invisible-island.net/cdk/">CDK</A>.
+If the the installer starts it will check if the user is running X. If it is so it will launch the FLTK frontend, otherwise the ncurses frontend will be launched.<br>
+You can specifiy manually which frontends will be included in the installer package.
+</p>
+</p>
+
+<p><h3>Config file</h3>
+To configure the installer you need to make/edit a simple config file. There are several examples in the example/ directory.<br>
+Please read the <A href="#config">Configuration files section</A> to know what to put in that file.
+</p>
+
+<p><h3>Language files</h3>
+In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it.
+Language files are stored in a subdirectory in the lang/ directory. The subdirectory should be the name of the language itself.
+
+Here is a example taken from the file 'lang/dutch/strings':<br>
+
+<br>
+<em>License Agreement<br>
+Licentie overeenkomst<br></em>
+<br>
+
+"Licentie overeenkomst" is dutch for "License Agreement". Its very important that the english text(the first line) is exactly the same as used by the installer.<br>
+If you read further in this file you will see the following sentence:<br>
+
+<br>
+<em>Installation of %s complete!<br>
+Installatie van %s gereed!<br></em>
+<br>
+
+Notice the '%s'? The '%s' will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name.<br>
+<br>
+<strong>IMPORTANT:</strong> Currently there is no UTF support yet. This means that you can't use any 'special' characters yet.<br>
+<br>
+
+<strong>Other things that can be translated</strong><br>
+There are other things to be translated aswell: The welcome message, the license agreement, the 'finish message' and the descriptions used for the install parameters. Read the following sections how to translate those.
+</p>
+
+<p><h3>Welcome message, license agreement and the 'finish message'</h3>
+<strong>Welcome message</strong><br>
+The welcome message is what will be displayed right after the user selected a language.<br>
+<br>
+
+<strong>License agreement</strong><br>
+The user can agree to a license agreement after the welcome message.<br>
+<br>
+
+<strong>'Finish message'</strong><br>
+This is the message that will be displayed after the installation has (succesfully) ended.<br>
+<br>
+
+All these items are stored in plain text files.<br>
+The filenames for the welcome message, license agreement and finish message are respectively: 'welcome', 'license' and 'finish'.<br>
+See section <A href="#create">Creating an install package</A> for more info where to put these files.
+</p>
+
+
+<p>
+<h2><A href="#toc-config" name="config">Configuration files</h2></A>
+First undone line.<br>
+Second undone line.<br>
+</p>
+
+<p>
+<h2><A href="#toc-create" name="create">Creating an install package</h2></A>
+First undone line.<br>
+Second undone line.<br>
+</p>
+
+<p>
+<h2><A href="#toc-compile" name="compile">Compiling nixstaller</h2></A>
+First undone line.<br>
+Second undone line.<br>
+</p>
+
+<p>
+<h2><A href="#toc-faq" name="faq">Frequently Asked Questions (FAQ)</h2></A>
+First undone line.<br>
+Second undone line.<br>
+</p>
+
+</body>
+</html>

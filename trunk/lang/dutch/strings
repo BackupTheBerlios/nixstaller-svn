@@ -127,7 +127,6 @@ Parameters
 Value
 Waarde
 
-
 #-----------------------------------------------
 # Messages
 #-----------------------------------------------
@@ -169,8 +168,7 @@ Directory does not exist
 Directory bestaat niet
 
 Do you want to create it?
-Wil je het aanmaken?
-
+Wilt u het aanmaken?
 
 #-----------------------------------------------
 # Button bar (ncurses only)
@@ -210,23 +208,17 @@ Create directory
 Maak directory
 
 #-----------------------------------------------
-# Error messages (ncurses only)
+# Error messages
 #-----------------------------------------------
 
 Error: %s
 Fout: %s
-
-Can't create text viewer
-Kan geen tekst bekijker maken
 
 Could not use su to gain root access
 Kon su niet gebruiken om root rechten te krijgen
 
 Make sure you can use su(adding the current user to the wheel group may help)
 Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen)
-
-Could not execute command
-Kon commando niet uitvoeren
 
 Could not create directory
 Kon directory niet maken
@@ -235,64 +227,71 @@ Could not change to directory
 Kon niet naar de directory gaan
 
 Could not read current directory
-Could not read current directory
+Kon huidige directory niet lezen
 
 Could not open directory '%s'
-Could not open directory '%s'
+Kon directory '%s' niet openen
 
 Could not read directory '%s'
-Could not read directory '%s'
+Kon directory '%s' niet lezen
 
 Could not read directory
-Could not read directory
+Kon directory niet lezen
 
 Could not init ncurses
-Could not init ncurses
+Kon ncurses niet initializeren
 
 Could not init CDK
-Could not init CDK
+Kon CDK niet initializeren
 
 Could not load language file for %s
-Could not load language file for %s
+Kon vertalings bestand niet laden voor %s
 
 Error during extracting files
-Error during extracting files
+Fout tijdens het uitpakken van bestanden
 
 Failed to execute install command
-Failed to execute install command
+Kon installatie commando niet uitvoeren
 
 Could not execute installation commands (could not open pipe)
-Could not execute installation commands (could not open pipe)
-
-Could not create text label
-Could not create text label
-
-Could not create button box
-Could not create button box
-
-Could not create scroll window
-Could not create scroll window
-
-Could not create alpha list
-Could not create alpha list
-
-Could not create dialog window
-Could not create dialog window
-
-Could not create window
-Could not create window
-
-Could not create input entry
-Could not create input entry
-
-Could not create histogram
-Could not create histogram
-
-Could not create button bar
-Could not create button bar
+Kon installatie opdrachten niet uitvoeren (kon geen pipe openen)
 
 You don't have write access for this directory
-You don't have write access for this directory
+U heeft geen toegang om te schrijven naar deze directory
+
+#-----------------------------------------------
+# Error messages for CDK widget creation
+#-----------------------------------------------
+
+Can't create text viewer
+Kan geen tekst bekijker maken
+
+Could not create text label
+Kon geen tekst balk maken
+
+Could not create button box
+Kon geen button box maken
+
+Could not create scroll window
+Kon geen scroll venster maken
+
+Could not create alpha list
+Kon geen alpha list maken
+
+Could not create dialog window
+Kon geen dialoog venster maken
+
+Could not create window
+Kon geen venster maken
+
+Could not create input entry
+Kon geen invoer veld maken
+
+Could not create histogram
+Kon geen histogram maken
+
+Could not create button bar
+Kon de knoppen balk niet maken
 
 
 #-----------------------------------------------
@@ -300,28 +299,28 @@ You don't have write access for this directory
 #-----------------------------------------------
 
 Add to Favorites
-Add to Favorites
+Voeg toe aan favorieten
 
 All Files (*)
-All Files (*)
+Alle bestanden (*)
 
 Custom Filter
-Custom Filter
+Eigen Filter
 
 Favorites
-Favorites
+Favorieten
 
 Filename:
-Filename:
+Bestandsnaam:
 
 File Systems
-File Systems
+Bestands Systemen
 
 Manage Favorites
-Manage Favorites
+Beheer Favorieten
 
 Show:
-Show:
+Zichtbaar:
 
 Create new directory
-Create new directory
+Maak een nieuwe directory

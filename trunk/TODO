@@ -1,5 +1,9 @@
 OVERALL
 - License stuff(COPYING file, stuff in source files?, libsu)
+- Check UNDONE's
+- Make a few example cfg files
+- A way to specify preferred frontends
+- Check uppercase words in strings files
 
 
 MAIN

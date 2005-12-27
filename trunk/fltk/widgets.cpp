@@ -642,7 +642,7 @@ void CInstallFilesScreen::Install()
                 if ((*it)->exit_on_failure)
                 {
                     CleanPasswdString(m_szPassword);
-                    throwerror(true, "%s\n('%s')", GetTranslation("Could not execute command"),
+                    throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
                                m_SUHandler.GetErrorMsgC());
                 }
             }

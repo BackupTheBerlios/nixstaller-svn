@@ -127,8 +127,6 @@ Parameters
 Value
 Value
 
-
-
 #-----------------------------------------------
 # Messages
 #-----------------------------------------------
@@ -172,7 +170,6 @@ Directory does not exist
 Do you want to create it?
 Do you want to create it?
 
-
 #-----------------------------------------------
 # Button bar (ncurses only)
 #-----------------------------------------------
@@ -211,23 +208,17 @@ Create directory
 Create directory
 
 #-----------------------------------------------
-# Error messages (ncurses only)
+# Error messages
 #-----------------------------------------------
 
 Error: %s
 Error: %s
 
-Can't create text viewer
-Can't create text viewer
-
 Could not use su to gain root access
 Could not use su to gain root access
 
 Make sure you can use su(adding the current user to the wheel group may help)
 Make sure you can use su(adding the current user to the wheel group may help)
-
-Could not execute command
-Could not execute command
 
 Could not create directory
 Could not create directory
@@ -265,6 +256,16 @@ Failed to execute install command
 Could not execute installation commands (could not open pipe)
 Could not execute installation commands (could not open pipe)
 
+You don't have write access for this directory
+You don't have write access for this directory
+
+#-----------------------------------------------
+# Error messages for CDK widget creation
+#-----------------------------------------------
+
+Can't create text viewer
+Can't create text viewer
+
 Could not create text label
 Could not create text label
 
@@ -291,9 +292,6 @@ Could not create histogram
 
 Could not create button bar
 Could not create button bar
-
-You don't have write access for this directory
-You don't have write access for this directory
 
 
 #-----------------------------------------------

@@ -521,7 +521,7 @@ bool InstallFiles()
                 if ((*it)->exit_on_failure)
                 {
                     CleanPasswdString(passwd);
-                    throwerror(true, "%s\n('%s')", GetTranslation("Could not execute command"),
+                    throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
                                SuHandler.GetErrorMsgC());
                 }
             }
