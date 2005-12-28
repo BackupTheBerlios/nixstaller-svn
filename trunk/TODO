@@ -4,6 +4,8 @@ OVERALL
 - Make a few example cfg files
 - A way to specify preferred frontends
 - Check uppercase words in strings files
+- Intro image should be copied to package
+- Check for permissions on a default dir
 
 
 MAIN
@@ -15,9 +17,11 @@ NCURSES FRONTEND
 
 FLTK FRONTEND
 - Finish UpdateLanguage functions
+- Handle exit
 
 
 ----------------------------- LATER ------------------------------------
 
 OVERALL
 - Check permissions for inst dir
+- Package version?

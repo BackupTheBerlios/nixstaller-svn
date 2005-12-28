@@ -139,11 +139,126 @@ The filenames for the welcome message, license agreement and finish message are 
 See section <A href="#create">Creating an install package</A> for more info where to put these files.
 </p>
 
+<p><h3>The installation</h3>
+<strong>Destination directory</strong><br>
+There are 3 ways where the files can are extracted to:
+<ol>
+   <li>Specifified: During installation the user can say where they want to have their files (default)</li>
+   <li>Temporaray: This is especially usefull for files which have to be compiled. The files will be extracted to a temporary directory and after that some {install commands} are called(such as './configure && make && make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
+   <li>A given directory. The files will always be extracted to this directory.</li>
+</ol>
+<br>
+
+<strong>Install commands</strong><br>
+After all the files are extracted some (optional) shell commands can be called in this directory. A good example for this is to compile a package.<br>
+<br>
+<em>Root access</em><br>
+Some commands(ie 'make install') may require root privileges. There are 2 ways to specify this:<br>
+<ol>
+   <li>Always: This command requires it, no matter what.</li>
+   <li>Dependent: It depends on something else. Currently this can only be a directory specified by a parameter for this or another command. A good example to use this is 'make install' which depends on the --prefix parameter for configure. If the prefix points to an directory where the user doesn't have write access, 'make install' will need root access.</li>
+</ol><br>
+If a command requests root access a dialog will pop up asking the user to give the root password. The command will then be executed with 'su'.<br>
+<br>
+<em>Parameters</em><br>
+Some commands (ie 'configure') may need commandline parameters(such as --prefix). Parameters such as the '--prefix' one can be configured (ie --prefix=/usr/local). If you specify these parameters in the {config file} the user can do so during installation. A screen will pop up before the installation begins where the user can configure each parameter specified in the config file.<br>
+Currently there are 4 ways to configure a parameter:
+<ol>
+   <li>One that can be simply enabled or disabled (if disabled the parameter won't be used when executing the install command).</li>
+   <li>String: The user can simply specify a text.</li>
+   <li>Choice list: A menu will pop up where the user can specify a value.</li>
+   <li>Directory: The user can specify a directory.</li>
+</ol>
+Here is an example: Lets say the command is './configure' and you have set '--prefix=' as a configurable parameter with as type 'directory'. Now right before the installation begins the user changes the directory for the prefix to '/usr'. the configure command will now look like this:<br>
+<br>
+<em>./configure --prefix=/usr</em><br>
+<br>
+
+You can set a default for each parameter, so that the user doesn't have to bother with everything.<br>
+<br>
+For each parameter you can also give a (short) description. If you add this description to one or more {language files} it will be translated when its shown.<br>
+<br>
+More info at the {config section}.
 
 <p>
 <h2><A href="#toc-config" name="config">Configuration files</h2></A>
-First undone line.<br>
-Second undone line.<br>
+The config file is used to specify what the installer should do and how the package must be created.<br>
+Config files can be very simple and small for simple installations.<br>
+<br>
+<p><h3>General section</h3>
+In this section you can put the general options for the installer. For installers without any install commands this is the only section used in the configuration file.<br>
+<br>
+
+<strong>appname</strong><br>
+Sets the name of the package that is going to be installed.<br>
+<br>
+<em>Usage: appname nameofapphere</em><br>
+<br>
+<em>Example: appname test</em><br>
+<br>
+<br>
+
+<strong>archtype</strong><br>
+Sets which archive type to use for packing the package that is going to be installed.<br>
+<br>
+<em>Usage: archtype gzip|bzip2</em><br>
+<br>
+<em>Example: archtype bzip2</em><br>
+<br>
+<em>Default: gzip</em><br>
+<br>
+<br>
+
+<strong>installdir</strong><br>
+Sets where the install package files should be extracted too (see {insdir section} ).<br>
+<br>
+<em>Usage: installdir select|temp|default dirnamehere</em><br>
+select: Let the user specify the install directory.<br>
+temp: Extract files to a temporary directory.<br>
+default: Extract the files specified by 'dirnamehere'.<br>
+<br>
+<em>Example: installdir default /usr/local</em><br>
+<br>
+<em>Default: select</em><br>
+<br>
+<em>Note: The user should have permission the installation directory.</em><br>
+<br>
+<br>
+
+<strong>languages</strong><br>
+Specifies a list of used languages.<br>
+<br>
+<em>Usage: languages lang1 lang2 lang3 ...</em><br>
+<br>
+<em>Example: languages english dutch</em><br>
+<br>
+<em>Default: english</em><br>
+<br>
+<br>
+
+<strong>intropic</strong><br>
+Specifies a picture which should be displayed at the welcome screen.<br>
+Valid types are: jpg, png, gif and bmp.<br>
+<br>
+<em>Usage: intropic picnamehere</em><br>
+<br>
+<em>Example: intropic intro.jpg</em><br>
+<br>
+<br>
+
+<strong>commandentry</strong><br>
+Start point of a {commandentry}.<br>
+<br>
+<em>Usage:<br>
+commandentry<br>
+[<br>
+...<br>
+options for a commandentry here<br>
+...<br>
+]<br></em><br>
+<br>
+
+</p>
 </p>
 
 <p>
