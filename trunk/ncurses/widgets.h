@@ -14,11 +14,11 @@ public:
     virtual ~CBaseCDKWidget(void) { Destroy(); };
 
     virtual void Destroy(void) { UnSetBgColor(); };
-    virtual void Draw(void) = NULL;
-    virtual void SetBgColor(int color) = NULL;
+    virtual void Draw(void) = 0;
+    virtual void SetBgColor(int color) = 0;
     virtual void UnSetBgColor() { };
     virtual EExitType ExitType(void) { return vNORMAL; };
-    virtual void Bind(chtype key, BINDFN function, void *data) = NULL;
+    virtual void Bind(chtype key, BINDFN function, void *data) = 0;
 };
 
 class CCDKLabel: public CBaseCDKWidget

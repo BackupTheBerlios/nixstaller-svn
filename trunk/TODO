@@ -1,13 +1,15 @@
 OVERALL
 - License stuff(COPYING file, stuff in source files?, libsu)
 - Check UNDONE's
-- Make a few example cfg files
+- Make a few example cfg files and directory layouts
 - A way to specify preferred frontends
 - Check uppercase words in strings files
 - Intro image should be copied to package
 - Check for permissions on a default dir
 - Check if descriptions of both commandentries and paramentries are translated
 - Whitespace for params
+- Translate choices for parameters
+- Check if install.cfg is present.
 
 
 MAIN

@@ -24,7 +24,7 @@
 <br>
 
 <p> <h2><A href="#toc-intro" name="intro">Introduction</A></h2>
-This document will describe how to use nixstaller to create installers for unix like systems. <br>
+This document describes how to use nixstaller to create installers for unix like systems. <br>
 If you can't wait you can read the <A href="#qstart">Quick start section</A>. <br>
 <br>
 <h3>Features</h3>
@@ -33,7 +33,7 @@ Here is a list with the main features. Read further for more info to see what th
 <ul>
    <li>2 different frontends used for the installer: <A href="http://www.fltk.org">FLTK</A> and <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> using <A href="http://invisible-island.net/cdk/">CDK</A> </li>
    <li>Support for the following OS'es: Linux, FreeBSD and NetBSD.</li>
-   <li>An installer itself has the following features:</li>
+   <li>An installer itself has the following features:
    <ul>
       <li>Can be translated(no UTF yet). Dutch and english translations are supplied by default</li>
       <li>Screen where the user can choose the language</li>
@@ -44,6 +44,7 @@ Here is a list with the main features. Read further for more info to see what th
       <li>Installation progress screen</li>
       <li>Optional screen which appears when the installation is done</li>
    </ul>
+   </li>
    <li>Commands which can be executed after file extraction. The parameters used by these commands can be customized by the end user during installation.</li>
    <li>Files that come with the installer can be either extracted to a temporary directory, a given directory or a directory specified by the user.</li>
    <li>Installation files can be compressed with either gzip or bzip2</li>
@@ -83,6 +84,8 @@ Please read the <A href="#config">Configuration files section</A> to know what t
 <p> <h3>Language files</h3>
 In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it.
 Language files are stored in a subdirectory in the lang/ directory. The subdirectory should be the name of the language itself.<br>
+Currently there are already 2 translations: dutch and english. You can 'translate' the english 'strings' file in order to modify texts used by the installer.<br>
+
 <br>
 Here is a example taken from the file 'lang/dutch/strings': <br>
 
@@ -105,7 +108,16 @@ Notice the '%s'? The '%s' will be replaced by the installer with another string.
 <br>
 
 <strong>Other things that can be translated</strong><br>
-There are other things to be translated aswell: The welcome message, the license agreement, the 'finish message' and the descriptions used for the install parameters. Read the following sections how to translate those.
+There are other things to be translated aswell:
+<ul>
+   <li> The welcome message </li>
+   <li> The license agreement </li>
+   <li> The 'finish message' </li>
+   <li> Descriptions for commandentries and parameter entries </li>
+   <li> Choices defined with 'addchoice' </li>
+ </ul>
+ <br>
+The followinging sections will explain what they are and how to translate those.<br>
 
 <p> <h3>Welcome message, license agreement and the 'finish message'</h3>
 <strong>Welcome message</strong><br>
@@ -122,7 +134,7 @@ This is the message that will be displayed after the installation has (succesful
 
 All these items are stored in plain text files.<br>
 The filenames for the welcome message, license agreement and finish message are respectively: 'welcome', 'license' and 'finish'.<br>
-See section <A href="#create">Creating an install package</A> for more info where to put these files.
+You can put translated versions in the language subdirectories in the lang/ directory(ie 'lang/dutch/welcome'). See the <A href="#create">Creating an install package section</A> for info where to put the normal, untranslated files.
 
 <p> <h3>The installation</h3>
 <strong>Destination directory</strong><br>
@@ -136,8 +148,7 @@ There are 3 ways where the files can are extracted to:
 
 <strong>Install commands</strong><br>
 After all the files are extracted some (optional) shell commands can be called in this directory. A good example for this is to compile a package.<br>
-<br>
-<em>Root access</em><br>
+<br><em>Root access</em> <br>
 Some commands(ie 'make install') may require root privileges. There are 2 ways to specify this:<br>
 <ol>
    <li>Always: This command requires it, no matter what.</li>
@@ -170,7 +181,7 @@ More info at the {config section}.
 The config file is used to specify what the installer should do and how the package must be created.<br>
 Config files can be very simple and small for simple installations.<br>
 <br>
-<p><h3>General section</h3>
+<p> <h3>General section</h3>
 In this section you can put the general options for the installer. For installers without any install commands this is the only section used in the configuration file.<br>
 <br>
 
@@ -243,7 +254,7 @@ options for a commandentry here<br>
 ]<br></samp><br>
 <br>
 
-<p><h3>Commandentries</h3>
+<p> <h3>Commandentries</h3>
 A command entry is a part where info can be specified for a single install command. A commandentry starts with simply 'commandentry' and a left square bracket('[') beaneath it. The commandentry ends with a right square bracket(']'). All the configuration options for a commandentry should be between the 2 square brackets.<br>
 <br>
 
@@ -292,7 +303,7 @@ dependson: it depends on the directory that is selected for the parameter with t
 <br>
 <br>
 
-<strong>exitonfailure</strong><br>
+<strong>exitonfailure</strong> <br>
 If enabled, the installation will abort if the command fails to execute.<br>
 <br>
 <samp>Usage: exitonfailure true|false</samp><br>
@@ -337,13 +348,14 @@ Here is a small example how a parameter entry may look like:<br>
 [
    name Enable Debug
    description Enable debugging code and symbols
-   parameter --enable-debug=
+   parameter --enable-debug
    defaultval false
    type bool
 ]
 <br></samp></pre>
 <br>
 A parameter entry has the following configure options: <br>
+<br>
 
 <strong>name</strong><br>
 Specifies a name for this parameter. This name is used for the installer itself(not for the actual command).<br>
@@ -355,10 +367,183 @@ Specifies a name for this parameter. This name is used for the installer itself(
 <br>
 
 <strong>parameter</strong><br>
-The parameter's name. This is used when exucuting the install command.
+The parameter's name. This is used when exucuting the install command. (UNDONE)<br>
+<br>
+<samp>Usage: parameter paramnamehere</samp><br>
+<br>
+<samp>Example: parameter --prefix=%s</samp><br>
+<br>
+<br>
+
+<strong>description</strong><br>
+You can specify a description for this parameter here. You can also add a translation to the {lang file}.<br>
+<br>
+<samp>description descriptionoftheparamhere</samp><br>
+<br>
+<samp>Example: description This will set the installation prefix for package test.</samp><br>
+<br>
+<br>
+
+<strong>type</strong><br>
+Specifies how this parameter can be changed.<br>
+<br>
+<samp>Usage: type string|dir|list|bool</samp><br>
+string: the user can specify a line of text to define a value for this parameter.<br>
+dir: the user can select a directory to define a value for this parameter.<br>
+list: the user can choose from a list of choices. The choices are defined by the 'addchoice' option (see below).<br>
+bool: the user can specify if this parameter is used at all.<br>
+<br>
+<samp>Example: type list</samp><br>
+<br>
+<samp>Default: bool</samp><br>
+<br>
+<br>
+
+<strong>defaultval</strong><br>
+Specifies the default value used for this parameter. See the {type section} for valid values.<br>
+<br>
+<samp>Usage: defaultval defaultvaluehere</samp><br>
+<br>
+<samp>Example: defaultval Yellow</samp><br>
+<br>
+<br>
+
+<strong>varname</strong><br>
+Gives this parameter a variabele name. You should use this if a command which may need root access depends on the value of this parameter. See the {basics section} and the 'needroot' option in the commandentry section for more info.<br>
+<br>
+<samp>Usage: varname somenamehere</samp><br>
+<br>
+<samp>Example:<br>
+<pre>
+...
+commandentry
+[
+   command ./configure
+   ...
+   addparam
+   [
+      name Install prefix
+      ...
+      varname prefix
+   ]
+]
+
+commandentry
+[
+   command make install
+   needroot dependson prefix
+]
+</pre>
+</samp><br>
+<br>
+
+<strong>addchoice</strong><br>
+You can use this if the parameter uses 'list' to define a value. Choices can be added to a {language file} for translation.<br>
+<br>
+<samp>Usage: addchoice choicenamehere</samp><br>
+<br>
+<samp>Example: addchoice Yellow</samp><br>
+<br>
+<br>
+
+
 <p> <h2><A href="#toc-create" name="create">Creating an install package</A></h2>
-First undone line.<br>
-Second undone line.<br>
+In the previous sections there is explained what the basics are, which config options there are etc. In this section there will be explained how to apply those.<br>
+All the files(except the language files) which tell what the installer should do and how to package must be created go in a single directory. After this directory contains everything necessarily you can run a script with this directory as first argument to create the installer. <br>
+<br>
+<p> <h3>Directory layout</h3>
+Here is a table for how the directory layout should look like:<br>
+<br>
+<table border="1">
+  <caption>Directory layout</caption>
+  <tbody>
+    <tr>
+      <th>File/directory</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td>install.cfg</td>
+      <td>The main configuration file.</td>
+    </tr>
+    <tr>
+      <td>welcome</td>
+      <td>A plain text file containing the welcome message.</td>
+    </tr>
+    <tr>
+      <td>license</td>
+      <td>A plain text file containing a license agreement.</td>
+    </tr>
+    <tr>
+      <td>finish</td>
+      <td>A plain text file containing text which will be displayed when the installation is finished.</td>
+    </tr>
+    <tr>
+      <td>intro picture</td>
+      <td>An image which will be displayed at the welcome screen. The name of the file has to be specified in the config file.</td>
+    </tr>
+    <tr>
+    <tr>
+      <td>files_all/</td>
+      <td>Directory containing all the files that must be installed. These are used for every operating system.</td>
+    </tr>
+    <tr>
+      <td>files_[osname]/</td>
+      <td>Directory containing files which are only meant for the operating system specified by [osname]. [osname] should be replaced by a valid operating system. A valid osname is the output in lowercase from the shell command 'uname'. Some examples are: linux, netbsd, freebsd.</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+
+The config file ('install.cfg') should always be present. There should also be atleast one 'files_all' or 'files_[osname]' directory.<br>
+
+<br>
+<strong>Example</strong><br>
+<ul>
+   <li> release/ (toplevel directory)
+   <ul>
+      <li> install.cfg </li>
+      <li> welcome </li>
+      <li> files_all/
+      <ul>
+         <li> config1.cfg </li>
+         <li> readme.txt </li>
+         <li> notes.txt </li>
+      </ul>
+      </li>
+      <li> files_linux/
+      <ul>
+         <li> someexe.bin </li>
+      </ul>
+      </li>
+      <li> files_freebsd/
+      <ul>
+         <li> someexe.bin </li>
+      </ul>
+      </li>
+   </ul>
+   </li>
+ </ul>
+<br>
+<br>
+
+You can find other, 'real' examples in the example/ directory.<br>
+<br>
+
+<p> <h3>Creating the installer</h3>
+OK now you know how to make a directory layout we can start with the actual creation of the installer.<br>
+<br>
+In the main directory of the nixstaller package there is a script called 'geninstall.sh'. If you invoke this script it will copy all the files that need to be in the installer package(translations, frontends, the files that needs to be installed) to a temporary directory.<br>
+After that it will call makeself to finish the job and you should have an installer.<br>
+The script must be run from the main nixstaller directory and has as first argument the directory that you just created in the above section.<br>
+<br>
+
+<samp>Example: ./geninstall.sh release/</samp><br>
+<br>
+
+This will create an installer from the release/ directory. The installer will be simply called setup.sh (you can rename it afterwards).<br>
+To test the installer simply run <samp>./setup.sh</samp> and see if it works.<br>
+<br>
 
 <p> <h2><A href="#toc-compile" name="compile">Compiling nixstaller</A></h2>
 First undone line.<br>
