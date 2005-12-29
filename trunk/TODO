@@ -6,6 +6,8 @@ OVERALL
 - Check uppercase words in strings files
 - Intro image should be copied to package
 - Check for permissions on a default dir
+- Check if descriptions of both commandentries and paramentries are translated
+- Whitespace for params
 
 
 MAIN

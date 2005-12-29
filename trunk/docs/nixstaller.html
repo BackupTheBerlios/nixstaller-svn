@@ -1,35 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 
 <head>
   <title>Nixstaller 0.1 documentation</title>
 </head>
 
-<p>
-
 <h1><strong>Nixstaller documentation</strong></h1>
 <hr>
 
 <br><br>
 
-<p>
-<h2>Table of contents</h2>
-<ul>
-   <li><A href="#intro" name="toc-intro">Introduction</A></li>
-   <li><A href="#qstart" name="toc-qstart">Quick start</A></li>
-   <li><A href="#basics" name="toc-first">Basics</A></li>
-   <li><A href="#config" name="toc-config">Configuration files</A></li>
-   <li><A href="create" name="toc-create">Creating an install package</A></li>
-   <li><A href="#compile" name="toc-compile">Compiling nixstaller</A></li>
-   <li><A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A></li>
-</ul>
-</p>
+<p> <h2>Table of contents</h2>
+ <ul>
+   <li> <A href="#intro" name="toc-intro">Introduction</A> </li>
+   <li> <A href="#qstart" name="toc-qstart">Quick start</A> </li>
+   <li> <A href="#basics" name="toc-first">Basics</A> </li>
+   <li> <A href="#config" name="toc-config">Configuration files</A> </li>
+   <li> <A href="create" name="toc-create">Creating an install package</A> </li>
+   <li> <A href="#compile" name="toc-compile">Compiling nixstaller</A> </li>
+   <li> <A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A> </li>
+ </ul>
 
 <br>
 
-<p>
-<h2><A href="#toc-intro" name="intro">Introduction</h2></A>
-This document will describe how to use nixstaller to create installers for unix like systems.<br>
-If you can't wait you can read the <A href="#qstart">Quick start section</A>.<br>
+<p> <h2><A href="#toc-intro" name="intro">Introduction</A></h2>
+This document will describe how to use nixstaller to create installers for unix like systems. <br>
+If you can't wait you can read the <A href="#qstart">Quick start section</A>. <br>
 <br>
 <h3>Features</h3>
 Here is a list with the main features. Read further for more info to see what they do and how to use them.<br>
@@ -53,18 +49,14 @@ Here is a list with the main features. Read further for more info to see what th
    <li>Installation files can be compressed with either gzip or bzip2</li>
    <li>Frontends are almost completly staticly linked. This way the end user doesn't have to worry about missing dependencies for the installer itself.</li>
  </ul>
-</p>
 
-<p>
-<h2><A href="#toc-qstart" name="qstart">Quick start</h2></A>
+<p> <h2><A href="#toc-qstart" name="qstart">Quick start</A></h2>
 Meh...just read the tutorial :)<br>
-</p>
 
-<p>
-<h2><A href="#toc-first" name="basics">Basics</h2></A>
+<p> <h2><A href="#toc-first" name="basics">Basics</A></h2>
 In this section the main things will be explained so you can get a idea how to use nixstaller and what it can do.<br>
 
-<p><h3>Installation package</h3>
+<p> <h3>Installation package</h3>
 The goal of nixstaller is to create a installation package. This package contains the following things:<br>
 <ul>
    <li>One or more frontends for the installer.</li>
@@ -75,41 +67,36 @@ The goal of nixstaller is to create a installation package. This package contain
    <li>Optional: an archive containing OS specific files that should be used for installation.</li>
    <li>A few required libs which couldn't be linked staticly.</li>
  </ul>
-</p>
 <br>
 From these files will be a self extracting archive made(with the help of <A href="http://www.megastep.org/makeself/">makeself</A>). <br>
 The creation of a package is discussed in section <A href="#create">Creating an install package</A>.
 
-<p>
-<h3>Frontends</h3>
+<p> <h3>Frontends</h3>
 Currently there are 2 frontends used for the installer: The first is using <A href="http://www.fltk.org">FLTK</A> and the second uses <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> with <A href="http://invisible-island.net/cdk/">CDK</A>.
 If the the installer starts it will check if the user is running X. If it is so it will launch the FLTK frontend, otherwise the ncurses frontend will be launched.<br>
 You can specifiy manually which frontends will be included in the installer package.
-</p>
-</p>
 
-<p><h3>Config file</h3>
+<p> <h3>Config file</h3>
 To configure the installer you need to make/edit a simple config file. There are several examples in the example/ directory.<br>
 Please read the <A href="#config">Configuration files section</A> to know what to put in that file.
-</p>
 
-<p><h3>Language files</h3>
+<p> <h3>Language files</h3>
 In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it.
-Language files are stored in a subdirectory in the lang/ directory. The subdirectory should be the name of the language itself.
-
-Here is a example taken from the file 'lang/dutch/strings':<br>
+Language files are stored in a subdirectory in the lang/ directory. The subdirectory should be the name of the language itself.<br>
+<br>
+Here is a example taken from the file 'lang/dutch/strings': <br>
 
 <br>
-<em>License Agreement<br>
-Licentie overeenkomst<br></em>
+<samp>License Agreement <br>
+Licentie overeenkomst <br></samp>
 <br>
 
 "Licentie overeenkomst" is dutch for "License Agreement". Its very important that the english text(the first line) is exactly the same as used by the installer.<br>
 If you read further in this file you will see the following sentence:<br>
 
 <br>
-<em>Installation of %s complete!<br>
-Installatie van %s gereed!<br></em>
+<samp>Installation of %s complete!<br>
+Installatie van %s gereed!<br></samp>
 <br>
 
 Notice the '%s'? The '%s' will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name.<br>
@@ -119,9 +106,8 @@ Notice the '%s'? The '%s' will be replaced by the installer with another string.
 
 <strong>Other things that can be translated</strong><br>
 There are other things to be translated aswell: The welcome message, the license agreement, the 'finish message' and the descriptions used for the install parameters. Read the following sections how to translate those.
-</p>
 
-<p><h3>Welcome message, license agreement and the 'finish message'</h3>
+<p> <h3>Welcome message, license agreement and the 'finish message'</h3>
 <strong>Welcome message</strong><br>
 The welcome message is what will be displayed right after the user selected a language.<br>
 <br>
@@ -137,14 +123,13 @@ This is the message that will be displayed after the installation has (succesful
 All these items are stored in plain text files.<br>
 The filenames for the welcome message, license agreement and finish message are respectively: 'welcome', 'license' and 'finish'.<br>
 See section <A href="#create">Creating an install package</A> for more info where to put these files.
-</p>
 
-<p><h3>The installation</h3>
+<p> <h3>The installation</h3>
 <strong>Destination directory</strong><br>
 There are 3 ways where the files can are extracted to:
 <ol>
    <li>Specifified: During installation the user can say where they want to have their files (default)</li>
-   <li>Temporaray: This is especially usefull for files which have to be compiled. The files will be extracted to a temporary directory and after that some {install commands} are called(such as './configure && make && make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
+   <li>Temporaray: This is especially usefull for files which have to be compiled. The files will be extracted to a temporary directory and after that some {install commands} are called(such as './configure &amp;&amp; make &amp;&amp; make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
    <li>A given directory. The files will always be extracted to this directory.</li>
 </ol>
 <br>
@@ -157,7 +142,8 @@ Some commands(ie 'make install') may require root privileges. There are 2 ways t
 <ol>
    <li>Always: This command requires it, no matter what.</li>
    <li>Dependent: It depends on something else. Currently this can only be a directory specified by a parameter for this or another command. A good example to use this is 'make install' which depends on the --prefix parameter for configure. If the prefix points to an directory where the user doesn't have write access, 'make install' will need root access.</li>
-</ol><br>
+</ol>
+<br>
 If a command requests root access a dialog will pop up asking the user to give the root password. The command will then be executed with 'su'.<br>
 <br>
 <em>Parameters</em><br>
@@ -171,7 +157,7 @@ Currently there are 4 ways to configure a parameter:
 </ol>
 Here is an example: Lets say the command is './configure' and you have set '--prefix=' as a configurable parameter with as type 'directory'. Now right before the installation begins the user changes the directory for the prefix to '/usr'. the configure command will now look like this:<br>
 <br>
-<em>./configure --prefix=/usr</em><br>
+<samp>./configure --prefix=/usr</samp><br>
 <br>
 
 You can set a default for each parameter, so that the user doesn't have to bother with everything.<br>
@@ -180,8 +166,7 @@ For each parameter you can also give a (short) description. If you add this desc
 <br>
 More info at the {config section}.
 
-<p>
-<h2><A href="#toc-config" name="config">Configuration files</h2></A>
+<p> <h2><A href="#toc-config" name="config">Configuration files</A></h2>
 The config file is used to specify what the installer should do and how the package must be created.<br>
 Config files can be very simple and small for simple installations.<br>
 <br>
@@ -192,47 +177,47 @@ In this section you can put the general options for the installer. For installer
 <strong>appname</strong><br>
 Sets the name of the package that is going to be installed.<br>
 <br>
-<em>Usage: appname nameofapphere</em><br>
+<samp>Usage: appname nameofapphere</samp><br>
 <br>
-<em>Example: appname test</em><br>
+<samp>Example: appname test</samp><br>
 <br>
 <br>
 
 <strong>archtype</strong><br>
 Sets which archive type to use for packing the package that is going to be installed.<br>
 <br>
-<em>Usage: archtype gzip|bzip2</em><br>
+<samp>Usage: archtype gzip|bzip2</samp><br>
 <br>
-<em>Example: archtype bzip2</em><br>
+<samp>Example: archtype bzip2</samp><br>
 <br>
-<em>Default: gzip</em><br>
+<samp>Default: gzip</samp><br>
 <br>
 <br>
 
 <strong>installdir</strong><br>
 Sets where the install package files should be extracted too (see {insdir section} ).<br>
 <br>
-<em>Usage: installdir select|temp|default dirnamehere</em><br>
+<samp>Usage: installdir select|temp|default dirnamehere</samp><br>
 select: Let the user specify the install directory.<br>
 temp: Extract files to a temporary directory.<br>
 default: Extract the files specified by 'dirnamehere'.<br>
 <br>
-<em>Example: installdir default /usr/local</em><br>
+<samp>Example: installdir default /usr/local</samp><br>
 <br>
-<em>Default: select</em><br>
+<samp>Default: select</samp><br>
 <br>
-<em>Note: The user should have permission the installation directory.</em><br>
+<samp>Note: The user should have permission the installation directory.</samp><br>
 <br>
 <br>
 
 <strong>languages</strong><br>
 Specifies a list of used languages.<br>
 <br>
-<em>Usage: languages lang1 lang2 lang3 ...</em><br>
+<samp>Usage: languages lang1 lang2 lang3 ...</samp><br>
 <br>
-<em>Example: languages english dutch</em><br>
+<samp>Example: languages english dutch</samp><br>
 <br>
-<em>Default: english</em><br>
+<samp>Default: english</samp><br>
 <br>
 <br>
 
@@ -240,44 +225,148 @@ Specifies a list of used languages.<br>
 Specifies a picture which should be displayed at the welcome screen.<br>
 Valid types are: jpg, png, gif and bmp.<br>
 <br>
-<em>Usage: intropic picnamehere</em><br>
+<samp>Usage: intropic picnamehere</samp><br>
 <br>
-<em>Example: intropic intro.jpg</em><br>
+<samp>Example: intropic intro.jpg</samp><br>
 <br>
 <br>
 
 <strong>commandentry</strong><br>
 Start point of a {commandentry}.<br>
 <br>
-<em>Usage:<br>
+<samp>Usage:<br>
 commandentry<br>
 [<br>
 ...<br>
 options for a commandentry here<br>
 ...<br>
-]<br></em><br>
+]<br></samp><br>
 <br>
 
-</p>
-</p>
+<p><h3>Commandentries</h3>
+A command entry is a part where info can be specified for a single install command. A commandentry starts with simply 'commandentry' and a left square bracket('[') beaneath it. The commandentry ends with a right square bracket(']'). All the configuration options for a commandentry should be between the 2 square brackets.<br>
+<br>
 
-<p>
-<h2><A href="#toc-create" name="create">Creating an install package</h2></A>
+Here is a small example how a commandentry may look like:<br>
+
+<pre><samp>commandentry
+[
+   description Compiling test
+   command make
+]
+<br></samp></pre>
+<br>
+A command entry has the following configure options: <br>
+
+<strong>command</strong><br>
+This specifies the actual command. It will be directly passed to sh (or su incase it needs root access).<br>
+<br>
+<samp>Usage: command commandlinehere</samp><br>
+<br>
+<samp>Example: command ./configure</samp><br>
+<br>
+<samp>Note: You can also use the additional functionality from SH such as 'if' or 'for'. Just make sure that everything is at one single line.</samp><br>
+<br>
+<br>
+
+<strong>description</strong><br>
+Here you can specify a simple description of what this command does. You can put any translations of it in the {language files}<br>
+<br>
+<samp>Usage: description descriptionhere</samp><br>
+<br>
+<samp>Example: description Configuring test for your system</samp>
+<br>
+<br>
+
+<strong>needroot</strong><br>
+Specifies if or when this command needs to be executed as the root user.<br>
+<br>
+<samp>Usage: needroot true|false|dependson varname</samp><br>
+true: command always needs to be executed as root user.<br>
+false: command never needs to be executed as root user.<br>
+dependson: it depends on the directory that is selected for the parameter with the {variabele name} 'varname'.<br>
+<br>
+<samp>Example: needroot true</samp><br>
+<br>
+<samp>Default: false</samp><br>
+<br>
+<br>
+
+<strong>exitonfailure</strong><br>
+If enabled, the installation will abort if the command fails to execute.<br>
+<br>
+<samp>Usage: exitonfailure true|false</samp><br>
+<br>
+<samp>Example: exitonfailure true</samp><br>
+<br>
+<samp>Default: true</samp><br>
+<br>
+<br>
+
+<strong>path</strong><br>
+Sets the $PATH environment variabele for this command.<br>
+<br>
+<samp>Usage: path dir1:dir2:dir3:...</samp><br>
+<br>
+<samp>Example: path /usr/bin:/bin</samp><br>
+<br>
+<samp>Default: /bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:.</samp><br>
+<br>
+<br>
+
+<strong>addparam</strong><br>
+Start point of a {parameter entry}.<br>
+<br>
+<samp>Usage:<br>
+addparam<br>
+[<br>
+...<br>
+options for a parameter entry here<br>
+...<br>
+]<br></samp><br>
+<br>
+
+<p> <h3>Parameter entries</h3>
+A parameter entry is a part where info can be specified for a single parameter for the current install command. A parameter entry starts with 'addparam' and a left square bracket('[') beaneath it. The parameter entry ends with a right square bracket(']'). All the configuration options for a parameter entry should be between the 2 square brackets.<br>
+Parameter entries can only be defined inside a {commandentry}<br>
+<br>
+
+Here is a small example how a parameter entry may look like:<br>
+
+<pre><samp>addparam
+[
+   name Enable Debug
+   description Enable debugging code and symbols
+   parameter --enable-debug=
+   defaultval false
+   type bool
+]
+<br></samp></pre>
+<br>
+A parameter entry has the following configure options: <br>
+
+<strong>name</strong><br>
+Specifies a name for this parameter. This name is used for the installer itself(not for the actual command).<br>
+<br>
+<samp>Usage: name namehere</samp><br>
+<br>
+<samp>Example: name prefix</samp><br>
+<br>
+<br>
+
+<strong>parameter</strong><br>
+The parameter's name. This is used when exucuting the install command.
+<p> <h2><A href="#toc-create" name="create">Creating an install package</A></h2>
 First undone line.<br>
 Second undone line.<br>
-</p>
 
-<p>
-<h2><A href="#toc-compile" name="compile">Compiling nixstaller</h2></A>
+<p> <h2><A href="#toc-compile" name="compile">Compiling nixstaller</A></h2>
 First undone line.<br>
 Second undone line.<br>
-</p>
 
-<p>
-<h2><A href="#toc-faq" name="faq">Frequently Asked Questions (FAQ)</h2></A>
+<p> <h2><A href="#toc-faq" name="faq">Frequently Asked Questions (FAQ)</A></h2>
 First undone line.<br>
 Second undone line.<br>
-</p>
 
 </body>
 </html>
