@@ -413,8 +413,10 @@ Gives this parameter a variabele name. You should use this if a command which ma
 <br>
 <samp>Usage: varname somenamehere</samp><br>
 <br>
-<samp>Example:<br>
+
 <pre>
+<samp>
+Example:
 ...
 commandentry
 [
@@ -433,8 +435,7 @@ commandentry
    command make install
    needroot dependson prefix
 ]
-</pre>
-</samp><br>
+</samp></pre><br>
 <br>
 
 <strong>addchoice</strong><br>
@@ -481,7 +482,6 @@ Here is a table for how the directory layout should look like:<br>
       <td>intro picture</td>
       <td>An image which will be displayed at the welcome screen. The name of the file has to be specified in the config file.</td>
     </tr>
-    <tr>
     <tr>
       <td>files_all/</td>
       <td>Directory containing all the files that must be installed. These are used for every operating system.</td>
@@ -546,8 +546,101 @@ To test the installer simply run <samp>./setup.sh</samp> and see if it works.<br
 <br>
 
 <p> <h2><A href="#toc-compile" name="compile">Compiling nixstaller</A></h2>
-First undone line.<br>
-Second undone line.<br>
+Normally all required libraries and frontends are already compiled for Linux, FreeBSD and NetBSD.<br>
+Sometimes you may want to compile (for example to support another platform).
+If, for example, you want to compile for another platform or made some modifications to the source code you should read this section to know how to compile nixstaller.<br>
+<br>
+
+<p> <h3>Required libraries</h3>
+Nixstaller uses the following libraries:<br>
+<br>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Library name</th>
+      <th>Where to get it</th>
+      <th>Used for</th>
+    </tr>
+    <tr>
+      <td>bzip2(libbz2)</td>
+      <td><A href="http://www.bzip.org/">http://www.bzip.org/</A></td>
+      <td>Core</td>
+    </tr>
+    <tr>
+      <td>zlib(libz)</td>
+      <td><A href="http://www.zlib.net/">http://www.zlib.net/</A></td>
+      <td>Core</td>
+    </tr>
+    <tr>
+      <td>libarchive</td>
+      <td><A href="http://people.freebsd.org/~kientzle/libarchive/">http://people.freebsd.org/~kientzle/libarchive/</A></td>
+      <td>Core</td>
+    </tr>
+    <tr>
+      <td>libmain</td>
+      <td>Part of nixstaller</td>
+      <td>Core</td>
+    </tr>
+    <tr>
+      <td>libsu</td>
+      <td>Part of nixstaller</td>
+      <td>Core</td>
+    </tr>
+    <tr>
+      <td>CDK(libcdk)</td>
+      <td><A href="http://invisible-island.net/cdk/">http://invisible-island.net/cdk/</A></td>
+      <td>ncurses frontend</td>
+    </tr>
+    <tr>
+      <td>ncurses(libncurses)</td>
+      <td><A href="http://www.gnu.org/software/ncurses/ncurses.html">http://www.gnu.org/software/ncurses/ncurses.html</A></td>
+      <td>ncurses frontend</td>
+    </tr>
+    <tr>
+      <td>FLTK(libfltk, libfltk_images)</td>
+      <td><A href="http://www.fltk.org">http://www.fltk.org</A></td>
+      <td>FLTK frontend</td>
+    </tr>
+    <tr>
+      <td>png(libpng)</td>
+      <td><A href="http://www.libpng.org/pub/png/libpng.html">http://www.libpng.org/pub/png/libpng.html</A></td>
+      <td>FLTK frontend</td>
+    </tr>
+    <tr>
+      <td>jpeg(libjpeg)</td>
+      <td><A href="http://www.ijg.org/">http://www.ijg.org/</A></td>
+      <td>FLTK frontend</td>
+    </tr>
+    <tr>
+      <td>X11(libX11, libXext)</td>
+      <td>You can get it from your local X.org/XFree distrobution</td>
+      <td>FLTK frontend</td>
+    </tr>
+    <tr>
+      <td>libm, libc, libstdc++</td>
+      <td>Come with GCC</td>
+      <td>Core</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+
+Always use static versions of these libraries (they end with '.a', ie 'libz.a'). Also make sure they are <strong>not</strong> compiled with cpu specific optimizations(ie '-march=athlon-xp'). This may be the case with, for example, source based linux distros which let you modify the CFLAGS used for compilation. If you're unsure it may be wise the compile the libs by yourself.<br>
+<br>
+After you collected your libraries you should put them in the right subdirectory in 'lib/'. The subdirectory must be the lowercased output from 'uname' (ie 'freebsd' - not 'FreeBSD').<br>
+<br>
+
+<p> <h3>SCons</h3>
+Nixstaller uses SCons as build system(instead of for example autoconf and GNU make). You can get SCons <A href="http://www.scons.org/">here</A>.<br>
+SCons is <A href="http://www.python.org/">python</A> based, so make sure you got that too. Also at the time of writing you need the latest SCons, which is "0.96.91".<br>
+<br>
+
+<p> <h3>Compiling</h3>
+If you got SCons installed simply type <samp> scons </samp> in the main nixstaller directory to build and configure everything.<br>
+To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
+The binaries will be automaticly put in the bin/[osname]/ directory(where [osname] is the lowercased output from 'uname').<br>
+<br>
 
 <p> <h2><A href="#toc-faq" name="faq">Frequently Asked Questions (FAQ)</A></h2>
 First undone line.<br>

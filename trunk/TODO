@@ -10,6 +10,7 @@ OVERALL
 - Whitespace for params
 - Translate choices for parameters
 - Check if install.cfg is present.
+- Integrate libsu in main SConstruct
 
 
 MAIN
