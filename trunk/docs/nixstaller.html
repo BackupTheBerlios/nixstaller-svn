@@ -16,7 +16,8 @@
    <li> <A href="#qstart" name="toc-qstart">Quick start</A> </li>
    <li> <A href="#basics" name="toc-first">Basics</A> </li>
    <li> <A href="#config" name="toc-config">Configuration files</A> </li>
-   <li> <A href="create" name="toc-create">Creating an install package</A> </li>
+   <li> <A href="#create" name="toc-create">Creating an install package</A> </li>
+   <li> <A href="#tutorial" name="toc-tutorial">Tutorials</A> </li>
    <li> <A href="#compile" name="toc-compile">Compiling nixstaller</A> </li>
    <li> <A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A> </li>
  </ul>
@@ -82,9 +83,8 @@ To configure the installer you need to make/edit a simple config file. There are
 Please read the <A href="#config">Configuration files section</A> to know what to put in that file.
 
 <p> <h3>Language files</h3>
-In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it.
-Language files are stored in a subdirectory in the lang/ directory. The subdirectory should be the name of the language itself.<br>
-Currently there are already 2 translations: dutch and english. You can 'translate' the english 'strings' file in order to modify texts used by the installer.<br>
+In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it.<br>
+Currently there are already 2 translations: dutch and english. You can find these in the lang/ directory. You can 'translate' the english 'strings' file in order to modify texts used by the installer.<br>
 
 <br>
 Here is a example taken from the file 'lang/dutch/strings': <br>
@@ -134,7 +134,7 @@ This is the message that will be displayed after the installation has (succesful
 
 All these items are stored in plain text files.<br>
 The filenames for the welcome message, license agreement and finish message are respectively: 'welcome', 'license' and 'finish'.<br>
-You can put translated versions in the language subdirectories in the lang/ directory(ie 'lang/dutch/welcome'). See the <A href="#create">Creating an install package section</A> for info where to put the normal, untranslated files.
+You can have for each of file a translation, to see where to put the translated and untranslated versions check the <A href="#create">Creating an install package section</A>.
 
 <p> <h3>The installation</h3>
 <strong>Destination directory</strong><br>
@@ -450,7 +450,7 @@ You can use this if the parameter uses 'list' to define a value. Choices can be 
 
 <p> <h2><A href="#toc-create" name="create">Creating an install package</A></h2>
 In the previous sections there is explained what the basics are, which config options there are etc. In this section there will be explained how to apply those.<br>
-All the files(except the language files) which tell what the installer should do and how to package must be created go in a single directory. After this directory contains everything necessarily you can run a script with this directory as first argument to create the installer. <br>
+All the files which tell what the installer should do and how to package must be created go in a single directory. After this directory contains everything necessarily you can run a script with this directory as first argument to create the installer. <br>
 <br>
 <p> <h3>Directory layout</h3>
 Here is a table for how the directory layout should look like:<br>
@@ -483,6 +483,26 @@ Here is a table for how the directory layout should look like:<br>
       <td>An image which will be displayed at the welcome screen. The name of the file has to be specified in the config file.</td>
     </tr>
     <tr>
+      <td>lang/</td>
+      <td>Directory containing subdirectories with translated files in them</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/</td>
+      <td>Directory containing translated files for [langname]. Replace [langname] with the lowercased name of the language(ie 'dutch').</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/welcome</td>
+      <td>Translated version for the welcome message.</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/license</td>
+      <td>Translated version for the license agreement.</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/finish</td>
+      <td>Translated version for the finish message.</td>
+    </tr>
+    <tr>
       <td>files_all/</td>
       <td>Directory containing all the files that must be installed. These are used for every operating system.</td>
     </tr>
@@ -495,7 +515,7 @@ Here is a table for how the directory layout should look like:<br>
 <br>
 <br>
 
-The config file ('install.cfg') should always be present. There should also be atleast one 'files_all' or 'files_[osname]' directory.<br>
+The config file ('install.cfg') should always be present. There should also be atleast one 'files_all' or 'files_[osname]' directory. The rest of the directories/files are optional.<br>
 
 <br>
 <strong>Example</strong><br>
@@ -504,6 +524,16 @@ The config file ('install.cfg') should always be present. There should also be a
    <ul>
       <li> install.cfg </li>
       <li> welcome </li>
+      <li> lang/
+      <ul>
+         <li> dutch/
+         <ul>
+            <li> strings </li>
+            <li> welcome </li>
+         </ul>
+         </li>
+      </ul>
+      </li>
       <li> files_all/
       <ul>
          <li> config1.cfg </li>
@@ -543,6 +573,187 @@ The script must be run from the main nixstaller directory and has as first argum
 
 This will create an installer from the release/ directory. The installer will be simply called setup.sh (you can rename it afterwards).<br>
 To test the installer simply run <samp>./setup.sh</samp> and see if it works.<br>
+<br>
+
+<p> <h2><A href="#toc-tutorial" name="tutorial">Tutorials</A></h2>
+In this section there are 2 tutorials: the first one is about making a simple installer which will only extract some files, the second is about creating a more advanced installer which will be able to compile a package.<br>
+
+<p> <h3>Simple tutorial</h3>
+After you followed this tutorial you should have created a simple installer for package 'foo'. This installer will do the following:<br>
+<ul>
+   <li> Let the user select a language (dutch or english) </li>
+   <li> Show the user a short welcome text </li>
+   <li> Let the user select a directory </li>
+   <li> Install(extract) package foo to that directory </li>
+ </ul>
+<br>
+
+First we need to make a directory for the 'geninstall.sh' script (see the {creating an installer section}). We will simply call this 'release/'<br>
+After the directory is created you should create the main config file 'install.cfg' in there. Simply open a text editor and put this in the file:<br>
+<pre><samp>
+appname foo
+archtype gzip
+installdir select
+languages english dutch
+</samp></pre>
+<br>
+For more info what everything does here, check the {config section}.<br>
+<br>
+
+Now create another text file called 'welcome' with your favorite editor and put this also in the 'release/' directory.<br>
+You can put the following text in this file:<br>
+<pre><samp>
+Thanks for downloading foo. This installer will guide you through the installation.
+If foo did anything usefull I would put some short explenation here...but foo doesn't do anything.
+</samp></pre>
+<br>
+
+We can now put some translations for our installer. We want the user to select from both english and dutch. Since both of these languages are already translated, you can simply copy the 'lang/' from the main nixstaller directory to the 'release/' directory.<br>
+The english 'translation' is only required incase you want to change some texts that are used by nixstaller. In this example we won't, so you can safely omit the 'lang/english/' directory.<br>
+Incase you want to have a translated welcome message too, simply copy the 'welcome' file to 'lang/dutch/' and translate it from there.<br>
+
+OK, now we should create a subdirectory called 'files_all' in the 'release/' directory and copy all the files from package foo.<br>
+Assuming that package foo has one file named README and another called foo.bin, the directory structure should now look this:<br>
+<ul>
+   <li> release/
+   <ul>
+      <li> install.cfg </li>
+      <li> welcome </li>
+      <li> lang/
+      <ul>
+         <li> dutch
+         <ul>
+            <li> strings </li>
+            <li> welcome </li>
+         </ul>
+         </li>
+      </ul>
+      </li>
+      <li> files_all/
+      <ul>
+         <li> README </li>
+         <li> foo.bin </li>
+      </ul>
+      </li>
+   </ul>
+   </li>
+ </ul>
+<br>
+
+Now from the main nixstaller directory execute <samp>./geninstall.sh release/</samp> (assuming the release/ directory is in the main nixstaller directory) and your installer is ready to use.<br>
+<br>
+
+<p> <h3>Advanced tutorial</h3>
+This tutorial is more advanced. This time we want an installer for package 'bar'. Bar should be compiled on the users machine before it can be used. 'bar' is one of these typical './configure &amp;&amp; make &amp;&amp; make install' packages.<br>
+<br>
+Here is a summary for what the installer for bar should do:<br>
+<ul>
+   <li> Let the user select a language (dutch or english) </li>
+   <li> Show the user a short welcome text </li>
+   <li> Let the user accept a license agreement </li>
+   <li> Let the user configure some parameters used by './configure' </li>
+   <li> Extract package 'bar' to a temporary directory, from there it should compile it and run 'make install' for further installation. </li>
+ </ul>
+<br>
+
+The 'welcome' file can be the same as used by the {previous tutorial}. The license agreement may look like this:<br>
+<pre>
+<samp>
+'bar' comes with no WARRENTY. Therefore you can't sue me if your machine explodes because of it.
+</samp>
+</pre>
+<br>
+Lets create the install.cfg file:<br>
+<pre><samp>
+appname bar
+archtype gzip
+installdir temp
+languages english dutch
+
+commandentry
+[
+   command ./configure
+   description Configuring bar for your system
+   
+   addparam
+   [
+      name Install prefix
+      parameter --prefix=%s
+      description Specifies the directory which shall be used to install bar too.
+      type dir
+      defaultval /usr/local
+      varname instprefix
+   ]
+]
+
+commandentry
+[
+   command make
+   description Compiling bar
+]
+
+commandentry
+[
+   command make install
+   description Installing files
+   needroot dependson instprefix
+]
+</samp></pre>
+<br>
+This file may look more complicated for you than the previous one. Just study it for a bit and look at the {config section} for more info.<br>
+<br>
+
+Now lets make a directory layout like the {previous tutorial}. 'bar' has the following files: 'README', 'configure' and 'bar.c'.<br>
+The directory layout will look like this:<br>
+<ul>
+   <li> release/
+   <ul>
+      <li> install.cfg </li>
+      <li> welcome </li>
+      <li> license </li>
+      <li> lang/
+      <ul>
+         <li> dutch
+         <ul>
+            <li> strings </li>
+            <li> welcome </li>
+         </ul>
+         </li>
+      </ul>
+      </li>
+      <li> files_all/
+      <ul>
+         <li> README </li>
+         <li> configure </li>
+         <li> bar.c </li>
+      </ul>
+      </li>
+   </ul>
+   </li>
+ </ul>
+<br>
+
+We're almost done. Since we want to translate the descriptions used for compiling we need to add some lines to the 'lang/dutch/strings' file.<br>
+Open the file in an editor and add the following lines at the end of the file:<br>
+<pre>
+<samp>
+Configuring bar for your system
+bar wordt voor uw systeem ingesteld
+
+Specifies the directory which shall be used to install bar too.
+Geeft de directory aan waar bar naar zal worden geïnstalleerd.
+
+Compiling bar
+bar wordt gecompileerd
+
+Installing files
+Bestanden worden geïnstalleerd
+</samp>
+</pre>
+<br>
+Now dutch people are happy with your installer too ;)<br>
+<br>
+Simply call <samp>./geninstall.sh release/</samp> from the main nixstaller directory and your installer should be ready.<br>
 <br>
 
 <p> <h2><A href="#toc-compile" name="compile">Compiling nixstaller</A></h2>
@@ -619,14 +830,14 @@ Nixstaller uses the following libraries:<br>
     </tr>
     <tr>
       <td>libm, libc, libstdc++</td>
-      <td>Come with GCC</td>
+      <td>Comes with GCC</td>
       <td>Core</td>
     </tr>
   </tbody>
 </table>
 <br>
 
-Always use static versions of these libraries (they end with '.a', ie 'libz.a'). Also make sure they are <strong>not</strong> compiled with cpu specific optimizations(ie '-march=athlon-xp'). This may be the case with, for example, source based linux distros which let you modify the CFLAGS used for compilation. If you're unsure it may be wise the compile the libs by yourself.<br>
+Always use static versions of these libraries (they end with '.a', ie 'libz.a'). Also make sure they are <strong>not</strong> compiled with cpu specific optimizations(ie '-march=athlon-xp'). This may be the case if, for example, you got a library from a source based linux distro which let you modify the CFLAGS used for compilation. If you're unsure it may be wise the compile the libs by yourself.<br>
 <br>
 After you collected your libraries you should put them in the right subdirectory in 'lib/'. The subdirectory must be the lowercased output from 'uname' (ie 'freebsd' - not 'FreeBSD').<br>
 <br>
@@ -637,7 +848,7 @@ SCons is <A href="http://www.python.org/">python</A> based, so make sure you got
 <br>
 
 <p> <h3>Compiling</h3>
-If you got SCons installed simply type <samp> scons </samp> in the main nixstaller directory to build and configure everything.<br>
+If you got SCons installed simply type <samp>scons</samp> in the main nixstaller directory to build and configure everything.<br>
 To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
 The binaries will be automaticly put in the bin/[osname]/ directory(where [osname] is the lowercased output from 'uname').<br>
 <br>

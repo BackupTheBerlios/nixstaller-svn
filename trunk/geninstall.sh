@@ -35,6 +35,7 @@ copytemp()
     cp $CONFDIR/welcome $CONFDIR/tmp/config/ 2>/dev/null
     cp $CONFDIR/install.cfg $CONFDIR/tmp/config/ || err "Error: no install config file"
     cp $CONFDIR/license $CONFDIR/tmp/config/ 2>/dev/null
+    cp $CONFDIR/finish $CONFDIR/tmp/config/ 2>/dev/null
     
     cp $CURDIR/startupinstaller.sh $CONFDIR/tmp || err "Error: missing startupinstaller.sh script"
     
@@ -42,9 +43,10 @@ copytemp()
     for L in $LANGUAGES
     do
         mkdir -p $CONFDIR/tmp/config/lang/$L/
-        cp $CURDIR/lang/$L/strings $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
+        cp $CONFDIR/lang/$L/strings $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
         cp $CONFDIR/lang/$L/welcome $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
         cp $CONFDIR/lang/$L/license $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
+        cp $CONFDIR/lang/$L/finish $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
     done
  
     # Copy OS specific files
