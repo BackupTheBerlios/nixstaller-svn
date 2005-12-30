@@ -758,7 +758,6 @@ Simply call <samp>./geninstall.sh release/</samp> from the main nixstaller direc
 
 <p> <h2><A href="#toc-compile" name="compile">Compiling nixstaller</A></h2>
 Normally all required libraries and frontends are already compiled for Linux, FreeBSD and NetBSD.<br>
-Sometimes you may want to compile (for example to support another platform).
 If, for example, you want to compile for another platform or made some modifications to the source code you should read this section to know how to compile nixstaller.<br>
 <br>
 
@@ -833,11 +832,17 @@ Nixstaller uses the following libraries:<br>
       <td>Comes with GCC</td>
       <td>Core</td>
     </tr>
+    <tr>
+      <td>acl(libacl)</td>
+      <td><A href="ftp://oss.sgi.com/projects/xfs/cmd_tars">ftp://oss.sgi.com/projects/xfs/cmd_tars</A></td>
+      <td>Core (Linux only)</td>
+    </tr>
   </tbody>
 </table>
 <br>
 
 Always use static versions of these libraries (they end with '.a', ie 'libz.a'). Also make sure they are <strong>not</strong> compiled with cpu specific optimizations(ie '-march=athlon-xp'). This may be the case if, for example, you got a library from a source based linux distro which let you modify the CFLAGS used for compilation. If you're unsure it may be wise the compile the libs by yourself.<br>
+You can find some notes about what is done to compile some libraries on different platforms in every subdirectory from the 'lib/' directory.<br>
 <br>
 After you collected your libraries you should put them in the right subdirectory in 'lib/'. The subdirectory must be the lowercased output from 'uname' (ie 'freebsd' - not 'FreeBSD').<br>
 <br>

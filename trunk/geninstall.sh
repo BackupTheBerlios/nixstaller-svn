@@ -57,6 +57,15 @@ copytemp()
         cp $CURDIR/lib/$OS/libc.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libc for $OS"
         cp $CURDIR/lib/$OS/libm.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libm for $OS"
     done
+
+    # Check if we got an intro picture
+    INTROPIC=`awk '$1=="intropic"{print $2}' $CONFDIR/install.cfg`
+
+    if [ -z $INTROPIC ]; then
+        echo "Warning: intropic has no filename specified"
+    else
+        cp $CONFDIR/$INTROPIC $CONFDIR/tmp || echo "Warning: $CONFDIR/$INTROPIC does not exist"
+    fi
 }
 
 remtemp()
@@ -68,6 +77,10 @@ remtemp()
 # Main part starts here...
 
 checkargs
+
+# If target dir has trailing '/', remove it
+CONFDI=${CONFDIR%*/}
+CONFDIR=$CONFDI
 
 # Check which target OS'es there are
 TARGET_OS=`awk '$1=="targetos"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`

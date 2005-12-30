@@ -1,6 +1,5 @@
 OVERALL
 - License stuff(COPYING file, stuff in source files?, libsu)
-- Check UNDONE's
 - Make a few example cfg files and directory layouts
 - A way to specify preferred frontends
 - Check uppercase words in strings files
@@ -11,6 +10,7 @@ OVERALL
 - Translate choices for parameters
 - Check if install.cfg is present.
 - Integrate libsu in main SConstruct
+- Update notes files for libs
 
 
 MAIN
@@ -23,6 +23,10 @@ NCURSES FRONTEND
 FLTK FRONTEND
 - Finish UpdateLanguage functions
 - Handle exit
+
+
+DOCS
+- include/ dir for compiling
 
 
 ----------------------------- LATER ------------------------------------
