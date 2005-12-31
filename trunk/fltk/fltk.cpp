@@ -7,6 +7,8 @@ void EndProg(void);
 
 Fl_Window *MainWindow = NULL;
 Fl_Wizard *Wizard = NULL;
+Fl_Window *pAboutWindow = NULL;
+Fl_Button *pAboutOKButton = NULL;
 Fl_Button *pAboutButton = NULL;
 Fl_Button *pCancelButton = NULL;
 Fl_Button *pPrevButton = NULL;
@@ -15,6 +17,8 @@ Fl_Button *pNextButton = NULL;
 std::list<CBaseScreen *> ScreenList;
 bool InstallFiles = false;
 
+void AboutOKCB(Fl_Widget *, void *) { pAboutWindow->hide(); };
+        
 void WizCancelCB(Fl_Widget *, void *)
 {
     if (fl_ask("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
@@ -60,6 +64,14 @@ void WizNextCB(Fl_Widget *, void *)
     }
 };
 
+void ShowAboutCB(Fl_Widget *, void *)
+{
+    pAboutWindow->hotspot(pAboutOKButton);
+    pAboutWindow->take_focus();
+    pAboutWindow->show();
+}
+    
+    
 int main(int argc, char **argv)
 {
     // Init
@@ -86,11 +98,25 @@ void CreateMainWindow(char **argv)
                                if (group) { Wizard->add(group); ScreenList.push_back(widget); } }
 
     Fl::scheme("plastic");
+
+    // Create about dialog
+    pAboutWindow = new Fl_Window(400, 200, "About nixstaller");
+    pAboutWindow->set_modal();
+    pAboutWindow->begin();
+
+    Fl_Text_Buffer *pBuffer = new Fl_Text_Buffer;
+    pBuffer->text(GetAbout());
+    
+    Fl_Text_Display *pAboutDisp = new Fl_Text_Display(20, 20, 360, 150, "About");
+    pAboutDisp->buffer(pBuffer);
+    
+    pAboutOKButton = new Fl_Button((400-80)/2, 170, 80, 25, "OK");
+    pAboutOKButton->callback(AboutOKCB, 0);
+    
+    pAboutWindow->end();
+    
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
 
-    pAboutButton = new Fl_Button((MAIN_WINDOW_W-80), 5, 60, 12, "About");
-    pAboutButton->labelsize(10);
-    //pAboutButton->callback(WizCancelCB, 0);
     pCancelButton = new Fl_Button(20, (MAIN_WINDOW_H-30), 120, 25, "Cancel");
     pCancelButton->callback(WizCancelCB, 0);
     pPrevButton = new Fl_Button(MAIN_WINDOW_W-280, (MAIN_WINDOW_H-30), 120, 25, "@<-    Back");
@@ -98,7 +124,10 @@ void CreateMainWindow(char **argv)
     pPrevButton->deactivate(); // First screen, no go back button yet
     pNextButton = new Fl_Button(MAIN_WINDOW_W-140, (MAIN_WINDOW_H-30), 120, 25, "Next    @->");
     pNextButton->callback(WizNextCB, 0);
-    
+    pAboutButton = new Fl_Button((MAIN_WINDOW_W-80), 5, 60, 12, "About");
+    pAboutButton->labelsize(10);
+    pAboutButton->callback(ShowAboutCB, 0);
+
     Wizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
     CBaseScreen *widget;
@@ -117,7 +146,7 @@ void CreateMainWindow(char **argv)
     MCreateWidget(CInstallFilesScreen);
     MCreateWidget(CFinishScreen);
     
-    (*ScreenList.begin())->Activate();
+    ScreenList.front()->Activate();
     
     // HACK: Switch that annoying bell off!
     XKeyboardControl XKBControl;
