@@ -3,14 +3,11 @@ OVERALL
 - Make a few example cfg files and directory layouts
 - A way to specify preferred frontends
 - Check uppercase words in strings files
-- Intro image should be copied to package
 - Check for permissions on a default dir
-- Check if descriptions of both commandentries and paramentries are translated
 - Whitespace for params
-- Translate choices for parameters
-- Check if install.cfg is present.
-- Integrate libsu in main SConstruct
 - Update notes files for libs
+- Test translations (strings, choices, descriptions)
+- Additional lib checks?
 
 
 MAIN
@@ -27,6 +24,7 @@ FLTK FRONTEND
 
 DOCS
 - include/ dir for compiling
+- Frontend choosing
 
 
 ----------------------------- LATER ------------------------------------

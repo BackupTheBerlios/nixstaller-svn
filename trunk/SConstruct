@@ -1,6 +1,6 @@
 import sys
 
-env = Environment(CXX = 'g++', CCFLAGS = "-O -static-libgcc", LIBS=Split(''))
+env = Environment(CXX = 'g++', CCFLAGS = "-O -static-libgcc")
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')
@@ -37,9 +37,6 @@ else:
     Execute(Delete('fltk/.sconsign'))
     Execute(Delete('.sconf_temp'))
     Execute(Delete('.sconsign.dblite'))
-
-    # Also clean libsu
-    env.Clean('libsu', 'libsu/')
 
 # Builds libsu
 libsu = env.SConscript('libsu/SConstruct')

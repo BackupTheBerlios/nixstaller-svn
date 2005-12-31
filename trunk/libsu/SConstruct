@@ -6,9 +6,6 @@ config_header = 'config.h'
 if not env.GetOption('clean'):
     conf = env.Configure(config_h = config_header)
     
-    if conf.CheckLibWithHeader('c', 'sched.h', 'C', 'sched_getscheduler(0);'):
-        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DPOSIX1B_SCHEDULING')
-        
     conf.CheckFunc('initgroups')
     
     conf.CheckCXXHeader(['stdlib.h', 'sys/types.h', 'libutil.h'], "<>")

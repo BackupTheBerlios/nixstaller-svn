@@ -188,7 +188,7 @@ bool ConfParams()
                            getmaxy(ScrollList.GetScroll()->win)-defh-1, 34, CreateText("<C></B/29>%s<!29!B>",
                            GetTranslation("Description")), 30);
     DescWindow.SetBgColor(5);
-    DescWindow.AddText(pFirstParam->description);
+    DescWindow.AddText(GetTranslation(pFirstParam->description));
     
     CCDKSWindow DefWindow(CDKScreen, (getbegx(ScrollList.GetScroll()->win) + getmaxx(ScrollList.GetScroll()->win))-1,
                           getmaxy(DescWindow.GetSWin()->win), defh, 34, NULL, 4);
@@ -283,7 +283,7 @@ bool ConfParams()
                     int i = 0;
                     for (std::list<std::string>::iterator it=pParam->options.begin(); it!=pParam->options.end();it++, i++)
                     {
-                        chitems.push_back(MakeCString(*it));
+                        chitems.push_back(GetTranslation(MakeCString(*it)));
                         if (*it == pParam->value)
                             cur = i;
                     }

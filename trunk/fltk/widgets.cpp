@@ -352,7 +352,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
             for (std::list<std::string>::iterator p=m_pCurrentParamEntry->options.begin();
                  p!=m_pCurrentParamEntry->options.end();p++,s++)
             {
-                m_pValChoiceMenu->add(p->c_str());
+                m_pValChoiceMenu->add(GetTranslation(MakeCString(*p)));
                 if (*p == m_pCurrentParamEntry->value) m_pValChoiceMenu->value(s);
             }
         }

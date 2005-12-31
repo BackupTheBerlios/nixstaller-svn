@@ -7,6 +7,7 @@ OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 CONFDIR="$CURDIR/$1"
 TARGET_OS=
+FRONTENDS=
 
 err()
 {
@@ -52,8 +53,21 @@ copytemp()
     # Copy OS specific files
     for OS in $TARGET_OS
     do
-        cp $CURDIR/bin/$OS/ncurs $CONFDIR/tmp/frontends/$OS/ || echo "Warning: no ncurses frontend for $OS"
-        cp $CURDIR/bin/$OS/fltk $CONFDIR/tmp/frontends/$OS/ || echo "Warning: no fltk frontend for $OS"
+        for FR in $FRONTENDS
+        do
+            case $FR in
+                ncurses )
+                    cp $CURDIR/bin/$OS/ncurs $CONFDIR/tmp/frontends/$OS/ || echo "Warning: no ncurses frontend for $OS"
+                    ;;
+                fltk )
+                    cp $CURDIR/bin/$OS/fltk $CONFDIR/tmp/frontends/$OS/ || echo "Warning: no fltk frontend for $OS"
+                    ;;
+                * )
+                    echo "Warning: Unknown frontend specified ('$FR')."
+                    ;;
+            esac
+        done
+        
         cp $CURDIR/lib/$OS/libc.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libc for $OS"
         cp $CURDIR/lib/$OS/libm.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libm for $OS"
     done
@@ -79,8 +93,18 @@ remtemp()
 checkargs
 
 # If target dir has trailing '/', remove it
-CONFDI=${CONFDIR%*/}
-CONFDIR=$CONFDI
+TEMP=${CONFDIR%*/}
+CONFDIR=$TEMP
+
+if [ ! -e $CONFDIR/install.cfg ]; then
+    err "Error: no install.cfg found!"
+fi
+
+# Check which target OS'es there are
+FRONTENDS=`awk '$1=="frontends"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
+if [ -z "FRONTENDS" ]; then
+    FRONTENDS="ncurses fltk" # Change if there are other frontends
+fi
 
 # Check which target OS'es there are
 TARGET_OS=`awk '$1=="targetos"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
