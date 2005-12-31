@@ -163,24 +163,41 @@ void CCDKSWindow::AddText(char *txt, bool wrap, int pos, int maxch)
     
     if (wrap)
     {
-        std::istringstream istr(txt);
-        std::string line, tmpstr;
+        std::istringstream fullstrm(txt);
+        std::string line;
 
-        istr >> line; // Need atleast one word...
-        while(istr >> tmpstr)
+        while (fullstrm)
         {
-            if ((line.length() + tmpstr.length() + 1) > maxch)
+            if (!std::getline(fullstrm, line))
+                break;
+            
+            if (line.length() > maxch)
             {
-                addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), BOTTOM);
-                line = tmpstr;
+                while (line.length() > maxch)
+                {
+                    std::string::size_type strpos = line.find_last_of(" \t\r\n", maxch-1);
+                    if (strpos == std::string::npos)
+                        strpos = maxch-1;
+                    
+                    addCDKSwindow(m_pSWindow, const_cast<char *>(line.substr(0, strpos).c_str()), pos);
+                    line.erase(0, strpos+1);
+                }
+                addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), pos);
             }
             else
-                line += " " + tmpstr;
+                addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), pos);
         }
-        addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), pos);
     }
     else
-        addCDKSwindow(m_pSWindow, txt, pos);
+    {
+        std::istringstream strstrm(txt);
+        std::string line;
+        while (strstrm)
+        {
+            if (std::getline(strstrm, line))
+                addCDKSwindow(m_pSWindow, const_cast<char *>(line.c_str()), pos);
+        }
+    }
 }
 
 // CDK Entry Wrapper
@@ -378,6 +395,7 @@ bool CFileDialog::Activate()
     ButtonBar.AddButton("ENTER", "Activate button");
     ButtonBar.AddButton("Arrows", "Navigate menu");
     ButtonBar.AddButton("C", "Create directory");
+    ButtonBar.AddButton("A", "About");
     ButtonBar.AddButton("ESC", "Cancel");
     ButtonBar.Draw();
 
@@ -398,6 +416,8 @@ bool CFileDialog::Activate()
                                     const_cast<char*>(m_szTitle.c_str()), label, &m_DirItems[0], m_DirItems.size());
     m_pFileList->SetBgColor(5);
     setCDKEntryPreProcess(m_pFileList->GetAList()->entryField, CreateDirCB, this);
+    bindCDKObject(vENTRY, m_pFileList->GetAList()->entryField, 'a', ShowAboutK, NULL);
+    
     //m_pFileList->GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
 
     setCDKAlphalistLLChar(m_pFileList->GetAList(), ACS_LTEE);

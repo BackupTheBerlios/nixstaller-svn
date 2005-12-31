@@ -78,7 +78,7 @@ copytemp()
     if [ -z $INTROPIC ]; then
         echo "Warning: intropic has no filename specified"
     else
-        cp $CONFDIR/$INTROPIC $CONFDIR/tmp || echo "Warning: $CONFDIR/$INTROPIC does not exist"
+        cp ${CONFDIR}/${INTROPIC} ${CONFDIR}/tmp || echo "Warning: $CONFDIR/$INTROPIC does not exist"
     fi
 }
 
@@ -136,6 +136,7 @@ echo "          OS: $TARGET_OS"
 echo "Archive type: $ARCH_TYPE"
 echo "   Languages: $LANGUAGES"
 echo "  Config dir: $CONFDIR"
+echo "   Frontends: $FRONTENDS"
 echo "---------------------------------"
 echo
 echo
@@ -166,9 +167,9 @@ fi
 
 for OS in $TARGET_OS
 do
-    if [ -d "$CONFDIR"/files_"$OS" ]; then
-        cd $CONFDIR/files_$OS 
-        $PACKCMD "$CONFDIR"/tmp/"$ARCHNAME_BASE"_"$OS" * || err "Couldn't pack files"
+    if [ -d ${CONFDIR}/files_${OS} ]; then
+        cd ${CONFDIR}/files_${OS} 
+        $PACKCMD ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS} * || err "Couldn't pack files"
     fi
 done
 
@@ -177,7 +178,7 @@ if [ ! -d $CONFDIR/files_all -a ! -d $CONFDIR/files_$CURRENT_OS ]; then
 fi
 
 echo "Generating installer..."
-$CURDIR/makeself.sh $CONFDIR/tmp $CURDIR/setup.sh "nixstaller" sh ./startupinstaller.sh
+$CURDIR/makeself.sh $CONFDIR/tmp $CURDIR/setup.sh "nixstaller" sh ./startupinstaller.sh '$1'
 
 echo "Cleaning up..."
 remtemp

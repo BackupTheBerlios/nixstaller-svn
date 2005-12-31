@@ -5,9 +5,11 @@
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 
-NCURS=
-FLTK=
+NCURS="none"
+FLTK="none"
 RUNCOMMAND=
+
+echo "arg1: $1"
 
 # Check if ncurses frontend exists
 if [ -e ./frontends/$CURRENT_OS/ncurs ]; then
@@ -20,16 +22,16 @@ if [ -e ./frontends/$CURRENT_OS/fltk ]; then
 fi
 
 # Do both frontends exist?
-if [ ! -z $NCURS -a ! -z $FLTK ]; then
+if [ $NCURS != "none" -a $FLTK != "none" ]; then
     # X Running?
     if [ -z $DISPLAY ]; then
         RUNCOMMAND="${NCURS} $CURRENT_OS" # Not running, use ncurses frontend
     else
         RUNCOMMAND="$FLTK $CURRENT_OS"
     fi
-elif [ ! -z $NCURS ]; then
+elif [ $NCURS != "none" ]; then
     RUNCOMMAND="${NCURS} $CURRENT_OS"
-elif [ ! -z $FLTK ]; then
+elif [ $FLTK != "none" ]; then
     RUNCOMMAND="$FLTK $CURRENT_OS"
 else
     echo "Error: Couldn't find any frontend to use!"

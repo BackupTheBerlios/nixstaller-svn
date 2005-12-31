@@ -70,6 +70,7 @@ inline bool FileExists(const std::string &file) { return FileExists(file.c_str()
 bool WriteAccess(const char *file);
 inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
 void CleanPasswdString(char *str);
+char *GetAbout(void);
 
 // These functions should be defined for each frontend
 void throwerror(bool dialog, const char *error, ...);

@@ -7,6 +7,7 @@ void EndProg(void);
 
 Fl_Window *MainWindow = NULL;
 Fl_Wizard *Wizard = NULL;
+Fl_Button *pAboutButton = NULL;
 Fl_Button *pCancelButton = NULL;
 Fl_Button *pPrevButton = NULL;
 Fl_Button *pNextButton = NULL;
@@ -86,7 +87,10 @@ void CreateMainWindow(char **argv)
 
     Fl::scheme("plastic");
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
-    
+
+    pAboutButton = new Fl_Button((MAIN_WINDOW_W-80), 5, 60, 12, "About");
+    pAboutButton->labelsize(10);
+    //pAboutButton->callback(WizCancelCB, 0);
     pCancelButton = new Fl_Button(20, (MAIN_WINDOW_H-30), 120, 25, "Cancel");
     pCancelButton->callback(WizCancelCB, 0);
     pPrevButton = new Fl_Button(MAIN_WINDOW_W-280, (MAIN_WINDOW_H-30), 120, 25, "@<-    Back");

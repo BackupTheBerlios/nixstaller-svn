@@ -28,6 +28,7 @@ bool YesNoBox(const char *msg, ...);
 void ExtrThinkFunc(void *p);
 void PrintExtrOutput(const char *msg, void *p);
 void InstThinkFunc(void *p);
+int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key);
 
 inline int dummyK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData GCC_UNUSED,
                   chtype key GCC_UNUSED) { return true; };

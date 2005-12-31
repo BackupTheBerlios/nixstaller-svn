@@ -104,6 +104,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     ButtonBar.AddButton("TAB", "Next button");
     ButtonBar.AddButton("ENTER", "Activate button");
     ButtonBar.AddButton("Arrows", "Scroll text");
+    ButtonBar.AddButton("A", "About");
     ButtonBar.AddButton("ESC", "Exit program");
     ButtonBar.Draw();
 
@@ -118,6 +119,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
         throwerror(false, "Can't create text viewer");
 
     setCDKViewerBackgroundColor(Viewer, "</B/5");
+    bindCDKObject(vVIEWER, Viewer, 'a', ShowAboutK, NULL);
     setCDKViewer(Viewer, title, info, lines, A_REVERSE, true, true, true);
     
     int selected = activateCDKViewer(Viewer, NULL);
@@ -207,6 +209,28 @@ void InstThinkFunc(void *p)
     }
 }
 
+int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
+{
+    ButtonBar.Push();
+    ButtonBar.AddButton("Arrows", "Scroll text");
+    ButtonBar.AddButton("Enter", "OK");
+    ButtonBar.Draw();
+    
+    CCDKSWindow AboutWindow(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH,
+                           CreateText("<C></B/29>%s<!29!B>", GetTranslation("About")), 30);
+    AboutWindow.SetBgColor(5);
+    AboutWindow.AddText(GetAbout(), true);
+    AboutWindow.Activate();
+
+    ButtonBar.Pop();
+
+    AboutWindow.Destroy();
+    refreshCDKScreen(CDKScreen);
+    
+    return true;
+}
+
+    
 #if 0
 // Disabled for now...need a nice way to extract files with root access
 

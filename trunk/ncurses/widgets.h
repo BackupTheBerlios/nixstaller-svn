@@ -18,7 +18,7 @@ public:
     virtual void SetBgColor(int color) = 0;
     virtual void UnSetBgColor() { };
     virtual EExitType ExitType(void) { return vNORMAL; };
-    virtual void Bind(chtype key, BINDFN function, void *data) = 0;
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) = 0;
 };
 
 class CCDKLabel: public CBaseCDKWidget
@@ -36,7 +36,7 @@ public:
     virtual void SetBgColor(int color) { setCDKLabelBackgroundColor(m_pLabel, CreateText("</B/%d>", color));
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKLabelBackgroundColor(m_pLabel, CreateText("<!%d!B>", m_sBackColor)); };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vLABEL, m_pLabel, key, function, data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vLABEL, m_pLabel, key, function, data); };
     
     CDKLABEL *GetLabel(void) { return m_pLabel; };
     void SetText(char **msg, int count) { setCDKLabelMessage(m_pLabel, msg, count); };
@@ -59,7 +59,8 @@ public:
     virtual void SetBgColor(int color) { setCDKButtonboxBackgroundColor(m_pBBox, CreateText("</B/%d>", color));
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKButtonboxBackgroundColor(m_pBBox, CreateText("<!%d!B>", m_sBackColor)); };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vBUTTONBOX, m_pBBox, key, function, data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vBUTTONBOX, m_pBBox, key,
+                                                                      function, data); };
     
     CDKBUTTONBOX *GetBBox(void) { return m_pBBox; };
     int GetCurrent(void) { return m_pBBox->currentButton; };
@@ -80,7 +81,7 @@ public:
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKScrollBackgroundColor(m_pScroll, CreateText("<!%d!B>", m_sBackColor)); };
     virtual EExitType ExitType(void) { return m_pScroll->exitType; };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vSCROLL, m_pScroll, key, function, data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vSCROLL, m_pScroll, key, function, data); };
     
     int Activate(chtype *actions = NULL) { return activateCDKScroll(m_pScroll, actions); };
     CDKSCROLL *GetScroll(void) { return m_pScroll; };
@@ -103,7 +104,7 @@ public:
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKAlphalistBackgroundColor(m_pAList, CreateText("<!%d!B>", m_sBackColor)); };
     virtual EExitType ExitType(void) { return m_pAList->exitType; };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vALPHALIST, m_pAList, key, function, data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vALPHALIST, m_pAList, key, function, data); };
     
     char *Activate(chtype *actions = NULL) { return activateCDKAlphalist(m_pAList, actions); };
     CDKALPHALIST *GetAList(void) { return m_pAList; };
@@ -133,7 +134,7 @@ public:
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKDialogBackgroundColor(m_pDialog, CreateText("<!%d!B>", m_sBackColor)); };
     virtual EExitType ExitType(void) { return m_pDialog->exitType; };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vDIALOG, m_pDialog, key, function, data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vDIALOG, m_pDialog, key, function, data); };
     
     int Activate(chtype *actions = NULL);
     CDKDIALOG *GetDialog(void) { return m_pDialog; };
@@ -152,7 +153,7 @@ public:
     virtual void SetBgColor(int color) { setCDKSwindowBackgroundColor(m_pSWindow, CreateText("</B/%d>", color));
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKSwindowBackgroundColor(m_pSWindow, CreateText("<!%d!B>", m_sBackColor)); };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vSWINDOW, m_pSWindow, key, function, data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vSWINDOW, m_pSWindow, key, function, data); };
     
     void AddText(const std::string &txt, bool wrap=true, int pos=BOTTOM) { AddText(const_cast<char *>(txt.c_str()),
                                                                                    wrap, pos); };
@@ -184,7 +185,7 @@ public:
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKEntryBackgroundColor(m_pEntry, CreateText("<!%d!B>", m_sBackColor)); };
     virtual EExitType ExitType(void) { return m_pEntry->exitType; };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vENTRY, m_pEntry, key, function, data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vENTRY, m_pEntry, key, function, data); };
     
     void SetHiddenChar(chtype ch) { setCDKEntryHiddenChar(m_pEntry, ch); };
     
@@ -209,8 +210,8 @@ public:
     virtual void SetBgColor(int color) { setCDKHistogramBackgroundColor(m_pHistogram, CreateText("</B/%d>", color));
                                          m_sBackColor = color; };
     virtual void UnSetBgColor() { setCDKHistogramBackgroundColor(m_pHistogram, CreateText("<!%d!B>", m_sBackColor)); };
-    virtual void Bind(chtype key, BINDFN function, void *data) { bindCDKObject(vHISTOGRAM, m_pHistogram, key, function,
-                                                                 data); };
+    virtual void Bind(chtype key, BINDFN function, void *data=NULL) { bindCDKObject(vHISTOGRAM, m_pHistogram, key, function,
+                                                                      data); };
     
     void SetHistogram(EHistogramDisplayType vtype, int statspos, int min, int max, int cur, chtype fillch,
                       chtype statattr=A_BOLD);
