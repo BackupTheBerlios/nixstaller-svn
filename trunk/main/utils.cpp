@@ -1,3 +1,37 @@
+/*
+    Copyright (C) 2006 by Rick Helmus (rhelmus@gmail.com)
+
+    This file is part of Nixstaller.
+
+    Nixstaller is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Nixstaller is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Nixstaller; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+    Linking cdk statically or dynamically with other modules is making a combined work based on cdk. Thus, the terms and
+    conditions of the GNU General Public License cover the whole combination.
+
+    In addition, as a special exception, the copyright holders of cdk give you permission to combine cdk program with free
+    software programs or libraries that are released under the GNU LGPL and with code included in the standard release of
+    DEF under the XYZ license (or modified versions of such code, with unchanged license). You may copy and distribute
+    such a system following the terms of the GNU GPL for cdk and the licenses of the other code concerned, provided that
+    you include the source code of that other code when and as the GNU GPL requires distribution of source code.
+
+    Note that people who make modified versions of cdk are not obligated to grant this special exception for their modified
+    versions; it is their choice whether to do so. The GNU General Public License gives permission to release a modified
+    version without this exception; this exception also makes it possible to release a modified version which carries forward
+    this exception.
+*/
+
 #include <archive.h>
 #include <archive_entry.h>
 #include <sys/stat.h>
@@ -29,8 +63,9 @@ int ArchSize(const char *archname)
 
 std::string GetParameters(command_entry_s *pCommandEntry)
 {
-    std::string args;
-    
+    std::string args, param;
+    std::string::size_type pos;
+
     for(std::map<std::string, param_entry_s *>::iterator it=pCommandEntry->parameter_entries.begin();
         it!=pCommandEntry->parameter_entries.end();it++)
     {
@@ -39,7 +74,11 @@ std::string GetParameters(command_entry_s *pCommandEntry)
             case PTYPE_STRING:
             case PTYPE_DIR:
             case PTYPE_LIST:
-                args += " " + it->second->parameter + it->second->value;
+                param = it->second->parameter;
+                pos = param.find("%s");
+                if (pos != std::string::npos)
+                    param.replace(pos, 2, it->second->value);
+                args += " " + param;
                 break;
             case PTYPE_BOOL:
                 if (it->second->value == "true") args += " " + it->second->parameter;
@@ -176,4 +215,16 @@ void CleanPasswdString(char *str)
         for (short s=0;s<strlen(str);s++) str[s] = 0;
         free(str);
     }
+}
+
+std::string EatWhite(const std::string &str)
+{
+    std::string ret = str;
+    std::string::size_type fpos = ret.find_first_not_of(" \t\r\n");
+    std::string::size_type lpos = ret.find_last_not_of(" \t\r\n");
+
+    if (fpos == std::string::npos)
+        fpos = 0;
+
+    return ret.substr(fpos, (lpos==std::string::npos) ? std::string::npos : ((lpos-fpos)+1));
 }

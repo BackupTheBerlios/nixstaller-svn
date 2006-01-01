@@ -70,6 +70,12 @@ int main(int argc, char *argv[])
     if (!(MainWin = initscr())) throwerror(false, "Could not init ncurses");
     if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, "Could not init CDK");
     initCDKColor();
+
+    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
+        throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
+                                    "However you don't have write permissions to this directory"
+                                    "Please restart the installer as a user who does or as the root user",
+                                    InstallInfo.dest_dir.c_str()));
     
     int i=0;
     while(Functions[i])
@@ -142,7 +148,7 @@ bool ShowWelcome()
 
 bool ShowLicense()
 {
-    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("License Agreement"));
+    char *title = CreateText("<C></B/29>%s<!29!B>", GetTranslation("License agreement"));
     char filename[] = "config/license";
     char *buttons[2] = { GetTranslation("Agree"), GetTranslation("Decline") };
     

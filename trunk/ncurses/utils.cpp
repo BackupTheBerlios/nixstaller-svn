@@ -1,3 +1,37 @@
+/*
+    Copyright (C) 2006 by Rick Helmus (rhelmus@gmail.com)
+
+    This file is part of Nixstaller.
+
+    Nixstaller is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Nixstaller is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Nixstaller; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+    Linking cdk statically or dynamically with other modules is making a combined work based on cdk. Thus, the terms and
+    conditions of the GNU General Public License cover the whole combination.
+
+    In addition, as a special exception, the copyright holders of cdk give you permission to combine cdk program with free
+    software programs or libraries that are released under the GNU LGPL and with code included in the standard release of
+    DEF under the XYZ license (or modified versions of such code, with unchanged license). You may copy and distribute
+    such a system following the terms of the GNU GPL for cdk and the licenses of the other code concerned, provided that
+    you include the source code of that other code when and as the GNU GPL requires distribution of source code.
+
+    Note that people who make modified versions of cdk are not obligated to grant this special exception for their modified
+    versions; it is their choice whether to do so. The GNU General Public License gives permission to release a modified
+    version without this exception; this exception also makes it possible to release a modified version which carries forward
+    this exception.
+*/
+
 #include "ncurs.h"
 
 void EndProg()
@@ -96,17 +130,9 @@ int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype
     return true;
 }
 
-int ViewFile(char *file, char **buttons, int buttoncount, char *title)
+int ViewFile(char *file, char **buttons, int buttoncount, char *title, bool showabout, bool showexit)
 {
     char **info = NULL;
-    
-    ButtonBar.Clear();
-    ButtonBar.AddButton("TAB", "Next button");
-    ButtonBar.AddButton("ENTER", "Activate button");
-    ButtonBar.AddButton("Arrows", "Scroll text");
-    ButtonBar.AddButton("A", "About");
-    ButtonBar.AddButton("ESC", "Exit program");
-    ButtonBar.Draw();
 
     int lines = CDKreadFile(file, &info);
     if (lines == -1)
@@ -118,6 +144,15 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     if (Viewer == NULL)
         throwerror(false, "Can't create text viewer");
 
+    ButtonBar.Push();
+    if (buttoncount > 1) ButtonBar.AddButton("TAB", "Next button");
+    ButtonBar.AddButton("ENTER", "Activate button");
+    ButtonBar.AddButton("Arrows", "Scroll text");
+    if (showabout) ButtonBar.AddButton("A", "About");
+    if (showexit) ButtonBar.AddButton("ESC", "Exit program");
+    else ButtonBar.AddButton("ESC", "Close");
+    ButtonBar.Draw();
+
     setCDKViewerBackgroundColor(Viewer, "</B/5");
     bindCDKObject(vVIEWER, Viewer, 'a', ShowAboutK, NULL);
     setCDKViewer(Viewer, title, info, lines, A_REVERSE, true, true, true);
@@ -128,6 +163,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title)
     CDKfreeStrings(info);
     setCDKViewerBackgroundColor(Viewer, "!5!B");
     destroyCDKViewer(Viewer);
+    ButtonBar.Pop();
     refreshCDKScreen(CDKScreen);
     return ret;
 }
@@ -211,21 +247,9 @@ void InstThinkFunc(void *p)
 
 int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
 {
-    ButtonBar.Push();
-    ButtonBar.AddButton("Arrows", "Scroll text");
-    ButtonBar.AddButton("Enter", "OK");
-    ButtonBar.Draw();
-    
-    CCDKSWindow AboutWindow(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH,
-                           CreateText("<C></B/29>%s<!29!B>", GetTranslation("About")), 30);
-    AboutWindow.SetBgColor(5);
-    AboutWindow.AddText(GetAbout(), true);
-    AboutWindow.Activate();
-
-    ButtonBar.Pop();
-
-    AboutWindow.Destroy();
-    refreshCDKScreen(CDKScreen);
+    char *buttons[1] = { GetTranslation("OK") };
+    ViewFile(CreateText("%s/about", InstallInfo.own_dir.c_str()), buttons, 1, CreateText("<C></B/29>%s<!29!B>",
+             GetTranslation("About")), false, false);
     
     return true;
 }

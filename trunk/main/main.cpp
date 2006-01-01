@@ -1,3 +1,37 @@
+/*
+    Copyright (C) 2006 by Rick Helmus (rhelmus@gmail.com)
+
+    This file is part of Nixstaller.
+
+    Nixstaller is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Nixstaller is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Nixstaller; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+    Linking cdk statically or dynamically with other modules is making a combined work based on cdk. Thus, the terms and
+    conditions of the GNU General Public License cover the whole combination.
+
+    In addition, as a special exception, the copyright holders of cdk give you permission to combine cdk program with free
+    software programs or libraries that are released under the GNU LGPL and with code included in the standard release of
+    DEF under the XYZ license (or modified versions of such code, with unchanged license). You may copy and distribute
+    such a system following the terms of the GNU GPL for cdk and the licenses of the other code concerned, provided that
+    you include the source code of that other code when and as the GNU GPL requires distribution of source code.
+
+    Note that people who make modified versions of cdk are not obligated to grant this special exception for their modified
+    versions; it is their choice whether to do so. The GNU General Public License gives permission to release a modified
+    version without this exception; this exception also makes it possible to release a modified version which carries forward
+    this exception.
+*/
+
 #include <fstream>
 #include <sstream>
 #include <limits>
@@ -80,6 +114,7 @@ bool ReadConfig()
     const int maxread = std::numeric_limits<std::streamsize>::max();
     std::ifstream file("config/install.cfg");
     std::string str, line, tmp, ParamName;
+    std::string::size_type strpos;
     bool incommandentry = false, inparamentry = false;
     command_entry_s *pCommandEntry = NULL;
     param_entry_s *pParamEntry = NULL;
@@ -110,40 +145,35 @@ bool ReadConfig()
                 }
                 else if (str == "name")
                 {
-                    strstrm >> ParamName;
-                    while (strstrm >> tmp)
-                        ParamName += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    ParamName = EatWhite(tmp);
                 }
                 else if (str == "parameter")
                 {
-                    strstrm >> pParamEntry->parameter;
-                    while (strstrm >> tmp)
-                        pParamEntry->parameter += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    pParamEntry->parameter = EatWhite(tmp);
                 }
                 else if (str == "description")
                 {
-                    strstrm >> pParamEntry->description;
-                    while (strstrm >> tmp)
-                        pParamEntry->description += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    pParamEntry->description = EatWhite(tmp);
                 }
                 else if (str == "defaultval")
                 {
-                    strstrm >> pParamEntry->defaultval;
-                    while (strstrm >> tmp)
-                        pParamEntry->defaultval += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    pParamEntry->defaultval = EatWhite(tmp);
                     pParamEntry->value = pParamEntry->defaultval;
                 }
                 else if (str == "varname")
                 {
-                    strstrm >> pParamEntry->varname;
-                    while (strstrm >> tmp)
-                        pParamEntry->varname += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    pParamEntry->varname = EatWhite(tmp);
                 }
                 else if (str == "addchoice")
                 {
-                    std::string choice;
-                    if (strstrm >> choice)
-                        pParamEntry->options.push_back(choice);
+                    std::getline(strstrm, tmp);
+                    pParamEntry->options.push_back(EatWhite(tmp));
+
                 }
                 else if (str == "type")
                 {
@@ -169,15 +199,13 @@ bool ReadConfig()
                 }
                 else if (str == "command")
                 {
-                    strstrm >> pCommandEntry->command;
-                    while (strstrm >> tmp)
-                        pCommandEntry->command += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    pCommandEntry->command = EatWhite(tmp);
                 }
                 else if (str == "description")
                 {
-                    strstrm >> pCommandEntry->description;
-                    while (strstrm >> tmp)
-                        pCommandEntry->description += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    pCommandEntry->description = EatWhite(tmp);
                 }
                 else if (str == "needroot")
                 {
@@ -204,9 +232,9 @@ bool ReadConfig()
                 }
                 else if (str == "path")
                 {
-                    strstrm >> pCommandEntry->path;
-                    while (strstrm >> tmp)
-                        pCommandEntry->path += " " + tmp;
+                    std::getline(strstrm, tmp);
+                    pCommandEntry->path = EatWhite(tmp);
+
                 }
                 else if (str == "addparam")
                 {
@@ -221,15 +249,14 @@ bool ReadConfig()
         {
             if (str == "appname")
             {
-                strstrm >> InstallInfo.program_name;
-                while (strstrm >> tmp)
-                    InstallInfo.program_name += " " + tmp;
+                std::getline(strstrm, tmp);
+                InstallInfo.program_name = EatWhite(tmp);
+
             }
-            else if (str == "version")
+            else if (str == "version") // unused
             {
-                strstrm >> InstallInfo.version;
-                while (strstrm >> tmp)
-                    InstallInfo.version += " " + tmp;
+                std::getline(strstrm, tmp);
+                InstallInfo.version = EatWhite(tmp);
             }
             else if (str == "archtype")
             {
@@ -260,20 +287,21 @@ bool ReadConfig()
                 while (strstrm >> lang)
                     InstallInfo.languages.push_back(lang);
             }
+            else if (str == "intropic")
+            {
+                std::getline(strstrm, tmp);
+                InstallInfo.intropicname = EatWhite(tmp);
+            }
             else if (str == "commandentry")
             {
                 file.ignore(maxread, '[');
                 incommandentry = true;
                 pCommandEntry = new command_entry_s;
             }
-            else if (str == "intropic")
-            {
-                strstrm >> InstallInfo.intropicname;
-                while (strstrm >> tmp)
-                    InstallInfo.intropicname += " " + tmp;
-            }
         }
     }
+
+#ifndef RELEASE
 
     debugline("appname: %s\n", InstallInfo.program_name.c_str());
     debugline("version: %s\n", InstallInfo.version.c_str());
@@ -308,7 +336,9 @@ bool ReadConfig()
             debugline("\n");
         }
     }
-    
+
+#endif
+
     return true;
 }
 
@@ -394,17 +424,16 @@ bool ReadLang()
     if (!file)
         return false;
 
-    std::string line, text, srcmsg;
+    std::string tmp, text, srcmsg;
     bool atsrc = true;
     while (file)
     {
-        file >> text; // Skip first whitespace
-        std::getline(file, line); // Get the rest of the text
-        text += line;
+        std::getline(file, tmp);
+        text = EatWhite(tmp);
 
-        if (text[0] == '#') 
+        if (text.empty() || text[0] == '#')
             continue;
-        
+
         if (atsrc)
             srcmsg = text;
         else
@@ -418,12 +447,4 @@ bool ReadLang()
     }
     
     return true;
-}
-
-char *GetAbout(void)
-{
-    return "            Nixstaller 0.1\n"
-            "Copyright (C) 2006 by Rick Helmus\n"
-            "\n"
-            "-----------------------------------------------";
 }

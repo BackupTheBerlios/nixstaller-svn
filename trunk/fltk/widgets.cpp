@@ -1,3 +1,37 @@
+/*
+    Copyright (C) 2006 by Rick Helmus (rhelmus@gmail.com)
+
+    This file is part of Nixstaller.
+
+    Nixstaller is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Nixstaller is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Nixstaller; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+    Linking cdk statically or dynamically with other modules is making a combined work based on cdk. Thus, the terms and
+    conditions of the GNU General Public License cover the whole combination.
+
+    In addition, as a special exception, the copyright holders of cdk give you permission to combine cdk program with free
+    software programs or libraries that are released under the GNU LGPL and with code included in the standard release of
+    DEF under the XYZ license (or modified versions of such code, with unchanged license). You may copy and distribute
+    such a system following the terms of the GNU GPL for cdk and the licenses of the other code concerned, provided that
+    you include the source code of that other code when and as the GNU GPL requires distribution of source code.
+
+    Note that people who make modified versions of cdk are not obligated to grant this special exception for their modified
+    versions; it is their choice whether to do so. The GNU General Public License gives permission to release a modified
+    version without this exception; this exception also makes it possible to release a modified version which carries forward
+    this exception.
+*/
+
 #include "fltk.h"
 
 // -------------------------------------
@@ -134,7 +168,7 @@ Fl_Group *CLicenseScreen::Create(void)
     
     m_pBuffer = new Fl_Text_Buffer;
     
-    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License Agreement");
+    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License agreement");
     m_pDisplay->buffer(m_pBuffer);
     
     m_pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-350)/2, (MAIN_WINDOW_H-80), 350, 25,
@@ -150,7 +184,7 @@ void CLicenseScreen::UpdateLang()
     m_bHasText = (!m_pBuffer->loadfile(CreateText("config/lang/%s/license", InstallInfo.cur_lang.c_str())) ||
                   !m_pBuffer->loadfile("config/license"));
     
-    m_pDisplay->label(GetTranslation("License Agreement"));
+    m_pDisplay->label(GetTranslation("License agreement"));
     m_pCheckButton->label(GetTranslation("I Agree to this license agreement"));
 }
 
@@ -285,9 +319,13 @@ void CSetParamsScreen::UpdateLang()
 {
     m_pBoxTitle->label(GetTranslation("Configure parameters"));
     m_pChoiceBrowser->label(GetTranslation("Parameters"));
+    m_pDescriptionOutput->label(GetTranslation("Description"));
+    m_pDefOutput->label(GetTranslation("Default"));
     m_pParamInput->label(CreateText("%s: ", GetTranslation("Value")));
     m_pValChoiceMenu->label(CreateText("%s: ", GetTranslation("Value")));
-
+    m_pSelDirInput->label(CreateText("%s: ", GetTranslation("Value")));
+    m_pSelDirButton->label(GetTranslation("Change"));
+    
     // Create dir selecter (need to do this when the language changes!)
     if (m_pDirChooser) delete m_pDirChooser;
     m_pDirChooser = new Fl_File_Chooser("~", "*",
@@ -352,7 +390,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
             for (std::list<std::string>::iterator p=m_pCurrentParamEntry->options.begin();
                  p!=m_pCurrentParamEntry->options.end();p++,s++)
             {
-                m_pValChoiceMenu->add(GetTranslation(MakeCString(*p)));
+                m_pValChoiceMenu->add(MakeCString(*p));
                 if (*p == m_pCurrentParamEntry->value) m_pValChoiceMenu->value(s);
             }
         }
@@ -590,7 +628,8 @@ void CInstallFilesScreen::AskPassCancelButtonCB(Fl_Widget *w, void *p)
 void CInstallFilesScreen::ChangeStatusText(const char *txt, int n)
 {
     // Install entries + 1 because it doesn't include extraction
-    m_pDisplay->label(CreateText("%s: %s (%d/%d)", GetTranslation("Status"), txt, n, InstallInfo.command_entries.size()+1));
+    m_pDisplay->label(CreateText("%s: %s (%d/%d)", GetTranslation("Status"), GetTranslation(txt), n,
+                      InstallInfo.command_entries.size()+1));
 }
 
 void CInstallFilesScreen::Install()
@@ -598,7 +637,7 @@ void CInstallFilesScreen::Install()
     std::string curfile;
     short percent = 0;
     
-    ChangeStatusText("Extracting Files", 1);
+    ChangeStatusText("Extracting files", 1);
     
     while(1)
     {
@@ -631,7 +670,7 @@ void CInstallFilesScreen::Install()
         std::string command = (*it)->command + " " + GetParameters(*it);
     
         AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
-        ChangeStatusText(GetTranslation((*it)->description.c_str()), step);
+        ChangeStatusText((*it)->description.c_str(), step);
 
         if ((*it)->need_root == NEED_ROOT)
         {

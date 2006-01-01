@@ -1,14 +1,7 @@
 OVERALL
-- License stuff(COPYING file, stuff in source files?, libsu)
 - Make a few example cfg files and directory layouts
-- A way to specify preferred frontends
-- Check uppercase words in strings files
-- Check for permissions on a default dir
-- Whitespace for params
 - Update notes files for libs
-- Test translations (strings, choices, descriptions)
 - Additional lib checks?
-- Fix multiple whitespace thing in config file
 
 
 MAIN
@@ -27,6 +20,8 @@ DOCS
 - include/ dir for compiling
 - Frontend choosing
 - Screenshots
+- License section
+- Whitespace for params
 
 
 ----------------------------- LATER ------------------------------------
@@ -34,3 +29,4 @@ DOCS
 OVERALL
 - Check permissions for inst dir
 - Package version?
+- Translate param names and param choices

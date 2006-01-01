@@ -5,8 +5,8 @@
 Welcome
 Welcome
 
-License Agreement
-License Agreement
+License agreement
+License agreement
 
 Select destination directory
 Select destination directory
@@ -84,6 +84,9 @@ Continue
 Finish
 Finish
 
+About
+About
+
 #-----------------------------------------------
 # Other
 #-----------------------------------------------
@@ -126,6 +129,9 @@ Parameters
 
 Value
 Value
+
+Change
+Change
 
 #-----------------------------------------------
 # Messages
