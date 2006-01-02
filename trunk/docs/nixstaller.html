@@ -366,11 +366,12 @@ Specifies a name for this parameter. This name is used for the installer itself(
 <br>
 
 <strong>parameter</strong><br>
-The parameter's name. This is used when exucuting the install command. (UNDONE)<br>
+The parameter's name. This is used when exucuting the install command. You should place '%s' where the value for this parameter should be put.<br>
 <br>
 <samp>Usage: parameter paramnamehere</samp><br>
 <br>
 <samp>Example: parameter --prefix=%s</samp><br>
+If the prefix is set to '/usr/local' then the parameter will look like this when its used: '--prefix=/usr/local'<br>
 <br>
 <br>
 
@@ -827,7 +828,7 @@ Nixstaller uses the following libraries:<br>
       <td>FLTK frontend</td>
     </tr>
     <tr>
-      <td>libm, libc, libstdc++</td>
+      <td>libm, libc, libstdc++, libutil</td>
       <td>Comes with GCC</td>
       <td>Core</td>
     </tr>

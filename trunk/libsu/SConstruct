@@ -1,4 +1,4 @@
-env = Environment(CXX = 'g++41', CCFLAGS = "-O2 -fPIC", CPPPATH=Split('/usr/local/include .'))
+env = Environment(CXX = 'g++', CCFLAGS = "-O", CPPPATH=Split('/usr/local/include .'))
 
 config_header = 'config.h'
 

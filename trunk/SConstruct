@@ -1,35 +1,53 @@
 import sys
 
-env = Environment(CXX = 'g++41', CCFLAGS = "-O -static-libgcc")
+env = Environment(CXX = 'g++', CCFLAGS = "-O -static-libgcc")
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')
 
-env.Append(LIBPATH=['.', 'main/', 'lib/'+cur_os, 'libsu/'])
-env.Append(CPPPATH=['.', 'main/', 'libsu/', 'include/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
+env.Append(LIBPATH=['lib/'+cur_os, 'libsu/'])
+env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
-     conf = env.Configure()
-     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
-          print 'libz must be installed!'
-          Exit(1)
-     if not conf.CheckLibWithHeader('bz2', ['stdio.h', 'bzlib.h'], 'C++', 'bz_stream s;', 0):
-          print 'libbz2 must be installed!'
-          Exit(1)
-     if not conf.CheckLibWithHeader('archive', 'archive.h', 'C++', 'archive_api_version();', 0):
-          print 'archive must be installed!'
-          Exit(1)
-     if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
-          print 'ncurses must be installed!'
-          Exit(1)
-     if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
-          print 'cdk must be installed!'
-          Exit(1)
-     if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 1):
-          print 'acl must be installed!'
-          Exit(1)
-     env = conf.Finish()
+    conf = env.Configure()
+    if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
+        print 'Couldn\'t find libz !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('bz2', ['stdio.h', 'bzlib.h'], 'C++', 'bz_stream s;', 0):
+        print 'Couldn\'t find libbz2 !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('archive', 'archive.h', 'C++', 'archive_api_version();', 0):
+        print 'Couldn\'t find libarchive !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
+        print 'Couldn\'t find libncurses !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
+        print 'Couldn\'t find libcdk !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('X11', 'X11/X.h', 'C++', ';', 0):
+        print 'Couldn\'t find libX11 !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('Xext', 'X11/X.h', 'C++', ';', 0):
+        print 'Couldn\'t find libXext !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
+        print 'Couldn\'t find libpng !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('jpeg', 'stdio.h', 'C++', ';', 0):
+        print 'Couldn\'t find libjpeg !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('fltk', ['FL/Fl.H', 'FL/filename.H'], 'C++', 'fl_filename_isdir(0);', 0):
+        print 'Couldn\'t find libfltk !'
+        Exit(1)
+    if not conf.CheckLibWithHeader('fltk_images', 'FL/Fl.H', 'C++', ';', 0):
+        print 'Couldn\'t find libfltk_images !'
+        Exit(1)
+    if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 1):
+        print 'Couldn\'t find libacl !'
+        Exit(1)
+    env = conf.Finish()
 else:
     # Make sure that scons properly cleans everything
     Execute(Delete('main/.sconsign'))
@@ -42,7 +60,7 @@ else:
 libsu = env.SConscript('libsu/SConstruct')
 
 # Builds main lib
-main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp'], CCFLAGS='$CCFLAGS -fPIC')
+main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp'], CCFLAGS='$CCFLAGS')
 
 env.Append(LIBS = Split('su main archive z bz2 util'))
 
@@ -57,4 +75,4 @@ fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Sp
 # extr = env.Program('extracter/extracter', ['extracter/extracter.c'])
 
 # Default to all
-Default(fltk, ncurses, main, libsu, env.Install('lib/'+cur_os, main), env.Install('bin/'+cur_os, ncurses), env.Install('bin/'+cur_os, fltk))
+Default(fltk, ncurses, main, libsu, env.Install('lib/'+cur_os, libsu), env.Install('lib/'+cur_os, main), env.Install('bin/'+cur_os, ncurses), env.Install('bin/'+cur_os, fltk))

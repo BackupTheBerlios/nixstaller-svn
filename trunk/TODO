@@ -1,7 +1,6 @@
 OVERALL
 - Make a few example cfg files and directory layouts
 - Update notes files for libs
-- Additional lib checks?
 
 
 MAIN
@@ -12,8 +11,6 @@ NCURSES FRONTEND
 
 
 FLTK FRONTEND
-- Finish UpdateLanguage functions
-- Handle exit
 
 
 DOCS

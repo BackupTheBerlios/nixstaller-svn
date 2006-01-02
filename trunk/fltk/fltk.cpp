@@ -133,15 +133,10 @@ void CreateMainWindow(char **argv)
 
     Fl::scheme("plastic");
 
-    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
-        throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                                    "However you don't have write permissions to this directory\n"
-                                    "Please restart the installer as a user who does or as the root user",
-                                    InstallInfo.dest_dir.c_str()));
-
     // Create about dialog
     pAboutWindow = new Fl_Window(400, 200, "About nixstaller");
     pAboutWindow->set_modal();
+    pAboutWindow->hide();
     pAboutWindow->begin();
 
     Fl_Text_Buffer *pBuffer = new Fl_Text_Buffer;
@@ -154,8 +149,15 @@ void CreateMainWindow(char **argv)
     pAboutOKButton->callback(AboutOKCB, 0);
     
     pAboutWindow->end();
-    
+
+    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
+        throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
+                                    "However you don't have write permissions to this directory\n"
+                                    "Please restart the installer as a user who does or as the root user",
+                                    InstallInfo.dest_dir.c_str()));
+
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
+    MainWindow->callback(WizCancelCB);
 
     pCancelButton = new Fl_Button(20, (MAIN_WINDOW_H-30), 120, 25, "Cancel");
     pCancelButton->callback(WizCancelCB, 0);
@@ -230,6 +232,11 @@ void UpdateLanguage()
 
 void EndProg()
 {
+    // HACK: Restore bell volume
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = -1;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
     exit(EXIT_SUCCESS);
@@ -248,6 +255,11 @@ void throwerror(bool dialog, const char *error, ...)
     if (dialog) fl_alert(txt);
     else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
     
+    // HACK: Restore bell volume
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = -1;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
     exit(EXIT_FAILURE);

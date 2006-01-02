@@ -231,9 +231,9 @@ void CSelectDirScreen::UpdateLang()
 
 bool CSelectDirScreen::Next()
 {
-    char *temp = CreateText(GetTranslation("This will install %s to the following directory:"),
+/*    char *temp = CreateText(GetTranslation("This will install %s to the following directory:"),
                             InstallInfo.program_name.c_str());
-    return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")));
+    return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")));*/
 }
 
 void CSelectDirScreen::OpenDirChooser(void)
@@ -502,6 +502,22 @@ Fl_Group *CInstallFilesScreen::Create()
 
 bool CInstallFilesScreen::Activate()
 {
+    if (InstallInfo.dest_dir_type == DEST_SELECT)
+    {
+        char *askstr = CreateText(GetTranslation("This will install %s to the following directory:"),
+                                  InstallInfo.program_name.c_str());
+        if (!fl_choice("%s\n%s\n%s", GetTranslation("Exit program"), GetTranslation("Continue"), NULL, askstr,
+             InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")))
+            EndProg();
+    }
+    else
+    {
+        char *askstr = CreateText(GetTranslation("This will install %s"), InstallInfo.program_name.c_str());
+        if (!fl_choice("%s\n%s", GetTranslation("Exit program"), GetTranslation("Continue"), NULL, askstr,
+             GetTranslation("Continue?")))
+            EndProg();
+    }
+        
     // Check if we need root access
     bool askpass = false;
     for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
