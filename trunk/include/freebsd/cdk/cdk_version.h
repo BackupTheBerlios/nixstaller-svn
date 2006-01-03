@@ -9,9 +9,9 @@
 extern "C" {
 #endif
 
-#define CDK_VERSION_MAJOR "4"
-#define CDK_VERSION_MINOR "9.11"
-#define CDK_VERSION_PATCH "20041224"
+#define CDK_VERSION_MAJOR "5"
+#define CDK_VERSION_MINOR "0"
+#define CDK_VERSION_PATCH "20050424"
 
 /*
  * Runtime to return the same version information.

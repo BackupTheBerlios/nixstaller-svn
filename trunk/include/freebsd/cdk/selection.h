@@ -1,5 +1,5 @@
 /*
- * $Id: selection.h,v 1.24 2004/08/30 00:00:57 tom Exp $
+ * $Id: selection.h,v 1.25 2005/04/14 22:19:25 tom Exp $
  */
 
 #ifndef CDKINCLUDES
@@ -12,11 +12,11 @@ extern "C" {
 
 #ifndef CDK_H
 #define CDKINCLUDES
-#include <cdk.h>
+#include <cdk/cdk.h>
 #undef CDKINCLUDES
-#include <binding.h>
-#include <cdkscreen.h>
-#include <cdk_objs.h>
+#include <cdk/binding.h>
+#include <cdk/cdkscreen.h>
+#include <cdk/cdk_objs.h>
 #endif
 
 /*
@@ -68,7 +68,7 @@ struct SSelection {
    WINDOW *	win;
    WINDOW *	scrollbarWin;
    WINDOW *	shadowWin;
-   int		titleAdj;
+   int		titleAdj;	/* unused */
    chtype **	item;
    int *	itemLen;
    int *	itemPos;
@@ -81,6 +81,7 @@ struct SSelection {
    int		maxTopItem;
    int		maxLeftChar;
    int		leftChar;
+
    int		lastItem;
    int		currentTop;
    int		currentHigh;
@@ -91,6 +92,7 @@ struct SSelection {
    int		toggleSize;
    int		togglePos;
    float	step;
+
    int		boxWidth;
    int		boxHeight;
    int		viewSize;

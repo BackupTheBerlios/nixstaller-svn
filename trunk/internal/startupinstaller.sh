@@ -1,6 +1,6 @@
 #/bin/sh
 
-#    Copyright (C) 2006 by Rick Helmus (rhelmus@gmail.com)
+#    Copyright (C) 2006 by Rick Helmus (rhelmus_AT_gmail.com)
 
 #    This file is part of Nixstaller.
 

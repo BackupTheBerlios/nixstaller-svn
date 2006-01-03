@@ -8,8 +8,8 @@
 
 
 #define CC_HAS_PROTOS 1
-#define CDK_PATCHDATE 20041224
-#define CDK_VERSION "4.9.11"
+#define CDK_PATCHDATE 20050424
+#define CDK_VERSION "5.0"
 #define HAVE_CURSES_H 1
 #define HAVE_CURSES_H 1
 #define HAVE_DIRENT_H 1
@@ -30,10 +30,11 @@
 #define HAVE_TERM_H 1
 #define HAVE_TYPE_CHTYPE 1
 #define HAVE_UNISTD_H 1
+#define MIXEDCASE_FILENAMES 1
 #define NCURSES 1
 #define PACKAGE "cdk"
 #define STDC_HEADERS 1
-#define SYSTEM_NAME "freebsd7.0"
+#define SYSTEM_NAME "freebsd6.0"
 #define TYPE_CHTYPE_IS_SCALAR 1
 #define setbegyx(win,y,x) ((win)->_begy = (y), (win)->_begx = (x), OK)
 

@@ -20,6 +20,13 @@
    <li> <A href="#tutorial" name="toc-tutorial">Tutorials</A> </li>
    <li> <A href="#compile" name="toc-compile">Compiling nixstaller</A> </li>
    <li> <A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A> </li>
+   <li> <A href="#licensecred" name="toc-licensecred">Credits and license</A>
+   <ul>
+      <li> <A href="#credits">Credits</A> </li>
+      <li> <A href="#license">License</A> </li>
+   </ul>
+   <li> <A href="#feedback" name="toc-feedback">Feedback, Questions, Suggestions etc.</A>
+   </li>
  </ul>
 
 <br>
@@ -238,6 +245,30 @@ Valid types are: jpg, png, gif and bmp.<br>
 <samp>Usage: intropic picnamehere</samp><br>
 <br>
 <samp>Example: intropic intro.jpg</samp><br>
+<br>
+<br>
+
+<strong>frontends</strong><br>
+Specifies which frontends should be bundled with the install package. The name of the frontends must be a whitespace separated list. Valid choices: ncurses and fltk <br>
+<br>
+<samp>Usage: frontends front1 front2 ...</samp><br>
+<br>
+<samp>Example: frontends fltk</samp><br>
+<br>
+<samp>Default: ncurses fltk</samp><br>
+<br>
+<br>
+
+<strong>targetos</strong><br>
+Specifies which frontends for which Operating Systems should be included in the installer package. Each OS name should be the lowercased out from the 'uname' command(ie linux or netbsd). You can specify multiple OS'es by separating them with a whitespace.<br>
+<br>
+<samp>Usage: targetos os1 os2 os3 ...</samp><br>
+<br>
+<samp>Example: targetos linux</samp><br>
+<br>
+<samp>Default: freebsd linux netbsd</samp><br>
+<br>
+<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the {compile section} if you want to support other platforms.</samp><br>
 <br>
 <br>
 
@@ -844,7 +875,13 @@ Nixstaller uses the following libraries:<br>
 Always use static versions of these libraries (they end with '.a', ie 'libz.a'). Also make sure they are <strong>not</strong> compiled with cpu specific optimizations(ie '-march=athlon-xp'). This may be the case if, for example, you got a library from a source based linux distro which let you modify the CFLAGS used for compilation. If you're unsure it may be wise the compile the libs by yourself.<br>
 You can find some notes about what is done to compile some libraries on different platforms in every subdirectory from the 'lib/' directory.<br>
 <br>
+
 After you collected your libraries you should put them in the right subdirectory in 'lib/'. The subdirectory must be the lowercased output from 'uname' (ie 'freebsd' - not 'FreeBSD').<br>
+<br>
+
+<strong>Header files</strong><br>
+You should put all the header files from the libs in the 'include/' directory. To know which headers you need you can take a look at which headers the 'include/' directory already has.<br>
+If the headers differs from other platforms or you are unsure if they do so you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). Again just take a look how the directory looks like by default.<br>
 <br>
 
 <p> <h3>SCons</h3>
@@ -861,6 +898,61 @@ The binaries will be automaticly put in the bin/[osname]/ directory(where [osnam
 <p> <h2><A href="#toc-faq" name="faq">Frequently Asked Questions (FAQ)</A></h2>
 First undone line.<br>
 Second undone line.<br>
+
+<p> <h2><A href="#toc-licensecred" name="licensecred">Credits and license</A></h2>
+
+<p> <h3><A name="credits">Credits</A></h3>
+<strong>kdesu:</strong> is heavily used for libsu. {kde project}.<br>
+<strong>Makeself:</strong> is used to create a self extracting archive. {makeself page}<br>
+<strong>BerliOS:</strong> Site hosting, SVN access etc. {berlios page}<br>
+<strong>KDevelop:</strong> Nice IDE which I mainly used for creating nixstaller. {kdevelop page}<br>
+<strong>Quanta+:</strong> Nice HTML editor which I used to create this manual. {quanta page}<br>
+<br>
+
+<p> <h3><A name="license">License</A></h3>
+Nixstaller is released under the GPlv2 license with an exception for CDK:<br>
+<pre>
+<em>
+    Copyright (C) 2006 by Rick Helmus (rhelmus_AT_gmail.com)
+
+    Nixstaller is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Nixstaller is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Nixstaller; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+    Linking cdk statically or dynamically with other modules is making a combined work based on cdk. Thus, the terms and
+    conditions of the GNU General Public License cover the whole combination.
+
+    In addition, as a special exception, the copyright holders of cdk give you permission to combine cdk program with free
+    software programs or libraries that are released under the GNU LGPL and with code included in the standard release of
+    DEF under the XYZ license (or modified versions of such code, with unchanged license). You may copy and distribute
+    such a system following the terms of the GNU GPL for cdk and the licenses of the other code concerned, provided that
+    you include the source code of that other code when and as the GNU GPL requires distribution of source code.
+
+    Note that people who make modified versions of cdk are not obligated to grant this special exception for their modified
+    versions; it is their choice whether to do so. The GNU General Public License gives permission to release a modified
+    version without this exception; this exception also makes it possible to release a modified version which carries forward
+    this exception.
+</em>
+</pre>
+<br>
+
+<p> <h2><A href="#toc-feedback" name="feedback">Feedback, Questions, Suggestions etc.</A></h2>
+If you got any suggestions, questions and such you can reach me through the following ways:<br>
+<ul>
+   <li> Send a email to rhelmus_AT_gmail.com</li>
+   <li> Use the forums at my site </li>
+   <li> Instant Message: rick_helmus8@hotmail.com(MSN), 224332897(ICQ) or rickakame(AIM) </li>
+ </ul>
 
 </body>
 </html>
