@@ -123,7 +123,9 @@ bool ReadConfig()
     {
         // Read one line at a time...this makes sure that we don't start reading at a new line if the user 'forgot'
         // to enter a value after the first command/variabele
-        std::getline(file, line);
+        if (!std::getline(file, line))
+            break;
+        
         std::istringstream strstrm(line); // Use a stringstream to easily read from this line
         
         if (!(strstrm >> str))
@@ -283,6 +285,7 @@ bool ReadConfig()
             }
             else if (str == "languages")
             {
+                printf("lang line: %s\n", strstrm.str().c_str());
                 std::string lang;
                 while (strstrm >> lang)
                     InstallInfo.languages.push_back(lang);

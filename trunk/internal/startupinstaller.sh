@@ -38,11 +38,22 @@
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 
+# Check if we can run on the users OS
+if [ ! -d ./frontends/$CURRENT_OS ]; then
+    echo "WARNING: Unsupported OS"
+    echo "WARNING: Defaulting to Linux"
+    CURRENT_OS="linux"
+fi
+
+# Still can't run?
+if [ ! -d ./frontends/$CURRENT_OS ]; then
+    echo "Error: No suitable frontend for OS \"$OS\" found, aborting"
+    exit 1
+fi
+
 NCURS="none"
 FLTK="none"
 RUNCOMMAND=
-
-echo "arg1: $1"
 
 # Check if ncurses frontend exists
 if [ -e ./frontends/$CURRENT_OS/ncurs ]; then

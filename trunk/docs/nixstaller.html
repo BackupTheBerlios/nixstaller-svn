@@ -12,13 +12,49 @@
 
 <p> <h2>Table of contents</h2>
  <ul>
-   <li> <A href="#intro" name="toc-intro">Introduction</A> </li>
+   <li> <A href="#intro" name="toc-intro">Introduction</A>
+   <ul>
+      <li> <A href="#features">Features</A> </li>
+   </ul>
+   </li>
    <li> <A href="#qstart" name="toc-qstart">Quick start</A> </li>
-   <li> <A href="#basics" name="toc-first">Basics</A> </li>
-   <li> <A href="#config" name="toc-config">Configuration files</A> </li>
-   <li> <A href="#create" name="toc-create">Creating an install package</A> </li>
-   <li> <A href="#tutorial" name="toc-tutorial">Tutorials</A> </li>
-   <li> <A href="#compile" name="toc-compile">Compiling nixstaller</A> </li>
+   <li> <A href="#basics" name="toc-first">Basics</A>
+   <ul>
+      <li> <A href="#installpack">Installation package</A> </li>
+      <li> <A href="#frontends">Frontends</A> </li>
+      <li> <A href="#config-file">Config file</A> </li>
+      <li> <A href="#lang-files">Language files</A> </li>
+      <li> <A href="#wlf-msg">Welcome message, License agreement and the 'finish message'</A> </li>
+      <li> <A href="#installation">The installation</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#config" name="toc-config">Configuration files</A>
+   <ul>
+      <li> <A href="#cfg-gen">General section</A> </li>
+      <li> <A href="#cfg-cmdentries">Command entries</A> </li>
+      <li> <A href="#cfg-paramentries">Parameter entries</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#create" name="toc-create">Creating an install package</A>
+   <ul>
+      <li> <A href="#dir-layout">Directory layout</A> </li>
+      <li> <A href="#creating-inst">Creating the installer</A> </li>
+      <li> <A href="#inst-examples">Examples</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#tutorial" name="toc-tutorial">Tutorials</A>
+   <ul>
+      <li> <A href="#simple-tut">Simple tutorial</A> </li>
+      <li> <A href="#adv-tut">Advanced tutorial</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#compile" name="toc-compile">Compiling nixstaller</A>
+   <ul>
+      <li> <A href="#req-libs">Required libraries</A> </li>
+      <li> <A href="#scons">SCons</A> </li>
+      <li> <A href="#compiling">Compiling</A> </li>
+   </ul>
+   </li>
    <li> <A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A> </li>
    <li> <A href="#licensecred" name="toc-licensecred">Credits and license</A>
    <ul>
@@ -35,7 +71,7 @@
 This document describes how to use nixstaller to create installers for unix like systems. <br>
 If you can't wait you can read the <A href="#qstart">Quick start section</A>. <br>
 <br>
-<h3>Features</h3>
+<h3><A name="features">Features</A></h3>
 Here is a list with the main features. Read further for more info to see what they do and how to use them.<br>
 
 <ul>
@@ -65,7 +101,7 @@ Meh...just read the tutorial :)<br>
 <p> <h2><A href="#toc-first" name="basics">Basics</A></h2>
 In this section the main things will be explained so you can get a idea how to use nixstaller and what it can do.<br>
 
-<p> <h3>Installation package</h3>
+<p> <h3><A name="installpack">Installation package</A></h3>
 The goal of nixstaller is to create a installation package. This package contains the following things:<br>
 <ul>
    <li>One or more frontends for the installer.</li>
@@ -80,17 +116,17 @@ The goal of nixstaller is to create a installation package. This package contain
 From these files will be a self extracting archive made(with the help of <A href="http://www.megastep.org/makeself/">makeself</A>). <br>
 The creation of a package is discussed in section <A href="#create">Creating an install package</A>.
 
-<p> <h3>Frontends</h3>
+<p> <h3><A name="frontends">Frontends</A></h3>
 Currently there are 2 frontends used for the installer: The first is using <A href="http://www.fltk.org">FLTK</A> and the second uses <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> with <A href="http://invisible-island.net/cdk/">CDK</A>.
 If the the installer starts it will check if the user is running X. If it is so it will launch the FLTK frontend, otherwise the ncurses frontend will be launched.<br>
 You can specifiy manually which frontends will be included in the installer package.
 
-<p> <h3>Config file</h3>
+<p> <h3><A name="config-file">Config file</A></h3>
 To configure the installer you need to make/edit a simple config file. There are several examples in the example/ directory.<br>
 Please read the <A href="#config">Configuration files section</A> to know what to put in that file.
 
-<p> <h3>Language files</h3>
-In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it.<br>
+<p> <h3><A name="lang-files">Language files</A></h3>
+In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it. Any line that starts with a '#' will be ignored.<br>
 Currently there are already 2 translations: dutch and english. You can find these in the lang/ directory. You can 'translate' the english 'strings' file in order to modify texts used by the installer.<br>
 
 <br>
@@ -101,7 +137,7 @@ Here is a example taken from the file 'lang/dutch/strings': <br>
 Licentie overeenkomst <br></samp>
 <br>
 
-"Licentie overeenkomst" is dutch for "License agreement". Its very important that the english text(the first line) is exactly the same as used by the installer.<br>
+"Licentie overeenkomst" is dutch for "License agreement". It's very important that the english text(the first line) is exactly the same as used by the installer.<br>
 If you read further in this file you will see the following sentence:<br>
 
 <br>
@@ -120,12 +156,12 @@ There are other things to be translated aswell:
    <li> The welcome message </li>
    <li> The license agreement </li>
    <li> The 'finish message' </li>
-   <li> Descriptions for commandentries and parameter entries </li>
+   <li> Descriptions for command entries and parameter entries </li>
  </ul>
  <br>
 The followinging sections will explain what they are and how to translate those.<br>
 
-<p> <h3>Welcome message, license agreement and the 'finish message'</h3>
+<p> <h3><A name="wlf-msg">Welcome message, license agreement and the 'finish message'</A></h3>
 <strong>Welcome message</strong><br>
 The welcome message is what will be displayed right after the user selected a language.<br>
 <br>
@@ -142,12 +178,12 @@ All these items are stored in plain text files.<br>
 The filenames for the welcome message, license agreement and finish message are respectively: 'welcome', 'license' and 'finish'.<br>
 You can have for each of file a translation, to see where to put the translated and untranslated versions check the <A href="#create">Creating an install package section</A>.
 
-<p> <h3>The installation</h3>
+<p> <h3><A name="installation">The installation</A></h3>
 <strong>Destination directory</strong><br>
 There are 3 ways where the files can are extracted to:
 <ol>
    <li>Specifified: During installation the user can say where they want to have their files (default)</li>
-   <li>Temporaray: This is especially usefull for files which have to be compiled. The files will be extracted to a temporary directory and after that some {install commands} are called(such as './configure &amp;&amp; make &amp;&amp; make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
+   <li>Temporaray: This is especially usefull for files which have to be compiled. The files will be extracted to a temporary directory and after that some install commands(see below) are called(such as './configure &amp;&amp; make &amp;&amp; make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
    <li>A given directory. The files will always be extracted to this directory.</li>
 </ol>
 <br>
@@ -164,7 +200,7 @@ Some commands(ie 'make install') may require root privileges. There are 2 ways t
 If a command requests root access a dialog will pop up asking the user to give the root password. The command will then be executed with 'su'.<br>
 <br>
 <em>Parameters</em><br>
-Some commands (ie 'configure') may need commandline parameters(such as --prefix). Parameters such as the '--prefix' one can be configured (ie --prefix=/usr/local). If you specify these parameters in the {config file} the user can do so during installation. A screen will pop up before the installation begins where the user can configure each parameter specified in the config file.<br>
+Some commands (ie 'configure') may need commandline parameters(such as --prefix). Parameters such as the '--prefix' one can be configured (ie --prefix=/usr/local). If you specify these parameters in the <A href="#config-file">config file</A> the user can do so during installation. A screen will pop up before the installation begins where the user can configure each parameter specified in the config file.<br>
 Currently there are 4 ways to configure a parameter:
 <ol>
    <li>One that can be simply enabled or disabled (if disabled the parameter won't be used when executing the install command).</li>
@@ -179,15 +215,17 @@ Here is an example: Lets say the command is './configure' and you have set '--pr
 
 You can set a default for each parameter, so that the user doesn't have to bother with everything.<br>
 <br>
-For each parameter you can also give a (short) description. If you add this description to one or more {language files} it will be translated when its shown.<br>
+For each parameter you can also give a (short) description. If you add this description to one or more
+<A href="#lang-files">language files</A> it will be translated when its shown.<br>
 <br>
-More info at the {config section}.
+More info at the <A href="#config">config section</A>.
 
 <p> <h2><A href="#toc-config" name="config">Configuration files</A></h2>
 The config file is used to specify what the installer should do and how the package must be created.<br>
 Config files can be very simple and small for simple installations.<br>
+Any line starting with a '#' will be ignored.<br>
 <br>
-<p> <h3>General section</h3>
+<p> <h3><A name="cfg-gen">General section</A></h3>
 In this section you can put the general options for the installer. For installers without any install commands this is the only section used in the configuration file.<br>
 <br>
 
@@ -212,7 +250,7 @@ Sets which archive type to use for packing the package that is going to be insta
 <br>
 
 <strong>installdir</strong><br>
-Sets where the install package files should be extracted too (see {insdir section} ).<br>
+Sets where the install package files should be extracted too (see <A href="#installation">The installation</A> ).<br>
 <br>
 <samp>Usage: installdir select|temp|default dirnamehere</samp><br>
 select: Let the user specify the install directory.<br>
@@ -268,12 +306,12 @@ Specifies which frontends for which Operating Systems should be included in the 
 <br>
 <samp>Default: freebsd linux netbsd</samp><br>
 <br>
-<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the {compile section} if you want to support other platforms.</samp><br>
+<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the <A href="#compile">compile section</A> if you want to support other platforms.</samp><br>
 <br>
 <br>
 
 <strong>commandentry</strong><br>
-Start point of a {commandentry}.<br>
+Start point of a <A href="#cfg-cmdentries">command entry</A>.<br>
 <br>
 <samp>Usage:<br>
 commandentry<br>
@@ -284,11 +322,11 @@ options for a commandentry here<br>
 ]<br></samp><br>
 <br>
 
-<p> <h3>Commandentries</h3>
-A command entry is a part where info can be specified for a single install command. A commandentry starts with simply 'commandentry' and a left square bracket('[') beaneath it. The commandentry ends with a right square bracket(']'). All the configuration options for a commandentry should be between the 2 square brackets.<br>
+<p> <h3><A name="cfg-cmdentries">Command entries</A></h3>
+A command entry is a part where info can be specified for a single install command. A command entry starts with simply 'commandentry' and a left square bracket('[') beaneath it. The command entry ends with a right square bracket(']'). All the configuration options for a command entry should be between the 2 square brackets.<br>
 <br>
 
-Here is a small example how a commandentry may look like:<br>
+Here is a small example how a command entry may look like:<br>
 
 <pre><samp>commandentry
 [
@@ -311,7 +349,8 @@ This specifies the actual command. It will be directly passed to sh (or su incas
 <br>
 
 <strong>description</strong><br>
-Here you can specify a simple description of what this command does. You can put any translations of it in the {language files}<br>
+Here you can specify a simple description of what this command does. You can put any translations of it in the
+<A href="#lang-files">language files</A><br>
 <br>
 <samp>Usage: description descriptionhere</samp><br>
 <br>
@@ -325,7 +364,8 @@ Specifies if or when this command needs to be executed as the root user.<br>
 <samp>Usage: needroot true|false|dependson varname</samp><br>
 true: command always needs to be executed as root user.<br>
 false: command never needs to be executed as root user.<br>
-dependson: it depends on the directory that is selected for the parameter with the {variabele name} 'varname'.<br>
+dependson: it depends on the directory that is selected for the parameter with the variabele name(see the
+<A href="#installation">the installation section</A>) 'varname'.<br>
 <br>
 <samp>Example: needroot true</samp><br>
 <br>
@@ -356,7 +396,7 @@ Sets the $PATH environment variabele for this command.<br>
 <br>
 
 <strong>addparam</strong><br>
-Start point of a {parameter entry}.<br>
+Start point of a <A href="#cfg-paramentries">parameter entry</A>.<br>
 <br>
 <samp>Usage:<br>
 addparam<br>
@@ -367,9 +407,9 @@ options for a parameter entry here<br>
 ]<br></samp><br>
 <br>
 
-<p> <h3>Parameter entries</h3>
+<p> <h3><A name="cfg-paramentries">Parameter entries</A></h3>
 A parameter entry is a part where info can be specified for a single parameter for the current install command. A parameter entry starts with 'addparam' and a left square bracket('[') beaneath it. The parameter entry ends with a right square bracket(']'). All the configuration options for a parameter entry should be between the 2 square brackets.<br>
-Parameter entries can only be defined inside a {commandentry}<br>
+Parameter entries can only be defined inside a <A href="#cfg-cmdentries">command entry</A><br>
 <br>
 
 Here is a small example how a parameter entry may look like:<br>
@@ -407,7 +447,8 @@ If the prefix is set to '/usr/local' then the parameter will look like this when
 <br>
 
 <strong>description</strong><br>
-You can specify a description for this parameter here. You can also add a translation to the {lang file}.<br>
+You can specify a description for this parameter here. You can also add a translation to a
+<A href="#lang-files">language file</A>.<br>
 <br>
 <samp>description descriptionoftheparamhere</samp><br>
 <br>
@@ -431,16 +472,19 @@ bool: the user can specify if this parameter is used at all.<br>
 <br>
 
 <strong>defaultval</strong><br>
-Specifies the default value used for this parameter. See the {type section} for valid values.<br>
+Specifies the default value used for this parameter.<br>
 <br>
 <samp>Usage: defaultval defaultvaluehere</samp><br>
 <br>
 <samp>Example: defaultval Yellow</samp><br>
 <br>
+<samp>Notes: If this paramater is a bool, valid values are: true or false. If this parameter is a list the value must be one of the entries in that list.</samp><br>
+<br>
 <br>
 
 <strong>varname</strong><br>
-Gives this parameter a variabele name. You should use this if a command which may need root access depends on the value of this parameter. See the {basics section} and the 'needroot' option in the commandentry section for more info.<br>
+Gives this parameter a variabele name. You should use this if a command which may need root access depends on the value of this parameter. See <A href="#installation">the installation</A> and the 'needroot' option in the
+<A href="#cfg-cmdentries">command entry section</A> for more info.<br>
 <br>
 <samp>Usage: varname somenamehere</samp><br>
 <br>
@@ -483,7 +527,7 @@ You can use this if the parameter uses 'list' to define a value.<br>
 In the previous sections there is explained what the basics are, which config options there are etc. In this section there will be explained how to apply those.<br>
 All the files which tell what the installer should do and how to package must be created go in a single directory. After this directory contains everything necessarily you can run a script with this directory as first argument to create the installer. <br>
 <br>
-<p> <h3>Directory layout</h3>
+<p> <h3><A name="dir-layout">Directory layout</A></h3>
 Here is a table for how the directory layout should look like:<br>
 <br>
 <table border="1">
@@ -591,7 +635,7 @@ The config file ('install.cfg') should always be present. There should also be a
 You can find other, 'real' examples in the example/ directory.<br>
 <br>
 
-<p> <h3>Creating the installer</h3>
+<p> <h3><A name="creating-inst">Creating the installer</A></h3>
 OK now you know how to make a directory layout we can start with the actual creation of the installer.<br>
 <br>
 In the main directory of the nixstaller package there is a script called 'geninstall.sh'. If you invoke this script it will copy all the files that need to be in the installer package(translations, frontends, the files that needs to be installed) to a temporary directory.<br>
@@ -606,10 +650,15 @@ This will create an installer from the release/ directory. The installer will be
 To test the installer simply run <samp>./setup.sh</samp> and see if it works.<br>
 <br>
 
+<p> <h3><A name="inst-examples">Examples</A></h3>
+For some examples go to the <A href="#tutorial">tutorial section</A> or see the 'example/' directory.<br>
+In the example/ directory you can find some examples of full directory layouts. You can call 'geninstall.sh' on these directories to make an installer of it.<br>
+<br>
+
 <p> <h2><A href="#toc-tutorial" name="tutorial">Tutorials</A></h2>
 In this section there are 2 tutorials: the first one is about making a simple installer which will only extract some files, the second is about creating a more advanced installer which will be able to compile a package.<br>
 
-<p> <h3>Simple tutorial</h3>
+<p> <h3><A name="simple-tut">Simple tutorial</A></h3>
 After you followed this tutorial you should have created a simple installer for package 'foo'. This installer will do the following:<br>
 <ul>
    <li> Let the user select a language (dutch or english) </li>
@@ -619,7 +668,8 @@ After you followed this tutorial you should have created a simple installer for 
  </ul>
 <br>
 
-First we need to make a directory for the 'geninstall.sh' script (see the {creating an installer section}). We will simply call this 'release/'<br>
+First we need to make a directory for the 'geninstall.sh' script
+(see the <A href="#creating-inst">creating the installer section</A>). We will simply call this 'release/'<br>
 After the directory is created you should create the main config file 'install.cfg' in there. Simply open a text editor and put this in the file:<br>
 <pre><samp>
 appname foo
@@ -628,7 +678,7 @@ installdir select
 languages english dutch
 </samp></pre>
 <br>
-For more info what everything does here, check the {config section}.<br>
+For more info what everything does here, check the <A href="#config">config section</A>.<br>
 <br>
 
 Now create another text file called 'welcome' with your favorite editor and put this also in the 'release/' directory.<br>
@@ -674,7 +724,7 @@ Assuming that package foo has one file named README and another called foo.bin, 
 Now from the main nixstaller directory execute <samp>./geninstall.sh release/</samp> (assuming the release/ directory is in the main nixstaller directory) and your installer is ready to use.<br>
 <br>
 
-<p> <h3>Advanced tutorial</h3>
+<p> <h3><A name="adv-tut">Advanced tutorial</A></h3>
 This tutorial is more advanced. This time we want an installer for package 'bar'. Bar should be compiled on the users machine before it can be used. 'bar' is one of these typical './configure &amp;&amp; make &amp;&amp; make install' packages.<br>
 <br>
 Here is a summary for what the installer for bar should do:<br>
@@ -687,7 +737,7 @@ Here is a summary for what the installer for bar should do:<br>
  </ul>
 <br>
 
-The 'welcome' file can be the same as used by the {previous tutorial}. The license agreement may look like this:<br>
+The 'welcome' file can be the same as used by the <A href="#simple-tut">previous tutorial</A>. The license agreement may look like this:<br>
 <pre>
 <samp>
 'bar' comes with no WARRENTY. Therefore you can't sue me if your machine explodes because of it.
@@ -731,10 +781,11 @@ commandentry
 ]
 </samp></pre>
 <br>
-This file may look more complicated for you than the previous one. Just study it for a bit and look at the {config section} for more info.<br>
+This file may look more complicated for you than the previous one. Just study it for a bit and look at the
+<A href="#config">config section</A> for more info.<br>
 <br>
 
-Now lets make a directory layout like the {previous tutorial}. 'bar' has the following files: 'README', 'configure' and 'bar.c'.<br>
+Now lets make a directory layout like the <A href="#simple-tut">previous tutorial</A>. 'bar' has the following files: 'README', 'configure' and 'bar.cpp'.<br>
 The directory layout will look like this:<br>
 <ul>
    <li> release/
@@ -756,7 +807,7 @@ The directory layout will look like this:<br>
       <ul>
          <li> README </li>
          <li> configure </li>
-         <li> bar.c </li>
+         <li> bar.cpp </li>
       </ul>
       </li>
    </ul>
@@ -792,7 +843,7 @@ Normally all required libraries and frontends are already compiled for Linux, Fr
 If, for example, you want to compile for another platform or made some modifications to the source code you should read this section to know how to compile nixstaller.<br>
 <br>
 
-<p> <h3>Required libraries</h3>
+<p> <h3><A name="req-libs">Required libraries</A></h3>
 Nixstaller uses the following libraries:<br>
 <br>
 
@@ -884,12 +935,12 @@ You should put all the header files from the libs in the 'include/' directory. T
 If the headers differs from other platforms or you are unsure if they do so you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). Again just take a look how the directory looks like by default.<br>
 <br>
 
-<p> <h3>SCons</h3>
+<p> <h3><A name="scons">SCons</A></h3>
 Nixstaller uses SCons as build system(instead of for example autoconf and GNU make). You can get SCons <A href="http://www.scons.org/">here</A>.<br>
 SCons is <A href="http://www.python.org/">python</A> based, so make sure you got that too. Also at the time of writing you need the latest SCons, which is "0.96.91".<br>
 <br>
 
-<p> <h3>Compiling</h3>
+<p> <h3><A name="compiling">Compiling</A></h3>
 If you got SCons installed simply type <samp>scons</samp> in the main nixstaller directory to build and configure everything.<br>
 To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
 The binaries will be automaticly put in the bin/[osname]/ directory(where [osname] is the lowercased output from 'uname').<br>
@@ -902,11 +953,14 @@ Second undone line.<br>
 <p> <h2><A href="#toc-licensecred" name="licensecred">Credits and license</A></h2>
 
 <p> <h3><A name="credits">Credits</A></h3>
-<strong>kdesu:</strong> is heavily used for libsu. {kde project}.<br>
-<strong>Makeself:</strong> is used to create a self extracting archive. {makeself page}<br>
-<strong>BerliOS:</strong> Site hosting, SVN access etc. {berlios page}<br>
-<strong>KDevelop:</strong> Nice IDE which I mainly used for creating nixstaller. {kdevelop page}<br>
-<strong>Quanta+:</strong> Nice HTML editor which I used to create this manual. {quanta page}<br>
+<strong>kdesu:</strong> is heavily used for libsu. <A href="http://www.kde.org">kde project</A>.<br>
+<strong>Makeself:</strong> is used to create a self extracting archive.
+<A href="http://www.megastep.org/makeself/">makeself page</A><br>
+<strong>BerliOS:</strong> Site hosting, SVN access etc. <A href="http://www.berlios.de/">berlios page</A><br>
+<strong>KDevelop:</strong> Nice IDE which I mainly used for creating nixstaller.
+<A href="http://www.kdevelop.org/">kdevelop page</A><br>
+<strong>Quanta+:</strong> Nice HTML editor which I used to create this manual.
+<A href="http://quanta.kdewebdev.org/">quanta page</A><br>
 <br>
 
 <p> <h3><A name="license">License</A></h3>

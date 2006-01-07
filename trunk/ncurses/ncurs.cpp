@@ -130,7 +130,7 @@ bool SelectLanguage()
     if (ScrollList.ExitType() == vNORMAL)
     {
         InstallInfo.cur_lang = LangItems[selection];
-        if (!ReadLang()) throwerror(true, "Could not load language file for %s", InstallInfo.cur_lang.c_str());
+        ReadLang();
     }
     else return false;
     

@@ -94,7 +94,7 @@ std::string GetTranslation(std::string &s)
     if (p != InstallInfo.translations.end()) return (*p).second;
     
     // No translation found
-    debugline("WARNING: No translation for %s\n", s.c_str());
+    //debugline("WARNING: No translation for %s\n", s.c_str());
     return s;
 }
 
@@ -104,7 +104,7 @@ char *GetTranslation(char *s)
     if (p != InstallInfo.translations.end()) return (*p).second;
     
     // No translation found
-    debugline("WARNING: No translation for %s\n", s);
+    //debugline("WARNING: No translation for %s\n", s);
     return s;
 }
 

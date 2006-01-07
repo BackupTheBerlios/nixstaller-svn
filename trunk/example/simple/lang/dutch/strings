@@ -3,181 +3,181 @@
 #-----------------------------------------------
 
 Welcome
-Welcome
+Welkom
 
 License agreement
-License agreement
+Licentie overeenkomst
 
 Select destination directory
-Select destination directory
+Selecteer bestemmings directory
 
 Configure parameters
-Configure parameters
+Parameters instellen
 
 Select a directory
-Select a directory
+Selecteer een directory
 
 Please enter new value
-Please enter new value
+Geef een nieuwe waarde
 
 Please choose new value
-Please choose new value
+Selecteer een nieuwe waarde
 
 Install output
-Install output
+Installatie uitvoer
 
 Please read the following text
-Please read the following text
+Lees de volgende tekst
 
 Enter name of new directory
-Enter name of new directory
+Type de naam van de nieuwe directory
 
 This installation requires root(administrator) privileges in order to continue
-This installation requires root(administrator) privileges in order to continue
+Deze installatie heeft root(systeembeheerder) rechten nodig om door te kunnen gaan
 
 Please enter the password of the root user
-Please enter the password of the root user
+Type het wachtwoord van de root gebruiker
 
 #-----------------------------------------------
 # Button names
 #-----------------------------------------------
 
 Next
-Next
+Volgende
 
 Back
-Back
+Vorige
 
 OK
 OK
 
 Cancel
-Cancel
+Annuleren
 
 Yes
-Yes
+Ja
 
 No
-No
+Nee
 
 Agree
-Agree
+Akkoord
 
 Decline
-Decline
+Niet akkoord
 
 Open directory
 Open directory
 
 Select directory
-Select directory
+Selecteer directory
 
 Exit
-Exit
+Sluiten
 
 Edit parameter
-Edit parameter
+Verander parameter
 
 Continue
-Continue
+Doorgaan
 
 Finish
-Finish
+Beïndigen
 
 About
-About
+Over
 
 #-----------------------------------------------
 # Other
 #-----------------------------------------------
 
 Default
-Default
+Standaard
 
 Current
-Current
+Huidig
 
 Description
-Description
+Beschrijving
 
 Enabled
-Enabled
+Ingeschakeld
 
 Disabled
-Disabled
+Uitgeschakeld
 
 Enable
-Enable
+Inschakelen
 
 Disable
-Disable
+Uitschakelen
 
 Status
 Status
 
 Extracting files
-Extracting files
+Bestanden uitpakken
 
 Progress
-Progress
+Vooruitgang
 
 I Agree to this license agreement
-I Agree to this license agreement
+Ik ga akkoord met deze licentie overeenkomst
 
 Parameters
 Parameters
 
 Value
-Value
+Waarde
 
 Change
-Change
+Verander
 
 #-----------------------------------------------
 # Messages
 #-----------------------------------------------
 
 This will install %s to the following directory:
-This will install %s to the following directory:
+%s zal in de volgende directory worden geïnstalleerd:
 
 This will install %s
-This will install %s
+%s zal nu worden geïnstalleerd
 
 Continue?
-Continue?
+Doorgaan?
 
 Installation of %s complete!
-Installation of %s complete!
+Installatie van %s gereed!
 
 Install commands are still running
-Install commands are still running
+Installatie opdrachten zijn nog bezig
 
 If you abort now this may lead to a broken installation
-If you abort now this may lead to a broken installation
+Als u nu stopt kan dit lijden tot een gebroken installatie
 
 Are you sure?
-Are you sure?
+Weet u het zeker?
 
 This will abort the installation
-This will abort the installation
+Dit zal de installatie onderbreken
 
 Root access is required to continue
-Root access is required to continue
+Root rechten zijn vereist om door te kunnen gaan
 
 Abort installation?
-Abort installation?
+Installatie onderbreken?
 
 Incorrect password given for root user
-Incorrect password given for root user
+Onjuist wachtwoord gegeven voor root gebruiker
 
 Please retype
-Please retype
+Type het opnieuw in
 
 Directory does not exist
-Directory does not exist
+Directory bestaat niet
 
 Do you want to create it?
-Do you want to create it?
+Wilt u het aanmaken?
 
 #-----------------------------------------------
 # Button bar (ncurses only)
@@ -190,117 +190,117 @@ ENTER
 ENTER
 
 ARROWS
-ARROWS
+PIJLEN
 
 ESC
 ESC
 
 Next button
-Next button
+Volgende knop
 
 Activate button
-Activate button
+Activeer knop
 
 Scroll text
-Scroll text
+Beweeg tekst
 
 Exit program
-Exit program
+Beïndig programma
 
 Navigate menu
-Navigate menu
+Navigeer menu
 
 Scroll install output
-Scroll install output
+Bekijk installatie uitvoer
 
 Create directory
-Create directory
+Maak directory
 
 #-----------------------------------------------
 # Error messages
 #-----------------------------------------------
 
 Error: %s
-Error: %s
+Fout: %s
 
 Could not use su to gain root access
-Could not use su to gain root access
+Kon su niet gebruiken om root rechten te krijgen
 
 Make sure you can use su(adding the current user to the wheel group may help)
-Make sure you can use su(adding the current user to the wheel group may help)
+Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen)
 
 Could not create directory
-Could not create directory
+Kon directory niet maken
 
 Could not change to directory
-Could not change to directory
+Kon niet naar de directory gaan
 
 Could not read current directory
-Could not read current directory
+Kon huidige directory niet lezen
 
 Could not open directory '%s'
-Could not open directory '%s'
+Kon directory '%s' niet openen
 
 Could not read directory '%s'
-Could not read directory '%s'
+Kon directory '%s' niet lezen
 
 Could not read directory
-Could not read directory
+Kon directory niet lezen
 
 Could not init ncurses
-Could not init ncurses
+Kon ncurses niet initializeren
 
 Could not init CDK
-Could not init CDK
+Kon CDK niet initializeren
 
 Could not load language file for %s
-Could not load language file for %s
+Kon vertalings bestand niet laden voor %s
 
 Error during extracting files
-Error during extracting files
+Fout tijdens het uitpakken van bestanden
 
 Failed to execute install command
-Failed to execute install command
+Kon installatie commando niet uitvoeren
 
 Could not execute installation commands (could not open pipe)
-Could not execute installation commands (could not open pipe)
+Kon installatie opdrachten niet uitvoeren (kon geen pipe openen)
 
 You don't have write access for this directory
-You don't have write access for this directory
+U heeft geen toegang om te schrijven naar deze directory
 
 #-----------------------------------------------
 # Error messages for CDK widget creation
 #-----------------------------------------------
 
 Can't create text viewer
-Can't create text viewer
+Kan geen tekst bekijker maken
 
 Could not create text label
-Could not create text label
+Kon geen tekst balk maken
 
 Could not create button box
-Could not create button box
+Kon geen button box maken
 
 Could not create scroll window
-Could not create scroll window
+Kon geen scroll venster maken
 
 Could not create alpha list
-Could not create alpha list
+Kon geen alpha list maken
 
 Could not create dialog window
-Could not create dialog window
+Kon geen dialoog venster maken
 
 Could not create window
-Could not create window
+Kon geen venster maken
 
 Could not create input entry
-Could not create input entry
+Kon geen invoer veld maken
 
 Could not create histogram
-Could not create histogram
+Kon geen histogram maken
 
 Could not create button bar
-Could not create button bar
+Kon de knoppen balk niet maken
 
 
 #-----------------------------------------------
@@ -308,32 +308,28 @@ Could not create button bar
 #-----------------------------------------------
 
 Add to Favorites
-Add to Favorites
+Voeg toe aan favorieten
 
 All Files (*)
-All Files (*)
+Alle bestanden (*)
 
 Custom Filter
-Custom Filter
+Eigen Filter
 
 Favorites
-Favorites
+Favorieten
 
 Filename:
-Filename:
+Bestandsnaam:
 
 File Systems
-File Systems
+Bestands Systemen
 
 Manage Favorites
-Manage Favorites
+Beheer Favorieten
 
 Show:
-Show:
+Zichtbaar:
 
 Create new directory
-Create new directory
-
-#-----------------------------------------------
-# Put your own translations here
-#-----------------------------------------------
+Maak een nieuwe directory

@@ -1,0 +1,3 @@
+To make sure that the nixstaller package won't get too big you should download the file manually:
+http://www.gnu.org/software/ncurses/ncurses.html
+Also make sure that you put the files from the directory 'ncurses-5.4/' in this directory, NOT this directory itself.

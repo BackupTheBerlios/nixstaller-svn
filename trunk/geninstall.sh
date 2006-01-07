@@ -108,9 +108,7 @@ copytemp()
     # Check if we got an intro picture
     INTROPIC=`awk '$1=="intropic"{print $2}' $CONFDIR/install.cfg`
 
-    if [ -z $INTROPIC ]; then
-        echo "Warning: intropic has no filename specified"
-    else
+    if [ ! -z $INTROPIC ]; then
         cp ${CONFDIR}/${INTROPIC} ${CONFDIR}/tmp || echo "Warning: $CONFDIR/$INTROPIC does not exist"
     fi
 }
@@ -135,7 +133,7 @@ fi
 
 # Check which target OS'es there are
 FRONTENDS=`awk '$1=="frontends"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
-if [ -z "FRONTENDS" ]; then
+if [ -z "$FRONTENDS" ]; then
     FRONTENDS="ncurses fltk" # Change if there are other frontends
 fi
 

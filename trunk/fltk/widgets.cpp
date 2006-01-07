@@ -391,7 +391,7 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
                  p!=m_pCurrentParamEntry->options.end();p++,s++)
             {
                 m_pValChoiceMenu->add(MakeCString(*p));
-                if (*p == m_pCurrentParamEntry->value) m_pValChoiceMenu->value(s);
+                if (*p == m_pCurrentParamEntry->value) { debugline("val: %s", p->c_str()); m_pValChoiceMenu->value(s); }
             }
         }
         m_pParamInput->hide();
