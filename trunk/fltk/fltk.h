@@ -84,7 +84,6 @@ public:
 
 class CLangScreen: public CBaseScreen
 {
-    Fl_Menu_Item *m_pMenuItems;
     Fl_Choice *m_pChoiceMenu;
     
 public:
@@ -152,7 +151,6 @@ class CSetParamsScreen: public CBaseScreen
 {
     Fl_Box *m_pBoxTitle;
     Fl_Input *m_pParamInput;
-    Fl_Menu_Item *m_pValMenuItems;
     Fl_Choice *m_pValChoiceMenu;
     Fl_Hold_Browser *m_pChoiceBrowser;
     Fl_Multiline_Output *m_pDescriptionOutput;

@@ -101,8 +101,8 @@ copytemp()
             esac
         done
         
-        cp $CURDIR/lib/$OS/libc.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libc for $OS"
-        cp $CURDIR/lib/$OS/libm.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libm for $OS"
+#        cp $CURDIR/lib/$OS/libc.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libc for $OS"
+#        cp $CURDIR/lib/$OS/libm.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libm for $OS"
     done
 
     # Check if we got an intro picture

@@ -1,52 +1,85 @@
 import sys
+import os
+import glob
+import commands
+import shutil
 
-env = Environment(CXX = 'g++', CCFLAGS = "-O -static-libgcc")
+# Check if atleast one file exists from a given list
+def checklibexist(context, fname):
+    context.Message('Checking for %s...' % fname)
+    if (os.path.lexists(lib_dir+'/'+fname)):
+        context.Result(1)
+        return True
+
+    context.Result(0)
+    return False
+
+
+env = Environment(CCFLAGS = "-O")
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')
+lib_dir = 'lib/'+cur_os
 
 env.Append(LIBPATH=['lib/'+cur_os, 'libsu/'])
-env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/'+cur_os, 'include/'+cur_os+'/cdk'])
+env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'+cur_os, 'include/'+cur_os+'/cdk',
+                     'include/'+cur_os+'/ncurses' ])
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
-    conf = env.Configure()
+    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist})
+
+    if not conf.checklibexist('libstdc++.a'):
+        print 'Searching for libstdc++.a'
+        lname = commands.getoutput('gcc -print-file-name=libstdc++.a')
+        if lname:
+            try:
+                shutil.copy(lname, lib_dir)
+                print "Copied %s to %s" % (lname, lib_dir)
+            except (IOError, os.error), why:
+                print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+                Exit(1)
+        else:
+            print 'Error: Could not find any libstdc++.a! Please copy it manually to ', lib_dir
+            Exit(1)
+            
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
-        print 'Couldn\'t find libz !'
+        print "Couldn\'t find libz !"
         Exit(1)
     if not conf.CheckLibWithHeader('bz2', ['stdio.h', 'bzlib.h'], 'C++', 'bz_stream s;', 0):
-        print 'Couldn\'t find libbz2 !'
+        print "Couldn't find libbz2 !"
         Exit(1)
     if not conf.CheckLibWithHeader('archive', 'archive.h', 'C++', 'archive_api_version();', 0):
-        print 'Couldn\'t find libarchive !'
+        print "Couldn't find libarchive !"
         Exit(1)
     if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
-        print 'Couldn\'t find libncurses !'
+        print "Couldn't find libncurses !"
         Exit(1)
     if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
-        print 'Couldn\'t find libcdk !'
+        print "Couldn't find libcdk !"
         Exit(1)
     if not conf.CheckLibWithHeader('X11', 'X11/X.h', 'C++', ';', 0):
-        print 'Couldn\'t find libX11 !'
+        print "Couldn't find libX11 !"
         Exit(1)
     if not conf.CheckLibWithHeader('Xext', 'X11/X.h', 'C++', ';', 0):
-        print 'Couldn\'t find libXext !'
+        print "Couldn't find libXext !"
         Exit(1)
     if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
-        print 'Couldn\'t find libpng !'
+        print "Couldn't find libpng !"
         Exit(1)
     if not conf.CheckLibWithHeader('jpeg', 'stdio.h', 'C++', ';', 0):
-        print 'Couldn\'t find libjpeg !'
+        print "Couldn't find libjpeg !"
         Exit(1)
     if not conf.CheckLibWithHeader('fltk', ['FL/Fl.H', 'FL/filename.H'], 'C++', 'fl_filename_isdir(0);', 0):
-        print 'Couldn\'t find libfltk !'
+        print "Couldn't find libfltk !"
         Exit(1)
     if not conf.CheckLibWithHeader('fltk_images', 'FL/Fl.H', 'C++', ';', 0):
-        print 'Couldn\'t find libfltk_images !'
+        print "Couldn't find libfltk_images !"
         Exit(1)
-    if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 1):
-        print 'Couldn\'t find libacl !'
+    if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 0):
+        print "Couldn't find libacl !"
         Exit(1)
+        
     env = conf.Finish()
 else:
     # Make sure that scons properly cleans everything
@@ -63,6 +96,10 @@ libsu = env.SConscript('libsu/SConstruct')
 main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp'], CCFLAGS='$CCFLAGS')
 
 env.Append(LIBS = Split('su main archive z bz2 util'))
+
+# UNDONE?
+if cur_os == 'linux':
+    env.Append(LIBS = 'acl')
 
 # Builds ncurses frontend
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '

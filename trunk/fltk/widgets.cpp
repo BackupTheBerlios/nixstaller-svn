@@ -43,22 +43,19 @@ Fl_Group *CLangScreen::Create(void)
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
     
-    m_pMenuItems = new Fl_Menu_Item[InstallInfo.languages.size()+1];
-    
     new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Please select a language");
     
-    short s=0;
-    for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++, s++)
-        m_pMenuItems[s].text = CreateText(p->c_str());
-        
-    m_pMenuItems[s].text = NULL;
     m_pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"Language: ");
-    m_pChoiceMenu->menu(m_pMenuItems);
     m_pChoiceMenu->callback(LangMenuCB);
+    
+    for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
+        m_pChoiceMenu->add(MakeCString(*p));
+
+    m_pChoiceMenu->value(0);
     
     m_pGroup->end();
     
-    InstallInfo.cur_lang = m_pMenuItems[0].text;
+    InstallInfo.cur_lang = InstallInfo.languages.front();
     
     return m_pGroup;
 }

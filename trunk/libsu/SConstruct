@@ -1,4 +1,4 @@
-env = Environment(CXX = 'g++', CCFLAGS = "-O", CPPPATH=Split('/usr/local/include .'))
+env = Environment(CCFLAGS = "-O", CPPPATH='.')
 
 config_header = 'config.h'
 
@@ -13,7 +13,7 @@ if not env.GetOption('clean'):
     conf.CheckCXXHeader('pty.h', "<>")
     
     if conf.CheckLib('util', 'openpty'):
-        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DHAVE_OPENPTY=1')
+        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DHAVE_OPENPTY')
         
     conf.CheckFunc('setgroups')
     conf.CheckFunc('getgroups')
