@@ -16,7 +16,7 @@ other: other things(fluid, examples) didn't want to compile.
 BZIP2:
 version: 1.0.3
 
-GZIP:
+ZLIB:
 version: 1.2.3
 
 libarchive
@@ -32,6 +32,6 @@ X11 (libX11, libXext)
 version: 6.8.2
 notes: compiled from ports
 
-GCC (libm, libc, libstdc++, libutil)
+GCC (libstdc++, libutil)
 version: 3.4.4
-notes: compiled from basesystem
+notes: used from basesystem

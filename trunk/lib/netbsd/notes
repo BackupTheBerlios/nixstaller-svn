@@ -1,16 +1,41 @@
 Notes for netbsd libs:
 
+JPEG:
+version: 6b
+notes: compiled from pkgsrc
+
+PNG:
+version: 1.2.8
+notes: compiled from pkgsrc
+
 FLTK:
-configure comannd: CPPFLAGS="-I/usr/pkg/include" LDFLAGS="-L/usr/pkg/lib" ./configure --disable-localpng --disable-localjpeg --x-includes=/usr/X11R6/include/ --x-libraries=/usr/X11R6/lib --enable-gl=no
-version used: fltk-1.1.6
+configure command: CPPFLAGS="-I/usr/pkg/include" LDFLAGS="-L/usr/pkg/lib" ./configure --disable-localpng --disable-localjpeg (configure script wouldn't detect png and jpeg libs otherwise)
+version: 1.1.6
+other: Failed at building examples.
+
+BZIP2:
+version: 1.0.3
+
+ZLIB:
+version: 1.2.3
+
+libarchive
+version: 1.02.034
 
 CDK:
 configure options: --with-ncurses  --with-curses-dir=/home/rick/div/ncurses-5.4 --without-curses
-version used: cdk-5.0-20050424
+version: 5.0-20050424
 other: manually changed HAVE_CURSES_H to HAVE_NCURSES_H in cdk/cdk_config.h(would conflict with native curses library otherwise)
 
-ncurses:
+NCURSES:
 configure options: --without-curses-h --enable-termcap
-version used: ncurses-5.4
+version: 5.4
 other: had to enable termcap fallback, since no terminfo exists by default
 
+Xfree (libX11, libXext)
+version: 4.4.0
+notes: used from basesystem
+
+GCC (libstdc++, libutil)
+version: 3.3.3
+notes: used from basesystem

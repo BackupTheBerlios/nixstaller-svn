@@ -7,7 +7,7 @@ import shutil
 # Check if atleast one file exists from a given list
 def checklibexist(context, fname):
     context.Message('Checking for %s...' % fname)
-    if (os.path.lexists(lib_dir+'/'+fname)):
+    if (os.path.exists(lib_dir+'/'+fname)):
         context.Result(1)
         return True
 
