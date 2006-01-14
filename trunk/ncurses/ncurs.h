@@ -54,7 +54,7 @@
 #define DEFAULT_HEIGHT      12
 
 int ReadDir(const std::string &dir, char ***list);
-int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key GCC_UNUSED);
+int SwitchButtonK(EObjectType cdktype, void *object, void *clientData, chtype key);
 int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype key);
 int ViewFile(char *file, char **buttons, int buttoncount, char *title, bool showabout=true, bool showexit=true);
 void WarningBox(const char *msg, ...);

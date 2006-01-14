@@ -209,7 +209,7 @@ if [ ! -d $CONFDIR/files_all -a ! -d $CONFDIR/files_$CURRENT_OS ]; then
 fi
 
 echo "Generating installer..."
-$CURDIR/makeself.sh $CONFDIR/tmp $CURDIR/setup.sh "nixstaller" sh ./startupinstaller.sh '$1'
+$CURDIR/makeself.sh --$ARCH_TYPE $CONFDIR/tmp $CURDIR/setup.sh "nixstaller" sh ./startupinstaller.sh
 
 echo "Cleaning up..."
 remtemp

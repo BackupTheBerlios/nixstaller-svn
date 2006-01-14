@@ -114,7 +114,6 @@ bool ReadConfig()
     const int maxread = std::numeric_limits<std::streamsize>::max();
     std::ifstream file("config/install.cfg");
     std::string str, line, tmp, ParamName;
-    std::string::size_type strpos;
     bool incommandentry = false, inparamentry = false;
     command_entry_s *pCommandEntry = NULL;
     param_entry_s *pParamEntry = NULL;

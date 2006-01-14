@@ -15,7 +15,7 @@ def checklibexist(context, fname):
     return False
 
 
-env = Environment(CCFLAGS = "-O")
+env = Environment(CCFLAGS = "-Wall -O")
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')
@@ -41,6 +41,20 @@ if not env.GetOption('clean'):
                 Exit(1)
         else:
             print 'Error: Could not find any libstdc++.a! Please copy it manually to ', lib_dir
+            Exit(1)
+
+    if not conf.checklibexist('libm.a'):
+        print 'Searching for libm.a'
+        lname = commands.getoutput('gcc -print-file-name=libm.a')
+        if lname:
+            try:
+                shutil.copy(lname, lib_dir)
+                print "Copied %s to %s" % (lname, lib_dir)
+            except (IOError, os.error), why:
+                print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+                Exit(1)
+        else:
+            print 'Error: Could not find any libm.a! Please copy it manually to ', lib_dir
             Exit(1)
             
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):

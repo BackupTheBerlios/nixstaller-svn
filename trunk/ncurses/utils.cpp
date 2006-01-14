@@ -94,7 +94,7 @@ int ReadDir(const std::string &dir, char ***list)
     return count;
 }
 
-int SwitchButtonK(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key GCC_UNUSED)
+int SwitchButtonK(EObjectType cdktype, void *object, void *clientData, chtype key)
 {
     CDKBUTTONBOX *buttonbox = (CDKBUTTONBOX *)clientData;
     injectCDKButtonbox(buttonbox, key);

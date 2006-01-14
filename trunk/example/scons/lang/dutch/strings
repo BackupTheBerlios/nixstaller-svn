@@ -339,14 +339,37 @@ Maak een nieuwe directory
 # Put your own translations here
 #-----------------------------------------------
 
-Configuring bar for your system
-bar wordt voor uw systeem ingesteld
+Installing SCons
+SCons wordt geïnstalleerd
 
-Specifies the directory which shall be used to install bar too.
-Geeft de directory aan waar bar naar zal worden geïnstalleerd.
 
-Compiling bar
-bar wordt gecompileerd
+Does not install the version numbered scripts('scons-0.96.91' and 'sconsign-0.96.91')
+Zal geen versie genummerde scripts installeren('scons-0.96.91' en 'sconsign-0.96.91')
 
-Installing files
-Bestanden worden geïnstalleerd
+
+Does not install the unversioned scripts('scons' and 'sconsign')
+Zal niet de ongenummerde scripts installeren('scons' and 'sconsign')
+
+
+Make 'scons' and 'sconsign' hardlinks to 'scons-0.96.91' and 'sconsign-0.96.91'
+Maak harde koppelingen van 'scons' en 'sconsign' naar 'scons-0.96.91' en 'sconsign-0.96.91'
+
+
+Make 'scons' and 'sconsign' symbolic links to 'scons-0.96.91' and 'sconsign-0.96.91'
+Maak symbolische koppelingen van 'scons' en 'sconsign' naar 'scons-0.96.91' en 'sconsign-0.96.91'
+
+
+Installs .bat files for windows users. This is handy for a shared installation.
+Installeert .bat bestanden voor windows gebruikers. Dit is handig voor een gedeelde installatie.
+
+
+Does not install any man pages.
+Zal de man pagina's niet installeren.
+
+
+If you want to use the SCons library modules in other python scripts enable this.
+Als je de SCons bibiliotheek modules wil voor andere python scripts schakel deze optie dan in.
+
+
+Relative install directory. Files will be installed in subdirectories (such as bin/, lib/) in this directory.
+Relatieve installatie directory. Bestanden zullen in subdirectories worden geïnstalleerd (zoals bin/, lib/) in deze directory.

@@ -1,7 +1,7 @@
 OVERALL
-- Make a few example cfg files and directory layouts
 - Update notes files for libs
-- Check libutil
+- Write access for param bug
+- Modify Makeself?
 
 
 MAIN
@@ -20,6 +20,7 @@ DOCS
 - FAQ
 - Installation
 - gmake
+- Libs for compiling
 
 
 ----------------------------- LATER ------------------------------------

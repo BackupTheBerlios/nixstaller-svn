@@ -1,0 +1,1 @@
+To keep the nixstaller package small I packed the SCons file, just extract them (and (re)move the archive and this file) for an functional installer.

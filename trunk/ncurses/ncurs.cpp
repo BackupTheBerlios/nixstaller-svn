@@ -382,7 +382,6 @@ bool InstallFiles()
     InstallOutput.SetBgColor(5);
     nodelay(WindowOf(InstallOutput.GetSWin()), true); // Make sure input doesn't block
 
-    const int halfx = getmaxx(InstallOutput.GetSWin()->win)/2;
     const int maxx = getmaxx(InstallOutput.GetSWin()->win);
 
     CCDKSWindow ProggWindow(CDKScreen, 0, 2, 5, maxx, NULL, 4);

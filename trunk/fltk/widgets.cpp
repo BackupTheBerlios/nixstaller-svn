@@ -292,7 +292,7 @@ Fl_Group *CSetParamsScreen::Create()
     m_pDefOutput->value("Test");
     
     x=100;
-    y+=40;//120;
+    y+=40;
 
     // List of parameter options
     m_pParamInput = new Fl_Input(x, y, 250, 25, "Value: ");

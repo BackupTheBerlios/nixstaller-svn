@@ -482,7 +482,7 @@ bool CFileDialog::Activate()
 
         if (ButtonBox.GetCurrent() == 1)
         {
-            if (!WriteAccess(m_szDestDir))
+            if (m_bNeedWAccess && !WriteAccess(m_szDestDir))
             {
                 WarningBox("You don't have write access for this directory");
                 continue;
@@ -521,9 +521,6 @@ bool CFileDialog::Activate()
 bool CFileDialog::UpdateFileList(const char *dir)
 {
     std::string newdir = m_szDestDir;
-    struct dirent *dirstruct;
-    struct stat filestat;
-    DIR *dp;
     
     newdir += "/";
     newdir += dir;
