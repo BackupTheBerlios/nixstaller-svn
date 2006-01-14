@@ -57,6 +57,20 @@ if not env.GetOption('clean'):
             print 'Error: Could not find any libm.a! Please copy it manually to ', lib_dir
             Exit(1)
             
+    if not conf.checklibexist('libutil.a'):
+        print 'Searching for libutil.a'
+        lname = commands.getoutput('gcc -print-file-name=libutil.a')
+        if lname:
+            try:
+                shutil.copy(lname, lib_dir)
+                print "Copied %s to %s" % (lname, lib_dir)
+            except (IOError, os.error), why:
+                print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+                Exit(1)
+        else:
+            print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
+            Exit(1)
+
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
         print "Couldn\'t find libz !"
         Exit(1)
