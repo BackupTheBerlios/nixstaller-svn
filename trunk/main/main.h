@@ -63,7 +63,7 @@ struct command_entry_s
     std::map<std::string, param_entry_s *> parameter_entries;
     std::string dep_param;
     bool exit_on_failure;
-    command_entry_s(void) : path("/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."), need_root(NO_ROOT),
+    command_entry_s(void) : need_root(NO_ROOT), path("/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."),
                             exit_on_failure(true) { };
 };
 

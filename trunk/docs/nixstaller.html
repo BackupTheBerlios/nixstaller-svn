@@ -17,6 +17,7 @@
       <li> <A href="#features">Features</A> </li>
    </ul>
    </li>
+   <li> <A href="#inst" name="toc-inst">Installation</A> </li>
    <li> <A href="#qstart" name="toc-qstart">Quick start</A> </li>
    <li> <A href="#basics" name="toc-first">Basics</A>
    <ul>
@@ -95,8 +96,27 @@ Here is a list with the main features. Read further for more info to see what th
    <li>Frontends are almost completly staticly linked. This way the end user doesn't have to worry about missing dependencies for the installer itself.</li>
  </ul>
 
+<p> <h2><A href="#toc-inst" name="inst">Installation</A></h2>
+Installation of Nixstaller if very easy: just extract the files to a directory and you're done.<br>
+All the work is done inside the directory where you extracted nixstaller to.<br>
+<br>
+
 <p> <h2><A href="#toc-qstart" name="qstart">Quick start</A></h2>
-Meh...just read the tutorial :)<br>
+If you're in a hurry or want a quick reference:<br>
+
+<ul>
+   <li> Extract files to a directory </li>
+   <li> Open terminal and cd to this directory </li>
+   <li> mkdir release/ </li>
+   <li> cp -R example/simple/ release/ </li>
+   <li> Edit release/install.cfg </li>
+   <li> Put some files in release/files_all/ </li>
+   <li> ./geninstall.sh release/ </li>
+   <li> ./setup.sh </li>
+ </ul>
+<br>
+Also read the <A href="#tutorial">tutorials</A><br>
+<br>
 
 <p> <h2><A href="#toc-first" name="basics">Basics</A></h2>
 In this section the main things will be explained so you can get a idea how to use nixstaller and what it can do.<br>

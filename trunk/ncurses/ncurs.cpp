@@ -314,7 +314,7 @@ bool ConfParams()
             else
             {
                 std::vector<char *> chitems;
-                int cur;
+                int cur = 0;
                 
                 if (pParam->param_type == PTYPE_BOOL)
                 {

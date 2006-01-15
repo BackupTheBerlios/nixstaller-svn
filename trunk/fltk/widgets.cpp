@@ -226,13 +226,6 @@ void CSelectDirScreen::UpdateLang()
     m_pSelDirButton->label(GetTranslation("Select a directory"));
 }
 
-bool CSelectDirScreen::Next()
-{
-/*    char *temp = CreateText(GetTranslation("This will install %s to the following directory:"),
-                            InstallInfo.program_name.c_str());
-    return (fl_ask("%s\n%s\n%s", temp, InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")));*/
-}
-
 void CSelectDirScreen::OpenDirChooser(void)
 {
     m_pDirChooser->show();
@@ -266,7 +259,7 @@ Fl_Group *CSetParamsScreen::Create()
 
     m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "Configure parameters");
     
-    const int iChoiceW = 250, iDescW = 250, iTotalW = iChoiceW + 10 + iDescW;
+    const int iChoiceW = 250, iDescW = 250;
     int x = 40, y = 120;
 
     m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 145, "Parameters");
@@ -784,4 +777,5 @@ bool CFinishScreen::Activate()
         return false;
 
     pNextButton->label(GetTranslation("Finish"));
+    return true;
 }

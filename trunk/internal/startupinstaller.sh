@@ -69,18 +69,18 @@ fi
 if [ $NCURS != "none" -a $FLTK != "none" ]; then
     # X Running?
     if [ -z $DISPLAY ]; then
-        RUNCOMMAND="${NCURS} $CURRENT_OS" # Not running, use ncurses frontend
+        RUNCOMMAND="${NCURS}" # Not running, use ncurses frontend
     else
-        RUNCOMMAND="$FLTK $CURRENT_OS"
+        RUNCOMMAND="$FLTK"
     fi
 elif [ $NCURS != "none" ]; then
-    RUNCOMMAND="${NCURS} $CURRENT_OS"
+    RUNCOMMAND="${NCURS}"
 elif [ $FLTK != "none" ]; then
-    RUNCOMMAND="$FLTK $CURRENT_OS"
+    RUNCOMMAND="$FLTK"
 else
     echo "Error: Couldn't find any frontend to use!"
     exit 1
 fi
 
-#Incase there are missing libraries, we just change the lib path...
-LD_LIBRARY_PATH="$LD_LIBRARY_PATH:./lib/$CURRENT_OS" $RUNCOMMAND
+# And here we go...
+$RUNCOMMAND

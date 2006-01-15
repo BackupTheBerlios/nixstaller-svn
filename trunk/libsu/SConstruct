@@ -1,4 +1,4 @@
-env = Environment(CCFLAGS = "-O", CPPPATH='.')
+env = Environment(CCFLAGS = "-Wall -O", CPPPATH='.')
 
 config_header = 'config.h'
 

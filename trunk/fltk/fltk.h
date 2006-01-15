@@ -141,7 +141,6 @@ public:
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual bool Next(void);
     
     void OpenDirChooser(void);
     static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSelectDirScreen *)p)->OpenDirChooser(); };
@@ -197,7 +196,7 @@ protected:
     
 public:
     CInstallFilesScreen(void) : CBaseScreen(), m_szPassword(NULL) { };
-    ~CInstallFilesScreen(void) { CleanPasswdString(m_szPassword); };
+    virtual ~CInstallFilesScreen(void) { CleanPasswdString(m_szPassword); };
     
     virtual Fl_Group *Create(void);
     virtual bool Activate(void);

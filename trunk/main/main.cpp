@@ -38,6 +38,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include "main.h"
+#include <sys/utsname.h>
 
 install_info_s InstallInfo;
 std::list<char *> StringList;
@@ -49,20 +50,23 @@ bool MainInit(int argc, char *argv[])
            "This is free software, and you are welcome to redistribute it\n"
            "under certain conditions; see the about section for details.\n");
     
-    if (!ReadConfig())
-        return false;
-
-    if (argc < 2)
+    // Get current OS name
+    utsname inf;
+    if (uname(&inf) == -1)
         return false;
     
-    InstallInfo.os = argv[1];
+    InstallInfo.os = inf.sysname;
+    std::transform(InstallInfo.os.begin(), InstallInfo.os.end(), InstallInfo.os.begin(), tolower);
     
     char curdir[1024];
     if (getcwd(curdir, sizeof(curdir)) == 0)
         throwerror(false, "Could not read current directory");
 
     InstallInfo.own_dir = curdir;
-    
+
+    if (!ReadConfig())
+        return false;
+
     if (InstallInfo.dest_dir_type == DEST_TEMP)
         InstallInfo.dest_dir = curdir;
     else if (InstallInfo.dest_dir_type == DEST_SELECT)

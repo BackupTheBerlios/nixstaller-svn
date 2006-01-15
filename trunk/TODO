@@ -8,8 +8,8 @@ MAIN
 
 
 NCURSES FRONTEND
-- Back button?
 - Check window width's
+
 
 FLTK FRONTEND
 
@@ -18,7 +18,6 @@ DOCS
 - Screenshots
 - More credits?
 - FAQ
-- Installation
 - gmake
 - Libs for compiling
 
@@ -29,3 +28,7 @@ OVERALL
 - Check permissions for inst dir
 - Package version?
 - Translate param names and param choices
+
+
+NCURSES FRONTEND
+- Back button?
