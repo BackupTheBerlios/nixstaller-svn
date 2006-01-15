@@ -50,9 +50,6 @@
 #define NO_FILE -1
 #define ESCAPE  -2
 
-#define DEFAULT_WIDTH       50
-#define DEFAULT_HEIGHT      12
-
 int ReadDir(const std::string &dir, char ***list);
 int SwitchButtonK(EObjectType cdktype, void *object, void *clientData, chtype key);
 int ScrollParamMenuK(EObjectType cdktype, void *object, void *clientData, chtype key);
@@ -74,6 +71,9 @@ extern CDKSCREEN *CDKScreen;
 extern CButtonBar ButtonBar;
 
 inline void PrintInstOutput(const char *msg, void *p) { ((CCDKSWindow *)p)->AddText(msg, false); };
-inline int GetMaxHeight(void) { return getbegy(ButtonBar.GetLabel()->GetLabel()->win)-2; };
+inline int GetDefaultHeight(void) { return getbegy(ButtonBar.GetLabel()->GetLabel()->win)-4; };
+inline int GetDefaultWidth(void) { return getmaxx(MainWin)/1.25; };
+inline int GetMaxHeight(int pref) { int y=GetDefaultHeight(); return (y<pref) ? y : pref; }
+inline int GetMaxWidth(int pref) { int x=GetDefaultWidth(); return (x<pref) ? x : pref; }
 
 #endif

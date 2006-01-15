@@ -440,13 +440,14 @@ bool CFileDialog::Activate()
 
     if (!ReadDir(m_szStartDir)) throwerror(true, "Could not read directory '%s'", m_szStartDir.c_str());
     
-    CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-2, 1, DEFAULT_WIDTH, 0, 1, 3, buttons, 3);
+    CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetDefaultHeight(), 1, GetDefaultWidth(), 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
 
-    m_pCurDirWin = new CCDKSWindow(CDKScreen, CENTER, getbegy(ButtonBox.GetBBox()->win)-2, 2, DEFAULT_WIDTH+1, NULL, 1);
+    m_pCurDirWin = new CCDKSWindow(CDKScreen, CENTER, getbegy(ButtonBox.GetBBox()->win)-2, 2, GetDefaultWidth()+1,
+                                                           NULL, 1);
     m_pCurDirWin->SetBgColor(5);
 
-    m_pFileList = new CCDKAlphaList(CDKScreen, CENTER, 2, getbegy(m_pCurDirWin->GetSWin()->win)-1, DEFAULT_WIDTH+1,
+    m_pFileList = new CCDKAlphaList(CDKScreen, CENTER, 2, getbegy(m_pCurDirWin->GetSWin()->win)-1, GetDefaultWidth()+1,
                                     const_cast<char*>(m_szTitle.c_str()), label, &m_DirItems[0], m_DirItems.size());
     m_pFileList->SetBgColor(5);
     setCDKEntryPreProcess(m_pFileList->GetAList()->entryField, CreateDirCB, this);

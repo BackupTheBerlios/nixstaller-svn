@@ -138,7 +138,7 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title, bool show
     if (lines == -1)
         return NO_FILE;
 
-    CDKVIEWER *Viewer = newCDKViewer(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, buttons, buttoncount,
+    CDKVIEWER *Viewer = newCDKViewer(CDKScreen, CENTER, 2, GetDefaultHeight(), GetDefaultWidth(), buttons, buttoncount,
                                      A_REVERSE, true, false);
 
     if (Viewer == NULL)

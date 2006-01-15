@@ -120,7 +120,7 @@ bool SelectLanguage()
     for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
         LangItems.push_back(MakeCString(*p));
 
-    CCDKScroll ScrollList(CDKScreen, CENTER, 2, GetMaxHeight()-2, DEFAULT_WIDTH, RIGHT, title, &LangItems[0],
+    CCDKScroll ScrollList(CDKScreen, CENTER, CENTER, GetMaxHeight(20), GetMaxWidth(45), RIGHT, title, &LangItems[0],
                           LangItems.size());
     ScrollList.SetBgColor(5);
     ScrollList.Bind('a', ShowAboutK);
@@ -218,10 +218,11 @@ bool ConfParams()
     ButtonBar.AddButton("ESC", "Exit program");
     ButtonBar.Draw();
     
-    CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetMaxHeight()-3, 1, 68, 0, 1, 3, buttons, 3);
+    CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetDefaultHeight()-1, 1, GetDefaultWidth(), 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
 
-    CCDKScroll ScrollList(CDKScreen, getbegx(ButtonBox.GetBBox()->win), 2, getbegy(ButtonBox.GetBBox()->win)-1, 35, RIGHT,
+    CCDKScroll ScrollList(CDKScreen, getbegx(ButtonBox.GetBBox()->win), 2, getbegy(ButtonBox.GetBBox()->win)-1,
+                          GetDefaultWidth()/2, RIGHT,
                           title, &ParamItems[0], ParamItems.size());
     ScrollList.SetBgColor(5);
     ScrollList.Bind('a', ShowAboutK);
@@ -229,13 +230,13 @@ bool ConfParams()
     const int defh = 3;
     
     CCDKSWindow DescWindow(CDKScreen, (getbegx(ScrollList.GetScroll()->win) + getmaxx(ScrollList.GetScroll()->win))-1, 2,
-                           getmaxy(ScrollList.GetScroll()->win)-defh-1, 34, CreateText("<C></B/29>%s<!29!B>",
+                           getmaxy(ScrollList.GetScroll()->win)-defh-1, (GetDefaultWidth()/2)+1, CreateText("<C></B/29>%s<!29!B>",
                            GetTranslation("Description")), 30);
     DescWindow.SetBgColor(5);
     DescWindow.AddText(GetTranslation(pFirstParam->description));
     
     CCDKSWindow DefWindow(CDKScreen, (getbegx(ScrollList.GetScroll()->win) + getmaxx(ScrollList.GetScroll()->win))-1,
-                          getmaxy(DescWindow.GetSWin()->win), defh, 34, NULL, 4);
+                          getmaxy(DescWindow.GetSWin()->win), defh, (GetDefaultWidth()/2)+1, NULL, 4);
     DefWindow.SetBgColor(5);
     
     const char *str = pFirstParam->defaultval.c_str();
@@ -377,7 +378,7 @@ bool InstallFiles()
     ButtonBar.AddButton("C", "Cancel");
     ButtonBar.Draw();
     
-    CCDKSWindow InstallOutput(CDKScreen, 0, 6, GetMaxHeight()-7, -1,
+    CCDKSWindow InstallOutput(CDKScreen, 0, 6, GetDefaultHeight()-5, -1,
                               CreateText("<C></29/B>%s", GetTranslation("Install output")), 2000);
     InstallOutput.SetBgColor(5);
     nodelay(WindowOf(InstallOutput.GetSWin()), true); // Make sure input doesn't block
