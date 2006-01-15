@@ -86,23 +86,40 @@ copytemp()
     # Copy OS specific files
     for OS in $TARGET_OS
     do
+        cd $CURDIR/bin/$OS || err "Error: no binaries found for $OS"
+        
         for FR in $FRONTENDS
         do
+            FRFOUND=0
+            FRNAME=
+            
             case $FR in
                 ncurses )
-                    cp $CURDIR/bin/$OS/ncurs $CONFDIR/tmp/frontends/$OS/ || echo "Warning: no ncurses frontend for $OS"
+                    FRNAME="ncurs"
                     ;;
                 fltk )
-                    cp $CURDIR/bin/$OS/fltk $CONFDIR/tmp/frontends/$OS/ || echo "Warning: no fltk frontend for $OS"
+                    FRNAME="fltk"
                     ;;
                 * )
-                    echo "Warning: Unknown frontend specified ('$FR')."
+                    echo "Warning: Unknown frontend specified (\'$FR\')."
                     ;;
             esac
+
+            if [ -z $FRNAME ]; then
+                continue
+            fi
+            
+            for LC in `echo libc*/`
+            do
+                mkdir -p $CONFDIR/tmp/frontends/$OS/$LC
+                cp $LC/$FRNAME $CONFDIR/tmp/frontends/$OS/$LC/ && FROUND=1
+            done
+
+            cp $CURDIR/bin/$OS/$FRNAME $CONFDIR/tmp/frontends/$OS/ && FRFOUND=1
+            if [ $FRFOUND -eq 1 ]; then
+                echo "Warning: no $FR frontend for $OS"
+            fi
         done
-        
-#        cp $CURDIR/lib/$OS/libc.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libc for $OS"
-#        cp $CURDIR/lib/$OS/libm.so.* $CONFDIR/tmp/lib/$OS/ || echo "Warning: missing libm for $OS"
     done
 
     # Check if we got an intro picture
@@ -131,7 +148,7 @@ if [ ! -e $CONFDIR/install.cfg ]; then
     err "Error: no install.cfg found!"
 fi
 
-# Check which target OS'es there are
+# Check which target frontends there are
 FRONTENDS=`awk '$1=="frontends"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
 if [ -z "$FRONTENDS" ]; then
     FRONTENDS="ncurses fltk" # Change if there are other frontends
@@ -145,7 +162,6 @@ fi
 
 for OS in $TARGET_OS
 do
-    mkdir -p $CONFDIR/tmp/lib/$OS
     mkdir -p $CONFDIR/tmp/frontends/$OS
 done
 

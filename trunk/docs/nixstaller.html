@@ -54,6 +54,7 @@
       <li> <A href="#req-libs">Required libraries</A> </li>
       <li> <A href="#scons">SCons</A> </li>
       <li> <A href="#compiling">Compiling</A> </li>
+      <li> <A href="#bindir">The bin/ directory</A> </li>
    </ul>
    </li>
    <li> <A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A> </li>
@@ -862,7 +863,8 @@ Simply call <samp>./geninstall.sh release/</samp> from the main nixstaller direc
 Normally all required libraries and frontends are already compiled for Linux, FreeBSD and NetBSD.<br>
 If, for example, you want to compile for another platform or made some modifications to the source code you should read this section to know how to compile nixstaller.<br>
 <br>
-
+<strong>Please note</strong><br>
+Compiling the frontends may not be easy since you have to be really sure that they are as less dependent as possible. Some common pitfalls are: libraries which are optimized for a specific arch(common with gentoo for example) .........
 <p> <h3><A name="req-libs">Required libraries</A></h3>
 Nixstaller uses the following libraries:<br>
 <br>
@@ -964,6 +966,26 @@ SCons is <A href="http://www.python.org/">python</A> based, so make sure you got
 If you got SCons installed simply type <samp>scons</samp> in the main nixstaller directory to build and configure everything.<br>
 To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
 The binaries will be automaticly put in the bin/[osname]/ directory(where [osname] is the lowercased output from 'uname').<br>
+<br>
+
+<p> <h3><A name="bindir">The bin/ directory</A></h3>
+When <samp>geninstall.sh</samp> is executed it will copy all the required frontends from this directory. In this directory are OS specific subdirectories which are named by the lowercased output from the uname command.<br>
+After SCons is done with compiling it will put the frontends in the subdirectory for the current OS.<br>
+<br>
+<strong>libc</strong><br>
+On some operating systems the C library 'libc' may change between new releases. A good example is FreeBSD, which has a new libc major version for every new major release. On the other hand, NetBSD is using the same major version for 1.6.X, 2.X and 3.X.<br>
+Since it's not possible to staticly link libc(some functions need runtime support) and it is only possible to let a binary use shared libraries from the same major release (ie libc.so.5 or libc.so.6) some platforms may need different binaries for different libc's.<br>
+To compile for a different libc you could do the following:
+<ul>
+   <li> Compile from a system which uses this libc by default(ie an older system) </li>
+   <li> Obtain the older libc from somewhere else. </li>
+ </ul> 
+
+The first option is the best, since it may fix other OS specific problems aswell. The drawback is ofcourse that you need to install a complete new OS.<br>
+The second option is easier, but may not always work. To get this to work you should put the libc in /lib and create a symlink called lib/[osname]/libc.so (again, replace [osname] with lowercased 'uname') to this file.<br>
+After you recompiled the binaries you should verify with tools such as 'ldd' if it uses the alternative libc.<br>
+<br>
+You should then move the files to a subdirectorie in bin/[osname]/. The subdirectory is called libcX where you should replace X with the major version number of libc (ie for libc.so.5 on freebsd: 'bin/freebsd/libc5/').<br>
 <br>
 
 <p> <h2><A href="#toc-faq" name="faq">Frequently Asked Questions (FAQ)</A></h2>

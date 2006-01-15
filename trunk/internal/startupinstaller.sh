@@ -37,6 +37,12 @@
 
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
+USELIBC="." # Incase no libc specific frontend is found, use the one in the main frontend dir
+
+# Find out existing libc's
+LIBCS=`ls /lib/libc.so.* | sort -nr`
+echo "Found following LIBC's:"
+echo "${LIBCS}"
 
 # Check if we can run on the users OS
 if [ ! -d ./frontends/$CURRENT_OS ]; then
@@ -51,19 +57,38 @@ if [ ! -d ./frontends/$CURRENT_OS ]; then
     exit 1
 fi
 
+if test -z ${LIBCS} 2>/dev/null; then
+    echo "WARNING: Couldn't detect any existing libc libraries"
+    echo "WARNING: Defaulting to libc.so.6"
+    LIBCS="/lib/libc.so.6"
+fi
+
+# Check which libc to use
+for L in $LIBCS
+do
+    L=`echo $L | sed -e 's/\/lib\///g' -e 's/\.so\.//g'`
+    if [ -d "./frontends/${CURRENT_OS}/${L}" ]; then
+        USELIBC=$L
+        echo "Using libc \"${USELIBC}\""
+        break
+    fi
+done
+
 NCURS="none"
 FLTK="none"
 RUNCOMMAND=
 
 # Check if ncurses frontend exists
-if [ -e ./frontends/$CURRENT_OS/ncurs ]; then
-    NCURS="./frontends/${CURRENT_OS}/ncurs"
+if [ -e ./frontends/$CURRENT_OS/${USELIBC}/ncurs ]; then
+    NCURS="./frontends/${CURRENT_OS}/${USELIBC}/ncurs"
 fi
 
+
 # Check if fltk frontend exists
-if [ -e ./frontends/$CURRENT_OS/fltk ]; then
-    FLTK="./frontends/${CURRENT_OS}/fltk"
+if [ -e ./frontends/$CURRENT_OS/${USELIBC}/fltk ]; then
+    FLTK="./frontends/${CURRENT_OS}/${USELIBC}/fltk"
 fi
+
 
 # Do both frontends exist?
 if [ $NCURS != "none" -a $FLTK != "none" ]; then
