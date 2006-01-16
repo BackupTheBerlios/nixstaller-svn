@@ -74,6 +74,8 @@ protected:
     
 public:
     CBaseScreen(void) : m_pGroup(NULL) { };
+    virtual ~CBaseScreen(void) { };
+    
     virtual Fl_Group *Create(void) = NULL;
     Fl_Group *GetGroup(void) const { return m_pGroup; };
     virtual void UpdateLang(void) { }; // Called after language is changed
@@ -87,6 +89,7 @@ class CLangScreen: public CBaseScreen
     Fl_Choice *m_pChoiceMenu;
     
 public:
+    virtual ~CLangScreen(void) { };
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
     virtual bool Activate(void);
