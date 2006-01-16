@@ -443,23 +443,29 @@ bool CFileDialog::Activate()
     CCDKButtonBox ButtonBox(CDKScreen, CENTER, GetDefaultHeight(), 1, GetDefaultWidth(), 0, 1, 3, buttons, 3);
     ButtonBox.SetBgColor(5);
 
-    m_pCurDirWin = new CCDKSWindow(CDKScreen, CENTER, getbegy(ButtonBox.GetBBox()->win)-2, 2, GetDefaultWidth()+1,
+    if (!m_pCurDirWin && !m_pFileList)
+    {
+        m_pCurDirWin = new CCDKSWindow(CDKScreen, CENTER, getbegy(ButtonBox.GetBBox()->win)-2, 2, GetDefaultWidth()+1,
                                                            NULL, 1);
-    m_pCurDirWin->SetBgColor(5);
+        m_pCurDirWin->SetBgColor(5);
 
-    m_pFileList = new CCDKAlphaList(CDKScreen, CENTER, 2, getbegy(m_pCurDirWin->GetSWin()->win)-1, GetDefaultWidth()+1,
-                                    const_cast<char*>(m_szTitle.c_str()), label, &m_DirItems[0], m_DirItems.size());
-    m_pFileList->SetBgColor(5);
-    setCDKEntryPreProcess(m_pFileList->GetAList()->entryField, CreateDirCB, this);
+        if (!m_pFileList)
+        {
+            m_pFileList = new CCDKAlphaList(CDKScreen, CENTER, 2, getbegy(m_pCurDirWin->GetSWin()->win)-1, GetDefaultWidth()+1,
+                                            const_cast<char*>(m_szTitle.c_str()), label, &m_DirItems[0], m_DirItems.size());
+            m_pFileList->SetBgColor(5);
+            setCDKEntryPreProcess(m_pFileList->GetAList()->entryField, CreateDirCB, this);
     
-    //m_pFileList->GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
-
-    setCDKAlphalistLLChar(m_pFileList->GetAList(), ACS_LTEE);
-    setCDKAlphalistLRChar(m_pFileList->GetAList(), ACS_RTEE);
-    setCDKLabelLLChar(m_pCurDirWin->GetSWin(), ACS_LTEE);
-    setCDKLabelLRChar(m_pCurDirWin->GetSWin(), ACS_RTEE);
-    setCDKButtonboxULChar(ButtonBox.GetBBox(), ACS_LTEE);
-    setCDKButtonboxURChar(ButtonBox.GetBBox(), ACS_RTEE);
+            //m_pFileList->GetAList()->entryField->dispType = vVIEWONLY;  // HACK: Disable backspace
+        }
+    
+        setCDKAlphalistLLChar(m_pFileList->GetAList(), ACS_LTEE);
+        setCDKAlphalistLRChar(m_pFileList->GetAList(), ACS_RTEE);
+        setCDKLabelLLChar(m_pCurDirWin->GetSWin(), ACS_LTEE);
+        setCDKLabelLRChar(m_pCurDirWin->GetSWin(), ACS_RTEE);
+        setCDKButtonboxULChar(ButtonBox.GetBBox(), ACS_LTEE);
+        setCDKButtonboxURChar(ButtonBox.GetBBox(), ACS_RTEE);
+    }
     
     m_pFileList->Draw();
     m_pCurDirWin->Draw();

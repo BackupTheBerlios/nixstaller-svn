@@ -38,6 +38,12 @@
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 USELIBC="." # Incase no libc specific frontend is found, use the one in the main frontend dir
+CURRENT_ARCH=`uname -m`
+
+# iX86 --> x86
+if [ ${CURRENT_ARCH:0:1} = "i" -a ${CURRENT_ARCH:2:2} = "86" ]; then
+    CURRENT_ARCH="x86"
+fi
 
 # Find out existing libc's
 LIBCS=`ls /lib/libc.so.* | sort -nr`
@@ -45,15 +51,15 @@ echo "Found following LIBC's:"
 echo "${LIBCS}"
 
 # Check if we can run on the users OS
-if [ ! -d ./frontends/$CURRENT_OS ]; then
-    echo "WARNING: Unsupported OS"
-    echo "WARNING: Defaulting to Linux"
+if [ ! -d ./frontends/$CURRENT_OS/$CURRENT_ARCH ]; then
+    echo "WARNING: Unsupported OS/Architecture"
+    echo "WARNING: Defaulting to Linux/$CURRENT_ARCH"
     CURRENT_OS="linux"
 fi
 
 # Still can't run?
-if [ ! -d ./frontends/$CURRENT_OS ]; then
-    echo "Error: No suitable frontend for OS \"$OS\" found, aborting"
+if [ ! -d ./frontends/$CURRENT_OS/$CURRENT_ARCH ]; then
+    echo "Error: No suitable frontend for \"$OS\"/$CURRENT_ARCH found, aborting"
     exit 1
 fi
 
@@ -66,7 +72,7 @@ fi
 # Check which libc to use
 for L in $LIBCS
 do
-    L=`echo $L | sed -e 's/\/lib\///g' -e 's/\.so\.//g'`
+    L=`echo $L | sed -e 's/\/lib\///g' -e 's/\.so\.//g'` # Convert /lib/libc.so.X to libcX
     if [ -d "./frontends/${CURRENT_OS}/${L}" ]; then
         USELIBC=$L
         echo "Using libc \"${USELIBC}\""
@@ -79,14 +85,14 @@ FLTK="none"
 RUNCOMMAND=
 
 # Check if ncurses frontend exists
-if [ -e ./frontends/$CURRENT_OS/${USELIBC}/ncurs ]; then
-    NCURS="./frontends/${CURRENT_OS}/${USELIBC}/ncurs"
+if [ -e ./frontends/$CURRENT_OS/${CURRENT_ARCH}/${USELIBC}/ncurs ]; then
+    NCURS="./frontends/${CURRENT_OS}/${CURRENT_ARCH}/${USELIBC}/ncurs"
 fi
 
 
 # Check if fltk frontend exists
-if [ -e ./frontends/$CURRENT_OS/${USELIBC}/fltk ]; then
-    FLTK="./frontends/${CURRENT_OS}/${USELIBC}/fltk"
+if [ -e ./frontends/$CURRENT_OS/${CURRENT_ARCH}/${USELIBC}/fltk ]; then
+    FLTK="./frontends/${CURRENT_OS}/${CURRENT_ARCH}/${USELIBC}/fltk"
 fi
 
 

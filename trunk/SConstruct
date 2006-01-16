@@ -3,11 +3,12 @@ import os
 import glob
 import commands
 import shutil
+import platform
 
 # Check if atleast one file exists from a given list
 def checklibexist(context, fname):
     context.Message('Checking for %s...' % fname)
-    if (os.path.exists(lib_dir+'/'+fname)):
+    if (os.path.exists(lib_dir+fname)):
         context.Result(1)
         return True
 
@@ -19,11 +20,18 @@ env = Environment(CCFLAGS = "-Wall -O", LINKFLAGS='-static-libgcc')
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')
-lib_dir = 'lib/'+cur_os
+cur_arch = platform.machine()
 
-env.Append(LIBPATH=['lib/'+cur_os, 'libsu/'])
-env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'+cur_os, 'include/'+cur_os+'/cdk',
-                     'include/'+cur_os+'/ncurses' ])
+if cur_arch[0] == 'i' and cur_arch[-2:] == "86":
+    cur_arch = "x86"
+    
+# OS/Arch specific dirs
+lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
+bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'
+inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
+
+env.Append(LIBPATH=[lib_dir, 'libsu/'])
+env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk' ])
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
@@ -43,20 +51,6 @@ if not env.GetOption('clean'):
             print 'Error: Could not find any libstdc++.a! Please copy it manually to ', lib_dir
             Exit(1)
 
-    #if not conf.checklibexist('libm.a'):
-#        print 'Searching for libm.a'
-  #      lname = commands.getoutput('gcc -print-file-name=libm.a')
-  #      if lname:
-  #          try:
-  #              shutil.copy(lname, lib_dir)
-  #              print "Copied %s to %s" % (lname, lib_dir)
-  #          except (IOError, os.error), why:
-  #              print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
-  #              Exit(1)
-  #      else:
-  #          print 'Error: Could not find any libm.a! Please copy it manually to ', lib_dir
-  #          Exit(1)
-            
     if not conf.checklibexist('libutil.a'):
         print 'Searching for libutil.a'
         lname = commands.getoutput('gcc -print-file-name=libutil.a')
@@ -121,7 +115,7 @@ else:
 libsu = env.SConscript('libsu/SConstruct')
 
 # Builds main lib
-main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp'], CCFLAGS='$CCFLAGS')
+main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp'])
 
 env.Append(LIBS = Split('su main archive z bz2 util'))
 
@@ -140,4 +134,4 @@ fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Sp
 # extr = env.Program('extracter/extracter', ['extracter/extracter.c'])
 
 # Default to all
-Default(fltk, ncurses, main, libsu, env.Install('lib/'+cur_os, libsu), env.Install('lib/'+cur_os, main), env.Install('bin/'+cur_os, ncurses), env.Install('bin/'+cur_os, fltk))
+Default(fltk, ncurses, main, libsu, env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, fltk))

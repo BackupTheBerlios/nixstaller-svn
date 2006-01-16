@@ -20,6 +20,8 @@ DOCS
 - FAQ
 - gmake
 - Libs for compiling
+- arch stuff: where to put includes, files_ dirs, targetarch
+- libc stuff: default libc
 
 
 ----------------------------- LATER ------------------------------------

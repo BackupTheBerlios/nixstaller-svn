@@ -37,13 +37,16 @@ CURDIR=$PWD
 ARCHNAME_BASE="instarchive"
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
+CURRENT_ARCH=`uname -m`
 CONFDIR="$CURDIR/$1"
 TARGET_OS=
+TARGET_ARCH=
 FRONTENDS=
 
 err()
 {
     echo $1
+    remtemp
     exit 1
 }
 
@@ -86,39 +89,44 @@ copytemp()
     # Copy OS specific files
     for OS in $TARGET_OS
     do
-        cd $CURDIR/bin/$OS || err "Error: no binaries found for $OS"
+        [ -e $CURDIR/bin/$OS ] || err "Error: no binaries found for $OS"
         
-        for FR in $FRONTENDS
+        for ARCH in $TARGET_ARCH
         do
-            FRFOUND=0
-            FRNAME=
+            cd $CURDIR/bin/$OS/$ARCH || err "Error: no binaries found for $OS/$ARCH"
             
-            case $FR in
-                ncurses )
-                    FRNAME="ncurs"
-                    ;;
-                fltk )
-                    FRNAME="fltk"
-                    ;;
-                * )
-                    echo "Warning: Unknown frontend specified (\'$FR\')."
-                    ;;
-            esac
-
-            if [ -z $FRNAME ]; then
-                continue
-            fi
-            
-            for LC in `echo libc*/`
+            for FR in $FRONTENDS
             do
-                mkdir -p $CONFDIR/tmp/frontends/$OS/$LC
-                cp $LC/$FRNAME $CONFDIR/tmp/frontends/$OS/$LC/ && FROUND=1
+                FRFOUND=0
+                FRNAME=
+                
+                case $FR in
+                    ncurses )
+                        FRNAME="ncurs"
+                        ;;
+                    fltk )
+                        FRNAME="fltk"
+                        ;;
+                    * )
+                        echo "Warning: Unknown frontend specified (\'$FR\')."
+                        ;;
+                esac
+    
+                if [ -z $FRNAME ]; then
+                    continue
+                fi
+                
+                for LC in `find libc*/ 2>/dev/null`
+                do
+                    mkdir -p $CONFDIR/tmp/frontends/$OS/$ARCH/$LC
+                    cp $LC/$FRNAME $CONFDIR/tmp/frontends/$OS/$ARCH/$LC/ && FROUND=1
+                done
+    
+                cp $FRNAME $CONFDIR/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
+                if [ $FRFOUND -eq 1 ]; then
+                    echo "Warning: no $FR frontend for $OS/$ARCH"
+                fi
             done
-
-            cp $CURDIR/bin/$OS/$FRNAME $CONFDIR/tmp/frontends/$OS/ && FRFOUND=1
-            if [ $FRFOUND -eq 1 ]; then
-                echo "Warning: no $FR frontend for $OS"
-            fi
         done
     done
 
@@ -137,6 +145,10 @@ remtemp()
 }
 
 # Main part starts here...
+
+if [ ${CURRENT_ARCH:0:1} = "i" -a ${CURRENT_ARCH:2:2} = "86" ]; then
+    CURRENT_ARCH="x86"
+fi
 
 checkargs
 
@@ -160,9 +172,18 @@ if [ -z "$TARGET_OS" ]; then
     TARGET_OS=$CURRENT_OS
 fi
 
+# Check which target archs there are
+TARGET_ARCH=`awk '$1=="targetarch"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
+if [ -z "$TARGET_ARCH" ]; then
+    TARGET_ARCH=$CURRENT_ARCH
+fi
+
 for OS in $TARGET_OS
 do
-    mkdir -p $CONFDIR/tmp/frontends/$OS
+    for ARCH in $TARGET_ARCH
+    do
+        mkdir -p $CONFDIR/tmp/frontends/$OS/$ARCH
+    done
 done
 
 mkdir -p $CONFDIR/tmp/config/lang
@@ -180,6 +201,7 @@ echo
 echo "Configuration:"
 echo "---------------------------------"
 echo "          OS: $TARGET_OS"
+echo "       Archs: $TARGET_ARCH"
 echo "Archive type: $ARCH_TYPE"
 echo "   Languages: $LANGUAGES"
 echo "  Config dir: $CONFDIR"
@@ -199,7 +221,7 @@ case $ARCH_TYPE in
         PACKCMD="tar czf"
         ;;
     bzip2 )
-        PACKCMD="tar czf"
+        PACKCMD="tar cjf"
         ;;
     * )
         echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
@@ -207,22 +229,32 @@ case $ARCH_TYPE in
         ;;
 esac
 
+# Pack platform independent files
 if [ -d $CONFDIR/files_all ]; then
     cd $CONFDIR/files_all
-    $PACKCMD "$CONFDIR"/tmp/"$ARCHNAME_BASE"_all * || err "Couldn't pack files"
+    $PACKCMD "${CONFDIR}/tmp/${ARCHNAME_BASE}_all" * || err "Couldn't pack files"
 fi
 
+# Pack platform dependent files
 for OS in $TARGET_OS
 do
-    if [ -d ${CONFDIR}/files_${OS} ]; then
-        cd ${CONFDIR}/files_${OS} 
+    if [ -d ${CONFDIR}/files_${OS}_all ]; then
+        cd ${CONFDIR}/files_${OS}_all/
         $PACKCMD ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS} * || err "Couldn't pack files"
     fi
+
+    for ARCH in $TARGET_ARCH
+    do
+        if [ -d ${CONFDIR}/files_${OS}_${ARCH} ]; then
+            cd ${CONFDIR}/files_${OS}_${ARCH}
+            $PACKCMD ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}_${ARCH} * || err "Couldn't pack files"
+        fi
+    done
 done
 
-if [ ! -d $CONFDIR/files_all -a ! -d $CONFDIR/files_$CURRENT_OS ]; then
-    err "Error: no files to install!"
-fi
+#if [ ! -e "${CONFDIR}/tmp/${ARCHNAME_BASE}_*" ]; then
+#    err "Error: no files to install!"
+#fi
 
 echo "Generating installer..."
 $CURDIR/makeself.sh --$ARCH_TYPE $CONFDIR/tmp $CURDIR/setup.sh "nixstaller" sh ./startupinstaller.sh
