@@ -116,14 +116,14 @@ copytemp()
                     continue
                 fi
                 
-                for LC in `find libc*/ 2>/dev/null`
+                for LC in `ls -d libc* 2>/dev/null`
                 do
                     mkdir -p $CONFDIR/tmp/frontends/$OS/$ARCH/$LC
                     cp $LC/$FRNAME $CONFDIR/tmp/frontends/$OS/$ARCH/$LC/ && FROUND=1
                 done
     
                 cp $FRNAME $CONFDIR/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
-                if [ $FRFOUND -eq 1 ]; then
+                if [ $FRFOUND -eq 0 ]; then
                     echo "Warning: no $FR frontend for $OS/$ARCH"
                 fi
             done
@@ -146,9 +146,8 @@ remtemp()
 
 # Main part starts here...
 
-if [ ${CURRENT_ARCH:0:1} = "i" -a ${CURRENT_ARCH:2:2} = "86" ]; then
-    CURRENT_ARCH="x86"
-fi
+# Convert iX86 --> x86
+echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
 
 checkargs
 
@@ -235,7 +234,16 @@ if [ -d $CONFDIR/files_all ]; then
     $PACKCMD "${CONFDIR}/tmp/${ARCHNAME_BASE}_all" * || err "Couldn't pack files"
 fi
 
-# Pack platform dependent files
+# Pack arch dependent files
+for ARCH in $TARGET_ARCH
+do
+    if [ -d ${CONFDIR}/files_all_${ARCH} ]; then
+        cd ${CONFDIR}/files_all_${ARCH}
+        $PACKCMD ${CONFDIR}/tmp/${ARCHNAME_BASE}_all_${ARCH} * || err "Couldn't pack files"
+    fi
+done
+    
+# Pack OS/arch dependent files
 for OS in $TARGET_OS
 do
     if [ -d ${CONFDIR}/files_${OS}_all ]; then

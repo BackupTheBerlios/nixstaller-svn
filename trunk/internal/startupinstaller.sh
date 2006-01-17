@@ -41,9 +41,7 @@ USELIBC="." # Incase no libc specific frontend is found, use the one in the main
 CURRENT_ARCH=`uname -m`
 
 # iX86 --> x86
-if [ ${CURRENT_ARCH:0:1} = "i" -a ${CURRENT_ARCH:2:2} = "86" ]; then
-    CURRENT_ARCH="x86"
-fi
+echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
 
 # Find out existing libc's
 LIBCS=`ls /lib/libc.so.* | sort -nr`

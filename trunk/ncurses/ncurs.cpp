@@ -167,22 +167,7 @@ bool SelectDir()
         if (FDialog.Activate())
         {
             InstallInfo.dest_dir = FDialog.Result();
-            
-            char *dtext[3] = { CreateText(GetTranslation("This will install %s to the following directory:"),
-                               InstallInfo.program_name.c_str()),
-                               const_cast<char *>(InstallInfo.dest_dir.c_str()),
-                               GetTranslation("Continue?") };
-            char *dbuttons[2] = { GetTranslation("OK"), GetTranslation("Cancel") };
-                
-            CCDKDialog Diag(CDKScreen, CENTER, CENTER, dtext, 3, dbuttons, 2);
-            Diag.SetBgColor(26);
-        
-            int sel = Diag.Activate();
-    
-            Diag.Destroy();
-            refreshCDKScreen(CDKScreen);
-                
-            if (sel==0) return true;
+            return true;
         }
         else break;
     }
@@ -377,6 +362,33 @@ bool InstallFiles()
     ButtonBar.Clear();
     ButtonBar.AddButton("C", "Cancel");
     ButtonBar.Draw();
+
+    std::vector<char *> askstr;
+    char *dbuttons[2] = { GetTranslation("Continue"), GetTranslation("Exit program") };
+    
+    if (InstallInfo.dest_dir_type == DEST_SELECT)
+    {
+        askstr.push_back(CreateText(GetTranslation("This will install %s to the following directory:"),
+                         InstallInfo.program_name.c_str()));
+        askstr.push_back(MakeCString(InstallInfo.dest_dir));
+        askstr.push_back(GetTranslation("Continue?"));
+    }
+    else
+    {
+        askstr.push_back(CreateText(GetTranslation("This will install %s"), InstallInfo.program_name.c_str()));
+        askstr.push_back(GetTranslation("Continue?"));
+    }
+
+    CCDKDialog Diag(CDKScreen, CENTER, CENTER, &askstr[0], askstr.size(), dbuttons, 2);
+    Diag.SetBgColor(26);
+        
+    int sel = Diag.Activate();
+    
+    Diag.Destroy();
+    refreshCDKScreen(CDKScreen);
+                
+    if (sel == 1)
+        return false;
     
     CCDKSWindow InstallOutput(CDKScreen, 0, 6, GetDefaultHeight()-5, -1,
                               CreateText("<C></29/B>%s", GetTranslation("Install output")), 2000);

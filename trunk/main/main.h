@@ -69,7 +69,7 @@ struct command_entry_s
 
 struct install_info_s
 {
-    std::string os, version, program_name, intropicname, own_dir, dest_dir, cur_lang;
+    std::string os, cpuarch, version, program_name, intropicname, own_dir, dest_dir, cur_lang;
     std::list<std::string> languages;
     std::map<std::string, char *> translations;
     EArchiveType archive_type;

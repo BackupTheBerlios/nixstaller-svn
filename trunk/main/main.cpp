@@ -50,13 +50,18 @@ bool MainInit(int argc, char *argv[])
            "This is free software, and you are welcome to redistribute it\n"
            "under certain conditions; see the about section for details.\n");
     
-    // Get current OS name
+    // Get current OS and cpu arch name
     utsname inf;
     if (uname(&inf) == -1)
         return false;
     
     InstallInfo.os = inf.sysname;
     std::transform(InstallInfo.os.begin(), InstallInfo.os.end(), InstallInfo.os.begin(), tolower);
+
+    InstallInfo.cpuarch = inf.machine;
+    // Convert iX86 to x86
+    if ((InstallInfo.cpuarch[0] == 'i') && (InstallInfo.cpuarch.compare(2, 2, "86") == 0))
+         InstallInfo.cpuarch = "x86";
     
     char curdir[1024];
     if (getcwd(curdir, sizeof(curdir)) == 0)
@@ -360,7 +365,10 @@ float ExtractArchive(std::string &curfile)
     if (!arch) // Does the file need to be opened?
     {
         char *archnameall = CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str());
+        char *archnameallcpu = CreateText("%s/instarchive_all_%s", InstallInfo.own_dir.c_str(), InstallInfo.cpuarch.c_str());
         char *archnameos = CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str());
+        char *archnameoscpu = CreateText("%s/instarchive_%s_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str(),
+                                         InstallInfo.cpuarch.c_str());
         
         size = 0;
         archlist.clear();
@@ -370,10 +378,20 @@ float ExtractArchive(std::string &curfile)
             size += ArchSize(archnameall);
             archlist.push_back(archnameall);
         }
+        if (FileExists(archnameallcpu))
+        {
+            size += ArchSize(archnameallcpu);
+            archlist.push_back(archnameallcpu);
+        }
         if (FileExists(archnameos))
         {
             size += ArchSize(archnameos);
             archlist.push_back(archnameos);
+        }
+        if (FileExists(archnameoscpu))
+        {
+            size += ArchSize(archnameoscpu);
+            archlist.push_back(archnameoscpu);
         }
         
         if (archlist.empty())

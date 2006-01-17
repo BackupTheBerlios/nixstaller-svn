@@ -54,7 +54,8 @@
       <li> <A href="#req-libs">Required libraries</A> </li>
       <li> <A href="#scons">SCons</A> </li>
       <li> <A href="#compiling">Compiling</A> </li>
-      <li> <A href="#bindir">The bin/ directory</A> </li>
+      <li> <A href="#libc">Specific libc binaries</A> </li>
+      <li> <A href="#libm">Specific libm binaries</A> </li>
    </ul>
    </li>
    <li> <A href="#faq" name="toc-faq">Frequently Asked Questions (FAQ)</A> </li>
@@ -106,7 +107,7 @@ All the work is done inside the directory where you extracted nixstaller to.<br>
 If you're in a hurry or want a quick reference:<br>
 
 <ul>
-   <li> Extract files to a directory </li>
+   <li> Extract Nixstaller archive to a directory </li>
    <li> Open terminal and cd to this directory </li>
    <li> mkdir release/ </li>
    <li> cp -R example/simple/ release/ </li>
@@ -203,7 +204,7 @@ You can have for each of file a translation, to see where to put the translated 
 <strong>Destination directory</strong><br>
 There are 3 ways where the files can are extracted to:
 <ol>
-   <li>Specifified: During installation the user can say where they want to have their files (default)</li>
+   <li>Specified: During installation the user can say where they want to have their files (default)</li>
    <li>Temporaray: This is especially usefull for files which have to be compiled. The files will be extracted to a temporary directory and after that some install commands(see below) are called(such as './configure &amp;&amp; make &amp;&amp; make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
    <li>A given directory. The files will always be extracted to this directory.</li>
 </ol>
@@ -327,7 +328,20 @@ Specifies which frontends for which Operating Systems should be included in the 
 <br>
 <samp>Default: freebsd linux netbsd</samp><br>
 <br>
-<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the <A href="#compile">compile section</A> if you want to support other platforms.</samp><br>
+<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the <A href="#compile">compile section</A> if you want to support other OS'es.</samp><br>
+<br>
+<br>
+
+<strong>targetarch</strong><br>
+Specifies which frontends for which cpu architectures should be included in the installer package. The CPU arch. name is either <samp>x86</samp> for Intel compatible systems or the output from <samp>uname -m</samp>. You can specify multiple architectures by separating them with a whitespace.<br>
+<br>
+<samp>Usage: targetarch arch1 arch2 arch3 ...</samp><br>
+<br>
+<samp>Example: targetarch x86</samp><br>
+<br>
+<samp>Default: x86</samp><br>
+<br>
+<samp>Note: Currently only x86 is supported. See the <A href="#compile">compile section</A> if you want to support other architectures.</samp><br>
 <br>
 <br>
 
@@ -600,11 +614,19 @@ Here is a table for how the directory layout should look like:<br>
     </tr>
     <tr>
       <td>files_all/</td>
-      <td>Directory containing all the files that must be installed. These are used for every operating system.</td>
+      <td>Directory containing all the files that must be installed. These are used for every operating system/architecture.</td>
     </tr>
     <tr>
-      <td>files_[osname]/</td>
-      <td>Directory containing files which are only meant for the operating system specified by [osname]. [osname] should be replaced by a valid operating system. A valid osname is the output in lowercase from the shell command 'uname'. Some examples are: linux, netbsd, freebsd.</td>
+      <td>files_all_[archname]/</td>
+      <td>Directory containing files which are only meant for the cpu architecture [archname] on any operating system. [archname] should be replaced by a valid cpu architecture name: x86 for intel compatible and the output from 'uname -m' for any other.</td>
+    </tr>
+    <tr>
+      <td>files_[osname]_all/</td>
+      <td>Directory containing files which are only meant for the operating system specified by [osname] on cpu architecture [arch]. [osname] should be replaced by a valid operating system. A valid osname is the output in lowercase from the shell command 'uname'. Some examples are: linux, netbsd, freebsd.</td>
+    </tr>
+    <tr>
+      <td>files_[osname]_[archname]/</td>
+      <td>Directory containing files which are only meant for the operating system specified by [osname]. [osname] should be replaced by a valid operating system(see above). [archname] should be replaced by a valid cpu architecture name(also see above).</td>
     </tr>
   </tbody>
 </table>
@@ -863,8 +885,22 @@ Simply call <samp>./geninstall.sh release/</samp> from the main nixstaller direc
 Normally all required libraries and frontends are already compiled for Linux, FreeBSD and NetBSD.<br>
 If, for example, you want to compile for another platform or made some modifications to the source code you should read this section to know how to compile nixstaller.<br>
 <br>
-<strong>Please note</strong><br>
-Compiling the frontends may not be easy since you have to be really sure that they are as less dependent as possible. Some common pitfalls are: libraries which are optimized for a specific arch(common with gentoo for example) .........
+
+<p> <h3><A name="comp-notes">General notes</A></h3>
+Since it's very important that a binary needs to beeing able to run on as many system as possible, you need to take care of a few things:<br>
+<br>
+<strong>Optimized libraries</strong><br>
+Never use libraries which are optimized for a specific platform(ie compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another cpu cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
+<br>
+
+<strong>Shared libraries</strong><br>
+Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries(currently libc and libm) can't be linked staticly or it might give some problems. This means that systems which don't have the same <em>major</em> library version the binary won't work. Luckely on most systems the major version of these libraries aren't changed very often. On systems where this isn't the case (such as FreeBSD, which has a new major version for every new major FreeBSD release) you need to compile different binaries which are linked with different libc's. You also need to check for right libm ofcourse.<br>
+<br>
+There are several ways to do this, the best way is ofcourse to install and compile on the Operating System which is using this specific libc/libm release.<br>
+<br>
+Another way is(incase the libraries are older then the ones on your system) to install a 'compat layer' which is provided on some systems(ie debian or BSD's). If you do this you need to make a symlink called libc.so(or libm.so) which points to the right library, this way gcc will use this older library instead. Note that copying the library and then renaming it won't work. To test if gcc linked the right libraries you can use the <samp>ldd</samp> command.<br>
+<br>
+
 <p> <h3><A name="req-libs">Required libraries</A></h3>
 Nixstaller uses the following libraries:<br>
 <br>
@@ -928,12 +964,12 @@ Nixstaller uses the following libraries:<br>
     </tr>
     <tr>
       <td>X11(libX11, libXext)</td>
-      <td>You can get it from your local X.org/XFree distrobution</td>
+      <td>You can get it from your local X.org/XFree distribution</td>
       <td>FLTK frontend</td>
     </tr>
     <tr>
       <td>libm, libc, libstdc++, libutil</td>
-      <td>Comes with GCC</td>
+      <td>Comes with GCC. The build script will automaticly search and copy them.</td>
       <td>Core</td>
     </tr>
     <tr>
@@ -944,48 +980,36 @@ Nixstaller uses the following libraries:<br>
   </tbody>
 </table>
 <br>
-
-Always use static versions of these libraries (they end with '.a', ie 'libz.a'). Also make sure they are <strong>not</strong> compiled with cpu specific optimizations(ie '-march=athlon-xp'). This may be the case if, for example, you got a library from a source based linux distro which let you modify the CFLAGS used for compilation. If you're unsure it may be wise the compile the libs by yourself.<br>
-You can find some notes about what is done to compile some libraries on different platforms in every subdirectory from the 'lib/' directory.<br>
+You can find some notes about what was done to compile some libraries on different platforms in every subdirectory from the 'lib/' directory.<br>
 <br>
-
-After you collected your libraries you should put them in the right subdirectory in 'lib/'. The subdirectory must be the lowercased output from 'uname' (ie 'freebsd' - not 'FreeBSD').<br>
+<strong>Library placement</strong><br>
+When you collected all the libraries for your platform you should put them in the right place in the 'lib/' directory.
+The libraries should be put in lib/[osname]/[archname] - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>
 <br>
 
 <strong>Header files</strong><br>
 You should put all the header files from the libs in the 'include/' directory. To know which headers you need you can take a look at which headers the 'include/' directory already has.<br>
-If the headers differs from other platforms or you are unsure if they do so you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). Again just take a look how the directory looks like by default.<br>
+If the headers differs from other platforms or you are unsure if they do so you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). If the headers also differ from architecture, put them under include/[osname]/[arch]/([arch]=x86 for intel compatible and output from 'uname -m' for any other). Again just take a look how the directory looks like by default.<br>
 <br>
 
 <p> <h3><A name="scons">SCons</A></h3>
-Nixstaller uses SCons as build system(instead of for example autoconf and GNU make). You can get SCons <A href="http://www.scons.org/">here</A>.<br>
+Nixstaller uses SCons as build system(instead of autoconf and GNU make for example). You can get SCons
+<A href="http://www.scons.org/">here</A>.<br>
 SCons is <A href="http://www.python.org/">python</A> based, so make sure you got that too. Also at the time of writing you need the latest SCons, which is "0.96.91".<br>
 <br>
 
 <p> <h3><A name="compiling">Compiling</A></h3>
 If you got SCons installed simply type <samp>scons</samp> in the main nixstaller directory to build and configure everything.<br>
 To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
-The binaries will be automaticly put in the bin/[osname]/ directory(where [osname] is the lowercased output from 'uname').<br>
+The binaries will be automaticly put in the bin/[osname]/[arch]/ directory(where [osname] is the lowercased output from 'uname', [arch] is x86 for intel compatible or output fron 'uname -m' for any other).<br>
 <br>
 
-<p> <h3><A name="bindir">The bin/ directory</A></h3>
-When <samp>geninstall.sh</samp> is executed it will copy all the required frontends from this directory. In this directory are OS specific subdirectories which are named by the lowercased output from the uname command.<br>
-After SCons is done with compiling it will put the frontends in the subdirectory for the current OS.<br>
-<br>
-<strong>libc</strong><br>
-On some operating systems the C library 'libc' may change between new releases. A good example is FreeBSD, which has a new libc major version for every new major release. On the other hand, NetBSD is using the same major version for 1.6.X, 2.X and 3.X.<br>
-Since it's not possible to staticly link libc(some functions need runtime support) and it is only possible to let a binary use shared libraries from the same major release (ie libc.so.5 or libc.so.6) some platforms may need different binaries for different libc's.<br>
-To compile for a different libc you could do the following:
-<ul>
-   <li> Compile from a system which uses this libc by default(ie an older system) </li>
-   <li> Obtain the older libc from somewhere else. </li>
- </ul> 
+<p> <h3><A name="libc">Specific libc binaries</A></h3>
+As been said, the major library version of libc (and libm) may change between releases of operating systems. For example FreeBSD 5.X has libc.so.5 while FreeBSD 6.X uses libc.so.6. In order to let Nixstaller still being able to run you should compile different binaries for different libc's. Some more info about this in the <A href="#comp-notes">general notes section</A>.<br>
+If you got the binaries you should put them in bin/[osname]/[arch]/libcX/ where the X should be replaced with the major version number of libc (ie /lib/libc.so.5 will become libc5).<br>
 
-The first option is the best, since it may fix other OS specific problems aswell. The drawback is ofcourse that you need to install a complete new OS.<br>
-The second option is easier, but may not always work. To get this to work you should put the libc in /lib and create a symlink called lib/[osname]/libc.so (again, replace [osname] with lowercased 'uname') to this file.<br>
-After you recompiled the binaries you should verify with tools such as 'ldd' if it uses the alternative libc.<br>
-<br>
-You should then move the files to a subdirectorie in bin/[osname]/. The subdirectory is called libcX where you should replace X with the major version number of libc (ie for libc.so.5 on freebsd: 'bin/freebsd/libc5/').<br>
+<p> <h3><A name="libm">Specific libm binaries</A></h3>
+Since libc and libm releate to each other, it's very lickely that they both change. Therefore it's not necessarily to do anything special, just make sure that you link with the libm version that came from the system that uses the different libc.<br>
 <br>
 
 <p> <h2><A href="#toc-faq" name="faq">Frequently Asked Questions (FAQ)</A></h2>
@@ -1047,8 +1071,8 @@ Nixstaller is released under the GPlv2 license with an exception for CDK:<br>
 If you got any suggestions, questions and such you can reach me through the following ways:<br>
 <ul>
    <li> Send a email to rhelmus_AT_gmail.com</li>
-   <li> Use the forums at my site </li>
-   <li> Instant Message: rick_helmus8@hotmail.com(MSN), 224332897(ICQ) or rickakame(AIM) </li>
+   <li> Use the <A href="http://nixstaller.berlios.de/forum/index.php">forums at my site</A> </li>
+   <li> Instant Message: rick_helmus8_AT_hotmail.com(MSN), 224332897(ICQ) or rickakame(AIM) </li>
  </ul>
 
 </body>

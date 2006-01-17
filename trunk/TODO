@@ -1,6 +1,6 @@
 OVERALL
 - Update notes files for libs
-- Write access for param bug
+- Write access for param bug?
 - Modify Makeself?
 
 
@@ -8,7 +8,6 @@ MAIN
 
 
 NCURSES FRONTEND
-- Check window width's
 
 
 FLTK FRONTEND
@@ -19,9 +18,6 @@ DOCS
 - More credits?
 - FAQ
 - gmake
-- Libs for compiling
-- arch stuff: where to put includes, files_ dirs, targetarch
-- libc stuff: default libc
 
 
 ----------------------------- LATER ------------------------------------
