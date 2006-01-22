@@ -40,6 +40,7 @@
 #include <stdarg.h>
 #include <string>
 #include <list>
+#include <vector>
 #include <map>
 
 enum EArchiveType { ARCH_GZIP, ARCH_BZIP2 };
@@ -104,7 +105,10 @@ inline bool FileExists(const std::string &file) { return FileExists(file.c_str()
 bool WriteAccess(const char *file);
 inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
 void CleanPasswdString(char *str);
-std::string EatWhite(const std::string &str);
+std::string &EatWhite(std::string &str);
+void MakeStringList(const std::string &str, std::vector<char *> &strlist);
+void MakeStringList(const char *str, std::vector<char *> &strlist);
+void GetTextFromBlock(std::ifstream &file, std::string &text);
 
 // These functions should be defined for each frontend
 void throwerror(bool dialog, const char *error, ...);

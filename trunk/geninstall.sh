@@ -189,6 +189,9 @@ mkdir -p $CONFDIR/tmp/config/lang
 
 # Check which archive type to use
 ARCH_TYPE=`awk '$1=="archtype"{print $2}' $CONFDIR/install.cfg`
+if [ -z "$ARCH_TYPE" ]; then
+    ARCH_TYPE="gzip"
+fi
 
 # Check which languages to use
 LANGUAGES=`awk '$1=="languages"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
@@ -268,7 +271,7 @@ echo "Generating installer..."
 $CURDIR/makeself.sh --$ARCH_TYPE $CONFDIR/tmp $CURDIR/setup.sh "nixstaller" sh ./startupinstaller.sh
 
 echo "Cleaning up..."
-remtemp
+#remtemp
 
 echo "Done"
 

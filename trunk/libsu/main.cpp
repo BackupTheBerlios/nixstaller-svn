@@ -214,7 +214,8 @@ std::string CLibSU::ReadLine(bool block)
         {
             ret = m_szInBuf;
             m_szInBuf.clear();
-        } else 
+        }
+        else 
         {
             ret = m_szInBuf.substr(0, pos+1);
             m_szInBuf = m_szInBuf.substr(pos+1);
@@ -504,7 +505,7 @@ bool CLibSU::TestSU(const char *password)
     
     if (Exec(command, args) < 0)
     {
-	return false;
+        return false;
     }
     
     ESuComErrors ret = (ESuComErrors) TalkWithSU(password);

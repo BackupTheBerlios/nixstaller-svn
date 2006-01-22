@@ -1,0 +1,37 @@
+Notes for linux libs:
+
+libacl:
+Version used: 2.2.27
+Other: after compilation you can find libacl in the libacl/.libs/ directory.
+
+JPEG:
+version: 6b
+
+PNG:
+version: 1.2.8
+
+FLTK:
+version: 1.1.6
+
+BZIP2:
+version: 1.0.3
+
+ZLIB:
+version: 1.2.3
+
+libarchive
+version: 1.02.034
+
+CDK:
+version: 5.0-20050424
+
+NCURSES:
+version: 5.4
+
+X11 (libX11, libXext)
+version: 6.8.2
+notes: compiled from portage
+
+GCC (libstdc++, libutil)
+version: 3.4.4
+

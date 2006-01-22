@@ -471,7 +471,7 @@ Fl_Group *CInstallFilesScreen::Create()
     m_pAskPassWindow->begin();
     
     m_pAskPassBox = new Fl_Box(10, 20, 370, 40, "This installation requires root(administrator) privileges in order to "
-                                                "continue.\nPlease enter the password of the root user");
+                                                "continue\nPlease enter the password of the root user");
     m_pAskPassBox->align(FL_ALIGN_WRAP);
     
     m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25, "Password: ");
@@ -494,17 +494,15 @@ bool CInstallFilesScreen::Activate()
 {
     if (InstallInfo.dest_dir_type == DEST_SELECT)
     {
-        char *askstr = CreateText(GetTranslation("This will install %s to the following directory:"),
-                                  InstallInfo.program_name.c_str());
-        if (!fl_choice("%s\n%s\n%s", GetTranslation("Exit program"), GetTranslation("Continue"), NULL, askstr,
-             InstallInfo.dest_dir.c_str(), GetTranslation("Continue?")))
+        if (!fl_choice(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
+             InstallInfo.program_name.c_str(), MakeCString(InstallInfo.dest_dir)), GetTranslation("Exit program"),
+             GetTranslation("Continue"), NULL))
             EndProg();
     }
     else
     {
-        char *askstr = CreateText(GetTranslation("This will install %s"), InstallInfo.program_name.c_str());
-        if (!fl_choice("%s\n%s", GetTranslation("Exit program"), GetTranslation("Continue"), NULL, askstr,
-             GetTranslation("Continue?")))
+        if (!fl_choice(CreateText(GetTranslation("This will install %s\nContinue?"), InstallInfo.program_name.c_str()),
+             GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
             EndProg();
     }
         
@@ -544,8 +542,7 @@ bool CInstallFilesScreen::Activate()
             // Check if password is invalid
             if (!m_szPassword)
             {
-                if (fl_ask("%s\n%s", GetTranslation("Root access is required to continue"),
-                    GetTranslation("Abort installation?")))
+                if (fl_ask(GetTranslation("Root access is required to continue\nAbort installation?")))
                     EndProg();
             }
             else
@@ -555,12 +552,11 @@ bool CInstallFilesScreen::Activate()
 
                 // Some error appeared
                 if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    fl_alert("%s\n%s", GetTranslation("Incorrect password given for root user"),
-                             GetTranslation("Please retype"));
+                    fl_alert(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
-                    throwerror(true, "%s\n%s", GetTranslation("Could not use su to gain root access"),
-                                GetTranslation("Make sure you can use su(adding the current user to the wheel group may help"));
+                    throwerror(true, GetTranslation("Could not use su to gain root access"
+                               "Make sure you can use su(adding the current user to the wheel group may help"));
                 }
             }
         }
@@ -584,7 +580,13 @@ bool CInstallFilesScreen::Activate()
 void CInstallFilesScreen::UpdateLang()
 {
     m_pProgress->label(GetTranslation("Progress"));
-    //m_pDisplay->label(GetTranslation("Status: %s"));
+    m_pDisplay->label(GetTranslation("Status"));
+    m_pAskPassWindow->label(GetTranslation("Password dialog"));
+    m_pAskPassInput->label(CreateText("%s: ", GetTranslation("Password")));
+    m_pAskPassBox->label(GetTranslation("This installation requires root(administrator) privileges in order to continue\n"
+            "Please enter the password of the root user"));
+    m_pAskPassOKButton->label(GetTranslation("OK"));
+    m_pAskPassCancelButton->label(GetTranslation("Cancel"));
 }
 
 void CInstallFilesScreen::AppendText(const char *txt)
@@ -597,26 +599,27 @@ void CInstallFilesScreen::AppendText(const char *txt)
 void CInstallFilesScreen::SetPassword(bool unset)
 {
     CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
     
-    const char *passwd = m_pAskPassInput->value();
-
     if (!unset)
-        m_szPassword = strdup(passwd);
-
-    if (passwd && passwd[0])
     {
-        // Can't use FLTK's replace() to delete input field text, since it stores undo info
-        int length = strlen(passwd);
-        
-        char str0[length];
-        for (int i=0;i<length;i++) str0[i] = 0;
-        m_pAskPassInput->value(str0);
-        
-        // Force clean temp inputfield string
-        char *str = const_cast<char *>(passwd);
-        for(int i=0;i<strlen(str);i++) str[i] = 0;
-    }
+        const char *passwd = m_pAskPassInput->value();
+        m_szPassword = strdup(passwd);
     
+        if (passwd && passwd[0])
+        {
+            // Can't use FLTK's replace() to delete input field text, since it stores undo info
+            int length = strlen(passwd);
+            
+            char str0[length];
+            for (int i=0;i<length;i++) str0[i] = 0;
+            m_pAskPassInput->value(str0);
+            
+            // Force clean temp inputfield string
+            char *str = const_cast<char *>(passwd);
+            for(int i=0;i<strlen(str);i++) str[i] = 0;
+        }
+    }
     m_pAskPassWindow->hide();
     m_pAskPassInput->value(NULL);
 }

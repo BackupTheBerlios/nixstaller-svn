@@ -166,13 +166,15 @@ bool ReadConfig()
                 else if (str == "description")
                 {
                     std::getline(strstrm, tmp);
-                    pParamEntry->description = EatWhite(tmp);
+                    EatWhite(tmp);
+                    if (tmp[0] == '[')
+                        GetTextFromBlock(file, tmp);
+                    pParamEntry->description = tmp;
                 }
                 else if (str == "defaultval")
                 {
                     std::getline(strstrm, tmp);
-                    pParamEntry->defaultval = EatWhite(tmp);
-                    pParamEntry->value = pParamEntry->defaultval;
+                    pParamEntry->defaultval = pParamEntry->value = EatWhite(tmp);
                 }
                 else if (str == "varname")
                 {
@@ -210,7 +212,10 @@ bool ReadConfig()
                 else if (str == "command")
                 {
                     std::getline(strstrm, tmp);
-                    pCommandEntry->command = EatWhite(tmp);
+                    EatWhite(tmp);
+                    if (tmp[0] == '[')
+                        GetTextFromBlock(file, tmp);
+                    pCommandEntry->command = tmp;
                 }
                 else if (str == "description")
                 {
@@ -293,7 +298,6 @@ bool ReadConfig()
             }
             else if (str == "languages")
             {
-                printf("lang line: %s\n", strstrm.str().c_str());
                 std::string lang;
                 while (strstrm >> lang)
                     InstallInfo.languages.push_back(lang);
@@ -353,7 +357,7 @@ bool ReadConfig()
     return true;
 }
 
-// Extract gzipped tar file. Returns how much percent is done.
+// Extract compressed tar file. Returns how much percent is done.
 float ExtractArchive(std::string &curfile)
 {
     static archive *arch = NULL;
@@ -447,7 +451,7 @@ bool ReadLang()
 
     if (!file)
         return false;
-
+    
     std::string tmp, text, srcmsg;
     bool atsrc = true;
     while (file)
@@ -458,17 +462,20 @@ bool ReadLang()
         if (text.empty() || text[0] == '#')
             continue;
 
-        if (atsrc)
-            srcmsg = text;
+        if (text[0] == '[')
+            GetTextFromBlock(file, text);
+        
+        if (atsrc) { debugline("src: %s\n", text.c_str());
+            srcmsg = text; }
         else
         {
             InstallInfo.translations[srcmsg] = new char[text.length()+1];
             text.copy(InstallInfo.translations[srcmsg], std::string::npos);
-            InstallInfo.translations[srcmsg][text.length()] = 0;
+            InstallInfo.translations[srcmsg][text.length()] = 0;debugline("dest: %s\n", InstallInfo.translations[srcmsg]);
         }
 
         atsrc = !atsrc;
     }
-    
+
     return true;
 }

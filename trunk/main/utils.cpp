@@ -35,6 +35,8 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <sys/stat.h>
+#include <fstream>
+#include <sstream>
 #include "main.h"
  
 
@@ -217,14 +219,63 @@ void CleanPasswdString(char *str)
     }
 }
 
-std::string EatWhite(const std::string &str)
+std::string &EatWhite(std::string &str)
 {
-    std::string ret = str;
-    std::string::size_type fpos = ret.find_first_not_of(" \t\r\n");
-    std::string::size_type lpos = ret.find_last_not_of(" \t\r\n");
+    std::string::size_type pos = str.find_first_not_of(" \t\r\n");
 
-    if (fpos == std::string::npos)
-        fpos = 0;
+    if (pos != std::string::npos)
+        str.erase(0, pos);
+    
+    pos = str.find_last_not_of(" \t\r\n");
 
-    return ret.substr(fpos, (lpos==std::string::npos) ? std::string::npos : ((lpos-fpos)+1));
+    if (pos != std::string::npos)
+        str.erase(pos+1);
+    //return ret.substr(fpos, (lpos==std::string::npos) ? std::string::npos : ((lpos-fpos)+1));
+    return str;
+}
+
+// Put every line from a string in a list
+void MakeStringList(const std::string &str, std::vector<char *> &strlist)
+{
+    std::istringstream strstrm(str);
+    std::string line;
+    while(strstrm && std::getline(strstrm, line))
+        strlist.push_back(MakeCString(line));
+}
+
+// Put every line from a string in a list (C strings)
+void MakeStringList(const char *str, std::vector<char *> &strlist)
+{
+    std::istringstream strstrm(str);
+    std::string line;
+    while(strstrm && std::getline(strstrm, line))
+        strlist.push_back(MakeCString(line));
+}
+
+// Used by config file parsing, gets string between a text block
+void GetTextFromBlock(std::ifstream &file, std::string &text)
+{
+    std::string tmp;
+    text.erase(0, 1); // Remove [
+    EatWhite(text);
+            
+    while (file)
+    {
+        std::getline(file, tmp);
+        text += '\n' + EatWhite(tmp);
+        if (text[text.length()-1] == ']')
+        {
+            // Don't use "\]" as exit point(this way we can use a ] in a text block)
+            if ((text.length() > 1) && (text[text.length()-2] == '\\'))
+                text.erase(text.length()-2, 1);
+            else
+                break;
+        }
+    }
+    
+    if (text[text.length()-1] == ']')
+    {
+        text.erase(text.length()-1, 1); // Remove ]
+        EatWhite(text);
+    }
 }

@@ -235,9 +235,9 @@ void InstThinkFunc(void *p)
     chtype input = getch();
     if (input == 'c')
     {
-        if (YesNoBox("%s\n%s\n%s", GetTranslation("Install commands are still running"),
-            GetTranslation("If you abort now this may lead to a broken installation"),
-            GetTranslation("Are you sure?")))
+        if (YesNoBox(GetTranslation("Install commands are still running\n"
+            "If you abort now this may lead to a broken installation\n"
+            "Are you sure?")))
         {
             CleanPasswdString((char *)p);
             EndProg();

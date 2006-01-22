@@ -55,7 +55,15 @@ void AboutOKCB(Fl_Widget *, void *) { pAboutWindow->hide(); };
         
 void WizCancelCB(Fl_Widget *, void *)
 {
-    if (fl_ask("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
+    char *msg;
+    if (InstallFiles)
+        msg = GetTranslation("Install commands are still running\n"
+                "If you abort now this may lead to a broken installation\n"
+                "Are you sure?");
+    else
+        msg = GetTranslation("This will abort the installation\nAre you sure?");
+    
+    if (fl_ask(msg))
         EndProg();
 }
 

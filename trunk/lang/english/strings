@@ -32,11 +32,9 @@ Please read the following text
 Enter name of new directory
 Enter name of new directory
 
-This installation requires root(administrator) privileges in order to continue
-This installation requires root(administrator) privileges in order to continue
+Password dialog
+Password dialog
 
-Please enter the password of the root user
-Please enter the password of the root user
 
 #-----------------------------------------------
 # Button names
@@ -133,51 +131,93 @@ Value
 Change
 Change
 
+Password
+Password
+
+
 #-----------------------------------------------
 # Messages
 #-----------------------------------------------
 
+[
 This will install %s to the following directory:
+%s
+Continue?
+]
+[
 This will install %s to the following directory:
-
-This will install %s
-This will install %s
-
+%s
 Continue?
+]
+
+[
+This will install %s
 Continue?
+]
+[
+This will install %s
+Continue?
+]
 
 Installation of %s complete!
 Installation of %s complete!
 
+[
 Install commands are still running
+If you abort now this may lead to a broken installation
+Are you sure?
+]
+[
 Install commands are still running
-
 If you abort now this may lead to a broken installation
-If you abort now this may lead to a broken installation
-
 Are you sure?
+]
+
+[
+This will abort the installation
 Are you sure?
-
+]
+[
 This will abort the installation
-This will abort the installation
+Are you sure?
+]
 
+[
 Root access is required to continue
+Abort installation?
+]
+[
 Root access is required to continue
-
 Abort installation?
-Abort installation?
+]
 
+[
 Incorrect password given for root user
+Please retype
+]
+[
 Incorrect password given for root user
-
 Please retype
-Please retype
+]
 
+[
 Directory does not exist
+Do you want to create it?
+]
+[
 Directory does not exist
+Do you want to create it?
+]
 
-Do you want to create it?
-Do you want to create it?
+[
+This installation requires root(administrator) privileges in order to continue
+Please enter the password of the root user
+]
+[
+This installation requires root(administrator) privileges in order to continue
+Please enter the password of the root user
+]
+
 
 #-----------------------------------------------
 # Button bar (ncurses only)
@@ -223,11 +263,14 @@ Create directory
 Error: %s
 Error: %s
 
+[
 Could not use su to gain root access
+Make sure you can use su(adding the current user to the wheel group may help)
+]
+[
 Could not use su to gain root access
-
 Make sure you can use su(adding the current user to the wheel group may help)
-Make sure you can use su(adding the current user to the wheel group may help)
+]
 
 Could not create directory
 Could not create directory

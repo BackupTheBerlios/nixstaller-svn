@@ -134,7 +134,9 @@ CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, char **message, int mco
 CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const char *message, char **buttons, int bcount,
                        chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
 {
-    std::vector<char *> vec(1, const_cast<char *>(message));
+    //std::vector<char *> vec(1, const_cast<char *>(message));
+    std::vector<char *> vec;
+    MakeStringList(message, vec);
     m_pDialog = newCDKDialog(pScreen, x, y, &vec[0], vec.size(), buttons, bcount, hlight, sep, box, shadow);
     if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
@@ -142,7 +144,9 @@ CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const char *message, ch
 CCDKDialog::CCDKDialog(CDKSCREEN *pScreen, int x, int y, const std::string &message, char **buttons, int bcount,
                        chtype hlight, bool sep, bool box, bool shadow) : CBaseCDKWidget(box)
 {
-    std::vector<char *> vec(1, const_cast<char *>(message.c_str()));
+    //std::vector<char *> vec(1, const_cast<char *>(message.c_str()));
+    std::vector<char *> vec;
+    MakeStringList(message, vec);
     m_pDialog = newCDKDialog(pScreen, x, y, &vec[0], vec.size(), buttons, bcount, hlight, sep, box, shadow);
     if (!m_pDialog) throwerror(false, "Could not create dialog window");
 }
@@ -499,7 +503,7 @@ bool CFileDialog::Activate()
         
         if (!FileExists(selection))
         {
-            if (YesNoBox("%s\n%s", GetTranslation("Directory does not exist"), GetTranslation("Do you want to create it?")))
+            if (YesNoBox(GetTranslation("Directory does not exist\nDo you want to create it?")))
             {
                 if (mkdir(selection, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
                 {

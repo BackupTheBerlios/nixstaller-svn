@@ -16,7 +16,7 @@ def checklibexist(context, fname):
     return False
 
 
-env = Environment(CCFLAGS = "-Wall -O", LINKFLAGS='-static-libgcc')
+env = Environment(CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc')
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')

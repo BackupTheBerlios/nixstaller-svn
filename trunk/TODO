@@ -1,7 +1,9 @@
 OVERALL
-- Update notes files for libs
 - Write access for param bug?
 - Modify Makeself?
+- Check tar(Solaris etc)
+- "/home/rick/src/nixstaller/trunk/makeself.sh: line 312: echo: write error: Bad file descriptor"
+- Link libX11 dynamic?
 
 
 MAIN
@@ -18,6 +20,7 @@ DOCS
 - More credits?
 - FAQ
 - gmake?
+- Multiline stuff(commands, descriptions, translaions)
 
 
 ----------------------------- LATER ------------------------------------

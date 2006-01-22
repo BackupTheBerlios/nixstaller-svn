@@ -1,4 +1,4 @@
-env = Environment(CCFLAGS = "-Wall -O", CPPPATH='.')
+env = Environment(CCFLAGS = "-Wall -Os", CPPPATH='.')
 
 config_header = 'config.h'
 
@@ -34,9 +34,6 @@ if not env.GetOption('clean'):
     env = conf.Finish()
 else:
     # Atleast for me, scons won't clean properly...removing all '.sconsign' files manually seems to help
-    Execute(Delete('main/.sconsign'))
-    Execute(Delete('ncurses/.sconsign'))
-    Execute(Delete('fltk/.sconsign'))
     Execute(Delete('.sconf_temp'))
     Execute(Delete('.sconsign.dblite'))
 

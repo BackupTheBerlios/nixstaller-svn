@@ -83,15 +83,8 @@ int main(int argc, char *argv[])
         if (Functions[i]()) i++;
         else
         {
-            char *buttons[2] = { GetTranslation("Yes"), GetTranslation("No") };
-            char *msg[2] = { GetTranslation("This will abort the installation"), GetTranslation("Are you sure?") };
-            
-            CCDKDialog dialog(CDKScreen, CENTER, CENTER, msg, 2, buttons, 2);
-            dialog.SetBgColor(26);
-            int ret = dialog.Activate();
-            if ((ret == 0) && (dialog.ExitType() == vNORMAL)) break;
-            dialog.Destroy();
-            refreshCDKScreen(CDKScreen);
+            if (YesNoBox(GetTranslation("This will abort the installation\nAre you sure?")))
+                break;
         }
     }
 
@@ -363,23 +356,20 @@ bool InstallFiles()
     ButtonBar.AddButton("C", "Cancel");
     ButtonBar.Draw();
 
-    std::vector<char *> askstr;
+    char *msg;
     char *dbuttons[2] = { GetTranslation("Continue"), GetTranslation("Exit program") };
     
     if (InstallInfo.dest_dir_type == DEST_SELECT)
     {
-        askstr.push_back(CreateText(GetTranslation("This will install %s to the following directory:"),
-                         InstallInfo.program_name.c_str()));
-        askstr.push_back(MakeCString(InstallInfo.dest_dir));
-        askstr.push_back(GetTranslation("Continue?"));
+        msg = CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
+                                   InstallInfo.program_name.c_str(), MakeCString(InstallInfo.dest_dir));
     }
     else
     {
-        askstr.push_back(CreateText(GetTranslation("This will install %s"), InstallInfo.program_name.c_str()));
-        askstr.push_back(GetTranslation("Continue?"));
+        msg = CreateText(GetTranslation("This will install %s\nContinue?"), InstallInfo.program_name.c_str());
     }
 
-    CCDKDialog Diag(CDKScreen, CENTER, CENTER, &askstr[0], askstr.size(), dbuttons, 2);
+    CCDKDialog Diag(CDKScreen, CENTER, CENTER, msg, dbuttons, 2);
     Diag.SetBgColor(26);
         
     int sel = Diag.Activate();
@@ -445,9 +435,12 @@ bool InstallFiles()
     // Ask root password if one of the command entries need root access and root isn't passwordless
     if (askpass && SuHandler.NeedPassword())
     {
-        CCDKEntry entry(CDKScreen, CENTER, CENTER, CreateText("%s\n%s",
+        /*CCDKEntry entry(CDKScreen, CENTER, CENTER, CreateText("%s\n%s",
                         GetTranslation("This installation requires root(administrator) privileges in order to continue"),
-                        GetTranslation("Please enter the password of the root user")), "", 60, 0, 256, vHMIXED);
+        GetTranslation("Please enter the password of the root user")), "", 60, 0, 256, vHMIXED);*/
+        CCDKEntry entry(CDKScreen, CENTER, CENTER,
+                        GetTranslation("This installation requires root(administrator) privileges in order to continue\n"
+                                       "Please enter the password of the root user"), "", 60, 0, 256, vHMIXED);
         entry.SetHiddenChar('*');
         entry.SetBgColor(26);
 
@@ -457,8 +450,7 @@ bool InstallFiles()
 
             if ((entry.ExitType() != vNORMAL) || !sz)
             {
-                if (YesNoBox(CreateText("%s\n%s", GetTranslation("Root access is required to continue"),
-                    GetTranslation("Abort installation?"))))
+                if (YesNoBox(GetTranslation("Root access is required to continue\nAbort installation?")))
                     EndProg();
                 refreshCDKScreen(CDKScreen);
             }
@@ -476,13 +468,12 @@ bool InstallFiles()
                 // Some error appeared
                 if (SuHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
                 {
-                    WarningBox("%s\n%s", GetTranslation("Incorrect password given for root user"),
-                                GetTranslation("Please retype"));
+                    WarningBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 }
                 else
                 {
-                    throwerror(true, "%s\n%s", GetTranslation("Could not use su to gain root access"),
-                               GetTranslation("Make sure you can use su(adding the current user to the wheel group may help)"));
+                    throwerror(true, GetTranslation("Could not use su to gain root access\n"
+                               "Make sure you can use su(adding the current user to the wheel group may help)"));
                 }
             }
         }
@@ -534,7 +525,7 @@ bool InstallFiles()
             chtype input = getch();
             if (input == 'c')
             {
-                if (YesNoBox("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
+                if (YesNoBox(GetTranslation("This will abort the installation\nAre you sure?")))
                 {
                     CleanPasswdString(passwd);
                     EndProg();
@@ -599,9 +590,9 @@ bool InstallFiles()
                     chtype input = getch();
                     if (input == 'c') /*injectCDKSwindow(InstallOutput.GetSWin(), input);*/
                     {
-                        if (YesNoBox("%s\n%s\n%s", GetTranslation("Install commands are still running"),
-                                                   GetTranslation("If you abort now this may lead to a broken installation"),
-                                                   GetTranslation("Are you sure?")))
+                        if (YesNoBox(GetTranslation("Install commands are still running\n"
+                                                    "If you abort now this may lead to a broken installation\n"
+                                                    "Are you sure?")))
                         {
                             CleanPasswdString(passwd);
                             EndProg();
