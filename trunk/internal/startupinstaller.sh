@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 #    Copyright (C) 2006 by Rick Helmus (rhelmus_AT_gmail.com)
 
@@ -71,7 +71,7 @@ fi
 for L in $LIBCS
 do
     L=`echo $L | sed -e 's/\/lib\///g' -e 's/\.so\.//g'` # Convert /lib/libc.so.X to libcX
-    if [ -d "./frontends/${CURRENT_OS}/${L}" ]; then
+    if [ -d "./frontends/${CURRENT_OS}/${CURRENT_ARCH}/${L}" ]; then
         USELIBC=$L
         echo "Using libc \"${USELIBC}\""
         break
@@ -100,12 +100,12 @@ if [ $NCURS != "none" -a $FLTK != "none" ]; then
     if [ -z $DISPLAY ]; then
         RUNCOMMAND="${NCURS}" # Not running, use ncurses frontend
     else
-        RUNCOMMAND="$FLTK"
+        RUNCOMMAND="${FLTK}"
     fi
 elif [ $NCURS != "none" ]; then
     RUNCOMMAND="${NCURS}"
 elif [ $FLTK != "none" ]; then
-    RUNCOMMAND="$FLTK"
+    RUNCOMMAND="${FLTK}"
 else
     echo "Error: Couldn't find any frontend to use!"
     exit 1

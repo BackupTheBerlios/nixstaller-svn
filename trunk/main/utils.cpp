@@ -209,6 +209,41 @@ bool WriteAccess(const char *file)
     return ((lstat(file, &st) == 0) && (access(file, W_OK) == 0));
 }
 
+// Incase dir does not exist, it will search for the first valid top directory
+std::string GetFirstValidDir(const std::string &dir)
+{
+    if ((dir[0] == '/') && (dir.length() == 1))
+        return dir; // Root dir given
+
+    if (FileExists(dir))
+        return dir;
+    
+    std::string subdir = dir;
+
+    // Remove trailing /
+    if (subdir[subdir.length()-1] == '/')
+        subdir.erase(subdir.length()-1, 1);
+    
+    std::string::size_type pos;
+    do
+    {
+        pos = subdir.rfind('/');
+        if (pos == std::string::npos)
+        {
+            // No absolute path given...just return current dir
+            char curdir[256];
+            if (getcwd(curdir, sizeof(curdir)) == 0)
+                return "/";
+            return curdir;
+        }
+        else if (pos == 0) // Reached the root dir('/')
+            return "/";
+        subdir.erase(pos);
+    }
+    while (!FileExists(subdir));
+    return subdir;
+}
+
 // Used for cleaning password strings
 void CleanPasswdString(char *str)
 {

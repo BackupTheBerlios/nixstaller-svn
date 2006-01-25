@@ -365,6 +365,7 @@ bool CFileDialog::ReadDir(const std::string &dir)
     struct dirent *dirstruct;
     struct stat filestat;
     DIR *dp;
+    bool isrootdir = ((dir[0] == '/') && (dir.length()==1));
 
     ClearDirList();
 
@@ -373,9 +374,19 @@ bool CFileDialog::ReadDir(const std::string &dir)
 
     while ((dirstruct = readdir (dp)) != 0)
     {
-        if ((lstat(dirstruct->d_name, &filestat) == 0) && (mode2Filetype(filestat.st_mode) == 'd') &&
-             (strcmp(dirstruct->d_name, ".")))
-            m_DirItems.push_back(strdup(dirstruct->d_name));
+        if (lstat(dirstruct->d_name, &filestat) != 0)
+            continue;
+        
+        if (mode2Filetype(filestat.st_mode) != 'd')
+            continue; // Has to be a directory...
+
+        if (!strcmp(dirstruct->d_name, "."))
+            continue;
+
+        if ((!strcmp(dirstruct->d_name, "..")) && isrootdir)
+            continue;
+        
+        m_DirItems.push_back(strdup(dirstruct->d_name));
     }
 
     closedir (dp);

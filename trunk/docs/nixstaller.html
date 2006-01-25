@@ -51,11 +51,9 @@
    </li>
    <li> <A href="#compile" name="toc-compile">Compiling nixstaller</A>
    <ul>
-      <li> <A href="#req-libs">Required libraries</A> </li>
+      <li> <A href="#libs">Libraries</A> </li>
       <li> <A href="#scons">SCons</A> </li>
       <li> <A href="#compiling">Compiling</A> </li>
-      <li> <A href="#libc">Specific libc binaries</A> </li>
-      <li> <A href="#libm">Specific libm binaries</A> </li>
    </ul>
    </li>
    <li> <A href="#licensecred" name="toc-licensecred">Credits and license</A>
@@ -885,22 +883,12 @@ Normally all required libraries and frontends are already compiled for Linux, Fr
 If, for example, you want to compile for another platform or made some modifications to the source code you should read this section to know how to compile nixstaller.<br>
 <br>
 
-<p> <h3><A name="comp-notes">General notes</A></h3>
-Since it's very important that a binary needs to beeing able to run on as many system as possible, you need to take care of a few things:<br>
-<br>
-<strong>Optimized libraries</strong><br>
-Never use libraries which are optimized for a specific platform(ie compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another cpu cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
+<p> <h3><A name="libs">Libraries</A></h3>
+Although external libraries are nice for things such as not reinventing the wheel, they can cause several troubles aswell.<br>
+This section tells how to handle the required libraries for Nixstaller.<br>
 <br>
 
-<strong>Shared libraries</strong><br>
-Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries(currently libc and libm) can't be linked staticly or it might give some problems. This means that systems which don't have the same <em>major</em> library version the binary won't work. Luckely on most systems the major version of these libraries aren't changed very often. On systems where this isn't the case (such as FreeBSD, which has a new major version for every new major FreeBSD release) you need to compile different binaries which are linked with different libc's. You also need to check for right libm ofcourse.<br>
-<br>
-There are several ways to do this, the best way is ofcourse to install and compile on the Operating System which is using this specific libc/libm release.<br>
-<br>
-Another way is(incase the libraries are older then the ones on your system) to install a 'compat layer' which is provided on some systems(ie debian or BSD's). If you do this you need to make a symlink called libc.so(or libm.so) which points to the right library, this way gcc will use this older library instead. Note that copying the library and then renaming it won't work. To test if gcc linked the right libraries you can use the <samp>ldd</samp> command.<br>
-<br>
-
-<p> <h3><A name="req-libs">Required libraries</A></h3>
+<strong>Required libraries</strong><br>
 Nixstaller uses the following libraries:<br>
 <br>
 
@@ -981,6 +969,32 @@ Nixstaller uses the following libraries:<br>
 <br>
 You can find some notes about what was done to compile some libraries on different platforms in every subdirectory from the 'lib/' directory.<br>
 <br>
+
+<strong>Optimized libraries</strong><br>
+Never use libraries which are optimized for a specific platform(ie compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another cpu cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
+<br>
+
+<strong>Shared libraries</strong><br>
+Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked staticly or it might give some problems. This means that systems which don't have the same <em>major</em> library version the binary won't work. Luckely on most systems the major version of these libraries aren't changed very often.<br>
+The following libraries are dynamicly linked:
+
+
+
+
+
+
+
+
+
+
+
+On systems where this isn't the case (such as FreeBSD, which has a new major version for every new major FreeBSD release) you need to compile different binaries which are linked with different libc's. You also need to check for right libm ofcourse.<br>
+<br>
+There are several ways to do this, the best way is ofcourse to install and compile on the Operating System which is using this specific libc/libm release.<br>
+<br>
+Another way is(incase the libraries are older then the ones on your system) to install a 'compat layer' which is provided on some systems(ie debian or BSD's). If you do this you need to make a symlink called libc.so(or libm.so) which points to the right library, this way gcc will use this older library instead. Note that copying the library and then renaming it won't work. To test if gcc linked the right libraries you can use the <samp>ldd</samp> command.<br>
+<br>
+
 <strong>Library placement</strong><br>
 When you collected all the libraries for your platform you should put them in the right place in the 'lib/' directory.
 The libraries should be put in lib/[osname]/[archname] - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>

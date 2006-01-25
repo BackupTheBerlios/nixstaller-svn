@@ -269,8 +269,8 @@ bool ConfParams()
             
             if (pParam->param_type == PTYPE_DIR)
             {
-                CFileDialog filedialog(pParam->value, CreateText("<C>%s", GetTranslation("Select a directory")),
-                                       true, false);
+                CFileDialog filedialog(GetFirstValidDir(pParam->value),
+                                       CreateText("<C>%s", GetTranslation("Select a directory")),  true, false);
                 if (filedialog.Activate()) pParam->value = filedialog.Result();
                 filedialog.Destroy();
                 refreshCDKScreen(CDKScreen);

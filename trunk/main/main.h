@@ -109,6 +109,7 @@ std::string &EatWhite(std::string &str);
 void MakeStringList(const std::string &str, std::vector<char *> &strlist);
 void MakeStringList(const char *str, std::vector<char *> &strlist);
 void GetTextFromBlock(std::ifstream &file, std::string &text);
+std::string GetFirstValidDir(const std::string &dir);
 
 // These functions should be defined for each frontend
 void throwerror(bool dialog, const char *error, ...);

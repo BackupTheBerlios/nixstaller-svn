@@ -15,14 +15,27 @@ def checklibexist(context, fname):
     context.Result(0)
     return False
 
+def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "main();", autoload = 1):
+    context.env.Append(LIBPATH = libdir, CPPPATH = incdir)
+    ret = context.sconf.CheckLibWithHeader(library, header, language, call, autoload)
+    context.env['LIBPATH'].remove(libdir)
+    context.env['CPPPATH'].remove(incdir)
+    context.did_show_result = 1 # Hack, says "Error: No result" otherwise
+    return ret
+    
+opts = Options()
+opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
+opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
 
-env = Environment(CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc')
+
+Help(opts.GenerateHelpText(env))
 
 # Get current OS...if this != to uname I should fix it :-)
 cur_os = sys.platform.rstrip('1234567890')
 cur_arch = platform.machine()
 
-if cur_arch[0] == 'i' and cur_arch[-2:] == "86":
+if cur_arch[0] == 'i' and cur_arch.endswith("86"):
     cur_arch = "x86"
     
 # OS/Arch specific dirs
@@ -31,11 +44,11 @@ bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'
 inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk' ])
+env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
-    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist})
+    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv})
 
     if not conf.checklibexist('libstdc++.a'):
         print 'Searching for libstdc++.a'
@@ -80,10 +93,10 @@ if not env.GetOption('clean'):
     if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
         print "Couldn't find libcdk !"
         Exit(1)
-    if not conf.CheckLibWithHeader('X11', 'X11/X.h', 'C++', ';', 0):
+    if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
         print "Couldn't find libX11 !"
         Exit(1)
-    if not conf.CheckLibWithHeader('Xext', 'X11/X.h', 'C++', ';', 0):
+    if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
         print "Couldn't find libXext !"
         Exit(1)
     if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
@@ -128,7 +141,8 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cp
                        'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
 
 # Builds fltk frontend
-fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11'))
+fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11'),
+                   LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 # Build help extracter
 # extr = env.Program('extracter/extracter', ['extracter/extracter.c'])

@@ -1,9 +1,7 @@
 OVERALL
-- Write access for param bug?
 - Modify Makeself?
-- Check tar(Solaris etc)
 - "/home/rick/src/nixstaller/trunk/makeself.sh: line 312: echo: write error: Bad file descriptor"
-- Link libX11 dynamic?
+- rpath for netbsd
 
 
 MAIN
@@ -21,6 +19,7 @@ DOCS
 - FAQ
 - gmake?
 - Multiline stuff(commands, descriptions, translaions)
+- libm specifics
 
 
 ----------------------------- LATER ------------------------------------
@@ -29,6 +28,7 @@ OVERALL
 - Check permissions for inst dir
 - Package version?
 - Translate param names and param choices
+- Check for tar with gzip/bzip on other platforms(Solaris...)
 
 
 NCURSES FRONTEND

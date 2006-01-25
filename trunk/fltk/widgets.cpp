@@ -414,7 +414,7 @@ void CSetParamsScreen::SetValue(const std::string &str)
 
 void CSetParamsScreen::OpenDirChooser(void)
 {
-    m_pDirChooser->directory(m_pCurrentParamEntry->value.c_str());
+    m_pDirChooser->directory(GetFirstValidDir(m_pCurrentParamEntry->value).c_str());
     m_pDirChooser->show();
     while(m_pDirChooser->visible()) Fl::wait();
     

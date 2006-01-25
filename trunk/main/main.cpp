@@ -49,7 +49,7 @@ bool MainInit(int argc, char *argv[])
            "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
            "This is free software, and you are welcome to redistribute it\n"
            "under certain conditions; see the about section for details.\n");
-    
+
     // Get current OS and cpu arch name
     utsname inf;
     if (uname(&inf) == -1)
@@ -62,7 +62,7 @@ bool MainInit(int argc, char *argv[])
     // Convert iX86 to x86
     if ((InstallInfo.cpuarch[0] == 'i') && (InstallInfo.cpuarch.compare(2, 2, "86") == 0))
          InstallInfo.cpuarch = "x86";
-    
+
     char curdir[1024];
     if (getcwd(curdir, sizeof(curdir)) == 0)
         throwerror(false, "Could not read current directory");
