@@ -38,8 +38,8 @@
 #include <fstream>
 #include <sstream>
 #include "main.h"
- 
 
+#ifdef WITH_LIB_ARCHIVE
 // Returns uncompressed file size of a gzipped tar file
 int ArchSize(const char *archname)
 {
@@ -62,6 +62,45 @@ int ArchSize(const char *archname)
    
     return size;
 }
+#else
+void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize)
+{
+    totalsize = 0;
+    archfilesizes.clear();
+    
+    std::string command = "cat " + std::string(archname);
+
+    if (InstallInfo.archive_type == ARCH_GZIP)
+        command += " | gzip -cd | tar tvf -";
+    else if (InstallInfo.archive_type == ARCH_BZIP2)
+        command += " | bzip2 -d | tar tvf -";
+    
+    FILE *pipe = popen(command.c_str(), "r");
+    if (pipe)
+    {
+        char line[1024];
+        while (fgets(line, sizeof(line), pipe))
+        {
+            std::istringstream strstrm(line);
+            short s;
+            unsigned int size;
+            std::string tmp, fname;
+            for (s=0;s<9 && strstrm;s++)
+            {
+                if (s==4)
+                    strstrm >> size;
+                else if (s==8)
+                    strstrm >> fname;
+                else
+                    strstrm >> tmp;
+            }
+            archfilesizes[fname] = size;
+            totalsize += size;
+        }
+        pclose(pipe);
+    }
+}
+#endif
 
 std::string GetParameters(command_entry_s *pCommandEntry)
 {

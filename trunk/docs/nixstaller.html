@@ -169,6 +169,21 @@ Notice the '%s'? The '%s' will be replaced by the installer with another string.
 <strong>IMPORTANT:</strong> Currently there is no UTF support yet. This means that you can't use any 'special' characters yet.<br>
 <br>
 
+<strong>Multiline translations</strong><br>
+Some translations need more than one line. If this is the case the text should be put between 2 square brackets.<br>
+For example:
+
+<pre><samp>[
+Directory does not exist
+Do you want to create it?
+]
+[
+Directory bestaat niet
+Wilt u het aanmaken?
+]
+</samp></pre>
+<br>
+
 <strong>Other things that can be translated</strong><br>
 There are other things to be translated aswell:
 <ul>
@@ -368,16 +383,21 @@ Here is a small example how a command entry may look like:<br>
 <br></samp></pre>
 <br>
 A command entry has the following configure options: <br>
+<br>
 
 <strong>command</strong><br>
 This specifies the actual command. It will be directly passed to sh (or su incase it needs root access).<br>
+You can have multiple lines with commands, this way simple shell scripts can be made. To do so simply but the commands between square brackets.<br>
 <br>
 <samp>Usage: command commandlinehere</samp><br>
 <br>
-<samp>Example: command ./configure</samp><br>
-<br>
-<samp>Note: You can also use the additional functionality from SH such as 'if' or 'for'. Just make sure that everything is at one single line.</samp><br>
-<br>
+<samp>Example 1: command ./configure</samp><br>
+<pre><samp>Example 2:
+command [
+cp lib/mylib.so.1 /usr/local/lib
+cp bin/mybin /usr/local/bin
+echo Installation complete!
+]</samp></pre>
 <br>
 
 <strong>description</strong><br>
@@ -387,7 +407,6 @@ Here you can specify a simple description of what this command does. You can put
 <samp>Usage: description descriptionhere</samp><br>
 <br>
 <samp>Example: description Configuring test for your system</samp>
-<br>
 <br>
 
 <strong>needroot</strong><br>
@@ -481,11 +500,16 @@ If the prefix is set to '/usr/local' then the parameter will look like this when
 <strong>description</strong><br>
 You can specify a description for this parameter here. You can also add a translation to a
 <A href="#lang-files">language file</A>.<br>
+If the description contains more than one line of text you should put it between 2 square brackets.<br>
 <br>
 <samp>description descriptionoftheparamhere</samp><br>
 <br>
-<samp>Example: description This will set the installation prefix for package test.</samp><br>
-<br>
+<samp>Example 1: description This will set the installation prefix for package test.</samp><br>
+<pre><samp>Example 2:
+description [
+If you enable this option component X will be installed.
+Component is required for feature Y.
+]</samp></pre>
 <br>
 
 <strong>type</strong><br>

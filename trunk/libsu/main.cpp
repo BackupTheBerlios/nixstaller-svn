@@ -77,9 +77,9 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     if (CreatePT() < 0)
         return -1;
         
-    if ((GrantPT() < 0) || (UnlockPT() < 0)) 
+    if ((GrantPT() < 0) || (UnlockPT() < 0))
     {
-        SetError(SU_ERROR_INTERNAL, "Master setup failed");
+        SetError(SU_ERROR_INTERNAL, "Master setup failed: %s", strerror(errno));
         return -1;
     }
     

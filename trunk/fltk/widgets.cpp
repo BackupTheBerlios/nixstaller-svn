@@ -667,6 +667,7 @@ void CInstallFilesScreen::Install()
         }
     
         m_pProgress->value(percent/(1+InstallInfo.command_entries.size()));
+        debugline("extract percent: %d\n", percent/(1+InstallInfo.command_entries.size()));
         Fl::wait(0.0); // Update screen
     }
 

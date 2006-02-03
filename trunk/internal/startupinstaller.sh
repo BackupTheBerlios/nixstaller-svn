@@ -45,8 +45,8 @@ echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
 
 # Find out existing libc's
 LIBCS=`ls /lib/libc.so.* | sort -nr`
-echo "Found following LIBC's:"
-echo "${LIBCS}"
+#echo "Found following LIBC's:"
+#echo "${LIBCS}"
 
 # Check if we can run on the users OS
 if [ ! -d ./frontends/$CURRENT_OS/$CURRENT_ARCH ]; then

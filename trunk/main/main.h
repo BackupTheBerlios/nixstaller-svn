@@ -76,8 +76,14 @@ struct install_info_s
     EArchiveType archive_type;
     EDestDirType dest_dir_type;
     std::list<command_entry_s *> command_entries;
-    
     install_info_s(void) : archive_type(ARCH_GZIP), dest_dir_type(DEST_SELECT) { };
+};
+
+struct arch_size_entry_s
+{
+    unsigned int totalsize;
+    std::map<std::string, unsigned int> filesizes;
+    arch_size_entry_s(void) : totalsize(0) { };
 };
 
 extern install_info_s InstallInfo;
@@ -87,6 +93,7 @@ bool MainInit(int argc, char *argv[]);
 void MainEnd(void);
 bool ReadConfig(void);
 int ArchSize(const char *archname);
+void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize);
 float ExtractArchive(std::string &curfile);
 bool ReadLang(void);
 std::string GetParameters(command_entry_s *pCommandEntry);

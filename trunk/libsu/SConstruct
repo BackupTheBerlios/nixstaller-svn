@@ -13,7 +13,7 @@ if not env.GetOption('clean'):
     conf.CheckCXXHeader('pty.h', "<>")
     
     if conf.CheckLib('util', 'openpty'):
-        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DHAVE_OPENPTY')
+        conf.env.Append(CPPDEFINES = 'HAVE_OPENPTY')
         
     conf.CheckFunc('setgroups')
     conf.CheckFunc('getgroups')
@@ -27,7 +27,7 @@ if not env.GetOption('clean'):
     conf.CheckFunc('_getpty')
     
     if conf.CheckType('ucred', '#include <sys/socket.h>'):
-        conf.env.Append(CPPFLAGS = '$CPPFLAGS -DHAVE_STRUCT_UCRED')
+        conf.env.Append(CPPDEFINES = 'HAVE_STRUCT_UCRED')
     
     conf.CheckFunc('getpeereid')
     

@@ -510,6 +510,7 @@ bool InstallFiles()
     else
 #endif
     {
+
         while(percent<100)
         {
             std::string curfile;
@@ -525,7 +526,9 @@ bool InstallFiles()
             chtype input = getch();
             if (input == 'c')
             {
-                if (YesNoBox(GetTranslation("This will abort the installation\nAre you sure?")))
+                if (YesNoBox(GetTranslation("Install commands are still running\n"
+                    "If you abort now this may lead to a broken installation\n"
+                    "Are you sure?")))
                 {
                     CleanPasswdString(passwd);
                     EndProg();

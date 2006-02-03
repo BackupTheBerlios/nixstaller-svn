@@ -358,6 +358,7 @@ bool ReadConfig()
 }
 
 // Extract compressed tar file. Returns how much percent is done.
+#ifdef WITH_LIB_ARCHIVE
 float ExtractArchive(std::string &curfile)
 {
     static archive *arch = NULL;
@@ -436,6 +437,105 @@ float ExtractArchive(std::string &curfile)
     
     return (status == ARCHIVE_EOF) ? 100 : -1;
 }
+#else
+float ExtractArchive(std::string &curfile)
+{
+    const int archnamescount = 4;
+    static bool init = true;
+    static int totalsize;
+    static float percent;
+    static std::map<char *, arch_size_entry_s> archlist;
+    static std::map<char *, arch_size_entry_s>::iterator curarchiter;
+    static char *curarchname;
+    static FILE *pipe;
+    
+    if (init)
+    {
+        char *archnames[archnamescount] = { CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str()),
+            CreateText("%s/instarchive_all_%s", InstallInfo.own_dir.c_str(),
+                       InstallInfo.cpuarch.c_str()),
+            CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str()),
+            CreateText("%s/instarchive_%s_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str(),
+                       InstallInfo.cpuarch.c_str()) };
+
+        totalsize = 0;
+        archlist.clear();
+        curarchname = NULL;
+        pipe = NULL;
+
+        for (short s=0;s<archnamescount;s++)
+        {
+            if (FileExists(archnames[s]))
+            {
+                GetArchiveInfo(archnames[s], archlist[archnames[s]].filesizes, archlist[archnames[s]].totalsize);
+                totalsize += archlist[archnames[s]].totalsize;
+                if (!curarchname)
+                {
+                    curarchname = archnames[s];
+                    curarchiter = archlist.find(archnames[s]);
+                }
+            }
+        }
+        
+        if (archlist.empty())
+            return 100;
+        
+        percent = 0.0f;
+        init = false;
+    }
+
+    if (!pipe)
+    {
+        std::string command = "cat " + std::string(curarchname);
+
+        if (InstallInfo.archive_type == ARCH_GZIP)
+            command += " | gzip -cd | tar xvf -";
+        else if (InstallInfo.archive_type == ARCH_BZIP2)
+            command += " | bzip2 -d | tar xvf -";
+
+        command += " 2>&1";
+        pipe = popen(command.c_str(), "r");
+        if (!pipe)
+        {
+            init = true;
+            return -1;
+        }
+    }
+
+    char line[512];
+    if (!fgets(line, sizeof(line), pipe))
+    {
+        pclose(pipe);
+        pipe = NULL;
+        curarchiter++;
+        if (curarchiter == archlist.end())
+        {
+            init = true;
+            return 100;
+        }
+        curarchname = curarchiter->first;
+    }
+    else
+    {
+        curfile = line;
+        if (curfile.compare(0, 2, "x ") == 0)
+            curfile.erase(0, 2);
+        EatWhite(curfile);
+        percent += ((float)archlist[curarchname].filesizes[curfile]/(float)totalsize)*100.0f;
+    }
+    
+    /*
+    if (status == ARCHIVE_OK)
+    {
+        curfile = archive_entry_pathname(entry);
+        percent += ((float)archive_entry_size(entry)/(float)size)*100.0f;
+        archive_read_extract(arch, entry, (ARCHIVE_EXTRACT_OWNER | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_FFLAGS));
+        return percent/archlist.size();
+    }
+    */
+    return percent;
+}
+#endif
 
 bool ReadLang()
 {

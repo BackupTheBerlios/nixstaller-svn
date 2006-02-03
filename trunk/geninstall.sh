@@ -38,7 +38,7 @@ ARCHNAME_BASE="instarchive"
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 CURRENT_ARCH=`uname -m`
-CONFDIR="$CURDIR/$1"
+CONFDIR="${CURDIR}/$1"
 TARGET_OS=
 TARGET_ARCH=
 FRONTENDS=
@@ -59,8 +59,8 @@ checkargs()
         exit 1
     fi
     
-    if [ ! -d "$CONFDIR" ]; then
-        echo "No such directory: $CONFDIR"
+    if [ ! -d "${CONFDIR}" ]; then
+        echo "No such directory: ${CONFDIR}"
         exit 1
     fi
 }
@@ -68,32 +68,32 @@ checkargs()
 copytemp()
 {
     # Temporary copy frontends, libs and install config files to install directory
-    cp $CONFDIR/welcome $CONFDIR/tmp/config/ 2>/dev/null
-    cp $CONFDIR/install.cfg $CONFDIR/tmp/config/ || err "Error: no install config file"
-    cp $CONFDIR/license $CONFDIR/tmp/config/ 2>/dev/null
-    cp $CONFDIR/finish $CONFDIR/tmp/config/ 2>/dev/null
+    cp ${CONFDIR}/welcome ${CONFDIR}/tmp/config/ 2>/dev/null
+    cp ${CONFDIR}/install.cfg ${CONFDIR}/tmp/config/ || err "Error: no install config file"
+    cp ${CONFDIR}/license ${CONFDIR}/tmp/config/ 2>/dev/null
+    cp ${CONFDIR}/finish ${CONFDIR}/tmp/config/ 2>/dev/null
     
-    cp $CURDIR/internal/startupinstaller.sh $CONFDIR/tmp || err "Error: missing startupinstaller.sh script"
-    cp $CURDIR/internal/about $CONFDIR/tmp || err "Error: missing about file"
+    cp ${CURDIR}/internal/startupinstaller.sh ${CONFDIR}/tmp || err "Error: missing startupinstaller.sh script"
+    cp ${CURDIR}/internal/about ${CONFDIR}/tmp || err "Error: missing about file"
     
     # Copy languages
     for L in $LANGUAGES
     do
-        mkdir -p $CONFDIR/tmp/config/lang/$L/
-        cp $CONFDIR/lang/$L/strings $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
-        cp $CONFDIR/lang/$L/welcome $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
-        cp $CONFDIR/lang/$L/license $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
-        cp $CONFDIR/lang/$L/finish $CONFDIR/tmp/config/lang/$L/ 2>/dev/null
+        mkdir -p ${CONFDIR}/tmp/config/lang/$L/
+        cp ${CONFDIR}/lang/$L/strings ${CONFDIR}/tmp/config/lang/$L/ 2>/dev/null
+        cp ${CONFDIR}/lang/$L/welcome ${CONFDIR}/tmp/config/lang/$L/ 2>/dev/null
+        cp ${CONFDIR}/lang/$L/license ${CONFDIR}/tmp/config/lang/$L/ 2>/dev/null
+        cp ${CONFDIR}/lang/$L/finish ${CONFDIR}/tmp/config/lang/$L/ 2>/dev/null
     done
  
     # Copy OS specific files
     for OS in $TARGET_OS
     do
-        [ -e $CURDIR/bin/$OS ] || err "Error: no binaries found for $OS"
+        [ -e ${CURDIR}/bin/$OS ] || err "Error: no binaries found for $OS"
         
         for ARCH in $TARGET_ARCH
         do
-            cd $CURDIR/bin/$OS/$ARCH || err "Error: no binaries found for $OS/$ARCH"
+            cd ${CURDIR}/bin/$OS/$ARCH || err "Error: no binaries found for $OS/$ARCH"
             
             for FR in $FRONTENDS
             do
@@ -118,11 +118,11 @@ copytemp()
                 
                 for LC in `ls -d libc* 2>/dev/null`
                 do
-                    mkdir -p $CONFDIR/tmp/frontends/$OS/$ARCH/$LC
-                    cp $LC/$FRNAME $CONFDIR/tmp/frontends/$OS/$ARCH/$LC/ && FROUND=1
+                    mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC
+                    cp $LC/$FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC/ && FROUND=1
                 done
     
-                cp $FRNAME $CONFDIR/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
+                cp $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
                 if [ $FRFOUND -eq 0 ]; then
                     echo "Warning: no $FR frontend for $OS/$ARCH"
                 fi
@@ -131,17 +131,37 @@ copytemp()
     done
 
     # Check if we got an intro picture
-    INTROPIC=`awk '$1=="intropic"{print $2}' $CONFDIR/install.cfg`
+    INTROPIC=`awk '$1=="intropic"{print $2}' ${CONFDIR}/install.cfg`
 
-    if [ ! -z $INTROPIC ]; then
-        cp ${CONFDIR}/${INTROPIC} ${CONFDIR}/tmp || echo "Warning: $CONFDIR/$INTROPIC does not exist"
+    if [ ! -z ${INTROPIC} ]; then
+        cp ${CONFDIR}/${INTROPIC} ${CONFDIR}/tmp || echo "Warning: ${CONFDIR}/$INTROPIC does not exist"
     fi
 }
 
 remtemp()
 {
     # Clean up all temporarily files
-    rm -rf $CONFDIR/tmp
+    rm -rf ${CONFDIR}/tmp
+}
+
+packdir()
+{
+    local PKCMD=
+    cd $1
+    case $ARCH_TYPE in
+        gzip )
+            tar cvf - . | gzip -c9 > ${2}
+            ;;
+        bzip2 )
+            tar cvf - . | bzip2 -9 > ${2}
+            ;;
+        * )
+            echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
+            exit 1
+            ;;
+    esac
+    [ -f $2 ] || err "Couldn't pack files(archname: $2 dir: $1)"
+    cd - # Go back to previous directory
 }
 
 # Main part starts here...
@@ -155,24 +175,24 @@ checkargs
 TEMP=${CONFDIR%*/}
 CONFDIR=$TEMP
 
-if [ ! -e $CONFDIR/install.cfg ]; then
+if [ ! -e ${CONFDIR}/install.cfg ]; then
     err "Error: no install.cfg found!"
 fi
 
 # Check which target frontends there are
-FRONTENDS=`awk '$1=="frontends"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
+FRONTENDS=`awk '$1=="frontends"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
 if [ -z "$FRONTENDS" ]; then
     FRONTENDS="ncurses fltk" # Change if there are other frontends
 fi
 
 # Check which target OS'es there are
-TARGET_OS=`awk '$1=="targetos"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
+TARGET_OS=`awk '$1=="targetos"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
 if [ -z "$TARGET_OS" ]; then
     TARGET_OS=$CURRENT_OS
 fi
 
 # Check which target archs there are
-TARGET_ARCH=`awk '$1=="targetarch"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
+TARGET_ARCH=`awk '$1=="targetarch"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
 if [ -z "$TARGET_ARCH" ]; then
     TARGET_ARCH=$CURRENT_ARCH
 fi
@@ -181,20 +201,20 @@ for OS in $TARGET_OS
 do
     for ARCH in $TARGET_ARCH
     do
-        mkdir -p $CONFDIR/tmp/frontends/$OS/$ARCH
+        mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH
     done
 done
 
-mkdir -p $CONFDIR/tmp/config/lang
+mkdir -p ${CONFDIR}/tmp/config/lang
 
 # Check which archive type to use
-ARCH_TYPE=`awk '$1=="archtype"{print $2}' $CONFDIR/install.cfg`
+ARCH_TYPE=`awk '$1=="archtype"{print $2}' ${CONFDIR}/install.cfg`
 if [ -z "$ARCH_TYPE" ]; then
     ARCH_TYPE="gzip"
 fi
 
 # Check which languages to use
-LANGUAGES=`awk '$1=="languages"{for (i=2;i <= NF;i++) printf("%s ", $i) }' $CONFDIR/install.cfg`
+LANGUAGES=`awk '$1=="languages"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
 if [ -z "$LANGUAGES" ]; then
     LANGUAGES="english"
 fi
@@ -206,7 +226,7 @@ echo "          OS: $TARGET_OS"
 echo "       Archs: $TARGET_ARCH"
 echo "Archive type: $ARCH_TYPE"
 echo "   Languages: $LANGUAGES"
-echo "  Config dir: $CONFDIR"
+echo "  Config dir: ${CONFDIR}"
 echo "   Frontends: $FRONTENDS"
 echo "---------------------------------"
 echo
@@ -216,33 +236,18 @@ echo
 copytemp
 
 echo "Generating archive..."
-PACKCMD=
 
-case $ARCH_TYPE in
-    gzip )
-        PACKCMD="tar czf"
-        ;;
-    bzip2 )
-        PACKCMD="tar cjf"
-        ;;
-    * )
-        echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
-        exit 1
-        ;;
-esac
 
 # Pack platform independent files
-if [ -d $CONFDIR/files_all ]; then
-    cd $CONFDIR/files_all
-    $PACKCMD "${CONFDIR}/tmp/${ARCHNAME_BASE}_all" * || err "Couldn't pack files"
+if [ -d ${CONFDIR}/files_all ]; then
+    packdir ${CONFDIR}/files_all "${CONFDIR}/tmp/${ARCHNAME_BASE}_all"
 fi
 
 # Pack arch dependent files
 for ARCH in $TARGET_ARCH
 do
     if [ -d ${CONFDIR}/files_all_${ARCH} ]; then
-        cd ${CONFDIR}/files_all_${ARCH}
-        $PACKCMD ${CONFDIR}/tmp/${ARCHNAME_BASE}_all_${ARCH} * || err "Couldn't pack files"
+        packdir ${CONFDIR}/files_all_${ARCH} ${CONFDIR}/tmp/${ARCHNAME_BASE}_all_${ARCH}
     fi
 done
     
@@ -250,15 +255,13 @@ done
 for OS in $TARGET_OS
 do
     if [ -d ${CONFDIR}/files_${OS}_all ]; then
-        cd ${CONFDIR}/files_${OS}_all/
-        $PACKCMD ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS} * || err "Couldn't pack files"
+        packdir ${CONFDIR}/files_${OS}_all/ ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}
     fi
 
     for ARCH in $TARGET_ARCH
     do
         if [ -d ${CONFDIR}/files_${OS}_${ARCH} ]; then
-            cd ${CONFDIR}/files_${OS}_${ARCH}
-            $PACKCMD ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}_${ARCH} * || err "Couldn't pack files"
+            packdir ${CONFDIR}/files_${OS}_${ARCH} ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}_${ARCH}
         fi
     done
 done
@@ -268,10 +271,10 @@ done
 #fi
 
 echo "Generating installer..."
-$CURDIR/makeself.sh --$ARCH_TYPE $CONFDIR/tmp $CURDIR/setup.sh "nixstaller" sh ./startupinstaller.sh
+${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/setup.sh "nixstaller" sh ./startupinstaller.sh 2>1 > /dev/null
 
 echo "Cleaning up..."
-#remtemp
+remtemp
 
 echo "Done"
 
