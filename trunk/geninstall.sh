@@ -271,7 +271,7 @@ done
 #fi
 
 echo "Generating installer..."
-${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/setup.sh "nixstaller" sh ./startupinstaller.sh 2>1 > /dev/null
+${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/setup.sh "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
 
 echo "Cleaning up..."
 remtemp

@@ -32,14 +32,16 @@
     this exception.
 */
 
-#include <archive.h>
-#include <archive_entry.h>
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
 #include "main.h"
 
 #ifdef WITH_LIB_ARCHIVE
+
+#include <archive.h>
+#include <archive_entry.h>
+
 // Returns uncompressed file size of a gzipped tar file
 int ArchSize(const char *archname)
 {
@@ -293,14 +295,15 @@ void CleanPasswdString(char *str)
     }
 }
 
-std::string &EatWhite(std::string &str)
+std::string &EatWhite(std::string &str, bool skipnewlines)
 {
-    std::string::size_type pos = str.find_first_not_of(" \t\r\n");
+    const char *filter = (skipnewlines) ? " \t" : " \t\r\n";
+    std::string::size_type pos = str.find_first_not_of(filter);
 
     if (pos != std::string::npos)
         str.erase(0, pos);
     
-    pos = str.find_last_not_of(" \t\r\n");
+    pos = str.find_last_not_of(filter);
 
     if (pos != std::string::npos)
         str.erase(pos+1);

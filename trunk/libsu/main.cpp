@@ -158,15 +158,17 @@ std::string CLibSU::ReadLine(bool block)
         pos = m_szInBuf.find('\n');
         if (pos == std::string::npos) 
         {
-            ret = m_szInBuf;
-            m_szInBuf.clear();
-        } else
+            //ret = m_szInBuf;
+            //m_szInBuf.clear();
+        }
+        else
         {
             ret = m_szInBuf.substr(0, pos+1);
-            m_szInBuf = m_szInBuf.substr(pos+1);
+            m_szInBuf.erase(0, pos+1);
+            return ret;
         }
         log("ret(1) in ReadLine: %s(%d)\n", ret.c_str(), ret.length());
-        return ret;
+        //return ret;
     }
 
     int flags = fcntl(m_iPTYFD, F_GETFL);

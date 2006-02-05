@@ -432,12 +432,12 @@ bool InstallFiles()
         }
     }
 
+    if (!askpass)
+        askpass = !WriteAccess(InstallInfo.dest_dir);
+    
     // Ask root password if one of the command entries need root access and root isn't passwordless
     if (askpass && SuHandler.NeedPassword())
     {
-        /*CCDKEntry entry(CDKScreen, CENTER, CENTER, CreateText("%s\n%s",
-                        GetTranslation("This installation requires root(administrator) privileges in order to continue"),
-        GetTranslation("Please enter the password of the root user")), "", 60, 0, 256, vHMIXED);*/
         CCDKEntry entry(CDKScreen, CENTER, CENTER,
                         GetTranslation("This installation requires root(administrator) privileges in order to continue\n"
                                        "Please enter the password of the root user"), "", 60, 0, 256, vHMIXED);
@@ -484,31 +484,23 @@ bool InstallFiles()
 
     short percent = 0;
     
-#if 0 // UNDONE: Need a proper way to extract files to a dir not owned by the current user
-    if (!WriteAccess(InstallInfo.dest_dir) != 0)
+    bool alwaysroot = false;
+    if (!WriteAccess(InstallInfo.dest_dir))
     {
-        key_t key = 32000;
-        int memid = shmget(key, 1, IPC_CREAT | 0600);
-        char *sharedmem;
+        CExtractAsRootFunctor Extracter;
+        Extracter.SetUpdateProgFunc(SUUpdateProgress, &ProgressBar);
+        Extracter.SetUpdateTextFunc(SUUpdateText, &InstallOutput);
+        
+        if (!Extracter(passwd))
+        {
+            CleanPasswdString(passwd);
+            throwerror(true, "Error during extracting files");
+        }
 
-        if (memid < 0) throwerror(true, "Could not allocate shared memory");
-
-        sharedmem = (char *)shmat(memid, NULL, 0);
-
-        if (sharedmem == (char *)-1) throwerror(true, "Could not read shared memory");
-
-        *sharedmem = 1;
-
-        void *Data[2] = { &InstallOutput, &ProgressBar };
-        SuHandler.SetThinkFunc(ExtrThinkFunc, sharedmem);
-        SuHandler.SetOutputFunc(PrintExtrOutput, &Data);
-        SuHandler.SetCommand("extracter " + InstallInfo.own_dir);
-
-        if (!SuHandler.ExecuteCommand(passwd))
-            throwerror(true, "%s\n%s", GetTranslation("Error: Could not use extracter utility"), SuHandler.GetErrorMsgC());
+        InstallOutput.AddText("Done!\n");
+        alwaysroot = true; // Install commands need root now too
     }
     else
-#endif
     {
 
         while(percent<100)
@@ -562,7 +554,7 @@ bool InstallFiles()
         InstallOutput.AddText("");
         InstallOutput.AddText("");
         
-        if ((*it)->need_root == NEED_ROOT)
+        if (((*it)->need_root == NEED_ROOT) || alwaysroot)
         {
             SuHandler.SetPath((*it)->path.c_str());
             SuHandler.SetCommand(command);

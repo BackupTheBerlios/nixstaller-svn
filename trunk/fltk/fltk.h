@@ -144,6 +144,7 @@ public:
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
+    virtual bool Next(void);
     
     void OpenDirChooser(void);
     static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSelectDirScreen *)p)->OpenDirChooser(); };
@@ -209,9 +210,12 @@ public:
     void AppendText(const char *txt);
     void AppendText(const std::string &txt) { AppendText(txt.c_str()); };
     void ChangeStatusText(const char *txt, int n);
+    void SetProgress(int percent) { m_pProgress->value(percent); };
     void SetPassword(bool unset);
     
     static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesScreen *)p)->Install(); };
+    static void SUUpdateProgress(int percent, void *p);
+    static void SUUpdateText(const std::string &str, void *p);
     static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesScreen *)p)->AppendText(msg); Fl::flush(); };
     static void AskPassOKButtonCB(Fl_Widget *w, void *p);
     static void AskPassCancelButtonCB(Fl_Widget *w, void *p);

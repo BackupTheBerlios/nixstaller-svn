@@ -4,7 +4,63 @@ import glob
 import commands
 import shutil
 import platform
+import tarfile
 
+distfiles_src = [
+'main/main.cpp',
+'main/main.h',
+'main/utils.cpp',
+'fltk/fltk.cpp',
+'fltk/fltk.h',
+'fltk/widgets.cpp',
+'ncurses/ncurs.cpp',
+'ncurses/ncurs.h',
+'ncurses/widgets.cpp',
+'ncurses/widgets.h',
+'ncurses/utils.cpp',
+'libsu/COPYING',
+'libsu/CREDITS',
+'libsu/libsu.h',
+'libsu/libtest.cpp',
+'libsu/LICENSE',
+'libsu/main.cpp',
+'libsu/main.h',
+'libsu/SConstruct',
+'libsu/terminal.cpp',
+'libsu/utils.cpp',
+'SConstruct',
+'TODO'
+]
+
+# Bins are handled seperately with 'getallbins'
+distfiles_user = [
+'docs/nixstaller.html',
+'internal/about',
+'internal/startupinstaller.sh',
+'makeself.sh',
+'makeself-header.sh',
+'geninstall.sh'
+]
+
+def getallbins():
+    # Traverse files, from http://effbot.org/librarybook/os-path.htm
+    stack = ['bin']
+    bins = []
+    while stack:
+        directory = stack.pop()
+        for file in os.listdir(directory):
+            fullname = os.path.join(directory, file)
+            if file == "ncurs" or file == "fltk":
+                bins.append(fullname)
+            if os.path.isdir(fullname) and not os.path.islink(fullname):
+                stack.append(fullname)
+    return bins
+
+def stripallbins():
+    bins = getallbins()
+    for file in bins:
+        Execute("strip -s %s" % file)
+        
 # Check if atleast one file exists from a given list
 def checklibexist(context, fname):
     context.Message('Checking for %s...' % fname)
@@ -22,12 +78,14 @@ def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "
     context.env['CPPPATH'].remove(incdir)
     context.did_show_result = 1 # Hack, says "Error: No result" otherwise
     return ret
-    
+
+EnsureSConsVersion(0,96,91)
+
 opts = Options()
 opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
 opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
 
-env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
 
 Help(opts.GenerateHelpText(env))
 
@@ -45,6 +103,19 @@ inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
+
+# Current version
+curnixstversion = '0.1'
+
+if 'tardist' in COMMAND_LINE_TARGETS:
+    stripallbins()
+    archname = 'nixstaller-' + curnixstversion + '.tar.gz'
+    tarredfile = tarfile.open(archname, 'w:gz')
+    for dfile in distfiles_src+distfiles_user+getallbins():
+        tarredfile.add(dfile)
+    tarredfile.close()
+    print "Generated %s" % archname
+    Exit(0)
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
@@ -81,12 +152,12 @@ if not env.GetOption('clean'):
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
         print "Couldn\'t find libz !"
         Exit(1)
-    if not conf.CheckLibWithHeader('bz2', ['stdio.h', 'bzlib.h'], 'C++', 'bz_stream s;', 0):
-        print "Couldn't find libbz2 !"
-        Exit(1)
-    if not conf.CheckLibWithHeader('archive', 'archive.h', 'C++', 'archive_api_version();', 0):
-        print "Couldn't find libarchive !"
-        Exit(1)
+#    if not conf.CheckLibWithHeader('bz2', ['stdio.h', 'bzlib.h'], 'C++', 'bz_stream s;', 0):
+#        print "Couldn't find libbz2 !"
+#        Exit(1)
+#    if not conf.CheckLibWithHeader('archive', 'archive.h', 'C++', 'archive_api_version();', 0):
+#        print "Couldn't find libarchive !"
+#        Exit(1)
     if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
         print "Couldn't find libncurses !"
         Exit(1)
@@ -111,9 +182,9 @@ if not env.GetOption('clean'):
     if not conf.CheckLibWithHeader('fltk_images', 'FL/Fl.H', 'C++', ';', 0):
         print "Couldn't find libfltk_images !"
         Exit(1)
-    if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 0):
-        print "Couldn't find libacl !"
-        Exit(1)
+#    if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 0):
+#        print "Couldn't find libacl !"
+#        Exit(1)
         
     env = conf.Finish()
 else:
@@ -133,9 +204,10 @@ main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp'])
 env.Append(LIBS = Split('su main util'))
 
 # UNDONE?
-if cur_os == 'linux':
-    env.Append(LIBS = 'acl')
-elif cur_os == 'netbsd':
+#if cur_os == 'linux':
+#    env.Append(LIBS = 'acl')
+#elif cur_os == 'netbsd':
+if cur_os == 'netbsd':
     env.Append(RPATH = '/usr/X11R6/lib')
 
 # Builds ncurses frontend
@@ -145,9 +217,6 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cp
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'),
                    LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
-
-# Build help extracter
-# extr = env.Program('extracter/extracter', ['extracter/extracter.c'])
 
 # Default to all
 Default(fltk, ncurses, main, libsu, env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, fltk))

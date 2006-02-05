@@ -112,7 +112,7 @@ inline bool FileExists(const std::string &file) { return FileExists(file.c_str()
 bool WriteAccess(const char *file);
 inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
 void CleanPasswdString(char *str);
-std::string &EatWhite(std::string &str);
+std::string &EatWhite(std::string &str, bool skipnewlines=false);
 void MakeStringList(const std::string &str, std::vector<char *> &strlist);
 void MakeStringList(const char *str, std::vector<char *> &strlist);
 void GetTextFromBlock(std::ifstream &file, std::string &text);
@@ -121,6 +121,30 @@ std::string GetFirstValidDir(const std::string &dir);
 // These functions should be defined for each frontend
 void throwerror(bool dialog, const char *error, ...);
 void EndProg(void);
+
+class CExtractAsRootFunctor
+{
+    int m_iTotalSize;
+    float m_fPercent;
+    std::map<char *, arch_size_entry_s> m_ArchList;
+    std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
+    char *m_szCurArchFName;
+    LIBSU::CLibSU m_SUHandler;
+    
+    typedef void (*TUpProgress)(int percent, void *p);
+    typedef void (*TUpText)(const std::string &str, void *p);
+
+    TUpProgress m_UpProgFunc;
+    TUpText m_UpTextFunc;
+    void *m_pFuncData[2];
+    
+public:
+    bool operator ()(char *passwd);
+    void Update(const char *s);
+    void SetUpdateProgFunc(TUpProgress UpProgFunc, void *data) { m_UpProgFunc = UpProgFunc; m_pFuncData[0] = data; };
+    void SetUpdateTextFunc(TUpText UpTextFunc, void *data) { m_UpTextFunc = UpTextFunc; m_pFuncData[1] = data; };
+    static void SUOutFunc(const char *s, void *p) { ((CExtractAsRootFunctor *)p)->Update(s); };
+};
 
 //#define RELEASE /* Enable on a release build */
 

@@ -35,8 +35,6 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
-#include <archive.h>
-#include <archive_entry.h>
 #include "main.h"
 #include <sys/utsname.h>
 
@@ -524,17 +522,103 @@ float ExtractArchive(std::string &curfile)
         percent += ((float)archlist[curarchname].filesizes[curfile]/(float)totalsize)*100.0f;
     }
     
-    /*
-    if (status == ARCHIVE_OK)
-    {
-        curfile = archive_entry_pathname(entry);
-        percent += ((float)archive_entry_size(entry)/(float)size)*100.0f;
-        archive_read_extract(arch, entry, (ARCHIVE_EXTRACT_OWNER | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_FFLAGS));
-        return percent/archlist.size();
-    }
-    */
     return percent;
 }
+
+bool CExtractAsRootFunctor::operator ()(char *passwd)
+{
+    const int archnamescount = 4;
+    
+    // Init
+    m_iTotalSize = 0;
+    m_fPercent = 0.0f;
+    m_ArchList.clear();
+    m_szCurArchFName = NULL;
+    
+    // Make list of all files to be extracted
+    char *archnames[archnamescount] = { CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str()),
+        CreateText("%s/instarchive_all_%s", InstallInfo.own_dir.c_str(),
+                   InstallInfo.cpuarch.c_str()),
+        CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str()),
+        CreateText("%s/instarchive_%s_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str(),
+                   InstallInfo.cpuarch.c_str()) };
+
+    for (short s=0;s<archnamescount;s++)
+    {
+        if (FileExists(archnames[s]))
+        {
+            GetArchiveInfo(archnames[s], m_ArchList[archnames[s]].filesizes, m_ArchList[archnames[s]].totalsize);
+            m_iTotalSize += m_ArchList[archnames[s]].totalsize;
+            if (!m_szCurArchFName)
+            {
+                m_szCurArchFName = archnames[s];
+                m_CurArchIter = m_ArchList.find(archnames[s]);
+            }
+        }
+    }
+
+    if (m_ArchList.empty())
+        return true; // No files to extract
+
+    // Set extract command
+    std::string command = "cat " + std::string(m_szCurArchFName);
+
+    if (InstallInfo.archive_type == ARCH_GZIP)
+        command += " | gzip -cd | tar xvf -";
+    else if (InstallInfo.archive_type == ARCH_BZIP2)
+        command += " | bzip2 -d | tar xvf -";
+
+    command += " 2>&1";
+
+    // Set up su command
+    m_SUHandler.SetUser("root");
+    m_SUHandler.SetCommand(command);
+    m_SUHandler.SetOutputFunc(SUOutFunc, this);
+    m_SUHandler.SetTerminalOutput(false);
+    
+    return m_SUHandler.ExecuteCommand(passwd);
+}
+
+void CExtractAsRootFunctor::Update(const char *s)
+{
+    if (!s || !s[0])
+        return;
+
+    std::string CurFile = s, tmp;
+    bool hasx = false, hasn = false;
+    if (CurFile.compare(0, 2, "x ") == 0)
+    {
+        CurFile.erase(0, 2);
+        hasx = true;
+    }
+    //else if (CurFile[CurFile.length()-1] == '\n')
+      //  hasn = true;
+
+    tmp = CurFile;
+    EatWhite(CurFile);
+
+    if (m_ArchList[m_szCurArchFName].filesizes.find(CurFile) == m_ArchList[m_szCurArchFName].filesizes.end())
+    {
+        // UNDONE: Output from 
+        debugline("Couldn't find %s\n", CurFile.c_str());
+        return;
+    }
+    
+    m_fPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[CurFile]/(float)m_iTotalSize)*100.0f;
+
+    CurFile = EatWhite(tmp, true);
+
+    debugline("cline %s\n", CurFile.c_str());
+    
+    if (hasx) // Need to do this after previousline, otherwise we got an invalid m_ArchList entry
+        CurFile.insert(0, "Extracting file: ");
+    if (hasn) // Ditto
+        CurFile += '\n';
+    
+    m_UpProgFunc(m_fPercent, m_pFuncData[0]);
+    m_UpTextFunc(CurFile, m_pFuncData[1]);
+}
+
 #endif
 
 bool ReadLang()

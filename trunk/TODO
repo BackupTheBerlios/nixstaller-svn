@@ -2,8 +2,7 @@ OVERALL
 - Modify Makeself?
 - "/home/rick/src/nixstaller/trunk/makeself.sh: line 312: echo: write error: Bad file descriptor"
 - rpath for netbsd
-- libsu for fbsd 5.X
-- Remove libarchive, libbzip2
+- bins for fbsd 5.X
 
 
 MAIN
@@ -20,7 +19,8 @@ DOCS
 - More credits?
 - FAQ
 - gmake?
-- libm specifics
+- Compile section
+- Remove libarchive, libbzip2
 
 
 ----------------------------- LATER ------------------------------------

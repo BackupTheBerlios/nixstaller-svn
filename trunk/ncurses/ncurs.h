@@ -71,6 +71,8 @@ extern CDKSCREEN *CDKScreen;
 extern CButtonBar ButtonBar;
 
 inline void PrintInstOutput(const char *msg, void *p) { ((CCDKSWindow *)p)->AddText(msg, false); };
+inline void SUUpdateProgress(int percent, void *p) { ((CCDKHistogram *)p)->SetValue(0, 100, percent); };
+inline void SUUpdateText(const std::string &str, void *p) { ((CCDKSWindow *)p)->AddText(str, false); };
 inline int GetDefaultHeight(void) { return getbegy(ButtonBar.GetLabel()->GetLabel()->win)-4; };
 inline int GetDefaultWidth(void) { return getmaxx(MainWin)/1.25; };
 inline int GetMaxHeight(int pref) { int y=GetDefaultHeight(); return (y<pref) ? y : pref; }
