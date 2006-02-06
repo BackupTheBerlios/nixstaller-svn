@@ -28,13 +28,14 @@ int main()
 {
     char command[128], user[128], passwd[128];
     printf("command: ");
-    scanf("%s", command);
+    //scanf("%s", command);
+    fgets(command, 127, stdin);
     printf("user: ");
     scanf("%s", user);
     printf("password: ");
     if (scanf("%s", passwd)) // Everyone can see your password...not good
     {
-        CLibSU LibSU("ls", user);
+        CLibSU LibSU(command, user);
         LibSU.SetPath("/bin:/usr/bin:/usr/pkg/bin:/usr/local/bin");
         LibSU.SetTerminalOutput(false);
         LibSU.SetOutputFunc(printout);

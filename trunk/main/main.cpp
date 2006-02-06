@@ -491,7 +491,7 @@ float ExtractArchive(std::string &curfile)
         else if (InstallInfo.archive_type == ARCH_BZIP2)
             command += " | bzip2 -d | tar xvf -";
 
-        command += " 2>&1";
+        command += " 2>&1"; // tar may output files to stderr
         pipe = popen(command.c_str(), "r");
         if (!pipe)
         {
@@ -568,8 +568,6 @@ bool CExtractAsRootFunctor::operator ()(char *passwd)
     else if (InstallInfo.archive_type == ARCH_BZIP2)
         command += " | bzip2 -d | tar xvf -";
 
-    command += " 2>&1";
-
     // Set up su command
     m_SUHandler.SetUser("root");
     m_SUHandler.SetCommand(command);
@@ -581,18 +579,17 @@ bool CExtractAsRootFunctor::operator ()(char *passwd)
 
 void CExtractAsRootFunctor::Update(const char *s)
 {
+    /*
     if (!s || !s[0])
         return;
 
     std::string CurFile = s, tmp;
-    bool hasx = false, hasn = false;
+    bool hasx = false;
     if (CurFile.compare(0, 2, "x ") == 0)
     {
         CurFile.erase(0, 2);
         hasx = true;
     }
-    //else if (CurFile[CurFile.length()-1] == '\n')
-      //  hasn = true;
 
     tmp = CurFile;
     EatWhite(CurFile);
@@ -617,6 +614,35 @@ void CExtractAsRootFunctor::Update(const char *s)
 
     m_UpProgFunc(m_fPercent, m_pFuncData[0]);
     m_UpTextFunc(CurFile, m_pFuncData[1]);
+    */
+    if (!s || !s[0])
+        return;
+
+    std::string curfile = s, orig = s;
+    
+    if (curfile.compare(0, 2, "x ") == 0)
+        curfile.erase(0, 2);
+
+    EatWhite(curfile);
+
+    if (m_ArchList[m_szCurArchFName].filesizes.find(curfile) == m_ArchList[m_szCurArchFName].filesizes.end())
+    {
+        debugline("Couldn't find %s\n", curfile.c_str());
+        return;
+    }
+    
+    m_fPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[curfile]/(float)m_iTotalSize)*100.0f;
+
+    curfile = EatWhite(orig, true);
+
+    debugline("cline %s\n", curfile.c_str());
+    
+    if (curfile.compare(0, 2, "x ") == 0)
+        curfile.replace(0, 2, "Extracting file: ");
+    
+    m_UpProgFunc(m_fPercent, m_pFuncData[0]);
+    m_UpTextFunc(curfile, m_pFuncData[1]);
+
 }
 
 #endif

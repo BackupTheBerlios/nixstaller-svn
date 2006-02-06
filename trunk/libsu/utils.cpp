@@ -33,15 +33,18 @@ void log(const char *txt, ...)
     FILE *LogFile = NULL;
     static bool InitLogFile = true;
     static char buffer[1024];
+    static char fname[512];
     static va_list v;
     
     if (InitLogFile)
     {
-        LogFile = fopen("log.txt", "w"); // Clear file on start
+        getcwd(fname, sizeof(fname));
+        strcat(fname, "/log.txt");
+        LogFile = fopen(fname, "w"); // Clear file on start
         InitLogFile = false;
     }
     else
-        LogFile = fopen("log.txt", "a");
+        LogFile = fopen(fname, "a");
     
     if (!LogFile) return;
     

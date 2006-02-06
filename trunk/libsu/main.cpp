@@ -162,13 +162,11 @@ std::string CLibSU::ReadLine(bool block)
             // Commented out, otherwise it may return non-complete lines(there may be chars letf until next \n)
             //ret = m_szInBuf;
             //m_szInBuf.clear();
-            printf("if 1\n");
         }
         else
         {
             ret = m_szInBuf.substr(0, pos+1);
             m_szInBuf.erase(0, pos+1);
-            printf("if 2\n");
             return ret;
         }
         log("ret(1) in ReadLine: %s(%d)\n", ret.c_str(), ret.length());
@@ -195,10 +193,10 @@ std::string CLibSU::ReadLine(bool block)
     }
 
     int nbytes;
-    char buf[512];
+    char buf[256];
     while (1) 
     {
-        nbytes = read(m_iPTYFD, buf, 511);
+        nbytes = read(m_iPTYFD, buf, 255);
 
         log("Read %d bytes\n", nbytes);
 
@@ -219,13 +217,11 @@ std::string CLibSU::ReadLine(bool block)
         if (pos == std::string::npos) 
         {
             ret = m_szInBuf;
-            printf("loop 1\nText: %s\n", m_szInBuf.c_str());
             m_szInBuf.clear();
         }
         else 
         {
             ret = m_szInBuf.substr(0, pos+1);
-            printf("loop 2\nText: %s\n", m_szInBuf.c_str());
             m_szInBuf = m_szInBuf.substr(pos+1);
         }
         break;
@@ -243,7 +239,7 @@ int CLibSU::WaitForChild()
     FD_ZERO(&fds);
 
     // HACK: Wait 0.5 sec to make sure that ReadLine() won't return unfinished lines
-    timespec tsec = { 0, 100000000 };
+    timespec tsec = { 0, 200000000 };
     nanosleep(&tsec, NULL);
 
     while (1) 
@@ -300,6 +296,7 @@ int CLibSU::WaitForChild()
             break;
         }
     }
+    log("retval: %d\n", retval);
     return retval;
 }
 
@@ -480,7 +477,7 @@ bool CLibSU::NeedPassword()
     
     if (Exec(command, args) < 0)
     {
-	return false;
+        return false;
     }
     
     ESuComErrors ret = (ESuComErrors) TalkWithSU(0L);
@@ -567,7 +564,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     
     if (Exec(command, args) < 0)
     {
-	return false;
+        return false;
     }
     
     ESuComErrors ret = (ESuComErrors) TalkWithSU(password);
