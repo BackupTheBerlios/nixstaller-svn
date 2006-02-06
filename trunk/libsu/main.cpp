@@ -26,6 +26,7 @@
 
 #include <main.h>
 #include <stdarg.h>
+#include <sys/time.h>
 
 using namespace LIBSU;
 
@@ -158,13 +159,16 @@ std::string CLibSU::ReadLine(bool block)
         pos = m_szInBuf.find('\n');
         if (pos == std::string::npos) 
         {
+            // Commented out, otherwise it may return non-complete lines(there may be chars letf until next \n)
             //ret = m_szInBuf;
             //m_szInBuf.clear();
+            printf("if 1\n");
         }
         else
         {
             ret = m_szInBuf.substr(0, pos+1);
             m_szInBuf.erase(0, pos+1);
+            printf("if 2\n");
             return ret;
         }
         log("ret(1) in ReadLine: %s(%d)\n", ret.c_str(), ret.length());
@@ -191,11 +195,11 @@ std::string CLibSU::ReadLine(bool block)
     }
 
     int nbytes;
-    char buf[256];
+    char buf[512];
     while (1) 
     {
-        nbytes = read(m_iPTYFD, buf, 255);
-    
+        nbytes = read(m_iPTYFD, buf, 511);
+
         log("Read %d bytes\n", nbytes);
 
         if (nbytes == -1) 
@@ -215,11 +219,13 @@ std::string CLibSU::ReadLine(bool block)
         if (pos == std::string::npos) 
         {
             ret = m_szInBuf;
+            printf("loop 1\nText: %s\n", m_szInBuf.c_str());
             m_szInBuf.clear();
         }
         else 
         {
             ret = m_szInBuf.substr(0, pos+1);
+            printf("loop 2\nText: %s\n", m_szInBuf.c_str());
             m_szInBuf = m_szInBuf.substr(pos+1);
         }
         break;
@@ -235,6 +241,10 @@ int CLibSU::WaitForChild()
 
     fd_set fds;
     FD_ZERO(&fds);
+
+    // HACK: Wait 0.5 sec to make sure that ReadLine() won't return unfinished lines
+    timespec tsec = { 0, 100000000 };
+    nanosleep(&tsec, NULL);
 
     while (1) 
     {

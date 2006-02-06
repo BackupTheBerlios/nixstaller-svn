@@ -609,12 +609,12 @@ void CExtractAsRootFunctor::Update(const char *s)
     CurFile = EatWhite(tmp, true);
 
     debugline("cline %s\n", CurFile.c_str());
-    
+
     if (hasx) // Need to do this after previousline, otherwise we got an invalid m_ArchList entry
         CurFile.insert(0, "Extracting file: ");
     if (hasn) // Ditto
         CurFile += '\n';
-    
+
     m_UpProgFunc(m_fPercent, m_pFuncData[0]);
     m_UpTextFunc(CurFile, m_pFuncData[1]);
 }
