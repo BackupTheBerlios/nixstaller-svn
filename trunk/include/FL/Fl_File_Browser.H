@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_File_Browser.H,v 1.1.2.7 2004/04/11 04:38:54 easysw Exp $"
+// "$Id: Fl_File_Browser.H 4288 2005-04-16 00:13:17Z mike $"
 //
 // FileBrowser definitions.
 //
-// Copyright 1999-2004 by Michael Sweet.
+// Copyright 1999-2005 by Michael Sweet.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 //
@@ -69,11 +71,11 @@ public:
   void		textsize(uchar s) { Fl_Browser::textsize(s); iconsize_ = (uchar)(3 * s / 2); };
 
   int		filetype() const { return (filetype_); };
-  void		filetype(int t) { filetype_ = t; load(directory_); };
+  void		filetype(int t) { filetype_ = t; };
 };
 
 #endif // !_Fl_File_Browser_H_
 
 //
-// End of "$Id: Fl_File_Browser.H,v 1.1.2.7 2004/04/11 04:38:54 easysw Exp $".
+// End of "$Id: Fl_File_Browser.H 4288 2005-04-16 00:13:17Z mike $".
 //

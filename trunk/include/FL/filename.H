@@ -1,9 +1,9 @@
 /*
- * "$Id: filename.H,v 1.11.2.4.2.15 2004/10/18 20:29:54 easysw Exp $"
+ * "$Id: filename.H 4548 2005-08-29 20:16:36Z matt $"
  *
  * Filename header file for the Fast Light Tool Kit (FLTK).
  *
- * Copyright 1998-2004 by Bill Spitzak and others.
+ * Copyright 1998-2005 by Bill Spitzak and others.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  * USA.
  *
- * Please report all bugs and problems to "fltk-bugs@fltk.org".
+ * Please report all bugs and problems on the following page:
+ *
+ *     http://www.fltk.org/str.php
  */
 
 #ifndef FL_FILENAME_H
@@ -57,11 +59,12 @@ struct dirent {char d_name[1];};
 
 #  elif defined(__APPLE__) && defined(__PROJECTBUILDER__)
 
-// Apple's ProjectBuilder has the nasty habit of including recursively
-// down the file tree. To avoid re-including <FL/dirent.h> we must 
-// directly include the systems math file. (Plus, I could not find a 
-// predefined macro for ProjectBuilder builds, so we have to define it 
-// in the project)
+/* Apple's ProjectBuilder has the nasty habit of including recursively
+ * down the file tree. To avoid re-including <FL/dirent.h> we must 
+ * directly include the systems math file. (Plus, I could not find a 
+ * predefined macro for ProjectBuilder builds, so we have to define it 
+ * in the project)
+ */
 #    include <sys/types.h>
 #    include "/usr/include/dirent.h"
 
@@ -131,5 +134,5 @@ FL_EXPORT int fl_filename_list(const char *d, struct dirent ***l,
 #endif /* FL_FILENAME_H */
 
 /*
- * End of "$Id: filename.H,v 1.11.2.4.2.15 2004/10/18 20:29:54 easysw Exp $".
+ * End of "$Id: filename.H 4548 2005-08-29 20:16:36Z matt $".
  */

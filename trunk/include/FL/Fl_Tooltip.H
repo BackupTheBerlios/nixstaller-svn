@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Tooltip.H,v 1.16.2.13 2004/09/12 20:26:23 easysw Exp $"
+// "$Id: Fl_Tooltip.H 4288 2005-04-16 00:13:17Z mike $"
 //
 // Tooltip header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2004 by Bill Spitzak and others.
+// Copyright 1998-2005 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef Fl_Tooltip_H
@@ -71,5 +73,5 @@ private:
 #endif
 
 //
-// End of "$Id: Fl_Tooltip.H,v 1.16.2.13 2004/09/12 20:26:23 easysw Exp $".
+// End of "$Id: Fl_Tooltip.H 4288 2005-04-16 00:13:17Z mike $".
 //

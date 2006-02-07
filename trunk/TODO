@@ -3,6 +3,7 @@ OVERALL
 - "/home/rick/src/nixstaller/trunk/makeself.sh: line 312: echo: write error: Bad file descriptor"
 - rpath for netbsd
 - bins for fbsd 5.X
+- Update to FLTK 1.1.7 for NetBSD/Linux
 
 
 MAIN
@@ -20,7 +21,6 @@ DOCS
 - FAQ
 - gmake?
 - Compile section
-- Remove libarchive, libbzip2
 
 
 ----------------------------- LATER ------------------------------------

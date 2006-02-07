@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Progress.H,v 1.1.2.6 2004/04/11 04:38:54 easysw Exp $"
+// "$Id: Fl_Progress.H 4288 2005-04-16 00:13:17Z mike $"
 //
 // Progress bar widget definitions.
 //
-// Copyright 2000-2004 by Michael Sweet.
+// Copyright 2000-2005 by Michael Sweet.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef _Fl_Progress_H_
@@ -64,5 +66,5 @@ class FL_EXPORT Fl_Progress : public Fl_Widget
 #endif // !_Fl_Progress_H_
 
 //
-// End of "$Id: Fl_Progress.H,v 1.1.2.6 2004/04/11 04:38:54 easysw Exp $".
+// End of "$Id: Fl_Progress.H 4288 2005-04-16 00:13:17Z mike $".
 //

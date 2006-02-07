@@ -504,10 +504,21 @@ bool CFileDialog::Activate()
 
         if (ButtonBox.GetCurrent() == 1)
         {
-            if (m_bNeedWAccess && !WriteAccess(m_szDestDir))
+            if (m_bAskWAccess && !WriteAccess(m_szDestDir))
             {
-                WarningBox("You don't have write access for this directory");
-                continue;
+                char *dbuttons[2] = { GetTranslation("Continue as root"), GetTranslation("Choose another directory") };
+                CCDKDialog Diag(CDKScreen, CENTER, CENTER,
+                                GetTranslation("You don't have write permissions for this directory.\n"
+                                        "The files can be extracted as the root user,\n"
+                                        "but you'll need to enter the root password for this later."), dbuttons, 2);
+                Diag.SetBgColor(26);
+        
+                int sel = Diag.Activate();
+    
+                Diag.Destroy();
+                refreshCDKScreen(CDKScreen);
+                if (sel)
+                    continue;
             }
             break;
         }

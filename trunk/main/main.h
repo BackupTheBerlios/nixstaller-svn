@@ -83,7 +83,7 @@ struct arch_size_entry_s
 {
     unsigned int totalsize;
     std::map<std::string, unsigned int> filesizes;
-    arch_size_entry_s(void) : totalsize(0) { };
+    arch_size_entry_s(void) : totalsize(1) { };
 };
 
 extern install_info_s InstallInfo;

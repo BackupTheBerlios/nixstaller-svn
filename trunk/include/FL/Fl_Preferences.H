@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Preferences.H,v 1.1.2.14 2004/04/11 04:38:54 easysw Exp $"
+// "$Id: Fl_Preferences.H 4458 2005-07-26 07:59:01Z matt $"
 //
 // Preferences definitions for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 2002-2004 by Matthias Melcher.
+// Copyright 2002-2005 by Matthias Melcher.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef Fl_Preferences_H
@@ -99,6 +101,11 @@ public:
 
 private:
 
+  // make the following functions unavailable
+  Fl_Preferences(); 
+  Fl_Preferences(const Fl_Preferences&); 
+  Fl_Preferences &operator=(const Fl_Preferences&);
+
   static char nameBuffer[128];
 
   class FL_EXPORT Node // a node contains a list to all its entries 
@@ -115,6 +122,7 @@ private:
     Node *search( const char *path, int offset=0 );
     Node *addChild( const char *path );
     void setParent( Node *parent );
+    Node *parent() { return parent_; }
     char remove();
     char dirty();
     // entry methods
@@ -157,5 +165,5 @@ private:
 #endif // !Fl_Preferences_H
 
 //
-// End of "$Id: Fl_Preferences.H,v 1.1.2.14 2004/04/11 04:38:54 easysw Exp $".
+// End of "$Id: Fl_Preferences.H 4458 2005-07-26 07:59:01Z matt $".
 //

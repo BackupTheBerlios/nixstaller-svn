@@ -560,61 +560,32 @@ bool CExtractAsRootFunctor::operator ()(char *passwd)
     if (m_ArchList.empty())
         return true; // No files to extract
 
-    // Set extract command
-    std::string command = "cat " + std::string(m_szCurArchFName);
-
-    if (InstallInfo.archive_type == ARCH_GZIP)
-        command += " | gzip -cd | tar xvf -";
-    else if (InstallInfo.archive_type == ARCH_BZIP2)
-        command += " | bzip2 -d | tar xvf -";
-
-    // Set up su command
+    // Set up su
     m_SUHandler.SetUser("root");
-    m_SUHandler.SetCommand(command);
     m_SUHandler.SetOutputFunc(SUOutFunc, this);
     m_SUHandler.SetTerminalOutput(false);
-    
-    return m_SUHandler.ExecuteCommand(passwd);
+
+    while (m_CurArchIter != m_ArchList.end())
+    {
+        // Set extract command
+        std::string command = "cat " + std::string(m_szCurArchFName);
+
+        if (InstallInfo.archive_type == ARCH_GZIP)
+            command += " | gzip -cd | tar xvf -";
+        else if (InstallInfo.archive_type == ARCH_BZIP2)
+            command += " | bzip2 -d | tar xvf -";
+
+        m_SUHandler.SetCommand(command);
+        if (!m_SUHandler.ExecuteCommand(passwd))
+            return false;
+
+        m_CurArchIter++;
+    }
+    return true;
 }
 
 void CExtractAsRootFunctor::Update(const char *s)
 {
-    /*
-    if (!s || !s[0])
-        return;
-
-    std::string CurFile = s, tmp;
-    bool hasx = false;
-    if (CurFile.compare(0, 2, "x ") == 0)
-    {
-        CurFile.erase(0, 2);
-        hasx = true;
-    }
-
-    tmp = CurFile;
-    EatWhite(CurFile);
-
-    if (m_ArchList[m_szCurArchFName].filesizes.find(CurFile) == m_ArchList[m_szCurArchFName].filesizes.end())
-    {
-        // UNDONE: Output from 
-        debugline("Couldn't find %s\n", CurFile.c_str());
-        return;
-    }
-    
-    m_fPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[CurFile]/(float)m_iTotalSize)*100.0f;
-
-    CurFile = EatWhite(tmp, true);
-
-    debugline("cline %s\n", CurFile.c_str());
-
-    if (hasx) // Need to do this after previousline, otherwise we got an invalid m_ArchList entry
-        CurFile.insert(0, "Extracting file: ");
-    if (hasn) // Ditto
-        CurFile += '\n';
-
-    m_UpProgFunc(m_fPercent, m_pFuncData[0]);
-    m_UpTextFunc(CurFile, m_pFuncData[1]);
-    */
     if (!s || !s[0])
         return;
 
@@ -635,7 +606,7 @@ void CExtractAsRootFunctor::Update(const char *s)
 
     curfile = EatWhite(orig, true);
 
-    debugline("cline %s\n", curfile.c_str());
+    //debugline("cline %s\n", curfile.c_str());
     
     if (curfile.compare(0, 2, "x ") == 0)
         curfile.replace(0, 2, "Extracting file: ");

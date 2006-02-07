@@ -85,6 +85,13 @@ Finish
 About
 About
 
+Continue as root
+Continue as root
+
+Choose another directory
+Choose another directory
+
+
 #-----------------------------------------------
 # Other
 #-----------------------------------------------
@@ -210,6 +217,17 @@ Do you want to create it?
 ]
 
 [
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+
+[
 This installation requires root(administrator) privileges in order to continue
 Please enter the password of the root user
 ]
@@ -308,8 +326,6 @@ Failed to execute install command
 Could not execute installation commands (could not open pipe)
 Could not execute installation commands (could not open pipe)
 
-You don't have write access for this directory
-You don't have write access for this directory
 
 #-----------------------------------------------
 # Error messages for CDK widget creation

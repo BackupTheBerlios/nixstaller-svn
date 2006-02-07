@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Group.H,v 1.6.2.4.2.9 2004/04/11 04:38:54 easysw Exp $"
+// "$Id: Fl_Group.H 4421 2005-07-15 09:34:53Z matt $"
 //
 // Group header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2004 by Bill Spitzak and others.
+// Copyright 1998-2005 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef Fl_Group_H
@@ -40,6 +42,10 @@ class FL_EXPORT Fl_Group : public Fl_Widget {
 
   int navigation(int);
   static Fl_Group *current_;
+ 
+  // unimplemented copy ctor and assignment operator
+  Fl_Group(const Fl_Group&);
+  Fl_Group& operator=(const Fl_Group&);
 
 protected:
 
@@ -97,5 +103,5 @@ public:
 #endif
 
 //
-// End of "$Id: Fl_Group.H,v 1.6.2.4.2.9 2004/04/11 04:38:54 easysw Exp $".
+// End of "$Id: Fl_Group.H 4421 2005-07-15 09:34:53Z matt $".
 //

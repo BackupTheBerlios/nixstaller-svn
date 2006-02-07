@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Sys_Menu_Bar.H,v 1.1.2.5 2004/04/11 04:38:54 easysw Exp $"
+// "$Id: Fl_Sys_Menu_Bar.H 4546 2005-08-29 20:05:38Z matt $"
 //
 // MacOS system menu bar header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2004 by Bill Spitzak and others.
+// Copyright 1998-2005 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef Fl_Sys_Menu_Bar_H
@@ -28,19 +30,27 @@
 
 #include "Fl_Menu_Bar.H"
 
+#ifdef __APPLE__
+
 class FL_EXPORT Fl_Sys_Menu_Bar : public Fl_Menu_Bar {
 protected:
   void draw();
 public:
-//int handle(int);
   Fl_Sys_Menu_Bar(int x,int y,int w,int h,const char *l=0)
-      : Fl_Menu_Bar(x,y,w,h,l) {}
+      : Fl_Menu_Bar(x,y,w,h,l) {
+	   deactivate();			// don't let the old area take events
+	  }
   void menu(const Fl_Menu_Item *m);
-//  Fl_Menu_Item* picked(const Fl_Menu_Item* v);
 };
+
+#else
+
+typedef Fl_Menu_Bar Fl_Sys_Menu_Bar;
+
+#endif
 
 #endif
 
 //
-// End of "$Id: Fl_Sys_Menu_Bar.H,v 1.1.2.5 2004/04/11 04:38:54 easysw Exp $".
+// End of "$Id: Fl_Sys_Menu_Bar.H 4546 2005-08-29 20:05:38Z matt $".
 //

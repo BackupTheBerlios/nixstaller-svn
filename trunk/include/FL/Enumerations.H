@@ -1,9 +1,9 @@
 //
-// "$Id: Enumerations.H,v 1.18.2.14.2.38 2004/11/20 03:19:57 easysw Exp $"
+// "$Id: Enumerations.H 4288 2005-04-16 00:13:17Z mike $"
 //
 // Enumerations for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2004 by Bill Spitzak and others.
+// Copyright 1998-2005 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef Fl_Enumerations_H
@@ -45,7 +47,7 @@
 
 #define FL_MAJOR_VERSION	1
 #define FL_MINOR_VERSION	1
-#define FL_PATCH_VERSION	6
+#define FL_PATCH_VERSION	7
 #define FL_VERSION		((double)FL_MAJOR_VERSION + \
 				 (double)FL_MINOR_VERSION * 0.01 + \
 				 (double)FL_PATCH_VERSION * 0.0001)
@@ -174,6 +176,7 @@ enum Fl_Boxtype { // boxtypes (if you change these you must fix fl_boxtype.C):
   _FL_PLASTIC_UP_BOX,	_FL_PLASTIC_DOWN_BOX,
   _FL_PLASTIC_UP_FRAME,	_FL_PLASTIC_DOWN_FRAME,
   _FL_PLASTIC_THIN_UP_BOX,	_FL_PLASTIC_THIN_DOWN_BOX,
+  _FL_PLASTIC_ROUND_UP_BOX,	_FL_PLASTIC_ROUND_DOWN_BOX,
   FL_FREE_BOXTYPE
 };
 extern FL_EXPORT Fl_Boxtype fl_define_FL_ROUND_UP_BOX();
@@ -205,6 +208,8 @@ extern FL_EXPORT Fl_Boxtype fl_define_FL_PLASTIC_UP_BOX();
 #define FL_PLASTIC_DOWN_FRAME (Fl_Boxtype)(fl_define_FL_PLASTIC_UP_BOX()+3)
 #define FL_PLASTIC_THIN_UP_BOX (Fl_Boxtype)(fl_define_FL_PLASTIC_UP_BOX()+4)
 #define FL_PLASTIC_THIN_DOWN_BOX (Fl_Boxtype)(fl_define_FL_PLASTIC_UP_BOX()+5)
+#define FL_PLASTIC_ROUND_UP_BOX (Fl_Boxtype)(fl_define_FL_PLASTIC_UP_BOX()+6)
+#define FL_PLASTIC_ROUND_DOWN_BOX (Fl_Boxtype)(fl_define_FL_PLASTIC_UP_BOX()+7)
 
 // conversions of box types to other boxtypes:
 inline Fl_Boxtype fl_down(Fl_Boxtype b) {return (Fl_Boxtype)(b|1);}
@@ -419,5 +424,5 @@ enum Fl_Damage {
 #endif
 
 //
-// End of "$Id: Enumerations.H,v 1.18.2.14.2.38 2004/11/20 03:19:57 easysw Exp $".
+// End of "$Id: Enumerations.H 4288 2005-04-16 00:13:17Z mike $".
 //

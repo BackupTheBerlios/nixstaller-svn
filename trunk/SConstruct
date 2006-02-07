@@ -107,6 +107,11 @@ env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'
 # Current version
 curnixstversion = '0.1'
 
+if 'stripbins' in COMMAND_LINE_TARGETS:
+    print 'Stripping all binaries in the bin/ directory...'
+    stripallbins()
+    Exit(0)
+
 if 'tardist' in COMMAND_LINE_TARGETS:
     stripallbins()
     archname = 'nixstaller-' + curnixstversion + '.tar.gz'

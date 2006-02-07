@@ -85,6 +85,13 @@ Beïndigen
 About
 Over
 
+Continue as root
+Hervat als root
+
+Choose another directory
+Kies een andere directory
+
+
 #-----------------------------------------------
 # Other
 #-----------------------------------------------
@@ -210,6 +217,17 @@ Wilt u het aanmaken?
 ]
 
 [
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+[
+U heeft geen toegang om te schrijven naar deze directory.
+De bestanden kunnen worden uitgepakt als de root gebruiker,
+maar u moet dan wel straks het root wachtwoord geven.
+]
+
+[
 This installation requires root(administrator) privileges in order to continue
 Please enter the password of the root user
 ]
@@ -308,8 +326,6 @@ Kon installatie commando niet uitvoeren
 Could not execute installation commands (could not open pipe)
 Kon installatie opdrachten niet uitvoeren (kon geen pipe openen)
 
-You don't have write access for this directory
-U heeft geen toegang om te schrijven naar deze directory
 
 #-----------------------------------------------
 # Error messages for CDK widget creation

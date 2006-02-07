@@ -1,9 +1,9 @@
 //
-// "$Id: math.h,v 1.4.2.4.2.11 2004/04/11 04:38:55 easysw Exp $"
+// "$Id: math.h 4288 2005-04-16 00:13:17Z mike $"
 //
 // Math header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2004 by Bill Spitzak and others.
+// Copyright 1998-2005 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef fl_math_h
@@ -66,5 +68,5 @@ inline double copysign(double a, double b) {return b<0 ? -a : a;}
 
 
 //
-// End of "$Id: math.h,v 1.4.2.4.2.11 2004/04/11 04:38:55 easysw Exp $".
+// End of "$Id: math.h 4288 2005-04-16 00:13:17Z mike $".
 //

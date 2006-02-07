@@ -289,7 +289,7 @@ class CFileDialog
     CCDKAlphaList *m_pFileList;
     CCDKSWindow *m_pCurDirWin;
     std::vector<char *> m_DirItems; // Vector of all sub directories in current dir
-    bool m_bRestoreDir, m_bNeedWAccess;
+    bool m_bRestoreDir, m_bAskWAccess;
 
     bool ReadDir(const std::string &dir);
     void UpdateCurDirText(void);
@@ -298,7 +298,7 @@ class CFileDialog
 public:
     CFileDialog(const std::string &s, const std::string &t, bool r, bool w) : m_szStartDir(s), m_szTitle(t),
                                                                               m_pFileList(NULL), m_pCurDirWin(NULL),
-                                                                              m_bRestoreDir(r), m_bNeedWAccess(w) { };
+                                                                              m_bRestoreDir(r), m_bAskWAccess(w) { };
     ~CFileDialog(void) { Destroy(); };
 
     bool Activate(void);

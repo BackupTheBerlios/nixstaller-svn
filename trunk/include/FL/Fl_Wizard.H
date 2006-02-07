@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Wizard.H,v 1.1.2.6 2004/04/11 04:38:54 easysw Exp $"
+// "$Id: Fl_Wizard.H 4288 2005-04-16 00:13:17Z mike $"
 //
 // Fl_Wizard widget definitions.
 //
-// Copyright 1999-2004 by Easy Software Products.
+// Copyright 1999-2005 by Easy Software Products.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 //
@@ -56,5 +58,5 @@ class FL_EXPORT Fl_Wizard : public Fl_Group
 #endif // !_Fl_Wizard_H_
 
 //
-// End of "$Id: Fl_Wizard.H,v 1.1.2.6 2004/04/11 04:38:54 easysw Exp $".
+// End of "$Id: Fl_Wizard.H 4288 2005-04-16 00:13:17Z mike $".
 //

@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Text_Display.H,v 1.4.2.15 2004/04/11 04:38:54 easysw Exp $"
+// "$Id: Fl_Text_Display.H 4502 2005-08-10 23:11:51Z matt $"
 //
 // Header file for Fl_Text_Display class.
 //
-// Copyright 2001-2004 by Bill Spitzak and others.
+// Copyright 2001-2005 by Bill Spitzak and others.
 // Original code Copyright Mark Edel.  Permission to distribute under
 // the LGPL for the FLTK library granted by Mark Edel.
 //
@@ -22,7 +22,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef FL_TEXT_DISPLAY_H
@@ -164,6 +166,8 @@ class FL_EXPORT Fl_Text_Display: public Fl_Group {
     int position_to_line( int pos, int* lineNum );
     int string_width(const char* string, int length, int style);
 
+    static void scroll_timer_cb(void*);
+
     static void buffer_predelete_cb(int pos, int nDeleted, void* cbArg);
     static void buffer_modified_cb(int pos, int nInserted, int nDeleted,
                                    int nRestyled, const char* deletedText,
@@ -290,5 +294,5 @@ class FL_EXPORT Fl_Text_Display: public Fl_Group {
 #endif
 
 //
-// End of "$Id: Fl_Text_Display.H,v 1.4.2.15 2004/04/11 04:38:54 easysw Exp $".
+// End of "$Id: Fl_Text_Display.H 4502 2005-08-10 23:11:51Z matt $".
 //

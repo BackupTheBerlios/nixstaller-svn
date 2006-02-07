@@ -63,7 +63,7 @@ void WizCancelCB(Fl_Widget *, void *)
     else
         msg = GetTranslation("This will abort the installation\nAre you sure?");
     
-    if (fl_ask(msg))
+    if (fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL))
         EndProg();
 }
 

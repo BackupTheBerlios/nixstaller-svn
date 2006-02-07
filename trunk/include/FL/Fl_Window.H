@@ -1,9 +1,9 @@
 //
-// "$Id: Fl_Window.H,v 1.12.2.6.2.9 2004/11/20 03:19:57 easysw Exp $"
+// "$Id: Fl_Window.H 4421 2005-07-15 09:34:53Z matt $"
 //
 // Window header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2004 by Bill Spitzak and others.
+// Copyright 1998-2005 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -20,7 +20,9 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA.
 //
-// Please report all bugs and problems to "fltk-bugs@fltk.org".
+// Please report all bugs and problems on the following page:
+//
+//     http://www.fltk.org/str.php
 //
 
 #ifndef Fl_Window_H
@@ -58,6 +60,10 @@ class FL_EXPORT Fl_Window : public Fl_Group {
   };
   void _Fl_Window(); // constructor innards
 
+  // unimplemented copy ctor and assignment operator
+  Fl_Window(const Fl_Window&);
+  Fl_Window& operator=(const Fl_Window&);
+
 protected:
 
   static Fl_Window *current_;
@@ -88,13 +94,14 @@ public:
   void hotspot(const Fl_Widget& p, int offscreen = 0) {hotspot(&p,offscreen);}
   void free_position()	{clear_flag(FL_FORCE_POSITION);}
   void size_range(int a, int b, int c=0, int d=0, int e=0, int f=0, int g=0) {
-    minw=(short)a; minh=(short)b; maxw=(short)c; maxh=(short)d; dw=(short)e; dh=(short)f; aspect=(short)g; size_range_();}
+    minw=(short)a; minh=(short)b; maxw=(short)c; maxh=(short)d; dw=(uchar)e; dh=(uchar)f; aspect=(uchar)g; size_range_();}
 
   const char* label() const	{return Fl_Widget::label();}
   const char* iconlabel() const	{return iconlabel_;}
   void label(const char*);
   void iconlabel(const char*);
   void label(const char* label, const char* iconlabel);
+  void copy_label(const char* a);
   const char* xclass() const	{return xclass_;}
   void xclass(const char* c)	{xclass_ = c;}
   const void* icon() const	{return icon_;}
@@ -124,5 +131,5 @@ public:
 #endif
 
 //
-// End of "$Id: Fl_Window.H,v 1.12.2.6.2.9 2004/11/20 03:19:57 easysw Exp $".
+// End of "$Id: Fl_Window.H 4421 2005-07-15 09:34:53Z matt $".
 //

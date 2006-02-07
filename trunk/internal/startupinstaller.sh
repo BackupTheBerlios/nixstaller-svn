@@ -73,7 +73,7 @@ do
     L=`echo $L | sed -e 's/\/lib\///g' -e 's/\.so\.//g'` # Convert /lib/libc.so.X to libcX
     if [ -d "./frontends/${CURRENT_OS}/${CURRENT_ARCH}/${L}" ]; then
         USELIBC=$L
-        echo "Using libc \"${USELIBC}\""
+        #echo "Using libc \"${USELIBC}\""
         break
     fi
 done

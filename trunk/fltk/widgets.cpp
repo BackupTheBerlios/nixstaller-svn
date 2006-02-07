@@ -231,7 +231,8 @@ bool CSelectDirScreen::Next()
     if (!WriteAccess(InstallInfo.dest_dir))
     {
         return (fl_choice(GetTranslation("You don't have write permissions for this directory.\n"
-                "The files can be extracted as the root user, but you'll need to enter the root password for this later."),
+                "The files can be extracted as the root user,\n"
+                "but you'll need to enter the root password for this later."),
                 GetTranslation("Choose another directory"),
                 GetTranslation("Continue as root"), NULL) == 1);
     }
@@ -562,7 +563,8 @@ bool CInstallFilesScreen::Activate()
             // Check if password is invalid
             if (!m_szPassword)
             {
-                if (fl_ask(GetTranslation("Root access is required to continue\nAbort installation?")))
+                if (fl_choice(GetTranslation("Root access is required to continue\nAbort installation?"),
+                    GetTranslation("No"), GetTranslation("Yes"), NULL))
                     EndProg();
             }
             else

@@ -191,7 +191,7 @@ std::string CLibSU::ReadLine(bool block)
        // the file descriptor already.
        return ret;
     }
-
+    
     int nbytes;
     char buf[256];
     while (1) 
@@ -226,7 +226,7 @@ std::string CLibSU::ReadLine(bool block)
         }
         break;
     }
-
+    
     log("ret(2) in ReadLine: %s(%d)\n", ret.c_str(), ret.length());
     return ret;
 }

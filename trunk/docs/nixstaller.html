@@ -922,71 +922,67 @@ Nixstaller uses the following libraries:<br>
       <th>Library name</th>
       <th>Where to get it</th>
       <th>Used for</th>
-    </tr>
-    <tr>
-      <td>bzip2(libbz2)</td>
-      <td><A href="http://www.bzip.org/">http://www.bzip.org/</A></td>
-      <td>Core</td>
+      <th>Linked dynamic or static</th>
     </tr>
     <tr>
       <td>zlib(libz)</td>
       <td><A href="http://www.zlib.net/">http://www.zlib.net/</A></td>
-      <td>Core</td>
-    </tr>
-    <tr>
-      <td>libarchive</td>
-      <td><A href="http://people.freebsd.org/~kientzle/libarchive/">http://people.freebsd.org/~kientzle/libarchive/</A></td>
-      <td>Core</td>
+      <td>FLTK frontend, required by libpng</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>libmain</td>
       <td>Part of nixstaller</td>
       <td>Core</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>libsu</td>
       <td>Part of nixstaller</td>
       <td>Core</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>CDK(libcdk)</td>
       <td><A href="http://invisible-island.net/cdk/">http://invisible-island.net/cdk/</A></td>
       <td>ncurses frontend</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>ncurses(libncurses)</td>
       <td><A href="http://www.gnu.org/software/ncurses/ncurses.html">http://www.gnu.org/software/ncurses/ncurses.html</A></td>
       <td>ncurses frontend</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>FLTK(libfltk, libfltk_images)</td>
       <td><A href="http://www.fltk.org">http://www.fltk.org</A></td>
       <td>FLTK frontend</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>png(libpng)</td>
       <td><A href="http://www.libpng.org/pub/png/libpng.html">http://www.libpng.org/pub/png/libpng.html</A></td>
       <td>FLTK frontend</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>jpeg(libjpeg)</td>
       <td><A href="http://www.ijg.org/">http://www.ijg.org/</A></td>
       <td>FLTK frontend</td>
+      <td>Static</td>
     </tr>
     <tr>
       <td>X11(libX11, libXext)</td>
-      <td>You can get it from your local X.org/XFree distribution</td>
+      <td>You can get them from your local X.org/XFree distribution</td>
       <td>FLTK frontend</td>
+      <td>Dynamic</td>
     </tr>
     <tr>
       <td>libm, libc, libstdc++, libutil</td>
       <td>Comes with GCC. The build script will automaticly search and copy them.</td>
       <td>Core</td>
-    </tr>
-    <tr>
-      <td>acl(libacl)</td>
-      <td><A href="ftp://oss.sgi.com/projects/xfs/cmd_tars">ftp://oss.sgi.com/projects/xfs/cmd_tars</A></td>
-      <td>Core (Linux only)</td>
+      <td>libm and libc dynamic, libstdc++ and libutil static</td>
     </tr>
   </tbody>
 </table>
@@ -999,34 +995,24 @@ Never use libraries which are optimized for a specific platform(ie compiled with
 <br>
 
 <strong>Shared libraries</strong><br>
-Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked staticly or it might give some problems. This means that systems which don't have the same <em>major</em> library version the binary won't work. Luckely on most systems the major version of these libraries aren't changed very often.<br>
-The following libraries are dynamicly linked:
-
-
-
-
-
-
-
-
-
-
-
-On systems where this isn't the case (such as FreeBSD, which has a new major version for every new major FreeBSD release) you need to compile different binaries which are linked with different libc's. You also need to check for right libm ofcourse.<br>
-<br>
-There are several ways to do this, the best way is ofcourse to install and compile on the Operating System which is using this specific libc/libm release.<br>
-<br>
-Another way is(incase the libraries are older then the ones on your system) to install a 'compat layer' which is provided on some systems(ie debian or BSD's). If you do this you need to make a symlink called libc.so(or libm.so) which points to the right library, this way gcc will use this older library instead. Note that copying the library and then renaming it won't work. To test if gcc linked the right libraries you can use the <samp>ldd</samp> command.<br>
+Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked staticly or their major version number isn't changed too often.<br>
+The C library, or libc, can't be linked staticly since it needs runtime support. This can give problems for older/newer systems than what is used for the compilation of Nixstaller. A good example is FreeBSD, which seems to bump the major version of libc every major release(ie FreeBSD 5.X has libc.so.5, FreeBSD 6.X has libc.so.6). This way a binary linked on FreeBSD 6.X won't run on FreeBSD 5.X because it doesn't has libc.so.6.<br>
+To solve this problem your installer can have binaries for each major libc version. Just compile the frontends on a system which uses the specific libc version and move the binaries from the 'bin/[osname]/[arch]/' directory to 'bin/[osname]/[arch]/libcX/' where the X should be replaced with the major version number of the libc major version.<br>
+When the user runs the installer, it will try to use the right binaries automaticly.<br>
 <br>
 
 <strong>Library placement</strong><br>
-When you collected all the libraries for your platform you should put them in the right place in the 'lib/' directory.
-The libraries should be put in lib/[osname]/[archname] - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>
+The libs provided by gcc will be handled automaticly. The (other) static libs need to be put in the directory 'lib/[osname]/[archname]' - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>
+
+The X.org/XFree libraries are expected to be in '/usr/X11R6/lib'. If SCons can't find them you should specify them when you execute scons, like this:<br>
+<samp>scons xlibsdir=/path/to/xlibraries</samp><br>
 <br>
 
 <strong>Header files</strong><br>
 You should put all the header files from the libs in the 'include/' directory. To know which headers you need you can take a look at which headers the 'include/' directory already has.<br>
-If the headers differs from other platforms or you are unsure if they do so you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). If the headers also differ from architecture, put them under include/[osname]/[arch]/([arch]=x86 for intel compatible and output from 'uname -m' for any other). Again just take a look how the directory looks like by default.<br>
+If the headers differs from platform to platform or you are unsure if they do, you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). If the headers also differ from architecture to architecture, put them under include/[osname]/[arch]/([arch]=x86 for intel compatible and output from 'uname -m' for any other). Again just take a look how the directory looks like by default.<br>
+Note that you won't need to copy any X libraries. If they aren't in '/usr/X11R6/include' and scons can't find them specify the location on the command line like this:<br>
+<samp>scons xincdir=/path/to/xincludes</samp><br>
 <br>
 
 <p> <h3><A name="scons">SCons</A></h3>
@@ -1039,14 +1025,7 @@ SCons is <A href="http://www.python.org/">python</A> based, so make sure you got
 If you got SCons installed simply type <samp>scons</samp> in the main nixstaller directory to build and configure everything.<br>
 To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
 The binaries will be automaticly put in the bin/[osname]/[arch]/ directory(where [osname] is the lowercased output from 'uname', [arch] is x86 for intel compatible or output fron 'uname -m' for any other).<br>
-<br>
-
-<p> <h3><A name="libc">Specific libc binaries</A></h3>
-As been said, the major library version of libc (and libm) may change between releases of operating systems. For example FreeBSD 5.X has libc.so.5 while FreeBSD 6.X uses libc.so.6. In order to let Nixstaller still being able to run you should compile different binaries for different libc's. Some more info about this in the <A href="#comp-notes">general notes section</A>.<br>
-If you got the binaries you should put them in bin/[osname]/[arch]/libcX/ where the X should be replaced with the major version number of libc (ie /lib/libc.so.5 will become libc5).<br>
-
-<p> <h3><A name="libm">Specific libm binaries</A></h3>
-Since libc and libm releate to each other, it's very lickely that they both change. Therefore it's not necessarily to do anything special, just make sure that you link with the libm version that came from the system that uses the different libc.<br>
+After you compiled the binaries it's recommended to strip all symbols from them to make them smaller. Simple type <samp>scons stripbins</samp> and every binary in the bin/ directory will be stripped.<br>
 <br>
 
 <p> <h2><A href="#toc-licensecred" name="licensecred">Credits and license</A></h2>

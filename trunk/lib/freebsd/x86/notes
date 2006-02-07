@@ -9,9 +9,9 @@ version: 1.2.8
 notes: compiled from ports
 
 FLTK:
-configure command: "CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./configure --disable-localjpeg --disable-localpng --prefix=/usr/local" (configure script wouldn't detect png and jpeg libs otherwise)
-version: 1.1.6
-other: other things(fluid, examples) didn't want to compile.
+configure command: "CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./configure --disable-localjpeg --disable-localpng"
+(configure script wouldn't detect png and jpeg libs otherwise)
+version: 1.1.7
 
 BZIP2:
 version: 1.0.3
