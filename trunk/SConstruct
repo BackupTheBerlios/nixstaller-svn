@@ -213,7 +213,7 @@ env.Append(LIBS = Split('su main util'))
 #    env.Append(LIBS = 'acl')
 #elif cur_os == 'netbsd':
 if cur_os == 'netbsd':
-    env.Append(RPATH = '/usr/X11R6/lib')
+    env.Append(LINKFLAGS = ' -Wl,--rpath -Wl,/usr/X11R6/lib')
 
 # Builds ncurses frontend
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '

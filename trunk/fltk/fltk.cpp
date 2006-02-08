@@ -215,7 +215,8 @@ void UpdateLanguage()
     fl_no = GetTranslation("No");
     fl_ok = GetTranslation("OK");
     fl_cancel = GetTranslation("Cancel");
-    
+    fl_close = GetTranslation("Close");
+
     // Translations for FLTK's File Chooser
     Fl_File_Chooser::add_favorites_label = GetTranslation("Add to Favorites");
     Fl_File_Chooser::all_files_label = GetTranslation("All Files (*)");
