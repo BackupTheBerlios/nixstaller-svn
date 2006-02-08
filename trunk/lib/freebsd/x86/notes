@@ -1,5 +1,7 @@
 Notes for freebsd libs:
 
+Host system: x86 FreeBSD 6.0-STABLE
+
 JPEG:
 version: 6b
 notes: compiled from ports

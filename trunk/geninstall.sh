@@ -161,6 +161,7 @@ packdir()
             ;;
     esac
     [ -f $2 ] || err "Couldn't pack files(archname: $2 dir: $1)"
+    tar tzf "${2}" | xargs -0 -n1 du # > "${2}.sizes"
     cd - # Go back to previous directory
 }
 

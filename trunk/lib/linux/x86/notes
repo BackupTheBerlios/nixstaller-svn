@@ -1,8 +1,6 @@
 Notes for linux libs:
 
-libacl:
-Version used: 2.2.27
-Other: after compilation you can find libacl in the libacl/.libs/ directory.
+Host system: x86 Kubuntu Breezy
 
 JPEG:
 version: 6b
@@ -11,7 +9,7 @@ PNG:
 version: 1.2.8
 
 FLTK:
-version: 1.1.6
+version: 1.1.7
 
 BZIP2:
 version: 1.0.3

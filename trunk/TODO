@@ -2,7 +2,7 @@ OVERALL
 - Modify Makeself?
 - "/home/rick/src/nixstaller/trunk/makeself.sh: line 312: echo: write error: Bad file descriptor"
 - bins for fbsd 5.X
-- Update to FLTK 1.1.7 for Linux
+- File sizes for file extraction during installation
 
 
 MAIN

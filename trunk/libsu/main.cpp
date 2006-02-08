@@ -549,7 +549,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 
     args.push_back(m_szUser);
     args.push_back("-c");
-    args.push_back(std::string("printf \"") + TermStr + "\"; " + m_szCommand); // Insert our magic terminate indicator to command
+    args.push_back(std::string("printf \"") + TermStr + "\"; sh -c \"" + m_szCommand + "\""); // Insert our magic terminate indicator to command
     args.push_back("-");
 
     std::string command;

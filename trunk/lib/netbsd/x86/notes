@@ -1,5 +1,7 @@
 Notes for netbsd libs:
 
+Host system: x86 NetBSD 2.02
+
 JPEG:
 version: 6b
 notes: compiled from pkgsrc
@@ -10,7 +12,7 @@ notes: compiled from pkgsrc
 
 FLTK:
 configure command: CPPFLAGS="-I/usr/pkg/include" LDFLAGS="-L/usr/pkg/lib" ./configure --disable-localpng --disable-localjpeg (configure script wouldn't detect png and jpeg libs otherwise)
-version: 1.1.6
+version: 1.1.7
 other: Failed at building examples.
 
 BZIP2:

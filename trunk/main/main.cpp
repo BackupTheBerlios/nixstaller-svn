@@ -646,13 +646,13 @@ bool ReadLang()
         if (text[0] == '[')
             GetTextFromBlock(file, text);
         
-        if (atsrc) { debugline("src: %s\n", text.c_str());
-            srcmsg = text; }
+        if (atsrc)
+            srcmsg = text;
         else
         {
             InstallInfo.translations[srcmsg] = new char[text.length()+1];
             text.copy(InstallInfo.translations[srcmsg], std::string::npos);
-            InstallInfo.translations[srcmsg][text.length()] = 0;debugline("dest: %s\n", InstallInfo.translations[srcmsg]);
+            InstallInfo.translations[srcmsg][text.length()] = 0;
         }
 
         atsrc = !atsrc;

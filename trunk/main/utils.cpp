@@ -67,6 +67,7 @@ int ArchSize(const char *archname)
 #else
 void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize)
 {
+    /*
     totalsize = 0;
     archfilesizes.clear();
     
@@ -100,6 +101,21 @@ void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &a
             totalsize += size;
         }
         pclose(pipe);
+}*/
+    char *fname = CreateText("%s.sizes", archname);
+    std::ifstream file(fname);
+    std::string arfilename;
+    unsigned int size;
+    
+    if (!file) printf("Could not open %s\n", fname);
+    while(file)
+    {
+        if (file >> size >> arfilename)
+        {
+            archfilesizes[arfilename] = size;
+            totalsize += size;
+            printf("%d\t%s\n", size, arfilename.c_str());
+        }
     }
 }
 #endif
