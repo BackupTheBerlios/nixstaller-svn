@@ -589,11 +589,12 @@ void CExtractAsRootFunctor::Update(const char *s)
     if (!s || !s[0])
         return;
 
-    std::string curfile = s, orig = s;
+    std::string curfile = s, orig;
     
     if (curfile.compare(0, 2, "x ") == 0)
         curfile.erase(0, 2);
 
+    orig = curfile;
     EatWhite(curfile);
 
     if (m_ArchList[m_szCurArchFName].filesizes.find(curfile) == m_ArchList[m_szCurArchFName].filesizes.end())
@@ -608,8 +609,9 @@ void CExtractAsRootFunctor::Update(const char *s)
 
     //debugline("cline %s\n", curfile.c_str());
     
-    if (curfile.compare(0, 2, "x ") == 0)
-        curfile.replace(0, 2, "Extracting file: ");
+    //if (curfile.compare(0, 2, "x ") == 0)
+        //curfile.replace(0, 2, "Extracting file: ");
+    curfile.insert(0, "Extracting file: ");
     
     m_UpProgFunc(m_fPercent, m_pFuncData[0]);
     m_UpTextFunc(curfile, m_pFuncData[1]);

@@ -610,7 +610,7 @@ void CInstallFilesScreen::UpdateLang()
 void CInstallFilesScreen::AppendText(const char *txt)
 {
     m_pDisplay->insert(txt);
-    // Move curser to last line end last word
+    // Move cursor to last line and last word
     m_pDisplay->scroll(m_pBuffer->length(), m_pDisplay->word_end(m_pBuffer->length()));
 }
 
