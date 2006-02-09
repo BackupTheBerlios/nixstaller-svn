@@ -151,9 +151,12 @@ packdir()
     case $ARCH_TYPE in
         gzip )
             tar cvf - . | gzip -c9 > ${2}
+            # Use awk to be able to use files with spaces...
+            cat ${2} | gzip -cd | tar tf - | awk '{if ($0 != "./") printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         bzip2 )
             tar cvf - . | bzip2 -9 > ${2}
+            cat ${2} | bzip2 -d | tar tf - | awk '{if ($0 != "./") printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         * )
             echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
@@ -161,7 +164,6 @@ packdir()
             ;;
     esac
     [ -f $2 ] || err "Couldn't pack files(archname: $2 dir: $1)"
-    tar tzf "${2}" | xargs -0 -n1 du # > "${2}.sizes"
     cd - # Go back to previous directory
 }
 
