@@ -71,11 +71,11 @@ int main(int argc, char *argv[])
     if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, "Could not init CDK");
     initCDKColor();
 
-    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
+    /*if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
         throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
                                     "However you don't have write permissions to this directory"
                                     "Please restart the installer as a user who does or as the root user",
-                                    InstallInfo.dest_dir.c_str()));
+    InstallInfo.dest_dir.c_str()));*/
     
     int i=0;
     while(Functions[i])
@@ -448,7 +448,7 @@ bool InstallFiles()
         {
             char *sz = entry.Activate();
 
-            if ((entry.ExitType() != vNORMAL) || !sz)
+            if ((entry.ExitType() != vNORMAL) || !sz || !sz[0])
             {
                 if (YesNoBox(GetTranslation("Root access is required to continue\nAbort installation?")))
                     EndProg();
@@ -464,7 +464,8 @@ bool InstallFiles()
                 }
 
                 for (short s=0;s<strlen(sz);s++) sz[s] = 0;
-
+                entry.Clean();
+                
                 // Some error appeared
                 if (SuHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
                 {

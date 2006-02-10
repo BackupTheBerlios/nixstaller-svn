@@ -1,5 +1,11 @@
 #!/bin/sh
 #
+# Slightly modified version of 'makeself'.
+#
+# ------------------------------------
+# Original header starts here
+# ------------------------------------
+#
 # Makeself version 2.1.x
 #  by Stephane Peter <megastep@megastep.org>
 #

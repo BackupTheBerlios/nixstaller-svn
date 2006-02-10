@@ -1,8 +1,6 @@
 OVERALL
-- Modify Makeself?
 - "/home/rick/src/nixstaller/trunk/makeself.sh: line 312: echo: write error: Bad file descriptor"
 - bins for fbsd 5.X
-- File sizes for file extraction during installation
 
 
 MAIN
@@ -25,10 +23,10 @@ DOCS
 ----------------------------- LATER ------------------------------------
 
 OVERALL
-- Check permissions for inst dir
 - Package version?
 - Translate param names and param choices
 - Check for tar with gzip/bzip on other platforms(Solaris...)
+- Modify Makeself?
 
 
 NCURSES FRONTEND

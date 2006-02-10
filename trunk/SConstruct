@@ -122,6 +122,51 @@ if 'tardist' in COMMAND_LINE_TARGETS:
     print "Generated %s" % archname
     Exit(0)
 
+if 'setupdist' in COMMAND_LINE_TARGETS:
+    workdir = "tmp-setup-dist/"
+    filesdir = workdir + "files_all/"
+    outputfile = "nixstaller-" + curnixstversion + ".sh"
+    stripallbins()
+
+    if os.path.exists(workdir):
+        print "Cleaning old workdir..."
+        shutil.rmtree(workdir)
+        
+    os.mkdir(workdir)
+
+    if not os.path.exists(filesdir):
+        os.mkdir(filesdir)
+
+    print "Copying all files to be installed..."
+    for file in distfiles_src+distfiles_user+getallbins():
+        dir = filesdir + os.path.dirname(file)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        shutil.copy(file, filesdir + file)
+
+    print "Generate install config file..."
+    cfgfile = open(workdir + "/install.cfg", "w")
+    cfgfile.write("""
+appname Nixstaller
+archtype bzip2
+installdir select
+languages english dutch
+""")
+    cfgfile.close()
+    
+    print "Copying welcome message..."
+    shutil.copy("internal/intro.txt", workdir + "/welcome")
+    print "%s --> %s" % ("internal/intro.txt", workdir + "/welcome")
+
+    print "Generating installer"
+    os.system("./geninstall.sh %s %s" % (workdir, outputfile))
+
+    print "Cleaning workdir..."
+    shutil.rmtree(workdir)
+
+    Exit(0)
+    
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
     conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv})
@@ -157,12 +202,6 @@ if not env.GetOption('clean'):
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
         print "Couldn\'t find libz !"
         Exit(1)
-#    if not conf.CheckLibWithHeader('bz2', ['stdio.h', 'bzlib.h'], 'C++', 'bz_stream s;', 0):
-#        print "Couldn't find libbz2 !"
-#        Exit(1)
-#    if not conf.CheckLibWithHeader('archive', 'archive.h', 'C++', 'archive_api_version();', 0):
-#        print "Couldn't find libarchive !"
-#        Exit(1)
     if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
         print "Couldn't find libncurses !"
         Exit(1)
@@ -187,9 +226,6 @@ if not env.GetOption('clean'):
     if not conf.CheckLibWithHeader('fltk_images', 'FL/Fl.H', 'C++', ';', 0):
         print "Couldn't find libfltk_images !"
         Exit(1)
-#    if cur_os == 'linux' and not conf.CheckLibWithHeader('acl', 'stdlib.h', 'C++', ';', 0):
-#        print "Couldn't find libacl !"
-#        Exit(1)
         
     env = conf.Finish()
 else:

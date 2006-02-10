@@ -703,7 +703,7 @@ OK now you know how to make a directory layout we can start with the actual crea
 <br>
 In the main directory of the nixstaller package there is a script called 'geninstall.sh'. If you invoke this script it will copy all the files that need to be in the installer package(translations, frontends, the files that needs to be installed) to a temporary directory.<br>
 After that it will call makeself to finish the job and you should have an installer.<br>
-The script must be run from the main nixstaller directory and has as first argument the directory that you just created in the above section.<br>
+The script must be run from the main nixstaller directory. It has 2 arguments: the first argument should be the directory that you created in the above section and with the second argument you can specify the name for the installer(default is setup.sh). The first argument is required, the second optional.<br>
 <br>
 
 <samp>Example: ./geninstall.sh release/</samp><br>
@@ -997,13 +997,13 @@ Never use libraries which are optimized for a specific platform(ie compiled with
 Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked staticly or their major version number isn't changed too often.<br>
 The C library, or libc, can't be linked staticly since it needs runtime support. This can give problems for older/newer systems than what is used for the compilation of Nixstaller. A good example is FreeBSD, which seems to bump the major version of libc every major release(ie FreeBSD 5.X has libc.so.5, FreeBSD 6.X has libc.so.6). This way a binary linked on FreeBSD 6.X won't run on FreeBSD 5.X because it doesn't has libc.so.6.<br>
 To solve this problem your installer can have binaries for each major libc version. Just compile the frontends on a system which uses the specific libc version and move the binaries from the 'bin/[osname]/[arch]/' directory to 'bin/[osname]/[arch]/libcX/' where the X should be replaced with the major version number of the libc major version.<br>
-When the user runs the installer, it will try to use the right binaries automaticly.<br>
+When the user runs the installer, the startup script will try to use the right binaries automaticly.<br>
 <br>
 
 <strong>Library placement</strong><br>
 The libs provided by gcc will be handled automaticly. The (other) static libs need to be put in the directory 'lib/[osname]/[archname]' - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>
 
-The X.org/XFree libraries are expected to be in '/usr/X11R6/lib'. If SCons can't find them you should specify them when you execute scons, like this:<br>
+The X.org/XFree libraries are expected to be in '/usr/X11R6/lib'. If SCons can't find them you should specify the directory when you execute scons, like this:<br>
 <samp>scons xlibsdir=/path/to/xlibraries</samp><br>
 <br>
 
@@ -1034,7 +1034,7 @@ After you compiled the binaries it's recommended to strip all symbols from them 
 <strong>Makeself:</strong> is used to create a self extracting archive.
 <A href="http://www.megastep.org/makeself/">makeself page</A><br>
 <strong>BerliOS:</strong> Site hosting, SVN access etc. <A href="http://www.berlios.de/">berlios page</A><br>
-<strong>KDevelop:</strong> Nice IDE which I mainly used for creating nixstaller.
+<strong>KDevelop:</strong> Nice IDE which I mainly use for creating nixstaller.
 <A href="http://www.kdevelop.org/">kdevelop page</A><br>
 <strong>Quanta+:</strong> Nice HTML editor which I used to create this manual.
 <A href="http://quanta.kdewebdev.org/">quanta page</A><br>

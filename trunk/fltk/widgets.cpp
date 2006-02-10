@@ -491,7 +491,7 @@ Fl_Group *CInstallFilesScreen::Create()
     m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25, "Password: ");
     m_pAskPassInput->take_focus();
     
-    m_pAskPassOKButton = new Fl_Button(60, 150, 100, 25, "OK");
+    m_pAskPassOKButton = new Fl_Return_Button(60, 150, 100, 25, "OK");
     m_pAskPassOKButton->callback(AskPassOKButtonCB, this);
     
     m_pAskPassCancelButton = new Fl_Button(240, 150, 100, 25, "Cancel");
@@ -553,6 +553,7 @@ bool CInstallFilesScreen::Activate()
         while(true)
         {
             CleanPasswdString(m_szPassword);
+            m_szPassword = NULL;
 
             m_pAskPassWindow->hotspot(m_pAskPassOKButton);
             m_pAskPassWindow->take_focus();
@@ -616,16 +617,18 @@ void CInstallFilesScreen::AppendText(const char *txt)
 
 void CInstallFilesScreen::SetPassword(bool unset)
 {
+    if (m_szPassword) printf("pass: %s\n", m_szPassword);
     CleanPasswdString(m_szPassword);
     m_szPassword = NULL;
     
     if (!unset)
     {
         const char *passwd = m_pAskPassInput->value();
-        m_szPassword = strdup(passwd);
     
         if (passwd && passwd[0])
         {
+            m_szPassword = strdup(passwd);
+
             // Can't use FLTK's replace() to delete input field text, since it stores undo info
             int length = strlen(passwd);
             

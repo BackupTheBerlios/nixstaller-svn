@@ -33,6 +33,7 @@
 #    this exception.
 
 ARGS="$*"
+OUTNAME=$2
 CURDIR=$PWD
 ARCHNAME_BASE="instarchive"
 OS=`uname`
@@ -53,9 +54,10 @@ err()
 checkargs()
 {
     if [ -z $ARGS ]; then
-        echo "Usage: $0 <config dir>"
+        echo "Usage: $0 <config dir> [ <installer name> ]"
         echo
         echo " <config dir>: The directory which holds the install config files"
+        echo " <installer name>: The file name of the created installer. Default: setup.sh"
         exit 1
     fi
     
@@ -144,19 +146,25 @@ remtemp()
     rm -rf ${CONFDIR}/tmp
 }
 
+sizefile()
+{
+    echo $1
+}
+
 packdir()
 {
     local PKCMD=
     cd $1
     case $ARCH_TYPE in
         gzip )
-            tar cvf - . | gzip -c9 > ${2}
-            # Use awk to be able to use files with spaces...
-            cat ${2} | gzip -cd | tar tf - | awk '{if ($0 != "./") printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
+            # Safe way to pack all files in the current directory, without including the current('.') dir
+            tar cf - --exclude .. --exclude . * .* | gzip -c9 > ${2}
+            # Use awk to be able to use files with spaces and omit directory names
+            cat ${2} | gzip -cd | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         bzip2 )
-            tar cvf - . | bzip2 -9 > ${2}
-            cat ${2} | bzip2 -d | tar tf - | awk '{if ($0 != "./") printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
+            tar cf - --exclude .. --exclude . * .* | bzip2 -9 > ${2}
+            cat ${2} | bzip2 -c | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         * )
             echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
@@ -177,6 +185,10 @@ checkargs
 # If target dir has trailing '/', remove it
 TEMP=${CONFDIR%*/}
 CONFDIR=$TEMP
+
+if [ -z ${OUTNAME} ]; then
+    OUTNAME="setup.sh"
+fi
 
 if [ ! -e ${CONFDIR}/install.cfg ]; then
     err "Error: no install.cfg found!"
@@ -225,12 +237,13 @@ fi
 echo
 echo "Configuration:"
 echo "---------------------------------"
-echo "          OS: $TARGET_OS"
-echo "       Archs: $TARGET_ARCH"
-echo "Archive type: $ARCH_TYPE"
-echo "   Languages: $LANGUAGES"
-echo "  Config dir: ${CONFDIR}"
-echo "   Frontends: $FRONTENDS"
+echo "Installer name: $OUTNAME"
+echo "            OS: $TARGET_OS"
+echo "         Archs: $TARGET_ARCH"
+echo "  Archive type: $ARCH_TYPE"
+echo "     Languages: $LANGUAGES"
+echo "    Config dir: ${CONFDIR}"
+echo "     Frontends: $FRONTENDS"
 echo "---------------------------------"
 echo
 echo
@@ -274,7 +287,7 @@ done
 #fi
 
 echo "Generating installer..."
-${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/setup.sh "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
+${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
 
 echo "Cleaning up..."
 remtemp

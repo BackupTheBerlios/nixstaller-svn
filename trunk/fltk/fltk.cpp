@@ -42,7 +42,7 @@ void EndProg(void);
 Fl_Window *MainWindow = NULL;
 Fl_Wizard *Wizard = NULL;
 Fl_Window *pAboutWindow = NULL;
-Fl_Button *pAboutOKButton = NULL;
+Fl_Return_Button *pAboutOKButton = NULL;
 Fl_Button *pAboutButton = NULL;
 Fl_Button *pCancelButton = NULL;
 Fl_Button *pPrevButton = NULL;
@@ -153,16 +153,16 @@ void CreateMainWindow(char **argv)
     Fl_Text_Display *pAboutDisp = new Fl_Text_Display(20, 20, 360, 150, "About");
     pAboutDisp->buffer(pBuffer);
     
-    pAboutOKButton = new Fl_Button((400-80)/2, 170, 80, 25, "OK");
+    pAboutOKButton = new Fl_Return_Button((400-80)/2, 170, 80, 25, "OK");
     pAboutOKButton->callback(AboutOKCB, 0);
     
     pAboutWindow->end();
 
-    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
+    /*if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
         throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
                                     "However you don't have write permissions to this directory\n"
                                     "Please restart the installer as a user who does or as the root user",
-                                    InstallInfo.dest_dir.c_str()));
+    InstallInfo.dest_dir.c_str()));*/
 
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     MainWindow->callback(WizCancelCB);

@@ -45,6 +45,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Wizard.H>
 #include <FL/Fl_Text_Buffer.H>
@@ -191,7 +192,8 @@ protected:
     Fl_Window *m_pAskPassWindow;
     Fl_Box *m_pAskPassBox;
     Fl_Secret_Input *m_pAskPassInput;
-    Fl_Button *m_pAskPassOKButton, *m_pAskPassCancelButton;
+    Fl_Return_Button *m_pAskPassOKButton;
+    Fl_Button *m_pAskPassCancelButton;
     
     LIBSU::CLibSU m_SUHandler;
     char *m_szPassword;

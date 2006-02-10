@@ -226,6 +226,8 @@ public:
     void SetValue(std::string &str) { SetValue(const_cast<char*>(str.c_str())); };
     void SetValue(const char *str) { SetValue(const_cast<char*>(str)); };
     void SetValue(char *str) { setCDKEntryValue(m_pEntry, str); };
+
+    void Clean(void) { cleanCDKEntry(m_pEntry); };
     
     char *Activate(chtype *actions = NULL);
     CDKENTRY *GetEntry(void) { return m_pEntry; };
