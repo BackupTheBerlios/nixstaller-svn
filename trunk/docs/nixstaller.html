@@ -76,13 +76,13 @@ Here is a list with the main features. Read further for more info to see what th
 
 <ul>
    <li>2 different frontends used for the installer: <A href="http://www.fltk.org">FLTK</A> and <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> using <A href="http://invisible-island.net/cdk/">CDK</A> </li>
-   <li>Support for the following OS'es: Linux, FreeBSD and NetBSD.</li>
+   <li>Support for the following OSes: Linux, FreeBSD and NetBSD.</li>
    <li>An installer itself has the following features:
    <ul>
-      <li>Can be translated(no UTF yet). Dutch and english translations are supplied by default</li>
+      <li>Can be translated(no UTF yet). Dutch and English translations are supplied by default</li>
       <li>Screen where the user can choose the language</li>
       <li>Optional intro screen with customizable image and text</li>
-      <li>Optional screen where a user have to accept a license agreement</li>
+      <li>Optional screen where a user has to accept a license agreement</li>
       <li>Optional screen where the user has to select a destination directory</li>
       <li>Optional screen where the user can set parameters used by installation commands</li>
       <li>Installation progress screen</li>
@@ -92,7 +92,7 @@ Here is a list with the main features. Read further for more info to see what th
    <li>Commands which can be executed after file extraction. The parameters used by these commands can be customized by the end user during installation.</li>
    <li>Files that come with the installer can be either extracted to a temporary directory, a given directory or a directory specified by the user.</li>
    <li>Installation files can be compressed with either gzip or bzip2</li>
-   <li>Frontends are almost completly staticly linked. This way the end user doesn't have to worry about missing dependencies for the installer itself.</li>
+   <li>Frontends are almost completely statically linked. This way the end user doesn't have to worry about missing dependencies for the installer itself.</li>
  </ul>
 
 <p> <h2><A href="#toc-inst" name="inst">Installation</A></h2>
@@ -117,35 +117,41 @@ Also read the <A href="#tutorial">tutorials</A><br>
 <br>
 
 <p> <h2><A href="#toc-first" name="basics">Basics</A></h2>
-In this section the main things will be explained so you can get a idea how to use nixstaller and what it can do.<br>
+In this section the main things will be explained so you can get an idea how to use nixstaller and what it can do.<br>
 
 <p> <h3><A name="installpack">Installation package</A></h3>
-The goal of nixstaller is to create a installation package. This package contains the following things:<br>
+The goal of nixstaller is to create an installation package. This package contains the following things:<br>
 <ul>
    <li>One or more frontends for the installer.</li>
    <li>A config file which tells what the installer should do.</li>
    <li>Language files for translations.</li>
    <li>Some (optional) text files containing the welcome message, the license agreement and a message after the installation is finished.</li>
-   <li>An archive containing the actual files that the installer should use for installation(eg your program and its required files).</li>
+   <li>An archive containing the actual files that the installer should use for installation(ie. your program and its required files).</li>
    <li>Optional: an archive containing OS specific files that should be used for installation.</li>
-   <li>A few required libs which couldn't be linked staticly.</li>
+   <li>A few required libs which couldn't be linked statically.</li>
  </ul>
 <br>
 From these files will be a self extracting archive made(with the help of <A href="http://www.megastep.org/makeself/">makeself</A>). <br>
 The creation of a package is discussed in section <A href="#create">Creating an install package</A>.
 
 <p> <h3><A name="frontends">Frontends</A></h3>
-Currently there are 2 frontends used for the installer: The first is using <A href="http://www.fltk.org">FLTK</A> and the second uses <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> with <A href="http://invisible-island.net/cdk/">CDK</A>.
+Currently there are 2 frontends used for the installer.<br>
+The first is using <A href="http://www.fltk.org">FLTK</A>:<br><br>
+<IMG src="fltk.png" alt="FLTK frontend" border="0">
+<br><br>
+and the second uses <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> with <A href="http://invisible-island.net/cdk/">CDK</A>:<br><br>
+<IMG src="ncurs.png" alt="FLTK frontend" border="0">
+<br><br>
 If the the installer starts it will check if the user is running X. If it is so it will launch the FLTK frontend, otherwise the ncurses frontend will be launched.<br>
-You can specifiy manually which frontends will be included in the installer package.
+You can specify manually which frontends will be included in the installer package.
 
 <p> <h3><A name="config-file">Config file</A></h3>
 To configure the installer you need to make/edit a simple config file. There are several examples in the example/ directory.<br>
 Please read the <A href="#config">Configuration files section</A> to know what to put in that file.
 
 <p> <h3><A name="lang-files">Language files</A></h3>
-In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (english) strings used by the installer with the translation beneath it. Any line that starts with a '#' will be ignored.<br>
-Currently there are already 2 translations: dutch and english. You can find these in the lang/ directory. You can 'translate' the english 'strings' file in order to modify texts used by the installer.<br>
+In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (English) strings used by the installer with the translation beneath it. Any line that starts with a '#' will be ignored.<br>
+Currently there are already 2 translations: dutch and English. You can find these in the lang/ directory. You can 'translate' the English 'strings' file in order to modify texts used by the installer.<br>
 
 <br>
 Here is a example taken from the file 'lang/dutch/strings': <br>
@@ -155,7 +161,7 @@ Here is a example taken from the file 'lang/dutch/strings': <br>
 Licentie overeenkomst <br></samp>
 <br>
 
-"Licentie overeenkomst" is dutch for "License agreement". It's very important that the english text(the first line) is exactly the same as used by the installer.<br>
+"Licentie overeenkomst" is dutch for "License agreement". It's very important that the English text(the first line) is exactly the same as used by the installer.<br>
 If you read further in this file you will see the following sentence:<br>
 
 <br>
@@ -184,7 +190,7 @@ Wilt u het aanmaken?
 <br>
 
 <strong>Other things that can be translated</strong><br>
-There are other things to be translated aswell:
+There are other things to be translated as well:
 <ul>
    <li> The welcome message </li>
    <li> The license agreement </li>
@@ -192,7 +198,7 @@ There are other things to be translated aswell:
    <li> Descriptions for command entries and parameter entries </li>
  </ul>
  <br>
-The followinging sections will explain what they are and how to translate those.<br>
+The following sections will explain what they are and how to translate those.<br>
 
 <p> <h3><A name="wlf-msg">Welcome message, license agreement and the 'finish message'</A></h3>
 <strong>Welcome message</strong><br>
@@ -204,7 +210,7 @@ The user can agree to a license agreement after the welcome message.<br>
 <br>
 
 <strong>'Finish message'</strong><br>
-This is the message that will be displayed after the installation has (succesfully) ended.<br>
+This is the message that will be displayed after the installation has (successfully) ended.<br>
 <br>
 
 All these items are stored in plain text files.<br>
@@ -216,7 +222,7 @@ You can have for each of file a translation, to see where to put the translated 
 There are 3 ways where the files can are extracted to:
 <ol>
    <li>Specified: During installation the user can say where they want to have their files (default)</li>
-   <li>Temporaray: This is especially usefull for files which have to be compiled. The files will be extracted to a temporary directory and after that some install commands(see below) are called(such as './configure &amp;&amp; make &amp;&amp; make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
+   <li>Temporary: This is especially useful for files which have to be compiled. The files will be extracted to a temporary directory and after that some install commands(see below) are called(such as './configure &amp;&amp; make &amp;&amp; make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
    <li>A given directory. The files will always be extracted to this directory.</li>
 </ol>
 <br>
@@ -227,7 +233,7 @@ After all the files are extracted some (optional) shell commands can be called i
 Some commands(ie 'make install') may require root privileges. There are 2 ways to specify this:<br>
 <ol>
    <li>Always: This command requires it, no matter what.</li>
-   <li>Dependent: It depends on something else. Currently this can only be a directory specified by a parameter for this or another command. A good example to use this is 'make install' which depends on the --prefix parameter for configure. If the prefix points to an directory where the user doesn't have write access, 'make install' will need root access.</li>
+   <li>Dependent: It depends on something else. Currently this can only be a directory specified by a parameter for this or another command. A good example to use this is 'make install' which depends on the --prefix parameter for configure. If the prefix points to a directory where the user doesn't have write access, 'make install' will need root access.</li>
 </ol>
 <br>
 If a command requests root access a dialog will pop up asking the user to give the root password. The command will then be executed with 'su'.<br>
@@ -249,7 +255,7 @@ Here is an example: Lets say the command is './configure' and you have set '--pr
 You can set a default for each parameter, so that the user doesn't have to bother with everything.<br>
 <br>
 For each parameter you can also give a (short) description. If you add this description to one or more
-<A href="#lang-files">language files</A> it will be translated when its shown.<br>
+<A href="#lang-files">language files</A> it will be translated when it's shown.<br>
 <br>
 More info at the <A href="#config">config section</A>.
 
@@ -303,9 +309,9 @@ Specifies a list of used languages.<br>
 <br>
 <samp>Usage: languages lang1 lang2 lang3 ...</samp><br>
 <br>
-<samp>Example: languages english dutch</samp><br>
+<samp>Example: languages English dutch</samp><br>
 <br>
-<samp>Default: english</samp><br>
+<samp>Default: English</samp><br>
 <br>
 <br>
 
@@ -331,20 +337,20 @@ Specifies which frontends should be bundled with the install package. The name o
 <br>
 
 <strong>targetos</strong><br>
-Specifies which frontends for which Operating Systems should be included in the installer package. Each OS name should be the lowercased out from the 'uname' command(ie linux or netbsd). You can specify multiple OS'es by separating them with a whitespace.<br>
+Specifies which frontends for which Operating Systems should be included in the installer package. Each OS name should be the lowercased out from the 'uname' command(ie linux or netbsd). You can specify multiple OSes by separating them with a whitespace.<br>
 <br>
-<samp>Usage: targetos os1 os2 os3 ...</samp><br>
+<samp>Usage: targetos OS1 OS2 OS3 ...</samp><br>
 <br>
 <samp>Example: targetos linux</samp><br>
 <br>
 <samp>Default: freebsd linux netbsd</samp><br>
 <br>
-<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the <A href="#compile">compile section</A> if you want to support other OS'es.</samp><br>
+<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the <A href="#compile">compile section</A> if you want to support other OSes.</samp><br>
 <br>
 <br>
 
 <strong>targetarch</strong><br>
-Specifies which frontends for which cpu architectures should be included in the installer package. The CPU arch. name is either <samp>x86</samp> for Intel compatible systems or the output from <samp>uname -m</samp>. You can specify multiple architectures by separating them with a whitespace.<br>
+Specifies which frontends for which CPU architectures should be included in the installer package. The CPU arch. name is either <samp>x86</samp> for Intel compatible systems or the output from <samp>uname -m</samp>. You can specify multiple architectures by separating them with a whitespace.<br>
 <br>
 <samp>Usage: targetarch arch1 arch2 arch3 ...</samp><br>
 <br>
@@ -369,7 +375,7 @@ options for a commandentry here<br>
 <br>
 
 <p> <h3><A name="cfg-cmdentries">Command entries</A></h3>
-A command entry is a part where info can be specified for a single install command. A command entry starts with simply 'commandentry' and a left square bracket('[') beaneath it. The command entry ends with a right square bracket(']'). All the configuration options for a command entry should be between the 2 square brackets.<br>
+A command entry is a part where info can be specified for a single install command. A command entry starts with simply 'commandentry' and a left square bracket('[') beneath it. The command entry ends with a right square bracket(']'). All the configuration options for a command entry should be between the 2 square brackets.<br>
 <br>
 
 Here is a small example how a command entry may look like:<br>
@@ -385,7 +391,7 @@ A command entry has the following configure options: <br>
 <br>
 
 <strong>command</strong><br>
-This specifies the actual command. It will be directly passed to sh (or su incase it needs root access).<br>
+This specifies the actual command. It will be directly passed to sh (or su in case it needs root access).<br>
 You can have multiple lines with commands, this way simple shell scripts can be made. To do so simply but the commands between square brackets.<br>
 <br>
 <samp>Usage: command commandlinehere</samp><br>
@@ -414,7 +420,7 @@ Specifies if or when this command needs to be executed as the root user.<br>
 <samp>Usage: needroot true|false|dependson varname</samp><br>
 true: command always needs to be executed as root user.<br>
 false: command never needs to be executed as root user.<br>
-dependson: it depends on the directory that is selected for the parameter with the variabele name(see the
+dependson: it depends on the directory that is selected for the parameter with the variable name(see the
 <A href="#installation">the installation section</A>) 'varname'.<br>
 <br>
 <samp>Example: needroot true</samp><br>
@@ -435,7 +441,7 @@ If enabled, the installation will abort if the command fails to execute.<br>
 <br>
 
 <strong>path</strong><br>
-Sets the $PATH environment variabele for this command.<br>
+Sets the $PATH environment variable for this command.<br>
 <br>
 <samp>Usage: path dir1:dir2:dir3:...</samp><br>
 <br>
@@ -458,7 +464,7 @@ options for a parameter entry here<br>
 <br>
 
 <p> <h3><A name="cfg-paramentries">Parameter entries</A></h3>
-A parameter entry is a part where info can be specified for a single parameter for the current install command. A parameter entry starts with 'addparam' and a left square bracket('[') beaneath it. The parameter entry ends with a right square bracket(']'). All the configuration options for a parameter entry should be between the 2 square brackets.<br>
+A parameter entry is a part where info can be specified for a single parameter for the current install command. A parameter entry starts with 'addparam' and a left square bracket('[') beneath it. The parameter entry ends with a right square bracket(']'). All the configuration options for a parameter entry should be between the 2 square brackets.<br>
 Parameter entries can only be defined inside a <A href="#cfg-cmdentries">command entry</A><br>
 <br>
 
@@ -487,7 +493,7 @@ Specifies a name for this parameter. This name is used for the installer itself(
 <br>
 
 <strong>parameter</strong><br>
-The parameter's name. This is used when exucuting the install command. You should place '%s' where the value for this parameter should be put.<br>
+The parameter's name. This is used when executing the install command. You should place '%s' where the value for this parameter should be put.<br>
 <br>
 <samp>Usage: parameter paramnamehere</samp><br>
 <br>
@@ -533,12 +539,12 @@ Specifies the default value used for this parameter.<br>
 <br>
 <samp>Example: defaultval Yellow</samp><br>
 <br>
-<samp>Notes: If this paramater is a bool, valid values are: true or false. If this parameter is a list the value must be one of the entries in that list.</samp><br>
+<samp>Notes: If this parameter is a bool, valid values are: true or false. If this parameter is a list the value must be one of the entries in that list.</samp><br>
 <br>
 <br>
 
 <strong>varname</strong><br>
-Gives this parameter a variabele name. You should use this if a command which may need root access depends on the value of this parameter. See <A href="#installation">the installation</A> and the 'needroot' option in the
+Gives this parameter a variable name. You should use this if a command which may need root access depends on the value of this parameter. See <A href="#installation">the installation</A> and the 'needroot' option in the
 <A href="#cfg-cmdentries">command entry section</A> for more info.<br>
 <br>
 <samp>Usage: varname somenamehere</samp><br>
@@ -638,22 +644,22 @@ Here is a table for how the directory layout should look like:<br>
     </tr>
     <tr>
       <td>files_all_[archname]/</td>
-      <td>Directory containing files which are only meant for the cpu architecture [archname] on any operating system. [archname] should be replaced by a valid cpu architecture name: x86 for intel compatible and the output from 'uname -m' for any other.</td>
+      <td>Directory containing files which are only meant for the CPU architecture [archname] on any operating system. [archname] should be replaced by a valid CPU architecture name: x86 for Intel compatible and the output from 'uname -m' for any other.</td>
     </tr>
     <tr>
       <td>files_[osname]_all/</td>
-      <td>Directory containing files which are only meant for the operating system specified by [osname] on cpu architecture [arch]. [osname] should be replaced by a valid operating system. A valid osname is the output in lowercase from the shell command 'uname'. Some examples are: linux, netbsd, freebsd.</td>
+      <td>Directory containing files which are only meant for the operating system specified by [osname] on CPU architecture [arch]. [osname] should be replaced by a valid operating system. A valid osname is the output in lowercase from the shell command 'uname'. Some examples are: linux, netbsd, freebsd.</td>
     </tr>
     <tr>
       <td>files_[osname]_[archname]/</td>
-      <td>Directory containing files which are only meant for the operating system specified by [osname]. [osname] should be replaced by a valid operating system(see above). [archname] should be replaced by a valid cpu architecture name(also see above).</td>
+      <td>Directory containing files which are only meant for the operating system specified by [osname]. [osname] should be replaced by a valid operating system(see above). [archname] should be replaced by a valid CPU architecture name(also see above).</td>
     </tr>
   </tbody>
 </table>
 <br>
 <br>
 
-The config file ('install.cfg') should always be present. There should also be atleast one 'files_all' or 'files_[osname]' directory. The rest of the directories/files are optional.<br>
+The config file ('install.cfg') should always be present. There should also be at least one 'files_all' or 'files_[osname]' directory. The rest of the directories/files are optional.<br>
 
 <br>
 <strong>Example</strong><br>
@@ -724,7 +730,7 @@ In this section there are 2 tutorials: the first one is about making a simple in
 <p> <h3><A name="simple-tut">Simple tutorial</A></h3>
 After you followed this tutorial you should have created a simple installer for package 'foo'. This installer will do the following:<br>
 <ul>
-   <li> Let the user select a language (dutch or english) </li>
+   <li> Let the user select a language (dutch or English) </li>
    <li> Show the user a short welcome text </li>
    <li> Let the user select a directory </li>
    <li> Install(extract) package foo to that directory </li>
@@ -738,7 +744,7 @@ After the directory is created you should create the main config file 'install.c
 appname foo
 archtype gzip
 installdir select
-languages english dutch
+languages English dutch
 </samp></pre>
 <br>
 For more info what everything does here, check the <A href="#config">config section</A>.<br>
@@ -748,12 +754,12 @@ Now create another text file called 'welcome' with your favorite editor and put 
 You can put the following text in this file:<br>
 <pre><samp>
 Thanks for downloading foo. This installer will guide you through the installation.
-If foo did anything usefull I would put some short explenation here...but foo doesn't do anything.
+If foo did anything useful I would put some short explanation here...but foo doesn't do anything.
 </samp></pre>
 <br>
 
-We can now put some translations for our installer. We want the user to select from both english and dutch. Since both of these languages are already translated, you can simply copy the 'lang/' from the main nixstaller directory to the 'release/' directory.<br>
-The english 'translation' is only required incase you want to change some texts that are used by nixstaller. In this example we won't, so you can safely omit the 'lang/english/' directory.<br>
+We can now put some translations for our installer. We want the user to select from both English and dutch. Since both of these languages are already translated, you can simply copy the 'lang/' from the main nixstaller directory to the 'release/' directory.<br>
+The English 'translation' is only required in case you want to change some texts that are used by nixstaller. In this example we won't, so you can safely omit the 'lang/English/' directory.<br>
 Incase you want to have a translated welcome message too, simply copy the 'welcome' file to 'lang/dutch/' and translate it from there.<br>
 
 OK, now we should create a subdirectory called 'files_all' in the 'release/' directory and copy all the files from package foo.<br>
@@ -792,7 +798,7 @@ This tutorial is more advanced. This time we want an installer for package 'bar'
 <br>
 Here is a summary for what the installer for bar should do:<br>
 <ul>
-   <li> Let the user select a language (dutch or english) </li>
+   <li> Let the user select a language (dutch or English) </li>
    <li> Show the user a short welcome text </li>
    <li> Let the user accept a license agreement </li>
    <li> Let the user configure some parameters used by './configure' </li>
@@ -812,7 +818,7 @@ Lets create the install.cfg file:<br>
 appname bar
 archtype gzip
 installdir temp
-languages english dutch
+languages English dutch
 
 commandentry
 [
@@ -907,7 +913,7 @@ If, for example, you want to compile for another platform or made some modificat
 <br>
 
 <p> <h3><A name="libs">Libraries</A></h3>
-Although external libraries are nice for things such as not reinventing the wheel, they can cause several troubles aswell.<br>
+Although external libraries are nice for things such as not reinventing the wheel, they can cause several troubles as well.<br>
 This section tells how to handle the required libraries for Nixstaller.<br>
 <br>
 
@@ -979,7 +985,7 @@ Nixstaller uses the following libraries:<br>
     </tr>
     <tr>
       <td>libm, libc, libstdc++, libutil</td>
-      <td>Comes with GCC. The build script will automaticly search and copy them.</td>
+      <td>Comes with GCC. The build script will automatically search and copy them.</td>
       <td>Core</td>
       <td>libm and libc dynamic, libstdc++ and libutil static</td>
     </tr>
@@ -990,18 +996,18 @@ You can find some notes about what was done to compile some libraries on differe
 <br>
 
 <strong>Optimized libraries</strong><br>
-Never use libraries which are optimized for a specific platform(ie compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another cpu cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
+Never use libraries which are optimized for a specific platform(ie compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another CPU cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
 <br>
 
 <strong>Shared libraries</strong><br>
-Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked staticly or their major version number isn't changed too often.<br>
-The C library, or libc, can't be linked staticly since it needs runtime support. This can give problems for older/newer systems than what is used for the compilation of Nixstaller. A good example is FreeBSD, which seems to bump the major version of libc every major release(ie FreeBSD 5.X has libc.so.5, FreeBSD 6.X has libc.so.6). This way a binary linked on FreeBSD 6.X won't run on FreeBSD 5.X because it doesn't has libc.so.6.<br>
+Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked statically or their major version number isn't changed too often.<br>
+The C library, or libc, can't be linked statically since it needs runtime support. This can give problems for older/newer systems than what is used for the compilation of Nixstaller. A good example is FreeBSD, which seems to bump the major version of libc every major release(ie FreeBSD 5.X has libc.so.5, FreeBSD 6.X has libc.so.6). This way a binary linked on FreeBSD 6.X won't run on FreeBSD 5.X because it doesn't has libc.so.6.<br>
 To solve this problem your installer can have binaries for each major libc version. Just compile the frontends on a system which uses the specific libc version and move the binaries from the 'bin/[osname]/[arch]/' directory to 'bin/[osname]/[arch]/libcX/' where the X should be replaced with the major version number of the libc major version.<br>
-When the user runs the installer, the startup script will try to use the right binaries automaticly.<br>
+When the user runs the installer, the start up script will try to use the right binaries automatically.<br>
 <br>
 
 <strong>Library placement</strong><br>
-The libs provided by gcc will be handled automaticly. The (other) static libs need to be put in the directory 'lib/[osname]/[archname]' - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>
+The libs provided by gcc will be handled automatically. The (other) static libs need to be put in the directory 'lib/[osname]/[archname]' - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>
 
 The X.org/XFree libraries are expected to be in '/usr/X11R6/lib'. If SCons can't find them you should specify the directory when you execute scons, like this:<br>
 <samp>scons xlibsdir=/path/to/xlibraries</samp><br>
@@ -1009,7 +1015,7 @@ The X.org/XFree libraries are expected to be in '/usr/X11R6/lib'. If SCons can't
 
 <strong>Header files</strong><br>
 You should put all the header files from the libs in the 'include/' directory. To know which headers you need you can take a look at which headers the 'include/' directory already has.<br>
-If the headers differs from platform to platform or you are unsure if they do, you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). If the headers also differ from architecture to architecture, put them under include/[osname]/[arch]/([arch]=x86 for intel compatible and output from 'uname -m' for any other). Again just take a look how the directory looks like by default.<br>
+If the headers differs from platform to platform or you are unsure if they do, you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). If the headers also differ from architecture to architecture, put them under include/[osname]/[arch]/([arch]=x86 for Intel compatible and output from 'uname -m' for any other). Again just take a look how the directory looks like by default.<br>
 Note that you won't need to copy any X libraries. If they aren't in '/usr/X11R6/include' and scons can't find them specify the location on the command line like this:<br>
 <samp>scons xincdir=/path/to/xincludes</samp><br>
 <br>
@@ -1023,7 +1029,7 @@ SCons is <A href="http://www.python.org/">python</A> based, so make sure you got
 <p> <h3><A name="compiling">Compiling</A></h3>
 If you got SCons installed simply type <samp>scons</samp> in the main nixstaller directory to build and configure everything.<br>
 To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
-The binaries will be automaticly put in the bin/[osname]/[arch]/ directory(where [osname] is the lowercased output from 'uname', [arch] is x86 for intel compatible or output fron 'uname -m' for any other).<br>
+The binaries will be automatically put in the bin/[osname]/[arch]/ directory(where [osname] is the lowercased output from 'uname', [arch] is x86 for Intel compatible or output from 'uname -m' for any other).<br>
 After you compiled the binaries it's recommended to strip all symbols from them to make them smaller. Simple type <samp>scons stripbins</samp> and every binary in the bin/ directory will be stripped.<br>
 <br>
 
