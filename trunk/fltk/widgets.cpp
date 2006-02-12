@@ -617,7 +617,6 @@ void CInstallFilesScreen::AppendText(const char *txt)
 
 void CInstallFilesScreen::SetPassword(bool unset)
 {
-    if (m_szPassword) printf("pass: %s\n", m_szPassword);
     CleanPasswdString(m_szPassword);
     m_szPassword = NULL;
     

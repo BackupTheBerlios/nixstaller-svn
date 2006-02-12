@@ -111,6 +111,8 @@ bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 bool WriteAccess(const char *file);
 inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
+bool ReadAccess(const char *file);
+inline bool ReadAccess(const std::string &file) { return ReadAccess(file.c_str()); };
 void CleanPasswdString(char *str);
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
 void MakeStringList(const std::string &str, std::vector<char *> &strlist);

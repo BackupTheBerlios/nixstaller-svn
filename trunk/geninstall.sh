@@ -158,12 +158,12 @@ packdir()
     case $ARCH_TYPE in
         gzip )
             # Safe way to pack all files in the current directory, without including the current('.') dir
-            tar cf - --exclude .. --exclude . * .* | gzip -c9 > ${2}
+            tar cf - --exclude .. --exclude . * .?* | gzip -c9 > ${2}
             # Use awk to be able to use files with spaces and omit directory names
             cat ${2} | gzip -cd | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         bzip2 )
-            tar cf - --exclude .. --exclude . * .* | bzip2 -9 > ${2}
+            tar cf - --exclude .. --exclude . * .?* | bzip2 -9 > ${2}
             cat ${2} | bzip2 -c | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         * )

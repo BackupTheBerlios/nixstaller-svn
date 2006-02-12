@@ -232,6 +232,12 @@ bool WriteAccess(const char *file)
     return ((lstat(file, &st) == 0) && (access(file, W_OK) == 0));
 }
 
+bool ReadAccess(const char *file)
+{
+    struct stat st;
+    return ((lstat(file, &st) == 0) && (access(file, R_OK) == 0));
+}
+
 // Incase dir does not exist, it will search for the first valid top directory
 std::string GetFirstValidDir(const std::string &dir)
 {

@@ -27,6 +27,7 @@ OVERALL
 - Translate param names and param choices
 - Check for tar with gzip/bzip on other platforms(Solaris...)
 - Modify Makeself?
+- Check read permissions for extract dir
 
 
 NCURSES FRONTEND
