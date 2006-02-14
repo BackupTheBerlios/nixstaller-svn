@@ -158,11 +158,11 @@ void CreateMainWindow(char **argv)
     
     pAboutWindow->end();
 
-    /*if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
+    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(InstallInfo.dest_dir))
         throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                                    "However you don't have write permissions to this directory\n"
+                                    "However you don't have read permissions to this directory\n"
                                     "Please restart the installer as a user who does or as the root user",
-    InstallInfo.dest_dir.c_str()));*/
+                                    InstallInfo.dest_dir.c_str()));
 
     MainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     MainWindow->callback(WizCancelCB);

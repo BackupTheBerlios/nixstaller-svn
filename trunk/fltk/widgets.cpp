@@ -506,7 +506,7 @@ Fl_Group *CInstallFilesScreen::Create()
 
 bool CInstallFilesScreen::Activate()
 {
-    if (InstallInfo.dest_dir_type == DEST_SELECT)
+    if ((InstallInfo.dest_dir_type == DEST_SELECT) || (InstallInfo.dest_dir_type == DEST_DEFAULT))
     {
         if (!fl_choice(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
              InstallInfo.program_name.c_str(), MakeCString(InstallInfo.dest_dir)), GetTranslation("Exit program"),
@@ -691,6 +691,7 @@ void CInstallFilesScreen::Install()
         if (!Extracter(m_szPassword))
         {
             CleanPasswdString(m_szPassword);
+            m_szPassword = NULL;
             throwerror(true, "Error during extracting files");
         }
 
@@ -707,6 +708,7 @@ void CInstallFilesScreen::Install()
             if (percent == -1)
             {
                 CleanPasswdString(m_szPassword);
+                m_szPassword = NULL;
                 throwerror(true, "Error during extracting files");
             }
     
@@ -742,6 +744,7 @@ void CInstallFilesScreen::Install()
                 if ((*it)->exit_on_failure)
                 {
                     CleanPasswdString(m_szPassword);
+                    m_szPassword = NULL;
                     throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
                                m_SUHandler.GetErrorMsgC());
                 }
@@ -770,6 +773,7 @@ void CInstallFilesScreen::Install()
                     if ((*it)->exit_on_failure)
                     {
                         CleanPasswdString(m_szPassword);
+                        m_szPassword = NULL;
                         throwerror(true, "Failed to execute install command");
                     }
                 }
@@ -777,6 +781,7 @@ void CInstallFilesScreen::Install()
             else
             {
                 CleanPasswdString(m_szPassword);
+                m_szPassword = NULL;
                 throwerror(true, "Could not execute installation commands (could not open pipe)");
             }
         }
@@ -789,6 +794,7 @@ void CInstallFilesScreen::Install()
     InstallFiles = false;
     fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());
     CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
     
     pCancelButton->deactivate();
     pPrevButton->deactivate();

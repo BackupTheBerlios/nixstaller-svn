@@ -187,6 +187,7 @@ Directory bestaat niet
 Wilt u het aanmaken?
 ]
 </samp></pre>
+If you want to put a ']' in the translation itself you should put a backslash before it: \].<br>
 <br>
 
 <strong>Other things that can be translated</strong><br>
@@ -391,7 +392,7 @@ A command entry has the following configure options: <br>
 <br>
 
 <strong>command</strong><br>
-This specifies the actual command. It will be directly passed to sh (or su in case it needs root access).<br>
+This specifies the actual command. It will be directly passed to sh.<br>
 You can have multiple lines with commands, this way simple shell scripts can be made. To do so simply but the commands between square brackets.<br>
 <br>
 <samp>Usage: command commandlinehere</samp><br>
@@ -403,6 +404,7 @@ cp lib/mylib.so.1 /usr/local/lib
 cp bin/mybin /usr/local/bin
 echo Installation complete!
 ]</samp></pre>
+<samp>Note: When you want to use right square brackets(']') when you use multiline-commands you have to put a backslash in front of it: '\]'. </samp><br>
 <br>
 
 <strong>description</strong><br>
@@ -515,6 +517,7 @@ description [
 If you enable this option component X will be installed.
 Component is required for feature Y.
 ]</samp></pre>
+<samp>Note: If you want to put a ']' in a multiline-description field you need to put a backslash in front of it('\]').</samp><br>
 <br>
 
 <strong>type</strong><br>
@@ -700,8 +703,8 @@ The config file ('install.cfg') should always be present. There should also be a
  </ul>
 <br>
 <br>
-
-You can find other, 'real' examples in the example/ directory.<br>
+    You can find other, 'real' examples in the example/ directory.
+   <br>
 <br>
 
 <p> <h3><A name="creating-inst">Creating the installer</A></h3>

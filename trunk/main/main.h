@@ -87,7 +87,7 @@ struct arch_size_entry_s
 };
 
 extern install_info_s InstallInfo;
-extern std::list<char *> StringList; // List of all strings created by CreateText, for easy removal :)
+extern std::list<char *> StringList; // List of all strings created by CreateText
 
 bool MainInit(int argc, char *argv[]);
 void MainEnd(void);

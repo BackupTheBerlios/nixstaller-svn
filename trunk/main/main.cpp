@@ -470,7 +470,7 @@ float ExtractArchive(std::string &curfile)
                 if (!curarchname)
                 {
                     curarchname = archnames[s];
-                    curarchiter = archlist.find(archnames[s]);
+                    curarchiter = archlist.begin();
                 }
             }
         }
@@ -552,7 +552,7 @@ bool CExtractAsRootFunctor::operator ()(char *passwd)
             if (!m_szCurArchFName)
             {
                 m_szCurArchFName = archnames[s];
-                m_CurArchIter = m_ArchList.find(archnames[s]);
+                m_CurArchIter = m_ArchList.begin();
             }
         }
     }
@@ -609,13 +609,10 @@ void CExtractAsRootFunctor::Update(const char *s)
 
     //debugline("cline %s\n", curfile.c_str());
     
-    //if (curfile.compare(0, 2, "x ") == 0)
-        //curfile.replace(0, 2, "Extracting file: ");
     curfile.insert(0, "Extracting file: ");
     
     m_UpProgFunc(m_fPercent, m_pFuncData[0]);
     m_UpTextFunc(curfile, m_pFuncData[1]);
-
 }
 
 #endif
@@ -635,12 +632,12 @@ bool ReadLang()
     if (!file)
         return false;
     
-    std::string tmp, text, srcmsg;
+    std::string text, srcmsg;
     bool atsrc = true;
     while (file)
     {
-        std::getline(file, tmp);
-        text = EatWhite(tmp);
+        std::getline(file, text);
+        EatWhite(text);
 
         if (text.empty() || text[0] == '#')
             continue;

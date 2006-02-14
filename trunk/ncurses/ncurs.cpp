@@ -71,11 +71,11 @@ int main(int argc, char *argv[])
     if (!(CDKScreen = initCDKScreen(MainWin))) throwerror(false, "Could not init CDK");
     initCDKColor();
 
-    /*if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !WriteAccess(InstallInfo.dest_dir))
+    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(InstallInfo.dest_dir))
         throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                                    "However you don't have write permissions to this directory"
+                                    "However you don't have read permissions to this directory\n"
                                     "Please restart the installer as a user who does or as the root user",
-    InstallInfo.dest_dir.c_str()));*/
+                                    InstallInfo.dest_dir.c_str()));
     
     int i=0;
     while(Functions[i])
@@ -359,7 +359,7 @@ bool InstallFiles()
     char *msg;
     char *dbuttons[2] = { GetTranslation("Continue"), GetTranslation("Exit program") };
     
-    if (InstallInfo.dest_dir_type == DEST_SELECT)
+    if ((InstallInfo.dest_dir_type == DEST_SELECT) || (InstallInfo.dest_dir_type == DEST_DEFAULT))
     {
         msg = CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
                                    InstallInfo.program_name.c_str(), MakeCString(InstallInfo.dest_dir));
@@ -495,6 +495,7 @@ bool InstallFiles()
         if (!Extracter(passwd))
         {
             CleanPasswdString(passwd);
+            passwd = NULL;
             throwerror(true, "Error during extracting files");
         }
 
@@ -524,6 +525,7 @@ bool InstallFiles()
                     "Are you sure?")))
                 {
                     CleanPasswdString(passwd);
+                    passwd = NULL;
                     EndProg();
                 }
             }
@@ -564,6 +566,7 @@ bool InstallFiles()
                 if ((*it)->exit_on_failure)
                 {
                     CleanPasswdString(passwd);
+                    passwd = NULL;
                     throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
                                SuHandler.GetErrorMsgC());
                 }
@@ -591,6 +594,7 @@ bool InstallFiles()
                                                     "Are you sure?")))
                         {
                             CleanPasswdString(passwd);
+                            passwd = NULL;
                             EndProg();
                         }
                     }
@@ -603,6 +607,7 @@ bool InstallFiles()
                     if ((*it)->exit_on_failure)
                     {
                         CleanPasswdString(passwd);
+                        passwd = NULL;
                         throwerror(true, "Failed to execute install command");
                     }
                 }
@@ -610,6 +615,7 @@ bool InstallFiles()
             else
             {
                 CleanPasswdString(passwd);
+                passwd = NULL;
                 throwerror(true, "Could not execute installation commands (could not open pipe)");
             }
             
@@ -702,6 +708,7 @@ bool InstallFiles()
     ProgressBar.Draw();
     
     CleanPasswdString(passwd);
+    passwd = NULL;
     
     ButtonBar.Clear();
     ButtonBar.AddButton("Arrows", "Scroll install output");

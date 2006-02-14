@@ -25,6 +25,7 @@ DOCS
 OVERALL
 - Package version?
 - Translate param names and param choices
+- Load english text strings before language has been selected
 - Check for tar with gzip/bzip on other platforms(Solaris...)
 - Modify Makeself?
 - Check read permissions for extract dir

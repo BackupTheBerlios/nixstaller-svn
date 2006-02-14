@@ -72,16 +72,13 @@ void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &a
     std::ifstream file(fname);
     std::string arfilename;
     unsigned int size;
-    
-    while(file)
+
+    // Read first column to size and the other column(s) to arfilename
+    while(file && (file >> size) && std::getline(file, arfilename))
     {
-        // Read first column to size and the other column(s) to arfilename
-        if ((file >> size) && std::getline(file, arfilename))
-        {
-            EatWhite(arfilename);
-            archfilesizes[arfilename] = size;
-            totalsize += size;
-        }
+        EatWhite(arfilename);
+        archfilesizes[arfilename] = size;
+        totalsize += size;
     }
 }
 #endif
@@ -235,7 +232,7 @@ bool WriteAccess(const char *file)
 bool ReadAccess(const char *file)
 {
     struct stat st;
-    return ((lstat(file, &st) == 0) && (access(file, R_OK) == 0));
+    return ((lstat(file, &st) == 0) && (access(file, (R_OK | X_OK)) == 0));
 }
 
 // Incase dir does not exist, it will search for the first valid top directory

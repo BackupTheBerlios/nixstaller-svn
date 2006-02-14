@@ -90,7 +90,6 @@ class CLangScreen: public CBaseScreen
     Fl_Choice *m_pChoiceMenu;
     
 public:
-    virtual ~CLangScreen(void) { };
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
     virtual bool Activate(void);
