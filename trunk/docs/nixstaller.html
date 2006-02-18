@@ -280,6 +280,7 @@ Sets the name of the package that is going to be installed.<br>
 
 <strong>archtype</strong><br>
 Sets which archive type to use for packing the package that is going to be installed.<br>
+Use gzip for fast compression/decompression and bzip2 for strong compression.<br>
 <br>
 <samp>Usage: archtype gzip|bzip2</samp><br>
 <br>
@@ -301,7 +302,7 @@ default: Extract the files specified by 'dirnamehere'.<br>
 <br>
 <samp>Default: select</samp><br>
 <br>
-<samp>Note: The user should have permission the installation directory.</samp><br>
+<samp>Note: The user should have read/search permissions to the installation directory.</samp><br>
 <br>
 <br>
 
@@ -406,6 +407,7 @@ echo Installation complete!
 ]</samp></pre>
 <samp>Note: When you want to use right square brackets(']') when you use multiline-commands you have to put a backslash in front of it: '\]'. </samp><br>
 <br>
+<br>
 
 <strong>description</strong><br>
 Here you can specify a simple description of what this command does. You can put any translations of it in the
@@ -413,7 +415,8 @@ Here you can specify a simple description of what this command does. You can put
 <br>
 <samp>Usage: description descriptionhere</samp><br>
 <br>
-<samp>Example: description Configuring test for your system</samp>
+<samp>Example: description Configuring test for your system</samp><br>
+<br>
 <br>
 
 <strong>needroot</strong><br>
@@ -518,6 +521,7 @@ If you enable this option component X will be installed.
 Component is required for feature Y.
 ]</samp></pre>
 <samp>Note: If you want to put a ']' in a multiline-description field you need to put a backslash in front of it('\]').</samp><br>
+<br>
 <br>
 
 <strong>type</strong><br>
@@ -1091,7 +1095,7 @@ Nixstaller is released under the GPlv2 license with an exception for CDK:<br>
 If you got any suggestions, questions and such you can reach me through the following ways:<br>
 <ul>
    <li> Send a email to rhelmus_AT_gmail.com</li>
-   <li> Use the <A href="http://nixstaller.berlios.de/forum/index.php">forums at my site</A> </li>
+   <li> Use the <A href="http://nixstaller.berlios.de/forum/index.php">online forums</A> </li>
    <li> Instant Message: rick_helmus8_AT_hotmail.com(MSN), 224332897(ICQ) or rickakame(AIM) </li>
  </ul>
 

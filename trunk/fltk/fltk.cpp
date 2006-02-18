@@ -37,7 +37,6 @@
 
 void CreateMainWindow(char **argv);
 void UpdateLanguage(void);
-void EndProg(void);
 
 Fl_Window *MainWindow = NULL;
 Fl_Wizard *Wizard = NULL;
@@ -239,7 +238,7 @@ void UpdateLanguage()
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) (*p)->UpdateLang();
 }
 
-void EndProg()
+void EndProg(bool err)
 {
     // HACK: Restore bell volume
     XKeyboardControl XKBControl;
@@ -248,7 +247,7 @@ void EndProg()
 
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
-    exit(EXIT_SUCCESS);
+    exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
 void throwerror(bool dialog, const char *error, ...)
@@ -263,13 +262,6 @@ void throwerror(bool dialog, const char *error, ...)
 
     if (dialog) fl_alert(txt);
     else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
-    
-    // HACK: Restore bell volume
-    XKeyboardControl XKBControl;
-    XKBControl.bell_duration = -1;
-    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
 
-    for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
-    MainEnd();
-    exit(EXIT_FAILURE);
+    EndProg(true);
 }

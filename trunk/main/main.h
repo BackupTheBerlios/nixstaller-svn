@@ -122,7 +122,7 @@ std::string GetFirstValidDir(const std::string &dir);
 
 // These functions should be defined for each frontend
 void throwerror(bool dialog, const char *error, ...);
-void EndProg(void);
+void EndProg(bool err=false);
 
 class CExtractAsRootFunctor
 {

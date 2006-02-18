@@ -32,11 +32,9 @@ Lees de volgende tekst
 Enter name of new directory
 Type de naam van de nieuwe directory
 
-This installation requires root(administrator) privileges in order to continue
-Deze installatie heeft root(systeembeheerder) rechten nodig om door te kunnen gaan
+Password dialog
+Wachtwoord venster
 
-Please enter the password of the root user
-Type het wachtwoord van de root gebruiker
 
 #-----------------------------------------------
 # Button names
@@ -87,6 +85,16 @@ Beïndigen
 About
 Over
 
+Continue as root
+Hervat als root
+
+Choose another directory
+Kies een andere directory
+
+Close
+Sluit
+
+
 #-----------------------------------------------
 # Other
 #-----------------------------------------------
@@ -133,51 +141,104 @@ Waarde
 Change
 Verander
 
+Password
+Wachtwoord
+
+
 #-----------------------------------------------
 # Messages
 #-----------------------------------------------
 
+[
 This will install %s to the following directory:
-%s zal in de volgende directory worden geïnstalleerd:
-
-This will install %s
-%s zal nu worden geïnstalleerd
-
+%s
 Continue?
+]
+[
+%s zal in de volgende directory worden geïnstalleerd:
+%s
 Doorgaan?
+]
+
+[
+This will install %s
+Continue?
+]
+[
+%s zal nu worden geïnstalleerd
+Doorgaan?
+]
 
 Installation of %s complete!
 Installatie van %s gereed!
 
+[
 Install commands are still running
-Installatie opdrachten zijn nog bezig
-
 If you abort now this may lead to a broken installation
-Als u nu stopt kan dit lijden tot een gebroken installatie
-
 Are you sure?
+]
+[
+Installatie opdrachten zijn nog bezig
+Als u nu stopt kan dit lijden tot een gebroken installatie
 Weet u het zeker?
+]
 
+[
 This will abort the installation
+Are you sure?
+]
+[
 Dit zal de installatie onderbreken
+Weet u het zeker?
+]
 
+[
 Root access is required to continue
-Root rechten zijn vereist om door te kunnen gaan
-
 Abort installation?
+]
+[
+Root rechten zijn vereist om door te kunnen gaan
 Installatie onderbreken?
+]
 
+[
 Incorrect password given for root user
-Onjuist wachtwoord gegeven voor root gebruiker
-
 Please retype
+]
+[
+Onjuist wachtwoord gegeven voor root gebruiker
 Type het opnieuw in
+]
 
+[
 Directory does not exist
-Directory bestaat niet
-
 Do you want to create it?
+]
+[
+Directory bestaat niet
 Wilt u het aanmaken?
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+[
+U heeft geen toegang om te schrijven naar deze directory.
+De bestanden kunnen worden uitgepakt als de root gebruiker,
+maar u moet dan wel straks het root wachtwoord geven.
+]
+
+[
+This installation requires root(administrator) privileges in order to continue
+Please enter the password of the root user
+]
+[
+Deze installatie heeft root(systeembeheerder) rechten nodig om door te kunnen gaan
+Type het wachtwoord van de root gebruiker
+]
+
 
 #-----------------------------------------------
 # Button bar (ncurses only)
@@ -223,11 +284,14 @@ Maak directory
 Error: %s
 Fout: %s
 
+[
 Could not use su to gain root access
-Kon su niet gebruiken om root rechten te krijgen
-
 Make sure you can use su(adding the current user to the wheel group may help)
+]
+[
+Kon su niet gebruiken om root rechten te krijgen
 Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen)
+]
 
 Could not create directory
 Kon directory niet maken
@@ -265,8 +329,6 @@ Kon installatie commando niet uitvoeren
 Could not execute installation commands (could not open pipe)
 Kon installatie opdrachten niet uitvoeren (kon geen pipe openen)
 
-You don't have write access for this directory
-U heeft geen toegang om te schrijven naar deze directory
 
 #-----------------------------------------------
 # Error messages for CDK widget creation
@@ -329,24 +391,11 @@ Manage Favorites
 Beheer Favorieten
 
 Show:
-Zichtbaar:
+Filter:
 
 Create new directory
 Maak een nieuwe directory
 
-
 #-----------------------------------------------
 # Put your own translations here
 #-----------------------------------------------
-
-Configuring bar for your system
-bar wordt voor uw systeem ingesteld
-
-Specifies the directory which shall be used to install bar too.
-Geeft de directory aan waar bar naar zal worden geïnstalleerd.
-
-Compiling bar
-bar wordt gecompileerd
-
-Installing files
-Bestanden worden geïnstalleerd

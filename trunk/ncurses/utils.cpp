@@ -34,7 +34,7 @@
 
 #include "ncurs.h"
 
-void EndProg()
+void EndProg(bool err)
 {
     if (CDKScreen)
     {
@@ -44,7 +44,7 @@ void EndProg()
     }
 
     MainEnd();
-    exit(EXIT_SUCCESS);
+    exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
 void throwerror(bool dialog, const char *error, ...)
@@ -58,17 +58,9 @@ void throwerror(bool dialog, const char *error, ...)
     va_end(v);
 
     if (dialog) WarningBox(txt);
-    
-    if (CDKScreen)
-    {
-        ButtonBar.Destroy();
-        destroyCDKScreen(CDKScreen);
-        endCDK();
-    }
 
     if (!dialog) { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
-    MainEnd();
-    exit(EXIT_FAILURE);
+    EndProg(true);
 }
 
 int ReadDir(const std::string &dir, char ***list)
