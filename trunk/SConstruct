@@ -146,7 +146,7 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
         shutil.copy(file, filesdir + file)
 
     print "Generate install config file..."
-    cfgfile = open(workdir + "/install.cfg", "w")
+    cfgfile = open(workdir + "install.cfg", "w")
     cfgfile.write("""
 appname Nixstaller
 archtype bzip2
@@ -156,8 +156,8 @@ languages english dutch
     cfgfile.close()
     
     print "Copying welcome message..."
-    shutil.copy("internal/intro.txt", workdir + "/welcome")
-    print "%s --> %s" % ("internal/intro.txt", workdir + "/welcome")
+    shutil.copy("internal/intro.txt", workdir + "welcome")
+    print "%s --> %s" % ("internal/intro.txt", workdir + "welcome")
 
     print "Generating installer"
     os.system("./geninstall.sh %s %s" % (workdir, outputfile))

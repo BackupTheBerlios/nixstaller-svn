@@ -53,7 +53,7 @@ err()
 
 checkargs()
 {
-    if [ -z $ARGS ]; then
+    if [ -z $1 ]; then
         echo "Usage: $0 <config dir> [ <installer name> ]"
         echo
         echo " <config dir>: The directory which holds the install config files"
@@ -146,11 +146,6 @@ remtemp()
     rm -rf ${CONFDIR}/tmp
 }
 
-sizefile()
-{
-    echo $1
-}
-
 packdir()
 {
     local PKCMD=
@@ -160,11 +155,12 @@ packdir()
             # Safe way to pack all files in the current directory, without including the current('.') dir
             tar cf - --exclude .. --exclude . * .?* | gzip -c9 > ${2}
             # Use awk to be able to use files with spaces and omit directory names
-            cat ${2} | gzip -cd | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
+            gzip -cd ${2} | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         bzip2 )
-            tar cf - --exclude .. --exclude . * .?* | bzip2 -9 > ${2}
-            cat ${2} | bzip2 -c | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
+            tar cf - --exclude .. --exclude . * .?*  | bzip2 -9 > ${2}
+            #cat ${2} | bzip2 -cq > blaat
+            bzip2 -cd ${2} | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         * )
             echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
@@ -181,19 +177,15 @@ packdir()
 echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
 
 # If target dir has trailing '/', remove it
-TEMP=${CONFDIR%*/}
-CONFDIR=$TEMP
+CONFDIR=${CONFDIR%*/}
 
 # If target dir doesn't have '/' insert the current dir to it
-if [ ! ${CONFDIR:0:1} = "/" ]; then
-    CONFDIR="${PWD}/${CONFDIR}"
-fi
+CONFDIR=`echo ${CONFDIR} | grep '^/' || echo ${PWD}/$CONFDIR`
 
-checkargs
+checkargs $*
 
-if [ -z ${OUTNAME} ]; then
-    OUTNAME="setup.sh"
-fi
+# Default installer name to 'setup.sh'
+OUTNAME=${OUTNAME:="setup.sh"}
 
 if [ ! -e ${CONFDIR}/install.cfg ]; then
     err "Error: no install.cfg found!"
