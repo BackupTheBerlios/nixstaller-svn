@@ -148,7 +148,7 @@ public:
     static void SUOutFunc(const char *s, void *p) { ((CExtractAsRootFunctor *)p)->Update(s); };
 };
 
-//#define RELEASE /* Enable on a release build */
+#define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };

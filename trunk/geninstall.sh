@@ -39,7 +39,7 @@ ARCHNAME_BASE="instarchive"
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
 CURRENT_ARCH=`uname -m`
-CONFDIR="${CURDIR}/$1"
+CONFDIR="$1"
 TARGET_OS=
 TARGET_ARCH=
 FRONTENDS=
@@ -180,11 +180,16 @@ packdir()
 # Convert iX86 --> x86
 echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
 
-checkargs
-
 # If target dir has trailing '/', remove it
 TEMP=${CONFDIR%*/}
 CONFDIR=$TEMP
+
+# If target dir doesn't have '/' insert the current dir to it
+if [ ! ${CONFDIR:0:1} = "/" ]; then
+    CONFDIR="${PWD}/${CONFDIR}"
+fi
+
+checkargs
 
 if [ -z ${OUTNAME} ]; then
     OUTNAME="setup.sh"
