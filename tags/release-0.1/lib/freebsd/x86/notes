@@ -1,0 +1,39 @@
+Notes for freebsd libs:
+
+Host system: x86 FreeBSD 6.0-STABLE
+
+JPEG:
+version: 6b
+notes: compiled from ports
+
+PNG:
+version: 1.2.8
+notes: compiled from ports
+
+FLTK:
+configure command: "CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ./configure --disable-localjpeg --disable-localpng"
+(configure script wouldn't detect png and jpeg libs otherwise)
+version: 1.1.7
+
+BZIP2:
+version: 1.0.3
+
+ZLIB:
+version: 1.2.3
+
+libarchive
+version: 1.02.034
+
+CDK:
+version: 5.0-20050424
+
+NCURSES:
+version: 5.4
+
+X11 (libX11, libXext)
+version: 6.8.2
+notes: compiled from ports
+
+GCC (libstdc++, libutil)
+version: 3.4.4
+notes: used from basesystem
