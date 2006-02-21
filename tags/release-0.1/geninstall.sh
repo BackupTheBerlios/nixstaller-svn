@@ -121,7 +121,7 @@ copytemp()
                 for LC in `ls -d libc* 2>/dev/null`
                 do
                     mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC
-                    cp $LC/$FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC/ && FROUND=1
+                    cp $LC/$FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC/ && FRFOUND=1
                 done
     
                 cp $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
