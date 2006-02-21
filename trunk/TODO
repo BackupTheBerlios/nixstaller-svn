@@ -15,13 +15,12 @@ FLTK FRONTEND
 DOCS
 - More credits?
 - General review
-- dist build targets
 
 FOR RELEASE
-- Put links to and merge the manual on site
 - Make bins
 - Make SCons installer
 - Create/upload the nixstaller installer and package
+- Create tag in svn
 
 
 ----------------------------- LATER ------------------------------------

@@ -67,7 +67,7 @@
 <br>
 
 <p> <h2><A href="#toc-intro" name="intro">Introduction</A></h2>
-This document describes how to use nixstaller to create installers for unix like systems. <br>
+This document describes how to use nixstaller to create installers for UNIX like systems. <br>
 If you can't wait you can read the <A href="#qstart">Quick start section</A>. <br>
 <br>
 <h3><A name="features">Features</A></h3>
@@ -125,7 +125,7 @@ The goal of nixstaller is to create an installation package. This package contai
    <li>A config file which tells what the installer should do.</li>
    <li>Language files for translations.</li>
    <li>Some (optional) text files containing the welcome message, the license agreement and a message after the installation is finished.</li>
-   <li>An archive containing the actual files that the installer should use for installation(ie. your program and its required files).</li>
+   <li>An archive containing the actual files that the installer should use for installation(IE. your program and its required files).</li>
    <li>Optional: an archive containing OS specific files that should be used for installation.</li>
    <li>A few required libs which couldn't be linked statically.</li>
  </ul>
@@ -230,7 +230,7 @@ There are 3 ways where the files can are extracted to:
 <strong>Install commands</strong><br>
 After all the files are extracted some (optional) shell commands can be called in this directory. A good example for this is to compile a package.<br>
 <br><em>Root access</em> <br>
-Some commands(ie 'make install') may require root privileges. There are 2 ways to specify this:<br>
+Some commands(IE 'make install') may require root privileges. There are 2 ways to specify this:<br>
 <ol>
    <li>Always: This command requires it, no matter what.</li>
    <li>Dependent: It depends on something else. Currently this can only be a directory specified by a parameter for this or another command. A good example to use this is 'make install' which depends on the --prefix parameter for configure. If the prefix points to a directory where the user doesn't have write access, 'make install' will need root access.</li>
@@ -239,7 +239,7 @@ Some commands(ie 'make install') may require root privileges. There are 2 ways t
 If a command requests root access a dialog will pop up asking the user to give the root password. The command will then be executed with 'su'.<br>
 <br>
 <em>Parameters</em><br>
-Some commands (ie 'configure') may need commandline parameters(such as --prefix). Parameters such as the '--prefix' one can be configured (ie --prefix=/usr/local). If you specify these parameters in the <A href="#config-file">config file</A> the user can do so during installation. A screen will pop up before the installation begins where the user can configure each parameter specified in the config file.<br>
+Some commands (IE 'configure') may need commandline parameters(such as --prefix). Parameters such as the '--prefix' one can be configured (IE --prefix=/usr/local). If you specify these parameters in the <A href="#config-file">config file</A> the user can do so during installation. A screen will pop up before the installation begins where the user can configure each parameter specified in the config file.<br>
 Currently there are 4 ways to configure a parameter:
 <ol>
    <li>One that can be simply enabled or disabled (if disabled the parameter won't be used when executing the install command).</li>
@@ -338,7 +338,7 @@ Specifies which frontends should be bundled with the install package. The name o
 <br>
 
 <strong>targetos</strong><br>
-Specifies which frontends for which Operating Systems should be included in the installer package. Each OS name should be the lowercased out from the 'uname' command(ie linux or netbsd). You can specify multiple OSes by separating them with a whitespace.<br>
+Specifies which frontends for which Operating Systems should be included in the installer package. Each OS name should be the lowercased out from the 'uname' command(IE linux or netbsd). You can specify multiple OSes by separating them with a whitespace.<br>
 <br>
 <samp>Usage: targetos OS1 OS2 OS3 ...</samp><br>
 <br>
@@ -591,7 +591,7 @@ You can use this if the parameter uses 'list' to define a value.<br>
 
 
 <p> <h2><A href="#toc-create" name="create">Creating an install package</A></h2>
-In the previous sections there is explained what the basics are, which config options there are etc. In this section there will be explained how to apply those.<br>
+In the previous sections is explained what the basics are, which config options there are etc. In this section will be explained how to apply those.<br>
 All the files which tell what the installer should do and how to package must be created go in a single directory. After this directory contains everything necessarily you can run a script with this directory as first argument to create the installer. <br>
 <br>
 <p> <h3><A name="dir-layout">Directory layout</A></h3>
@@ -630,7 +630,7 @@ Here is a table for how the directory layout should look like:<br>
     </tr>
     <tr>
       <td>lang/[langname]/</td>
-      <td>Directory containing translated files for [langname]. Replace [langname] with the lowercased name of the language(ie 'dutch').</td>
+      <td>Directory containing translated files for [langname]. Replace [langname] with the lowercased name of the language(IE 'dutch').</td>
     </tr>
     <tr>
       <td>lang/[langname]/welcome</td>
@@ -665,7 +665,7 @@ Here is a table for how the directory layout should look like:<br>
 <br>
 <br>
 
-The config file ('install.cfg') should always be present. There should also be at least one 'files_all' or 'files_[osname]' directory. The rest of the directories/files are optional.<br>
+The config file ('install.cfg') should always be present. The rest of the directories/files are optional.<br>
 
 <br>
 <strong>Example</strong><br>
@@ -818,7 +818,6 @@ The 'welcome' file can be the same as used by the <A href="#simple-tut">previous
 'bar' comes with no WARRENTY. Therefore you can't sue me if your machine explodes because of it.
 </samp>
 </pre>
-<br>
 Lets create the install.cfg file:<br>
 <pre><samp>
 appname bar
@@ -1002,12 +1001,12 @@ You can find some notes about what was done to compile some libraries on differe
 <br>
 
 <strong>Optimized libraries</strong><br>
-Never use libraries which are optimized for a specific platform(ie compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another CPU cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
+Never use libraries which are optimized for a specific platform(IE compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another CPU cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
 <br>
 
 <strong>Shared libraries</strong><br>
 Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked statically or their major version number isn't changed too often.<br>
-The C library, or libc, can't be linked statically since it needs runtime support. This can give problems for older/newer systems than what is used for the compilation of Nixstaller. A good example is FreeBSD, which seems to bump the major version of libc every major release(ie FreeBSD 5.X has libc.so.5, FreeBSD 6.X has libc.so.6). This way a binary linked on FreeBSD 6.X won't run on FreeBSD 5.X because it doesn't has libc.so.6.<br>
+The C library, or libc, can't be linked statically since it needs runtime support. This can give problems for older/newer systems than what is used for the compilation of Nixstaller. A good example is FreeBSD, which seems to bump the major version of libc every major release(IE FreeBSD 5.X has libc.so.5, FreeBSD 6.X has libc.so.6). This way a binary linked on FreeBSD 6.X won't run on FreeBSD 5.X because it doesn't has libc.so.6.<br>
 To solve this problem your installer can have binaries for each major libc version. Just compile the frontends on a system which uses the specific libc version and move the binaries from the 'bin/[osname]/[arch]/' directory to 'bin/[osname]/[arch]/libcX/' where the X should be replaced with the major version number of the libc major version.<br>
 When the user runs the installer, the start up script will try to use the right binaries automatically.<br>
 <br>
@@ -1037,6 +1036,9 @@ If you got SCons installed simply type <samp>scons</samp> in the main nixstaller
 To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
 The binaries will be automatically put in the bin/[osname]/[arch]/ directory(where [osname] is the lowercased output from 'uname', [arch] is x86 for Intel compatible or output from 'uname -m' for any other).<br>
 After you compiled the binaries it's recommended to strip all symbols from them to make them smaller. Simple type <samp>scons stripbins</samp> and every binary in the bin/ directory will be stripped.<br>
+<br>
+If you want to create an dist-archive you can type <samp>scons tardist</samp>. If you want to add more files you should add them in the SConstruct file.<br>
+<samp>scons setupdist</samp> will create an installer of all the dist files.<br>
 <br>
 
 <p> <h2><A href="#toc-licensecred" name="licensecred">Credits and license</A></h2>
@@ -1094,7 +1096,7 @@ Nixstaller is released under the GPlv2 license with an exception for CDK:<br>
 If you got any suggestions, questions and such you can reach me through the following ways:<br>
 <ul>
    <li> Send a email to rhelmus_AT_gmail.com</li>
-   <li> Use the <A href="http://nixstaller.berlios.de/forum/index.php">forums at my site</A> </li>
+   <li> Use the <A href="http://nixstaller.berlios.de/forum/index.php">online forums</A> </li>
    <li> Instant Message: rick_helmus8_AT_hotmail.com(MSN), 224332897(ICQ) or rickakame(AIM) </li>
  </ul>
 

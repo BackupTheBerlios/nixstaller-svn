@@ -6,20 +6,46 @@ import shutil
 import platform
 import tarfile
 
-distfiles_src = [
-'main/main.cpp',
-'main/main.h',
-'main/utils.cpp',
+# All the files for Nixstaller...If a directory is specified the whole directory(excluding dot files) will be copied.
+# By specifying as many files as possible you can be more sure unwanted files won't be copied.
+# --------------------------------------------------------------------------------------
+
+distfiles_user = [
+'docs/nixstaller.html',
+'docs/fltk.png',
+'docs/ncurs.png',
+'example/simple/install.cfg',
+'example/simple/welcome',
+'example/simple/files_all/foo.bin',
+'example/simple/files_all/README',
+'example/simple/lang/dutch/strings',
+'example/advanced/install.cfg',
+'example/advanced/welcome',
+'example/advanced/license',
+'example/advanced/files_all/bar.cpp',
+'example/advanced/files_all/configure',
+'example/advanced/files_all/README',
+'example/advanced/lang/dutch/strings',
+'example/advanced/lang/dutch/welcome',
+'example/scons/install.cfg',
+'example/scons/welcome',
+'example/scons/files_all/',
+'example/scons/lang/dutch/strings',
 'fltk/fltk.cpp',
 'fltk/fltk.h',
 'fltk/widgets.cpp',
-'ncurses/ncurs.cpp',
-'ncurses/ncurs.h',
-'ncurses/widgets.cpp',
-'ncurses/widgets.h',
-'ncurses/utils.cpp',
+'include/',
+'internal/about',
+'internal/startupinstaller.sh',
+'internal/intro.txt',
+'lang/dutch/strings',
+'lang/english/strings',
+'lib/freebsd/x86/',
+'lib/linux/x86/',
+'lib/netbsd/x86/',
 'libsu/COPYING',
 'libsu/CREDITS',
+'libsu/TODO',
 'libsu/libsu.h',
 'libsu/libtest.cpp',
 'libsu/LICENSE',
@@ -28,19 +54,25 @@ distfiles_src = [
 'libsu/SConstruct',
 'libsu/terminal.cpp',
 'libsu/utils.cpp',
-'SConstruct',
-'TODO'
-]
-
-# Bins are handled seperately with 'getallbins'
-distfiles_user = [
-'docs/nixstaller.html',
-'internal/about',
-'internal/startupinstaller.sh',
+'main/main.cpp',
+'main/main.h',
+'main/utils.cpp',
+'ncurses/ncurs.cpp',
+'ncurses/ncurs.h',
+'ncurses/widgets.cpp',
+'ncurses/widgets.h',
+'ncurses/utils.cpp',
+'COPYING',
+'geninstall.sh',
+'LICENSE',
 'makeself.sh',
 'makeself-header.sh',
-'geninstall.sh'
+'SConstruct',
+'TODO',
 ]
+
+# --------------------------------------------------------------------------------------
+
 
 def getallbins():
     # Traverse files, from http://effbot.org/librarybook/os-path.htm
@@ -60,7 +92,21 @@ def stripallbins():
     bins = getallbins()
     for file in bins:
         Execute("strip -s %s" % file)
-        
+
+# Copies whole directory, excluding dotfiles
+def copydir(dir, dest):
+    stack = [ dir ]
+    while stack:
+        directory = stack.pop()
+        if not os.path.exists(dest+directory):
+            os.makedirs(dest+directory)
+        for file in glob.glob(directory + '/*'):
+            if os.path.isdir(file):
+                stack.append(file)
+            else:
+                shutil.copy(file, dest+file)
+
+
 # Check if atleast one file exists from a given list
 def checklibexist(context, fname):
     context.Message('Checking for %s...' % fname)
@@ -116,8 +162,18 @@ if 'tardist' in COMMAND_LINE_TARGETS:
     stripallbins()
     archname = 'nixstaller-' + curnixstversion + '.tar.gz'
     tarredfile = tarfile.open(archname, 'w:gz')
-    for dfile in distfiles_src+distfiles_user+getallbins():
-        tarredfile.add(dfile)
+    for dfile in distfiles_user+getallbins():
+        if os.path.isdir(dfile):
+            stack = [ dfile ]
+            while stack:
+                directory = stack.pop()
+                for sfile in glob.glob(directory + '/*'):
+                    if os.path.isdir(sfile):
+                        stack.append(sfile)
+                    else:
+                        tarredfile.add(sfile)
+        else:
+            tarredfile.add(dfile)
     tarredfile.close()
     print "Generated %s" % archname
     Exit(0)
@@ -138,12 +194,15 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
         os.mkdir(filesdir)
 
     print "Copying all files to be installed..."
-    for file in distfiles_src+distfiles_user+getallbins():
+    for file in distfiles_user+getallbins():
         dir = filesdir + os.path.dirname(file)
         if not os.path.exists(dir):
             os.makedirs(dir)
 
-        shutil.copy(file, filesdir + file)
+        if os.path.isdir(file):
+            copydir(file, filesdir)
+        else:
+            shutil.copy(file, filesdir + file)
 
     print "Generate install config file..."
     cfgfile = open(workdir + "install.cfg", "w")
