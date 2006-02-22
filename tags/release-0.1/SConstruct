@@ -74,9 +74,12 @@ distfiles_user = [
 # --------------------------------------------------------------------------------------
 
 
-def getallbins():
+def getallbins(onlyforcuros):
     # Traverse files, from http://effbot.org/librarybook/os-path.htm
-    stack = ['bin/'+cur_os]
+    if onlyforcuros:
+        stack = ['bin/'+cur_os]
+    else:
+        stack = ['bin']
     bins = []
     while stack:
         directory = stack.pop()
@@ -89,7 +92,7 @@ def getallbins():
     return bins
 
 def stripallbins():
-    bins = getallbins()
+    bins = getallbins(True)
     for file in bins:
         Execute("strip -s %s" % file)
 
@@ -162,7 +165,7 @@ if 'tardist' in COMMAND_LINE_TARGETS:
     stripallbins()
     archname = 'nixstaller-' + curnixstversion + '.tar.gz'
     tarredfile = tarfile.open(archname, 'w:gz')
-    for dfile in distfiles_user+getallbins():
+    for dfile in distfiles_user+getallbins(False):
         if os.path.isdir(dfile):
             stack = [ dfile ]
             while stack:
@@ -194,7 +197,7 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
         os.mkdir(filesdir)
 
     print "Copying all files to be installed..."
-    for file in distfiles_user+getallbins():
+    for file in distfiles_user+getallbins(False):
         dir = filesdir + os.path.dirname(file)
         if not os.path.exists(dir):
             os.makedirs(dir)
