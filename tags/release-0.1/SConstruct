@@ -76,7 +76,7 @@ distfiles_user = [
 
 def getallbins():
     # Traverse files, from http://effbot.org/librarybook/os-path.htm
-    stack = ['bin']
+    stack = ['bin/'+cur_os]
     bins = []
     while stack:
         directory = stack.pop()
@@ -154,7 +154,7 @@ env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'
 curnixstversion = '0.1'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
-    print 'Stripping all binaries in the bin/ directory...'
+    print 'Stripping all binaries in the bin/%s directory...' % cur_os
     stripallbins()
     Exit(0)
 
