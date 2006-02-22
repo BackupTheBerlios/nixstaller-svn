@@ -1,6 +1,4 @@
 OVERALL
-- "/home/rick/src/nixstaller/trunk/makeself.sh: line 312: echo: write error: Bad file descriptor"
-- bins for fbsd 5.X
 
 
 MAIN
@@ -20,7 +18,6 @@ FOR RELEASE
 - Make bins
 - Make SCons installer
 - Create/upload the nixstaller installer and package
-- Create tag in svn
 
 
 ----------------------------- LATER ------------------------------------

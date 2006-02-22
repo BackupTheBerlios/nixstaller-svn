@@ -246,8 +246,8 @@ void CSelectDirScreen::OpenDirChooser(void)
 
     char *dir = const_cast<char *>(m_pDirChooser->value());
     if (!dir || !dir[0])
-        dir = "/";
-    
+        return;
+        
     InstallInfo.dest_dir = dir;
     m_pSelDirInput->value(dir);
 }
