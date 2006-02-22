@@ -10,7 +10,7 @@ import tarfile
 # By specifying as many files as possible you can be more sure unwanted files won't be copied.
 # --------------------------------------------------------------------------------------
 
-distfiles_user = [
+distfiles = [
 'docs/nixstaller.html',
 'docs/fltk.png',
 'docs/ncurs.png',
@@ -68,7 +68,6 @@ distfiles_user = [
 'makeself.sh',
 'makeself-header.sh',
 'SConstruct',
-'TODO',
 ]
 
 # --------------------------------------------------------------------------------------
@@ -165,7 +164,7 @@ if 'tardist' in COMMAND_LINE_TARGETS:
     stripallbins()
     archname = 'nixstaller-' + curnixstversion + '.tar.gz'
     tarredfile = tarfile.open(archname, 'w:gz')
-    for dfile in distfiles_user+getallbins(False):
+    for dfile in distfiles+getallbins(False):
         if os.path.isdir(dfile):
             stack = [ dfile ]
             while stack:
@@ -197,7 +196,7 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
         os.mkdir(filesdir)
 
     print "Copying all files to be installed..."
-    for file in distfiles_user+getallbins(False):
+    for file in distfiles+getallbins(False):
         dir = filesdir + os.path.dirname(file)
         if not os.path.exists(dir):
             os.makedirs(dir)
@@ -214,6 +213,7 @@ appname Nixstaller
 archtype bzip2
 installdir select
 languages english dutch
+targetos linux freebsd netbsd
 """)
     cfgfile.close()
     
