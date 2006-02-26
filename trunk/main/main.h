@@ -148,7 +148,23 @@ public:
     static void SUOutFunc(const char *s, void *p) { ((CExtractAsRootFunctor *)p)->Update(s); };
 };
 
-#define RELEASE /* Enable on a release build */
+class CRegister
+{
+    char *m_szFileName;
+
+    const char *GetFileName(void);
+    
+public:
+    CRegister(void) : m_szFileName(NULL) { };
+    
+    bool IsInstalled(bool checkver);
+    void RemoveFromRegister(void);
+    void RegisterInstall(void);
+};
+
+extern CRegister Register;
+
+//#define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };

@@ -790,6 +790,11 @@ void CInstallFilesScreen::Install()
         SetProgress(percent);
     }
 
+    AppendText("Registering installation...");
+    Register.RegisterInstall();
+    Register.RemoveFromRegister();
+    AppendText("done\n");
+
     SetProgress(100);
     InstallFiles = false;
     fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());

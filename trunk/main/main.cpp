@@ -183,7 +183,6 @@ bool ReadConfig()
                 {
                     std::getline(strstrm, tmp);
                     pParamEntry->options.push_back(EatWhite(tmp));
-
                 }
                 else if (str == "type")
                 {
@@ -266,7 +265,7 @@ bool ReadConfig()
                 InstallInfo.program_name = EatWhite(tmp);
 
             }
-            else if (str == "version") // unused
+            else if (str == "version")
             {
                 std::getline(strstrm, tmp);
                 InstallInfo.version = EatWhite(tmp);
