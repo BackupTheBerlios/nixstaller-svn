@@ -296,7 +296,6 @@ Fl_Group *CSetParamsScreen::Create()
     y += 120;
     m_pDefOutput = new Fl_Output(x, y, iDescW, 25, "Default");
     m_pDefOutput->align(FL_ALIGN_TOP);
-    m_pDefOutput->value("Test");
     
     x=100;
     y+=40;
@@ -792,7 +791,6 @@ void CInstallFilesScreen::Install()
 
     AppendText("Registering installation...");
     Register.RegisterInstall();
-    Register.RemoveFromRegister();
     AppendText("done\n");
 
     SetProgress(100);

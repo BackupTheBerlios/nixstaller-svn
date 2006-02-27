@@ -1,5 +1,5 @@
 OVERALL
-- Package version?
+- Check if version is specified in install.cfg
 - Translate param names and param choices
 - Load english text strings before language has been selected
 - Check for tar with gzip/bzip on other platforms(Solaris...)
@@ -8,7 +8,7 @@ OVERALL
 
 
 MAIN
-
+- 
 
 NCURSES FRONTEND
 - Back button?

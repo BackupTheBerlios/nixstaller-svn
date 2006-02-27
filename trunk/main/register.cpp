@@ -123,7 +123,6 @@ void CRegister::RemoveFromRegister(void)
     while(infile)
     {
         std::getline(infile, line);
-        debugline("line : %s\n", line.c_str());
 
         if (line.compare(0, 5, "name ") == 0)
         {
@@ -148,7 +147,6 @@ void CRegister::RemoveFromRegister(void)
         return;
 
     outfile << buffer;
-    debugline(buffer.c_str());
 }
 
 void CRegister::RegisterInstall(void)
@@ -156,11 +154,45 @@ void CRegister::RegisterInstall(void)
     if (IsInstalled(true))
         return;
     
-    std::ofstream file(GetFileName(), std::ofstream::app);
+    std::ofstream file(GetFileName());
     
     if (!file)
         throwerror(false, "Error while opening register file");
 
     file << "name " + InstallInfo.program_name + "\n";
     file << "version " + InstallInfo.version + "\n";
+}
+
+void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
+{
+    std::ifstream file(GetFileName());
+    std::string line, str;
+    app_entry_s *entry = NULL;
+    
+    while(file)
+    {
+        std::getline(file, line);
+        std::istringstream strstrm(line);
+
+        if (!(strstrm >> str))
+            break;
+
+        if (str == "name")
+        {
+            if (entry)
+                AppVec->push_back(entry);
+            entry = new app_entry_s;
+            std::getline(strstrm, entry->name);
+        }
+        else if (!entry); // Don't do anything when no current entry has been made yet
+        else if (str == "version")
+            std::getline(strstrm, entry->version);
+        else if (str == "description") // UNDONE: need multiline support
+            std::getline(strstrm, entry->description);
+        else if (str == "url")
+            std::getline(strstrm, entry->url);
+    }
+    
+    if (entry)
+        AppVec->push_back(entry);
 }

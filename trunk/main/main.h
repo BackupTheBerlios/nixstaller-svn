@@ -86,6 +86,11 @@ struct arch_size_entry_s
     arch_size_entry_s(void) : totalsize(1) { };
 };
 
+struct app_entry_s
+{
+    std::string name, version, description, url;
+};
+
 extern install_info_s InstallInfo;
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
@@ -160,6 +165,7 @@ public:
     bool IsInstalled(bool checkver);
     void RemoveFromRegister(void);
     void RegisterInstall(void);
+    void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
 };
 
 extern CRegister Register;

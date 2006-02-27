@@ -236,4 +236,16 @@ public:
     virtual bool Activate(void);
 };
 
+
+class CAppManager
+{
+    Fl_Window *m_pMainWindow;
+    Fl_Button *m_pAboutButton, *m_pInfoButton, *m_pDeinstallButton, *m_pExitButton;
+    Fl_Hold_Browser *m_pAppList;
+    std::vector<app_entry_s *> m_AppVec;
+    
+public:
+    CAppManager(char **argv);
+};
+
 #endif
