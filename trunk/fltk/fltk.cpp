@@ -162,7 +162,7 @@ void CreateMainWindow(char **argv)
     XKBControl.bell_duration = 0;
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
 
-    if (0) { // UNDONE: Seperate Installer and Manager
+    if (!strcmp(argv[1], "inst")) { // UNDONE: Seperate Installer and Manager
     if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(InstallInfo.dest_dir))
         throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
                                     "However you don't have read permissions to this directory\n"

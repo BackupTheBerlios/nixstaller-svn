@@ -155,12 +155,15 @@ public:
 
 class CRegister
 {
-    char *m_szFileName;
-
-    const char *GetFileName(void);
+    char *m_szConfDir;
+    app_entry_s *m_pAppEntry;
+    
+    const char *GetAppRegDir(void);
+    const char *GetConfFile(const char *progname);
+    app_entry_s *GetAppEntry(const char *progname);
     
 public:
-    CRegister(void) : m_szFileName(NULL) { };
+    CRegister(void) : m_szConfDir(NULL), m_pAppEntry(NULL) { };
     
     bool IsInstalled(bool checkver);
     void RemoveFromRegister(void);

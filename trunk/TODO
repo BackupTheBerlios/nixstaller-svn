@@ -8,7 +8,8 @@ OVERALL
 
 
 MAIN
-- 
+- Better error handling for register
+
 
 NCURSES FRONTEND
 - Back button?

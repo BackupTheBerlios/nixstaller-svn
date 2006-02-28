@@ -37,137 +37,51 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <dirent.h>
 
 #include "main.h"
 
 CRegister Register;
 
-const char *CRegister::GetFileName()
+const char *CRegister::GetAppRegDir()
 {
-    if (!m_szFileName)
+    if (!m_szConfDir)
     {
         const char *home = getenv("HOME");
         if (!home)
             throwerror(false, "Couldn't find out your home directory!");
         
-        if (mkdir(CreateText("%s/.nixstaller", home), (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
+        m_szConfDir = CreateText("%s/.nixstaller", home);
+        
+        if (mkdir(m_szConfDir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
             throwerror(false, "Could not create nixstaller config directory!(%s)", strerror(errno));
-
-        m_szFileName = CreateText("%s/.nixstaller/register", home);
     }
     
-    return m_szFileName;
+    return m_szConfDir;
 }
 
-bool CRegister::IsInstalled(bool checkver)
+const char *CRegister::GetConfFile(const char *progname)
 {
-    std::ifstream file(GetFileName());
+    const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
+    if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
+            throwerror(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
+    return CreateText("%s/config", dir);
+}
+
+app_entry_s *CRegister::GetAppEntry(const char *progname)
+{
+    if (m_pAppEntry)
+        return m_pAppEntry;
+        
+    const char *filename = GetConfFile(progname);
+    if (!FileExists(filename))
+        return NULL;
+
+    m_pAppEntry = new app_entry_s;
+    m_pAppEntry->name = progname;
+    
+    std::ifstream file(filename);
     std::string line, str;
-    
-    while (file)
-    {
-        if (!std::getline(file, line))
-            break;
-
-        std::istringstream strstrm(line);
-
-        if (!(strstrm >> str))
-            break;
-
-        if (str.compare("name"))
-            continue;
-
-        std::getline(strstrm, str);
-        EatWhite(str);
-
-        if (str == InstallInfo.program_name)
-        {
-            if (checkver)
-            {
-                if (!std::getline(file, line))
-                    break;
-
-                std::istringstream strstrm(line);
-
-                if (!(strstrm >> str))
-                    break;
-
-                if (str.compare("version"))
-                    break;
-
-                std::getline(strstrm, str);
-                if (EatWhite(str) == InstallInfo.version)
-                    return true;
-                
-                break;
-            }
-            else
-                return true;
-        }
-    }
-
-    return false;
-}
-
-void CRegister::RemoveFromRegister(void)
-{
-    if (!IsInstalled(true))
-        return;
-
-    std::ifstream infile(GetFileName());
-    std::string buffer, line;
-    
-    if (!infile)
-        return;
-    
-    while(infile)
-    {
-        std::getline(infile, line);
-
-        if (line.compare(0, 5, "name ") == 0)
-        {
-            if (line.compare(5, std::string::npos, InstallInfo.program_name) == 0)
-            {
-                std::string tmp;
-                std::getline(infile, tmp);
-                if (!tmp.compare(0, 8, "version ") && !tmp.compare(8, std::string::npos, InstallInfo.version))
-                    continue;
-
-                line += "\n" + tmp;
-            }
-        }
-        buffer += line + "\n";
-    }
-
-    infile.close();
-    
-    std::ofstream outfile(GetFileName());
-    
-    if (!outfile)
-        return;
-
-    outfile << buffer;
-}
-
-void CRegister::RegisterInstall(void)
-{
-    if (IsInstalled(true))
-        return;
-    
-    std::ofstream file(GetFileName());
-    
-    if (!file)
-        throwerror(false, "Error while opening register file");
-
-    file << "name " + InstallInfo.program_name + "\n";
-    file << "version " + InstallInfo.version + "\n";
-}
-
-void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
-{
-    std::ifstream file(GetFileName());
-    std::string line, str;
-    app_entry_s *entry = NULL;
     
     while(file)
     {
@@ -177,22 +91,93 @@ void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
         if (!(strstrm >> str))
             break;
 
-        if (str == "name")
-        {
-            if (entry)
-                AppVec->push_back(entry);
-            entry = new app_entry_s;
-            std::getline(strstrm, entry->name);
-        }
-        else if (!entry); // Don't do anything when no current entry has been made yet
-        else if (str == "version")
-            std::getline(strstrm, entry->version);
+        if (str == "version")
+            std::getline(strstrm, m_pAppEntry->version);
         else if (str == "description") // UNDONE: need multiline support
-            std::getline(strstrm, entry->description);
+            std::getline(strstrm, m_pAppEntry->description);
         else if (str == "url")
-            std::getline(strstrm, entry->url);
+            std::getline(strstrm, m_pAppEntry->url);
     }
+    return m_pAppEntry;
+}
+
+bool CRegister::IsInstalled(bool checkver)
+{
+    if (!FileExists(GetConfFile(InstallInfo.program_name.c_str())))
+        return false;
     
-    if (entry)
-        AppVec->push_back(entry);
+    app_entry_s *pApp = GetAppEntry(InstallInfo.program_name.c_str());
+    
+    if (!pApp)
+        return false;
+    
+    return (!checkver || (pApp->version == InstallInfo.version));
+}
+
+void CRegister::RemoveFromRegister(void)
+{
+    if (!IsInstalled(true))
+        return;
+
+    if (InstallInfo.program_name.empty())
+        return; // Otherwise we delete the main config directory ;)
+        
+    system(CreateText("rm -rf %s/%s", GetAppRegDir(), InstallInfo.program_name.c_str())); // Lazy way to remove whole dir   
+}
+
+void CRegister::RegisterInstall(void)
+{
+    if (IsInstalled(true))
+        return;
+    
+    std::ofstream file(GetConfFile(InstallInfo.program_name.c_str()));
+    
+    if (!file)
+        throwerror(false, "Error while opening register file");
+
+    file << "version " + InstallInfo.version + "\n";
+    // UNDONE: Write description and url too
+}
+
+void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
+{
+    struct dirent *dirstruct;
+    struct stat filestat;
+    DIR *dp = opendir(GetAppRegDir());
+
+    if (!dp)
+        return;
+
+    char curdir[1024];
+    if (!getcwd(curdir, sizeof(curdir))) throwerror(true, "Could not read current directory");
+    
+    // Changing directory temporary makes things easier
+    if (chdir(GetAppRegDir()) != 0)
+        throwerror(true, "Could not open directory '%s'", GetAppRegDir());
+        
+    while ((dirstruct = readdir(dp)) != 0)
+    {
+        if (lstat(dirstruct->d_name, &filestat) != 0)
+        {
+            debugline("dir err: %s\n", strerror(errno));
+            continue;
+        }
+        
+        if (!(filestat.st_mode & S_IFDIR))
+            continue; // Has to be a directory...
+
+        if (!strcmp(dirstruct->d_name, "."))
+            continue;
+
+        if (!strcmp(dirstruct->d_name, ".."))
+            continue;
+        
+        app_entry_s *pApp = GetAppEntry(dirstruct->d_name);
+        if (pApp)
+            AppVec->push_back(pApp);
+    }
+
+    closedir (dp);
+    
+    chdir(curdir); // Return back to original directory
 }
