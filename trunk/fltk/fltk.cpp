@@ -123,7 +123,7 @@ int main(int argc, char **argv)
     }
 
     //CreateMainWindow(argv);
-    if (argc && !strcmp(argv[1], "inst"))
+    if ((argc > 1) && !strcmp(argv[1], "inst"))
         CInstaller inst(argv);
     else
         CAppManager app(argv);

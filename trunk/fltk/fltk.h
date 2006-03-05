@@ -56,6 +56,7 @@
 #include <FL/Fl_Secret_Input.H>
 #include <FL/Fl_Multiline_Output.H>
 #include <FL/Fl_Progress.H>
+#include <FL/Fl_Browser.H>
 #include <FL/Fl_Hold_Browser.H>
 
 #define MAIN_WINDOW_W 600
@@ -118,13 +119,18 @@ public:
 
 class CAppManager: public CFLTKBase
 {
-    Fl_Button *m_pInfoButton, *m_pDeinstallButton, *m_pExitButton;
+    Fl_Button *m_pDeinstallButton, *m_pExitButton;
+    Fl_Browser *m_pInfoOutput;
     Fl_Hold_Browser *m_pAppList;
     std::vector<app_entry_s *> m_AppVec;
+    app_entry_s *m_pCurrentAppEntry;
     
 public:
     CAppManager(char **argv);
     
+    void UpdateInfo(bool init);
+    
+    static void AppListCB(Fl_Widget *, void *p) { ((CAppManager *)p)->UpdateInfo(false); };
     static void ExitCB(Fl_Widget *, void *) { EndProg(); };
 };
 

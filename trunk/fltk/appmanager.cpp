@@ -39,19 +39,39 @@ CAppManager::CAppManager(char **argv)
 {
     m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller - App Manager");
 
-    m_pInfoButton = new Fl_Button((MAIN_WINDOW_W-140), 40, 120, 25, "Info");
+    m_pInfoOutput = new Fl_Browser((MAIN_WINDOW_W-140), 40, 120, 250, "Info");
+    m_pInfoOutput->column_char('\a');
+    int cwidths[2] = { 75, 50 };
+    m_pInfoOutput->column_widths(cwidths);
+
+    m_pDeinstallButton = new Fl_Button((MAIN_WINDOW_W-140), m_pInfoOutput->h() + 60, 120, 25, "Deinstall");
     
-    m_pDeinstallButton = new Fl_Button((MAIN_WINDOW_W-140), 80, 120, 25, "Deinstall");
-    
-    m_pExitButton = new Fl_Button((MAIN_WINDOW_W-140), 120, 120, 25, "Exit");
+    m_pExitButton = new Fl_Button((MAIN_WINDOW_W-140), (MAIN_WINDOW_H-40), 120, 25, "Exit");
     m_pExitButton->callback(ExitCB);
     
-    m_pAppList = new Fl_Hold_Browser(20, 40, m_pInfoButton->x()-40, (MAIN_WINDOW_H-60), "Installed applications");
+    m_pAppList = new Fl_Hold_Browser(20, 40, m_pInfoOutput->x()-40, (MAIN_WINDOW_H-60), "Installed applications");
     m_pAppList->align(FL_ALIGN_TOP);
     Register.GetRegisterEntries(&m_AppVec);
     for (std::vector<app_entry_s *>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++)
         m_pAppList->add(MakeCString((*it)->name));
+    m_pAppList->callback(AppListCB, this);
+    m_pAppList->value(1);
     
+    UpdateInfo(true);
+
     m_pMainWindow->end();
     Run(argv);
+}
+
+void CAppManager::UpdateInfo(bool init)
+{
+    if (init)
+        m_pCurrentAppEntry = m_AppVec.front();
+    else
+        m_pCurrentAppEntry = m_AppVec.at(m_pAppList->value()-1);
+    
+    m_pInfoOutput->add(CreateText("@bName\a:%s", m_pCurrentAppEntry->name.c_str()));
+    m_pInfoOutput->add(CreateText("@bVersion\a:%s", m_pCurrentAppEntry->version.c_str()));
+    m_pInfoOutput->add(CreateText("@bWeb site\a:%s", m_pCurrentAppEntry->url.c_str()));
+    m_pInfoOutput->add(CreateText("@bDescription\a:%s", m_pCurrentAppEntry->description.c_str()));
 }
