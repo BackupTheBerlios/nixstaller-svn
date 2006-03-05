@@ -315,7 +315,7 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cp
                        'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
 
 # Builds fltk frontend
-fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/widgets.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'),
+fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'),
                    LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 # Default to all

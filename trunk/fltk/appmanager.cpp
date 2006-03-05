@@ -39,22 +39,19 @@ CAppManager::CAppManager(char **argv)
 {
     m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller - App Manager");
 
-    m_pAboutButton = new Fl_Button((MAIN_WINDOW_W-80), 5, 60, 12, "About");
-    m_pAboutButton->labelsize(10);
-//    pAboutButton->callback(ShowAboutCB, 0);
-
     m_pInfoButton = new Fl_Button((MAIN_WINDOW_W-140), 40, 120, 25, "Info");
     
     m_pDeinstallButton = new Fl_Button((MAIN_WINDOW_W-140), 80, 120, 25, "Deinstall");
     
     m_pExitButton = new Fl_Button((MAIN_WINDOW_W-140), 120, 120, 25, "Exit");
+    m_pExitButton->callback(ExitCB);
     
     m_pAppList = new Fl_Hold_Browser(20, 40, m_pInfoButton->x()-40, (MAIN_WINDOW_H-60), "Installed applications");
-    m_pAppList->align(FL_ALIGN_TOP);   
+    m_pAppList->align(FL_ALIGN_TOP);
     Register.GetRegisterEntries(&m_AppVec);
     for (std::vector<app_entry_s *>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++)
         m_pAppList->add(MakeCString((*it)->name));
     
     m_pMainWindow->end();
-    m_pMainWindow->show(1, argv);
+    Run(argv);
 }

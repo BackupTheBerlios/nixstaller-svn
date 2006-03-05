@@ -63,18 +63,79 @@
 
 void UpdateLanguage(void);
 
-extern Fl_Button *pCancelButton;
+/*extern Fl_Button *pCancelButton;
 extern Fl_Button *pPrevButton;
 extern Fl_Button *pNextButton;
-extern bool InstallFiles;
+extern bool InstallFiles;*/
+
+class CBaseScreen;
+        
+class CFLTKBase
+{
+    Fl_Window *m_pAboutWindow;
+    Fl_Return_Button *m_pAboutOKButton;
+    
+protected:
+    Fl_Window *m_pMainWindow;
+    Fl_Button *m_pAboutButton;
+
+    void Run(char **argv) { m_pMainWindow->show(1, argv); Fl::run(); };
+
+public:
+    CFLTKBase(void);
+    virtual ~CFLTKBase(void) { };
+
+    virtual void UpdateLanguage(void);
+    void ShowAbout(bool show);
+
+    static void AboutOKCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(false); };
+    static void ShowAboutCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(true); };
+};
+
+class CInstaller: public CFLTKBase
+{
+    Fl_Wizard *m_pWizard;
+    std::list<CBaseScreen *> m_ScreenList;
+    
+public:
+    bool m_bInstallFiles;
+    Fl_Button *m_pCancelButton;
+    Fl_Button *m_pPrevButton;
+    Fl_Button *m_pNextButton;
+
+    CInstaller(char **argv);
+    virtual ~CInstaller(void);
+
+    virtual void UpdateLanguage(void);
+
+    void Prev(void);
+    void Next(void);
+
+    static void WizCancelCB(Fl_Widget *, void *p);
+    static void WizPrevCB(Fl_Widget *, void *p) { ((CInstaller *)p)->Prev(); };
+    static void WizNextCB(Fl_Widget *, void *p) { ((CInstaller *)p)->Next(); };
+};
+
+class CAppManager: public CFLTKBase
+{
+    Fl_Button *m_pInfoButton, *m_pDeinstallButton, *m_pExitButton;
+    Fl_Hold_Browser *m_pAppList;
+    std::vector<app_entry_s *> m_AppVec;
+    
+public:
+    CAppManager(char **argv);
+    
+    static void ExitCB(Fl_Widget *, void *) { EndProg(); };
+};
 
 class CBaseScreen
 {
 protected:
     Fl_Group *m_pGroup;
+    CInstaller *m_pOwner;
     
 public:
-    CBaseScreen(void) : m_pGroup(NULL) { };
+    CBaseScreen(CInstaller *owner) : m_pGroup(NULL), m_pOwner(owner) { };
     virtual ~CBaseScreen(void) { };
     
     virtual Fl_Group *Create(void) = NULL;
@@ -90,6 +151,7 @@ class CLangScreen: public CBaseScreen
     Fl_Choice *m_pChoiceMenu;
     
 public:
+    CLangScreen(CInstaller *owner) : CBaseScreen(owner) { };
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
     virtual bool Activate(void);
@@ -106,7 +168,7 @@ class CWelcomeScreen: public CBaseScreen
     bool m_bHasText;
     
 public:
-    CWelcomeScreen(void) : CBaseScreen(), m_bHasText(false) { };
+    CWelcomeScreen(CInstaller *owner) : CBaseScreen(owner), m_bHasText(false) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
@@ -121,15 +183,16 @@ class CLicenseScreen: public CBaseScreen
     bool m_bHasText;
     
 public:
-    CLicenseScreen(void) : CBaseScreen(), m_bHasText(false) { };
+    CLicenseScreen(CInstaller *owner) : CBaseScreen(owner), m_bHasText(false) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual bool Prev(void) { pNextButton->activate(); return true; };
+    virtual bool Prev(void) { m_pOwner->m_pNextButton->activate(); return true; };
     virtual bool Activate(void);
     
-    static void LicenseCheckCB(Fl_Widget *w, void *)
-                { (((Fl_Button*)w)->value())?pNextButton->activate():pNextButton->deactivate(); };
+    void LicenseCheck(bool on) { (on)?m_pOwner->m_pNextButton->activate():m_pOwner->m_pNextButton->deactivate(); };
+        
+    static void LicenseCheckCB(Fl_Widget *w, void *p) { ((CLicenseScreen *)p)->LicenseCheck(((Fl_Button*)w)->value()); };
 };
 
 class CSelectDirScreen: public CBaseScreen
@@ -140,7 +203,7 @@ class CSelectDirScreen: public CBaseScreen
     Fl_Output *m_pSelDirInput;
     
 public:
-    CSelectDirScreen(void) : CBaseScreen(), m_pDirChooser(NULL) { };
+    CSelectDirScreen(CInstaller *owner) : CBaseScreen(owner), m_pDirChooser(NULL) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
@@ -164,7 +227,7 @@ class CSetParamsScreen: public CBaseScreen
     param_entry_s *m_pCurrentParamEntry;
     
 public:
-    CSetParamsScreen(void) : CBaseScreen(), m_pDirChooser(NULL), m_pCurrentParamEntry(NULL) { };
+    CSetParamsScreen(CInstaller *owner) : CBaseScreen(owner), m_pDirChooser(NULL), m_pCurrentParamEntry(NULL) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
@@ -200,7 +263,7 @@ protected:
     void ClearPassword(void);
     
 public:
-    CInstallFilesScreen(void) : CBaseScreen(), m_szPassword(NULL) { };
+    CInstallFilesScreen(CInstaller *owner) : CBaseScreen(owner), m_szPassword(NULL) { };
     virtual ~CInstallFilesScreen(void) { CleanPasswdString(m_szPassword); };
     
     virtual Fl_Group *Create(void);
@@ -214,7 +277,6 @@ public:
     void SetProgress(int percent) { m_pProgress->value(percent); };
     void SetPassword(bool unset);
     
-    static void stat_inst(void *p) { if (InstallFiles) ((CInstallFilesScreen *)p)->Install(); };
     static void SUUpdateProgress(int percent, void *p);
     static void SUUpdateText(const std::string &str, void *p);
     static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesScreen *)p)->AppendText(msg); Fl::flush(); };
@@ -229,23 +291,11 @@ class CFinishScreen: public CBaseScreen
     bool m_bHasText;
     
 public:
-    CFinishScreen(void) : CBaseScreen(), m_bHasText(false) { };
+    CFinishScreen(CInstaller *owner) : CBaseScreen(owner), m_bHasText(false) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual bool Activate(void);
-};
-
-
-class CAppManager
-{
-    Fl_Window *m_pMainWindow;
-    Fl_Button *m_pAboutButton, *m_pInfoButton, *m_pDeinstallButton, *m_pExitButton;
-    Fl_Hold_Browser *m_pAppList;
-    std::vector<app_entry_s *> m_AppVec;
-    
-public:
-    CAppManager(char **argv);
 };
 
 #endif

@@ -35,6 +35,134 @@
 #include "fltk.h"
 
 // -------------------------------------
+// Main installer screen
+// -------------------------------------
+
+CInstaller::CInstaller(char **argv) : m_bInstallFiles(false)
+{
+    // Lazy but handy macro :)
+    #define MCreateWidget(w) { widget = new w(this); \
+                               group = widget->Create(); \
+                               if (group) { m_pWizard->add(group); m_ScreenList.push_back(widget); } }
+                               
+    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(InstallInfo.dest_dir))
+        throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
+                "However you don't have read permissions to this directory\n"
+                        "Please restart the installer as a user who does or as the root user",
+                InstallInfo.dest_dir.c_str()));
+
+    m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
+    m_pMainWindow->callback(WizCancelCB);
+
+    m_pCancelButton = new Fl_Button(20, (MAIN_WINDOW_H-30), 120, 25, "Cancel");
+    m_pCancelButton->callback(WizCancelCB, this);
+    m_pPrevButton = new Fl_Button(MAIN_WINDOW_W-280, (MAIN_WINDOW_H-30), 120, 25, "@<-    Back");
+    m_pPrevButton->callback(WizPrevCB, this);
+    m_pPrevButton->deactivate(); // First screen, no go back button yet
+    m_pNextButton = new Fl_Button(MAIN_WINDOW_W-140, (MAIN_WINDOW_H-30), 120, 25, "Next    @->");
+    m_pNextButton->callback(WizNextCB, this);
+    m_pAboutButton = new Fl_Button((MAIN_WINDOW_W-80), 5, 60, 12, "About");
+    m_pAboutButton->labelsize(10);
+    m_pAboutButton->callback(ShowAboutCB, this);
+
+    m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    
+    CBaseScreen *widget;
+    Fl_Group *group;
+    
+    MCreateWidget(CLangScreen);
+    MCreateWidget(CWelcomeScreen);
+    MCreateWidget(CLicenseScreen);
+    
+    if (InstallInfo.dest_dir_type == DEST_SELECT)
+    {
+        MCreateWidget(CSelectDirScreen);
+    }
+    
+    MCreateWidget(CSetParamsScreen);
+    MCreateWidget(CInstallFilesScreen);
+    MCreateWidget(CFinishScreen);
+    
+    if (!m_ScreenList.front()->Activate())
+        Next();
+    
+    m_pMainWindow->end();
+    Run(argv);
+}
+
+CInstaller::~CInstaller()
+{
+    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+        delete *p;
+}
+
+void CInstaller::UpdateLanguage(void)
+{
+    // Update main buttons
+    m_pCancelButton->label(GetTranslation("Cancel"));
+    m_pPrevButton->label(CreateText("@<-    %s", GetTranslation("Back")));
+    m_pNextButton->label(CreateText("%s    @->", GetTranslation("Next")));
+    
+    // Update all screens
+    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++) (*p)->UpdateLang();
+}
+
+void CInstaller::WizCancelCB(Fl_Widget *, void *p)
+{
+    CInstaller *pInst = (CInstaller *)p;
+    
+    char *msg;
+    if (pInst->m_bInstallFiles)
+        msg = GetTranslation("Install commands are still running\n"
+                "If you abort now this may lead to a broken installation\n"
+                "Are you sure?");
+    else
+        msg = GetTranslation("This will abort the installation\nAre you sure?");
+    
+    if (fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL))
+        EndProg();
+}
+
+void CInstaller::Prev()
+{
+    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+    {
+        if ((*p)->GetGroup() == m_pWizard->value())
+        {
+            if (p == m_ScreenList.begin()) break;
+            if ((*p)->Prev())
+            {
+                p--;
+                m_pWizard->prev();
+                while (!(*p)->Activate() && (p != m_ScreenList.begin())) { m_pWizard->prev(); p--; }
+            }
+            break;
+        }
+    }
+}
+
+void CInstaller::Next()
+{
+    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+    {
+        if ((*p)->GetGroup() == m_pWizard->value())
+        {
+            if (p == m_ScreenList.end()) break;
+            if ((*p)->Next())
+            {
+                p++;
+                m_pWizard->next();
+                while ((p != m_ScreenList.end()) && (!(*p)->Activate())) { m_pWizard->next(); p++; }
+
+                if (p == m_ScreenList.end())
+                    EndProg();
+            }
+            break;
+        }
+    }
+}
+
+// -------------------------------------
 // Language selection screen
 // -------------------------------------
 
@@ -62,22 +190,23 @@ Fl_Group *CLangScreen::Create(void)
 
 bool CLangScreen::Next()
 {
-    pPrevButton->activate();
+    m_pOwner->m_pPrevButton->activate();
     ReadLang();
-    UpdateLanguage();
+    m_pOwner->UpdateLanguage();
     return true;
 }
 
 bool CLangScreen::Activate()
 {
-    pPrevButton->deactivate();
+    //pPrevButton->deactivate();
     
     // Default to first language if there is just one
     if (InstallInfo.languages.size() == 1)
     {
         // HACK
-        extern void WizNextCB(Fl_Widget *, void *);
-        WizNextCB(NULL, NULL);
+        //extern void WizNextCB(Fl_Widget *, void *);
+        //WizNextCB(NULL, NULL);
+        return false;
     }
     
     return true;
@@ -170,7 +299,7 @@ Fl_Group *CLicenseScreen::Create(void)
     
     m_pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-350)/2, (MAIN_WINDOW_H-80), 350, 25,
                                          "I Agree to this license agreement");
-    m_pCheckButton->callback(LicenseCheckCB);
+    m_pCheckButton->callback(LicenseCheckCB, this);
     
     m_pGroup->end();
     return m_pGroup;
@@ -189,7 +318,9 @@ bool CLicenseScreen::Activate()
 {
     if (!m_bHasText) return false;
     
-    if (!m_pCheckButton->value()) pNextButton->deactivate();
+    if (!m_pCheckButton->value())
+        m_pOwner->m_pNextButton->deactivate();
+    
     return true;
 }
 
@@ -587,9 +718,9 @@ bool CInstallFilesScreen::Activate()
     if (chdir(InstallInfo.dest_dir.c_str()))
         throwerror(true, "Could not open directory '%s'", InstallInfo.dest_dir.c_str());
     
-    InstallFiles = true;
-    pPrevButton->deactivate();
-    pNextButton->deactivate();
+    m_pOwner->m_bInstallFiles = true;
+    m_pOwner->m_pPrevButton->deactivate();
+    m_pOwner->m_pNextButton->deactivate();
     
     Install();
     return true;
@@ -794,18 +925,18 @@ void CInstallFilesScreen::Install()
     AppendText("done\n");
 
     SetProgress(100);
-    InstallFiles = false;
+    m_pOwner->m_bInstallFiles = false;
     fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());
     CleanPasswdString(m_szPassword);
     m_szPassword = NULL;
     
-    pCancelButton->deactivate();
-    pPrevButton->deactivate();
-    pNextButton->activate();
+    m_pOwner->m_pCancelButton->deactivate();
+    m_pOwner->m_pPrevButton->deactivate();
+    m_pOwner->m_pNextButton->activate();
 
     // HACK
     if (!FileExists(InstallInfo.own_dir + "/config/finish"))
-        pNextButton->label(GetTranslation("Finish"));
+        m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
 }
 
 // -------------------------------------
@@ -840,6 +971,6 @@ bool CFinishScreen::Activate()
     if (!m_bHasText)
         return false;
 
-    pNextButton->label(GetTranslation("Finish"));
+    m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
     return true;
 }

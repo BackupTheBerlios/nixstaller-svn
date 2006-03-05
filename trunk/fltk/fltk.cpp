@@ -34,7 +34,7 @@
 
 #include "fltk.h"
 #include <FL/x.H>
-
+/*
 void CreateMainWindow(char **argv);
 void UpdateLanguage(void);
 
@@ -111,7 +111,7 @@ void ShowAboutCB(Fl_Widget *, void *)
     pAboutWindow->take_focus();
     pAboutWindow->show();
 }
-    
+    */
     
 int main(int argc, char **argv)
 {
@@ -122,16 +122,18 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    fl_register_images();
-
-    CreateMainWindow(argv);
+    //CreateMainWindow(argv);
+    if (argc && !strcmp(argv[1], "inst"))
+        CInstaller inst(argv);
+    else
+        CAppManager app(argv);
     
     // Deinit
-    for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
     return 0;
 }
 
+/*
 void CreateMainWindow(char **argv)
 {
     #define MCreateWidget(w) { widget = new w; \
@@ -246,6 +248,7 @@ void UpdateLanguage()
     // Update all screens
     for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) (*p)->UpdateLang();
 }
+*/
 
 void EndProg(bool err)
 {
@@ -254,7 +257,6 @@ void EndProg(bool err)
     XKBControl.bell_duration = -1;
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
 
-    for(std::list<CBaseScreen *>::iterator p=ScreenList.begin();p!=ScreenList.end();p++) delete *p;
     MainEnd();
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
@@ -273,4 +275,74 @@ void throwerror(bool dialog, const char *error, ...)
     else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
 
     EndProg(true);
+}
+
+// -------------------------------------
+// FLTK Base screen class
+// -------------------------------------
+
+CFLTKBase::CFLTKBase(void)
+{
+    fl_register_images();
+    Fl::scheme("plastic");
+
+    // Create about dialog
+    m_pAboutWindow = new Fl_Window(400, 200, "About nixstaller");
+    m_pAboutWindow->set_modal();
+    m_pAboutWindow->hide();
+    m_pAboutWindow->begin();
+
+    Fl_Text_Buffer *pBuffer = new Fl_Text_Buffer;
+    pBuffer->loadfile("about");
+    
+    Fl_Text_Display *pAboutDisp = new Fl_Text_Display(20, 20, 360, 150, "About");
+    pAboutDisp->buffer(pBuffer);
+    
+    m_pAboutOKButton = new Fl_Return_Button((400-80)/2, 170, 80, 25, "OK");
+    m_pAboutOKButton->callback(AboutOKCB, this);
+    
+    m_pAboutWindow->end();
+
+    // HACK: Switch that annoying bell off!
+    // UNDONE: Doesn't work on NetBSD yet :(
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = 0;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+}
+
+void CFLTKBase::UpdateLanguage()
+{
+    // Translations for FL ASK dialogs
+    fl_yes = GetTranslation("Yes");
+    fl_no = GetTranslation("No");
+    fl_ok = GetTranslation("OK");
+    fl_cancel = GetTranslation("Cancel");
+    fl_close = GetTranslation("Close");
+
+    // Translations for FLTK's File Chooser
+    Fl_File_Chooser::add_favorites_label = GetTranslation("Add to Favorites");
+    Fl_File_Chooser::all_files_label = GetTranslation("All Files (*)");
+    Fl_File_Chooser::custom_filter_label = GetTranslation("Custom Filter");
+    Fl_File_Chooser::favorites_label = GetTranslation("Favorites");
+    Fl_File_Chooser::filename_label = GetTranslation("Filename:");
+    Fl_File_Chooser::filesystems_label = GetTranslation("File Systems");
+    Fl_File_Chooser::manage_favorites_label = GetTranslation("Manage Favorites");
+    Fl_File_Chooser::new_directory_label = GetTranslation("Enter name of new directory");
+    Fl_File_Chooser::new_directory_tooltip = GetTranslation("Create new directory");
+    Fl_File_Chooser::show_label = GetTranslation("Show:");
+    
+    // Update main buttons
+    m_pAboutButton->label(GetTranslation("About"));
+}
+
+void CFLTKBase::ShowAbout(bool show)
+{
+    if (show)
+    {
+        m_pAboutWindow->hotspot(m_pAboutOKButton);
+        m_pAboutWindow->take_focus();
+        m_pAboutWindow->show();
+    }
+    else
+        m_pAboutWindow->hide();
 }
