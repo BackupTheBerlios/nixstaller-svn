@@ -70,15 +70,12 @@ const char *CRegister::GetConfFile(const char *progname)
 
 app_entry_s *CRegister::GetAppEntry(const char *progname)
 {
-    if (m_pAppEntry)
-        return m_pAppEntry;
-        
     const char *filename = GetConfFile(progname);
     if (!FileExists(filename))
         return NULL;
 
-    m_pAppEntry = new app_entry_s;
-    m_pAppEntry->name = progname;
+    app_entry_s *pAppEntry = new app_entry_s;
+    pAppEntry->name = progname;
     
     std::ifstream file(filename);
     std::string line, str;
@@ -92,13 +89,13 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
             break;
 
         if (str == "version")
-            std::getline(strstrm, m_pAppEntry->version);
+            std::getline(strstrm, pAppEntry->version);
         else if (str == "description") // UNDONE: need multiline support
-            std::getline(strstrm, m_pAppEntry->description);
+            std::getline(strstrm, pAppEntry->description);
         else if (str == "url")
-            std::getline(strstrm, m_pAppEntry->url);
+            std::getline(strstrm, pAppEntry->url);
     }
-    return m_pAppEntry;
+    return pAppEntry;
 }
 
 bool CRegister::IsInstalled(bool checkver)

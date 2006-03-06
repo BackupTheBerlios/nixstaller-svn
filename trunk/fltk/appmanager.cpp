@@ -37,25 +37,25 @@
 
 CAppManager::CAppManager(char **argv)
 {
-    m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller - App Manager");
+    const int mainw = 560, mainh = 330;
+    m_pMainWindow = new Fl_Window(mainw, mainh, "Nixstaller - App Manager");
 
-    m_pInfoOutput = new Fl_Browser((MAIN_WINDOW_W-140), 40, 120, 250, "Info");
-    m_pInfoOutput->column_char('\a');
-    int cwidths[2] = { 75, 50 };
-    m_pInfoOutput->column_widths(cwidths);
-
-    m_pDeinstallButton = new Fl_Button((MAIN_WINDOW_W-140), m_pInfoOutput->h() + 60, 120, 25, "Deinstall");
-    
-    m_pExitButton = new Fl_Button((MAIN_WINDOW_W-140), (MAIN_WINDOW_H-40), 120, 25, "Exit");
-    m_pExitButton->callback(ExitCB);
-    
-    m_pAppList = new Fl_Hold_Browser(20, 40, m_pInfoOutput->x()-40, (MAIN_WINDOW_H-60), "Installed applications");
+    m_pAppList = new Fl_Hold_Browser(20, 40, 180, 240, "Installed applications");
     m_pAppList->align(FL_ALIGN_TOP);
     Register.GetRegisterEntries(&m_AppVec);
     for (std::vector<app_entry_s *>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++)
         m_pAppList->add(MakeCString((*it)->name));
     m_pAppList->callback(AppListCB, this);
     m_pAppList->value(1);
+
+    m_pInfoOutput = new Fl_Help_View((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Info");
+    m_pInfoOutput->align(FL_ALIGN_TOP);
+    //m_pInfoOutput->textsize(13);
+
+    m_pDeinstallButton = new Fl_Button(20, (m_pAppList->y()+m_pAppList->h())+20, 120, 25, "Deinstall");
+    
+    m_pExitButton = new Fl_Button((mainw-140), (m_pAppList->y()+m_pAppList->h())+20, 120, 25, "Exit");
+    m_pExitButton->callback(ExitCB);
     
     UpdateInfo(true);
 
@@ -65,13 +65,25 @@ CAppManager::CAppManager(char **argv)
 
 void CAppManager::UpdateInfo(bool init)
 {
+    const char *format =
+            "<center><h3><b>%s</b></h3></center><br><br>"
+            "<table><tbody>"
+            "<tr><td><b>Version</b></td><td>%s</td></tr>"
+            "<tr><td><b>Web site</b></td><td>%s</td></tr>"
+            "<tr><td><b>Description</b></td><td>%s</td></tr>"
+            "</tbody></table>";
+    
     if (init)
         m_pCurrentAppEntry = m_AppVec.front();
     else
-        m_pCurrentAppEntry = m_AppVec.at(m_pAppList->value()-1);
+    {
+        int index = m_pAppList->value() - 1;
+        if ((index >= 0) && (index < m_AppVec.size()))
+            m_pCurrentAppEntry = m_AppVec[index];
+        else
+            return;
+    }
     
-    m_pInfoOutput->add(CreateText("@bName\a:%s", m_pCurrentAppEntry->name.c_str()));
-    m_pInfoOutput->add(CreateText("@bVersion\a:%s", m_pCurrentAppEntry->version.c_str()));
-    m_pInfoOutput->add(CreateText("@bWeb site\a:%s", m_pCurrentAppEntry->url.c_str()));
-    m_pInfoOutput->add(CreateText("@bDescription\a:%s", m_pCurrentAppEntry->description.c_str()));
+    m_pInfoOutput->value(CreateText(format, m_pCurrentAppEntry->name.c_str(), m_pCurrentAppEntry->version.c_str(),
+                                    m_pCurrentAppEntry->url.c_str(), m_pCurrentAppEntry->description.c_str()));
 }
