@@ -65,6 +65,7 @@ CAppManager::CAppManager(char **argv)
 
 void CAppManager::UpdateInfo(bool init)
 {
+    printf("MD5: %s\n", GetMD5("/usr/home/rick/operacodes.txt").c_str());
     const char *format =
             "<center><h3><b>%s</b></h3></center><br><br>"
             "<table><tbody>"

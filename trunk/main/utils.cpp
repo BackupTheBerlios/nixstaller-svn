@@ -32,9 +32,12 @@
     this exception.
 */
 
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
+
+#include "md5.h"
 #include "main.h"
 
 #ifdef WITH_LIB_ARCHIVE
@@ -340,4 +343,37 @@ void GetTextFromBlock(std::ifstream &file, std::string &text)
         text.erase(text.length()-1, 1); // Remove ]
         EatWhite(text);
     }
+}
+
+std::string GetMD5(const std::string &file)
+{
+    FILE *fp = fopen(file.c_str(), "rb");
+    
+    if (!fp)
+        return 0;
+
+    unsigned bytes = 0;
+    char buf[4096];
+    md5_state_t state;
+    md5_byte_t digest[16];
+    char hex_output[16*2 + 1];
+    
+    md5_init(&state);
+    
+    while((bytes = fread(buf, 1, sizeof(buf), fp)))
+    {
+        md5_append(&state, (const md5_byte_t *)buf, bytes);
+        char txt[4097];
+        strncpy(txt, buf, 4096);
+        txt[4096] = 0;
+        printf(txt);
+    }
+
+    md5_finish(&state, digest);
+
+    for (int di = 0; di < 16; ++di)
+        sprintf(hex_output + di * 2, "%02x", digest[di]);
+    
+    fclose(fp);
+    return hex_output;
 }

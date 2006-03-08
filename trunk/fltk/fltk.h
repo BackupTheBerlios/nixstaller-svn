@@ -63,13 +63,6 @@
 #define MAIN_WINDOW_W 600
 #define MAIN_WINDOW_H 400
 
-void UpdateLanguage(void);
-
-/*extern Fl_Button *pCancelButton;
-extern Fl_Button *pPrevButton;
-extern Fl_Button *pNextButton;
-extern bool InstallFiles;*/
-
 class CBaseScreen;
         
 class CFLTKBase

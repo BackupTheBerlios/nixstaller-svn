@@ -68,6 +68,14 @@ const char *CRegister::GetConfFile(const char *progname)
     return CreateText("%s/config", dir);
 }
 
+const char *CRegister::GetSumListFile(const char *progname)
+{
+    const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
+    if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
+        throwerror(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
+    return CreateText("%s/list", dir);
+}
+
 app_entry_s *CRegister::GetAppEntry(const char *progname)
 {
     const char *filename = GetConfFile(progname);
@@ -95,6 +103,23 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
         else if (str == "url")
             std::getline(strstrm, pAppEntry->url);
     }
+
+    file.close();
+
+    filename = GetSumListFile(progname);
+    if (FileExists(filename))
+    {
+        std::string sum;
+
+        file.open(filename);
+        while(file)
+        {
+            file >> sum;
+            std::getline(file, line);
+            m_pAppEntry->FileSums[line] = sum;
+        }
+    }
+    
     return pAppEntry;
 }
 

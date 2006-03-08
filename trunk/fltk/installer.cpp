@@ -198,18 +198,8 @@ bool CLangScreen::Next()
 
 bool CLangScreen::Activate()
 {
-    //pPrevButton->deactivate();
-    
     // Default to first language if there is just one
-    if (InstallInfo.languages.size() == 1)
-    {
-        // HACK
-        //extern void WizNextCB(Fl_Widget *, void *);
-        //WizNextCB(NULL, NULL);
-        return false;
-    }
-    
-    return true;
+    return (InstallInfo.languages.size() > 1);
 }
 
 // -------------------------------------

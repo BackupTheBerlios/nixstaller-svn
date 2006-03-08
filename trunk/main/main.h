@@ -89,6 +89,8 @@ struct arch_size_entry_s
 struct app_entry_s
 {
     std::string name, version, description, url;
+    std::map<std::string, std::string> FileSums;
+    app_entry_s(void) : name("-"), version("-"), description("-"), url("-") { };
 };
 
 extern install_info_s InstallInfo;
@@ -124,6 +126,7 @@ void MakeStringList(const std::string &str, std::vector<char *> &strlist);
 void MakeStringList(const char *str, std::vector<char *> &strlist);
 void GetTextFromBlock(std::ifstream &file, std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
+std::string GetMD5(const std::string &file);
 
 // These functions should be defined for each frontend
 void throwerror(bool dialog, const char *error, ...);
@@ -159,6 +162,7 @@ class CRegister
     
     const char *GetAppRegDir(void);
     const char *GetConfFile(const char *progname);
+    const char *GetSumListFile(const char *progname);
     app_entry_s *GetAppEntry(const char *progname);
     
 public:
