@@ -116,7 +116,7 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
         {
             file >> sum;
             std::getline(file, line);
-            m_pAppEntry->FileSums[line] = sum;
+            pAppEntry->FileSums[line] = sum;
         }
     }
     

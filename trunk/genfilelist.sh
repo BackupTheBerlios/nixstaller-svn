@@ -32,11 +32,14 @@
 #    version without this exception; this exception also makes it possible to release a modified version which carries forward
 #    this exception.
 
-FILESDIR="$1"
+FILESDIR=
+OUTPUT="plist_extract_all"
 
 checkargs()
 {
-    if [ -z $1 ]; then
+    FILESDIR=${1}
+    
+    if [ -z "${FILESDIR}" ]; then
         echo "Usage: $0 <file dir>"
         echo
         echo " <file dir>: The directory which holds the files that are going to be on the users system"
@@ -47,33 +50,16 @@ checkargs()
         echo "No such directory: ${FILESDIR}"
         exit 1
     fi
+    
+    [ ! -z $2 ] && OUTPUT=$2
 }
 
 checkargs $*
 
-MD5_PATH=`type -p md5sum`
-if ! test -x "$MD5_PATH"; then
-    MD5_PATH=`type -p md5`
-fi
-if ! test -x "$MD5_PATH"; then
-    MD5_PATH=`which md5sum`
-fi
-if ! test -x "$MD5_PATH"; then
-    MD5_PATH=`which md5`
-fi
+# If target dir has trailing '/', remove it
+FILESDIR=${FILESDIR%*/}
 
-if ! test -x "$MD5_PATH"; then
-    echo "Error: Couldn't execute md5 or md5sum!"
-    exit 1
-fi
+rm -f ${OUTPUT}
+find "${FILESDIR}" >> "${OUTPUT}"
 
-rm -f list
-echo `find "${FILESDIR}" | xargs -J % echo "F=%"`
-#echo `find $FILESDIR | awk '{printf("\"%s\"\n", $0) | "xargs md5 -q"; close("xargs md5 -q"); print $0}' | awk '{print}'` >> list
-
-#for F in `find "${FILESDIR}" | awk '{printf("\"%s\"\n", $0)}'`
-#do
-#    file "${F}"
-#done
-
-echo "Generated list file ($PWD/list). Please put it in your installer configuration directory if it's not already there."
+echo "Generated list file ($PWD/$OUTPUT). Please put it in your installer configuration directory if it's not already there."
