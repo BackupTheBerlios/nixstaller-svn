@@ -33,33 +33,54 @@
 #    this exception.
 
 FILESDIR=
-OUTPUT="plist_extract_all"
+FILEPREFIX="plist_"
+REL="extrpath"
 
-checkargs()
+usage()
 {
-    FILESDIR=${1}
-    
-    if [ -z "${FILESDIR}" ]; then
-        echo "Usage: $0 <file dir>"
-        echo
-        echo " <file dir>: The directory which holds the files that are going to be on the users system"
-        exit 1
-    fi
-    
-    if [ ! -d "${FILESDIR}" ]; then
-        echo "No such directory: ${FILESDIR}"
-        exit 1
-    fi
-    
-    [ ! -z $2 ] && OUTPUT=$2
+    echo "Usage: $0 <file dir>"
+    echo
+    echo " <file dir>: The directory which holds the files that are going to be on the users system"
+    exit 1
 }
 
-checkargs $*
+if [ -z "$1" ]; then
+    usage
+fi
+
+while true
+do
+    case $1 in
+        --rel | -r)
+            REL=$2
+            shift 2
+            ;;
+        --help | -h)
+            usage
+            ;;
+        * )
+            break
+            ;;
+    esac
+done
+
+if [ -z "$1" ]; then
+    usage
+fi
+
+FILESDIR="$1"
+
+if [ ! -d "$FILESDIR" ]; then
+    echo "No such directory: ${FILESDIR} 22"
+    exit 1
+fi
 
 # If target dir has trailing '/', remove it
 FILESDIR=${FILESDIR%*/}
 
-rm -f ${OUTPUT}
-find "${FILESDIR}" >> "${OUTPUT}"
+LISTNAME="${FILEPREFIX}${REL}"
 
-echo "Generated list file ($PWD/$OUTPUT). Please put it in your installer configuration directory if it's not already there."
+rm -f ${LISTNAME}
+ls -A "${FILESDIR}" >> "${LISTNAME}"
+
+echo "Generated list file ($PWD/$LISTNAME). Please put it in your installer configuration directory if it's not already there."
