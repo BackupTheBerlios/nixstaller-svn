@@ -164,6 +164,7 @@ class CRegister
     const char *GetConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
     app_entry_s *GetAppEntry(const char *progname);
+    void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
     
 public:
     CRegister(void) : m_szConfDir(NULL) { };
@@ -172,6 +173,7 @@ public:
     void RemoveFromRegister(void);
     void RegisterInstall(void);
     void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
+    void CalcSums(void);
 };
 
 extern CRegister Register;

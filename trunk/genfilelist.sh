@@ -38,8 +38,9 @@ REL="extrpath"
 
 usage()
 {
-    echo "Usage: $0 <file dir>"
+    echo "Usage: $0 [--relative-to or -r <rel>]  <file dir>"
     echo
+    echo " --relative or -r: Specifies where to files are relative too. Can be either extrpath or varname. Default is extrpath."
     echo " <file dir>: The directory which holds the files that are going to be on the users system"
     exit 1
 }
@@ -51,9 +52,16 @@ fi
 while true
 do
     case $1 in
-        --rel | -r)
-            REL=$2
-            shift 2
+        --relative-to | -r)
+            case $2 in
+                extrpath | varname)
+                    REL=$2
+                    shift 2
+                    ;;
+                * )
+                    usage
+                    ;;
+            esac
             ;;
         --help | -h)
             usage

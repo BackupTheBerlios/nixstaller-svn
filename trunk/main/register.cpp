@@ -123,6 +123,21 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
     return pAppEntry;
 }
 
+void CRegister::WriteSums(const char *filename, std::ofstream &outfile, const std::string *var)
+{
+    std::ifstream infile(CreateText("%s/%s", InstallInfo.own_dir.c_str(), filename));
+    std::string line;
+    while (infile && std::getline(infile, line))
+    {
+        if (var)
+            line.insert(0, *var + "/");
+        else
+            line.insert(0, InstallInfo.dest_dir + "/");
+        
+        outfile << GetMD5(line) << " " << line << "\n";
+    }
+}
+    
 bool CRegister::IsInstalled(bool checkver)
 {
     if (!FileExists(GetConfFile(InstallInfo.program_name.c_str())))
@@ -202,4 +217,34 @@ void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
     closedir (dp);
     
     chdir(curdir); // Return back to original directory
+}
+
+void CRegister::CalcSums()
+{
+    std::ofstream outfile(GetSumListFile(InstallInfo.program_name.c_str()));
+    
+    if (!outfile)
+        return; // UNDONE
+    
+    WriteSums("plist_extrpath", outfile, NULL);
+    WriteSums(CreateText("plist_extrpath_%s", InstallInfo.os.c_str()), outfile, NULL);
+    WriteSums(CreateText("plist_extrpath_%s_%s", InstallInfo.os.c_str(), InstallInfo.cpuarch.c_str()), outfile, NULL);
+    
+    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
+         it++)
+    {
+        if ((*it)->parameter_entries.empty()) continue;
+        for (std::map<std::string, param_entry_s *>::iterator it2=(*it)->parameter_entries.begin();
+             it2!=(*it)->parameter_entries.end(); it2++)
+        {
+            if (it2->second->varname.empty())
+                continue;
+            
+            WriteSums(CreateText("plist_var_%s", it2->second->varname.c_str()), outfile, &it2->second->value);
+            WriteSums(CreateText("plist_var_%s_%s", it2->second->varname.c_str(), InstallInfo.os.c_str()), outfile,
+                      &it2->second->value);
+            WriteSums(CreateText("plist_var_%s_%s", it2->second->varname.c_str(), InstallInfo.os.c_str(),
+                      InstallInfo.cpuarch.c_str()), outfile, &it2->second->value);
+        }
+    }
 }
