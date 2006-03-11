@@ -913,6 +913,7 @@ void CInstallFilesScreen::Install()
     AppendText("Registering installation...");
     Register.RegisterInstall();
     Register.CalcSums();
+    Register.CheckSums(InstallInfo.program_name.c_str());
     AppendText("done\n");
 
     SetProgress(100);

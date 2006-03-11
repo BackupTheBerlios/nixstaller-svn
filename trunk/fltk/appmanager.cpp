@@ -48,12 +48,24 @@ CAppManager::CAppManager(char **argv)
     m_pAppList->callback(AppListCB, this);
     m_pAppList->value(1);
 
-    m_pInfoOutput = new Fl_Help_View((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Info");
-    m_pInfoOutput->align(FL_ALIGN_TOP);
-    //m_pInfoOutput->textsize(13);
-
-    m_pDeinstallButton = new Fl_Button(20, (m_pAppList->y()+m_pAppList->h())+20, 120, 25, "Deinstall");
+    Fl_Tabs *pTabs = new Fl_Tabs((m_pAppList->x()+m_pAppList->w())+20, 20, 300, 240);
     
+    Fl_Group *pInfoTab = new Fl_Group((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Info");
+    //m_pInfoOutput = new Fl_Help_View((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Info");
+    m_pInfoOutput = new Fl_Help_View((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240);
+    m_pInfoOutput->align(FL_ALIGN_TOP);
+    pInfoTab->end();
+    
+    Fl_Group *pFilesTab = new Fl_Group((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Files");
+    m_pFilesTextDisplay = new Fl_Text_Display((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240);
+    m_pFilesTextBuffer = new Fl_Text_Buffer;
+    m_pFilesTextDisplay->buffer(m_pFilesTextBuffer);
+    
+    pFilesTab->end();
+    
+    pTabs->end();
+    m_pUninstallButton = new Fl_Button(20, (m_pAppList->y()+m_pAppList->h())+20, 120, 25, "Uninstall");
+    m_pUninstallButton->callback(UninstallCB, this);
     m_pExitButton = new Fl_Button((mainw-140), (m_pAppList->y()+m_pAppList->h())+20, 120, 25, "Exit");
     m_pExitButton->callback(ExitCB);
     
@@ -65,7 +77,6 @@ CAppManager::CAppManager(char **argv)
 
 void CAppManager::UpdateInfo(bool init)
 {
-    printf("MD5: %s\n", GetMD5("/usr/home/rick/operacodes.txt").c_str());
     const char *format =
             "<center><h3><b>%s</b></h3></center><br><br>"
             "<table><tbody>"
@@ -87,4 +98,40 @@ void CAppManager::UpdateInfo(bool init)
     
     m_pInfoOutput->value(CreateText(format, m_pCurrentAppEntry->name.c_str(), m_pCurrentAppEntry->version.c_str(),
                                     m_pCurrentAppEntry->url.c_str(), m_pCurrentAppEntry->description.c_str()));
+    
+    // Clear previous contents
+    m_pFilesTextBuffer->select(0, m_pFilesTextBuffer->length());
+    m_pFilesTextBuffer->remove_selection();
+    
+    for (std::map<std::string, std::string>::iterator it=m_pCurrentAppEntry->FileSums.begin();
+         it!=m_pCurrentAppEntry->FileSums.end(); it++)
+    {
+        m_pFilesTextBuffer->append(it->first.c_str());
+        m_pFilesTextBuffer->append("\n");
+    }
+}
+
+void CAppManager::Uninstall()
+{
+    if (!fl_choice(CreateText(GetTranslation("This will remove %s from your computer\nContinue?"),
+         m_pCurrentAppEntry->name.c_str()), GetTranslation("No"), GetTranslation("Yes"), NULL))
+        return;
+    
+    bool checksums = false;
+    if (!Register.CheckSums(m_pCurrentAppEntry->name.c_str()))
+    {
+        int ret = fl_choice(GetTranslation("Some files have been modified after installation.\n"
+                                           "This can happen if you installed another package which uses one or\n"
+                                           "more simalar file names or you installed another version."),
+                                           GetTranslation("Cancel"), GetTranslation("Continue anyway"),
+                                           GetTranslation("Only remove unchanged"));
+        if (ret == 0)
+            return;
+        
+        checksums = (ret == 2);
+    }
+    
+    Register.Uninstall(m_pCurrentAppEntry->name.c_str(), checksums);
+    m_pAppList->remove(m_pAppList->value());
+    UpdateInfo(false);
 }

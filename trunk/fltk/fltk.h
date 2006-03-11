@@ -59,6 +59,7 @@
 #include <FL/Fl_Browser.H>
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Help_View.H>
+#include <FL/Fl_Tabs.H>
 
 #define MAIN_WINDOW_W 600
 #define MAIN_WINDOW_H 400
@@ -113,18 +114,24 @@ public:
 
 class CAppManager: public CFLTKBase
 {
-    Fl_Button *m_pDeinstallButton, *m_pExitButton;
+    Fl_Button *m_pUninstallButton, *m_pExitButton;
     Fl_Help_View *m_pInfoOutput;
     Fl_Hold_Browser *m_pAppList;
+    Fl_Text_Display *m_pFilesTextDisplay;
+    Fl_Text_Buffer *m_pFilesTextBuffer;
     std::vector<app_entry_s *> m_AppVec;
     app_entry_s *m_pCurrentAppEntry;
     
 public:
     CAppManager(char **argv);
+    virtual ~CAppManager(void)
+    { for (std::vector<app_entry_s*>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++) delete *it; };
     
     void UpdateInfo(bool init);
+    void Uninstall(void);
     
     static void AppListCB(Fl_Widget *, void *p) { ((CAppManager *)p)->UpdateInfo(false); };
+    static void UninstallCB(Fl_Widget *, void *p) { ((CAppManager *)p)->Uninstall(); };
     static void ExitCB(Fl_Widget *, void *) { EndProg(); };
 };
 

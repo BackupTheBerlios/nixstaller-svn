@@ -89,6 +89,7 @@ FILESDIR=${FILESDIR%*/}
 LISTNAME="${FILEPREFIX}${REL}"
 
 rm -f ${LISTNAME}
-ls -A "${FILESDIR}" >> "${LISTNAME}"
+
+find "${FILESDIR}" | awk '{if (system(sprintf("test -d \"%s\"", $0))) print}' | sed -e "s#${FILESDIR}/##g" >> "${LISTNAME}"
 
 echo "Generated list file ($PWD/$LISTNAME). Please put it in your installer configuration directory if it's not already there."

@@ -111,12 +111,12 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
     {
         std::string sum;
 
-        file.open(filename);
-        while(file)
+        std::ifstream sumfile(filename);
+        while(sumfile)
         {
-            file >> sum;
-            std::getline(file, line);
-            pAppEntry->FileSums[line] = sum;
+            if (!(sumfile >> sum) || !std::getline(sumfile, line))
+                break;
+            pAppEntry->FileSums[EatWhite(line)] = sum;
         }
     }
     
@@ -151,15 +151,12 @@ bool CRegister::IsInstalled(bool checkver)
     return (!checkver || (pApp->version == InstallInfo.version));
 }
 
-void CRegister::RemoveFromRegister(void)
+void CRegister::RemoveFromRegister(const char *progname)
 {
-    if (!IsInstalled(true))
-        return;
-
-    if (InstallInfo.program_name.empty())
+    if (!progname || !progname[0])
         return; // Otherwise we delete the main config directory ;)
         
-    system(CreateText("rm -rf %s/%s", GetAppRegDir(), InstallInfo.program_name.c_str())); // Lazy way to remove whole dir   
+    system(CreateText("rm -rf %s/%s", GetAppRegDir(), progname)); // Lazy way to remove whole dir   
 }
 
 void CRegister::RegisterInstall(void)
@@ -174,6 +171,33 @@ void CRegister::RegisterInstall(void)
 
     file << "version " + InstallInfo.version + "\n";
     // UNDONE: Write description and url too
+}
+
+void CRegister::Uninstall(const char *progname, bool checksum)
+{
+    app_entry_s *pApp = GetAppEntry(progname);
+    
+    if (!pApp)
+        return;
+    
+    for (std::map<std::string, std::string>::iterator it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
+    {
+        if (!FileExists(it->first))
+        {
+            debugline("Couldn't find file %s\n", it->first.c_str());
+            continue;
+        }
+        
+        if (checksum && (GetMD5(it->first) != it->second))
+        {
+            debugline("MD5 Mismatch: %s for %s\n", it->first.c_str(), progname);
+            continue;
+        }
+        
+        unlink(it->first.c_str());
+    }
+    
+    RemoveFromRegister(progname);
 }
 
 void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
@@ -247,4 +271,33 @@ void CRegister::CalcSums()
                       InstallInfo.cpuarch.c_str()), outfile, &it2->second->value);
         }
     }
+}
+
+bool CRegister::CheckSums(const char *progname)
+{
+    std::ifstream file(GetSumListFile(progname));
+    
+    if (!file)
+        return true;
+    
+    app_entry_s *pApp = GetAppEntry(progname);
+    if (!pApp)
+        return true;
+    
+    for (std::map<std::string, std::string>::iterator it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
+    {
+        if (!FileExists(it->first))
+        {
+            debugline("Couldn't find file %s\n", it->first.c_str());
+            continue;
+        }
+        
+        if (GetMD5(it->first) != it->second)
+        {
+            debugline("MD5 Mismatch: %s for %s\n", it->first.c_str(), progname);
+            return false;
+        }
+    }
+    
+    return true;
 }

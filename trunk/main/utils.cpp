@@ -350,7 +350,7 @@ std::string GetMD5(const std::string &file)
     FILE *fp = fopen(file.c_str(), "rb");
     
     if (!fp)
-        return 0;
+        return "0";
 
     unsigned bytes = 0;
     char buf[4096];
@@ -366,7 +366,6 @@ std::string GetMD5(const std::string &file)
         char txt[4097];
         strncpy(txt, buf, 4096);
         txt[4096] = 0;
-        printf(txt);
     }
 
     md5_finish(&state, digest);

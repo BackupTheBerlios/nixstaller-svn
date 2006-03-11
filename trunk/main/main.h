@@ -170,10 +170,12 @@ public:
     CRegister(void) : m_szConfDir(NULL) { };
     
     bool IsInstalled(bool checkver);
-    void RemoveFromRegister(void);
+    void RemoveFromRegister(const char *progname);
     void RegisterInstall(void);
+    void Uninstall(const char *progname, bool checksum);
     void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
     void CalcSums(void);
+    bool CheckSums(const char *progname);
 };
 
 extern CRegister Register;
@@ -183,7 +185,9 @@ extern CRegister Register;
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };
 #else
-#define debugline printf
+//#define debugline printf
+inline void debugline(const char *t, ...)
+{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); printf("DEBUG: %s", txt); };
 #endif
 
 #endif 
