@@ -138,6 +138,9 @@ copytemp()
     if [ ! -z ${INTROPIC} ]; then
         cp ${CONFDIR}/${INTROPIC} ${CONFDIR}/tmp || echo "Warning: ${CONFDIR}/$INTROPIC does not exist"
     fi
+    
+    # Copy all plist files
+    cp ${CONFDIR}/plist_extrpath* ${CONFDIR}/plist_var_* ${CONFDIR}/tmp || echo "Warning: No plist files found!"
 }
 
 remtemp()

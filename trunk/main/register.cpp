@@ -151,12 +151,12 @@ bool CRegister::IsInstalled(bool checkver)
     return (!checkver || (pApp->version == InstallInfo.version));
 }
 
-void CRegister::RemoveFromRegister(const char *progname)
+void CRegister::RemoveFromRegister(app_entry_s *pApp)
 {
-    if (!progname || !progname[0])
+    if (pApp->name.empty())
         return; // Otherwise we delete the main config directory ;)
         
-    system(CreateText("rm -rf %s/%s", GetAppRegDir(), progname)); // Lazy way to remove whole dir   
+    system(CreateText("rm -rf %s/%s", GetAppRegDir(), pApp->name.c_str())); // Lazy way to remove whole dir   
 }
 
 void CRegister::RegisterInstall(void)
@@ -173,12 +173,9 @@ void CRegister::RegisterInstall(void)
     // UNDONE: Write description and url too
 }
 
-void CRegister::Uninstall(const char *progname, bool checksum)
+void CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPasFunc PasFunc, void *pData)
 {
-    app_entry_s *pApp = GetAppEntry(progname);
-    
-    if (!pApp)
-        return;
+    float percent = 0.0f;
     
     for (std::map<std::string, std::string>::iterator it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
     {
@@ -190,14 +187,17 @@ void CRegister::Uninstall(const char *progname, bool checksum)
         
         if (checksum && (GetMD5(it->first) != it->second))
         {
-            debugline("MD5 Mismatch: %s for %s\n", it->first.c_str(), progname);
+            debugline("MD5 Mismatch: %s for %s\n", it->first.c_str(), pApp->name.c_str());
             continue;
         }
         
         unlink(it->first.c_str());
+        
+        percent += (100.0f/float(pApp->FileSums.size()));
+        UpFunc((int)percent, it->first, pData);
     }
     
-    RemoveFromRegister(progname);
+    RemoveFromRegister(pApp);
 }
 
 void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)

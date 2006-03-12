@@ -112,4 +112,4 @@ else
 fi
 
 # And here we go...
-$RUNCOMMAND
+$RUNCOMMAND inst

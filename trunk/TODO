@@ -5,6 +5,7 @@ OVERALL
 - Check for tar with gzip/bzip on other platforms(Solaris...)
 - Modify Makeself?
 - Check read permissions for extract dir
+- Extract temporaty files to subdir
 
 
 MAIN

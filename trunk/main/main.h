@@ -167,12 +167,15 @@ class CRegister
     void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
     
 public:
+    typedef void (*TUpFunc)(int, const std::string &, void *);
+    typedef char *(*TPasFunc)(void *);
+    
     CRegister(void) : m_szConfDir(NULL) { };
     
     bool IsInstalled(bool checkver);
-    void RemoveFromRegister(const char *progname);
+    void RemoveFromRegister(app_entry_s *pApp);
     void RegisterInstall(void);
-    void Uninstall(const char *progname, bool checksum);
+    void Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPasFunc PasFunc, void *pData);
     void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
     void CalcSums(void);
     bool CheckSums(const char *progname);
