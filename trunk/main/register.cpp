@@ -173,11 +173,48 @@ void CRegister::RegisterInstall(void)
     // UNDONE: Write description and url too
 }
 
-void CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPasFunc PasFunc, void *pData)
+CRegister::EUninstRet CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPasFunc PasFunc,
+                                           void *pData)
 {
     float percent = 0.0f;
+    char *passwd = NULL;
+    std::map<std::string, std::string>::iterator it;
+    bool needroot = false;
     
-    for (std::map<std::string, std::string>::iterator it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
+    // Check if we got permission to remove all files
+    for (it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
+    {
+        if (FileExists(it->first) && (!WriteAccess(it->first) || !ReadAccess(it->first)))
+        {
+            needroot = true;
+            break;
+        }
+    }
+    
+    if (needroot)
+    {
+        m_SUHandler.SetUser("root");
+        m_SUHandler.SetTerminalOutput(false);
+        
+        if (m_SUHandler.NeedPassword())
+        {
+            passwd = PasFunc(pData);
+            if (!passwd)
+                return UNINST_NULLPASS;
+            
+            if (!m_SUHandler.TestSU(passwd))
+            {
+                // Some error appeared
+                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                    return UNINST_WRONGPASS;
+                else
+                    return UNINST_SUERR;
+            }
+        }
+    }
+    
+    // Now get rid of the app...
+    for (it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
     {
         if (!FileExists(it->first))
         {
@@ -191,13 +228,21 @@ void CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPas
             continue;
         }
         
-        unlink(it->first.c_str());
-        
+        if (needroot)
+        {
+            m_SUHandler.SetCommand(CreateText("rm %s", it->first.c_str()));
+            if (!m_SUHandler.ExecuteCommand(passwd))
+                ; // UNDONE?
+        }
+        else
+            unlink(it->first.c_str());
         percent += (100.0f/float(pApp->FileSums.size()));
         UpFunc((int)percent, it->first, pData);
     }
     
     RemoveFromRegister(pApp);
+    
+    return UNINST_SUCCESS;
 }
 
 void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)

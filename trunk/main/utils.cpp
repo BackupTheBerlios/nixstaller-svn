@@ -235,7 +235,12 @@ bool WriteAccess(const char *file)
 bool ReadAccess(const char *file)
 {
     struct stat st;
-    return ((lstat(file, &st) == 0) && (access(file, (R_OK | X_OK)) == 0));
+    
+    if (lstat(file, &st) != 0)
+        return false;
+    
+    int check = (S_ISDIR(st.st_mode)) ? (R_OK | X_OK) : (R_OK);
+    return (access(file, check) == 0);
 }
 
 // Incase dir does not exist, it will search for the first valid top directory

@@ -151,3 +151,71 @@ void CFLTKBase::ShowAbout(bool show)
     else
         m_pAboutWindow->hide();
 }
+
+// -------------------------------------
+// Password window class
+// -------------------------------------
+
+CAskPassWindow::CAskPassWindow(const char *msg) : m_szPassword(NULL)
+{
+    m_pAskPassWindow = new Fl_Window(400, 190, "Password dialog");
+    m_pAskPassWindow->set_modal();
+    m_pAskPassWindow->begin();
+    
+    m_pAskPassBox = new Fl_Box(10, 20, 370, 40, msg);
+    m_pAskPassBox->align(FL_ALIGN_WRAP);
+    
+    m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25, "Password: ");
+    m_pAskPassInput->take_focus();
+    
+    m_pAskPassOKButton = new Fl_Return_Button(60, 150, 100, 25, "OK");
+    m_pAskPassOKButton->callback(AskPassOKButtonCB, this);
+    
+    m_pAskPassCancelButton = new Fl_Button(240, 150, 100, 25, "Cancel");
+    m_pAskPassCancelButton->callback(AskPassCancelButtonCB, this);
+    
+    m_pAskPassWindow->end();
+}
+
+char *CAskPassWindow::Activate()
+{
+    CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
+
+    m_pAskPassWindow->hotspot(m_pAskPassOKButton);
+    m_pAskPassWindow->take_focus();
+    m_pAskPassWindow->show();
+
+    while(m_pAskPassWindow->visible()) Fl::wait();
+
+    return m_szPassword;
+}
+
+void CAskPassWindow::SetPassword(bool unset)
+{
+    CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
+    
+    if (!unset)
+    {
+        const char *passwd = m_pAskPassInput->value();
+    
+        if (passwd && passwd[0])
+        {
+            m_szPassword = strdup(passwd);
+
+            // Can't use FLTK's replace() to delete input field text, since it stores undo info
+            int length = strlen(passwd);
+            
+            char str0[length];
+            for (int i=0;i<length;i++) str0[i] = 0;
+            m_pAskPassInput->value(str0);
+            
+            // Force clean temp inputfield string
+            char *str = const_cast<char *>(passwd);
+            for(int i=0;i<strlen(str);i++) str[i] = 0;
+        }
+    }
+    m_pAskPassWindow->hide();
+    m_pAskPassInput->value(NULL);
+}

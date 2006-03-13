@@ -313,6 +313,30 @@ public:
 };
 
 // -------------------------
+// Misc classes
+// -------------------------
+
+class CAskPassWindow
+{
+    Fl_Window *m_pAskPassWindow;
+    Fl_Box *m_pAskPassBox;
+    Fl_Secret_Input *m_pAskPassInput;
+    Fl_Return_Button *m_pAskPassOKButton;
+    Fl_Button *m_pAskPassCancelButton;
+    char *m_szPassword;
+    
+public:
+    CAskPassWindow(const char *msg);
+    ~CAskPassWindow(void) { CleanPasswdString(m_szPassword); };
+
+    char *Activate(void);
+    void SetPassword(bool unset);
+
+    static void AskPassOKButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(false); };
+    static void AskPassCancelButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(true); };
+};
+
+// -------------------------
 // AppManager classes
 // -------------------------
 
@@ -323,24 +347,20 @@ class CUninstallWindow
     Fl_Text_Buffer *m_pBuffer;
     Fl_Text_Display *m_pDisplay;
     Fl_Button *m_pOKButton;
-    
-    Fl_Window *m_pAskPassWindow;
-    Fl_Box *m_pAskPassBox;
-    Fl_Secret_Input *m_pAskPassInput;
-    Fl_Return_Button *m_pAskPassOKButton;
-    Fl_Button *m_pAskPassCancelButton;
+    CAskPassWindow *m_pPasswdWin;
     
 public:
     CUninstallWindow(void);
     
-    void Start(app_entry_s *pApp);
+    bool Start(app_entry_s *pApp);
     void Close(void) { m_pWindow->hide(); };
     void UpdateProgress(int percent, const std::string &file);
-    
+    char *GetPassword(void) { return m_pPasswdWin->Activate(); };
+     
     static void OKButtonCB(Fl_Widget *w, void *p) { ((CUninstallWindow *)p)->Close(); };
     static void UpdateProgressCB(int percent, const std::string &file, void *p)
     { ((CUninstallWindow *)p)->UpdateProgress(percent, file); };
-    static char *GetPassword(void *p);
+    static char *GetPasswordCB(void *p) { return ((CUninstallWindow *)p)->GetPassword(); };
 };
 
 #endif

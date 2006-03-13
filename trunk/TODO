@@ -6,6 +6,7 @@ OVERALL
 - Modify Makeself?
 - Check read permissions for extract dir
 - Extract temporaty files to subdir
+- Langauge updates: Password screen class, FLTK AppManager
 
 
 MAIN

@@ -126,13 +126,17 @@ void CAppManager::Uninstall()
     if (m_AppVec.empty())
         return;
 
-    m_pUninstallWindow->Start(m_pCurrentAppEntry);
+    if (!m_pUninstallWindow->Start(m_pCurrentAppEntry))
+        return;
+    
     m_pAppList->remove(m_pAppList->value());
     
     std::vector<app_entry_s *>::iterator it = std::find(m_AppVec.begin(), m_AppVec.end(), m_pCurrentAppEntry);
     if (it != m_AppVec.end())
         m_AppVec.erase(it);
     
+    fl_message(GetTranslation("Uinstallation of %s complete!"), m_pCurrentAppEntry->name.c_str());
+
     delete m_pCurrentAppEntry;
     UpdateInfo(false);
 }
@@ -158,49 +162,28 @@ CUninstallWindow::CUninstallWindow()
     m_pOKButton = new Fl_Button((w-80)/2, (h-40), 80, 25, GetTranslation("OK"));
     m_pOKButton->callback(OKButtonCB, this);
     m_pOKButton->deactivate();
-//    CreatePasswordWin();
     
+    m_pPasswdWin = new CAskPassWindow(GetTranslation("This uninstallation requires root(administrator) "
+            "privileges in order to continue\nPlease enter the password of the root user"));
     m_pWindow->end();
 }
-/*
-void CUninstallWindow::CreatePasswordWin()
-{
-    m_pAskPassWindow = new Fl_Window(400, 190, "Password dialog");
-    m_pAskPassWindow->set_modal();
-    m_pAskPassWindow->begin();
-    
-    m_pAskPassBox = new Fl_Box(10, 20, 370, 40, "This uninstallation requires root(administrator) privileges in order to "
-            "continue\nPlease enter the password of the root user");
-    m_pAskPassBox->align(FL_ALIGN_WRAP);
-    
-    m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25, "Password: ");
-    m_pAskPassInput->take_focus();
-    
-    m_pAskPassOKButton = new Fl_Return_Button(60, 150, 100, 25, "OK");
-    m_pAskPassOKButton->callback(AskPassOKButtonCB, this);
-    
-    m_pAskPassCancelButton = new Fl_Button(240, 150, 100, 25, "Cancel");
-    m_pAskPassCancelButton->callback(AskPassCancelButtonCB, this);
-    
-    m_pAskPassWindow->end();
-}
-*/
-void CUninstallWindow::Start(app_entry_s *pApp)
+
+bool CUninstallWindow::Start(app_entry_s *pApp)
 {
     if (!fl_choice(CreateText(GetTranslation("This will remove %s from your computer\nContinue?"),
          pApp->name.c_str()), GetTranslation("No"), GetTranslation("Yes"), NULL))
-        return;
+        return false;
     
     bool checksums = false;
     if (!Register.CheckSums(pApp->name.c_str()))
     {
         int ret = fl_choice(GetTranslation("Some files have been modified after installation.\n"
                 "This can happen if you installed another package which uses one or\n"
-                "more simalar file names or you installed another version."),
+                "more files with the same name or you installed another version."),
         GetTranslation("Cancel"), GetTranslation("Continue anyway"),
         GetTranslation("Only remove unchanged"));
         if (ret == 0)
-            return;
+            return false;
         
         checksums = (ret == 2);
     }
@@ -213,10 +196,33 @@ void CUninstallWindow::Start(app_entry_s *pApp)
     
     m_pWindow->show();
 
-    Register.Uninstall(pApp, checksums, &UpdateProgressCB, &GetPassword, this);
+    while (true)
+    {
+        CRegister::EUninstRet ret = Register.Uninstall(pApp, checksums, &UpdateProgressCB, &GetPasswordCB,
+                                                       this);
+        if (ret == CRegister::UNINST_SUCCESS)
+            break;
+        else if (ret == CRegister::UNINST_NULLPASS)
+        {
+            if (fl_choice(GetTranslation("Root access is required to continue\nAbort uninstallation?"),
+                GetTranslation("No"), GetTranslation("Yes"), NULL))
+            {
+                Close();
+                return false;
+            }
+        }
+        else if (ret == CRegister::UNINST_WRONGPASS)
+            fl_alert(GetTranslation("Incorrect password given for root user\nPlease retype"));
+        else if (ret == CRegister::UNINST_SUERR)
+        {
+            throwerror(true, GetTranslation("Could not use su to gain root access"
+                    "Make sure you can use su(adding the current user to the wheel group may help"));
+        }
+    }
     
     m_pProgress->value(100);
     m_pOKButton->activate();
+    return true;
 }
 
 void CUninstallWindow::UpdateProgress(int percent, const std::string &file)
@@ -226,9 +232,4 @@ void CUninstallWindow::UpdateProgress(int percent, const std::string &file)
     // Move cursor to last line and last word
     m_pDisplay->scroll(m_pBuffer->length(), m_pDisplay->word_end(m_pBuffer->length()));
     Fl::wait(0.0); // Update screen
-}
-
-char *CUninstallWindow::GetPassword(void *p)
-{
-    return " ";
 }
