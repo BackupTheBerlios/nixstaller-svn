@@ -270,6 +270,19 @@ bool ReadConfig()
                 std::getline(strstrm, tmp);
                 InstallInfo.version = EatWhite(tmp);
             }
+            else if (str == "url")
+            {
+                std::getline(strstrm, tmp);
+                InstallInfo.url = EatWhite(tmp);
+            }
+            else if (str == "description")
+            {
+                std::getline(strstrm, tmp);
+                EatWhite(tmp);
+                if (tmp[0] == '[')
+                    GetTextFromBlock(file, tmp);
+                InstallInfo.description = tmp;
+            }
             else if (str == "archtype")
             {
                 std::string type;

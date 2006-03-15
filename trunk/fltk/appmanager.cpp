@@ -92,7 +92,7 @@ void CAppManager::UpdateInfo(bool init)
             "<table><tbody>"
             "<tr><td><b>Version</b></td><td>%s</td></tr>"
             "<tr><td><b>Web site</b></td><td>%s</td></tr>"
-            "<tr><td><b>Description</b></td><td>%s</td></tr>"
+            "<tr><td><b>Description</b></td><td><pre>%s</pre></td></tr>"
             "</tbody></table>";
     
     if (init)

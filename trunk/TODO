@@ -11,6 +11,7 @@ OVERALL
 
 MAIN
 - Better error handling for register
+- Check path for rm
 
 
 NCURSES FRONTEND

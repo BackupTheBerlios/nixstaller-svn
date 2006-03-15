@@ -43,6 +43,48 @@
 
 CRegister Register;
 
+void CRegister::WriteRegEntry(const char *entry, const std::string &field, std::ofstream &file)
+{
+    file << entry << ' ';
+    
+    std::string format = field;
+    std::string::size_type index;
+    
+    while ((index = format.find("\"", index+2)) != std::string::npos)
+        format.replace(index, 1, "\\\"");
+    
+    file << '\"' << format << "\"\n";
+}
+
+std::string CRegister::ReadRegField(std::ifstream &file)
+{
+    std::string line, ret;
+    std::string::size_type index;
+    
+    std::getline(file, line);
+    EatWhite(line);
+    
+    if (line[0] != '\"')
+        return "";
+    
+    line.erase(0, 1); // Remove initial "
+    while ((index = line.find("\\\"", index+1)) != std::string::npos)
+        line.replace(index, 2, "\"");
+
+    ret = line;
+    
+    while(line[line.length()-1] != '\"' && file && std::getline(file, line))
+    {
+        EatWhite(line);
+        while ((index = line.find("\\\"")) != std::string::npos)
+            line.replace(index, 2, "\"");
+        ret += "\n" + line;
+    }
+    
+    ret.erase(ret.length()-1, 1); // Remove trailing "
+    return ret;
+}
+
 const char *CRegister::GetAppRegDir()
 {
     if (!m_szConfDir)
@@ -86,22 +128,18 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
     pAppEntry->name = progname;
     
     std::ifstream file(filename);
-    std::string line, str;
+    std::string str, field;
     
-    while(file)
+    while(file && (file >> str))
     {
-        std::getline(file, line);
-        std::istringstream strstrm(line);
-
-        if (!(strstrm >> str))
-            break;
-
+        field = ReadRegField(file);
+        
         if (str == "version")
-            std::getline(strstrm, pAppEntry->version);
-        else if (str == "description") // UNDONE: need multiline support
-            std::getline(strstrm, pAppEntry->description);
+            pAppEntry->version = field;
+        else if (str == "description")
+            pAppEntry->description = field;
         else if (str == "url")
-            std::getline(strstrm, pAppEntry->url);
+            pAppEntry->url = field;
     }
 
     file.close();
@@ -109,7 +147,7 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
     filename = GetSumListFile(progname);
     if (FileExists(filename))
     {
-        std::string sum;
+        std::string line, sum;
 
         std::ifstream sumfile(filename);
         while(sumfile)
@@ -169,8 +207,10 @@ void CRegister::RegisterInstall(void)
     if (!file)
         throwerror(false, "Error while opening register file");
 
-    file << "version " + InstallInfo.version + "\n";
-    // UNDONE: Write description and url too
+    WriteRegEntry("regver", m_szRegVer, file);
+    WriteRegEntry("version", InstallInfo.version, file);
+    WriteRegEntry("url", InstallInfo.url, file);
+    WriteRegEntry("description", InstallInfo.description, file);
 }
 
 CRegister::EUninstRet CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPasFunc PasFunc,
@@ -184,6 +224,12 @@ CRegister::EUninstRet CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUp
     // Check if we got permission to remove all files
     for (it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
     {
+        if (FileExists(it->first) && (!WriteAccess(it->first)))
+            debugline("No w access to %s\n", it->first.c_str());
+        
+        if (FileExists(it->first) && (!ReadAccess(it->first)))
+            debugline("No r access to %s\n", it->first.c_str());
+        
         if (FileExists(it->first) && (!WriteAccess(it->first) || !ReadAccess(it->first)))
         {
             needroot = true;

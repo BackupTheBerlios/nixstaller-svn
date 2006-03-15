@@ -140,7 +140,13 @@ copytemp()
     fi
     
     # Copy all plist files
-    cp ${CONFDIR}/plist_extrpath* ${CONFDIR}/plist_var_* ${CONFDIR}/tmp || echo "Warning: No plist files found!"
+    PLIST_FOUND=0
+    cp ${CONFDIR}/plist_extrpath* ${CONFDIR}/tmp && PLIST_FOUND=1
+    cp ${CONFDIR}/plist_var_* ${CONFDIR}/tmp && PLIST_FOUND=1
+    
+    if [ $PLIST_FOUND -eq 0 ]; then
+        echo "Warning: No plist files found!"
+    fi
 }
 
 remtemp()

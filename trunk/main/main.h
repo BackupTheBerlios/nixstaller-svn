@@ -70,7 +70,7 @@ struct command_entry_s
 
 struct install_info_s
 {
-    std::string os, cpuarch, version, program_name, intropicname, own_dir, dest_dir, cur_lang;
+    std::string os, cpuarch, version, program_name, description, url, intropicname, own_dir, dest_dir, cur_lang;
     std::list<std::string> languages;
     std::map<std::string, char *> translations;
     EArchiveType archive_type;
@@ -159,8 +159,11 @@ public:
 class CRegister
 {
     char *m_szConfDir;
+    const std::string m_szRegVer;
     LIBSU::CLibSU m_SUHandler;
     
+    void WriteRegEntry(const char *entry, const std::string &field, std::ofstream &file);
+    std::string ReadRegField(std::ifstream &file);
     const char *GetAppRegDir(void);
     const char *GetConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
@@ -172,7 +175,7 @@ public:
     typedef char *(*TPasFunc)(void *);
     enum EUninstRet { UNINST_SUCCESS, UNINST_WRONGPASS, UNINST_NULLPASS, UNINST_SUERR };
     
-    CRegister(void) : m_szConfDir(NULL) { };
+    CRegister(void) : m_szConfDir(NULL), m_szRegVer("1.0") { };
     
     bool IsInstalled(bool checkver);
     void RemoveFromRegister(app_entry_s *pApp);
