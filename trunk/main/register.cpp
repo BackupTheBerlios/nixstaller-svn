@@ -38,6 +38,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <dirent.h>
+#include <libgen.h>
 
 #include "main.h"
 
@@ -224,17 +225,15 @@ CRegister::EUninstRet CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUp
     // Check if we got permission to remove all files
     for (it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
     {
-        if (FileExists(it->first) && (!WriteAccess(it->first)))
-            debugline("No w access to %s\n", it->first.c_str());
-        
-        if (FileExists(it->first) && (!ReadAccess(it->first)))
-            debugline("No r access to %s\n", it->first.c_str());
-        
-        if (FileExists(it->first) && (!WriteAccess(it->first) || !ReadAccess(it->first)))
+        char *fname = strdup(it->first.c_str());
+        char *dname = dirname(fname);
+        if (dname && dname[0] && (!WriteAccess(dname) || !ReadAccess(dname)))
         {
             needroot = true;
+            free(fname);
             break;
         }
+        free(fname);
     }
     
     if (needroot)

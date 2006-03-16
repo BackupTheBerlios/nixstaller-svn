@@ -51,7 +51,6 @@ CAppManager::CAppManager(char **argv)
     Fl_Tabs *pTabs = new Fl_Tabs((m_pAppList->x()+m_pAppList->w())+20, 20, 300, 240);
     
     Fl_Group *pInfoTab = new Fl_Group((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Info");
-    //m_pInfoOutput = new Fl_Help_View((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Info");
     m_pInfoOutput = new Fl_Help_View((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240);
     m_pInfoOutput->align(FL_ALIGN_TOP);
     pInfoTab->end();
