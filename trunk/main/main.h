@@ -132,6 +132,22 @@ std::string GetMD5(const std::string &file);
 void throwerror(bool dialog, const char *error, ...);
 void EndProg(bool err=false);
 
+// Class containing functions specific for each frontend. This way libmain can talk to the user.
+class CFrontend
+{
+public:
+    virtual ~CFrontend(void) { };
+    
+    // General
+    //virtual void MessageBox(const char *text);
+    //virtual void YesNoBox(const char *text);
+    
+    // AppManager
+    virtual void ListFailedFilesToRM(std::list<std::string> flist) = 0;
+};
+
+extern CFrontend *pFrontend;
+
 class CExtractAsRootFunctor
 {
     int m_iTotalSize;

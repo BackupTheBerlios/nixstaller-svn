@@ -34,7 +34,9 @@
 
 #include "fltk.h"
 #include <FL/x.H>
-    
+
+CFrontend *pFrontend = new CFLTKFrontend;
+
 int main(int argc, char **argv)
 {
     // Init

@@ -64,6 +64,18 @@
 #define MAIN_WINDOW_W 600
 #define MAIN_WINDOW_H 400
 
+class CFLTKFrontend: public CFrontend
+{
+public:
+    virtual ~CFLTKFrontend(void) { };
+    // General
+    //virtual void MessageBox(const char *text);
+    //virtual void YesNoBox(const char *text);
+    
+    // AppManager
+    virtual void ListFailedFilesToRM(std::list<std::string> flist) { };
+};
+
 class CBaseScreen;
 class CUninstallWindow;
 
