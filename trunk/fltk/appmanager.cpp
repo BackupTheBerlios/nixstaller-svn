@@ -35,7 +35,7 @@
 #include "fltk.h"
 #include <FL/x.H>
 
-CAppManager::CAppManager(char **argv)
+CAppManager::CAppManager()
 {
     const int mainw = 560, mainh = 330;
     m_pMainWindow = new Fl_Window(mainw, mainh, "Nixstaller - App Manager");
@@ -73,7 +73,6 @@ CAppManager::CAppManager(char **argv)
     m_pUninstallWindow = new CUninstallWindow;
     
     m_pMainWindow->end();
-    Run(argv);
 }
 
 void CAppManager::UpdateInfo(bool init)

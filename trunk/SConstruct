@@ -319,4 +319,4 @@ fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/app
                    LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 # Default to all
-Default(fltk, ncurses, main, libsu, env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, fltk))
+Default(fltk, main, libsu, env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk))

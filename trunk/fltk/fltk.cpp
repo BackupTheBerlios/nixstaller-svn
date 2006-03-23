@@ -35,7 +35,7 @@
 #include "fltk.h"
 #include <FL/x.H>
 
-CFrontend *pFrontend = new CFLTKFrontend;
+CFLTKBase *pInterface = NULL;
 
 int main(int argc, char **argv)
 {
@@ -46,11 +46,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    //CreateMainWindow(argv);
     if ((argc > 1) && !strcmp(argv[1], "inst"))
-        CInstaller inst(argv);
+        pInterface = new CInstaller;
     else
-        CAppManager app(argv);
+        pInterface = new CAppManager;
+    
+    pInterface->Run(argv);
     
     // Deinit
     MainEnd();
@@ -65,6 +66,7 @@ void EndProg(bool err)
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
 
     MainEnd();
+    delete pInterface;
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 

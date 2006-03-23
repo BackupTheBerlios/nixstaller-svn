@@ -38,7 +38,7 @@
 // Main installer screen
 // -------------------------------------
 
-CInstaller::CInstaller(char **argv) : m_bInstallFiles(false)
+CInstaller::CInstaller() : m_bInstallFiles(false)
 {
     // Lazy but handy macro :)
     #define MCreateWidget(w) { widget = new w(this); \
@@ -87,7 +87,6 @@ CInstaller::CInstaller(char **argv) : m_bInstallFiles(false)
         Next();
     
     m_pMainWindow->end();
-    Run(argv);
 }
 
 CInstaller::~CInstaller()
@@ -794,7 +793,7 @@ void CInstallFilesScreen::ChangeStatusText(const char *txt, int n)
 }
 
 void CInstallFilesScreen::Install()
-{
+{/*
     std::string curfile;
     short percent = 0;
     
@@ -926,7 +925,7 @@ void CInstallFilesScreen::Install()
     m_pOwner->m_pPrevButton->deactivate();
     m_pOwner->m_pNextButton->activate();
 
-    // HACK
+    // HACK*/
     if (!FileExists(InstallInfo.own_dir + "/config/finish"))
         m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
 }

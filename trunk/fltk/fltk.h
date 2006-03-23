@@ -64,18 +64,6 @@
 #define MAIN_WINDOW_W 600
 #define MAIN_WINDOW_H 400
 
-class CFLTKFrontend: public CFrontend
-{
-public:
-    virtual ~CFLTKFrontend(void) { };
-    // General
-    //virtual void MessageBox(const char *text);
-    //virtual void YesNoBox(const char *text);
-    
-    // AppManager
-    virtual void ListFailedFilesToRM(std::list<std::string> flist) { };
-};
-
 class CBaseScreen;
 class CUninstallWindow;
 
@@ -88,14 +76,14 @@ protected:
     Fl_Window *m_pMainWindow;
     Fl_Button *m_pAboutButton;
 
-    void Run(char **argv) { m_pMainWindow->show(1, argv); Fl::run(); };
-
 public:
     CFLTKBase(void);
     virtual ~CFLTKBase(void) { };
 
     virtual void UpdateLanguage(void);
     void ShowAbout(bool show);
+
+    void Run(char **argv) { m_pMainWindow->show(1, argv); Fl::run(); };
 
     static void AboutOKCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(false); };
     static void ShowAboutCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(true); };
@@ -112,11 +100,11 @@ public:
     Fl_Button *m_pPrevButton;
     Fl_Button *m_pNextButton;
 
-    CInstaller(char **argv);
+    CInstaller(void);
     virtual ~CInstaller(void);
 
     virtual void UpdateLanguage(void);
-
+    
     void Prev(void);
     void Next(void);
 
@@ -137,7 +125,7 @@ class CAppManager: public CFLTKBase
     CUninstallWindow *m_pUninstallWindow;
     
 public:
-    CAppManager(char **argv);
+    CAppManager();
     virtual ~CAppManager(void)
     { for (std::vector<app_entry_s*>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++) delete *it; };
     

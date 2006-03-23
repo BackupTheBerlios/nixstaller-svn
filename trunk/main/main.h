@@ -144,9 +144,14 @@ public:
     
     // AppManager
     virtual void ListFailedFilesToRM(std::list<std::string> flist) = 0;
+    
+    // Installer
+    virtual void UpdateInstProgress(int percent, const std::string &file) = 0;
+    static void UpdateInstProgressCB(int percent, const std::string &file, void *p)
+    { ((CFrontend *)p)->UpdateInstProgress(percent, file); }; // Callback for su
 };
 
-extern CFrontend *pFrontend;
+//extern CFrontend *pFrontend;
 
 class CExtractAsRootFunctor
 {
@@ -157,18 +162,15 @@ class CExtractAsRootFunctor
     char *m_szCurArchFName;
     LIBSU::CLibSU m_SUHandler;
     
-    typedef void (*TUpProgress)(int percent, void *p);
-    typedef void (*TUpText)(const std::string &str, void *p);
+    typedef void (*TUpProgress)(int percent, const std::string &str, void *p);
 
     TUpProgress m_UpProgFunc;
-    TUpText m_UpTextFunc;
-    void *m_pFuncData[2];
+    void *m_pFuncData;
     
 public:
-    bool operator ()(char *passwd);
+    bool operator ()(char *passwd, TUpProgress upfunc, void *data);
     void Update(const char *s);
-    void SetUpdateProgFunc(TUpProgress UpProgFunc, void *data) { m_UpProgFunc = UpProgFunc; m_pFuncData[0] = data; };
-    void SetUpdateTextFunc(TUpText UpTextFunc, void *data) { m_UpTextFunc = UpTextFunc; m_pFuncData[1] = data; };
+    
     static void SUOutFunc(const char *s, void *p) { ((CExtractAsRootFunctor *)p)->Update(s); };
 };
 

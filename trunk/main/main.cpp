@@ -537,7 +537,7 @@ float ExtractArchive(std::string &curfile)
     return percent;
 }
 
-bool CExtractAsRootFunctor::operator ()(char *passwd)
+bool CExtractAsRootFunctor::operator ()(char *passwd, TUpProgress upfunc, void *data)
 {
     const int archnamescount = 4;
     
@@ -546,6 +546,8 @@ bool CExtractAsRootFunctor::operator ()(char *passwd)
     m_fPercent = 0.0f;
     m_ArchList.clear();
     m_szCurArchFName = NULL;
+    m_UpProgFunc = upfunc;
+    m_pFuncData = data;
     
     // Make list of all files to be extracted
     char *archnames[archnamescount] = { CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str()),
@@ -623,8 +625,7 @@ void CExtractAsRootFunctor::Update(const char *s)
     
     curfile.insert(0, "Extracting file: ");
     
-    m_UpProgFunc(m_fPercent, m_pFuncData[0]);
-    m_UpTextFunc(curfile, m_pFuncData[1]);
+    m_UpProgFunc(m_fPercent, curfile, m_pFuncData);
 }
 
 #endif
@@ -671,3 +672,127 @@ bool ReadLang()
 
     return true;
 }
+
+void ExtractFiles(char *passwd, void (*UpFunc)(int, const std::string &, void *), void *pData)
+{
+    std::string curfile;
+    short percent = 0;
+    
+    bool alwaysroot = false;
+    if (!WriteAccess(InstallInfo.dest_dir))
+    {
+        CExtractAsRootFunctor Extracter;
+        
+        if (!Extracter(passwd, UpFunc, pData))
+        {
+            CleanPasswdString(passwd);
+            passwd = NULL;
+            throwerror(true, "Error during extracting files");
+        }
+        alwaysroot = true; // Install commands need root now too
+    }
+    else
+    {
+        while(1)
+        {
+            percent = ExtractArchive(curfile);
+    
+            if (percent == -1)
+            {
+                CleanPasswdString(passwd);
+                passwd = NULL;
+                throwerror(true, "Error during extracting files");
+            }
+    
+            if (percent == 100)
+            {
+                percent = 100/(1+InstallInfo.command_entries.size()); // Convert to overall progress
+                break;
+            }
+        
+            UpFunc(percent/(1+InstallInfo.command_entries.size()), "Extracting file: " + curfile + "\n", pData);
+        }
+    }
+}
+/*
+void ExecuteInstCmd(char *passwd, void (*UpFunc)(int, const std::string &, void *), void *pData)
+{
+    short step = 2; // Not 1, because extracting files is also a step
+    for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
+         it!=InstallInfo.command_entries.end(); it++, step++)
+    {
+        if ((*it)->command.empty()) continue;
+        
+        std::string command = (*it)->command + " " + GetParameters(*it);
+    
+        AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
+        ChangeStatusText((*it)->description.c_str(), step);
+
+        if ((*it)->need_root == NEED_ROOT || alwaysroot)
+        {
+            m_SUHandler.SetPath((*it)->path.c_str());
+            m_SUHandler.SetCommand(command);
+            if (!m_SUHandler.ExecuteCommand(m_szPassword))
+            {
+                if ((*it)->exit_on_failure)
+                {
+                    CleanPasswdString(m_szPassword);
+                    m_szPassword = NULL;
+                    throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
+                               m_SUHandler.GetErrorMsgC());
+                }
+            }
+        }
+        else
+        {
+            // Redirect stderr to stdout, so that errors will be displayed too
+            command += " 2>&1";
+            
+            setenv("PATH", (*it)->path.c_str(), 1);
+            FILE *pPipe = popen(command.c_str(), "r");
+            if (pPipe)
+            {
+                char buf[1024];
+                while(fgets(buf, sizeof(buf), pPipe))
+                {
+                    AppendText(buf);
+                    Fl::wait(0.0); // Update screen
+                }
+                
+                // Check if command exitted normally and close pipe
+                int state = pclose(pPipe);
+                if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
+                {
+                    if ((*it)->exit_on_failure)
+                    {
+                        CleanPasswdString(m_szPassword);
+                        m_szPassword = NULL;
+                        throwerror(true, "Failed to execute install command");
+                    }
+                }
+            }
+            else
+            {
+                CleanPasswdString(m_szPassword);
+                m_szPassword = NULL;
+                throwerror(true, "Could not execute installation commands (could not open pipe)");
+            }
+        }
+        
+        percent += (1.0f/((float)InstallInfo.command_entries.size()+1.0f))*100.0f;
+        SetProgress(percent);
+    }
+
+    AppendText("Registering installation...");
+    Register.RegisterInstall();
+    Register.CalcSums();
+    Register.CheckSums(InstallInfo.program_name.c_str());
+    AppendText("done\n");
+
+    SetProgress(100);
+    m_pOwner->m_bInstallFiles = false;
+    fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());
+    CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
+}*/
+
