@@ -75,7 +75,7 @@ class CFLTKBase
 protected:
     Fl_Window *m_pMainWindow;
     Fl_Button *m_pAboutButton;
-
+    
 public:
     CFLTKBase(void);
     virtual ~CFLTKBase(void) { };
@@ -89,10 +89,14 @@ public:
     static void ShowAboutCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(true); };
 };
 
-class CInstaller: public CFLTKBase
+class CInstaller: public CFLTKBase, public CBaseInstall
 {
     Fl_Wizard *m_pWizard;
     std::list<CBaseScreen *> m_ScreenList;
+    
+protected:
+    virtual void AddStatusText(const std::string) { };
+    virtual void SetProgress(int percent) { };
     
 public:
     bool m_bInstallFiles;

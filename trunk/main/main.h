@@ -206,6 +206,19 @@ public:
 
 extern CRegister Register;
 
+class CBaseInstall
+{
+protected:
+    virtual void AddStatusText(const std::string) = 0;
+    virtual void SetProgress(int percent) = 0;
+    
+public:
+    virtual ~CBaseInstall(void) { };
+    
+    void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize) { };
+    float ExtractArchive(std::string &curfile) { return 0.0f; };
+};
+
 //#define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE

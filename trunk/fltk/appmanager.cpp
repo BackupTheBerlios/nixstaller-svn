@@ -133,7 +133,7 @@ void CAppManager::Uninstall()
     if (it != m_AppVec.end())
         m_AppVec.erase(it);
     
-    fl_message(GetTranslation("Uinstallation of %s complete!"), m_pCurrentAppEntry->name.c_str());
+    fl_message(GetTranslation("Uninstallation of %s complete!"), m_pCurrentAppEntry->name.c_str());
 
     delete m_pCurrentAppEntry;
     UpdateInfo(false);
