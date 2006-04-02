@@ -206,16 +206,32 @@ public:
 
 extern CRegister Register;
 
-class CBaseInstall
+class CMain
 {
+protected:
+    bool ReadLang(void);
+    virtual char *GetPassword(void *p) = 0;
+    
+public:
+    virtual ~CMain(void) { };
+    
+    virtual void Init(int argc, char *argv[]);
+};
+    
+class CBaseInstall: public CMain
+{
+    void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize) { };
+    bool ReadConfig(void);
+    
 protected:
     virtual void AddStatusText(const std::string) = 0;
     virtual void SetProgress(int percent) = 0;
     
 public:
+    install_info_s m_InstallInfo;
+    
     virtual ~CBaseInstall(void) { };
     
-    void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize) { };
     float ExtractArchive(std::string &curfile) { return 0.0f; };
 };
 

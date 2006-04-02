@@ -76,6 +76,8 @@ protected:
     Fl_Window *m_pMainWindow;
     Fl_Button *m_pAboutButton;
     
+    virtual char *GetPassword(void *p) { };
+    
 public:
     CFLTKBase(void);
     virtual ~CFLTKBase(void) { };
@@ -97,6 +99,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
 protected:
     virtual void AddStatusText(const std::string) { };
     virtual void SetProgress(int percent) { };
+    using CFLTKBase::GetPassword;
     
 public:
     bool m_bInstallFiles;
