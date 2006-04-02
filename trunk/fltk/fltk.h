@@ -67,7 +67,7 @@
 class CBaseScreen;
 class CUninstallWindow;
 
-class CFLTKBase
+class CFLTKBase: public CMain
 {
     Fl_Window *m_pAboutWindow;
     Fl_Return_Button *m_pAboutOKButton;
@@ -76,7 +76,7 @@ protected:
     Fl_Window *m_pMainWindow;
     Fl_Button *m_pAboutButton;
     
-    virtual char *GetPassword(void *p) { };
+    char *GetPassword(void *p) { };
     
 public:
     CFLTKBase(void);
@@ -99,7 +99,6 @@ class CInstaller: public CFLTKBase, public CBaseInstall
 protected:
     virtual void AddStatusText(const std::string) { };
     virtual void SetProgress(int percent) { };
-    using CFLTKBase::GetPassword;
     
 public:
     bool m_bInstallFiles;

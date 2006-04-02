@@ -215,10 +215,10 @@ protected:
 public:
     virtual ~CMain(void) { };
     
-    virtual void Init(int argc, char *argv[]);
+    virtual void Init(int argc, char *argv[]) { };
 };
     
-class CBaseInstall: public CMain
+class CBaseInstall
 {
     void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize) { };
     bool ReadConfig(void);
