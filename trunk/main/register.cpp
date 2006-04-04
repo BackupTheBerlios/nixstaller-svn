@@ -49,7 +49,7 @@ void CRegister::WriteRegEntry(const char *entry, const std::string &field, std::
     file << entry << ' ';
     
     std::string format = field;
-    std::string::size_type index;
+    std::string::size_type index = 0;
     
     while ((index = format.find("\"", index+2)) != std::string::npos)
         format.replace(index, 1, "\\\"");
@@ -60,7 +60,7 @@ void CRegister::WriteRegEntry(const char *entry, const std::string &field, std::
 std::string CRegister::ReadRegField(std::ifstream &file)
 {
     std::string line, ret;
-    std::string::size_type index;
+    std::string::size_type index = 0;
     
     std::getline(file, line);
     EatWhite(line);

@@ -228,7 +228,7 @@ class CBaseInstall
     std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
     char *m_szCurArchFName;
     
-    void InitArchive(const char *archname) { };
+    void InitArchive(const char *archname);
     bool ReadConfig(void);
     
 protected:

@@ -32,7 +32,27 @@
     this exception.
 */
 
+#include <fstream>
 #include "main.h"
+
+void CBaseInstall::InitArchive(const char *archname)
+{
+    if (!FileExists(archname))
+        return;
+        
+    char *fname = CreateText("%s.sizes", archname);
+    std::ifstream file(fname);
+    std::string arfilename;
+    unsigned int size;
+
+    // Read first column to size and the other column(s) to arfilename
+    while(file && (file >> size) && std::getline(file, arfilename))
+    {
+        EatWhite(arfilename);
+        m_ArchList[const_cast<char*>(archname)].filesizes[arfilename] = size;
+        m_iTotalArchSize += size;
+    }
+}
 
 bool CBaseInstall::ExtractFiles()
 {
@@ -91,19 +111,18 @@ bool CBaseInstall::ExtractFiles()
             char line[512];
             while (fgets(line, sizeof(line), pipe))
             {
-                std::string stat = line, curfile;
+                std::string stat = line;
                 
                 if (stat.compare(0, 2, "x ") == 0)
                     stat.erase(0, 2);
-                
-                curfile = stat;
-                EatWhite(curfile, true);
-                
+                               
                 EatWhite(stat);
 
                 AddStatusText("Extracting file: " + stat);
                 
-                m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[curfile]/(float)m_iTotalArchSize)*100.0f;
+                stat += '\n'; // File names are stored with a newline
+                
+                m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_iTotalArchSize)*100.0f;
                 SetProgress((int)m_fExtrPercent);
             }
         }
