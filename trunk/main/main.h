@@ -209,6 +209,8 @@ extern CRegister Register;
 class CMain
 {
 protected:
+    LIBSU::CLibSU m_SUHandler;
+    
     bool ReadLang(void);
     virtual char *GetPassword(void *p) = 0;
     
@@ -220,7 +222,13 @@ public:
     
 class CBaseInstall
 {
-    void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize) { };
+    int m_iTotalArchSize;
+    float m_fExtrPercent;
+    std::map<char *, arch_size_entry_s> m_ArchList;
+    std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
+    char *m_szCurArchFName;
+    
+    void InitArchive(const char *archname) { };
     bool ReadConfig(void);
     
 protected:
@@ -232,7 +240,7 @@ public:
     
     virtual ~CBaseInstall(void) { };
     
-    float ExtractArchive(std::string &curfile) { return 0.0f; };
+    bool ExtractFiles(void);
 };
 
 //#define RELEASE /* Enable on a release build */

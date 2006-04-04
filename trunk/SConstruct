@@ -302,7 +302,7 @@ else:
 libsu = env.SConscript('libsu/SConstruct')
 
 # Builds main lib
-main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/register.cpp', 'libmd5/md5.c'])
+main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/register.cpp', 'main/install.cpp', 'libmd5/md5.c'])
 
 env.Append(LIBS = Split('su main util'))
 
