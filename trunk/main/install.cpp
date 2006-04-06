@@ -33,6 +33,7 @@
 */
 
 #include <fstream>
+#include <sstream>
 #include "main.h"
 
 void CBaseInstall::InitArchive(const char *archname)
@@ -63,11 +64,11 @@ bool CBaseInstall::ExtractFiles()
     m_szCurArchFName = NULL;
     
     // Init all archives (if file doesn't exist nothing will be done)
-    InitArchive(CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str()));
-    InitArchive(CreateText("%s/instarchive_all_%s", InstallInfo.own_dir.c_str(), InstallInfo.cpuarch.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str(),
-                InstallInfo.cpuarch.c_str()));
+    InitArchive(CreateText("%s/instarchive_all", m_InstallInfo.own_dir.c_str()));
+    InitArchive(CreateText("%s/instarchive_all_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.cpuarch.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str(),
+                m_InstallInfo.cpuarch.c_str()));
     
     if (m_ArchList.empty())
         return true; // No files to extract
@@ -86,9 +87,9 @@ bool CBaseInstall::ExtractFiles()
         // Set extract command
         std::string command = "cat " + std::string(m_szCurArchFName);
 
-        if (InstallInfo.archive_type == ARCH_GZIP)
+        if (m_InstallInfo.archive_type == ARCH_GZIP)
             command += " | gzip -cd | tar xvf -";
-        else if (InstallInfo.archive_type == ARCH_BZIP2)
+        else if (m_InstallInfo.archive_type == ARCH_BZIP2)
             command += " | bzip2 -d | tar xvf -";
 
         if (needroot)
@@ -128,5 +129,256 @@ bool CBaseInstall::ExtractFiles()
         }
         m_CurArchIter++;
     }
+    return true;
+}
+
+bool CBaseInstall::ReadConfig()
+{
+    const int maxread = std::numeric_limits<std::streamsize>::max();
+    std::ifstream file("config/install.cfg");
+    std::string str, line, tmp, ParamName;
+    bool incommandentry = false, inparamentry = false;
+    command_entry_s *pCommandEntry = NULL;
+    param_entry_s *pParamEntry = NULL;
+    
+    while(file)
+    {
+        // Read one line at a time...this makes sure that we don't start reading at a new line if the user 'forgot'
+        // to enter a value after the first command/variabele
+        if (!std::getline(file, line))
+            break;
+        
+        std::istringstream strstrm(line); // Use a stringstream to easily read from this line
+        
+        if (!(strstrm >> str))
+            continue;
+
+        if (str[0] == '#') // Comment, skip
+            continue;
+
+        if (incommandentry)
+        {
+            if (inparamentry)
+            {
+                if (str[0] == ']')
+                {
+                    if (!ParamName.empty())
+                        pCommandEntry->parameter_entries[ParamName] = pParamEntry;
+                    pParamEntry = NULL;
+                    inparamentry = false;
+                }
+                else if (str == "name")
+                {
+                    std::getline(strstrm, tmp);
+                    ParamName = EatWhite(tmp);
+                }
+                else if (str == "parameter")
+                {
+                    std::getline(strstrm, tmp);
+                    pParamEntry->parameter = EatWhite(tmp);
+                }
+                else if (str == "description")
+                {
+                    std::getline(strstrm, tmp);
+                    EatWhite(tmp);
+                    if (tmp[0] == '[')
+                        GetTextFromBlock(file, tmp);
+                    pParamEntry->description = tmp;
+                }
+                else if (str == "defaultval")
+                {
+                    std::getline(strstrm, tmp);
+                    pParamEntry->defaultval = pParamEntry->value = EatWhite(tmp);
+                }
+                else if (str == "varname")
+                {
+                    std::getline(strstrm, tmp);
+                    pParamEntry->varname = EatWhite(tmp);
+                }
+                else if (str == "addchoice")
+                {
+                    std::getline(strstrm, tmp);
+                    pParamEntry->options.push_back(EatWhite(tmp));
+                }
+                else if (str == "type")
+                {
+                    std::string type;
+                    strstrm >> type;
+                    if (type == "string")
+                        pParamEntry->param_type = PTYPE_STRING;
+                    else if (type == "dir")
+                        pParamEntry->param_type = PTYPE_DIR;
+                    else if (type == "list")
+                        pParamEntry->param_type = PTYPE_LIST;
+                    else if (type == "bool")
+                        pParamEntry->param_type = PTYPE_BOOL;
+                }
+            }
+            else
+            {
+                if (str[0] == ']')
+                {
+                    m_InstallInfo.command_entries.push_back(pCommandEntry);
+                    pCommandEntry = NULL;
+                    incommandentry = false;
+                }
+                else if (str == "command")
+                {
+                    std::getline(strstrm, tmp);
+                    EatWhite(tmp);
+                    if (tmp[0] == '[')
+                        GetTextFromBlock(file, tmp);
+                    pCommandEntry->command = tmp;
+                }
+                else if (str == "description")
+                {
+                    std::getline(strstrm, tmp);
+                    pCommandEntry->description = EatWhite(tmp);
+                }
+                else if (str == "needroot")
+                {
+                    std::string s;
+                    strstrm >> s;
+                    if (s == "true")
+                        pCommandEntry->need_root = NEED_ROOT;
+                    else if (s == "false")
+                        pCommandEntry->need_root = NO_ROOT;
+                    else if (s == "dependson")
+                    {
+                        if (strstrm >> pCommandEntry->dep_param)
+                            pCommandEntry->need_root = DEPENDED_ROOT;
+                    }
+                }
+                else if (str == "exitonfailure")
+                {
+                    std::string ex;
+                    strstrm >> ex;
+                    if (ex == "true")
+                        pCommandEntry->exit_on_failure = true;
+                    else if (ex == "false")
+                        pCommandEntry->exit_on_failure = false;
+                }
+                else if (str == "path")
+                {
+                    std::getline(strstrm, tmp);
+                    pCommandEntry->path = EatWhite(tmp);
+
+                }
+                else if (str == "addparam")
+                {
+                    file.ignore(maxread, '[');
+                    inparamentry = true;
+                    pParamEntry = new param_entry_s;
+                    ParamName.clear();
+                }
+            }
+        }
+        else
+        {
+            if (str == "appname")
+            {
+                std::getline(strstrm, tmp);
+                m_InstallInfo.program_name = EatWhite(tmp);
+
+            }
+            else if (str == "version")
+            {
+                std::getline(strstrm, tmp);
+                m_InstallInfo.version = EatWhite(tmp);
+            }
+            else if (str == "url")
+            {
+                std::getline(strstrm, tmp);
+                m_InstallInfo.url = EatWhite(tmp);
+            }
+            else if (str == "description")
+            {
+                std::getline(strstrm, tmp);
+                EatWhite(tmp);
+                if (tmp[0] == '[')
+                    GetTextFromBlock(file, tmp);
+                m_InstallInfo.description = tmp;
+            }
+            else if (str == "archtype")
+            {
+                std::string type;
+                strstrm >> type;
+                if (type == "gzip")
+                    m_InstallInfo.archive_type = ARCH_GZIP;
+                else if (type == "bzip2")
+                    m_InstallInfo.archive_type = ARCH_BZIP2;
+            }
+            else if (str == "installdir")
+            {
+                std::string type;
+                strstrm >> type;
+                if (type == "select")
+                    m_InstallInfo.dest_dir_type = DEST_SELECT;
+                if (type == "temp")
+                    m_InstallInfo.dest_dir_type = DEST_TEMP;
+                else if (type == "default")
+                {
+                    if (strstrm >> m_InstallInfo.dest_dir)
+                        m_InstallInfo.dest_dir_type = DEST_DEFAULT;
+                }
+            }
+            else if (str == "languages")
+            {
+                std::string lang;
+                while (strstrm >> lang)
+                    m_InstallInfo.languages.push_back(lang);
+            }
+            else if (str == "intropic")
+            {
+                std::getline(strstrm, tmp);
+                m_InstallInfo.intropicname = EatWhite(tmp);
+            }
+            else if (str == "commandentry")
+            {
+                file.ignore(maxread, '[');
+                incommandentry = true;
+                pCommandEntry = new command_entry_s;
+            }
+        }
+    }
+
+#ifndef RELEASE
+
+    debugline("appname: %s\n", m_InstallInfo.program_name.c_str());
+    debugline("version: %s\n", m_InstallInfo.version.c_str());
+    debugline("archtype: %d\n", m_InstallInfo.archive_type);
+    debugline("installdir: %s\n", m_InstallInfo.dest_dir.c_str());
+    debugline("dir type: %d\n", m_InstallInfo.dest_dir_type);
+    debugline("languages: ");
+    for (std::list<std::string>::iterator it=m_InstallInfo.languages.begin(); it!=m_InstallInfo.languages.end(); it++)
+        debugline("%s ", it->c_str());
+    debugline("\n");
+
+    debugline("Comp entries:\n");
+    for (std::list<command_entry_s *>::iterator p=m_InstallInfo.command_entries.begin();p!=m_InstallInfo.command_entries.end();p++)
+    {
+        debugline("Need root: %d\n", (*p)->need_root);
+        debugline("Command: %s\n", (*p)->command.c_str());
+        debugline("Description: %s\n", (*p)->description.c_str());
+        debugline("Depends on param: %s\n", (*p)->dep_param.c_str());
+        debugline("Exit on failure: %d\n", (*p)->exit_on_failure);
+        debugline("Params:\n");
+        for (std::map<std::string, param_entry_s *>::iterator
+             p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
+        {
+            debugline("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
+                    "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
+            (*p2).second->parameter.c_str(),
+            (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
+            (*p2).second->varname.c_str());
+            debugline("\tOptions: ");
+            for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
+                debugline("%s ", p3->c_str());
+            debugline("\n");
+        }
+    }
+
+#endif
+
     return true;
 }

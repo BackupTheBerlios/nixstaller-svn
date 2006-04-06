@@ -208,10 +208,12 @@ extern CRegister Register;
 
 class CMain
 {
-protected:
     LIBSU::CLibSU m_SUHandler;
-    
+    bool m_bInitSU;
+
+protected:
     bool ReadLang(void);
+    void ExecuteAsRoot(const char *command, LIBSU::CLibSU::TOutputFunc outf=NULL, LIBSU::CLibSU::TThinkFunc thinkf=NULL);
     virtual char *GetPassword(void *p) = 0;
     
 public:
