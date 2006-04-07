@@ -208,12 +208,8 @@ extern CRegister Register;
 
 class CMain
 {
-    LIBSU::CLibSU m_SUHandler;
-    bool m_bInitSU;
-
 protected:
     bool ReadLang(void);
-    void ExecuteAsRoot(const char *command, LIBSU::CLibSU::TOutputFunc outf=NULL, LIBSU::CLibSU::TThinkFunc thinkf=NULL);
     virtual char *GetPassword(void *p) = 0;
     
 public:
@@ -234,6 +230,8 @@ class CBaseInstall
     bool ReadConfig(void);
     
 protected:
+    LIBSU::CLibSU m_SUHandler;
+
     virtual void AddStatusText(const std::string) = 0;
     virtual void SetProgress(int percent) = 0;
     
@@ -243,6 +241,9 @@ public:
     virtual ~CBaseInstall(void) { };
     
     bool ExtractFiles(void);
+    void UpdateStatus(const char *s);
+    
+    static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };
 };
 
 //#define RELEASE /* Enable on a release build */
