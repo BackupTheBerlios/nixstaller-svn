@@ -116,17 +116,17 @@ bool CBaseInstall::ExtractFiles()
 }
 
 bool CBaseInstall::Install(void)
-{/*
+{
     if ((InstallInfo.dest_dir_type == DEST_SELECT) || (InstallInfo.dest_dir_type == DEST_DEFAULT))
     {
         if (!ChoiceBox(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
              InstallInfo.program_name.c_str(), MakeCString(InstallInfo.dest_dir)), GetTranslation("Exit program"),
-        GetTranslation("Continue"), NULL))
+             GetTranslation("Continue"), NULL))
             EndProg();
     }
     else
     {
-        if (!fl_choice(CreateText(GetTranslation("This will install %s\nContinue?"), InstallInfo.program_name.c_str()),
+        if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), InstallInfo.program_name.c_str()),
              GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
             EndProg();
     }
@@ -155,7 +155,7 @@ bool CBaseInstall::Install(void)
     if (!askpass)
         askpass = !WriteAccess(InstallInfo.dest_dir);
 
-    m_SUHandler.SetOutputFunc(SUOutputHandler, this);
+    m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
     m_SUHandler.SetUser("root");
     m_SUHandler.SetTerminalOutput(false);
 
@@ -164,18 +164,13 @@ bool CBaseInstall::Install(void)
         while(true)
         {
             CleanPasswdString(m_szPassword);
-            m_szPassword = NULL;
-
-            m_pAskPassWindow->hotspot(m_pAskPassOKButton);
-            m_pAskPassWindow->take_focus();
-            m_pAskPassWindow->show();
-
-            while(m_pAskPassWindow->visible()) Fl::wait();
-
+            
+            m_szPassword = GetPassword();
+            
             // Check if password is invalid
             if (!m_szPassword)
             {
-                if (fl_choice(GetTranslation("Root access is required to continue\nAbort installation?"),
+                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
                     GetTranslation("No"), GetTranslation("Yes"), NULL))
                     EndProg();
             }
@@ -186,7 +181,7 @@ bool CBaseInstall::Install(void)
 
                 // Some error appeared
                 if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    fl_alert(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                    Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
                     throwerror(true, GetTranslation("Could not use su to gain root access"
@@ -199,12 +194,8 @@ bool CBaseInstall::Install(void)
     if (chdir(InstallInfo.dest_dir.c_str()))
         throwerror(true, "Could not open directory '%s'", InstallInfo.dest_dir.c_str());
     
-    m_pOwner->m_bInstallFiles = true;
-    m_pOwner->m_pPrevButton->deactivate();
-    m_pOwner->m_pNextButton->deactivate();
-    
-    Install();
-    return true;*/
+//    Install();
+    return true;
 }
 
 void CBaseInstall::UpdateStatus(const char *s)

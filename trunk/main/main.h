@@ -210,17 +210,19 @@ class CMain
 {
 protected:
     bool ReadLang(void);
-    virtual char *GetPassword(void *p) = 0;
+    virtual char *GetPassword(void) = 0;
     virtual bool YesNoBox(const char *str, ...) = 0;
     virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
                           const char *title, ...) = 0;
+    virtual void Warn(const char *text) = 0;
+    
 public:
     virtual ~CMain(void) { };
     
     virtual void Init(int argc, char *argv[]) { };
 };
     
-class CBaseInstall
+class CBaseInstall: virtual public CMain
 {
     int m_iTotalArchSize;
     float m_fExtrPercent;

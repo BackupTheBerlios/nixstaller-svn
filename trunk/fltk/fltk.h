@@ -67,7 +67,7 @@
 class CBaseScreen;
 class CUninstallWindow;
 
-class CFLTKBase: public CMain
+class CFLTKBase: virtual public CMain
 {
     Fl_Window *m_pAboutWindow;
     Fl_Return_Button *m_pAboutOKButton;
@@ -76,10 +76,11 @@ protected:
     Fl_Window *m_pMainWindow;
     Fl_Button *m_pAboutButton;
     
-    char *GetPassword(void *p) { };
+    char *GetPassword(void) { };
     virtual bool YesNoBox(const char *str, ...) { };
     virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
                           const char *title, ...) { };
+    virtual void Warn(const char *text) { };
     
 public:
     CFLTKBase(void);
