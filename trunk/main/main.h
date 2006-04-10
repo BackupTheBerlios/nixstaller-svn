@@ -211,7 +211,9 @@ class CMain
 protected:
     bool ReadLang(void);
     virtual char *GetPassword(void *p) = 0;
-    
+    virtual bool YesNoBox(const char *str, ...) = 0;
+    virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
+                          const char *title, ...) = 0;
 public:
     virtual ~CMain(void) { };
     
@@ -225,8 +227,12 @@ class CBaseInstall
     std::map<char *, arch_size_entry_s> m_ArchList;
     std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
     char *m_szCurArchFName;
+    char *m_szPassword;
+    bool m_bAlwaysRoot; // If we need root access during whole installation
     
     void InitArchive(const char *archname);
+    bool ExtractFiles(void);
+    bool ExecuteInstCommands(void);
     bool ReadConfig(void);
     
 protected:
@@ -238,9 +244,11 @@ protected:
 public:
     install_info_s m_InstallInfo;
     
+    CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
+                         m_szPassword(NULL), m_bAlwaysRoot(false) { };
     virtual ~CBaseInstall(void) { };
     
-    bool ExtractFiles(void);
+    bool Install(void);
     void UpdateStatus(const char *s);
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };

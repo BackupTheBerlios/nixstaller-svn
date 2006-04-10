@@ -55,6 +55,177 @@ void CBaseInstall::InitArchive(const char *archname)
     }
 }
 
+bool CBaseInstall::ExtractFiles()
+{    
+    // Init all archives (if file doesn't exist nothing will be done)
+    InitArchive(CreateText("%s/instarchive_all", m_InstallInfo.own_dir.c_str()));
+    InitArchive(CreateText("%s/instarchive_all_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.cpuarch.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str(),
+                m_InstallInfo.cpuarch.c_str()));
+    
+    if (m_ArchList.empty())
+        return true; // No files to extract
+
+    bool needroot = !WriteAccess(m_InstallInfo.dest_dir);
+    
+    if (needroot)
+    {
+        // Set up su
+        m_SUHandler.SetUser("root");
+        m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
+        m_SUHandler.SetTerminalOutput(false);
+    }
+    
+    while (m_CurArchIter != m_ArchList.end())
+    {
+        m_szCurArchFName = m_CurArchIter->first;
+        
+        // Set extract command
+        std::string command = "cat " + std::string(m_szCurArchFName);
+
+        if (m_InstallInfo.archive_type == ARCH_GZIP)
+            command += " | gzip -cd | tar xvf -";
+        else if (m_InstallInfo.archive_type == ARCH_BZIP2)
+            command += " | bzip2 -d | tar xvf -";
+
+        if (needroot)
+        {
+            m_SUHandler.SetCommand(command);
+            /*if (!m_SUHandler.ExecuteCommand(passwd))
+            return false;UNDONE*/
+        }
+        else
+        {
+            command += " 2>&1"; // tar may output files to stderr
+            
+            FILE *pipe = popen(command.c_str(), "r");
+            if (!pipe)
+            {
+                // UNDONE
+                return false;
+            }
+            
+            char line[512];
+            while (fgets(line, sizeof(line), pipe))
+                UpdateStatus(line);
+        }
+        m_CurArchIter++;
+    }
+    return true;
+}
+
+bool CBaseInstall::Install(void)
+{/*
+    if ((InstallInfo.dest_dir_type == DEST_SELECT) || (InstallInfo.dest_dir_type == DEST_DEFAULT))
+    {
+        if (!ChoiceBox(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
+             InstallInfo.program_name.c_str(), MakeCString(InstallInfo.dest_dir)), GetTranslation("Exit program"),
+        GetTranslation("Continue"), NULL))
+            EndProg();
+    }
+    else
+    {
+        if (!fl_choice(CreateText(GetTranslation("This will install %s\nContinue?"), InstallInfo.program_name.c_str()),
+             GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
+            EndProg();
+    }
+        
+    // Check if we need root access
+    bool askpass = false;
+    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
+         it!=InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->need_root != NO_ROOT)
+        {
+            // Command may need root permission, check if it is so
+            if ((*it)->need_root == DEPENDED_ROOT)
+            {
+                param_entry_s *p = GetParamByVar((*it)->dep_param);
+                if (p && !WriteAccess(p->value))
+                {
+                    (*it)->need_root = NEED_ROOT;
+                    if (!askpass) askpass = true;
+                }
+            }
+            else if (!askpass) askpass = true;
+        }
+    }
+
+    if (!askpass)
+        askpass = !WriteAccess(InstallInfo.dest_dir);
+
+    m_SUHandler.SetOutputFunc(SUOutputHandler, this);
+    m_SUHandler.SetUser("root");
+    m_SUHandler.SetTerminalOutput(false);
+
+    if (askpass && m_SUHandler.NeedPassword())
+    {
+        while(true)
+        {
+            CleanPasswdString(m_szPassword);
+            m_szPassword = NULL;
+
+            m_pAskPassWindow->hotspot(m_pAskPassOKButton);
+            m_pAskPassWindow->take_focus();
+            m_pAskPassWindow->show();
+
+            while(m_pAskPassWindow->visible()) Fl::wait();
+
+            // Check if password is invalid
+            if (!m_szPassword)
+            {
+                if (fl_choice(GetTranslation("Root access is required to continue\nAbort installation?"),
+                    GetTranslation("No"), GetTranslation("Yes"), NULL))
+                    EndProg();
+            }
+            else
+            {
+                if (m_SUHandler.TestSU(m_szPassword))
+                    break;
+
+                // Some error appeared
+                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                    fl_alert(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                else
+                {
+                    throwerror(true, GetTranslation("Could not use su to gain root access"
+                            "Make sure you can use su(adding the current user to the wheel group may help"));
+                }
+            }
+        }
+    }
+    
+    if (chdir(InstallInfo.dest_dir.c_str()))
+        throwerror(true, "Could not open directory '%s'", InstallInfo.dest_dir.c_str());
+    
+    m_pOwner->m_bInstallFiles = true;
+    m_pOwner->m_pPrevButton->deactivate();
+    m_pOwner->m_pNextButton->deactivate();
+    
+    Install();
+    return true;*/
+}
+
+void CBaseInstall::UpdateStatus(const char *s)
+{
+    if (!s || !s[0])
+        return;
+    
+    std::string stat = s;
+                
+    if (stat.compare(0, 2, "x ") == 0)
+        stat.erase(0, 2);
+                               
+    EatWhite(stat);
+
+    AddStatusText("Extracting file: " + stat);
+                
+    stat += '\n'; // File names are stored with a newline
+                
+    m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_iTotalArchSize)*100.0f;
+}
+
 bool CBaseInstall::ReadConfig()
 {
     const int maxread = std::numeric_limits<std::streamsize>::max();
@@ -304,86 +475,4 @@ bool CBaseInstall::ReadConfig()
 #endif
 
     return true;
-}
-
-bool CBaseInstall::ExtractFiles()
-{
-    // Init
-    m_iTotalArchSize = 0;
-    m_fExtrPercent = 0.0f;
-    m_ArchList.clear();
-    m_szCurArchFName = NULL;
-    
-    // Init all archives (if file doesn't exist nothing will be done)
-    InitArchive(CreateText("%s/instarchive_all", m_InstallInfo.own_dir.c_str()));
-    InitArchive(CreateText("%s/instarchive_all_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.cpuarch.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str(),
-                m_InstallInfo.cpuarch.c_str()));
-    
-    if (m_ArchList.empty())
-        return true; // No files to extract
-
-    bool needroot = false;
-    
-    // Set up su
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
-    m_SUHandler.SetTerminalOutput(false);
-
-    while (m_CurArchIter != m_ArchList.end())
-    {
-        m_szCurArchFName = m_CurArchIter->first;
-        
-        // Set extract command
-        std::string command = "cat " + std::string(m_szCurArchFName);
-
-        if (m_InstallInfo.archive_type == ARCH_GZIP)
-            command += " | gzip -cd | tar xvf -";
-        else if (m_InstallInfo.archive_type == ARCH_BZIP2)
-            command += " | bzip2 -d | tar xvf -";
-
-        if (needroot)
-        {
-            m_SUHandler.SetCommand(command);
-            /*if (!m_SUHandler.ExecuteCommand(passwd))
-            return false;UNDONE*/
-        }
-        else
-        {
-            command += " 2>&1"; // tar may output files to stderr
-            
-            FILE *pipe = popen(command.c_str(), "r");
-            if (!pipe)
-            {
-                // UNDONE
-                return false;
-            }
-            
-            char line[512];
-            while (fgets(line, sizeof(line), pipe))
-                UpdateStatus(line);
-        }
-        m_CurArchIter++;
-    }
-    return true;
-}
-
-void CBaseInstall::UpdateStatus(const char *s)
-{
-    if (!s || !s[0])
-        return;
-    
-    std::string stat = s;
-                
-    if (stat.compare(0, 2, "x ") == 0)
-        stat.erase(0, 2);
-                               
-    EatWhite(stat);
-
-    AddStatusText("Extracting file: " + stat);
-                
-    stat += '\n'; // File names are stored with a newline
-                
-    m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_iTotalArchSize)*100.0f;
 }

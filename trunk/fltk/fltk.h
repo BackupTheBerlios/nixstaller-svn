@@ -77,6 +77,9 @@ protected:
     Fl_Button *m_pAboutButton;
     
     char *GetPassword(void *p) { };
+    virtual bool YesNoBox(const char *str, ...) { };
+    virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
+                          const char *title, ...) { };
     
 public:
     CFLTKBase(void);
