@@ -211,6 +211,7 @@ class CMain
 protected:
     bool ReadLang(void);
     virtual char *GetPassword(void) = 0;
+    virtual void MsgBox(const char *str, ...) = 0;
     virtual bool YesNoBox(const char *str, ...) = 0;
     virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
                           const char *title, ...) = 0;
@@ -231,26 +232,29 @@ class CBaseInstall: virtual public CMain
     char *m_szCurArchFName;
     char *m_szPassword;
     bool m_bAlwaysRoot; // If we need root access during whole installation
-    
+    short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
+    float m_fInstallProgress;
+     
     void InitArchive(const char *archname);
-    bool ExtractFiles(void);
-    bool ExecuteInstCommands(void);
+    void ExtractFiles(void);
+    void ExecuteInstCommands(void);
     bool ReadConfig(void);
     
 protected:
     LIBSU::CLibSU m_SUHandler;
 
-    virtual void AddStatusText(const std::string) = 0;
+    virtual void ChangeStatusText(const char *str, int step) = 0;
+    virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
     
 public:
     install_info_s m_InstallInfo;
     
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_szPassword(NULL), m_bAlwaysRoot(false) { };
+                         m_szPassword(NULL), m_bAlwaysRoot(false), m_sInstallSteps(0), m_fInstallProgress(0.0f) { };
     virtual ~CBaseInstall(void) { };
     
-    bool Install(void);
+    void Install(void);
     void UpdateStatus(const char *s);
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };

@@ -34,6 +34,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <sys/wait.h>
 #include "main.h"
 
 void CBaseInstall::InitArchive(const char *archname)
@@ -55,7 +56,7 @@ void CBaseInstall::InitArchive(const char *archname)
     }
 }
 
-bool CBaseInstall::ExtractFiles()
+void CBaseInstall::ExtractFiles()
 {    
     // Init all archives (if file doesn't exist nothing will be done)
     InitArchive(CreateText("%s/instarchive_all", m_InstallInfo.own_dir.c_str()));
@@ -65,7 +66,7 @@ bool CBaseInstall::ExtractFiles()
                 m_InstallInfo.cpuarch.c_str()));
     
     if (m_ArchList.empty())
-        return true; // No files to extract
+        return; // No files to extract
 
     bool needroot = !WriteAccess(m_InstallInfo.dest_dir);
     
@@ -92,8 +93,12 @@ bool CBaseInstall::ExtractFiles()
         if (needroot)
         {
             m_SUHandler.SetCommand(command);
-            /*if (!m_SUHandler.ExecuteCommand(passwd))
-            return false;UNDONE*/
+            if (!m_SUHandler.ExecuteCommand(m_szPassword))
+            {
+                CleanPasswdString(m_szPassword);
+                m_szPassword = NULL;
+                throwerror(true, "Error during extracting files");
+            }
         }
         else
         {
@@ -101,40 +106,107 @@ bool CBaseInstall::ExtractFiles()
             
             FILE *pipe = popen(command.c_str(), "r");
             if (!pipe)
-            {
-                // UNDONE
-                return false;
-            }
+                throwerror(true, "Error during extracting files (could not open pipe)");
             
             char line[512];
             while (fgets(line, sizeof(line), pipe))
                 UpdateStatus(line);
+            
+            // Check if command exitted normally and close pipe
+            int state = pclose(pipe);
+            if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
+                throwerror(true, "Failed to execute install command (could not execute tar)");
         }
         m_CurArchIter++;
     }
-    return true;
 }
 
-bool CBaseInstall::Install(void)
+void CBaseInstall::ExecuteInstCommands(void)
 {
-    if ((InstallInfo.dest_dir_type == DEST_SELECT) || (InstallInfo.dest_dir_type == DEST_DEFAULT))
+    short step = 2; // Not 1, because extracting files is also a step
+    for (std::list<command_entry_s*>::iterator it=m_InstallInfo.command_entries.begin();
+         it!=m_InstallInfo.command_entries.end(); it++, step++)
+    {
+        if ((*it)->command.empty()) continue;
+        
+        std::string command = (*it)->command + " " + GetParameters(*it);
+    
+        AddInstOutput(CreateText("\nExecute: %s\n\n", command.c_str()));
+        ChangeStatusText((*it)->description.c_str(), step);
+
+        if ((*it)->need_root == NEED_ROOT || m_bAlwaysRoot)
+        {
+            m_SUHandler.SetPath((*it)->path.c_str());
+            m_SUHandler.SetCommand(command);
+            if (!m_SUHandler.ExecuteCommand(m_szPassword))
+            {
+                if ((*it)->exit_on_failure)
+                {
+                    CleanPasswdString(m_szPassword);
+                    m_szPassword = NULL;
+                    throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
+                               m_SUHandler.GetErrorMsgC());
+                }
+            }
+        }
+        else
+        {
+            // Redirect stderr to stdout, so that errors will be displayed too
+            command += " 2>&1";
+            
+            setenv("PATH", (*it)->path.c_str(), 1);
+            FILE *pPipe = popen(command.c_str(), "r");
+            if (pPipe)
+            {
+                char buf[1024];
+                while(fgets(buf, sizeof(buf), pPipe))
+                    AddInstOutput(buf);
+                
+                // Check if command exitted normally and close pipe
+                int state = pclose(pPipe);
+                if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
+                {
+                    if ((*it)->exit_on_failure)
+                    {
+                        CleanPasswdString(m_szPassword);
+                        m_szPassword = NULL;
+                        throwerror(true, "Failed to execute install command");
+                    }
+                }
+            }
+            else
+            {
+                CleanPasswdString(m_szPassword);
+                m_szPassword = NULL;
+                throwerror(true, "Could not execute installation commands (could not open pipe)");
+            }
+        }
+        
+        m_fInstallProgress += (1.0f/((float)m_InstallInfo.command_entries.size()+1.0f))*100.0f;
+        SetProgress(m_fInstallProgress);
+    }
+}
+
+void CBaseInstall::Install(void)
+{
+    if ((m_InstallInfo.dest_dir_type == DEST_SELECT) || (m_InstallInfo.dest_dir_type == DEST_DEFAULT))
     {
         if (!ChoiceBox(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
-             InstallInfo.program_name.c_str(), MakeCString(InstallInfo.dest_dir)), GetTranslation("Exit program"),
+             m_InstallInfo.program_name.c_str(), MakeCString(m_InstallInfo.dest_dir)), GetTranslation("Exit program"),
              GetTranslation("Continue"), NULL))
             EndProg();
     }
     else
     {
-        if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), InstallInfo.program_name.c_str()),
+        if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), m_InstallInfo.program_name.c_str()),
              GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
             EndProg();
     }
         
     // Check if we need root access
     bool askpass = false;
-    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin();
-         it!=InstallInfo.command_entries.end(); it++)
+    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
+         it!=m_InstallInfo.command_entries.end(); it++)
     {
         if ((*it)->need_root != NO_ROOT)
         {
@@ -153,7 +225,7 @@ bool CBaseInstall::Install(void)
     }
 
     if (!askpass)
-        askpass = !WriteAccess(InstallInfo.dest_dir);
+        askpass = !WriteAccess(m_InstallInfo.dest_dir);
 
     m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
     m_SUHandler.SetUser("root");
@@ -191,11 +263,22 @@ bool CBaseInstall::Install(void)
         }
     }
     
-    if (chdir(InstallInfo.dest_dir.c_str()))
-        throwerror(true, "Could not open directory '%s'", InstallInfo.dest_dir.c_str());
+    if (chdir(m_InstallInfo.dest_dir.c_str()))
+        throwerror(true, "Could not open directory '%s'", m_InstallInfo.dest_dir.c_str());
     
-//    Install();
-    return true;
+    ExtractFiles();
+    ExecuteInstCommands();
+    
+    AddInstOutput("Registering installation...");
+    Register.RegisterInstall();
+    Register.CalcSums();
+    Register.CheckSums(m_InstallInfo.program_name.c_str());
+    AddInstOutput("done\n");
+
+    SetProgress(100);
+    MsgBox(GetTranslation("Installation of %s complete!"), m_InstallInfo.program_name.c_str());
+    CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
 }
 
 void CBaseInstall::UpdateStatus(const char *s)
@@ -210,7 +293,7 @@ void CBaseInstall::UpdateStatus(const char *s)
                                
     EatWhite(stat);
 
-    AddStatusText("Extracting file: " + stat);
+    AddInstOutput("Extracting file: " + stat);
                 
     stat += '\n'; // File names are stored with a newline
                 

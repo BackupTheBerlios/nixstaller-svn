@@ -77,6 +77,7 @@ protected:
     Fl_Button *m_pAboutButton;
     
     char *GetPassword(void) { };
+    virtual void MsgBox(const char *str, ...) { };
     virtual bool YesNoBox(const char *str, ...) { };
     virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
                           const char *title, ...) { };
@@ -101,7 +102,8 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     std::list<CBaseScreen *> m_ScreenList;
     
 protected:
-    virtual void AddStatusText(const std::string) { };
+    virtual void ChangeStatusText(const char *str, int step) { };
+    virtual void AddInstOutput(const std::string &str) { };
     virtual void SetProgress(int percent) { };
     
 public:
