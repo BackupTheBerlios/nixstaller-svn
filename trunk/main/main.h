@@ -233,9 +233,12 @@ class CBaseInstall: virtual public CMain
     char *m_szPassword;
     bool m_bAlwaysRoot; // If we need root access during whole installation
     short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
+    short m_sCurrentStep;
     float m_fInstallProgress;
      
+    void SetNextStep(void);
     void InitArchive(const char *archname);
+    void SetUpSU(void);
     void ExtractFiles(void);
     void ExecuteInstCommands(void);
     bool ReadConfig(void);
@@ -251,7 +254,8 @@ public:
     install_info_s m_InstallInfo;
     
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_szPassword(NULL), m_bAlwaysRoot(false), m_sInstallSteps(0), m_fInstallProgress(0.0f) { };
+                         m_szPassword(NULL), m_bAlwaysRoot(false), m_sInstallSteps(0),
+                         m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
     virtual ~CBaseInstall(void) { };
     
     void Install(void);

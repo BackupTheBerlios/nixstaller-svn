@@ -37,6 +37,13 @@
 #include <sys/wait.h>
 #include "main.h"
 
+void CBaseInstall::SetNextStep()
+{
+    m_sCurrentStep++;
+    m_fInstallProgress += (1.0f/(float)m_sInstallSteps)*100.0f;
+    SetProgress(m_fInstallProgress);
+}
+
 void CBaseInstall::InitArchive(const char *archname)
 {
     if (!FileExists(archname))
@@ -56,27 +63,80 @@ void CBaseInstall::InitArchive(const char *archname)
     }
 }
 
+void CBaseInstall::SetUpSU()
+{
+    // Check if we need root access
+    bool askpass = false;
+    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
+         it!=m_InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->need_root != NO_ROOT)
+        {
+            // Command may need root permission, check if it is so
+            if ((*it)->need_root == DEPENDED_ROOT)
+            {
+                param_entry_s *p = GetParamByVar((*it)->dep_param);
+                if (p && !WriteAccess(p->value))
+                {
+                    (*it)->need_root = NEED_ROOT;
+                    if (!askpass) askpass = true;
+                }
+            }
+            else if (!askpass) askpass = true;
+        }
+    }
+
+    if (!askpass)
+        askpass = !WriteAccess(m_InstallInfo.dest_dir);
+
+    if (!askpass)
+        return;
+    
+    m_SUHandler.SetUser("root");
+    m_SUHandler.SetTerminalOutput(false);
+
+    if (m_SUHandler.NeedPassword())
+    {
+        while(true)
+        {
+            CleanPasswdString(m_szPassword);
+            
+            m_szPassword = GetPassword();
+            
+            // Check if password is invalid
+            if (!m_szPassword)
+            {
+                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
+                    GetTranslation("No"), GetTranslation("Yes"), NULL))
+                    EndProg();
+            }
+            else
+            {
+                if (m_SUHandler.TestSU(m_szPassword))
+                    break;
+
+                // Some error appeared
+                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                    Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                else
+                {
+                    throwerror(true, GetTranslation("Could not use su to gain root access"
+                            "Make sure you can use su(adding the current user to the wheel group may help"));
+                }
+            }
+        }
+    }
+}
+
 void CBaseInstall::ExtractFiles()
 {    
-    // Init all archives (if file doesn't exist nothing will be done)
-    InitArchive(CreateText("%s/instarchive_all", m_InstallInfo.own_dir.c_str()));
-    InitArchive(CreateText("%s/instarchive_all_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.cpuarch.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str(),
-                m_InstallInfo.cpuarch.c_str()));
-    
     if (m_ArchList.empty())
         return; // No files to extract
 
-    bool needroot = !WriteAccess(m_InstallInfo.dest_dir);
+    m_bAlwaysRoot = !WriteAccess(m_InstallInfo.dest_dir);
     
-    if (needroot)
-    {
-        // Set up su
-        m_SUHandler.SetUser("root");
+    if (m_bAlwaysRoot)
         m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
-        m_SUHandler.SetTerminalOutput(false);
-    }
     
     while (m_CurArchIter != m_ArchList.end())
     {
@@ -90,7 +150,7 @@ void CBaseInstall::ExtractFiles()
         else if (m_InstallInfo.archive_type == ARCH_BZIP2)
             command += " | bzip2 -d | tar xvf -";
 
-        if (needroot)
+        if (m_bAlwaysRoot)
         {
             m_SUHandler.SetCommand(command);
             if (!m_SUHandler.ExecuteCommand(m_szPassword))
@@ -119,20 +179,21 @@ void CBaseInstall::ExtractFiles()
         }
         m_CurArchIter++;
     }
+    
+    SetNextStep();
 }
 
 void CBaseInstall::ExecuteInstCommands(void)
 {
-    short step = 2; // Not 1, because extracting files is also a step
     for (std::list<command_entry_s*>::iterator it=m_InstallInfo.command_entries.begin();
-         it!=m_InstallInfo.command_entries.end(); it++, step++)
+         it!=m_InstallInfo.command_entries.end(); it++)
     {
         if ((*it)->command.empty()) continue;
         
         std::string command = (*it)->command + " " + GetParameters(*it);
     
         AddInstOutput(CreateText("\nExecute: %s\n\n", command.c_str()));
-        ChangeStatusText((*it)->description.c_str(), step);
+        ChangeStatusText((*it)->description.c_str(), m_sCurrentStep);
 
         if ((*it)->need_root == NEED_ROOT || m_bAlwaysRoot)
         {
@@ -182,8 +243,7 @@ void CBaseInstall::ExecuteInstCommands(void)
             }
         }
         
-        m_fInstallProgress += (1.0f/((float)m_InstallInfo.command_entries.size()+1.0f))*100.0f;
-        SetProgress(m_fInstallProgress);
+        SetNextStep();
     }
 }
 
@@ -203,67 +263,21 @@ void CBaseInstall::Install(void)
             EndProg();
     }
         
-    // Check if we need root access
-    bool askpass = false;
-    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
-         it!=m_InstallInfo.command_entries.end(); it++)
-    {
-        if ((*it)->need_root != NO_ROOT)
-        {
-            // Command may need root permission, check if it is so
-            if ((*it)->need_root == DEPENDED_ROOT)
-            {
-                param_entry_s *p = GetParamByVar((*it)->dep_param);
-                if (p && !WriteAccess(p->value))
-                {
-                    (*it)->need_root = NEED_ROOT;
-                    if (!askpass) askpass = true;
-                }
-            }
-            else if (!askpass) askpass = true;
-        }
-    }
+    // Init all archives (if file doesn't exist nothing will be done)
+    InitArchive(CreateText("%s/instarchive_all", m_InstallInfo.own_dir.c_str()));
+    InitArchive(CreateText("%s/instarchive_all_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.cpuarch.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str(),
+                m_InstallInfo.cpuarch.c_str()));
 
-    if (!askpass)
-        askpass = !WriteAccess(m_InstallInfo.dest_dir);
-
-    m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetTerminalOutput(false);
-
-    if (askpass && m_SUHandler.NeedPassword())
-    {
-        while(true)
-        {
-            CleanPasswdString(m_szPassword);
-            
-            m_szPassword = GetPassword();
-            
-            // Check if password is invalid
-            if (!m_szPassword)
-            {
-                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
-                    GetTranslation("No"), GetTranslation("Yes"), NULL))
-                    EndProg();
-            }
-            else
-            {
-                if (m_SUHandler.TestSU(m_szPassword))
-                    break;
-
-                // Some error appeared
-                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
-                else
-                {
-                    throwerror(true, GetTranslation("Could not use su to gain root access"
-                            "Make sure you can use su(adding the current user to the wheel group may help"));
-                }
-            }
-        }
-    }
+    // Count all install steps that have to be taken
+    m_sInstallSteps = !m_ArchList.empty(); // Extracting is one step
+    m_sInstallSteps += m_InstallInfo.command_entries.size(); // Every install command is one step
     
-    if (chdir(m_InstallInfo.dest_dir.c_str()))
+    // Set up su incase we need root access
+    SetUpSU();
+    
+    if (chdir(m_InstallInfo.dest_dir.c_str())) 
         throwerror(true, "Could not open directory '%s'", m_InstallInfo.dest_dir.c_str());
     
     ExtractFiles();
