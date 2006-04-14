@@ -90,7 +90,7 @@ void throwerror(bool dialog, const char *error, ...)
 // FLTK Base screen class
 // -------------------------------------
 
-CFLTKBase::CFLTKBase(void)
+CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
 {
     fl_register_images();
     Fl::scheme("plastic");
@@ -117,6 +117,64 @@ CFLTKBase::CFLTKBase(void)
     XKeyboardControl XKBControl;
     XKBControl.bell_duration = 0;
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+}
+
+void CFLTKBase::MsgBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+        vasprintf(&text, str, v);
+    va_end(v);
+    
+    fl_message(text);
+    
+    free(text);
+}
+
+bool CFLTKBase::YesNoBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+        vasprintf(&text, str, v);
+    va_end(v);
+    
+    int ret = fl_choice(text, GetTranslation("No"), GetTranslation("Yes"), NULL);
+    free(text);
+    
+    return (ret!=0);
+}
+
+int CFLTKBase::ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+        vasprintf(&text, str, v);
+    va_end(v);
+    
+    int ret = fl_choice(text, button1, button2, button3);
+    free(text);
+    
+    return ret;
+}
+
+void CFLTKBase::Warn(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    fl_alert(text);
+    
+    free(text);
 }
 
 void CFLTKBase::UpdateLanguage()

@@ -132,27 +132,6 @@ std::string GetMD5(const std::string &file);
 void throwerror(bool dialog, const char *error, ...);
 void EndProg(bool err=false);
 
-// Class containing functions specific for each frontend. This way libmain can talk to the user.
-class CFrontend
-{
-public:
-    virtual ~CFrontend(void) { };
-    
-    // General
-    //virtual void MessageBox(const char *text);
-    //virtual void YesNoBox(const char *text);
-    
-    // AppManager
-    virtual void ListFailedFilesToRM(std::list<std::string> flist) = 0;
-    
-    // Installer
-    virtual void UpdateInstProgress(int percent, const std::string &file) = 0;
-    static void UpdateInstProgressCB(int percent, const std::string &file, void *p)
-    { ((CFrontend *)p)->UpdateInstProgress(percent, file); }; // Callback for su
-};
-
-//extern CFrontend *pFrontend;
-
 class CExtractAsRootFunctor
 {
     int m_iTotalSize;
@@ -210,12 +189,12 @@ class CMain
 {
 protected:
     bool ReadLang(void);
-    virtual char *GetPassword(void) = 0;
+    
+    virtual char *GetPassword(const char *title) = 0;
     virtual void MsgBox(const char *str, ...) = 0;
     virtual bool YesNoBox(const char *str, ...) = 0;
-    virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
-                          const char *title, ...) = 0;
-    virtual void Warn(const char *text) = 0;
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) = 0;
+    virtual void Warn(const char *str, ...) = 0;
     
 public:
     virtual ~CMain(void) { };
@@ -246,6 +225,16 @@ class CBaseInstall: virtual public CMain
 protected:
     LIBSU::CLibSU m_SUHandler;
 
+    const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_InstallInfo.own_dir.c_str()); };
+    const char *GetLangWelcomeFName(void)
+    { return CreateText("%s/config/lang/%s/welcome", m_InstallInfo.own_dir.c_str(), InstallInfo.cur_lang.c_str()); };
+    const char *GetLicenseFName(void) { return CreateText("%s/config/license", m_InstallInfo.own_dir.c_str()); };
+    const char *GetLangLicenseFName(void)
+    { return CreateText("%s/config/lang/%s/license", m_InstallInfo.own_dir.c_str(), InstallInfo.cur_lang.c_str()); };
+    const char *GetFinishFName(void) { return CreateText("%s/config/finish", m_InstallInfo.own_dir.c_str()); };
+    const char *GetLangFinishFName(void)
+    { return CreateText("%s/config/lang/%s/finish", m_InstallInfo.own_dir.c_str(), InstallInfo.cur_lang.c_str()); };
+
     virtual void ChangeStatusText(const char *str, int step) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
@@ -258,7 +247,7 @@ public:
                          m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
     virtual ~CBaseInstall(void) { };
     
-    void Install(void);
+    virtual void Install(void);
     void UpdateStatus(const char *s);
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };

@@ -67,6 +67,27 @@
 class CBaseScreen;
 class CUninstallWindow;
 
+class CAskPassWindow
+{
+    Fl_Window *m_pAskPassWindow;
+    Fl_Box *m_pAskPassBox;
+    Fl_Secret_Input *m_pAskPassInput;
+    Fl_Return_Button *m_pAskPassOKButton;
+    Fl_Button *m_pAskPassCancelButton;
+    char *m_szPassword;
+    
+    public:
+        CAskPassWindow(const char *msg=NULL);
+        ~CAskPassWindow(void) { CleanPasswdString(m_szPassword); };
+
+        void SetMsg(const char *msg) { m_pAskPassBox->label(msg); };
+        char *Activate(void);
+        void SetPassword(bool unset);
+
+        static void AskPassOKButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(false); };
+        static void AskPassCancelButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(true); };
+};
+
 class CFLTKBase: virtual public CMain
 {
     Fl_Window *m_pAboutWindow;
@@ -75,17 +96,17 @@ class CFLTKBase: virtual public CMain
 protected:
     Fl_Window *m_pMainWindow;
     Fl_Button *m_pAboutButton;
+    CAskPassWindow *m_pAskPassWindow;
     
-    char *GetPassword(void) { };
-    virtual void MsgBox(const char *str, ...) { };
-    virtual bool YesNoBox(const char *str, ...) { };
-    virtual int ChoiceBox(const char *button1, const char *button2, const char *button3,
-                          const char *title, ...) { };
-    virtual void Warn(const char *text) { };
+    virtual char *GetPassword(const char *str) { m_pAskPassWindow->SetMsg(str); return m_pAskPassWindow->Activate(); };
+    virtual void MsgBox(const char *str, ...);
+    virtual bool YesNoBox(const char *str, ...);
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
+    virtual void Warn(const char *str, ...);
     
 public:
     CFLTKBase(void);
-    virtual ~CFLTKBase(void) { };
+    virtual ~CFLTKBase(void) { delete m_pAskPassWindow; };
 
     virtual void UpdateLanguage(void);
     void ShowAbout(bool show);
@@ -115,6 +136,7 @@ public:
     CInstaller(void);
     virtual ~CInstaller(void);
 
+    virtual void Install(void);
     virtual void UpdateLanguage(void);
     
     void Prev(void);
@@ -293,9 +315,8 @@ public:
     virtual ~CInstallFilesScreen(void) { CleanPasswdString(m_szPassword); };
     
     virtual Fl_Group *Create(void);
-    virtual bool Activate(void);
+    virtual bool Activate(void) { m_pOwner->Install(); return true; };
     virtual void UpdateLang(void);
-    virtual void Install(void);
     
     void AppendText(const char *txt);
     void AppendText(const std::string &txt) { AppendText(txt.c_str()); };
@@ -324,29 +345,6 @@ public:
     virtual bool Activate(void);
 };
 
-// -------------------------
-// Misc classes
-// -------------------------
-
-class CAskPassWindow
-{
-    Fl_Window *m_pAskPassWindow;
-    Fl_Box *m_pAskPassBox;
-    Fl_Secret_Input *m_pAskPassInput;
-    Fl_Return_Button *m_pAskPassOKButton;
-    Fl_Button *m_pAskPassCancelButton;
-    char *m_szPassword;
-    
-public:
-    CAskPassWindow(const char *msg);
-    ~CAskPassWindow(void) { CleanPasswdString(m_szPassword); };
-
-    char *Activate(void);
-    void SetPassword(bool unset);
-
-    static void AskPassOKButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(false); };
-    static void AskPassCancelButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(true); };
-};
 
 // -------------------------
 // AppManager classes

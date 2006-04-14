@@ -95,6 +95,22 @@ CInstaller::~CInstaller()
         delete *p;
 }
 
+void CInstaller::Install()
+{
+    m_bInstallFiles = true;
+    m_pPrevButton->deactivate();
+    m_pNextButton->deactivate();
+    
+    CBaseInstall::Install();
+    
+    m_bInstallFiles = false;
+    m_pCancelButton->deactivate();
+    m_pNextButton->activate();
+    
+    if (!FileExists(GetFinishFName()) && !FileExists(GetLangFinishFName()))
+        m_pNextButton->label(GetTranslation("Finish"));
+}
+
 void CInstaller::UpdateLanguage(void)
 {
     // Update main buttons
@@ -622,7 +638,7 @@ Fl_Group *CInstallFilesScreen::Create()
 
     return m_pGroup;
 }
-
+/*
 bool CInstallFilesScreen::Activate()
 {
     if ((InstallInfo.dest_dir_type == DEST_SELECT) || (InstallInfo.dest_dir_type == DEST_DEFAULT))
@@ -705,15 +721,24 @@ bool CInstallFilesScreen::Activate()
     }
     
     if (chdir(InstallInfo.dest_dir.c_str()))
-        throwerror(true, "Could not open directory '%s'", InstallInfo.dest_dir.c_str());
+    throwerror(true, "Could not open directory '%s'", InstallInfo.dest_dir.c_str());
     
     m_pOwner->m_bInstallFiles = true;
     m_pOwner->m_pPrevButton->deactivate();
     m_pOwner->m_pNextButton->deactivate();
     
-    Install();
+    m_pOwner->Install();
+    
+    m_pOwner->m_bInstallFiles = false;
+    m_pOwner->m_pCancelButton->deactivate();
+    m_pOwner->m_pNextButton->activate();
+
+    // HACK
+    if (!FileExists(GetFinishFName()) && !FileExists(GetLangFinishFName()))
+        m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
     return true;
 }
+*/
 
 void CInstallFilesScreen::UpdateLang()
 {
@@ -792,8 +817,9 @@ void CInstallFilesScreen::ChangeStatusText(const char *txt, int n)
                       InstallInfo.command_entries.size()+1));
 }
 
+/*
 void CInstallFilesScreen::Install()
-{/*
+{
     std::string curfile;
     short percent = 0;
     
@@ -925,10 +951,11 @@ void CInstallFilesScreen::Install()
     m_pOwner->m_pPrevButton->deactivate();
     m_pOwner->m_pNextButton->activate();
 
-    // HACK*/
+    // HACK
     if (!FileExists(InstallInfo.own_dir + "/config/finish"))
         m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
 }
+*/
 
 // -------------------------------------
 // Finish display screen

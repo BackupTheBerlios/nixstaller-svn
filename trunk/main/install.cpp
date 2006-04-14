@@ -101,7 +101,9 @@ void CBaseInstall::SetUpSU()
         {
             CleanPasswdString(m_szPassword);
             
-            m_szPassword = GetPassword();
+            m_szPassword = GetPassword(GetTranslation("This installation requires root(administrator)"
+                                                      "privileges in order to continue\n"
+                                                      "Please enter the password of the root user"));
             
             // Check if password is invalid
             if (!m_szPassword)
