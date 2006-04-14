@@ -36,6 +36,43 @@
 #include <sstream>
 #include <sys/wait.h>
 #include "main.h"
+#include <sys/utsname.h>
+
+bool CBaseInstall::Init(int argc, char *argv[])
+{   
+    // Get current OS and cpu arch name
+    utsname inf;
+    if (uname(&inf) == -1)
+        return false;
+    
+    m_InstallInfo.os = inf.sysname;
+    std::transform(m_InstallInfo.os.begin(), m_InstallInfo.os.end(), m_InstallInfo.os.begin(), tolower);
+
+    m_InstallInfo.cpuarch = inf.machine;
+    // Convert iX86 to x86
+    if ((m_InstallInfo.cpuarch[0] == 'i') && (m_InstallInfo.cpuarch.compare(2, 2, "86") == 0))
+        m_InstallInfo.cpuarch = "x86";
+
+    char curdir[1024];
+    if (getcwd(curdir, sizeof(curdir)) == 0)
+        throwerror(false, "Could not read current directory");
+
+    m_InstallInfo.own_dir = curdir;
+
+    if (!CMain::Init(argc, argv)) // Init main, will also read config files
+        return false;
+    
+    if (m_InstallInfo.dest_dir_type == DEST_TEMP)
+        m_InstallInfo.dest_dir = curdir;
+    else if (m_InstallInfo.dest_dir_type == DEST_SELECT)
+    {
+        const char *env = getenv("HOME");
+        if (env) m_InstallInfo.dest_dir = env;
+        else m_InstallInfo.dest_dir = "/";
+    }
+    
+    return true;
+}
 
 void CBaseInstall::SetNextStep()
 {
@@ -565,4 +602,14 @@ bool CBaseInstall::ReadConfig()
 #endif
 
     return true;
+}
+
+void CBaseInstall::VerifyDestDir()
+{
+    // Check if destination directory is readable(called on init)
+    if ((m_InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(m_InstallInfo.dest_dir))
+        throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
+                "However you don't have read permissions to this directory\n"
+                        "Please restart the installer as a user who does or as the root user",
+                m_InstallInfo.dest_dir.c_str()));
 }

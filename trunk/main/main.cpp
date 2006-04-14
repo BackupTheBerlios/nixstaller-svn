@@ -630,49 +630,6 @@ void CExtractAsRootFunctor::Update(const char *s)
 
 #endif
 
-bool ReadLang()
-{
-    // Clear all translations
-    if (!InstallInfo.translations.empty())
-    {
-        std::map<std::string, char *>::iterator p = InstallInfo.translations.begin();
-        for(;p!=InstallInfo.translations.end();p++) delete [] (*p).second;
-        InstallInfo.translations.erase(InstallInfo.translations.begin(), InstallInfo.translations.end());
-    }
-    
-    std::ifstream file(CreateText("config/lang/%s/strings", InstallInfo.cur_lang.c_str()));
-
-    if (!file)
-        return false;
-    
-    std::string text, srcmsg;
-    bool atsrc = true;
-    while (file)
-    {
-        std::getline(file, text);
-        EatWhite(text);
-
-        if (text.empty() || text[0] == '#')
-            continue;
-
-        if (text[0] == '[')
-            GetTextFromBlock(file, text);
-        
-        if (atsrc)
-            srcmsg = text;
-        else
-        {
-            InstallInfo.translations[srcmsg] = new char[text.length()+1];
-            text.copy(InstallInfo.translations[srcmsg], std::string::npos);
-            InstallInfo.translations[srcmsg][text.length()] = 0;
-        }
-
-        atsrc = !atsrc;
-    }
-
-    return true;
-}
-
 void ExtractFiles(char *passwd, void (*UpFunc)(int, const std::string &, void *), void *pData)
 {
     std::string curfile;
@@ -796,3 +753,72 @@ void ExecuteInstCmd(char *passwd, void (*UpFunc)(int, const std::string &, void 
     m_szPassword = NULL;
 }*/
 
+// -------------------------------------
+// Main Class
+// -------------------------------------
+
+bool CMain::Init(int argc, char *argv[])
+{
+    printf("Nixstaller version 0.1, Copyright (C) 2006 of Rick Helmus\n"
+            "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
+            "This is free software, and you are welcome to redistribute it\n"
+            "under certain conditions; see the about section for details.\n");
+
+    if (!ReadConfig())
+        return false;
+    
+    if (m_Languages.empty())
+    {
+        char *s = new char[8];
+        strcpy(s, "english");
+        m_Languages.push_front(s);
+    }
+    
+    m_CurLang = m_Languages.front();
+
+    return true;
+}
+
+bool CMain::ReadLang()
+{
+    // Clear all translations
+    if (!m_Translations.empty())
+    {
+        std::map<std::string, char *>::iterator p = m_Translations.begin();
+        for(;p!=m_Translations.end();p++)
+            delete [] (*p).second;
+        m_Translations.erase(m_Translations.begin(), m_Translations.end());
+    }
+    
+    std::ifstream file(CreateText("config/lang/%s/strings", InstallInfo.cur_lang.c_str()));
+
+    if (!file)
+        return false;
+    
+    std::string text, srcmsg;
+    bool atsrc = true;
+    while (file)
+    {
+        std::getline(file, text);
+        EatWhite(text);
+
+        if (text.empty() || text[0] == '#')
+            continue;
+
+        if (text[0] == '[')
+            GetTextFromBlock(file, text);
+        
+        if (atsrc)
+            srcmsg = text;
+        else
+        {
+            m_Translations[srcmsg] = new char[text.length()+1];
+            text.copy(m_Translations[srcmsg], std::string::npos);
+            m_Translations[srcmsg][text.length()] = 0;
+        }
+
+        atsrc = !atsrc;
+    }
+
+    return true;
+}

@@ -76,16 +76,16 @@ class CAskPassWindow
     Fl_Button *m_pAskPassCancelButton;
     char *m_szPassword;
     
-    public:
-        CAskPassWindow(const char *msg=NULL);
-        ~CAskPassWindow(void) { CleanPasswdString(m_szPassword); };
+public:
+    CAskPassWindow(const char *msg=NULL);
+    ~CAskPassWindow(void) { CleanPasswdString(m_szPassword); };
 
-        void SetMsg(const char *msg) { m_pAskPassBox->label(msg); };
-        char *Activate(void);
-        void SetPassword(bool unset);
+    void SetMsg(const char *msg) { m_pAskPassBox->label(msg); };
+    char *Activate(void);
+    void SetPassword(bool unset);
 
-        static void AskPassOKButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(false); };
-        static void AskPassCancelButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(true); };
+    static void AskPassOKButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(false); };
+    static void AskPassCancelButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(true); };
 };
 
 class CFLTKBase: virtual public CMain
@@ -117,15 +117,18 @@ public:
     static void ShowAboutCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(true); };
 };
 
+class CInstallFilesScreen;
+
 class CInstaller: public CFLTKBase, public CBaseInstall
 {
     Fl_Wizard *m_pWizard;
+    CInstallFilesScreen *m_pInstallFilesScreen; // We need this for updating stats while installing
     std::list<CBaseScreen *> m_ScreenList;
     
 protected:
-    virtual void ChangeStatusText(const char *str, int step) { };
-    virtual void AddInstOutput(const std::string &str) { };
-    virtual void SetProgress(int percent) { };
+    virtual void ChangeStatusText(const char *str, int step);
+    virtual void AddInstOutput(const std::string &str);
+    virtual void SetProgress(int percent);
     
 public:
     bool m_bInstallFiles;
@@ -158,6 +161,7 @@ class CAppManager: public CFLTKBase
     app_entry_s *m_pCurrentAppEntry;
     CUninstallWindow *m_pUninstallWindow;
     
+    virtual bool ReadConfig(void) { }; //UNDONE
 public:
     CAppManager();
     virtual ~CAppManager(void)

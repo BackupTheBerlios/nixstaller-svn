@@ -153,7 +153,7 @@ int CFLTKBase::ChoiceBox(const char *str, const char *button1, const char *butto
     char *text;
     va_list v;
     
-    va_start(v, str);
+    va_start(v, button3);
         vasprintf(&text, str, v);
     va_end(v);
     

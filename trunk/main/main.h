@@ -102,7 +102,7 @@ bool ReadConfig(void);
 int ArchSize(const char *archname);
 void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize);
 float ExtractArchive(std::string &curfile);
-bool ReadLang(void);
+inline bool ReadLang(void) { return false; }; // REMOVE ME
 std::string GetParameters(command_entry_s *pCommandEntry);
 std::string GetTranslation(std::string &s);
 char *GetTranslation(char *s);
@@ -195,11 +195,16 @@ protected:
     virtual bool YesNoBox(const char *str, ...) = 0;
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) = 0;
     virtual void Warn(const char *str, ...) = 0;
+    virtual bool ReadConfig(void) = 0;
     
 public:
+    std::string m_CurLang;
+    std::list<std::string> m_Languages;
+    std::map<std::string, char *> m_Translations;
+    
     virtual ~CMain(void) { };
     
-    virtual void Init(int argc, char *argv[]) { };
+    virtual bool Init(int argc, char *argv[]);
 };
     
 class CBaseInstall: virtual public CMain
@@ -220,24 +225,18 @@ class CBaseInstall: virtual public CMain
     void SetUpSU(void);
     void ExtractFiles(void);
     void ExecuteInstCommands(void);
-    bool ReadConfig(void);
     
 protected:
     LIBSU::CLibSU m_SUHandler;
 
-    const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_InstallInfo.own_dir.c_str()); };
-    const char *GetLangWelcomeFName(void)
-    { return CreateText("%s/config/lang/%s/welcome", m_InstallInfo.own_dir.c_str(), InstallInfo.cur_lang.c_str()); };
-    const char *GetLicenseFName(void) { return CreateText("%s/config/license", m_InstallInfo.own_dir.c_str()); };
-    const char *GetLangLicenseFName(void)
-    { return CreateText("%s/config/lang/%s/license", m_InstallInfo.own_dir.c_str(), InstallInfo.cur_lang.c_str()); };
-    const char *GetFinishFName(void) { return CreateText("%s/config/finish", m_InstallInfo.own_dir.c_str()); };
-    const char *GetLangFinishFName(void)
-    { return CreateText("%s/config/lang/%s/finish", m_InstallInfo.own_dir.c_str(), InstallInfo.cur_lang.c_str()); };
-
+    
+    void VerifyDestDir(void);
+    
     virtual void ChangeStatusText(const char *str, int step) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
+    
+    virtual bool ReadConfig(void);
     
 public:
     install_info_s m_InstallInfo;
@@ -247,7 +246,21 @@ public:
                          m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
     virtual ~CBaseInstall(void) { };
     
+    virtual bool Init(int argc, char *argv[]);
     virtual void Install(void);
+    
+    const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_InstallInfo.own_dir.c_str()); };
+    const char *GetLangWelcomeFName(void)
+    { return CreateText("%s/config/lang/%s/welcome", m_InstallInfo.own_dir.c_str(), m_CurLang.c_str()); };
+    const char *GetLicenseFName(void) { return CreateText("%s/config/license", m_InstallInfo.own_dir.c_str()); };
+    const char *GetLangLicenseFName(void)
+    { return CreateText("%s/config/lang/%s/license", m_InstallInfo.own_dir.c_str(), m_CurLang.c_str()); };
+    const char *GetFinishFName(void) { return CreateText("%s/config/finish", m_InstallInfo.own_dir.c_str()); };
+    const char *GetLangFinishFName(void)
+    { return CreateText("%s/config/lang/%s/finish", m_InstallInfo.own_dir.c_str(), m_CurLang.c_str()); };
+    const char *GetIntroPicFName(void)
+    { return CreateText("%s/%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.intropicname.c_str()); };
+    
     void UpdateStatus(const char *s);
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };

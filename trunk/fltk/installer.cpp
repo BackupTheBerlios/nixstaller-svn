@@ -45,11 +45,7 @@ CInstaller::CInstaller() : m_bInstallFiles(false)
                                group = widget->Create(); \
                                if (group) { m_pWizard->add(group); m_ScreenList.push_back(widget); } }
                                
-    if ((InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(InstallInfo.dest_dir))
-        throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                "However you don't have read permissions to this directory\n"
-                        "Please restart the installer as a user who does or as the root user",
-                InstallInfo.dest_dir.c_str()));
+    VerifyDestDir();
 
     m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     m_pMainWindow->callback(WizCancelCB);
@@ -74,13 +70,18 @@ CInstaller::CInstaller() : m_bInstallFiles(false)
     MCreateWidget(CWelcomeScreen);
     MCreateWidget(CLicenseScreen);
     
-    if (InstallInfo.dest_dir_type == DEST_SELECT)
+    if (m_InstallInfo.dest_dir_type == DEST_SELECT)
     {
         MCreateWidget(CSelectDirScreen);
     }
     
     MCreateWidget(CSetParamsScreen);
-    MCreateWidget(CInstallFilesScreen);
+    
+    //MCreateWidget(CInstallFilesScreen);
+    m_pInstallFilesScreen = new CInstallFilesScreen(this);
+    m_pWizard->add(m_pInstallFilesScreen->Create());
+    m_ScreenList.push_back(m_pInstallFilesScreen);
+    
     MCreateWidget(CFinishScreen);
     
     if (!m_ScreenList.front()->Activate())
@@ -95,6 +96,21 @@ CInstaller::~CInstaller()
         delete *p;
 }
 
+void CInstaller::ChangeStatusText(const char *str, int step)
+{
+    m_pInstallFilesScreen->ChangeStatusText(str, step);
+}
+
+void CInstaller::AddInstOutput(const std::string &str)
+{
+    m_pInstallFilesScreen->AppendText(str);
+}
+
+void CInstaller::SetProgress(int percent)
+{
+    m_pInstallFilesScreen->SetProgress(percent);
+}
+    
 void CInstaller::Install()
 {
     m_bInstallFiles = true;
@@ -191,15 +207,14 @@ Fl_Group *CLangScreen::Create(void)
     m_pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"Language: ");
     m_pChoiceMenu->callback(LangMenuCB);
     
-    for (std::list<std::string>::iterator p=InstallInfo.languages.begin();p!=InstallInfo.languages.end();p++)
+    for (std::list<std::string>::iterator p=m_pOwner->m_Languages.begin();
+         p!=m_pOwner->m_Languages.end();p++)
         m_pChoiceMenu->add(MakeCString(*p));
 
     m_pChoiceMenu->value(0);
     
     m_pGroup->end();
-    
-    InstallInfo.cur_lang = InstallInfo.languages.front();
-    
+        
     return m_pGroup;
 }
 
@@ -214,7 +229,7 @@ bool CLangScreen::Next()
 bool CLangScreen::Activate()
 {
     // Default to first language if there is just one
-    return (InstallInfo.languages.size() > 1);
+    return (m_pOwner->m_Languages.size() > 1);
 }
 
 // -------------------------------------
@@ -228,7 +243,7 @@ Fl_Group *CWelcomeScreen::Create(void)
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
-    m_pImage = Fl_Shared_Image::get(CreateText("%s/%s", InstallInfo.own_dir.c_str(), InstallInfo.intropicname.c_str()));
+    m_pImage = Fl_Shared_Image::get(m_pOwner->GetIntroPicFName());
     if (m_pImage)
     {
         m_pImageBox = new Fl_Box(40, 60, 165, (MAIN_WINDOW_H-120));
@@ -283,8 +298,8 @@ Fl_Group *CWelcomeScreen::Create(void)
 
 void CWelcomeScreen::UpdateLang()
 {
-    m_bHasText = (!m_pBuffer->loadfile(CreateText("config/lang/%s/welcome", InstallInfo.cur_lang.c_str())) ||
-                  !m_pBuffer->loadfile("config/welcome"));
+    m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangWelcomeFName()) ||
+                  !m_pBuffer->loadfile(m_pOwner->GetWelcomeFName()));
     m_pDisplay->label(GetTranslation("Welcome"));
 }
 
@@ -312,8 +327,8 @@ Fl_Group *CLicenseScreen::Create(void)
 
 void CLicenseScreen::UpdateLang()
 {
-    m_bHasText = (!m_pBuffer->loadfile(CreateText("config/lang/%s/license", InstallInfo.cur_lang.c_str())) ||
-                  !m_pBuffer->loadfile("config/license"));
+    m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangLicenseFName()) ||
+            !m_pBuffer->loadfile(m_pOwner->GetLicenseFName()));
     
     m_pDisplay->label(GetTranslation("License agreement"));
     m_pCheckButton->label(GetTranslation("I Agree to this license agreement"));
@@ -340,7 +355,7 @@ Fl_Group *CSelectDirScreen::Create()
 
     m_pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
     m_pSelDirInput = new Fl_Output(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "dir: ");
-    m_pSelDirInput->value(InstallInfo.dest_dir.c_str());
+    m_pSelDirInput->value(m_pOwner->m_InstallInfo.dest_dir.c_str());
     m_pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select a directory");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
@@ -351,7 +366,7 @@ Fl_Group *CSelectDirScreen::Create()
 void CSelectDirScreen::UpdateLang()
 {
     if (m_pDirChooser) delete m_pDirChooser;
-    m_pDirChooser = new Fl_File_Chooser(InstallInfo.dest_dir.c_str(), "*",
+    m_pDirChooser = new Fl_File_Chooser(m_pOwner->m_InstallInfo.dest_dir.c_str(), "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
                                         GetTranslation("Select destination directory"));
     m_pDirChooser->preview(false);
@@ -364,7 +379,7 @@ void CSelectDirScreen::UpdateLang()
 
 bool CSelectDirScreen::Next()
 {
-    if (!WriteAccess(InstallInfo.dest_dir))
+    if (!WriteAccess(m_pOwner->m_InstallInfo.dest_dir))
     {
         return (fl_choice(GetTranslation("You don't have write permissions for this directory.\n"
                 "The files can be extracted as the root user,\n"
@@ -384,7 +399,7 @@ void CSelectDirScreen::OpenDirChooser(void)
     if (!dir || !dir[0])
         return;
         
-    InstallInfo.dest_dir = dir;
+    m_pOwner->m_InstallInfo.dest_dir = dir;
     m_pSelDirInput->value(dir);
 }
 
@@ -397,7 +412,7 @@ Fl_Group *CSetParamsScreen::Create()
     std::list<command_entry_s *>::iterator p;
     bool empty = true;
     
-    for (p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end(); p++)
+    for (p=m_pOwner->m_InstallInfo.command_entries.begin();p!=m_pOwner->m_InstallInfo.command_entries.end(); p++)
     {
         if (!(*p)->parameter_entries.empty()) { empty = false; break; }
     }
@@ -414,7 +429,7 @@ Fl_Group *CSetParamsScreen::Create()
 
     m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 145, "Parameters");
     
-    for (p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end(); p++)
+    for (p=m_pOwner->m_InstallInfo.command_entries.begin();p!=m_pOwner->m_InstallInfo.command_entries.end(); p++)
     {
         for (std::map<std::string, param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
              p2!=(*p)->parameter_entries.end();p2++)
@@ -978,9 +993,8 @@ Fl_Group *CFinishScreen::Create(void)
 
 void CFinishScreen::UpdateLang()
 {
-    m_bHasText = (!m_pBuffer->loadfile(CreateText("%s/config/lang/%s/finish", InstallInfo.own_dir.c_str(),
-                   InstallInfo.cur_lang.c_str())) || !m_pBuffer->loadfile(CreateText("%s/config/finish",
-                   InstallInfo.own_dir.c_str())));
+    m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangFinishFName()) ||
+            !m_pBuffer->loadfile(m_pOwner->GetFinishFName()));
     m_pDisplay->label(GetTranslation("Please read the following text"));
 }
 
