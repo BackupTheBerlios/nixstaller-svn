@@ -86,53 +86,6 @@ void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &a
 }
 #endif
 
-std::string GetParameters(command_entry_s *pCommandEntry)
-{
-    std::string args, param;
-    std::string::size_type pos;
-
-    for(std::map<std::string, param_entry_s *>::iterator it=pCommandEntry->parameter_entries.begin();
-        it!=pCommandEntry->parameter_entries.end();it++)
-    {
-        switch (it->second->param_type)
-        {
-            case PTYPE_STRING:
-            case PTYPE_DIR:
-            case PTYPE_LIST:
-                param = it->second->parameter;
-                pos = param.find("%s");
-                if (pos != std::string::npos)
-                    param.replace(pos, 2, it->second->value);
-                args += " " + param;
-                break;
-            case PTYPE_BOOL:
-                if (it->second->value == "true") args += " " + it->second->parameter;
-                break;
-        }
-    }
-    return args;
-}
-
-std::string GetTranslation(std::string &s)
-{
-    std::map<std::string, char *>::iterator p = InstallInfo.translations.find(s);
-    if (p != InstallInfo.translations.end()) return (*p).second;
-    
-    // No translation found
-    //debugline("WARNING: No translation for %s\n", s.c_str());
-    return s;
-}
-
-char *GetTranslation(char *s)
-{
-    std::map<std::string, char *>::iterator p = InstallInfo.translations.find(s);
-    if (p != InstallInfo.translations.end()) return (*p).second;
-    
-    // No translation found
-    //debugline("WARNING: No translation for %s\n", s);
-    return s;
-}
-
 char *CreateText(const char *s, ...)
 {
     static char txt[2048]; // Should be enough ;)
@@ -167,57 +120,6 @@ void FreeStrings()
         delete [] StringList.back();
         StringList.pop_back();
     }
-}
-
-param_entry_s *GetParamByName(std::string str)
-{
-    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
-         it++)
-    {
-        if ((*it)->parameter_entries.empty()) continue;
-        return ((*it)->parameter_entries.find(str))->second;
-    }
-    return NULL;
-}
-
-param_entry_s *GetParamByVar(std::string str)
-{
-    for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
-         it++)
-    {
-        if ((*it)->parameter_entries.empty()) continue;
-        for (std::map<std::string, param_entry_s *>::iterator it2=(*it)->parameter_entries.begin();
-             it2!=(*it)->parameter_entries.end(); it2++)
-        {
-            if (it2->second->varname == str)
-                return it2->second;
-        }
-    }
-    return NULL;
-}
-
-const char *GetParamDefault(param_entry_s *pParam)
-{
-    if (pParam->param_type == PTYPE_BOOL)
-    {
-        if (pParam->defaultval == "true")
-            return GetTranslation("Enabled");
-        else
-            return GetTranslation("Disabled");
-    }
-    return GetTranslation(pParam->defaultval.c_str());
-}
-
-const char *GetParamValue(param_entry_s *pParam)
-{
-    if (pParam->param_type == PTYPE_BOOL)
-    {
-        if (pParam->value == "true")
-            return GetTranslation("Enabled");
-        else
-            return GetTranslation("Disabled");
-    }
-    return GetTranslation(pParam->value.c_str());
 }
 
 bool FileExists(const char *file)

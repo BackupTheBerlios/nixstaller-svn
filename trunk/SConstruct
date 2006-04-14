@@ -302,7 +302,7 @@ else:
 libsu = env.SConscript('libsu/SConstruct')
 
 # Builds main lib
-main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/register.cpp', 'main/install.cpp', 'libmd5/md5.c'])
+main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'libmd5/md5.c'])
 
 env.Append(LIBS = Split('su main util'))
 
@@ -315,8 +315,7 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cp
                        'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
 
 # Builds fltk frontend
-fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'),
-                   LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
+fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 # Default to all
 Default(fltk, main, libsu, env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk))

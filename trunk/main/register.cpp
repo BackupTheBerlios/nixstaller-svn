@@ -42,8 +42,6 @@
 
 #include "main.h"
 
-CRegister Register;
-
 void CRegister::WriteRegEntry(const char *entry, const std::string &field, std::ofstream &file)
 {
     file << entry << ' ';
@@ -92,12 +90,12 @@ const char *CRegister::GetAppRegDir()
     {
         const char *home = getenv("HOME");
         if (!home)
-            throwerror(false, "Couldn't find out your home directory!");
+            m_pOwner->ThrowError(false, "Couldn't find out your home directory!");
         
         m_szConfDir = CreateText("%s/.nixstaller", home);
         
         if (mkdir(m_szConfDir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
-            throwerror(false, "Could not create nixstaller config directory!(%s)", strerror(errno));
+            m_pOwner->ThrowError(false, "Could not create nixstaller config directory!(%s)", strerror(errno));
     }
     
     return m_szConfDir;
@@ -107,7 +105,7 @@ const char *CRegister::GetConfFile(const char *progname)
 {
     const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
     if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
-            throwerror(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
+            m_pOwner->ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
     return CreateText("%s/config", dir);
 }
 
@@ -115,7 +113,7 @@ const char *CRegister::GetSumListFile(const char *progname)
 {
     const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
     if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
-        throwerror(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
+        m_pOwner->ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
     return CreateText("%s/list", dir);
 }
 
@@ -164,7 +162,7 @@ app_entry_s *CRegister::GetAppEntry(const char *progname)
 
 void CRegister::WriteSums(const char *filename, std::ofstream &outfile, const std::string *var)
 {
-    std::ifstream infile(CreateText("%s/%s", InstallInfo.own_dir.c_str(), filename));
+    std::ifstream infile(filename);
     std::string line;
     while (infile && std::getline(infile, line))
     {
@@ -206,7 +204,7 @@ void CRegister::RegisterInstall(void)
     std::ofstream file(GetConfFile(InstallInfo.program_name.c_str()));
     
     if (!file)
-        throwerror(false, "Error while opening register file");
+        m_pOwner->ThrowError(false, "Error while opening register file");
 
     WriteRegEntry("regver", m_szRegVer, file);
     WriteRegEntry("version", InstallInfo.version, file);
@@ -300,11 +298,11 @@ void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
         return;
 
     char curdir[1024];
-    if (!getcwd(curdir, sizeof(curdir))) throwerror(true, "Could not read current directory");
+    if (!getcwd(curdir, sizeof(curdir))) m_pOwner->ThrowError(true, "Could not read current directory");
     
     // Changing directory temporary makes things easier
     if (chdir(GetAppRegDir()) != 0)
-        throwerror(true, "Could not open directory '%s'", GetAppRegDir());
+        m_pOwner->ThrowError(true, "Could not open directory '%s'", GetAppRegDir());
         
     while ((dirstruct = readdir(dp)) != 0)
     {
@@ -333,16 +331,16 @@ void CRegister::GetRegisterEntries(std::vector<app_entry_s *> *AppVec)
     chdir(curdir); // Return back to original directory
 }
 
-void CRegister::CalcSums()
+void CRegister::CalcSums(const char *dir)
 {
     std::ofstream outfile(GetSumListFile(InstallInfo.program_name.c_str()));
     
     if (!outfile)
         return; // UNDONE
     
-    WriteSums("plist_extrpath", outfile, NULL);
-    WriteSums(CreateText("plist_extrpath_%s", InstallInfo.os.c_str()), outfile, NULL);
-    WriteSums(CreateText("plist_extrpath_%s_%s", InstallInfo.os.c_str(), InstallInfo.cpuarch.c_str()), outfile, NULL);
+    WriteSums(CreateText("%s/plist_extrpath", dir), outfile, NULL);
+    WriteSums(CreateText("%s/plist_extrpath_%s", dir, InstallInfo.os.c_str()), outfile, NULL);
+    WriteSums(CreateText("%s/plist_extrpath_%s_%s", dir, InstallInfo.os.c_str(), InstallInfo.cpuarch.c_str()), outfile, NULL);
     
     for (std::list<command_entry_s *>::iterator it=InstallInfo.command_entries.begin(); it!=InstallInfo.command_entries.end();
          it++)
@@ -354,10 +352,10 @@ void CRegister::CalcSums()
             if (it2->second->varname.empty())
                 continue;
             
-            WriteSums(CreateText("plist_var_%s", it2->second->varname.c_str()), outfile, &it2->second->value);
-            WriteSums(CreateText("plist_var_%s_%s", it2->second->varname.c_str(), InstallInfo.os.c_str()), outfile,
+            WriteSums(CreateText("%s/plist_var_%s", dir, it2->second->varname.c_str()), outfile, &it2->second->value);
+            WriteSums(CreateText("%s/plist_var_%s_%s", dir, it2->second->varname.c_str(), InstallInfo.os.c_str()), outfile,
                       &it2->second->value);
-            WriteSums(CreateText("plist_var_%s_%s", it2->second->varname.c_str(), InstallInfo.os.c_str(),
+            WriteSums(CreateText("%s/plist_var_%s_%s", dir, it2->second->varname.c_str(), InstallInfo.os.c_str(),
                       InstallInfo.cpuarch.c_str()), outfile, &it2->second->value);
         }
     }

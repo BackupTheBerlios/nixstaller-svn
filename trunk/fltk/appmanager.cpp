@@ -42,7 +42,7 @@ CAppManager::CAppManager()
 
     m_pAppList = new Fl_Hold_Browser(20, 40, 180, 240, "Installed applications");
     m_pAppList->align(FL_ALIGN_TOP);
-    Register.GetRegisterEntries(&m_AppVec);
+    GetRegisterEntries(&m_AppVec);
     for (std::vector<app_entry_s *>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++)
         m_pAppList->add(MakeCString((*it)->name));
     m_pAppList->callback(AppListCB, this);
@@ -70,7 +70,7 @@ CAppManager::CAppManager()
     
     UpdateInfo(true);
 
-    m_pUninstallWindow = new CUninstallWindow;
+    m_pUninstallWindow = new CUninstallWindow(this);
     
     m_pMainWindow->end();
 }
@@ -140,7 +140,7 @@ void CAppManager::Uninstall()
 }
 
 
-CUninstallWindow::CUninstallWindow()
+CUninstallWindow::CUninstallWindow(CAppManager *owner) : m_pOwner(owner)
 {
     const int w = 400, h = 300;
     m_pWindow = new Fl_Window(w, h, "Uninstallation progress");
@@ -157,29 +157,29 @@ CUninstallWindow::CUninstallWindow()
     m_pDisplay->buffer(m_pBuffer);
     m_pDisplay->wrap_mode(true, 60);
     
-    m_pOKButton = new Fl_Button((w-80)/2, (h-40), 80, 25, GetTranslation("OK"));
+    m_pOKButton = new Fl_Button((w-80)/2, (h-40), 80, 25, m_pOwner->GetTranslation("OK"));
     m_pOKButton->callback(OKButtonCB, this);
     m_pOKButton->deactivate();
     
-    m_pPasswdWin = new CAskPassWindow(GetTranslation("This uninstallation requires root(administrator) "
+    m_pPasswdWin = new CAskPassWindow(m_pOwner->GetTranslation("This uninstallation requires root(administrator) "
             "privileges in order to continue\nPlease enter the password of the root user"));
     m_pWindow->end();
 }
 
 bool CUninstallWindow::Start(app_entry_s *pApp)
 {
-    if (!fl_choice(CreateText(GetTranslation("This will remove %s from your computer\nContinue?"),
-         pApp->name.c_str()), GetTranslation("No"), GetTranslation("Yes"), NULL))
+    if (!fl_choice(CreateText(m_pOwner->GetTranslation("This will remove %s from your computer\nContinue?"),
+         pApp->name.c_str()), m_pOwner->GetTranslation("No"), m_pOwner->GetTranslation("Yes"), NULL))
         return false;
     
     bool checksums = false;
-    if (!Register.CheckSums(pApp->name.c_str()))
+    if (!m_pOwner->CheckSums(pApp->name.c_str()))
     {
-        int ret = fl_choice(GetTranslation("Some files have been modified after installation.\n"
+        int ret = fl_choice(m_pOwner->GetTranslation("Some files have been modified after installation.\n"
                 "This can happen if you installed another package which uses one or\n"
                 "more files with the same name or you installed another version."),
-        GetTranslation("Cancel"), GetTranslation("Continue anyway"),
-        GetTranslation("Only remove unchanged"));
+        m_pOwner->GetTranslation("Cancel"), m_pOwner->GetTranslation("Continue anyway"),
+        m_pOwner->GetTranslation("Only remove unchanged"));
         if (ret == 0)
             return false;
         
@@ -193,30 +193,31 @@ bool CUninstallWindow::Start(app_entry_s *pApp)
     m_pProgress->value(0);
     
     m_pWindow->show();
-
+    
+    m_pOwner->Uninstall();
+    /*
     while (true)
     {
-        CRegister::EUninstRet ret = Register.Uninstall(pApp, checksums, &UpdateProgressCB, &GetPasswordCB,
-                                                       this);
+        CRegister::EUninstRet ret = m_pOwner->Uninstall(pApp, checksums, &UpdateProgressCB, &GetPasswordCB, this);
         if (ret == CRegister::UNINST_SUCCESS)
             break;
         else if (ret == CRegister::UNINST_NULLPASS)
         {
-            if (fl_choice(GetTranslation("Root access is required to continue\nAbort uninstallation?"),
-                GetTranslation("No"), GetTranslation("Yes"), NULL))
+            if (fl_choice(m_pOwner->GetTranslation("Root access is required to continue\nAbort uninstallation?"),
+                m_pOwner->GetTranslation("No"), m_pOwner->GetTranslation("Yes"), NULL))
             {
                 Close();
                 return false;
             }
         }
         else if (ret == CRegister::UNINST_WRONGPASS)
-            fl_alert(GetTranslation("Incorrect password given for root user\nPlease retype"));
+            fl_alert(m_pOwner->GetTranslation("Incorrect password given for root user\nPlease retype"));
         else if (ret == CRegister::UNINST_SUERR)
         {
-            throwerror(true, GetTranslation("Could not use su to gain root access"
+            m_pOwner->ThrowError(true, m_pOwner->GetTranslation("Could not use su to gain root access"
                     "Make sure you can use su(adding the current user to the wheel group may help"));
         }
-    }
+}*/
     
     m_pProgress->value(100);
     m_pOKButton->activate();

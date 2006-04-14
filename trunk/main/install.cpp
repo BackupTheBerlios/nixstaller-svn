@@ -38,6 +38,24 @@
 #include "main.h"
 #include <sys/utsname.h>
 
+CBaseInstall::~CBaseInstall()
+{
+    if (!m_InstallInfo.command_entries.empty())
+    {
+        std::list<command_entry_s *>::iterator p = m_InstallInfo.command_entries.begin();
+        for(;p!=m_InstallInfo.command_entries.end();p++)
+        {
+            if (!(*p)->parameter_entries.empty())
+            {
+                for (std::map<std::string, param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
+                     p2!=(*p)->parameter_entries.end();p2++)
+                    delete (*p2).second;
+            }
+            delete *p;
+        }
+    }
+}
+
 bool CBaseInstall::Init(int argc, char *argv[])
 {   
     // Get current OS and cpu arch name
@@ -45,33 +63,44 @@ bool CBaseInstall::Init(int argc, char *argv[])
     if (uname(&inf) == -1)
         return false;
     
-    m_InstallInfo.os = inf.sysname;
-    std::transform(m_InstallInfo.os.begin(), m_InstallInfo.os.end(), m_InstallInfo.os.begin(), tolower);
+    m_szOS = inf.sysname;
+    std::transform(m_szOS.begin(), m_szOS.end(), m_szOS.begin(), tolower);
 
-    m_InstallInfo.cpuarch = inf.machine;
+    m_szCPUArch = inf.machine;
     // Convert iX86 to x86
-    if ((m_InstallInfo.cpuarch[0] == 'i') && (m_InstallInfo.cpuarch.compare(2, 2, "86") == 0))
-        m_InstallInfo.cpuarch = "x86";
+    if ((m_szCPUArch[0] == 'i') && (m_szCPUArch.compare(2, 2, "86") == 0))
+        m_szCPUArch = "x86";
 
     char curdir[1024];
     if (getcwd(curdir, sizeof(curdir)) == 0)
-        throwerror(false, "Could not read current directory");
+        ThrowError(false, "Could not read current directory");
 
-    m_InstallInfo.own_dir = curdir;
-
+    m_szOwnDir = curdir;
+    debugline("Current dir: %s\n", m_szOwnDir.c_str());
+    
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
-        m_InstallInfo.dest_dir = curdir;
+        m_szDestDir = curdir;
     else if (m_InstallInfo.dest_dir_type == DEST_SELECT)
     {
         const char *env = getenv("HOME");
-        if (env) m_InstallInfo.dest_dir = env;
-        else m_InstallInfo.dest_dir = "/";
+        if (env) m_szDestDir = env;
+        else m_szDestDir = "/";
     }
     
     return true;
+}
+
+void CBaseInstall::VerifyDestDir()
+{
+    // Check if destination directory is readable(called on init)
+    if ((m_InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(m_szDestDir))
+        ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
+                "However you don't have read permissions to this directory\n"
+                        "Please restart the installer as a user who does or as the root user",
+                m_szDestDir.c_str()));
 }
 
 void CBaseInstall::SetNextStep()
@@ -81,7 +110,7 @@ void CBaseInstall::SetNextStep()
     SetProgress(m_fInstallProgress);
 }
 
-void CBaseInstall::InitArchive(const char *archname)
+void CBaseInstall::InitArchive(char *archname)
 {
     if (!FileExists(archname))
         return;
@@ -95,8 +124,14 @@ void CBaseInstall::InitArchive(const char *archname)
     while(file && (file >> size) && std::getline(file, arfilename))
     {
         EatWhite(arfilename);
-        m_ArchList[const_cast<char*>(archname)].filesizes[arfilename] = size;
+        m_ArchList[archname].filesizes[arfilename] = size;
         m_iTotalArchSize += size;
+    }
+    
+    if (!m_szCurArchFName)
+    {
+        m_szCurArchFName = archname;
+        m_CurArchIter = m_ArchList.begin();
     }
 }
 
@@ -113,7 +148,7 @@ void CBaseInstall::SetUpSU()
             if ((*it)->need_root == DEPENDED_ROOT)
             {
                 param_entry_s *p = GetParamByVar((*it)->dep_param);
-                if (p && !WriteAccess(p->value))
+                if (p && FileExists(p->value) && !WriteAccess(p->value))
                 {
                     (*it)->need_root = NEED_ROOT;
                     if (!askpass) askpass = true;
@@ -124,7 +159,7 @@ void CBaseInstall::SetUpSU()
     }
 
     if (!askpass)
-        askpass = !WriteAccess(m_InstallInfo.dest_dir);
+        askpass = FileExists(m_szDestDir) && !WriteAccess(m_szDestDir);
 
     if (!askpass)
         return;
@@ -159,7 +194,7 @@ void CBaseInstall::SetUpSU()
                     Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
-                    throwerror(true, GetTranslation("Could not use su to gain root access"
+                    ThrowError(true, GetTranslation("Could not use su to gain root access"
                             "Make sure you can use su(adding the current user to the wheel group may help"));
                 }
             }
@@ -172,7 +207,7 @@ void CBaseInstall::ExtractFiles()
     if (m_ArchList.empty())
         return; // No files to extract
 
-    m_bAlwaysRoot = !WriteAccess(m_InstallInfo.dest_dir);
+    m_bAlwaysRoot = !WriteAccess(m_szDestDir);
     
     if (m_bAlwaysRoot)
         m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
@@ -196,7 +231,7 @@ void CBaseInstall::ExtractFiles()
             {
                 CleanPasswdString(m_szPassword);
                 m_szPassword = NULL;
-                throwerror(true, "Error during extracting files");
+                ThrowError(true, "Error during extracting files");
             }
         }
         else
@@ -205,7 +240,7 @@ void CBaseInstall::ExtractFiles()
             
             FILE *pipe = popen(command.c_str(), "r");
             if (!pipe)
-                throwerror(true, "Error during extracting files (could not open pipe)");
+                ThrowError(true, "Error during extracting files (could not open pipe)");
             
             char line[512];
             while (fgets(line, sizeof(line), pipe))
@@ -214,7 +249,7 @@ void CBaseInstall::ExtractFiles()
             // Check if command exitted normally and close pipe
             int state = pclose(pipe);
             if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
-                throwerror(true, "Failed to execute install command (could not execute tar)");
+                ThrowError(true, "Failed to execute install command (could not execute tar)");
         }
         m_CurArchIter++;
     }
@@ -232,7 +267,7 @@ void CBaseInstall::ExecuteInstCommands(void)
         std::string command = (*it)->command + " " + GetParameters(*it);
     
         AddInstOutput(CreateText("\nExecute: %s\n\n", command.c_str()));
-        ChangeStatusText((*it)->description.c_str(), m_sCurrentStep);
+        ChangeStatusText((*it)->description.c_str(), m_sCurrentStep, m_sInstallSteps);
 
         if ((*it)->need_root == NEED_ROOT || m_bAlwaysRoot)
         {
@@ -244,7 +279,7 @@ void CBaseInstall::ExecuteInstCommands(void)
                 {
                     CleanPasswdString(m_szPassword);
                     m_szPassword = NULL;
-                    throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
+                    ThrowError(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
                                m_SUHandler.GetErrorMsgC());
                 }
             }
@@ -270,7 +305,7 @@ void CBaseInstall::ExecuteInstCommands(void)
                     {
                         CleanPasswdString(m_szPassword);
                         m_szPassword = NULL;
-                        throwerror(true, "Failed to execute install command");
+                        ThrowError(true, "Failed to execute install command");
                     }
                 }
             }
@@ -278,7 +313,7 @@ void CBaseInstall::ExecuteInstCommands(void)
             {
                 CleanPasswdString(m_szPassword);
                 m_szPassword = NULL;
-                throwerror(true, "Could not execute installation commands (could not open pipe)");
+                ThrowError(true, "Could not execute installation commands (could not open pipe)");
             }
         }
         
@@ -291,7 +326,7 @@ void CBaseInstall::Install(void)
     if ((m_InstallInfo.dest_dir_type == DEST_SELECT) || (m_InstallInfo.dest_dir_type == DEST_DEFAULT))
     {
         if (!ChoiceBox(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
-             m_InstallInfo.program_name.c_str(), MakeCString(m_InstallInfo.dest_dir)), GetTranslation("Exit program"),
+             m_InstallInfo.program_name.c_str(), MakeCString(m_szDestDir)), GetTranslation("Exit program"),
              GetTranslation("Continue"), NULL))
             EndProg();
     }
@@ -303,11 +338,11 @@ void CBaseInstall::Install(void)
     }
         
     // Init all archives (if file doesn't exist nothing will be done)
-    InitArchive(CreateText("%s/instarchive_all", m_InstallInfo.own_dir.c_str()));
-    InitArchive(CreateText("%s/instarchive_all_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.cpuarch.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s_%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.os.c_str(),
-                m_InstallInfo.cpuarch.c_str()));
+    InitArchive(CreateText("%s/instarchive_all", m_szOwnDir.c_str()));
+    InitArchive(CreateText("%s/instarchive_all_%s", m_szOwnDir.c_str(), m_szCPUArch.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s", m_szOwnDir.c_str(), m_szOS.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
+                m_szCPUArch.c_str()));
 
     // Count all install steps that have to be taken
     m_sInstallSteps = !m_ArchList.empty(); // Extracting is one step
@@ -316,16 +351,16 @@ void CBaseInstall::Install(void)
     // Set up su incase we need root access
     SetUpSU();
     
-    if (chdir(m_InstallInfo.dest_dir.c_str())) 
-        throwerror(true, "Could not open directory '%s'", m_InstallInfo.dest_dir.c_str());
+    if (chdir(m_szDestDir.c_str())) 
+        ThrowError(true, "Could not open directory '%s'", m_szDestDir.c_str());
     
     ExtractFiles();
     ExecuteInstCommands();
     
     AddInstOutput("Registering installation...");
-    Register.RegisterInstall();
-    Register.CalcSums();
-    Register.CheckSums(m_InstallInfo.program_name.c_str());
+    RegisterInstall();
+    CalcSums();
+    //Register.CheckSums(m_InstallInfo.program_name.c_str());
     AddInstOutput("done\n");
 
     SetProgress(100);
@@ -351,6 +386,7 @@ void CBaseInstall::UpdateStatus(const char *s)
     stat += '\n'; // File names are stored with a newline
                 
     m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_iTotalArchSize)*100.0f;
+    SetProgress(m_fExtrPercent/(float)m_sInstallSteps);
 }
 
 bool CBaseInstall::ReadConfig()
@@ -539,7 +575,7 @@ bool CBaseInstall::ReadConfig()
                     m_InstallInfo.dest_dir_type = DEST_TEMP;
                 else if (type == "default")
                 {
-                    if (strstrm >> m_InstallInfo.dest_dir)
+                    if (strstrm >> m_szDestDir)
                         m_InstallInfo.dest_dir_type = DEST_DEFAULT;
                 }
             }
@@ -547,7 +583,7 @@ bool CBaseInstall::ReadConfig()
             {
                 std::string lang;
                 while (strstrm >> lang)
-                    m_InstallInfo.languages.push_back(lang);
+                    m_Languages.push_back(lang);
             }
             else if (str == "intropic")
             {
@@ -568,10 +604,10 @@ bool CBaseInstall::ReadConfig()
     debugline("appname: %s\n", m_InstallInfo.program_name.c_str());
     debugline("version: %s\n", m_InstallInfo.version.c_str());
     debugline("archtype: %d\n", m_InstallInfo.archive_type);
-    debugline("installdir: %s\n", m_InstallInfo.dest_dir.c_str());
+    debugline("installdir: %s\n", m_szDestDir.c_str());
     debugline("dir type: %d\n", m_InstallInfo.dest_dir_type);
     debugline("languages: ");
-    for (std::list<std::string>::iterator it=m_InstallInfo.languages.begin(); it!=m_InstallInfo.languages.end(); it++)
+    for (std::list<std::string>::iterator it=m_Languages.begin(); it!=m_Languages.end(); it++)
         debugline("%s ", it->c_str());
     debugline("\n");
 
@@ -604,12 +640,168 @@ bool CBaseInstall::ReadConfig()
     return true;
 }
 
-void CBaseInstall::VerifyDestDir()
+void CBaseInstall::WriteSums(const char *filename, std::ofstream &outfile, const std::string *var)
 {
-    // Check if destination directory is readable(called on init)
-    if ((m_InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(m_InstallInfo.dest_dir))
-        throwerror(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                "However you don't have read permissions to this directory\n"
-                        "Please restart the installer as a user who does or as the root user",
-                m_InstallInfo.dest_dir.c_str()));
+    std::ifstream infile(filename);
+    std::string line;
+    while (infile && std::getline(infile, line))
+    {
+        if (var)
+            line.insert(0, *var + "/");
+        else
+            line.insert(0, m_szDestDir + "/");
+        
+        outfile << GetMD5(line) << " " << line << "\n";
+    }
+}
+
+void CBaseInstall::WriteRegEntry(const char *entry, const std::string &field, std::ofstream &file)
+{
+    file << entry << ' ';
+    
+    std::string format = field;
+    std::string::size_type index = 0;
+    
+    while ((index = format.find("\"", index+2)) != std::string::npos)
+        format.replace(index, 1, "\\\"");
+    
+    file << '\"' << format << "\"\n";
+}
+
+void CBaseInstall::CalcSums()
+{
+    std::ofstream outfile(GetSumListFile(m_InstallInfo.program_name.c_str()));
+    const char *dir = m_szOwnDir.c_str();
+    
+    if (!outfile)
+        return; // UNDONE
+    
+    WriteSums(CreateText("%s/plist_extrpath", dir), outfile, NULL);
+    WriteSums(CreateText("%s/plist_extrpath_%s", dir, m_szOS.c_str()), outfile, NULL);
+    WriteSums(CreateText("%s/plist_extrpath_%s_%s", dir, m_szOS.c_str(), m_szCPUArch.c_str()), outfile, NULL);
+    
+    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
+         it!=m_InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->parameter_entries.empty()) continue;
+        for (std::map<std::string, param_entry_s *>::iterator it2=(*it)->parameter_entries.begin();
+             it2!=(*it)->parameter_entries.end(); it2++)
+        {
+            if (it2->second->varname.empty())
+                continue;
+            
+            WriteSums(CreateText("%s/plist_var_%s", dir, it2->second->varname.c_str()), outfile, &it2->second->value);
+            WriteSums(CreateText("%s/plist_var_%s_%s", dir, it2->second->varname.c_str(), m_szOS.c_str()), outfile,
+                      &it2->second->value);
+            WriteSums(CreateText("%s/plist_var_%s_%s", dir, it2->second->varname.c_str(), m_szOS.c_str(),
+                      m_szCPUArch.c_str()), outfile, &it2->second->value);
+        }
+    }
+}
+
+bool CBaseInstall::IsInstalled(bool checkver)
+{
+    if (!FileExists(GetRegConfFile(m_InstallInfo.program_name.c_str())))
+        return false;
+    
+    app_entry_s *pApp = GetAppRegEntry(m_InstallInfo.program_name.c_str());
+    
+    if (!pApp)
+        return false;
+    
+    return (!checkver || (pApp->version == m_InstallInfo.version));
+}
+
+void CBaseInstall::RegisterInstall(void)
+{
+    /*if (IsInstalled(true))
+        return; UNDONE? */
+    
+    std::ofstream file(GetRegConfFile(m_InstallInfo.program_name.c_str()));
+    
+    if (!file)
+        ThrowError(false, "Error while opening register file");
+
+    WriteRegEntry("regver", m_szRegVer, file);
+    WriteRegEntry("version", m_InstallInfo.version, file);
+    WriteRegEntry("url", m_InstallInfo.url, file);
+    WriteRegEntry("description", m_InstallInfo.description, file);
+}
+
+param_entry_s *CBaseInstall::GetParamByName(std::string str)
+{
+    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
+         it!=m_InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->parameter_entries.empty()) continue;
+        return ((*it)->parameter_entries.find(str))->second;
+    }
+    return NULL;
+}
+
+param_entry_s *CBaseInstall::GetParamByVar(std::string str)
+{
+    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
+         it!=m_InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->parameter_entries.empty()) continue;
+        for (std::map<std::string, param_entry_s *>::iterator it2=(*it)->parameter_entries.begin();
+             it2!=(*it)->parameter_entries.end(); it2++)
+        {
+            if (it2->second->varname == str)
+                return it2->second;
+        }
+    }
+    return NULL;
+}
+
+const char *CBaseInstall::GetParamDefault(param_entry_s *pParam)
+{
+    if (pParam->param_type == PTYPE_BOOL)
+    {
+        if (pParam->defaultval == "true")
+            return GetTranslation("Enabled");
+        else
+            return GetTranslation("Disabled");
+    }
+    return GetTranslation(pParam->defaultval.c_str());
+}
+
+const char *CBaseInstall::GetParamValue(param_entry_s *pParam)
+{
+    if (pParam->param_type == PTYPE_BOOL)
+    {
+        if (pParam->value == "true")
+            return GetTranslation("Enabled");
+        else
+            return GetTranslation("Disabled");
+    }
+    return GetTranslation(pParam->value.c_str());
+}
+
+std::string CBaseInstall::GetParameters(command_entry_s *pCommandEntry)
+{
+    std::string args, param;
+    std::string::size_type pos;
+
+    for(std::map<std::string, param_entry_s *>::iterator it=pCommandEntry->parameter_entries.begin();
+        it!=pCommandEntry->parameter_entries.end();it++)
+    {
+        switch (it->second->param_type)
+        {
+            case PTYPE_STRING:
+            case PTYPE_DIR:
+            case PTYPE_LIST:
+                param = it->second->parameter;
+                pos = param.find("%s");
+                if (pos != std::string::npos)
+                    param.replace(pos, 2, it->second->value);
+                args += " " + param;
+                break;
+            case PTYPE_BOOL:
+                if (it->second->value == "true") args += " " + it->second->parameter;
+                break;
+        }
+    }
+    return args;
 }

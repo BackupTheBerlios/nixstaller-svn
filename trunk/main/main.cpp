@@ -35,727 +35,28 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
-#include "main.h"
+#include <errno.h>
+#include <sys/stat.h>
 #include <sys/utsname.h>
 
-install_info_s InstallInfo;
+#include "main.h"
+
 std::list<char *> StringList;
-
-bool MainInit(int argc, char *argv[])
-{
-    printf("Nixstaller version 0.1, Copyright (C) 2006 of Rick Helmus\n"
-           "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
-           "This is free software, and you are welcome to redistribute it\n"
-           "under certain conditions; see the about section for details.\n");
-
-    // Get current OS and cpu arch name
-    utsname inf;
-    if (uname(&inf) == -1)
-        return false;
-    
-    InstallInfo.os = inf.sysname;
-    std::transform(InstallInfo.os.begin(), InstallInfo.os.end(), InstallInfo.os.begin(), tolower);
-
-    InstallInfo.cpuarch = inf.machine;
-    // Convert iX86 to x86
-    if ((InstallInfo.cpuarch[0] == 'i') && (InstallInfo.cpuarch.compare(2, 2, "86") == 0))
-         InstallInfo.cpuarch = "x86";
-
-    char curdir[1024];
-    if (getcwd(curdir, sizeof(curdir)) == 0)
-        throwerror(false, "Could not read current directory");
-
-    InstallInfo.own_dir = curdir;
-
-    if (!ReadConfig())
-        return false;
-
-    if (InstallInfo.dest_dir_type == DEST_TEMP)
-        InstallInfo.dest_dir = curdir;
-    else if (InstallInfo.dest_dir_type == DEST_SELECT)
-    {
-        const char *env = getenv("HOME");
-        if (env) InstallInfo.dest_dir = env;
-        else InstallInfo.dest_dir = "/";
-    }
-    
-    if (InstallInfo.languages.empty())
-    {
-        char *s = new char[8];
-        strcpy(s, "english");
-        InstallInfo.languages.push_front(s);
-        InstallInfo.cur_lang = "english";
-    }
-    return true;
-}
-
-void MainEnd()
-{
-    if (!InstallInfo.translations.empty())
-    {
-        std::map<std::string, char *>::iterator p = InstallInfo.translations.begin();
-        for(;p!=InstallInfo.translations.end();p++) delete [] (*p).second;
-    }
-    
-    if (!InstallInfo.command_entries.empty())
-    {
-        std::list<command_entry_s *>::iterator p = InstallInfo.command_entries.begin();
-        for(;p!=InstallInfo.command_entries.end();p++)
-        {
-            if (!(*p)->parameter_entries.empty())
-            {
-                for (std::map<std::string, param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
-                     p2!=(*p)->parameter_entries.end();p2++)
-                    delete (*p2).second;
-            }
-            delete *p;
-        }
-    }
-    
-    FreeStrings();
-}
-
-// Reads install data from config file
-bool ReadConfig()
-{
-    const int maxread = std::numeric_limits<std::streamsize>::max();
-    std::ifstream file("config/install.cfg");
-    std::string str, line, tmp, ParamName;
-    bool incommandentry = false, inparamentry = false;
-    command_entry_s *pCommandEntry = NULL;
-    param_entry_s *pParamEntry = NULL;
-    
-    while(file)
-    {
-        // Read one line at a time...this makes sure that we don't start reading at a new line if the user 'forgot'
-        // to enter a value after the first command/variabele
-        if (!std::getline(file, line))
-            break;
-        
-        std::istringstream strstrm(line); // Use a stringstream to easily read from this line
-        
-        if (!(strstrm >> str))
-            continue;
-
-        if (str[0] == '#') // Comment, skip
-            continue;
-
-        if (incommandentry)
-        {
-            if (inparamentry)
-            {
-                if (str[0] == ']')
-                {
-                    if (!ParamName.empty())
-                        pCommandEntry->parameter_entries[ParamName] = pParamEntry;
-                    pParamEntry = NULL;
-                    inparamentry = false;
-                }
-                else if (str == "name")
-                {
-                    std::getline(strstrm, tmp);
-                    ParamName = EatWhite(tmp);
-                }
-                else if (str == "parameter")
-                {
-                    std::getline(strstrm, tmp);
-                    pParamEntry->parameter = EatWhite(tmp);
-                }
-                else if (str == "description")
-                {
-                    std::getline(strstrm, tmp);
-                    EatWhite(tmp);
-                    if (tmp[0] == '[')
-                        GetTextFromBlock(file, tmp);
-                    pParamEntry->description = tmp;
-                }
-                else if (str == "defaultval")
-                {
-                    std::getline(strstrm, tmp);
-                    pParamEntry->defaultval = pParamEntry->value = EatWhite(tmp);
-                }
-                else if (str == "varname")
-                {
-                    std::getline(strstrm, tmp);
-                    pParamEntry->varname = EatWhite(tmp);
-                }
-                else if (str == "addchoice")
-                {
-                    std::getline(strstrm, tmp);
-                    pParamEntry->options.push_back(EatWhite(tmp));
-                }
-                else if (str == "type")
-                {
-                    std::string type;
-                    strstrm >> type;
-                    if (type == "string")
-                        pParamEntry->param_type = PTYPE_STRING;
-                    else if (type == "dir")
-                        pParamEntry->param_type = PTYPE_DIR;
-                    else if (type == "list")
-                        pParamEntry->param_type = PTYPE_LIST;
-                    else if (type == "bool")
-                        pParamEntry->param_type = PTYPE_BOOL;
-                }
-            }
-            else
-            {
-                if (str[0] == ']')
-                {
-                    InstallInfo.command_entries.push_back(pCommandEntry);
-                    pCommandEntry = NULL;
-                    incommandentry = false;
-                }
-                else if (str == "command")
-                {
-                    std::getline(strstrm, tmp);
-                    EatWhite(tmp);
-                    if (tmp[0] == '[')
-                        GetTextFromBlock(file, tmp);
-                    pCommandEntry->command = tmp;
-                }
-                else if (str == "description")
-                {
-                    std::getline(strstrm, tmp);
-                    pCommandEntry->description = EatWhite(tmp);
-                }
-                else if (str == "needroot")
-                {
-                    std::string s;
-                    strstrm >> s;
-                    if (s == "true")
-                        pCommandEntry->need_root = NEED_ROOT;
-                    else if (s == "false")
-                        pCommandEntry->need_root = NO_ROOT;
-                    else if (s == "dependson")
-                    {
-                        if (strstrm >> pCommandEntry->dep_param)
-                            pCommandEntry->need_root = DEPENDED_ROOT;
-                    }
-                }
-                else if (str == "exitonfailure")
-                {
-                    std::string ex;
-                    strstrm >> ex;
-                    if (ex == "true")
-                        pCommandEntry->exit_on_failure = true;
-                    else if (ex == "false")
-                        pCommandEntry->exit_on_failure = false;
-                }
-                else if (str == "path")
-                {
-                    std::getline(strstrm, tmp);
-                    pCommandEntry->path = EatWhite(tmp);
-
-                }
-                else if (str == "addparam")
-                {
-                    file.ignore(maxread, '[');
-                    inparamentry = true;
-                    pParamEntry = new param_entry_s;
-                    ParamName.clear();
-                }
-            }
-        }
-        else
-        {
-            if (str == "appname")
-            {
-                std::getline(strstrm, tmp);
-                InstallInfo.program_name = EatWhite(tmp);
-
-            }
-            else if (str == "version")
-            {
-                std::getline(strstrm, tmp);
-                InstallInfo.version = EatWhite(tmp);
-            }
-            else if (str == "url")
-            {
-                std::getline(strstrm, tmp);
-                InstallInfo.url = EatWhite(tmp);
-            }
-            else if (str == "description")
-            {
-                std::getline(strstrm, tmp);
-                EatWhite(tmp);
-                if (tmp[0] == '[')
-                    GetTextFromBlock(file, tmp);
-                InstallInfo.description = tmp;
-            }
-            else if (str == "archtype")
-            {
-                std::string type;
-                strstrm >> type;
-                if (type == "gzip")
-                    InstallInfo.archive_type = ARCH_GZIP;
-                else if (type == "bzip2")
-                    InstallInfo.archive_type = ARCH_BZIP2;
-            }
-            else if (str == "installdir")
-            {
-                std::string type;
-                strstrm >> type;
-                if (type == "select")
-                    InstallInfo.dest_dir_type = DEST_SELECT;
-                if (type == "temp")
-                    InstallInfo.dest_dir_type = DEST_TEMP;
-                else if (type == "default")
-                {
-                    if (strstrm >> InstallInfo.dest_dir)
-                        InstallInfo.dest_dir_type = DEST_DEFAULT;
-                }
-            }
-            else if (str == "languages")
-            {
-                std::string lang;
-                while (strstrm >> lang)
-                    InstallInfo.languages.push_back(lang);
-            }
-            else if (str == "intropic")
-            {
-                std::getline(strstrm, tmp);
-                InstallInfo.intropicname = EatWhite(tmp);
-            }
-            else if (str == "commandentry")
-            {
-                file.ignore(maxread, '[');
-                incommandentry = true;
-                pCommandEntry = new command_entry_s;
-            }
-        }
-    }
-
-#ifndef RELEASE
-
-    debugline("appname: %s\n", InstallInfo.program_name.c_str());
-    debugline("version: %s\n", InstallInfo.version.c_str());
-    debugline("archtype: %d\n", InstallInfo.archive_type);
-    debugline("installdir: %s\n", InstallInfo.dest_dir.c_str());
-    debugline("dir type: %d\n", InstallInfo.dest_dir_type);
-    debugline("languages: ");
-    for (std::list<std::string>::iterator it=InstallInfo.languages.begin(); it!=InstallInfo.languages.end(); it++)
-        debugline("%s ", it->c_str());
-    debugline("\n");
-
-    debugline("Comp entries:\n");
-    for (std::list<command_entry_s *>::iterator p=InstallInfo.command_entries.begin();p!=InstallInfo.command_entries.end();p++)
-    {
-        debugline("Need root: %d\n", (*p)->need_root);
-        debugline("Command: %s\n", (*p)->command.c_str());
-        debugline("Description: %s\n", (*p)->description.c_str());
-        debugline("Depends on param: %s\n", (*p)->dep_param.c_str());
-        debugline("Exit on failure: %d\n", (*p)->exit_on_failure);
-        debugline("Params:\n");
-        for (std::map<std::string, param_entry_s *>::iterator
-             p2=(*p)->parameter_entries.begin();p2!=(*p)->parameter_entries.end();p2++)
-        {
-            debugline("\tName: %s\n\tType: %d\n\tParameter: %s\n\tDefault: %s\n\t"
-                      "Description: %s\n\tVarname: %s\n", (*p2).first.c_str(), (*p2).second->param_type,
-                      (*p2).second->parameter.c_str(),
-                      (*p2).second->defaultval.c_str(), (*p2).second->description.c_str(),
-                      (*p2).second->varname.c_str());
-            debugline("\tOptions: ");
-            for (std::list<std::string>::iterator p3=(*p2).second->options.begin();p3!=(*p2).second->options.end();p3++)
-                debugline("%s ", p3->c_str());
-            debugline("\n");
-        }
-    }
-
-#endif
-
-    return true;
-}
-
-// Extract compressed tar file. Returns how much percent is done.
-#ifdef WITH_LIB_ARCHIVE
-float ExtractArchive(std::string &curfile)
-{
-    static archive *arch = NULL;
-    archive_entry *entry = NULL;
-    static int size;
-    static float percent;
-    static std::list<char *> archlist;
-
-    if (!arch) // Does the file need to be opened?
-    {
-        char *archnameall = CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str());
-        char *archnameallcpu = CreateText("%s/instarchive_all_%s", InstallInfo.own_dir.c_str(), InstallInfo.cpuarch.c_str());
-        char *archnameos = CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str());
-        char *archnameoscpu = CreateText("%s/instarchive_%s_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str(),
-                                         InstallInfo.cpuarch.c_str());
-        
-        size = 0;
-        archlist.clear();
-        
-        if (FileExists(archnameall))
-        {
-            size += ArchSize(archnameall);
-            archlist.push_back(archnameall);
-        }
-        if (FileExists(archnameallcpu))
-        {
-            size += ArchSize(archnameallcpu);
-            archlist.push_back(archnameallcpu);
-        }
-        if (FileExists(archnameos))
-        {
-            size += ArchSize(archnameos);
-            archlist.push_back(archnameos);
-        }
-        if (FileExists(archnameoscpu))
-        {
-            size += ArchSize(archnameoscpu);
-            archlist.push_back(archnameoscpu);
-        }
-        
-        if (archlist.empty())
-            return 100;
-        
-        percent = 0.0f;
-        
-        arch = archive_read_new();
-        archive_read_support_compression_all(arch);
-        archive_read_support_format_all(arch);
-        archive_read_open_file(arch, archlist.front(), 512);
-    }
-    
-    int status = archive_read_next_header(arch, &entry);
-    
-    if ((status == ARCHIVE_EOF) && !archlist.empty())
-    {
-        archlist.pop_front();
-        archive_read_finish(arch);
-        arch = archive_read_new();
-        archive_read_support_compression_all(arch);
-        archive_read_support_format_all(arch);
-        archive_read_open_file(arch, archlist.front(), 512);
-        
-        status = archive_read_next_header(arch, &entry);
-    }
-        
-    if (status == ARCHIVE_OK)
-    {
-        curfile = archive_entry_pathname(entry);
-        percent += ((float)archive_entry_size(entry)/(float)size)*100.0f;
-        archive_read_extract(arch, entry, (ARCHIVE_EXTRACT_OWNER | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_FFLAGS));
-        return percent/archlist.size();
-    }
-    
-    archive_read_finish(arch);
-    arch = NULL;
-    
-    return (status == ARCHIVE_EOF) ? 100 : -1;
-}
-#else
-float ExtractArchive(std::string &curfile)
-{
-    const int archnamescount = 4;
-    static bool init = true;
-    static int totalsize;
-    static float percent;
-    static std::map<char *, arch_size_entry_s> archlist;
-    static std::map<char *, arch_size_entry_s>::iterator curarchiter;
-    static char *curarchname;
-    static FILE *pipe;
-    
-    if (init)
-    {
-        char *archnames[archnamescount] = { CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str()),
-            CreateText("%s/instarchive_all_%s", InstallInfo.own_dir.c_str(),
-                       InstallInfo.cpuarch.c_str()),
-            CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str()),
-            CreateText("%s/instarchive_%s_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str(),
-                       InstallInfo.cpuarch.c_str()) };
-
-        totalsize = 0;
-        archlist.clear();
-        curarchname = NULL;
-        pipe = NULL;
-
-        for (short s=0;s<archnamescount;s++)
-        {
-            if (FileExists(archnames[s]))
-            {
-                GetArchiveInfo(archnames[s], archlist[archnames[s]].filesizes, archlist[archnames[s]].totalsize);
-                totalsize += archlist[archnames[s]].totalsize;
-                if (!curarchname)
-                {
-                    curarchname = archnames[s];
-                    curarchiter = archlist.begin();
-                }
-            }
-        }
-        
-        if (archlist.empty())
-            return 100;
-        
-        percent = 0.0f;
-        init = false;
-    }
-
-    if (!pipe)
-    {
-        std::string command = "cat " + std::string(curarchname);
-
-        if (InstallInfo.archive_type == ARCH_GZIP)
-            command += " | gzip -cd | tar xvf -";
-        else if (InstallInfo.archive_type == ARCH_BZIP2)
-            command += " | bzip2 -d | tar xvf -";
-
-        command += " 2>&1"; // tar may output files to stderr
-        pipe = popen(command.c_str(), "r");
-        if (!pipe)
-        {
-            init = true;
-            return -1;
-        }
-    }
-
-    char line[512];
-    if (!fgets(line, sizeof(line), pipe))
-    {
-        pclose(pipe);
-        pipe = NULL;
-        curarchiter++;
-        if (curarchiter == archlist.end())
-        {
-            init = true;
-            return 100;
-        }
-        curarchname = curarchiter->first;
-    }
-    else
-    {
-        curfile = line;
-        if (curfile.compare(0, 2, "x ") == 0)
-            curfile.erase(0, 2);
-        EatWhite(curfile);
-        percent += ((float)archlist[curarchname].filesizes[curfile]/(float)totalsize)*100.0f;
-    }
-    
-    return percent;
-}
-
-bool CExtractAsRootFunctor::operator ()(char *passwd, TUpProgress upfunc, void *data)
-{
-    const int archnamescount = 4;
-    
-    // Init
-    m_iTotalSize = 0;
-    m_fPercent = 0.0f;
-    m_ArchList.clear();
-    m_szCurArchFName = NULL;
-    m_UpProgFunc = upfunc;
-    m_pFuncData = data;
-    
-    // Make list of all files to be extracted
-    char *archnames[archnamescount] = { CreateText("%s/instarchive_all", InstallInfo.own_dir.c_str()),
-        CreateText("%s/instarchive_all_%s", InstallInfo.own_dir.c_str(),
-                   InstallInfo.cpuarch.c_str()),
-        CreateText("%s/instarchive_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str()),
-        CreateText("%s/instarchive_%s_%s", InstallInfo.own_dir.c_str(), InstallInfo.os.c_str(),
-                   InstallInfo.cpuarch.c_str()) };
-
-    for (short s=0;s<archnamescount;s++)
-    {
-        if (FileExists(archnames[s]))
-        {
-            GetArchiveInfo(archnames[s], m_ArchList[archnames[s]].filesizes, m_ArchList[archnames[s]].totalsize);
-            m_iTotalSize += m_ArchList[archnames[s]].totalsize;
-            if (!m_szCurArchFName)
-            {
-                m_szCurArchFName = archnames[s];
-                m_CurArchIter = m_ArchList.begin();
-            }
-        }
-    }
-
-    if (m_ArchList.empty())
-        return true; // No files to extract
-
-    // Set up su
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetOutputFunc(SUOutFunc, this);
-    m_SUHandler.SetTerminalOutput(false);
-
-    while (m_CurArchIter != m_ArchList.end())
-    {
-        // Set extract command
-        std::string command = "cat " + std::string(m_szCurArchFName);
-
-        if (InstallInfo.archive_type == ARCH_GZIP)
-            command += " | gzip -cd | tar xvf -";
-        else if (InstallInfo.archive_type == ARCH_BZIP2)
-            command += " | bzip2 -d | tar xvf -";
-
-        m_SUHandler.SetCommand(command);
-        if (!m_SUHandler.ExecuteCommand(passwd))
-            return false;
-
-        m_CurArchIter++;
-    }
-    return true;
-}
-
-void CExtractAsRootFunctor::Update(const char *s)
-{
-    if (!s || !s[0])
-        return;
-
-    std::string curfile = s, orig;
-    
-    if (curfile.compare(0, 2, "x ") == 0)
-        curfile.erase(0, 2);
-
-    orig = curfile;
-    EatWhite(curfile);
-
-    if (m_ArchList[m_szCurArchFName].filesizes.find(curfile) == m_ArchList[m_szCurArchFName].filesizes.end())
-    {
-        debugline("Couldn't find %s\n", curfile.c_str());
-        return;
-    }
-    
-    m_fPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[curfile]/(float)m_iTotalSize)*100.0f;
-
-    curfile = EatWhite(orig, true);
-
-    //debugline("cline %s\n", curfile.c_str());
-    
-    curfile.insert(0, "Extracting file: ");
-    
-    m_UpProgFunc(m_fPercent, curfile, m_pFuncData);
-}
-
-#endif
-
-void ExtractFiles(char *passwd, void (*UpFunc)(int, const std::string &, void *), void *pData)
-{
-    std::string curfile;
-    short percent = 0;
-    
-    bool alwaysroot = false;
-    if (!WriteAccess(InstallInfo.dest_dir))
-    {
-        CExtractAsRootFunctor Extracter;
-        
-        if (!Extracter(passwd, UpFunc, pData))
-        {
-            CleanPasswdString(passwd);
-            passwd = NULL;
-            throwerror(true, "Error during extracting files");
-        }
-        alwaysroot = true; // Install commands need root now too
-    }
-    else
-    {
-        while(1)
-        {
-            percent = ExtractArchive(curfile);
-    
-            if (percent == -1)
-            {
-                CleanPasswdString(passwd);
-                passwd = NULL;
-                throwerror(true, "Error during extracting files");
-            }
-    
-            if (percent == 100)
-            {
-                percent = 100/(1+InstallInfo.command_entries.size()); // Convert to overall progress
-                break;
-            }
-        
-            UpFunc(percent/(1+InstallInfo.command_entries.size()), "Extracting file: " + curfile + "\n", pData);
-        }
-    }
-}
-/*
-void ExecuteInstCmd(char *passwd, void (*UpFunc)(int, const std::string &, void *), void *pData)
-{
-    short step = 2; // Not 1, because extracting files is also a step
-    for (std::list<command_entry_s*>::iterator it=InstallInfo.command_entries.begin();
-         it!=InstallInfo.command_entries.end(); it++, step++)
-    {
-        if ((*it)->command.empty()) continue;
-        
-        std::string command = (*it)->command + " " + GetParameters(*it);
-    
-        AppendText(CreateText("\nExecute: %s\n\n", command.c_str()));
-        ChangeStatusText((*it)->description.c_str(), step);
-
-        if ((*it)->need_root == NEED_ROOT || alwaysroot)
-        {
-            m_SUHandler.SetPath((*it)->path.c_str());
-            m_SUHandler.SetCommand(command);
-            if (!m_SUHandler.ExecuteCommand(m_szPassword))
-            {
-                if ((*it)->exit_on_failure)
-                {
-                    CleanPasswdString(m_szPassword);
-                    m_szPassword = NULL;
-                    throwerror(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
-                               m_SUHandler.GetErrorMsgC());
-                }
-            }
-        }
-        else
-        {
-            // Redirect stderr to stdout, so that errors will be displayed too
-            command += " 2>&1";
-            
-            setenv("PATH", (*it)->path.c_str(), 1);
-            FILE *pPipe = popen(command.c_str(), "r");
-            if (pPipe)
-            {
-                char buf[1024];
-                while(fgets(buf, sizeof(buf), pPipe))
-                {
-                    AppendText(buf);
-                    Fl::wait(0.0); // Update screen
-                }
-                
-                // Check if command exitted normally and close pipe
-                int state = pclose(pPipe);
-                if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
-                {
-                    if ((*it)->exit_on_failure)
-                    {
-                        CleanPasswdString(m_szPassword);
-                        m_szPassword = NULL;
-                        throwerror(true, "Failed to execute install command");
-                    }
-                }
-            }
-            else
-            {
-                CleanPasswdString(m_szPassword);
-                m_szPassword = NULL;
-                throwerror(true, "Could not execute installation commands (could not open pipe)");
-            }
-        }
-        
-        percent += (1.0f/((float)InstallInfo.command_entries.size()+1.0f))*100.0f;
-        SetProgress(percent);
-    }
-
-    AppendText("Registering installation...");
-    Register.RegisterInstall();
-    Register.CalcSums();
-    Register.CheckSums(InstallInfo.program_name.c_str());
-    AppendText("done\n");
-
-    SetProgress(100);
-    m_pOwner->m_bInstallFiles = false;
-    fl_message(GetTranslation("Installation of %s complete!"), InstallInfo.program_name.c_str());
-    CleanPasswdString(m_szPassword);
-    m_szPassword = NULL;
-}*/
 
 // -------------------------------------
 // Main Class
 // -------------------------------------
+
+CMain::~CMain()
+{
+    if (!m_Translations.empty())
+    {
+        for(std::map<std::string, char *>::iterator p=m_Translations.begin(); p!=m_Translations.end(); p++)
+            delete [] (*p).second;
+    }
+    
+    FreeStrings();
+}
 
 bool CMain::Init(int argc, char *argv[])
 {
@@ -774,9 +75,25 @@ bool CMain::Init(int argc, char *argv[])
         m_Languages.push_front(s);
     }
     
-    m_CurLang = m_Languages.front();
+    m_szCurLang = m_Languages.front();
 
     return true;
+}
+
+void CMain::ThrowError(bool dialog, const char *error, ...)
+{
+    char *txt;
+    const char *translated = GetTranslation(error);
+    va_list v;
+    
+    va_start(v, error);
+        vasprintf(&txt, translated, v);
+    va_end(v);
+
+    if (dialog) Warn(txt);
+    else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
+
+    EndProg(true);
 }
 
 bool CMain::ReadLang()
@@ -790,7 +107,7 @@ bool CMain::ReadLang()
         m_Translations.erase(m_Translations.begin(), m_Translations.end());
     }
     
-    std::ifstream file(CreateText("config/lang/%s/strings", InstallInfo.cur_lang.c_str()));
+    std::ifstream file(CreateText("config/lang/%s/strings", m_szCurLang.c_str()));
 
     if (!file)
         return false;
@@ -821,4 +138,131 @@ bool CMain::ReadLang()
     }
 
     return true;
+}
+
+std::string CMain::GetTranslation(std::string &s)
+{
+    std::map<std::string, char *>::iterator p = m_Translations.find(s);
+    if (p != m_Translations.end())
+        return (*p).second;
+    
+    // No translation found
+    //debugline("WARNING: No translation for %s\n", s.c_str());
+    return s;
+}
+
+char *CMain::GetTranslation(char *s)
+{
+    std::map<std::string, char *>::iterator p = m_Translations.find(s);
+    if (p != m_Translations.end())
+        return (*p).second;
+    
+    // No translation found
+    //debugline("WARNING: No translation for %s\n", s);
+    return s;
+}
+
+std::string CMain::ReadRegField(std::ifstream &file)
+{
+    std::string line, ret;
+    std::string::size_type index = 0;
+    
+    std::getline(file, line);
+    EatWhite(line);
+    
+    if (line[0] != '\"')
+        return "";
+    
+    line.erase(0, 1); // Remove initial "
+    while ((index = line.find("\\\"", index+1)) != std::string::npos)
+        line.replace(index, 2, "\"");
+
+    ret = line;
+    
+    while(line[line.length()-1] != '\"' && file && std::getline(file, line))
+    {
+        EatWhite(line);
+        while ((index = line.find("\\\"")) != std::string::npos)
+            line.replace(index, 2, "\"");
+        ret += "\n" + line;
+    }
+    
+    ret.erase(ret.length()-1, 1); // Remove trailing "
+    return ret;
+}
+
+app_entry_s *CMain::GetAppRegEntry(const char *progname)
+{
+    const char *filename = GetRegConfFile(progname);
+    if (!FileExists(filename))
+        return NULL;
+
+    app_entry_s *pAppEntry = new app_entry_s;
+    pAppEntry->name = progname;
+    
+    std::ifstream file(filename);
+    std::string str, field;
+    
+    while(file && (file >> str))
+    {
+        field = ReadRegField(file);
+        
+        if (str == "version")
+            pAppEntry->version = field;
+        else if (str == "description")
+            pAppEntry->description = field;
+        else if (str == "url")
+            pAppEntry->url = field;
+    }
+
+    file.close();
+
+    filename = GetSumListFile(progname);
+    if (FileExists(filename))
+    {
+        std::string line, sum;
+
+        std::ifstream sumfile(filename);
+        while(sumfile)
+        {
+            if (!(sumfile >> sum) || !std::getline(sumfile, line))
+                break;
+            pAppEntry->FileSums[EatWhite(line)] = sum;
+        }
+    }
+    
+    return pAppEntry;
+}
+
+const char *CMain::GetAppRegDir()
+{
+    if (!m_szAppConfDir)
+    {
+        const char *home = getenv("HOME");
+        if (!home)
+            ThrowError(false, "Couldn't find out your home directory!");
+        
+        m_szAppConfDir = CreateText("%s/.nixstaller", home);
+        
+        if (mkdir(m_szAppConfDir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
+            ThrowError(false, "Could not create nixstaller config directory!(%s)", strerror(errno));
+    }
+    
+    return m_szAppConfDir;
+}
+
+const char *CMain::GetRegConfFile(const char *progname)
+{
+    const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
+    if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
+        ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
+    return CreateText("%s/config", dir);
+}
+
+const char *CMain::GetSumListFile(const char *progname)
+{
+    const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
+    if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
+        ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
+    return CreateText("%s/list", dir);
 }

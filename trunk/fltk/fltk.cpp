@@ -39,51 +39,28 @@ CFLTKBase *pInterface = NULL;
 
 int main(int argc, char **argv)
 {
-    // Init
-    if (!MainInit(argc, argv))
-    {
-        printf("Error: %s\n", GetTranslation("Init failed, aborting"));
-        return 1;
-    }
-
     if ((argc > 1) && !strcmp(argv[1], "inst"))
         pInterface = new CInstaller;
     else
         pInterface = new CAppManager;
     
+    // Init
+    if (!pInterface->Init(argc, argv))
+    {
+        printf("Error: Init failed, aborting\n"); // UNDONE
+        return 1;
+    }
+
     pInterface->Run(argv);
     
     // Deinit
-    MainEnd();
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void EndProg(bool err)
 {
-    // HACK: Restore bell volume
-    XKeyboardControl XKBControl;
-    XKBControl.bell_duration = -1;
-    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
-
-    MainEnd();
     delete pInterface;
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
-}
-
-void throwerror(bool dialog, const char *error, ...)
-{
-    static char txt[1024];
-    const char *translated = GetTranslation(error);
-    va_list v;
-    
-    va_start(v, error);
-        vsprintf(txt, translated, v);
-    va_end(v);
-
-    if (dialog) fl_alert(txt);
-    else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
-
-    EndProg(true);
 }
 
 // -------------------------------------
@@ -116,6 +93,16 @@ CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
     // UNDONE: Doesn't work on NetBSD yet :(
     XKeyboardControl XKBControl;
     XKBControl.bell_duration = 0;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+}
+
+CFLTKBase::~CFLTKBase()
+{
+    delete m_pAskPassWindow;
+    
+    // HACK: Restore bell volume
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = -1;
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
 }
 
@@ -179,6 +166,8 @@ void CFLTKBase::Warn(const char *str, ...)
 
 void CFLTKBase::UpdateLanguage()
 {
+    CMain::UpdateLanguage();
+    
     // Translations for FL ASK dialogs
     fl_yes = GetTranslation("Yes");
     fl_no = GetTranslation("No");

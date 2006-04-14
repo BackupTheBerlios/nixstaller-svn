@@ -106,11 +106,11 @@ protected:
     
 public:
     CFLTKBase(void);
-    virtual ~CFLTKBase(void) { delete m_pAskPassWindow; };
+    virtual ~CFLTKBase(void);
 
     virtual void UpdateLanguage(void);
-    void ShowAbout(bool show);
 
+    void ShowAbout(bool show);
     void Run(char **argv) { m_pMainWindow->show(1, argv); Fl::run(); };
 
     static void AboutOKCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(false); };
@@ -126,7 +126,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     std::list<CBaseScreen *> m_ScreenList;
     
 protected:
-    virtual void ChangeStatusText(const char *str, int step);
+    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps);
     virtual void AddInstOutput(const std::string &str);
     virtual void SetProgress(int percent);
     
@@ -136,9 +136,10 @@ public:
     Fl_Button *m_pPrevButton;
     Fl_Button *m_pNextButton;
 
-    CInstaller(void);
+    CInstaller(void) : m_bInstallFiles(false) { };
     virtual ~CInstaller(void);
 
+    virtual bool Init(int argc, char *argv[]);
     virtual void Install(void);
     virtual void UpdateLanguage(void);
     
@@ -150,7 +151,7 @@ public:
     static void WizNextCB(Fl_Widget *, void *p) { ((CInstaller *)p)->Next(); };
 };
 
-class CAppManager: public CFLTKBase
+class CAppManager: public CFLTKBase, public CBaseAppManager
 {
     Fl_Button *m_pUninstallButton, *m_pExitButton;
     Fl_Help_View *m_pInfoOutput;
@@ -161,9 +162,14 @@ class CAppManager: public CFLTKBase
     app_entry_s *m_pCurrentAppEntry;
     CUninstallWindow *m_pUninstallWindow;
     
-    virtual bool ReadConfig(void) { }; //UNDONE
+    friend class CUninstallWindow;
+    
+protected:
+    virtual void AddUninstOutput(const std::string &str) { };
+    virtual void SetProgress(int percent) { };
+    
 public:
-    CAppManager();
+    CAppManager(void);
     virtual ~CAppManager(void)
     { for (std::vector<app_entry_s*>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++) delete *it; };
     
@@ -207,8 +213,9 @@ public:
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
     virtual bool Activate(void);
+    void SetLang(void) { m_pOwner->m_szCurLang = m_pChoiceMenu->mvalue()->text; };
     
-    static void LangMenuCB(Fl_Widget *w, void *) { InstallInfo.cur_lang = ((Fl_Menu_*)w)->mvalue()->text; };
+    static void LangMenuCB(Fl_Widget *w, void *p) { ((CLangScreen *)p)->SetLang(); };
 };
 
 class CWelcomeScreen: public CBaseScreen
@@ -303,20 +310,9 @@ protected:
     Fl_Text_Buffer *m_pBuffer;
     Fl_Text_Display *m_pDisplay;
     
-    Fl_Window *m_pAskPassWindow;
-    Fl_Box *m_pAskPassBox;
-    Fl_Secret_Input *m_pAskPassInput;
-    Fl_Return_Button *m_pAskPassOKButton;
-    Fl_Button *m_pAskPassCancelButton;
-    
-    LIBSU::CLibSU m_SUHandler;
-    char *m_szPassword;
-    
-    void ClearPassword(void);
-    
 public:
-    CInstallFilesScreen(CInstaller *owner) : CBaseScreen(owner), m_szPassword(NULL) { };
-    virtual ~CInstallFilesScreen(void) { CleanPasswdString(m_szPassword); };
+    CInstallFilesScreen(CInstaller *owner) : CBaseScreen(owner) { };
+    virtual ~CInstallFilesScreen(void) { };
     
     virtual Fl_Group *Create(void);
     virtual bool Activate(void) { m_pOwner->Install(); return true; };
@@ -324,15 +320,8 @@ public:
     
     void AppendText(const char *txt);
     void AppendText(const std::string &txt) { AppendText(txt.c_str()); };
-    void ChangeStatusText(const char *txt, int n);
+    void ChangeStatusText(const char *txt, int curstep, int maxsteps);
     void SetProgress(int percent) { m_pProgress->value(percent); };
-    void SetPassword(bool unset);
-    
-    static void SUUpdateProgress(int percent, void *p);
-    static void SUUpdateText(const std::string &str, void *p);
-    static void SUOutputHandler(const char *msg, void *p) { ((CInstallFilesScreen *)p)->AppendText(msg); Fl::flush(); };
-    static void AskPassOKButtonCB(Fl_Widget *w, void *p);
-    static void AskPassCancelButtonCB(Fl_Widget *w, void *p);
 };
 
 class CFinishScreen: public CBaseScreen
@@ -356,6 +345,7 @@ public:
 
 class CUninstallWindow
 {
+    CAppManager *m_pOwner;
     Fl_Window *m_pWindow;
     Fl_Progress *m_pProgress;
     Fl_Text_Buffer *m_pBuffer;
@@ -364,7 +354,7 @@ class CUninstallWindow
     CAskPassWindow *m_pPasswdWin;
     
 public:
-    CUninstallWindow(void);
+    CUninstallWindow(CAppManager *owner);
     
     bool Start(app_entry_s *pApp);
     void Close(void) { m_pWindow->hide(); };

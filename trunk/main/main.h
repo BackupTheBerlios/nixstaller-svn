@@ -70,9 +70,7 @@ struct command_entry_s
 
 struct install_info_s
 {
-    std::string os, cpuarch, version, program_name, description, url, intropicname, own_dir, dest_dir, cur_lang;
-    std::list<std::string> languages;
-    std::map<std::string, char *> translations;
+    std::string version, program_name, description, url, intropicname;
     EArchiveType archive_type;
     EDestDirType dest_dir_type;
     std::list<command_entry_s *> command_entries;
@@ -93,27 +91,11 @@ struct app_entry_s
     app_entry_s(void) : name("-"), version("-"), description("-"), url("-") { };
 };
 
-extern install_info_s InstallInfo;
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
-bool MainInit(int argc, char *argv[]);
-void MainEnd(void);
-bool ReadConfig(void);
-int ArchSize(const char *archname);
-void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &archfilesizes, unsigned int &totalsize);
-float ExtractArchive(std::string &curfile);
-inline bool ReadLang(void) { return false; }; // REMOVE ME
-std::string GetParameters(command_entry_s *pCommandEntry);
-std::string GetTranslation(std::string &s);
-char *GetTranslation(char *s);
-inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 char *CreateText(const char *s, ...);
 inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
 void FreeStrings(void);
-param_entry_s *GetParamByName(std::string str);
-param_entry_s *GetParamByVar(std::string str);
-const char *GetParamDefault(param_entry_s *pParam);
-const char *GetParamValue(param_entry_s *pParam);
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 bool WriteAccess(const char *file);
@@ -129,32 +111,13 @@ std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
 
 // These functions should be defined for each frontend
-void throwerror(bool dialog, const char *error, ...);
 void EndProg(bool err=false);
 
-class CExtractAsRootFunctor
-{
-    int m_iTotalSize;
-    float m_fPercent;
-    std::map<char *, arch_size_entry_s> m_ArchList;
-    std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
-    char *m_szCurArchFName;
-    LIBSU::CLibSU m_SUHandler;
-    
-    typedef void (*TUpProgress)(int percent, const std::string &str, void *p);
-
-    TUpProgress m_UpProgFunc;
-    void *m_pFuncData;
-    
-public:
-    bool operator ()(char *passwd, TUpProgress upfunc, void *data);
-    void Update(const char *s);
-    
-    static void SUOutFunc(const char *s, void *p) { ((CExtractAsRootFunctor *)p)->Update(s); };
-};
+class CMain;
 
 class CRegister
 {
+    CMain *m_pOwner;
     char *m_szConfDir;
     const std::string m_szRegVer;
     LIBSU::CLibSU m_SUHandler;
@@ -171,23 +134,26 @@ public:
     typedef void (*TUpFunc)(int, const std::string &, void *);
     typedef char *(*TPasFunc)(void *);
     enum EUninstRet { UNINST_SUCCESS, UNINST_WRONGPASS, UNINST_NULLPASS, UNINST_SUERR };
-    
-    CRegister(void) : m_szConfDir(NULL), m_szRegVer("1.0") { };
-    
+
+    CRegister(CMain *owner) : m_pOwner(owner), m_szConfDir(NULL), m_szRegVer("1.0") { };
+
     bool IsInstalled(bool checkver);
     void RemoveFromRegister(app_entry_s *pApp);
     void RegisterInstall(void);
     EUninstRet Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPasFunc PasFunc, void *pData);
     void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
-    void CalcSums(void);
+    void CalcSums(const char *dir);
     bool CheckSums(const char *progname);
 };
-
-extern CRegister Register;
 
 class CMain
 {
 protected:
+    const std::string m_szRegVer;
+    char *m_szAppConfDir;
+    LIBSU::CLibSU m_SUHandler;
+    char *m_szPassword;
+
     bool ReadLang(void);
     
     virtual char *GetPassword(const char *title) = 0;
@@ -197,14 +163,29 @@ protected:
     virtual void Warn(const char *str, ...) = 0;
     virtual bool ReadConfig(void) = 0;
     
+    // App register stuff
+    std::string ReadRegField(std::ifstream &file);
+    app_entry_s *GetAppRegEntry(const char *progname);
+    const char *GetAppRegDir(void);
+    const char *GetRegConfFile(const char *progname);
+    const char *GetSumListFile(const char *progname);
+    
 public:
-    std::string m_CurLang;
+    std::string m_szCurLang;
     std::list<std::string> m_Languages;
     std::map<std::string, char *> m_Translations;
     
-    virtual ~CMain(void) { };
+    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL) { };
+    virtual ~CMain(void);
+    
+    void ThrowError(bool dialog, const char *error, ...);
     
     virtual bool Init(int argc, char *argv[]);
+    virtual void UpdateLanguage(void) { ReadLang(); };
+    
+    std::string GetTranslation(std::string &s);
+    char *GetTranslation(char *s);
+    inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 };
     
 class CBaseInstall: virtual public CMain
@@ -214,25 +195,29 @@ class CBaseInstall: virtual public CMain
     std::map<char *, arch_size_entry_s> m_ArchList;
     std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
     char *m_szCurArchFName;
-    char *m_szPassword;
     bool m_bAlwaysRoot; // If we need root access during whole installation
     short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
     short m_sCurrentStep;
     float m_fInstallProgress;
      
     void SetNextStep(void);
-    void InitArchive(const char *archname);
+    void InitArchive(char *archname);
     void SetUpSU(void);
     void ExtractFiles(void);
     void ExecuteInstCommands(void);
     
+    // App register stuff
+    void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
+    void WriteRegEntry(const char *entry, const std::string &field, std::ofstream &file);
+    void CalcSums(void);
+    void RegisterInstall(void);
+    bool IsInstalled(bool checkver);
+    
 protected:
-    LIBSU::CLibSU m_SUHandler;
-
     
     void VerifyDestDir(void);
     
-    virtual void ChangeStatusText(const char *str, int step) = 0;
+    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
     
@@ -240,32 +225,61 @@ protected:
     
 public:
     install_info_s m_InstallInfo;
+    std::string m_szOS, m_szCPUArch, m_szOwnDir, m_szDestDir;
+
     
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_szPassword(NULL), m_bAlwaysRoot(false), m_sInstallSteps(0),
-                         m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
-    virtual ~CBaseInstall(void) { };
+                         m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
+    virtual ~CBaseInstall(void);
     
     virtual bool Init(int argc, char *argv[]);
     virtual void Install(void);
     
-    const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_InstallInfo.own_dir.c_str()); };
+    const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_szOwnDir.c_str()); };
     const char *GetLangWelcomeFName(void)
-    { return CreateText("%s/config/lang/%s/welcome", m_InstallInfo.own_dir.c_str(), m_CurLang.c_str()); };
-    const char *GetLicenseFName(void) { return CreateText("%s/config/license", m_InstallInfo.own_dir.c_str()); };
+    { return CreateText("%s/config/lang/%s/welcome", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
+    const char *GetLicenseFName(void) { return CreateText("%s/config/license", m_szOwnDir.c_str()); };
     const char *GetLangLicenseFName(void)
-    { return CreateText("%s/config/lang/%s/license", m_InstallInfo.own_dir.c_str(), m_CurLang.c_str()); };
-    const char *GetFinishFName(void) { return CreateText("%s/config/finish", m_InstallInfo.own_dir.c_str()); };
+    { return CreateText("%s/config/lang/%s/license", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
+    const char *GetFinishFName(void) { return CreateText("%s/config/finish", m_szOwnDir.c_str()); };
     const char *GetLangFinishFName(void)
-    { return CreateText("%s/config/lang/%s/finish", m_InstallInfo.own_dir.c_str(), m_CurLang.c_str()); };
+    { return CreateText("%s/config/lang/%s/finish", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
     const char *GetIntroPicFName(void)
-    { return CreateText("%s/%s", m_InstallInfo.own_dir.c_str(), m_InstallInfo.intropicname.c_str()); };
+    { return CreateText("%s/%s", m_szOwnDir.c_str(), m_InstallInfo.intropicname.c_str()); };
+    
+    param_entry_s *GetParamByName(std::string str);
+    param_entry_s *GetParamByVar(std::string str);
+    const char *GetParamDefault(param_entry_s *pParam);
+    const char *GetParamValue(param_entry_s *pParam);
+    std::string GetParameters(command_entry_s *pCommandEntry);
     
     void UpdateStatus(const char *s);
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };
 };
 
+class CBaseAppManager: virtual public CMain
+{
+    void SetUpSU(void);
+    const char *GetSumListFile(const char *progname);
+    app_entry_s *GetAppEntry(const char *progname);
+    
+protected:
+    virtual bool ReadConfig(void) { return true; }; // UNDONE
+    
+    void RemoveFromRegister(app_entry_s *pApp);
+    void Uninstall(app_entry_s *pApp, bool checksum);
+    void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
+    bool CheckSums(const char *progname);
+    
+    virtual void AddUninstOutput(const std::string &str) = 0;
+    virtual void SetProgress(int percent) = 0;
+    
+public:
+    
+    ~CBaseAppManager(void) { };
+};
+        
 //#define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE
