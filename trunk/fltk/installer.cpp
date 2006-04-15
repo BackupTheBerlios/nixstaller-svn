@@ -651,6 +651,7 @@ void CInstallFilesScreen::AppendText(const char *txt)
     m_pDisplay->insert(txt);
     // Move cursor to last line and last word
     m_pDisplay->scroll(m_pBuffer->length(), m_pDisplay->word_end(m_pBuffer->length()));
+    Fl::wait(0.0); // Update screen
 }
 
 void CInstallFilesScreen::ChangeStatusText(const char *txt, int curstep, int maxsteps)
@@ -658,6 +659,7 @@ void CInstallFilesScreen::ChangeStatusText(const char *txt, int curstep, int max
     // Install entries + 1 because it doesn't include extraction
     m_pDisplay->label(CreateText("%s: %s (%d/%d)", m_pOwner->GetTranslation("Status"), m_pOwner->GetTranslation(txt),
                       curstep, maxsteps));
+    Fl::wait(0.0); // Update screen
 }
 
 // -------------------------------------

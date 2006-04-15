@@ -75,6 +75,16 @@ CAppManager::CAppManager()
     m_pMainWindow->end();
 }
 
+void CAppManager::AddUninstOutput(const std::string &str)
+{
+    m_pUninstallWindow->AddOutput(str);
+}
+
+void CAppManager::SetProgress(int percent)
+{
+    m_pUninstallWindow->SetProgress(percent);
+}
+    
 void CAppManager::UpdateInfo(bool init)
 {
     if (m_AppVec.empty())
@@ -119,7 +129,7 @@ void CAppManager::UpdateInfo(bool init)
     }
 }
 
-void CAppManager::Uninstall()
+void CAppManager::StartUninstall()
 {
     if (m_AppVec.empty())
         return;
@@ -161,8 +171,6 @@ CUninstallWindow::CUninstallWindow(CAppManager *owner) : m_pOwner(owner)
     m_pOKButton->callback(OKButtonCB, this);
     m_pOKButton->deactivate();
     
-    m_pPasswdWin = new CAskPassWindow(m_pOwner->GetTranslation("This uninstallation requires root(administrator) "
-            "privileges in order to continue\nPlease enter the password of the root user"));
     m_pWindow->end();
 }
 
@@ -178,8 +186,8 @@ bool CUninstallWindow::Start(app_entry_s *pApp)
         int ret = fl_choice(m_pOwner->GetTranslation("Some files have been modified after installation.\n"
                 "This can happen if you installed another package which uses one or\n"
                 "more files with the same name or you installed another version."),
-        m_pOwner->GetTranslation("Cancel"), m_pOwner->GetTranslation("Continue anyway"),
-        m_pOwner->GetTranslation("Only remove unchanged"));
+                m_pOwner->GetTranslation("Cancel"), m_pOwner->GetTranslation("Continue anyway"),
+                m_pOwner->GetTranslation("Only remove unchanged"));
         if (ret == 0)
             return false;
         
@@ -194,7 +202,7 @@ bool CUninstallWindow::Start(app_entry_s *pApp)
     
     m_pWindow->show();
     
-    m_pOwner->Uninstall();
+    m_pOwner->Uninstall(pApp, checksums);
     /*
     while (true)
     {
@@ -224,9 +232,8 @@ bool CUninstallWindow::Start(app_entry_s *pApp)
     return true;
 }
 
-void CUninstallWindow::UpdateProgress(int percent, const std::string &file)
+void CUninstallWindow::AddOutput(const std::string &file)
 {
-    m_pProgress->value(percent);
     m_pBuffer->append(CreateText("Removing %s\n", file.c_str()));
     // Move cursor to last line and last word
     m_pDisplay->scroll(m_pBuffer->length(), m_pDisplay->word_end(m_pBuffer->length()));

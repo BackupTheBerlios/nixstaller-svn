@@ -165,8 +165,8 @@ class CAppManager: public CFLTKBase, public CBaseAppManager
     friend class CUninstallWindow;
     
 protected:
-    virtual void AddUninstOutput(const std::string &str) { };
-    virtual void SetProgress(int percent) { };
+    virtual void AddUninstOutput(const std::string &str);
+    virtual void SetProgress(int percent);
     
 public:
     CAppManager(void);
@@ -174,10 +174,10 @@ public:
     { for (std::vector<app_entry_s*>::iterator it=m_AppVec.begin(); it!=m_AppVec.end(); it++) delete *it; };
     
     void UpdateInfo(bool init);
-    void Uninstall(void);
+    void StartUninstall(void);
     
     static void AppListCB(Fl_Widget *, void *p) { ((CAppManager *)p)->UpdateInfo(false); };
-    static void UninstallCB(Fl_Widget *, void *p) { ((CAppManager *)p)->Uninstall(); };
+    static void UninstallCB(Fl_Widget *, void *p) { ((CAppManager *)p)->StartUninstall(); };
     static void ExitCB(Fl_Widget *, void *) { EndProg(); };
 };
 
@@ -321,7 +321,7 @@ public:
     void AppendText(const char *txt);
     void AppendText(const std::string &txt) { AppendText(txt.c_str()); };
     void ChangeStatusText(const char *txt, int curstep, int maxsteps);
-    void SetProgress(int percent) { m_pProgress->value(percent); };
+    void SetProgress(int percent) { m_pProgress->value(percent); Fl::wait(0.0); };
 };
 
 class CFinishScreen: public CBaseScreen
@@ -351,20 +351,16 @@ class CUninstallWindow
     Fl_Text_Buffer *m_pBuffer;
     Fl_Text_Display *m_pDisplay;
     Fl_Button *m_pOKButton;
-    CAskPassWindow *m_pPasswdWin;
     
 public:
     CUninstallWindow(CAppManager *owner);
     
     bool Start(app_entry_s *pApp);
     void Close(void) { m_pWindow->hide(); };
-    void UpdateProgress(int percent, const std::string &file);
-    char *GetPassword(void) { return m_pPasswdWin->Activate(); };
+    void AddOutput(const std::string &str);
+    void SetProgress(int percent) { m_pProgress->value(percent); Fl::wait(0.0); };
      
     static void OKButtonCB(Fl_Widget *w, void *p) { ((CUninstallWindow *)p)->Close(); };
-    static void UpdateProgressCB(int percent, const std::string &file, void *p)
-    { ((CUninstallWindow *)p)->UpdateProgress(percent, file); };
-    static char *GetPasswordCB(void *p) { return ((CUninstallWindow *)p)->GetPassword(); };
 };
 
 #endif

@@ -71,7 +71,7 @@ CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
 {
     fl_register_images();
     Fl::scheme("plastic");
-
+    
     // Create about dialog
     m_pAboutWindow = new Fl_Window(400, 200, "About nixstaller");
     m_pAboutWindow->set_modal();
@@ -156,7 +156,7 @@ void CFLTKBase::Warn(const char *str, ...)
     va_list v;
     
     va_start(v, str);
-    vasprintf(&text, str, v);
+        vasprintf(&text, str, v);
     va_end(v);
     
     fl_alert(text);

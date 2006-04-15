@@ -207,6 +207,8 @@ void CBaseInstall::ExtractFiles()
     if (m_ArchList.empty())
         return; // No files to extract
 
+    ChangeStatusText("Extracting files", m_sCurrentStep, m_sInstallSteps);
+    
     m_bAlwaysRoot = !WriteAccess(m_szDestDir);
     
     if (m_bAlwaysRoot)
@@ -345,7 +347,7 @@ void CBaseInstall::Install(void)
                 m_szCPUArch.c_str()));
 
     // Count all install steps that have to be taken
-    m_sInstallSteps = !m_ArchList.empty(); // Extracting is one step
+    m_sInstallSteps = m_sCurrentStep = !m_ArchList.empty(); // Extracting is one step
     m_sInstallSteps += m_InstallInfo.command_entries.size(); // Every install command is one step
     
     // Set up su incase we need root access
@@ -381,11 +383,15 @@ void CBaseInstall::UpdateStatus(const char *s)
                                
     EatWhite(stat);
 
-    AddInstOutput("Extracting file: " + stat);
-                
-    stat += '\n'; // File names are stored with a newline
-                
+    if (m_ArchList[m_szCurArchFName].filesizes.find(stat) == m_ArchList[m_szCurArchFName].filesizes.end())
+    {
+        debugline("Couldn't find %s\n", stat.c_str());
+        return;
+    }
+    
     m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_iTotalArchSize)*100.0f;
+
+    AddInstOutput("Extracting file: " + stat + '\n');
     SetProgress(m_fExtrPercent/(float)m_sInstallSteps);
 }
 
@@ -646,12 +652,16 @@ void CBaseInstall::WriteSums(const char *filename, std::ofstream &outfile, const
     std::string line;
     while (infile && std::getline(infile, line))
     {
+        std::string dir;
         if (var)
-            line.insert(0, *var + "/");
+            dir = *var;
         else
-            line.insert(0, m_szDestDir + "/");
+            dir = m_szDestDir;
         
-        outfile << GetMD5(line) << " " << line << "\n";
+        if (dir[dir.length()-1] != '/')
+            dir += '/';
+
+        outfile << GetMD5(line) << " " << dir << line << "\n";
     }
 }
 
