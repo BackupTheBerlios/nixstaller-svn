@@ -48,14 +48,14 @@ CAppManager::CAppManager()
     m_pAppList->callback(AppListCB, this);
     m_pAppList->value(1);
 
-    Fl_Tabs *pTabs = new Fl_Tabs((m_pAppList->x()+m_pAppList->w())+20, 20, 300, 240);
+    Fl_Tabs *pTabs = new Fl_Tabs((m_pAppList->x()+m_pAppList->w())+20, 20, 300, 260);
     
-    Fl_Group *pInfoTab = new Fl_Group((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Info");
+    Fl_Group *pInfoTab = new Fl_Group((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 260, "Info");
     m_pInfoOutput = new Fl_Help_View((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240);
     m_pInfoOutput->align(FL_ALIGN_TOP);
     pInfoTab->end();
     
-    Fl_Group *pFilesTab = new Fl_Group((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240, "Files");
+    Fl_Group *pFilesTab = new Fl_Group((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 260, "Files");
     m_pFilesTextDisplay = new Fl_Text_Display((m_pAppList->x()+m_pAppList->w())+20, 40, 300, 240);
     m_pFilesTextBuffer = new Fl_Text_Buffer;
     m_pFilesTextDisplay->buffer(m_pFilesTextBuffer);
@@ -203,29 +203,6 @@ bool CUninstallWindow::Start(app_entry_s *pApp)
     m_pWindow->show();
     
     m_pOwner->Uninstall(pApp, checksums);
-    /*
-    while (true)
-    {
-        CRegister::EUninstRet ret = m_pOwner->Uninstall(pApp, checksums, &UpdateProgressCB, &GetPasswordCB, this);
-        if (ret == CRegister::UNINST_SUCCESS)
-            break;
-        else if (ret == CRegister::UNINST_NULLPASS)
-        {
-            if (fl_choice(m_pOwner->GetTranslation("Root access is required to continue\nAbort uninstallation?"),
-                m_pOwner->GetTranslation("No"), m_pOwner->GetTranslation("Yes"), NULL))
-            {
-                Close();
-                return false;
-            }
-        }
-        else if (ret == CRegister::UNINST_WRONGPASS)
-            fl_alert(m_pOwner->GetTranslation("Incorrect password given for root user\nPlease retype"));
-        else if (ret == CRegister::UNINST_SUERR)
-        {
-            m_pOwner->ThrowError(true, m_pOwner->GetTranslation("Could not use su to gain root access"
-                    "Make sure you can use su(adding the current user to the wheel group may help"));
-        }
-}*/
     
     m_pProgress->value(100);
     m_pOKButton->activate();

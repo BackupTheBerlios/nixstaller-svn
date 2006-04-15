@@ -96,6 +96,44 @@ void CMain::ThrowError(bool dialog, const char *error, ...)
     EndProg(true);
 }
 
+void CMain::SetUpSU(const char *msg)
+{
+    m_SUHandler.SetUser("root");
+    m_SUHandler.SetTerminalOutput(false);
+
+    if (m_SUHandler.NeedPassword())
+    {
+        while(true)
+        {
+            CleanPasswdString(m_szPassword);
+            
+            m_szPassword = GetPassword(GetTranslation(msg));
+            
+            // Check if password is invalid
+            if (!m_szPassword)
+            {
+                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
+                    GetTranslation("No"), GetTranslation("Yes"), NULL))
+                    EndProg();
+            }
+            else
+            {
+                if (m_SUHandler.TestSU(m_szPassword))
+                    break;
+
+                // Some error appeared
+                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                    Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                else
+                {
+                    ThrowError(true, GetTranslation("Could not use su to gain root access"
+                            "Make sure you can use su(adding the current user to the wheel group may help"));
+                }
+            }
+        }
+    }
+}
+
 bool CMain::ReadLang()
 {
     // Clear all translations

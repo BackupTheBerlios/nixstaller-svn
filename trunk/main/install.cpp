@@ -135,73 +135,6 @@ void CBaseInstall::InitArchive(char *archname)
     }
 }
 
-void CBaseInstall::SetUpSU()
-{
-    // Check if we need root access
-    bool askpass = false;
-    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
-         it!=m_InstallInfo.command_entries.end(); it++)
-    {
-        if ((*it)->need_root != NO_ROOT)
-        {
-            // Command may need root permission, check if it is so
-            if ((*it)->need_root == DEPENDED_ROOT)
-            {
-                param_entry_s *p = GetParamByVar((*it)->dep_param);
-                if (p && FileExists(p->value) && !WriteAccess(p->value))
-                {
-                    (*it)->need_root = NEED_ROOT;
-                    if (!askpass) askpass = true;
-                }
-            }
-            else if (!askpass) askpass = true;
-        }
-    }
-
-    if (!askpass)
-        askpass = FileExists(m_szDestDir) && !WriteAccess(m_szDestDir);
-
-    if (!askpass)
-        return;
-    
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetTerminalOutput(false);
-
-    if (m_SUHandler.NeedPassword())
-    {
-        while(true)
-        {
-            CleanPasswdString(m_szPassword);
-            
-            m_szPassword = GetPassword(GetTranslation("This installation requires root(administrator)"
-                                                      "privileges in order to continue\n"
-                                                      "Please enter the password of the root user"));
-            
-            // Check if password is invalid
-            if (!m_szPassword)
-            {
-                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
-                    GetTranslation("No"), GetTranslation("Yes"), NULL))
-                    EndProg();
-            }
-            else
-            {
-                if (m_SUHandler.TestSU(m_szPassword))
-                    break;
-
-                // Some error appeared
-                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
-                else
-                {
-                    ThrowError(true, GetTranslation("Could not use su to gain root access"
-                            "Make sure you can use su(adding the current user to the wheel group may help"));
-                }
-            }
-        }
-    }
-}
-
 void CBaseInstall::ExtractFiles()
 {    
     if (m_ArchList.empty())
@@ -350,8 +283,33 @@ void CBaseInstall::Install(void)
     m_sInstallSteps = m_sCurrentStep = !m_ArchList.empty(); // Extracting is one step
     m_sInstallSteps += m_InstallInfo.command_entries.size(); // Every install command is one step
     
-    // Set up su incase we need root access
-    SetUpSU();
+    // Check if we need root access
+    bool needroot = false;
+    for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
+         it!=m_InstallInfo.command_entries.end(); it++)
+    {
+        if ((*it)->need_root != NO_ROOT)
+        {
+            // Command may need root permission, check if it is so
+            if ((*it)->need_root == DEPENDED_ROOT)
+            {
+                param_entry_s *p = GetParamByVar((*it)->dep_param);
+                if (p && FileExists(p->value) && !WriteAccess(p->value))
+                {
+                    (*it)->need_root = NEED_ROOT;
+                    if (!needroot) needroot = true;
+                }
+            }
+            else if (!needroot) needroot = true;
+        }
+    }
+
+    if (!needroot)
+        needroot = (FileExists(m_szDestDir) && !WriteAccess(m_szDestDir));
+
+    if (needroot)
+        SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
+                "Please enter the password of the root user");
     
     if (chdir(m_szDestDir.c_str())) 
         ThrowError(true, "Could not open directory '%s'", m_szDestDir.c_str());
@@ -661,7 +619,8 @@ void CBaseInstall::WriteSums(const char *filename, std::ofstream &outfile, const
         if (dir[dir.length()-1] != '/')
             dir += '/';
 
-        outfile << GetMD5(line) << " " << dir << line << "\n";
+        line = dir + line;
+        outfile << GetMD5(line) << " " << line << "\n";
     }
 }
 

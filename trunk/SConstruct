@@ -311,11 +311,15 @@ if cur_os == 'netbsd':
     env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib'))
 
 # Builds ncurses frontend
-ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '
-                       'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
+#ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '
+#                       'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
+
+#ncurses = env.Program('ncurses/ncurs', Split('ncurses/c++/'+cur_os+'/cursesmain.cc ncurses/ncurses.cpp'), LIBS=Split('$LIBS #ncurses ncurses++'), CPPPATH=Split('$CPPPATH ncurses/c++/'+cur_os))
+
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp'), LIBS=Split('$LIBS ncurses++ form menu panel ncurses'))
 
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 # Default to all
-Default(fltk, main, libsu, env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk))
+Default(fltk, ncurses, main, libsu, env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk), env.Install(bin_dir, ncurses))

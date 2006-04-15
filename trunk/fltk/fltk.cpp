@@ -53,7 +53,6 @@ int main(int argc, char **argv)
 
     pInterface->Run(argv);
     
-    // Deinit
     return EXIT_SUCCESS;
 }
 

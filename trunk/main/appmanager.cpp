@@ -42,46 +42,6 @@
 
 #include "main.h"
 
-void CBaseAppManager::SetUpSU()
-{
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetTerminalOutput(false);
-
-    if (m_SUHandler.NeedPassword())
-    {
-        while(true)
-        {
-            CleanPasswdString(m_szPassword);
-            
-            m_szPassword = GetPassword(GetTranslation("This installation requires root(administrator)"
-                    "privileges in order to continue\n"
-                    "Please enter the password of the root user"));
-            
-            // Check if password is invalid
-            if (!m_szPassword)
-            {
-                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
-                    GetTranslation("No"), GetTranslation("Yes"), NULL))
-                    EndProg();
-            }
-            else
-            {
-                if (m_SUHandler.TestSU(m_szPassword))
-                    break;
-
-                // Some error appeared
-                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
-                else
-                {
-                    ThrowError(true, GetTranslation("Could not use su to gain root access"
-                            "Make sure you can use su(adding the current user to the wheel group may help"));
-                }
-            }
-        }
-    }
-}
-
 const char *CBaseAppManager::GetSumListFile(const char *progname)
 {
     const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
@@ -163,7 +123,8 @@ void CBaseAppManager::Uninstall(app_entry_s *pApp, bool checksum)
     }
     
     if (needroot)
-        SetUpSU();
+        SetUpSU("This uninstallation requires root(administrator) privileges in order to continue\n"
+                "Please enter the password of the root user");
     
     // Now get rid of the app...
     for (it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)

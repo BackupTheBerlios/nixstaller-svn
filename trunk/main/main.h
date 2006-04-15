@@ -154,6 +154,7 @@ protected:
     LIBSU::CLibSU m_SUHandler;
     char *m_szPassword;
 
+    void SetUpSU(const char *msg);
     bool ReadLang(void);
     
     virtual char *GetPassword(const char *title) = 0;
@@ -202,7 +203,6 @@ class CBaseInstall: virtual public CMain
      
     void SetNextStep(void);
     void InitArchive(char *archname);
-    void SetUpSU(void);
     void ExtractFiles(void);
     void ExecuteInstCommands(void);
     
@@ -260,7 +260,6 @@ public:
 
 class CBaseAppManager: virtual public CMain
 {
-    void SetUpSU(void);
     const char *GetSumListFile(const char *progname);
     app_entry_s *GetAppEntry(const char *progname);
     
