@@ -238,7 +238,7 @@ int CLibSU::WaitForChild()
     fd_set fds;
     FD_ZERO(&fds);
 
-    // HACK: Wait 0.5 sec to make sure that ReadLine() won't return unfinished lines
+    // HACK: Wait 0.2 sec to make sure that ReadLine() won't return unfinished lines
     timespec tsec = { 0, 200000000 };
     nanosleep(&tsec, NULL);
 

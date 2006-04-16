@@ -304,7 +304,7 @@ libsu = env.SConscript('libsu/SConstruct')
 # Builds main lib
 main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'libmd5/md5.c'])
 
-env.Append(LIBS = Split('su main util'))
+env.Append(LIBS = Split('main su util'))
 
 # UNDONE?
 if cur_os == 'netbsd':

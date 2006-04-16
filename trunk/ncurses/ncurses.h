@@ -57,4 +57,24 @@ public:
     int run();
 };
 
+class CNCursBase: public virtual CMain
+{
+    NCursesPanel *m_pDummyPanel; // Used for updating screen
+    
+protected:
+    virtual char *GetPassword(const char *str) { };
+    virtual void MsgBox(const char *str, ...);
+    virtual bool YesNoBox(const char *str, ...) { };
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) { };
+    virtual void Warn(const char *str, ...) { };
+    
+    virtual bool ReadConfig(void) { }; // UNDONE: Remove me!
+    friend class CNCursScreen; // UNDONE: Remove me!
+public:
+    
+    virtual ~CNCursBase(void) { delete m_pDummyPanel; };
+    
+    virtual bool Init(void) { m_pDummyPanel = new NCursesPanel; m_pDummyPanel->bkgd(' '|COLOR_PAIR(7)); };
+};
+
 #endif

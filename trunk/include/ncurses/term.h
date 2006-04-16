@@ -42,7 +42,7 @@
 #define NCURSES_TERM_H_incl 1
 
 #undef  NCURSES_VERSION
-#define NCURSES_VERSION "5.4"
+#define NCURSES_VERSION "5.5"
 
 #include <ncurses/ncurses_dll.h>
 
@@ -84,7 +84,7 @@ extern "C" {
 
 #else /* !HAVE_TERMIOS_H */
 
-#if 1 /* HAVE_TERMIO_H */
+#if 0 /* HAVE_TERMIO_H */
 
 #undef  TERMIOS
 #define TERMIOS 1

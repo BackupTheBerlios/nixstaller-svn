@@ -32,8 +32,15 @@
     this exception.
 */
 
-
 #include "ncurses.h"
+
+static CNCursScreen MainScreen;
+
+void EndProg(bool err)
+{
+//    delete pInterface;
+    exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
+}
 
 void CNCursScreen::init_labels(Soft_Label_Key_Set& S) const
 {
@@ -57,11 +64,41 @@ void CNCursScreen::handleArgs(int argc, char* argv[])
 
 int CNCursScreen::run()
 {
+    Root_Window->setcolor(7);
+    Root_Window->setpalette(COLOR_BLACK, COLOR_BLACK);
+    
+    CNCursBase p;
+    p.Init();
+    p.MsgBox("hi\n");
+    
     // Init installer/appmanager
     
     // Run installer/appmanager
+    
     return EXIT_SUCCESS;
 }
 
+void CNCursBase::MsgBox(const char *str, ...)
+{
+    char *text;
+    NCursesPanel *panel = new NCursesPanel(8,20,12,4);
+    
+    va_list v;
+    
+    va_start(v, str);
+        vasprintf(&text, str, v);
+    va_end(v);
+    
+    panel->boldframe("Message");
+    panel->bkgd(' '|MainScreen.dialog_backgrounds());
+    panel->printw(1, 0, str);
+    m_pDummyPanel->refresh();
+    sleep(5);
+    
+    delete panel;
+    m_pDummyPanel->refresh();
+    
+    sleep(3);
+    free(text);
+}
 
-static CNCursScreen MainScreen;
