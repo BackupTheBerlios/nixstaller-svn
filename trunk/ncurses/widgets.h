@@ -35,6 +35,8 @@
 #ifndef CDK_WIDGET_H
 #define CDK_WIDGET_H
 
+#ifdef REMOVE_ME_AFTER_NEW_FRONTEND_IS_DONE
+
 // CDK Wrapper Classes
 
 class CBaseCDKWidget
@@ -311,5 +313,14 @@ public:
 
     static int CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object, void *clientData, chtype key);
 };
+
+#endif
+
+class CButton: public NCursesWindow
+{
+public:
+    CButton(NCursesWindow& par, int nlines, int ncols, int begin_y = 0, int begin_x = 0, char absrel = 'a');
+};
+
 
 #endif

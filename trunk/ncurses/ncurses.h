@@ -35,11 +35,12 @@
 #ifndef NCURSES_H
 #define NCURSES_H
 
-#include "main.h"
-
 #include "cursesapp.h"
 #include "cursesm.h"
 #include "cursesf.h"
+
+#include "main.h"
+#include "widgets.h"
 
 class CNCursScreen: public NCursesApplication
 {

@@ -32,6 +32,8 @@
     this exception.
 */
 
+#ifdef REMOVE_ME_AFTER_NEW_FRONTEND_IS_DONE
+
 #include "ncurs.h"
 
 // CDK Label Wrapper
@@ -631,3 +633,13 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
     FileList->UpdateFileList(newdir);
     return false;
 }
+
+#endif
+
+#include "ncurses.h"
+
+CButton::CButton(NCursesWindow& par, int nlines, int ncols, int begin_y, int begin_x, char absrel) : NCursesWindow(/*par,*/ nlines, ncols, begin_y, begin_x/*, absrel*/)
+{
+    box();
+    addstr(1, 1, "Button");
+};
