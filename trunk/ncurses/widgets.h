@@ -318,8 +318,11 @@ public:
 
 class CButton: public NCursesWindow
 {
+    typedef void (*TCallBack)(CButton *, void *);
+    
 public:
-    CButton(NCursesWindow& par, int nlines, int ncols, int begin_y = 0, int begin_x = 0, char absrel = 'a');
+    CButton(NCursesWindow& par, int nlines, int ncols, int begin_y, int begin_x,
+            const char *text, TCallBack func, char absrel = 'a');
 };
 
 

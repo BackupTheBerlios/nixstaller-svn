@@ -92,13 +92,20 @@ void CNCursBase::MsgBox(const char *str, ...)
     panel->boldframe("Message");
     panel->bkgd(' '|MainScreen.dialog_backgrounds());
     panel->printw(1, 1, str);
+        
+    CButton *but = new CButton(*panel, 3, 12, 1, 3, "hah", NULL, 'r');
     
-    CButton *but = new CButton(*panel, 6, 12, 3, 3);
     m_pDummyPanel->refresh();
-    sleep(5);
+    but->refresh();
     
-    delete but;
+    sleep(5);
+    panel->mvwin(5, 10);
+    m_pDummyPanel->refresh();
+    sleep(4);
+            
     delete panel;
+    delete but;
+    
     m_pDummyPanel->refresh();
     
     sleep(3);

@@ -638,8 +638,10 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 
 #include "ncurses.h"
 
-CButton::CButton(NCursesWindow& par, int nlines, int ncols, int begin_y, int begin_x, char absrel) : NCursesWindow(/*par,*/ nlines, ncols, begin_y, begin_x/*, absrel*/)
+CButton::CButton(NCursesWindow& par, int nlines, int ncols, int begin_y, int begin_x,
+                 const char *text, TCallBack func, char absrel) : NCursesWindow(par, nlines, ncols, begin_y, begin_x, absrel)
 {
+    bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
+    printw(1, 1, text);
     box();
-    addstr(1, 1, "Button");
-};
+}
