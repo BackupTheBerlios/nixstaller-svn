@@ -720,11 +720,21 @@ void CWidgetManager::Run()
             (*it)->Run();
     }
 }
-        
+
+void CWidgetWindow::CenterText(const char *text, int row)
+{
+    if (row == -1)
+        row = maxy()/2;
+    
+    int x = (maxx() - ::strlen(text)) / 2;
+    if (x < 0)
+        x = 0;
+    addstr(row, x, text, width());
+}
+
 CButton::CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
-                 TCallBack func, char absrel) : NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), CWidget(owner)
+                 TCallBack func, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel)
 {
     bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
-    printw(1, 1, text);
-    box();
+    CenterText(text);
 }

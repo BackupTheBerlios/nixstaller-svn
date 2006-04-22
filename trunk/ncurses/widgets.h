@@ -318,6 +318,8 @@ public:
 
 class CWidget
 {
+    bool m_bEnabled;
+
     void SetNextWidget(void);
     void SetPrevWidget(void);
 
@@ -325,7 +327,6 @@ class CWidget
     
 protected:
     CWidget *m_pOwner;
-    bool m_bEnabled;
     std::list<CWidget *> m_ChildList;
     std::list<CWidget *>::iterator m_FocusedChild;
     
@@ -358,7 +359,22 @@ public:
                  int begin_x) : CWidget(owner), NCursesPanel(nlines, ncols, begin_y, begin_x) { };
 };
 
-class CButton: public NCursesWindow, public CWidget
+class CWidgetWindow: public CWidget, public NCursesWindow
+{
+public:
+    CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
+                  char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
+    
+    void CenterText(const char *text, int row=-1);
+};
+
+class CWidgetPad: public CWidget, public NCursesFramedPad
+{
+public:
+    CWidgetPad(CWidgetWindow *owner, int nlines, int ncols) : CWidget(owner), NCursesFramedPad(*owner, nlines, ncols) { };
+};
+
+class CButton: public CWidgetWindow
 {
     typedef void (*TCallBack)(CButton *, void *);
     

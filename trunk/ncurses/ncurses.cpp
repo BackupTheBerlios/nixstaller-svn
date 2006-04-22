@@ -65,7 +65,7 @@ void CNCursScreen::handleArgs(int argc, char* argv[])
 int CNCursScreen::run()
 {
     Root_Window->setcolor(7);
-    Root_Window->setpalette(COLOR_YELLOW, COLOR_BLACK);
+    Root_Window->setpalette(COLOR_WHITE, COLOR_BLACK);
     
     CNCursBase p;
     p.Init();
@@ -82,7 +82,7 @@ void CNCursBase::MsgBox(const char *str, ...)
 {
     char *text;
     CWidgetManager Man;
-    CWidgetPanel *panel = new CWidgetPanel(&Man, 10,20,12,4);
+    CWidgetPanel *panel = new CWidgetPanel(&Man, 18,40,2,4);
     
     va_list v;
     
@@ -94,22 +94,25 @@ void CNCursBase::MsgBox(const char *str, ...)
     panel->bkgd(' '|MainScreen.dialog_backgrounds());
     panel->printw(1, 1, str);
         
-    CButton *but = new CButton(panel, 3, 8, 1, 3, "hah", NULL, 'r');
-    CButton *but2 = new CButton(panel, 3, 8, 5, 3, "hah", NULL, 'r');
+    CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
+    CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
+    CWidgetWindow *pwin = new CWidgetWindow(panel, 8, 15, 8, 2, 'r');
+    NCursesFramedPad *pad = new NCursesFramedPad(*pwin, 40, 40);
     
     m_pDummyPanel->refresh();
     but->refresh();
     but2->refresh();
     
+    for (int i=0;i<40;i++)
+        pad->addch(i+65);
+    pad->refresh();
+    
     Man.Run();
     
-    sleep(5);
-    panel->mvwin(5, 10);
-    m_pDummyPanel->refresh();
-    sleep(4);
-            
     delete panel;
-    delete but;
+    delete but, but2;
+    delete pwin;
+    delete pad;
     
     m_pDummyPanel->refresh();
     
