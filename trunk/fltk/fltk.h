@@ -363,4 +363,9 @@ public:
     static void OKButtonCB(Fl_Widget *w, void *p) { ((CUninstallWindow *)p)->Close(); };
 };
 
+#ifndef RELEASE
+inline void debugline(const char *t, ...)
+{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); printf("DEBUG: %s", txt); };
+#endif
+
 #endif

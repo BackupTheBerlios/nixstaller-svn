@@ -65,7 +65,7 @@ void CNCursScreen::handleArgs(int argc, char* argv[])
 int CNCursScreen::run()
 {
     Root_Window->setcolor(7);
-    Root_Window->setpalette(COLOR_BLACK, COLOR_BLACK);
+    Root_Window->setpalette(COLOR_YELLOW, COLOR_BLACK);
     
     CNCursBase p;
     p.Init();
@@ -81,7 +81,8 @@ int CNCursScreen::run()
 void CNCursBase::MsgBox(const char *str, ...)
 {
     char *text;
-    NCursesPanel *panel = new NCursesPanel(8,20,12,4);
+    CWidgetManager Man;
+    CWidgetPanel *panel = new CWidgetPanel(&Man, 10,20,12,4);
     
     va_list v;
     
@@ -93,10 +94,14 @@ void CNCursBase::MsgBox(const char *str, ...)
     panel->bkgd(' '|MainScreen.dialog_backgrounds());
     panel->printw(1, 1, str);
         
-    CButton *but = new CButton(*panel, 3, 12, 1, 3, "hah", NULL, 'r');
+    CButton *but = new CButton(panel, 3, 8, 1, 3, "hah", NULL, 'r');
+    CButton *but2 = new CButton(panel, 3, 8, 5, 3, "hah", NULL, 'r');
     
     m_pDummyPanel->refresh();
     but->refresh();
+    but2->refresh();
+    
+    Man.Run();
     
     sleep(5);
     panel->mvwin(5, 10);

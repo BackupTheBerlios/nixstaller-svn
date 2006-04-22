@@ -42,6 +42,8 @@
 #include "main.h"
 #include "widgets.h"
 
+#define CTRL(x)             ((x) & 0x1f)
+
 class CNCursScreen: public NCursesApplication
 {
 protected:
@@ -77,5 +79,11 @@ public:
     
     virtual bool Init(void) { m_pDummyPanel = new NCursesPanel; m_pDummyPanel->bkgd(' '|COLOR_PAIR(7)); };
 };
+
+
+#ifndef RELEASE
+inline void debugline(const char *t, ...)
+{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); mvprintw(4, 40, "DEBUG: %s", txt); };
+#endif
 
 #endif

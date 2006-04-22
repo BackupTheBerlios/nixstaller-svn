@@ -638,8 +638,91 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 
 #include "ncurses.h"
 
-CButton::CButton(NCursesWindow& par, int nlines, int ncols, int begin_y, int begin_x,
-                 const char *text, TCallBack func, char absrel) : NCursesWindow(par, nlines, ncols, begin_y, begin_x, absrel)
+bool CWidget::HandleKeyPre(chtype ch)
+{
+    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        if ((*it)->HandleKeyPre(ch))
+            return true;
+    
+    debugline("PreKey: %d", ch);
+    return false;
+}
+
+bool CWidget::HandleKeyPost(chtype ch)
+{
+    if (ch == 9)
+        SetNextWidget();
+    else if (ch == KEY_BTAB)
+        SetPrevWidget();
+    
+    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        if ((*it)->HandleKeyPost(ch))
+            return true;
+
+    debugline("PostKey: %d", ch);
+    return false;
+}
+
+void CWidget::SetNextWidget()
+{
+    if (m_ChildList.size() < 2)
+        return;
+    
+    (*m_FocusedChild)->LeaveFocus();
+    
+    m_FocusedChild++;
+    if (m_FocusedChild == m_ChildList.end())
+        m_FocusedChild = m_ChildList.begin();
+    
+    (*m_FocusedChild)->Focus();
+}
+
+void CWidget::SetPrevWidget()
+{
+    if (m_ChildList.size() < 2)
+        return;
+
+    (*m_FocusedChild)->LeaveFocus();
+    
+    if (m_FocusedChild == m_ChildList.begin())
+        m_FocusedChild = m_ChildList.end();
+    
+    m_FocusedChild--;
+
+    (*m_FocusedChild)->Focus();
+}
+
+void CWidget::Run()
+{
+    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        (*it)->Run();
+}
+
+void CWidgetManager::Run()
+{
+    while (true)
+    {
+        chtype ch = getch();
+        if (ch != ERR)
+        {
+            debugline("key: %d\n", ch);
+            if (ch == CTRL('['))
+                break;
+            
+            for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+                (*it)->HandleKeyPre(ch);
+            
+            for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+                (*it)->HandleKeyPost(ch);
+        }
+        
+        for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+            (*it)->Run();
+    }
+}
+        
+CButton::CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
+                 TCallBack func, char absrel) : NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), CWidget(owner)
 {
     bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
     printw(1, 1, text);

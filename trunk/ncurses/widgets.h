@@ -316,12 +316,58 @@ public:
 
 #endif
 
-class CButton: public NCursesWindow
+class CWidget
+{
+    void SetNextWidget(void);
+    void SetPrevWidget(void);
+
+    friend class CWidgetManager;
+    
+protected:
+    CWidget *m_pOwner;
+    bool m_bEnabled;
+    std::list<CWidget *> m_ChildList;
+    std::list<CWidget *>::iterator m_FocusedChild;
+    
+    virtual void Focus(void) { };
+    virtual void LeaveFocus(void) { };
+    virtual bool HandleKeyPre(chtype ch);
+    virtual bool HandleKeyPost(chtype ch);
+    
+public:
+    CWidget(CWidget *owner) : m_pOwner(owner) { if (owner) owner->AddChild(this); };
+    virtual ~CWidget(void) { };
+    
+    virtual void Run(void);
+    
+    bool Enabled(void) { return m_bEnabled; };
+    void AddChild(CWidget *p) { m_ChildList.push_back(p); m_FocusedChild = m_ChildList.end(); m_FocusedChild--; };
+};
+
+class CWidgetManager: public CWidget
+{
+public:
+    CWidgetManager(void) : CWidget(NULL) { };
+    virtual void Run(void);
+};
+
+class CWidgetPanel: public CWidget, public NCursesPanel
+{
+public:
+    CWidgetPanel(CWidget *owner, int nlines, int ncols, int begin_y,
+                 int begin_x) : CWidget(owner), NCursesPanel(nlines, ncols, begin_y, begin_x) { };
+};
+
+class CButton: public NCursesWindow, public CWidget
 {
     typedef void (*TCallBack)(CButton *, void *);
     
+protected:
+    virtual void Focus(void) { bkgd(' '|COLOR_PAIR(4)); refresh(); debugline("Focus"); };
+    virtual void LeaveFocus(void) { bkgd(' '|COLOR_PAIR(4)|A_REVERSE); refresh(); debugline("UnFocus"); };
+    
 public:
-    CButton(NCursesWindow& par, int nlines, int ncols, int begin_y, int begin_x,
+    CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
             const char *text, TCallBack func, char absrel = 'a');
 };
 

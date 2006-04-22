@@ -285,8 +285,7 @@ public:
 inline void debugline(const char *, ...) { };
 #else
 //#define debugline printf
-inline void debugline(const char *t, ...)
-{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); printf("DEBUG: %s", txt); };
+inline void debugline(const char *t, ...); // Defined in frontend code
 #endif
 
 #endif 
