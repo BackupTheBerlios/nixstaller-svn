@@ -640,11 +640,15 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 
 bool CWidget::HandleKeyPre(chtype ch)
 {
-    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    /*for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
         if ((*it)->HandleKeyPre(ch))
-            return true;
+    return true;*/
     
-    debugline("PreKey: %d", ch);
+    //debugline("PreKey: %d", ch);
+    
+    if (!m_ChildList.empty())
+        return (*m_FocusedChild)->HandleKeyPre(ch);
+    
     return false;
 }
 
@@ -655,11 +659,15 @@ bool CWidget::HandleKeyPost(chtype ch)
     else if (ch == KEY_BTAB)
         SetPrevWidget();
     
-    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        if ((*it)->HandleKeyPost(ch))
-            return true;
+    /*for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    if ((*it)->HandleKeyPost(ch))
+    return true;*/
 
-    debugline("PostKey: %d", ch);
+    //debugline("PostKey: %d", ch);
+    
+    if (!m_ChildList.empty())
+        return (*m_FocusedChild)->HandleKeyPost(ch);
+
     return false;
 }
 
@@ -706,14 +714,25 @@ void CWidgetManager::Run()
         if (ch != ERR)
         {
             debugline("key: %d\n", ch);
-            if (ch == CTRL('['))
+            if (ch == CTRL('[')) // Escape pressed
                 break;
             
+            if (m_ChildList.size() == 1)
+            {
+                if (!m_ChildList.front()->HandleKeyPre(ch))
+                    m_ChildList.front()->HandleKeyPost(ch);
+            }
+            else if (m_ChildList.size() > 1)
+            {
+                if (!(*m_FocusedChild)->HandleKeyPre(ch))
+                    (*m_FocusedChild)->HandleKeyPost(ch);
+            }
+            /*
             for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
                 (*it)->HandleKeyPre(ch);
             
             for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-                (*it)->HandleKeyPost(ch);
+            (*it)->HandleKeyPost(ch);*/
         }
         
         for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -730,6 +749,99 @@ void CWidgetWindow::CenterText(const char *text, int row)
     if (x < 0)
         x = 0;
     addstr(row, x, text, width());
+}
+
+bool CWidgetPad::HandleKeyPre(chtype ch)
+{
+    if (CWidget::HandleKeyPre(ch))
+        return true;
+    
+    debugline("key in pad");
+
+    // Modified code from NCursesPad's () operator (keep in sync!)
+    
+    NCursesWindow* W = Win();
+
+    if (static_cast<NCursesWindow*>(0) != W)
+    {
+        int Width  = W->width();
+        int Height = W->height();
+
+        //int req = REQ_PAD_REFRESH;
+        int req = driver(ch);
+        //W->keypad(TRUE);
+        //W->meta(TRUE);
+        refresh();
+
+        bool changed = FALSE;
+
+        switch (req) {
+            case REQ_PAD_REFRESH:
+                // ================
+                changed = TRUE;
+                break;
+            case REQ_PAD_LEFT:
+                // =============
+                if (min_col > 0) {
+                    changed = TRUE;
+                    if (min_col < m_iHGrid)
+                        min_col = 0;
+                    else
+                        min_col -= m_iHGrid;
+                }
+                else
+                    OnNavigationError(req);
+                break;
+            case REQ_PAD_RIGHT:
+                // ==============
+                if (min_col < (width() - Width - 1)) {
+                    changed = TRUE;
+                    if (min_col > (width() - Width - m_iHGrid - 1))
+                        min_col = width() - Width - 1;
+                    else
+                        min_col += m_iHGrid;
+                }
+                else
+                    OnNavigationError(req);
+                break;
+            case REQ_PAD_UP:
+                // ===========
+                if (min_row > 0) {
+                    changed = TRUE;
+                    if (min_row < m_iVGrid)
+                        min_row = 0;
+                    else
+                        min_row -= m_iVGrid;
+                }
+                else
+                    OnNavigationError(req);
+                break;
+            case REQ_PAD_DOWN:
+                // =============
+                if (min_row < (height() - Height - 1)) {
+                    changed = TRUE;
+                    if (min_row > (height() - Height - m_iVGrid - 1))
+                        min_row = height() - Height - 1;
+                    else
+                        min_row += m_iVGrid;
+                }
+                else
+                    OnNavigationError(req);
+                break;
+
+            default:
+                OnUnknownOperation(req);
+                return false;
+        }
+
+        if (changed) {
+            noutrefresh();
+            W->syncup();
+            OnOperation(req);
+            getWindow()->refresh();
+        }
+    }
+    return true;
 }
 
 CButton::CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,

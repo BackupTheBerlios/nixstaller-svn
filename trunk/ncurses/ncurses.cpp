@@ -97,14 +97,14 @@ void CNCursBase::MsgBox(const char *str, ...)
     CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
     CWidgetWindow *pwin = new CWidgetWindow(panel, 8, 15, 8, 2, 'r');
-    NCursesFramedPad *pad = new NCursesFramedPad(*pwin, 40, 40);
+    CWidgetPad *pad = new CWidgetPad(pwin, 40, 40);
     
     m_pDummyPanel->refresh();
     but->refresh();
     but2->refresh();
     
     for (int i=0;i<40;i++)
-        pad->addch(i+65);
+        pad->printw("%d h0 h0 h0\n", i);
     pad->refresh();
     
     Man.Run();

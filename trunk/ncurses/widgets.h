@@ -370,8 +370,15 @@ public:
 
 class CWidgetPad: public CWidget, public NCursesFramedPad
 {
+    int m_iVGrid, m_iHGrid;
+    
+protected:
+    virtual bool HandleKeyPre(chtype ch);
+    
 public:
-    CWidgetPad(CWidgetWindow *owner, int nlines, int ncols) : CWidget(owner), NCursesFramedPad(*owner, nlines, ncols) { };
+    CWidgetPad(CWidgetWindow *owner, int nlines, int ncols, int v_grid = 1,
+               int h_grid = 1) : CWidget(owner), NCursesFramedPad(*owner, nlines, ncols, v_grid, h_grid),
+                                 m_iVGrid(v_grid), m_iHGrid(h_grid) { };
 };
 
 class CButton: public CWidgetWindow
