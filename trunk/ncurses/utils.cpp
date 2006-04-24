@@ -246,39 +246,4 @@ int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
     return true;
 }
 
-    
-#if 0
-// Disabled for now...need a nice way to extract files with root access
 
-// Called during extracting files by libsu
-void ExtrThinkFunc(void *p)
-{
-    // Key mode is unblocked in InstallFiles()
-    chtype input = getch();
-    if (input == KEY_ESC)
-    {
-        if (YesNoBox("%s\n%s", GetTranslation("This will abort the installation"), GetTranslation("Are you sure?")))
-            EndProg();
-    }
-}
-
-void PrintExtrOutput(const char *msg, void *p)
-{
-    static bool percent = true;
-    void **pData = ((void **)p);
-    CCDKSWindow *pWin = ((CCDKSWindow *)pData[0]);
-    CCDKHistogram *pHisto = ((CCDKHistogram *)pData[1]);
-
-    if (percent)
-    {
-        pHisto->SetValue(0, 100, atoi(msg)/(1+InstallInfo.command_entries.size()));
-        pHisto->Draw();
-        percent = false;
-    }
-    else
-    {
-        pWin->AddText(msg, false);
-        percent = true;
-    }
-}
-#endif

@@ -373,7 +373,7 @@ class CWidgetPad: public CWidget, public NCursesFramedPad
     int m_iVGrid, m_iHGrid;
     
 protected:
-    virtual bool HandleKeyPre(chtype ch);
+    virtual bool HandleKeyPost(chtype ch);
     
 public:
     CWidgetPad(CWidgetWindow *owner, int nlines, int ncols, int v_grid = 1,
@@ -394,5 +394,45 @@ public:
             const char *text, TCallBack func, char absrel = 'a');
 };
 
+class CScrollbar: public CWidgetWindow
+{
+    int m_iMinVal, m_iMaxVal, m_iCurVal;
+    int m_iScrollStep; // How much one scroll changes
+    bool m_bVertical; // if not vertical, than it's horizontal...
+    
+    void CalcScrollStep(void);
+    
+public:
+    CScrollbar(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
+               int min, int max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
+                                                                     begin_x, absrel), m_iMinVal(min), m_iMaxVal(max),
+                                                                     m_bVertical(vertical) { };
+    
+    virtual int refresh();
+    
+    void SetMinMax(int min, int max) { m_iMinVal = min; m_iMaxVal = max; };
+    void SetCurrent(int cur) { m_iCurVal = cur; CalcScrollStep(); };
+    int GetValue(void) { return m_iCurVal; };
+    void Scroll(int n); // Scroll n steps. Negative n is up, positive down.
+};
+
+class CTextWindow: public CWidgetWindow
+{
+    CScrollbar *m_pVScrollbar, *m_pHScrollbar;
+    int m_iLines, m_iCols; // Lines/columns from text
+    std::string m_szText;
+    bool m_bWrap;
+    
+protected:
+    virtual bool HandleKeyPost(chtype ch) { CWidgetWindow::HandleKeyPost(ch); };
+    
+public:
+    CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap,
+                char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel), m_bWrap(wrap),
+                                     m_pVScrollbar(NULL), m_pHScrollbar(NULL) { };
+                                     
+    void SetText(const std::string &text);
+    void AddText(const std::string &text);
+};
 
 #endif

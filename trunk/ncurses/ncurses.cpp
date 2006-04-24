@@ -98,6 +98,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
     CWidgetWindow *pwin = new CWidgetWindow(panel, 8, 15, 8, 2, 'r');
     CWidgetPad *pad = new CWidgetPad(pwin, 40, 40);
+    CScrollbar *scroll = new CScrollbar(panel, 10, 1, 1, 18, 0, 100, true, 'r');
     
     m_pDummyPanel->refresh();
     but->refresh();
@@ -107,10 +108,15 @@ void CNCursBase::MsgBox(const char *str, ...)
         pad->printw("%d h0 h0 h0\n", i);
     pad->refresh();
     
+    scroll->SetCurrent(100);
+    scroll->Scroll(-1);
+    scroll->refresh();
+    
     Man.Run();
     
     delete panel;
-    delete but, but2;
+    delete but;
+    delete but2;
     delete pwin;
     delete pad;
     

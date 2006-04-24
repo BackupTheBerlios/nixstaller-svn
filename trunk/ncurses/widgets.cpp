@@ -713,7 +713,7 @@ void CWidgetManager::Run()
         chtype ch = getch();
         if (ch != ERR)
         {
-            debugline("key: %d\n", ch);
+            //debugline("key: %d\n", ch);
             if (ch == CTRL('[')) // Escape pressed
                 break;
             
@@ -751,12 +751,12 @@ void CWidgetWindow::CenterText(const char *text, int row)
     addstr(row, x, text, width());
 }
 
-bool CWidgetPad::HandleKeyPre(chtype ch)
+bool CWidgetPad::HandleKeyPost(chtype ch)
 {
-    if (CWidget::HandleKeyPre(ch))
+    if (CWidget::HandleKeyPost(ch))
         return true;
     
-    debugline("key in pad");
+    //debugline("key in pad");
 
     // Modified code from NCursesPad's () operator (keep in sync!)
     
@@ -849,4 +849,52 @@ CButton::CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int be
 {
     bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
     CenterText(text);
+}
+
+void CScrollbar::CalcScrollStep()
+{
+    int sbsize;
+    
+    if (m_bVertical)
+        sbsize = height();
+    else
+        sbsize = width();
+    
+    int valrange = m_iMaxVal - m_iMinVal;
+    
+    m_iScrollStep = valrange / sbsize;
+}
+
+int CScrollbar::refresh()
+{
+    bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
+    
+    // Calc slide position
+    float fac = ((float)m_iCurVal / (float)m_iMaxVal);
+    float posx, posy;
+    
+    if (m_bVertical)
+    {
+        posx = 0.0f;
+        posy = ((float)height() * fac) - 1.0f; // - 1.0f becouse widht starts at 1, while pos starts at 0
+    }
+    else
+    {
+        posx = ((float)width() * fac) - 1.0f;
+        posy = 0.0f;
+    }
+    
+    debugline("posx: %f posy: %f cur: %d", posx, posy, m_iCurVal);
+    printw((int)posy, (int)posx, "+");
+    return NCursesWindow::refresh();
+}
+
+void CScrollbar::Scroll(int n)
+{
+    m_iCurVal += (n * m_iScrollStep);
+    
+    if (m_iCurVal < m_iMinVal)
+        m_iCurVal = m_iMinVal;
+    else if (m_iCurVal > m_iMaxVal)
+        m_iCurVal = m_iMaxVal;
 }
