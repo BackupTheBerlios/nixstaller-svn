@@ -364,7 +364,8 @@ class CWidgetWindow: public CWidget, public NCursesWindow
 public:
     CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
                   char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
-    
+    CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+                  char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
     void CenterText(const char *text, int row=-1);
 };
 
@@ -416,23 +417,26 @@ public:
     void Scroll(int n); // Scroll n steps. Negative n is up, positive down.
 };
 
-class CTextWindow: public CWidgetWindow
+class CTextWindow: public CWidget
 {
     CScrollbar *m_pVScrollbar, *m_pHScrollbar;
     int m_iLines, m_iCols; // Lines/columns from text
     std::string m_szText;
     bool m_bWrap;
+    CWidgetWindow *m_pFrameWin; // Dummy window for frame
+    CWidgetWindow *m_pTextWin; // Actual window containing text
     
 protected:
-    virtual bool HandleKeyPost(chtype ch) { CWidgetWindow::HandleKeyPost(ch); };
+    virtual bool HandleKeyPost(chtype ch) { return CWidget::HandleKeyPost(ch); };
     
 public:
     CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap,
-                char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel), m_bWrap(wrap),
-                                     m_pVScrollbar(NULL), m_pHScrollbar(NULL) { };
+                char absrel = 'a');
                                      
     void SetText(const std::string &text);
     void AddText(const std::string &text);
+    
+    void refresh(void) { m_pFrameWin->refresh(); m_pTextWin->refresh(); };
 };
 
 #endif

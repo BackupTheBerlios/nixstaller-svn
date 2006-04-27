@@ -876,7 +876,7 @@ int CScrollbar::refresh()
     if (m_bVertical)
     {
         posx = 0.0f;
-        posy = ((float)height() * fac) - 1.0f; // - 1.0f becouse widht starts at 1, while pos starts at 0
+        posy = ((float)height() * fac) - 1.0f; // - 1.0f becouse height/width starts at 1, while pos starts at 0
     }
     else
     {
@@ -897,4 +897,13 @@ void CScrollbar::Scroll(int n)
         m_iCurVal = m_iMinVal;
     else if (m_iCurVal > m_iMaxVal)
         m_iCurVal = m_iMaxVal;
+}
+
+CTextWindow::CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap,
+                         char absrel) : CWidget(owner), m_bWrap(wrap), m_pVScrollbar(NULL), m_pHScrollbar(NULL)
+{
+    m_pFrameWin = new CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel);
+    m_pFrameWin->box();
+    m_pTextWin = new CWidgetWindow(m_pFrameWin, nlines-2, ncols-2, 1, 1, 'r');
+    m_pTextWin->printw("beh beh beh beh beh");
 }
