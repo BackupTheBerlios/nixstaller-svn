@@ -638,6 +638,8 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 
 #include "ncurses.h"
 
+#include <sstream>
+
 bool CWidget::HandleKeyPre(chtype ch)
 {
     /*for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -884,7 +886,12 @@ int CScrollbar::refresh()
         posy = 0.0f;
     }
     
-    debugline("posx: %f posy: %f cur: %d", posx, posy, m_iCurVal);
+    if (posx < 0.0f)
+        posx = 0.0f;
+    if (posy < 0.0f)
+        posy = 0.0f;
+    
+    debugline("posx: %f posy: %f cur: %d step %d", posx, posy, m_iCurVal, m_iScrollStep);
     printw((int)posy, (int)posx, "+");
     return NCursesWindow::refresh();
 }
@@ -900,10 +907,139 @@ void CScrollbar::Scroll(int n)
 }
 
 CTextWindow::CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap,
-                         char absrel) : CWidget(owner), m_bWrap(wrap), m_pVScrollbar(NULL), m_pHScrollbar(NULL)
+                         char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel), m_bWrap(wrap)
 {
-    m_pFrameWin = new CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel);
-    m_pFrameWin->box();
-    m_pTextWin = new CWidgetWindow(m_pFrameWin, nlines-2, ncols-2, 1, 1, 'r');
-    m_pTextWin->printw("beh beh beh beh beh");
+    box();
+    m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r');
+    m_pVScrollbar = new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 100, true, 'r');
+    m_pHScrollbar = new CScrollbar(this, 1, ncols-2, nlines-1, 1, 0, 100, false, 'r');
+}
+
+void CTextWindow::FormatText()
+{
+    m_FormattedText.clear();
+    
+    std::string line, txt;
+    std::istringstream fullstrm(m_szText);
+    int longest = 0; // Longest line
+    
+    while (fullstrm)
+    {
+        if (!std::getline(fullstrm, line))
+            break;
+            
+        if (m_bWrap)
+        {
+            while (line.length() > m_pTextWin->width())
+            {
+                std::string::size_type strpos = line.find_last_of(" \t\r\n", m_pTextWin->width()-1);
+                if (strpos == std::string::npos)
+                    strpos = m_pTextWin->width()-1;
+                
+                txt = line.substr(0, strpos);
+                m_FormattedText.push_back(txt.c_str());
+                
+                if (txt.length() > longest)
+                    longest = txt.length();
+                
+                line.erase(0, strpos+1);
+            }
+            
+            m_FormattedText.push_back(line.c_str());
+            if (line.length() > longest)
+                longest = line.length();
+        }
+        else
+        {
+            m_FormattedText.push_back(line.c_str());
+            if (line.length() > longest)
+                longest = line.length();
+        }
+    }
+    
+    m_pVScrollbar->SetMinMax(0, m_FormattedText.size());
+    m_pHScrollbar->SetMinMax(0, longest);
+}
+
+bool CTextWindow::HandleKeyPost(chtype ch)
+{
+    if (CWidgetWindow::HandleKeyPost(ch))
+        return true;
+    
+    bool handled = true;
+    
+    switch (ch)
+    {
+        case KEY_LEFT:
+            m_pHScrollbar->Scroll(-1);
+            refresh();
+            break;
+        case KEY_RIGHT:
+            m_pHScrollbar->Scroll(1);
+            refresh();
+            break;
+        case KEY_UP:
+            m_pVScrollbar->Scroll(-1);
+            refresh();
+            break;
+        case KEY_DOWN:
+            m_pVScrollbar->Scroll(1);
+            refresh();
+            break;
+        default:
+            handled = false;
+            break;
+    }
+    
+    return handled;
+}
+
+int CTextWindow::refresh()
+{
+    int lines = 0; // Printed lines
+    std::string line, txt;
+    std::istringstream fullstrm(m_szText);
+    bool needhsb = false;
+
+    while (fullstrm && (lines < m_pTextWin->height()))
+    {
+        if (!std::getline(fullstrm, line))
+            break;
+            
+        if (m_bWrap)
+        {
+            while (line.length() > m_pTextWin->width())
+            {
+                std::string::size_type strpos = line.find_last_of(" \t\r\n", m_pTextWin->width()-1);
+                if (strpos == std::string::npos)
+                    strpos = m_pTextWin->width()-1;
+                
+                m_pTextWin->printw(lines, 0, line.substr(0, strpos).c_str());
+                line.erase(0, strpos+1);
+                lines++;
+            }
+            m_pTextWin->printw(lines, 0, line.c_str());
+            lines++;
+        }
+        else
+        {
+            m_pTextWin->addstr(lines, 0, line.c_str(), m_pTextWin->width());
+            lines++;
+            if (!needhsb)
+                needhsb = (line.length() > m_pTextWin->width());
+        }
+    }
+    
+    box();
+     
+    int ret = CWidgetWindow::refresh();
+    m_pTextWin->refresh();
+    
+    if (lines >= m_pTextWin->height())
+        m_pVScrollbar->refresh(); // Box made it disappear, redraw when needed
+    
+    if (!m_bWrap && needhsb)
+        m_pHScrollbar->refresh();
+    
+    return ret;
 }
