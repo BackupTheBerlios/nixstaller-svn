@@ -101,7 +101,9 @@ void CNCursBase::MsgBox(const char *str, ...)
     CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, 'r');
 //    CScrollbar *scroll = new CScrollbar(panel, 10, 1, 1, 18, 0, 100, true, 'r');
     
-    twin->SetText("ha h ahah hah aha  haah\nbhjbjhjbh bjhjbh\n11\n12\n13\n14\n15\n16");
+    std::string nrs;
+    for (int i=0;i<25;i++) twin->AddText(CreateText("%d hkhi upo hity vuoiup uy[p ]o nkuo\n", i));
+    //twin->SetText(nrs);
     m_pDummyPanel->refresh();
     but->refresh();
     but2->refresh();

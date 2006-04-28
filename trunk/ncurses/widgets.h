@@ -397,41 +397,46 @@ public:
 
 class CScrollbar: public CWidgetWindow
 {
-    int m_iMinVal, m_iMaxVal, m_iCurVal;
-    int m_iScrollStep; // How much one scroll changes
+    float m_fMinVal, m_fMaxVal, m_fCurVal;
+    float m_fScrollStep; // How much one scroll changes
     bool m_bVertical; // if not vertical, than it's horizontal...
     
     void CalcScrollStep(void);
     
 public:
     CScrollbar(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
-               int min, int max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
-                                                                     begin_x, absrel), m_iMinVal(min), m_iMaxVal(max),
-                                                                     m_iCurVal(min), m_bVertical(vertical) { CalcScrollStep(); };
+               float min, float max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
+                                                                         begin_x, absrel), m_fMinVal(min), m_fMaxVal(max),
+                                                                         m_fCurVal(min),
+                                                                         m_bVertical(vertical) { CalcScrollStep(); };
 
     CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-               int min, int max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
-                                                                     begin_x, absrel), m_iMinVal(min), m_iMaxVal(max),
-                                                                     m_iCurVal(min), m_bVertical(vertical) { CalcScrollStep(); };
+               float min, float max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
+                                                                         begin_x, absrel), m_fMinVal(min), m_fMaxVal(max),
+                                                                         m_fCurVal(min),
+                                                                         m_bVertical(vertical) { CalcScrollStep(); };
     
     virtual int refresh();
     
-    void SetMinMax(int min, int max) { m_iMinVal = min; m_iMaxVal = max; CalcScrollStep(); };
-    void SetCurrent(int cur) { m_iCurVal = cur; };
-    int GetValue(void) { return m_iCurVal; };
-    void Scroll(int n); // Scroll n steps. Negative n is up, positive down.
+    void SetMinMax(int min, int max) { m_fMinVal = min; m_fMaxVal = max; CalcScrollStep(); };
+    void SetCurrent(int cur) { m_fCurVal = cur; };
+    float GetValue(void) { return m_fCurVal; };
+    void Scroll(float n); // Scroll n steps. Negative n is up, positive down.
 };
 
 class CTextWindow: public CWidgetWindow
 {
     CScrollbar *m_pVScrollbar, *m_pHScrollbar;
-    int m_iLines, m_iCols; // Lines/columns from text
+    int m_iCurrentLine, m_iLongestLine;
+    std::list<std::string>::iterator m_CurrentLineIt;
     std::string m_szText;
     std::list<std::string> m_FormattedText; // list containing lines of formatted text
     bool m_bWrap;
     CWidgetWindow *m_pTextWin; // Actual window containing text
     
     void FormatText(void);
+    void VScroll(int n);
+    void HScroll(int n);
     
 protected:
     virtual bool HandleKeyPost(chtype ch);
@@ -440,8 +445,8 @@ public:
     CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap,
                 char absrel = 'a');
                                      
-    void SetText(const std::string text) { m_szText = text; };
-    void AddText(const std::string text) { m_szText += text; };
+    void SetText(std::string text);
+    void AddText(std::string text);
     
     virtual int refresh(void);
 };

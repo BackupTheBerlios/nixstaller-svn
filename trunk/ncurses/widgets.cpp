@@ -862,9 +862,9 @@ void CScrollbar::CalcScrollStep()
     else
         sbsize = width();
     
-    int valrange = m_iMaxVal - m_iMinVal;
+    int valrange = m_fMaxVal - m_fMinVal;
     
-    m_iScrollStep = valrange / sbsize;
+    m_fScrollStep = (float)sbsize / (float)valrange;
 }
 
 int CScrollbar::refresh()
@@ -872,17 +872,17 @@ int CScrollbar::refresh()
     bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
     
     // Calc slide position
-    float fac = ((float)m_iCurVal / (float)m_iMaxVal);
+    float fac = (m_fCurVal / m_fMaxVal);
     float posx, posy;
     
     if (m_bVertical)
     {
         posx = 0.0f;
-        posy = ((float)height() * fac) - 1.0f; // - 1.0f becouse height/width starts at 1, while pos starts at 0
+        posy = ((float)height() - 1.0f) * fac; // - 1.0f becouse height/width starts at 1, while pos starts at 0
     }
     else
     {
-        posx = ((float)width() * fac) - 1.0f;
+        posx = ((float)width() - 1.0f) * fac;
         posy = 0.0f;
     }
     
@@ -891,23 +891,24 @@ int CScrollbar::refresh()
     if (posy < 0.0f)
         posy = 0.0f;
     
-    debugline("posx: %f posy: %f cur: %d step %d", posx, posy, m_iCurVal, m_iScrollStep);
+    debugline("posx: %.2f posy: %.2f cur: %.2f step %.2f", posx, posy, m_fCurVal, m_fScrollStep);
     printw((int)posy, (int)posx, "+");
     return NCursesWindow::refresh();
 }
 
-void CScrollbar::Scroll(int n)
+void CScrollbar::Scroll(float n)
 {
-    m_iCurVal += (n * m_iScrollStep);
+    m_fCurVal += n;
     
-    if (m_iCurVal < m_iMinVal)
-        m_iCurVal = m_iMinVal;
-    else if (m_iCurVal > m_iMaxVal)
-        m_iCurVal = m_iMaxVal;
+    if (m_fCurVal < m_fMinVal)
+        m_fCurVal = m_fMinVal;
+    else if (m_fCurVal > m_fMaxVal)
+        m_fCurVal = m_fMaxVal;
 }
 
 CTextWindow::CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap,
-                         char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel), m_bWrap(wrap)
+                         char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel), m_bWrap(wrap),
+                         m_iCurrentLine(-1), m_iLongestLine(0)
 {
     box();
     m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r');
@@ -915,13 +916,66 @@ CTextWindow::CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y
     m_pHScrollbar = new CScrollbar(this, 1, ncols-2, nlines-1, 1, 0, 100, false, 'r');
 }
 
-void CTextWindow::FormatText()
+void CTextWindow::VScroll(int n)
 {
+    m_pVScrollbar->Scroll(n);
+    int diff = m_pVScrollbar->GetValue() - m_iCurrentLine;
+    
+    if (diff)
+    {
+        std::advance(m_CurrentLineIt, diff);
+        m_iCurrentLine = m_pVScrollbar->GetValue();
+        refresh();
+    }
+}
+
+void CTextWindow::HScroll(int n)
+{
+    m_pHScrollbar->Scroll(n);
+    refresh();
+}
+
+bool CTextWindow::HandleKeyPost(chtype ch)
+{
+    if (CWidgetWindow::HandleKeyPost(ch))
+        return true;
+    
+    bool handled = true;
+    
+    switch (ch)
+    {
+        case KEY_LEFT:
+            HScroll(-1);
+            refresh();
+            break;
+        case KEY_RIGHT:
+            HScroll(1);
+            refresh();
+            break;
+        case KEY_UP:
+            VScroll(-1);
+            refresh();
+            break;
+        case KEY_DOWN:
+            VScroll(1);
+            refresh();
+            break;
+        default:
+            handled = false;
+            break;
+    }
+    
+    return handled;
+}
+
+void CTextWindow::SetText(std::string text)
+{
+    m_szText = text;
     m_FormattedText.clear();
+    m_iLongestLine = 0;
     
     std::string line, txt;
     std::istringstream fullstrm(m_szText);
-    int longest = 0; // Longest line
     
     while (fullstrm)
     {
@@ -939,69 +993,56 @@ void CTextWindow::FormatText()
                 txt = line.substr(0, strpos);
                 m_FormattedText.push_back(txt.c_str());
                 
-                if (txt.length() > longest)
-                    longest = txt.length();
+                if (txt.length() > m_iLongestLine)
+                    m_iLongestLine = txt.length();
                 
                 line.erase(0, strpos+1);
             }
             
             m_FormattedText.push_back(line.c_str());
-            if (line.length() > longest)
-                longest = line.length();
+            if (line.length() > m_iLongestLine)
+                m_iLongestLine = line.length();
         }
         else
         {
             m_FormattedText.push_back(line.c_str());
-            if (line.length() > longest)
-                longest = line.length();
+            if (line.length() > m_iLongestLine)
+                m_iLongestLine = line.length();
         }
     }
     
-    m_pVScrollbar->SetMinMax(0, m_FormattedText.size());
-    m_pHScrollbar->SetMinMax(0, longest);
+    if (!m_FormattedText.empty())
+    {
+        int h = m_FormattedText.size() - m_pTextWin->height();
+        if (h < 0)
+            h = 0;
+        
+        m_pVScrollbar->SetMinMax(0, h);
+        
+        if (m_iLongestLine > m_pTextWin->width())
+            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
+        
+        m_iCurrentLine = 0;
+        m_CurrentLineIt = m_FormattedText.begin();
+    }
 }
 
-bool CTextWindow::HandleKeyPost(chtype ch)
+void CTextWindow::AddText(std::string text)
 {
-    if (CWidgetWindow::HandleKeyPost(ch))
-        return true;
+    m_szText += text;
     
-    bool handled = true;
-    
-    switch (ch)
+    // HACK
+    if (!m_FormattedText.empty() && m_FormattedText.back()[m_FormattedText.back().length()-1] != '\n')
     {
-        case KEY_LEFT:
-            m_pHScrollbar->Scroll(-1);
-            refresh();
-            break;
-        case KEY_RIGHT:
-            m_pHScrollbar->Scroll(1);
-            refresh();
-            break;
-        case KEY_UP:
-            m_pVScrollbar->Scroll(-1);
-            refresh();
-            break;
-        case KEY_DOWN:
-            m_pVScrollbar->Scroll(1);
-            refresh();
-            break;
-        default:
-            handled = false;
-            break;
+        text = m_FormattedText.back() + text;
+        //if (m_CurrentLineIt == m_FormattedText.)
+        m_FormattedText.pop_back();
     }
     
-    return handled;
-}
-
-int CTextWindow::refresh()
-{
-    int lines = 0; // Printed lines
     std::string line, txt;
-    std::istringstream fullstrm(m_szText);
-    bool needhsb = false;
-
-    while (fullstrm && (lines < m_pTextWin->height()))
+    std::istringstream fullstrm(text);
+    
+    while (fullstrm)
     {
         if (!std::getline(fullstrm, line))
             break;
@@ -1014,20 +1055,57 @@ int CTextWindow::refresh()
                 if (strpos == std::string::npos)
                     strpos = m_pTextWin->width()-1;
                 
-                m_pTextWin->printw(lines, 0, line.substr(0, strpos).c_str());
+                txt = line.substr(0, strpos);
+                m_FormattedText.push_back(txt.c_str());
+                
+                if (txt.length() > m_iLongestLine)
+                    m_iLongestLine = txt.length();
+                
                 line.erase(0, strpos+1);
-                lines++;
             }
-            m_pTextWin->printw(lines, 0, line.c_str());
-            lines++;
+            
+            m_FormattedText.push_back(line.c_str());
+            if (line.length() > m_iLongestLine)
+                m_iLongestLine = line.length();
         }
         else
         {
-            m_pTextWin->addstr(lines, 0, line.c_str(), m_pTextWin->width());
-            lines++;
-            if (!needhsb)
-                needhsb = (line.length() > m_pTextWin->width());
+            m_FormattedText.push_back(line.c_str());
+            if (line.length() > m_iLongestLine)
+                m_iLongestLine = line.length();
         }
+    }
+    
+    if (!m_FormattedText.empty())
+    {
+        int h = m_FormattedText.size() - m_pTextWin->height();
+        if (h < 0)
+            h = 0;
+        
+        m_pVScrollbar->SetMinMax(0, h);
+        
+        if (m_iLongestLine > m_pTextWin->width())
+            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
+        
+        //if (m_iCurrentLine == -1)
+        {
+            m_iCurrentLine = 0;
+            m_CurrentLineIt = m_FormattedText.begin();
+        }
+    }
+}
+
+int CTextWindow::refresh()
+{
+    int lines = 0; // Printed lines
+        
+    clear();
+    
+    for(std::list<std::string>::iterator it=m_CurrentLineIt; ((it!=m_FormattedText.end()) && (lines<m_pTextWin->height()));
+        it++)
+    {
+        m_pTextWin->printw(lines, 0, it->substr(m_pHScrollbar->GetValue()).c_str());
+        lines++;
     }
     
     box();
@@ -1035,10 +1113,10 @@ int CTextWindow::refresh()
     int ret = CWidgetWindow::refresh();
     m_pTextWin->refresh();
     
-    if (lines >= m_pTextWin->height())
+    if (m_FormattedText.size() > m_pTextWin->height())
         m_pVScrollbar->refresh(); // Box made it disappear, redraw when needed
     
-    if (!m_bWrap && needhsb)
+    if (!m_bWrap && (m_iLongestLine > m_pTextWin->width()))
         m_pHScrollbar->refresh();
     
     return ret;
