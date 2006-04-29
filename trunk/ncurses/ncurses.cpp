@@ -64,6 +64,7 @@ void CNCursScreen::handleArgs(int argc, char* argv[])
 
 int CNCursScreen::run()
 {
+    curs_set(0);
     Root_Window->setcolor(7);
     Root_Window->setpalette(COLOR_WHITE, COLOR_BLACK);
     
@@ -96,39 +97,29 @@ void CNCursBase::MsgBox(const char *str, ...)
         
     CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
-    //CWidgetWindow *pwin = new CWidgetWindow(panel, 8, 15, 8, 2, 'r');
-    //CWidgetPad *pad = new CWidgetPad(pwin, 40, 40);
-    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, 'r');
-//    CScrollbar *scroll = new CScrollbar(panel, 10, 1, 1, 18, 0, 100, true, 'r');
+    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r');
+    CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');
     
-    std::string nrs;
-    for (int i=0;i<25;i++) twin->AddText(CreateText("%d hkhi upo hity vuoiup uy[p ]o nkuo\n", i));
-    //twin->SetText(nrs);
     m_pDummyPanel->refresh();
     but->refresh();
     but2->refresh();
     twin->refresh();
     
-/*    for (int i=0;i<40;i++)
-        pad->printw("%d h0 h0 h0\n", i);
-    pad->refresh();*/
-    
-  //  scroll->SetCurrent(100);
-   // scroll->Scroll(-1);
-   // scroll->refresh();
-    
+    for (int i=0;i<50;i++) { twin->AddText(CreateText("%d\n", i)); menu->AddItem(CreateText("%d_", i), NULL); }
+
+    twin->refresh();
+    menu->refresh();
+
     Man.Run();
     
     delete panel;
     delete but;
     delete but2;
-    //delete pwin;
-    //delete pad;
     delete twin;
+    delete menu;
     
     m_pDummyPanel->refresh();
     
-    sleep(3);
     free(text);
 }
 

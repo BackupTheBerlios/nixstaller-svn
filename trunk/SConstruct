@@ -134,7 +134,7 @@ opts = Options()
 opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
 opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
 
-env = Environment(options = opts, CCFLAGS = "-Wall -Os -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
+env = Environment(options = opts, CCFLAGS = "-Wall -Wno-sign-compare -Os -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
 
 Help(opts.GenerateHelpText(env))
 
