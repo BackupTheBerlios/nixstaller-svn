@@ -361,12 +361,33 @@ public:
 
 class CWidgetWindow: public CWidget, public NCursesWindow
 {
+protected:
+    enum EStrAttr { COLOR, CENTER };
+    
+    struct form_str_entry_s
+    {
+        EStrAttr attr;
+        short cpair; // Color pair
+        unsigned begin, end; // Range in string which this attribute should applied to
+        form_str_entry_s(EStrAttr a, unsigned b, unsigned e, short c=0) : attr(a), cpair(c), begin(b), end(e) { };
+    };
+    
+    struct format_string_s
+    {
+        std::string str;
+        std::list<form_str_entry_s> attr_list;
+    };
+    
+    void FormatString(const std::string &input, format_string_s *output);
+    
 public:
     CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
                   char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                   char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
-    void CenterText(const char *text, int row=-1);
+    
+    void PrintFormat(int y, int x, const format_string_s &str, ...);
+    void AddStrFormat(int y, int x, const format_string_s &str, int n=-1);
 };
 
 class CButton: public CWidgetWindow
@@ -441,33 +462,36 @@ public:
     virtual int refresh(void);
 };
 
-class CMenu: private CTextWindow
+class CMenu: public CWidgetWindow
 {
 public:
     typedef void (*TCallBack)(CMenu *, const std::string &, void *);
-    
+
 private:
     struct menu_entry_s
     {
         std::string name;
         TCallBack cb;
         void *data;
-        
+    
         menu_entry_s(const std::string &s, TCallBack f, void *p) : name(s), cb(f), data(p) { };
     };
-    
+
     std::vector<menu_entry_s> m_MenuItems;
     int m_iCursorLine;
+    int m_iStartEntry; // First entry to display(for scrolling)
+    int m_iLongestLine;
+    CScrollbar *m_pVScrollbar, *m_pHScrollbar;
+    CWidgetWindow *m_pTextWin; // Window containing the actual text
     
+    void HScroll(int n);
+    void VScroll(int n);
     
 protected:
     virtual bool HandleKeyPost(chtype ch);
-//    virtual void VScroll(int n);
-
+        
 public:
-    CMenu(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
-          char absrel = 'a') : CTextWindow(owner, nlines, ncols, begin_y, begin_x, false, false, absrel),
-                               m_iCursorLine(0) { };
+    CMenu(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
     void AddItem(std::string s, TCallBack f, void *p = NULL);
     
