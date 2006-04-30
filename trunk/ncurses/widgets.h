@@ -379,6 +379,7 @@ protected:
     };
     
     void FormatString(const std::string &input, format_string_s *output);
+    unsigned GetUnFormatLen(const std::string &str);
     
 public:
     CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
