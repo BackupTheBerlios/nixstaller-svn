@@ -387,8 +387,8 @@ public:
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                   char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
     
-    void PrintFormat(int y, int x, const format_string_s &str, ...);
-    void AddStrFormat(int y, int x, const format_string_s &str, int n=-1);
+    void PrintFormat(int y, int x, const char *str, ...);
+    void AddStrFormat(int y, int x, const char *str, int n=-1);
 };
 
 class CButton: public CWidgetWindow

@@ -797,6 +797,51 @@ unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
     return length;
 }
 
+void CWidgetWindow::PrintFormat(int y, int x, const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    std::string ftext = text; // Yes I like C++ strings...
+    std::string::size_type start = 0, end;
+    
+    while (start < ftext.length())
+    {
+        if (ftext[start] == '<')
+        {
+            if (!ftext.compare(start+1, 4, "col=")) // Color tag
+            {
+                start += 5; // length of <col= == 5
+                end = ftext.find(">", start);
+                                
+                short cpair = atoi(ftext.substr(start, end).c_str());
+                attron(COLOR_PAIR(cpair));
+            }
+            else if (!ftext.compare(start+1, 2, "C>")) // Center tag
+                start += 3; // Ignore, is handled earlier
+            else
+            {
+                addch(y, x, ftext[start]);
+                start++;
+                x++;
+            }
+        }
+        else
+        {
+            addch(y, x, ftext[start]);
+            start++;
+            x++;
+        }
+    }
+        
+    //printw(y, x, text);
+    free(text);
+}
+
 // -------------------------------------
 // Button widget class
 // -------------------------------------
@@ -1140,7 +1185,8 @@ int CTextWindow::refresh()
         for(std::list<std::string>::iterator it=m_CurrentLineIt;
             ((it!=m_FormattedText.end()) && (lines<m_pTextWin->height())); it++)
         {
-            std::string line = it->substr((int)m_pHScrollbar->GetValue());
+            std::string line = it->substr((int)m_pHScrollbar->GetValue()), txt;
+            /*
             start = w = 0;
             
             do
@@ -1172,8 +1218,23 @@ int CTextWindow::refresh()
 
                 m_pTextWin->addstr(lines, w, word.c_str());
             }
-            while ((ind != std::string::npos) && (start < line.length()) && (lines<m_pTextWin->height()));
-
+            while ((ind != std::string::npos) && (start < line.length()) && (lines<m_pTextWin->height()));*/
+            
+            while ((line.length() > m_pTextWin->width()) && (lines<m_pTextWin->height()))
+            {
+                std::string::size_type strpos = line.find_last_of(" \t\r\n", m_pTextWin->width()-1);
+                if (strpos == std::string::npos)
+                    strpos = m_pTextWin->width()-1;
+                
+                txt = line.substr(0, strpos);
+                m_pTextWin->PrintFormat(lines, 0, txt.c_str());
+                
+                line.erase(0, strpos+1);
+                lines++;
+            }
+            
+            m_pTextWin->PrintFormat(lines, 0, line.c_str());
+            
             //m_pTextWin->addstr(lines, 0, it->substr((int)m_pHScrollbar->GetValue()).c_str(), m_pTextWin->width());
             lines++;
         }
