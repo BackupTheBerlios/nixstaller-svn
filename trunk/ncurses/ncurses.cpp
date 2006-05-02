@@ -105,7 +105,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     but2->refresh();
     twin->refresh();
     
-    for (int i=0;i<50;i++) { twin->AddText(CreateText("%d <C>dfs fds sfd sd f fsd fds\n", i)); menu->AddItem(CreateText("%d_\n", i), NULL); }
+    for (int i=0;i<50;i++) { twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd sd f fsd fds\n", i)); menu->AddItem(CreateText("%d_\n", i), NULL); }
 
     twin->refresh();
     menu->refresh();

@@ -316,6 +316,8 @@ public:
 
 #endif
 
+#include <stack>
+
 class CWidget
 {
     bool m_bEnabled;
@@ -380,6 +382,8 @@ protected:
     
     void FormatString(const std::string &input, format_string_s *output);
     unsigned GetUnFormatLen(const std::string &str);
+    
+    std::stack<short> m_ColorStack; // Stack containig all set color pairs in formatted text
     
 public:
     CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,

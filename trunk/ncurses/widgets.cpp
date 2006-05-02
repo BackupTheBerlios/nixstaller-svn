@@ -779,12 +779,10 @@ void CWidgetWindow::FormatString(const std::string &input, format_string_s *outp
 unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
 {
     unsigned length = str.length();
-    std::string::size_type pos = 0;
+    std::string::size_type pos = std::string::npos;
     
-    while ((pos = str.find("<C>", (!pos)?0:pos+1)) != std::string::npos)
+    while ((pos = str.find("<C>", (pos==std::string::npos)?0:pos+1)) != std::string::npos)
         length -= 3;
-    while ((pos = str.find("</C>", pos+1)) != std::string::npos)
-        length -= 4;
     while ((pos = str.find("<col=", pos+1)) != std::string::npos)
     {
         std::string::size_type end = str.find(">", pos+4);
@@ -817,9 +815,17 @@ void CWidgetWindow::PrintFormat(int y, int x, const char *str, ...)
             {
                 start += 5; // length of <col= == 5
                 end = ftext.find(">", start);
-                                
                 short cpair = atoi(ftext.substr(start, end).c_str());
+                m_ColorStack.push(cpair);
                 attron(COLOR_PAIR(cpair));
+                start = end;
+            }
+            else if (!ftext.compare(start+1, 5, "/col>")) // End color tag
+            {
+                start += 6;
+                short cpair = m_ColorStack.top();
+                m_ColorStack.pop();
+                attroff(COLOR_PAIR(cpair));
             }
             else if (!ftext.compare(start+1, 2, "C>")) // Center tag
                 start += 3; // Ignore, is handled earlier
@@ -1220,7 +1226,7 @@ int CTextWindow::refresh()
             }
             while ((ind != std::string::npos) && (start < line.length()) && (lines<m_pTextWin->height()));*/
             
-            while ((line.length() > m_pTextWin->width()) && (lines<m_pTextWin->height()))
+            while ((GetUnFormatLen(line) > m_pTextWin->width()) && (lines<m_pTextWin->height()))
             {
                 std::string::size_type strpos = line.find_last_of(" \t\r\n", m_pTextWin->width()-1);
                 if (strpos == std::string::npos)
