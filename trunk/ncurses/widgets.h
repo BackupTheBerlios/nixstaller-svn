@@ -364,35 +364,20 @@ public:
 class CWidgetWindow: public CWidget, public NCursesWindow
 {
 protected:
-    enum EStrAttr { COLOR, CENTER };
+    short m_sCurColor; // Current color pair used in formatted text
     
-    struct form_str_entry_s
-    {
-        EStrAttr attr;
-        short cpair; // Color pair
-        unsigned begin, end; // Range in string which this attribute should applied to
-        form_str_entry_s(EStrAttr a, unsigned b, unsigned e, short c=0) : attr(a), cpair(c), begin(b), end(e) { };
-    };
-    
-    struct format_string_s
-    {
-        std::string str;
-        std::list<form_str_entry_s> attr_list;
-    };
-    
-    void FormatString(const std::string &input, format_string_s *output);
     unsigned GetUnFormatLen(const std::string &str);
-    
-    std::stack<short> m_ColorStack; // Stack containig all set color pairs in formatted text
     
 public:
     CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
+                  char absrel = 'a') : CWidget(owner),
+                                       NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0) { };
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  char absrel = 'a') : CWidget(owner), NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel) { };
+                  char absrel = 'a') : CWidget(owner),
+                                       NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0) { };
     
-    void PrintFormat(int y, int x, const char *str, ...);
-    void AddStrFormat(int y, int x, const char *str, int n=-1);
+    int PrintFormat(int y, int x, bool wrap, const char *str, ...);
+    int AddStrFormat(int y, int x, bool wrap, const char *str, int n=-1);
 };
 
 class CButton: public CWidgetWindow

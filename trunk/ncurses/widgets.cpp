@@ -737,65 +737,35 @@ void CWidgetManager::Run()
 // Widget window class
 // -------------------------------------
 
-void CWidgetWindow::FormatString(const std::string &input, format_string_s *output)
-{
-    std::string::size_type ind, start=0, end=0;
-    output->str = input;
-    
-    // Check for all know attributes and remove them from string
-    
-    while(true)
-    {
-        ind = output->str.find("<C>", start);
-        if (ind != std::string::npos)
-        {
-            output->attr_list.push_back(form_str_entry_s(CENTER, ind, -1));
-            start = ind;
-            output->str.erase(start, 3);
-        }
-        else if ((ind = output->str.find("<col=", start)) != std::string::npos)
-        {
-            start = ind;
-            ind = output->str.find(">", start);
-            if (ind != std::string::npos)
-            {
-                std::string pairstr = output->str.substr(start, ind-start);
-                short pair = atoi(pairstr.c_str());
-                end = output->str.find("</col>", ind);
-                output->attr_list.push_back(form_str_entry_s(COLOR, start, end-6-pairstr.length(), pair));
-                output->str.erase(start, 6+pairstr.length());
-                
-                if (end != std::string::npos)
-                    output->str.erase(end-(6+pairstr.length()), 5);
-            }
-            else
-                start++; // Don't start searching here again
-        }
-        else
-            break;
-    }
-}
-
 unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
 {
     unsigned length = str.length();
-    std::string::size_type pos = std::string::npos;
+    std::string::size_type pos = 0;
     
-    while ((pos = str.find("<C>", (pos==std::string::npos)?0:pos+1)) != std::string::npos)
-        length -= 3;
-    while ((pos = str.find("<col=", pos+1)) != std::string::npos)
+    while ((pos = str.find("<C>", pos)) != std::string::npos)
     {
-        std::string::size_type end = str.find(">", pos+4);
-        if (end != std::string::npos)
-            length -= ((end - pos)+1);
+        length -= 3;
+        pos += 3;
     }
-    while ((pos = str.find("</col>", pos+1)) != std::string::npos)
+    while ((pos = str.find("<col=", pos)) != std::string::npos)
+    {
+        std::string::size_type end = str.find(">", pos+5);
+        if (end != std::string::npos)
+        {
+            length -= ((end - pos)+1);
+            pos += ((end - pos)+1);
+        }
+    }
+    while ((pos = str.find("</col>", pos)) != std::string::npos)
+    {
         length -= 6;
+        pos += 6;
+    }
     
     return length;
 }
 
-void CWidgetWindow::PrintFormat(int y, int x, const char *str, ...)
+int CWidgetWindow::PrintFormat(int y, int x, bool wrap, const char *str, ...)
 {
     char *text;
     va_list v;
@@ -804,48 +774,81 @@ void CWidgetWindow::PrintFormat(int y, int x, const char *str, ...)
     vasprintf(&text, str, v);
     va_end(v);
     
-    std::string ftext = text; // Yes I like C++ strings...
-    std::string::size_type start = 0, end;
+    std::string ftext = text, word;
+    std::string::size_type start=0, end, strstart, strend;
+    int lines = 1;
     
-    while (start < ftext.length())
+    do
     {
-        if (ftext[start] == '<')
+        end = ftext.find_first_of(" \t", start);
+        
+        if (end != std::string::npos)
+            word = ftext.substr(start, (end-start));
+        else
+            word = ftext.substr(start);
+        
+        unsigned len = GetUnFormatLen(word);
+        if (((x+len) > width()) && (len < width()))
         {
-            if (!ftext.compare(start+1, 4, "col=")) // Color tag
+            y++;
+            lines++;
+            x = 0;
+        }
+        
+        if (end != std::string::npos)
+        {
+            start = end;
+            end = ftext.find_first_not_of(" \t", start);
+            if (end != std::string::npos)
             {
-                start += 5; // length of <col= == 5
-                end = ftext.find(">", start);
-                short cpair = atoi(ftext.substr(start, end).c_str());
-                m_ColorStack.push(cpair);
-                attron(COLOR_PAIR(cpair));
+                short count = ((end - start) <= (width() - start)) ? (end-start) : (width()-start);
+                word += ftext.substr(start, count);
                 start = end;
             }
-            else if (!ftext.compare(start+1, 5, "/col>")) // End color tag
+            else
+                start++; // Start searching on next char
+        }
+        
+        strstart = strend = 0;
+        while (strstart < word.length())
+        {
+            if (word[strstart] == '<')
             {
-                start += 6;
-                short cpair = m_ColorStack.top();
-                m_ColorStack.pop();
-                attroff(COLOR_PAIR(cpair));
+                if (!word.compare(strstart+1, 4, "col=")) // Color tag
+                {
+                    strstart += 5; // length of <col= == 5
+                    strend = word.find(">", strstart);
+                    short cpair = atoi(word.substr(strstart, (strend-strstart)).c_str());
+                    m_sCurColor = cpair;
+                    attron(COLOR_PAIR(cpair));
+                    strstart = strend+1;
+                }
+                else if (!word.compare(strstart+1, 5, "/col>")) // End color tag
+                {
+                    strstart += 6;
+                    attroff(COLOR_PAIR(m_sCurColor));
+                }
+                else if (!word.compare(strstart+1, 2, "C>")) // Center tag
+                    strstart += 3; // Ignore, is handled earlier
+                else
+                {
+                    addch(y, x, word[strstart]);
+                    strstart++;
+                    x++;
+                }
             }
-            else if (!ftext.compare(start+1, 2, "C>")) // Center tag
-                start += 3; // Ignore, is handled earlier
             else
             {
-                addch(y, x, ftext[start]);
-                start++;
+                addch(y, x, word[strstart]);
+                strstart++;
                 x++;
             }
         }
-        else
-        {
-            addch(y, x, ftext[start]);
-            start++;
-            x++;
-        }
     }
-        
-    //printw(y, x, text);
+    while(end != std::string::npos);
+    
     free(text);
+    return lines;
 }
 
 // -------------------------------------
@@ -1001,126 +1004,6 @@ bool CTextWindow::HandleKeyPost(chtype ch)
 
 void CTextWindow::AddText(std::string text)
 {
-#if 0
-    m_szText += text;
-    
-    std::string line, txt;
-    std::string::size_type strpos;
-    
-    if (!m_FormattedText.empty() && m_FormattedText.back()[m_FormattedText.back().length()-1] != '\n')
-    {
-        std::string *str = &m_FormattedText.back();
-        strpos = text.find_first_of("\r\n");
-        
-        if (strpos != std::string::npos)
-        {
-            line = text.substr(0, strpos+1);
-            text.erase(0, strpos+1);
-        }
-        else
-        {
-            line = text;
-            text.clear();
-        }
-        
-        if (m_bWrap)
-        {
-            if (str->length() < m_pTextWin->width()) // Not to big yet?
-            {
-                *str += line;
-
-                if (str->length() > m_pTextWin->width())
-                {
-                    strpos = str->find_last_of(" \t\r\n", m_pTextWin->width()-1);
-                    if (strpos == std::string::npos)
-                        strpos = m_pTextWin->width()-1;
-    
-                    text = str->substr(strpos+1);
-                    str->erase(strpos+1);
-                }
-            }
-        }
-        else
-        {
-            *str += line;
-
-            if (str->length() > m_iLongestLine)
-                m_iLongestLine = str->length();
-        }
-    }
-    
-    std::istringstream fullstrm(text);
-    
-    while (!text.empty())
-    {
-        //if (!std::getline(fullstrm, line))
-            //break;
-        
-        strpos = text.find_first_of("\r\n");
-            
-        if (strpos != std::string::npos)
-        {
-            line = text.substr(0, strpos+1);
-            text.erase(0, strpos+1);
-        }
-        else
-        {
-            line = text;
-            text.clear();
-        }
-        
-        if (m_bWrap)
-        {
-            while (line.length() > m_pTextWin->width())
-            {
-                std::string::size_type strpos = line.find_last_of(" \t\r\n", m_pTextWin->width()-1);
-                if (strpos == std::string::npos)
-                    strpos = m_pTextWin->width()-1;
-                
-                txt = line.substr(0, strpos);
-                m_FormattedText.push_back(txt.c_str());
-                
-                if (txt.length() > m_iLongestLine)
-                    m_iLongestLine = txt.length();
-                
-                line.erase(0, strpos+1);
-            }
-            
-            m_FormattedText.push_back(line.c_str());
-            if (line.length() > m_iLongestLine)
-                m_iLongestLine = line.length();
-        }
-        else
-        {
-            m_FormattedText.push_back(line.c_str());
-            if (line.length() > m_iLongestLine)
-                m_iLongestLine = line.length();
-        }
-    }
-    
-    if (!m_FormattedText.empty())
-    {
-        int h = m_FormattedText.size() - m_pTextWin->height();
-        if (h < 0)
-            h = 0;
-        
-        m_pVScrollbar->SetMinMax(0, h);
-        
-        if (m_iLongestLine > m_pTextWin->width())
-            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
-        
-        // Current line not yet initialized
-        if (m_iCurrentLine == -1)
-        {
-            m_iCurrentLine = m_FormattedText.size() - 1;
-            m_CurrentLineIt = m_FormattedText.end();
-            m_CurrentLineIt--;
-            m_pVScrollbar->SetCurrent(h);
-        }
-        else if (m_bFollow)
-            ScrollToBottom();
-    }
-#endif
     unsigned lines = 0;
     std::string line;
     std::string::size_type start = 0, end;
@@ -1192,57 +1075,7 @@ int CTextWindow::refresh()
             ((it!=m_FormattedText.end()) && (lines<m_pTextWin->height())); it++)
         {
             std::string line = it->substr((int)m_pHScrollbar->GetValue()), txt;
-            /*
-            start = w = 0;
-            
-            do
-            {
-                ind = line.find_first_of(" \t", start);
-                word = line.substr(start, ind);
-                start = line.find_first_not_of(" \t", ind);
-                
-                unsigned len = GetUnFormatLen(word);
-                
-                if (1)//((len + w) > m_pTextWin->width())
-                {
-                    // Wrap word to next line
-                    lines++;
-                    w = 0;
-                }
-                else
-                {
-                    // Add spaces/tabs that came after this word
-                    if (ind != std::string::npos)
-                    {
-                        word += line.substr(start, ind);
-                        w += len + (ind - start);
-                        start = ind+1;
-                    }
-                }
-                
-                FILE *fp=fopen("log.txt", "a"); fprintf(fp, "%s-\n", word.c_str()); fclose(fp);
-
-                m_pTextWin->addstr(lines, w, word.c_str());
-            }
-            while ((ind != std::string::npos) && (start < line.length()) && (lines<m_pTextWin->height()));*/
-            
-            while ((GetUnFormatLen(line) > m_pTextWin->width()) && (lines<m_pTextWin->height()))
-            {
-                std::string::size_type strpos = line.find_last_of(" \t\r\n", m_pTextWin->width()-1);
-                if (strpos == std::string::npos)
-                    strpos = m_pTextWin->width()-1;
-                
-                txt = line.substr(0, strpos);
-                m_pTextWin->PrintFormat(lines, 0, txt.c_str());
-                
-                line.erase(0, strpos+1);
-                lines++;
-            }
-            
-            m_pTextWin->PrintFormat(lines, 0, line.c_str());
-            
-            //m_pTextWin->addstr(lines, 0, it->substr((int)m_pHScrollbar->GetValue()).c_str(), m_pTextWin->width());
-            lines++;
+            lines += m_pTextWin->PrintFormat(lines, 0, true, line.c_str());
         }
     }
 
@@ -1389,13 +1222,6 @@ int CMenu::refresh()
     
     if (!m_iLongestLine > m_pTextWin->width())
         m_pHScrollbar->refresh();
-    
-    std::string str = "normal\n<C>centered\n<col=1>colored</col>";
-    /*
-    FormatString(str, &fstr);
-    
-    for (std::list<form_str_entry_s>::iterator it=fstr.attr_list.begin(); it!=fstr.attr_list.end(); it++)
-    debugline("attr: %d col: %d beg: %d end: %d\n", it->attr, it->cpair, it->begin, it->end);*/
     
     return ret;
 }
