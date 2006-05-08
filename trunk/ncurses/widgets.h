@@ -376,8 +376,8 @@ public:
                   char absrel = 'a') : CWidget(owner),
                                        NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0) { };
     
-    int PrintFormat(int y, int x, bool wrap, const char *str, ...);
-    int AddStrFormat(int y, int x, bool wrap, const char *str, int n=-1);
+    void PrintFormat(int y, int x, const char *str, ...);
+    void AddStrFormat(int y, int x, const char *str, int n=-1);
 };
 
 class CButton: public CWidgetWindow
@@ -434,13 +434,13 @@ class CTextWindow: public CWidgetWindow
     void FormatText(void);
     void ScrollToBottom(void);
     void HScroll(int n);
+    void VScroll(int n);
     
 protected:
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     int m_iCurrentLine;
     
     virtual bool HandleKeyPost(chtype ch);
-    virtual void VScroll(int n); // CMenu wants to override this
 
 public:
     CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,

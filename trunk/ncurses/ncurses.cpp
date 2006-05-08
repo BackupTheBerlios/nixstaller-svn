@@ -98,17 +98,15 @@ void CNCursBase::MsgBox(const char *str, ...)
     CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
     CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, true, false, 'r');
-    CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');
     
     m_pDummyPanel->refresh();
     but->refresh();
     but2->refresh();
     twin->refresh();
     
-    for (int i=0;i<51;i++) { twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd sd f fsd fds\n", i)); menu->AddItem(CreateText("%d_\n", i), NULL); }
+    for (int i=0;i<51;i++) twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd sd f fsd fds tt\n", i));
 
     twin->refresh();
-    menu->refresh();
 
     Man.Run();
     
@@ -116,7 +114,6 @@ void CNCursBase::MsgBox(const char *str, ...)
     delete but;
     delete but2;
     delete twin;
-    delete menu;
     
     m_pDummyPanel->refresh();
     
