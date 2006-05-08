@@ -815,11 +815,19 @@ void CWidgetWindow::PrintFormat(int y, int x, const char *str, ...)
     free(text);
 }
 
-void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int n)
+void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n)
 {
     std::string ftext = str, word, line;
-    std::string::size_type strstart=0, strend=0;
+    std::string::size_type strstart=0, strend=0, chars=0, len;
     
+    if (ftext.find("<C>", 0, ftext.find("\n")))
+    {
+        int w = (n != -1) ? n : width();
+        len = GetUnFormatLen(ftext);
+        if (len < w)
+            x = ((w - len) / 2);
+    }
+        
     while (strstart < ftext.length())
     {
         if (ftext[strstart] == '<')
@@ -842,18 +850,25 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int n)
                 strstart += 3; // Ignore, is handled earlier
             else
             {
-                if ((n == -1) || (x < n)) // Only print stuff when max isn't reached(but still process remaining tags
+                // Only print stuff when in range (but still process remaining tags
+                if (((start == -1) || (chars >= start)) && ((n == -1) || (x < n)))
+                {
                     addch(y, x, ftext[strstart]);
+                    x++;
+                }
+                chars++;
                 strstart++;
-                x++;
             }
         }
         else
         {
-            if ((n == -1) || (x < n))
+            if (((start == -1) || (chars >= start)) && ((n == -1) || (x < n)))
+            {
                 addch(y, x, ftext[strstart]);
+                x++;
+            }
+            chars++;
             strstart++;
-            x++;
         }
     }
 }
@@ -1018,40 +1033,59 @@ void CTextWindow::AddText(std::string text)
     if (!m_FormattedText.empty())
         lines = m_FormattedText.size();
 
-    do
+    if (m_bWrap)
     {
-        end = text.find_first_of(" \t", start);
-        
-        if (end != std::string::npos)
-            word = text.substr(start, (end-start));
-        else
-            word = text.substr(start);
-        
-        if (end != std::string::npos)
+        do
         {
-            start = end;
-            end = text.find_first_not_of(" \t", start);
+            end = text.find_first_of(" \t", start);
+            
+            if (end != std::string::npos)
+                word = text.substr(start, (end-start));
+            else
+                word = text.substr(start);
+            
             if (end != std::string::npos)
             {
-                short count = ((end - start) <= (m_pTextWin->width() - start)) ? (end-start) : (m_pTextWin->width()-start);
-                word += text.substr(start, count);
                 start = end;
+                end = text.find_first_not_of(" \t", start);
+                if (end != std::string::npos)
+                {
+                    short count = ((end - start) <= (m_pTextWin->width() - start)) ? (end-start) : (m_pTextWin->width()-start);
+                    word += text.substr(start, count);
+                    start = end;
+                }
+                else
+                    start++; // Start searching on next char
             }
-            else
-                start++; // Start searching on next char
+            
+            if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
+                ((GetUnFormatLen(m_FormattedText.back())+GetUnFormatLen(word)) > m_pTextWin->width()))
+            {
+                m_FormattedText.push_back("");
+                lines++;
+            }
+            
+            m_FormattedText.back() += word;
+            
+            len = GetUnFormatLen(m_FormattedText.back());
+            if (len > m_iLongestLine)
+                m_iLongestLine = len;
         }
-        
-        if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
-             ((GetUnFormatLen(m_FormattedText.back())+GetUnFormatLen(word)) > m_pTextWin->width()))
-        {
-            m_FormattedText.push_back("");
-            lines++;
-        }
-        
-        m_FormattedText.back() += word;
+        while(end != std::string::npos);
     }
-    while(end != std::string::npos);
-    
+    else
+    {
+        std::stringstream strstrm(text);
+        while(strstrm && getline(strstrm, line))
+        {
+            m_FormattedText.push_back(line);
+            lines++;
+            len = GetUnFormatLen(line);
+            if (len > m_iLongestLine)
+                m_iLongestLine = len;
+        }
+    }
+
     if (lines > m_pTextWin->height())
         m_pVScrollbar->SetMinMax(0, (lines - m_pTextWin->height()));
     
@@ -1081,10 +1115,12 @@ int CTextWindow::refresh()
         for(std::list<std::string>::iterator it=m_CurrentLineIt;
             ((it!=m_FormattedText.end()) && (lines<m_pTextWin->height())); it++)
         {
-            m_pTextWin->AddStrFormat(lines, 0, it->substr((int)m_pHScrollbar->GetValue()).c_str(), -1);
+            m_pTextWin->AddStrFormat(lines, 0, it->c_str(), (int)m_pHScrollbar->GetValue(), width());
             lines++;
         }
     }
+
+    debugline("hscroll: %.2f", m_pHScrollbar->GetValue());
 
     box();
      

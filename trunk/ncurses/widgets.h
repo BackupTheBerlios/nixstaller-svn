@@ -377,7 +377,7 @@ public:
                                        NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0) { };
     
     void PrintFormat(int y, int x, const char *str, ...);
-    void AddStrFormat(int y, int x, const char *str, int n=-1);
+    void AddStrFormat(int y, int x, const char *str, int start=-1, int n=-1);
 };
 
 class CButton: public CWidgetWindow

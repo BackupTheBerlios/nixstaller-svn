@@ -97,13 +97,14 @@ void CNCursBase::MsgBox(const char *str, ...)
         
     CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
-    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, true, false, 'r');
+    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r');
     
     m_pDummyPanel->refresh();
     but->refresh();
     but2->refresh();
     twin->refresh();
     
+    twin->AddText("<C>centere\n");
     for (int i=0;i<51;i++) twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd sd f fsd fds tt\n", i));
 
     twin->refresh();
