@@ -820,7 +820,9 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
     std::string ftext = str, word, line;
     std::string::size_type strstart=0, strend=0, chars=0, len;
     
-    if (ftext.find("<C>", 0, ftext.find("\n")))
+    len = ftext.find("<C>", 0, 5);
+    FILE *f=fopen("log.txt", "a"); fprintf(f, "pos: %d str: %s\n", len, str); fclose(f);
+    if (ftext.find("<C>", 0, 5) != std::string::npos)
     {
         int w = (n != -1) ? n : width();
         len = GetUnFormatLen(ftext);
