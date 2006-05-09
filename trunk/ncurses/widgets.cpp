@@ -761,58 +761,18 @@ unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
         length -= 6;
         pos += 6;
     }
+    while ((pos = str.find("<rev>", pos)) != std::string::npos)
+    {
+        length -= 5;
+        pos += 5;
+    }
+    while ((pos = str.find("</rev>", pos)) != std::string::npos)
+    {
+        length -= 6;
+        pos += 6;
+    }
     
     return length;
-}
-
-void CWidgetWindow::PrintFormat(int y, int x, const char *str, ...)
-{
-    char *text;
-    va_list v;
-    
-    va_start(v, str);
-    vasprintf(&text, str, v);
-    va_end(v);
-    
-    std::string ftext = text, word, line;
-    std::string::size_type strstart=0, strend=0;
-    
-    while (strstart < ftext.length())
-    {
-        if (ftext[strstart] == '<')
-        {
-            if (!ftext.compare(strstart+1, 4, "col=")) // Color tag
-            {
-                strstart += 5; // length of <col= == 5
-                strend = ftext.find(">", strstart);
-                short cpair = atoi(ftext.substr(strstart, (strend-strstart)).c_str());
-                m_sCurColor = cpair;
-                attron(COLOR_PAIR(cpair));
-                strstart = strend+1;
-            }
-            else if (!ftext.compare(strstart+1, 5, "/col>")) // End color tag
-            {
-                strstart += 6;
-                attroff(COLOR_PAIR(m_sCurColor));
-            }
-            else if (!ftext.compare(strstart+1, 2, "C>")) // Center tag
-                strstart += 3; // Ignore, is handled earlier
-            else
-            {
-                addch(y, x, ftext[strstart]);
-                strstart++;
-                x++;
-            }
-        }
-        else
-        {
-            addch(y, x, ftext[strstart]);
-            strstart++;
-            x++;
-        }
-    }
-            
-    free(text);
 }
 
 void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n)
@@ -820,14 +780,12 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
     std::string ftext = str, word, line;
     std::string::size_type strstart=0, strend=0, chars=0, len;
     
-    len = ftext.find("<C>", 0, 5);
-    FILE *f=fopen("log.txt", "a"); fprintf(f, "pos: %d str: %s\n", len, str); fclose(f);
-    if (ftext.find("<C>", 0, 5) != std::string::npos)
+    if (ftext.substr(0, ftext.find('\n')).find("<C>") != std::string::npos)
     {
         int w = (n != -1) ? n : width();
         len = GetUnFormatLen(ftext);
         if (len < w)
-            x = ((w - len) / 2);
+            ftext.insert(0, ((w - len) / 2)-1, ' '); // Add spaces so it centers
     }
         
     while (strstart < ftext.length())
@@ -850,13 +808,37 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
             }
             else if (!ftext.compare(strstart+1, 2, "C>")) // Center tag
                 strstart += 3; // Ignore, is handled earlier
+            else if (!ftext.compare(strstart+1, 4, "rev>")) // Reverse color tag
+            {
+                strstart += 5;
+                attron(A_REVERSE);
+            }
+            else if (!ftext.compare(strstart+1, 5, "/rev>")) // Reverse color tag
+            {
+                strstart += 6;
+                attroff(A_REVERSE);
+            }
             else
             {
-                // Only print stuff when in range (but still process remaining tags
+                // Only print stuff when in range (but still process remaining tags)
                 if (((start == -1) || (chars >= start)) && ((n == -1) || (x < n)))
                 {
                     addch(y, x, ftext[strstart]);
-                    x++;
+                    
+                    if (ftext[strstart] == '\n')
+                    {
+                        x = 0;
+                        
+                        if (ftext.substr(strstart, ftext.find('\n')).find("<C>") != std::string::npos)
+                        {
+                            int w = (n != -1) ? n : width();
+                            len = GetUnFormatLen(ftext);
+                            if (len < w)
+                                x = ((w - len) / 2)-1;
+                        }
+                    }
+                    else
+                        x++;
                 }
                 chars++;
                 strstart++;
@@ -1078,7 +1060,7 @@ void CTextWindow::AddText(std::string text)
     else
     {
         std::stringstream strstrm(text);
-        while(strstrm && getline(strstrm, line))
+        while(strstrm && std::getline(strstrm, line))
         {
             m_FormattedText.push_back(line);
             lines++;
@@ -1108,7 +1090,6 @@ void CTextWindow::AddText(std::string text)
 int CTextWindow::refresh()
 {
     int lines = 0; // Printed lines
-    int w = m_pTextWin->width();
     
     clear();
     
@@ -1117,12 +1098,11 @@ int CTextWindow::refresh()
         for(std::list<std::string>::iterator it=m_CurrentLineIt;
             ((it!=m_FormattedText.end()) && (lines<m_pTextWin->height())); it++)
         {
-            m_pTextWin->AddStrFormat(lines, 0, it->c_str(), (int)m_pHScrollbar->GetValue(), width());
+            m_pTextWin->AddStrFormat(lines, 0, it->c_str(), (int)m_pHScrollbar->GetValue(),
+                                     m_pTextWin->width());
             lines++;
         }
     }
-
-    debugline("hscroll: %.2f", m_pHScrollbar->GetValue());
 
     box();
      
@@ -1247,13 +1227,13 @@ int CMenu::refresh()
         for(int i=m_iStartEntry; ((i<m_MenuItems.size()) && (lines<m_pTextWin->height())); i++, lines++)
         {
             if (m_iCursorLine == lines)
-                m_pTextWin->attron(A_REVERSE | A_BOLD);
+                m_pTextWin->attron(A_REVERSE);
             
-            m_pTextWin->addstr(lines, 0, m_MenuItems[i].name.substr((int)m_pHScrollbar->GetValue()).c_str(),
-                               m_pTextWin->width());
+            m_pTextWin->AddStrFormat(lines, 0, m_MenuItems[i].name.c_str(), (int)m_pHScrollbar->GetValue(),
+                                     m_pTextWin->width());
             
             if (m_iCursorLine == lines)
-                m_pTextWin->attroff(A_REVERSE | A_BOLD);
+                m_pTextWin->attroff(A_REVERSE);
         }
     }
 
@@ -1265,7 +1245,7 @@ int CMenu::refresh()
     if (m_MenuItems.size() > m_pTextWin->height())
         m_pVScrollbar->refresh(); // Box made it disappear, redraw when needed
     
-    if (!m_iLongestLine > m_pTextWin->width())
+    if (m_iLongestLine > m_pTextWin->width())
         m_pHScrollbar->refresh();
     
     return ret;
