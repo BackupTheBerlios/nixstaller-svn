@@ -316,7 +316,7 @@ if cur_os == 'netbsd':
 
 #ncurses = env.Program('ncurses/ncurs', Split('ncurses/c++/'+cur_os+'/cursesmain.cc ncurses/ncurses.cpp'), LIBS=Split('$LIBS #ncurses ncurses++'), CPPPATH=Split('$CPPPATH ncurses/c++/'+cur_os))
 
-ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp'), LIBS=Split('$LIBS ncurses++ form menu panel ncurses'))
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp'), LIBS=Split('$LIBS ncurses++ panel ncurses'))
 
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
