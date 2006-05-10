@@ -106,10 +106,11 @@ void CNCursBase::MsgBox(const char *str, ...)
     twin->refresh();
     
     twin->AddText("<C>centere\n");
+    
     for (int i=0;i<51;i++)
     {
         twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd <rev>sd f</rev> fsd fds tt\n", i));
-        menu->AddItem(CreateText("%d <C><col=2>dfs fds</col> sfd <rev>sd f</rev> fsd fds tt\n", i), 0, 0);
+        menu->AddItem(CreateText("<C>menu item %d\n", i), 0, 0);
     }
 
     twin->refresh();

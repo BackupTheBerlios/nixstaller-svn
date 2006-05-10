@@ -784,7 +784,7 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
     {
         int w = (n != -1) ? n : width();
         len = GetUnFormatLen(ftext);
-        if (len < w)
+        if ((len+1) < w)
             ftext.insert(0, ((w - len) / 2)-1, ' '); // Add spaces so it centers
     }
         
@@ -829,12 +829,16 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
                     {
                         x = 0;
                         
-                        if (ftext.substr(strstart, ftext.find('\n')).find("<C>") != std::string::npos)
+                        unsigned pos = ftext.find('\n');
+                        if (pos != std::string::npos)
+                            pos -= (strstart+1);
+                        
+                        if (ftext.substr(strstart+1, pos).find("<C>") != std::string::npos)
                         {
                             int w = (n != -1) ? n : width();
                             len = GetUnFormatLen(ftext);
-                            if (len < w)
-                                x = ((w - len) / 2)-1;
+                            if ((len+1) < w)
+                                ftext.insert(strstart+1, ((w - len) / 2)-1, ' '); // Add spaces so it centers
                         }
                     }
                     else
@@ -942,7 +946,7 @@ CTextWindow::CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y
 
 void CTextWindow::HScroll(int n)
 {
-    if (m_bWrap || (m_iLongestLine < m_pTextWin->width()))
+    if (m_bWrap || (m_iLongestLine <= m_pTextWin->width()))
         return;
     
     m_pHScrollbar->Scroll(n);
@@ -1134,7 +1138,7 @@ CMenu::CMenu(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_
 
 void CMenu::HScroll(int n)
 {
-    if (m_iLongestLine < m_pTextWin->width())
+    if (m_iLongestLine <= m_pTextWin->width())
         return;
     
     m_pHScrollbar->Scroll(n);
@@ -1190,6 +1194,15 @@ bool CMenu::HandleKeyPost(chtype ch)
         case KEY_DOWN:
             VScroll(1);
             break;
+        case KEY_ENTER:
+        case '\n':
+        case '\r':
+        {
+            menu_entry_s *entry = &m_MenuItems[m_iStartEntry + m_iCursorLine];
+            if (entry->cb)
+                entry->cb(this, m_iStartEntry + m_iCursorLine, entry->data);
+            break;
+        }
         default:
             handled = false;
             break;
@@ -1207,9 +1220,10 @@ void CMenu::AddItem(std::string s, TCallBack f, void *p)
         h = 0;
     m_pVScrollbar->SetMinMax(0, h);
 
-    if (s.length() > m_iLongestLine)
+    unsigned len = GetUnFormatLen(s);
+    if (len > m_iLongestLine)
     {
-        m_iLongestLine = s.length();
+        m_iLongestLine = len;
         
         if (m_iLongestLine > m_pTextWin->width())
             m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));

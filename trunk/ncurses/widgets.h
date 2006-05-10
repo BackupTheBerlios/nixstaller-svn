@@ -454,7 +454,7 @@ public:
 class CMenu: public CWidgetWindow
 {
 public:
-    typedef void (*TCallBack)(CMenu *, const std::string &, void *);
+    typedef void (*TCallBack)(CMenu *, int, void *);
 
 private:
     struct menu_entry_s
