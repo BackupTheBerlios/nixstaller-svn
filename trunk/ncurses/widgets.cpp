@@ -777,15 +777,16 @@ unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
 
 void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n)
 {
-    std::string ftext = str, word, line;
+    std::string ftext = str, line;
     std::string::size_type strstart=0, strend=0, chars=0, len;
     
-    if (ftext.substr(0, ftext.find('\n')).find("<C>") != std::string::npos)
+    line = ftext.substr(0, ftext.find('\n'));
+    if (line.find("<C>") != std::string::npos)
     {
         int w = (n != -1) ? n : width();
-        len = GetUnFormatLen(ftext);
-        if ((len+1) < w)
-            ftext.insert(0, ((w - len) / 2)-1, ' '); // Add spaces so it centers
+        len = GetUnFormatLen(line);
+        if (len < w)
+            ftext.insert(0, ((w - len) / 2), ' '); // Add spaces so it centers
     }
         
     while (strstart < ftext.length())
@@ -833,12 +834,13 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
                         if (pos != std::string::npos)
                             pos -= (strstart+1);
                         
-                        if (ftext.substr(strstart+1, pos).find("<C>") != std::string::npos)
+                        line = ftext.substr(strstart+1, pos);
+                        if (line.find("<C>") != std::string::npos)
                         {
                             int w = (n != -1) ? n : width();
-                            len = GetUnFormatLen(ftext);
-                            if ((len+1) < w)
-                                ftext.insert(strstart+1, ((w - len) / 2)-1, ' '); // Add spaces so it centers
+                            len = GetUnFormatLen(line);
+                            if (len < w)
+                                ftext.insert(strstart+1, ((w - len) / 2), ' '); // Add spaces so it centers
                         }
                     }
                     else
@@ -1004,6 +1006,12 @@ bool CTextWindow::HandleKeyPost(chtype ch)
         case KEY_DOWN:
             VScroll(1);
             break;
+        case KEY_NPAGE:
+            VScroll(m_pTextWin->height());
+            break;
+        case KEY_PPAGE:
+            VScroll(-m_pTextWin->height());
+            break;
         default:
             handled = false;
             break;
@@ -1149,20 +1157,10 @@ void CMenu::VScroll(int n)
 {
     bool scroll = false;
     
-    if (n < 0)
-    {
-        if (m_iCursorLine > 0)
-            m_iCursorLine--;
-        else
-            scroll = true;
-    }
-    else if (n > 0)
-    {
-        if (m_iCursorLine < (m_pTextWin->height()-1))
-            m_iCursorLine++;
-        else
-            scroll = true;
-    }
+    if (((m_iCursorLine+n) >= 0) && ((m_iCursorLine+n) < m_pTextWin->height()))
+        m_iCursorLine += n;
+    else
+        scroll = true;
     
     if (scroll)
     {
@@ -1203,6 +1201,12 @@ bool CMenu::HandleKeyPost(chtype ch)
                 entry->cb(this, m_iStartEntry + m_iCursorLine, entry->data);
             break;
         }
+        case KEY_NPAGE:
+            VScroll(m_pTextWin->height());
+            break;
+        case KEY_PPAGE:
+            VScroll(-m_pTextWin->height());
+            break;
         default:
             handled = false;
             break;
