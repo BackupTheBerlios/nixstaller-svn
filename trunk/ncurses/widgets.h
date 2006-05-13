@@ -487,4 +487,37 @@ public:
     virtual int refresh(void);
 };
 
+class CInputField: public CWidgetWindow
+{
+public:
+    typedef void (*TCallBack)(CInputField *, const std::string &, void *);
+
+private:
+    std::list<chtype> m_IllegalCharList;
+    std::string m_szText;
+    int m_iMaxChars;
+    int m_iCursorPos, m_iScrollOffset;
+    CWidgetWindow *m_pOutputWin; // Window containing the displayed text
+    TCallBack m_pCallBack; // Function called when user presses enter
+    void *m_pUserData;
+    
+    void Addch(chtype ch);
+    void Delch(bool backspace);
+    void MoveCursor(int n);
+    
+protected:
+    virtual void Focus(void) { curs_set(1); };
+    virtual void LeaveFocus(void) { curs_set(0); };
+    virtual bool HandleKeyPost(chtype ch);
+    
+public:
+    
+    CInputField(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1,
+                TCallBack cb=NULL, void *data=NULL);
+    
+    const std::string &GetText(void) { return m_szText; };
+    
+    virtual int refresh(void);
+};
+
 #endif

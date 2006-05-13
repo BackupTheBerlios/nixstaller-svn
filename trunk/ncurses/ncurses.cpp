@@ -79,6 +79,11 @@ int CNCursScreen::run()
     return EXIT_SUCCESS;
 }
 
+void menucb(CMenu *, int n, void *)
+{
+    debugline("menu: %d", n);
+}
+
 void CNCursBase::MsgBox(const char *str, ...)
 {
     char *text;
@@ -97,12 +102,14 @@ void CNCursBase::MsgBox(const char *str, ...)
         
     CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
+    CInputField *in = new CInputField(panel, 3, 12, 5, 15, 'r');
     CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r');
     CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');
     
     m_pDummyPanel->refresh();
     but->refresh();
     but2->refresh();
+    in->refresh();
     twin->refresh();
     
     twin->AddText("<C>centere\n");
@@ -110,7 +117,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     for (int i=0;i<51;i++)
     {
         twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd <rev>sd f</rev> fsd fds tt\n", i));
-        menu->AddItem(CreateText("<C>menu item %d\n", i), 0, 0);
+        menu->AddItem(CreateText("<C>menu item %d\n", i), menucb, 0);
     }
 
     twin->refresh();
@@ -121,6 +128,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     delete panel;
     delete but;
     delete but2;
+    delete in;
     delete twin;
     delete menu;
     

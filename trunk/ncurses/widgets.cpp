@@ -1268,3 +1268,147 @@ int CMenu::refresh()
     
     return ret;
 }
+
+// -------------------------------------
+// Inputfield class
+// -------------------------------------
+
+CInputField::CInputField(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel, int max,
+                         TCallBack cb, void *data) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel),
+                                                     m_iMaxChars(max), m_iCursorPos(0), m_iScrollOffset(0),
+                                                     m_pCallBack(cb), m_pUserData(data)
+{
+    box();
+    m_pOutputWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r');
+}
+
+void CInputField::Addch(chtype ch)
+{
+    if ((!m_iMaxChars != -1) && (m_szText.length() >= m_iMaxChars))
+        return;
+    
+    unsigned pos = m_iScrollOffset + m_iCursorPos;
+    if (pos == m_szText.length())
+        m_szText += ch;
+    else
+        m_szText.insert(pos, 1, ch);
+    
+    MoveCursor(1);
+}
+
+void CInputField::Delch(bool backspace)
+{
+    if (m_szText.length() < 1)
+        return;
+    
+    unsigned pos = m_iScrollOffset + m_iCursorPos;
+    
+    if (backspace)
+        pos--;
+    
+    if (pos < m_szText.length())
+        m_szText.erase(pos, 1);
+    
+    if (backspace)
+        MoveCursor(-1);
+    else
+    {
+        if (m_iScrollOffset)
+            m_iScrollOffset--;
+        refresh(); // MoveCursor would call it otherwise
+    }
+}
+
+void CInputField::MoveCursor(int n)
+{
+    int w = (m_pOutputWin->width()-1); // -1, because we want to scroll before char is at last available position
+    m_iCursorPos += n;
+    
+    if (m_iCursorPos < 0)
+    {
+        m_iScrollOffset -= abs(m_iCursorPos);
+        
+        if (m_iScrollOffset < 0)
+            m_iScrollOffset = 0;
+        
+        m_iCursorPos = 0;
+    }
+    else if (m_iCursorPos > m_szText.length())
+        m_iCursorPos = m_szText.length();
+    else if (m_iCursorPos > w)
+    {
+        m_iScrollOffset += (m_iCursorPos - w);
+        
+        unsigned max = m_szText.length() - w;
+        if (m_iScrollOffset > max)
+            m_iScrollOffset = max;
+        
+        m_iCursorPos = w;
+    }
+    
+    refresh();
+}
+
+bool CInputField::HandleKeyPost(chtype ch)
+{
+    if (CWidgetWindow::HandleKeyPost(ch))
+        return true;
+    
+    bool handled = true;
+    
+    switch (ch)
+    {
+        
+        case KEY_LEFT:
+            MoveCursor(-1);
+            break;
+        case KEY_RIGHT:
+            MoveCursor(1);
+            break;
+        case KEY_HOME:
+            m_iCursorPos = m_iScrollOffset = 0;
+            refresh();
+            break;
+        case KEY_END:
+            MoveCursor(m_szText.length());
+            break;
+        case KEY_DC:
+            Delch(false);
+            break;
+        case KEY_BACKSPACE:
+        case 0x07f: // Some terminals may give this instead of KEY_BACKSPACE
+            Delch(true);
+            break;
+        case KEY_ENTER:
+        case '\n':
+        case '\r':
+            if (m_pCallBack)
+                m_pCallBack(this, m_szText, m_pUserData);
+            break;
+        default:
+            if (!isprint(ch) ||
+                 (std::find(m_IllegalCharList.begin(), m_IllegalCharList.begin(), ch) != m_IllegalCharList.end()))
+                handled = false;
+            else
+                Addch(ch);
+            break;
+    }
+    
+    return handled;
+}
+
+int CInputField::refresh()
+{
+    clear();
+    
+    if (!m_szText.empty())
+        m_pOutputWin->AddStrFormat(0, 0, m_szText.c_str(), m_iScrollOffset, m_pOutputWin->width());
+
+    box();
+     
+    int ret = CWidgetWindow::refresh();
+    m_pOutputWin->move(0, m_iCursorPos);
+    m_pOutputWin->refresh();
+    
+    return ret;
+}
