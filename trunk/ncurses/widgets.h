@@ -326,6 +326,7 @@ class CWidget
     void SetPrevWidget(void);
 
     friend class CWidgetManager;
+    friend class CGroupWidget;
     
 protected:
     CWidget *m_pOwner;
@@ -379,6 +380,21 @@ public:
     void AddStrFormat(int y, int x, const char *str, int start=-1, int n=-1);
 };
 
+class CGroupWidget: public CWidgetWindow // Groups several widgets together
+{
+protected:
+    virtual void Focus(void);
+    virtual void LeaveFocus(void);
+    virtual bool HandleKeyPre(chtype ch);
+    virtual bool HandleKeyPost(chtype ch);
+    
+public:
+    CGroupWidget(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
+                  char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel) { };
+    CGroupWidget(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+                  char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel) { };
+};
+
 class CButton: public CWidgetWindow
 {
     typedef void (*TCallBack)(CButton *, void *);
@@ -428,7 +444,7 @@ class CTextWindow: public CWidgetWindow
     std::list<std::string>::iterator m_CurrentLineIt;
     std::string m_szText;
     std::list<std::string> m_FormattedText; // list containing lines of formatted text
-    bool m_bWrap, m_bFollow;
+    bool m_bWrap, m_bFollow, m_bBox;
     
     void FormatText(void);
     void ScrollToBottom(void);
@@ -443,9 +459,8 @@ protected:
 
 public:
     CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
-                char absrel = 'a');
+                bool box, char absrel = 'a');
                                      
-    void SetText(std::string text);
     void AddText(std::string text);
     
     virtual int refresh(void);
@@ -516,6 +531,21 @@ public:
                 TCallBack cb=NULL, void *data=NULL);
     
     const std::string &GetText(void) { return m_szText; };
+    
+    virtual int refresh(void);
+};
+
+class CFileDialog: public CWidgetPanel // Currently only browses directories
+{
+    std::string m_szStartDir, m_szTitle;
+    bool m_bRequireWAccess; // Directory requires write access
+    CTextWindow *m_pTitleBox;
+    CMenu *m_pFileMenu;
+    CButton *m_pOpenButton, *m_pSelButton, *m_pCancelButton;
+    
+public:
+    CFileDialog(CWidget *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
+                const std::string &t, bool w);
     
     virtual int refresh(void);
 };

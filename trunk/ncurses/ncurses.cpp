@@ -70,7 +70,12 @@ int CNCursScreen::run()
     
     CNCursBase p;
     p.Init();
-    p.MsgBox("hi\n");
+    //p.MsgBox("hi\n");
+    
+    CWidgetManager Man;
+    CFileDialog f(&Man, 18, 60, 2, 4, "/", "<C>Select a file please", false);
+    f.refresh();
+    Man.Run();
     
     // Init installer/appmanager
     
@@ -103,7 +108,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
     CInputField *in = new CInputField(panel, 3, 12, 5, 15, 'r');
-    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r');
+    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, true, 'r');
     CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');
     
     m_pDummyPanel->refresh();

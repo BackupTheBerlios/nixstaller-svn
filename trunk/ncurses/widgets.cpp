@@ -864,6 +864,48 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
 }
 
 // -------------------------------------
+// Group widget class
+// -------------------------------------
+
+void CGroupWidget::Focus()
+{
+    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        (*it)->Focus();
+}
+
+void CGroupWidget::LeaveFocus()
+{
+    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        (*it)->LeaveFocus();
+}
+
+bool CGroupWidget::HandleKeyPre(chtype ch)
+{
+    bool handled = CWidgetWindow::HandleKeyPre(ch);
+    
+    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    {
+        if ((*it)->HandleKeyPre(ch) && !handled)
+            handled = true;
+    }
+    
+    return handled;
+}
+
+bool CGroupWidget::HandleKeyPost(chtype ch)
+{
+    bool handled = CWidgetWindow::HandleKeyPost(ch);
+    
+    for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    {
+        if ((*it)->HandleKeyPost(ch) && !handled)
+            handled = true;
+    }
+    
+    return handled;
+}
+
+// -------------------------------------
 // Button widget class
 // -------------------------------------
 
@@ -937,10 +979,10 @@ void CScrollbar::Scroll(float n)
 // -------------------------------------
 
 CTextWindow::CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
-                         char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel),
-                                        m_iLongestLine(0), m_bWrap(wrap), m_bFollow(follow), m_iCurrentLine(-1)
+                         bool box, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel),
+                                                  m_iLongestLine(0), m_bWrap(wrap), m_bFollow(follow),
+                                                  m_bBox(box), m_iCurrentLine(-1)
 {
-    box();
     m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r');
     m_pVScrollbar = new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 0, true, 'r');
     m_pHScrollbar = new CScrollbar(this, 1, ncols-2, nlines-1, 1, 0, 0, false, 'r');
@@ -1116,7 +1158,8 @@ int CTextWindow::refresh()
         }
     }
 
-    box();
+    if (m_bBox)
+        box();
      
     int ret = CWidgetWindow::refresh();
     m_pTextWin->refresh();
@@ -1409,6 +1452,37 @@ int CInputField::refresh()
     int ret = CWidgetWindow::refresh();
     m_pOutputWin->move(0, m_iCursorPos);
     m_pOutputWin->refresh();
+    
+    return ret;
+}
+
+// -------------------------------------
+// File dialog class
+// -------------------------------------
+
+CFileDialog::CFileDialog(CWidget *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
+                         const std::string &t, bool w) : CWidgetPanel(owner, nlines, ncols, begin_y, begin_x),
+                                                         m_szStartDir(s), m_szTitle(t), m_bRequireWAccess(w)
+{
+    boldframe("");
+    
+    m_pTitleBox = new CTextWindow(this, 2, ncols-4, 2, 2, true, false, false, 'r');
+    m_pTitleBox->AddText(m_szTitle);
+    
+    m_pFileMenu = new CMenu(this, nlines-10, ncols-4, 6, 2, 'r');
+    
+    m_pOpenButton = new CButton(this, 1, 15, nlines-3, 2, "Open directory", NULL, 'r');
+    m_pSelButton = new CButton(this, 1, 15, nlines-3, 19, "Select directory", NULL, 'r');
+    m_pCancelButton = new CButton(this, 1, 15, nlines-3, 36, "Cancel", NULL, 'r');
+}
+
+int CFileDialog::refresh()
+{
+    int ret = CWidgetPanel::refresh();
+    
+    m_pTitleBox->refresh();
+    m_pFileMenu->refresh();
+    m_pOpenButton->refresh();
     
     return ret;
 }
