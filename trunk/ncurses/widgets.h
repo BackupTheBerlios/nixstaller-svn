@@ -322,8 +322,8 @@ class CWidget
 {
     bool m_bEnabled;
 
-    void SetNextWidget(void);
-    void SetPrevWidget(void);
+    bool SetNextWidget(void);
+    bool SetPrevWidget(void);
 
     friend class CWidgetManager;
     friend class CGroupWidget;
@@ -335,8 +335,7 @@ protected:
     
     virtual void Focus(void) { };
     virtual void LeaveFocus(void) { };
-    virtual bool HandleKeyPre(chtype ch);
-    virtual bool HandleKeyPost(chtype ch);
+    virtual bool HandleKey(chtype ch);
     
 public:
     CWidget(CWidget *owner) : m_pOwner(owner) { if (owner) owner->AddChild(this); };
@@ -366,8 +365,10 @@ class CWidgetWindow: public CWidget, public NCursesWindow
 {
 protected:
     short m_sCurColor; // Current color pair used in formatted text
+    chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     
     unsigned GetUnFormatLen(const std::string &str);
+    int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
 public:
     CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -375,9 +376,15 @@ public:
                                        NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0) { };
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                   char absrel = 'a') : CWidget(owner),
-                                       NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0) { };
+                                       NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0),
+                                       m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0) { };
     
     void AddStrFormat(int y, int x, const char *str, int start=-1, int n=-1);
+    
+    void SetLLCorner(chtype c) { m_cLLCorner = c; };
+    void SetLRCorner(chtype c) { m_cLRCorner = c; };
+    void SetULCorner(chtype c) { m_cULCorner = c; };
+    void SetURCorner(chtype c) { m_cURCorner = c; };
 };
 
 class CGroupWidget: public CWidgetWindow // Groups several widgets together
@@ -385,8 +392,7 @@ class CGroupWidget: public CWidgetWindow // Groups several widgets together
 protected:
     virtual void Focus(void);
     virtual void LeaveFocus(void);
-    virtual bool HandleKeyPre(chtype ch);
-    virtual bool HandleKeyPost(chtype ch);
+    virtual bool HandleKey(chtype ch);
     
 public:
     CGroupWidget(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -400,8 +406,8 @@ class CButton: public CWidgetWindow
     typedef void (*TCallBack)(CButton *, void *);
     
 protected:
-    virtual void Focus(void) { bkgd(' '|COLOR_PAIR(4)); refresh(); debugline("Focus"); };
-    virtual void LeaveFocus(void) { bkgd(' '|COLOR_PAIR(4)|A_REVERSE); refresh(); debugline("UnFocus"); };
+    virtual void Focus(void) { bkgd(' '|COLOR_PAIR(4)); refresh(); };
+    virtual void LeaveFocus(void) { bkgd(' '|COLOR_PAIR(4)|A_REVERSE); refresh(); };
     
 public:
     CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -455,7 +461,7 @@ protected:
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     int m_iCurrentLine;
     
-    virtual bool HandleKeyPost(chtype ch);
+    virtual bool HandleKey(chtype ch);
 
 public:
     CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
@@ -492,12 +498,13 @@ private:
     void VScroll(int n);
     
 protected:
-    virtual bool HandleKeyPost(chtype ch);
+    virtual bool HandleKey(chtype ch);
         
 public:
     CMenu(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
+    CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
-    void AddItem(std::string s, TCallBack f, void *p = NULL);
+    void AddItem(std::string s, TCallBack f=NULL, void *p = NULL);
     
     virtual int refresh(void);
 };
@@ -523,14 +530,17 @@ private:
 protected:
     virtual void Focus(void) { curs_set(1); };
     virtual void LeaveFocus(void) { curs_set(0); };
-    virtual bool HandleKeyPost(chtype ch);
+    virtual bool HandleKey(chtype ch);
     
 public:
     
     CInputField(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1,
                 TCallBack cb=NULL, void *data=NULL);
+    CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1,
+                TCallBack cb=NULL, void *data=NULL);
     
     const std::string &GetText(void) { return m_szText; };
+    void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length()); };
     
     virtual int refresh(void);
 };
@@ -540,7 +550,9 @@ class CFileDialog: public CWidgetPanel // Currently only browses directories
     std::string m_szStartDir, m_szTitle;
     bool m_bRequireWAccess; // Directory requires write access
     CTextWindow *m_pTitleBox;
+    CGroupWidget *m_pBrowserGroup;
     CMenu *m_pFileMenu;
+    CInputField *m_pDirField;
     CButton *m_pOpenButton, *m_pSelButton, *m_pCancelButton;
     
 public:

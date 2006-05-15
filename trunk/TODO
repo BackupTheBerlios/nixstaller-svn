@@ -16,7 +16,7 @@ MAIN
 
 
 NCURSES FRONTEND
-- Back button?
+- Add some destructors to widgets which delete child widgets
 
 
 FLTK FRONTEND
