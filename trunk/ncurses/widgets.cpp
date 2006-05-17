@@ -644,20 +644,22 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 // Base widget class
 // -------------------------------------
 
-bool CWidget::HandleKey(chtype ch)
+bool CWidget::HandleKey(chtype ch, bool callchild)
 {
-    if ((!m_ChildList.empty() && (*m_FocusedChild)->HandleKey(ch)) ||
-          ((ch == 9) && SetNextWidget()) || ((ch == KEY_BTAB) && SetPrevWidget()))
+    if (callchild && !m_ChildList.empty() && ((*m_FocusedChild)->HandleKey(ch) ||
+         ((ch == 9) && SetNextWidget()) || ((ch == KEY_BTAB) && SetPrevWidget())))
         return true;
-    
+
     return false;
 }
 
 bool CWidget::SetNextWidget()
 {
     if (m_ChildList.size() < 2)
-        return false;;
+        return false;
     
+    debugline("nextwidget %d", rand());
+
     (*m_FocusedChild)->LeaveFocus();
     
     m_FocusedChild++;
@@ -672,6 +674,8 @@ bool CWidget::SetPrevWidget()
 {
     if (m_ChildList.size() < 2)
         return false;
+
+    debugline("prevwidget %d", rand());
 
     (*m_FocusedChild)->LeaveFocus();
     
@@ -853,43 +857,22 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
 
 void CGroupWidget::Focus()
 {
-    CWidgetWindow::Focus();
-    
-    // Skip focused child, since it's handled by parent function call
     for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    {
-        if (it != m_FocusedChild)
-            (*it)->Focus();
-    }
+        (*it)->Focus();
 }
 
 void CGroupWidget::LeaveFocus()
 {
-    CWidgetWindow::LeaveFocus();
-    
-    // Skip focused child, since it's handled by parent function call
     for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    {
-        if (it != m_FocusedChild)
-            (*it)->LeaveFocus();
-    } 
+        (*it)->LeaveFocus();
 }
 
-bool CGroupWidget::HandleKey(chtype ch)
+bool CGroupWidget::HandleKey(chtype ch, bool callchild)
 {
-    // HACK: Don't let child widgets switch focus
-    if (ch == 9)
-    {
-        if (SetNextWidget())
-            return true;
-    }
-    else if (ch == KEY_BTAB)
-    {
-        if (SetPrevWidget())
-            return true;
-    }
+    if (CWidgetWindow::HandleKey(ch, false))
+        return true;
     
-    bool handled = CWidgetWindow::HandleKey(ch);
+    bool handled = false;
     
     for (std::list<CWidget *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
     {
@@ -1026,9 +1009,9 @@ void CTextWindow::ScrollToBottom()
     }
 }
 
-bool CTextWindow::HandleKey(chtype ch)
+bool CTextWindow::HandleKey(chtype ch, bool callchild)
 {
-    if (CWidgetWindow::HandleKey(ch))
+    if (CWidgetWindow::HandleKey(ch, false))
         return true;
     
     bool handled = true;
@@ -1223,9 +1206,9 @@ void CMenu::VScroll(int n)
     refresh();
 }
 
-bool CMenu::HandleKey(chtype ch)
+bool CMenu::HandleKey(chtype ch, bool callchild)
 {
-    if (CWidgetWindow::HandleKey(ch))
+    if (CWidgetWindow::HandleKey(ch, false))
         return true;
     
     bool handled = true;
@@ -1409,9 +1392,9 @@ void CInputField::MoveCursor(int n)
     refresh();
 }
 
-bool CInputField::HandleKey(chtype ch)
+bool CInputField::HandleKey(chtype ch, bool callchild)
 {
-    if (CWidgetWindow::HandleKey(ch))
+    if (CWidgetWindow::HandleKey(ch, false))
         return true;
     
     bool handled = true;

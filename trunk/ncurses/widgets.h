@@ -335,7 +335,7 @@ protected:
     
     virtual void Focus(void) { };
     virtual void LeaveFocus(void) { };
-    virtual bool HandleKey(chtype ch);
+    virtual bool HandleKey(chtype ch, bool callchild=true); // callchild: If true, call HandleKey on focused child
     
 public:
     CWidget(CWidget *owner) : m_pOwner(owner) { if (owner) owner->AddChild(this); };
@@ -392,7 +392,7 @@ class CGroupWidget: public CWidgetWindow // Groups several widgets together
 protected:
     virtual void Focus(void);
     virtual void LeaveFocus(void);
-    virtual bool HandleKey(chtype ch);
+    virtual bool HandleKey(chtype ch, bool callchild=true);
     
 public:
     CGroupWidget(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -406,8 +406,8 @@ class CButton: public CWidgetWindow
     typedef void (*TCallBack)(CButton *, void *);
     
 protected:
-    virtual void Focus(void) { bkgd(' '|COLOR_PAIR(4)); refresh(); };
-    virtual void LeaveFocus(void) { bkgd(' '|COLOR_PAIR(4)|A_REVERSE); refresh(); };
+    virtual void Focus(void) { bkgd(' '|COLOR_PAIR(4)); refresh(); debugline("focus %d", rand()); };
+    virtual void LeaveFocus(void) { bkgd(' '|COLOR_PAIR(4)|A_REVERSE); refresh(); debugline("unfocus %d", rand()); };
     
 public:
     CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -461,7 +461,7 @@ protected:
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     int m_iCurrentLine;
     
-    virtual bool HandleKey(chtype ch);
+    virtual bool HandleKey(chtype ch, bool callchild=true);
 
 public:
     CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
@@ -498,7 +498,7 @@ private:
     void VScroll(int n);
     
 protected:
-    virtual bool HandleKey(chtype ch);
+    virtual bool HandleKey(chtype ch, bool callchild=true);
         
 public:
     CMenu(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
@@ -530,7 +530,7 @@ private:
 protected:
     virtual void Focus(void) { curs_set(1); };
     virtual void LeaveFocus(void) { curs_set(0); };
-    virtual bool HandleKey(chtype ch);
+    virtual bool HandleKey(chtype ch, bool callchild=true);
     
 public:
     
