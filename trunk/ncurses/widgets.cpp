@@ -658,16 +658,22 @@ bool CWidget::SetNextWidget()
     if (m_ChildList.size() < 2)
         return false;
     
-    debugline("nextwidget %d", rand());
-
     (*m_FocusedChild)->LeaveFocus();
     
-    m_FocusedChild++;
-    if (m_FocusedChild == m_ChildList.end())
-        m_FocusedChild = m_ChildList.begin();
+    std::list<CWidget *>::iterator prev = m_FocusedChild;
+    for (m_FocusedChild++; m_FocusedChild != prev; m_FocusedChild++)
+    {
+        if (m_FocusedChild == m_ChildList.end())
+            m_FocusedChild = m_ChildList.begin();
+        
+        if ((*m_FocusedChild)->CanFocus())
+        {
+            (*m_FocusedChild)->Focus();
+            return true;
+        }
+    }
     
-    (*m_FocusedChild)->Focus();
-    return true;
+    return false;
 }
 
 bool CWidget::SetPrevWidget()
@@ -675,17 +681,25 @@ bool CWidget::SetPrevWidget()
     if (m_ChildList.size() < 2)
         return false;
 
-    debugline("prevwidget %d", rand());
-
     (*m_FocusedChild)->LeaveFocus();
     
-    if (m_FocusedChild == m_ChildList.begin())
-        m_FocusedChild = m_ChildList.end();
+    std::list<CWidget *>::iterator prev = m_FocusedChild;
+    do
+    {
+        if (m_FocusedChild == m_ChildList.begin())
+            m_FocusedChild = m_ChildList.end();
     
-    m_FocusedChild--;
+        m_FocusedChild--;
+        
+        if ((*m_FocusedChild)->CanFocus())
+        {
+            (*m_FocusedChild)->Focus();
+            return true;
+        }
+    }
+    while (m_FocusedChild != prev);
 
-    (*m_FocusedChild)->Focus();
-    return true;
+    return false;
 }
 
 void CWidget::Run()
@@ -915,20 +929,21 @@ void CScrollbar::CalcScrollStep()
 int CScrollbar::refresh()
 {
     clear();
-    bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
+    bkgd(' '|A_REVERSE);
     
     // Calc slide position
+    std::string::size_type len;
     float fac = (m_fCurVal / m_fMaxVal);
     float posx, posy;
     
     if (m_bVertical)
     {
         posx = 0.0f;
-        posy = ((float)height() - 1.0f) * fac; // - 1.0f becouse height/width starts at 1, while pos starts at 0
+        posy = (float)maxy() * fac;
     }
     else
     {
-        posx = ((float)width() - 1.0f) * fac;
+        posx = (float)maxx() * fac;
         posy = 0.0f;
     }
     
@@ -937,8 +952,7 @@ int CScrollbar::refresh()
     if (posy < 0.0f)
         posy = 0.0f;
     
-    //debugline("posx: %.2f posy: %.2f cur: %.2f step %.2f", posx, posy, m_fCurVal, m_fScrollStep);
-    printw((int)posy, (int)posx, "+");
+    addch((int)posy, (int)posx, ACS_CKBOARD);
     return NCursesWindow::refresh();
 }
 
@@ -1469,15 +1483,19 @@ CFileDialog::CFileDialog(CWidget *owner, int nlines, int ncols, int begin_y, int
     m_pTitleBox = new CTextWindow(this, 2, ncols-4, 2, 2, true, false, false, 'r');
     m_pTitleBox->AddText(m_szTitle);
     
-    m_pBrowserGroup = new CGroupWidget(this, nlines-7, ncols-4, 5, 2, 'r');
+    //m_pBrowserGroup = new CGroupWidget(this, nlines-7, ncols-4, 5, 2, 'r');
     
-    m_pFileMenu = new CMenu(m_pBrowserGroup, m_pBrowserGroup->height()-3, m_pBrowserGroup->width(), 0, 0, 'r');
+    m_pFileMenu = new CMenu(this, nlines-10, ncols-4, 5, 2, 'r');
     for (short s=0; s<40; s++) m_pFileMenu->AddItem(CreateText("menu item %d", s));
     
-    m_pDirField = new CInputField(m_pBrowserGroup, 3, m_pBrowserGroup->width(), m_pFileMenu->maxy(), 0, 'r');
-    m_pDirField->SetULCorner(ACS_LTEE); // (visually) connect it to the file menu
-    m_pDirField->SetURCorner(ACS_RTEE);
+    m_pDirField = new CInputField(this, 3, ncols-4, 5+m_pFileMenu->maxy(), 2, 'r');
     m_pDirField->SetText(m_szStartDir);
+    
+    // (visually) connect file menu with input field
+    m_pFileMenu->SetLLCorner(ACS_LTEE);
+    m_pFileMenu->SetLRCorner(ACS_RTEE);
+    m_pDirField->SetULCorner(ACS_LTEE);
+    m_pDirField->SetURCorner(ACS_RTEE);
     
     // Center 3 buttons with 18 width, 2 space at a cols-4(=border) space
     const int startx = ((ncols + 4) - (3 * 18 + (2 * 2))) / 3;

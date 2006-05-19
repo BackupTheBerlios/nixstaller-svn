@@ -333,6 +333,7 @@ protected:
     std::list<CWidget *> m_ChildList;
     std::list<CWidget *>::iterator m_FocusedChild;
     
+    virtual bool CanFocus(void) { return false; };
     virtual void Focus(void) { };
     virtual void LeaveFocus(void) { };
     virtual bool HandleKey(chtype ch, bool callchild=true); // callchild: If true, call HandleKey on focused child
@@ -356,6 +357,9 @@ public:
 
 class CWidgetPanel: public CWidget, public NCursesPanel
 {
+protected:
+    virtual bool CanFocus(void) { return true; };
+    
 public:
     CWidgetPanel(CWidget *owner, int nlines, int ncols, int begin_y,
                  int begin_x) : CWidget(owner), NCursesPanel(nlines, ncols, begin_y, begin_x) { };
@@ -367,6 +371,7 @@ protected:
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     
+    virtual bool CanFocus(void) { return true; };
     unsigned GetUnFormatLen(const std::string &str);
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
@@ -422,6 +427,9 @@ class CScrollbar: public CWidgetWindow
     
     void CalcScrollStep(void);
     
+protected:
+    virtual bool CanFocus(void) { return false; };
+    
 public:
     CScrollbar(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
                float min, float max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
@@ -461,6 +469,7 @@ protected:
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     int m_iCurrentLine;
     
+    virtual bool CanFocus(void) { return m_bBox; };
     virtual bool HandleKey(chtype ch, bool callchild=true);
 
 public:
@@ -498,6 +507,7 @@ private:
     void VScroll(int n);
     
 protected:
+    virtual bool CanFocus(void) { return true; };
     virtual bool HandleKey(chtype ch, bool callchild=true);
         
 public:
@@ -528,6 +538,7 @@ private:
     void MoveCursor(int n);
     
 protected:
+    virtual bool CanFocus(void) { return true; };
     virtual void Focus(void) { curs_set(1); };
     virtual void LeaveFocus(void) { curs_set(0); };
     virtual bool HandleKey(chtype ch, bool callchild=true);
