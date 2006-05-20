@@ -70,12 +70,12 @@ int CNCursScreen::run()
     
     CNCursBase p;
     p.Init();
-    //p.MsgBox("hi\n");
+    p.MsgBox("hi\n");
     
-    CWidgetManager Man;
+    /*CWidgetManager Man;
     CFileDialog f(&Man, 18, 70, 2, 4, "/", "<C>Select a file please", false);
     f.refresh();
-    Man.Run();
+    Man.Run();*/
     
     // Init installer/appmanager
     
@@ -93,7 +93,7 @@ void CNCursBase::MsgBox(const char *str, ...)
 {
     char *text;
     CWidgetManager Man;
-    CWidgetPanel *panel = new CWidgetPanel(&Man, 18,40,2,4);
+    CWidgetWindow *panel = new CWidgetWindow(&Man, 18, 40, 2, 4, true);
     
     va_list v;
     
@@ -101,21 +101,23 @@ void CNCursBase::MsgBox(const char *str, ...)
         vasprintf(&text, str, v);
     va_end(v);
     
+    /*
     panel->boldframe("Message");
     panel->bkgd(' '|MainScreen.dialog_backgrounds());
-    panel->printw(1, 1, str);
-        
+    panel->printw(1, 1, str);*/
+    
     CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
     CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
     CInputField *in = new CInputField(panel, 3, 12, 5, 15, 'r');
-    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, true, 'r');
+    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r', true);
     CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');
     
-    m_pDummyPanel->refresh();
-    but->refresh();
+    //m_pDummyPanel->refresh();
+    //panel->refresh();
+/*    but->refresh();
     but2->refresh();
     in->refresh();
-    twin->refresh();
+    twin->refresh();*/
     
     twin->AddText("<C>centere\n");
     
@@ -125,11 +127,12 @@ void CNCursBase::MsgBox(const char *str, ...)
         menu->AddItem(CreateText("<C>menu item %d\n", i), menucb, 0);
     }
 
-    twin->refresh();
-    menu->refresh();
+    //twin->refresh();
+    //menu->refresh();
 
-    Man.Run();
+    panel->refresh();
     
+    Man.Run();
     delete panel;
     delete but;
     delete but2;
@@ -137,7 +140,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     delete twin;
     delete menu;
     
-    m_pDummyPanel->refresh();
+    //m_pDummyPanel->refresh();
     
     free(text);
 }

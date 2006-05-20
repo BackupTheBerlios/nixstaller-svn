@@ -316,8 +316,7 @@ public:
 
 #endif
 
-#include <stack>
-
+/*
 class CWidget
 {
     bool m_bEnabled;
@@ -337,6 +336,7 @@ protected:
     virtual void Focus(void) { };
     virtual void LeaveFocus(void) { };
     virtual bool HandleKey(chtype ch, bool callchild=true); // callchild: If true, call HandleKey on focused child
+    virtual void Draw(void) { };
     
 public:
     CWidget(CWidget *owner) : m_pOwner(owner) { if (owner) owner->AddChild(this); };
@@ -347,45 +347,77 @@ public:
     bool Enabled(void) { return m_bEnabled; };
     void AddChild(CWidget *p) { m_ChildList.push_back(p); m_FocusedChild = m_ChildList.end(); m_FocusedChild--; };
 };
+*/
 
-class CWidgetManager: public CWidget
+class CWidgetWindow;
+
+class CWidgetHandler
 {
+    bool m_bEnabled;
+
+    bool SetNextWidget(void);
+    bool SetPrevWidget(void);
+    
+    friend class CWidgetManager;
+    friend class CGroupWidget;
+
+protected:
+    std::list<CWidgetWindow *> m_ChildList;
+    std::list<CWidgetWindow *>::iterator m_FocusedChild;
+
+    virtual bool CanFocus(void) { return true; };
+    virtual void Focus(void) { };
+    virtual void LeaveFocus(void) { };
+    virtual bool HandleKey(chtype ch, bool callchild=true); // callchild: If true, call HandleKey on focused child
+
 public:
-    CWidgetManager(void) : CWidget(NULL) { };
+    virtual ~CWidgetHandler(void) { };
+    
+    void AddChild(CWidgetWindow *p) { m_ChildList.push_back(p); m_FocusedChild = m_ChildList.end(); m_FocusedChild--; };
+    bool Enabled(void) { return m_bEnabled; };
+    
     virtual void Run(void);
 };
 
-class CWidgetPanel: public CWidget, public NCursesPanel
+class CWidgetManager: public CWidgetHandler
 {
-protected:
-    virtual bool CanFocus(void) { return true; };
-    
 public:
-    CWidgetPanel(CWidget *owner, int nlines, int ncols, int begin_y,
-                 int begin_x) : CWidget(owner), NCursesPanel(nlines, ncols, begin_y, begin_x) { };
+    virtual void Run(void);
 };
 
-class CWidgetWindow: public CWidget, public NCursesWindow
+class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 {
-protected:
+    bool m_bEnabled;
+    chtype m_cColorPair;
+    bool m_bBox;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
-    
-    virtual bool CanFocus(void) { return true; };
+
+protected:
+    virtual void Draw(void) { };
+
     unsigned GetUnFormatLen(const std::string &str);
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
 public:
-    CWidgetWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  char absrel = 'a') : CWidget(owner),
-                                       NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0) { };
+    CWidgetWindow(CWidgetHandler *owner, int nlines, int ncols, int begin_y, int begin_x,
+                  bool box=true) : NCursesWindow(nlines, ncols, begin_y, begin_x),
+                                   m_cColorPair(2), m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
+                                   m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0) { owner->AddChild(this); };
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  char absrel = 'a') : CWidget(owner),
-                                       NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel), m_sCurColor(0),
-                                       m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0) { };
-    
+                  char absrel = 'a', bool box=true) : NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
+                                                      m_cColorPair(2), m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
+                                                      m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0) { owner->AddChild(this); };
+
+    virtual int refresh();
+
+    void AddChild(CWidgetWindow *p) { m_ChildList.push_back(p); m_FocusedChild = m_ChildList.end(); m_FocusedChild--; };
+
     void AddStrFormat(int y, int x, const char *str, int start=-1, int n=-1);
     
+    bool HasBox(void) { return m_bBox; };
+    void SetBox(bool box) { m_bBox = box; };
+
     void SetLLCorner(chtype c) { m_cLLCorner = c; };
     void SetLRCorner(chtype c) { m_cLRCorner = c; };
     void SetULCorner(chtype c) { m_cULCorner = c; };
@@ -400,10 +432,8 @@ protected:
     virtual bool HandleKey(chtype ch, bool callchild=true);
     
 public:
-    CGroupWidget(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel) { };
     CGroupWidget(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel) { };
+                  char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false) { };
 };
 
 class CButton: public CWidgetWindow
@@ -415,7 +445,7 @@ protected:
     virtual void LeaveFocus(void) { bkgd(' '|COLOR_PAIR(4)|A_REVERSE); refresh(); debugline("unfocus %d", rand()); };
     
 public:
-    CButton(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
+    CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
             const char *text, TCallBack func, char absrel = 'a');
 };
 
@@ -429,21 +459,13 @@ class CScrollbar: public CWidgetWindow
     
 protected:
     virtual bool CanFocus(void) { return false; };
+    virtual void Draw(void);
     
 public:
-    CScrollbar(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x,
-               float min, float max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
-                                                                         begin_x, absrel), m_fMinVal(min), m_fMaxVal(max),
-                                                                         m_fCurVal(min),
-                                                                         m_bVertical(vertical) { CalcScrollStep(); };
-
-    CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-               float min, float max, bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y,
-                                                                         begin_x, absrel), m_fMinVal(min), m_fMaxVal(max),
-                                                                         m_fCurVal(min),
-                                                                         m_bVertical(vertical) { CalcScrollStep(); };
-    
-    virtual int refresh();
+    CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, float min, float max,
+               bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false),
+                                                   m_fMinVal(min), m_fMaxVal(max), m_fCurVal(min),
+                                                   m_bVertical(vertical) { CalcScrollStep(); };
     
     void SetMinMax(int min, int max) { m_fMinVal = min; m_fMaxVal = max; CalcScrollStep(); };
     void SetCurrent(int cur) { m_fCurVal = cur; };
@@ -458,7 +480,7 @@ class CTextWindow: public CWidgetWindow
     std::list<std::string>::iterator m_CurrentLineIt;
     std::string m_szText;
     std::list<std::string> m_FormattedText; // list containing lines of formatted text
-    bool m_bWrap, m_bFollow, m_bBox;
+    bool m_bWrap, m_bFollow;
     
     void FormatText(void);
     void ScrollToBottom(void);
@@ -469,16 +491,15 @@ protected:
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     int m_iCurrentLine;
     
-    virtual bool CanFocus(void) { return m_bBox; };
+    virtual bool CanFocus(void) { return HasBox(); };
     virtual bool HandleKey(chtype ch, bool callchild=true);
+    virtual void Draw(void);
 
 public:
-    CTextWindow(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
-                bool box, char absrel = 'a');
+    CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
+                char absrel = 'a', bool box=true);
                                      
     void AddText(std::string text);
-    
-    virtual int refresh(void);
 };
 
 class CMenu: public CWidgetWindow
@@ -509,14 +530,12 @@ private:
 protected:
     virtual bool CanFocus(void) { return true; };
     virtual bool HandleKey(chtype ch, bool callchild=true);
-        
+    virtual void Draw(void);
+    
 public:
-    CMenu(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
     void AddItem(std::string s, TCallBack f=NULL, void *p = NULL);
-    
-    virtual int refresh(void);
 };
 
 class CInputField: public CWidgetWindow
@@ -542,21 +561,18 @@ protected:
     virtual void Focus(void) { curs_set(1); };
     virtual void LeaveFocus(void) { curs_set(0); };
     virtual bool HandleKey(chtype ch, bool callchild=true);
+    virtual void Draw(void);
     
 public:
     
-    CInputField(CWidgetPanel *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1,
-                TCallBack cb=NULL, void *data=NULL);
     CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1,
                 TCallBack cb=NULL, void *data=NULL);
     
     const std::string &GetText(void) { return m_szText; };
     void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length()); };
-    
-    virtual int refresh(void);
 };
 
-class CFileDialog: public CWidgetPanel // Currently only browses directories
+class CFileDialog: public CWidgetWindow // Currently only browses directories
 {
     std::string m_szStartDir, m_szTitle;
     bool m_bRequireWAccess; // Directory requires write access
@@ -566,11 +582,12 @@ class CFileDialog: public CWidgetPanel // Currently only browses directories
     CInputField *m_pDirField;
     CButton *m_pOpenButton, *m_pSelButton, *m_pCancelButton;
     
-public:
-    CFileDialog(CWidget *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
-                const std::string &t, bool w);
+protected:
+    virtual void Draw(void);
     
-    virtual int refresh(void);
+public:
+    CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
+                const std::string &t, bool w);
 };
 
 #endif

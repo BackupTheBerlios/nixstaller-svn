@@ -167,7 +167,7 @@ std::string GetFirstValidDir(const std::string &dir)
         if (pos == std::string::npos)
         {
             // No absolute path given...just return current dir
-            char curdir[256];
+            char curdir[1024];
             if (getcwd(curdir, sizeof(curdir)) == 0)
                 return "/";
             return curdir;

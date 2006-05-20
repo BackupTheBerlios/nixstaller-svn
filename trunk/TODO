@@ -14,10 +14,11 @@ MAIN
 - Better error handling for register
 - Check path for rm
 
-
 NCURSES FRONTEND
 - Add some destructors to widgets which delete child widgets
-
+- Change bkgd to SetColor in widgets
+- Let button use REVERSE for highlighting
+- Add a graphics for focused focus widgets
 
 FLTK FRONTEND
 - Translate password dialog
