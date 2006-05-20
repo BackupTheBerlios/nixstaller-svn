@@ -783,8 +783,6 @@ void CWidgetHandler::Run()
 
 int CWidgetWindow::refresh()
 {
-    bkgd(' '|COLOR_PAIR(m_cColorPair));
-    
     if (m_bBox)
         Box();
     
@@ -793,7 +791,10 @@ int CWidgetWindow::refresh()
     int ret = NCursesWindow::refresh();
     
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        (*it)->refresh();
+    {
+        if ((*it)->Enabled())
+            (*it)->refresh();
+    }
     
     return ret;
 }
@@ -1014,7 +1015,10 @@ void CScrollbar::CalcScrollStep()
 
 void CScrollbar::Draw()
 {
-    bkgd(' '|A_REVERSE);
+    if (m_pOwner)
+        bkgd(m_pOwner->getbkgd()|A_REVERSE);
+    else
+        bkgd(::getbkgd(stdscr)|A_REVERSE);
     
     // Calc slide position
     float fac = (m_fCurVal / m_fMaxVal);
@@ -1237,14 +1241,8 @@ void CTextWindow::Draw()
         }
     }
 
-    if (HasBox())
-        m_pTextWin->refresh(); // Otherwise it would point to this window
-    
-    if (HasBox() && (m_FormattedText.size() > m_pTextWin->height()))
-        m_pVScrollbar->refresh(); // Box made it disappear, redraw when needed
-    
-    if (!m_bWrap && HasBox() && (m_iLongestLine > m_pTextWin->width()))
-        m_pHScrollbar->refresh();
+    m_pVScrollbar->Enable((HasBox() && (m_FormattedText.size() > m_pTextWin->height())));
+    m_pHScrollbar->Enable(!m_bWrap && HasBox() && (m_iLongestLine > m_pTextWin->width()));        
 }
 
 // -------------------------------------
@@ -1370,12 +1368,9 @@ void CMenu::Draw()
                 m_pTextWin->attroff(A_REVERSE);
         }
     }
-    /*
-    if (m_MenuItems.size() > m_pTextWin->height())
-        m_pVScrollbar->refresh(); // Box made it disappear, redraw when needed
     
-    if (m_iLongestLine > m_pTextWin->width())
-    m_pHScrollbar->refresh();*/
+    m_pVScrollbar->Enable((m_MenuItems.size() > m_pTextWin->height()));
+    m_pHScrollbar->Enable((m_iLongestLine > m_pTextWin->width()));
 }
 
 // -------------------------------------
@@ -1521,8 +1516,6 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
                          const std::string &t, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x),
                                                          m_szStartDir(s), m_szTitle(t), m_bRequireWAccess(w)
 {
-    //bkgd(' '|COLOR_PAIR(2));
-    
     m_pTitleBox = new CTextWindow(this, 2, ncols-4, 2, 2, true, false, 'r', false);
     m_pTitleBox->AddText(m_szTitle);
     

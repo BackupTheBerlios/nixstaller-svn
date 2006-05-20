@@ -360,21 +360,25 @@ class CWidgetHandler
     
     friend class CWidgetManager;
     friend class CGroupWidget;
-
+        
 protected:
     std::list<CWidgetWindow *> m_ChildList;
     std::list<CWidgetWindow *>::iterator m_FocusedChild;
 
-    virtual bool CanFocus(void) { return true; };
+    virtual bool CanFocus(void) { return m_bEnabled; };
     virtual void Focus(void) { };
     virtual void LeaveFocus(void) { };
     virtual bool HandleKey(chtype ch, bool callchild=true); // callchild: If true, call HandleKey on focused child
+    
+    CWidgetHandler(void) : m_bEnabled(true) { };
 
 public:
     virtual ~CWidgetHandler(void) { };
     
     void AddChild(CWidgetWindow *p) { m_ChildList.push_back(p); m_FocusedChild = m_ChildList.end(); m_FocusedChild--; };
+    
     bool Enabled(void) { return m_bEnabled; };
+    void Enable(bool e) { m_bEnabled = e; };
     
     virtual void Run(void);
 };
@@ -387,27 +391,28 @@ public:
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 {
-    bool m_bEnabled;
-    chtype m_cColorPair;
+    chtype m_cColors;
     bool m_bBox;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
 
 protected:
+    CWidgetWindow *m_pOwner;
+    
     virtual void Draw(void) { };
-
     unsigned GetUnFormatLen(const std::string &str);
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
 public:
     CWidgetWindow(CWidgetHandler *owner, int nlines, int ncols, int begin_y, int begin_x,
                   bool box=true) : NCursesWindow(nlines, ncols, begin_y, begin_x),
-                                   m_cColorPair(2), m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
-                                   m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0) { owner->AddChild(this); };
+                                   m_cColors(0), m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
+                                   m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0), m_pOwner(NULL) { owner->AddChild(this); };
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                   char absrel = 'a', bool box=true) : NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
-                                                      m_cColorPair(2), m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
-                                                      m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0) { owner->AddChild(this); };
+                                                      m_cColors(0), m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
+                                                      m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0),
+                                                      m_pOwner(owner) { owner->AddChild(this); };
 
     virtual int refresh();
 
@@ -418,6 +423,8 @@ public:
     bool HasBox(void) { return m_bBox; };
     void SetBox(bool box) { m_bBox = box; };
 
+    void SetColors(chtype c) { m_cColors = c; bkgd(c); };
+    
     void SetLLCorner(chtype c) { m_cLLCorner = c; };
     void SetLRCorner(chtype c) { m_cLRCorner = c; };
     void SetULCorner(chtype c) { m_cULCorner = c; };

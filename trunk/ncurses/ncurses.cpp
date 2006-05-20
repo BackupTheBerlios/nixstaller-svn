@@ -101,6 +101,7 @@ void CNCursBase::MsgBox(const char *str, ...)
         vasprintf(&text, str, v);
     va_end(v);
     
+    panel->SetColors(' '|MainScreen.dialog_backgrounds());
     /*
     panel->boldframe("Message");
     panel->bkgd(' '|MainScreen.dialog_backgrounds());
