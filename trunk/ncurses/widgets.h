@@ -396,7 +396,6 @@ public:
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 {
-    chtype m_cFocusedColors, m_cDefocusedColors;
     bool m_bBox;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
@@ -406,6 +405,7 @@ class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 
 protected:
     CWidgetWindow *m_pOwner;
+    chtype m_cFocusedColors, m_cDefocusedColors;
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
@@ -415,11 +415,13 @@ protected:
     unsigned GetUnFormatLen(const std::string &str);
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
+    CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
+                  bool box, chtype fcolor, chtype dfcolor);
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
-                  bool box, bool canfocus);
+                  bool box, bool canfocus, chtype fcolor, chtype dfcolor);
     
 public:
-    CWidgetWindow(CWidgetHandler *owner, int nlines, int ncols, int begin_y, int begin_x, bool box=true);
+    CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box=true);
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a',
                   bool box=true);
 
@@ -458,11 +460,15 @@ class CButton: public CWidgetWindow
 {
     typedef void (*TCallBack)(CButton *, void *);
     
+protected:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
 public:
     CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
             const char *text, TCallBack func, char absrel = 'a');
     
-    static void InitDefaultColors(void) { SetDefaultColors(' '|COLOR_PAIR(1)|A_REVERSE, ' '|COLOR_PAIR(0)); };
+    static void SetDefaultColors(chtype f, chtype df) { m_cDefaultFocusedColors = f; m_cDefaultDefocusedColors = df; };
+    static void InitDefaultColors(void) { SetDefaultColors(' '|COLOR_PAIR(2)|A_REVERSE, ' '|COLOR_PAIR(1)); };
 };
 
 class CScrollbar: public CWidgetWindow
@@ -478,9 +484,7 @@ protected:
     
 public:
     CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, float min, float max,
-               bool vertical, char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false, false),
-                                                   m_fMinVal(min), m_fMaxVal(max), m_fCurVal(min),
-                                                   m_bVertical(vertical) { CalcScrollStep(); };
+               bool vertical, char absrel = 'a');
     
     void SetMinMax(int min, int max) { m_fMinVal = min; m_fMaxVal = max; CalcScrollStep(); };
     void SetCurrent(int cur) { m_fCurVal = cur; };
@@ -601,7 +605,7 @@ protected:
     
 public:
     CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
-                const std::string &t, bool w);
+                const std::string &t, bool w);    
 };
 
 #endif

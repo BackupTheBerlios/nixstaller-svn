@@ -829,24 +829,38 @@ void CWidgetHandler::Run()
 // Widget window class
 // -------------------------------------
 
-chtype CWidgetWindow::m_cDefaultFocusedColors=0, CWidgetWindow::m_cDefaultDefocusedColors=0;
+chtype CWidgetWindow::m_cDefaultFocusedColors = ' '|COLOR_PAIR(0);
+chtype CWidgetWindow::m_cDefaultDefocusedColors = ' '|COLOR_PAIR(0);
+chtype CButton::m_cDefaultFocusedColors = ' '|COLOR_PAIR(0);
+chtype CButton::m_cDefaultDefocusedColors = ' '|COLOR_PAIR(0);
 
-CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
-                             bool box, bool canfocus) : CWidgetHandler(canfocus),
-                                                        NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
-                                                        m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
-                                                        m_cULCorner(0), m_cURCorner(0), m_pOwner(owner)
+CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box,
+                             chtype fcolor, chtype dfcolor) : NCursesWindow(nlines, ncols, begin_y, begin_x),
+                                                              m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
+                                                              m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0),
+                                                              m_pOwner(NULL)
 {
+    SetColors(fcolor, dfcolor);
     owner->AddChild(this);
-    SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
 }
 
-CWidgetWindow::CWidgetWindow(CWidgetHandler *owner, int nlines, int ncols, int begin_y, int begin_x,
+CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
+                             bool box, bool canfocus, chtype fcolor,
+                             chtype dfcolor) : CWidgetHandler(canfocus), NCursesWindow(*owner, nlines, ncols,
+                                                                                       begin_y, begin_x, absrel),
+                                               m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
+                                               m_cULCorner(0), m_cURCorner(0), m_pOwner(owner)
+{
+    SetColors(fcolor, dfcolor);
+    owner->AddChild(this);
+}
+
+CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
                              bool box) : NCursesWindow(nlines, ncols, begin_y, begin_x), m_bBox(box), m_sCurColor(0),
                                          m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0), m_pOwner(NULL)
 {
-    owner->AddChild(this);
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+    owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
@@ -854,8 +868,8 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                                          m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
                                          m_cULCorner(0), m_cURCorner(0), m_pOwner(owner)
 {
-    owner->AddChild(this);
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+    owner->AddChild(this);
 }
 
 int CWidgetWindow::refresh()
@@ -1077,7 +1091,9 @@ bool CGroupWidget::HandleKey(chtype ch, bool callchild)
 // -------------------------------------
 
 CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
-                 TCallBack func, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false)
+                 TCallBack func, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel,
+                                                              false, true, m_cDefaultFocusedColors,
+                                                              m_cDefaultDefocusedColors)
 {
     AddStrFormat(0, 0, text);
 }
@@ -1085,6 +1101,16 @@ CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int b
 // -------------------------------------
 // Scrollbar widget class
 // -------------------------------------
+
+CScrollbar::CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, float min, float max,
+                       bool vertical, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x,
+                                                                   absrel, false, false, m_cDefaultFocusedColors,
+                                                                   m_cDefaultDefocusedColors),
+                                                     m_fMinVal(min), m_fMaxVal(max), m_fCurVal(min),
+                                                     m_bVertical(vertical)
+{
+    CalcScrollStep();
+}
 
 void CScrollbar::CalcScrollStep()
 {
@@ -1145,7 +1171,8 @@ void CScrollbar::Scroll(float n)
 // -------------------------------------
 
 CTextWindow::CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
-                         char absrel, bool box) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, box, box),
+                         char absrel, bool box) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, box,
+                                                                box, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                                                   m_iLongestLine(0), m_bWrap(wrap), m_bFollow(follow),
                                                   m_iCurrentLine(-1)
 {
@@ -1337,7 +1364,8 @@ void CTextWindow::Draw()
 // -------------------------------------
 
 CMenu::CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-               char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true),
+               char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true,
+                                            true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                               m_iCursorLine(0), m_iStartEntry(0), m_iLongestLine(0)
 {
     m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
@@ -1465,7 +1493,9 @@ void CMenu::Draw()
 // -------------------------------------
 
 CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel, int max,
-                         TCallBack cb, void *data) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true),
+                         TCallBack cb, void *data) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel,
+                                                                   true, true, m_cDefaultFocusedColors,
+                                                                   m_cDefaultDefocusedColors),
                                                      m_iMaxChars(max), m_iCursorPos(0), m_iScrollOffset(0),
                                                      m_pCallBack(cb), m_pUserData(data)
 {
@@ -1600,7 +1630,8 @@ void CInputField::Draw()
 // -------------------------------------
 
 CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
-                         const std::string &t, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x),
+                         const std::string &t, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
+                                                                       m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                                                          m_szStartDir(s), m_szTitle(t), m_bRequireWAccess(w)
 {
     m_pTitleBox = new CTextWindow(this, 2, ncols-4, 2, 2, true, false, 'r', false);
