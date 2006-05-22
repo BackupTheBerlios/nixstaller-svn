@@ -406,7 +406,6 @@ class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 protected:
     CWidgetWindow *m_pOwner;
     chtype m_cFocusedColors, m_cDefocusedColors;
-    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
     virtual void Focus(void) { bkgd(m_cFocusedColors); refresh(); CWidgetHandler::Focus(); refresh(); };
@@ -421,6 +420,8 @@ protected:
                   bool box, bool canfocus, chtype fcolor, chtype dfcolor);
     
 public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+
     CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box=true);
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a',
                   bool box=true);

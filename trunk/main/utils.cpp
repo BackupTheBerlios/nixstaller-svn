@@ -88,11 +88,11 @@ void GetArchiveInfo(const char *archname, std::map<std::string, unsigned int> &a
 
 char *CreateText(const char *s, ...)
 {
-    static char txt[2048]; // Should be enough ;)
+    char *txt;
     va_list v;
     
     va_start(v, s);
-    vsprintf(txt, s, v);
+    vasprintf(&txt, s, v);
     va_end(v);
     
     // Check if string was already created
@@ -105,10 +105,8 @@ char *CreateText(const char *s, ...)
         }
     }
     
-    char *output = new char[strlen(txt)+1];
-    strcpy(output, txt);
-    StringList.push_front(output);
-    return output;
+    StringList.push_front(txt);
+    return txt;
 }
 
 void FreeStrings()
@@ -117,7 +115,7 @@ void FreeStrings()
     while(!StringList.empty())
     {
         debugline("STRING: %s\n", StringList.back());
-        delete [] StringList.back();
+        free(StringList.back());
         StringList.pop_back();
     }
 }
