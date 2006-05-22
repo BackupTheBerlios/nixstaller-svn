@@ -70,12 +70,12 @@ int CNCursScreen::run()
     
     CNCursBase p;
     p.Init();
-    p.MsgBox("hi\n");
+    //p.MsgBox("hi\n");
     
-    /*CWidgetManager Man;
+    CWidgetManager Man;
     CFileDialog f(&Man, 18, 70, 2, 4, "/", "<C>Select a file please", false);
     f.refresh();
-    Man.Run();*/
+    Man.Run();
     
     // Init installer/appmanager
     
@@ -101,7 +101,6 @@ void CNCursBase::MsgBox(const char *str, ...)
         vasprintf(&text, str, v);
     va_end(v);
     
-    panel->SetColors(' '|MainScreen.dialog_backgrounds());
     /*
     panel->boldframe("Message");
     panel->bkgd(' '|MainScreen.dialog_backgrounds());
@@ -112,6 +111,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     CInputField *in = new CInputField(panel, 3, 12, 5, 15, 'r');
     CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r', true);
     CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');
+    in->SetText("har!");
     
     //m_pDummyPanel->refresh();
     //panel->refresh();

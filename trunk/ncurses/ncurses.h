@@ -83,7 +83,7 @@ public:
 
 #ifndef RELEASE
 inline void debugline(const char *t, ...)
-{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); mvprintw(4, 40, "DEBUG: %s", txt); };
+{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); mvprintw(4, 50, "DEBUG: %s", txt); ::refresh(); };
 #endif
 
 #endif

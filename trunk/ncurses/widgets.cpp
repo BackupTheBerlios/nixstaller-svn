@@ -715,7 +715,7 @@ void CWidget::Run()
 
 bool CWidgetHandler::HandleKey(chtype ch, bool callchild)
 {
-    if (callchild && !m_ChildList.empty() && ((*m_FocusedChild)->HandleKey(ch) ||
+    if (callchild && (m_FocusedChild != m_ChildList.end()) && ((*m_FocusedChild)->HandleKey(ch) ||
          ((ch == 9) && SetNextWidget()) || ((ch == KEY_BTAB) && SetPrevWidget())))
         return true;
 
@@ -727,15 +727,21 @@ bool CWidgetHandler::SetNextWidget()
     if (m_ChildList.size() < 2)
         return false;
     
-    (*m_FocusedChild)->LeaveFocus();
+    std::list<CWidgetWindow *>::iterator prev;
+    if (m_FocusedChild != m_ChildList.end())
+    {
+        prev = m_FocusedChild;
+        (*m_FocusedChild)->LeaveFocus();
+    }
+    else
+        prev = m_ChildList.begin();
     
-    std::list<CWidgetWindow *>::iterator prev = m_FocusedChild;
     for (m_FocusedChild++; m_FocusedChild != prev; m_FocusedChild++)
     {
         if (m_FocusedChild == m_ChildList.end())
             m_FocusedChild = m_ChildList.begin();
         
-        if ((*m_FocusedChild)->CanFocus())
+        if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled())
         {
             (*m_FocusedChild)->Focus();
             return true;
@@ -750,9 +756,15 @@ bool CWidgetHandler::SetPrevWidget()
     if (m_ChildList.size() < 2)
         return false;
 
-    (*m_FocusedChild)->LeaveFocus();
+    std::list<CWidgetWindow *>::iterator prev;
+    if (m_FocusedChild != m_ChildList.end())
+    {
+        prev = m_FocusedChild;
+        (*m_FocusedChild)->LeaveFocus();
+    }
+    else
+        prev = m_ChildList.begin();
     
-    std::list<CWidgetWindow *>::iterator prev = m_FocusedChild;
     do
     {
         if (m_FocusedChild == m_ChildList.begin())
@@ -760,7 +772,7 @@ bool CWidgetHandler::SetPrevWidget()
     
         m_FocusedChild--;
         
-        if ((*m_FocusedChild)->CanFocus())
+        if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled())
         {
             (*m_FocusedChild)->Focus();
             return true;
@@ -771,6 +783,42 @@ bool CWidgetHandler::SetPrevWidget()
     return false;
 }
 
+void CWidgetHandler::Focus()
+{
+    m_bFocused = true;
+    
+    if (m_FocusedChild != m_ChildList.end())
+        (*m_FocusedChild)->Focus();
+}
+
+void CWidgetHandler::LeaveFocus()
+{
+    m_bFocused = false;
+    
+    if (m_FocusedChild != m_ChildList.end())
+        (*m_FocusedChild)->LeaveFocus();
+}
+
+void CWidgetHandler::AddChild(CWidgetWindow *p)
+{
+    if (m_FocusedChild != m_ChildList.end())
+    {
+        if (p->CanFocus() && p->Enabled() && ((*m_FocusedChild)->CanFocus()) && ((*m_FocusedChild)->Enabled()))
+            (*m_FocusedChild)->LeaveFocus();
+    }
+    
+    m_ChildList.push_back(p);
+    
+    if (p->CanFocus())
+    {
+        m_FocusedChild = m_ChildList.end();
+        m_FocusedChild--;
+    }
+    
+    p->Focus();
+}
+
+
 void CWidgetHandler::Run()
 {
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -780,6 +828,35 @@ void CWidgetHandler::Run()
 // -------------------------------------
 // Widget window class
 // -------------------------------------
+
+chtype CWidgetWindow::m_cDefaultFocusedColors=0, CWidgetWindow::m_cDefaultDefocusedColors=0;
+
+CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
+                             bool box, bool canfocus) : CWidgetHandler(canfocus),
+                                                        NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
+                                                        m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
+                                                        m_cULCorner(0), m_cURCorner(0), m_pOwner(owner)
+{
+    owner->AddChild(this);
+    SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+}
+
+CWidgetWindow::CWidgetWindow(CWidgetHandler *owner, int nlines, int ncols, int begin_y, int begin_x,
+                             bool box) : NCursesWindow(nlines, ncols, begin_y, begin_x), m_bBox(box), m_sCurColor(0),
+                                         m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0), m_pOwner(NULL)
+{
+    owner->AddChild(this);
+    SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+}
+
+CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
+                             bool box) : NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
+                                         m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
+                                         m_cULCorner(0), m_cURCorner(0), m_pOwner(owner)
+{
+    owner->AddChild(this);
+    SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+}
 
 int CWidgetWindow::refresh()
 {
@@ -929,24 +1006,35 @@ void CWidgetWindow::AddStrFormat(int y, int x, const char *str, int start, int n
 // Widget manager class
 // -------------------------------------
 
+CWidgetManager::CWidgetManager()
+{
+    CWidgetWindow::InitDefaultColors();
+    CButton::InitDefaultColors();
+    CScrollbar::InitDefaultColors();
+    CTextWindow::InitDefaultColors();
+    CMenu::InitDefaultColors();
+    CInputField::InitDefaultColors();
+    CFileDialog::InitDefaultColors();
+}
+
 void CWidgetManager::Run()
 {
     nodelay(stdscr, true);
     while (true)
     {
-        if (m_ChildList.empty())
-            continue;
-        
-        chtype ch = (*m_FocusedChild)->getch();
-        if (ch != ERR)
+        if (m_FocusedChild != m_ChildList.end())
         {
-            //debugline("key: %d\n", ch);
-            if (ch == CTRL('[')) // Escape pressed
-                break;
-            
-            (*m_FocusedChild)->HandleKey(ch);
+            chtype ch = (*m_FocusedChild)->getch();
+            if (ch != ERR)
+            {
+                //debugline("key: %d\n", ch);
+                if (ch == CTRL('[')) // Escape pressed
+                    break;
+                
+                (*m_FocusedChild)->HandleKey(ch);
+            }
         }
-        
+         
         for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
             (*it)->Run();
     }
@@ -991,7 +1079,6 @@ bool CGroupWidget::HandleKey(chtype ch, bool callchild)
 CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
                  TCallBack func, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false)
 {
-    bkgd(' '|COLOR_PAIR(4)|A_REVERSE);
     AddStrFormat(0, 0, text);
 }
 
@@ -1058,7 +1145,7 @@ void CScrollbar::Scroll(float n)
 // -------------------------------------
 
 CTextWindow::CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
-                         char absrel, bool box) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, box),
+                         char absrel, bool box) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, box, box),
                                                   m_iLongestLine(0), m_bWrap(wrap), m_bFollow(follow),
                                                   m_iCurrentLine(-1)
 {
@@ -1541,16 +1628,15 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
 }
 
 
-void CFileDialog::Draw()
-{/*
-    int ret = CWidgetWindow::refresh();
+bool CFileDialog::HandleKey(chtype ch, bool callchild)
+{
+    if (CWidgetWindow::HandleKey(ch, callchild))
+    {
+        // HACK: Update inputfield when user moved through menu
+        if ((*m_FocusedChild == m_pFileMenu) && ((ch == KEY_UP) || (ch == KEY_DOWN)))
+            m_pDirField->SetText(*m_pFileMenu->GetCurrentItemName());
+        return true;
+    }
     
-    m_pTitleBox->refresh();
-    m_pFileMenu->refresh();
-    m_pDirField->refresh();
-    m_pOpenButton->refresh();
-    m_pSelButton->refresh();
-    m_pCancelButton->refresh();
-    
-    return ret;*/
+    return false;
 }

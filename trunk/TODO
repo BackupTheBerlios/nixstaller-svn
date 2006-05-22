@@ -6,9 +6,8 @@ OVERALL
 - Modify Makeself?
 - Check read permissions for extract dir
 - Extract temporaty files to subdir
-- Langauge updates: Password screen class, FLTK AppManager
+- Language updates: Password screen class, FLTK AppManager
 - Use vasprintf instead of vsprintf whenever possible.
-- Update ncurses libs for netbsd and linux
 
 MAIN
 - Better error handling for register
@@ -18,7 +17,7 @@ NCURSES FRONTEND
 - Add some destructors to widgets which delete child widgets
 - Change bkgd to SetColor in widgets
 - Let button use REVERSE for highlighting
-- Add a graphics for focused focus widgets
+- Add graphics for focused widgets
 
 FLTK FRONTEND
 - Translate password dialog
