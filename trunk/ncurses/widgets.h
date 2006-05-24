@@ -389,8 +389,6 @@ public:
 class CWidgetManager: public CWidgetHandler
 {
 public:
-    CWidgetManager(void);
-    
     virtual void Run(void);
 };
 
@@ -433,10 +431,6 @@ public:
     bool HasBox(void) { return m_bBox; };
     void SetBox(bool box) { m_bBox = box; };
 
-     // This function should be called BEFORE any widgets are created
-    static void SetDefaultColors(chtype f, chtype df) { m_cDefaultFocusedColors = f; m_cDefaultDefocusedColors = df; };
-    static void InitDefaultColors(void) { SetDefaultColors(' '|COLOR_PAIR(1), ' '|COLOR_PAIR(0)); };
-    
     void SetColors(chtype f, chtype df) { m_cFocusedColors = f; m_cDefocusedColors = df; bkgd((Focused()) ? f : df); };
     
     void SetLLCorner(chtype c) { m_cLLCorner = c; };
@@ -461,15 +455,11 @@ class CButton: public CWidgetWindow
 {
     typedef void (*TCallBack)(CButton *, void *);
     
-protected:
+public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
-public:
     CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
             const char *text, TCallBack func, char absrel = 'a');
-    
-    static void SetDefaultColors(chtype f, chtype df) { m_cDefaultFocusedColors = f; m_cDefaultDefocusedColors = df; };
-    static void InitDefaultColors(void) { SetDefaultColors(' '|COLOR_PAIR(2)|A_REVERSE, ' '|COLOR_PAIR(1)); };
 };
 
 class CScrollbar: public CWidgetWindow
@@ -515,6 +505,8 @@ protected:
     virtual void Draw(void);
 
 public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
     CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
                 char absrel = 'a', bool box=true);
                                      
@@ -551,6 +543,8 @@ protected:
     virtual void Draw(void);
     
 public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
     CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
     void AddItem(std::string s, TCallBack f=NULL, void *p = NULL);
@@ -583,6 +577,7 @@ protected:
     virtual void Draw(void);
     
 public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1,
                 TCallBack cb=NULL, void *data=NULL);
