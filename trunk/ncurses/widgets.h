@@ -389,11 +389,17 @@ public:
 class CWidgetManager: public CWidgetHandler
 {
 public:
+    void Init(void);
+
     virtual void Run(void);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 {
+public:
+    typedef std::map<int, std::map<int, int> > ColorMapType;
+
+private:
     bool m_bBox;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
@@ -401,6 +407,9 @@ class CWidgetWindow: public CWidgetHandler, public NCursesWindow
     friend class CWidgetHandler;
     friend class CGroupWidget;
 
+    static ColorMapType m_ColorPairs; // Map for easy getting color pairs
+    static int m_iCurColorPair;
+    
 protected:
     CWidgetWindow *m_pOwner;
     chtype m_cFocusedColors, m_cDefocusedColors;
@@ -426,7 +435,7 @@ public:
 
     virtual int refresh();
 
-    void AddStrFormat(int y, int x, const char *str, int start=-1, int n=-1);
+    void AddStrFormat(int y, int x, std::string ftext, int start=-1, int n=-1);
     
     bool HasBox(void) { return m_bBox; };
     void SetBox(bool box) { m_bBox = box; };
@@ -437,6 +446,8 @@ public:
     void SetLRCorner(chtype c) { m_cLRCorner = c; };
     void SetULCorner(chtype c) { m_cULCorner = c; };
     void SetURCorner(chtype c) { m_cURCorner = c; };
+    
+    static int GetColorPair(int fg, int bg);
 };
 
 class CGroupWidget: public CWidgetWindow // Groups several widgets together
@@ -453,9 +464,16 @@ public:
 
 class CButton: public CWidgetWindow
 {
-    typedef void (*TCallBack)(CButton *, void *);
+    std::string m_szFocusedTitle, m_szDefocusedTitle, *m_pCurrentTitle;
+    
+protected:
+    virtual void Focus(void) { m_pCurrentTitle = &m_szFocusedTitle; CWidgetWindow::Focus(); };
+    virtual void LeaveFocus(void) { m_pCurrentTitle = &m_szDefocusedTitle; CWidgetWindow::LeaveFocus(); };
+    virtual void Draw(void) { clear(); AddStrFormat(0, 0, *m_pCurrentTitle); };
     
 public:
+    typedef void (*TCallBack)(CButton *, void *);
+
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,

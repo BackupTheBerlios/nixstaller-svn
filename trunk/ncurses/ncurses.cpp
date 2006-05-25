@@ -73,6 +73,7 @@ int CNCursScreen::run()
     //p.MsgBox("hi\n");
     
     CWidgetManager Man;
+    Man.Init();
     CFileDialog f(&Man, 18, 70, 2, 4, "/", "<C>Select a file please", false);
     f.refresh();
     Man.Run();
