@@ -85,9 +85,10 @@ int CNCursScreen::run()
     return EXIT_SUCCESS;
 }
 
-void menucb(CMenu *, int n, void *)
+bool menucb(CWidgetHandler *, int n, int)
 {
     debugline("menu: %d", n);
+    beep();
 }
 
 void CNCursBase::MsgBox(const char *str, ...)
@@ -107,8 +108,8 @@ void CNCursBase::MsgBox(const char *str, ...)
     panel->bkgd(' '|MainScreen.dialog_backgrounds());
     panel->printw(1, 1, str);*/
     
-    CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", NULL, 'r');
-    CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", NULL, 'r');
+    CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", 'r');
+    CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", 'r');
     CInputField *in = new CInputField(panel, 3, 12, 5, 15, 'r');
     CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r', true);
     CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');

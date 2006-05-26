@@ -316,38 +316,49 @@ public:
 
 #endif
 
-/*
-class CWidget
+class CWidgetHandler;
+
+// Base event handler. Generic class which calls a function from a function pointer on some events.
+// An extra base class is defined, so that a pointer to a template class can be stored in a base class pointer.
+class CBaseEventHandler
 {
-    bool m_bEnabled;
+public:
+    virtual bool operator ()(CWidgetHandler *p) = 0;
+};
 
-    bool SetNextWidget(void);
-    bool SetPrevWidget(void);
-
-    friend class CWidgetManager;
-    friend class CGroupWidget;
-    
+// C: Function pointer to a callback function
+// D: Private data
+template<typename C, typename D> class CEventHandler: public CBaseEventHandler
+{
 protected:
-    CWidget *m_pOwner;
-    std::list<CWidget *> m_ChildList;
-    std::list<CWidget *>::iterator m_FocusedChild;
-    
-    virtual bool CanFocus(void) { return false; };
-    virtual void Focus(void) { };
-    virtual void LeaveFocus(void) { };
-    virtual bool HandleKey(chtype ch); // callchild: If true, call HandleKey on focused child
-    virtual void Draw(void) { };
+    C m_CallBack;
+    D m_Data;
     
 public:
-    CWidget(CWidget *owner) : m_pOwner(owner) { if (owner) owner->AddChild(this); };
-    virtual ~CWidget(void) { };
-    
-    virtual void Run(void);
-    
-    bool Enabled(void) { return m_bEnabled; };
-    void AddChild(CWidget *p) { m_ChildList.push_back(p); m_FocusedChild = m_ChildList.end(); m_FocusedChild--; };
+    CEventHandler(C c, D d) : m_CallBack(c), m_Data(d) { };
+    virtual bool operator ()(CWidgetHandler *p) { return m_CallBack(p, m_Data); };
 };
-*/
+
+// As above, but with additional argument given by the event.
+template<typename V> class CBaseValEventHandler
+{
+public:
+    virtual bool operator ()(CWidgetHandler *p, V v) = 0;
+};
+
+// C: Function pointer to a callback function
+// D: Private data
+// V: Type of additional variabele
+template<typename C, typename D, typename V> class CValEventHandler: public CBaseValEventHandler<V>
+{
+protected:
+    C m_CallBack;
+    D m_Data;
+
+public:
+    CValEventHandler(C c, D d) : m_CallBack(c), m_Data(d) { };
+    virtual bool operator ()(CWidgetHandler *p, V v) { return m_CallBack(p, m_Data, v); };
+};
 
 class CWidgetWindow;
 
@@ -359,25 +370,7 @@ class CWidgetHandler
     bool SetNextWidget(void);
     bool SetPrevWidget(void);
     
-    // Base key handler. We want a pointer to CKeyHandler, but this won't work because it's a template. Creating a base
-    // class and point to that solves this problem.
-    class CBaseKeyHandler
-    {
-    public:
-        virtual bool operator ()(CWidgetHandler *p, chtype ch) = 0;
-    };
-    
-    template<typename C, typename D> class CKeyHandler: public CBaseKeyHandler
-    {
-        C m_CallBack;
-        D m_Data;
-        
-    public:
-        CKeyHandler(C c, D d) : m_CallBack(c), m_Data(d) { };
-        virtual bool operator ()(CWidgetHandler *p, chtype ch) { return m_CallBack(p, ch, m_Data); };
-    };
-    
-    CBaseKeyHandler *m_pPreKeyHandler, *m_pPostKeyHandler;
+    CBaseValEventHandler<chtype> *m_pPreKeyHandler, *m_pPostKeyHandler;
     
     friend class CWidgetManager;
 
@@ -386,7 +379,7 @@ protected:
     std::list<CWidgetWindow *>::iterator m_FocusedChild;
 
     // Dummy function to disable key inpout, by passing it to BindPre
-    static bool DisableKeysCB(CWidgetHandler *, chtype, int) { return true; };
+    static bool DisableKeysCB(CWidgetHandler *, int, chtype) { return true; };
 
     virtual void Focus(void);
     virtual void LeaveFocus(void);
@@ -411,9 +404,9 @@ public:
     bool CanFocus(void) { return m_bCanFocus; };
     
     template <typename C, typename D> void BindPre(C cb, D dat)
-    { if (m_pPreKeyHandler) delete m_pPreKeyHandler; m_pPreKeyHandler = new CKeyHandler<C, D>(cb, dat); };
+    { if (m_pPreKeyHandler) delete m_pPreKeyHandler; m_pPreKeyHandler = new CValEventHandler<C, D, chtype>(cb, dat); };
     template <typename C, typename D> void BindPost(C cb, D dat)
-    { if (m_pPostKeyHandler) delete m_pPostKeyHandler; m_pPostKeyHandler = new CKeyHandler<C, D>(cb, dat); };
+    { if (m_pPostKeyHandler) delete m_pPostKeyHandler; m_pPostKeyHandler = new CValEventHandler<C, D, chtype>(cb, dat); };
     
     virtual void Run(void);
 };
@@ -497,6 +490,7 @@ public:
 class CButton: public CWidgetWindow
 {
     std::string m_szFocusedTitle, m_szDefocusedTitle, *m_pCurrentTitle;
+    CBaseEventHandler *m_pCallBack;
     
 protected:
     virtual void Focus(void) { m_pCurrentTitle = &m_szFocusedTitle; CWidgetWindow::Focus(); };
@@ -504,12 +498,13 @@ protected:
     virtual void Draw(void) { clear(); AddStrFormat(0, 0, *m_pCurrentTitle); };
     
 public:
-    typedef void (*TCallBack)(CButton *, void *);
-
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-            const char *text, TCallBack func, char absrel = 'a');
+            const char *text, char absrel = 'a');
+    
+    template <typename C, typename D> void SetCallBack(C cb, D dat)
+    { if (m_pCallBack) delete m_pCallBack; m_pCallBack = new CEventHandler<C, D>(cb, dat); };
 };
 
 class CScrollbar: public CWidgetWindow
@@ -565,17 +560,12 @@ public:
 
 class CMenu: public CWidgetWindow
 {
-public:
-    typedef void (*TCallBack)(CMenu *, int, void *);
-
-private:
     struct menu_entry_s
     {
         std::string name;
-        TCallBack cb;
-        void *data;
-    
-        menu_entry_s(const std::string &s, TCallBack f, void *p) : name(s), cb(f), data(p) { };
+        CBaseValEventHandler<int> *callback;
+        
+        menu_entry_s(const std::string &n, CBaseValEventHandler<int> *cb) : name(n), callback(cb) { };
     };
 
     std::vector<menu_entry_s> m_MenuItems;
@@ -587,7 +577,8 @@ private:
     
     void HScroll(int n);
     void VScroll(int n);
-    
+    void AddItem(const std::string &s, CBaseValEventHandler<int> *cb);
+            
 protected:
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
@@ -596,25 +587,24 @@ public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
+    virtual ~CMenu(void) { Clear(); };
     
-    void AddItem(std::string s, TCallBack f=NULL, void *p = NULL);
+    template<typename C, typename D> void AddItem(std::string s, C cb, D dat)
+    { AddItem(s, new CValEventHandler<C, D, int>(cb, dat)); };
+    void Clear(void);
     int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
     std::string *GetCurrentItemName(void) { return &m_MenuItems[GetCurrent()].name; };
+    bool Empty(void) { return m_MenuItems.empty(); };
 };
 
 class CInputField: public CWidgetWindow
 {
-public:
-    typedef void (*TCallBack)(CInputField *, const std::string &, void *);
-
-private:
     std::list<chtype> m_IllegalCharList;
     std::string m_szText;
     int m_iMaxChars;
     int m_iCursorPos, m_iScrollOffset;
     CWidgetWindow *m_pOutputWin; // Window containing the displayed text
-    TCallBack m_pCallBack; // Function called when user presses enter
-    void *m_pUserData;
+    CBaseValEventHandler<const std::string &> *m_pCallBack;
     
     void Addch(chtype ch);
     void Delch(bool backspace);
@@ -629,16 +619,18 @@ protected:
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
-    CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1,
-                TCallBack cb=NULL, void *data=NULL);
+    CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1);
     
     const std::string &GetText(void) { return m_szText; };
-    void SetText(const std::string &s) { m_szText = s; m_pOutputWin->clear(); MoveCursor(m_szText.length()); };
+    void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length()); };
+    
+    template <typename C, typename D> void SetCallBack(C cb, D dat)
+    { if (m_pCallBack) delete m_pCallBack; m_pCallBack = new CValEventHandler<C, D, const std::string &>(cb, dat); };
 };
 
 class CFileDialog: public CWidgetWindow // Currently only browses directories
 {
-    std::string m_szStartDir, m_szTitle;
+    std::string m_szStartDir, m_szSelectedDir, m_szTitle;
     bool m_bRequireWAccess; // Directory requires write access
     CTextWindow *m_pTitleBox;
     CGroupWidget *m_pBrowserGroup;
@@ -646,11 +638,18 @@ class CFileDialog: public CWidgetWindow // Currently only browses directories
     CInputField *m_pDirField;
     CButton *m_pOpenButton, *m_pSelButton, *m_pCancelButton;
     
+    void OpenDir(void);
+    void UpdateDirField(void);
+    
+    friend bool CFileDialog::FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key);
+    friend bool CFileDialog::FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int);
+    
 public:
     CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
                 const std::string &t, bool w);
     
-    static bool FileMenuCB(CWidgetHandler *p, chtype key, CInputField *i);
+    static bool FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key);
+    static bool FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int) { owner->OpenDir(); };
 };
 
 #endif

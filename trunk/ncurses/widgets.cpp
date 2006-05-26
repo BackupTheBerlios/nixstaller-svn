@@ -639,75 +639,9 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 #include "ncurses.h"
 
 #include <sstream>
-
-// -------------------------------------
-// Base widget class
-// -------------------------------------
-/*
-bool CWidget::HandleKey(chtype ch)
-{
-    if (callchild && !m_ChildList.empty() && ((*m_FocusedChild)->HandleKey(ch) ||
-         ((ch == 9) && SetNextWidget()) || ((ch == KEY_BTAB) && SetPrevWidget())))
-        return true;
-
-    return false;
-}
-
-bool CWidget::SetNextWidget()
-{
-    if (m_ChildList.size() < 2)
-        return false;
-    
-    (*m_FocusedChild)->LeaveFocus();
-    
-    std::list<CWidgetWindow *>::iterator prev = m_FocusedChild;
-    for (m_FocusedChild++; m_FocusedChild != prev; m_FocusedChild++)
-    {
-        if (m_FocusedChild == m_ChildList.end())
-            m_FocusedChild = m_ChildList.begin();
-        
-        if ((*m_FocusedChild)->CanFocus())
-        {
-            (*m_FocusedChild)->Focus();
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-bool CWidget::SetPrevWidget()
-{
-    if (m_ChildList.size() < 2)
-        return false;
-
-    (*m_FocusedChild)->LeaveFocus();
-    
-    std::list<CWidgetWindow *>::iterator prev = m_FocusedChild;
-    do
-    {
-        if (m_FocusedChild == m_ChildList.begin())
-            m_FocusedChild = m_ChildList.end();
-    
-        m_FocusedChild--;
-        
-        if ((*m_FocusedChild)->CanFocus())
-        {
-            (*m_FocusedChild)->Focus();
-            return true;
-        }
-    }
-    while (m_FocusedChild != prev);
-
-    return false;
-}
-
-void CWidget::Run()
-{
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        (*it)->Run();
-}
-*/
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
 
 // -------------------------------------
 // Widget handler class
@@ -1147,9 +1081,8 @@ chtype CButton::m_cDefaultFocusedColors;
 chtype CButton::m_cDefaultDefocusedColors;
 
 CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
-                 TCallBack func, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel,
-                                                              false, true, m_cDefaultFocusedColors,
-                                                              m_cDefaultDefocusedColors)
+                 char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false, true,
+                 m_cDefaultFocusedColors, m_cDefaultDefocusedColors)
 {
     m_szDefocusedTitle = text;
     m_szFocusedTitle = "< " + m_szDefocusedTitle + " >";
@@ -1448,6 +1381,9 @@ void CMenu::HScroll(int n)
 
 void CMenu::VScroll(int n)
 {
+    if (((GetCurrent()+n) < 0) || ((GetCurrent()+n) >= m_MenuItems.size()))
+        return;
+    
     bool scroll = false;
     
     if (((m_iCursorLine+n) >= 0) && ((m_iCursorLine+n) < m_pTextWin->height()))
@@ -1462,6 +1398,25 @@ void CMenu::VScroll(int n)
     }
     
     refresh();
+}
+
+void CMenu::AddItem(const std::string &s, CBaseValEventHandler<int> *cb)
+{
+    m_MenuItems.push_back(menu_entry_s(s, cb));
+    
+    int h = m_MenuItems.size() - m_pTextWin->height();
+    if (h < 0)
+        h = 0;
+    m_pVScrollbar->SetMinMax(0, h);
+
+    unsigned len = GetUnFormatLen(s);
+    if (len > m_iLongestLine)
+    {
+        m_iLongestLine = len;
+        
+        if (m_iLongestLine > m_pTextWin->width())
+            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
+    }
 }
 
 bool CMenu::HandleKey(chtype ch)
@@ -1490,8 +1445,8 @@ bool CMenu::HandleKey(chtype ch)
         case '\r':
         {
             menu_entry_s *entry = &m_MenuItems[m_iStartEntry + m_iCursorLine];
-            if (entry->cb)
-                entry->cb(this, m_iStartEntry + m_iCursorLine, entry->data);
+            if (entry->callback)
+                (*entry->callback)(this, m_iStartEntry + m_iCursorLine);
             break;
         }
         case KEY_NPAGE:
@@ -1506,25 +1461,6 @@ bool CMenu::HandleKey(chtype ch)
     }
     
     return handled;
-}
-
-void CMenu::AddItem(std::string s, TCallBack f, void *p)
-{
-    m_MenuItems.push_back(menu_entry_s(s, f, p));
-    
-    int h = m_MenuItems.size() - m_pTextWin->height();
-    if (h < 0)
-        h = 0;
-    m_pVScrollbar->SetMinMax(0, h);
-
-    unsigned len = GetUnFormatLen(s);
-    if (len > m_iLongestLine)
-    {
-        m_iLongestLine = len;
-        
-        if (m_iLongestLine > m_pTextWin->width())
-            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
-    }
 }
 
 void CMenu::Draw()
@@ -1552,6 +1488,17 @@ void CMenu::Draw()
     m_pHScrollbar->Enable((m_iLongestLine > m_pTextWin->width()));
 }
 
+void CMenu::Clear()
+{
+    for (std::vector<menu_entry_s>::iterator it=m_MenuItems.begin(); it!=m_MenuItems.end(); it++)
+        delete it->callback;
+    
+    m_MenuItems.clear();
+    m_iCursorLine = m_iStartEntry = m_iLongestLine = 0;
+    m_pHScrollbar->SetCurrent(0);
+    m_pVScrollbar->SetCurrent(0);
+}
+
 // -------------------------------------
 // Inputfield class
 // -------------------------------------
@@ -1559,12 +1506,10 @@ void CMenu::Draw()
 chtype CInputField::m_cDefaultFocusedColors;
 chtype CInputField::m_cDefaultDefocusedColors;
 
-CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel, int max,
-                         TCallBack cb, void *data) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel,
-                                                                   true, true, m_cDefaultFocusedColors,
-                                                                   m_cDefaultDefocusedColors),
-                                                     m_iMaxChars(max), m_iCursorPos(0), m_iScrollOffset(0),
-                                                     m_pCallBack(cb), m_pUserData(data)
+CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
+                         int max) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true, true,
+                                                  m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_iMaxChars(max),
+                                    m_iCursorPos(0), m_iScrollOffset(0), m_pCallBack(NULL)
 {
     m_pOutputWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
     m_pOutputWin->BindPre(DisableKeysCB, NULL);
@@ -1612,17 +1557,18 @@ void CInputField::MoveCursor(int n)
     int w = (m_pOutputWin->width()-1); // -1, because we want to scroll before char is at last available position
     m_iCursorPos += n;
     
+    if (m_iCursorPos > m_szText.length())
+        m_iCursorPos = m_szText.length();
+
     if (m_iCursorPos < 0)
     {
-        m_iScrollOffset -= abs(m_iCursorPos);
+        m_iScrollOffset += m_iCursorPos;
         
         if (m_iScrollOffset < 0)
             m_iScrollOffset = 0;
         
         m_iCursorPos = 0;
     }
-    else if (m_iCursorPos > m_szText.length())
-        m_iCursorPos = m_szText.length();
     else if (m_iCursorPos > w)
     {
         m_iScrollOffset += (m_iCursorPos - w);
@@ -1670,7 +1616,7 @@ bool CInputField::HandleKey(chtype ch)
         case '\n':
         case '\r':
             if (m_pCallBack)
-                m_pCallBack(this, m_szText, m_pUserData);
+                (*m_pCallBack)(this, m_szText);
             break;
         default:
             if (!isprint(ch) ||
@@ -1687,8 +1633,11 @@ bool CInputField::HandleKey(chtype ch)
 void CInputField::Draw()
 {
     if (!m_szText.empty())
+    {
+        m_pOutputWin->clear();
         m_pOutputWin->AddStrFormat(0, 0, m_szText.c_str(), m_iScrollOffset, m_pOutputWin->width());
-
+    }
+    
     m_pOutputWin->move(0, m_iCursorPos);
 }
 
@@ -1699,7 +1648,8 @@ void CInputField::Draw()
 CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
                          const std::string &t, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
                                                                        m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                                         m_szStartDir(s), m_szTitle(t), m_bRequireWAccess(w)
+                                                         m_szStartDir(s), m_szSelectedDir(s), m_szTitle(t),
+                                                         m_bRequireWAccess(w)
 {
     m_pTitleBox = new CTextWindow(this, 2, ncols-4, 2, 2, true, false, 'r', false);
     m_pTitleBox->AddText(m_szTitle);
@@ -1707,27 +1657,86 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     //m_pBrowserGroup = new CGroupWidget(this, nlines-7, ncols-4, 5, 2, 'r');
     
     m_pFileMenu = new CMenu(this, nlines-10, ncols-4, 5, 2, 'r');
-    for (short s=0; s<40; s++) m_pFileMenu->AddItem(CreateText("menu item %d", s));
+    //for (short s=0; s<40; s++) m_pFileMenu->AddItem(CreateText("menu item %d", s), 0, 0);
     
     m_pDirField = new CInputField(this, 3, ncols-4, 5+m_pFileMenu->maxy()+1, 2, 'r');
     m_pDirField->SetText(m_szStartDir);
     
-    m_pFileMenu->BindPost(FileMenuCB, m_pDirField);
+    m_pFileMenu->BindPost(FileMenuKeyCB, this);
 
     // Center 3 buttons with 20 width, 2 space at a cols-4(=border) space
     const int startx = ((ncols + 4) - (3 * 20 + (2 * 2))) / 3;
-    m_pOpenButton = new CButton(this, 1, 20, nlines-2, startx, "<C>Open directory", NULL, 'r');
-    m_pSelButton = new CButton(this, 1, 20, nlines-2, startx+22, "<C>Select directory", NULL, 'r');
-    m_pCancelButton = new CButton(this, 1, 20, nlines-2, startx+42, "<C>Cancel", NULL, 'r');
+    m_pOpenButton = new CButton(this, 1, 20, nlines-2, startx, "<C>Open directory", 'r');
+    m_pSelButton = new CButton(this, 1, 20, nlines-2, startx+22, "<C>Select directory", 'r');
+    m_pCancelButton = new CButton(this, 1, 20, nlines-2, startx+42, "<C>Cancel", 'r');
+    
+    OpenDir();
 }
 
-bool CFileDialog::FileMenuCB(CWidgetHandler *p, chtype key, CInputField *i)
+void CFileDialog::OpenDir()
+{
+    std::string newdir = m_szSelectedDir;
+    
+    if (!m_pFileMenu->Empty())
+        newdir += '/' + *m_pFileMenu->GetCurrentItemName();
+    
+    if (chdir(newdir.c_str()))
+    {
+        /* UNDONE
+        WarningBox("%s\n%s\n%s", GetTranslation("Could not change to directory"), newdir.c_str(), strerror(errno));
+        return false;*/
+        return;
+    }
+    
+    char tmp[1024];
+    if (getcwd(tmp, sizeof(tmp))) m_szSelectedDir = tmp;
+    else { /*WarningBox("Could not read current directory"); return false;UNDONE*/ return; }
+    
+    struct dirent *dirstruct;
+    struct stat filestat;
+    DIR *dp = opendir(newdir.c_str());
+    bool isrootdir = (newdir == "/");
+
+    if (!dp)
+        return; // UNDONE
+
+    m_pFileMenu->Clear();
+    
+    while ((dirstruct = readdir (dp)) != 0)
+    {
+        if (lstat(dirstruct->d_name, &filestat) != 0)
+            continue;
+        
+        if (!S_ISDIR(filestat.st_mode))
+            continue; // Has to be a directory...
+
+        if (!strcmp(dirstruct->d_name, "."))
+            continue;
+
+        if ((!strcmp(dirstruct->d_name, "..")) && isrootdir)
+            continue;
+        
+        m_pFileMenu->AddItem(dirstruct->d_name, FileMenuCB, this);
+    }
+
+    closedir (dp);
+    
+    UpdateDirField();
+    refresh();
+}
+
+void CFileDialog::UpdateDirField()
+{
+    if (m_szSelectedDir == "/")
+        m_pDirField->SetText(*m_pFileMenu->GetCurrentItemName());
+    else
+        m_pDirField->SetText(m_szSelectedDir + '/' + *m_pFileMenu->GetCurrentItemName());
+}
+
+bool CFileDialog::FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key)
 {
     if ((key == KEY_UP) || (key == KEY_DOWN))
-    {
-        CMenu *Menu = (CMenu *)p;
-        i->SetText(*Menu->GetCurrentItemName());
-    }
+        owner->UpdateDirField();
     
     return false;
 }
