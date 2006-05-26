@@ -644,7 +644,7 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 // Base widget class
 // -------------------------------------
 /*
-bool CWidget::HandleKey(chtype ch, bool callchild)
+bool CWidget::HandleKey(chtype ch)
 {
     if (callchild && !m_ChildList.empty() && ((*m_FocusedChild)->HandleKey(ch) ||
          ((ch == 9) && SetNextWidget()) || ((ch == KEY_BTAB) && SetPrevWidget())))
@@ -713,13 +713,29 @@ void CWidget::Run()
 // Widget handler class
 // -------------------------------------
 
-bool CWidgetHandler::HandleKey(chtype ch, bool callchild)
+bool CWidgetHandler::HandleKey(chtype ch)
 {
-    if (callchild && (m_FocusedChild != m_ChildList.end()) && ((*m_FocusedChild)->HandleKey(ch) ||
-         ((ch == 9) && SetNextWidget()) || ((ch == KEY_BTAB) && SetPrevWidget())))
+    return ((m_FocusedChild != m_ChildList.end()) && (*m_FocusedChild)->HandleKey(ch));
+}
+
+bool CWidgetHandler::HandleKeyPre(chtype ch)
+{
+    if ((m_FocusedChild != m_ChildList.end()) && (((ch == 9) && SetNextWidget()) ||
+         ((ch == KEY_BTAB) && SetPrevWidget())))
+        return true; // Next/previous widget
+    
+    if (m_pPreKeyHandler && (*m_pPreKeyHandler)(this, ch))
         return true;
 
     return false;
+}
+
+bool CWidgetHandler::HandleKeyPost(chtype ch)
+{
+    if (m_pPostKeyHandler && (*m_pPostKeyHandler)(this, ch))
+        return true;
+
+    return ((m_FocusedChild != m_ChildList.end()) && ((*m_FocusedChild)->HandleKeyPost(ch)));
 }
 
 bool CWidgetHandler::SetNextWidget()
@@ -863,7 +879,10 @@ void CWidgetManager::Run()
                 if (ch == CTRL('[')) // Escape pressed
                     break;
                 
-                (*m_FocusedChild)->HandleKey(ch);
+                if (!(*m_FocusedChild)->HandleKeyPre(ch))
+                    (*m_FocusedChild)->HandleKey(ch);
+                
+                (*m_FocusedChild)->HandleKeyPost(ch);
             }
         }
          
@@ -1104,9 +1123,9 @@ void CGroupWidget::LeaveFocus()
         (*it)->LeaveFocus();
 }
 
-bool CGroupWidget::HandleKey(chtype ch, bool callchild)
+bool CGroupWidget::HandleKey(chtype ch)
 {
-    if (CWidgetWindow::HandleKey(ch, false))
+    if (CWidgetWindow::HandleKey(ch))
         return true;
     
     bool handled = false;
@@ -1266,9 +1285,9 @@ void CTextWindow::ScrollToBottom()
     }
 }
 
-bool CTextWindow::HandleKey(chtype ch, bool callchild)
+bool CTextWindow::HandleKey(chtype ch)
 {
-    if (CWidgetWindow::HandleKey(ch, false))
+    if (CWidgetWindow::HandleKey(ch))
         return true;
     
     bool handled = true;
@@ -1445,9 +1464,9 @@ void CMenu::VScroll(int n)
     refresh();
 }
 
-bool CMenu::HandleKey(chtype ch, bool callchild)
+bool CMenu::HandleKey(chtype ch)
 {
-    if (CWidgetWindow::HandleKey(ch, false))
+    if (CWidgetWindow::HandleKey(ch))
         return true;
     
     bool handled = true;
@@ -1548,6 +1567,7 @@ CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_
                                                      m_pCallBack(cb), m_pUserData(data)
 {
     m_pOutputWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
+    m_pOutputWin->BindPre(DisableKeysCB, NULL);
 }
 
 void CInputField::Addch(chtype ch)
@@ -1617,16 +1637,15 @@ void CInputField::MoveCursor(int n)
     refresh();
 }
 
-bool CInputField::HandleKey(chtype ch, bool callchild)
+bool CInputField::HandleKey(chtype ch)
 {
-    if (CWidgetWindow::HandleKey(ch, false))
+    if (CWidgetWindow::HandleKey(ch))
         return true;
     
     bool handled = true;
     
     switch (ch)
     {
-        
         case KEY_LEFT:
             MoveCursor(-1);
             break;
@@ -1693,6 +1712,8 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     m_pDirField = new CInputField(this, 3, ncols-4, 5+m_pFileMenu->maxy()+1, 2, 'r');
     m_pDirField->SetText(m_szStartDir);
     
+    m_pFileMenu->BindPost(FileMenuCB, m_pDirField);
+
     // Center 3 buttons with 20 width, 2 space at a cols-4(=border) space
     const int startx = ((ncols + 4) - (3 * 20 + (2 * 2))) / 3;
     m_pOpenButton = new CButton(this, 1, 20, nlines-2, startx, "<C>Open directory", NULL, 'r');
@@ -1700,15 +1721,12 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     m_pCancelButton = new CButton(this, 1, 20, nlines-2, startx+42, "<C>Cancel", NULL, 'r');
 }
 
-
-bool CFileDialog::HandleKey(chtype ch, bool callchild)
+bool CFileDialog::FileMenuCB(CWidgetHandler *p, chtype key, CInputField *i)
 {
-    if (CWidgetWindow::HandleKey(ch, callchild))
+    if ((key == KEY_UP) || (key == KEY_DOWN))
     {
-        // HACK: Update inputfield when user moved through menu
-        if ((*m_FocusedChild == m_pFileMenu) && ((ch == KEY_UP) || (ch == KEY_DOWN)))
-            m_pDirField->SetText(*m_pFileMenu->GetCurrentItemName());
-        return true;
+        CMenu *Menu = (CMenu *)p;
+        i->SetText(*Menu->GetCurrentItemName());
     }
     
     return false;

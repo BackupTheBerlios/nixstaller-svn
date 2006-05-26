@@ -335,7 +335,7 @@ protected:
     virtual bool CanFocus(void) { return false; };
     virtual void Focus(void) { };
     virtual void LeaveFocus(void) { };
-    virtual bool HandleKey(chtype ch, bool callchild=true); // callchild: If true, call HandleKey on focused child
+    virtual bool HandleKey(chtype ch); // callchild: If true, call HandleKey on focused child
     virtual void Draw(void) { };
     
 public:
@@ -359,17 +359,44 @@ class CWidgetHandler
     bool SetNextWidget(void);
     bool SetPrevWidget(void);
     
+    // Base key handler. We want a pointer to CKeyHandler, but this won't work because it's a template. Creating a base
+    // class and point to that solves this problem.
+    class CBaseKeyHandler
+    {
+    public:
+        virtual bool operator ()(CWidgetHandler *p, chtype ch) = 0;
+    };
+    
+    template<typename C, typename D> class CKeyHandler: public CBaseKeyHandler
+    {
+        C m_CallBack;
+        D m_Data;
+        
+    public:
+        CKeyHandler(C c, D d) : m_CallBack(c), m_Data(d) { };
+        virtual bool operator ()(CWidgetHandler *p, chtype ch) { return m_CallBack(p, ch, m_Data); };
+    };
+    
+    CBaseKeyHandler *m_pPreKeyHandler, *m_pPostKeyHandler;
+    
     friend class CWidgetManager;
 
 protected:
     std::list<CWidgetWindow *> m_ChildList;
     std::list<CWidgetWindow *>::iterator m_FocusedChild;
 
+    // Dummy function to disable key inpout, by passing it to BindPre
+    static bool DisableKeysCB(CWidgetHandler *, chtype, int) { return true; };
+
     virtual void Focus(void);
     virtual void LeaveFocus(void);
-    virtual bool HandleKey(chtype ch, bool callchild=true); // callchild: If true, call HandleKey on focused child
+    virtual bool HandleKey(chtype ch);
+    
+    bool HandleKeyPre(chtype ch); // Gets called before a key is handled
+    bool HandleKeyPost(chtype ch); // Gets called after a key is handled
     
     CWidgetHandler(bool canfocus=true) : m_bEnabled(true), m_bFocused(false), m_bCanFocus(canfocus),
+                                         m_pPreKeyHandler(NULL), m_pPostKeyHandler(NULL),
                                          m_FocusedChild(m_ChildList.end()) { };
 
 public:
@@ -382,6 +409,11 @@ public:
     
     bool Focused(void) { return m_bFocused; };
     bool CanFocus(void) { return m_bCanFocus; };
+    
+    template <typename C, typename D> void BindPre(C cb, D dat)
+    { if (m_pPreKeyHandler) delete m_pPreKeyHandler; m_pPreKeyHandler = new CKeyHandler<C, D>(cb, dat); };
+    template <typename C, typename D> void BindPost(C cb, D dat)
+    { if (m_pPostKeyHandler) delete m_pPostKeyHandler; m_pPostKeyHandler = new CKeyHandler<C, D>(cb, dat); };
     
     virtual void Run(void);
 };
@@ -398,7 +430,7 @@ class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 {
 public:
     typedef std::map<int, std::map<int, int> > ColorMapType;
-
+    
 private:
     bool m_bBox;
     short m_sCurColor; // Current color pair used in formatted text
@@ -455,7 +487,7 @@ class CGroupWidget: public CWidgetWindow // Groups several widgets together
 protected:
     virtual void Focus(void);
     virtual void LeaveFocus(void);
-    virtual bool HandleKey(chtype ch, bool callchild=true);
+    virtual bool HandleKey(chtype ch);
     
 public:
     CGroupWidget(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -519,7 +551,7 @@ protected:
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     int m_iCurrentLine;
     
-    virtual bool HandleKey(chtype ch, bool callchild=true);
+    virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
 
 public:
@@ -557,7 +589,7 @@ private:
     void VScroll(int n);
     
 protected:
-    virtual bool HandleKey(chtype ch, bool callchild=true);
+    virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
     
 public:
@@ -591,7 +623,7 @@ private:
 protected:
     virtual void Focus(void) { CWidgetWindow::Focus(); curs_set(1); };
     virtual void LeaveFocus(void) { CWidgetWindow::LeaveFocus(); curs_set(0); };
-    virtual bool HandleKey(chtype ch, bool callchild=true);
+    virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
     
 public:
@@ -614,12 +646,11 @@ class CFileDialog: public CWidgetWindow // Currently only browses directories
     CInputField *m_pDirField;
     CButton *m_pOpenButton, *m_pSelButton, *m_pCancelButton;
     
-protected:
-    virtual bool HandleKey(chtype ch, bool callchild=true);
-    
 public:
     CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
-                const std::string &t, bool w);    
+                const std::string &t, bool w);
+    
+    static bool FileMenuCB(CWidgetHandler *p, chtype key, CInputField *i);
 };
 
 #endif
