@@ -36,8 +36,6 @@
 #define NCURSES_H
 
 #include "cursesapp.h"
-#include "cursesm.h"
-#include "cursesf.h"
 
 #include "main.h"
 #include "widgets.h"
@@ -62,8 +60,6 @@ public:
 
 class CNCursBase: public virtual CMain
 {
-    NCursesPanel *m_pDummyPanel; // Used for updating screen
-    
 protected:
     virtual char *GetPassword(const char *str) { };
     virtual void MsgBox(const char *str, ...);
@@ -75,9 +71,9 @@ protected:
     friend class CNCursScreen; // UNDONE: Remove me!
 public:
     
-    virtual ~CNCursBase(void) { delete m_pDummyPanel; };
+    virtual ~CNCursBase(void) { };
     
-    virtual bool Init(void) { m_pDummyPanel = new NCursesPanel; m_pDummyPanel->bkgd(' '|COLOR_PAIR(7)); };
+    virtual bool Init(void) { };
 };
 
 

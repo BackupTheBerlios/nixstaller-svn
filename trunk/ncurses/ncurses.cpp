@@ -65,17 +65,17 @@ void CNCursScreen::handleArgs(int argc, char* argv[])
 int CNCursScreen::run()
 {
     curs_set(0);
-    Root_Window->setcolor(7);
-    Root_Window->setpalette(COLOR_WHITE, COLOR_BLACK);
     
     CNCursBase p;
     p.Init();
     //p.MsgBox("hi\n");
     
+    Root_Window->bkgd(' '|CWidgetWindow::GetColorPair(0, 0));
+    
     CWidgetManager Man;
     Man.Init();
-    CFileDialog f(&Man, 18, 70, 2, 4, "/", "<C>Select a file please", false);
-    f.refresh();
+    CFileDialog *f = new CFileDialog(&Man, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
+    Man.Refresh();
     Man.Run();
     
     // Init installer/appmanager

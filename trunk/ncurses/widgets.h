@@ -323,6 +323,7 @@ class CWidgetHandler;
 class CBaseEventHandler
 {
 public:
+    virtual ~CBaseEventHandler(void) { };
     virtual bool operator ()(CWidgetHandler *p) = 0;
 };
 
@@ -343,6 +344,7 @@ public:
 template<typename V> class CBaseValEventHandler
 {
 public:
+    virtual ~CBaseValEventHandler(void) { };
     virtual bool operator ()(CWidgetHandler *p, V v) = 0;
 };
 
@@ -393,9 +395,10 @@ protected:
                                          m_FocusedChild(m_ChildList.end()) { };
 
 public:
-    virtual ~CWidgetHandler(void) { };
+    virtual ~CWidgetHandler(void);
     
     void AddChild(CWidgetWindow *p);
+    void RemoveChild(CWidgetWindow *p);
     
     bool Enabled(void) { return m_bEnabled; };
     void Enable(bool e) { m_bEnabled = e; };
@@ -415,7 +418,9 @@ class CWidgetManager: public CWidgetHandler
 {
 public:
     void Init(void);
-
+    void Refresh(void);
+    void ActivateWidget(CWidgetWindow *p);
+    
     virtual void Run(void);
 };
 
@@ -495,7 +500,7 @@ class CButton: public CWidgetWindow
 protected:
     virtual void Focus(void) { m_pCurrentTitle = &m_szFocusedTitle; CWidgetWindow::Focus(); };
     virtual void LeaveFocus(void) { m_pCurrentTitle = &m_szDefocusedTitle; CWidgetWindow::LeaveFocus(); };
-    virtual void Draw(void) { clear(); AddStrFormat(0, 0, *m_pCurrentTitle); };
+    virtual void Draw(void) { erase(); AddStrFormat(0, 0, *m_pCurrentTitle); };
     
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
@@ -569,6 +574,7 @@ class CMenu: public CWidgetWindow
     };
 
     std::vector<menu_entry_s> m_MenuItems;
+    bool m_bSortItems;
     int m_iCursorLine;
     int m_iStartEntry; // First entry to display(for scrolling)
     int m_iLongestLine;
@@ -579,6 +585,9 @@ class CMenu: public CWidgetWindow
     void VScroll(int n);
     void AddItem(const std::string &s, CBaseValEventHandler<int> *cb);
             
+    friend bool operator <(const CMenu::menu_entry_s &e1, const CMenu::menu_entry_s &e2);
+    friend bool operator <(const CMenu::menu_entry_s &e, char c);
+    
 protected:
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
@@ -597,6 +606,10 @@ public:
     bool Empty(void) { return m_MenuItems.empty(); };
 };
 
+// Used for sorting/searching menu items
+inline bool operator <(const CMenu::menu_entry_s &e1, const CMenu::menu_entry_s &e2) { return (e1.name < e2.name); };
+inline bool operator <(const CMenu::menu_entry_s &e, char c) { return (e.name[0] < c); };
+
 class CInputField: public CWidgetWindow
 {
     std::list<chtype> m_IllegalCharList;
@@ -608,7 +621,7 @@ class CInputField: public CWidgetWindow
     
     void Addch(chtype ch);
     void Delch(bool backspace);
-    void MoveCursor(int n);
+    void MoveCursor(int n, bool relative=true);
     
 protected:
     virtual void Focus(void) { CWidgetWindow::Focus(); curs_set(1); };
@@ -622,7 +635,7 @@ public:
     CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1);
     
     const std::string &GetText(void) { return m_szText; };
-    void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length()); };
+    void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length(), false); };
     
     template <typename C, typename D> void SetCallBack(C cb, D dat)
     { if (m_pCallBack) delete m_pCallBack; m_pCallBack = new CValEventHandler<C, D, const std::string &>(cb, dat); };
@@ -635,21 +648,20 @@ class CFileDialog: public CWidgetWindow // Currently only browses directories
     CTextWindow *m_pTitleBox;
     CGroupWidget *m_pBrowserGroup;
     CMenu *m_pFileMenu;
-    CInputField *m_pDirField;
+    CInputField *m_pFileField;
     CButton *m_pOpenButton, *m_pSelButton, *m_pCancelButton;
     
-    void OpenDir(void);
+    void OpenDir(std::string newdir="");
     void UpdateDirField(void);
-    
-    friend bool CFileDialog::FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key);
-    friend bool CFileDialog::FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int);
     
 public:
     CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
                 const std::string &t, bool w);
     
     static bool FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key);
-    static bool FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int) { owner->OpenDir(); };
+    static bool FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int) { owner->OpenDir(); return true; };
+    static bool FileFieldCB(CWidgetHandler *p, CFileDialog *owner, const std::string &dir)
+    { owner->OpenDir(dir); return true; };
 };
 
 #endif
