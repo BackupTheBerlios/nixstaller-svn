@@ -411,7 +411,7 @@ public:
     template <typename C, typename D> void BindPost(C cb, D dat)
     { if (m_pPostKeyHandler) delete m_pPostKeyHandler; m_pPostKeyHandler = new CValEventHandler<C, D, chtype>(cb, dat); };
     
-    virtual void Run(void);
+    virtual bool Run(void);
 };
 
 class CWidgetManager: public CWidgetHandler
@@ -421,7 +421,7 @@ public:
     void Refresh(void);
     void ActivateWidget(CWidgetWindow *p);
     
-    virtual void Run(void);
+    virtual bool Run(void);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
@@ -478,18 +478,6 @@ public:
     void SetURCorner(chtype c) { m_cURCorner = c; };
     
     static int GetColorPair(int fg, int bg);
-};
-
-class CGroupWidget: public CWidgetWindow // Groups several widgets together
-{
-protected:
-    virtual void Focus(void);
-    virtual void LeaveFocus(void);
-    virtual bool HandleKey(chtype ch);
-    
-public:
-    CGroupWidget(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  char absrel = 'a') : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false) { };
 };
 
 class CButton: public CWidgetWindow
@@ -646,10 +634,9 @@ class CFileDialog: public CWidgetWindow // Currently only browses directories
     std::string m_szStartDir, m_szSelectedDir, m_szTitle;
     bool m_bRequireWAccess; // Directory requires write access
     CTextWindow *m_pTitleBox;
-    CGroupWidget *m_pBrowserGroup;
     CMenu *m_pFileMenu;
     CInputField *m_pFileField;
-    CButton *m_pOpenButton, *m_pSelButton, *m_pCancelButton;
+    CButton *m_pOpenButton, *m_pCancelButton;
     
     void OpenDir(std::string newdir="");
     void UpdateDirField(void);

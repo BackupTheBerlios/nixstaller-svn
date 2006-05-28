@@ -32,6 +32,7 @@
     this exception.
 */
 
+#ifdef REMOVE_ME_AFTER_NEW_FRONTEND_IS_DONE
 #include "ncurs.h"
 
 void EndProg(bool err)
@@ -245,5 +246,20 @@ int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
     
     return true;
 }
+#endif
 
+#include "widgets.h"
 
+void MessageBox(const char *msg, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    CWidgetWindow win(&WidgetManager, 15, 40, 2, 2);
+    
+    free(text);
+}

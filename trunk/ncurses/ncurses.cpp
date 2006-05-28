@@ -35,6 +35,7 @@
 #include "ncurses.h"
 
 static CNCursScreen MainScreen;
+CWidgetManager WidgetManager;
 
 void EndProg(bool err)
 {
@@ -72,11 +73,10 @@ int CNCursScreen::run()
     
     Root_Window->bkgd(' '|CWidgetWindow::GetColorPair(0, 0));
     
-    CWidgetManager Man;
-    Man.Init();
-    CFileDialog *f = new CFileDialog(&Man, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
-    Man.Refresh();
-    Man.Run();
+    WidgetManager.Init();
+    CFileDialog *f = new CFileDialog(&WidgetManager, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
+    WidgetManager.Refresh();
+    while(WidgetManager.Run());
     
     // Init installer/appmanager
     

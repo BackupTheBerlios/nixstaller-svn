@@ -784,10 +784,14 @@ void CWidgetHandler::RemoveChild(CWidgetWindow *p)
     delete p;
 }
 
-void CWidgetHandler::Run()
+bool CWidgetHandler::Run()
 {
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        (*it)->Run();
+    {
+        if (!(*it)->Run())
+            return false;
+    }
+    return true;
 }
 
 // -------------------------------------
@@ -837,29 +841,31 @@ void CWidgetManager::ActivateWidget(CWidgetWindow *p)
     }
 }
 
-void CWidgetManager::Run()
+bool CWidgetManager::Run()
 {
-    while (true)
+    if (m_FocusedChild != m_ChildList.end())
     {
-        if (m_FocusedChild != m_ChildList.end())
+        chtype ch = (*m_FocusedChild)->getch();
+        if (ch != ERR)
         {
-            chtype ch = (*m_FocusedChild)->getch();
-            if (ch != ERR)
-            {
-                //debugline("key: %d\n", ch);
-                if (ch == CTRL('[')) // Escape pressed
-                    break;
-                
-                if (!(*m_FocusedChild)->HandleKeyPre(ch))
-                    (*m_FocusedChild)->HandleKey(ch);
-                
-                (*m_FocusedChild)->HandleKeyPost(ch);
-            }
+            //debugline("key: %d\n", ch);
+            if (ch == CTRL('[')) // Escape pressed
+                return false;
+            
+            if (!(*m_FocusedChild)->HandleKeyPre(ch))
+                (*m_FocusedChild)->HandleKey(ch);
+            
+            (*m_FocusedChild)->HandleKeyPost(ch);
         }
-         
-        for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-            (*it)->Run();
     }
+        
+    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    {
+        if (!(*it)->Run())
+            return false;
+    }
+    
+    return true;
 }
 
 // -------------------------------------
@@ -1076,38 +1082,6 @@ int CWidgetWindow::GetColorPair(int fg, int bg)
     ::init_pair(m_iCurColorPair, fg, bg);
     m_ColorPairs[fg][bg] = m_iCurColorPair;
     return COLOR_PAIR(m_iCurColorPair);
-}
-
-// -------------------------------------
-// Group widget class
-// -------------------------------------
-
-void CGroupWidget::Focus()
-{
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        (*it)->Focus();
-}
-
-void CGroupWidget::LeaveFocus()
-{
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        (*it)->LeaveFocus();
-}
-
-bool CGroupWidget::HandleKey(chtype ch)
-{
-    if (CWidgetWindow::HandleKey(ch))
-        return true;
-    
-    bool handled = false;
-    
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    {
-        if ((*it)->HandleKey(ch) && !handled)
-            handled = true;
-    }
-    
-    return handled;
 }
 
 // -------------------------------------
@@ -1418,28 +1392,53 @@ void CMenu::HScroll(int n)
 
 void CMenu::VScroll(int n)
 {
-    if ((GetCurrent()+n) > (int)m_MenuItems.size())
-        m_iCursorLine = (m_MenuItems.size() - m_iStartEntry);
-    else
-        m_iCursorLine += n;
-    
     bool scroll = false;
     
-    if (m_iCursorLine < 0)
+    /*
+    if ((GetCurrent() + n) < 0)
+        n = (GetCurrent());
+    else if ((GetCurrent() + n) >= m_MenuItems.size())
+        n = ((m_MenuItems.size() - 0) - GetCurrent());
+    */
+    
+    int newline = m_iCursorLine + n;
+    if (newline < 0)
     {
-        scroll = true;
-        m_iCursorLine = 0;
+        if ((m_iStartEntry + newline) < 0)
+        {
+            m_iStartEntry = m_iCursorLine = 0;
+            m_pVScrollbar->SetCurrent(0);
+        }
+        else
+            scroll = true;
+        //m_iCursorLine = 0;
     }
-    else if (m_iCursorLine >= m_pTextWin->height())
+    else if (newline >= m_pTextWin->height())
     {
-        scroll = true;
-        m_iCursorLine = m_pTextWin->height()-1;
+        if ((m_iStartEntry + newline) >= m_MenuItems.size())
+        {
+            m_iStartEntry = (m_MenuItems.size() - m_pTextWin->height());
+            if (m_iStartEntry < 0)
+                m_iStartEntry = 0;
+            m_iCursorLine = m_pTextWin->height()-1;
+            m_pVScrollbar->SetCurrent(m_MenuItems.size() - m_pTextWin->height());
+        }
+        else
+            scroll = true;
+        //n -= ((m_pTextWin->height()-1) - cur);
+        //m_iCursorLine = m_pTextWin->height()-1;
     }
+    else
+        m_iCursorLine = newline;
 
     if (scroll)
     {
+        int oldstart = m_iStartEntry;
         m_pVScrollbar->Scroll(n);
         m_iStartEntry = (int)m_pVScrollbar->GetValue();
+        
+        if (GetCurrent() < (oldstart + newline))
+            m_iCursorLine = ((oldstart + newline) - GetCurrent());
     }
     
     refresh();
@@ -1732,10 +1731,7 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     m_pTitleBox = new CTextWindow(this, 2, ncols-4, 2, 2, true, false, 'r', false);
     m_pTitleBox->AddText(m_szTitle);
     
-    //m_pBrowserGroup = new CGroupWidget(this, nlines-7, ncols-4, 5, 2, 'r');
-    
     m_pFileMenu = new CMenu(this, nlines-10, ncols-4, 5, 2, 'r');
-    //for (short s=0; s<40; s++) m_pFileMenu->AddItem(CreateText("menu item %d", s), 0, 0);
     
     m_pFileField = new CInputField(this, 3, ncols-4, 5+m_pFileMenu->maxy()+1, 2, 'r');
     m_pFileField->SetText(m_szStartDir);
@@ -1743,11 +1739,9 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     m_pFileMenu->BindPost(FileMenuKeyCB, this);
     m_pFileField->SetCallBack(FileFieldCB, this);
     
-    // Center 3 buttons with 20 width, 2 space at a cols-4(=border) space
-    const int startx = ((ncols + 4) - (3 * 20 + (2 * 2))) / 3;
+    const int startx = ((ncols + 2) - (2 * 20 + 2)) / 2;
     m_pOpenButton = new CButton(this, 1, 20, nlines-2, startx, "<C>Open directory", 'r');
-    m_pSelButton = new CButton(this, 1, 20, nlines-2, startx+22, "<C>Select directory", 'r');
-    m_pCancelButton = new CButton(this, 1, 20, nlines-2, startx+42, "<C>Cancel", 'r');
+    m_pCancelButton = new CButton(this, 1, 20, nlines-2, startx+22, "<C>Cancel", 'r');
     
     OpenDir();
 }
@@ -1818,8 +1812,6 @@ void CFileDialog::UpdateDirField()
 
 bool CFileDialog::FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key)
 {
-    if ((key == KEY_UP) || (key == KEY_DOWN))
-        owner->UpdateDirField();
-    
+    owner->UpdateDirField();
     return false;
 }

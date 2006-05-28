@@ -76,6 +76,7 @@ public:
     virtual bool Init(void) { };
 };
 
+extern CWidgetManager WidgetManager;
 
 #ifndef RELEASE
 inline void debugline(const char *t, ...)
