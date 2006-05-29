@@ -488,6 +488,7 @@ class CButton: public CWidgetWindow
 protected:
     virtual void Focus(void) { m_pCurrentTitle = &m_szFocusedTitle; CWidgetWindow::Focus(); };
     virtual void LeaveFocus(void) { m_pCurrentTitle = &m_szDefocusedTitle; CWidgetWindow::LeaveFocus(); };
+    virtual bool HandleKey(chtype ch);
     virtual void Draw(void) { erase(); AddStrFormat(0, 0, *m_pCurrentTitle); };
     
 public:

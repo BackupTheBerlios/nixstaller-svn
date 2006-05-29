@@ -248,18 +248,73 @@ int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
 }
 #endif
 
-#include "widgets.h"
+#include "ncurses.h"
+#include <stack>
+
+// stack containing addresses of buttons which are called by GenButtonCB().
+// By comparing the top button from the stack we can see which button was last called.
+static std::stack<CWidgetHandler *> ButtonStack;
+static bool GenButtonCB(CWidgetHandler *p, CWidgetWindow *owner) { owner->Enable(false); ButtonStack.push(p); return true; };
+
+// Simple close window callback function.
+static bool CloseCB(CWidgetHandler *p, CWidgetWindow *owner) { owner->Enable(false); return true; };
 
 void MessageBox(const char *msg, ...)
 {
     char *text;
     va_list v;
     
-    va_start(v, str);
-    vasprintf(&text, str, v);
+    va_start(v, msg);
+    vasprintf(&text, msg, v);
     va_end(v);
     
-    CWidgetWindow win(&WidgetManager, 15, 40, 2, 2);
+    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 15, 40, 2, 2);
+    CTextWindow *textwin = new CTextWindow(win, 5, 10, 2, 2, true, false, 'r');
+    textwin->AddText(text);
+    CButton *button = new CButton(win, 1, 20, win->maxy()-2, (win->maxx()-20), "OK", 'r');
+    button->SetCallBack(CloseCB, win);
+    
+    WidgetManager.Refresh();
+    while(WidgetManager.Run() && win->Enabled());
     
     free(text);
+}
+
+bool YesNoBox(const char *msg, ...)
+{
+    char *text;
+    va_list v;
+    bool ret = false;
+    
+    va_start(v, msg);
+    vasprintf(&text, msg, v);
+    va_end(v);
+    
+    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 15, 50, 2, 2);
+    CTextWindow *textwin = new CTextWindow(win, 11, 46, 2, 2, true, false, 'r');
+    textwin->AddText(text);
+    CButton *buttonyes = new CButton(win, 1, 15, win->maxy()-1, (win->maxx()-((2*15)+2))/2, "<C>Yes", 'r');
+    CButton *buttonno = new CButton(win, 1, 15, win->maxy()-1, (buttonyes->begx()+buttonyes->maxx()+2), "<C>No", 'r');
+    buttonyes->SetCallBack(GenButtonCB, win);
+    buttonno->SetCallBack(GenButtonCB, win);
+    
+    WidgetManager.Refresh();
+    while(WidgetManager.Run() && win->Enabled());
+    
+    if (!ButtonStack.empty())
+    {
+        if (ButtonStack.top() == buttonyes)
+        {
+            ret = true;
+            ButtonStack.pop();
+        }
+        else if (ButtonStack.top() == buttonno)
+        {
+            ret = false;
+            ButtonStack.pop();
+        }
+    }
+    
+    free(text);
+    return ret;
 }

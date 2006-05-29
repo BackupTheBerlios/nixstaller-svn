@@ -1093,11 +1093,26 @@ chtype CButton::m_cDefaultDefocusedColors;
 
 CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
                  char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false, true,
-                 m_cDefaultFocusedColors, m_cDefaultDefocusedColors)
+                 m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_pCallBack(NULL)
 {
     m_szDefocusedTitle = text;
     m_szFocusedTitle = "< " + m_szDefocusedTitle + " >";
     m_pCurrentTitle = &m_szFocusedTitle;
+}
+
+bool CButton::HandleKey(chtype ch)
+{
+    if (CWidgetWindow::HandleKey(ch))
+        return true;
+    
+    if ((ch == KEY_ENTER) || (ch == '\n') || (ch == 'r'))
+    {
+        if (m_pCallBack)
+            (*m_pCallBack)(this);
+        return true;
+    }
+    
+    return false;
 }
 
 // -------------------------------------

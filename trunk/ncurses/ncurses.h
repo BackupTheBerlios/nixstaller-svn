@@ -78,6 +78,10 @@ public:
 
 extern CWidgetManager WidgetManager;
 
+// Utils
+void MessageBox(const char *msg, ...);
+bool YesNoBox(const char *msg, ...);
+
 #ifndef RELEASE
 inline void debugline(const char *t, ...)
 { static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); mvprintw(4, 50, "DEBUG: %s", txt); ::refresh(); };

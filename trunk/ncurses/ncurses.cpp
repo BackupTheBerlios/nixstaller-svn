@@ -77,7 +77,7 @@ int CNCursScreen::run()
     CFileDialog *f = new CFileDialog(&WidgetManager, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
     WidgetManager.Refresh();
     while(WidgetManager.Run());
-    
+    YesNoBox("O Rly?");
     // Init installer/appmanager
     
     // Run installer/appmanager
