@@ -290,13 +290,20 @@ bool YesNoBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 15, 50, 2, 2);
-    CTextWindow *textwin = new CTextWindow(win, 11, 46, 2, 2, true, false, 'r');
+    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 20, 50, 2, 2);
+    
+    CTextLabel *textwin = new CTextLabel(win, 10, 46, 2, 2, 'r');
     textwin->AddText(text);
-    CButton *buttonyes = new CButton(win, 1, 15, win->maxy()-1, (win->maxx()-((2*15)+2))/2, "<C>Yes", 'r');
-    CButton *buttonno = new CButton(win, 1, 15, win->maxy()-1, (buttonyes->begx()+buttonyes->maxx()+2), "<C>No", 'r');
+    
+    CButton *buttonyes = new CButton(win, 1, 15, (textwin->begy()+textwin->maxy()+2),
+                                     (win->maxx()-((2*15)+2))/2, "<C>Yes", 'r');
+    CButton *buttonno = new CButton(win, 1, 15, (textwin->begy()+textwin->maxy()+2),
+                                    (buttonyes->begx()+buttonyes->maxx()+2), "<C>No", 'r');
     buttonyes->SetCallBack(GenButtonCB, win);
     buttonno->SetCallBack(GenButtonCB, win);
+    
+    win->touchwin();
+    win->resize(buttonyes->begy()+1, win->width());
     
     WidgetManager.Refresh();
     while(WidgetManager.Run() && win->Enabled());

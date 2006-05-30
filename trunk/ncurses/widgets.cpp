@@ -809,6 +809,9 @@ void CWidgetManager::Init()
     CButton::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CButton::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 
+    CTextLabel::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    CTextLabel::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    
     CTextWindow::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CTextWindow::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 
@@ -1184,6 +1187,84 @@ void CScrollbar::Scroll(float n)
 }
 
 // -------------------------------------
+// Text label class
+// -------------------------------------
+
+chtype CTextLabel::m_cDefaultFocusedColors;
+chtype CTextLabel::m_cDefaultDefocusedColors;
+
+CTextLabel::CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+                       char absrel) : CWidgetWindow(owner, 3, ncols, begin_y, begin_x, absrel, false,
+                                                   false, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
+                                      m_iMaxHeight(nlines)
+{
+}
+
+void CTextLabel::AddText(std::string text)
+{
+    unsigned lines = 0, curlines = 0;
+    std::string word, line;
+    std::string::size_type start=0, end;
+    
+    if (!m_FormattedText.empty())
+        lines = curlines = m_FormattedText.size();
+
+    if (lines >= m_iMaxHeight)
+        return;
+    
+    do
+    {
+        end = text.find_first_of(" \t\n", start);
+        
+        if (end != std::string::npos)
+            word = text.substr(start, (end-start));
+        else
+            word = text.substr(start);
+        
+        if (end != std::string::npos)
+        {
+            start = end;
+            end = text.find_first_not_of(" \t", start+1);
+            if (end != std::string::npos)
+            {
+                short count = ((end - start) <= (width() - start)) ? (end-start) : (width()-start);
+                word += text.substr(start, count);
+                start = end;
+            }
+            else
+                start++; // Start searching on next char
+        }
+        
+        if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
+            ((GetUnFormatLen(m_FormattedText.back())+GetUnFormatLen(word)) > width()))
+        {
+            if ((lines+1) >= m_iMaxHeight)
+                break; // No more space
+            m_FormattedText.push_back("");
+            lines++;
+        }
+        
+        m_FormattedText.back() += word;
+    }
+    while((end != std::string::npos) && (lines < m_iMaxHeight));
+    
+    if (lines != curlines)
+        resize(lines, width());
+}
+
+void CTextLabel::Draw()
+{
+    erase();
+    
+    if (!m_FormattedText.empty())
+    {
+        int lines = 0;
+        for(std::list<std::string>::iterator it=m_FormattedText.begin(); it!=m_FormattedText.end(); it++, lines++)
+            AddStrFormat(lines, 0, it->c_str(), 0, width());
+    }
+}
+
+// -------------------------------------
 // Text window class
 // -------------------------------------
 
@@ -1292,7 +1373,7 @@ void CTextWindow::AddText(std::string text)
     {
         do
         {
-            end = text.find_first_of(" \t", start);
+            end = text.find_first_of(" \t\n", start);
             
             if (end != std::string::npos)
                 word = text.substr(start, (end-start));
@@ -1302,7 +1383,7 @@ void CTextWindow::AddText(std::string text)
             if (end != std::string::npos)
             {
                 start = end;
-                end = text.find_first_not_of(" \t", start);
+                end = text.find_first_not_of(" \t", start+1);
                 if (end != std::string::npos)
                 {
                     short count = ((end - start) <= (m_pTextWin->width() - start)) ? (end-start) : (m_pTextWin->width()-start);

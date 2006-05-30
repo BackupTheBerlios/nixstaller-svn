@@ -477,6 +477,8 @@ public:
     void SetULCorner(chtype c) { m_cULCorner = c; };
     void SetURCorner(chtype c) { m_cURCorner = c; };
     
+    int resize(int nlines, int ncols) { return ::wresize(w, nlines, ncols); };
+    
     static int GetColorPair(int fg, int bg);
 };
 
@@ -520,6 +522,23 @@ public:
     void SetCurrent(int cur) { m_fCurVal = cur; };
     float GetValue(void) { return m_fCurVal; };
     void Scroll(float n); // Scroll n steps. Negative n is up, positive down.
+};
+
+class CTextLabel: public CWidgetWindow
+{
+    std::string m_szText;
+    std::list<std::string> m_FormattedText;
+    int m_iMaxHeight;
+    
+protected:
+    virtual void Draw(void);
+    
+public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
+    CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
+    
+    void AddText(std::string text);
 };
 
 class CTextWindow: public CWidgetWindow
