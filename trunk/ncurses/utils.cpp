@@ -269,10 +269,14 @@ void MessageBox(const char *msg, ...)
     va_end(v);
     
     CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 15, 40, 2, 2);
+    
     CTextLabel *label = new CTextLabel(win, 5, 10, 2, 2, 'r');
     label->AddText(text);
-    CButton *button = new CButton(win, 1, 20, win->maxy()-2, (win->maxx()-20), "OK", 'r');
+    
+    CButton *button = new CButton(win, 1, 10, (label->rely()+label->maxy()+2), (win->maxx()-10)/2, "<C>OK", 'r');
     button->SetCallBack(CloseCB, win);
+    
+    win->resize(button->rely()+button->maxy()+2, win->width());
     
     WidgetManager.Refresh();
     while(WidgetManager.Run() && win->Enabled());
@@ -327,4 +331,18 @@ bool YesNoBox(const char *msg, ...)
     
     free(text);
     return ret;
+}
+
+std::string FileDialog(const char *start, const char *info, bool needw)
+{
+    int maxx, maxy;
+    getmaxyx(stdscr, maxy, maxx);
+    
+    CFileDialog *filedialog = new CFileDialog(&WidgetManager, 20, 70, 2, (maxx-70)/2, start, info, needw);
+    
+    WidgetManager.Refresh();
+    
+    while(WidgetManager.Run() && filedialog->Enabled());
+    
+    return *filedialog->Selection();
 }

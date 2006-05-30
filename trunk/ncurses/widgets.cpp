@@ -922,6 +922,9 @@ int CWidgetWindow::refresh()
     if (m_bBox)
         Box();
     
+    if (!m_szTitle.empty())
+        addstr(0, (maxx()-m_szTitle.length())/2, m_szTitle.c_str());
+    
     Draw();
     
     int ret = NCursesWindow::refresh();
@@ -1816,26 +1819,31 @@ void CInputField::Draw()
 // File dialog class
 // -------------------------------------
 
-CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
-                         const std::string &t, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
+CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *s,
+                         const char *i, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
                                                                        m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                                         m_szStartDir(s), m_szSelectedDir(s), m_szTitle(t),
+                                                         m_szStartDir(s), m_szSelectedDir(s), m_szInfo(i),
                                                          m_bRequireWAccess(w)
 {
-    m_pTitleBox = new CTextWindow(this, 2, ncols-4, 2, 2, true, false, 'r', false);
-    m_pTitleBox->AddText(m_szTitle);
+    m_pInfoLabel = new CTextLabel(this, 2, ncols-4, 2, 2, 'r');
+    m_pInfoLabel->AddText(m_szInfo);
     
-    m_pFileMenu = new CMenu(this, nlines-10, ncols-4, 5, 2, 'r');
+    m_pFileMenu = new CMenu(this, nlines-10, ncols-4, (m_pInfoLabel->rely()+m_pInfoLabel->maxy()+2), 2, 'r');
     
-    m_pFileField = new CInputField(this, 3, ncols-4, 5+m_pFileMenu->maxy()+1, 2, 'r');
+    m_pFileField = new CInputField(this, 3, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+1), 2, 'r');
     m_pFileField->SetText(m_szStartDir);
     
     m_pFileMenu->BindPost(FileMenuKeyCB, this);
     m_pFileField->SetCallBack(FileFieldCB, this);
     
     const int startx = ((ncols + 2) - (2 * 20 + 2)) / 2;
-    m_pOpenButton = new CButton(this, 1, 20, nlines-2, startx, "<C>Open directory", 'r');
-    m_pCancelButton = new CButton(this, 1, 20, nlines-2, startx+22, "<C>Cancel", 'r');
+    m_pOpenButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx, "<C>Open directory", 'r');
+    m_pOpenButton->SetCallBack(OpenButtonCB, this);
+    
+    m_pCancelButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx+22, "<C>Cancel", 'r');
+    m_pCancelButton->SetCallBack(CancelButtonCB, this);
+    
+    resize(m_pOpenButton->rely()+m_pOpenButton->maxy()+2, ncols);
     
     OpenDir();
 }

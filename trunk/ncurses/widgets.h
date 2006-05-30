@@ -433,6 +433,7 @@ private:
     bool m_bBox;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
+    chtype m_cFocusedColors, m_cDefocusedColors;
 
     friend class CWidgetHandler;
     friend class CGroupWidget;
@@ -442,7 +443,7 @@ private:
     
 protected:
     CWidgetWindow *m_pOwner;
-    chtype m_cFocusedColors, m_cDefocusedColors;
+    std::string m_szTitle;
     
     // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
     virtual void Focus(void) { bkgd(m_cFocusedColors); refresh(); CWidgetHandler::Focus(); refresh(); };
@@ -476,6 +477,9 @@ public:
     void SetLRCorner(chtype c) { m_cLRCorner = c; };
     void SetULCorner(chtype c) { m_cULCorner = c; };
     void SetURCorner(chtype c) { m_cURCorner = c; };
+    
+    void SetTitle(const char *str) { m_szTitle = str; };
+    void SetTitle(const std::string &str) { m_szTitle = str; };
     
     int resize(int nlines, int ncols) { return ::wresize(w, nlines, ncols); };
     int relx(void) { return (m_pOwner) ? (begx() - m_pOwner->begx()) : begx(); };
@@ -653,9 +657,9 @@ public:
 
 class CFileDialog: public CWidgetWindow // Currently only browses directories
 {
-    std::string m_szStartDir, m_szSelectedDir, m_szTitle;
+    std::string m_szStartDir, m_szSelectedDir, m_szInfo;
     bool m_bRequireWAccess; // Directory requires write access
-    CTextWindow *m_pTitleBox;
+    CTextLabel *m_pInfoLabel;
     CMenu *m_pFileMenu;
     CInputField *m_pFileField;
     CButton *m_pOpenButton, *m_pCancelButton;
@@ -664,13 +668,18 @@ class CFileDialog: public CWidgetWindow // Currently only browses directories
     void UpdateDirField(void);
     
 public:
-    CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const std::string &s,
-                const std::string &t, bool w);
+    CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *s,
+                const char *i, bool w);
+    
+    std::string *Selection(void) { return &m_szSelectedDir; };
     
     static bool FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key);
     static bool FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int) { owner->OpenDir(); return true; };
     static bool FileFieldCB(CWidgetHandler *p, CFileDialog *owner, const std::string &dir)
     { owner->OpenDir(dir); return true; };
+    static bool OpenButtonCB(CWidgetHandler *p, CFileDialog *owner) { owner->Enable(false); };
+    static bool CancelButtonCB(CWidgetHandler *p, CFileDialog *owner)
+    { owner->m_szSelectedDir.clear(); owner->Enable(false); };
 };
 
 #endif
