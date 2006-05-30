@@ -269,8 +269,8 @@ void MessageBox(const char *msg, ...)
     va_end(v);
     
     CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 15, 40, 2, 2);
-    CTextWindow *textwin = new CTextWindow(win, 5, 10, 2, 2, true, false, 'r');
-    textwin->AddText(text);
+    CTextLabel *label = new CTextLabel(win, 5, 10, 2, 2, 'r');
+    label->AddText(text);
     CButton *button = new CButton(win, 1, 20, win->maxy()-2, (win->maxx()-20), "OK", 'r');
     button->SetCallBack(CloseCB, win);
     
@@ -290,22 +290,25 @@ bool YesNoBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 20, 50, 2, 2);
+    int maxx, maxy;
+    getmaxyx(stdscr, maxy, maxx);
+    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 20, 50, 2, (maxx-50)/2);
     
-    CTextLabel *textwin = new CTextLabel(win, 10, 46, 2, 2, 'r');
-    textwin->AddText(text);
+    CTextLabel *label = new CTextLabel(win, 10, 46, 2, 2, 'r');
+    label->AddText(text);
     
-    CButton *buttonyes = new CButton(win, 1, 15, (textwin->begy()+textwin->maxy()+2),
+    CButton *buttonyes = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
                                      (win->maxx()-((2*15)+2))/2, "<C>Yes", 'r');
-    CButton *buttonno = new CButton(win, 1, 15, (textwin->begy()+textwin->maxy()+2),
-                                    (buttonyes->begx()+buttonyes->maxx()+2), "<C>No", 'r');
+    CButton *buttonno = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
+                                    (buttonyes->relx()+buttonyes->maxx()+2), "<C>No", 'r');
     buttonyes->SetCallBack(GenButtonCB, win);
     buttonno->SetCallBack(GenButtonCB, win);
     
-    win->touchwin();
-    win->resize(buttonyes->begy()+1, win->width());
+    win->resize(buttonyes->rely()+buttonyes->maxy()+2, win->width());
     
+    erase();
     WidgetManager.Refresh();
+    
     while(WidgetManager.Run() && win->Enabled());
     
     if (!ButtonStack.empty())

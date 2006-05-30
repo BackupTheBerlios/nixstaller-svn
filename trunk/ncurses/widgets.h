@@ -478,6 +478,8 @@ public:
     void SetURCorner(chtype c) { m_cURCorner = c; };
     
     int resize(int nlines, int ncols) { return ::wresize(w, nlines, ncols); };
+    int relx(void) { return (m_pOwner) ? (begx() - m_pOwner->begx()) : begx(); };
+    int rely(void) { return (m_pOwner) ? (begy() - m_pOwner->begy()) : begy(); };
     
     static int GetColorPair(int fg, int bg);
 };

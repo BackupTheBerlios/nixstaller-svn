@@ -686,10 +686,7 @@ bool CWidgetHandler::SetNextWidget()
     
     std::list<CWidgetWindow *>::iterator prev;
     if (m_FocusedChild != m_ChildList.end())
-    {
         prev = m_FocusedChild;
-        (*m_FocusedChild)->LeaveFocus();
-    }
     else
         prev = m_ChildList.begin();
     
@@ -700,6 +697,7 @@ bool CWidgetHandler::SetNextWidget()
         
         if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled())
         {
+            (*prev)->LeaveFocus();
             (*m_FocusedChild)->Focus();
             return true;
         }
@@ -715,10 +713,7 @@ bool CWidgetHandler::SetPrevWidget()
 
     std::list<CWidgetWindow *>::iterator prev;
     if (m_FocusedChild != m_ChildList.end())
-    {
         prev = m_FocusedChild;
-        (*m_FocusedChild)->LeaveFocus();
-    }
     else
         prev = m_ChildList.begin();
     
@@ -731,6 +726,7 @@ bool CWidgetHandler::SetPrevWidget()
         
         if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled())
         {
+            (*prev)->LeaveFocus();
             (*m_FocusedChild)->Focus();
             return true;
         }
@@ -824,6 +820,8 @@ void CWidgetManager::Init()
 
 void CWidgetManager::Refresh()
 {
+    ::refresh();
+
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
         (*it)->refresh();
 }
