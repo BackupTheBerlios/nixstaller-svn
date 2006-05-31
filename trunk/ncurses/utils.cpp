@@ -259,6 +259,20 @@ static bool GenButtonCB(CWidgetHandler *p, CWidgetWindow *owner) { owner->Enable
 // Simple close window callback function.
 static bool CloseCB(CWidgetHandler *p, CWidgetWindow *owner) { owner->Enable(false); return true; };
 
+int MaxX()
+{
+    int y, x;
+    getmaxyx(stdscr, y, x);
+    return x;
+}
+
+int MaxY()
+{
+    int y, x;
+    getmaxyx(stdscr, y, x);
+    return y;
+}
+
 void MessageBox(const char *msg, ...)
 {
     char *text;
@@ -268,7 +282,8 @@ void MessageBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 15, 40, 2, 2);
+    int width = Min(50, MaxX());
+    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, MaxY(), width, 0, (MaxX()-width)/2);
     
     CTextLabel *label = new CTextLabel(win, 5, 10, 2, 2, 'r');
     label->AddText(text);
@@ -277,6 +292,9 @@ void MessageBox(const char *msg, ...)
     button->SetCallBack(CloseCB, win);
     
     win->resize(button->rely()+button->maxy()+2, win->width());
+    win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
+    
+    erase();
     
     WidgetManager.Refresh();
     while(WidgetManager.Run() && win->Enabled());
@@ -294,9 +312,8 @@ bool YesNoBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int maxx, maxy;
-    getmaxyx(stdscr, maxy, maxx);
-    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, 20, 50, 2, (maxx-50)/2);
+    int width = Min(50, MaxX());
+    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, MaxY()-2, width, 2, (MaxX()-width)/2);
     
     CTextLabel *label = new CTextLabel(win, 10, 46, 2, 2, 'r');
     label->AddText(text);
@@ -309,6 +326,7 @@ bool YesNoBox(const char *msg, ...)
     buttonno->SetCallBack(GenButtonCB, win);
     
     win->resize(buttonyes->rely()+buttonyes->maxy()+2, win->width());
+    win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
     
     erase();
     WidgetManager.Refresh();
@@ -338,7 +356,8 @@ std::string FileDialog(const char *start, const char *info, bool needw)
     int maxx, maxy;
     getmaxyx(stdscr, maxy, maxx);
     
-    CFileDialog *filedialog = new CFileDialog(&WidgetManager, 20, 70, 2, (maxx-70)/2, start, info, needw);
+    int width = Min(70, MaxX());
+    CFileDialog *filedialog = new CFileDialog(&WidgetManager, MaxY()-2, width, 2, (MaxX()-width)/2, start, info, needw);
     
     WidgetManager.Refresh();
     

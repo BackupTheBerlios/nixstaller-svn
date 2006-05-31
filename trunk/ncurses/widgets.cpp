@@ -1064,6 +1064,19 @@ void CWidgetWindow::AddStrFormat(int y, int x, std::string ftext, int start, int
     }
 }
 
+int CWidgetWindow::mvwin(int begin_y, int begin_x)
+{
+    int diffy = begy() - begin_y;
+    int diffx = begx() - begin_x;
+    int ret = NCursesWindow::mvwin(begin_y, begin_x);
+    
+    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        //(*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx);
+        (*it)->mvwin(diffy, diffx);
+    
+    return ret;
+}
+
 int CWidgetWindow::GetColorPair(int fg, int bg)
 {
     if (!::has_colors())

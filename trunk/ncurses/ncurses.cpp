@@ -74,7 +74,8 @@ int CNCursScreen::run()
     Root_Window->bkgd(' '|CWidgetWindow::GetColorPair(0, 0));
     
     WidgetManager.Init();
-    CFileDialog *f = new CFileDialog(&WidgetManager, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
+    //CFileDialog *f = new CFileDialog(&WidgetManager, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
+    FileDialog("/", "<C>Select a directory please", false);
     WidgetManager.Refresh();
     while(WidgetManager.Run());
     if (YesNoBox("O Rly?\nYes Rly\nk Wai?"))

@@ -110,6 +110,9 @@ void GetTextFromBlock(std::ifstream &file, std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
 
+inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
+inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };
+
 // These functions should be defined for each frontend
 void EndProg(bool err=false);
 

@@ -485,6 +485,8 @@ public:
     int relx(void) { return (m_pOwner) ? (begx() - m_pOwner->begx()) : begx(); };
     int rely(void) { return (m_pOwner) ? (begy() - m_pOwner->begy()) : begy(); };
     
+    virtual int mvwin(int begin_y, int begin_x);
+    
     static int GetColorPair(int fg, int bg);
 };
 

@@ -79,8 +79,11 @@ public:
 extern CWidgetManager WidgetManager;
 
 // Utils
+int MaxX(void);
+int MaxY(void);
 void MessageBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
+std::string FileDialog(const char *start, const char *info, bool needw);
 
 #ifndef RELEASE
 inline void debugline(const char *t, ...)
