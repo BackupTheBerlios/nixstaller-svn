@@ -1066,15 +1066,76 @@ void CWidgetWindow::AddStrFormat(int y, int x, std::string ftext, int start, int
 
 int CWidgetWindow::mvwin(int begin_y, int begin_x)
 {
+    // Original mvwin won't work
+    
+    if (w->_flags & _ISPAD)
+        return ERR;
+    
+    if (((begin_y + maxy()) > (::MaxY() - 1)) || ((begin_x + maxx()) > (::MaxX() - 1)) ||
+          (begin_y < 0) || (begin_x < 0))
+        return ERR;
+    
+    /* Copying subwindows is allowed, but it is expensive... */
+    //if (w->_flags & _SUBWIN)
+    if (m_pOwner)
+    {
+        int err = ERR;
+        if (par)
+        {
+           /* Now comes the complicated and costly part, you should really
+            * try to avoid to move subwindows. Because a subwindow shares
+            * the text buffers with its parent, one can't do a simple
+            * memmove of the text buffers. One has to create a copy, then
+            * to relocate the subwindow and then to do a copy.
+                            */
+            if ((begin_y - par->begy() == w->_pary) &&
+                 (begin_x - par->begx() == w->_parx))
+                err = OK;   /* we don't actually move */
+            else
+            {
+                NCursesWindow clone = Clone();
+                /* now we have the clone, so relocate win */
+
+                erase();    /* Erase the original place     */
+                /* fill with parents background */
+                bkgd(par->getbkgd());
+                syncup();   /* Tell the parent(s)           */
+
+                err = mvderwin(w, begin_y - par->begy(), begin_x - par->begx());
+                if (err != ERR)
+                {
+                    err = copywin(clone, 0, 0, 0, 0, maxy(), maxx(), 0);
+                    if (ERR != err)
+                        syncup();
+                }
+//                if (ERR == delwin(clone.w))
+//                    err = ERR;
+            }
+        }
+        return err;
+    }
+
+    int diffy = begy() - begin_y;
+    int diffx = begx() - begin_x;
+
+    w->_begy = begin_y;
+    w->_begx = begin_x;
+    
+        /*
     int diffy = begy() - begin_y;
     int diffx = begx() - begin_x;
     int ret = NCursesWindow::mvwin(begin_y, begin_x);
     
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        //(*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx);
-        (*it)->mvwin(diffy, diffx);
+    (*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx);
     
-    return ret;
+    return ret;*/
+
+    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+//         (*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx);
+        (*it)->mvwin(5, 5);
+    
+    return touchwin();
 }
 
 int CWidgetWindow::GetColorPair(int fg, int bg)
