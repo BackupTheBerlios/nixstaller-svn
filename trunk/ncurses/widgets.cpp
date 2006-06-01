@@ -780,16 +780,6 @@ void CWidgetHandler::RemoveChild(CWidgetWindow *p)
     delete p;
 }
 
-bool CWidgetHandler::Run()
-{
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    {
-        if (!(*it)->Run())
-            return false;
-    }
-    return true;
-}
-
 // -------------------------------------
 // Widget manager class
 // -------------------------------------
@@ -858,12 +848,6 @@ bool CWidgetManager::Run()
             
             (*m_FocusedChild)->HandleKeyPost(ch);
         }
-    }
-        
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    {
-        if (!(*it)->Run())
-            return false;
     }
     
     return true;
@@ -1066,82 +1050,28 @@ void CWidgetWindow::AddStrFormat(int y, int x, std::string ftext, int start, int
 
 int CWidgetWindow::mvwin(int begin_y, int begin_x)
 {
-    // Original mvwin won't work
-    
-    if (w->_flags & _ISPAD)
-        return ERR;
-    
-    if (((begin_y + maxy()) > (::MaxY() - 1)) || ((begin_x + maxx()) > (::MaxX() - 1)) ||
-          (begin_y < 0) || (begin_x < 0))
-        return ERR;
-    
-    w->_begy = begin_y;
-    w->_begx = begin_x;
-    
-    /* Copying subwindows is allowed, but it is expensive... */
-    //if (w->_flags & _SUBWIN)
-    if (m_pOwner)
-    {
-        int err = ERR;
-        if (par)
-        {
-           /* Now comes the complicated and costly part, you should really
-            * try to avoid to move subwindows. Because a subwindow shares
-            * the text buffers with its parent, one can't do a simple
-            * memmove of the text buffers. One has to create a copy, then
-            * to relocate the subwindow and then to do a copy.
-                            */
-            if ((begin_y - par->begy() == w->_pary) &&
-                 (begin_x - par->begx() == w->_parx))
-                err = OK;   /* we don't actually move */
-            else
-            {
-                NCursesWindow clone = Clone();
-                /* now we have the clone, so relocate win */
-
-                erase();    /* Erase the original place     */
-                /* fill with parents background */
-                bkgd(par->getbkgd());
-                syncup();   /* Tell the parent(s)           */
-
-                err = mvderwin(w, begin_y - par->begy(), begin_x - par->begx());
-                if (err != ERR)
-                {
-                    err = clone.copywin(*this, 0, 0, 0, 0, maxy(), maxx(), 0);
-                    if (ERR != err)
-                        syncup();
-                }
-                //if (ERR == delwin(clone))
-                //   err = ERR;
-            }
-        }
-        return err;
-    }
-
     int diffy = begy() - begin_y;
     int diffx = begx() - begin_x;
-
-    w->_begy = begin_y;
-    w->_begx = begin_x;
     
-        /*
-    int diffy = begy() - begin_y;
-    int diffx = begx() - begin_x;
     int ret = NCursesWindow::mvwin(begin_y, begin_x);
     
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    (*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx);
-    
-    return ret;*/
-
-    int ret = touchwin();
-    
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    if (ret != ERR)
     {
-        if ((*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx) == ERR)
-            return ERR;
+        // Child widgets won't move without this...
+        if (m_pOwner)
+        {
+            w->_begy = begin_y;
+            w->_begx = begin_x;
+        }
+        
+        // Move all child widgets
+        for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        {
+            if ((*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx) == ERR)
+                return ERR;
+        }
     }
-    
+
     return ret;
 }
 
@@ -1180,8 +1110,9 @@ CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int b
                  char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false, true,
                  m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_pCallBack(NULL)
 {
-    m_szDefocusedTitle = text;
-    m_szFocusedTitle = "< " + m_szDefocusedTitle + " >";
+    m_szDefocusedTitle = "<C>";
+    m_szDefocusedTitle += text;
+    m_szFocusedTitle = "<C>< " + m_szDefocusedTitle + " >";
     m_pCurrentTitle = &m_szFocusedTitle;
 }
 
@@ -1918,10 +1849,10 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     m_pFileField->SetCallBack(FileFieldCB, this);
     
     const int startx = ((ncols + 2) - (2 * 20 + 2)) / 2;
-    m_pOpenButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx, "<C>Open directory", 'r');
+    m_pOpenButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx, "Open directory", 'r');
     m_pOpenButton->SetCallBack(OpenButtonCB, this);
     
-    m_pCancelButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx+22, "<C>Cancel", 'r');
+    m_pCancelButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx+22, "Cancel", 'r');
     m_pCancelButton->SetCallBack(CancelButtonCB, this);
     
     resize(m_pOpenButton->rely()+m_pOpenButton->maxy()+2, ncols);

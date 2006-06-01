@@ -282,13 +282,13 @@ void MessageBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(50, MaxX());
+    int width = Min(35, MaxX());
     CWidgetWindow *win = new CWidgetWindow(&WidgetManager, MaxY(), width, 0, (MaxX()-width)/2);
     
-    CTextLabel *label = new CTextLabel(win, 5, 10, 2, 2, 'r');
+    CTextLabel *label = new CTextLabel(win, 5, width-4, 2, 2, 'r');
     label->AddText(text);
     
-    CButton *button = new CButton(win, 1, 10, (label->rely()+label->maxy()+2), (win->maxx()-10)/2, "<C>OK", 'r');
+    CButton *button = new CButton(win, 1, 10, (label->rely()+label->maxy()+2), (win->maxx()-10)/2, "OK", 'r');
     button->SetCallBack(CloseCB, win);
     
     win->resize(button->rely()+button->maxy()+2, win->width());
@@ -312,25 +312,21 @@ bool YesNoBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(50, MaxX());
+    int width = Min(40, MaxX());
     CWidgetWindow *win = new CWidgetWindow(&WidgetManager, MaxY()-2, width, 2, (MaxX()-width)/2);
     
-    CTextLabel *label = new CTextLabel(win, 10, 46, 2, 2, 'r');
+    CTextLabel *label = new CTextLabel(win, 10, width-4, 2, 2, 'r');
     label->AddText(text);
     
     CButton *buttonyes = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
-                                     (win->maxx()-((2*15)+2))/2, "<C>Yes", 'r');
-    //CButton *buttonyes = new CButton(win, 1, 15, 10, 2, "<C>Yes", 'r');
+                                     (win->maxx()-((2*15)+2))/2, "Yes", 'r');
     CButton *buttonno = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
-                                    (buttonyes->relx()+buttonyes->maxx()+2), "<C>No", 'r');
+                                    (buttonyes->relx()+buttonyes->maxx()+2), "No", 'r');
     buttonyes->SetCallBack(GenButtonCB, win);
     buttonno->SetCallBack(GenButtonCB, win);
     
-    //win->resize(buttonyes->rely()+buttonyes->maxy()+2, win->width());
-    //win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
-    int err = buttonyes->mvwin(buttonyes->begy()-2, buttonyes->begx()-2);
-    
-    //MessageBox("err: %d ret: %d x: %d y: %d", ERR, err, buttonyes->win()->_parx, buttonyes->win()->_pary);
+    win->resize(buttonyes->rely()+buttonyes->maxy()+2, win->width());
+    win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
     
     erase();
     WidgetManager.Refresh();

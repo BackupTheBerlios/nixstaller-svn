@@ -410,8 +410,6 @@ public:
     { if (m_pPreKeyHandler) delete m_pPreKeyHandler; m_pPreKeyHandler = new CValEventHandler<C, D, chtype>(cb, dat); };
     template <typename C, typename D> void BindPost(C cb, D dat)
     { if (m_pPostKeyHandler) delete m_pPostKeyHandler; m_pPostKeyHandler = new CValEventHandler<C, D, chtype>(cb, dat); };
-    
-    virtual bool Run(void);
 };
 
 class CWidgetManager: public CWidgetHandler
@@ -421,7 +419,7 @@ public:
     void Refresh(void);
     void ActivateWidget(CWidgetWindow *p);
     
-    virtual bool Run(void);
+    bool Run(void);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
@@ -486,8 +484,6 @@ public:
     int rely(void) { return (m_pOwner) ? (begy() - m_pOwner->begy()) : begy(); };
     
     virtual int mvwin(int begin_y, int begin_x);
-    
-    WINDOW *win(void) { return w; };
     
     static int GetColorPair(int fg, int bg);
 };
