@@ -320,13 +320,17 @@ bool YesNoBox(const char *msg, ...)
     
     CButton *buttonyes = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
                                      (win->maxx()-((2*15)+2))/2, "<C>Yes", 'r');
+    //CButton *buttonyes = new CButton(win, 1, 15, 10, 2, "<C>Yes", 'r');
     CButton *buttonno = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
                                     (buttonyes->relx()+buttonyes->maxx()+2), "<C>No", 'r');
     buttonyes->SetCallBack(GenButtonCB, win);
     buttonno->SetCallBack(GenButtonCB, win);
     
-    win->resize(buttonyes->rely()+buttonyes->maxy()+2, win->width());
-    win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
+    //win->resize(buttonyes->rely()+buttonyes->maxy()+2, win->width());
+    //win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
+    int err = buttonyes->mvwin(buttonyes->begy()-2, buttonyes->begx()-2);
+    
+    //MessageBox("err: %d ret: %d x: %d y: %d", ERR, err, buttonyes->win()->_parx, buttonyes->win()->_pary);
     
     erase();
     WidgetManager.Refresh();

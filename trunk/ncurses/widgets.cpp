@@ -1075,6 +1075,9 @@ int CWidgetWindow::mvwin(int begin_y, int begin_x)
           (begin_y < 0) || (begin_x < 0))
         return ERR;
     
+    w->_begy = begin_y;
+    w->_begx = begin_x;
+    
     /* Copying subwindows is allowed, but it is expensive... */
     //if (w->_flags & _SUBWIN)
     if (m_pOwner)
@@ -1104,12 +1107,12 @@ int CWidgetWindow::mvwin(int begin_y, int begin_x)
                 err = mvderwin(w, begin_y - par->begy(), begin_x - par->begx());
                 if (err != ERR)
                 {
-                    err = copywin(clone, 0, 0, 0, 0, maxy(), maxx(), 0);
+                    err = clone.copywin(*this, 0, 0, 0, 0, maxy(), maxx(), 0);
                     if (ERR != err)
                         syncup();
                 }
-//                if (ERR == delwin(clone.w))
-//                    err = ERR;
+                //if (ERR == delwin(clone))
+                //   err = ERR;
             }
         }
         return err;
@@ -1131,11 +1134,15 @@ int CWidgetWindow::mvwin(int begin_y, int begin_x)
     
     return ret;*/
 
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-//         (*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx);
-        (*it)->mvwin(5, 5);
+    int ret = touchwin();
     
-    return touchwin();
+    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    {
+        if ((*it)->mvwin((*it)->begy() - diffy, (*it)->begx() - diffx) == ERR)
+            return ERR;
+    }
+    
+    return ret;
 }
 
 int CWidgetWindow::GetColorPair(int fg, int bg)

@@ -487,6 +487,8 @@ public:
     
     virtual int mvwin(int begin_y, int begin_x);
     
+    WINDOW *win(void) { return w; };
+    
     static int GetColorPair(int fg, int bg);
 };
 
@@ -679,9 +681,9 @@ public:
     static bool FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int) { owner->OpenDir(); return true; };
     static bool FileFieldCB(CWidgetHandler *p, CFileDialog *owner, const std::string &dir)
     { owner->OpenDir(dir); return true; };
-    static bool OpenButtonCB(CWidgetHandler *p, CFileDialog *owner) { owner->Enable(false); };
+    static bool OpenButtonCB(CWidgetHandler *p, CFileDialog *owner) { owner->Enable(false); return true; };
     static bool CancelButtonCB(CWidgetHandler *p, CFileDialog *owner)
-    { owner->m_szSelectedDir.clear(); owner->Enable(false); };
+    { owner->m_szSelectedDir.clear(); owner->Enable(false); return true; };
 };
 
 #endif
