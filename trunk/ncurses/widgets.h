@@ -386,6 +386,7 @@ protected:
     virtual void Focus(void);
     virtual void LeaveFocus(void);
     virtual bool HandleKey(chtype ch);
+    virtual bool HandleEvent(CWidgetHandler *p, int type) { return false; };
     
     bool HandleKeyPre(chtype ch); // Gets called before a key is handled
     bool HandleKeyPost(chtype ch); // Gets called after a key is handled
@@ -395,6 +396,8 @@ protected:
                                          m_FocusedChild(m_ChildList.end()) { };
 
 public:
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED };
+
     virtual ~CWidgetHandler(void);
     
     void AddChild(CWidgetWindow *p);
@@ -426,7 +429,7 @@ class CWidgetWindow: public CWidgetHandler, public NCursesWindow
 {
 public:
     typedef std::map<int, std::map<int, int> > ColorMapType;
-    
+
 private:
     bool m_bBox;
     short m_sCurColor; // Current color pair used in formatted text
@@ -447,8 +450,10 @@ protected:
     virtual void Focus(void) { bkgd(m_cFocusedColors); refresh(); CWidgetHandler::Focus(); refresh(); };
     virtual void LeaveFocus(void) { bkgd(m_cDefocusedColors); refresh(); CWidgetHandler::LeaveFocus(); refresh(); };
     virtual void Draw(void) { };
+    
     unsigned GetUnFormatLen(const std::string &str);
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
+    void PushEvent(int type);
     
     CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
                   bool box, chtype fcolor, chtype dfcolor);
@@ -667,6 +672,9 @@ class CFileDialog: public CWidgetWindow // Currently only browses directories
     void OpenDir(std::string newdir="");
     void UpdateDirField(void);
     
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    
 public:
     CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *s,
                 const char *i, bool w);
@@ -674,7 +682,7 @@ public:
     std::string *Selection(void) { return &m_szSelectedDir; };
     
     static bool FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key);
-    static bool FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int) { owner->OpenDir(); return true; };
+    static bool FileMenuCB(CWidgetHandler *p, CFileDialog *owner, int) { /*owner->OpenDir();*/ return true; };
     static bool FileFieldCB(CWidgetHandler *p, CFileDialog *owner, const std::string &dir)
     { owner->OpenDir(dir); return true; };
     static bool OpenButtonCB(CWidgetHandler *p, CFileDialog *owner) { owner->Enable(false); return true; };

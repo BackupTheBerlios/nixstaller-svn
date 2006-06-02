@@ -901,27 +901,6 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
     owner->AddChild(this);
 }
 
-int CWidgetWindow::refresh()
-{
-    if (m_bBox)
-        Box();
-    
-    if (!m_szTitle.empty())
-        addstr(0, (maxx()-m_szTitle.length())/2, m_szTitle.c_str());
-    
-    Draw();
-    
-    int ret = NCursesWindow::refresh();
-    
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    {
-        if ((*it)->Enabled())
-            (*it)->refresh();
-    }
-    
-    return ret;
-}
-
 unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
 {
     unsigned length = str.length();
@@ -958,6 +937,35 @@ unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
     }
     
     return length;
+}
+
+void CWidgetWindow::PushEvent(int type)
+{
+    CWidgetWindow *owner = m_pOwner;
+    
+    while (owner && !owner->HandleEvent(this, type))
+        owner = owner->m_pOwner;
+}
+
+int CWidgetWindow::refresh()
+{
+    if (m_bBox)
+        Box();
+    
+    if (!m_szTitle.empty())
+        addstr(0, (maxx()-m_szTitle.length())/2, m_szTitle.c_str());
+    
+    Draw();
+    
+    int ret = NCursesWindow::refresh();
+    
+    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+    {
+        if ((*it)->Enabled())
+            (*it)->refresh();
+    }
+    
+    return ret;
 }
 
 void CWidgetWindow::AddStrFormat(int y, int x, std::string ftext, int start, int n)
@@ -1125,6 +1133,7 @@ bool CButton::HandleKey(chtype ch)
     {
         if (m_pCallBack)
             (*m_pCallBack)(this);
+        PushEvent(EVENT_CALLBACK);
         return true;
     }
     
@@ -1502,15 +1511,8 @@ void CMenu::HScroll(int n)
 void CMenu::VScroll(int n)
 {
     bool scroll = false;
-    
-    /*
-    if ((GetCurrent() + n) < 0)
-        n = (GetCurrent());
-    else if ((GetCurrent() + n) >= m_MenuItems.size())
-        n = ((m_MenuItems.size() - 0) - GetCurrent());
-    */
-    
     int newline = m_iCursorLine + n;
+    
     if (newline < 0)
     {
         if ((m_iStartEntry + newline) < 0)
@@ -1520,7 +1522,6 @@ void CMenu::VScroll(int n)
         }
         else
             scroll = true;
-        //m_iCursorLine = 0;
     }
     else if (newline >= m_pTextWin->height())
     {
@@ -1534,8 +1535,6 @@ void CMenu::VScroll(int n)
         }
         else
             scroll = true;
-        //n -= ((m_pTextWin->height()-1) - cur);
-        //m_iCursorLine = m_pTextWin->height()-1;
     }
     else
         m_iCursorLine = newline;
@@ -1593,20 +1592,25 @@ bool CMenu::HandleKey(chtype ch)
     {
         case KEY_LEFT:
             HScroll(-1);
+            PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_RIGHT:
             HScroll(1);
+            PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_UP:
             VScroll(-1);
+            PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_DOWN:
             VScroll(1);
+            PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_ENTER:
         case '\n':
         case '\r':
         {
+            PushEvent(EVENT_CALLBACK);
             menu_entry_s *entry = &m_MenuItems[m_iStartEntry + m_iCursorLine];
             if (entry->callback)
                 (*entry->callback)(this, m_iStartEntry + m_iCursorLine);
@@ -1614,9 +1618,11 @@ bool CMenu::HandleKey(chtype ch)
         }
         case KEY_NPAGE:
             VScroll(m_pTextWin->height());
+            PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_PPAGE:
             VScroll(-m_pTextWin->height());
+            PushEvent(EVENT_DATACHANGED);
             break;
         default:
             if (!isprint(ch))
@@ -1631,7 +1637,10 @@ bool CMenu::HandleKey(chtype ch)
                     it = std::lower_bound(m_MenuItems.begin(), cur, ch); // Failed, start from the begin
                 
                 if ((it != m_MenuItems.end()) && (it->name[0] == ch))
+                {
                     VScroll(std::distance(cur, it));
+                    PushEvent(EVENT_DATACHANGED);
+                }
             }
             break;
     }
@@ -1803,6 +1812,7 @@ bool CInputField::HandleKey(chtype ch)
         case '\r':
             if (m_pCallBack)
                 (*m_pCallBack)(this, m_szText);
+            PushEvent(EVENT_CALLBACK);
             break;
         default:
             if (!isprint(ch) ||
@@ -1845,15 +1855,15 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     m_pFileField = new CInputField(this, 3, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+1), 2, 'r');
     m_pFileField->SetText(m_szStartDir);
     
-    m_pFileMenu->BindPost(FileMenuKeyCB, this);
-    m_pFileField->SetCallBack(FileFieldCB, this);
+    //m_pFileMenu->BindPost(FileMenuKeyCB, this);
+    //m_pFileField->SetCallBack(FileFieldCB, this);
     
     const int startx = ((ncols + 2) - (2 * 20 + 2)) / 2;
     m_pOpenButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx, "Open directory", 'r');
-    m_pOpenButton->SetCallBack(OpenButtonCB, this);
+    //m_pOpenButton->SetCallBack(OpenButtonCB, this);
     
     m_pCancelButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx+22, "Cancel", 'r');
-    m_pCancelButton->SetCallBack(CancelButtonCB, this);
+    //m_pCancelButton->SetCallBack(CancelButtonCB, this);
     
     resize(m_pOpenButton->rely()+m_pOpenButton->maxy()+2, ncols);
     
@@ -1911,8 +1921,10 @@ void CFileDialog::OpenDir(std::string newdir)
 
     closedir (dp);
     
-    UpdateDirField();
     m_pFileMenu->refresh();
+    
+    // Update AFTER file menu, since it may sort items in Draw()
+    UpdateDirField();
     m_pFileField->refresh();
 }
 
@@ -1922,6 +1934,40 @@ void CFileDialog::UpdateDirField()
         m_pFileField->SetText('/' + *m_pFileMenu->GetCurrentItemName());
     else
         m_pFileField->SetText(m_szSelectedDir + '/' + *m_pFileMenu->GetCurrentItemName());
+}
+
+bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (p == m_pFileMenu)
+    {
+        switch (type)
+        {
+            case EVENT_CALLBACK:
+                OpenDir();
+                return true;
+            case EVENT_DATACHANGED:
+                UpdateDirField();
+                return true;
+        }
+    }
+    else if (p == m_pFileField)
+    {
+        OpenDir(m_pFileField->GetText());
+        return true;
+    }
+    else if (p == m_pOpenButton)
+    {
+        Enable(false);
+        return true;
+    }
+    else if (p == m_pCancelButton)
+    {
+        m_szSelectedDir.clear();
+        Enable(false);
+        return true;
+    }
+    
+    return false;
 }
 
 bool CFileDialog::FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key)
