@@ -283,6 +283,7 @@ void MessageBox(const char *msg, ...)
     va_end(v);
     
     int width = Min(35, MaxX());
+    /*
     CWidgetWindow *win = new CWidgetWindow(&WidgetManager, MaxY(), width, 0, (MaxX()-width)/2);
     
     CTextLabel *label = new CTextLabel(win, 5, width-4, 2, 2, 'r');
@@ -297,9 +298,13 @@ void MessageBox(const char *msg, ...)
     erase();
     
     WidgetManager.Refresh();
-    while(WidgetManager.Run() && win->Enabled());
+    while(WidgetManager.Run() && win->Enabled());*/
+    
+    CMessageBox *msgbox = new CMessageBox(&WidgetManager, MaxY(), width, 0, 0, text);
+    msgbox->Run();
     
     free(text);
+    WidgetManager.RemoveChild(msgbox);
 }
 
 bool YesNoBox(const char *msg, ...)

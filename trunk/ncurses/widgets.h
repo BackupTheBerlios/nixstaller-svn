@@ -368,7 +368,8 @@ class CWidgetHandler
 {
     bool m_bEnabled;
     bool m_bFocused, m_bCanFocus;
-
+    bool m_bDeleteMe;
+    
     bool SetNextWidget(void);
     bool SetPrevWidget(void);
     
@@ -391,7 +392,7 @@ protected:
     bool HandleKeyPre(chtype ch); // Gets called before a key is handled
     bool HandleKeyPost(chtype ch); // Gets called after a key is handled
     
-    CWidgetHandler(bool canfocus=true) : m_bEnabled(true), m_bFocused(false), m_bCanFocus(canfocus),
+    CWidgetHandler(bool canfocus=true) : m_bEnabled(true), m_bFocused(false), m_bCanFocus(canfocus), m_bDeleteMe(false),
                                          m_pPreKeyHandler(NULL), m_pPostKeyHandler(NULL),
                                          m_FocusedChild(m_ChildList.end()) { };
 
@@ -417,7 +418,11 @@ public:
 
 class CWidgetManager: public CWidgetHandler
 {
+    bool m_bQuit;
+    
 public:
+    CWidgetManager(void) : m_bQuit(false) { };
+    
     void Init(void);
     void Refresh(void);
     void ActivateWidget(CWidgetWindow *p);
@@ -658,6 +663,21 @@ public:
     
     template <typename C, typename D> void SetCallBack(C cb, D dat)
     { if (m_pCallBack) delete m_pCallBack; m_pCallBack = new CValEventHandler<C, D, const std::string &>(cb, dat); };
+};
+
+class CMessageBox: public CWidgetWindow
+{
+    CTextLabel *m_pLabel;
+    CButton *m_pOKButton;
+    bool m_bFinished;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    
+public:
+    CMessageBox(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text);
+    
+    void Run(void);
 };
 
 class CFileDialog: public CWidgetWindow // Currently only browses directories

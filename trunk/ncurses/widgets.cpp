@@ -682,7 +682,16 @@ bool CWidgetHandler::HandleKeyPost(chtype ch)
 bool CWidgetHandler::SetNextWidget()
 {
     if (m_ChildList.size() < 2)
+    {
+        bool ret = (m_FocusedChild != m_ChildList.begin());
+        m_FocusedChild = m_ChildList.begin();
+        return ret;
+    }
+    else if (m_ChildList.empty())
+    {
+        m_FocusedChild = m_ChildList.end();
         return false;
+    }
     
     std::list<CWidgetWindow *>::iterator prev;
     if (m_FocusedChild != m_ChildList.end())
@@ -695,7 +704,7 @@ bool CWidgetHandler::SetNextWidget()
         if (m_FocusedChild == m_ChildList.end())
             m_FocusedChild = m_ChildList.begin();
         
-        if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled())
+        if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled() && !(*m_FocusedChild)->m_bDeleteMe)
         {
             (*prev)->LeaveFocus();
             (*m_FocusedChild)->Focus();
@@ -709,7 +718,16 @@ bool CWidgetHandler::SetNextWidget()
 bool CWidgetHandler::SetPrevWidget()
 {
     if (m_ChildList.size() < 2)
+    {
+        bool ret = (m_FocusedChild != m_ChildList.begin());
+        m_FocusedChild = m_ChildList.begin();
+        return ret;
+    }
+    else if (m_ChildList.empty())
+    {
+        m_FocusedChild = m_ChildList.end();
         return false;
+    }
 
     std::list<CWidgetWindow *>::iterator prev;
     if (m_FocusedChild != m_ChildList.end())
@@ -724,7 +742,7 @@ bool CWidgetHandler::SetPrevWidget()
     
         m_FocusedChild--;
         
-        if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled())
+        if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled() && !(*m_FocusedChild)->m_bDeleteMe)
         {
             (*prev)->LeaveFocus();
             (*m_FocusedChild)->Focus();
@@ -772,12 +790,21 @@ void CWidgetHandler::AddChild(CWidgetWindow *p)
 }
 
 void CWidgetHandler::RemoveChild(CWidgetWindow *p)
-{
+{/*
     if (*m_FocusedChild == p)
         SetPrevWidget();
     
+    bool changed = (*m_FocusedChild != p);
     m_ChildList.remove(p);
-    delete p;
+    
+    if (!changed)
+    {
+        // Have to do this after the child was removed from the list, otherwise it would be invalid
+        m_FocusedChild = m_ChildList.end();
+    }
+    
+    delete p;*/
+    p->m_bDeleteMe = true; // Delete it later, incase we are in a loop from ie Run()
 }
 
 // -------------------------------------
@@ -828,12 +855,52 @@ void CWidgetManager::ActivateWidget(CWidgetWindow *p)
             m_ChildList.erase(it);
             AddChild(p);
             Refresh();
+            break;
         }
     }
 }
 
 bool CWidgetManager::Run()
 {
+    if (m_bQuit)
+        return false;
+    
+    // Check for widgets that should be removed
+    bool done = false, dirty = false;
+    while(!done)
+    {
+        std::list<CWidgetWindow *>::iterator it = m_ChildList.begin();
+        for (;it!=m_ChildList.end(); it++)
+        {
+            if ((*it)->m_bDeleteMe)
+            {
+                CWidgetWindow *w = *it;
+                if (m_FocusedChild == it)
+                    SetPrevWidget();
+    
+                bool changed = (m_FocusedChild != it);
+                m_ChildList.erase(it);
+    
+                if (!changed)
+                {
+                    // Have to do this after the child was removed from the list, otherwise it would be invalid
+                    m_FocusedChild = m_ChildList.end();
+                }
+    
+                delete w;
+                dirty = true;
+                break; // Iter was removed, start over
+            }
+        }
+        done = (it == m_ChildList.end());
+    }
+    
+    if (dirty)
+    {
+        ::erase();
+        Refresh();
+    }
+
     if (m_FocusedChild != m_ChildList.end())
     {
         chtype ch = (*m_FocusedChild)->getch();
@@ -841,7 +908,12 @@ bool CWidgetManager::Run()
         {
             //debugline("key: %d\n", ch);
             if (ch == CTRL('[')) // Escape pressed
+            {
+                // Set this so that later calls will also return false. This is required incase this function
+                // wasn't called from the main app.
+                m_bQuit = true;
                 return false;
+            }
             
             if (!(*m_FocusedChild)->HandleKeyPre(ch))
                 (*m_FocusedChild)->HandleKey(ch);
@@ -1838,6 +1910,45 @@ void CInputField::Draw()
 }
 
 // -------------------------------------
+// Message Box class
+// -------------------------------------
+
+CMessageBox::CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                         const char *text) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x),
+                                             m_bFinished(false)
+{
+    m_pLabel = new CTextLabel(this, maxlines-3, ncols-4, 2, 2, 'r');
+    m_pLabel->AddText(text);
+    
+    m_pOKButton = new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (ncols-10)/2, "OK", 'r');
+    
+    // Resize window and center it
+    resize(m_pOKButton->rely()+m_pOKButton->maxy()+2, ncols);
+    mvwin((MaxY() - maxlines)/2, (MaxX() - ncols)/2);
+    
+    // Refresh main screen, this is required after a window has been resized or moved
+    ::erase();
+    WidgetManager.Refresh();
+}
+
+bool CMessageBox::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (p == m_pOKButton)
+    {
+        m_bFinished = true;
+        return true;
+    }
+    
+    return false;
+}
+
+void CMessageBox::Run()
+{
+    while (WidgetManager.Run() && !m_bFinished)
+        ;
+}
+
+// -------------------------------------
 // File dialog class
 // -------------------------------------
 
@@ -1957,6 +2068,7 @@ bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
     }
     else if (p == m_pOpenButton)
     {
+        MessageBox("Open");
         Enable(false);
         return true;
     }
