@@ -76,8 +76,6 @@ int CNCursScreen::run()
     WidgetManager.Init();
     //CFileDialog *f = new CFileDialog(&WidgetManager, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
     FileDialog("/", "<C>Select a directory please", false);
-    WidgetManager.Refresh();
-    while(WidgetManager.Run());
     if (YesNoBox("O Rly?\nYes Rly\nk Wai?"))
         MessageBox("OK");
     else
@@ -132,7 +130,7 @@ void CNCursBase::MsgBox(const char *str, ...)
     for (int i=0;i<51;i++)
     {
         twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd <rev>sd f</rev> fsd fds tt\n", i));
-        menu->AddItem(CreateText("<C>menu item %d\n", i), menucb, 0);
+        menu->AddItem(CreateText("<C>menu item %d\n", i));
     }
 
     //twin->refresh();

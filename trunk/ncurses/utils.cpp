@@ -249,15 +249,6 @@ int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
 #endif
 
 #include "ncurses.h"
-#include <stack>
-
-// stack containing addresses of buttons which are called by GenButtonCB().
-// By comparing the top button from the stack we can see which button was last called.
-static std::stack<CWidgetHandler *> ButtonStack;
-static bool GenButtonCB(CWidgetHandler *p, CWidgetWindow *owner) { owner->Enable(false); ButtonStack.push(p); return true; };
-
-// Simple close window callback function.
-static bool CloseCB(CWidgetHandler *p, CWidgetWindow *owner) { owner->Enable(false); return true; };
 
 int MaxX()
 {
@@ -283,23 +274,6 @@ void MessageBox(const char *msg, ...)
     va_end(v);
     
     int width = Min(35, MaxX());
-    /*
-    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, MaxY(), width, 0, (MaxX()-width)/2);
-    
-    CTextLabel *label = new CTextLabel(win, 5, width-4, 2, 2, 'r');
-    label->AddText(text);
-    
-    CButton *button = new CButton(win, 1, 10, (label->rely()+label->maxy()+2), (win->maxx()-10)/2, "OK", 'r');
-    button->SetCallBack(CloseCB, win);
-    
-    win->resize(button->rely()+button->maxy()+2, win->width());
-    win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
-    
-    erase();
-    
-    WidgetManager.Refresh();
-    while(WidgetManager.Run() && win->Enabled());*/
-    
     CMessageBox *msgbox = new CMessageBox(&WidgetManager, MaxY(), width, 0, 0, text);
     msgbox->Run();
     
@@ -311,48 +285,19 @@ bool YesNoBox(const char *msg, ...)
 {
     char *text;
     va_list v;
-    bool ret = false;
     
     va_start(v, msg);
     vasprintf(&text, msg, v);
     va_end(v);
     
     int width = Min(40, MaxX());
-    CWidgetWindow *win = new CWidgetWindow(&WidgetManager, MaxY()-2, width, 2, (MaxX()-width)/2);
     
-    CTextLabel *label = new CTextLabel(win, 10, width-4, 2, 2, 'r');
-    label->AddText(text);
-    
-    CButton *buttonyes = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
-                                     (win->maxx()-((2*15)+2))/2, "Yes", 'r');
-    CButton *buttonno = new CButton(win, 1, 15, (label->rely()+label->maxy()+2),
-                                    (buttonyes->relx()+buttonyes->maxx()+2), "No", 'r');
-    buttonyes->SetCallBack(GenButtonCB, win);
-    buttonno->SetCallBack(GenButtonCB, win);
-    
-    win->resize(buttonyes->rely()+buttonyes->maxy()+2, win->width());
-    win->mvwin((MaxY() - win->maxy())/2, (MaxX() - win->maxx())/2);
-    
-    erase();
-    WidgetManager.Refresh();
-    
-    while(WidgetManager.Run() && win->Enabled());
-    
-    if (!ButtonStack.empty())
-    {
-        if (ButtonStack.top() == buttonyes)
-        {
-            ret = true;
-            ButtonStack.pop();
-        }
-        else if (ButtonStack.top() == buttonno)
-        {
-            ret = false;
-            ButtonStack.pop();
-        }
-    }
+    CYesNoBox *yesnobox = new CYesNoBox(&WidgetManager, MaxY(), width, 0, 0, text);
+    bool ret = yesnobox->Run();
     
     free(text);
+    WidgetManager.RemoveChild(yesnobox);
+    
     return ret;
 }
 
@@ -362,11 +307,11 @@ std::string FileDialog(const char *start, const char *info, bool needw)
     getmaxyx(stdscr, maxy, maxx);
     
     int width = Min(70, MaxX());
-    CFileDialog *filedialog = new CFileDialog(&WidgetManager, MaxY()-2, width, 2, (MaxX()-width)/2, start, info, needw);
+    int height = Min(30, MaxY());
+    CFileDialog *filedialog = new CFileDialog(&WidgetManager, height, width, 0, 0, start, info, needw);
+    std::string ret = filedialog->Run();
     
-    WidgetManager.Refresh();
+    WidgetManager.RemoveChild(filedialog);
     
-    while(WidgetManager.Run() && filedialog->Enabled());
-    
-    return *filedialog->Selection();
+    return ret;
 }

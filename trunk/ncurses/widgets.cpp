@@ -656,27 +656,18 @@ CWidgetHandler::~CWidgetHandler()
 
 bool CWidgetHandler::HandleKey(chtype ch)
 {
-    return ((m_FocusedChild != m_ChildList.end()) && (*m_FocusedChild)->HandleKey(ch));
-}
-
-bool CWidgetHandler::HandleKeyPre(chtype ch)
-{
-    if ((m_FocusedChild != m_ChildList.end()) && (((ch == 9) && SetNextWidget()) ||
-         ((ch == KEY_BTAB) && SetPrevWidget())))
-        return true; // Next/previous widget
+    if (m_FocusedChild != m_ChildList.end())
+    {
+        if ((ch == 9) && SetNextWidget())
+            return true;
+        
+        if ((ch == KEY_BTAB) && SetPrevWidget())
+            return true;
+        
+        return ((*m_FocusedChild)->HandleKey(ch));
+    }
     
-    if (m_pPreKeyHandler && (*m_pPreKeyHandler)(this, ch))
-        return true;
-
     return false;
-}
-
-bool CWidgetHandler::HandleKeyPost(chtype ch)
-{
-    if (m_pPostKeyHandler && (*m_pPostKeyHandler)(this, ch))
-        return true;
-
-    return ((m_FocusedChild != m_ChildList.end()) && ((*m_FocusedChild)->HandleKeyPost(ch)));
 }
 
 bool CWidgetHandler::SetNextWidget()
@@ -770,6 +761,14 @@ void CWidgetHandler::LeaveFocus()
         (*m_FocusedChild)->LeaveFocus();
 }
 
+void CWidgetHandler::PushEvent(int type)
+{
+    CWidgetHandler *owner = m_pOwner;
+    
+    while (owner && !owner->HandleEvent(this, type))
+        owner = owner->m_pOwner;
+}
+
 void CWidgetHandler::AddChild(CWidgetWindow *p)
 {
     if (m_FocusedChild != m_ChildList.end())
@@ -807,6 +806,18 @@ void CWidgetHandler::RemoveChild(CWidgetWindow *p)
     p->m_bDeleteMe = true; // Delete it later, incase we are in a loop from ie Run()
 }
 
+void CWidgetHandler::Enable(bool e)
+{
+    m_bEnabled = e;
+    
+    if (!e)
+    {
+        // Disabled widgets shouldn't have focus
+        if (*m_pOwner->m_FocusedChild == this)
+            m_pOwner->SetPrevWidget();
+    }
+}
+
 // -------------------------------------
 // Widget manager class
 // -------------------------------------
@@ -840,7 +851,10 @@ void CWidgetManager::Refresh()
     ::refresh();
 
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-        (*it)->refresh();
+    {
+        if ((*it)->Enabled() && !(*it)->m_bDeleteMe)
+            (*it)->refresh();
+    }
 }
 
 void CWidgetManager::ActivateWidget(CWidgetWindow *p)
@@ -915,10 +929,7 @@ bool CWidgetManager::Run()
                 return false;
             }
             
-            if (!(*m_FocusedChild)->HandleKeyPre(ch))
-                (*m_FocusedChild)->HandleKey(ch);
-            
-            (*m_FocusedChild)->HandleKeyPost(ch);
+            (*m_FocusedChild)->HandleKey(ch);
         }
     }
     
@@ -935,10 +946,10 @@ chtype CWidgetWindow::m_cDefaultFocusedColors;
 chtype CWidgetWindow::m_cDefaultDefocusedColors;
     
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box,
-                             chtype fcolor, chtype dfcolor) : NCursesWindow(nlines, ncols, begin_y, begin_x),
+                             chtype fcolor, chtype dfcolor) : CWidgetHandler(owner),
+                                                              NCursesWindow(nlines, ncols, begin_y, begin_x),
                                                               m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
-                                                              m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0),
-                                                              m_pOwner(NULL)
+                                                              m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
     owner->AddChild(this);
@@ -946,28 +957,29 @@ CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int b
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
                              bool box, bool canfocus, chtype fcolor,
-                             chtype dfcolor) : CWidgetHandler(canfocus), NCursesWindow(*owner, nlines, ncols,
-                                                                                       begin_y, begin_x, absrel),
+                             chtype dfcolor) : CWidgetHandler(owner, canfocus),
+                                               NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
                                                m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
-                                               m_cULCorner(0), m_cURCorner(0), m_pOwner(owner)
+                                               m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
-                             bool box) : NCursesWindow(nlines, ncols, begin_y, begin_x), m_bBox(box), m_sCurColor(0),
-                                         m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0),
-                                         m_pOwner(NULL)
+                             bool box) : CWidgetHandler(owner), NCursesWindow(nlines, ncols, begin_y, begin_x),
+                                         m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0),
+                                         m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
-                             bool box) : NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
+                             bool box) : CWidgetHandler(owner),
+                                         NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
                                          m_bBox(box), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
-                                         m_cULCorner(0), m_cURCorner(0), m_pOwner(owner)
+                                         m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
     owner->AddChild(this);
@@ -1009,14 +1021,6 @@ unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
     }
     
     return length;
-}
-
-void CWidgetWindow::PushEvent(int type)
-{
-    CWidgetWindow *owner = m_pOwner;
-    
-    while (owner && !owner->HandleEvent(this, type))
-        owner = owner->m_pOwner;
 }
 
 int CWidgetWindow::refresh()
@@ -1188,7 +1192,7 @@ chtype CButton::m_cDefaultDefocusedColors;
 
 CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
                  char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false, true,
-                 m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_pCallBack(NULL)
+                 m_cDefaultFocusedColors, m_cDefaultDefocusedColors)
 {
     m_szDefocusedTitle = "<C>";
     m_szDefocusedTitle += text;
@@ -1203,8 +1207,6 @@ bool CButton::HandleKey(chtype ch)
     
     if ((ch == KEY_ENTER) || (ch == '\n') || (ch == 'r'))
     {
-        if (m_pCallBack)
-            (*m_pCallBack)(this);
         PushEvent(EVENT_CALLBACK);
         return true;
     }
@@ -1242,8 +1244,8 @@ void CScrollbar::CalcScrollStep()
 
 void CScrollbar::Draw()
 {
-    if (m_pOwner)
-        bkgd(m_pOwner->getbkgd()|A_REVERSE);
+    if (par)
+        bkgd(par->getbkgd()|A_REVERSE);
     else
         bkgd(::getbkgd(stdscr)|A_REVERSE);
     
@@ -1608,6 +1610,8 @@ void CMenu::VScroll(int n)
         else
             scroll = true;
     }
+    else if (newline >= m_MenuItems.size())
+        m_iCursorLine = ((m_MenuItems.size()-1)-m_iStartEntry);
     else
         m_iCursorLine = newline;
 
@@ -1622,29 +1626,6 @@ void CMenu::VScroll(int n)
     }
     
     refresh();
-}
-
-void CMenu::AddItem(const std::string &s, CBaseValEventHandler<int> *cb)
-{
-    m_MenuItems.push_back(menu_entry_s(s, cb));
-    m_bSortItems = true;
-    
-    int h = m_MenuItems.size() - m_pTextWin->height();
-    if (h < 0)
-        h = 0;
-    m_pVScrollbar->SetMinMax(0, h);
-
-    unsigned len = GetUnFormatLen(s);
-    if (len > m_iLongestLine)
-    {
-        m_iLongestLine = len;
-        
-        if (m_iLongestLine > m_pTextWin->width())
-            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
-    }
-    
-    m_pVScrollbar->Enable((m_MenuItems.size() > m_pTextWin->height()));
-    m_pHScrollbar->Enable((m_iLongestLine > m_pTextWin->width()));
 }
 
 bool CMenu::HandleKey(chtype ch)
@@ -1683,9 +1664,6 @@ bool CMenu::HandleKey(chtype ch)
         case '\r':
         {
             PushEvent(EVENT_CALLBACK);
-            menu_entry_s *entry = &m_MenuItems[m_iStartEntry + m_iCursorLine];
-            if (entry->callback)
-                (*entry->callback)(this, m_iStartEntry + m_iCursorLine);
             break;
         }
         case KEY_NPAGE:
@@ -1701,14 +1679,14 @@ bool CMenu::HandleKey(chtype ch)
                 handled = false;
             else // Go to item which starts with typed character
             {
-                std::vector<menu_entry_s>::iterator cur = (m_MenuItems.begin() + GetCurrent());
+                std::vector<std::string>::iterator cur = (m_MenuItems.begin() + GetCurrent());
                 
                 // First try from current position
-                std::vector<menu_entry_s>::iterator it = std::lower_bound(cur+1, m_MenuItems.end(), ch);
-                if ((it == m_MenuItems.end()) || (it->name[0] != ch))
-                    it = std::lower_bound(m_MenuItems.begin(), cur, ch); // Failed, start from the begin
+                std::vector<std::string>::iterator it = std::lower_bound(cur+1, m_MenuItems.end(), ch, LowerChar);
+                if ((it == m_MenuItems.end()) || ((*it)[0] != ch))
+                    it = std::lower_bound(m_MenuItems.begin(), cur, ch, LowerChar); // Failed, start from the begin
                 
-                if ((it != m_MenuItems.end()) && (it->name[0] == ch))
+                if ((it != m_MenuItems.end()) && ((*it)[0] == ch))
                 {
                     VScroll(std::distance(cur, it));
                     PushEvent(EVENT_DATACHANGED);
@@ -1739,7 +1717,7 @@ void CMenu::Draw()
             if (m_iCursorLine == lines)
                 m_pTextWin->attron(A_REVERSE);
             
-            m_pTextWin->AddStrFormat(lines, 0, m_MenuItems[i].name.c_str(), (int)m_pHScrollbar->GetValue(),
+            m_pTextWin->AddStrFormat(lines, 0, m_MenuItems[i].c_str(), (int)m_pHScrollbar->GetValue(),
                                      m_pTextWin->width());
             
             if (m_iCursorLine == lines)
@@ -1748,11 +1726,31 @@ void CMenu::Draw()
     }
 }
 
+void CMenu::AddItem(std::string s)
+{
+    m_MenuItems.push_back(s);
+    m_bSortItems = true;
+    
+    int h = m_MenuItems.size() - m_pTextWin->height();
+    if (h < 0)
+        h = 0;
+    m_pVScrollbar->SetMinMax(0, h);
+
+    unsigned len = GetUnFormatLen(s);
+    if (len > m_iLongestLine)
+    {
+        m_iLongestLine = len;
+        
+        if (m_iLongestLine > m_pTextWin->width())
+            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
+    }
+    
+    m_pVScrollbar->Enable((m_MenuItems.size() > m_pTextWin->height()));
+    m_pHScrollbar->Enable((m_iLongestLine > m_pTextWin->width()));
+}
+
 void CMenu::Clear()
 {
-    for (std::vector<menu_entry_s>::iterator it=m_MenuItems.begin(); it!=m_MenuItems.end(); it++)
-        delete it->callback;
-    
     m_MenuItems.clear();
     m_iCursorLine = m_iStartEntry = m_iLongestLine = 0;
     m_pHScrollbar->SetCurrent(0);
@@ -1769,10 +1767,9 @@ chtype CInputField::m_cDefaultDefocusedColors;
 CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
                          int max) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true, true,
                                                   m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_iMaxChars(max),
-                                    m_iCursorPos(0), m_iScrollOffset(0), m_pCallBack(NULL)
+                                    m_iCursorPos(0), m_iScrollOffset(0)
 {
     m_pOutputWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
-    m_pOutputWin->BindPre(DisableKeysCB, 0);
 }
 
 void CInputField::Addch(chtype ch)
@@ -1874,16 +1871,16 @@ bool CInputField::HandleKey(chtype ch)
             break;
         case KEY_DC:
             Delch(false);
+            PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_BACKSPACE:
         case 0x07f: // Some terminals may give this instead of KEY_BACKSPACE
             Delch(true);
+            PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_ENTER:
         case '\n':
         case '\r':
-            if (m_pCallBack)
-                (*m_pCallBack)(this, m_szText);
             PushEvent(EVENT_CALLBACK);
             break;
         default:
@@ -1891,7 +1888,10 @@ bool CInputField::HandleKey(chtype ch)
                  (std::find(m_IllegalCharList.begin(), m_IllegalCharList.begin(), ch) != m_IllegalCharList.end()))
                 handled = false;
             else
+            {
                 Addch(ch);
+                PushEvent(EVENT_DATACHANGED);
+            }
             break;
     }
     
@@ -1915,16 +1915,16 @@ void CInputField::Draw()
 
 CMessageBox::CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
                          const char *text) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x),
-                                             m_bFinished(false)
+                                             m_bFinished(false), m_pWidgetManager(owner)
 {
-    m_pLabel = new CTextLabel(this, maxlines-3, ncols-4, 2, 2, 'r');
+    m_pLabel = new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r');
     m_pLabel->AddText(text);
     
     m_pOKButton = new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (ncols-10)/2, "OK", 'r');
     
     // Resize window and center it
     resize(m_pOKButton->rely()+m_pOKButton->maxy()+2, ncols);
-    mvwin((MaxY() - maxlines)/2, (MaxX() - ncols)/2);
+    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
     
     // Refresh main screen, this is required after a window has been resized or moved
     ::erase();
@@ -1942,10 +1942,45 @@ bool CMessageBox::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
-void CMessageBox::Run()
+// -------------------------------------
+// Yes-No Box class
+// -------------------------------------
+
+CYesNoBox::CYesNoBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                     const char *text) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x),
+                                         m_bFinished(false), m_bYes(false), m_pWidgetManager(owner)
 {
-    while (WidgetManager.Run() && !m_bFinished)
-        ;
+    m_pLabel = new CTextLabel(this, maxlines-3, ncols-4, 2, 2, 'r');
+    m_pLabel->AddText(text);
+    
+    int x = (maxx()-((2*10)+2))/2; // Center 2 buttons of 10 length and one 2 sized space
+    int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
+    m_pNoButton = new CButton(this, 1, 10, y, x, "No", 'r');
+    m_pYesButton = new CButton(this, 1, 10, y, (x+m_pNoButton->maxx()+2), "Yes", 'r');
+    
+    // Resize window and center it
+    resize(y+m_pNoButton->maxy()+2, ncols);
+    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
+    
+    // Refresh main screen, this is required after a window has been resized or moved
+    ::erase();
+    WidgetManager.Refresh();
+}
+
+bool CYesNoBox::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (p == m_pYesButton)
+    {
+        m_bFinished = m_bYes = true;
+        return true;
+    }
+    else if (p == m_pNoButton)
+    {
+        m_bFinished = true;
+        return true;
+    }
+    
+    return false;
 }
 
 // -------------------------------------
@@ -1956,7 +1991,8 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
                          const char *i, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
                                                                        m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                                                          m_szStartDir(s), m_szSelectedDir(s), m_szInfo(i),
-                                                         m_bRequireWAccess(w)
+                                                         m_bRequireWAccess(w), m_bFinished(false),
+                                                         m_pWidgetManager(owner)
 {
     m_pInfoLabel = new CTextLabel(this, 2, ncols-4, 2, 2, 'r');
     m_pInfoLabel->AddText(m_szInfo);
@@ -1977,6 +2013,11 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     //m_pCancelButton->SetCallBack(CancelButtonCB, this);
     
     resize(m_pOpenButton->rely()+m_pOpenButton->maxy()+2, ncols);
+    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
+    
+    // Refresh main screen, this is required after a window has been resized or moved
+    ::erase();
+    WidgetManager.Refresh();
     
     OpenDir();
 }
@@ -1988,7 +2029,7 @@ void CFileDialog::OpenDir(std::string newdir)
         newdir = m_szSelectedDir;
 
         if (!m_pFileMenu->Empty())
-            newdir += '/' + *m_pFileMenu->GetCurrentItemName();
+            newdir += '/' + m_pFileMenu->GetCurrentItemName();
     }
     
     if (chdir(newdir.c_str()))
@@ -2027,7 +2068,7 @@ void CFileDialog::OpenDir(std::string newdir)
         if (isrootdir && !strcmp(dirstruct->d_name, ".."))
             continue;
         
-        m_pFileMenu->AddItem(dirstruct->d_name, FileMenuCB, this);
+        m_pFileMenu->AddItem(dirstruct->d_name);
     }
 
     closedir (dp);
@@ -2042,9 +2083,9 @@ void CFileDialog::OpenDir(std::string newdir)
 void CFileDialog::UpdateDirField()
 {
     if (m_szSelectedDir == "/")
-        m_pFileField->SetText('/' + *m_pFileMenu->GetCurrentItemName());
+        m_pFileField->SetText('/' + m_pFileMenu->GetCurrentItemName());
     else
-        m_pFileField->SetText(m_szSelectedDir + '/' + *m_pFileMenu->GetCurrentItemName());
+        m_pFileField->SetText(m_szSelectedDir + '/' + m_pFileMenu->GetCurrentItemName());
 }
 
 bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
@@ -2063,27 +2104,23 @@ bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
     }
     else if (p == m_pFileField)
     {
-        OpenDir(m_pFileField->GetText());
-        return true;
+        if (type == EVENT_CALLBACK)
+        {
+            OpenDir(m_pFileField->GetText());
+            return true;
+        }
     }
     else if (p == m_pOpenButton)
     {
-        MessageBox("Open");
-        Enable(false);
+        m_bFinished = true;
         return true;
     }
     else if (p == m_pCancelButton)
     {
         m_szSelectedDir.clear();
-        Enable(false);
+        m_bFinished = true;
         return true;
     }
     
-    return false;
-}
-
-bool CFileDialog::FileMenuKeyCB(CWidgetHandler *p, CFileDialog *owner, chtype key)
-{
-    owner->UpdateDirField();
     return false;
 }
