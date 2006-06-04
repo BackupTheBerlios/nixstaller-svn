@@ -40,12 +40,13 @@ CWidgetManager WidgetManager;
 void EndProg(bool err)
 {
 //    delete pInterface;
+    debugline("EndProg");
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
 void CNCursScreen::init_labels(Soft_Label_Key_Set& S) const
 {
-    // UNDONE
+    // UNDONE?
 }
 
 void CNCursScreen::title()
@@ -75,11 +76,11 @@ int CNCursScreen::run()
     
     WidgetManager.Init();
     //CFileDialog *f = new CFileDialog(&WidgetManager, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
-    FileDialog("/", "<C>Select a directory please", false);
-    if (YesNoBox("O Rly?\nYes Rly\nk Wai?"))
-        MessageBox("OK");
+    std::string dir = FileDialog("/", "<C>Select a directory please", false);
+    if (!dir.empty())
+        MessageBox("You selected: %s", dir.c_str());
     else
-        MessageBox("Not OK");
+        MessageBox("Nothing");
     
     // Init installer/appmanager
     
@@ -88,66 +89,32 @@ int CNCursScreen::run()
     return EXIT_SUCCESS;
 }
 
-bool menucb(CWidgetHandler *, int n, int)
-{
-    debugline("menu: %d", n);
-    beep();
-}
-
 void CNCursBase::MsgBox(const char *str, ...)
 {
     char *text;
-    CWidgetManager Man;
-    CWidgetWindow *panel = new CWidgetWindow(&Man, 18, 40, 2, 4, true);
-    
     va_list v;
     
     va_start(v, str);
         vasprintf(&text, str, v);
     va_end(v);
     
-    /*
-    panel->boldframe("Message");
-    panel->bkgd(' '|MainScreen.dialog_backgrounds());
-    panel->printw(1, 1, str);*/
-    
-    CButton *but = new CButton(panel, 1, 8, 1, 3, "hah", 'r');
-    CButton *but2 = new CButton(panel, 1, 8, 5, 3, "hah", 'r');
-    CInputField *in = new CInputField(panel, 3, 12, 5, 15, 'r');
-    CTextWindow *twin = new CTextWindow(panel, 8, 15, 8, 2, false, false, 'r', true);
-    CMenu *menu = new CMenu(panel, 8, 15, 8, 20, 'r');
-    in->SetText("har!");
-    
-    //m_pDummyPanel->refresh();
-    //panel->refresh();
-/*    but->refresh();
-    but2->refresh();
-    in->refresh();
-    twin->refresh();*/
-    
-    twin->AddText("<C>centere\n");
-    
-    for (int i=0;i<51;i++)
-    {
-        twin->AddText(CreateText("%d <C><col=2>dfs fds</col> sfd <rev>sd f</rev> fsd fds tt\n", i));
-        menu->AddItem(CreateText("<C>menu item %d\n", i));
-    }
-
-    //twin->refresh();
-    //menu->refresh();
-
-    panel->refresh();
-    
-    Man.Run();
-    delete panel;
-    delete but;
-    delete but2;
-    delete in;
-    delete twin;
-    delete menu;
-    
-    //m_pDummyPanel->refresh();
+    ::MessageBox(text);
     
     free(text);
 }
 
+bool CNCursBase::YesNoBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    bool ret = ::YesNoBox(text);
+    
+    free(text);
+    
+    return ret;
+}

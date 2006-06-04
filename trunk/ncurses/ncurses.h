@@ -48,7 +48,7 @@ protected:
     // Overide some functions from ncurses++
     int titlesize() const { return 1; };
     void title();
-    //Soft_Label_Key_Set::Label_Layout useSLKs() const { return Soft_Label_Key_Set::PC_Style_With_Index; };
+    //Soft_Label_Key_Set::Label_Layout useSLKs() const { return Soft_Label_Key_Set::Three_Two_Three; };
     void init_labels(Soft_Label_Key_Set& S) const;
     void handleArgs(int argc, char* argv[]);
     
@@ -63,7 +63,7 @@ class CNCursBase: public virtual CMain
 protected:
     virtual char *GetPassword(const char *str) { };
     virtual void MsgBox(const char *str, ...);
-    virtual bool YesNoBox(const char *str, ...) { };
+    virtual bool YesNoBox(const char *str, ...);
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) { };
     virtual void Warn(const char *str, ...) { };
     
