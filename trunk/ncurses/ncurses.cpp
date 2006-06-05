@@ -70,17 +70,14 @@ int CNCursScreen::run()
     
     CNCursBase p;
     p.Init();
-    //p.MsgBox("hi\n");
     
     Root_Window->bkgd(' '|CWidgetWindow::GetColorPair(0, 0));
     
     WidgetManager.Init();
-    //CFileDialog *f = new CFileDialog(&WidgetManager, 18, 70, 2, 2, "/", "<C>Select a directory please", false);
+    
+    std::string txt = InputDialog("Please type something", "Hello", 10, false);
     std::string dir = FileDialog("/", "<C>Select a directory please", false);
-    if (!dir.empty())
-        MessageBox("You selected: %s", dir.c_str());
-    else
-        MessageBox("Nothing");
+    MessageBox("You typed: %s\nYou selected dir: %s", txt.c_str(), dir.c_str());
     
     // Init installer/appmanager
     

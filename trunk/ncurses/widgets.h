@@ -463,10 +463,7 @@ public:
 class CScrollbar: public CWidgetWindow
 {
     float m_fMinVal, m_fMaxVal, m_fCurVal;
-    float m_fScrollStep; // How much one scroll changes
     bool m_bVertical; // if not vertical, than it's horizontal...
-    
-    void CalcScrollStep(void);
     
 protected:
     virtual void Draw(void);
@@ -475,7 +472,7 @@ public:
     CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, float min, float max,
                bool vertical, char absrel = 'a');
     
-    void SetMinMax(int min, int max) { m_fMinVal = min; m_fMaxVal = max; CalcScrollStep(); };
+    void SetMinMax(int min, int max) { m_fMinVal = min; m_fMaxVal = max; };
     void SetCurrent(int cur) { m_fCurVal = cur; };
     float GetValue(void) { return m_fCurVal; };
     void Scroll(float n); // Scroll n steps. Negative n is up, positive down.
@@ -589,6 +586,22 @@ public:
     void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length(), false); };
 };
 
+class CProgressbar: public CWidgetWindow
+{
+    float m_fMin, m_fMax, m_fCurrent;
+
+protected:
+    virtual void Draw(void);
+    
+public:
+    static chtype m_cDefaultFillColors, m_cDefaultEmptyColors;
+    
+    CProgressbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+                 int min, int max, char absrel = 'a');
+    
+    void SetCurrent(int n) { m_fCurrent = (float)n; };
+};
+
 class CMessageBox: public CWidgetWindow
 {
     CTextLabel *m_pLabel;
@@ -634,9 +647,12 @@ protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
-    CInputDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *start,
-                 const char *title, bool sec);
+    CInputDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *title,
+                 int max=-1, bool sec=false);
 
+    void SetText(const std::string &s) { m_pTextField->SetText(s); };
+    void SetText(const char *s) { m_pTextField->SetText(std::string(s)); };
+    
     const std::string &Run(void);
 };
 

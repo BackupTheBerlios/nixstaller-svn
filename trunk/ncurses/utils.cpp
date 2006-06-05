@@ -301,11 +301,15 @@ bool YesNoBox(const char *msg, ...)
     return ret;
 }
 
-std::string InputDialog(const char *start, const char *title, bool sec)
+std::string InputDialog(const char *title, const char *start, int max, bool sec)
 {
     int width = Min(60, MaxX());
     int height = Min(30, MaxY());
-    CInputDialog *textdialog = new CInputDialog(&WidgetManager, height, width, 0, 0, start, title, sec);
+    CInputDialog *textdialog = new CInputDialog(&WidgetManager, height, width, 0, 0, title, max, sec);
+    
+    if (start)
+        textdialog->SetText(start);
+    
     std::string ret = textdialog->Run();
     
     WidgetManager.RemoveChild(textdialog);

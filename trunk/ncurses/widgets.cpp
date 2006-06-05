@@ -855,6 +855,9 @@ void CWidgetManager::Init()
 
     CInputField::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CInputField::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    
+    CProgressbar::m_cDefaultFillColors = ' ' | CWidgetWindow::GetColorPair(COLOR_BLUE, COLOR_YELLOW) | A_BOLD;
+    CProgressbar::m_cDefaultEmptyColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
 }
 
 void CWidgetManager::Refresh()
@@ -1241,21 +1244,6 @@ CScrollbar::CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y,
                                                      m_fMinVal(min), m_fMaxVal(max), m_fCurVal(min),
                                                      m_bVertical(vertical)
 {
-    CalcScrollStep();
-}
-
-void CScrollbar::CalcScrollStep()
-{
-    int sbsize;
-    
-    if (m_bVertical)
-        sbsize = height();
-    else
-        sbsize = width();
-    
-    float valrange = m_fMaxVal - m_fMinVal;
-    
-    m_fScrollStep = (float)sbsize / (float)valrange;
 }
 
 void CScrollbar::Draw()
@@ -1917,10 +1905,10 @@ bool CInputField::HandleKey(chtype ch)
 
 void CInputField::Draw()
 {
+    m_pOutputWin->erase();
+
     if (!m_szText.empty())
     {
-        m_pOutputWin->erase();
-
         if (m_chOutChar)
         {
             std::string str(m_szText.length(), m_chOutChar);
@@ -1931,6 +1919,43 @@ void CInputField::Draw()
     }
     
     m_pOutputWin->move(0, m_iCursorPos); // Draw cursor
+}
+
+// -------------------------------------
+// Progressbar class
+// -------------------------------------
+
+chtype CProgressbar::m_cDefaultFillColors;
+chtype CProgressbar::m_cDefaultEmptyColors;
+
+CProgressbar::CProgressbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+                           int min, int max, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y,
+                                                                          begin_x, absrel, true, false,
+                                                                          m_cDefaultEmptyColors,
+                                                                          m_cDefaultEmptyColors),
+                                                            m_fMin(min), m_fMax(max), m_fCurrent(0.0f)
+{
+}
+
+void CProgressbar::Draw()
+{
+    float maxw = (float)width() - 2.0f; // -2 for the borders
+    float fac = (m_fCurrent / m_fMax);
+    float w = (maxw * fac);
+    
+    bool filling = true;
+    attron(m_cDefaultFillColors);
+    
+    for (int i=0; i<(int)maxw; i++)
+    {
+        if (filling && (i <= w))
+        {
+            attroff(m_cDefaultFillColors);
+            attron(m_cDefaultEmptyColors);
+        }
+        
+        addch(1, i, ' ');
+    }
 }
 
 // -------------------------------------
@@ -2008,26 +2033,25 @@ bool CYesNoBox::HandleEvent(CWidgetHandler *p, int type)
 }
 
 // -------------------------------------
-// File dialog class
+// Input dialog class
 // -------------------------------------
 
 CInputDialog::CInputDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
-                           const char *start, const char *title,
-                           bool sec) : CWidgetWindow(owner, nlines, ncols, begin_y,
-                                                     begin_x, true, m_cDefaultFocusedColors,
-                                                     m_cDefaultDefocusedColors),
+                           const char *title, int max,
+                           bool sec) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
+                                                     m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                                        m_bSecure(sec), m_bFinished(false), m_bCanceled(true),
                                        m_pWidgetManager(owner)
 {
     m_pLabel = new CTextLabel(this, 2, ncols-4, 2, 2, 'r');
     m_pLabel->AddText(title);
     
+    char out = (sec) ? '*' : 0;
     int y = (m_pLabel->rely()+m_pLabel->maxy()+1);
-    m_pTextField = new CInputField(this, 3, ncols-4, y, 2, 'r');
-    m_pTextField->SetText(start);
+    m_pTextField = new CInputField(this, 3, ncols-4, y, 2, 'r', max, out);
     
     int x = ((ncols + 2) - (2 * 20 + 2)) / 2;
-    y += 2;
+    y += (m_pTextField->maxy() + 2);
     m_pOKButton = new CButton(this, 1, 20, y, x, "OK", 'r');
     
     m_pCancelButton = new CButton(this, 1, 20, y, x+22, "Cancel", 'r');
@@ -2168,7 +2192,6 @@ void CFileDialog::OpenDir(std::string newdir)
     
     // Update AFTER file menu, since it may sort items in Draw()
     UpdateDirField();
-    m_pFileField->refresh();
 }
 
 bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
