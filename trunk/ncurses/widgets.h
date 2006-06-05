@@ -322,7 +322,7 @@ class CWidgetHandler
 {
     bool m_bEnabled;
     bool m_bFocused, m_bCanFocus;
-    bool m_bDeleteMe;
+    bool m_bDeleteMe; // Delete it later, incase we are in a loop from ie Run()
     
     friend class CWidgetManager;
 
@@ -351,7 +351,9 @@ public:
     virtual ~CWidgetHandler(void);
     
     void AddChild(CWidgetWindow *p);
-    void RemoveChild(CWidgetWindow *p);
+    virtual void RemoveChild(CWidgetWindow *p);
+    
+    virtual void ActivateChild(CWidgetWindow *p);
     
     bool Enabled(void) { return m_bEnabled; };
     void Enable(bool e);
@@ -369,7 +371,8 @@ public:
     
     void Init(void);
     void Refresh(void);
-    void ActivateWidget(CWidgetWindow *p);
+    virtual void RemoveChild(CWidgetWindow *p);
+    virtual void ActivateChild(CWidgetWindow *p);
     
     bool Run(void);
 };
@@ -560,7 +563,7 @@ public:
 
 class CInputField: public CWidgetWindow
 {
-    std::list<chtype> m_IllegalCharList;
+    chtype m_chOutChar;
     std::string m_szText;
     int m_iMaxChars;
     int m_iCursorPos, m_iScrollOffset;
@@ -579,7 +582,8 @@ protected:
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
-    CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a', int max=-1);
+    CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a',
+                int max=-1, chtype out=0);
     
     const std::string &GetText(void) { return m_szText; };
     void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length(), false); };
@@ -617,6 +621,25 @@ public:
     bool Run(void) { while (m_pWidgetManager->Run() && !m_bFinished); return m_bYes; };
 };
 
+class CInputDialog: public CWidgetWindow
+{
+    bool m_bSecure; // For passwords; prints stars, clears text buffer
+    CTextLabel *m_pLabel;
+    CInputField *m_pTextField;
+    CButton *m_pOKButton, *m_pCancelButton;
+    bool m_bFinished, m_bCanceled;
+    CWidgetManager *m_pWidgetManager;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    
+public:
+    CInputDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *start,
+                 const char *title, bool sec);
+
+    const std::string &Run(void);
+};
+
 class CFileDialog: public CWidgetWindow // Currently only browses directories
 {
     std::string m_szStartDir, m_szSelectedDir, m_szInfo;
@@ -629,7 +652,7 @@ class CFileDialog: public CWidgetWindow // Currently only browses directories
     CWidgetManager *m_pWidgetManager;
     
     void OpenDir(std::string newdir="");
-    void UpdateDirField(void);
+    void UpdateDirField(void) { m_pFileField->SetText(m_szSelectedDir); };
     
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);

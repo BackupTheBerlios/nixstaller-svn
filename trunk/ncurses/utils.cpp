@@ -301,11 +301,20 @@ bool YesNoBox(const char *msg, ...)
     return ret;
 }
 
+std::string InputDialog(const char *start, const char *title, bool sec)
+{
+    int width = Min(60, MaxX());
+    int height = Min(30, MaxY());
+    CInputDialog *textdialog = new CInputDialog(&WidgetManager, height, width, 0, 0, start, title, sec);
+    std::string ret = textdialog->Run();
+    
+    WidgetManager.RemoveChild(textdialog);
+    
+    return ret;
+}
+        
 std::string FileDialog(const char *start, const char *info, bool needw)
 {
-    int maxx, maxy;
-    getmaxyx(stdscr, maxy, maxx);
-    
     int width = Min(70, MaxX());
     int height = Min(30, MaxY());
     CFileDialog *filedialog = new CFileDialog(&WidgetManager, height, width, 0, 0, start, info, needw);

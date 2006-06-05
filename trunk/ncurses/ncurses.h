@@ -83,6 +83,7 @@ int MaxX(void);
 int MaxY(void);
 void MessageBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
+std::string InputDialog(const char *start, const char *title, bool sec);
 std::string FileDialog(const char *start, const char *info, bool needw);
 
 #ifndef RELEASE

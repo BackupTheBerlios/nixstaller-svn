@@ -29,6 +29,7 @@
 #include <string>
 #include <list>
 #include <signal.h>
+#include <unistd.h>
 
 namespace LIBSU
 {

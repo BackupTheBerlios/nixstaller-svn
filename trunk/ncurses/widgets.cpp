@@ -789,7 +789,7 @@ void CWidgetHandler::AddChild(CWidgetWindow *p)
 }
 
 void CWidgetHandler::RemoveChild(CWidgetWindow *p)
-{/*
+{
     if (*m_FocusedChild == p)
         SetPrevWidget();
     
@@ -802,8 +802,19 @@ void CWidgetHandler::RemoveChild(CWidgetWindow *p)
         m_FocusedChild = m_ChildList.end();
     }
     
-    delete p;*/
-    p->m_bDeleteMe = true; // Delete it later, incase we are in a loop from ie Run()
+    delete p;
+}
+
+void CWidgetHandler::ActivateChild(CWidgetWindow *p)
+{
+    if (!p->Focused())
+    {
+        if ((m_FocusedChild != m_ChildList.end()) && (*m_FocusedChild)->CanFocus() &&
+             (*m_FocusedChild)->Enabled())
+            (*m_FocusedChild)->LeaveFocus();
+        p->Focus();
+        m_FocusedChild = std::find(m_ChildList.begin(), m_ChildList.end(), p);
+    }
 }
 
 void CWidgetHandler::Enable(bool e)
@@ -857,7 +868,12 @@ void CWidgetManager::Refresh()
     }
 }
 
-void CWidgetManager::ActivateWidget(CWidgetWindow *p)
+void CWidgetManager::RemoveChild(CWidgetWindow *p)
+{
+    p->m_bDeleteMe = true;
+}
+
+void CWidgetManager::ActivateChild(CWidgetWindow *p)
 {
     if (m_ChildList.back() == p)
         return; // Already 'activated'
@@ -1765,9 +1781,11 @@ chtype CInputField::m_cDefaultFocusedColors;
 chtype CInputField::m_cDefaultDefocusedColors;
 
 CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
-                         int max) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true, true,
-                                                  m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_iMaxChars(max),
-                                    m_iCursorPos(0), m_iScrollOffset(0)
+                         int max, chtype out) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x,
+                                                              absrel, true, true, m_cDefaultFocusedColors,
+                                                              m_cDefaultDefocusedColors),
+                                                m_chOutChar(out), m_iMaxChars(max), m_iCursorPos(0),
+                                                m_iScrollOffset(0)
 {
     m_pOutputWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
 }
@@ -1884,8 +1902,7 @@ bool CInputField::HandleKey(chtype ch)
             PushEvent(EVENT_CALLBACK);
             break;
         default:
-            if (!isprint(ch) ||
-                 (std::find(m_IllegalCharList.begin(), m_IllegalCharList.begin(), ch) != m_IllegalCharList.end()))
+            if (!isprint(ch))
                 handled = false;
             else
             {
@@ -1903,7 +1920,14 @@ void CInputField::Draw()
     if (!m_szText.empty())
     {
         m_pOutputWin->erase();
-        m_pOutputWin->AddStrFormat(0, 0, m_szText.c_str(), m_iScrollOffset, m_pOutputWin->width());
+
+        if (m_chOutChar)
+        {
+            std::string str(m_szText.length(), m_chOutChar);
+            m_pOutputWin->AddStrFormat(0, 0, str.c_str(), m_iScrollOffset, m_pOutputWin->width());
+        }
+        else
+            m_pOutputWin->AddStrFormat(0, 0, m_szText.c_str(), m_iScrollOffset, m_pOutputWin->width());
     }
     
     m_pOutputWin->move(0, m_iCursorPos); // Draw cursor
@@ -1928,7 +1952,7 @@ CMessageBox::CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int beg
     
     // Refresh main screen, this is required after a window has been resized or moved
     ::erase();
-    WidgetManager.Refresh();
+    m_pWidgetManager->Refresh();
 }
 
 bool CMessageBox::HandleEvent(CWidgetHandler *p, int type)
@@ -1964,7 +1988,7 @@ CYesNoBox::CYesNoBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y
     
     // Refresh main screen, this is required after a window has been resized or moved
     ::erase();
-    WidgetManager.Refresh();
+    m_pWidgetManager->Refresh();
 }
 
 bool CYesNoBox::HandleEvent(CWidgetHandler *p, int type)
@@ -1987,6 +2011,76 @@ bool CYesNoBox::HandleEvent(CWidgetHandler *p, int type)
 // File dialog class
 // -------------------------------------
 
+CInputDialog::CInputDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
+                           const char *start, const char *title,
+                           bool sec) : CWidgetWindow(owner, nlines, ncols, begin_y,
+                                                     begin_x, true, m_cDefaultFocusedColors,
+                                                     m_cDefaultDefocusedColors),
+                                       m_bSecure(sec), m_bFinished(false), m_bCanceled(true),
+                                       m_pWidgetManager(owner)
+{
+    m_pLabel = new CTextLabel(this, 2, ncols-4, 2, 2, 'r');
+    m_pLabel->AddText(title);
+    
+    int y = (m_pLabel->rely()+m_pLabel->maxy()+1);
+    m_pTextField = new CInputField(this, 3, ncols-4, y, 2, 'r');
+    m_pTextField->SetText(start);
+    
+    int x = ((ncols + 2) - (2 * 20 + 2)) / 2;
+    y += 2;
+    m_pOKButton = new CButton(this, 1, 20, y, x, "OK", 'r');
+    
+    m_pCancelButton = new CButton(this, 1, 20, y, x+22, "Cancel", 'r');
+    
+    ActivateChild(m_pTextField);
+    
+    resize(m_pOKButton->rely()+m_pOKButton->maxy()+2, ncols);
+    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
+    
+    // Refresh main screen, this is required after a window has been resized or moved
+    ::erase();
+    m_pWidgetManager->Refresh();
+}
+
+bool CInputDialog::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (p == m_pTextField)
+    {
+        if (type == EVENT_CALLBACK)
+        {
+            m_bFinished = true;
+            m_bCanceled = false;
+            return true;
+        }
+    }
+    else if (p == m_pOKButton)
+    {
+        m_bFinished = true;
+        m_bCanceled = false;
+        return true;
+    }
+    else if (p == m_pCancelButton)
+    {
+        m_bFinished = true;
+        return true;
+    }
+    
+    return false;
+}
+
+const std::string &CInputDialog::Run()
+{
+    while (m_pWidgetManager->Run() && !m_bFinished)
+        ;
+    
+    std::string dummy;
+    return (m_bCanceled) ? dummy : m_pTextField->GetText();
+}
+
+// -------------------------------------
+// File dialog class
+// -------------------------------------
+
 CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *s,
                          const char *i, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
                                                                        m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
@@ -2002,22 +2096,19 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     m_pFileField = new CInputField(this, 3, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+1), 2, 'r');
     m_pFileField->SetText(m_szStartDir);
     
-    //m_pFileMenu->BindPost(FileMenuKeyCB, this);
-    //m_pFileField->SetCallBack(FileFieldCB, this);
-    
     const int startx = ((ncols + 2) - (2 * 20 + 2)) / 2;
     m_pOpenButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx, "Open directory", 'r');
-    //m_pOpenButton->SetCallBack(OpenButtonCB, this);
     
     m_pCancelButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx+22, "Cancel", 'r');
-    //m_pCancelButton->SetCallBack(CancelButtonCB, this);
+    
+    ActivateChild(m_pFileMenu);
     
     resize(m_pOpenButton->rely()+m_pOpenButton->maxy()+2, ncols);
     mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
     
     // Refresh main screen, this is required after a window has been resized or moved
     ::erase();
-    WidgetManager.Refresh();
+    m_pWidgetManager->Refresh();
     
     OpenDir();
 }
@@ -2080,26 +2171,14 @@ void CFileDialog::OpenDir(std::string newdir)
     m_pFileField->refresh();
 }
 
-void CFileDialog::UpdateDirField()
-{
-    if (m_szSelectedDir == "/")
-        m_pFileField->SetText('/' + m_pFileMenu->GetCurrentItemName());
-    else
-        m_pFileField->SetText(m_szSelectedDir + '/' + m_pFileMenu->GetCurrentItemName());
-}
-
 bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
 {
     if (p == m_pFileMenu)
     {
-        switch (type)
+        if (type == EVENT_CALLBACK)
         {
-            case EVENT_CALLBACK:
-                OpenDir();
-                return true;
-            case EVENT_DATACHANGED:
-                UpdateDirField();
-                return true;
+            OpenDir();
+            return true;
         }
     }
     else if (p == m_pFileField)
