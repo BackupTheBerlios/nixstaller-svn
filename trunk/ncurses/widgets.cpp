@@ -1044,14 +1044,14 @@ unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
 
 int CWidgetWindow::refresh()
 {
+    Draw();
+
     if (m_bBox)
         Box();
     
     if (!m_szTitle.empty())
         addstr(0, (maxx()-m_szTitle.length())/2, m_szTitle.c_str());
-    
-    Draw();
-    
+        
     int ret = NCursesWindow::refresh();
     
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -1940,22 +1940,18 @@ CProgressbar::CProgressbar(CWidgetWindow *owner, int nlines, int ncols, int begi
 void CProgressbar::Draw()
 {
     float maxw = (float)width() - 2.0f; // -2 for the borders
-    float fac = (m_fCurrent / m_fMax);
+    float fac = ((m_fCurrent) / (m_fMax));
     float w = (maxw * fac);
     
-    bool filling = true;
+    move(1, 1);
+    clrtoeol();
+    
     attron(m_cDefaultFillColors);
     
-    for (int i=0; i<(int)maxw; i++)
-    {
-        if (filling && (i <= w))
-        {
-            attroff(m_cDefaultFillColors);
-            attron(m_cDefaultEmptyColors);
-        }
-        
-        addch(1, i, ' ');
-    }
+    for (int i=0; i<(int)w; i++)
+        addch(1, i+1, ' ');
+    
+    attroff(m_cDefaultFillColors);
 }
 
 // -------------------------------------
@@ -2114,17 +2110,21 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
 {
     m_pInfoLabel = new CTextLabel(this, 2, ncols-4, 2, 2, 'r');
     m_pInfoLabel->AddText(m_szInfo);
-    
+        
     m_pFileMenu = new CMenu(this, nlines-10, ncols-4, (m_pInfoLabel->rely()+m_pInfoLabel->maxy()+2), 2, 'r');
     
     m_pFileField = new CInputField(this, 3, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+1), 2, 'r');
     m_pFileField->SetText(m_szStartDir);
     
     const int startx = ((ncols + 2) - (2 * 20 + 2)) / 2;
-    m_pOpenButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx, "Open directory", 'r');
+    const int starty = (m_pFileField->rely()+m_pFileField->maxy()+1);
+    m_pOpenButton = new CButton(this, 1, 20, starty, startx, "Open directory", 'r');
     
-    m_pCancelButton = new CButton(this, 1, 20, (m_pFileField->rely()+m_pFileField->maxy()+1), startx+22, "Cancel", 'r');
+    m_pCancelButton = new CButton(this, 1, 20, starty, startx+22, "Cancel", 'r');
     
+    CProgressbar *pbar = new CProgressbar(this, 3, 20, 1, 1, -100, 100, 'r');
+    pbar->SetCurrent(75);
+
     ActivateChild(m_pFileMenu);
     
     resize(m_pOpenButton->rely()+m_pOpenButton->maxy()+2, ncols);

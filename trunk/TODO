@@ -17,6 +17,7 @@ NCURSES FRONTEND
 - Handle ESC in widgets
 - Test Progressbar widget
 - Handle negative ranges for scrollbar/progressbar
+- Put some code to put the cursor away or at the focused widget, incase platforms don't support cursor hiding
 
 FLTK FRONTEND
 - Translate password dialog
