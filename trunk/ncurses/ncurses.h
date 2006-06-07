@@ -69,6 +69,7 @@ protected:
     
     virtual bool ReadConfig(void) { }; // UNDONE: Remove me!
     friend class CNCursScreen; // UNDONE: Remove me!
+    
 public:
     
     virtual ~CNCursBase(void) { };
@@ -83,6 +84,7 @@ int MaxX(void);
 int MaxY(void);
 void MessageBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
+int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
 std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
 std::string FileDialog(const char *start, const char *info, bool needw);
 

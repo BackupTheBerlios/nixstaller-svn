@@ -75,9 +75,10 @@ int CNCursScreen::run()
     
     WidgetManager.Init();
     
+    int choice = ChoiceBox("Please click some button", "button 1", "button 2", "button 3");
     std::string txt = InputDialog("Please type something", "Hello", 10, false);
     std::string dir = FileDialog("/", "<C>Select a directory please", false);
-    MessageBox("You typed: %s\nYou selected dir: %s", txt.c_str(), dir.c_str());
+    MessageBox("You choose: %d\nYou typed: %s\nYou selected dir: %s", choice, txt.c_str(), dir.c_str());
     
     // Init installer/appmanager
     

@@ -8,16 +8,14 @@ OVERALL
 - Extract temporaty files to subdir
 - Language updates: Password screen class, FLTK AppManager
 - Use vasprintf instead of vsprintf whenever possible.
+- Usage of exceptions?
 
 MAIN
 - Better error handling for register
 - Check path for rm
 
 NCURSES FRONTEND
-- Handle ESC in widgets
-- Test Progressbar widget
-- Handle negative ranges for scrollbar/progressbar
-- Put some code to put the cursor away or at the focused widget, incase platforms don't support cursor hiding
+- Error handling in file manager
 
 FLTK FRONTEND
 - Translate password dialog

@@ -301,6 +301,26 @@ bool YesNoBox(const char *msg, ...)
     return ret;
 }
 
+int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, msg);
+    vasprintf(&text, msg, v);
+    va_end(v);
+    
+    int width = Min(50, MaxX());
+    
+    CChoiceBox *choicebox = new CChoiceBox(&WidgetManager, MaxY(), width, 0, 0, text, but1, but2, but3);
+    int ret = choicebox->Run();
+    
+    free(text);
+    WidgetManager.RemoveChild(choicebox);
+    
+    return ret;
+}
+
 std::string InputDialog(const char *title, const char *start, int max, bool sec)
 {
     int width = Min(60, MaxX());

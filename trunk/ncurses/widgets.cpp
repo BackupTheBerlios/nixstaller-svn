@@ -856,12 +856,30 @@ void CWidgetManager::Init()
     CInputField::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CInputField::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
     
-    CProgressbar::m_cDefaultFillColors = ' ' | CWidgetWindow::GetColorPair(COLOR_BLUE, COLOR_YELLOW) | A_BOLD;
-    CProgressbar::m_cDefaultEmptyColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CProgressbar::m_cDefaultFillColors = ' ' | CWidgetWindow::GetColorPair(COLOR_BLUE, COLOR_WHITE) | A_BOLD;
+    CProgressbar::m_cDefaultEmptyColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    
+    CMessageBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CMessageBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+
+    CYesNoBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CYesNoBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+
+    CChoiceBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CChoiceBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+
+    CInputDialog::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CInputDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+
+    CFileDialog::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CFileDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 }
 
 void CWidgetManager::Refresh()
 {
+    // Move cursor to end of display(some terminals aren't able to hide it)
+    ::move(MaxY(), MaxY());
+    
     ::refresh();
 
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -939,16 +957,16 @@ bool CWidgetManager::Run()
         chtype ch = (*m_FocusedChild)->getch();
         if (ch != ERR)
         {
-            //debugline("key: %d\n", ch);
-            if (ch == CTRL('[')) // Escape pressed
+            if (!(*m_FocusedChild)->HandleKey(ch))
             {
-                // Set this so that later calls will also return false. This is required incase this function
-                // wasn't called from the main app.
-                m_bQuit = true;
-                return false;
+                if (ch == CTRL('[')) // Escape pressed
+                {
+                    // Set this so that later calls will also return false. This is required incase this function
+                    // wasn't called from the main app.
+                    m_bQuit = true;
+                    return false;
+                }
             }
-            
-            (*m_FocusedChild)->HandleKey(ch);
         }
     }
     
@@ -1254,7 +1272,7 @@ void CScrollbar::Draw()
         bkgd(::getbkgd(stdscr)|A_REVERSE);
     
     // Calc slide position
-    float fac = (m_fCurVal / m_fMaxVal);
+    float fac = fabs(m_fCurVal / (m_fMaxVal-m_fMinVal));
     float posx, posy;
     
     if (m_bVertical)
@@ -1940,7 +1958,7 @@ CProgressbar::CProgressbar(CWidgetWindow *owner, int nlines, int ncols, int begi
 void CProgressbar::Draw()
 {
     float maxw = (float)width() - 2.0f; // -2 for the borders
-    float fac = ((m_fCurrent) / (m_fMax));
+    float fac = fabs(m_fCurrent / (m_fMax-m_fMin));
     float w = (maxw * fac);
     
     move(1, 1);
@@ -1955,25 +1973,57 @@ void CProgressbar::Draw()
 }
 
 // -------------------------------------
-// Message Box class
+// Widget Box base class
 // -------------------------------------
 
-CMessageBox::CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
-                         const char *text) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x),
-                                             m_bFinished(false), m_pWidgetManager(owner)
+CWidgetBox::CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                       const char *info, chtype fcolor,
+                       chtype dfcolor) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x, true,
+                                                       fcolor, dfcolor), m_bFinished(false),
+                                         m_bCanceled(false), m_pWidgetManager(owner)
 {
     m_pLabel = new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r');
-    m_pLabel->AddText(text);
+    m_pLabel->AddText(info);
+}
+
+bool CWidgetBox::HandleKey(chtype ch)
+{
+    if (CWidgetWindow::HandleKey(ch))
+        return true;
     
-    m_pOKButton = new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (ncols-10)/2, "OK", 'r');
+    if (ch == CTRL('[')) // Escape
+    {
+        m_bFinished = m_bCanceled = true;
+        return true;
+    }
     
-    // Resize window and center it
-    resize(m_pOKButton->rely()+m_pOKButton->maxy()+2, ncols);
-    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
+    return false;
+}
+
+void CWidgetBox::Fit(int nlines)
+{
+    resize(nlines, maxx());
+    mvwin(((MaxY() - maxy())/2), ((MaxX() - maxx())/2));
     
     // Refresh main screen, this is required after a window has been resized or moved
     ::erase();
     m_pWidgetManager->Refresh();
+}
+
+// -------------------------------------
+// Message Box class
+// -------------------------------------
+
+chtype CMessageBox::m_cDefaultFocusedColors;
+chtype CMessageBox::m_cDefaultDefocusedColors;
+
+CMessageBox::CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                         const char *text) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x,
+                                                        text, m_cDefaultFocusedColors,
+                                                        m_cDefaultDefocusedColors)
+{
+    m_pOKButton = new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (ncols-10)/2, "OK", 'r');
+    Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
 }
 
 bool CMessageBox::HandleEvent(CWidgetHandler *p, int type)
@@ -1991,37 +2041,32 @@ bool CMessageBox::HandleEvent(CWidgetHandler *p, int type)
 // Yes-No Box class
 // -------------------------------------
 
+chtype CYesNoBox::m_cDefaultFocusedColors;
+chtype CYesNoBox::m_cDefaultDefocusedColors;
+
 CYesNoBox::CYesNoBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
-                     const char *text) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x),
-                                         m_bFinished(false), m_bYes(false), m_pWidgetManager(owner)
+                     const char *text) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x,
+                                                    text, m_cDefaultFocusedColors,
+                                                    m_cDefaultDefocusedColors)
 {
-    m_pLabel = new CTextLabel(this, maxlines-3, ncols-4, 2, 2, 'r');
-    m_pLabel->AddText(text);
-    
     int x = (maxx()-((2*10)+2))/2; // Center 2 buttons of 10 length and one 2 sized space
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
     m_pNoButton = new CButton(this, 1, 10, y, x, "No", 'r');
     m_pYesButton = new CButton(this, 1, 10, y, (x+m_pNoButton->maxx()+2), "Yes", 'r');
     
-    // Resize window and center it
-    resize(y+m_pNoButton->maxy()+2, ncols);
-    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
-    
-    // Refresh main screen, this is required after a window has been resized or moved
-    ::erase();
-    m_pWidgetManager->Refresh();
+    Fit(y+m_pNoButton->maxy()+2);
 }
 
 bool CYesNoBox::HandleEvent(CWidgetHandler *p, int type)
 {
     if (p == m_pYesButton)
     {
-        m_bFinished = m_bYes = true;
+        m_bFinished = true;
         return true;
     }
     else if (p == m_pNoButton)
     {
-        m_bFinished = true;
+        m_bFinished = m_bCanceled = true;
         return true;
     }
     
@@ -2029,19 +2074,88 @@ bool CYesNoBox::HandleEvent(CWidgetHandler *p, int type)
 }
 
 // -------------------------------------
+// Choice Box class
+// -------------------------------------
+
+chtype CChoiceBox::m_cDefaultFocusedColors;
+chtype CChoiceBox::m_cDefaultDefocusedColors;
+
+CChoiceBox::CChoiceBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                       const char *text, const char *but1, const char *but2,
+                       const char *but3) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, text,
+                                                      m_cDefaultFocusedColors, m_cDefaultDefocusedColors)
+{
+    // Button 3 is optional
+    int bcount = (but3) ? 3 : 2;
+    
+    // Find out longest text
+    int w;
+    if (but3)
+        w = Max(Max(strlen(but1), strlen(but2)), strlen(but3));
+    else
+        w = Max(strlen(but1), strlen(but2));
+    
+    w += 4; // Buttons use 4 additional tokens for focusing
+    
+    int x = (maxx()-((bcount*w)+bcount-1))/2; // Center bcount buttons, with bcount-1 2 sized spaces.
+    int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
+
+    m_pButtons[0] = new CButton(this, 1, w, y, x, but1, 'r');
+    
+    x += (w + 2);
+    m_pButtons[1] = new CButton(this, 1, w, y, x, but2, 'r');
+    
+    if (but3)
+    {
+        x += (w + 2);
+        m_pButtons[2] = new CButton(this, 1, w, y, x, but3, 'r');
+    }
+    
+    Fit(y+m_pButtons[0]->maxy()+2);
+}
+
+bool CChoiceBox::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (p == m_pButtons[0])
+    {
+        m_iSelectedButton = 0;
+        m_bFinished = true;
+    }
+    else if (p == m_pButtons[1])
+    {
+        m_iSelectedButton = 1;
+        m_bFinished = true;
+    }
+    else if (p == m_pButtons[2])
+    {
+        m_iSelectedButton = 2;
+        m_bFinished = true;
+    }
+
+    return false;
+}
+
+int CChoiceBox::Run()
+{
+    while (m_pWidgetManager->Run() && !m_bFinished)
+        ;
+    
+    return (m_bCanceled) ? -1 : m_iSelectedButton;
+}
+
+// -------------------------------------
 // Input dialog class
 // -------------------------------------
 
-CInputDialog::CInputDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
-                           const char *title, int max,
-                           bool sec) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
-                                                     m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                       m_bSecure(sec), m_bFinished(false), m_bCanceled(true),
-                                       m_pWidgetManager(owner)
+chtype CInputDialog::m_cDefaultFocusedColors;
+chtype CInputDialog::m_cDefaultDefocusedColors;
+
+CInputDialog::CInputDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                           const char *info, int max,
+                           bool sec) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, info,
+                                                  m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
+                                       m_bSecure(sec)
 {
-    m_pLabel = new CTextLabel(this, 2, ncols-4, 2, 2, 'r');
-    m_pLabel->AddText(title);
-    
     char out = (sec) ? '*' : 0;
     int y = (m_pLabel->rely()+m_pLabel->maxy()+1);
     m_pTextField = new CInputField(this, 3, ncols-4, y, 2, 'r', max, out);
@@ -2054,12 +2168,7 @@ CInputDialog::CInputDialog(CWidgetManager *owner, int nlines, int ncols, int beg
     
     ActivateChild(m_pTextField);
     
-    resize(m_pOKButton->rely()+m_pOKButton->maxy()+2, ncols);
-    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
-    
-    // Refresh main screen, this is required after a window has been resized or moved
-    ::erase();
-    m_pWidgetManager->Refresh();
+    Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
 }
 
 bool CInputDialog::HandleEvent(CWidgetHandler *p, int type)
@@ -2081,7 +2190,7 @@ bool CInputDialog::HandleEvent(CWidgetHandler *p, int type)
     }
     else if (p == m_pCancelButton)
     {
-        m_bFinished = true;
+        m_bFinished = m_bCanceled = true;
         return true;
     }
     
@@ -2101,17 +2210,17 @@ const std::string &CInputDialog::Run()
 // File dialog class
 // -------------------------------------
 
-CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *s,
-                         const char *i, bool w) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, true,
-                                                                       m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                                         m_szStartDir(s), m_szSelectedDir(s), m_szInfo(i),
-                                                         m_bRequireWAccess(w), m_bFinished(false),
-                                                         m_pWidgetManager(owner)
+chtype CFileDialog::m_cDefaultFocusedColors;
+chtype CFileDialog::m_cDefaultDefocusedColors;
+
+CFileDialog::CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *s,
+                         const char *info, bool w) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, info,
+                                                                m_cDefaultFocusedColors,
+                                                                m_cDefaultDefocusedColors),
+                                                     m_szStartDir(s), m_szSelectedDir(s), m_szInfo(info),
+                                                     m_bRequireWAccess(w)
 {
-    m_pInfoLabel = new CTextLabel(this, 2, ncols-4, 2, 2, 'r');
-    m_pInfoLabel->AddText(m_szInfo);
-        
-    m_pFileMenu = new CMenu(this, nlines-10, ncols-4, (m_pInfoLabel->rely()+m_pInfoLabel->maxy()+2), 2, 'r');
+    m_pFileMenu = new CMenu(this, maxlines-10, ncols-4, (m_pLabel->rely()+m_pLabel->maxy()+2), 2, 'r');
     
     m_pFileField = new CInputField(this, 3, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+1), 2, 'r');
     m_pFileField->SetText(m_szStartDir);
@@ -2122,17 +2231,9 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin
     
     m_pCancelButton = new CButton(this, 1, 20, starty, startx+22, "Cancel", 'r');
     
-    CProgressbar *pbar = new CProgressbar(this, 3, 20, 1, 1, -100, 100, 'r');
-    pbar->SetCurrent(75);
-
     ActivateChild(m_pFileMenu);
     
-    resize(m_pOpenButton->rely()+m_pOpenButton->maxy()+2, ncols);
-    mvwin(((MaxY() - maxy())/2), ((MaxX() - ncols)/2));
-    
-    // Refresh main screen, this is required after a window has been resized or moved
-    ::erase();
-    m_pWidgetManager->Refresh();
+    Fit(m_pOpenButton->rely()+m_pOpenButton->maxy()+2);
     
     OpenDir();
 }
@@ -2220,9 +2321,18 @@ bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
     else if (p == m_pCancelButton)
     {
         m_szSelectedDir.clear();
-        m_bFinished = true;
+        m_bFinished = m_bCanceled = true;
         return true;
     }
     
     return false;
+}
+
+const std::string &CFileDialog::Run()
+{
+    while (m_pWidgetManager->Run() && !m_bFinished)
+        ;
+    
+    std::string dummy;
+    return (m_bCanceled) ? dummy : m_szSelectedDir;
 }

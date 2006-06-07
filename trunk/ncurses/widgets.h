@@ -343,7 +343,8 @@ protected:
 
     CWidgetHandler(CWidgetHandler *owner, bool canfocus=true) : m_bEnabled(true), m_bFocused(false),
                                                                 m_bCanFocus(canfocus), m_bDeleteMe(false),
-                                                                m_pOwner(owner), m_FocusedChild(m_ChildList.end()) { };
+                                                                m_pOwner(owner),
+                                                                m_FocusedChild(m_ChildList.end()) { };
 
 public:
     enum { EVENT_CALLBACK, EVENT_DATACHANGED };
@@ -602,52 +603,80 @@ public:
     void SetCurrent(int n) { m_fCurrent = (float)n; };
 };
 
-class CMessageBox: public CWidgetWindow
+class CWidgetBox: public CWidgetWindow
 {
-    CTextLabel *m_pLabel;
-    CButton *m_pOKButton;
-    bool m_bFinished;
+protected:
+    bool m_bFinished, m_bCanceled;
     CWidgetManager *m_pWidgetManager;
+    CTextLabel *m_pLabel; // Derived classes will need coords from this label, so protected
+
+    virtual bool HandleKey(chtype ch);
+    void Fit(int nlines); // Fit on screen: Resize and center this window
+    
+    CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+               const char *info, chtype fcolor, chtype dfcolor);
+};
+
+class CMessageBox: public CWidgetBox
+{
+    CButton *m_pOKButton;
     
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
-    CMessageBox(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text);
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
+    CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *text);
     
     void Run(void) { while (m_pWidgetManager->Run() && !m_bFinished) {}; };
 };
 
-class CYesNoBox: public CWidgetWindow
+class CYesNoBox: public CWidgetBox
 {
-    CTextLabel *m_pLabel;
     CButton *m_pYesButton, *m_pNoButton;
-    bool m_bFinished, m_bYes;
-    CWidgetManager *m_pWidgetManager;
 
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
 
 public:
-    CYesNoBox(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text);
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
+    CYesNoBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *text);
 
-    bool Run(void) { while (m_pWidgetManager->Run() && !m_bFinished); return m_bYes; };
+    bool Run(void) { while (m_pWidgetManager->Run() && !m_bFinished); return !m_bCanceled; };
 };
 
-class CInputDialog: public CWidgetWindow
+class CChoiceBox: public CWidgetBox
+{
+    CButton *m_pButtons[3];
+    int m_iSelectedButton;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+
+public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+
+    CChoiceBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *text,
+               const char *but1, const char *but2, const char *but3=NULL);
+
+    int Run(void);
+};
+
+class CInputDialog: public CWidgetBox
 {
     bool m_bSecure; // For passwords; prints stars, clears text buffer
-    CTextLabel *m_pLabel;
     CInputField *m_pTextField;
     CButton *m_pOKButton, *m_pCancelButton;
-    bool m_bFinished, m_bCanceled;
-    CWidgetManager *m_pWidgetManager;
-    
+
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
-    CInputDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *title,
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
+    CInputDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *info,
                  int max=-1, bool sec=false);
 
     void SetText(const std::string &s) { m_pTextField->SetText(s); };
@@ -656,16 +685,13 @@ public:
     const std::string &Run(void);
 };
 
-class CFileDialog: public CWidgetWindow // Currently only browses directories
+class CFileDialog: public CWidgetBox // Currently only browses directories
 {
     std::string m_szStartDir, m_szSelectedDir, m_szInfo;
     bool m_bRequireWAccess; // Directory requires write access
-    CTextLabel *m_pInfoLabel;
     CMenu *m_pFileMenu;
     CInputField *m_pFileField;
     CButton *m_pOpenButton, *m_pCancelButton;
-    bool m_bFinished;
-    CWidgetManager *m_pWidgetManager;
     
     void OpenDir(std::string newdir="");
     void UpdateDirField(void) { m_pFileField->SetText(m_szSelectedDir); };
@@ -674,10 +700,12 @@ protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
-    CFileDialog(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, const char *s,
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    
+    CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *s,
                 const char *i, bool w);
     
-    const std::string &Run(void) { while (m_pWidgetManager->Run() && !m_bFinished); return m_szSelectedDir; };
+    const std::string &Run(void);
 };
 
 #endif
