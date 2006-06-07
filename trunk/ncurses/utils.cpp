@@ -306,7 +306,7 @@ int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *b
     char *text;
     va_list v;
     
-    va_start(v, msg);
+    va_start(v, but3);
     vasprintf(&text, msg, v);
     va_end(v);
     
