@@ -116,3 +116,19 @@ bool CNCursBase::YesNoBox(const char *str, ...)
     
     return ret;
 }
+
+int CNCursBase::ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...)
+{
+    /*char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);*/
+    
+    int ret = ::ChoiceBox(str, button1, button2, button3, ...);
+    
+    free(text);
+    
+    return ret;
+}

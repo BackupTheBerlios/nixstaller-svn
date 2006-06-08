@@ -2328,6 +2328,30 @@ bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
+bool CFileDialog::HandleKey(chtype ch)
+{
+    if (CWidgetBox::HandleKey(ch))
+        return true;
+    
+    if (ch == KEY_F(2))
+    {
+        std::string newdir = InputDialog("Enter name of new directory", NULL, 1024);
+        
+        if (newdir.empty())
+            return true;
+        
+        if (mkdir(newdir.c_str(), (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
+        {
+            MessageBox("%s\n%.75s\n%.75s", "Could not create directory", newdir.c_str(), strerror(errno));
+            return true;
+        }
+
+        OpenDir(newdir);
+    }
+    
+    return false;
+}
+
 const std::string &CFileDialog::Run()
 {
     while (m_pWidgetManager->Run() && !m_bFinished)

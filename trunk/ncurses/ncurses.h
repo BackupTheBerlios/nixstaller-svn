@@ -64,7 +64,7 @@ protected:
     virtual char *GetPassword(const char *str) { };
     virtual void MsgBox(const char *str, ...);
     virtual bool YesNoBox(const char *str, ...);
-    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) { };
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
     virtual void Warn(const char *str, ...) { };
     
     virtual bool ReadConfig(void) { }; // UNDONE: Remove me!

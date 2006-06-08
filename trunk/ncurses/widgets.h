@@ -698,6 +698,7 @@ class CFileDialog: public CWidgetBox // Currently only browses directories
     
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
+    virtual bool HandleKey(chtype ch);
     
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
