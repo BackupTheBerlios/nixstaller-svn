@@ -5,7 +5,7 @@ OVERALL
 - Check for tar with gzip/bzip on other platforms(Solaris...)
 - Modify Makeself?
 - Check read permissions for extract dir
-- Extract temporaty files to subdir
+- Extract temporary files to subdir
 - Language updates: Password screen class, FLTK AppManager
 - Use vasprintf instead of vsprintf whenever possible.
 - Usage of exceptions?

@@ -65,7 +65,7 @@ protected:
     virtual void MsgBox(const char *str, ...);
     virtual bool YesNoBox(const char *str, ...);
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
-    virtual void Warn(const char *str, ...) { };
+    virtual void Warn(const char *str, ...);
     
     virtual bool ReadConfig(void) { }; // UNDONE: Remove me!
     friend class CNCursScreen; // UNDONE: Remove me!
@@ -83,6 +83,7 @@ extern CWidgetManager WidgetManager;
 int MaxX(void);
 int MaxY(void);
 void MessageBox(const char *msg, ...);
+void WarningBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
 int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
 std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);

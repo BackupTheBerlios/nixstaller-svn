@@ -281,6 +281,26 @@ void MessageBox(const char *msg, ...)
     WidgetManager.RemoveChild(msgbox);
 }
 
+void WarningBox(const char *msg, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, msg);
+    vasprintf(&text, msg, v);
+    va_end(v);
+    
+    int width = Min(35, MaxX());
+    CMessageBox *warnbox = new CMessageBox(&WidgetManager, MaxY(), width, 0, 0, text);
+    warnbox->SetColors(' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_RED) | A_BOLD,
+                       ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_RED) | A_BOLD);
+    warnbox->refresh();
+    warnbox->Run();
+    
+    free(text);
+    WidgetManager.RemoveChild(warnbox);
+}
+
 bool YesNoBox(const char *msg, ...)
 {
     char *text;
