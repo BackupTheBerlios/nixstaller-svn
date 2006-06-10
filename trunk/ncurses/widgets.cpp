@@ -638,11 +638,13 @@ int CFileDialog::CreateDirCB(EObjectType cdktype GCC_UNUSED, void *object GCC_UN
 
 #include "ncurses.h"
 
+#include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <math.h>
 
 // -------------------------------------
 // Widget handler class
@@ -862,6 +864,9 @@ void CWidgetManager::Init()
     CMessageBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CMessageBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 
+    CWarningBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_RED) | A_BOLD;
+    CWarningBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_RED) | A_BOLD;
+    
     CYesNoBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CYesNoBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 
@@ -1557,6 +1562,15 @@ void CTextWindow::AddText(std::string text)
         ScrollToBottom();
 }
 
+void CTextWindow::LoadFile(const char *fname)
+{
+    std::ifstream file(fname);
+    std::string line;
+    
+    while(file && std::getline(file, line))
+        AddText(line);
+}
+
 void CTextWindow::Draw()
 {
     int lines = 0; // Printed lines
@@ -2035,6 +2049,23 @@ bool CMessageBox::HandleEvent(CWidgetHandler *p, int type)
     }
     
     return false;
+}
+
+// -------------------------------------
+// Warning Box class
+// -------------------------------------
+
+chtype CWarningBox::m_cDefaultFocusedColors;
+chtype CWarningBox::m_cDefaultDefocusedColors;
+
+CWarningBox::CWarningBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                         const char *text) : CMessageBox(owner, maxlines, ncols, begin_y, begin_x, text)
+{
+    SetTitle("Warning");
+    SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+    m_pLabel->SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+    m_pOKButton->SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+    refresh();
 }
 
 // -------------------------------------

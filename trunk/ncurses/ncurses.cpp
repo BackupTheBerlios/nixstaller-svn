@@ -44,6 +44,12 @@ void EndProg(bool err)
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
+void CNCursScreen::init(bool bColors)
+{
+    NCursesApplication::init(bColors);
+    WidgetManager.Init();
+}
+
 void CNCursScreen::init_labels(Soft_Label_Key_Set& S) const
 {
     // UNDONE?
@@ -54,7 +60,7 @@ void CNCursScreen::title()
     const char *title = "Nixstaller";
     const int len = strlen(title);
 
-    titleWindow->bkgd(screen_titles());
+    titleWindow->bkgd(' '|CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_GREEN)|A_BOLD);
     titleWindow->addstr(0, (titleWindow->cols() - len)/2, title);
     titleWindow->noutrefresh();
 }
@@ -72,8 +78,6 @@ int CNCursScreen::run()
     p.Init();
     
     Root_Window->bkgd(' '|CWidgetWindow::GetColorPair(0, 0));
-    
-    WidgetManager.Init();
     
     int choice = ChoiceBox("Please click some button", "button 1", "button 2", "button 3");
     std::string txt = InputDialog("Please type something", "Hello", 10, false);
@@ -122,7 +126,7 @@ int CNCursBase::ChoiceBox(const char *str, const char *button1, const char *butt
     char *text;
     va_list v;
     
-    va_start(v, str);
+    va_start(v, button3);
     vasprintf(&text, str, v);
     va_end(v);
     

@@ -291,10 +291,7 @@ void WarningBox(const char *msg, ...)
     va_end(v);
     
     int width = Min(35, MaxX());
-    CMessageBox *warnbox = new CMessageBox(&WidgetManager, MaxY(), width, 0, 0, text);
-    warnbox->SetColors(' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_RED) | A_BOLD,
-                       ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_RED) | A_BOLD);
-    warnbox->refresh();
+    CWarningBox *warnbox = new CWarningBox(&WidgetManager, MaxY(), width, 0, 0, text);
     warnbox->Run();
     
     free(text);

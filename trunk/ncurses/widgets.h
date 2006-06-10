@@ -524,6 +524,7 @@ public:
                 char absrel = 'a', bool box=true);
                                      
     void AddText(std::string text);
+    void LoadFile(const char *fname);
 };
 
 class CMenu: public CWidgetWindow
@@ -619,9 +620,9 @@ protected:
 
 class CMessageBox: public CWidgetBox
 {
-    CButton *m_pOKButton;
-    
 protected:
+    CButton *m_pOKButton;
+
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
@@ -630,6 +631,14 @@ public:
     CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *text);
     
     void Run(void) { while (m_pWidgetManager->Run() && !m_bFinished) {}; };
+};
+
+class CWarningBox: public CMessageBox
+{
+public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+
+    CWarningBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *text);
 };
 
 class CYesNoBox: public CWidgetBox

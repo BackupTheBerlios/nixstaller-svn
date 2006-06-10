@@ -45,7 +45,7 @@
 class CNCursScreen: public NCursesApplication
 {
 protected:
-    // Overide some functions from ncurses++
+    void init(bool bColors);
     int titlesize() const { return 1; };
     void title();
     //Soft_Label_Key_Set::Label_Layout useSLKs() const { return Soft_Label_Key_Set::Three_Two_Three; };
