@@ -91,6 +91,12 @@ int CNCursScreen::run()
     return EXIT_SUCCESS;
 }
 
+char *CNCursBase::GetPassword(const char *str)
+{
+    std::string pass = ::InputDialog(str, NULL, -1, true);
+    return MakeCString(pass);
+}
+
 void CNCursBase::MsgBox(const char *str, ...)
 {
     char *text;
