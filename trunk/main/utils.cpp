@@ -178,12 +178,24 @@ std::string GetFirstValidDir(const std::string &dir)
     return subdir;
 }
 
+// From http://tldp.org/HOWTO/Secure-Programs-HOWTO/protect-secrets.html
+void *guaranteed_memset(void *v, int c, size_t n)
+{
+    volatile char *p = (volatile char *)v;
+    while (n)
+    {
+        n--;
+        *(p++) = c;
+    }
+    return v;
+}
+
 // Used for cleaning password strings
 void CleanPasswdString(char *str)
 {
     if (str)
     {
-        for (short s=0;s<strlen(str);s++) str[s] = 0;
+        guaranteed_memset(str, 0, strlen(str));
         free(str);
     }
 }
