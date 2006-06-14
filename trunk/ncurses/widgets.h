@@ -446,13 +446,11 @@ public:
 
 class CButton: public CWidgetWindow
 {
-    std::string m_szFocusedTitle, m_szDefocusedTitle, *m_pCurrentTitle;
+    std::string m_szTitle;
     
 protected:
-    virtual void Focus(void) { m_pCurrentTitle = &m_szFocusedTitle; CWidgetWindow::Focus(); };
-    virtual void LeaveFocus(void) { m_pCurrentTitle = &m_szDefocusedTitle; CWidgetWindow::LeaveFocus(); };
     virtual bool HandleKey(chtype ch);
-    virtual void Draw(void) { erase(); AddStrFormat(0, 0, *m_pCurrentTitle); };
+    virtual void Draw(void);
     
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
@@ -586,6 +584,7 @@ public:
     
     const std::string &GetText(void) { return m_szText; };
     void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length(), false); };
+    void SetText(const char *s) { m_szText = s; MoveCursor(m_szText.length(), false); };
 };
 
 class CProgressbar: public CWidgetWindow
@@ -616,6 +615,8 @@ protected:
     
     CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
                const char *info, chtype fcolor, chtype dfcolor);
+    CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+               const char *info=NULL);
 };
 
 class CMessageBox: public CWidgetBox

@@ -263,8 +263,7 @@ void CAskPassWindow::SetPassword(bool unset)
             
             // Force clean temp inputfield string
             char *str = const_cast<char *>(passwd);
-            unsigned len = strlen(str);
-            for(int i=0;i<strlen(str);i++) str[i] = 0;
+            guaranteed_memset(str, 0, strlen(str));
         }
     }
     m_pAskPassWindow->hide();

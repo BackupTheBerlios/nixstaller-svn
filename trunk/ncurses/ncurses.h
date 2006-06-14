@@ -58,8 +58,24 @@ public:
     int run();
 };
 
-class CNCursBase: public virtual CMain
+class CAboutScreen: public CWidgetBox
 {
+    CButton *m_pOKButton;
+    CTextWindow *m_pTextWin;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+
+public:
+    CAboutScreen(CWidgetManager *owner);
+
+    void Run(void) { while (m_pWidgetManager->Run() && !m_bFinished) {}; };
+};
+
+class CNCursBase: virtual public CMain, public CWidgetWindow
+{
+    CAboutScreen *m_pAboutScreen;
+    
 protected:
     virtual char *GetPassword(const char *str);
     virtual void MsgBox(const char *str, ...);
@@ -67,14 +83,24 @@ protected:
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
     virtual void Warn(const char *str, ...);
     
-    virtual bool ReadConfig(void) { }; // UNDONE: Remove me!
-    friend class CNCursScreen; // UNDONE: Remove me!
+    virtual bool HandleKey(chtype ch);
     
 public:
-    
+    CNCursBase(void);
     virtual ~CNCursBase(void) { };
+};
+
+class CInstaller: public CNCursBase, public CBaseInstall
+{
+    CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
+
+protected:
+    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) { };
+    virtual void AddInstOutput(const std::string &str) { };
+    virtual void SetProgress(int percent) { };
     
-    virtual bool Init(void) { };
+public:
+    CInstaller(void);
 };
 
 extern CWidgetManager WidgetManager;

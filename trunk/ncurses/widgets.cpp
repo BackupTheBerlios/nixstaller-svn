@@ -902,18 +902,19 @@ void CWidgetManager::RemoveChild(CWidgetWindow *p)
 void CWidgetManager::ActivateChild(CWidgetWindow *p)
 {
     if (m_ChildList.back() == p)
-        return; // Already 'activated'
-    
-    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
-    {
-        if (*it == p)
+    { 
+        for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
         {
-            m_ChildList.erase(it);
-            AddChild(p);
-            Refresh();
-            break;
+            if (*it == p)
+            {
+                m_ChildList.erase(it);
+                AddChild(p);
+                Refresh();
+                break;
+            }
         }
     }
+    CWidgetHandler::ActivateChild(p);
 }
 
 bool CWidgetManager::Run()
@@ -1236,10 +1237,8 @@ CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int b
                  char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false, true,
                  m_cDefaultFocusedColors, m_cDefaultDefocusedColors)
 {
-    m_szDefocusedTitle = "<C>";
-    m_szDefocusedTitle += text;
-    m_szFocusedTitle = "<C>< " + m_szDefocusedTitle + " >";
-    m_pCurrentTitle = &m_szFocusedTitle;
+    m_szTitle = "<C>";
+    m_szTitle += text;
 }
 
 bool CButton::HandleKey(chtype ch)
@@ -1254,6 +1253,19 @@ bool CButton::HandleKey(chtype ch)
     }
     
     return false;
+}
+
+void CButton::Draw()
+{
+    erase();
+    
+    AddStrFormat(0, 0, m_szTitle);
+    
+    if (Focused())
+    {
+        addch(0, 0, '<');
+        addch(0, maxx(), '>');
+    }
 }
 
 // -------------------------------------
@@ -1537,8 +1549,14 @@ void CTextWindow::AddText(std::string text)
         std::stringstream strstrm(text);
         while(strstrm && std::getline(strstrm, line))
         {
-            m_FormattedText.push_back(line);
-            lines++;
+            if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n'))
+            {
+                m_FormattedText.push_back("");
+                lines++;
+            }
+
+            m_FormattedText.back() += (line + '\n');
+            
             len = GetUnFormatLen(line);
             if (len > m_iLongestLine)
                 m_iLongestLine = len;
@@ -1568,7 +1586,7 @@ void CTextWindow::LoadFile(const char *fname)
     std::string line;
     
     while(file && std::getline(file, line))
-        AddText(line);
+        AddText(line + '\n');
 }
 
 void CTextWindow::Draw()
@@ -1996,8 +2014,26 @@ CWidgetBox::CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin
                                                        fcolor, dfcolor), m_bFinished(false),
                                          m_bCanceled(false), m_pWidgetManager(owner)
 {
-    m_pLabel = new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r');
-    m_pLabel->AddText(info);
+    if (info)
+    {
+        m_pLabel = new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r');
+        m_pLabel->AddText(info);
+    }
+    else
+        m_pLabel = NULL;
+}
+
+CWidgetBox::CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                       const char *info) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x, true),
+                                           m_bFinished(false), m_bCanceled(false), m_pWidgetManager(owner)
+{
+    if (info)
+    {
+        m_pLabel = new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r');
+        m_pLabel->AddText(info);
+    }
+    else
+        m_pLabel = NULL;
 }
 
 bool CWidgetBox::HandleKey(chtype ch)
@@ -2233,8 +2269,10 @@ const std::string &CInputDialog::Run()
     while (m_pWidgetManager->Run() && !m_bFinished)
         ;
     
-    std::string dummy;
-    return (m_bCanceled) ? dummy : m_pTextField->GetText();
+    if (m_bCanceled)
+        m_pTextField->SetText("");
+    
+    return m_pTextField->GetText();
 }
 
 // -------------------------------------
@@ -2388,6 +2426,8 @@ const std::string &CFileDialog::Run()
     while (m_pWidgetManager->Run() && !m_bFinished)
         ;
     
-    std::string dummy;
-    return (m_bCanceled) ? dummy : m_szSelectedDir;
+    if (m_bCanceled)
+        m_szSelectedDir = "";
+    
+    return m_szSelectedDir;
 }
