@@ -103,6 +103,30 @@ public:
     CInstaller(void);
 };
 
+// -------------------------
+// Installer screens
+// -------------------------
+
+class CBaseScreen: public CWidgetWindow
+{
+    bool m_bNeedDrawInit;
+    
+protected:
+    CInstaller *m_pInstaller;
+
+public:
+    CBaseScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                int begin_x) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, 'r'),
+                               m_bNeedDrawInit(true), m_pInstaller(owner) { };
+    virtual ~CBaseScreen(void) { };
+
+    virtual void UpdateLang(void) { }; // Called after language is changed
+    virtual bool Prev(void) { return true; };
+    virtual bool Next(void) { return true; };
+    virtual bool Activate(void);
+    virtual void DrawInit(void) = 0;
+};
+
 extern CWidgetManager WidgetManager;
 
 // Utils
