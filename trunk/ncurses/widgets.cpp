@@ -883,7 +883,7 @@ void CWidgetManager::Init()
 void CWidgetManager::Refresh()
 {
     // Move cursor to end of display(some terminals aren't able to hide it)
-    ::move(MaxY(), MaxY());
+    ::move(MaxY(), MaxX());
     
     ::refresh();
 
@@ -965,12 +965,15 @@ bool CWidgetManager::Run()
         {
             if (!(*m_FocusedChild)->HandleKey(ch))
             {
-                if (ch == CTRL('[')) // Escape pressed
+                if (!m_pBoundKeyWidget || !m_pBoundKeyWidget->HandleKey(ch))
                 {
-                    // Set this so that later calls will also return false. This is required incase this function
-                    // wasn't called from the main app.
-                    m_bQuit = true;
-                    return false;
+                    if (ch == CTRL('[')) // Escape pressed
+                    {
+                        // Set this so that later calls will also return false. This is required incase this function
+                        // wasn't called from the main app.
+                        m_bQuit = true;
+                        return false;
+                    }
                 }
             }
         }
@@ -1546,21 +1549,30 @@ void CTextWindow::AddText(std::string text)
     }
     else
     {
-        std::stringstream strstrm(text);
-        while(strstrm && std::getline(strstrm, line))
+        do
         {
+            end = text.find_first_of("\n", start);
+            
+            if (end != std::string::npos)
+                line = text.substr(start, (end-start)+1);
+            else
+                line = text.substr(start);
+            
             if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n'))
             {
                 m_FormattedText.push_back("");
                 lines++;
             }
 
-            m_FormattedText.back() += (line + '\n');
+            m_FormattedText.back() += line;
             
             len = GetUnFormatLen(line);
             if (len > m_iLongestLine)
                 m_iLongestLine = len;
+            
+            start = end + 1;
         }
+        while(end != std::string::npos);
     }
 
     if (lines > m_pTextWin->height())

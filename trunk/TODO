@@ -18,6 +18,7 @@ MAIN
 NCURSES FRONTEND
 - Error handling in file manager
 - Init for CNCursBase
+- Multiple focused widgets?
 
 FLTK FRONTEND
 - Translate password dialog

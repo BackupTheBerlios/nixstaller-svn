@@ -40,7 +40,7 @@
 
 CInstaller::CInstaller()
 {
-    SetTitle("Nixstaller");
+    SetTitle("<Appname>");
     
     // Button width; longest text + 4 chars for focusing
     int bw = strlen("Cancel") + 4;
@@ -48,11 +48,26 @@ CInstaller::CInstaller()
     m_pCancelButton = new CButton(this, 1, bw, height()-2, 2, "Cancel", 'r');
     m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
     m_pPrevButton = new CButton(this, 1, bw, height()-2, m_pNextButton->relx()-(bw+2), "Back", 'r');
+    
+    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+    m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
+    
+    for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
+    {
+        if ((*it)->Activate())
+            break;
+    }
 }
 
 // -------------------------------------
 // Installer base class
 // -------------------------------------
+
+void CBaseScreen::SetInfo(const char *text)
+{
+    m_pLabel = new CTextLabel(this, height(), width(), 0, 0, 'r');
+    m_pLabel->AddText(text);
+}
 
 bool CBaseScreen::Activate(void)
 {
@@ -62,4 +77,26 @@ bool CBaseScreen::Activate(void)
         DrawInit();
     }
     return true;
+}
+
+// -------------------------------------
+// Language selection screen
+// -------------------------------------
+
+bool CLangScreen::HandleEvent(CWidgetHandler *p, int type)
+{
+    return false;
+}
+
+void CLangScreen::DrawInit()
+{
+    SetInfo("<C>Please select a language");
+    
+    int y = m_pLabel->rely() + m_pLabel->height() + 1;
+    m_pLangMenu = new CMenu(this, height()-y, width(), y, 0, 'r');
+    m_pLangMenu->AddItem("har");
+    m_pLangMenu->AddItem("har");
+    m_pLangMenu->AddItem("har");
+    
+    refresh();
 }

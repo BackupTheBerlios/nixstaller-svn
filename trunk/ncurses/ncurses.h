@@ -90,10 +90,13 @@ public:
     virtual ~CNCursBase(void) { };
 };
 
+class CBaseScreen;
+
 class CInstaller: public CNCursBase, public CBaseInstall
 {
     CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
-
+    std::list<CBaseScreen *> m_InstallScreens;
+    
 protected:
     virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) { };
     virtual void AddInstOutput(const std::string &str) { };
@@ -113,18 +116,35 @@ class CBaseScreen: public CWidgetWindow
     
 protected:
     CInstaller *m_pInstaller;
+    CTextLabel *m_pLabel;
 
-public:
     CBaseScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                 int begin_x) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, 'r'),
-                               m_bNeedDrawInit(true), m_pInstaller(owner) { };
+                               m_bNeedDrawInit(true), m_pInstaller(owner) { SetBox(false); erase(); };
+                               
+    virtual void DrawInit(void) = 0;
+
+    void SetInfo(const char *text);
+
+public:
     virtual ~CBaseScreen(void) { };
 
-    virtual void UpdateLang(void) { }; // Called after language is changed
     virtual bool Prev(void) { return true; };
     virtual bool Next(void) { return true; };
     virtual bool Activate(void);
-    virtual void DrawInit(void) = 0;
+};
+
+class CLangScreen: public CBaseScreen
+{
+    CMenu *m_pLangMenu;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    virtual void DrawInit(void);
+    
+public:
+    CLangScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 };
 
 extern CWidgetManager WidgetManager;

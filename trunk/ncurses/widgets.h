@@ -323,6 +323,7 @@ class CWidgetHandler
     bool m_bEnabled;
     bool m_bFocused, m_bCanFocus;
     bool m_bDeleteMe; // Delete it later, incase we are in a loop from ie Run()
+    CWidgetHandler *m_pBoundKeyWidget; // Widgets which will recieve key events from this widget
     
     friend class CWidgetManager;
 
@@ -341,9 +342,11 @@ protected:
     
     void PushEvent(int type);
 
+    void BindKeyWidget(CWidgetHandler *p) { m_pBoundKeyWidget = p; };
+    
     CWidgetHandler(CWidgetHandler *owner, bool canfocus=true) : m_bEnabled(true), m_bFocused(false),
                                                                 m_bCanFocus(canfocus), m_bDeleteMe(false),
-                                                                m_pOwner(owner),
+                                                                m_pBoundKeyWidget(NULL), m_pOwner(owner),
                                                                 m_FocusedChild(m_ChildList.end()) { };
 
 public:
