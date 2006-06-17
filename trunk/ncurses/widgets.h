@@ -342,8 +342,6 @@ protected:
     
     void PushEvent(int type);
 
-    void BindKeyWidget(CWidgetHandler *p) { m_pBoundKeyWidget = p; };
-    
     CWidgetHandler(CWidgetHandler *owner, bool canfocus=true) : m_bEnabled(true), m_bFocused(false),
                                                                 m_bCanFocus(canfocus), m_bDeleteMe(false),
                                                                 m_pBoundKeyWidget(NULL), m_pOwner(owner),
@@ -364,6 +362,8 @@ public:
     
     bool Focused(void) { return m_bFocused; };
     bool CanFocus(void) { return m_bCanFocus; };
+    
+    void BindKeyWidget(CWidgetHandler *p) { m_pBoundKeyWidget = p; };
 };
 
 class CWidgetManager: public CWidgetHandler

@@ -666,7 +666,7 @@ bool CWidgetHandler::HandleKey(chtype ch)
         if ((ch == KEY_BTAB) && SetPrevWidget())
             return true;
         
-        return ((*m_FocusedChild)->HandleKey(ch));
+        return ((*m_FocusedChild)->HandleKey(ch) || (m_pBoundKeyWidget && m_pBoundKeyWidget->HandleKey(ch)));
     }
     
     return false;
@@ -1435,6 +1435,9 @@ void CTextWindow::HScroll(int n)
 
 void CTextWindow::VScroll(int n)
 {
+    if (m_FormattedText.empty())
+        return;
+    
     m_pVScrollbar->Scroll(n);
     int diff = (int)m_pVScrollbar->GetValue() - m_iCurrentLine;
     

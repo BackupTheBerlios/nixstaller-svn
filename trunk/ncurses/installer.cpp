@@ -38,24 +38,33 @@
 // Main installer screen
 // -------------------------------------
 
-CInstaller::CInstaller()
+bool CInstaller::Init()
 {
-    SetTitle("<Appname>");
+    if (!CBaseInstall::Init())
+        return false;
+    
+    SetTitle("Nixstaller");
     
     // Button width; longest text + 4 chars for focusing
     int bw = strlen("Cancel") + 4;
 
     m_pCancelButton = new CButton(this, 1, bw, height()-2, 2, "Cancel", 'r');
+    m_pPrevButton = new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r');
     m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
-    m_pPrevButton = new CButton(this, 1, bw, height()-2, m_pNextButton->relx()-(bw+2), "Back", 'r');
     
     const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
     m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
     
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
+        m_pNextButton->BindKeyWidget(*it);
+    
+    for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
     {
         if ((*it)->Activate())
+        {
+            ActivateChild(*it); // Give screen focus
             break;
+        }
     }
 }
 
@@ -94,9 +103,10 @@ void CLangScreen::DrawInit()
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pLangMenu = new CMenu(this, height()-y, width(), y, 0, 'r');
-    m_pLangMenu->AddItem("har");
-    m_pLangMenu->AddItem("har");
-    m_pLangMenu->AddItem("har");
+    
+    for (std::list<std::string>::iterator p=m_pInstaller->m_Languages.begin();
+         p!=m_pInstaller->m_Languages.end();p++)
+        m_pLangMenu->AddItem(*p);
     
     refresh();
 }

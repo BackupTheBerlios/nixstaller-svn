@@ -185,7 +185,7 @@ public:
     
     void ThrowError(bool dialog, const char *error, ...);
     
-    virtual bool Init(int argc, char *argv[]);
+    virtual bool Init(void);
     virtual void UpdateLanguage(void) { ReadLang(); };
     
     std::string GetTranslation(std::string &s);
@@ -236,7 +236,7 @@ public:
                          m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
     virtual ~CBaseInstall(void);
     
-    virtual bool Init(int argc, char *argv[]);
+    virtual bool Init(void);
     virtual void Install(void);
     
     const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_szOwnDir.c_str()); };

@@ -139,7 +139,7 @@ public:
     CInstaller(void) : m_bInstallFiles(false) { };
     virtual ~CInstaller(void);
 
-    virtual bool Init(int argc, char *argv[]);
+    virtual bool Init(void);
     virtual void Install(void);
     virtual void UpdateLanguage(void);
     

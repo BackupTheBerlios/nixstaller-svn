@@ -274,11 +274,11 @@ void MessageBox(const char *msg, ...)
     va_end(v);
     
     int width = Min(35, MaxX());
-    CMessageBox *msgbox = new CMessageBox(&WidgetManager, MaxY(), width, 0, 0, text);
+    CMessageBox *msgbox = new CMessageBox(pWidgetManager, MaxY(), width, 0, 0, text);
     msgbox->Run();
     
     free(text);
-    WidgetManager.RemoveChild(msgbox);
+    pWidgetManager->RemoveChild(msgbox);
 }
 
 void WarningBox(const char *msg, ...)
@@ -291,11 +291,11 @@ void WarningBox(const char *msg, ...)
     va_end(v);
     
     int width = Min(35, MaxX());
-    CWarningBox *warnbox = new CWarningBox(&WidgetManager, MaxY(), width, 0, 0, text);
+    CWarningBox *warnbox = new CWarningBox(pWidgetManager, MaxY(), width, 0, 0, text);
     warnbox->Run();
     
     free(text);
-    WidgetManager.RemoveChild(warnbox);
+    pWidgetManager->RemoveChild(warnbox);
 }
 
 bool YesNoBox(const char *msg, ...)
@@ -309,11 +309,11 @@ bool YesNoBox(const char *msg, ...)
     
     int width = Min(40, MaxX());
     
-    CYesNoBox *yesnobox = new CYesNoBox(&WidgetManager, MaxY(), width, 0, 0, text);
+    CYesNoBox *yesnobox = new CYesNoBox(pWidgetManager, MaxY(), width, 0, 0, text);
     bool ret = yesnobox->Run();
     
     free(text);
-    WidgetManager.RemoveChild(yesnobox);
+    pWidgetManager->RemoveChild(yesnobox);
     
     return ret;
 }
@@ -329,11 +329,11 @@ int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *b
     
     int width = Min(50, MaxX());
     
-    CChoiceBox *choicebox = new CChoiceBox(&WidgetManager, MaxY(), width, 0, 0, text, but1, but2, but3);
+    CChoiceBox *choicebox = new CChoiceBox(pWidgetManager, MaxY(), width, 0, 0, text, but1, but2, but3);
     int ret = choicebox->Run();
     
     free(text);
-    WidgetManager.RemoveChild(choicebox);
+    pWidgetManager->RemoveChild(choicebox);
     
     return ret;
 }
@@ -342,14 +342,14 @@ std::string InputDialog(const char *title, const char *start, int max, bool sec)
 {
     int width = Min(60, MaxX());
     int height = Min(30, MaxY());
-    CInputDialog *textdialog = new CInputDialog(&WidgetManager, height, width, 0, 0, title, max, sec);
+    CInputDialog *textdialog = new CInputDialog(pWidgetManager, height, width, 0, 0, title, max, sec);
     
     if (start)
         textdialog->SetText(start);
     
     std::string ret = textdialog->Run();
     
-    WidgetManager.RemoveChild(textdialog);
+    pWidgetManager->RemoveChild(textdialog);
     
     return ret;
 }
@@ -358,10 +358,10 @@ std::string FileDialog(const char *start, const char *info, bool needw)
 {
     int width = Min(70, MaxX());
     int height = Min(30, MaxY());
-    CFileDialog *filedialog = new CFileDialog(&WidgetManager, height, width, 0, 0, start, info, needw);
+    CFileDialog *filedialog = new CFileDialog(pWidgetManager, height, width, 0, 0, start, info, needw);
     std::string ret = filedialog->Run();
     
-    WidgetManager.RemoveChild(filedialog);
+    pWidgetManager->RemoveChild(filedialog);
     
     return ret;
 }

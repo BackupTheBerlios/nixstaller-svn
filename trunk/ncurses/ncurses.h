@@ -42,22 +42,6 @@
 
 #define CTRL(x)             ((x) & 0x1f)
 
-class CNCursScreen: public NCursesApplication
-{
-protected:
-    void init(bool bColors);
-    int titlesize() const { return 1; };
-    void title();
-    //Soft_Label_Key_Set::Label_Layout useSLKs() const { return Soft_Label_Key_Set::Three_Two_Three; };
-    void init_labels(Soft_Label_Key_Set& S) const;
-    void handleArgs(int argc, char* argv[]);
-    
-public:
-    CNCursScreen() : NCursesApplication(true) { };
-
-    int run();
-};
-
 class CAboutScreen: public CWidgetBox
 {
     CButton *m_pOKButton;
@@ -86,7 +70,7 @@ protected:
     virtual bool HandleKey(chtype ch);
     
 public:
-    CNCursBase(void);
+    CNCursBase(CWidgetManager *owner);
     virtual ~CNCursBase(void) { };
 };
 
@@ -103,7 +87,9 @@ protected:
     virtual void SetProgress(int percent) { };
     
 public:
-    CInstaller(void);
+    CInstaller(CWidgetManager *owner) : CNCursBase(owner) { };
+    
+    virtual bool Init(void);
 };
 
 // -------------------------
@@ -147,7 +133,7 @@ public:
                 int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 };
 
-extern CWidgetManager WidgetManager;
+extern CWidgetManager *pWidgetManager;
 
 // Utils
 int MaxX(void);

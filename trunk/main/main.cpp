@@ -58,7 +58,7 @@ CMain::~CMain()
     FreeStrings();
 }
 
-bool CMain::Init(int argc, char *argv[])
+bool CMain::Init()
 {
     printf("Nixstaller version 0.1, Copyright (C) 2006 of Rick Helmus\n"
             "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"

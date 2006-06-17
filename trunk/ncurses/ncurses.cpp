@@ -34,65 +34,55 @@
 
 #include "ncurses.h"
 
-static CNCursScreen MainScreen;
-CWidgetManager WidgetManager;
+NCursesWindow *pRootWin;
+CWidgetManager *pWidgetManager;
 
 void EndProg(bool err)
 {
-//    delete pInterface;
+    delete pWidgetManager;
+    delete pRootWin;
+    ::endwin();
+    
     debugline("EndProg");
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
-// -------------------------------------
-// NCurses screen class
-// -------------------------------------
-
-void CNCursScreen::init(bool bColors)
+int main(int argc, char **argv)
 {
-    NCursesApplication::init(bColors);
-    WidgetManager.Init();
-}
-
-void CNCursScreen::init_labels(Soft_Label_Key_Set& S) const
-{
-    // UNDONE?
-}
-
-void CNCursScreen::title()
-{
-    const char *title = "Nixstaller";
-    const int len = strlen(title);
-
-    titleWindow->bkgd(' '|CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_GREEN)|A_BOLD);
-    titleWindow->addstr(0, (titleWindow->cols() - len)/2, title);
-    titleWindow->noutrefresh();
-}
-
-void CNCursScreen::handleArgs(int argc, char* argv[])
-{
-    // Choose between installer or appmanager here
-}
-
-int CNCursScreen::run()
-{
-    curs_set(0);
+    // Init ncurses
     
-    CNCursBase *p = new CInstaller;
-    //p->Init();
+    ::endwin();
     
-    Root_Window->bkgd(' '|CWidgetWindow::GetColorPair(0, 0));
+    // Create root window
+    pRootWin = new NCursesWindow(::stdscr);
+    NCursesWindow::useColors(); // Use colors when possible
     
-    /*int choice = ChoiceBox("Please click some button", "button 1", "button 2", "button 3");
-    std::string txt = InputDialog("Please type something", "Hello", 10, false);
-    std::string dir = FileDialog("/", "<C>Select a directory please", false);
-    MessageBox("You choose: %d\nYou typed: %s\nYou selected dir: %s", choice, txt.c_str(), dir.c_str());*/
+    pWidgetManager = new CWidgetManager;
+    pWidgetManager->Init();
     
-    // Init installer/appmanager
+    curs_set(0); // Hide cursor when possible
     
-    // Run installer/appmanager
-    WidgetManager.Refresh();
-    while (WidgetManager.Run());
+    pRootWin->bkgd(' '|CWidgetWindow::GetColorPair(0, 0)); // No background
+
+    CNCursBase *pInterface;
+    //if ((argc > 1) && !strcmp(argv[1], "inst"))
+        pInterface = new CInstaller(pWidgetManager);
+    //else
+    //pInterface = new CAppManager;
+    
+    // Init
+    if (!pInterface->Init())
+    {
+        printf("Error: Init failed, aborting\n"); // UNDONE
+        return 1;
+    }
+
+    pWidgetManager->Refresh();
+    while (pWidgetManager->Run());
+    
+    delete pWidgetManager;
+    delete pRootWin;
+    ::endwin();
     
     return EXIT_SUCCESS;
 }
@@ -110,6 +100,9 @@ CAboutScreen::CAboutScreen(CWidgetManager *owner) : CWidgetBox(owner, 20, 50, 0,
 
     m_pOKButton = new CButton(this, 1, 10, (m_pTextWin->rely()+m_pTextWin->maxy()+2), (width()-10)/2, "OK", 'r');
     Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
+    
+    ActivateChild(m_pTextWin);
+    m_pTextWin->BindKeyWidget(m_pOKButton);
 }
 
 bool CAboutScreen::HandleEvent(CWidgetHandler *p, int type)
@@ -127,10 +120,15 @@ bool CAboutScreen::HandleEvent(CWidgetHandler *p, int type)
 // NCurses base interface class
 // -------------------------------------
 
-CNCursBase::CNCursBase() : CWidgetWindow(&WidgetManager, MaxY()-4, MaxX()-4, 2, 2)
+CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-4), Min(60, MaxX()-4), 0, 0)
 {
-    m_pAboutScreen = new CAboutScreen(&WidgetManager);
+    m_pAboutScreen = new CAboutScreen(owner);
     m_pAboutScreen->Enable(false);
+    
+    // Center & apply
+    mvwin(((MaxY() - maxy())/2), ((MaxX() - maxx())/2));
+    ::erase();
+    pWidgetManager->Refresh();
 }
 
 char *CNCursBase::GetPassword(const char *str)
@@ -207,15 +205,15 @@ bool CNCursBase::HandleKey(chtype ch)
     if (ch == KEY_F(3))
     {
         m_pAboutScreen->Enable(true);
-        WidgetManager.ActivateChild(m_pAboutScreen);
+        pWidgetManager->ActivateChild(m_pAboutScreen);
         
-        WidgetManager.Refresh();
+        pWidgetManager->Refresh();
         
         m_pAboutScreen->Run();
         
         m_pAboutScreen->Enable(false);
         ::erase(); // Clear whole screen
-        WidgetManager.Refresh();
+        pWidgetManager->Refresh();
         
         return true;
     }

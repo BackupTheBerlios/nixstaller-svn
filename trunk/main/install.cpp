@@ -56,7 +56,7 @@ CBaseInstall::~CBaseInstall()
     }
 }
 
-bool CBaseInstall::Init(int argc, char *argv[])
+bool CBaseInstall::Init()
 {   
     // Get current OS and cpu arch name
     utsname inf;
@@ -78,7 +78,7 @@ bool CBaseInstall::Init(int argc, char *argv[])
     m_szOwnDir = curdir;
     debugline("Current dir: %s\n", m_szOwnDir.c_str());
     
-    if (!CMain::Init(argc, argv)) // Init main, will also read config files
+    if (!CMain::Init()) // Init main, will also read config files
         return false;
     
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)

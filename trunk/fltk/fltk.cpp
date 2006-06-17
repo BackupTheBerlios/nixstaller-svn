@@ -45,7 +45,7 @@ int main(int argc, char **argv)
         pInterface = new CAppManager;
     
     // Init
-    if (!pInterface->Init(argc, argv))
+    if (!pInterface->Init())
     {
         printf("Error: Init failed, aborting\n"); // UNDONE
         return 1;
