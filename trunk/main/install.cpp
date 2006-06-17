@@ -90,17 +90,14 @@ bool CBaseInstall::Init()
         else m_szDestDir = "/";
     }
     
-    return true;
-}
-
-void CBaseInstall::VerifyDestDir()
-{
-    // Check if destination directory is readable(called on init)
+    // Check if destination directory is readable
     if ((m_InstallInfo.dest_dir_type == DEST_DEFAULT) && !ReadAccess(m_szDestDir))
         ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                "However you don't have read permissions to this directory\n"
-                        "Please restart the installer as a user who does or as the root user",
-                m_szDestDir.c_str()));
+                                    "However you don't have read permissions to this directory\n"
+                                    "Please restart the installer as a user who does or as the root user",
+                   m_szDestDir.c_str()));
+
+    return true;
 }
 
 void CBaseInstall::SetNextStep()

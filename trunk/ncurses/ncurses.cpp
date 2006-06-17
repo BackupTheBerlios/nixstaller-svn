@@ -49,6 +49,8 @@ void EndProg(bool err)
 
 int main(int argc, char **argv)
 {
+    Intro();
+    
     // Init ncurses
     
     ::endwin();

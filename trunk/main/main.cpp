@@ -60,11 +60,6 @@ CMain::~CMain()
 
 bool CMain::Init()
 {
-    printf("Nixstaller version 0.1, Copyright (C) 2006 of Rick Helmus\n"
-            "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
-            "This is free software, and you are welcome to redistribute it\n"
-            "under certain conditions; see the about section for details.\n");
-
     if (!ReadConfig())
         return false;
     

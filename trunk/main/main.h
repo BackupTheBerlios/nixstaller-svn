@@ -93,6 +93,7 @@ struct app_entry_s
 
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
+void Intro(void);
 char *CreateText(const char *s, ...);
 inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
 void FreeStrings(void);
@@ -218,9 +219,6 @@ class CBaseInstall: virtual public CMain
     bool IsInstalled(bool checkver);
     
 protected:
-    
-    void VerifyDestDir(void);
-    
     virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;

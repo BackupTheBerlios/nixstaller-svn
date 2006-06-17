@@ -48,8 +48,6 @@ bool CInstaller::Init()
                                group = widget->Create(); \
                                if (group) { m_pWizard->add(group); m_ScreenList.push_back(widget); } }
                                
-    VerifyDestDir();
-
     m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     m_pMainWindow->callback(WizCancelCB);
 
