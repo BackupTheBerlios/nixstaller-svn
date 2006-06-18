@@ -37,18 +37,6 @@
 NCursesWindow *pRootWin;
 CWidgetManager *pWidgetManager;
 
-void EndProg(bool err)
-{
-    delete pWidgetManager;
-    delete pRootWin;
-    ::endwin();
-    
-    pWidgetManager = NULL;
-    
-    debugline("EndProg");
-    exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
-}
-
 int main(int argc, char **argv)
 {
     Intro();

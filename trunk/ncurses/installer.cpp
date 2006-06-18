@@ -55,6 +55,7 @@ void CInstaller::Prev()
         if ((*it)->Activate())
         {
             (*m_CurrentScreenIt)->Enable(false);
+            (*it)->Enable(true);
             ActivateChild(*it); // Give screen focus
             m_CurrentScreenIt = it;
             break;
@@ -69,21 +70,21 @@ void CInstaller::Next()
     
     std::list<CBaseScreen *>::iterator it = m_CurrentScreenIt;
     
-    while (it != m_InstallScreens.end())
+    while (*it != m_InstallScreens.back())
     {
         it++;
         
         if ((*it)->Activate())
         {
             (*m_CurrentScreenIt)->Enable(false);
+            (*it)->Enable(true);
             ActivateChild(*it); // Give screen focus
             m_CurrentScreenIt = it;
-            break;
+            return;
         }
     }
     
-    if (it == m_InstallScreens.end())
-        EndProg();
+    EndProg();
 }
 
 bool CInstaller::HandleKey(chtype ch)
@@ -157,6 +158,7 @@ bool CInstaller::Init()
     m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
     m_InstallScreens.push_back(new CWelcomeScreen(this, h, w, y, x));
     m_InstallScreens.push_back(new CLicenseScreen(this, h, w, y, x));
+    m_InstallScreens.push_back(new CSelectDirScreen(this, h, w, y, x));
     
     bool initscreen = true;
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
@@ -308,4 +310,31 @@ bool CLicenseScreen::Activate()
         return false;
     
     return true;
+}
+
+// -------------------------------------
+// Destination directory selection screen
+// -------------------------------------
+
+bool CSelectDirScreen::HandleEvent(CWidgetHandler *p, int type)
+{
+    if ((type == EVENT_CALLBACK) && (p == m_pFileField))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
+    return false;
+}
+
+void CSelectDirScreen::DrawInit()
+{
+    SetInfo("<C>Select destination directory");
+    
+    int y = m_pLabel->rely() + m_pLabel->height() + 1;
+    m_pFileField = new CInputField(this, 3, width(), y, 0, 'r', 1024);
+    
+    y += 4;
+    int x = (width()-15)/2;
+    m_pChangeDirButton = new CButton(this, 1, 15, y, x, "Select a directory", 'r');
 }

@@ -175,6 +175,22 @@ public:
     virtual bool Activate(void);
 };
 
+class CSelectDirScreen: public CBaseScreen
+{
+    CInputField *m_pFileField;
+    CButton *m_pChangeDirButton;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    virtual void DrawInit(void);
+
+public:
+    CSelectDirScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                     int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+
+    //virtual bool Next(void);
+};
+
 extern CWidgetManager *pWidgetManager;
 
 // Utils

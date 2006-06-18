@@ -707,6 +707,62 @@ bool CWidgetHandler::SetNextWidget()
     
     return false;
 }
+#if 0
+
+bool CWidgetHandler::SetNextWidget()
+{
+    /*if (m_ChildList.size() < 2)
+    {
+        bool ret = (m_FocusedChild != m_ChildList.begin());
+        m_FocusedChild = m_ChildList.begin();
+        return ret;
+    }
+    else */if (m_ChildList.empty())
+    {
+        m_FocusedChild = m_ChildList.end();
+        return true;
+    }
+    else if (m_FocusedChild == m_ChildList.end())
+        return true;
+    
+    std::list<CWidgetWindow *>::iterator it = m_FocusedChild;
+    
+    while (*it != m_ChildList.back())
+    {
+        it++;
+        
+        if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (*it)->SetNextWidget())
+        {
+            (*prev)->LeaveFocus();
+            (*it)->Focus();
+            m_FocusedChild = it;
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool CWidgetHandler::SetFirstWidget()
+{
+    std::list<CWidgetWindow *>::iterator it = m_ChildList.begin();
+    
+    while (it != m_ChildList.end())
+    {
+        if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (*it)->SetNextWidget())
+        {
+            (*prev)->LeaveFocus();
+            (*it)->Focus();
+            m_FocusedChild = it;
+            return true;
+        }
+        
+        it++;
+    }
+    
+    return false;
+}
+#endif
 
 bool CWidgetHandler::SetPrevWidget()
 {
@@ -981,6 +1037,69 @@ bool CWidgetManager::Run()
     
     return true;
 }
+
+#if 0
+bool CWidgetManager::SetNextWidget()
+{
+    if (m_ChildList.size() < 2)
+    {
+        m_FocusedChild = m_ChildList.begin();
+        return false;
+    }
+    else if (m_ChildList.empty())
+    {
+        m_FocusedChild = m_ChildList.end();
+        return false;
+    }
+    else if (m_FocusedChild == m_ChildList.end())
+        return false;
+    
+    std::list<CWidgetWindow *>::iterator prev = (*m_FocusedChild)->m_FocusedChild, cur;
+    
+    if (prev == (*m_FocusedChild)->m_ChildList.end())
+        prev = (*m_FocusedChild)->m_ChildList.begin();
+    
+    cur = prev;
+
+    for (; cur != prev; cur++)
+    {
+        if (cur == m_ChildList.end())
+            cur = m_ChildList.begin();
+        
+        if ((*cur)->CanFocus() && (*cur)->Enabled() && !(*cur)->m_bDeleteMe && (*cur)->SetNextWidget())
+        {
+            if (cur != prev)
+            {
+                (*prev)->LeaveFocus();
+                (*m_FocusedChild)->m_FocusedChild = cur;
+                (*cur)->Focus();
+            }
+            return true;
+        }
+    }
+    
+    cur = prev;
+
+    for (; cur != prev; cur++)
+    {
+        if (cur == m_ChildList.end())
+            cur = m_ChildList.begin();
+        
+        if ((*cur)->CanFocus() && (*cur)->Enabled() && !(*cur)->m_bDeleteMe && (*cur)->SetFirstWidget())
+        {
+            if (cur != prev)
+            {
+                (*prev)->LeaveFocus();
+                (*m_FocusedChild)->m_FocusedChild = cur;
+                (*cur)->Focus();
+            }
+            return true;
+        }
+    }
+    
+    return false;
+}
+#endif
 
 // -------------------------------------
 // Widget window class
@@ -1355,24 +1474,23 @@ void CTextLabel::AddText(std::string text)
         end = text.find_first_of(" \t\n", start);
         
         if (end != std::string::npos)
-            word = text.substr(start, (end-start));
-        else
-            word = text.substr(start);
-        
-        if (end != std::string::npos)
         {
+            word = text.substr(start, (end-start));
+
             start = end;
+            
             end = text.find_first_not_of(" \t", start+1);
             if (end != std::string::npos)
             {
-                short count = ((end - start) <= (width() - start)) ? (end-start) : (width()-start);
-                word += text.substr(start, count);
+                word += text.substr(start, (end-start));
                 start = end;
             }
             else
                 start++; // Start searching on next char
         }
-        
+        else
+            word = text.substr(start);
+
         if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
             ((GetUnFormatLen(m_FormattedText.back())+GetUnFormatLen(word)) > width()))
         {
@@ -1397,8 +1515,12 @@ void CTextLabel::Draw()
     if (!m_FormattedText.empty())
     {
         int lines = 0;
-        for(std::list<std::string>::iterator it=m_FormattedText.begin(); it!=m_FormattedText.end(); it++, lines++)
+        for(std::list<std::string>::iterator it=m_FormattedText.begin(); it!=m_FormattedText.end();
+            it++, lines++)
+        {
+            debugline(it->c_str());
             AddStrFormat(lines, 0, it->c_str(), 0, width());
+        }
     }
 }
 
@@ -1527,8 +1649,7 @@ void CTextWindow::AddText(std::string text)
                 end = text.find_first_not_of(" \t", start+1);
                 if (end != std::string::npos)
                 {
-                    short count = ((end - start) <= (m_pTextWin->width() - start)) ? (end-start) : (m_pTextWin->width()-start);
-                    word += text.substr(start, count);
+                    word += text.substr(start, (end-start));
                     start = end;
                 }
                 else

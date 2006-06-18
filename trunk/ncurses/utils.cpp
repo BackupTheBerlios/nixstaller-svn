@@ -262,16 +262,32 @@ void debugline(const char *t, ...)
     
     bool plain = isendwin();
     if (!plain)
-        endwin();
+        endwin(); // Disable ncurses mode
     
     printf("DEBUG: %s", txt);
+    FILE *f=fopen("log.txt", "a");fprintf(f, txt);fclose(f);
+    fflush(stdout);
     
-    if (!plain && pWidgetManager)
-        pWidgetManager->Refresh();
+    if (!plain)
+        refresh(); // Reenable ncurses mode
     
     free(txt);
 }
 #endif
+
+void EndProg(bool err)
+{
+    extern NCursesWindow *pRootWin;
+    
+    delete pWidgetManager;
+    delete pRootWin;
+    ::endwin();
+    
+    pWidgetManager = NULL;
+    
+    debugline("EndProg");
+    exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
+}
 
 int MaxX()
 {
