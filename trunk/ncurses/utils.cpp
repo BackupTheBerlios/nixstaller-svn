@@ -250,16 +250,39 @@ int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
 
 #include "ncurses.h"
 
+#ifndef RELEASE
+void debugline(const char *t, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, t);
+    vasprintf(&txt, t, v);
+    va_end(v);
+    
+    bool plain = isendwin();
+    if (!plain)
+        endwin();
+    
+    printf("DEBUG: %s", txt);
+    
+    if (!plain && pWidgetManager)
+        pWidgetManager->Refresh();
+    
+    free(txt);
+}
+#endif
+
 int MaxX()
 {
-    int y, x;
+    static int y, x;
     getmaxyx(stdscr, y, x);
     return x;
 }
 
 int MaxY()
 {
-    int y, x;
+    static int y, x;
     getmaxyx(stdscr, y, x);
     return y;
 }

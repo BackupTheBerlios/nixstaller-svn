@@ -460,6 +460,8 @@ public:
     
     CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
             const char *text, char absrel = 'a');
+    
+    void Push(void) { PushEvent(EVENT_CALLBACK); };
 };
 
 class CScrollbar: public CWidgetWindow

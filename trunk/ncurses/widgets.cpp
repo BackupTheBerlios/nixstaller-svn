@@ -1249,7 +1249,7 @@ bool CButton::HandleKey(chtype ch)
     if (CWidgetWindow::HandleKey(ch))
         return true;
     
-    if ((ch == KEY_ENTER) || (ch == '\n') || (ch == 'r'))
+    if (ENTER(ch))
     {
         PushEvent(EVENT_CALLBACK);
         return true;
@@ -1598,10 +1598,13 @@ void CTextWindow::AddText(std::string text)
 void CTextWindow::LoadFile(const char *fname)
 {
     std::ifstream file(fname);
-    std::string line;
+    std::string buf;
+    char c;
     
-    while(file && std::getline(file, line))
-        AddText(line + '\n');
+    while (file && file.get(c))
+        buf += c;
+        
+    AddText(buf);
 }
 
 void CTextWindow::Draw()

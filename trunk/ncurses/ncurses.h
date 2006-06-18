@@ -41,6 +41,8 @@
 #include "widgets.h"
 
 #define CTRL(x)             ((x) & 0x1f)
+#define ENTER(x)            ((x==KEY_ENTER)||(x=='\n')||(x=='\r'))
+#define ESCAPE              CTRL('[')
 
 class CAboutScreen: public CWidgetBox
 {
@@ -80,14 +82,23 @@ class CInstaller: public CNCursBase, public CBaseInstall
 {
     CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
     std::list<CBaseScreen *> m_InstallScreens;
+    std::list<CBaseScreen *>::iterator m_CurrentScreenIt;
+    
+    void Prev(void);
+    void Next(void);
     
 protected:
     virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) { };
     virtual void AddInstOutput(const std::string &str) { };
     virtual void SetProgress(int percent) { };
     
+    virtual bool HandleKey(chtype ch);
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    
 public:
-    CInstaller(CWidgetManager *owner) : CNCursBase(owner) { };
+    bool m_bInstallFiles;
+    
+    CInstaller(CWidgetManager *owner) : CNCursBase(owner), m_bInstallFiles(false) { };
     
     virtual bool Init(void);
 };
@@ -133,6 +144,37 @@ public:
                 int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 };
 
+class CWelcomeScreen: public CBaseScreen
+{
+    CTextWindow *m_pTextWin;
+
+protected:
+    virtual bool HandleKey(chtype ch);
+    virtual void DrawInit(void);
+
+public:
+    CWelcomeScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                   int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+    
+    virtual bool Activate(void);
+};
+
+class CLicenseScreen: public CBaseScreen
+{
+    CTextWindow *m_pTextWin;
+
+protected:
+    virtual bool HandleKey(chtype ch);
+    virtual void DrawInit(void);
+
+public:
+    CLicenseScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                   int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+
+    virtual bool Next(void);
+    virtual bool Activate(void);
+};
+
 extern CWidgetManager *pWidgetManager;
 
 // Utils
@@ -144,10 +186,5 @@ bool YesNoBox(const char *msg, ...);
 int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
 std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
 std::string FileDialog(const char *start, const char *info, bool needw);
-
-#ifndef RELEASE
-inline void debugline(const char *t, ...)
-{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); mvprintw(4, 50, "DEBUG: %s", txt); ::refresh(); };
-#endif
 
 #endif

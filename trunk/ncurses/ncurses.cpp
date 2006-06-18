@@ -43,6 +43,8 @@ void EndProg(bool err)
     delete pRootWin;
     ::endwin();
     
+    pWidgetManager = NULL;
+    
     debugline("EndProg");
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
@@ -85,6 +87,8 @@ int main(int argc, char **argv)
     delete pWidgetManager;
     delete pRootWin;
     ::endwin();
+    
+    pWidgetManager = NULL;
     
     return EXIT_SUCCESS;
 }

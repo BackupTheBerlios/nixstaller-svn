@@ -38,6 +38,106 @@
 // Main installer screen
 // -------------------------------------
 
+void CInstaller::Prev()
+{
+    if (m_CurrentScreenIt == m_InstallScreens.begin())
+        return;
+    
+    if (!(*m_CurrentScreenIt)->Prev())
+        return;
+    
+    std::list<CBaseScreen *>::iterator it = m_CurrentScreenIt;
+    
+    while (it != m_InstallScreens.begin())
+    {
+        it--;
+        
+        if ((*it)->Activate())
+        {
+            (*m_CurrentScreenIt)->Enable(false);
+            ActivateChild(*it); // Give screen focus
+            m_CurrentScreenIt = it;
+            break;
+        }
+    }
+}
+
+void CInstaller::Next()
+{
+    if ((*m_CurrentScreenIt != m_InstallScreens.back()) && (!(*m_CurrentScreenIt)->Next()))
+        return;
+    
+    std::list<CBaseScreen *>::iterator it = m_CurrentScreenIt;
+    
+    while (it != m_InstallScreens.end())
+    {
+        it++;
+        
+        if ((*it)->Activate())
+        {
+            (*m_CurrentScreenIt)->Enable(false);
+            ActivateChild(*it); // Give screen focus
+            m_CurrentScreenIt = it;
+            break;
+        }
+    }
+    
+    if (it == m_InstallScreens.end())
+        EndProg();
+}
+
+bool CInstaller::HandleKey(chtype ch)
+{
+    if (CNCursBase::HandleKey(ch))
+        return true;
+    
+    if (ch == ESCAPE)
+    {
+        m_pCancelButton->Push();
+        return true;
+    }
+    
+    return false;
+}
+
+bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (type == EVENT_CALLBACK)
+    {
+        if (p == m_pNextButton)
+        {
+            Next();
+            return true;
+        }
+        else if (p == m_pPrevButton)
+        {
+            Prev();
+            return true;
+        }
+        else if (p == m_pCancelButton)
+        {
+            char *msg;
+            if (m_bInstallFiles)
+                msg = /*pInst->GetTranslation UNDONE*/("Install commands are still running\n"
+                        "If you abort now this may lead to a broken installation\n"
+                        "Are you sure?");
+            else
+                msg = /*pInst->GetTranslation UNDONE*/("This will abort the installation\nAre you sure?");
+    
+            if (YesNoBox(msg))
+                EndProg();
+            return true;
+        }
+        else if (p == *m_CurrentScreenIt)
+        {
+            ActivateChild(m_pNextButton);
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 bool CInstaller::Init()
 {
     if (!CBaseInstall::Init())
@@ -53,19 +153,25 @@ bool CInstaller::Init()
     m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
     
     const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+    
     m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
+    m_InstallScreens.push_back(new CWelcomeScreen(this, h, w, y, x));
+    m_InstallScreens.push_back(new CLicenseScreen(this, h, w, y, x));
     
-    for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
-        m_pNextButton->BindKeyWidget(*it);
-    
+    bool initscreen = true;
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
     {
-        if ((*it)->Activate())
+        if (initscreen && (*it)->Activate())
         {
             ActivateChild(*it); // Give screen focus
-            break;
+            m_CurrentScreenIt = it;
+            initscreen = false;
         }
+        else
+            (*it)->Enable(false);
     }
+    
+    return true;
 }
 
 // -------------------------------------
@@ -80,11 +186,13 @@ void CBaseScreen::SetInfo(const char *text)
 
 bool CBaseScreen::Activate(void)
 {
+    erase();
     if (m_bNeedDrawInit)
     {
         m_bNeedDrawInit = false;
         DrawInit();
     }
+    refresh();
     return true;
 }
 
@@ -94,6 +202,12 @@ bool CBaseScreen::Activate(void)
 
 bool CLangScreen::HandleEvent(CWidgetHandler *p, int type)
 {
+    if ((type == EVENT_CALLBACK) && (p == m_pLangMenu))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
     return false;
 }
 
@@ -107,6 +221,91 @@ void CLangScreen::DrawInit()
     for (std::list<std::string>::iterator p=m_pInstaller->m_Languages.begin();
          p!=m_pInstaller->m_Languages.end();p++)
         m_pLangMenu->AddItem(*p);
+}
+
+// -------------------------------------
+// Welcome screen
+// -------------------------------------
+
+bool CWelcomeScreen::HandleKey(chtype ch)
+{
+    if (CBaseScreen::HandleKey(ch))
+        return true;
     
-    refresh();
+    if (ENTER(ch))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
+    return false;
+}
+
+void CWelcomeScreen::DrawInit()
+{
+    SetInfo("<C>Welcome");
+    
+    int y = m_pLabel->rely() + m_pLabel->height() + 1;
+    m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+}
+
+bool CWelcomeScreen::Activate()
+{
+    if (!CBaseScreen::Activate())
+        return false;
+
+    if (FileExists(m_pInstaller->GetLangWelcomeFName()))
+        m_pTextWin->LoadFile(m_pInstaller->GetLangWelcomeFName());
+    else if (FileExists(m_pInstaller->GetWelcomeFName()))
+        m_pTextWin->LoadFile(m_pInstaller->GetWelcomeFName());
+    else
+        return false;
+    
+    return true;
+}
+
+// -------------------------------------
+// License agreement screen
+// -------------------------------------
+
+bool CLicenseScreen::HandleKey(chtype ch)
+{
+    if (CBaseScreen::HandleKey(ch))
+        return true;
+    
+    if (ENTER(ch))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
+    return false;
+}
+
+void CLicenseScreen::DrawInit()
+{
+    SetInfo("<C>License agreement");
+    
+    int y = m_pLabel->rely() + m_pLabel->height() + 1;
+    m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+}
+
+bool CLicenseScreen::Next()
+{
+    return (YesNoBox("Do you accept and understand the terms of the license agreement?"));
+}
+
+bool CLicenseScreen::Activate()
+{
+    if (!CBaseScreen::Activate())
+        return false;
+
+    if (FileExists(m_pInstaller->GetLangLicenseFName()))
+        m_pTextWin->LoadFile(m_pInstaller->GetLangLicenseFName());
+    else if (FileExists(m_pInstaller->GetLicenseFName()))
+        m_pTextWin->LoadFile(m_pInstaller->GetLicenseFName());
+    else
+        return false;
+    
+    return true;
 }
