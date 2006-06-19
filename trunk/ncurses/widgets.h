@@ -332,8 +332,8 @@ protected:
     std::list<CWidgetWindow *> m_ChildList;
     std::list<CWidgetWindow *>::iterator m_FocusedChild;
 
-    virtual bool SetNextWidget(void);
-    virtual bool SetPrevWidget(void);
+    bool SetNextWidget(void);
+    bool SetPrevWidget(void);
     
     virtual void Focus(void);
     virtual void LeaveFocus(void);
@@ -371,8 +371,8 @@ class CWidgetManager: public CWidgetHandler
     bool m_bQuit;
     
 protected:
-    virtual bool SetNextWidget(void);
-    virtual bool SetPrevWidget(void);
+    bool SetNextChildWidget(void);
+    bool SetPrevChildWidget(void);
 
 public:
     CWidgetManager(void) : CWidgetHandler(NULL, false), m_bQuit(false) { };

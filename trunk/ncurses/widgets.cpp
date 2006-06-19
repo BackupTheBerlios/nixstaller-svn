@@ -704,46 +704,6 @@ bool CWidgetHandler::SetNextWidget()
 
 bool CWidgetHandler::SetPrevWidget()
 {
-    if (m_ChildList.size() < 2)
-    {
-        bool ret = (m_FocusedChild != m_ChildList.begin());
-        m_FocusedChild = m_ChildList.begin();
-        return ret;
-    }
-    else if (m_ChildList.empty())
-    {
-        m_FocusedChild = m_ChildList.end();
-        return false;
-    }
-
-    std::list<CWidgetWindow *>::iterator prev;
-    if (m_FocusedChild != m_ChildList.end())
-        prev = m_FocusedChild;
-    else
-        prev = m_ChildList.begin();
-    
-    do
-    {
-        if (m_FocusedChild == m_ChildList.begin())
-            m_FocusedChild = m_ChildList.end();
-    
-        m_FocusedChild--;
-        
-        if ((*m_FocusedChild)->CanFocus() && (*m_FocusedChild)->Enabled() && !(*m_FocusedChild)->m_bDeleteMe)
-        {
-            (*prev)->LeaveFocus();
-            (*m_FocusedChild)->Focus();
-            return true;
-        }
-    }
-    while (m_FocusedChild != prev);
-
-    return false;
-}
-
-#if 0
-bool CWidgetHandler::SetPrevWidget()
-{
     if (m_ChildList.empty())
     {
         m_FocusedChild = m_ChildList.end();
@@ -757,7 +717,7 @@ bool CWidgetHandler::SetPrevWidget()
     
     prev = it;
     
-    do
+    while (true)
     {
         if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (*it)->SetPrevWidget())
         {
@@ -770,13 +730,15 @@ bool CWidgetHandler::SetPrevWidget()
             return true;
         }
         
+        if (it == m_ChildList.begin())
+            break;
+        
         it--;
     }
-    while (it != m_ChildList.begin());
     
     return false;
 }
-#endif
+
 void CWidgetHandler::Focus()
 {
     m_bFocused = true;
@@ -1007,9 +969,9 @@ bool CWidgetManager::Run()
                 if (!m_pBoundKeyWidget || !m_pBoundKeyWidget->HandleKey(ch))
                 {
                     if ((ch == 9) || (ch == CTRL('n')))
-                        SetNextWidget();
+                        SetNextChildWidget();
                     else if ((ch == KEY_BTAB) || (ch == CTRL('p')))
-                        SetPrevWidget();
+                        SetPrevChildWidget();
                     else if (ch == CTRL('[')) // Escape pressed
                     {
                         // Set this so that later calls will also return false. This is required incase this function
@@ -1025,7 +987,7 @@ bool CWidgetManager::Run()
     return true;
 }
 
-bool CWidgetManager::SetNextWidget()
+bool CWidgetManager::SetNextChildWidget()
 {
     if (m_ChildList.empty())
     {
@@ -1042,8 +1004,8 @@ bool CWidgetManager::SetNextWidget()
 
     do
     {
-        if (cur == m_ChildList.end())
-            cur = m_ChildList.begin();
+        if (cur == (*m_FocusedChild)->m_ChildList.end())
+            cur = (*m_FocusedChild)->m_ChildList.begin();
         
         if ((*cur)->CanFocus() && (*cur)->Enabled() && !(*cur)->m_bDeleteMe && (*cur)->SetNextWidget())
         {
@@ -1062,7 +1024,7 @@ bool CWidgetManager::SetNextWidget()
     return false;
 }
 
-bool CWidgetManager::SetPrevWidget()
+bool CWidgetManager::SetPrevChildWidget()
 {
     if (m_ChildList.empty())
     {
@@ -1090,8 +1052,8 @@ bool CWidgetManager::SetPrevWidget()
             return true;
         }
         
-        if (cur == m_ChildList.begin())
-            cur = m_ChildList.end();
+        if (cur == (*m_FocusedChild)->m_ChildList.begin())
+            cur = (*m_FocusedChild)->m_ChildList.end();
 
         cur--;
     }
@@ -1099,6 +1061,7 @@ bool CWidgetManager::SetPrevWidget()
     
     return false;
 }
+
 
 // -------------------------------------
 // Widget window class

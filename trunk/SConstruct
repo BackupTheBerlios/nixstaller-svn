@@ -263,6 +263,8 @@ if not env.GetOption('clean'):
             print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
             Exit(1)
 
+    if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
+        conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
         print "Couldn\'t find libz !"
         Exit(1)
@@ -304,7 +306,7 @@ else:
 libsu = env.SConscript('libsu/SConstruct')
 
 # Builds main lib
-main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'libmd5/md5.c'])
+main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'main/vasprintf.c', 'libmd5/md5.c'])
 
 env.Append(LIBS = Split('main su util'))
 

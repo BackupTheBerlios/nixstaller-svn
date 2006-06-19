@@ -118,6 +118,14 @@ inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };
 // These functions should be defined for each frontend
 void EndProg(bool err=false);
 
+#ifndef HAVE_VASPRINTF
+extern "C" int
+vasprintf (result, format, args)
+     char **result;
+     const char *format;
+     va_list args;
+#endif
+
 class CMain;
 
 class CRegister

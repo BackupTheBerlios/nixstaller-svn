@@ -252,7 +252,7 @@ int ShowAboutK(EObjectType cdktype, void *object, void *clientData, chtype key)
 
 #ifndef RELEASE
 void debugline(const char *t, ...)
-{
+{return;
     char *txt;
     va_list v;
     
