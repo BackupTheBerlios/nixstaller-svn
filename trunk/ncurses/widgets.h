@@ -372,7 +372,7 @@ class CWidgetManager: public CWidgetHandler
     
 protected:
     virtual bool SetNextWidget(void);
-    //virtual bool SetPrevWidget(void);
+    virtual bool SetPrevWidget(void);
 
 public:
     CWidgetManager(void) : CWidgetHandler(NULL, false), m_bQuit(false) { };
