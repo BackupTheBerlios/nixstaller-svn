@@ -1,4 +1,10 @@
-env = Environment(CCFLAGS = "-Wall -Os", CPPPATH='.')
+opts = Options()
+opts.Add('CC', 'The C compiler', 'gcc')
+opts.Add('CXX', 'The C++ compiler', 'g++')
+
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH='.')
+
+Help(opts.GenerateHelpText(env))
 
 config_header = 'config.h'
 
@@ -31,6 +37,9 @@ if not env.GetOption('clean'):
     
     conf.CheckFunc('getpeereid')
     
+    conf.CheckLib('util')
+    conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
+ 
     env = conf.Finish()
 else:
     # Atleast for me, scons won't clean properly...removing all '.sconsign' files manually seems to help
@@ -41,4 +50,4 @@ else:
 env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp'))
 
 # Builds test program
-env.Program("libtest", 'libtest.cpp', LIBPATH=".", LIBS=Split('su util'))
+env.Program("libtest", 'libtest.cpp', LIBPATH=".", LIBS=Split('$LIBS su'))

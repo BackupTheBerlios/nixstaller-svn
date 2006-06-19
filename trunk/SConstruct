@@ -144,7 +144,7 @@ Help(opts.GenerateHelpText(env))
 cur_os = sys.platform.rstrip('1234567890')
 cur_arch = platform.machine()
 
-if cur_arch[0] == 'i' and cur_arch.endswith("86"):
+if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
     cur_arch = "x86"
     
 # OS/Arch specific dirs
@@ -251,28 +251,31 @@ if not env.GetOption('clean'):
 
     if not conf.checklibexist('libutil.a'):
         print 'Searching for libutil.a'
-        lname = commands.getoutput('gcc -print-file-name=libutil.a')
+        lname = commands.getoutput(env['CC']+' -print-file-name=libutil.a')
         if lname:
-            try:
-                shutil.copy(lname, lib_dir)
-                print "Copied %s to %s" % (lname, lib_dir)
-            except (IOError, os.error), why:
-                print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
-                Exit(1)
+            if lname == 'libutil.a':
+                # Compiler didn't found it, ignore
+                print "None found by compiler"
+            else:
+                try:
+                    shutil.copy(lname, lib_dir)
+                    print "Copied %s to %s" % (lname, lib_dir)
+                    conf.env.Append(LIBS='util')
+                except (IOError, os.error), why:
+                    print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+                    Exit(1)
         else:
             print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
             Exit(1)
 
     if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
+    conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
         print "Couldn\'t find libz !"
         Exit(1)
     if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
         print "Couldn't find libncurses !"
-        Exit(1)
-    if not conf.CheckLibWithHeader('cdk', 'cdk/cdk.h', 'C++', 'stopCDKDebug(NULL);', 0):
-        print "Couldn't find libcdk !"
         Exit(1)
     if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
         print "Couldn't find libX11 !"
@@ -308,7 +311,7 @@ libsu = env.SConscript('libsu/SConstruct')
 # Builds main lib
 main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'main/vasprintf.c', 'libmd5/md5.c'])
 
-env.Append(LIBS = Split('main su util'))
+env.Append(LIBS = Split('main su'))
 
 # UNDONE?
 if cur_os == 'netbsd':

@@ -59,7 +59,7 @@ CBaseInstall::~CBaseInstall()
 bool CBaseInstall::Init()
 {   
     // Get current OS and cpu arch name
-    utsname inf;
+    struct utsname inf;
     if (uname(&inf) == -1)
         return false;
     
