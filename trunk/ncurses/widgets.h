@@ -371,7 +371,7 @@ class CWidgetManager: public CWidgetHandler
     bool m_bQuit;
     
 protected:
-    //virtual bool SetNextWidget(void);
+    virtual bool SetNextWidget(void);
     //virtual bool SetPrevWidget(void);
 
 public:
@@ -397,7 +397,7 @@ private:
     chtype m_cFocusedColors, m_cDefocusedColors;
 
     friend class CWidgetHandler;
-    friend class CGroupWidget;
+    friend class CWidgetManager;
 
     static ColorMapType m_ColorPairs; // Map for easy getting color pairs
     static int m_iCurColorPair;

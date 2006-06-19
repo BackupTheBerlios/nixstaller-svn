@@ -660,18 +660,18 @@ bool CWidgetHandler::HandleKey(chtype ch)
 {
     if (m_FocusedChild != m_ChildList.end())
     {
-        if ((ch == 9) && SetNextWidget())
+/*        if ((ch == 9) && SetNextWidget())
             return true;
         
         if ((ch == KEY_BTAB) && SetPrevWidget())
-            return true;
+        return true;*/
         
         return ((*m_FocusedChild)->HandleKey(ch) || (m_pBoundKeyWidget && m_pBoundKeyWidget->HandleKey(ch)));
     }
     
     return false;
 }
-
+#if 0
 bool CWidgetHandler::SetNextWidget()
 {
     if (m_ChildList.size() < 2)
@@ -707,42 +707,52 @@ bool CWidgetHandler::SetNextWidget()
     
     return false;
 }
-#if 0
+#endif
 
 bool CWidgetHandler::SetNextWidget()
 {
+    if (m_ChildList.empty())
+    {
+        m_FocusedChild = m_ChildList.end();
+        return !Focused();
+    }
+    
     /*if (m_ChildList.size() < 2)
     {
         bool ret = (m_FocusedChild != m_ChildList.begin());
         m_FocusedChild = m_ChildList.begin();
         return ret;
     }
-    else */if (m_ChildList.empty())
+    else if (m_ChildList.empty())
     {
         m_FocusedChild = m_ChildList.end();
         return true;
     }
     else if (m_FocusedChild == m_ChildList.end())
-        return true;
+    return true;*/
     
-    std::list<CWidgetWindow *>::iterator it = m_FocusedChild;
+    std::list<CWidgetWindow *>::iterator it = ((Focused()) ? m_FocusedChild : m_ChildList.begin()), prev;
+    prev = it;
     
-    while (*it != m_ChildList.back())
+    while (it != m_ChildList.end())
     {
-        it++;
-        
         if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (*it)->SetNextWidget())
         {
-            (*prev)->LeaveFocus();
-            (*it)->Focus();
-            m_FocusedChild = it;
+            if (prev != it)
+            {
+                (*prev)->LeaveFocus();
+                (*it)->Focus();
+                m_FocusedChild = it;
+            }
             return true;
         }
+        
+        it++;
     }
     
     return false;
 }
-
+#if 0
 bool CWidgetHandler::SetFirstWidget()
 {
     std::list<CWidgetWindow *>::iterator it = m_ChildList.begin();
@@ -1023,7 +1033,9 @@ bool CWidgetManager::Run()
             {
                 if (!m_pBoundKeyWidget || !m_pBoundKeyWidget->HandleKey(ch))
                 {
-                    if (ch == CTRL('[')) // Escape pressed
+                    if (ch == 9)
+                        SetNextWidget();
+                    else if (ch == CTRL('[')) // Escape pressed
                     {
                         // Set this so that later calls will also return false. This is required incase this function
                         // wasn't called from the main app.
@@ -1038,21 +1050,20 @@ bool CWidgetManager::Run()
     return true;
 }
 
-#if 0
 bool CWidgetManager::SetNextWidget()
 {
-    if (m_ChildList.size() < 2)
+    /*if (m_ChildList.size() < 2)
     {
         m_FocusedChild = m_ChildList.begin();
         return false;
     }
-    else if (m_ChildList.empty())
+    else*/ if (m_ChildList.empty())
     {
         m_FocusedChild = m_ChildList.end();
         return false;
     }
-    else if (m_FocusedChild == m_ChildList.end())
-        return false;
+    //else if (m_FocusedChild == m_ChildList.end())
+      //  return false;
     
     std::list<CWidgetWindow *>::iterator prev = (*m_FocusedChild)->m_FocusedChild, cur;
     
@@ -1061,7 +1072,7 @@ bool CWidgetManager::SetNextWidget()
     
     cur = prev;
 
-    for (; cur != prev; cur++)
+    do
     {
         if (cur == m_ChildList.end())
             cur = m_ChildList.begin();
@@ -1076,30 +1087,12 @@ bool CWidgetManager::SetNextWidget()
             }
             return true;
         }
+        cur++;
     }
-    
-    cur = prev;
-
-    for (; cur != prev; cur++)
-    {
-        if (cur == m_ChildList.end())
-            cur = m_ChildList.begin();
-        
-        if ((*cur)->CanFocus() && (*cur)->Enabled() && !(*cur)->m_bDeleteMe && (*cur)->SetFirstWidget())
-        {
-            if (cur != prev)
-            {
-                (*prev)->LeaveFocus();
-                (*m_FocusedChild)->m_FocusedChild = cur;
-                (*cur)->Focus();
-            }
-            return true;
-        }
-    }
+    while (cur != prev);
     
     return false;
 }
-#endif
 
 // -------------------------------------
 // Widget window class
