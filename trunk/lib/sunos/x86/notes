@@ -1,0 +1,37 @@
+Notes for solaris libs:
+
+Host system: x86 Solaris Express 10
+
+JPEG:
+version: 6b
+notes: Installed from www.sunfreeware.com
+
+PNG:
+version: 1.2.10
+notes: Installed from www.sunfreeware.com
+
+FLTK:
+configure command: CC=/usr/sfw/bin/gcc CXX=/usr/sfw/bin/g++ ./configure
+version: 1.1.7
+
+ZLIB:
+version: 1.2.3
+notes: Installed from www.sunfreeware.com
+
+NCURSES:
+configure command: CC=/usr/sfw/bin/gcc CXX=/usr/sfw/bin/g++ ./configure --with-terminfo-dirs=/usr/share/terminfo --with-default-terminfo-dir=/usr/share/terminfo
+version: 5.5
+notes: Using ncurses on both Solaris and Nexenta took some work;
+* There is an terminfo directory in /usr/share/terminfo and in /usr/share/lib/terminfo. The first doesn't work in Nexenta's normal terminal(outside X), while the second does not give colors in X. So when X is running the first is choses, otherwise the second will be used(the startup script will set $TERMINFO). Note that the 'normal' solaris will work with both.
+* Regular Solaris use 'sun-color' as the default terminal(outside X). I couldn't get this get to work with ncurses. Therefore when 'sun-color' is detected (and it's not Nexenta which is running) the $TERM variabele is set(temporary) to 'sun' instead. The drawback is that it has no color support. On Nexenta 'sun-color' works however.
+
+If you know better ways or have fixes please email me.
+
+
+X.org (libX11, libXext)
+version: 6.8.2
+notes: used from basesystem
+
+GCC (libstdc++, libutil)
+version: 3.4.3
+notes: used from basesystem
