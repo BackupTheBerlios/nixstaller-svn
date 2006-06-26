@@ -880,9 +880,6 @@ void CWidgetManager::Init()
 
 void CWidgetManager::Refresh()
 {
-    // Move cursor to end of display(some terminals aren't able to hide it)
-    ::move(MaxY(), MaxX());
-    
     ::refresh();
 
     for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -1071,7 +1068,9 @@ CWidgetWindow::ColorMapType CWidgetWindow::m_ColorPairs;
 int CWidgetWindow::m_iCurColorPair = 0;
 chtype CWidgetWindow::m_cDefaultFocusedColors;
 chtype CWidgetWindow::m_cDefaultDefocusedColors;
-    
+int CWidgetWindow::m_iCursorY = -1;
+int CWidgetWindow::m_iCursorX = -1;
+
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box,
                              chtype fcolor, chtype dfcolor) : CWidgetHandler(owner),
                                                               NCursesWindow(nlines, ncols, begin_y, begin_x),
@@ -1168,6 +1167,8 @@ int CWidgetWindow::refresh()
             (*it)->refresh();
     }
     
+    ApplyCursorPos();
+    ::refresh();
     return ret;
 }
 
@@ -1953,12 +1954,12 @@ void CInputField::Delch(bool backspace)
     if (backspace)
         pos--;
     
-    if (pos < m_szText.length())
+    if (pos <= m_szText.length())
         m_szText.erase(pos, 1);
     
     if (backspace)
         MoveCursor(-1);
-    else
+    else if (pos <= m_szText.length())
     {
         if (m_iScrollOffset)
             m_iScrollOffset--;
@@ -2002,6 +2003,13 @@ void CInputField::MoveCursor(int n, bool relative)
     }
     
     refresh();
+}
+
+void CInputField::Focus()
+{
+    CWidgetWindow::Focus();
+    curs_set(1);
+    SetCursorPos(m_pOutputWin->begy(), m_pOutputWin->begx()+m_iCursorPos);
 }
 
 bool CInputField::HandleKey(chtype ch)
@@ -2069,7 +2077,7 @@ void CInputField::Draw()
             m_pOutputWin->AddStrFormat(0, 0, m_szText.c_str(), m_iScrollOffset, m_pOutputWin->width());
     }
     
-    m_pOutputWin->move(0, m_iCursorPos); // Draw cursor
+    SetCursorPos(m_pOutputWin->begy(), m_pOutputWin->begx() + m_iCursorPos);
 }
 
 // -------------------------------------

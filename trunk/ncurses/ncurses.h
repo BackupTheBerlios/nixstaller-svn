@@ -35,14 +35,24 @@
 #ifndef NCURSES_H
 #define NCURSES_H
 
-#include "cursesapp.h"
-
-#include "main.h"
-#include "widgets.h"
-
 #define CTRL(x)             ((x) & 0x1f)
 #define ENTER(x)            ((x==KEY_ENTER)||(x=='\n')||(x=='\r'))
 #define ESCAPE              CTRL('[')
+
+#include "main.h"
+#include <cursslk.h>
+
+// Utils
+int MaxX(void);
+int MaxY(void);
+void MessageBox(const char *msg, ...);
+void WarningBox(const char *msg, ...);
+bool YesNoBox(const char *msg, ...);
+int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
+std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
+std::string FileDialog(const char *start, const char *info, bool needw);
+
+#include "widgets.h"
 
 class CAboutScreen: public CWidgetBox
 {
@@ -192,15 +202,5 @@ public:
 };
 
 extern CWidgetManager *pWidgetManager;
-
-// Utils
-int MaxX(void);
-int MaxY(void);
-void MessageBox(const char *msg, ...);
-void WarningBox(const char *msg, ...);
-bool YesNoBox(const char *msg, ...);
-int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
-std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
-std::string FileDialog(const char *start, const char *info, bool needw);
 
 #endif

@@ -156,7 +156,7 @@ env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
 
 # Current version
-curnixstversion = '0.1'
+curnixstversion = '0.2'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
     print 'Stripping all binaries in the bin/%s directory...' % cur_os
@@ -268,7 +268,7 @@ if not env.GetOption('clean'):
             print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
             Exit(1)
     else:
-	conf.env.Append(LIBS='util')
+        conf.env.Append(LIBS='util')
 
     if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')

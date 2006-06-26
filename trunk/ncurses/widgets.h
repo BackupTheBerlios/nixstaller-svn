@@ -32,8 +32,8 @@
     this exception.
 */
 
-#ifndef CDK_WIDGET_H
-#define CDK_WIDGET_H
+#ifndef WIDGET_H
+#define WIDGET_H
 
 #ifdef REMOVE_ME_AFTER_NEW_FRONTEND_IS_DONE
 
@@ -401,6 +401,7 @@ private:
 
     static ColorMapType m_ColorPairs; // Map for easy getting color pairs
     static int m_iCurColorPair;
+    static int m_iCursorY, m_iCursorX;
     
 protected:
     std::string m_szTitle;
@@ -412,6 +413,10 @@ protected:
     
     unsigned GetUnFormatLen(const std::string &str);
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
+    
+    static void SetCursorPos(int y, int x) { m_iCursorY = y; m_iCursorX = x; }; // Lock cursor position
+    static void ReleaseCursor(void) { m_iCursorY = MaxY(); m_iCursorX = MaxX(); };
+    static void ApplyCursorPos(void) { ::move(m_iCursorY, m_iCursorX); };
     
     CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
                   bool box, chtype fcolor, chtype dfcolor);
@@ -580,8 +585,8 @@ class CInputField: public CWidgetWindow
     void MoveCursor(int n, bool relative=true);
     
 protected:
-    virtual void Focus(void) { CWidgetWindow::Focus(); curs_set(1); };
-    virtual void LeaveFocus(void) { CWidgetWindow::LeaveFocus(); curs_set(0); };
+    virtual void Focus(void);
+    virtual void LeaveFocus(void) { CWidgetWindow::LeaveFocus(); curs_set(0); ReleaseCursor(); };
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
     
