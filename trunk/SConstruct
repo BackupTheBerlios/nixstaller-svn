@@ -267,34 +267,40 @@ if not env.GetOption('clean'):
         else:
             print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
             Exit(1)
+    else:
+	conf.env.Append(LIBS='util')
 
     if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
-    conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
+    if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
+        conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
     if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
         print "Couldn\'t find libz !"
         Exit(1)
-    if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
-        print "Couldn't find libncurses !"
-        Exit(1)
-    if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
-        print "Couldn't find libX11 !"
-        Exit(1)
-    if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
-        print "Couldn't find libXext !"
-        Exit(1)
-    if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
-        print "Couldn't find libpng !"
-        Exit(1)
-    if not conf.CheckLibWithHeader('jpeg', 'stdio.h', 'C++', ';', 0):
-        print "Couldn't find libjpeg !"
-        Exit(1)
-    if not conf.CheckLibWithHeader('fltk', ['FL/Fl.H', 'FL/filename.H'], 'C++', 'fl_filename_isdir(0);', 0):
-        print "Couldn't find libfltk !"
-        Exit(1)
-    if not conf.CheckLibWithHeader('fltk_images', 'FL/Fl.H', 'C++', ';', 0):
-        print "Couldn't find libfltk_images !"
-        Exit(1)
+        
+    if 'ncurses' in BUILD_TARGETS:
+        if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
+            print "Couldn't find libncurses !"
+            Exit(1)
+    elif 'fltk' in BUILD_TARGETS:
+        if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+            print "Couldn't find libX11 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+            print "Couldn't find libXext !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libpng !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('jpeg', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libjpeg !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('fltk', ['FL/Fl.H', 'FL/filename.H'], 'C++', 'fl_filename_isdir(0);', 0):
+            print "Couldn't find libfltk !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('fltk_images', 'FL/Fl.H', 'C++', ';', 0):
+            print "Couldn't find libfltk_images !"
+            Exit(1)
         
     env = conf.Finish()
 else:
@@ -311,7 +317,7 @@ libsu = env.SConscript('libsu/SConstruct')
 # Builds main lib
 main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'main/vasprintf.c', 'libmd5/md5.c'])
 
-env.Append(LIBS = Split('main su'))
+env.Prepend(LIBS = Split('main su'))
 
 # UNDONE?
 if cur_os == 'netbsd':
@@ -321,7 +327,7 @@ if cur_os == 'netbsd':
 #ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '
 #                       'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
 
-#ncurses = env.Program('ncurses/ncurs', Split('ncurses/c++/'+cur_os+'/cursesmain.cc ncurses/ncurses.cpp'), LIBS=Split('$LIBS #ncurses ncurses++'), CPPPATH=Split('$CPPPATH ncurses/c++/'+cur_os))
+#ncurses = env.Program('ncurses/ncurs', Split('ncurses/c++/'+cur_os+'/cursesmain.cc ncurses/ncurses.cpp'), LIBS=Split('$LIBS ncurses ncurses++'), CPPPATH=Split('$CPPPATH ncurses/c++/'+cur_os))
 
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
 

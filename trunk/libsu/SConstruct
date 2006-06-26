@@ -38,7 +38,9 @@ if not env.GetOption('clean'):
     conf.CheckFunc('getpeereid')
     
     conf.CheckLib('util')
-    conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
+
+    if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
+        conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
  
     env = conf.Finish()
 else:
