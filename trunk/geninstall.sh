@@ -43,6 +43,7 @@ CONFDIR="$1"
 TARGET_OS=
 TARGET_ARCH=
 FRONTENDS=
+BIN_LZMA=
 
 err()
 {
@@ -77,6 +78,8 @@ copytemp()
     
     cp ${CURDIR}/internal/startupinstaller.sh ${CONFDIR}/tmp || err "Error: missing startupinstaller.sh script"
     cp ${CURDIR}/internal/about ${CONFDIR}/tmp || err "Error: missing about file"
+    
+    cp ${CURDIR}/lzma/lzma-decode ${CONFDIR}/tmp
     
     # Copy languages
     for L in $LANGUAGES
@@ -168,8 +171,11 @@ packdir()
             ;;
         bzip2 )
             tar cf - --exclude .. --exclude . * .?*  | bzip2 -9 > ${2}
-            #cat ${2} | bzip2 -cq > blaat
             bzip2 -cd ${2} | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
+            ;;
+        lzma )
+            tar cf - --exclude .. --exclude . * .?*  | $BIN_LZMA e ${2} -si
+            $BIN_LZMA d ${2} -so | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         * )
             echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
@@ -225,6 +231,8 @@ do
         mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH
     done
 done
+
+BIN_LZMA=${CURDIR}/lzma/lzma
 
 mkdir -p ${CONFDIR}/tmp/config/lang
 
@@ -293,7 +301,8 @@ done
 #fi
 
 echo "Generating installer..."
-${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
+#${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
+${CURDIR}/makeself.sh --gzip ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
 
 echo "Cleaning up..."
 remtemp

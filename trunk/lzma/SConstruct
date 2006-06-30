@@ -1,0 +1,38 @@
+opts = Options()
+opts.Add('CC', 'The C compiler', 'gcc')
+opts.Add('CXX', 'The C++ compiler', 'g++')
+
+env = Environment(options = opts, CCFLAGS = "-Wall -O2", CPPPATH='.')
+
+Help(opts.GenerateHelpText(env))
+
+FILES = [
+'7zip/Compress/LZMA_Alone/LzmaAlone.cpp',
+'7zip/Compress/LZMA_Alone/LzmaBench.cpp',
+'7zip/Compress/LZMA_Alone/LzmaRam.cpp',
+'7zip/Compress/LZMA_Alone/LzmaRamDecode.c',
+'7zip/Compress/LZMA_C/LzmaDecode.c',
+'7zip/Compress/Branch/BranchX86.c',
+'7zip/Compress/LZMA/LZMADecoder.cpp',
+'7zip/Compress/LZMA/LZMAEncoder.cpp',
+'7zip/Compress/LZ/LZInWindow.cpp',
+'7zip/Compress/LZ/LZOutWindow.cpp',
+'7zip/Compress/RangeCoder/RangeCoderBit.cpp',
+'7zip/Common/InBuffer.cpp',
+'7zip/Common/OutBuffer.cpp',
+'7zip/Common/FileStreams.cpp',
+'7zip/Common/StreamUtils.cpp',
+'Common/Alloc.cpp',
+'Common/C_FileIO.cpp',
+'Common/CommandLineParser.cpp',
+'Common/CRC.cpp',
+'Common/String.cpp',
+'Common/StringConvert.cpp',
+'Common/StringToInt.cpp',
+'Common/Vector.cpp'
+]
+
+env.Program('lzma', FILES, chdir='7zip/Compress/LZMA_Alone')
+
+LZMADEC_OBJ=env.Object(Split('7zip/Compress/LZMA_C/LzmaDecode.c 7zip/Compress/LZMA_C/LzmaTest.c'))
+env.Program('lzma-decode', LZMADEC_OBJ, CCFLAGS=Split("$CCFLAGS -pedantic"), CPPDEFINES="_LZMA_PROB32")

@@ -155,7 +155,12 @@ void CBaseInstall::ExtractFiles()
             command += " | gzip -cd | tar xvf -";
         else if (m_InstallInfo.archive_type == ARCH_BZIP2)
             command += " | bzip2 -d | tar xvf -";
-
+        else if (m_InstallInfo.archive_type == ARCH_LZMA)
+        {
+            command = m_szOwnDir + "/lzma-decode " + std::string(m_szCurArchFName) + " arch.tar && tar xvf arch.tar && rm arch.tar";
+            debugline("Extr cmd: %s", command.c_str());
+        }
+        
         if (m_bAlwaysRoot)
         {
             m_SUHandler.SetCommand(command);
@@ -525,6 +530,8 @@ bool CBaseInstall::ReadConfig()
                     m_InstallInfo.archive_type = ARCH_GZIP;
                 else if (type == "bzip2")
                     m_InstallInfo.archive_type = ARCH_BZIP2;
+                else if (type == "lzma")
+                    m_InstallInfo.archive_type = ARCH_LZMA;
             }
             else if (str == "installdir")
             {

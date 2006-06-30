@@ -43,7 +43,7 @@
 #include <vector>
 #include <map>
 
-enum EArchiveType { ARCH_GZIP, ARCH_BZIP2 };
+enum EArchiveType { ARCH_GZIP, ARCH_BZIP2, ARCH_LZMA };
 enum ENeedRoot { NO_ROOT, NEED_ROOT, DEPENDED_ROOT };
 enum EParamType { PTYPE_STRING, PTYPE_DIR, PTYPE_LIST, PTYPE_BOOL };
 enum EDestDirType { DEST_TEMP, DEST_SELECT, DEST_DEFAULT };
