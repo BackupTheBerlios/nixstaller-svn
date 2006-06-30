@@ -79,8 +79,6 @@ copytemp()
     cp ${CURDIR}/internal/startupinstaller.sh ${CONFDIR}/tmp || err "Error: missing startupinstaller.sh script"
     cp ${CURDIR}/internal/about ${CONFDIR}/tmp || err "Error: missing about file"
     
-    cp ${CURDIR}/lzma/lzma-decode ${CONFDIR}/tmp
-    
     # Copy languages
     for L in $LANGUAGES
     do
@@ -126,12 +124,21 @@ copytemp()
                     mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC
                     cp $LC/$FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC/ && FRFOUND=1
                 done
-    
-                cp $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
+
+                if [ $ARCH_TYPE = "lzma" ]; then
+                    $BIN_LZMA e $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$FRNAME 2>&1 >/dev/null && FRFOUND=1
+                else
+                    cp $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
+                fi
+                
                 if [ $FRFOUND -eq 0 ]; then
                     echo "Warning: no $FR frontend for $OS/$ARCH"
                 fi
             done
+            
+            if [ $ARCH_TYPE = "lzma" ]; then
+                cp "lzma-decode" ${CONFDIR}/tmp/lzma/$OS/$ARCH/ || err "Error: no lzma decoder for ${OS}/${ARCH}"
+            fi
         done
     done
 
@@ -174,8 +181,10 @@ packdir()
             bzip2 -cd ${2} | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         lzma )
-            tar cf - --exclude .. --exclude . * .?*  | $BIN_LZMA e ${2} -si
-            $BIN_LZMA d ${2} -so | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
+            tar cf ${2}.tmp --exclude .. --exclude . * .?*
+            $BIN_LZMA e ${2}.tmp ${2}
+            tar tf ${2}.tmp | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
+            rm ${2}.tmp
             ;;
         * )
             echo "Error: wrong archive type($ARCH_TYPE). Should be gzip or bzip2"
@@ -229,10 +238,11 @@ do
     for ARCH in $TARGET_ARCH
     do
         mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH
+        mkdir -p ${CONFDIR}/tmp/lzma/$OS/$ARCH
     done
 done
 
-BIN_LZMA=${CURDIR}/lzma/lzma
+BIN_LZMA=${CURDIR}/bin/${CURRENT_OS}/${CURRENT_ARCH}/lzma
 
 mkdir -p ${CONFDIR}/tmp/config/lang
 

@@ -138,6 +138,8 @@ opts.Add('CXX', 'The C++ compiler', 'g++')
 
 env = Environment(options = opts, CCFLAGS = "-Wall -Wno-sign-compare  -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
 
+Export("env")
+
 Help(opts.GenerateHelpText(env))
 
 # Get current OS...if this != to uname I should fix it :-)
@@ -312,7 +314,8 @@ else:
     Execute(Delete('.sconsign.dblite'))
 
 # Builds LZMA encode/decode programs
-lzma = env.SConscript('lzma/SConstruct')
+lzma = env.SConscript('lzma/SConstruct', duplicate=0)
+
 
 # Builds libsu
 libsu = env.SConscript('libsu/SConstruct')
@@ -330,12 +333,10 @@ if cur_os == 'netbsd':
 #ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '
 #                       'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
 
-#ncurses = env.Program('ncurses/ncurs', Split('ncurses/c++/'+cur_os+'/cursesmain.cc ncurses/ncurses.cpp'), LIBS=Split('$LIBS ncurses ncurses++'), CPPPATH=Split('$CPPPATH ncurses/c++/'+cur_os))
-
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
 
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 # Default to all
-Default(lzma, fltk, ncurses, main, libsu, env.Install(bin_dir, lzma), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk), env.Install(bin_dir, ncurses))
+Default(lzma, fltk, ncurses, main, libsu, env.Install(bin_dir, Flatten(lzma)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk), env.Install(bin_dir, ncurses))

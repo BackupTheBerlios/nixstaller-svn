@@ -48,6 +48,12 @@ LIBCS=`ls /lib/libc.so.* | sort -nr`
 #echo "Found following LIBC's:"
 #echo "${LIBCS}"
 
+# Check which archive type to use
+ARCH_TYPE=`awk '$1=="archtype"{print $2}' config/install.cfg`
+if [ -z "$ARCH_TYPE" ]; then
+    ARCH_TYPE="gzip"
+fi
+
 # Check if we can run on the users OS
 if [ ! -d ./frontends/$CURRENT_OS/$CURRENT_ARCH ]; then
     echo "WARNING: Unsupported OS/Architecture"
@@ -109,6 +115,13 @@ elif [ $FLTK != "none" ]; then
 else
     echo "Error: Couldn't find any frontend to use!"
     exit 1
+fi
+
+# Unpack frontend if required
+if [ $ARCH_TYPE = "lzma" ]; then
+    ./lzma/${CURRENT_OS}/${CURRENT_ARCH}/lzma-decode $RUNCOMMAND ${RUNCOMMAND}.2
+    RUNCOMMAND=${RUNCOMMAND}.2
+    chmod +x $RUNCOMMAND
 fi
 
 # And here we go...

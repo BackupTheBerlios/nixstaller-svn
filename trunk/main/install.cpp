@@ -157,7 +157,8 @@ void CBaseInstall::ExtractFiles()
             command += " | bzip2 -d | tar xvf -";
         else if (m_InstallInfo.archive_type == ARCH_LZMA)
         {
-            command = m_szOwnDir + "/lzma-decode " + std::string(m_szCurArchFName) + " arch.tar && tar xvf arch.tar && rm arch.tar";
+            command = "(" + m_szOwnDir + "/lzma/" + m_szOS + "/" + m_szCPUArch + "/lzma-decode " +
+                    std::string(m_szCurArchFName) + " arch.tar && tar xvf arch.tar && rm arch.tar)";
             debugline("Extr cmd: %s", command.c_str());
         }
         
@@ -236,7 +237,7 @@ void CBaseInstall::ExecuteInstCommands(void)
                 
                 // Check if command exitted normally and close pipe
                 int state = pclose(pPipe);
-                if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
+                if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution fails
                 {
                     if ((*it)->exit_on_failure)
                     {

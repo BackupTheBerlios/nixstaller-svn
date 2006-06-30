@@ -6,7 +6,9 @@ env = Environment(options = opts, CCFLAGS = "-Wall -O2", CPPPATH='.')
 
 Help(opts.GenerateHelpText(env))
 
-FILES = [
+#Import('env')
+
+LZMA_FILES = [
 '7zip/Compress/LZMA_Alone/LzmaAlone.cpp',
 '7zip/Compress/LZMA_Alone/LzmaBench.cpp',
 '7zip/Compress/LZMA_Alone/LzmaRam.cpp',
@@ -32,7 +34,16 @@ FILES = [
 'Common/Vector.cpp'
 ]
 
-env.Program('lzma', FILES, chdir='7zip/Compress/LZMA_Alone')
+LZMAC_FILES = [
+'7zip/Compress/LZMA_C/LzmaDecode.c',
+'7zip/Compress/LZMA_C/LzmaTest.c'
+]
 
-LZMADEC_OBJ=env.Object(Split('7zip/Compress/LZMA_C/LzmaDecode.c 7zip/Compress/LZMA_C/LzmaTest.c'))
-env.Program('lzma-decode', LZMADEC_OBJ, CCFLAGS=Split("$CCFLAGS -pedantic"), CPPDEFINES="_LZMA_PROB32")
+LZMAC_OBJ=env.Object(LZMAC_FILES)
+LZMA_OBJ=env.Object(LZMA_FILES)
+
+lzma = env.Program('lzma', LZMA_OBJ, chdir='7zip/Compress/LZMA_Alone')
+
+lzma_dec = env.Program('lzma-decode', LZMAC_OBJ, CCFLAGS=Split("$CCFLAGS -pedantic"), CPPDEFINES="_LZMA_PROB32")
+
+Return('lzma lzma_dec')
