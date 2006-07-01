@@ -128,6 +128,36 @@ def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "
     context.did_show_result = 1 # Hack, says "Error: No result" otherwise
     return ret
 
+def CheckLinkedLibVersion(context, libname):
+    context.Message('Checking which library version is used for %s...' % libname)
+    reallibname = ''
+    lastLIBS = context.env['LIBS']
+    context.env['LIBS'] = Split('$LIBS ' + libname)
+    ret = context.TryLink("""
+int main(int argc, char **argv) {
+    return 0;
+}
+""", '.c')
+    context.env.Replace(LIBS = lastLIBS)
+    
+    if not ret:
+        context.Result('None')
+    else:
+        reallibname = os.popen('ldd %s | grep lib%s' % (context.lastTarget.path, libname), 'r').read()
+        ind = 0
+        
+        # ldd gives an output like "<lib.so.X> => /lib/lib.so.X.Y" we are only interested in the part before ' =>'
+        try:
+            ind = reallibname.index(" =>")
+        except:
+            context.Result('None')
+        
+        # Get the part before " =>" and strip leading/trailing whitespace
+        reallibname = reallibname[0:ind].strip()
+        context.Result(reallibname)
+    
+    return reallibname
+    
 EnsureSConsVersion(0,96,91)
 
 opts = Options()
@@ -151,8 +181,9 @@ if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc"))
     
 # OS/Arch specific dirs
 lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
-bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'
 inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
+libc_ver = ''
+libstdcpp_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
@@ -235,7 +266,7 @@ languages english dutch
     
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
-    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv})
+    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv, 'CheckLinkedLibVersion' : CheckLinkedLibVersion})
 
 #    if not conf.checklibexist('libstdc++.a'):
 #       print 'Searching for libstdc++.a'
@@ -276,8 +307,14 @@ if not env.GetOption('clean'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
     if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
         conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
-    if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
-        print "Couldn\'t find libz !"
+        
+    libc_ver = conf.CheckLinkedLibVersion('c')
+    if not libc_ver:
+        print "Couldn't detect libc version!"
+        Exit(1)
+    libstdcpp_ver = conf.CheckLinkedLibVersion('stdc++')
+    if not libstdcpp_ver:
+        print "Couldn't detect libstdc++ version!"
         Exit(1)
         
     if 'ncurses' in BUILD_TARGETS:
@@ -285,6 +322,9 @@ if not env.GetOption('clean'):
             print "Couldn't find libncurses !"
             Exit(1)
     elif 'fltk' in BUILD_TARGETS:
+        if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
+            print "Couldn\'t find libz !"
+            Exit(1)
         if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
             print "Couldn't find libX11 !"
             Exit(1)
@@ -338,5 +378,9 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widget
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
+# Directory to install binaries to.
+lzma_bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
+front_bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
+
 # Default to all
-Default(lzma, fltk, ncurses, main, libsu, env.Install(bin_dir, Flatten(lzma)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk), env.Install(bin_dir, ncurses))
+Default(lzma, fltk, ncurses, main, libsu, env.Install(lzma_bin_dir, Flatten(lzma)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(front_bin_dir, fltk), env.Install(front_bin_dir, ncurses))

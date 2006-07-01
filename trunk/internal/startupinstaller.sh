@@ -35,18 +35,27 @@
 
 # Does some simple checking, and tries to launch the right installer frontend
 
-OS=`uname`
-CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
-USELIBC="." # Incase no libc specific frontend is found, use the one in the main frontend dir
-CURRENT_ARCH=`uname -m`
-
-# iX86 --> x86
-echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
-
-# Find out existing libc's
-LIBCS=`ls /lib/libc.so.* | sort -nr`
-#echo "Found following LIBC's:"
-#echo "${LIBCS}"
+configure()
+{
+    echo "Collecting info for this system..."
+    
+    OS=`uname`
+    CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
+    echo "Operating system: $CURRENT_OS"
+    
+    CURRENT_ARCH=`uname -m`
+    # iX86 --> x86
+    echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
+    echo "CPU Arch: $CURRENT_ARCH"
+    
+    # Get all C libs. Sorted so higher versions come first
+    LIBCS=`ls /lib/libc.so.* | sort -nr`
+    echo "C libraries: "`echo $LIBCS | tr 'n\' ' '`
+    
+    # Get all C++ libs. Sorted so higher versions come first
+    LIBSTDCPPS=`ls '/usr/lib/libstdc++.so.'* | sort -nr`
+    echo "C++ libraries: "`echo $LIBSTDCPPS | tr 'n\' ' '`
+}
 
 # Check which archive type to use
 ARCH_TYPE=`awk '$1=="archtype"{print $2}' config/install.cfg`
@@ -54,75 +63,46 @@ if [ -z "$ARCH_TYPE" ]; then
     ARCH_TYPE="gzip"
 fi
 
-# Check if we can run on the users OS
-if [ ! -d ./frontends/$CURRENT_OS/$CURRENT_ARCH ]; then
-    echo "WARNING: Unsupported OS/Architecture"
-    echo "WARNING: Defaulting to Linux/$CURRENT_ARCH"
-    CURRENT_OS="linux"
-fi
+configure
 
-# Still can't run?
-if [ ! -d ./frontends/$CURRENT_OS/$CURRENT_ARCH ]; then
-    echo "Error: No suitable frontend for \"$OS\"/$CURRENT_ARCH found, aborting"
-    exit 1
-fi
-
-if test -z ${LIBCS} 2>/dev/null; then
-    echo "WARNING: Couldn't detect any existing libc libraries"
-    echo "WARNING: Defaulting to libc.so.6"
-    LIBCS="/lib/libc.so.6"
-fi
-
-# Check which libc to use
-for L in $LIBCS
+# Try to launch a frontend
+for LC in $LIBCS
 do
-    L=`echo $L | sed -e 's/\/lib\///g' -e 's/\.so\.//g'` # Convert /lib/libc.so.X to libcX
-    if [ -d "./frontends/${CURRENT_OS}/${CURRENT_ARCH}/${L}" ]; then
-        USELIBC=$L
-        #echo "Using libc \"${USELIBC}\""
-        break
+    LCDIR="./bin/$CURRENT_OS/$CURRENT_ARCH/"`basename $LC`
+    echo "Trying libc: " $LCDIR
+    
+    if [ ! -d ${LCDIR} ]; then
+        continue
     fi
+
+    for LCPP in $LIBSTDCPPS
+    do
+        LCPPDIR=${LCDIR}/`basename $LCPP`
+        echo "Trying libstdc++: " $LCPPDIR
+        
+        if [ ! -d ${LCPPDIR} ]; then
+            continue
+        fi
+        
+        # X Running?
+        if [ ! -z $DISPLAY ]; then
+            FRONTEND="${LCPPDIR}/fltk"
+        else
+            FRONTEND="${LCPPDIR}}/ncurs"
+        fi
+        
+        # If the package is compressed with lzma, the frontends will be aswell. So unpack them if required
+        if [ $ARCH_TYPE = "lzma" ]; then
+            ${LCDIR}/lzma-decode $FRONTEND ${FRONTEND}.2
+            FRONTEND=${FRONTEND}.2
+            chmod +x $FRONTEND
+        fi
+        
+        # Run it
+        $FRONTEND inst
+        exit 0
+    done
 done
 
-NCURS="none"
-FLTK="none"
-RUNCOMMAND=
-
-# Check if ncurses frontend exists
-if [ -e ./frontends/$CURRENT_OS/${CURRENT_ARCH}/${USELIBC}/ncurs ]; then
-    NCURS="./frontends/${CURRENT_OS}/${CURRENT_ARCH}/${USELIBC}/ncurs"
-fi
-
-
-# Check if fltk frontend exists
-if [ -e ./frontends/$CURRENT_OS/${CURRENT_ARCH}/${USELIBC}/fltk ]; then
-    FLTK="./frontends/${CURRENT_OS}/${CURRENT_ARCH}/${USELIBC}/fltk"
-fi
-
-
-# Do both frontends exist?
-if [ $NCURS != "none" -a $FLTK != "none" ]; then
-    # X Running?
-    if [ -z $DISPLAY ]; then
-        RUNCOMMAND="${NCURS}" # Not running, use ncurses frontend
-    else
-        RUNCOMMAND="${FLTK}"
-    fi
-elif [ $NCURS != "none" ]; then
-    RUNCOMMAND="${NCURS}"
-elif [ $FLTK != "none" ]; then
-    RUNCOMMAND="${FLTK}"
-else
-    echo "Error: Couldn't find any frontend to use!"
-    exit 1
-fi
-
-# Unpack frontend if required
-if [ $ARCH_TYPE = "lzma" ]; then
-    ./lzma/${CURRENT_OS}/${CURRENT_ARCH}/lzma-decode $RUNCOMMAND ${RUNCOMMAND}.2
-    RUNCOMMAND=${RUNCOMMAND}.2
-    chmod +x $RUNCOMMAND
-fi
-
-# And here we go...
-$RUNCOMMAND inst
+echo "Error: Couldn't find any suitable frontend for your system"
+exit 1

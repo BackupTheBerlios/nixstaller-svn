@@ -121,24 +121,38 @@ copytemp()
                 
                 for LC in `ls -d libc* 2>/dev/null`
                 do
-                    mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC
-                    cp $LC/$FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$LC/ && FRFOUND=1
+                    cd $LC
+                    
+                    # Copy frontends
+                    for LCPP in `ls -d 'libstdc++'* 2>/dev/null`
+                    do
+                        cd $LCPP
+                        local DIR=${CONFDIR}/tmp/bin/$OS/$ARCH/$LC/$LCPP
+                        mkdir -p ${DIR}
+                        if [ $ARCH_TYPE = "lzma" ]; then
+                            $BIN_LZMA e $FRNAME ${DIR}/$FRNAME 2>&1 >/dev/null && FRFOUND=1
+                        else
+                            cp $FRNAME ${DIR}/ && FRFOUND=1
+                        fi
+                        cd ..
+                    done
+                    
+                    if [ $ARCH_TYPE = "lzma" ]; then
+                        cp lzma-decode ${CONFDIR}/tmp/bin/$OS/$ARCH/$LC/ || err "Error: no lzma decoder for ${OS}/${ARCH}/${LC}/${LCPP}"
+                    fi
+                    cd ..
                 done
 
-                if [ $ARCH_TYPE = "lzma" ]; then
-                    $BIN_LZMA e $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$FRNAME 2>&1 >/dev/null && FRFOUND=1
-                else
-                    cp $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
-                fi
+#               if [ $ARCH_TYPE = "lzma" ]; then
+#                   $BIN_LZMA e $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$FRNAME 2>&1 >/dev/null && FRFOUND=1
+#               else
+#                   cp $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
+#               fi
                 
                 if [ $FRFOUND -eq 0 ]; then
                     echo "Warning: no $FR frontend for $OS/$ARCH"
                 fi
             done
-            
-            if [ $ARCH_TYPE = "lzma" ]; then
-                cp "lzma-decode" ${CONFDIR}/tmp/lzma/$OS/$ARCH/ || err "Error: no lzma decoder for ${OS}/${ARCH}"
-            fi
         done
     done
 
@@ -237,12 +251,11 @@ for OS in $TARGET_OS
 do
     for ARCH in $TARGET_ARCH
     do
-        mkdir -p ${CONFDIR}/tmp/frontends/$OS/$ARCH
-        mkdir -p ${CONFDIR}/tmp/lzma/$OS/$ARCH
+        mkdir -p ${CONFDIR}/tmp/bin/$OS/$ARCH
     done
 done
 
-BIN_LZMA=${CURDIR}/bin/${CURRENT_OS}/${CURRENT_ARCH}/lzma
+BIN_LZMA=${CURDIR}/bin/${CURRENT_OS}/${CURRENT_ARCH}/libc.so.6/lzma
 
 mkdir -p ${CONFDIR}/tmp/config/lang
 
