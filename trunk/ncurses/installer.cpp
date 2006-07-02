@@ -139,9 +139,9 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
-bool CInstaller::Init()
+bool CInstaller::Init(int argc, char **argv)
 {
-    if (!CBaseInstall::Init())
+    if (!CBaseInstall::Init(argc, argv))
         return false;
     
     SetTitle("Nixstaller");

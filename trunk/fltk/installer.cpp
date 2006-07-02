@@ -38,9 +38,9 @@
 // Main installer screen
 // -------------------------------------
 
-bool CInstaller::Init()
+bool CInstaller::Init(int argc, char **argv)
 {
-    if (!CBaseInstall::Init())
+    if (!CBaseInstall::Init(argc, argv))
         return false;
     
     // Lazy but handy macro :)

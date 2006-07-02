@@ -110,7 +110,7 @@ public:
     
     CInstaller(CWidgetManager *owner) : CNCursBase(owner), m_bInstallFiles(false) { };
     
-    virtual bool Init(void);
+    virtual bool Init(int argc, char **argv);
 };
 
 // -------------------------

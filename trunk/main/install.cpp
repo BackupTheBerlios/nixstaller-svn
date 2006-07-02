@@ -37,6 +37,7 @@
 #include <sys/wait.h>
 #include "main.h"
 #include <sys/utsname.h>
+#include <libgen.h>
 
 CBaseInstall::~CBaseInstall()
 {
@@ -56,7 +57,7 @@ CBaseInstall::~CBaseInstall()
     }
 }
 
-bool CBaseInstall::Init()
+bool CBaseInstall::Init(int argc, char **argv)
 {   
     // Get current OS and cpu arch name
     struct utsname inf;
@@ -78,7 +79,9 @@ bool CBaseInstall::Init()
     m_szOwnDir = curdir;
     debugline("Current dir: %s\n", m_szOwnDir.c_str());
     
-    if (!CMain::Init()) // Init main, will also read config files
+    m_szBinDir = dirname(argv[0]);
+    
+    if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
@@ -157,8 +160,8 @@ void CBaseInstall::ExtractFiles()
             command += " | bzip2 -d | tar xvf -";
         else if (m_InstallInfo.archive_type == ARCH_LZMA)
         {
-            command = "(" + m_szOwnDir + "/lzma/" + m_szOS + "/" + m_szCPUArch + "/lzma-decode " +
-                    std::string(m_szCurArchFName) + " arch.tar && tar xvf arch.tar && rm arch.tar)";
+            command = "(" + m_szBinDir + "/../lzma-decode " + std::string(m_szCurArchFName) +
+                    " arch.tar && tar xvf arch.tar && rm arch.tar)";
             debugline("Extr cmd: %s", command.c_str());
         }
         

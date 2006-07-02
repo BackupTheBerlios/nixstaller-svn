@@ -85,10 +85,12 @@ do
         fi
         
         # X Running?
-        if [ ! -z $DISPLAY ]; then
+        if [ ! -z $DISPLAY -a -e ${LCPPDIR}/fltk ]; then
             FRONTEND="${LCPPDIR}/fltk"
+        elif [ -e "${LCPPDIR}/ncurs" ]; then
+            FRONTEND="${LCPPDIR}/ncurs"
         else
-            FRONTEND="${LCPPDIR}}/ncurs"
+            continue
         fi
         
         # If the package is compressed with lzma, the frontends will be aswell. So unpack them if required

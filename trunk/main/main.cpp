@@ -58,7 +58,7 @@ CMain::~CMain()
     FreeStrings();
 }
 
-bool CMain::Init()
+bool CMain::Init(int argc, char **argv)
 {
     if (!ReadConfig())
         return false;
