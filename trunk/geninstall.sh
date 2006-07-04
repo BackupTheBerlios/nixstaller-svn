@@ -32,27 +32,12 @@
 #    version without this exception; this exception also makes it possible to release a modified version which carries forward
 #    this exception.
 
-ARGS="$*"
-OUTNAME=$2
-CURDIR=$PWD
 ARCHNAME_BASE="instarchive"
-OS=`uname`
-CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
-CURRENT_ARCH=`uname -m`
-CONFDIR="$1"
-TARGET_OS=
-TARGET_ARCH=
-FRONTENDS=
-BIN_LZMA=
 
-err()
-{
-    echo $1
-    remtemp
-    exit 1
-}
+# Main functions
+# --------------------------------------------------
 
-checkargs()
+init()
 {
     if [ -z $1 ]; then
         echo "Usage: $0 <config dir> [ <installer name> ]"
@@ -62,15 +47,105 @@ checkargs()
         exit 1
     fi
     
-    if [ ! -d "${CONFDIR}" ]; then
+    if [ ! -d "${1}" ]; then
         echo "No such directory: ${CONFDIR}"
         exit 1
     fi
+
+    CURDIR=$PWD
+
+    CONFDIR="${1}"
+    CONFDIR=${CONFDIR%*/} # If target dir has trailing '/', remove it
+    # If target dir doesn't start with '/' insert the current dir to it
+    CONFDIR=`echo ${CONFDIR} | grep '^/' || echo ${PWD}/$CONFDIR`
+
+    if [ -z "${2}" ]; then
+        OUTNAME="setup.sh"
+    else
+        OUTNAME="${2}"
+    fi
+    
+    
+    local OS=`uname`
+    CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]` # Convert to lowercase
+    
+    CURRENT_ARCH=`uname -m`
+    echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86" # Convert iX86 --> x86
+    echo $CURRENT_ARCH | grep "86pc" >/dev/null && CURRENT_ARCH="x86" # Convert 86pc --> x86
+    
+    BIN_LZMA=
+    
+    for LC in `ls -d ${CURDIR}/bin/${CURRENT_OS}/${CURRENT_ARCH}/libc* 2>/dev/null | sort -nr`
+    do
+        local BIN=${LC}/lzma
+        
+        if [ -e $BIN ]; then
+            if [ ! `ldd  $BIN | grep "not found"` ]; then
+                BIN_LZMA=$BIN
+                break
+            fi
+        fi
+    done
+    
+    if [ -z $BIN_LZMA ]; then
+        err "Couldn't find a suitable LZMA encoder"
+    fi
 }
 
-copytemp()
+readconfig()
 {
-    # Temporary copy frontends, libs and install config files to install directory
+    # Check which target frontends there are
+    FRONTENDS=`awk '$1=="frontends"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
+    if [ -z "$FRONTENDS" ]; then
+        FRONTENDS="ncurses fltk" # Change if there are other frontends
+    fi
+    
+    # Check which target OS'es there are
+    TARGET_OS=`awk '$1=="targetos"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
+    if [ -z "$TARGET_OS" ]; then
+        TARGET_OS=$CURRENT_OS
+    fi
+    
+    # Check which target archs there are
+    TARGET_ARCH=`awk '$1=="targetarch"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
+    if [ -z "$TARGET_ARCH" ]; then
+        TARGET_ARCH=$CURRENT_ARCH
+    fi
+    
+    # Check which archive type to use
+    ARCH_TYPE=`awk '$1=="archtype"{print $2}' ${CONFDIR}/install.cfg`
+    if [ -z "$ARCH_TYPE" ]; then
+        ARCH_TYPE="gzip"
+    fi
+    
+    # Check which languages to use
+    LANGUAGES=`awk '$1=="languages"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
+    if [ -z "$LANGUAGES" ]; then
+        LANGUAGES="english"
+    fi
+    
+    INTROPIC=`awk '$1=="intropic"{print $2}' ${CONFDIR}/install.cfg`
+
+    echo
+    echo "Configuration:"
+    echo "---------------------------------"
+    echo "Installer name: $OUTNAME"
+    echo "            OS: $TARGET_OS"
+    echo "         Archs: $TARGET_ARCH"
+    echo "  Archive type: $ARCH_TYPE"
+    echo "     Languages: $LANGUAGES"
+    echo "    Config dir: ${CONFDIR}"
+    echo "     Frontends: $FRONTENDS"
+    echo "     Intro pic: $INTROPIC"
+    echo "---------------------------------"
+    echo
+    echo
+}
+
+# This function will copy all files that should be in the final installer archive to a temporary directory
+preparearchive()
+{
+    mkdir -p ${CONFDIR}/tmp/config/
     cp ${CONFDIR}/welcome ${CONFDIR}/tmp/config/ 2>/dev/null
     cp ${CONFDIR}/install.cfg ${CONFDIR}/tmp/config/ || err "Error: no install config file"
     cp ${CONFDIR}/license ${CONFDIR}/tmp/config/ 2>/dev/null
@@ -79,7 +154,7 @@ copytemp()
     cp ${CURDIR}/internal/startupinstaller.sh ${CONFDIR}/tmp || err "Error: missing startupinstaller.sh script"
     cp ${CURDIR}/internal/about ${CONFDIR}/tmp || err "Error: missing about file"
     
-    # Copy languages
+    # Copy language files
     for L in $LANGUAGES
     do
         mkdir -p ${CONFDIR}/tmp/config/lang/$L/
@@ -100,8 +175,8 @@ copytemp()
             
             for FR in $FRONTENDS
             do
-                FRFOUND=0
-                FRNAME=
+                local FRFOUND=0
+                local FRNAME=
                 
                 case $FR in
                     ncurses )
@@ -138,16 +213,10 @@ copytemp()
                     done
                     
                     if [ $ARCH_TYPE = "lzma" ]; then
-                        cp lzma-decode ${CONFDIR}/tmp/bin/$OS/$ARCH/$LC/ || err "Error: no lzma decoder for ${OS}/${ARCH}/${LC}/${LCPP}"
+                        cp lzma-decode ${CONFDIR}/tmp/bin/$OS/$ARCH/$LC/ || err "Error: no lzma decoder for ${OS}/${ARCH}/${LC}"
                     fi
                     cd ..
                 done
-
-#               if [ $ARCH_TYPE = "lzma" ]; then
-#                   $BIN_LZMA e $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/$FRNAME 2>&1 >/dev/null && FRFOUND=1
-#               else
-#                   cp $FRNAME ${CONFDIR}/tmp/frontends/$OS/$ARCH/ 2>/dev/null && FRFOUND=1
-#               fi
                 
                 if [ $FRFOUND -eq 0 ]; then
                     echo "Warning: no $FR frontend for $OS/$ARCH"
@@ -156,27 +225,68 @@ copytemp()
         done
     done
 
-    # Check if we got an intro picture
-    INTROPIC=`awk '$1=="intropic"{print $2}' ${CONFDIR}/install.cfg`
-
     if [ ! -z ${INTROPIC} ]; then
         cp ${CONFDIR}/${INTROPIC} ${CONFDIR}/tmp || echo "Warning: ${CONFDIR}/$INTROPIC does not exist"
     fi
     
     # Copy all plist files
     PLIST_FOUND=0
-    cp ${CONFDIR}/plist_extrpath* ${CONFDIR}/tmp && PLIST_FOUND=1
-    cp ${CONFDIR}/plist_var_* ${CONFDIR}/tmp && PLIST_FOUND=1
+    cp ${CONFDIR}/plist_extrpath* ${CONFDIR}/tmp 2>/dev/null && PLIST_FOUND=1
+    cp ${CONFDIR}/plist_var_* ${CONFDIR}/tmp 2>/dev/null && PLIST_FOUND=1
     
     if [ $PLIST_FOUND -eq 0 ]; then
         echo "Warning: No plist files found!"
     fi
 }
 
-remtemp()
+makearchive()
 {
-    # Clean up all temporarily files
-    rm -rf ${CONFDIR}/tmp
+    echo "Generating archive..."
+    
+    # Pack platform independent files
+    if [ -d ${CONFDIR}/files_all ]; then
+        packdir ${CONFDIR}/files_all "${CONFDIR}/tmp/${ARCHNAME_BASE}_all"
+    fi
+    
+    # Pack arch dependent files
+    for ARCH in $TARGET_ARCH
+    do
+        if [ -d ${CONFDIR}/files_all_${ARCH} ]; then
+            packdir ${CONFDIR}/files_all_${ARCH} ${CONFDIR}/tmp/${ARCHNAME_BASE}_all_${ARCH}
+        fi
+    done
+        
+    # Pack OS/arch dependent files
+    for OS in $TARGET_OS
+    do
+        if [ -d ${CONFDIR}/files_${OS}_all ]; then
+            packdir ${CONFDIR}/files_${OS}_all/ ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}
+        fi
+    
+        for ARCH in $TARGET_ARCH
+        do
+            if [ -d ${CONFDIR}/files_${OS}_${ARCH} ]; then
+                packdir ${CONFDIR}/files_${OS}_${ARCH} ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}_${ARCH}
+            fi
+        done
+    done
+}
+
+createinstaller()
+{
+    echo "Generating installer..."
+    #${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
+    ${CURDIR}/makeself.sh --gzip ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
+}
+
+# Util functions
+# --------------------------------------------------
+
+err()
+{
+    echo $1
+    cleanup
+    exit 1
 }
 
 packdir()
@@ -209,126 +319,18 @@ packdir()
     cd - # Go back to previous directory
 }
 
-# Main part starts here...
+cleanup()
+{
+    # Clean up all temporarily files
+    rm -rf ${CONFDIR}/tmp
+}
 
-# Convert iX86 --> x86
-echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
+# Main part starts here
+# --------------------------------------------------
 
-# If target dir has trailing '/', remove it
-CONFDIR=${CONFDIR%*/}
-
-# If target dir doesn't have '/' insert the current dir to it
-CONFDIR=`echo ${CONFDIR} | grep '^/' || echo ${PWD}/$CONFDIR`
-
-checkargs $*
-
-# Default installer name to 'setup.sh'
-OUTNAME=${OUTNAME:="setup.sh"}
-
-if [ ! -e ${CONFDIR}/install.cfg ]; then
-    err "Error: no install.cfg found!"
-fi
-
-# Check which target frontends there are
-FRONTENDS=`awk '$1=="frontends"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
-if [ -z "$FRONTENDS" ]; then
-    FRONTENDS="ncurses fltk" # Change if there are other frontends
-fi
-
-# Check which target OS'es there are
-TARGET_OS=`awk '$1=="targetos"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
-if [ -z "$TARGET_OS" ]; then
-    TARGET_OS=$CURRENT_OS
-fi
-
-# Check which target archs there are
-TARGET_ARCH=`awk '$1=="targetarch"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
-if [ -z "$TARGET_ARCH" ]; then
-    TARGET_ARCH=$CURRENT_ARCH
-fi
-
-for OS in $TARGET_OS
-do
-    for ARCH in $TARGET_ARCH
-    do
-        mkdir -p ${CONFDIR}/tmp/bin/$OS/$ARCH
-    done
-done
-
-BIN_LZMA=${CURDIR}/bin/${CURRENT_OS}/${CURRENT_ARCH}/libc.so.6/lzma
-
-mkdir -p ${CONFDIR}/tmp/config/lang
-
-# Check which archive type to use
-ARCH_TYPE=`awk '$1=="archtype"{print $2}' ${CONFDIR}/install.cfg`
-if [ -z "$ARCH_TYPE" ]; then
-    ARCH_TYPE="gzip"
-fi
-
-# Check which languages to use
-LANGUAGES=`awk '$1=="languages"{for (i=2;i <= NF;i++) printf("%s ", $i) }' ${CONFDIR}/install.cfg`
-if [ -z "$LANGUAGES" ]; then
-    LANGUAGES="english"
-fi
-
-echo
-echo "Configuration:"
-echo "---------------------------------"
-echo "Installer name: $OUTNAME"
-echo "            OS: $TARGET_OS"
-echo "         Archs: $TARGET_ARCH"
-echo "  Archive type: $ARCH_TYPE"
-echo "     Languages: $LANGUAGES"
-echo "    Config dir: ${CONFDIR}"
-echo "     Frontends: $FRONTENDS"
-echo "---------------------------------"
-echo
-echo
-
-# Copy all files needed by installer(temporary)
-copytemp
-
-echo "Generating archive..."
-
-
-# Pack platform independent files
-if [ -d ${CONFDIR}/files_all ]; then
-    packdir ${CONFDIR}/files_all "${CONFDIR}/tmp/${ARCHNAME_BASE}_all"
-fi
-
-# Pack arch dependent files
-for ARCH in $TARGET_ARCH
-do
-    if [ -d ${CONFDIR}/files_all_${ARCH} ]; then
-        packdir ${CONFDIR}/files_all_${ARCH} ${CONFDIR}/tmp/${ARCHNAME_BASE}_all_${ARCH}
-    fi
-done
-    
-# Pack OS/arch dependent files
-for OS in $TARGET_OS
-do
-    if [ -d ${CONFDIR}/files_${OS}_all ]; then
-        packdir ${CONFDIR}/files_${OS}_all/ ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}
-    fi
-
-    for ARCH in $TARGET_ARCH
-    do
-        if [ -d ${CONFDIR}/files_${OS}_${ARCH} ]; then
-            packdir ${CONFDIR}/files_${OS}_${ARCH} ${CONFDIR}/tmp/${ARCHNAME_BASE}_${OS}_${ARCH}
-        fi
-    done
-done
-
-#if [ ! -e "${CONFDIR}/tmp/${ARCHNAME_BASE}_*" ]; then
-#    err "Error: no files to install!"
-#fi
-
-echo "Generating installer..."
-#${CURDIR}/makeself.sh --$ARCH_TYPE ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
-${CURDIR}/makeself.sh --gzip ${CONFDIR}/tmp ${CURDIR}/${OUTNAME} "nixstaller" sh ./startupinstaller.sh > /dev/null 2>&1
-
-echo "Cleaning up..."
-remtemp
-
-echo "Done"
-
+init "$*"
+readconfig
+preparearchive
+makearchive
+createinstaller
+cleanup
