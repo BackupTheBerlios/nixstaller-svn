@@ -159,6 +159,7 @@ bool CInstaller::Init(int argc, char **argv)
     m_InstallScreens.push_back(new CWelcomeScreen(this, h, w, y, x));
     m_InstallScreens.push_back(new CLicenseScreen(this, h, w, y, x));
     m_InstallScreens.push_back(new CSelectDirScreen(this, h, w, y, x));
+    m_InstallScreens.push_back(new CSetParamsScreen(this, h, w, y, x));
     
     bool initscreen = true;
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
@@ -318,10 +319,23 @@ bool CLicenseScreen::Activate()
 
 bool CSelectDirScreen::HandleEvent(CWidgetHandler *p, int type)
 {
-    if ((type == EVENT_CALLBACK) && (p == m_pFileField))
+    if (type == EVENT_CALLBACK)
     {
-        PushEvent(EVENT_CALLBACK);
-        return true;
+        if (p == m_pFileField)
+        {
+            PushEvent(EVENT_CALLBACK);
+            return true;
+        }
+        else if (p == m_pChangeDirButton)
+        {
+            std::string newdir = FileDialog(m_pInstaller->m_szDestDir.c_str(), "Select destination directory");
+            if (!newdir.empty())
+            {
+                m_pInstaller->m_szDestDir = newdir;
+                m_pFileField->SetText(m_pInstaller->m_szDestDir.c_str());
+            }
+            return true;
+        }
     }
     
     return false;
@@ -329,12 +343,40 @@ bool CSelectDirScreen::HandleEvent(CWidgetHandler *p, int type)
 
 void CSelectDirScreen::DrawInit()
 {
+    const int buttonw = 22;
     SetInfo("<C>Select destination directory");
     
-    int y = m_pLabel->rely() + m_pLabel->height() + 1;
-    m_pFileField = new CInputField(this, 3, width(), y, 0, 'r', 1024);
+    int y = (height()-3)/2;
+    int w = width() - (buttonw + 2);
+    m_pFileField = new CInputField(this, 3, w, y, 0, 'r', 1024);
+    m_pFileField->SetText(m_pInstaller->m_szDestDir.c_str());
     
-    y += 4;
-    int x = (width()-15)/2;
-    m_pChangeDirButton = new CButton(this, 1, 15, y, x, "Select a directory", 'r');
+    y++;
+    m_pChangeDirButton = new CButton(this, 1, buttonw, y, w+2, "Select a directory", 'r');
+}
+
+bool CSelectDirScreen::Next()
+{
+    if (!WriteAccess(m_pInstaller->m_szDestDir))
+    {
+        return (ChoiceBox(m_pInstaller->GetTranslation("You don't have write permissions for this directory.\n"
+                "The files can be extracted as the root user,\n"
+                "but you'll need to enter the root password for this later."),
+                m_pInstaller->GetTranslation("Choose another directory"),
+                m_pInstaller->GetTranslation("Continue as root"), NULL) == 1);
+    }
+    return true;
+}
+
+// -------------------------------------
+// Configuring parameters screen
+// -------------------------------------
+
+bool CSetParamsScreen::HandleEvent(CWidgetHandler *p, int type)
+{
+    return false;
+}
+
+void CSetParamsScreen::DrawInit()
+{
 }

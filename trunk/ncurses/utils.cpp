@@ -366,7 +366,7 @@ int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *b
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(50, MaxX());
+    int width = Min(65, MaxX());
     
     CChoiceBox *choicebox = new CChoiceBox(pWidgetManager, MaxY(), width, 0, 0, text, but1, but2, but3);
     int ret = choicebox->Run();
@@ -393,11 +393,11 @@ std::string InputDialog(const char *title, const char *start, int max, bool sec)
     return ret;
 }
         
-std::string FileDialog(const char *start, const char *info, bool needw)
+std::string FileDialog(const char *start, const char *info)
 {
     int width = Min(70, MaxX());
     int height = Min(30, MaxY());
-    CFileDialog *filedialog = new CFileDialog(pWidgetManager, height, width, 0, 0, start, info, needw);
+    CFileDialog *filedialog = new CFileDialog(pWidgetManager, height, width, 0, 0, start, info);
     std::string ret = filedialog->Run();
     
     pWidgetManager->RemoveChild(filedialog);

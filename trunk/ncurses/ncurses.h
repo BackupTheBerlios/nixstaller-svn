@@ -50,7 +50,7 @@ void WarningBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
 int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
 std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
-std::string FileDialog(const char *start, const char *info, bool needw);
+std::string FileDialog(const char *start, const char *info);
 
 #include "widgets.h"
 
@@ -198,7 +198,18 @@ public:
     CSelectDirScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                      int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 
-    //virtual bool Next(void);
+    virtual bool Next(void);
+};
+
+class CSetParamsScreen: public CBaseScreen
+{
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    virtual void DrawInit(void);
+
+public:
+    CSetParamsScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                     int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 };
 
 extern CWidgetManager *pWidgetManager;

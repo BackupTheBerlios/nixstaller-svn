@@ -2286,6 +2286,8 @@ CChoiceBox::CChoiceBox(CWidgetManager *owner, int maxlines, int ncols, int begin
         x += (w + 2);
         m_pButtons[2] = new CButton(this, 1, w, y, x, but3, 'r');
     }
+    else
+        m_pButtons[2] = NULL;
     
     Fit(y+m_pButtons[0]->maxy()+2);
 }
@@ -2392,11 +2394,9 @@ chtype CFileDialog::m_cDefaultFocusedColors;
 chtype CFileDialog::m_cDefaultDefocusedColors;
 
 CFileDialog::CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *s,
-                         const char *info, bool w) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, info,
-                                                                m_cDefaultFocusedColors,
-                                                                m_cDefaultDefocusedColors),
-                                                     m_szStartDir(s), m_szSelectedDir(s), m_szInfo(info),
-                                                     m_bRequireWAccess(w)
+                         const char *info) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, info,
+                                                        m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
+                                             m_szStartDir(s), m_szSelectedDir(s), m_szInfo(info)
 {
     m_pFileMenu = new CMenu(this, maxlines-10, ncols-4, (m_pLabel->rely()+m_pLabel->maxy()+2), 2, 'r');
     

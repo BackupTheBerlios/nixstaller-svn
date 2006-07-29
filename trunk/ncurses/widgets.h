@@ -712,7 +712,6 @@ public:
 class CFileDialog: public CWidgetBox // Currently only browses directories
 {
     std::string m_szStartDir, m_szSelectedDir, m_szInfo;
-    bool m_bRequireWAccess; // Directory requires write access
     CMenu *m_pFileMenu;
     CInputField *m_pFileField;
     CButton *m_pOpenButton, *m_pCancelButton;
@@ -728,7 +727,7 @@ public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *s,
-                const char *i, bool w);
+                const char *i);
     
     const std::string &Run(void);
 };
