@@ -36,6 +36,7 @@
 #define MAIN_H
 
 #include "libsu.h"
+#include "lua.hpp"
 
 #include <stdarg.h>
 #include <string>
@@ -157,7 +158,10 @@ public:
 
 class CMain
 {
+    void LoadLuaLibs(void);
+    
 protected:
+    lua_State *m_pLuaVM;
     const std::string m_szRegVer;
     char *m_szAppConfDir;
     LIBSU::CLibSU m_SUHandler;
@@ -284,7 +288,19 @@ public:
     
     ~CBaseAppManager(void) { };
 };
-        
+
+class CLuaVM
+{
+    lua_State *m_pLuaState;
+    
+public:
+    CLuaVM(void);
+    ~CLuaVM(void) { lua_close(m_pLuaState); };
+    
+    void RegisterTable(const char *name, luaL_Reg *p);
+    void RegisterFunction(const char *name, luaL_Reg *p);
+};
+
 //#define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE

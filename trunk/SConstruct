@@ -186,7 +186,7 @@ libc_ver = ''
 libstdcpp_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
+env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', 'include/', 'include/ncurses', 'include/lua', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
 
 # Current version
 curnixstversion = '0.2'
@@ -363,7 +363,7 @@ libsu = env.SConscript('libsu/SConstruct')
 # Builds main lib
 main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'main/vasprintf.c', 'libmd5/md5.c'])
 
-env.Prepend(LIBS = Split('main su'))
+env.Prepend(LIBS = Split('main su lua'))
 
 # UNDONE?
 if cur_os == 'netbsd':

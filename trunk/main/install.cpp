@@ -84,6 +84,15 @@ bool CBaseInstall::Init(int argc, char **argv)
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
+    // Load lua config
+    if (luaL_dofile(m_pLuaVM, "config/install.lua"))
+    {
+        const char *errmsg = lua_tostring(m_pLuaVM, -1);
+        if (!errmsg)
+            errmsg = "Unknown error!";
+        ThrowError(false, "While parsing install.lua: %s", errmsg);
+    }
+    
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = curdir;
     else if (m_InstallInfo.dest_dir_type == DEST_SELECT)
