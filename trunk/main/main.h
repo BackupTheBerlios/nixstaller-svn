@@ -294,11 +294,12 @@ class CLuaVM
     lua_State *m_pLuaState;
     
 public:
-    CLuaVM(void);
     ~CLuaVM(void) { lua_close(m_pLuaState); };
-    
+
+    bool Init(void);    
     void RegisterTable(const char *name, luaL_Reg *p);
-    void RegisterFunction(const char *name, luaL_Reg *p);
+    void RegisterVar(const char *name, const char *val, const char *env=NULL);
+    void RegisterVar(const char *name, lua_Number val, const char *env=NULL);
 };
 
 //#define RELEASE /* Enable on a release build */
