@@ -54,29 +54,90 @@ static const luaL_Reg libtable[] = {
 bool CLuaVM::Init()
 {
     // Initialize lua
-    m_pLuaVM = lua_open();
+    m_pLuaState = lua_open();
     
-    if (!m_pLuaVM)
+    if (!m_pLuaState)
         return false;
         
     const luaL_Reg *lib = libtable;
     for (; lib->func; lib++)
     {
-        lua_pushcfunction(m_pLuaVM, lib->func);
-        lua_pushstring(m_pLuaVM, lib->name);
-        lua_call(m_pLuaVM, 1, 0);
-        lua_settop(m_pLuaVM, 0);  // Clear stack
+        lua_pushcfunction(m_pLuaState, lib->func);
+        lua_pushstring(m_pLuaState, lib->name);
+        lua_call(m_pLuaState, 1, 0);
+        lua_settop(m_pLuaState, 0);  // Clear stack
     }
     
     return true;
 }
 
-void CLuaVM::RegisterTable(const char *name, luaL_Reg *p)
+bool CLuaVM::LoadFile(const char *name)
 {
-	luaL_register(m_pLuaVM, name, p);
+    if (luaL_dofile(m_pLuaState, name))
+    {
+        const char *errmsg = lua_tostring(m_pLuaState, -1);
+        if (!errmsg)
+            errmsg = "Unknown error!";
+        //ThrowError(false, "While parsing %s: %s", name, errmsg);
+        fprintf(stderr, "While parsing %s: %s", name, errmsg);
+        return false;
+    }
+    return true;
 }
 
-void RegisterVar(const char *name, const char *val, const char *env)
+void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab)
 {
-	if (env)
-		luaL_register(m_pLuaVM, 
+    if (!tab)
+        lua_register(m_pLuaState, name, f);
+    else
+    {
+        lua_getglobal(m_pLuaState, tab);
+        
+        bool neednewtab = lua_isnil(m_pLuaState, -1);
+        
+        if (neednewtab)
+        {
+            lua_pop(m_pLuaState, 1);
+            lua_newtable(m_pLuaState);
+        }
+        
+        lua_pushstring(m_pLuaState, name);
+        lua_pushcfunction(m_pLuaState, f);
+        lua_settable(m_pLuaState, -3);
+        
+        //if (neednewtab)
+            lua_setglobal(m_pLuaState, tab);
+        //else
+          //  lua_pop
+    }
+}
+
+void CLuaVM::RegisterNumber(lua_Number n, const char *name, const char *tab)
+{
+    if (!tab)
+    {
+        lua_pushnumber(m_pLuaState, n);
+        lua_setglobal(m_pLuaState, name);
+    }
+    else
+    {
+        lua_getglobal(m_pLuaState, tab);
+        
+        bool neednewtab = lua_isnil(m_pLuaState, -1);
+        
+        if (neednewtab)
+        {
+            lua_pop(m_pLuaState, 1);
+            lua_newtable(m_pLuaState);
+        }
+        
+        lua_pushstring(m_pLuaState, name);
+        lua_pushnumber(m_pLuaState, n);
+        lua_settable(m_pLuaState, -3);
+        
+        //if (neednewtab)
+            lua_setglobal(m_pLuaState, tab);
+        //else
+          //  lua_pop
+    }
+}

@@ -57,6 +57,9 @@ CBaseInstall::~CBaseInstall()
     }
 }
 
+int f(lua_State *) { printf("f() is being called :-)\n"); }
+int fh(lua_State *) { printf("fh() is being called :-)\n"); }
+
 bool CBaseInstall::Init(int argc, char **argv)
 {   
     // Get current OS and cpu arch name
@@ -84,14 +87,13 @@ bool CBaseInstall::Init(int argc, char **argv)
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
-    // Load lua config
-    if (luaL_dofile(m_pLuaVM, "config/install.lua"))
-    {
-        const char *errmsg = lua_tostring(m_pLuaVM, -1);
-        if (!errmsg)
-            errmsg = "Unknown error!";
-        ThrowError(false, "While parsing install.lua: %s", errmsg);
-    }
+    m_LuaVM.RegisterFunction(f, "f", "mytab");
+    m_LuaVM.RegisterFunction(fh, "fh", "mytab");
+    m_LuaVM.RegisterNumber(5, "someval");
+    m_LuaVM.RegisterNumber(6, "someval", "mytab");
+    
+    if (!m_LuaVM.LoadFile("config/install.lua"))
+        return false;
     
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = curdir;

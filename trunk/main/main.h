@@ -123,6 +123,21 @@ void EndProg(bool err=false);
 extern "C" int vasprintf (char **result, const char *format, va_list args);
 #endif
 
+class CLuaVM
+{
+    lua_State *m_pLuaState;
+    
+public:
+    ~CLuaVM(void) { lua_close(m_pLuaState); };
+
+    bool Init(void);
+    bool LoadFile(const char *name);
+    
+    void RegisterFunction(lua_CFunction f, const char *name, const char *tab=NULL);
+    void RegisterNumber(lua_Number n, const char *name, const char *tab=NULL);
+    void RegisterString(const char *s, const char *name, const char *tab=NULL);
+};
+
 class CMain;
 
 class CRegister
@@ -158,10 +173,8 @@ public:
 
 class CMain
 {
-    void LoadLuaLibs(void);
-    
 protected:
-    lua_State *m_pLuaVM;
+    CLuaVM m_LuaVM;
     const std::string m_szRegVer;
     char *m_szAppConfDir;
     LIBSU::CLibSU m_SUHandler;
@@ -287,19 +300,6 @@ protected:
 public:
     
     ~CBaseAppManager(void) { };
-};
-
-class CLuaVM
-{
-    lua_State *m_pLuaState;
-    
-public:
-    ~CLuaVM(void) { lua_close(m_pLuaState); };
-
-    bool Init(void);    
-    void RegisterTable(const char *name, luaL_Reg *p);
-    void RegisterVar(const char *name, const char *val, const char *env=NULL);
-    void RegisterVar(const char *name, lua_Number val, const char *env=NULL);
 };
 
 //#define RELEASE /* Enable on a release build */

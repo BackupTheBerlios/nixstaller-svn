@@ -361,7 +361,7 @@ lzma = env.SConscript('lzma/SConstruct', duplicate=0)
 libsu = env.SConscript('libsu/SConstruct')
 
 # Builds main lib
-main = env.Library("main/main", ['main/main.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'main/vasprintf.c', 'libmd5/md5.c'])
+main = env.Library("main/main", ['main/main.cpp', 'main/lua.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'main/vasprintf.c', 'libmd5/md5.c'])
 
 env.Prepend(LIBS = Split('main su lua'))
 

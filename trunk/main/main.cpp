@@ -55,49 +55,16 @@ CMain::~CMain()
             delete [] (*p).second;
     }
     
-    FreeStrings();
-    
-    lua_close(m_pLuaVM);
+    FreeStrings();    
 }
-
-// Based on lua's 'luaL_openlibs' function
-void CMain::LoadLuaLibs()
-{
-    // Table of libs that should be loaded
-    const luaL_Reg libtable[] = {
-        { "", luaopen_base },
-        { LUA_TABLIBNAME, luaopen_table },
-        { LUA_IOLIBNAME, luaopen_io },
-        { LUA_OSLIBNAME, luaopen_os },
-        { LUA_STRLIBNAME, luaopen_string },
-        { LUA_MATHLIBNAME, luaopen_math },
-        // { LUA_LOADLIBNAME, luaopen_package }, // Perhaps later
-        // { LUA_DBLIBNAME, luaopen_debug }, // No debug
-        { NULL, NULL }
-    };
-    
-    const luaL_Reg *lib = libtable;
-    for (; lib->func; lib++)
-    {
-        lua_pushcfunction(m_pLuaVM, lib->func);
-        lua_pushstring(m_pLuaVM, lib->name);
-        lua_call(m_pLuaVM, 1, 0);
-        lua_settop(m_pLuaVM, 0);  // Clear stack
-    }
-}
-
-int f(lua_State *p) { printf("f()...\n"); }
 
 bool CMain::Init(int argc, char **argv)
 {
     // Initialize lua
-    m_pLuaVM = lua_open();
-    
-    if (!m_pLuaVM)
+    if (!m_LuaVM.Init())
         return false;
-    
-    LoadLuaLibs();
-    
+
+/*    
     lua_pushnumber(m_pLuaVM, 8.0);
     lua_setglobal(m_pLuaVM, "num");
     
@@ -109,7 +76,7 @@ bool CMain::Init(int argc, char **argv)
     lua_pushcfunction(m_pLuaVM, f);
     lua_settable(m_pLuaVM, -3);
     lua_setglobal(m_pLuaVM, "tab");
-    
+   */ 
     if (!ReadConfig())
         return false;
     
