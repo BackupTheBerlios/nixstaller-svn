@@ -126,8 +126,12 @@ extern "C" int vasprintf (char **result, const char *format, va_list args);
 class CLuaVM
 {
     lua_State *m_pLuaState;
+    int m_iPushedArgs;
+    
+    void StackDump(const char *msg);
     
 public:
+    CLuaVM(void) : m_iPushedArgs(0) { };
     ~CLuaVM(void) { lua_close(m_pLuaState); };
 
     bool Init(void);
@@ -136,6 +140,19 @@ public:
     void RegisterFunction(lua_CFunction f, const char *name, const char *tab=NULL);
     void RegisterNumber(lua_Number n, const char *name, const char *tab=NULL);
     void RegisterString(const char *s, const char *name, const char *tab=NULL);
+    
+    bool InitCall(const char *func, const char *tab=NULL);
+    void PushArg(lua_Number n);
+    void PushArg(const char *s);
+    void DoCall(void);
+    
+    int GetNumVar(const char *var, const char *tab=NULL);
+    const char *GetStrVar(const char *var, const char *tab=NULL);
+    
+    unsigned OpenArray(const char *var, const char *tab=NULL);
+    lua_Number GetArrayNum(unsigned &index);
+    void GetArrayStr(unsigned &index, std::string &str);
+    void CloseArray(void);
 };
 
 class CMain;

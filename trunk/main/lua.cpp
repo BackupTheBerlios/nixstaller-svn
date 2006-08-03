@@ -51,6 +51,40 @@ static const luaL_Reg libtable[] = {
 // Lua Class
 // -------------------------------------
 
+#ifndef RELEASE
+// Based from example in the book "Programming in Lua"
+void CLuaVM::StackDump(const char *msg)
+{
+    if (msg)
+        printf(msg);
+    
+    int i;
+    int top = lua_gettop(m_pLuaState);
+    for (i = 1; i <= top; i++)
+    {
+        /* repeat for each level */
+        int t = lua_type(m_pLuaState, i);
+        switch (t)
+        {
+            case LUA_TSTRING:  /* strings */
+                printf("`%s'", lua_tostring(m_pLuaState, i));
+                break;
+            case LUA_TBOOLEAN:  /* booleans */
+                printf(lua_toboolean(m_pLuaState, i) ? "true" : "false");
+                break;
+            case LUA_TNUMBER:  /* numbers */
+                printf("%g", lua_tonumber(m_pLuaState, i));
+                break;
+            default:  /* other values */
+                printf("%s", lua_typename(m_pLuaState, t));
+                break;
+        }
+        printf("  ");  /* put a separator */
+    }
+    printf("\n");  /* end the listing */
+}
+#endif
+
 bool CLuaVM::Init()
 {
     // Initialize lua
@@ -93,22 +127,16 @@ void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab
     {
         lua_getglobal(m_pLuaState, tab);
         
-        bool neednewtab = lua_isnil(m_pLuaState, -1);
-        
-        if (neednewtab)
+        if (lua_isnil(m_pLuaState, -1))
         {
             lua_pop(m_pLuaState, 1);
             lua_newtable(m_pLuaState);
         }
         
-        lua_pushstring(m_pLuaState, name);
         lua_pushcfunction(m_pLuaState, f);
-        lua_settable(m_pLuaState, -3);
+        lua_setfield(m_pLuaState, -2, name);
         
-        //if (neednewtab)
-            lua_setglobal(m_pLuaState, tab);
-        //else
-          //  lua_pop
+        lua_setglobal(m_pLuaState, tab);
     }
 }
 
@@ -123,21 +151,147 @@ void CLuaVM::RegisterNumber(lua_Number n, const char *name, const char *tab)
     {
         lua_getglobal(m_pLuaState, tab);
         
-        bool neednewtab = lua_isnil(m_pLuaState, -1);
-        
-        if (neednewtab)
+        if (lua_isnil(m_pLuaState, -1))
         {
             lua_pop(m_pLuaState, 1);
             lua_newtable(m_pLuaState);
         }
         
-        lua_pushstring(m_pLuaState, name);
         lua_pushnumber(m_pLuaState, n);
-        lua_settable(m_pLuaState, -3);
+        lua_setfield(m_pLuaState, -2, name);
         
-        //if (neednewtab)
-            lua_setglobal(m_pLuaState, tab);
-        //else
-          //  lua_pop
+        lua_setglobal(m_pLuaState, tab);
     }
+}
+
+void CLuaVM::RegisterString(const char *s, const char *name, const char *tab)
+{
+    if (!tab)
+    {
+        lua_pushstring(m_pLuaState, s);
+        lua_setglobal(m_pLuaState, name);
+    }
+    else
+    {
+        lua_getglobal(m_pLuaState, tab);
+        
+        if (lua_isnil(m_pLuaState, -1))
+        {
+            lua_pop(m_pLuaState, 1);
+            lua_newtable(m_pLuaState);
+        }
+        
+        lua_pushstring(m_pLuaState, s);
+        lua_setfield(m_pLuaState, -2, name);
+        
+        lua_setglobal(m_pLuaState, tab);
+    }
+}
+
+bool CLuaVM::InitCall(const char *func, const char *tab)
+{
+    if (tab)
+    {
+        lua_getglobal(m_pLuaState, tab);
+        if (!lua_isnil(m_pLuaState, -1))
+        {
+            lua_getfield(m_pLuaState, -1, func);
+            lua_remove(m_pLuaState, -2); // Remove tabel from stack(we don't need it anymore)
+        }
+    }
+    else
+        lua_getglobal(m_pLuaState, func);
+        
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        return false;
+    }
+
+    return true;
+}
+
+void CLuaVM::PushArg(lua_Number n)
+{
+    lua_pushnumber(m_pLuaState, n);
+    m_iPushedArgs++;
+}
+
+void CLuaVM::PushArg(const char *s)
+{
+    lua_pushstring(m_pLuaState, s);
+    m_iPushedArgs++;
+}
+
+void CLuaVM::DoCall(void)
+{
+    if (lua_pcall(m_pLuaState, m_iPushedArgs, 0, 0) != 0)
+        fprintf(stderr, "error running function : %s", lua_tostring(m_pLuaState, -1));
+    
+    m_iPushedArgs = 0;
+    StackDump("After DoCall");
+}
+
+unsigned CLuaVM::OpenArray(const char *var, const char *tab)
+{
+    if (tab)
+    {
+        lua_getglobal(m_pLuaState, tab);
+        if (!lua_isnil(m_pLuaState, -1))
+        {
+            lua_getfield(m_pLuaState, -1, var);
+            lua_remove(m_pLuaState, -2); // Remove tabel from stack(we don't need it anymore)
+        }
+    }
+    else
+        lua_getglobal(m_pLuaState, var);
+        
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        return false;
+    }
+    
+    return luaL_getn(m_pLuaState, -1);
+}
+
+lua_Number CLuaVM::GetArrayNum(unsigned &index)
+{
+    lua_Number ret;
+
+    lua_rawgeti(m_pLuaState, -1, index);
+    
+    bool goodtype = lua_isnumber(m_pLuaState, -1);
+    if (goodtype)
+        ret = lua_tonumber(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    if (!goodtype)
+    {
+        // throw exception here
+    }
+    
+    return ret;
+}
+
+void CLuaVM::GetArrayStr(unsigned &index, std::string &str)
+{
+    lua_rawgeti(m_pLuaState, -1, index);
+    
+    bool goodtype = lua_isstring(m_pLuaState, -1);
+    if (goodtype)
+        str = lua_tostring(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    if (!goodtype)
+    {
+        // throw exception here
+    }
+}
+
+void CLuaVM::CloseArray()
+{
+    lua_pop(m_pLuaState, 1);
 }

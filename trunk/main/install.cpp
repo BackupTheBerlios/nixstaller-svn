@@ -91,10 +91,33 @@ bool CBaseInstall::Init(int argc, char **argv)
     m_LuaVM.RegisterFunction(fh, "fh", "mytab");
     m_LuaVM.RegisterNumber(5, "someval");
     m_LuaVM.RegisterNumber(6, "someval", "mytab");
+    m_LuaVM.RegisterString("hey", "somestr");
+    m_LuaVM.RegisterString("bye", "somestr", "mytab");
     
     if (!m_LuaVM.LoadFile("config/install.lua"))
         return false;
     
+    if (m_LuaVM.InitCall("Install", "mytab"))
+    {
+        m_LuaVM.PushArg(5);
+        m_LuaVM.PushArg("55");
+        m_LuaVM.DoCall();
+    }
+
+    unsigned count = m_LuaVM.OpenArray("numtab"), n;
+    for (n=1;n<=count;n++)
+        printf("num[%d] = %d\n", n, m_LuaVM.GetArrayNum(n));
+    m_LuaVM.CloseArray();
+    
+    count = m_LuaVM.OpenArray("strtab");
+    std::string str;
+    for (n=1;n<=count;n++)
+    {
+        m_LuaVM.GetArrayStr(n, str);
+        printf("str[%d] = %s\n", n, str.c_str());
+    }
+    m_LuaVM.CloseArray();
+
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = curdir;
     else if (m_InstallInfo.dest_dir_type == DEST_SELECT)
