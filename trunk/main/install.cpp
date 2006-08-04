@@ -57,8 +57,8 @@ CBaseInstall::~CBaseInstall()
     }
 }
 
-int f(lua_State *) { printf("f() is being called :-)\n"); }
-int fh(lua_State *) { printf("fh() is being called :-)\n"); }
+int f(lua_State *) { printf("f() is being called :-)\n"); return 0; }
+int fh(lua_State *) { printf("fh() is being called :-)\n"); return 0; }
 
 bool CBaseInstall::Init(int argc, char **argv)
 {   
@@ -105,19 +105,26 @@ bool CBaseInstall::Init(int argc, char **argv)
     }
 
     unsigned count = m_LuaVM.OpenArray("numtab"), n;
+    int var;
     for (n=1;n<=count;n++)
-        printf("num[%d] = %d\n", n, m_LuaVM.GetArrayNum(n));
+    {
+        m_LuaVM.GetArrayNum(n, &var);
+        printf("num[%d] = %d\n", n, var);
+    }
     m_LuaVM.CloseArray();
     
     count = m_LuaVM.OpenArray("strtab");
     std::string str;
     for (n=1;n<=count;n++)
     {
-        m_LuaVM.GetArrayStr(n, str);
+        m_LuaVM.GetArrayStr(n, &str);
         printf("str[%d] = %s\n", n, str.c_str());
     }
     m_LuaVM.CloseArray();
 
+    m_LuaVM.GetNumVar(&var, "someval", "mytab"); printf("var: %d\n", var);
+    m_LuaVM.GetStrVar(&str, "dummystr"); printf("dummy: %s\n", str.c_str());
+    
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = curdir;
     else if (m_InstallInfo.dest_dir_type == DEST_SELECT)

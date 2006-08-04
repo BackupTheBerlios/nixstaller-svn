@@ -85,6 +85,21 @@ void CLuaVM::StackDump(const char *msg)
 }
 #endif
 
+void CLuaVM::PushGlobal(const char *var, const char *tab)
+{
+    if (tab)
+    {
+        lua_getglobal(m_pLuaState, tab);
+        if (!lua_isnil(m_pLuaState, -1))
+        {
+            lua_getfield(m_pLuaState, -1, var);
+            lua_remove(m_pLuaState, -2); // Remove tabel from stack(we don't need it anymore)
+        }
+    }
+    else
+        lua_getglobal(m_pLuaState, var);
+}
+
 bool CLuaVM::Init()
 {
     // Initialize lua
@@ -190,17 +205,7 @@ void CLuaVM::RegisterString(const char *s, const char *name, const char *tab)
 
 bool CLuaVM::InitCall(const char *func, const char *tab)
 {
-    if (tab)
-    {
-        lua_getglobal(m_pLuaState, tab);
-        if (!lua_isnil(m_pLuaState, -1))
-        {
-            lua_getfield(m_pLuaState, -1, func);
-            lua_remove(m_pLuaState, -2); // Remove tabel from stack(we don't need it anymore)
-        }
-    }
-    else
-        lua_getglobal(m_pLuaState, func);
+    PushGlobal(func, tab);
         
     if (lua_isnil(m_pLuaState, -1))
     {
@@ -232,63 +237,113 @@ void CLuaVM::DoCall(void)
     StackDump("After DoCall");
 }
 
-unsigned CLuaVM::OpenArray(const char *var, const char *tab)
+bool CLuaVM::GetNumVar(lua_Number *out, const char *var, const char *tab)
 {
-    if (tab)
-    {
-        lua_getglobal(m_pLuaState, tab);
-        if (!lua_isnil(m_pLuaState, -1))
-        {
-            lua_getfield(m_pLuaState, -1, var);
-            lua_remove(m_pLuaState, -2); // Remove tabel from stack(we don't need it anymore)
-        }
-    }
-    else
-        lua_getglobal(m_pLuaState, var);
-        
+    PushGlobal(var, tab);
+    
     if (lua_isnil(m_pLuaState, -1))
     {
         lua_pop(m_pLuaState, 1);
         return false;
     }
     
+    bool goodtype = lua_isnumber(m_pLuaState, -1);
+    if (goodtype)
+        *out = lua_tonumber(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    return (goodtype);
+}
+
+bool CLuaVM::GetNumVar(lua_Integer *out, const char *var, const char *tab)
+{
+    PushGlobal(var, tab);
+    
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        return false;
+    }
+    
+    bool goodtype = lua_isnumber(m_pLuaState, -1);
+    if (goodtype)
+        *out = lua_tointeger(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    return (goodtype);
+}
+
+bool CLuaVM::GetStrVar(std::string *out, const char *var, const char *tab)
+{
+    PushGlobal(var, tab);
+    
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        return false;
+    }
+    
+    bool goodtype = lua_isstring(m_pLuaState, -1);
+    if (goodtype)
+        *out = lua_tostring(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    return (goodtype);
+}
+
+unsigned CLuaVM::OpenArray(const char *var, const char *tab)
+{
+    PushGlobal(var, tab);
+        
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        return 0;
+    }
+    
     return luaL_getn(m_pLuaState, -1);
 }
 
-lua_Number CLuaVM::GetArrayNum(unsigned &index)
+bool CLuaVM::GetArrayNum(unsigned &index, lua_Number *out)
 {
-    lua_Number ret;
-
     lua_rawgeti(m_pLuaState, -1, index);
     
     bool goodtype = lua_isnumber(m_pLuaState, -1);
     if (goodtype)
-        ret = lua_tonumber(m_pLuaState, -1);
+        *out = lua_tonumber(m_pLuaState, -1);
     
     lua_pop(m_pLuaState, 1);
     
-    if (!goodtype)
-    {
-        // throw exception here
-    }
-    
-    return ret;
+    return (goodtype);
 }
 
-void CLuaVM::GetArrayStr(unsigned &index, std::string &str)
+bool CLuaVM::GetArrayNum(unsigned &index, lua_Integer *out)
+{
+    lua_rawgeti(m_pLuaState, -1, index);
+    
+    bool goodtype = lua_isnumber(m_pLuaState, -1);
+    if (goodtype)
+        *out = lua_tointeger(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    return (goodtype);
+}
+
+bool CLuaVM::GetArrayStr(unsigned &index, std::string *out)
 {
     lua_rawgeti(m_pLuaState, -1, index);
     
     bool goodtype = lua_isstring(m_pLuaState, -1);
     if (goodtype)
-        str = lua_tostring(m_pLuaState, -1);
+        *out = lua_tostring(m_pLuaState, -1);
     
     lua_pop(m_pLuaState, 1);
     
-    if (!goodtype)
-    {
-        // throw exception here
-    }
+    return (goodtype);
 }
 
 void CLuaVM::CloseArray()

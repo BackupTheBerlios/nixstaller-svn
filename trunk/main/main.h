@@ -129,6 +129,7 @@ class CLuaVM
     int m_iPushedArgs;
     
     void StackDump(const char *msg);
+    void PushGlobal(const char *var, const char *tab);
     
 public:
     CLuaVM(void) : m_iPushedArgs(0) { };
@@ -146,12 +147,14 @@ public:
     void PushArg(const char *s);
     void DoCall(void);
     
-    int GetNumVar(const char *var, const char *tab=NULL);
-    const char *GetStrVar(const char *var, const char *tab=NULL);
+    bool GetNumVar(lua_Number *out, const char *var, const char *tab=NULL);
+    bool GetNumVar(lua_Integer *out, const char *var, const char *tab=NULL);
+    bool GetStrVar(std::string *out, const char *var, const char *tab=NULL);
     
     unsigned OpenArray(const char *var, const char *tab=NULL);
-    lua_Number GetArrayNum(unsigned &index);
-    void GetArrayStr(unsigned &index, std::string &str);
+    bool GetArrayNum(unsigned &index, lua_Number *out);
+    bool GetArrayNum(unsigned &index, lua_Integer *out);
+    bool GetArrayStr(unsigned &index, std::string *out);
     void CloseArray(void);
 };
 
@@ -316,7 +319,7 @@ protected:
     
 public:
     
-    ~CBaseAppManager(void) { };
+    virtual ~CBaseAppManager(void) { };
 };
 
 //#define RELEASE /* Enable on a release build */
