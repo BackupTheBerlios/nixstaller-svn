@@ -36,7 +36,7 @@ ARCHNAME_BASE="instarchive"
 
 # Main functions
 # --------------------------------------------------
-
+ 
 init()
 {
     if [ -z $1 ]; then

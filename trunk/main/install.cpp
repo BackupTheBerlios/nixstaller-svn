@@ -70,26 +70,6 @@ int cc(lua_State *L)
 
 bool CBaseInstall::Init(int argc, char **argv)
 {   
-    // Get current OS and cpu arch name
-    struct utsname inf;
-    if (uname(&inf) == -1)
-        return false;
-    
-    m_szOS = inf.sysname;
-    std::transform(m_szOS.begin(), m_szOS.end(), m_szOS.begin(), tolower);
-
-    m_szCPUArch = inf.machine;
-    // Convert iX86 to x86
-    if ((m_szCPUArch[0] == 'i') && (m_szCPUArch.compare(2, 2, "86") == 0))
-        m_szCPUArch = "x86";
-
-    char curdir[1024];
-    if (getcwd(curdir, sizeof(curdir)) == 0)
-        ThrowError(false, "Could not read current directory");
-
-    m_szOwnDir = curdir;
-    debugline("Current dir: %s\n", m_szOwnDir.c_str());
-    
     m_szBinDir = dirname(argv[0]);
     
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
@@ -137,7 +117,7 @@ bool CBaseInstall::Init(int argc, char **argv)
     m_LuaVM.GetStrVar(&str, "dummystr"); printf("dummy: %s\n", str.c_str());
     
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
-        m_szDestDir = curdir;
+        m_szDestDir = m_szOwnDir;
     else if (m_InstallInfo.dest_dir_type == DEST_SELECT)
     {
         const char *env = getenv("HOME");

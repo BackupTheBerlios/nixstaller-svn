@@ -373,36 +373,3 @@ void *CLuaVM::GetClosure()
 {
     return lua_touserdata(m_pLuaState, lua_upvalueindex(1));
 }
-
-bool CLuaVM::GetArgNum(lua_Number *out)
-{
-    bool goodtype = lua_isnumber(m_pLuaState, -1);
-    if (goodtype)
-        *out = lua_tonumber(m_pLuaState, -1);
-    
-    lua_pop(m_pLuaState, 1);
-    
-    return (goodtype);
-}
-
-bool CLuaVM::GetArgNum(lua_Integer *out)
-{
-    bool goodtype = lua_isnumber(m_pLuaState, -1);
-    if (goodtype)
-        *out = lua_tointeger(m_pLuaState, -1);
-    
-    lua_pop(m_pLuaState, 1);
-    
-    return (goodtype);
-}
-
-bool CLuaVM::GetArgStr(std::string *out)
-{
-    bool goodtype = lua_isstring(m_pLuaState, -1);
-    if (goodtype)
-        *out = lua_tostring(m_pLuaState, -1);
-    
-    lua_pop(m_pLuaState, 1);
-    
-    return (goodtype);
-}

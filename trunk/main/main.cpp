@@ -38,6 +38,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "main.h"
 
@@ -64,11 +66,40 @@ bool CMain::Init(int argc, char **argv)
     if (!m_LuaVM.Init())
         return false;
 
-    if (argc >= 3)
+    // Get current OS and cpu arch name
+    struct utsname inf;
+    if (uname(&inf) == -1)
+        return false;
+    
+    m_szOS = inf.sysname;
+    std::transform(m_szOS.begin(), m_szOS.end(), m_szOS.begin(), tolower);
+
+    m_szCPUArch = inf.machine;
+    // Convert iX86 to x86
+    if ((m_szCPUArch[0] == 'i') && (m_szCPUArch.compare(2, 2, "86") == 0))
+        m_szCPUArch = "x86";
+
+    char curdir[1024];
+    if (getcwd(curdir, sizeof(curdir)) == 0)
+        ThrowError(false, "Could not read current directory");
+
+    m_szOwnDir = curdir;
+    
+    // Register some globals for lua
+    m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
+    m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
+    m_LuaVM.RegisterString(m_szOwnDir.c_str(), "curdir");
+    m_LuaVM.RegisterFunction(LuaInitDirIter, "dir", "io");
+    m_LuaVM.RegisterFunction(LuaFileExists, "fileexists", "io");
+    m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "io");
+    m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "io");
+    m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "io");
+    
+    if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
         if (!strcmp(argv[1], "-c"))
         {
-            CreateInstall(argv[2]);
+            CreateInstall(argc, argv);
             EndProg();
         }
     }
@@ -101,9 +132,12 @@ bool CMain::Init(int argc, char **argv)
     return true;
 }
 
-void CMain::CreateInstall(const char *file)
+void CMain::CreateInstall(int argc, char **argv)
 {
-    if (!m_LuaVM.LoadFile(file))
+    m_LuaVM.RegisterString(argv[3], "confdir");
+    m_LuaVM.RegisterString(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
+    
+    if (!m_LuaVM.LoadFile(argv[2]))
         ThrowError(false, "Error opening lua file!\n");
 }
 
@@ -330,4 +364,83 @@ const char *CMain::GetSumListFile(const char *progname)
     if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
         ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
     return CreateText("%s/list", dir);
+}
+
+// Directory iter functions. Based on examples from "Programming in lua"
+int CMain::LuaInitDirIter(lua_State *L)
+{
+    const char *path = luaL_checkstring(L, 1);
+    
+    DIR **d = (DIR **)lua_newuserdata(L, sizeof(DIR *));
+    
+    //luaL_getmetatable(L, "LuaBook.dir");
+    if (luaL_newmetatable(L, "diriter") == 1) // Table didn't exist yet?
+    {
+        lua_pushstring(L, "__gc");
+        lua_pushcfunction(L, LuaDirIterGC);
+        lua_settable(L, -3);
+    }
+    
+    lua_setmetatable(L, -2);
+    
+    *d = opendir(path);
+    if (*d == NULL)
+        luaL_error(L, "cannot open %s: %s", path, strerror(errno));
+    
+    lua_pushcclosure(L, LuaDirIter, 1);
+    return 1;
+}
+
+int CMain::LuaDirIter(lua_State *L)
+{
+    DIR *d = *(DIR **)lua_touserdata(L, lua_upvalueindex(1));
+    struct dirent *entry = readdir(d);
+    
+    while (entry && (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")))
+        entry = readdir(d);
+    
+    if (entry)
+    {
+        lua_pushstring(L, entry->d_name);
+        return 1;
+    }
+    else
+        return 0;
+}
+
+int CMain::LuaDirIterGC(lua_State *L)
+{
+    DIR *d = *(DIR **)lua_touserdata(L, 1);
+    if (d)
+        closedir(d);
+    return 0;
+}
+
+int CMain::LuaFileExists(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    lua_pushboolean(L, FileExists(file));
+    return 1;
+}
+
+int CMain::LuaReadPerm(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    lua_pushboolean(L, ReadAccess(file));
+    return 1;
+}
+
+int CMain::LuaWritePerm(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    lua_pushboolean(L, WriteAccess(file));
+    return 1;
+}
+
+int CMain::LuaIsDir(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    struct stat st;
+    lua_pushboolean(L, ((lstat(file, &st) == 0) && S_ISDIR(st.st_mode)));
+    return 1;
 }

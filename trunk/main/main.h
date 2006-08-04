@@ -155,12 +155,14 @@ public:
     bool GetArrayNum(unsigned &index, lua_Number *out);
     bool GetArrayNum(unsigned &index, lua_Integer *out);
     bool GetArrayStr(unsigned &index, std::string *out);
+    bool GetArrayStr(unsigned &index, char *out);
     void CloseArray(void);
     
     void *GetClosure(void);
     bool GetArgNum(lua_Number *out);
     bool GetArgNum(lua_Integer *out);
     bool GetArgStr(std::string *out);
+    bool GetArgStr(char *out);
 };
 
 class CMain;
@@ -198,11 +200,12 @@ public:
 
 class CMain
 {
-    void CreateInstall(const char *file);
+    void CreateInstall(int argc, char **argv);
     
 protected:
     CLuaVM m_LuaVM;
     const std::string m_szRegVer;
+    std::string m_szOS, m_szCPUArch, m_szOwnDir;
     char *m_szAppConfDir;
     LIBSU::CLibSU m_SUHandler;
     char *m_szPassword;
@@ -240,6 +243,15 @@ public:
     std::string GetTranslation(std::string &s);
     char *GetTranslation(char *s);
     inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
+    
+    // Functions for lua binding
+    static int LuaInitDirIter(lua_State *L);
+    static int LuaDirIter(lua_State *L);
+    static int LuaDirIterGC(lua_State *L);
+    static int LuaFileExists(lua_State *L);
+    static int LuaWritePerm(lua_State *L);
+    static int LuaReadPerm(lua_State *L);
+    static int LuaIsDir(lua_State *L);
 };
     
 class CBaseInstall: virtual public CMain
@@ -275,7 +287,7 @@ protected:
     
 public:
     install_info_s m_InstallInfo;
-    std::string m_szOS, m_szCPUArch, m_szOwnDir, m_szDestDir, m_szBinDir;
+    std::string m_szDestDir, m_szBinDir;
 
     
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
@@ -306,6 +318,8 @@ public:
     void UpdateStatus(const char *s);
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };
+    
+    // Functions for lua binding
 };
 
 class CBaseAppManager: virtual public CMain
