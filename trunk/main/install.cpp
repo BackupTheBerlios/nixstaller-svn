@@ -60,6 +60,14 @@ CBaseInstall::~CBaseInstall()
 int f(lua_State *) { printf("f() is being called :-)\n"); return 0; }
 int fh(lua_State *) { printf("fh() is being called :-)\n"); return 0; }
 
+int cc(lua_State *L)
+{
+    const char *secretmsg = static_cast<const char *>(lua_touserdata(L, lua_upvalueindex(1)));
+    printf("msg: %s\n", secretmsg);
+    
+    return 0;
+}
+
 bool CBaseInstall::Init(int argc, char **argv)
 {   
     // Get current OS and cpu arch name
@@ -87,8 +95,10 @@ bool CBaseInstall::Init(int argc, char **argv)
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
+    
     m_LuaVM.RegisterFunction(f, "f", "mytab");
     m_LuaVM.RegisterFunction(fh, "fh", "mytab");
+    //m_LuaVM.RegisterFunction(cc, "cc", "mytab", (void *)"Howdy");
     m_LuaVM.RegisterNumber(5, "someval");
     m_LuaVM.RegisterNumber(6, "someval", "mytab");
     m_LuaVM.RegisterString("hey", "somestr");
@@ -104,8 +114,10 @@ bool CBaseInstall::Init(int argc, char **argv)
         m_LuaVM.DoCall();
     }
 
-    unsigned count = m_LuaVM.OpenArray("numtab"), n;
     int var;
+    std::string str;
+    
+    unsigned count = m_LuaVM.OpenArray("numtab"), n;
     for (n=1;n<=count;n++)
     {
         m_LuaVM.GetArrayNum(n, &var);
@@ -114,7 +126,6 @@ bool CBaseInstall::Init(int argc, char **argv)
     m_LuaVM.CloseArray();
     
     count = m_LuaVM.OpenArray("strtab");
-    std::string str;
     for (n=1;n<=count;n++)
     {
         m_LuaVM.GetArrayStr(n, &str);

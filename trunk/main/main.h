@@ -129,7 +129,7 @@ class CLuaVM
     int m_iPushedArgs;
     
     void StackDump(const char *msg);
-    void PushGlobal(const char *var, const char *tab);
+    void GetGlobal(const char *var, const char *tab);
     
 public:
     CLuaVM(void) : m_iPushedArgs(0) { };
@@ -138,7 +138,7 @@ public:
     bool Init(void);
     bool LoadFile(const char *name);
     
-    void RegisterFunction(lua_CFunction f, const char *name, const char *tab=NULL);
+    void RegisterFunction(lua_CFunction f, const char *name, const char *tab=NULL, void *data=NULL);
     void RegisterNumber(lua_Number n, const char *name, const char *tab=NULL);
     void RegisterString(const char *s, const char *name, const char *tab=NULL);
     
@@ -156,6 +156,11 @@ public:
     bool GetArrayNum(unsigned &index, lua_Integer *out);
     bool GetArrayStr(unsigned &index, std::string *out);
     void CloseArray(void);
+    
+    void *GetClosure(void);
+    bool GetArgNum(lua_Number *out);
+    bool GetArgNum(lua_Integer *out);
+    bool GetArgStr(std::string *out);
 };
 
 class CMain;
@@ -193,6 +198,8 @@ public:
 
 class CMain
 {
+    void CreateInstall(const char *file);
+    
 protected:
     CLuaVM m_LuaVM;
     const std::string m_szRegVer;

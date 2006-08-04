@@ -64,6 +64,15 @@ bool CMain::Init(int argc, char **argv)
     if (!m_LuaVM.Init())
         return false;
 
+    if (argc >= 3)
+    {
+        if (!strcmp(argv[1], "-c"))
+        {
+            CreateInstall(argv[2]);
+            EndProg();
+        }
+    }
+     
 /*    
     lua_pushnumber(m_pLuaVM, 8.0);
     lua_setglobal(m_pLuaVM, "num");
@@ -90,6 +99,12 @@ bool CMain::Init(int argc, char **argv)
     m_szCurLang = m_Languages.front();
 
     return true;
+}
+
+void CMain::CreateInstall(const char *file)
+{
+    if (!m_LuaVM.LoadFile(file))
+        ThrowError(false, "Error opening lua file!\n");
 }
 
 void CMain::ThrowError(bool dialog, const char *error, ...)

@@ -52,7 +52,7 @@ static const luaL_Reg libtable[] = {
 // -------------------------------------
 
 #ifndef RELEASE
-// Based from example in the book "Programming in Lua"
+// Based from a example in the book "Programming in Lua"
 void CLuaVM::StackDump(const char *msg)
 {
     if (msg)
@@ -85,7 +85,7 @@ void CLuaVM::StackDump(const char *msg)
 }
 #endif
 
-void CLuaVM::PushGlobal(const char *var, const char *tab)
+void CLuaVM::GetGlobal(const char *var, const char *tab)
 {
     if (tab)
     {
@@ -134,10 +134,21 @@ bool CLuaVM::LoadFile(const char *name)
     return true;
 }
 
-void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab)
+void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab, void *data)
 {
     if (!tab)
-        lua_register(m_pLuaState, name, f);
+    {
+//         lua_register(m_pLuaState, name, f);
+        if (data)
+        {
+            lua_pushlightuserdata(m_pLuaState, data);
+            lua_pushcclosure(m_pLuaState, f, 1);
+        }
+        else
+            lua_pushcfunction(m_pLuaState, f);
+        
+        lua_setglobal(m_pLuaState, name);
+    }
     else
     {
         lua_getglobal(m_pLuaState, tab);
@@ -148,7 +159,14 @@ void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab
             lua_newtable(m_pLuaState);
         }
         
-        lua_pushcfunction(m_pLuaState, f);
+        if (data)
+        {
+            lua_pushlightuserdata(m_pLuaState, data);
+            lua_pushcclosure(m_pLuaState, f, 1);
+        }
+        else
+            lua_pushcfunction(m_pLuaState, f);
+        
         lua_setfield(m_pLuaState, -2, name);
         
         lua_setglobal(m_pLuaState, tab);
@@ -205,7 +223,7 @@ void CLuaVM::RegisterString(const char *s, const char *name, const char *tab)
 
 bool CLuaVM::InitCall(const char *func, const char *tab)
 {
-    PushGlobal(func, tab);
+    GetGlobal(func, tab);
         
     if (lua_isnil(m_pLuaState, -1))
     {
@@ -234,12 +252,11 @@ void CLuaVM::DoCall(void)
         fprintf(stderr, "error running function : %s", lua_tostring(m_pLuaState, -1));
     
     m_iPushedArgs = 0;
-    StackDump("After DoCall");
 }
 
 bool CLuaVM::GetNumVar(lua_Number *out, const char *var, const char *tab)
 {
-    PushGlobal(var, tab);
+    GetGlobal(var, tab);
     
     if (lua_isnil(m_pLuaState, -1))
     {
@@ -258,7 +275,7 @@ bool CLuaVM::GetNumVar(lua_Number *out, const char *var, const char *tab)
 
 bool CLuaVM::GetNumVar(lua_Integer *out, const char *var, const char *tab)
 {
-    PushGlobal(var, tab);
+    GetGlobal(var, tab);
     
     if (lua_isnil(m_pLuaState, -1))
     {
@@ -277,7 +294,7 @@ bool CLuaVM::GetNumVar(lua_Integer *out, const char *var, const char *tab)
 
 bool CLuaVM::GetStrVar(std::string *out, const char *var, const char *tab)
 {
-    PushGlobal(var, tab);
+    GetGlobal(var, tab);
     
     if (lua_isnil(m_pLuaState, -1))
     {
@@ -296,7 +313,7 @@ bool CLuaVM::GetStrVar(std::string *out, const char *var, const char *tab)
 
 unsigned CLuaVM::OpenArray(const char *var, const char *tab)
 {
-    PushGlobal(var, tab);
+    GetGlobal(var, tab);
         
     if (lua_isnil(m_pLuaState, -1))
     {
@@ -348,5 +365,44 @@ bool CLuaVM::GetArrayStr(unsigned &index, std::string *out)
 
 void CLuaVM::CloseArray()
 {
+    if (lua_istable(m_pLuaState, -1))
+        lua_pop(m_pLuaState, 1);
+}
+
+void *CLuaVM::GetClosure()
+{
+    return lua_touserdata(m_pLuaState, lua_upvalueindex(1));
+}
+
+bool CLuaVM::GetArgNum(lua_Number *out)
+{
+    bool goodtype = lua_isnumber(m_pLuaState, -1);
+    if (goodtype)
+        *out = lua_tonumber(m_pLuaState, -1);
+    
     lua_pop(m_pLuaState, 1);
+    
+    return (goodtype);
+}
+
+bool CLuaVM::GetArgNum(lua_Integer *out)
+{
+    bool goodtype = lua_isnumber(m_pLuaState, -1);
+    if (goodtype)
+        *out = lua_tointeger(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    return (goodtype);
+}
+
+bool CLuaVM::GetArgStr(std::string *out)
+{
+    bool goodtype = lua_isstring(m_pLuaState, -1);
+    if (goodtype)
+        *out = lua_tostring(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    return (goodtype);
 }
