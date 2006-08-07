@@ -128,11 +128,11 @@ def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "
     context.did_show_result = 1 # Hack, says "Error: No result" otherwise
     return ret
 
-def CheckLinkedLibVersion(context, libname):
+def CheckLinkedLibVersion(context, libname, optlibs=""):
     context.Message('Checking which library version is used for %s...' % libname)
     reallibname = ''
     lastLIBS = context.env['LIBS']
-    context.env['LIBS'] = Split('$LIBS ' + libname)
+    context.env.Append(LIBS = Split("%s %s" % (libname, optlibs)))
     ret = context.TryLink("""
 int main(int argc, char **argv) {
     return 0;
@@ -143,17 +143,31 @@ int main(int argc, char **argv) {
     if not ret:
         context.Result('None')
     else:
-        reallibname = os.popen('ldd %s | grep lib%s' % (context.lastTarget.path, libname), 'r').read()
+        reallibname = os.popen('ldd %s | grep %s' % (context.lastTarget.path, libname), 'r').read()
         ind = 0
         
-        # ldd gives an output like "<lib.so.X> => /lib/lib.so.X.Y" we are only interested in the part before ' =>'
-        try:
-            ind = reallibname.index(" =>")
-        except:
-            context.Result('None')
-        
-        # Get the part before " =>" and strip leading/trailing whitespace
-        reallibname = reallibname[0:ind].strip()
+        if cur_os == "netbsd":
+            try:
+                ind = reallibname.index("=> ")
+            except:
+                context.Result('None')
+            
+            # Get the part after "=> " and strip leading/trailing whitespace
+            #reallibname = reallibname[ind].strip()
+            # Remove the path from the lib
+            ind = reallibname.rfind("/", ind)
+            if ind == -1:
+                context.Result("None")
+            
+            reallibname = reallibname[ind+1:].strip()
+        else:
+            try:
+                ind = reallibname.index(" =>")
+            except:
+                context.Result('None')
+            
+            # Get the part before " =>" and strip leading/trailing whitespace
+            reallibname = reallibname[0:ind].strip()
         context.Result(reallibname)
     
     return reallibname
@@ -312,7 +326,7 @@ if not env.GetOption('clean'):
     if not libc_ver:
         print "Couldn't detect libc version!"
         Exit(1)
-    libstdcpp_ver = conf.CheckLinkedLibVersion('stdc++')
+    libstdcpp_ver = conf.CheckLinkedLibVersion('stdc++', 'm')
     if not libstdcpp_ver:
         print "Couldn't detect libstdc++ version!"
         Exit(1)
