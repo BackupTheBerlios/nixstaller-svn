@@ -112,6 +112,7 @@ void MakeStringList(const char *str, std::vector<char *> &strlist);
 void GetTextFromBlock(std::ifstream &file, std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
+mode_t StrToMode(const char *str);
 
 inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
 inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };
@@ -252,6 +253,7 @@ public:
     static int LuaWritePerm(lua_State *L);
     static int LuaReadPerm(lua_State *L);
     static int LuaIsDir(lua_State *L);
+    static int LuaMKDir(lua_State *L);
 };
     
 class CBaseInstall: virtual public CMain

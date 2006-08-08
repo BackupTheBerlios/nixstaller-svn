@@ -94,6 +94,7 @@ bool CMain::Init(int argc, char **argv)
     m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "io");
     m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "io");
     m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "io");
+    m_LuaVM.RegisterFunction(LuaMKDir, "mkdir", "io");
     
     if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
@@ -444,3 +445,32 @@ int CMain::LuaIsDir(lua_State *L)
     lua_pushboolean(L, ((lstat(file, &st) == 0) && S_ISDIR(st.st_mode)));
     return 1;
 }
+
+int CMain::LuaMKDir(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    const char *modestr = luaL_optstring(L, 2, NULL);
+    bool ignoreumask = lua_toboolean(L, 3);
+    mode_t dirmode, oldumask;
+
+    if (modestr)
+        dirmode = StrToMode(modestr);
+    else
+        dirmode = 0777; // This is the default mode for the mkdir command
+
+    if (ignoreumask)
+        oldumask = umask(0);
+    
+    if (mkdir(file, dirmode)) // Error
+    {
+        lua_pushstring(L, strerror(errno));
+        umask(oldumask);
+        return 1;
+    }
+
+    if (ignoreumask)
+        umask(oldumask);
+
+    return 0;
+}
+

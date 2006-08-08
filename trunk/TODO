@@ -8,7 +8,7 @@ OVERALL
 - Extract temporary files to subdir
 - Language updates: Password screen class, FLTK AppManager
 - Use vasprintf instead of vsprintf whenever possible.
-- Usage of exceptions?
+- Usage of exceptions(StrToMode)
 - GetTranslation - Global or not?
 
 MAIN

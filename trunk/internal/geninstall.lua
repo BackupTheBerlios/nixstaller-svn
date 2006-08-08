@@ -102,3 +102,5 @@ function PrepareArchive()
 end
 
 Init()
+io.mkdir("teste", 777)
+

@@ -302,3 +302,20 @@ std::string GetMD5(const std::string &file)
     fclose(fp);
     return hex_output;
 }
+
+mode_t StrToMode(const char *str)
+{
+    // Code from GNU's coreutils
+    unsigned int octal_value = 0;
+
+    do
+	{
+	  octal_value = 8 * octal_value + *str++ - '0';
+	  if (07777 < octal_value)
+	    return 0; // UNDONE
+	}
+    while ('0' <= *str && *str < '8');
+
+    return octal_value;
+}
+
