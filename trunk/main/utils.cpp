@@ -118,6 +118,19 @@ char *CreateText(const char *s, ...)
     return txt;
 }
 
+// As CreateText, but caller has to free string manually
+char *CreateTmpText(const char *s, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, s);
+    vasprintf(&txt, s, v);
+    va_end(v);
+    
+    return txt;
+}
+
 void FreeStrings()
 {
     debugline("freeing %d strings....\n", StringList.size());
@@ -150,6 +163,16 @@ bool ReadAccess(const char *file)
     
     int check = (S_ISDIR(st.st_mode)) ? (R_OK | X_OK) : (R_OK);
     return (access(file, check) == 0);
+}
+
+bool IsDir(const char *file)
+{
+    struct stat st;
+    
+    if (lstat(file, &st) != 0)
+        return false;
+    
+    return (S_ISDIR(st.st_mode));
 }
 
 // Incase dir does not exist, it will search for the first valid top directory

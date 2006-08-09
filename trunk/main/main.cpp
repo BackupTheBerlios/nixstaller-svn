@@ -36,6 +36,7 @@
 #include <sstream>
 #include <limits>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/types.h>
@@ -95,6 +96,7 @@ bool CMain::Init(int argc, char **argv)
     m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "io");
     m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "io");
     m_LuaVM.RegisterFunction(LuaMKDir, "mkdir", "io");
+    m_LuaVM.RegisterFunction(LuaCPFile, "copy", "io");
     
     if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
@@ -105,19 +107,6 @@ bool CMain::Init(int argc, char **argv)
         }
     }
      
-/*    
-    lua_pushnumber(m_pLuaVM, 8.0);
-    lua_setglobal(m_pLuaVM, "num");
-    
-    lua_newtable(m_pLuaVM);
-    lua_pushnumber(m_pLuaVM, 1);
-    lua_pushstring(m_pLuaVM, "hello world!");
-    lua_settable(m_pLuaVM, -3);
-    lua_pushstring(m_pLuaVM, "f");
-    lua_pushcfunction(m_pLuaVM, f);
-    lua_settable(m_pLuaVM, -3);
-    lua_setglobal(m_pLuaVM, "tab");
-   */ 
     if (!ReadConfig())
         return false;
     
@@ -441,8 +430,7 @@ int CMain::LuaWritePerm(lua_State *L)
 int CMain::LuaIsDir(lua_State *L)
 {
     const char *file = luaL_checkstring(L, 1);
-    struct stat st;
-    lua_pushboolean(L, ((lstat(file, &st) == 0) && S_ISDIR(st.st_mode)));
+    lua_pushboolean(L, IsDir(file));
     return 1;
 }
 
@@ -470,6 +458,112 @@ int CMain::LuaMKDir(lua_State *L)
 
     if (ignoreumask)
         umask(oldumask);
+
+    return 0;
+}
+
+int CMain::LuaCPFile(lua_State *L)
+{
+    std::list<const char *> srcfiles;
+    const char *infile;
+    int in, out;
+    unsigned args = lua_gettop(L);
+     
+    for (unsigned u=1;u<args;u++)
+    {
+        infile = luaL_checkstring(L, u);
+        if (infile)
+            srcfiles.push_back(infile);
+    }
+    
+    char *dest = strdup(luaL_checkstring(L, args));
+    
+    // Strip trailing /'s
+    unsigned len;
+    while(dest && *dest && (dest[(len = strlen(dest))-1] == '/'))
+        dest[len-1] = 0;
+
+    if (srcfiles.empty() || !dest)
+        luaL_error(L, "Bad source/destination files");
+    
+    bool isdir = IsDir(dest);
+    if ((args >= 3) && !isdir)
+    {
+        lua_pushstring(L, "Destination has to be a directory when copying multiple files!");
+        free(dest);
+        return 1;
+    }
+
+    for (std::list<const char *>::iterator it=srcfiles.begin(); it!=srcfiles.end(); it++)
+    {
+        in = open(*it, O_RDONLY);
+        if (in < 0)
+        {
+            lua_pushfstring(L, "Could not open source file %s: %s\n", srcfiles.front(), strerror(errno));
+            free(dest);
+            return 1;
+        }
+       
+        char *destfile = (!isdir) ? dest : CreateTmpText("%s/%s", dest, *it);
+        mode_t flags = O_WRONLY | (FileExists(destfile) ? O_TRUNC : O_CREAT);
+        out = open(destfile, flags);
+
+        if (out < 0)
+        {
+            lua_pushfstring(L, "Could not open destination file %s: %s\n", destfile, strerror(errno));
+            close(in);
+            free(destfile);
+            return 1;
+        }
+        
+        bool goterr = false;
+        char buffer[1024];
+        unsigned size;
+        while((size = read(in, buffer, sizeof(buffer))))
+        {
+            if (size < 0)
+            {
+                lua_pushfstring(L, "Error reading file %s: %s", srcfiles.front(), strerror(errno));
+                goterr = true;
+                break;
+            }
+            
+            if (write(out, buffer, size) < 0)
+            {
+                lua_pushfstring(L, "Error writing to file %s: %s", destfile, strerror(errno));
+                goterr = true;
+                break;
+            }
+        }
+        
+        if (!goterr)
+        {
+            // Copy file permissions
+            struct stat st; 
+            if (fstat(in, &st) != 0)
+            {
+                lua_pushfstring(L, "Could not stat file %s", srcfiles.front());
+                goterr = true;
+            }
+            else
+            {
+                // Disable umask temporary so we can normally copy permissions
+                mode_t mask = umask(0);
+                if (fchmod(out, st.st_mode) != 0)
+                {
+                    lua_pushfstring(L, "Could not chmod destination file %s", destfile);
+                    goterr = true;
+                }
+                umask(mask);
+            }
+        }
+        close(in);
+        close(out);
+        free(destfile);
+
+        if (goterr)
+            return 1;
+    }
 
     return 0;
 }

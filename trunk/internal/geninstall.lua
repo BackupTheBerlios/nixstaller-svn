@@ -102,5 +102,5 @@ function PrepareArchive()
 end
 
 Init()
-io.mkdir("teste", 777)
+print("cp:", io.copy("TODO", "LICENSE", "COPYING", "blh/"))
 

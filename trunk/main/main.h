@@ -97,6 +97,7 @@ extern std::list<char *> StringList; // List of all strings created by CreateTex
 void Intro(void);
 char *CreateText(const char *s, ...);
 inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
+char *CreateTmpText(const char *s, ...);
 void FreeStrings(void);
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
@@ -104,6 +105,7 @@ bool WriteAccess(const char *file);
 inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
 bool ReadAccess(const char *file);
 inline bool ReadAccess(const std::string &file) { return ReadAccess(file.c_str()); };
+bool IsDir(const char *file);
 void *guaranteed_memset(void *v,int c,size_t n);
 void CleanPasswdString(char *str);
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
@@ -254,6 +256,7 @@ public:
     static int LuaReadPerm(lua_State *L);
     static int LuaIsDir(lua_State *L);
     static int LuaMKDir(lua_State *L);
+    static int LuaCPFile(lua_State *L);
 };
     
 class CBaseInstall: virtual public CMain
