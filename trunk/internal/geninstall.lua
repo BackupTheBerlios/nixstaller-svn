@@ -42,14 +42,14 @@ print("current directory:", curdir)
 print("confdir:", confdir)
 print("outname:", outname)
 
-function Traverse(dir, func)
-    dirlist = { dir }
+function TraverseFiles(dir, func)
+    local dirlist = { dir }
     while (#dirlist > 0) do
         local d = table.remove(dirlist) -- pop last element
 
         for f in io.dir(d) do
             local dpath = string.format("%s/%s", d, f)
-            if (io.isdir(dpath)) then
+            if (os.isdir(dpath)) then
                 table.insert(dirlist, dpath)
             else
                 func(d, f)
@@ -58,16 +58,65 @@ function Traverse(dir, func)
     end
 end
 
+function Clean()
+    local newdirlist = { confdir .. "/tmp" }
+    local olddirlist = { }
+    
+    while (#newdirlist > 0) do
+        local d = newdirlist[#newdirlist] -- pop last element
+        local newdir = false
+
+        for f in io.dir(d) do
+            local dpath = string.format("%s/%s", d, f)
+            if (os.isdir(dpath)) then
+                local processed = false
+                for _, o in pairs(olddirlist) do
+                    if (o == dpath) then
+                        processed = true
+                        break
+                    end
+                end
+                
+                if not processed then
+                    table.insert(newdirlist, dpath)
+                    newdir = true
+                    break
+                end
+            else
+                os.remove(dpath)
+            end
+        end
+        
+        if not newdir then
+            local d = table.remove(newdirlist)
+            table.insert(olddirlist, d)
+            os.remove(d)
+        end
+    end
+end
+
+function ThrowError(msg, ...)
+    -- Cleanup...
+    print(debug.traceback())
+    error(string.format(msg .. "\n", ...))
+end
+
 function Init()
+    -- Init all global install configuration files
+    OLDG.languages = { "english" }
+    OLDG.targetos = { os.osname }
+    OLDG.targetarch = { os.arch }
+    OLDG.frontends = { "fltk", "ncurses" }
+    
     -- Strip all trailing /'s
     local _, i = string.find(string.reverse(confdir), "^/+")
     
     if (i) then
-        confdir = string.sub(confdir, 1, (-i- 1))
+        OLDG.confdir = string.sub(confdir, 1, (-i- 1))
     end
     
     if (not string.find(confdir, "^/")) then
-        confdir = curdir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
+        OLDG.confdir = curdir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
     end
     
     dofile(confdir .. "/install.lua")
@@ -92,7 +141,7 @@ function Init()
     end
     
     if (not LZMABin) then
-        error("Could not find a suitable LZMA encoder")
+        ThrowError("Could not find a suitable LZMA encoder")
     end
     
     print("LZMA:", LZMABin)
@@ -101,7 +150,7 @@ end
 function RequiredCopy(src, dest)
     local stat, msg = os.copy(src, dest)
     if (not stat) then
-        err("Error could not copy required file %s: %s", dest, msg)
+        ThrowError("Error could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
     end
 end
         
@@ -125,7 +174,7 @@ function PrepareArchive()
         local langsrc = confdir .. "lang/" .. f
         local langdest = destdir .. "lang/" .. f
         
-        os.mkdirrec(langdir)
+        os.mkdirrec(langdest)
         
         os.copy(langsrc .. "/strings", langdest)
         os.copy(langsrc .. "/welcome", langdest)
@@ -137,15 +186,31 @@ function PrepareArchive()
         for _, ARCH in pairs(targetarch) do
             local tmpdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
             if (not os.fileexists(tmpdir)) then
-                err("No bins for %s/%s", OS, ARCH)
+                ThrowError("No bins for %s/%s", OS, ARCH)
+                
+                for _, FR in pairs(frontends) do
+                    local binname
+                    
+                    if (FR == "fltk")
+                        binname = "fltk"
+                    elseif (FR == "ncurses")
+                        binname = "ncurs"
+                    else
+                        ThrowError("Unknown frontend: %s", FR)
+                    end
+                end
             end
         end
     end
 end
 
 Init()
+PrepareArchive()
+Clean()
 
 print("mkdir:", os.mkdirrec("blh/bl/h"))
 print("cp:", os.copy("TODO", "LICENSE", "COPYING", "blh/"))
 print("chmod:", os.chmod("blh/LICENSE", 555))
+--print("OLDG:"); table.foreach(OLDG, print)
+--print("P:"); table.foreach(P, print)
 

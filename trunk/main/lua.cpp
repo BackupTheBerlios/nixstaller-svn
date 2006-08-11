@@ -43,7 +43,7 @@ static const luaL_Reg libtable[] = {
     { LUA_STRLIBNAME, luaopen_string },
     { LUA_MATHLIBNAME, luaopen_math },
  // { LUA_LOADLIBNAME, luaopen_package }, // Perhaps later
- // { LUA_DBLIBNAME, luaopen_debug }, // No debug
+  { LUA_DBLIBNAME, luaopen_debug }, // No debug
     { NULL, NULL }
 };
     

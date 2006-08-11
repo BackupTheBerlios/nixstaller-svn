@@ -561,12 +561,12 @@ int CMain::LuaCPFile(lua_State *L)
         if (in < 0)
         {
             lua_pushnil(L);
-            lua_pushfstring(L, "Could not open source file %s: %s\n", srcfiles.front(), strerror(errno));
+            lua_pushfstring(L, "Could not open source file %s: %s\n", *it, strerror(errno));
             free(dest);
             return 2;
         }
        
-        char *destfile = (!isdir) ? dest : CreateTmpText("%s/%s", dest, *it);
+        char *destfile = (!isdir) ? dest : CreateTmpText("%s/%s", dest, basename(*it));
         mode_t flags = O_WRONLY | (FileExists(destfile) ? O_TRUNC : O_CREAT);
         out = open(destfile, flags);
 
@@ -633,7 +633,7 @@ int CMain::LuaCPFile(lua_State *L)
     }
 
     lua_pushboolean(L, true);
-    return 0;
+    return 1;
 }
 
 int CMain::LuaCHMod(lua_State *L)
