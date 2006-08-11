@@ -91,12 +91,14 @@ bool CMain::Init(int argc, char **argv)
     m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
     m_LuaVM.RegisterString(m_szOwnDir.c_str(), "curdir");
     m_LuaVM.RegisterFunction(LuaInitDirIter, "dir", "io");
-    m_LuaVM.RegisterFunction(LuaFileExists, "fileexists", "io");
-    m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "io");
-    m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "io");
-    m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "io");
-    m_LuaVM.RegisterFunction(LuaMKDir, "mkdir", "io");
-    m_LuaVM.RegisterFunction(LuaCPFile, "copy", "io");
+    m_LuaVM.RegisterFunction(LuaFileExists, "fileexists", "os");
+    m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "os");
+    m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "os");
+    m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "os");
+    m_LuaVM.RegisterFunction(LuaMKDir, "mkdir", "os");
+    m_LuaVM.RegisterFunction(LuaMKDirRec, "mkdirrec", "os");
+    m_LuaVM.RegisterFunction(LuaCPFile, "copy", "os");
+    m_LuaVM.RegisterFunction(LuaCHMod, "chmod", "os");
     
     if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
@@ -449,17 +451,70 @@ int CMain::LuaMKDir(lua_State *L)
     if (ignoreumask)
         oldumask = umask(0);
     
-    if (mkdir(file, dirmode)) // Error
-    {
-        lua_pushstring(L, strerror(errno));
-        umask(oldumask);
-        return 1;
-    }
-
+    int ret = mkdir(file, dirmode);
+    
     if (ignoreumask)
         umask(oldumask);
 
-    return 0;
+    if (ret != 0)
+    {
+        lua_pushnil(L);
+        lua_pushstring(L, strerror(errno));
+        return 2;
+    }
+
+    lua_pushboolean(L, true);
+    return 1;
+}
+
+int CMain::LuaMKDirRec(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    const char *modestr = luaL_optstring(L, 2, NULL);
+    bool ignoreumask = lua_toboolean(L, 3);
+    mode_t dirmode, oldumask;
+
+    if (modestr)
+        dirmode = StrToMode(modestr);
+    else
+        dirmode = 0777; // This is the default mode for the mkdir command
+
+    if (ignoreumask)
+        oldumask = umask(0);
+    
+    size_t len = strlen(file), u = 0;
+    while (true)
+    {
+        // Don't check if first char is '/', since that should exist anyway
+        if ((u && (file[u] == '/')) || (u == (len-1)))
+        {
+            char tmp[u+2];
+            strncpy(tmp, file, u+1);
+            tmp[u+1] = 0;
+            if (!FileExists(tmp))
+            {
+                if (mkdir(tmp, dirmode) != 0)
+                {
+                    if (ignoreumask)
+                        umask(oldumask);
+
+                    lua_pushnil(L);
+                    lua_pushfstring(L, "Could not create directory %s: %s", tmp, strerror(errno));
+                    return 2;
+                }
+            }
+        }
+        u++;
+        
+        if (u == len)
+            break;
+    }
+    
+    if (ignoreumask)
+        umask(oldumask);
+
+    lua_pushboolean(L, true);
+    return 1;
 }
 
 int CMain::LuaCPFile(lua_State *L)
@@ -477,11 +532,15 @@ int CMain::LuaCPFile(lua_State *L)
     }
     
     char *dest = strdup(luaL_checkstring(L, args));
+    // UNDONE: Check if dest is NULL
     
     // Strip trailing /'s
-    unsigned len;
-    while(dest && *dest && (dest[(len = strlen(dest))-1] == '/'))
+    unsigned len = strlen(dest);
+    while(dest && *dest && (dest[len-1] == '/'))
+    {
         dest[len-1] = 0;
+        len--;
+    }
 
     if (srcfiles.empty() || !dest)
         luaL_error(L, "Bad source/destination files");
@@ -489,9 +548,11 @@ int CMain::LuaCPFile(lua_State *L)
     bool isdir = IsDir(dest);
     if ((args >= 3) && !isdir)
     {
-        lua_pushstring(L, "Destination has to be a directory when copying multiple files!");
         free(dest);
-        return 1;
+        if (!FileExists(dest))
+            luaL_error(L, "Destination directory does not exist!");
+        else
+            luaL_error(L, "Destination has to be a directory when copying multiple files!");
     }
 
     for (std::list<const char *>::iterator it=srcfiles.begin(); it!=srcfiles.end(); it++)
@@ -499,9 +560,10 @@ int CMain::LuaCPFile(lua_State *L)
         in = open(*it, O_RDONLY);
         if (in < 0)
         {
+            lua_pushnil(L);
             lua_pushfstring(L, "Could not open source file %s: %s\n", srcfiles.front(), strerror(errno));
             free(dest);
-            return 1;
+            return 2;
         }
        
         char *destfile = (!isdir) ? dest : CreateTmpText("%s/%s", dest, *it);
@@ -510,10 +572,11 @@ int CMain::LuaCPFile(lua_State *L)
 
         if (out < 0)
         {
+            lua_pushnil(L);
             lua_pushfstring(L, "Could not open destination file %s: %s\n", destfile, strerror(errno));
             close(in);
             free(destfile);
-            return 1;
+            return 2;
         }
         
         bool goterr = false;
@@ -523,6 +586,7 @@ int CMain::LuaCPFile(lua_State *L)
         {
             if (size < 0)
             {
+                lua_pushnil(L);
                 lua_pushfstring(L, "Error reading file %s: %s", srcfiles.front(), strerror(errno));
                 goterr = true;
                 break;
@@ -530,6 +594,7 @@ int CMain::LuaCPFile(lua_State *L)
             
             if (write(out, buffer, size) < 0)
             {
+                lua_pushnil(L);
                 lua_pushfstring(L, "Error writing to file %s: %s", destfile, strerror(errno));
                 goterr = true;
                 break;
@@ -542,6 +607,7 @@ int CMain::LuaCPFile(lua_State *L)
             struct stat st; 
             if (fstat(in, &st) != 0)
             {
+                lua_pushnil(L);
                 lua_pushfstring(L, "Could not stat file %s", srcfiles.front());
                 goterr = true;
             }
@@ -551,6 +617,7 @@ int CMain::LuaCPFile(lua_State *L)
                 mode_t mask = umask(0);
                 if (fchmod(out, st.st_mode) != 0)
                 {
+                    lua_pushnil(L);
                     lua_pushfstring(L, "Could not chmod destination file %s", destfile);
                     goterr = true;
                 }
@@ -562,9 +629,26 @@ int CMain::LuaCPFile(lua_State *L)
         free(destfile);
 
         if (goterr)
-            return 1;
+            return 2;
     }
 
+    lua_pushboolean(L, true);
     return 0;
 }
 
+int CMain::LuaCHMod(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    const char *modestr = luaL_checkstring(L, 2);
+    mode_t fmode = StrToMode(modestr);
+    
+    if (chmod(file, fmode) != 0)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not chmod file %s: %s\n", file);
+        return 2;
+    }
+    
+    lua_pushboolean(L, true);
+    return 1;
+}

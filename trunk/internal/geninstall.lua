@@ -76,7 +76,7 @@ function Init()
     local LCDirs = { } -- List containing all libc subdirectories for this system
     local binpath = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
     for s in io.dir(binpath) do
-        if (string.find(s, "^libc") and io.isdir(binpath .. "/" .. s)) then
+        if (string.find(s, "^libc") and os.isdir(binpath .. "/" .. s)) then
             table.insert(LCDirs, s)
         end
     end
@@ -86,7 +86,7 @@ function Init()
     for _, s in ipairs(LCDirs) do
         -- Check if we can a bin from the directory
         local bin = binpath .. "/" .. s .. "/lzma"
-        if (io.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin))) then
+        if (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin))) then
             LZMABin = bin
         end
     end
@@ -98,9 +98,54 @@ function Init()
     print("LZMA:", LZMABin)
 end
 
+function RequiredCopy(src, dest)
+    local stat, msg = os.copy(src, dest)
+    if (not stat) then
+        err("Error could not copy required file %s: %s", dest, msg)
+    end
+end
+        
+-- Creates directory layout for installer archive
 function PrepareArchive()
+    local destdir = confdir .. "/tmp/config"
+    os.mkdirrec(destdir)
+    
+    -- Configuration files
+    RequiredCopy(confdir .. "/install.lua", destdir)
+    os.copy(confdir .. "/welcome", destdir)
+    os.copy(confdir .. "/license", destdir)
+    os.copy(confdir .. "/finish", destdir)
+
+    -- Some internal stuff
+    RequiredCopy(curdir .. "/internal/startupinstaller.sh", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/internal/about", confdir .. "/tmp")
+    
+    -- Language files
+    for _, f in pairs(languages) do
+        local langsrc = confdir .. "lang/" .. f
+        local langdest = destdir .. "lang/" .. f
+        
+        os.mkdirrec(langdir)
+        
+        os.copy(langsrc .. "/strings", langdest)
+        os.copy(langsrc .. "/welcome", langdest)
+        os.copy(langsrc .. "/license", langdest)
+        os.copy(langsrc .. "/finish", langdest)
+    end
+    
+    for _, OS in pairs(targetos) do
+        for _, ARCH in pairs(targetarch) do
+            local tmpdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
+            if (not os.fileexists(tmpdir)) then
+                err("No bins for %s/%s", OS, ARCH)
+            end
+        end
+    end
 end
 
 Init()
-print("cp:", io.copy("TODO", "LICENSE", "COPYING", "blh/"))
+
+print("mkdir:", os.mkdirrec("blh/bl/h"))
+print("cp:", os.copy("TODO", "LICENSE", "COPYING", "blh/"))
+print("chmod:", os.chmod("blh/LICENSE", 555))
 

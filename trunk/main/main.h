@@ -256,7 +256,9 @@ public:
     static int LuaReadPerm(lua_State *L);
     static int LuaIsDir(lua_State *L);
     static int LuaMKDir(lua_State *L);
+    static int LuaMKDirRec(lua_State *L);
     static int LuaCPFile(lua_State *L);
+    static int LuaCHMod(lua_State *L);
 };
     
 class CBaseInstall: virtual public CMain
