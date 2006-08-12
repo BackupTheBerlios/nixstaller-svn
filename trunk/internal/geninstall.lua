@@ -101,6 +101,27 @@ function ThrowError(msg, ...)
     error(string.format(msg .. "\n", ...))
 end
 
+function RequiredCopy(src, dest)
+    local stat, msg = os.copy(src, dest)
+    if (not stat) then
+        ThrowError("Error could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
+    end
+end
+
+function PackDirectory(dir, file)
+    local olddir = os.getcwd()
+    os.chdir(dir)
+    
+    local dirlist = { "." }
+        while (#dirlist) do
+            local subdir = table.remove(dirlist) -- pop
+            for f in io.dir(subdir) do
+                -- ...
+            end
+        end
+    end
+end
+    
 function Init()
     -- Init all global install configuration files
     OLDG.languages = { "english" }
@@ -148,13 +169,6 @@ function Init()
     print("LZMA:", LZMABin)
 end
 
-function RequiredCopy(src, dest)
-    local stat, msg = os.copy(src, dest)
-    if (not stat) then
-        ThrowError("Error could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
-    end
-end
-        
 -- Creates directory layout for installer archive
 function PrepareArchive()
     local destdir = confdir .. "/tmp/config"

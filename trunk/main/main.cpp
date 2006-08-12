@@ -99,6 +99,8 @@ bool CMain::Init(int argc, char **argv)
     m_LuaVM.RegisterFunction(LuaMKDirRec, "mkdirrec", "os");
     m_LuaVM.RegisterFunction(LuaCPFile, "copy", "os");
     m_LuaVM.RegisterFunction(LuaCHMod, "chmod", "os");
+    m_LuaVM.RegisterFunction(LuaGetCWD, "getcwd", "os");
+    m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
     
     if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
@@ -646,6 +648,34 @@ int CMain::LuaCHMod(lua_State *L)
     {
         lua_pushnil(L);
         lua_pushfstring(L, "Could not chmod file %s: %s\n", file);
+        return 2;
+    }
+    
+    lua_pushboolean(L, true);
+    return 1;
+}
+
+int CMain::LuaGetCWD(lua_State *L)
+{
+    char curdir[1024];
+    if (getcwd(curdir, sizeof(curdir)) == 0)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not get current directory: %s", strerror(errno));
+        return 2;
+    }
+    
+    lua_pushboolean(L, true);
+    return 1;
+}
+
+int CMain::LuaCHDir(lua_State *L)
+{
+    const char *dir = luaL_checkstring(L, 1);
+    if (chdir(dir) != 0)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not change current directory: %s", strerror(errno));
         return 2;
     }
     

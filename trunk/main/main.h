@@ -259,6 +259,8 @@ public:
     static int LuaMKDirRec(lua_State *L);
     static int LuaCPFile(lua_State *L);
     static int LuaCHMod(lua_State *L);
+    static int LuaGetCWD(lua_State *L);
+    static int LuaCHDir(lua_State *L);
 };
     
 class CBaseInstall: virtual public CMain
