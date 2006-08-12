@@ -107,6 +107,7 @@ function Init()
     OLDG.targetos = { os.osname }
     OLDG.targetarch = { os.arch }
     OLDG.frontends = { "fltk", "ncurses" }
+    OLDG.archivetype = "lzma"
     
     -- Strip all trailing /'s
     local _, i = string.find(string.reverse(confdir), "^/+")
@@ -171,8 +172,8 @@ function PrepareArchive()
     
     -- Language files
     for _, f in pairs(languages) do
-        local langsrc = confdir .. "lang/" .. f
-        local langdest = destdir .. "lang/" .. f
+        local langsrc = confdir .. "/lang/" .. f
+        local langdest = destdir .. "/lang/" .. f
         
         os.mkdirrec(langdest)
         
@@ -182,35 +183,73 @@ function PrepareArchive()
         os.copy(langsrc .. "/finish", langdest)
     end
     
+    -- Copy all specified frontends for every given OS/ARCH and every availiable libc/libstdc++ version
     for _, OS in pairs(targetos) do
         for _, ARCH in pairs(targetarch) do
             local tmpdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
             if (not os.fileexists(tmpdir)) then
                 ThrowError("No bins for %s/%s", OS, ARCH)
-                
-                for _, FR in pairs(frontends) do
-                    local binname
-                    
-                    if (FR == "fltk")
-                        binname = "fltk"
-                    elseif (FR == "ncurses")
-                        binname = "ncurs"
-                    else
-                        ThrowError("Unknown frontend: %s", FR)
+            end
+            
+            for LC in io.dir(tmpdir) do
+                local lcpath = tmpdir .. "/" .. LC
+                if (string.find(LC, "^libc") and os.isdir(lcpath)) then
+                    for LCPP in io.dir(lcpath) do
+                        local lcpppath = lcpath .. "/" .. LCPP
+                        if (string.find(LCPP, "^libstdc++") and os.isdir(lcpppath)) then
+                            for _, FR in pairs(frontends) do
+                                local frfound = false
+                                local binname
+                                
+                                if (FR == "fltk") then
+                                    binname = "fltk"
+                                elseif (FR == "ncurses") then
+                                    binname = "ncurs"
+                                else
+                                    ThrowError("Unknown frontend: %s", FR)
+                                end
+                                
+                                binpath = string.format("%s/%s", lcpppath, binname)
+                                if os.fileexists(binpath) then
+                                    local destpath = string.format("%s/tmp/bin/%s/%s/%s/%s", confdir, OS, ARCH, LC, LCPP)
+                                    os.mkdirrec(destpath)
+                                    if (archivetype == "lzma") then
+                                        if os.execute(string.format("%s e %s %s/%s.lzma 2>&1 >/dev/null", LZMABin,
+                                                      binpath, destpath, binname)) == 0 then
+                                            frfound = true
+                                        end
+                                    else
+                                        if os.copy(binpath, destpath) ~= nil then
+                                            frfound = true
+                                        end
+                                    end
+                                end
+                                
+                                if not frfound then
+                                    print(string.format("Warning: no frontend '%s' found for %s/%s/%s/%s", binname, OS,
+                                          ARCH, LC, LCPP))
+                                end
+                            end
+                        end
+                    end
+                    if (archivetype == "lzma") then
+                        RequiredCopy(lcpath .. "/lzma-decode", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
                     end
                 end
             end
+        end
+    end
+    
+    -- Intro picture
+    if intropic ~= nil then
+        ret, msg = os.copy(string.format("%s/%s %s/tmp/", curdir, intropic, confdir))
+        if ret == nil then
+            print(string.format("Warning could not copy intro picture: %s", msg))
         end
     end
 end
 
 Init()
 PrepareArchive()
-Clean()
-
-print("mkdir:", os.mkdirrec("blh/bl/h"))
-print("cp:", os.copy("TODO", "LICENSE", "COPYING", "blh/"))
-print("chmod:", os.chmod("blh/LICENSE", 555))
---print("OLDG:"); table.foreach(OLDG, print)
---print("P:"); table.foreach(P, print)
+--Clean()
 
