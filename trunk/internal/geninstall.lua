@@ -110,16 +110,40 @@ end
 
 function PackDirectory(dir, file)
     local olddir = os.getcwd()
-    os.chdir(dir)
+    local dirlist = { "." } -- Directories to process
+    local files = { } -- Files that should be packed
+    local sizesfile, msg = io.open(file .. ".sizes", "w")
     
-    local dirlist = { "." }
-        while (#dirlist) do
-            local subdir = table.remove(dirlist) -- pop
-            for f in io.dir(subdir) do
-                -- ...
+    if sizesfile == nil then
+        ThrowError("Could not create sizes file for archive %s: %s", file, msg)
+    end
+    
+    os.chdir(dir)
+
+    while (#dirlist > 0) do
+        local subdir = table.remove(dirlist) -- pop
+        for f in io.dir(subdir) do
+            local dpath = string.format("%s/%s", subdir, f)
+            if (os.isdir(dpath)) then
+                table.insert(dirlist, dpath)
+            else
+                table.insert(files, dpath)
+                --print(string.format("Packing %s", dpath))
+                local fsize, msg = os.filesize(dpath)
+                if fsize == nil then
+                    ThrowError("Could not get file size: %s", msg)
+                end
+                
+                local ret, msg = sizesfile:write(fsize, " ", dpath, "\n")
+                if ret == nil then
+                    ThrowError("Could not write to size file for archive %s: %s", file, msg)
+                end
             end
         end
     end
+    
+    sizesfile:close()
+    os.chdir(olddir)
 end
     
 function Init()
@@ -128,7 +152,7 @@ function Init()
     OLDG.targetos = { os.osname }
     OLDG.targetarch = { os.arch }
     OLDG.frontends = { "fltk", "ncurses" }
-    OLDG.archivetype = "lzma"
+    OLDG.archivetype = "gzip"
     
     -- Strip all trailing /'s
     local _, i = string.find(string.reverse(confdir), "^/+")
@@ -152,7 +176,8 @@ function Init()
         end
     end
     
-    table.sort(LCDirs, function(a, b) return a > b end) -- Sort in reverse order, this way we start with binaries which use the highest libc version
+    -- Sort in reverse order, this way we start with binaries which use the highest libc version
+    table.sort(LCDirs, function(a, b) return a > b end)
     
     for _, s in ipairs(LCDirs) do
         -- Check if we can a bin from the directory
@@ -263,7 +288,22 @@ function PrepareArchive()
     end
 end
 
+function CreateArchive()
+    local src, dest
+    local basename = "instarchive"
+
+    print("Generating archive...")
+    
+    -- Platform indepent files
+    src = confdir .. "/files_all"
+    dest = string.format("%s/tmp/%s_all", confdir, basename)
+    if os.isdir(src) then
+        PackDirectory(src, dest)
+    end
+end
+
 Init()
 PrepareArchive()
+CreateArchive()
 --Clean()
 

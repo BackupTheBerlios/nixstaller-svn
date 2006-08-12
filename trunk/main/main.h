@@ -261,6 +261,7 @@ public:
     static int LuaCHMod(lua_State *L);
     static int LuaGetCWD(lua_State *L);
     static int LuaCHDir(lua_State *L);
+    static int LuaGetFileSize(lua_State *L);
 };
     
 class CBaseInstall: virtual public CMain

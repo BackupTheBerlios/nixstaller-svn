@@ -101,6 +101,7 @@ bool CMain::Init(int argc, char **argv)
     m_LuaVM.RegisterFunction(LuaCHMod, "chmod", "os");
     m_LuaVM.RegisterFunction(LuaGetCWD, "getcwd", "os");
     m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
+    m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
     
     if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
@@ -665,7 +666,7 @@ int CMain::LuaGetCWD(lua_State *L)
         return 2;
     }
     
-    lua_pushboolean(L, true);
+    lua_pushstring(L, curdir);
     return 1;
 }
 
@@ -680,5 +681,21 @@ int CMain::LuaCHDir(lua_State *L)
     }
     
     lua_pushboolean(L, true);
+    return 1;
+}
+
+int CMain::LuaGetFileSize(lua_State *L)
+{
+    const char *file = luaL_checkstring(L, 1);
+    struct stat st;
+    
+    if (lstat(file, &st) != 0)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not stat file %s: %s", file, strerror(errno));
+        return 2;
+    }
+    
+    lua_pushnumber(L, st.st_size);
     return 1;
 }

@@ -57,17 +57,6 @@ CBaseInstall::~CBaseInstall()
     }
 }
 
-int f(lua_State *) { printf("f() is being called :-)\n"); return 0; }
-int fh(lua_State *) { printf("fh() is being called :-)\n"); return 0; }
-
-int cc(lua_State *L)
-{
-    const char *secretmsg = static_cast<const char *>(lua_touserdata(L, lua_upvalueindex(1)));
-    printf("msg: %s\n", secretmsg);
-    
-    return 0;
-}
-
 bool CBaseInstall::Init(int argc, char **argv)
 {   
     m_szBinDir = dirname(argv[0]);
@@ -75,46 +64,8 @@ bool CBaseInstall::Init(int argc, char **argv)
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
-    
-    m_LuaVM.RegisterFunction(f, "f", "mytab");
-    m_LuaVM.RegisterFunction(fh, "fh", "mytab");
-    //m_LuaVM.RegisterFunction(cc, "cc", "mytab", (void *)"Howdy");
-    m_LuaVM.RegisterNumber(5, "someval");
-    m_LuaVM.RegisterNumber(6, "someval", "mytab");
-    m_LuaVM.RegisterString("hey", "somestr");
-    m_LuaVM.RegisterString("bye", "somestr", "mytab");
-    
     if (!m_LuaVM.LoadFile("config/install.lua"))
         return false;
-    
-    if (m_LuaVM.InitCall("Install", "mytab"))
-    {
-        m_LuaVM.PushArg(5);
-        m_LuaVM.PushArg("55");
-        m_LuaVM.DoCall();
-    }
-
-    int var;
-    std::string str;
-    
-    unsigned count = m_LuaVM.OpenArray("numtab"), n;
-    for (n=1;n<=count;n++)
-    {
-        m_LuaVM.GetArrayNum(n, &var);
-        printf("num[%d] = %d\n", n, var);
-    }
-    m_LuaVM.CloseArray();
-    
-    count = m_LuaVM.OpenArray("strtab");
-    for (n=1;n<=count;n++)
-    {
-        m_LuaVM.GetArrayStr(n, &str);
-        printf("str[%d] = %s\n", n, str.c_str());
-    }
-    m_LuaVM.CloseArray();
-
-    m_LuaVM.GetNumVar(&var, "someval", "mytab"); printf("var: %d\n", var);
-    m_LuaVM.GetStrVar(&str, "dummystr"); printf("dummy: %s\n", str.c_str());
     
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = m_szOwnDir;
