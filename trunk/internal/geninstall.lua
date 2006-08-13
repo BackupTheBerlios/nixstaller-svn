@@ -36,28 +36,6 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
     
-print("OS:", os.osname)
-print("ARCH:", os.arch)
-print("current directory:", curdir)
-print("confdir:", confdir)
-print("outname:", outname)
-
-function TraverseFiles(dir, func)
-    local dirlist = { dir }
-    while (#dirlist > 0) do
-        local d = table.remove(dirlist) -- pop last element
-
-        for f in io.dir(d) do
-            local dpath = string.format("%s/%s", d, f)
-            if (os.isdir(dpath)) then
-                table.insert(dirlist, dpath)
-            else
-                func(d, f)
-            end
-        end
-    end
-end
-
 function Clean()
     local newdirlist = { confdir .. "/tmp" }
     local olddirlist = { }
@@ -111,13 +89,20 @@ end
 function PackDirectory(dir, file)
     local olddir = os.getcwd()
     local dirlist = { "." } -- Directories to process
-    local files = { } -- Files that should be packed
+    
     local sizesfile, msg = io.open(file .. ".sizes", "w")
     
     if sizesfile == nil then
         ThrowError("Could not create sizes file for archive %s: %s", file, msg)
     end
     
+    local tarlistfname = file .. ".list"
+    local tarlistfile, msg = io.open(tarlistfname, "w")
+    
+    if tarlistfile == nil then
+        ThrowError("Could not create temporary file-list file for archive %s: %s", file, msg)
+    end
+
     os.chdir(dir)
 
     while (#dirlist > 0) do
@@ -127,8 +112,6 @@ function PackDirectory(dir, file)
             if (os.isdir(dpath)) then
                 table.insert(dirlist, dpath)
             else
-                table.insert(files, dpath)
-                --print(string.format("Packing %s", dpath))
                 local fsize, msg = os.filesize(dpath)
                 if fsize == nil then
                     ThrowError("Could not get file size: %s", msg)
@@ -138,14 +121,44 @@ function PackDirectory(dir, file)
                 if ret == nil then
                     ThrowError("Could not write to size file for archive %s: %s", file, msg)
                 end
+                
+                ret, msg = tarlistfile:write(dpath, "\n")
+                if ret == nil then
+                    ThrowError("Could not write to temporary file-list file for archive %s: %s", file, msg)
+                end
             end
         end
     end
     
     sizesfile:close()
+    tarlistfile:close()
+    
+    -- Tar all files from the temp list file. Note that solaris(sunos) tar uses -I instead of -T used by other
+    -- systems as list file option
+    os.execute(string.format("tar c %s %s -f %s.tmp", (os.osname == "sunos") and "-I" or "-T", tarlistfname, file))
+    
+    if archivetype == "gzip" then
+        os.execute(string.format("gzip -c9 %s.tmp > %s", file, file))
+    elseif archivetype == "bzip2" then
+        os.execute(string.format("cat %s.tmp | bzip2 -9 > %s", file, file)) -- Use cat so that bzip won't append ".bz2" to filename
+    elseif archivetype == "lzma" then
+        os.execute(string.format("%s e %s.tmp %s", LZMABin, file, file))
+    end
+    
+    os.remove(tarlistfname)
+    os.remove(file .. ".tmp")
     os.chdir(olddir)
 end
-    
+
+-- Don't use this for large tables :)
+function StrPack(tab)
+    local ret
+    for _, s in pairs(tab) do
+        ret = (ret == nil) and s or ret .. " " .. s
+    end
+    return ret
+end
+
 function Init()
     -- Init all global install configuration files
     OLDG.languages = { "english" }
@@ -190,8 +203,19 @@ function Init()
     if (not LZMABin) then
         ThrowError("Could not find a suitable LZMA encoder")
     end
-    
-    print("LZMA:", LZMABin)
+print(string.format([[
+Configuration:
+---------------------------------
+Installer name: %s
+            OS: %s
+         Archs: %s
+  Archive type: %s
+     Languages: %s
+    Config dir: %s
+     Frontends: %s
+     Intro pic: %s
+---------------------------------
+]], outname, StrPack(targetos), StrPack(targetarch), archivetype, StrPack(languages), confdir, StrPack(frontends), intropic or "None"))
 end
 
 -- Creates directory layout for installer archive
@@ -300,10 +324,31 @@ function CreateArchive()
     if os.isdir(src) then
         PackDirectory(src, dest)
     end
+    
+    -- Pack every OS/ARCH dependent file
+    for _, OS in pairs(targetos) do
+        local archname = string.format("%s/files_%s_all", confdir, OS) 
+        if os.isdir(archname) then
+            PackDirectory(archname, string.format("%s/tmp/%s_%s", confdir, basename, OS))
+        end
+        
+        for _, ARCH in pairs(targetarch) do
+            archname = string.format("%s/files_%s_%s", confdir, OS, ARCH) 
+            if os.isdir(archname) then
+                PackDirectory(archname, string.format("%s/tmp/%s_%s_%s", confdir, basename, OS, ARCH))
+            end
+        end
+    end
+end
+
+function CreateInstaller()
+    print("Generating installer...")
+    os.execute(string.format("%s/makeself.sh --gzip %s/tmp %s/%s \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1",
+                             curdir, confdir, curdir, outname))
 end
 
 Init()
 PrepareArchive()
 CreateArchive()
---Clean()
-
+CreateInstaller()
+Clean()
