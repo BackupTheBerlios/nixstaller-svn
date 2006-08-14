@@ -41,6 +41,7 @@
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <libgen.h>
 
 #include "main.h"
 
@@ -577,7 +578,7 @@ int CMain::LuaCPFile(lua_State *L)
             return 2;
         }
        
-        char *destfile = (!isdir) ? dest : CreateTmpText("%s/%s", dest, basename(*it));
+        char *destfile = (!isdir) ? dest : CreateTmpText("%s/%s", dest, basename(((char *)*it)));
         mode_t flags = O_WRONLY | (FileExists(destfile) ? O_TRUNC : O_CREAT);
         out = open(destfile, flags);
 
