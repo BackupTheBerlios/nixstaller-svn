@@ -64,9 +64,11 @@ bool CBaseInstall::Init(int argc, char **argv)
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
-    if (!m_LuaVM.LoadFile("config/install.lua"))
+    if (!m_LuaVM.LoadFile("config/config.lua"))
         return false;
     
+    m_LuaVM.LoadFile("config/run.lua");
+
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = m_szOwnDir;
     else if (m_InstallInfo.dest_dir_type == DEST_SELECT)

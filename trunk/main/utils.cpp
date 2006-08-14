@@ -333,9 +333,9 @@ mode_t StrToMode(const char *str)
 
     do
     {
-    octal_value = 8 * octal_value + *str++ - '0';
-    if (07777 < octal_value)
-        return 0; // UNDONE
+        octal_value = 8 * octal_value + *str++ - '0';
+        if (07777 < octal_value)
+            return 0; // UNDONE
     }
     while ('0' <= *str && *str < '8');
 

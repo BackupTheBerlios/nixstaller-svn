@@ -171,7 +171,7 @@ function Init()
         OLDG.confdir = curdir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
     end
     
-    dofile(confdir .. "/install.lua")
+    dofile(confdir .. "/config.lua")
     
     -- Find a LZMA bin which we can use
     local LCDirs = { } -- List containing all libc subdirectories for this system
