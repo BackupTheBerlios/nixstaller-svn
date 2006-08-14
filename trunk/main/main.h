@@ -161,6 +161,9 @@ public:
     bool GetArrayStr(unsigned &index, char *out);
     void CloseArray(void);
     
+    void SetArrayNum(lua_Number n, const char *tab, int index);
+    void SetArrayStr(const char *s, const char *tab, int index);
+
     void *GetClosure(void);
     bool GetArgNum(lua_Number *out);
     bool GetArgNum(lua_Integer *out);

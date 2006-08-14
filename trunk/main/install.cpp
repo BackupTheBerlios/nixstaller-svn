@@ -344,6 +344,7 @@ void CBaseInstall::UpdateStatus(const char *s)
 
 bool CBaseInstall::ReadConfig()
 {
+    return true;
     const int maxread = std::numeric_limits<std::streamsize>::max();
     std::ifstream file("config/install.cfg");
     std::string str, line, tmp, ParamName;

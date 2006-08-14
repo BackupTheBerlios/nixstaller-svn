@@ -142,7 +142,7 @@ function PackDirectory(dir, file)
     elseif archivetype == "bzip2" then
         os.execute(string.format("cat %s.tmp | bzip2 -9 > %s", file, file)) -- Use cat so that bzip won't append ".bz2" to filename
     elseif archivetype == "lzma" then
-        os.execute(string.format("%s e %s.tmp %s", LZMABin, file, file))
+        os.execute(string.format("%s e %s.tmp %s 2>/dev/null", LZMABin, file, file))
     end
     
     os.remove(tarlistfname)
@@ -160,13 +160,6 @@ function StrPack(tab)
 end
 
 function Init()
-    -- Init all global install configuration files
-    OLDG.languages = { "english" }
-    OLDG.targetos = { os.osname }
-    OLDG.targetarch = { os.arch }
-    OLDG.frontends = { "fltk", "ncurses" }
-    OLDG.archivetype = "gzip"
-    
     -- Strip all trailing /'s
     local _, i = string.find(string.reverse(confdir), "^/+")
     
@@ -277,7 +270,7 @@ function PrepareArchive()
                                     local destpath = string.format("%s/tmp/bin/%s/%s/%s/%s", confdir, OS, ARCH, LC, LCPP)
                                     os.mkdirrec(destpath)
                                     if (archivetype == "lzma") then
-                                        if os.execute(string.format("%s e %s %s/%s.lzma 2>&1 >/dev/null", LZMABin,
+                                        if os.execute(string.format("%s e %s %s/%s.lzma 2>/dev/null", LZMABin,
                                                       binpath, destpath, binname)) == 0 then
                                             frfound = true
                                         end

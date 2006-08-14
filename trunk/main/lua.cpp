@@ -373,3 +373,34 @@ void *CLuaVM::GetClosure()
 {
     return lua_touserdata(m_pLuaState, lua_upvalueindex(1));
 }
+
+void CLuaVM::SetArrayNum(lua_Number n, const char *tab, int index)
+{
+    lua_getglobal(m_pLuaState, tab);
+
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        lua_newtable(m_pLuaState);
+    }
+
+    lua_pushnumber(m_pLuaState, n);
+    lua_rawseti(m_pLuaState, -2, index);
+    lua_setglobal(m_pLuaState, tab);
+}
+
+void CLuaVM::SetArrayStr(const char *s, const char *tab, int index)
+{
+    lua_getglobal(m_pLuaState, tab);
+
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        lua_newtable(m_pLuaState);
+    }
+
+    lua_pushstring(m_pLuaState, s);
+    lua_rawseti(m_pLuaState, -2, index);
+    lua_setglobal(m_pLuaState, tab);
+}
+

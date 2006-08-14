@@ -103,6 +103,14 @@ bool CMain::Init(int argc, char **argv)
     m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
     m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
     
+    // Set some default values for config variabeles
+    m_LuaVM.SetArrayStr("english", "languages", 1);
+    m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1);
+    m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1);
+    m_LuaVM.SetArrayStr("fltk", "frontends", 1);
+    m_LuaVM.SetArrayStr("ncurses", "frontends", 2);
+    m_LuaVM.RegisterString("gzip", "archivetype");
+    
     if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
         if (!strcmp(argv[1], "-c"))
@@ -133,7 +141,7 @@ void CMain::CreateInstall(int argc, char **argv)
     m_LuaVM.RegisterString(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
     
     if (!m_LuaVM.LoadFile(argv[2]))
-        ThrowError(false, "Error opening lua file!\n");
+        ThrowError(false, "\nError parsing lua file!\n");
 }
 
 void CMain::ThrowError(bool dialog, const char *error, ...)
