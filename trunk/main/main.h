@@ -161,6 +161,27 @@ public:
     bool GetArrayStr(unsigned &index, char *out);
     void CloseArray(void);
     
+    void InitClass(const char *name, lua_CFunction gc=NULL, void *gcdata=NULL);
+    template <typename C> void CreateClass(C val, const char *type)
+    {
+        C *ud = (C *)lua_newuserdata(m_pLuaState, sizeof(C));
+        *ud = val;
+    
+        luaL_getmetatable(m_pLuaState, type);
+        lua_setmetatable(m_pLuaState, -2);
+    }
+    template <typename C> C CheckClass(const char *type, int index=-1)
+    {
+        luaL_checktype(m_pLuaState, index, LUA_TUSERDATA);
+        C *val = (C *)luaL_checkudata(m_pLuaState, index, type);
+        if (!val)
+            luaL_typerror(m_pLuaState, index, type);
+        else if (!(*val))
+            luaL_error(m_pLuaState, "Got a NULL value for class %s", type);
+    
+        return *val;
+    }
+    
     void SetArrayNum(lua_Number n, const char *tab, int index);
     void SetArrayStr(const char *s, const char *tab, int index);
 
@@ -267,73 +288,7 @@ public:
     static int LuaGetFileSize(lua_State *L);
 };
     
-class CBaseInstall: virtual public CMain
-{
-    int m_iTotalArchSize;
-    float m_fExtrPercent;
-    std::map<char *, arch_size_entry_s> m_ArchList;
-    std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
-    char *m_szCurArchFName;
-    bool m_bAlwaysRoot; // If we need root access during whole installation
-    short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
-    short m_sCurrentStep;
-    float m_fInstallProgress;
-     
-    void SetNextStep(void);
-    void InitArchive(char *archname);
-    void ExtractFiles(void);
-    void ExecuteInstCommands(void);
-    
-    // App register stuff
-    void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
-    void WriteRegEntry(const char *entry, const std::string &field, std::ofstream &file);
-    void CalcSums(void);
-    void RegisterInstall(void);
-    bool IsInstalled(bool checkver);
-    
-protected:
-    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) = 0;
-    virtual void AddInstOutput(const std::string &str) = 0;
-    virtual void SetProgress(int percent) = 0;
-    
-    virtual bool ReadConfig(void);
-    
-public:
-    install_info_s m_InstallInfo;
-    std::string m_szDestDir, m_szBinDir;
-
-    
-    CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
-    virtual ~CBaseInstall(void);
-    
-    virtual bool Init(int argc, char **argv);
-    virtual void Install(void);
-    
-    const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_szOwnDir.c_str()); };
-    const char *GetLangWelcomeFName(void)
-    { return CreateText("%s/config/lang/%s/welcome", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
-    const char *GetLicenseFName(void) { return CreateText("%s/config/license", m_szOwnDir.c_str()); };
-    const char *GetLangLicenseFName(void)
-    { return CreateText("%s/config/lang/%s/license", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
-    const char *GetFinishFName(void) { return CreateText("%s/config/finish", m_szOwnDir.c_str()); };
-    const char *GetLangFinishFName(void)
-    { return CreateText("%s/config/lang/%s/finish", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
-    const char *GetIntroPicFName(void)
-    { return CreateText("%s/%s", m_szOwnDir.c_str(), m_InstallInfo.intropicname.c_str()); };
-    
-    param_entry_s *GetParamByName(std::string str);
-    param_entry_s *GetParamByVar(std::string str);
-    const char *GetParamDefault(param_entry_s *pParam);
-    const char *GetParamValue(param_entry_s *pParam);
-    std::string GetParameters(command_entry_s *pCommandEntry);
-    
-    void UpdateStatus(const char *s);
-    
-    static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };
-    
-    // Functions for lua binding
-};
+#include "install.h"
 
 class CBaseAppManager: virtual public CMain
 {

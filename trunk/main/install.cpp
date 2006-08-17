@@ -64,10 +64,14 @@ bool CBaseInstall::Init(int argc, char **argv)
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
+    m_LuaVM.InitClass("cfgscreen", LuaGCCFGScreen, (void *)this);
+    m_LuaVM.InitClass("inputfield");
+    m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, (void *)this);
+    
     if (!m_LuaVM.LoadFile("config/config.lua"))
         return false;
     
-    m_LuaVM.LoadFile("config/run.lua");
+    m_LuaVM.LoadFile("config/run.lua"); // UNDONE(Error checking)
 
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = m_szOwnDir;
@@ -762,9 +766,24 @@ std::string CBaseInstall::GetParameters(command_entry_s *pCommandEntry)
                 args += " " + param;
                 break;
             case PTYPE_BOOL:
-                if (it->second->value == "true") args += " " + it->second->parameter;
+                if (it->second->value == "true")
+                    args += " " + it->second->parameter;
                 break;
         }
     }
     return args;
+}
+
+int CBaseInstall::LuaNewCFGScreen(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    const char *name = (lua_gettop(L) >= 1) ? luaL_checkstring(L, 1) : NULL;
+    pInstaller->m_LuaVM.CreateClass<CBaseInstallScreen *>(pInstaller->CreateCFGScreen(name), "cfgscreen");
+}
+
+int CBaseInstall::LuaGCCFGScreen(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    delete pInstaller->m_LuaVM.CheckClass<CBaseInstallScreen *>("cfgscreen", 1);
+    return 0;
 }

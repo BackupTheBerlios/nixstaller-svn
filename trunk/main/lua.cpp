@@ -374,19 +374,34 @@ void *CLuaVM::GetClosure()
     return lua_touserdata(m_pLuaState, lua_upvalueindex(1));
 }
 
-void CLuaVM::SetArrayNum(lua_Number n, const char *tab, int index)
+void CLuaVM::InitClass(const char *name, lua_CFunction gc, void *gcdata)
 {
-    lua_getglobal(m_pLuaState, tab);
-
-    if (lua_isnil(m_pLuaState, -1))
+    luaL_newmetatable(m_pLuaState, name);
+    
+    lua_pushstring(m_pLuaState, "__index");
+    lua_pushvalue(m_pLuaState, -2);
+    lua_settable(m_pLuaState, -3); // __index = metatable
+    
+    lua_pushstring(m_pLuaState, "__metatable");
+    lua_pushvalue(m_pLuaState, -2);
+    lua_settable(m_pLuaState, -3); // hide metatable
+    
+    if (gc)
     {
-        lua_pop(m_pLuaState, 1);
-        lua_newtable(m_pLuaState);
+        lua_pushstring(m_pLuaState, "__gc");
+        
+        if (gcdata)
+        {
+            lua_pushlightuserdata(m_pLuaState, gcdata);
+            lua_pushcclosure(m_pLuaState, gc, 1);
+        }
+        else
+            lua_pushcfunction(m_pLuaState, gc);
+        
+        lua_settable(m_pLuaState, -3);
     }
-
-    lua_pushnumber(m_pLuaState, n);
-    lua_rawseti(m_pLuaState, -2, index);
-    lua_setglobal(m_pLuaState, tab);
+    
+    lua_pop(m_pLuaState, 1);
 }
 
 void CLuaVM::SetArrayStr(const char *s, const char *tab, int index)
