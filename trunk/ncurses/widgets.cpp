@@ -896,7 +896,7 @@ void CWidgetManager::RemoveChild(CWidgetWindow *p)
 
 void CWidgetManager::ActivateChild(CWidgetWindow *p)
 {
-    if (m_ChildList.back() == p)
+    if (m_ChildList.back() != p)
     { 
         for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
         {

@@ -139,11 +139,31 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
+bool CInstaller::InitLua()
+{
+    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+    
+    m_LuaVM.InitClass("welcomescreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(new CWelcomeScreen(this, h, w, y, x), "welcomescreen", "WelcomeScreen");
+    
+    m_LuaVM.InitClass("licensescreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(new CLicenseScreen(this, h, w, y, x), "licensescreen", "LicenseScreen");
+
+    m_LuaVM.InitClass("selectdirscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(new CSelectDirScreen(this, h, w, y, x), "selectdirscreen", "SelectDirScreen");
+
+/*    m_LuaVM.InitClass("installscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(new CLangScreen(this, h, w, y, x), "installscreen", "InstallScreen");*/
+    
+/*    m_LuaVM.InitClass("finishscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(new CLangScreen(this, h, w, y, x), "finishscreen", "FinishScreen");*/
+    
+    if (!CBaseInstall::InitLua())
+        return false;
+}
+
 bool CInstaller::Init(int argc, char **argv)
 {
-    if (!CBaseInstall::Init(argc, argv))
-        return false;
-    
     SetTitle("Nixstaller");
     
     // Button width; longest text + 4 chars for focusing
@@ -153,13 +173,43 @@ bool CInstaller::Init(int argc, char **argv)
     m_pPrevButton = new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r');
     m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
     
-    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+    if (!CBaseInstall::Init(argc, argv))
+        return false;
     
+    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
     m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
-    m_InstallScreens.push_back(new CWelcomeScreen(this, h, w, y, x));
-    m_InstallScreens.push_back(new CLicenseScreen(this, h, w, y, x));
-    m_InstallScreens.push_back(new CSelectDirScreen(this, h, w, y, x));
-    m_InstallScreens.push_back(new CSetParamsScreen(this, h, w, y, x));
+
+    unsigned count = m_LuaVM.OpenArray("ScreenList");
+    debugline("Count : %d\n", count);
+    if (!count)
+    {
+        m_InstallScreens.push_back(new CWelcomeScreen(this, h, w, y, x));
+        m_InstallScreens.push_back(new CLicenseScreen(this, h, w, y, x));
+        m_InstallScreens.push_back(new CSelectDirScreen(this, h, w, y, x));
+    }
+    else
+    {
+        for (unsigned u=1; u<=count; u++)
+        {
+            CBaseScreen *screen = NULL;
+            CBaseCFGScreen *cfgscreen = NULL;
+            if (m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "welcomescreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "licensescreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "selectdirscreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "installscreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "finishscreen") ||
+                m_LuaVM.GetArrayClass<CBaseCFGScreen *>(u, &cfgscreen, "cfgscreen"))
+            {
+                if (screen)
+                    m_InstallScreens.push_back(screen);
+                else if (cfgscreen)
+                    m_InstallScreens.push_back((CCFGScreen *)cfgscreen);
+            }
+            else
+                ThrowError(false, "Wrong type found in ScreenList variabale");
+        }
+        m_LuaVM.CloseArray();
+    }
     
     bool initscreen = true;
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
@@ -175,6 +225,18 @@ bool CInstaller::Init(int argc, char **argv)
     }
     
     return true;
+}
+
+CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
+{
+    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+    CCFGScreen *screen = new CCFGScreen(this, h, w, y, x);
+    screen->Enable(false);
+    
+    if (title)
+        screen->SetTitle(CreateText("<C>%s", title));
+    
+    return screen;
 }
 
 // -------------------------------------
@@ -372,11 +434,13 @@ bool CSelectDirScreen::Next()
 // Configuring parameters screen
 // -------------------------------------
 
-bool CSetParamsScreen::HandleEvent(CWidgetHandler *p, int type)
+bool CCFGScreen::HandleEvent(CWidgetHandler *p, int type)
 {
     return false;
 }
 
-void CSetParamsScreen::DrawInit()
+void CCFGScreen::DrawInit()
 {
+    if (!m_szTitle.empty())
+        SetInfo(m_szTitle.c_str());
 }

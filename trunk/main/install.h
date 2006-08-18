@@ -32,7 +32,7 @@
     this exception.
 */
 
-class CBaseInstallScreen;
+class CBaseCFGScreen;
 
 class CBaseInstall: virtual public CMain
 {
@@ -63,6 +63,7 @@ protected:
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
 
+    virtual bool InitLua(void);
     virtual bool ReadConfig(void);
 
 public:
@@ -71,7 +72,7 @@ public:
 
 
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-    m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
+                         m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
     virtual ~CBaseInstall(void);
 
     virtual bool Init(int argc, char **argv);
@@ -97,7 +98,7 @@ public:
 
     void UpdateStatus(const char *s);
 
-    virtual CBaseInstallScreen *CreateCFGScreen(const char *title) { };
+    virtual CBaseCFGScreen *CreateCFGScreen(const char *title) = 0;
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };
 
@@ -112,10 +113,10 @@ public:
     const char *GetValue(void);
 };
 
-class CBaseInstallScreen
+class CBaseCFGScreen
 {
 public:
-    virtual ~CBaseInstallScreen(void) { };
+    virtual ~CBaseCFGScreen(void) { };
     
     virtual CLuaInputField *CreateInputField(const char *label, const char *desc, const char *val) { };
 };

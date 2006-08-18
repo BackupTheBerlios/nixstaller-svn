@@ -64,15 +64,6 @@ bool CBaseInstall::Init(int argc, char **argv)
     if (!CMain::Init(argc, argv)) // Init main, will also read config files
         return false;
     
-    m_LuaVM.InitClass("cfgscreen", LuaGCCFGScreen, (void *)this);
-    m_LuaVM.InitClass("inputfield");
-    m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, (void *)this);
-    
-    if (!m_LuaVM.LoadFile("config/config.lua"))
-        return false;
-    
-    m_LuaVM.LoadFile("config/run.lua"); // UNDONE(Error checking)
-
     if (m_InstallInfo.dest_dir_type == DEST_TEMP)
         m_szDestDir = m_szOwnDir;
     else if (m_InstallInfo.dest_dir_type == DEST_SELECT)
@@ -346,6 +337,24 @@ void CBaseInstall::UpdateStatus(const char *s)
 
     AddInstOutput("Extracting file: " + stat + '\n');
     SetProgress(m_fExtrPercent/(float)m_sInstallSteps);
+}
+
+bool CBaseInstall::InitLua()
+{
+    if (!CMain::InitLua())
+        return false;
+    
+    m_LuaVM.InitClass("cfgscreen", LuaGCCFGScreen, (void *)this);
+    m_LuaVM.InitClass("inputfield");
+    m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, (void *)this);
+    
+    if (!m_LuaVM.LoadFile("config/config.lua"))
+        return false;
+    
+    if (FileExists("config/run.lua"))
+        return m_LuaVM.LoadFile("config/run.lua");
+    
+    return true;
 }
 
 bool CBaseInstall::ReadConfig()
@@ -778,12 +787,13 @@ int CBaseInstall::LuaNewCFGScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     const char *name = (lua_gettop(L) >= 1) ? luaL_checkstring(L, 1) : NULL;
-    pInstaller->m_LuaVM.CreateClass<CBaseInstallScreen *>(pInstaller->CreateCFGScreen(name), "cfgscreen");
+    pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen *>(pInstaller->CreateCFGScreen(name), "cfgscreen");
+    return 1;
 }
 
 int CBaseInstall::LuaGCCFGScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
-    delete pInstaller->m_LuaVM.CheckClass<CBaseInstallScreen *>("cfgscreen", 1);
+    delete pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
     return 0;
 }

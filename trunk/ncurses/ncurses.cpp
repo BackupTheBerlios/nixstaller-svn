@@ -65,8 +65,7 @@ int main(int argc, char **argv)
     // Init
     if (!pInterface->Init(argc, argv))
     {
-        printf("Error: Init failed, aborting\n"); // UNDONE
-        return 1;
+        pInterface->ThrowError(false, "Error: Init failed, aborting\n"); // UNDONE
     }
 
     pWidgetManager->Refresh();

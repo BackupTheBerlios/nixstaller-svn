@@ -142,6 +142,7 @@ public:
     virtual bool Init(int argc, char **argv);
     virtual void Install(void);
     virtual void UpdateLanguage(void);
+    virtual CBaseCFGScreen *CreateCFGScreen(const char *title) { };
     
     void Prev(void);
     void Next(void);

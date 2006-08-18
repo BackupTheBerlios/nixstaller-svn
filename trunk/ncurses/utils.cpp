@@ -265,7 +265,7 @@ void debugline(const char *t, ...)
         endwin(); // Disable ncurses mode
     
     printf("DEBUG: %s", txt);
-    //FILE *f=fopen("log.txt", "a");fprintf(f, txt);fclose(f);
+    FILE *f=fopen("log.txt", "a");fprintf(f, txt);fclose(f);
     fflush(stdout);
     
     if (!plain)

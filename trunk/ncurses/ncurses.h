@@ -105,12 +105,15 @@ protected:
     virtual bool HandleKey(chtype ch);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
+    virtual bool InitLua(void);
+    
 public:
     bool m_bInstallFiles;
     
     CInstaller(CWidgetManager *owner) : CNCursBase(owner), m_bInstallFiles(false) { };
     
     virtual bool Init(int argc, char **argv);
+    virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
 };
 
 // -------------------------
@@ -201,15 +204,19 @@ public:
     virtual bool Next(void);
 };
 
-class CSetParamsScreen: public CBaseScreen
+class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 {
+    std::string m_szTitle;
+    
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     virtual void DrawInit(void);
 
 public:
-    CSetParamsScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
-                     int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+    CCFGScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+               int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+    
+    void SetTitle(const char *s) { m_szTitle = s; };
 };
 
 extern CWidgetManager *pWidgetManager;

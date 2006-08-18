@@ -56,7 +56,7 @@ static const luaL_Reg libtable[] = {
 void CLuaVM::StackDump(const char *msg)
 {
     if (msg)
-        printf(msg);
+        debugline(msg);
     
     int i;
     int top = lua_gettop(m_pLuaState);
@@ -67,21 +67,21 @@ void CLuaVM::StackDump(const char *msg)
         switch (t)
         {
             case LUA_TSTRING:  /* strings */
-                printf("`%s'", lua_tostring(m_pLuaState, i));
+                debugline("`%s'", lua_tostring(m_pLuaState, i));
                 break;
             case LUA_TBOOLEAN:  /* booleans */
-                printf(lua_toboolean(m_pLuaState, i) ? "true" : "false");
+                debugline(lua_toboolean(m_pLuaState, i) ? "true" : "false");
                 break;
             case LUA_TNUMBER:  /* numbers */
-                printf("%g", lua_tonumber(m_pLuaState, i));
+                debugline("%g", lua_tonumber(m_pLuaState, i));
                 break;
             default:  /* other values */
-                printf("%s", lua_typename(m_pLuaState, t));
+                debugline("%s", lua_typename(m_pLuaState, t));
                 break;
         }
-        printf("  ");  /* put a separator */
+        debugline("  ");  /* put a separator */
     }
-    printf("\n");  /* end the listing */
+    debugline("\n");  /* end the listing */
 }
 #endif
 
@@ -128,7 +128,7 @@ bool CLuaVM::LoadFile(const char *name)
         if (!errmsg)
             errmsg = "Unknown error!";
         //ThrowError(false, "While parsing %s: %s", name, errmsg);
-        fprintf(stderr, "While parsing %s: %s", name, errmsg);
+        fprintf(stderr, "While parsing %s: %s\n", name, errmsg);
         return false;
     }
     return true;
@@ -138,7 +138,6 @@ void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab
 {
     if (!tab)
     {
-//         lua_register(m_pLuaState, name, f);
         if (data)
         {
             lua_pushlightuserdata(m_pLuaState, data);

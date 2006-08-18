@@ -64,10 +64,6 @@ CMain::~CMain()
 
 bool CMain::Init(int argc, char **argv)
 {
-    // Initialize lua
-    if (!m_LuaVM.Init())
-        return false;
-
     // Get current OS and cpu arch name
     struct utsname inf;
     if (uname(&inf) == -1)
@@ -87,30 +83,12 @@ bool CMain::Init(int argc, char **argv)
 
     m_szOwnDir = curdir;
     
-    // Register some globals for lua
-    m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
-    m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
-    m_LuaVM.RegisterString(m_szOwnDir.c_str(), "curdir");
-    m_LuaVM.RegisterFunction(LuaInitDirIter, "dir", "io");
-    m_LuaVM.RegisterFunction(LuaFileExists, "fileexists", "os");
-    m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "os");
-    m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "os");
-    m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "os");
-    m_LuaVM.RegisterFunction(LuaMKDir, "mkdir", "os");
-    m_LuaVM.RegisterFunction(LuaMKDirRec, "mkdirrec", "os");
-    m_LuaVM.RegisterFunction(LuaCPFile, "copy", "os");
-    m_LuaVM.RegisterFunction(LuaCHMod, "chmod", "os");
-    m_LuaVM.RegisterFunction(LuaGetCWD, "getcwd", "os");
-    m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
-    m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
-    
-    // Set some default values for config variabeles
-    m_LuaVM.SetArrayStr("english", "languages", 1);
-    m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1);
-    m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1);
-    m_LuaVM.SetArrayStr("fltk", "frontends", 1);
-    m_LuaVM.SetArrayStr("ncurses", "frontends", 2);
-    m_LuaVM.RegisterString("gzip", "archivetype");
+    // Initialize lua
+    if (!m_LuaVM.Init())
+        return false;
+
+    if (!InitLua())
+        return false;
     
     if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
@@ -368,6 +346,36 @@ const char *CMain::GetSumListFile(const char *progname)
     if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
         ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
     return CreateText("%s/list", dir);
+}
+
+bool CMain::InitLua()
+{
+    // Register some globals for lua
+    m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
+    m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
+    m_LuaVM.RegisterString(m_szOwnDir.c_str(), "curdir");
+    m_LuaVM.RegisterFunction(LuaInitDirIter, "dir", "io");
+    m_LuaVM.RegisterFunction(LuaFileExists, "fileexists", "os");
+    m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "os");
+    m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "os");
+    m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "os");
+    m_LuaVM.RegisterFunction(LuaMKDir, "mkdir", "os");
+    m_LuaVM.RegisterFunction(LuaMKDirRec, "mkdirrec", "os");
+    m_LuaVM.RegisterFunction(LuaCPFile, "copy", "os");
+    m_LuaVM.RegisterFunction(LuaCHMod, "chmod", "os");
+    m_LuaVM.RegisterFunction(LuaGetCWD, "getcwd", "os");
+    m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
+    m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
+    
+    // Set some default values for config variabeles
+    m_LuaVM.SetArrayStr("english", "languages", 1);
+    m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1);
+    m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1);
+    m_LuaVM.SetArrayStr("fltk", "frontends", 1);
+    m_LuaVM.SetArrayStr("ncurses", "frontends", 2);
+    m_LuaVM.RegisterString("gzip", "archivetype");
+    
+    return true;
 }
 
 // Directory iter functions. Based on examples from "Programming in lua"
