@@ -59,7 +59,7 @@ CMain::~CMain()
             delete [] (*p).second;
     }
     
-    FreeStrings();    
+    FreeStrings();
 }
 
 bool CMain::Init(int argc, char **argv)

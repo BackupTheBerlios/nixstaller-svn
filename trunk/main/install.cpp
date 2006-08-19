@@ -352,6 +352,8 @@ bool CBaseInstall::InitLua()
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddInput, "AddInput", this);
     
     m_LuaVM.InitClass("inputfield");
+    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "Get", this);
+    
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
     
     if (!m_LuaVM.LoadFile("config/config.lua"))
@@ -813,4 +815,16 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
     screen->CreateInputField(desc, label, val, maxc);
     
     return 0;
+}
+
+// -------------------------------------
+// Base Lua Inputfield Class
+// -------------------------------------
+
+int CBaseLuaInputField::LuaGet(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaInputField *field = pInstaller->m_LuaVM.CheckClass<CBaseLuaInputField *>("inputfield", 1);
+    lua_pushstring(L, field->GetValue());
+    return 1;
 }

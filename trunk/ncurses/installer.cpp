@@ -209,7 +209,17 @@ bool CInstaller::Init(int argc, char **argv)
                 if (screen)
                     m_InstallScreens.push_back(screen);
                 else if (cfgscreen)
-                    m_InstallScreens.push_back((CCFGScreen *)cfgscreen);
+                {
+                    CCFGScreen *p = (CCFGScreen *)cfgscreen;
+                    
+                    m_InstallScreens.push_back(p);
+
+                    while (p && p->m_pNextScreen)
+                    {
+                        m_InstallScreens.push_back(p->m_pNextScreen);
+                        p = p->m_pNextScreen;
+                    }
+                }
             }
             else
                 ThrowError(false, "Wrong type found in ScreenList variabale");
@@ -483,5 +493,17 @@ void CCFGScreen::DrawInit()
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
 {
-    return new CLuaInputField(this, 2, 2, width()-2, label, desc, val, max);
+    int h = CLuaInputField::CalcHeight(label, desc);
+    
+    if ((h + m_iStartY) < height())
+    {
+        CLuaInputField *field = new CLuaInputField(this, m_iStartY, 2, width()-2, label, desc, val, max);
+        m_iStartY += (h + 1);
+        return field;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+    return m_pNextScreen->CreateInputField(label, desc, val, max);
 }

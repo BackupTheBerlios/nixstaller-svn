@@ -134,7 +134,7 @@ public:
     
     virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
     
-    static int GetHeight(void) { return 3; };
+    static int CalcHeight(const char *label, const char *desc) { return (desc && *desc) ? 2 : 1; };
 };
 
 // -------------------------
@@ -228,6 +228,10 @@ public:
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 {
     std::string m_szTitle;
+    int m_iStartY;
+    CCFGScreen *m_pNextScreen; 
+    
+    friend class CInstaller;
     
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
@@ -235,7 +239,7 @@ protected:
 
 public:
     CCFGScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
-               int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+               int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x), m_iStartY(2), m_pNextScreen(NULL) { };
     
     void SetTitle(const char *s) { m_szTitle = s; };
     

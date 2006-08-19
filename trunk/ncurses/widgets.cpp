@@ -1931,11 +1931,8 @@ CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_
 void CInputField::Addch(chtype ch)
 {
     if ((m_iMaxChars != -1) && (m_szText.length() >= m_iMaxChars))
-    {
-        debugline("key: %c\nmax: %d\n", ch, m_iMaxChars);
-
         return;
-    }
+
     unsigned pos = m_iScrollOffset + m_iCursorPos;
     if (pos == m_szText.length())
         m_szText += ch;
