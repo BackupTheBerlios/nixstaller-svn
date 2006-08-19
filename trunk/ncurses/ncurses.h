@@ -87,12 +87,20 @@ public:
 };
 
 class CBaseScreen;
+class CWelcomeScreen;
+class CLicenseScreen;
+class CSelectDirScreen;
+class CCFGScreen;
 
 class CInstaller: public CNCursBase, public CBaseInstall
 {
     CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
     std::list<CBaseScreen *> m_InstallScreens;
     std::list<CBaseScreen *>::iterator m_CurrentScreenIt;
+    
+    CWelcomeScreen *m_pWelcomeScreen;
+    CLicenseScreen *m_pLicenseScreen;
+    CSelectDirScreen *m_pSelectDirScreen;
     
     void Prev(void);
     void Next(void);
@@ -114,6 +122,19 @@ public:
     
     virtual bool Init(int argc, char **argv);
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
+};
+
+class CLuaInputField: public CBaseLuaInputField
+{
+    int m_iMaxX, m_iMaxY;
+    CInputField *m_pInput;
+    
+public:
+    CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const char *label, const char *desc, const char *val, int max);
+    
+    virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
+    
+    static int GetHeight(void) { return 3; };
 };
 
 // -------------------------
@@ -217,6 +238,8 @@ public:
                int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
     
     void SetTitle(const char *s) { m_szTitle = s; };
+    
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
 };
 
 extern CWidgetManager *pWidgetManager;

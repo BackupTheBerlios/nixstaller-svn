@@ -58,6 +58,8 @@ class CBaseInstall: virtual public CMain
     void RegisterInstall(void);
     bool IsInstalled(bool checkver);
     
+    friend class CBaseCFGScreen;
+
 protected:
     virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
@@ -106,10 +108,11 @@ public:
     static int LuaNewCFGScreen(lua_State *L);
 };
 
-class CLuaInputField
+class CBaseLuaInputField
 {
 public:
-    const char *GetValue(void);
+    virtual ~CBaseLuaInputField(void) { };
+    virtual const char *GetValue(void) = 0;
 };
 
 class CBaseCFGScreen
@@ -117,5 +120,7 @@ class CBaseCFGScreen
 public:
     virtual ~CBaseCFGScreen(void) { };
     
-    virtual CLuaInputField *CreateInputField(const char *label, const char *desc, const char *val) { };
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max) = 0;
+    
+    static int LuaAddInput(lua_State *L);
 };

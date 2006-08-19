@@ -141,16 +141,14 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
 
 bool CInstaller::InitLua()
 {
-    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
-    
     m_LuaVM.InitClass("welcomescreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(new CWelcomeScreen(this, h, w, y, x), "welcomescreen", "WelcomeScreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pWelcomeScreen, "welcomescreen", "WelcomeScreen");
     
     m_LuaVM.InitClass("licensescreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(new CLicenseScreen(this, h, w, y, x), "licensescreen", "LicenseScreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pLicenseScreen, "licensescreen", "LicenseScreen");
 
     m_LuaVM.InitClass("selectdirscreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(new CSelectDirScreen(this, h, w, y, x), "selectdirscreen", "SelectDirScreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pSelectDirScreen, "selectdirscreen", "SelectDirScreen");
 
 /*    m_LuaVM.InitClass("installscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(new CLangScreen(this, h, w, y, x), "installscreen", "InstallScreen");*/
@@ -175,19 +173,25 @@ bool CInstaller::Init(int argc, char **argv)
     m_pPrevButton = new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r');
     m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
     
+    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+
+    m_pWelcomeScreen = new CWelcomeScreen(this, h, w, y, x);
+    m_pLicenseScreen = new CLicenseScreen(this, h, w, y, x);
+    m_pSelectDirScreen = new CSelectDirScreen(this, h, w, y, x);
+    
     if (!CBaseInstall::Init(argc, argv))
         return false;
     
-    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
     m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
 
     unsigned count = m_LuaVM.OpenArray("ScreenList");
     debugline("Count : %d\n", count);
     if (!count)
     {
-        m_InstallScreens.push_back(new CWelcomeScreen(this, h, w, y, x));
-        m_InstallScreens.push_back(new CLicenseScreen(this, h, w, y, x));
-        m_InstallScreens.push_back(new CSelectDirScreen(this, h, w, y, x));
+        // Default install screens
+        m_InstallScreens.push_back(m_pWelcomeScreen);
+        m_InstallScreens.push_back(m_pLicenseScreen);
+        m_InstallScreens.push_back(m_pSelectDirScreen);
     }
     else
     {
@@ -242,7 +246,38 @@ CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 }
 
 // -------------------------------------
-// Installer base class
+// Lua inputfield class
+// -------------------------------------
+
+CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const char *label,
+                               const char *desc, const char *val, int max)
+{
+    int begy = y, begx = x, fieldw = maxx - begx;
+    
+    if (desc && *desc)
+    {
+        CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, begx, 'r');
+        pDesc->AddText(desc);
+        begy += pDesc->height();
+    }
+    
+    if (label && *label)
+    {
+        unsigned w = Min(strlen(label), maxx/3); 
+        CTextLabel *pLabel = new CTextLabel(owner, 2, w, begy, begx, 'r');
+        pLabel->AddText(label);
+        begx += (pLabel->width() + 1);
+        fieldw -= (pLabel->width() + 1);
+    }
+    
+    m_pInput = new CInputField(owner, 1, fieldw, begy, begx, 'r', max);
+    
+    if (val)
+        m_pInput->SetText(val);
+}
+
+// -------------------------------------
+// Installer base screen class
 // -------------------------------------
 
 void CBaseScreen::SetInfo(const char *text)
@@ -412,11 +447,10 @@ void CSelectDirScreen::DrawInit()
     
     int y = (height()-3)/2;
     int w = width() - (buttonw + 2);
-    m_pFileField = new CInputField(this, 3, w, y, 0, 'r', 1024);
+    m_pFileField = new CInputField(this, 1, w, y, 0, 'r', 1024);
     m_pFileField->SetText(m_pInstaller->m_szDestDir.c_str());
     
-    y++;
-    m_pChangeDirButton = new CButton(this, 1, buttonw, y, w+2, "Select a directory", 'r');
+    m_pChangeDirButton = new CButton(this, 1, buttonw, y, w+2, "<C>Select a directory", 'r');
 }
 
 bool CSelectDirScreen::Next()
@@ -445,4 +479,9 @@ void CCFGScreen::DrawInit()
 {
     if (!m_szTitle.empty())
         SetInfo(m_szTitle.c_str());
+}
+
+CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
+{
+    return new CLuaInputField(this, 2, 2, width()-2, label, desc, val, max);
 }

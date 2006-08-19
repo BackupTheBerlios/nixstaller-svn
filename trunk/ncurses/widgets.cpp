@@ -691,7 +691,6 @@ bool CWidgetHandler::SetNextWidget(bool rec)
             {
                 (*prev)->LeaveFocus();
                 (*it)->Focus();
-                debugline("Activated next widget %d of %d\n", (std::distance(m_ChildList.begin(), it)+1), m_ChildList.size());
                 m_FocusedChild = it;
             }
             return true;
@@ -726,7 +725,6 @@ bool CWidgetHandler::SetPrevWidget(bool rec)
             {
                 (*prev)->LeaveFocus();
                 (*it)->Focus();
-                debugline("Activated prev widget %d of %d\n", (std::distance(m_ChildList.begin(), it)+1), m_ChildList.size());
                 m_FocusedChild = it;
             }
             return true;
@@ -855,8 +853,8 @@ void CWidgetManager::Init()
     CMenu::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CMenu::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 
-    CInputField::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
-    CInputField::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    CInputField::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_RED) | A_BOLD;
+    CInputField::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_RED) | A_BOLD;
     
     CProgressbar::m_cDefaultFillColors = ' ' | CWidgetWindow::GetColorPair(COLOR_BLUE, COLOR_WHITE) | A_BOLD;
     CProgressbar::m_cDefaultEmptyColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
@@ -1012,7 +1010,6 @@ bool CWidgetManager::SetNextChildWidget()
             {
                 (*prev)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
-                debugline("Activated next c widget(%s) %d of %d\n", typeid(*cur).name(), (std::distance((*m_FocusedChild)->m_ChildList.begin(), cur)+1), (*m_FocusedChild)->m_ChildList.size());
                 (*cur)->Focus();
             }
             return true;
@@ -1047,7 +1044,6 @@ bool CWidgetManager::SetPrevChildWidget()
             {
                 (*prev)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
-                debugline("Activated prev c widget(%s) %d of %d\n", typeid(*cur).name(), (std::distance((*m_FocusedChild)->m_ChildList.begin(), cur)+1), (*m_FocusedChild)->m_ChildList.size());
                 (*cur)->Focus();
             }
             return true;
@@ -1925,19 +1921,21 @@ chtype CInputField::m_cDefaultDefocusedColors;
 
 CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
                          int max, chtype out) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x,
-                                                              absrel, true, true, m_cDefaultFocusedColors,
+                                                              absrel, false, true, m_cDefaultFocusedColors,
                                                               m_cDefaultDefocusedColors),
                                                 m_chOutChar(out), m_iMaxChars(max), m_iCursorPos(0),
                                                 m_iScrollOffset(0)
 {
-    m_pOutputWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
 }
 
 void CInputField::Addch(chtype ch)
 {
-    if ((!m_iMaxChars != -1) && (m_szText.length() >= m_iMaxChars))
+    if ((m_iMaxChars != -1) && (m_szText.length() >= m_iMaxChars))
+    {
+        debugline("key: %c\nmax: %d\n", ch, m_iMaxChars);
+
         return;
-    
+    }
     unsigned pos = m_iScrollOffset + m_iCursorPos;
     if (pos == m_szText.length())
         m_szText += ch;
@@ -1972,7 +1970,7 @@ void CInputField::Delch(bool backspace)
 
 void CInputField::MoveCursor(int n, bool relative)
 {
-    int w = (m_pOutputWin->width()-1); // -1, because we want to scroll before char is at last available position
+    int w = width()-1; // -1, because we want to scroll before char is at last available position
     
     if (relative)
         m_iCursorPos += n;
@@ -2012,7 +2010,7 @@ void CInputField::Focus()
 {
     CWidgetWindow::Focus();
     curs_set(1);
-    SetCursorPos(m_pOutputWin->begy(), m_pOutputWin->begx()+m_iCursorPos);
+    SetCursorPos(begy(), begx()+m_iCursorPos);
 }
 
 bool CInputField::HandleKey(chtype ch)
@@ -2067,20 +2065,22 @@ bool CInputField::HandleKey(chtype ch)
 
 void CInputField::Draw()
 {
-    m_pOutputWin->erase();
+    erase();
+
+    std::string out;
 
     if (!m_szText.empty())
     {
         if (m_chOutChar)
-        {
-            std::string str(m_szText.length(), m_chOutChar);
-            m_pOutputWin->AddStrFormat(0, 0, str.c_str(), m_iScrollOffset, m_pOutputWin->width());
-        }
+            out.append(m_szText.length(), m_chOutChar);
         else
-            m_pOutputWin->AddStrFormat(0, 0, m_szText.c_str(), m_iScrollOffset, m_pOutputWin->width());
+            out = m_szText;
     }
     
-    SetCursorPos(m_pOutputWin->begy(), m_pOutputWin->begx() + m_iCursorPos);
+    out.append(width(), '_');
+    AddStrFormat(0, 0, out.c_str(), m_iScrollOffset, width());
+
+    SetCursorPos(begy(), begx() + m_iCursorPos);
 }
 
 // -------------------------------------
@@ -2338,8 +2338,8 @@ CInputDialog::CInputDialog(CWidgetManager *owner, int maxlines, int ncols, int b
                                        m_bSecure(sec)
 {
     char out = (sec) ? '*' : 0;
-    int y = (m_pLabel->rely()+m_pLabel->maxy()+1);
-    m_pTextField = new CInputField(this, 3, ncols-4, y, 2, 'r', max, out);
+    int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
+    m_pTextField = new CInputField(this, 1, ncols-4, y, 2, 'r', max, out);
     
     int x = ((ncols + 2) - (2 * 20 + 2)) / 2;
     y += (m_pTextField->maxy() + 2);
@@ -2403,11 +2403,11 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int beg
 {
     m_pFileMenu = new CMenu(this, maxlines-10, ncols-4, (m_pLabel->rely()+m_pLabel->maxy()+2), 2, 'r');
     
-    m_pFileField = new CInputField(this, 3, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+1), 2, 'r');
+    m_pFileField = new CInputField(this, 1, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+2), 2, 'r');
     m_pFileField->SetText(m_szStartDir);
     
     const int startx = ((ncols + 2) - (2 * 20 + 2)) / 2;
-    const int starty = (m_pFileField->rely()+m_pFileField->maxy()+1);
+    const int starty = (m_pFileField->rely()+m_pFileField->maxy()+2);
     m_pOpenButton = new CButton(this, 1, 20, starty, startx, "Open directory", 'r');
     
     m_pCancelButton = new CButton(this, 1, 20, starty, startx+22, "Cancel", 'r');

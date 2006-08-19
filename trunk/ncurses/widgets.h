@@ -578,7 +578,6 @@ class CInputField: public CWidgetWindow
     std::string m_szText;
     int m_iMaxChars;
     int m_iCursorPos, m_iScrollOffset;
-    CWidgetWindow *m_pOutputWin; // Window containing the displayed text
     
     void Addch(chtype ch);
     void Delch(bool backspace);

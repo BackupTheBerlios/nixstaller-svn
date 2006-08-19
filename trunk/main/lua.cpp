@@ -403,6 +403,23 @@ void CLuaVM::InitClass(const char *name, lua_CFunction gc, void *gcdata)
     lua_pop(m_pLuaState, 1);
 }
 
+void CLuaVM::RegisterClassFunc(const char *type, lua_CFunction f, const char *name, void *data)
+{
+    luaL_getmetatable(m_pLuaState, type);
+    
+    lua_pushstring(m_pLuaState, name);
+    
+    if (data)
+    {
+        lua_pushlightuserdata(m_pLuaState, data);
+        lua_pushcclosure(m_pLuaState, f, 1);
+    }
+    else
+        lua_pushcfunction(m_pLuaState, f);
+    
+    lua_settable(m_pLuaState, -3);
+}
+
 void CLuaVM::SetArrayStr(const char *s, const char *tab, int index)
 {
     lua_getglobal(m_pLuaState, tab);

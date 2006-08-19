@@ -209,7 +209,8 @@ public:
         luaL_getmetatable(m_pLuaState, type);
         lua_setmetatable(m_pLuaState, -2);
     }
-    template <typename C> C CheckClass(const char *type, int index=-1)
+    void RegisterClassFunc(const char *type, lua_CFunction f, const char *name, void *data=NULL);
+    template <typename C> C CheckClass(const char *type, int index)
     {
         luaL_checktype(m_pLuaState, index, LUA_TUSERDATA);
         C *val = (C *)luaL_checkudata(m_pLuaState, index, type);

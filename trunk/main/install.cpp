@@ -39,6 +39,10 @@
 #include <sys/utsname.h>
 #include <libgen.h>
 
+// -------------------------------------
+// Base Installer Class
+// -------------------------------------
+
 CBaseInstall::~CBaseInstall()
 {
     if (!m_InstallInfo.command_entries.empty())
@@ -345,8 +349,10 @@ bool CBaseInstall::InitLua()
         return false;
     
     m_LuaVM.InitClass("cfgscreen");
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddInput, "AddInput", this);
+    
     m_LuaVM.InitClass("inputfield");
-    m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, (void *)this);
+    m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
     
     if (!m_LuaVM.LoadFile("config/config.lua"))
         return false;
@@ -789,4 +795,22 @@ int CBaseInstall::LuaNewCFGScreen(lua_State *L)
     const char *name = (lua_gettop(L) >= 1) ? luaL_checkstring(L, 1) : NULL;
     pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen *>(pInstaller->CreateCFGScreen(name), "cfgscreen");
     return 1;
+}
+
+// -------------------------------------
+// Base install config screen Class
+// -------------------------------------
+
+int CBaseCFGScreen::LuaAddInput(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
+    const char *desc = luaL_checkstring(L, 2);
+    const char *label = luaL_checkstring(L, 3);
+    int maxc = luaL_optint(L, 4, 1024);
+    const char *val = lua_tostring(L, 5);
+    
+    screen->CreateInputField(desc, label, val, maxc);
+    
+    return 0;
 }
