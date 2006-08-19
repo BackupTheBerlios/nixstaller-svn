@@ -332,8 +332,8 @@ protected:
     std::list<CWidgetWindow *> m_ChildList;
     std::list<CWidgetWindow *>::iterator m_FocusedChild;
 
-    bool SetNextWidget(void);
-    bool SetPrevWidget(void);
+    bool SetNextWidget(bool rec=true);
+    bool SetPrevWidget(bool rec=true);
     
     virtual void Focus(void);
     virtual void LeaveFocus(void);

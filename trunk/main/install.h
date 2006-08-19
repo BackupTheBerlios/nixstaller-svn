@@ -104,7 +104,6 @@ public:
 
     // Functions for lua binding
     static int LuaNewCFGScreen(lua_State *L);
-    static int LuaGCCFGScreen(lua_State *L);
 };
 
 class CLuaInputField

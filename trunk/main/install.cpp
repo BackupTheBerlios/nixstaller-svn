@@ -344,7 +344,7 @@ bool CBaseInstall::InitLua()
     if (!CMain::InitLua())
         return false;
     
-    m_LuaVM.InitClass("cfgscreen", LuaGCCFGScreen, (void *)this);
+    m_LuaVM.InitClass("cfgscreen");
     m_LuaVM.InitClass("inputfield");
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, (void *)this);
     
@@ -789,11 +789,4 @@ int CBaseInstall::LuaNewCFGScreen(lua_State *L)
     const char *name = (lua_gettop(L) >= 1) ? luaL_checkstring(L, 1) : NULL;
     pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen *>(pInstaller->CreateCFGScreen(name), "cfgscreen");
     return 1;
-}
-
-int CBaseInstall::LuaGCCFGScreen(lua_State *L)
-{
-    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
-    delete pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    return 0;
 }

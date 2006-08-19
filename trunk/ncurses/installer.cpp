@@ -160,6 +160,8 @@ bool CInstaller::InitLua()
     
     if (!CBaseInstall::InitLua())
         return false;
+    
+    return true;
 }
 
 bool CInstaller::Init(int argc, char **argv)

@@ -672,7 +672,7 @@ bool CWidgetHandler::HandleKey(chtype ch)
     return false;
 }
 
-bool CWidgetHandler::SetNextWidget()
+bool CWidgetHandler::SetNextWidget(bool rec)
 {
     if (m_ChildList.empty())
     {
@@ -685,12 +685,13 @@ bool CWidgetHandler::SetNextWidget()
     
     while (it != m_ChildList.end())
     {
-        if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (*it)->SetNextWidget())
+        if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (!rec || (*it)->SetNextWidget()))
         {
             if (prev != it)
             {
                 (*prev)->LeaveFocus();
                 (*it)->Focus();
+                debugline("Activated next widget %d of %d\n", (std::distance(m_ChildList.begin(), it)+1), m_ChildList.size());
                 m_FocusedChild = it;
             }
             return true;
@@ -702,7 +703,7 @@ bool CWidgetHandler::SetNextWidget()
     return false;
 }
 
-bool CWidgetHandler::SetPrevWidget()
+bool CWidgetHandler::SetPrevWidget(bool rec)
 {
     if (m_ChildList.empty())
     {
@@ -719,12 +720,13 @@ bool CWidgetHandler::SetPrevWidget()
     
     while (true)
     {
-        if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (*it)->SetPrevWidget())
+        if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (!rec || (*it)->SetPrevWidget()))
         {
             if (prev != it)
             {
                 (*prev)->LeaveFocus();
                 (*it)->Focus();
+                debugline("Activated prev widget %d of %d\n", (std::distance(m_ChildList.begin(), it)+1), m_ChildList.size());
                 m_FocusedChild = it;
             }
             return true;
@@ -929,8 +931,8 @@ bool CWidgetManager::Run()
                 CWidgetWindow *w = *it;
                 if (m_FocusedChild == it)
                 {
-                    if (!SetPrevWidget())
-                        SetNextWidget();
+                    if (!SetPrevWidget(false))
+                        SetNextWidget(false);
                 }
                 
                 bool changed = (m_FocusedChild != it);
@@ -1010,6 +1012,7 @@ bool CWidgetManager::SetNextChildWidget()
             {
                 (*prev)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
+                debugline("Activated next c widget(%s) %d of %d\n", typeid(*cur).name(), (std::distance((*m_FocusedChild)->m_ChildList.begin(), cur)+1), (*m_FocusedChild)->m_ChildList.size());
                 (*cur)->Focus();
             }
             return true;
@@ -1044,6 +1047,7 @@ bool CWidgetManager::SetPrevChildWidget()
             {
                 (*prev)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
+                debugline("Activated prev c widget(%s) %d of %d\n", typeid(*cur).name(), (std::distance((*m_FocusedChild)->m_ChildList.begin(), cur)+1), (*m_FocusedChild)->m_ChildList.size());
                 (*cur)->Focus();
             }
             return true;
@@ -1481,7 +1485,6 @@ void CTextLabel::Draw()
         for(std::list<std::string>::iterator it=m_FormattedText.begin(); it!=m_FormattedText.end();
             it++, lines++)
         {
-            debugline(it->c_str());
             AddStrFormat(lines, 0, it->c_str(), 0, width());
         }
     }
