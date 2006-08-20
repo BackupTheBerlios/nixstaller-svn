@@ -185,7 +185,6 @@ bool CInstaller::Init(int argc, char **argv)
     m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
 
     unsigned count = m_LuaVM.OpenArray("ScreenList");
-    debugline("Count : %d\n", count);
     if (!count)
     {
         // Default install screens
@@ -306,6 +305,28 @@ CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char
     
     for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
         m_pCheckbox->Add(*it);
+}
+
+// -------------------------------------
+// Lua radio button class
+// -------------------------------------
+
+CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
+                                 const std::list<std::string> &l)
+{
+    int begy = y;
+    
+    if (desc && *desc)
+    {
+        CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, x, 'r');
+        pDesc->AddText(desc);
+        begy += pDesc->height();
+    }
+    
+    m_pRadioButton = new CRadioButton(owner, l.size(), maxx, begy, x, 'r');
+    
+    for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
+        m_pRadioButton->Add(*it);
 }
 
 // -------------------------------------
@@ -513,6 +534,26 @@ void CCFGScreen::DrawInit()
         SetInfo(m_szTitle.c_str());
 }
 
+bool CCFGScreen::Activate()
+{
+    if (!CBaseScreen::Activate())
+        return false;
+    
+    if (!m_ChildList.empty())
+    {
+        for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        {
+            if ((*it)->Enabled() && (*it)->CanFocus())
+            {
+                ActivateChild(*it);
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
 {
     int h = CLuaInputField::CalcHeight(label, desc);
@@ -547,3 +588,19 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::list<s
     return m_pNextScreen->CreateCheckbox(desc, l);
 }
 
+CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::list<std::string> &l)
+{
+    int h = CLuaRadioButton::CalcHeight(desc, l);
+    
+    if ((h + m_iStartY) < height())
+    {
+        CLuaRadioButton *radio = new CLuaRadioButton(this, m_iStartY, 2, width()-2, desc, l);
+        m_iStartY += (h + 1);
+        return radio;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+    return m_pNextScreen->CreateRadioButton(desc, l);
+}

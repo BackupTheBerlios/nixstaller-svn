@@ -61,6 +61,7 @@ class CBaseInstall: virtual public CMain
     friend class CBaseCFGScreen;
     friend class CBaseLuaInputField;
     friend class CBaseLuaCheckbox;
+    friend class CBaseLuaRadioButton;
     
 protected:
     virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) = 0;
@@ -130,6 +131,17 @@ public:
     static int LuaSet(lua_State *L);
 };
 
+class CBaseLuaRadioButton
+{
+public:
+    virtual ~CBaseLuaRadioButton(void) { };
+    virtual int EnabledButton(void) = 0;
+    virtual void Enable(int n) = 0;
+    
+    static int LuaGet(lua_State *L);
+    static int LuaSet(lua_State *L);
+};
+
 class CBaseCFGScreen
 {
 public:
@@ -138,7 +150,9 @@ public:
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
                                                    int max) = 0;
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l) = 0;
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l) = 0;
     
     static int LuaAddInput(lua_State *L);
     static int LuaAddCheckbox(lua_State *L);
+    static int LuaAddRadioButton(lua_State *L);
 };

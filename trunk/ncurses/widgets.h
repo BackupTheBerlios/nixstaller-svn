@@ -639,6 +639,28 @@ public:
     bool IsEnabled(int n) { return (m_ulCheckedboxes & (1<<(n-1))); };
 };
 
+class CRadioButton: public CWidgetWindow
+{
+    int m_iCheckedButton;
+    std::list<std::string> m_ButtonList;
+    int m_iSelectedButton;
+
+protected:
+    virtual bool HandleKey(chtype ch);
+    virtual void Draw(void);
+
+public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+
+    CRadioButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+                char absrel = 'a');
+
+    void Add(const char *text) { m_ButtonList.push_back(text); };
+    void Add(const std::string &text) { m_ButtonList.push_back(text); };
+    void EnableButton(int n) { m_iCheckedButton = n; };
+    int EnabledButton(void) { return m_iCheckedButton; };
+};
+
 class CWidgetBox: public CWidgetWindow
 {
 protected:

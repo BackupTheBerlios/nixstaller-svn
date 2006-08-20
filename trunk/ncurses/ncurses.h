@@ -153,6 +153,22 @@ public:
     { return (((desc && *desc) ? 2 : 0) + l.size()); };
 };
 
+class CLuaRadioButton: public CBaseLuaRadioButton
+{
+    int m_iMaxX, m_iMaxY;
+    CRadioButton *m_pRadioButton;
+    
+public:
+    CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
+                    const std::list<std::string> &l);
+
+    virtual int EnabledButton() { return m_pRadioButton->EnabledButton(); };
+    virtual void Enable(int n) { m_pRadioButton->EnableButton(n); };
+
+    static int CalcHeight(const char *desc, const std::list<std::string> &l)
+    { return (((desc && *desc) ? 2 : 0) + l.size()); };
+};
+
 // -------------------------
 // Installer screens
 // -------------------------
@@ -252,6 +268,7 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     virtual void DrawInit(void);
+    virtual bool Activate(void);
 
 public:
     CCFGScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
@@ -261,6 +278,7 @@ public:
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l);
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l);
 };
 
 extern CWidgetManager *pWidgetManager;
