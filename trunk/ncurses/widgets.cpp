@@ -692,6 +692,7 @@ bool CWidgetHandler::SetNextWidget(bool rec)
                 (*prev)->LeaveFocus();
                 (*it)->Focus();
                 m_FocusedChild = it;
+                debugline("NW: %d/%d\n", std::distance(m_ChildList.begin(), it)+1, m_ChildList.size());
             }
             return true;
         }
@@ -726,6 +727,7 @@ bool CWidgetHandler::SetPrevWidget(bool rec)
                 (*prev)->LeaveFocus();
                 (*it)->Focus();
                 m_FocusedChild = it;
+                debugline("PW: %d/%d\n", std::distance(m_ChildList.begin(), it)+1, m_ChildList.size());
             }
             return true;
         }
@@ -859,6 +861,9 @@ void CWidgetManager::Init()
     CProgressbar::m_cDefaultFillColors = ' ' | CWidgetWindow::GetColorPair(COLOR_BLUE, COLOR_WHITE) | A_BOLD;
     CProgressbar::m_cDefaultEmptyColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
     
+    CCheckbox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CCheckbox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+
     CMessageBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CMessageBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 
@@ -1011,6 +1016,7 @@ bool CWidgetManager::SetNextChildWidget()
                 (*prev)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
                 (*cur)->Focus();
+                debugline("NWC: %d/%d\n", std::distance((*m_FocusedChild)->m_ChildList.begin(), cur)+1, (*m_FocusedChild)->m_ChildList.size());
             }
             return true;
         }
@@ -1045,6 +1051,7 @@ bool CWidgetManager::SetPrevChildWidget()
                 (*prev)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
                 (*cur)->Focus();
+                debugline("PWC: %d/%d\n", std::distance((*m_FocusedChild)->m_ChildList.begin(), cur)+1, (*m_FocusedChild)->m_ChildList.size());
             }
             return true;
         }
@@ -2111,6 +2118,88 @@ void CProgressbar::Draw()
         addch(1, i+1, ' ');
     
     attroff(m_cDefaultFillColors);
+}
+
+// -------------------------------------
+// Checkbox class
+// -------------------------------------
+
+chtype CCheckbox::m_cDefaultFocusedColors;
+chtype CCheckbox::m_cDefaultDefocusedColors;
+
+CCheckbox::CCheckbox(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+                     char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel,
+                     false, true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
+                     m_ulCheckedboxes(0), m_iSelectedButton(1)
+{
+}
+
+bool CCheckbox::HandleKey(chtype ch)
+{
+    if (CWidgetWindow::HandleKey(ch))
+        return true;
+    
+    bool handled = true;
+    
+    switch (ch)
+    {
+        case KEY_UP:
+            m_iSelectedButton--;
+            if (m_iSelectedButton < 1)
+                m_iSelectedButton = m_BoxList.size();
+            break;
+        case KEY_DOWN:
+            m_iSelectedButton++;
+            if (m_iSelectedButton > m_BoxList.size())
+                m_iSelectedButton = 1;
+            break;
+        case KEY_ENTER:
+        case '\n':
+        case '\r':
+        {
+            PushEvent(EVENT_CALLBACK);
+            break;
+        }
+        case ' ':
+            if (IsEnabled(m_iSelectedButton))
+                DisableBox(m_iSelectedButton);
+            else
+                EnableBox(m_iSelectedButton);
+            PushEvent(EVENT_DATACHANGED);
+            break;
+        default:
+            handled = false;
+            break;
+    }
+    
+    if (handled)
+        refresh();
+    
+    return handled;
+}
+
+void CCheckbox::Draw()
+{
+    int counter = 1;
+    for (std::list<std::string>::iterator it=m_BoxList.begin(); it!=m_BoxList.end(); it++)
+    {
+        std::string out;
+        if (IsEnabled(counter))
+            out = "[X] ";
+        else
+            out = "[ ] ";
+        
+        out += *it;
+        
+        if (counter == m_iSelectedButton)
+        {
+            out.insert(0, "<rev>");
+            out += "</rev>";
+        }
+        
+        AddStrFormat(counter-1, 0, out);
+        counter++;
+    }
 }
 
 // -------------------------------------

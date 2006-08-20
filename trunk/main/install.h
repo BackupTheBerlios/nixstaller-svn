@@ -60,6 +60,7 @@ class CBaseInstall: virtual public CMain
     
     friend class CBaseCFGScreen;
     friend class CBaseLuaInputField;
+    friend class CBaseLuaCheckbox;
     
 protected:
     virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) = 0;
@@ -118,12 +119,26 @@ public:
     static int LuaGet(lua_State *L);
 };
 
+class CBaseLuaCheckbox
+{
+public:
+    virtual ~CBaseLuaCheckbox(void) { };
+    virtual bool Enabled(int n) = 0;
+    virtual void Enable(int n) = 0;
+    
+    static int LuaGet(lua_State *L);
+    static int LuaSet(lua_State *L);
+};
+
 class CBaseCFGScreen
 {
 public:
     virtual ~CBaseCFGScreen(void) { };
     
-    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max) = 0;
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
+                                                   int max) = 0;
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l) = 0;
     
     static int LuaAddInput(lua_State *L);
+    static int LuaAddCheckbox(lua_State *L);
 };

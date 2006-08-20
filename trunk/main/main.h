@@ -191,7 +191,6 @@ public:
     
         if (val)
         {
-            //val->Enable(false);
             *out = val;
             return true;
         }

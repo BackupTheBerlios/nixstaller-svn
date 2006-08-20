@@ -175,9 +175,9 @@ bool CInstaller::Init(int argc, char **argv)
     
     const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
 
-    m_pWelcomeScreen = new CWelcomeScreen(this, h, w, y, x);
-    m_pLicenseScreen = new CLicenseScreen(this, h, w, y, x);
-    m_pSelectDirScreen = new CSelectDirScreen(this, h, w, y, x);
+    (m_pWelcomeScreen = new CWelcomeScreen(this, h, w, y, x))->Enable(false);
+    (m_pLicenseScreen = new CLicenseScreen(this, h, w, y, x))->Enable(false);
+    (m_pSelectDirScreen = new CSelectDirScreen(this, h, w, y, x))->Enable(false);
     
     if (!CBaseInstall::Init(argc, argv))
         return false;
@@ -284,6 +284,28 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const 
     
     if (val)
         m_pInput->SetText(val);
+}
+
+// -------------------------------------
+// Lua checkbox class
+// -------------------------------------
+
+CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
+                           const std::list<std::string> &l)
+{
+    int begy = y;
+    
+    if (desc && *desc)
+    {
+        CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, x, 'r');
+        pDesc->AddText(desc);
+        begy += pDesc->height();
+    }
+    
+    m_pCheckbox = new CCheckbox(owner, l.size(), maxx, begy, x, 'r');
+    
+    for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
+        m_pCheckbox->Add(*it);
 }
 
 // -------------------------------------
@@ -507,3 +529,21 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     
     return m_pNextScreen->CreateInputField(label, desc, val, max);
 }
+
+CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::list<std::string> &l)
+{
+    int h = CLuaCheckbox::CalcHeight(desc, l);
+    
+    if ((h + m_iStartY) < height())
+    {
+        CLuaCheckbox *box = new CLuaCheckbox(this, m_iStartY, 2, width()-2, desc, l);
+        m_iStartY += (h + 1);
+        return box;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+    return m_pNextScreen->CreateCheckbox(desc, l);
+}
+

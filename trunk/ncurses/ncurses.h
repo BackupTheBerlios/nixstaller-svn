@@ -134,7 +134,23 @@ public:
     
     virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
     
-    static int CalcHeight(const char *label, const char *desc) { return (desc && *desc) ? 2 : 1; };
+    static int CalcHeight(const char *label, const char *desc) { return (desc && *desc) ? 3 : 1; };
+};
+
+class CLuaCheckbox: public CBaseLuaCheckbox
+{
+    int m_iMaxX, m_iMaxY;
+    CCheckbox *m_pCheckbox;
+    
+public:
+    CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
+                 const std::list<std::string> &l);
+
+    virtual bool Enabled(int n) { return m_pCheckbox->IsEnabled(n); };
+    virtual void Enable(int n) { m_pCheckbox->EnableBox(n); };
+
+    static int CalcHeight(const char *desc, const std::list<std::string> &l)
+    { return (((desc && *desc) ? 2 : 0) + l.size()); };
 };
 
 // -------------------------
@@ -244,6 +260,7 @@ public:
     void SetTitle(const char *s) { m_szTitle = s; };
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l);
 };
 
 extern CWidgetManager *pWidgetManager;

@@ -350,9 +350,14 @@ bool CBaseInstall::InitLua()
     
     m_LuaVM.InitClass("cfgscreen");
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddInput, "AddInput", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCheckbox, "AddCheckbox", this);
     
     m_LuaVM.InitClass("inputfield");
     m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "Get", this);
+    
+    m_LuaVM.InitClass("checkbox");
+    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaGet, "Enabled", this);
+    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaSet, "Enable", this);
     
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
     
@@ -817,6 +822,29 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
     return 0;
 }
 
+int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
+    const char *desc = lua_tostring(L, 2);
+    
+    std::list<std::string> l;
+    luaL_checktype(L, 3, LUA_TTABLE);
+    int count = luaL_getn(L, 3);
+    
+    for (int i=1; i<=count; i++)
+    {
+        lua_rawgeti(L, 3, i);
+        const char *s = luaL_checkstring(L, -1);
+        l.push_back(s);
+        lua_pop(L, 1);
+    }
+    
+    screen->CreateCheckbox(desc, l);
+    
+    return 0;
+}
+
 // -------------------------------------
 // Base Lua Inputfield Class
 // -------------------------------------
@@ -828,3 +856,26 @@ int CBaseLuaInputField::LuaGet(lua_State *L)
     lua_pushstring(L, field->GetValue());
     return 1;
 }
+
+// -------------------------------------
+// Base Lua Checkbox Class
+// -------------------------------------
+
+int CBaseLuaCheckbox::LuaGet(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaCheckbox *box = pInstaller->m_LuaVM.CheckClass<CBaseLuaCheckbox *>("checkbox", 1);
+    int n = luaL_checkint(L, 2);
+    lua_pushboolean(L, box->Enabled(n));
+    return 1;
+}
+
+int CBaseLuaCheckbox::LuaSet(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaCheckbox *box = pInstaller->m_LuaVM.CheckClass<CBaseLuaCheckbox *>("checkbox", 1);
+    int n = luaL_checkint(L, 2);
+    box->Enable(n);
+    return 0;
+}
+

@@ -616,6 +616,29 @@ public:
     void SetCurrent(int n) { m_fCurrent = (float)n; };
 };
 
+class CCheckbox: public CWidgetWindow
+{
+    unsigned long m_ulCheckedboxes;
+    std::list<std::string> m_BoxList;
+    int m_iSelectedButton;
+
+protected:
+    virtual bool HandleKey(chtype ch);
+    virtual void Draw(void);
+
+public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+
+    CCheckbox(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
+              char absrel = 'a');
+
+    void Add(const char *text) { m_BoxList.push_back(text); };
+    void Add(const std::string &text) { m_BoxList.push_back(text); };
+    void EnableBox(int n) { m_ulCheckedboxes |= (1<<(n-1)); };
+    void DisableBox(int n) { m_ulCheckedboxes &= ~(1<<(n-1)); };
+    bool IsEnabled(int n) { return (m_ulCheckedboxes & (1<<(n-1))); };
+};
+
 class CWidgetBox: public CWidgetWindow
 {
 protected:
