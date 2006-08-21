@@ -134,7 +134,7 @@ public:
     
     virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
     
-    static int CalcHeight(const char *label, const char *desc) { return (desc && *desc) ? 3 : 1; };
+    static int CalcHeight(const char *desc) { return (desc && *desc) ? 3 : 1; };
 };
 
 class CLuaCheckbox: public CBaseLuaCheckbox
@@ -167,6 +167,24 @@ public:
 
     static int CalcHeight(const char *desc, const std::list<std::string> &l)
     { return (((desc && *desc) ? 2 : 0) + l.size()); };
+};
+
+// We inherit from CWidgetWindow so that events can be recieved
+class CLuaDirSelector: public CBaseLuaDirSelector, public CWidgetWindow
+{
+    CInputField *m_pDirInput;
+    CButton *m_pDirButton;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    
+public:
+    CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxx, const char *desc, const char *val);
+
+    virtual const char *GetDir(void) { return m_pDirInput->GetText().c_str(); };
+    virtual void SetDir(const char *dir) { m_pDirInput->SetText(dir); };
+    
+    static int CalcHeight(const char *desc) { return (desc && *desc) ? 3 : 1; };
 };
 
 // -------------------------
@@ -279,6 +297,7 @@ public:
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l);
+    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
 };
 
 extern CWidgetManager *pWidgetManager;

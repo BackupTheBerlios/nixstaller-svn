@@ -330,6 +330,46 @@ CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, cons
 }
 
 // -------------------------------------
+// Lua directory selector class
+// -------------------------------------
+
+CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
+                                 const char *val) : CWidgetWindow(owner, 3, maxx, y, x, 'r', false)
+{
+    int begy = 0;
+    
+    if (desc && *desc)
+    {
+        CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
+        pDesc->AddText(desc);
+        begy += pDesc->height();
+    }
+    
+    const int buttonw = 20;
+    
+    m_pDirInput = new CInputField(this, 1, maxx-buttonw-2-x, begy, 0, 'r', 1024);
+    if (val && *val)
+        m_pDirInput->SetText(val);
+    
+    // UNDONE
+    int begx = m_pDirInput->width() + 2;
+    m_pDirButton = new CButton(this, 1, buttonw, begy, begx, "Browse", 'r');
+}
+
+bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
+{
+    if ((type == EVENT_CALLBACK) && (p == m_pDirButton))
+    {
+        std::string dir = FileDialog(m_pDirInput->GetText().c_str(), "Select directory");
+        if (!dir.empty())
+            m_pDirInput->SetText(dir);
+        return true;
+    }
+    
+    return false;
+}
+
+// -------------------------------------
 // Installer base screen class
 // -------------------------------------
 
@@ -556,7 +596,7 @@ bool CCFGScreen::Activate()
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
 {
-    int h = CLuaInputField::CalcHeight(label, desc);
+    int h = CLuaInputField::CalcHeight(desc);
     
     if ((h + m_iStartY) < height())
     {
@@ -603,4 +643,21 @@ CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::
         m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
     
     return m_pNextScreen->CreateRadioButton(desc, l);
+}
+
+CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char *val)
+{
+    int h = CLuaDirSelector::CalcHeight(desc);
+    
+    if ((h + m_iStartY) < height())
+    {
+        CLuaDirSelector *sel = new CLuaDirSelector(this, m_iStartY, 2, width()-2, desc, val);
+        m_iStartY += (h + 1);
+        return sel;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+    return m_pNextScreen->CreateDirSelector(desc, val);
 }

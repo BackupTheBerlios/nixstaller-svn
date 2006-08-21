@@ -352,6 +352,7 @@ bool CBaseInstall::InitLua()
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddInput, "AddInput", this);
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCheckbox, "AddCheckbox", this);
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddRadioButton, "AddRadioButton", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddDirSelector, "AddDirSelector", this);
     
     m_LuaVM.InitClass("inputfield");
     m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "Get", this);
@@ -363,6 +364,10 @@ bool CBaseInstall::InitLua()
     m_LuaVM.InitClass("radiobutton");
     m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaGet, "EnabledButton", this);
     m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaSet, "Enable", this);
+
+    m_LuaVM.InitClass("dirselector");
+    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaRadioButton::LuaGet, "GetDir", this);
+    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaRadioButton::LuaSet, "SetDir", this);
 
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
     
@@ -822,9 +827,9 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
     int maxc = luaL_optint(L, 4, 1024);
     const char *val = lua_tostring(L, 5);
     
-    screen->CreateInputField(desc, label, val, maxc);
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField *>(screen->CreateInputField(desc, label, val, maxc), "inputfield");
     
-    return 0;
+    return 1;
 }
 
 int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
@@ -845,9 +850,9 @@ int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
         lua_pop(L, 1);
     }
     
-    screen->CreateCheckbox(desc, l);
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaCheckbox *>(screen->CreateCheckbox(desc, l), "checkbox");
     
-    return 0;
+    return 1;
 }
 
 int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
@@ -868,9 +873,21 @@ int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
         lua_pop(L, 1);
     }
     
-    screen->CreateRadioButton(desc, l);
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaRadioButton *>(screen->CreateRadioButton(desc, l), "radiobutton");
+
+    return 1;
+}
+
+int CBaseCFGScreen::LuaAddDirSelector(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
+    const char *desc = luaL_checkstring(L, 2);
+    const char *val = lua_tostring(L, 3);
     
-    return 0;
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaDirSelector *>(screen->CreateDirSelector(desc, val), "dirselector");
+    
+    return 1;
 }
 
 // -------------------------------------
@@ -926,4 +943,16 @@ int CBaseLuaRadioButton::LuaSet(lua_State *L)
     int n = luaL_checkint(L, 2);
     box->Enable(n);
     return 0;
+}
+
+// -------------------------------------
+// Base Lua Directory Selector Class
+// -------------------------------------
+
+int CBaseLuaDirSelector::LuaGet(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaDirSelector *sel = pInstaller->m_LuaVM.CheckClass<CBaseLuaDirSelector *>("dirselector", 1);
+    lua_pushstring(L, sel->GetDir());
+    return 1;
 }
