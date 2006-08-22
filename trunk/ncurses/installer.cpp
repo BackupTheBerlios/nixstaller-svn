@@ -87,6 +87,21 @@ void CInstaller::Next()
     EndProg();
 }
 
+void CInstaller::ChangeStatusText(const char *str, int curstep, int maxsteps)
+{
+    m_pInstallScreen->ChangeStatusText(str, curstep, maxsteps);
+}
+
+void CInstaller::AddInstOutput(const std::string &str)
+{
+    m_pInstallScreen->AppendText(str);
+}
+
+void CInstaller::SetProgress(int percent)
+{
+    m_pInstallScreen->SetProgress(percent);
+}
+
 bool CInstaller::HandleKey(chtype ch)
 {
     if (CNCursBase::HandleKey(ch))
@@ -150,8 +165,8 @@ bool CInstaller::InitLua()
     m_LuaVM.InitClass("selectdirscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pSelectDirScreen, "selectdirscreen", "SelectDirScreen");
 
-/*    m_LuaVM.InitClass("installscreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(new CLangScreen(this, h, w, y, x), "installscreen", "InstallScreen");*/
+    m_LuaVM.InitClass("installscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pInstallScreen, "installscreen", "InstallScreen");
     
 /*    m_LuaVM.InitClass("finishscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(new CLangScreen(this, h, w, y, x), "finishscreen", "FinishScreen");*/
@@ -178,6 +193,7 @@ bool CInstaller::Init(int argc, char **argv)
     (m_pWelcomeScreen = new CWelcomeScreen(this, h, w, y, x))->Enable(false);
     (m_pLicenseScreen = new CLicenseScreen(this, h, w, y, x))->Enable(false);
     (m_pSelectDirScreen = new CSelectDirScreen(this, h, w, y, x))->Enable(false);
+    (m_pInstallScreen = new CInstallScreen(this, h, w, y, x))->Enable(false);
     
     if (!CBaseInstall::Init(argc, argv))
         return false;
@@ -240,6 +256,11 @@ bool CInstaller::Init(int argc, char **argv)
     }
     
     return true;
+}
+
+void CInstaller::Install()
+{
+    CBaseInstall::Install();
 }
 
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
@@ -556,6 +577,44 @@ bool CSelectDirScreen::Next()
                 m_pInstaller->GetTranslation("Choose another directory"),
                 m_pInstaller->GetTranslation("Continue as root"), NULL) == 1);
     }
+    return true;
+}
+
+// -------------------------------------
+// Install screen
+// -------------------------------------
+
+void CInstallScreen::DrawInit()
+{
+    m_pProgLabel = new CTextLabel(this, 1, width(), 0, 0, 'r');
+    m_pProgLabel->AddText("<C>Progress");
+    
+    int x=2, y=1;
+
+    m_pProgressbar = new CProgressbar(this, 3, width()-x-2, y, x, 1, 100, 'r');
+    m_pProgressbar->SetCurrent(50);
+    
+    y += 3;
+    
+    m_pStatLabel = new CTextLabel(this, 1, width(), y, 0, 'r');
+    
+    y++;
+    
+    m_pTextWin = new CTextWindow(this, height()-y, width()-x-2, y, x, true, true, 'r');
+}
+
+void CInstallScreen::ChangeStatusText(const char *txt, int curstep, int maxsteps)
+{
+    m_pStatLabel->SetText(CreateText("<C>%s: %s (%d/%d)", m_pInstaller->GetTranslation("Status"),
+                          m_pInstaller->GetTranslation(txt), curstep, maxsteps));
+}
+
+bool CInstallScreen::Activate()
+{
+    if (!CBaseScreen::Activate())
+        return false;
+    
+    m_pInstaller->Install();
     return true;
 }
 

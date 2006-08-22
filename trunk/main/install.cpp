@@ -97,7 +97,10 @@ void CBaseInstall::SetNextStep()
 void CBaseInstall::InitArchive(char *archname)
 {
     if (!FileExists(archname))
+    {
+        debugline("InitArchive: No such file: %s\n", archname);
         return;
+    }
         
     char *fname = CreateText("%s.sizes", archname);
     std::ifstream file(fname);
@@ -122,8 +125,11 @@ void CBaseInstall::InitArchive(char *archname)
 void CBaseInstall::ExtractFiles()
 {    
     if (m_ArchList.empty())
+    {
+        debugline("No files to extract\n");
         return; // No files to extract
-
+    }
+    
     ChangeStatusText("Extracting files", m_sCurrentStep, m_sInstallSteps);
     
     m_bAlwaysRoot = !WriteAccess(m_szDestDir);
@@ -382,7 +388,7 @@ bool CBaseInstall::InitLua()
 
 bool CBaseInstall::ReadConfig()
 {
-    return true;
+    //return true;
     const int maxread = std::numeric_limits<std::streamsize>::max();
     std::ifstream file("config/install.cfg");
     std::string str, line, tmp, ParamName;

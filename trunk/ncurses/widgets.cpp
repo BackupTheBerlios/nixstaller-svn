@@ -1422,7 +1422,7 @@ chtype CTextLabel::m_cDefaultFocusedColors;
 chtype CTextLabel::m_cDefaultDefocusedColors;
 
 CTextLabel::CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-                       char absrel) : CWidgetWindow(owner, 3, ncols, begin_y, begin_x, absrel, false,
+                       char absrel) : CWidgetWindow(owner, 1, ncols, begin_y, begin_x, absrel, false,
                                                    false, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                                       m_iMaxHeight(nlines)
 {
@@ -1444,13 +1444,16 @@ void CTextLabel::AddText(std::string text)
     {
         end = text.find_first_of(" \t\n", start);
         
+        if ((end != std::string::npos) && (text[end] == '\n'))
+            end++; // Include \n in word
+
         if (end != std::string::npos)
         {
             word = text.substr(start, (end-start));
 
             start = end;
             
-            end = text.find_first_not_of(" \t", start+1);
+            end = text.find_first_not_of(" \t", start);
             if (end != std::string::npos)
             {
                 word += text.substr(start, (end-start));
@@ -1465,7 +1468,7 @@ void CTextLabel::AddText(std::string text)
         if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
             ((GetUnFormatLen(m_FormattedText.back())+GetUnFormatLen(word)) > width()))
         {
-            if ((lines+1) >= m_iMaxHeight)
+            if (lines >= m_iMaxHeight)
                 break; // No more space
             m_FormattedText.push_back("");
             lines++;
@@ -1608,6 +1611,9 @@ void CTextWindow::AddText(std::string text)
         {
             end = text.find_first_of(" \t\n", start);
             
+            if ((end != std::string::npos) && (text[end] == '\n'))
+                end++; // Include \n in word
+            
             if (end != std::string::npos)
                 word = text.substr(start, (end-start));
             else
@@ -1616,7 +1622,7 @@ void CTextWindow::AddText(std::string text)
             if (end != std::string::npos)
             {
                 start = end;
-                end = text.find_first_not_of(" \t", start+1);
+                end = text.find_first_not_of(" \t", start);
                 if (end != std::string::npos)
                 {
                     word += text.substr(start, (end-start));

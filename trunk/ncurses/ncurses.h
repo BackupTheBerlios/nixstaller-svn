@@ -90,6 +90,7 @@ class CBaseScreen;
 class CWelcomeScreen;
 class CLicenseScreen;
 class CSelectDirScreen;
+class CInstallScreen;
 class CCFGScreen;
 
 class CInstaller: public CNCursBase, public CBaseInstall
@@ -101,14 +102,15 @@ class CInstaller: public CNCursBase, public CBaseInstall
     CWelcomeScreen *m_pWelcomeScreen;
     CLicenseScreen *m_pLicenseScreen;
     CSelectDirScreen *m_pSelectDirScreen;
+    CInstallScreen *m_pInstallScreen;
     
     void Prev(void);
     void Next(void);
     
 protected:
-    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) { };
-    virtual void AddInstOutput(const std::string &str) { };
-    virtual void SetProgress(int percent) { };
+    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps);
+    virtual void AddInstOutput(const std::string &str);
+    virtual void SetProgress(int percent);
     
     virtual bool HandleKey(chtype ch);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
@@ -121,6 +123,7 @@ public:
     CInstaller(CWidgetManager *owner) : CNCursBase(owner), m_bInstallFiles(false) { };
     
     virtual bool Init(int argc, char **argv);
+    virtual void Install(void);
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
 };
 
@@ -273,6 +276,26 @@ public:
                      int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 
     virtual bool Next(void);
+};
+
+class CInstallScreen: public CBaseScreen
+{
+    CProgressbar *m_pProgressbar;
+    CTextWindow *m_pTextWin;
+    CTextLabel *m_pProgLabel, *m_pStatLabel;
+    
+protected:
+    virtual void DrawInit(void);
+    
+public:
+    CInstallScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                   int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+    
+    void ChangeStatusText(const char *txt, int curstep, int maxsteps);
+    void AppendText(const std::string &str) { m_pTextWin->AddText(str); };
+    void SetProgress(int n) { m_pProgressbar->SetCurrent(n); };
+    
+    virtual bool Activate(void);
 };
 
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen

@@ -493,7 +493,6 @@ public:
 
 class CTextLabel: public CWidgetWindow
 {
-    std::string m_szText;
     std::list<std::string> m_FormattedText;
     int m_iMaxHeight;
     
@@ -506,6 +505,8 @@ public:
     CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
     void AddText(std::string text);
+    void SetText(const std::string &text) { m_FormattedText.clear(); AddText(text); };
+    void SetText(const char *text) { m_FormattedText.clear(); AddText(text); };
 };
 
 class CTextWindow: public CWidgetWindow
