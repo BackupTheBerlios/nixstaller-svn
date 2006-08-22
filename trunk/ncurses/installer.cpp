@@ -52,11 +52,12 @@ void CInstaller::Prev()
     {
         it--;
         
-        if ((*it)->Activate())
+        if ((*it)->CanActivate())
         {
             (*m_CurrentScreenIt)->Enable(false);
             (*it)->Enable(true);
             ActivateChild(*it); // Give screen focus
+            (*it)->Activate();
             m_CurrentScreenIt = it;
             break;
         }
@@ -74,11 +75,12 @@ void CInstaller::Next()
     {
         it++;
         
-        if ((*it)->Activate())
+        if ((*it)->CanActivate())
         {
             (*m_CurrentScreenIt)->Enable(false);
             (*it)->Enable(true);
             ActivateChild(*it); // Give screen focus
+            (*it)->Activate();
             m_CurrentScreenIt = it;
             return;
         }
@@ -207,6 +209,7 @@ bool CInstaller::Init(int argc, char **argv)
         m_InstallScreens.push_back(m_pWelcomeScreen);
         m_InstallScreens.push_back(m_pLicenseScreen);
         m_InstallScreens.push_back(m_pSelectDirScreen);
+        m_InstallScreens.push_back(m_pInstallScreen);
     }
     else
     {
@@ -245,9 +248,10 @@ bool CInstaller::Init(int argc, char **argv)
     bool initscreen = true;
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
     {
-        if (initscreen && (*it)->Activate())
+        if (initscreen && (*it)->CanActivate())
         {
             ActivateChild(*it); // Give screen focus
+            (*it)->Activate();
             m_CurrentScreenIt = it;
             initscreen = false;
         }
@@ -400,7 +404,7 @@ void CBaseScreen::SetInfo(const char *text)
     m_pLabel->AddText(text);
 }
 
-bool CBaseScreen::Activate(void)
+void CBaseScreen::Activate(void)
 {
     erase();
     if (m_bNeedDrawInit)
@@ -409,7 +413,6 @@ bool CBaseScreen::Activate(void)
         DrawInit();
     }
     refresh();
-    return true;
 }
 
 // -------------------------------------
@@ -465,9 +468,9 @@ void CWelcomeScreen::DrawInit()
     m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
 }
 
-bool CWelcomeScreen::Activate()
+bool CWelcomeScreen::CanActivate()
 {
-    if (!CBaseScreen::Activate())
+    if (!CBaseScreen::CanActivate())
         return false;
 
     if (FileExists(m_pInstaller->GetLangWelcomeFName()))
@@ -511,9 +514,9 @@ bool CLicenseScreen::Next()
     return (YesNoBox("Do you accept and understand the terms of the license agreement?"));
 }
 
-bool CLicenseScreen::Activate()
+bool CLicenseScreen::CanActivate()
 {
-    if (!CBaseScreen::Activate())
+    if (!CBaseScreen::CanActivate())
         return false;
 
     if (FileExists(m_pInstaller->GetLangLicenseFName()))
@@ -592,7 +595,6 @@ void CInstallScreen::DrawInit()
     int x=2, y=1;
 
     m_pProgressbar = new CProgressbar(this, 3, width()-x-2, y, x, 1, 100, 'r');
-    m_pProgressbar->SetCurrent(50);
     
     y += 3;
     
@@ -610,13 +612,10 @@ void CInstallScreen::ChangeStatusText(const char *txt, int curstep, int maxsteps
     m_pStatLabel->refresh();
 }
 
-bool CInstallScreen::Activate()
+void CInstallScreen::Activate()
 {
-    if (!CBaseScreen::Activate())
-        return false;
-    
+    CBaseScreen::Activate();
     m_pInstaller->Install();
-    return true;
 }
 
 // -------------------------------------
@@ -634,11 +633,8 @@ void CCFGScreen::DrawInit()
         SetInfo(m_szTitle.c_str());
 }
 
-bool CCFGScreen::Activate()
+void CCFGScreen::Activate()
 {
-    if (!CBaseScreen::Activate())
-        return false;
-    
     if (!m_ChildList.empty())
     {
         for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -650,8 +646,6 @@ bool CCFGScreen::Activate()
             }
         }
     }
-
-    return true;
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)

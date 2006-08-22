@@ -322,13 +322,14 @@ class CWidgetHandler
 {
     bool m_bEnabled;
     bool m_bFocused, m_bCanFocus;
-    bool m_bDeleteMe; // Delete it later, incase we are in a loop from ie Run()
     CWidgetHandler *m_pBoundKeyWidget; // Widgets which will recieve key events from this widget
     
     friend class CWidgetManager;
 
 protected:
     CWidgetHandler *m_pOwner;
+    bool m_bDeleteMe; // Delete it later, incase we are in a loop from ie Run()
+
     std::list<CWidgetWindow *> m_ChildList;
     std::list<CWidgetWindow *>::iterator m_FocusedChild;
 
@@ -343,8 +344,8 @@ protected:
     void PushEvent(int type);
 
     CWidgetHandler(CWidgetHandler *owner, bool canfocus=true) : m_bEnabled(true), m_bFocused(false),
-                                                                m_bCanFocus(canfocus), m_bDeleteMe(false),
-                                                                m_pBoundKeyWidget(NULL), m_pOwner(owner),
+                                                                m_bCanFocus(canfocus), m_pBoundKeyWidget(NULL),
+                                                                m_pOwner(owner), m_bDeleteMe(false),
                                                                 m_FocusedChild(m_ChildList.end()) { };
 
 public:
@@ -505,8 +506,8 @@ public:
     CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
     void AddText(std::string text);
-    void SetText(const std::string &text) { m_FormattedText.clear(); AddText(text); };
-    void SetText(const char *text) { m_FormattedText.clear(); AddText(text); };
+    void SetText(const std::string &text) { if (!m_FormattedText.empty()) m_FormattedText.clear(); AddText(text); };
+    void SetText(const char *text) { if (!m_FormattedText.empty()) m_FormattedText.clear(); AddText(text); };
 };
 
 class CTextWindow: public CWidgetWindow

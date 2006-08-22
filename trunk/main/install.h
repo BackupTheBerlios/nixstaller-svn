@@ -110,6 +110,7 @@ public:
 
     // Functions for lua binding
     static int LuaNewCFGScreen(lua_State *L);
+    static int LuaExtractFiles(lua_State *L);
 };
 
 class CBaseLuaInputField

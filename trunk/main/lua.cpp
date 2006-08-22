@@ -248,7 +248,7 @@ void CLuaVM::PushArg(const char *s)
 void CLuaVM::DoCall(void)
 {
     if (lua_pcall(m_pLuaState, m_iPushedArgs, 0, 0) != 0)
-        fprintf(stderr, "error running function : %s", lua_tostring(m_pLuaState, -1));
+        fprintf(stderr, "error running function : %s", lua_tostring(m_pLuaState, -1)); // UNDONE
     
     m_iPushedArgs = 0;
 }

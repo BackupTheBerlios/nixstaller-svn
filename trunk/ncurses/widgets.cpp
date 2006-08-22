@@ -659,15 +659,7 @@ CWidgetHandler::~CWidgetHandler()
 bool CWidgetHandler::HandleKey(chtype ch)
 {
     if (m_FocusedChild != m_ChildList.end())
-    {
-/*        if ((ch == 9) && SetNextWidget())
-            return true;
-        
-        if ((ch == KEY_BTAB) && SetPrevWidget())
-        return true;*/
-        
         return ((*m_FocusedChild)->HandleKey(ch) || (m_pBoundKeyWidget && m_pBoundKeyWidget->HandleKey(ch)));
-    }
     
     return false;
 }
@@ -819,7 +811,7 @@ void CWidgetHandler::ActivateChild(CWidgetWindow *p)
 void CWidgetHandler::Enable(bool e)
 {
     m_bEnabled = e;
-    
+
     if (!e)
     {
         // Disabled widgets shouldn't have focus
@@ -858,7 +850,7 @@ void CWidgetManager::Init()
     CInputField::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_RED) | A_BOLD;
     CInputField::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_RED) | A_BOLD;
     
-    CProgressbar::m_cDefaultFillColors = ' ' | CWidgetWindow::GetColorPair(COLOR_BLUE, COLOR_WHITE) | A_BOLD;
+    CProgressbar::m_cDefaultFillColors = ' ' | CWidgetWindow::GetColorPair(COLOR_BLUE, COLOR_YELLOW) | A_BOLD;
     CProgressbar::m_cDefaultEmptyColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
     
     CCheckbox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
@@ -899,7 +891,18 @@ void CWidgetManager::Refresh()
 
 void CWidgetManager::RemoveChild(CWidgetWindow *p)
 {
+    p->erase();
+    
     p->m_bDeleteMe = true;
+
+    if (*m_FocusedChild == p)
+    {
+        if (!SetPrevWidget(false))
+            SetNextWidget(false);
+    }
+    
+    ::erase();
+    Refresh();
 }
 
 void CWidgetManager::ActivateChild(CWidgetWindow *p)
@@ -926,7 +929,7 @@ bool CWidgetManager::Run()
         return false;
     
     // Check for widgets that should be removed
-    bool done = false, dirty = false;
+    bool done = false;
     while(!done)
     {
         std::list<CWidgetWindow *>::iterator it = m_ChildList.begin();
@@ -934,13 +937,12 @@ bool CWidgetManager::Run()
         {
             if ((*it)->m_bDeleteMe)
             {
-                CWidgetWindow *w = *it;
                 if (m_FocusedChild == it)
                 {
                     if (!SetPrevWidget(false))
                         SetNextWidget(false);
                 }
-                
+             
                 bool changed = (m_FocusedChild != it);
                 m_ChildList.erase(it);
     
@@ -949,21 +951,14 @@ bool CWidgetManager::Run()
                     // Have to do this after the child was removed from the list, otherwise it would be invalid
                     m_FocusedChild = m_ChildList.end();
                 }
-    
-                delete w;
-                dirty = true;
+             
+                delete *it;
                 break; // Iter was removed, start over
             }
         }
         done = (it == m_ChildList.end());
     }
     
-    if (dirty)
-    {
-        ::erase();
-        Refresh();
-    }
-
     if (m_FocusedChild != m_ChildList.end())
     {
         chtype ch = (*m_FocusedChild)->getch();
@@ -1159,6 +1154,9 @@ unsigned CWidgetWindow::GetUnFormatLen(const std::string &str)
 
 int CWidgetWindow::refresh()
 {
+    if (!Enabled() || m_bDeleteMe)
+        return 0;
+    
     Draw();
 
     if (m_bBox)

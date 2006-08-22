@@ -215,7 +215,8 @@ public:
 
     virtual bool Prev(void) { return true; };
     virtual bool Next(void) { return true; };
-    virtual bool Activate(void);
+    virtual void Activate(void);
+    virtual bool CanActivate(void) { return true; };
 };
 
 class CLangScreen: public CBaseScreen
@@ -243,7 +244,7 @@ public:
     CWelcomeScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                    int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
     
-    virtual bool Activate(void);
+    virtual bool CanActivate(void);
 };
 
 class CLicenseScreen: public CBaseScreen
@@ -259,7 +260,7 @@ public:
                    int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 
     virtual bool Next(void);
-    virtual bool Activate(void);
+    virtual bool CanActivate(void);
 };
 
 class CSelectDirScreen: public CBaseScreen
@@ -295,7 +296,7 @@ public:
     void AppendText(const std::string &str) { m_pTextWin->AddText(str); m_pTextWin->refresh(); };
     void SetProgress(int n) { m_pProgressbar->SetCurrent(n); m_pProgressbar->refresh(); };
     
-    virtual bool Activate(void);
+    virtual void Activate(void);
 };
 
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
@@ -309,7 +310,6 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     virtual void DrawInit(void);
-    virtual bool Activate(void);
 
 public:
     CCFGScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
@@ -321,6 +321,8 @@ public:
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
+    
+    virtual void Activate(void);
 };
 
 extern CWidgetManager *pWidgetManager;

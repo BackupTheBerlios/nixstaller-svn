@@ -275,12 +275,15 @@ void CBaseInstall::Install(void)
     InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
                 m_szCPUArch.c_str()));
 
+    bool needroot = false;
+
     // Count all install steps that have to be taken
     m_sInstallSteps = m_sCurrentStep = !m_ArchList.empty(); // Extracting is one step
+#if 0
+
     m_sInstallSteps += m_InstallInfo.command_entries.size(); // Every install command is one step
     
     // Check if we need root access
-    bool needroot = false;
     for (std::list<command_entry_s *>::iterator it=m_InstallInfo.command_entries.begin();
          it!=m_InstallInfo.command_entries.end(); it++)
     {
@@ -299,7 +302,7 @@ void CBaseInstall::Install(void)
             else if (!needroot) needroot = true;
         }
     }
-
+#endif
     if (!needroot)
         needroot = (FileExists(m_szDestDir) && !WriteAccess(m_szDestDir));
 
@@ -310,8 +313,11 @@ void CBaseInstall::Install(void)
     if (chdir(m_szDestDir.c_str())) 
         ThrowError(true, "Could not open directory '%s'", m_szDestDir.c_str());
     
-    ExtractFiles();
-    ExecuteInstCommands();
+    if (m_LuaVM.InitCall("Install"))
+        m_LuaVM.DoCall();
+    else
+        ExtractFiles(); // Default behaviour
+    //ExecuteInstCommands();
     
     AddInstOutput("Registering installation...");
     RegisterInstall();
@@ -376,6 +382,7 @@ bool CBaseInstall::InitLua()
     m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaRadioButton::LuaSet, "SetDir", this);
 
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
+    m_LuaVM.RegisterFunction(LuaExtractFiles, "ExtractFiles", NULL, this);
     
     if (!m_LuaVM.LoadFile("config/config.lua"))
         return false;
@@ -818,6 +825,13 @@ int CBaseInstall::LuaNewCFGScreen(lua_State *L)
     const char *name = (lua_gettop(L) >= 1) ? luaL_checkstring(L, 1) : NULL;
     pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen *>(pInstaller->CreateCFGScreen(name), "cfgscreen");
     return 1;
+}
+
+int CBaseInstall::LuaExtractFiles(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    pInstaller->ExtractFiles();
+    return 0;
 }
 
 // -------------------------------------
