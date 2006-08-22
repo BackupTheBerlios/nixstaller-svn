@@ -292,8 +292,8 @@ public:
                    int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
     
     void ChangeStatusText(const char *txt, int curstep, int maxsteps);
-    void AppendText(const std::string &str) { m_pTextWin->AddText(str); };
-    void SetProgress(int n) { m_pProgressbar->SetCurrent(n); };
+    void AppendText(const std::string &str) { m_pTextWin->AddText(str); m_pTextWin->refresh(); };
+    void SetProgress(int n) { m_pProgressbar->SetCurrent(n); m_pProgressbar->refresh(); };
     
     virtual bool Activate(void);
 };

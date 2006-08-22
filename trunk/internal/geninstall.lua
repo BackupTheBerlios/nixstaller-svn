@@ -217,7 +217,8 @@ function PrepareArchive()
     os.mkdirrec(destdir)
     
     -- Configuration files
-    RequiredCopy(confdir .. "/install.lua", destdir)
+    RequiredCopy(confdir .. "/config.lua", destdir)
+    os.copy(confdir .. "/run.lua", destdir)
     os.copy(confdir .. "/welcome", destdir)
     os.copy(confdir .. "/license", destdir)
     os.copy(confdir .. "/finish", destdir)

@@ -607,6 +607,7 @@ void CInstallScreen::ChangeStatusText(const char *txt, int curstep, int maxsteps
 {
     m_pStatLabel->SetText(CreateText("<C>%s: %s (%d/%d)", m_pInstaller->GetTranslation("Status"),
                           m_pInstaller->GetTranslation(txt), curstep, maxsteps));
+    m_pStatLabel->refresh();
 }
 
 bool CInstallScreen::Activate()
