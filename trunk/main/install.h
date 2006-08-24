@@ -69,6 +69,7 @@ class CBaseInstall: virtual public CMain
     friend class CBaseLuaCheckbox;
     friend class CBaseLuaRadioButton;
     friend class CBaseLuaDirSelector;
+    friend class CBaseLuaCFGMenu;
     
 protected:
     virtual void ChangeStatusText(const char *str) = 0;
@@ -168,6 +169,28 @@ public:
     static int LuaSet(lua_State *L);
 };
 
+class CBaseLuaCFGMenu
+{
+protected:
+    enum EVarType { TYPE_DIR, TYPE_STRING, TYPE_LIST, TYPE_BOOL };
+
+    struct entry_s
+    {
+        std::string val, desc;
+        EVarType type;
+        entry_s(const char *v, const char *d, EVarType t) : val(v), desc(d), type(t) { };
+    };
+    
+    std::map<std::string, entry_s *> m_Variabeles;
+
+public:
+    virtual ~CBaseLuaCFGMenu(void);
+    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type);
+    
+    static int LuaAddString(lua_State *L);
+    static int LuaGet(lua_State *L);
+};
+
 class CBaseCFGScreen
 {
 public:
@@ -178,9 +201,11 @@ public:
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l) = 0;
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l) = 0;
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) = 0;
+    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) = 0;
     
     static int LuaAddInput(lua_State *L);
     static int LuaAddCheckbox(lua_State *L);
     static int LuaAddRadioButton(lua_State *L);
     static int LuaAddDirSelector(lua_State *L);
+    static int LuaAddCFGMenu(lua_State *L);
 };

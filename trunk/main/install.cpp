@@ -466,6 +466,7 @@ bool CBaseInstall::InitLua()
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCheckbox, "AddCheckbox", this);
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddRadioButton, "AddRadioButton", this);
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddDirSelector, "AddDirSelector", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCFGMenu, "AddCFGMenu", this);
     
     m_LuaVM.InitClass("inputfield");
     m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "Get", this);
@@ -481,6 +482,10 @@ bool CBaseInstall::InitLua()
     m_LuaVM.InitClass("dirselector");
     m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaGet, "Get", this);
     m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaSet, "Set", this);
+
+    m_LuaVM.InitClass("configmenu");
+    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaGet, "Get", this);
+    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddString, "AddString", this);
 
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
     m_LuaVM.RegisterFunction(LuaExtractFiles, "ExtractFiles", NULL, this);
@@ -1076,6 +1081,17 @@ int CBaseCFGScreen::LuaAddDirSelector(lua_State *L)
     return 1;
 }
 
+int CBaseCFGScreen::LuaAddCFGMenu(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
+    const char *desc = luaL_checkstring(L, 2);
+    
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaCFGMenu *>(screen->CreateCFGMenu(desc), "configmenu");
+    
+    return 1;
+}
+
 // -------------------------------------
 // Base Lua Inputfield Class
 // -------------------------------------
@@ -1151,3 +1167,49 @@ int CBaseLuaDirSelector::LuaSet(lua_State *L)
     sel->SetDir(dir);
     return 0;
 }
+
+// -------------------------------------
+// Base Lua config menu Class
+// -------------------------------------
+
+CBaseLuaCFGMenu::~CBaseLuaCFGMenu()
+{
+    for (std::map<std::string, entry_s *>::iterator it=m_Variabeles.begin(); it!=m_Variabeles.end(); it++)
+        delete it->second;
+}
+
+void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type)
+{
+    if (m_Variabeles[name])
+        delete m_Variabeles[name];
+    
+    m_Variabeles[name] = new entry_s(val, desc, type);
+}
+
+int CBaseLuaCFGMenu::LuaAddString(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClass<CBaseLuaCFGMenu *>("configmenu", 1);
+    const char *var = luaL_checkstring(L, 2);
+    const char *desc = luaL_checkstring(L, 3);
+    const char *val = lua_tostring(L, 4);
+
+    menu->AddVar(var, desc, val, TYPE_STRING);
+    
+    return 0;
+}
+
+int CBaseLuaCFGMenu::LuaGet(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClass<CBaseLuaCFGMenu *>("configmenu", 1);
+    const char *var = luaL_checkstring(L, 2);
+    
+    if (menu->m_Variabeles[var])
+        lua_pushstring(L, menu->m_Variabeles[var]->val.c_str());
+    else
+        luaL_error(L, "No variabele %s found in menu\n", var);
+    
+    return 1;
+}
+

@@ -395,6 +395,30 @@ bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
 }
 
 // -------------------------------------
+// Lua config menu class
+// -------------------------------------
+
+CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc) : CWidgetWindow(owner, 8, maxx, y, x, 'r', false)
+{
+    int begy = 0;
+    
+    if (desc && *desc)
+    {
+        CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
+        pDesc->AddText(desc);
+        begy += pDesc->height();
+    }
+    
+    m_pMenu = new CMenu(this, 5, maxx, begy, 0, 'r');
+}
+
+void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type)
+{
+    CBaseLuaCFGMenu::AddVar(name, desc, val, type);
+    m_pMenu->AddItem(name);
+}
+
+// -------------------------------------
 // Installer base screen class
 // -------------------------------------
 
@@ -716,3 +740,21 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
     
     return m_pNextScreen->CreateDirSelector(desc, val);
 }
+
+CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
+{
+    int h = CLuaCFGMenu::CalcHeight(desc);
+    
+    if ((h + m_iStartY) < height())
+    {
+        CLuaCFGMenu *menu = new CLuaCFGMenu(this, m_iStartY, 2, width()-2, desc);
+        m_iStartY += (h + 1);
+        return menu;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+    return m_pNextScreen->CreateCFGMenu(desc);
+}
+

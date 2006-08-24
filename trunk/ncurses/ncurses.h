@@ -190,6 +190,18 @@ public:
     static int CalcHeight(const char *desc) { return (desc && *desc) ? 3 : 1; };
 };
 
+class CLuaCFGMenu: public CBaseLuaCFGMenu, public CWidgetWindow
+{
+    CMenu *m_pMenu;
+    
+public:
+    CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc);
+    
+    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type);
+    
+    static int CalcHeight(const char *desc) { return (desc && *desc) ? 8 : 5; };
+};
+
 // -------------------------
 // Installer screens
 // -------------------------
@@ -321,6 +333,7 @@ public:
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
+    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
     
     virtual void Activate(void);
 };

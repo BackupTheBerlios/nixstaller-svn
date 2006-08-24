@@ -26,6 +26,7 @@ NCURSES FRONTEND
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
 - Finishscreen, lua config menu widget
 - Remove CDK code
+- Throw exception when lua widget doesn't fit on new screen
 
 FLTK FRONTEND
 - Translate password dialog
