@@ -89,9 +89,9 @@ void CInstaller::Next()
     EndProg();
 }
 
-void CInstaller::ChangeStatusText(const char *str, int curstep, int maxsteps)
+void CInstaller::ChangeStatusText(const char *str)
 {
-    m_pInstallScreen->ChangeStatusText(str, curstep, maxsteps);
+    m_pInstallScreen->ChangeStatusText(str);
 }
 
 void CInstaller::AddInstOutput(const std::string &str)
@@ -605,10 +605,9 @@ void CInstallScreen::DrawInit()
     m_pTextWin = new CTextWindow(this, height()-y, width()-x-2, y, x, true, true, 'r');
 }
 
-void CInstallScreen::ChangeStatusText(const char *txt, int curstep, int maxsteps)
+void CInstallScreen::ChangeStatusText(const char *txt)
 {
-    m_pStatLabel->SetText(CreateText("<C>%s: %s (%d/%d)", m_pInstaller->GetTranslation("Status"),
-                          m_pInstaller->GetTranslation(txt), curstep, maxsteps));
+    m_pStatLabel->SetText(CreateText("<C>%s", txt));
     m_pStatLabel->refresh();
 }
 
@@ -635,6 +634,8 @@ void CCFGScreen::DrawInit()
 
 void CCFGScreen::Activate()
 {
+    CBaseScreen::Activate();
+    
     if (!m_ChildList.empty())
     {
         for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)

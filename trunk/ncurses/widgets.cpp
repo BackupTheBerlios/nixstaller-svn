@@ -1474,7 +1474,7 @@ void CTextLabel::AddText(std::string text)
         
         m_FormattedText.back() += word;
     }
-    while((end != std::string::npos) && (lines < m_iMaxHeight));
+    while((end != std::string::npos) && (lines <= m_iMaxHeight));
     
     if (lines != curlines)
         resize(lines, width());

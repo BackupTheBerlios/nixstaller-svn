@@ -126,8 +126,7 @@ CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, Max
 
 char *CNCursBase::GetPassword(const char *str)
 {
-    std::string pass = ::InputDialog(str, NULL, -1, true);
-    return MakeCString(pass);
+    return strdup(::InputDialog(str, NULL, -1, true).c_str());
 }
 
 void CNCursBase::MsgBox(const char *str, ...)

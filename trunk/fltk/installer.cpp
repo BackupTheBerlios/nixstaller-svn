@@ -98,9 +98,9 @@ CInstaller::~CInstaller()
         delete *p;
 }
 
-void CInstaller::ChangeStatusText(const char *str, int curstep, int maxsteps)
+void CInstaller::ChangeStatusText(const char *str)
 {
-    m_pInstallFilesScreen->ChangeStatusText(str, curstep, maxsteps);
+    m_pInstallFilesScreen->ChangeStatusText(str);
 }
 
 void CInstaller::AddInstOutput(const std::string &str)
@@ -652,11 +652,9 @@ void CInstallFilesScreen::AppendText(const char *txt)
     Fl::wait(0.0); // Update screen
 }
 
-void CInstallFilesScreen::ChangeStatusText(const char *txt, int curstep, int maxsteps)
+void CInstallFilesScreen::ChangeStatusText(const char *txt)
 {
-    // Install entries + 1 because it doesn't include extraction
-    m_pDisplay->label(CreateText("%s: %s (%d/%d)", m_pOwner->GetTranslation("Status"), m_pOwner->GetTranslation(txt),
-                      curstep, maxsteps));
+    m_pDisplay->label(txt);
     Fl::wait(0.0); // Update screen
 }
 

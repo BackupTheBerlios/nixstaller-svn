@@ -42,6 +42,7 @@ class CBaseInstall: virtual public CMain
     std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
     char *m_szCurArchFName;
     bool m_bAlwaysRoot; // If we need root access during whole installation
+    bool m_bInstalling;
     short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
     short m_sCurrentStep;
     float m_fInstallProgress;
@@ -49,7 +50,12 @@ class CBaseInstall: virtual public CMain
     void SetNextStep(void);
     void InitArchive(char *archname);
     void ExtractFiles(void);
+    void ExecuteCommand(const char *cmd, const char *path, bool required);
+    void ExecuteCommandAsRoot(const char *cmd, const char *path, bool required);
     void ExecuteInstCommands(void);
+    const char *GetDefaultPath(void) const { return "/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
+    void VerifyIfInstalling(void);
+    void UpdateStatusText(const char *str);
     
     // App register stuff
     void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
@@ -65,7 +71,7 @@ class CBaseInstall: virtual public CMain
     friend class CBaseLuaDirSelector;
     
 protected:
-    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps) = 0;
+    virtual void ChangeStatusText(const char *str) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
 
@@ -78,7 +84,8 @@ public:
 
 
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
+                         m_bAlwaysRoot(false), m_bInstalling(false), m_sInstallSteps(0),
+                         m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
     virtual ~CBaseInstall(void);
 
     virtual bool Init(int argc, char **argv);
@@ -102,15 +109,21 @@ public:
     const char *GetParamValue(param_entry_s *pParam);
     std::string GetParameters(command_entry_s *pCommandEntry);
 
-    void UpdateStatus(const char *s);
+    void UpdateExtrStatus(const char *s);
 
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title) = 0;
     
-    static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateStatus(s); };
+    static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
+    static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddInstOutput(std::string(s)); };
 
     // Functions for lua binding
     static int LuaNewCFGScreen(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
+    static int LuaExecuteCMD(lua_State *L);
+    static int LuaExecuteCMDAsRoot(lua_State *L);
+    static int LuaAskRootPW(lua_State *L);
+    static int LuaSetStatusMSG(lua_State *L);
+    static int LuaSetStepCount(lua_State *L);
 };
 
 class CBaseLuaInputField

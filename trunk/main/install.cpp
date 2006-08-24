@@ -123,20 +123,22 @@ void CBaseInstall::InitArchive(char *archname)
 }
 
 void CBaseInstall::ExtractFiles()
-{    
+{
+    VerifyIfInstalling();
+    
     if (m_ArchList.empty())
     {
         debugline("No files to extract\n");
         return; // No files to extract
     }
     
-    ChangeStatusText("Extracting files", m_sCurrentStep, m_sInstallSteps);
+    UpdateStatusText("Extracting files");
     
     m_bAlwaysRoot = !WriteAccess(m_szDestDir);
     
     if (m_bAlwaysRoot)
         m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
-    
+
     while (m_CurArchIter != m_ArchList.end())
     {
         m_szCurArchFName = m_CurArchIter->first;
@@ -175,7 +177,7 @@ void CBaseInstall::ExtractFiles()
             
             char line[512];
             while (fgets(line, sizeof(line), pipe))
-                UpdateStatus(line);
+                UpdateExtrStatus(line);
             
             // Check if command exitted normally and close pipe
             int state = pclose(pipe);
@@ -185,11 +187,84 @@ void CBaseInstall::ExtractFiles()
         m_CurArchIter++;
     }
     
-    SetNextStep();
+    //SetNextStep();
 }
 
-void CBaseInstall::ExecuteInstCommands(void)
+void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool required)
 {
+    VerifyIfInstalling();
+    
+    if (m_bAlwaysRoot)
+    {
+        ExecuteCommandAsRoot(cmd, path, required);
+        return;
+    }
+    
+    // Redirect stderr to stdout, so that errors will be displayed too
+    const char *append = " 2>&1";
+    char command[strlen(cmd) + strlen(append)];
+    strcpy(command, cmd);
+    strcat(command, append);
+    
+    if (path && *path)
+        setenv("PATH", path, 1);
+    else
+        setenv("PATH", GetDefaultPath(), 1);
+    
+    AddInstOutput(CreateText("\nExecute: %s\n\n", cmd));
+    
+    FILE *pPipe = popen(command, "r");
+    if (pPipe)
+    {
+        char buf[1024];
+        while(fgets(buf, sizeof(buf), pPipe))
+            AddInstOutput(buf);
+                
+        // Check if command exitted normally and close pipe
+        int state = pclose(pPipe);
+        if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution fails
+        {
+            if (required)
+                ThrowError(true, "Failed to execute install command");
+        }
+    }
+    else
+        ThrowError(true, "Could not execute installation commands (could not open pipe)");
+}
+
+void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, const char *path, bool required)
+{
+    VerifyIfInstalling();
+    
+    if (!m_szPassword)
+        SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
+                "Please enter the password of the root user");
+    
+    m_SUHandler.SetOutputFunc(CMDSUOutFunc, this);
+
+    if (!path || !*path)
+        path = GetDefaultPath();
+    
+    m_SUHandler.SetPath(path);
+    m_SUHandler.SetCommand(cmd);
+    
+    AddInstOutput(CreateText("\nExecute: %s\n\n", cmd));
+    
+    if (!m_SUHandler.ExecuteCommand(m_szPassword))
+    {
+        if (required)
+        {
+            CleanPasswdString(m_szPassword);
+            m_szPassword = NULL;
+            ThrowError(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
+                       m_SUHandler.GetErrorMsgC());
+        }
+    }
+}
+
+void CBaseInstall::ExecuteInstCommands()
+{
+#if 0
     for (std::list<command_entry_s*>::iterator it=m_InstallInfo.command_entries.begin();
          it!=m_InstallInfo.command_entries.end(); it++)
     {
@@ -250,6 +325,30 @@ void CBaseInstall::ExecuteInstCommands(void)
         
         SetNextStep();
     }
+#endif
+}
+
+void CBaseInstall::VerifyIfInstalling()
+{
+    if (!m_bInstalling)
+        ThrowError(false, "Error: function called when install is not in progress\n");
+}
+
+void CBaseInstall::UpdateStatusText(const char *msg)
+{
+    if (m_sCurrentStep > 0)
+    {
+        m_fInstallProgress += (1.0f/(float)m_sInstallSteps)*100.0f;
+        SetProgress(m_fInstallProgress);
+    }
+    
+    m_sCurrentStep++;
+    
+    if (m_sInstallSteps > 1)
+        ChangeStatusText(CreateText("%s: %s (%d/%d)", GetTranslation("Status"),
+                         GetTranslation(msg), m_sCurrentStep, m_sInstallSteps));
+    else
+        ChangeStatusText(CreateText("%s: %s", GetTranslation("Status"), GetTranslation(msg)));
 }
 
 void CBaseInstall::Install(void)
@@ -267,7 +366,9 @@ void CBaseInstall::Install(void)
              GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
             EndProg();
     }
-        
+    
+    m_bInstalling = true;
+    
     // Init all archives (if file doesn't exist nothing will be done)
     InitArchive(CreateText("%s/instarchive_all", m_szOwnDir.c_str()));
     InitArchive(CreateText("%s/instarchive_all_%s", m_szOwnDir.c_str(), m_szCPUArch.c_str()));
@@ -278,7 +379,6 @@ void CBaseInstall::Install(void)
     bool needroot = false;
 
     // Count all install steps that have to be taken
-    m_sInstallSteps = m_sCurrentStep = !m_ArchList.empty(); // Extracting is one step
 #if 0
 
     m_sInstallSteps += m_InstallInfo.command_entries.size(); // Every install command is one step
@@ -329,9 +429,10 @@ void CBaseInstall::Install(void)
     MsgBox(GetTranslation("Installation of %s complete!"), m_InstallInfo.program_name.c_str());
     CleanPasswdString(m_szPassword);
     m_szPassword = NULL;
+    m_bInstalling = false;
 }
 
-void CBaseInstall::UpdateStatus(const char *s)
+void CBaseInstall::UpdateExtrStatus(const char *s)
 {
     if (!s || !s[0])
         return;
@@ -370,19 +471,24 @@ bool CBaseInstall::InitLua()
     m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "Get", this);
     
     m_LuaVM.InitClass("checkbox");
-    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaGet, "Enabled", this);
-    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaSet, "Enable", this);
+    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaGet, "Get", this);
+    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaSet, "Set", this);
     
     m_LuaVM.InitClass("radiobutton");
-    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaGet, "EnabledButton", this);
-    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaSet, "Enable", this);
+    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaGet, "Get", this);
+    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaSet, "Set", this);
 
     m_LuaVM.InitClass("dirselector");
-    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaRadioButton::LuaGet, "GetDir", this);
-    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaRadioButton::LuaSet, "SetDir", this);
+    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaGet, "Get", this);
+    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaSet, "Set", this);
 
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
     m_LuaVM.RegisterFunction(LuaExtractFiles, "ExtractFiles", NULL, this);
+    m_LuaVM.RegisterFunction(LuaExecuteCMD, "Execute", NULL, this);
+    m_LuaVM.RegisterFunction(LuaExecuteCMDAsRoot, "ExecuteAsRoot", NULL, this);
+    m_LuaVM.RegisterFunction(LuaAskRootPW, "AskRootPW", NULL, this);
+    m_LuaVM.RegisterFunction(LuaSetStatusMSG, "SetStatus", NULL, this);
+    m_LuaVM.RegisterFunction(LuaSetStepCount, "SetStepCount", NULL, this);
     
     if (!m_LuaVM.LoadFile("config/config.lua"))
         return false;
@@ -834,6 +940,66 @@ int CBaseInstall::LuaExtractFiles(lua_State *L)
     return 0;
 }
 
+int CBaseInstall::LuaExecuteCMD(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    const char *cmd = luaL_checkstring(L, 1);
+    const char *path = lua_tostring(L, 2);
+    bool required = true;
+    
+    if (lua_isboolean(L, 3))
+        required = lua_toboolean(L, 3);
+    
+    pInstaller->ExecuteCommand(cmd, path, required);
+    return 0;
+}
+
+int CBaseInstall::LuaExecuteCMDAsRoot(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    const char *cmd = luaL_checkstring(L, 1);
+    const char *path = lua_tostring(L, 2);
+    bool required = true;
+    
+    if (lua_isboolean(L, 3))
+        required = lua_toboolean(L, 3);
+    
+    pInstaller->ExecuteCommandAsRoot(cmd, path, required);
+    return 0;
+}
+
+int CBaseInstall::LuaAskRootPW(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    pInstaller->VerifyIfInstalling();
+    if (!pInstaller->m_szPassword)
+        pInstaller->SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
+                            "Please enter the password of the root user");
+    return 0;
+}
+
+int CBaseInstall::LuaSetStatusMSG(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    
+    pInstaller->VerifyIfInstalling();
+    
+    const char *msg = luaL_checkstring(L, 1);
+    pInstaller->UpdateStatusText(msg);
+    return 0;
+}
+
+int CBaseInstall::LuaSetStepCount(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    
+    pInstaller->VerifyIfInstalling();
+    
+    int n = luaL_checkint(L, 1);
+    pInstaller->m_sInstallSteps = n + !pInstaller->m_ArchList.empty();
+    return 0;
+}
+
 // -------------------------------------
 // Base install config screen Class
 // -------------------------------------
@@ -975,4 +1141,13 @@ int CBaseLuaDirSelector::LuaGet(lua_State *L)
     CBaseLuaDirSelector *sel = pInstaller->m_LuaVM.CheckClass<CBaseLuaDirSelector *>("dirselector", 1);
     lua_pushstring(L, sel->GetDir());
     return 1;
+}
+
+int CBaseLuaDirSelector::LuaSet(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaDirSelector *sel = pInstaller->m_LuaVM.CheckClass<CBaseLuaDirSelector *>("dirselector", 1);
+    const char *dir = luaL_checkstring(L, 2);
+    sel->SetDir(dir);
+    return 0;
 }

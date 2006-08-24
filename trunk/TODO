@@ -1,5 +1,5 @@
 OVERALL
-- Check if version is specified in install.cfg
+- Check if version is specified in config file?
 - Translate param names and param choices
 - Load english text strings before language has been selected
 - Check for tar with gzip/bzip on other platforms(Solaris...)
@@ -10,20 +10,26 @@ OVERALL
 - Use vasprintf instead of vsprintf whenever possible.
 - Usage of exceptions(StrToMode)
 - GetTranslation - Global or not?
+- Clean SVN trunk
 
 MAIN
 - Better error handling for register
 - Check path for rm
 - Error handling in lua class(exceptions, type checking)
+- Lua code for all install vars
+- Use lua config code
+- Remove old config code
 
 NCURSES FRONTEND
 - Error handling in file manager
 - Multiple focused widgets?
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
+- Finishscreen, lua config menu widget
+- Remove CDK code
 
 FLTK FRONTEND
 - Translate password dialog
-
+- Lua widgets
 
 DOCS
 

@@ -108,7 +108,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     void Next(void);
     
 protected:
-    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps);
+    virtual void ChangeStatusText(const char *str);
     virtual void AddInstOutput(const std::string &str);
     virtual void SetProgress(int percent);
     
@@ -292,7 +292,7 @@ public:
     CInstallScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                    int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
     
-    void ChangeStatusText(const char *txt, int curstep, int maxsteps);
+    void ChangeStatusText(const char *txt);
     void AppendText(const std::string &str) { m_pTextWin->AddText(str); m_pTextWin->refresh(); };
     void SetProgress(int n) { m_pProgressbar->SetCurrent(n); m_pProgressbar->refresh(); };
     

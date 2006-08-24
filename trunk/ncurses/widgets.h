@@ -506,8 +506,8 @@ public:
     CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
     void AddText(std::string text);
-    void SetText(const std::string &text) { if (!m_FormattedText.empty()) m_FormattedText.clear(); AddText(text); };
-    void SetText(const char *text) { if (!m_FormattedText.empty()) m_FormattedText.clear(); AddText(text); };
+    void SetText(const std::string &text) { m_FormattedText.clear(); AddText(text); };
+    void SetText(const char *text) { m_FormattedText.clear(); AddText(text); };
 };
 
 class CTextWindow: public CWidgetWindow

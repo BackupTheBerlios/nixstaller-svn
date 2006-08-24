@@ -126,7 +126,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     std::list<CBaseScreen *> m_ScreenList;
     
 protected:
-    virtual void ChangeStatusText(const char *str, int curstep, int maxsteps);
+    virtual void ChangeStatusText(const char *str);
     virtual void AddInstOutput(const std::string &str);
     virtual void SetProgress(int percent);
     
@@ -321,7 +321,7 @@ public:
     
     void AppendText(const char *txt);
     void AppendText(const std::string &txt) { AppendText(txt.c_str()); };
-    void ChangeStatusText(const char *txt, int curstep, int maxsteps);
+    void ChangeStatusText(const char *txt);
     void SetProgress(int percent) { m_pProgress->value(percent); Fl::wait(0.0); };
 };
 
