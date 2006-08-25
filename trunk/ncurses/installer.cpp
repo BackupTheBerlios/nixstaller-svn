@@ -398,9 +398,10 @@ bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
 // Lua config menu class
 // -------------------------------------
 
-CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc) : CWidgetWindow(owner, 8, maxx, y, x, 'r', false)
+CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc) : CWidgetWindow(owner, 10, maxx, y, x, 'r', false)
 {
     int begy = 0;
+    const int menuw = maxx / 2;
     
     if (desc && *desc)
     {
@@ -409,13 +410,73 @@ CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *
         begy += pDesc->height();
     }
     
-    m_pMenu = new CMenu(this, 5, maxx, begy, 0, 'r');
+    m_pMenu = new CMenu(this, 7, menuw, begy, 0, 'r');
+    m_pInfoLabel = new CTextLabel(this, 7, maxx-2-menuw, begy, menuw+2, 'r');
 }
 
-void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type)
+void CLuaCFGMenu::SetInfo()
 {
-    CBaseLuaCFGMenu::AddVar(name, desc, val, type);
+    std::string item = m_pMenu->GetCurrentItemName();
+    if (!item.empty() && m_Variabeles[item])
+    {
+        if (m_Variabeles[item]->type == TYPE_BOOL)
+            m_pInfoLabel->SetText(CreateText("Current: %s\nDefault: %s", InfoBoolStr(m_Variabeles[item]->val), InfoBoolStr(m_Variabeles[item]->def)));
+        else
+            m_pInfoLabel->SetText(CreateText("Current: %s\nDefault: %s", m_Variabeles[item]->val.c_str(), m_Variabeles[item]->def.c_str()));
+        
+        m_pInfoLabel->refresh();
+    }
+}
+
+bool CLuaCFGMenu::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (p == m_pMenu)
+    {
+        std::string item = m_pMenu->GetCurrentItemName();
+        if (!item.empty() && m_Variabeles[item])
+        {
+            if (type == EVENT_CALLBACK)
+            {
+                std::string newval;
+                switch (m_Variabeles[item]->type)
+                {
+                    case TYPE_DIR:
+                        newval = FileDialog(m_Variabeles[item]->val.c_str(), CreateText("Please select a directory for %s", item.c_str()));
+                        break;
+                    case TYPE_STRING:
+                        newval = InputDialog(CreateText("Please enter a new value for %s", item.c_str()), m_Variabeles[item]->val.c_str());
+                        break;
+                    case TYPE_LIST:
+                    case TYPE_BOOL:
+                        newval = MenuDialog(CreateText("Please choose a new value for %s", item.c_str()), m_Variabeles[item]->options,
+                                            m_Variabeles[item]->val.c_str());
+                        break;
+                }
+                
+                if (!newval.empty())
+                {
+                    m_Variabeles[item]->val = newval;
+                    SetInfo();
+                }
+            }
+            else if (type == EVENT_DATACHANGED)
+            {
+                SetInfo();
+            }
+            else
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l)
+{
+    CBaseLuaCFGMenu::AddVar(name, desc, val, type, l);
     m_pMenu->AddItem(name);
+    
+    SetInfo();
 }
 
 // -------------------------------------

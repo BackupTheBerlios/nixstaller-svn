@@ -404,3 +404,23 @@ std::string FileDialog(const char *start, const char *info)
     
     return ret;
 }
+
+std::string MenuDialog(const char *title, const std::list<std::string> &l, const char *def)
+{
+    int width = Min(50, MaxX());
+    int height = Min(30, MaxY());
+    CMenuDialog *dialog = new CMenuDialog(pWidgetManager, height, width, 0, 0, title);
+    
+    for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
+        dialog->AddItem(*it);
+    
+    if (def && *def)
+        dialog->SetItem(def);
+    
+    dialog->refresh();
+    std::string ret = dialog->Run();
+    
+    pWidgetManager->RemoveChild(dialog);
+    
+    return ret;
+}

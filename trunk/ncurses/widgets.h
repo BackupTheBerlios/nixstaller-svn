@@ -571,6 +571,8 @@ public:
     void Clear(void);
     int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
     const std::string &GetCurrentItemName(void) { return m_MenuItems[GetCurrent()]; };
+    void SetCurrent(const std::string &str);
+    void SetCurrent(const char *str) { SetCurrent(std::string(str)); };
     bool Empty(void) { return m_MenuItems.empty(); };
 };
 
@@ -774,6 +776,28 @@ public:
     
     CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *s,
                 const char *i);
+    
+    const std::string &Run(void);
+};
+
+class CMenuDialog: public CWidgetBox
+{
+    CMenu *m_pMenu;
+    CButton *m_pOKButton, *m_pCancelButton;
+    std::string m_szSelection;
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
+
+public:
+    static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+
+    CMenuDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *info);
+
+    void AddItem(const std::string &s) { m_pMenu->AddItem(s); };
+    void AddItem(const char *s) { m_pMenu->AddItem(s); };
+    void SetItem(const std::string &s) { m_pMenu->SetCurrent(s); };
+    void SetItem(const char *s) { m_pMenu->SetCurrent(s); };
     
     const std::string &Run(void);
 };

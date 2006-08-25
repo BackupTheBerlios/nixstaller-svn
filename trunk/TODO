@@ -27,6 +27,7 @@ NCURSES FRONTEND
 - Finishscreen, lua config menu widget
 - Remove CDK code
 - Throw exception when lua widget doesn't fit on new screen
+- Translations
 
 FLTK FRONTEND
 - Translate password dialog

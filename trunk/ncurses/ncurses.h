@@ -51,6 +51,7 @@ bool YesNoBox(const char *msg, ...);
 int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
 std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
 std::string FileDialog(const char *start, const char *info);
+std::string MenuDialog(const char *title, const std::list<std::string> &l, const char *def=NULL);
 
 #include "widgets.h"
 
@@ -193,13 +194,19 @@ public:
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CWidgetWindow
 {
     CMenu *m_pMenu;
+    CTextLabel *m_pInfoLabel;
+    
+    void SetInfo(void);
+    
+protected:
+    virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
     CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc);
     
-    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type);
+    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l=NULL);
     
-    static int CalcHeight(const char *desc) { return (desc && *desc) ? 8 : 5; };
+    static int CalcHeight(const char *desc) { return (desc && *desc) ? 10 : 7; };
 };
 
 // -------------------------

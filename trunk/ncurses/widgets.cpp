@@ -876,6 +876,9 @@ void CWidgetManager::Init()
 
     CFileDialog::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CFileDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    
+    CMenuDialog::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
+    CMenuDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
 }
 
 void CWidgetManager::Refresh()
@@ -1802,12 +1805,6 @@ bool CMenu::HandleKey(chtype ch)
     
     bool handled = true;
     
-    if (m_bSortItems)
-    {
-        std::sort(m_MenuItems.begin(), m_MenuItems.end());
-        m_bSortItems = false;
-    }
-
     switch (ch)
     {
         case KEY_LEFT:
@@ -1867,6 +1864,26 @@ bool CMenu::HandleKey(chtype ch)
 
 void CMenu::Draw()
 {
+    if (m_bSortItems)
+    {
+        unsigned curind = GetCurrent();
+        std::vector<std::string>::iterator cur = m_MenuItems.begin() + curind;
+        
+        std::sort(m_MenuItems.begin(), m_MenuItems.end());
+        m_bSortItems = false;
+
+        if (cur != (m_MenuItems.begin() + GetCurrent()))
+        {
+            unsigned n = 0;
+            for (std::vector<std::string>::iterator it=m_MenuItems.begin(); it!=m_MenuItems.end(); it++, n++)
+            {
+                debugline("Changing current after sort(%d, %d)\n", curind, n);
+                if (it == cur)
+                    VScroll(curind - n);
+            }
+        }
+    }
+
     int lines = 0; // Printed lines
     
     m_pTextWin->erase();
@@ -1896,7 +1913,8 @@ void CMenu::Draw()
 void CMenu::AddItem(std::string s)
 {
     m_MenuItems.push_back(s);
-    m_bSortItems = true;
+    //m_bSortItems = true;
+    std::sort(m_MenuItems.begin(), m_MenuItems.end());
     
     int h = m_MenuItems.size() - m_pTextWin->height();
     if (h < 0)
@@ -1914,6 +1932,20 @@ void CMenu::AddItem(std::string s)
     
     m_pVScrollbar->Enable((m_MenuItems.size() > m_pTextWin->height()));
     m_pHScrollbar->Enable((m_iLongestLine > m_pTextWin->width()));
+}
+
+void CMenu::SetCurrent(const std::string &str)
+{
+    std::vector<std::string>::iterator it = std::find(m_MenuItems.begin(), m_MenuItems.end(), str);
+    
+    if (it != m_MenuItems.end())
+    {
+        std::vector<std::string>::iterator cur = (m_MenuItems.begin() + GetCurrent());
+        VScroll(std::distance(cur, it));
+        PushEvent(EVENT_DATACHANGED);
+    }
+    else
+        ;// UNDONE: Exception?
 }
 
 void CMenu::Clear()
@@ -2713,4 +2745,67 @@ const std::string &CFileDialog::Run()
         m_szSelectedDir = "";
     
     return m_szSelectedDir;
+}
+
+// -------------------------------------
+// Menu dialog class
+// -------------------------------------
+
+chtype CMenuDialog::m_cDefaultFocusedColors;
+chtype CMenuDialog::m_cDefaultDefocusedColors;
+
+CMenuDialog::CMenuDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
+                         const char *info) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, info,
+                                             m_cDefaultFocusedColors, m_cDefaultDefocusedColors)
+{
+    int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
+    const int menuh = maxlines - y - 4;
+    m_pMenu = new CMenu(this, menuh, ncols-4, y, 2, 'r');
+    
+    int x = ((ncols + 2) - (2 * 20 + 2)) / 2;
+    y += (menuh + 2);
+    m_pOKButton = new CButton(this, 1, 20, y, x, "OK", 'r');
+    
+    m_pCancelButton = new CButton(this, 1, 20, y, x+22, "Cancel", 'r');
+    
+    ActivateChild(m_pMenu);
+    
+    Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
+}
+
+bool CMenuDialog::HandleEvent(CWidgetHandler *p, int type)
+{
+    if (p == m_pMenu)
+    {
+        if (type == EVENT_CALLBACK)
+        {
+            m_bFinished = true;
+            m_bCanceled = false;
+            m_szSelection = m_pMenu->GetCurrentItemName();
+            return true;
+        }
+    }
+    else if (p == m_pOKButton)
+    {
+        m_bFinished = true;
+        m_bCanceled = false;
+        m_szSelection = m_pMenu->GetCurrentItemName();
+        return true;
+    }
+    else if (p == m_pCancelButton)
+    {
+        m_bFinished = m_bCanceled = true;
+        m_szSelection = "";
+        return true;
+    }
+    
+    return false;
+}
+
+const std::string &CMenuDialog::Run()
+{
+    while (m_pWidgetManager->Run() && !m_bFinished)
+        ;
+    
+    return m_szSelection;
 }

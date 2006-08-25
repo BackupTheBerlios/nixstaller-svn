@@ -176,18 +176,27 @@ protected:
 
     struct entry_s
     {
-        std::string val, desc;
+        std::string val, def, desc;
+        std::list<std::string> options;
         EVarType type;
-        entry_s(const char *v, const char *d, EVarType t) : val(v), desc(d), type(t) { };
+        entry_s(const char *v, const char *d, EVarType t) : val(v), def(v), desc(d), type(t) { };
     };
     
     std::map<std::string, entry_s *> m_Variabeles;
+    
+    const char *BoolToStr(bool b) { return (b) ? "Enable" : "Disable"; };
+    const char *InfoBoolStr(const std::string &s) { return (!s.empty() && (s == "Enable")) ? "Enabled" : "Disabled"; };
+    bool StrToBool(const char *s) { if (s && *s && !strcmp(s, "Enable")) return true; else return false; };
+    bool StrToBool(const std::string &s) { if (!s.empty() && (s == "Enable")) return true; else return false; };
 
 public:
     virtual ~CBaseLuaCFGMenu(void);
-    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type);
+    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l=NULL);
     
+    static int LuaAddDir(lua_State *L);
     static int LuaAddString(lua_State *L);
+    static int LuaAddList(lua_State *L);
+    static int LuaAddBool(lua_State *L);
     static int LuaGet(lua_State *L);
 };
 
