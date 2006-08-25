@@ -1184,9 +1184,40 @@ CBaseLuaCFGMenu::~CBaseLuaCFGMenu()
 void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l)
 {
     if (m_Variabeles[name])
+    {
         delete m_Variabeles[name];
+        m_Variabeles[name] = NULL;
+    }
     
-    m_Variabeles[name] = new entry_s(val, desc, type);
+    const char *value = val;
+    std::list<std::string> opts;
+    
+    if (l)
+        l->sort();
+    
+    if (!value || !*value)
+    {
+        switch (type)
+        {
+            case TYPE_DIR:
+                value = "/";
+                break;
+            case TYPE_STRING:
+                value = "";
+                break;
+            case TYPE_LIST:
+                if (l)
+                    value = l->front().c_str();
+                else
+                    value = "";
+                break;
+            case TYPE_BOOL:
+                value = "Disable";
+                break;
+        }
+    }
+    
+    m_Variabeles[name] = new entry_s(value, desc, type);
     
     if (l)
     {
@@ -1245,7 +1276,7 @@ int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
 
     const char *val = lua_tostring(L, 5);
     
-    menu->AddVar(var, desc, (val) ? val : l.front().c_str(), TYPE_LIST, &l);
+    menu->AddVar(var, desc, val, TYPE_LIST, &l);
     
     return 0;
 }
@@ -1259,10 +1290,10 @@ int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
     bool val = (lua_isboolean(L, 4)) ? lua_toboolean(L, 4) : false;
 
     std::list<std::string> l;
-    l.push_back("Enable");
     l.push_back("Disable");
+    l.push_back("Enable");
     
-    menu->AddVar(var, desc, (val) ? "Enable" : "Disable", TYPE_BOOL, &l);
+    menu->AddVar(var, desc, menu->BoolToStr(val), TYPE_BOOL, &l);
     
     return 0;
 }

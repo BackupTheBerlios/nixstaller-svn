@@ -408,7 +408,7 @@ std::string FileDialog(const char *start, const char *info)
 std::string MenuDialog(const char *title, const std::list<std::string> &l, const char *def)
 {
     int width = Min(50, MaxX());
-    int height = Min(30, MaxY());
+    int height = Min(15, MaxY());
     CMenuDialog *dialog = new CMenuDialog(pWidgetManager, height, width, 0, 0, title);
     
     for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)

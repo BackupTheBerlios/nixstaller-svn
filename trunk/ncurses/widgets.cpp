@@ -1448,7 +1448,13 @@ void CTextLabel::AddText(std::string text)
         if ((end != std::string::npos) && (text[end] == '\n'))
             end++; // Include \n in word
 
-        if (end != std::string::npos)
+        if (GetUnFormatLen(text.substr(start, end-start)) > width())
+        {
+            word = text.substr(start, width());
+            start += width();
+            end = start; // HACK: So that loop won't be broken
+        }
+        else if (end != std::string::npos)
         {
             word = text.substr(start, (end-start));
 
@@ -1615,13 +1621,15 @@ void CTextWindow::AddText(std::string text)
             if ((end != std::string::npos) && (text[end] == '\n'))
                 end++; // Include \n in word
             
-            if (end != std::string::npos)
-                word = text.substr(start, (end-start));
-            else
-                word = text.substr(start);
-            
-            if (end != std::string::npos)
+            if (GetUnFormatLen(text.substr(start, end-start)) > width())
             {
+                word = text.substr(start, width());
+                start += width();
+                end = start; // HACK: So that loop won't be broken
+            }
+            else if (end != std::string::npos)
+            {
+                word = text.substr(start, (end-start));
                 start = end;
                 end = text.find_first_not_of(" \t", start);
                 if (end != std::string::npos)
@@ -1632,6 +1640,8 @@ void CTextWindow::AddText(std::string text)
                 else
                     start++; // Start searching on next char
             }
+            else
+                word = text.substr(start);
             
             if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
                 ((GetUnFormatLen(m_FormattedText.back())+GetUnFormatLen(word)) > m_pTextWin->width()))
@@ -1693,6 +1703,15 @@ void CTextWindow::AddText(std::string text)
         ScrollToBottom();
 }
 
+void CTextWindow::Clear()
+{
+    m_FormattedText.clear();
+    m_iCurrentLine = -1;
+    m_iLongestLine = 0;
+    m_pVScrollbar->SetMinMax(0, 0);
+    m_pHScrollbar->SetMinMax(0, 0);
+}
+
 void CTextWindow::LoadFile(const char *fname)
 {
     std::ifstream file(fname);
@@ -1723,7 +1742,7 @@ void CTextWindow::Draw()
     }
 
     m_pVScrollbar->Enable((HasBox() && (m_FormattedText.size() > m_pTextWin->height())));
-    m_pHScrollbar->Enable(!m_bWrap && HasBox() && (m_iLongestLine > m_pTextWin->width()));        
+    m_pHScrollbar->Enable(!m_bWrap && HasBox() && (m_iLongestLine > m_pTextWin->width()));
 }
 
 // -------------------------------------
@@ -1736,7 +1755,7 @@ chtype CMenu::m_cDefaultDefocusedColors;
 CMenu::CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true,
                                             true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                              m_bSortItems(false), m_iCursorLine(0), m_iStartEntry(0), m_iLongestLine(0)
+                              m_iCursorLine(0), m_iStartEntry(0), m_iLongestLine(0)
 {
     m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
     m_pVScrollbar = new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 100, true, 'r');
@@ -1864,38 +1883,12 @@ bool CMenu::HandleKey(chtype ch)
 
 void CMenu::Draw()
 {
-    if (m_bSortItems)
-    {
-        unsigned curind = GetCurrent();
-        std::vector<std::string>::iterator cur = m_MenuItems.begin() + curind;
-        
-        std::sort(m_MenuItems.begin(), m_MenuItems.end());
-        m_bSortItems = false;
-
-        if (cur != (m_MenuItems.begin() + GetCurrent()))
-        {
-            unsigned n = 0;
-            for (std::vector<std::string>::iterator it=m_MenuItems.begin(); it!=m_MenuItems.end(); it++, n++)
-            {
-                debugline("Changing current after sort(%d, %d)\n", curind, n);
-                if (it == cur)
-                    VScroll(curind - n);
-            }
-        }
-    }
-
     int lines = 0; // Printed lines
     
     m_pTextWin->erase();
     
     if (!m_MenuItems.empty())
     {
-        if (m_bSortItems)
-        {
-            std::sort(m_MenuItems.begin(), m_MenuItems.end());
-            m_bSortItems = false;
-        }
-        
         for(int i=m_iStartEntry; ((i<m_MenuItems.size()) && (lines<m_pTextWin->height())); i++, lines++)
         {
             if (m_iCursorLine == lines)
@@ -1912,9 +1905,11 @@ void CMenu::Draw()
 
 void CMenu::AddItem(std::string s)
 {
-    m_MenuItems.push_back(s);
-    //m_bSortItems = true;
-    std::sort(m_MenuItems.begin(), m_MenuItems.end());
+    // Search a place that won't mess up sorted vector
+    std::vector<std::string>::iterator it = std::lower_bound(m_MenuItems.begin(), m_MenuItems.end(), s);
+    
+    if ((it == m_MenuItems.end()) || (*it != s)) // Don't add duplicates
+        m_MenuItems.insert(it, s);
     
     int h = m_MenuItems.size() - m_pTextWin->height();
     if (h < 0)
@@ -2763,7 +2758,7 @@ CMenuDialog::CMenuDialog(CWidgetManager *owner, int maxlines, int ncols, int beg
     m_pMenu = new CMenu(this, menuh, ncols-4, y, 2, 'r');
     
     int x = ((ncols + 2) - (2 * 20 + 2)) / 2;
-    y += (menuh + 2);
+    y += (menuh + 1);
     m_pOKButton = new CButton(this, 1, 20, y, x, "OK", 'r');
     
     m_pCancelButton = new CButton(this, 1, 20, y, x+22, "Cancel", 'r');

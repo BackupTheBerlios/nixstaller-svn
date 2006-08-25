@@ -34,7 +34,7 @@ FLTK FRONTEND
 - Lua widgets
 
 DOCS
-
+- Max config var description length
 
 FOR RELEASE
 - CFLAGS: Add -Os; remove -g

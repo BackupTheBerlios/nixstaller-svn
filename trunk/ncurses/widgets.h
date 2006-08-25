@@ -363,6 +363,7 @@ public:
     
     bool Focused(void) { return m_bFocused; };
     bool CanFocus(void) { return m_bCanFocus; };
+    void SetCanFocus(bool f) { m_bCanFocus = f; };
     
     void BindKeyWidget(CWidgetHandler *p) { m_pBoundKeyWidget = p; };
 };
@@ -538,13 +539,15 @@ public:
                 char absrel = 'a', bool box=true);
                                      
     void AddText(std::string text);
+    void Clear(void);
+    void SetText(const std::string &text) { Clear(); AddText(text); };
+    void SetText(const char *text) { Clear(); AddText(text); };
     void LoadFile(const char *fname);
 };
 
 class CMenu: public CWidgetWindow
 {
     std::vector<std::string> m_MenuItems;
-    bool m_bSortItems;
     int m_iCursorLine;
     int m_iStartEntry; // First entry to display(for scrolling)
     int m_iLongestLine;
@@ -553,7 +556,8 @@ class CMenu: public CWidgetWindow
     
     void HScroll(int n);
     void VScroll(int n);
-            
+    int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
+
     // Used for std::lower_bound()
     static bool LowerChar(const std::string &str, chtype ch) { return (str[0] < ch); };
 
@@ -569,7 +573,6 @@ public:
     
     void AddItem(std::string s);
     void Clear(void);
-    int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
     const std::string &GetCurrentItemName(void) { return m_MenuItems[GetCurrent()]; };
     void SetCurrent(const std::string &str);
     void SetCurrent(const char *str) { SetCurrent(std::string(str)); };

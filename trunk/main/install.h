@@ -185,7 +185,6 @@ protected:
     std::map<std::string, entry_s *> m_Variabeles;
     
     const char *BoolToStr(bool b) { return (b) ? "Enable" : "Disable"; };
-    const char *InfoBoolStr(const std::string &s) { return (!s.empty() && (s == "Enable")) ? "Enabled" : "Disabled"; };
     bool StrToBool(const char *s) { if (s && *s && !strcmp(s, "Enable")) return true; else return false; };
     bool StrToBool(const std::string &s) { if (!s.empty() && (s == "Enable")) return true; else return false; };
 

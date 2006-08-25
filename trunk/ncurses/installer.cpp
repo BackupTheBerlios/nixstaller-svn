@@ -401,17 +401,19 @@ bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
 CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc) : CWidgetWindow(owner, 10, maxx, y, x, 'r', false)
 {
     int begy = 0;
-    const int menuw = maxx / 2;
+    const int menuw = 20;
+    const int infow = maxx - 2 - menuw;
     
     if (desc && *desc)
     {
         CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
-        pDesc->AddText(desc);
+        pDesc->AddText(CreateText("%s", desc));
         begy += pDesc->height();
     }
     
     m_pMenu = new CMenu(this, 7, menuw, begy, 0, 'r');
-    m_pInfoLabel = new CTextLabel(this, 7, maxx-2-menuw, begy, menuw+2, 'r');
+    m_pInfoWindow = new CTextWindow(this, 7, infow, begy, menuw+2, true, false, 'r');
+    ActivateChild(m_pMenu);
 }
 
 void CLuaCFGMenu::SetInfo()
@@ -419,12 +421,8 @@ void CLuaCFGMenu::SetInfo()
     std::string item = m_pMenu->GetCurrentItemName();
     if (!item.empty() && m_Variabeles[item])
     {
-        if (m_Variabeles[item]->type == TYPE_BOOL)
-            m_pInfoLabel->SetText(CreateText("Current: %s\nDefault: %s", InfoBoolStr(m_Variabeles[item]->val), InfoBoolStr(m_Variabeles[item]->def)));
-        else
-            m_pInfoLabel->SetText(CreateText("Current: %s\nDefault: %s", m_Variabeles[item]->val.c_str(), m_Variabeles[item]->def.c_str()));
-        
-        m_pInfoLabel->refresh();
+        m_pInfoWindow->SetText(m_Variabeles[item]->desc);
+        m_pInfoWindow->refresh();
     }
 }
 
@@ -740,7 +738,7 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     
     if ((h + m_iStartY) < height())
     {
-        CLuaInputField *field = new CLuaInputField(this, m_iStartY, 2, width()-2, label, desc, val, max);
+        CLuaInputField *field = new CLuaInputField(this, m_iStartY, 1, width()-3, label, desc, val, max);
         m_iStartY += (h + 1);
         return field;
     }
@@ -757,7 +755,7 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::list<s
     
     if ((h + m_iStartY) < height())
     {
-        CLuaCheckbox *box = new CLuaCheckbox(this, m_iStartY, 2, width()-2, desc, l);
+        CLuaCheckbox *box = new CLuaCheckbox(this, m_iStartY, 1, width()-3, desc, l);
         m_iStartY += (h + 1);
         return box;
     }
@@ -774,7 +772,7 @@ CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::
     
     if ((h + m_iStartY) < height())
     {
-        CLuaRadioButton *radio = new CLuaRadioButton(this, m_iStartY, 2, width()-2, desc, l);
+        CLuaRadioButton *radio = new CLuaRadioButton(this, m_iStartY, 1, width()-3, desc, l);
         m_iStartY += (h + 1);
         return radio;
     }
@@ -791,7 +789,7 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
     
     if ((h + m_iStartY) < height())
     {
-        CLuaDirSelector *sel = new CLuaDirSelector(this, m_iStartY, 2, width()-2, desc, val);
+        CLuaDirSelector *sel = new CLuaDirSelector(this, m_iStartY, 1, width()-3, desc, val);
         m_iStartY += (h + 1);
         return sel;
     }
@@ -808,7 +806,7 @@ CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
     
     if ((h + m_iStartY) < height())
     {
-        CLuaCFGMenu *menu = new CLuaCFGMenu(this, m_iStartY, 2, width()-2, desc);
+        CLuaCFGMenu *menu = new CLuaCFGMenu(this, m_iStartY, 1, width()-3, desc);
         m_iStartY += (h + 1);
         return menu;
     }

@@ -194,7 +194,7 @@ public:
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CWidgetWindow
 {
     CMenu *m_pMenu;
-    CTextLabel *m_pInfoLabel;
+    CTextWindow *m_pInfoWindow;
     
     void SetInfo(void);
     
