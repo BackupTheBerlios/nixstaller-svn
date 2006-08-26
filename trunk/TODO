@@ -11,6 +11,7 @@ OVERALL
 - Usage of exceptions(StrToMode)
 - GetTranslation - Global or not?
 - Clean SVN trunk
+- bsdiff support 
 
 MAIN
 - Better error handling for register
@@ -19,15 +20,18 @@ MAIN
 - Lua code for all install vars
 - Use lua config code
 - Remove old config code
+- InstallThink virtual function
 
 NCURSES FRONTEND
 - Error handling in file manager
 - Multiple focused widgets?
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
-- Finishscreen, lua config menu widget
+- Finishscreen
 - Remove CDK code
 - Throw exception when lua widget doesn't fit on new screen
 - Translations
+- CalcSize for labels
+- Buttonbar
 
 FLTK FRONTEND
 - Translate password dialog

@@ -413,7 +413,10 @@ protected:
     virtual void LeaveFocus(void) { bkgd(m_cDefocusedColors); refresh(); CWidgetHandler::LeaveFocus(); refresh(); };
     virtual void Draw(void) { };
     
-    unsigned GetUnFormatLen(const std::string &str);
+    static unsigned GetUnFormatLen(const std::string &str); // Length without tags
+    static unsigned GetWordLen(const std::string &str) // Length without tags and trailing newline
+    { return GetUnFormatLen(str) - (!str.empty() && (str[str.length()-1] == '\n')); };
+    
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
     static void SetCursorPos(int y, int x) { m_iCursorY = y; m_iCursorX = x; }; // Lock cursor position
@@ -509,6 +512,9 @@ public:
     void AddText(std::string text);
     void SetText(const std::string &text) { m_FormattedText.clear(); AddText(text); };
     void SetText(const char *text) { m_FormattedText.clear(); AddText(text); };
+    
+    static int CalcHeight(int ncols, const std::string &text);
+    static int CalcHeight(int ncols, const char *text) { return CalcHeight(ncols, std::string(text)); };
 };
 
 class CTextWindow: public CWidgetWindow

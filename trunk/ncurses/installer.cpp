@@ -407,7 +407,7 @@ CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *
     if (desc && *desc)
     {
         CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
-        pDesc->AddText(CreateText("%s", desc));
+        pDesc->AddText(desc);
         begy += pDesc->height();
     }
     
@@ -421,6 +421,7 @@ void CLuaCFGMenu::SetInfo()
     std::string item = m_pMenu->GetCurrentItemName();
     if (!item.empty() && m_Variabeles[item])
     {
+        debugline("desc lines: %d('%s')\n", CTextLabel::CalcHeight(m_pInfoWindow->width(), m_Variabeles[item]->desc), m_Variabeles[item]->desc.c_str());
         m_pInfoWindow->SetText(m_Variabeles[item]->desc);
         m_pInfoWindow->refresh();
     }
