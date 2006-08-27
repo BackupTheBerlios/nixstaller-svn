@@ -499,6 +499,7 @@ public:
 class CTextLabel: public CWidgetWindow
 {
     std::list<std::string> m_FormattedText;
+    std::list<std::string>::iterator m_CurLineIter;
     int m_iMaxHeight;
     
 protected:

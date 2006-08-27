@@ -115,6 +115,8 @@ void GetTextFromBlock(std::ifstream &file, std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
 mode_t StrToMode(const char *str);
+unsigned StrFindInRange(const std::string &src, const std::string &findstr, unsigned pos, unsigned n);
+unsigned StrFindInRange(const std::string &src, const char *findstr, unsigned pos, unsigned n);
 
 inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
 inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };

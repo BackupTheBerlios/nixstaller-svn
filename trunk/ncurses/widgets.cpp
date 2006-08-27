@@ -1429,9 +1429,10 @@ CTextLabel::CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y,
 {
 }
 
+#if 1
 void CTextLabel::AddText(std::string text)
 {
-    unsigned lines = 0, curlines = 0;
+    unsigned lines = 0, curlines = 0, len = 0;
     std::string word, line;
     std::string::size_type start=0, end;
     
@@ -1443,13 +1444,14 @@ void CTextLabel::AddText(std::string text)
     
     do
     {
-        end = text.find_first_of(" \t\n", start);
-        
+        end = text.find_first_of(" \t\n", start); // Get first word
+            
         if ((end != std::string::npos) && (text[end] == '\n'))
             end++; // Include \n in word
-
-        if (GetUnFormatLen(text.substr(start, end-start)) > width())
+            
+        if (GetWordLen(text.substr(start, end-start)) >= width())
         {
+            // If word is to long, split it
             word = text.substr(start, width());
             start += width();
             end = start; // HACK: So that loop won't be broken
@@ -1457,37 +1459,96 @@ void CTextLabel::AddText(std::string text)
         else if (end != std::string::npos)
         {
             word = text.substr(start, (end-start));
-
             start = end;
-            
             end = text.find_first_not_of(" \t", start);
             if (end != std::string::npos)
             {
-                word += text.substr(start, (end-start));
-                start = end;
+                unsigned wlen = GetWordLen(word), max = width() - wlen;
+                len = end-start;
+                if (len > max)
+                    len = max;
+                word += text.substr(start, len);
+                start = end-((end-start) - len); // Add remaining spaces next frame 
             }
-            else
-                start++; // Start searching on next char
         }
         else
             word = text.substr(start);
-
+            
         if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
-            ((GetUnFormatLen(m_FormattedText.back())+GetUnFormatLen(word)) > width()))
+            ((GetUnFormatLen(m_FormattedText.back())+GetWordLen(word)) >= width()))
         {
             if (lines >= m_iMaxHeight)
                 break; // No more space
+
             m_FormattedText.push_back("");
             lines++;
         }
-        
+            
         m_FormattedText.back() += word;
     }
-    while((end != std::string::npos) && (lines <= m_iMaxHeight));
+    while ((end != std::string::npos) && (lines <= m_iMaxHeight));
+
+    if (lines != curlines)
+        resize(lines, width());
+}
+
+#else
+
+void CTextLabel::AddText(std::string text)
+{
+    unsigned lines = 1, curlines = 1, start = 0, end = width(), length = text.length();
+        
+    if (!m_FormattedText.empty())
+        lines = curlines = m_FormattedText.size();
+    else
+    {
+        m_FormattedText.push_back("");
+        m_CurLineIter = m_FormattedText.begin();
+    }
+    
+    if (lines >= m_iMaxHeight)
+        return;
+    
+    do
+    {
+        end = start + width()-1;
+        
+        if (!m_CurLineIter->empty())
+            end -= m_CurLineIter->length();
+        
+        if (end >= length)
+            end = length - 1;
+        
+        unsigned newline = text.substr(start, (end-start)+1).find("\n");
+        if (newline != std::string::npos)
+            end = newline+1;
+        
+        if ((end + 1) != length)
+        {
+            while ((end >= start) && !isspace(text[end]))
+                end--;
+        }
+        
+        if ((end - start) > 0)
+        {
+            *m_CurLineIter += text.substr(start, (end - start) + 1);
+            
+            if (lines >= m_iMaxHeight)
+                break; // No more space
+            
+            m_FormattedText.push_back("");
+            m_CurLineIter++;
+            lines++;
+        }
+        
+        start = end + 1;
+    }
+    while (start < length);
     
     if (lines != curlines)
         resize(lines, width());
 }
+#endif
 
 void CTextLabel::Draw()
 {
@@ -1506,6 +1567,7 @@ void CTextLabel::Draw()
 
 int CTextLabel::CalcHeight(int ncols, const std::string &text)
 {
+#if 1
     unsigned lines = 0, wordlen = 0, linelen = 0;
     std::string::size_type start=0, end;
     
@@ -1516,7 +1578,7 @@ int CTextLabel::CalcHeight(int ncols, const std::string &text)
         if ((end != std::string::npos) && (text[end] == '\n'))
             end++; // Include \n in word
 
-        if (GetUnFormatLen(text.substr(start, end-start)) > ncols)
+        if (GetUnFormatLen(text.substr(start, end-start)) >= ncols)
         {
             wordlen = ncols;
             start += ncols;
@@ -1539,7 +1601,7 @@ int CTextLabel::CalcHeight(int ncols, const std::string &text)
         else
             wordlen = GetUnFormatLen(text.substr(start));
 
-        if (!lines || (linelen+wordlen) > ncols)
+        if (!lines || (linelen+wordlen) >= ncols)
         {
             lines++;
             linelen = 0;
@@ -1550,6 +1612,33 @@ int CTextLabel::CalcHeight(int ncols, const std::string &text)
     while (end != std::string::npos);
     
     return lines + (linelen > 0);
+#else
+    unsigned lines = 1, start = 0, end = ncols, length = text.length();
+        
+    do
+    {
+        end = start + width()-1;
+        
+        if (end >= length)
+            end = length - 1;
+        
+        unsigned newline = text.substr(start, (end-start)+1).find("\n");
+        if (newline != std::string::npos)
+            end = newline+1;
+        
+        if ((end + 1) != length)
+        {
+            while ((end >= start) && !isspace(text[end]))
+                end--;
+        }
+        
+        if ((end - start) > 0)
+            lines++;
+        
+        start = end + 1;
+    }
+    while (start < length);
+#endif
 }
 
 // -------------------------------------
@@ -1664,13 +1753,14 @@ void CTextWindow::AddText(std::string text)
     {
         do
         {
-            end = text.find_first_of("_ \t\n", start);
+            end = text.find_first_of(" \t\n", start); // Get first word
             
             if ((end != std::string::npos) && (text[end] == '\n'))
                 end++; // Include \n in word
             
-            if (GetWordLen(text.substr(start, end-start)) > m_pTextWin->width())
+            if (GetWordLen(text.substr(start, end-start)) >= m_pTextWin->width())
             {
+                // If word is to long, split it
                 word = text.substr(start, m_pTextWin->width());
                 start += m_pTextWin->width();
                 end = start; // HACK: So that loop won't be broken
@@ -1679,7 +1769,7 @@ void CTextWindow::AddText(std::string text)
             {
                 word = text.substr(start, (end-start));
                 start = end;
-                end = text.find_first_not_of("_ \t", start);
+                end = text.find_first_not_of(" \t", start);
                 if (end != std::string::npos)
                 {
                     unsigned wlen = GetWordLen(word), max = m_pTextWin->width() - wlen;
@@ -1694,7 +1784,7 @@ void CTextWindow::AddText(std::string text)
                 word = text.substr(start);
             
             if (m_FormattedText.empty() || (m_FormattedText.back()[m_FormattedText.back().length()-1] == '\n') ||
-                ((GetUnFormatLen(m_FormattedText.back())+GetWordLen(word)) > m_pTextWin->width()))
+                ((GetUnFormatLen(m_FormattedText.back())+GetWordLen(word)) >= m_pTextWin->width()))
             {
                 m_FormattedText.push_back("");
                 lines++;
