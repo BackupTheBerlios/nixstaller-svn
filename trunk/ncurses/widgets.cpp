@@ -1065,6 +1065,218 @@ bool CWidgetManager::SetPrevChildWidget()
     return false;
 }
 
+// -------------------------------------
+// Formatted text class
+// -------------------------------------
+
+CFormattedText::CFormattedText(CWidgetWindow *w, const std::string &str) : m_pWindow(w), m_uWidth(w->width())
+{
+    if (!str.empty())
+        AddText(str);
+}
+
+void CFormattedText::AddText(const std::string &str)
+{
+    unsigned offset = m_szRawText.length();
+    
+    unsigned strstart = 0, strend, length = str.length();
+    unsigned addedchars = m_szRawText.length();
+    unsigned startcolor = 0;
+    int curcolor = -1;
+
+    while (strstart < length)
+    {
+        if (str[strstart] == '<')
+        {
+            if (!str.compare(strstart+1, 4, "col=")) // Color tag
+            {
+                startcolor = addedchars;
+                strstart += 5; // length of <col= == 5
+                strend = str.find(">", strstart);
+                curcolor = atoi(str.substr(strstart, (strend-strstart)+1).c_str());
+                strstart = strend+1;
+                continue;
+            }
+            else if (!str.compare(strstart+1, 5, "/col>")) // End color tag
+            {
+                if (curcolor != -1)
+                    m_Colors[startcolor] = new color_entry_s(addedchars-startcolor, curcolor);
+                strstart += 6;
+                curcolor = -1;
+                continue;
+            }
+            else if (!str.compare(strstart+1, 2, "C>"))
+            {
+                m_CenteredIndexes.insert(addedchars);
+                strstart += 3;
+                continue;
+            }
+        }
+        
+        m_szRawText += str[strstart];
+        addedchars++;
+        strstart++;
+    }
+    
+    // Now wrap tagless text
+    strstart = offset;
+    length = m_szRawText.length();
+    
+    if (m_Lines.empty())
+    {
+        m_Lines.push_back(new line_entry_s);
+        m_iCurrentLine = 0;
+    }
+        
+    do
+    {
+        strend = strstart + (m_uWidth-1);
+        
+        if (strend < strstart) // Overflow
+            strend = std::numeric_limits<unsigned>::max()-1;
+        
+        bool add = false;
+        if (!m_Lines[m_iCurrentLine]->text.empty())
+            strend -= ((strend-strstart) - (m_Lines[m_iCurrentLine]->text.length()-1));
+        
+        assert(strend > strstart);
+        
+        if (strend >= length)
+            strend = length - 1;
+        
+        if (strend <= strstart)
+            debugline("rawtext: %s\n", m_szRawText.c_str());
+        
+        unsigned newline = m_szRawText.substr(strstart, (strend-strstart)+1).find("\n");
+        if (newline != std::string::npos)
+        {
+            strend = strstart + newline;
+            add = true; // Found a newline, so create a new line entry at the end of the loop
+        }
+        
+        debugline("rwtext: %s\n", m_szRawText.substr(strstart, (strend-strstart)+1).c_str());
+        debugline("strstart, strend: %u %u\n", strstart, strend);
+        if ((strend + 1) != length)
+        {
+            //unsigned begwind = m_szRawText.find_last_of(" \t\n", strstart);
+            unsigned begwind = strend;
+            while ((begwind >= strstart) && !isspace(m_szRawText[begwind]))
+                begwind--;
+            
+            //if (begwind != std::string::npos)
+            if ((begwind >= strstart) && (begwind != strend))
+            {
+                unsigned endwind = m_szRawText.find_first_of(" \t\n", begwind+1);
+                debugline("begwind, endwind: %u %u\n", begwind, endwind);
+                if (endwind == std::string::npos)
+                    endwind = length; // NOT -1, because normally endwind would be point to a whitespace after the word
+                
+                debugline("len of last w: %u('%s')\n", endwind-begwind-1, m_szRawText.substr(begwind+1, (endwind-begwind)-1).c_str());
+                if (((endwind - begwind)-1 <= m_uWidth) && (endwind-1 != strend)) 
+                    strend = begwind;
+            }
+        }
+        
+        debugline("strstart, strend: %u %u\n", strstart, strend);
+
+        if ((strend - strstart) > 0)
+        {
+            if (((strend+1) < length) && isspace(m_szRawText[strend+1]))
+                strend++; // Don't add leading whitespace to a new line
+            
+            bool toolong = ((m_Lines[m_iCurrentLine]->text.length() + (strend-strstart)+1) > m_uWidth);
+            
+            debugline("Add line: %s\n", m_szRawText.substr(strstart, (strend - strstart) + 1).c_str());
+            if (!toolong) // If it's not too long add to current line
+                m_Lines[m_iCurrentLine]->text += m_szRawText.substr(strstart, (strend - strstart) + 1);
+            
+            /*if (lines >= m_iMaxHeight)
+            break; // No more space*/
+            
+            if (((strend+1)>=length) || add || (m_Lines[m_iCurrentLine]->text.length() >= m_uWidth))
+            {
+                debugline("newline\n");
+                m_Lines.push_back(new line_entry_s);
+                m_iCurrentLine++;
+                
+                if (toolong) // New line was too long, add to new one
+                    m_Lines[m_iCurrentLine]->text += m_szRawText.substr(strstart, (strend - strstart) + 1);
+            }
+        }
+        
+        strstart = strend + 1;
+    }
+    while (strstart < length);
+}
+
+CFormattedText::~CFormattedText()
+{
+    for (std::map<int, color_entry_s *>::iterator it=m_Colors.begin(); it!=m_Colors.end(); it++)
+        delete it->second;
+    
+    for (std::vector<line_entry_s *>::iterator it=m_Lines.begin(); it!=m_Lines.end(); it++)
+        delete *it;
+}
+
+void CFormattedText::Print()
+{
+    unsigned chars = 0, index, colorchars = 0;
+    bool incolortag = false;
+    
+    for (unsigned u=0; u<m_Lines.size(); u++)
+    {
+        unsigned len = m_Lines[u]->text.length();
+        index = 0;
+        bool center = false;
+        
+        for (std::set<unsigned>::iterator it=m_CenteredIndexes.begin(); it!=m_CenteredIndexes.end(); it++)
+        {
+            if ((*it >= chars) && (*it <= (chars+m_uWidth)) && (*it <= (chars+len)))
+                center = true;
+        }
+        
+        unsigned spaces = 0;
+        
+        if (center && (len < m_uWidth))
+        {
+            std::string tmp = m_Lines[u]->text;
+            EatWhite(tmp);
+            spaces = (m_uWidth-tmp.length())/2;
+        }
+        
+        while (index < len)
+        {
+            // Line may containing trailing whitespace or newline which should not be printed.
+            bool canprint = (index <= m_uWidth) && (((index+1)!=len) || !isspace(m_Lines[u]->text[index]));
+            
+            if (colorchars)
+            {
+                if (canprint)
+                    m_pWindow->addch(u, spaces+index, toupper(m_Lines[u]->text[index]));
+                colorchars--;
+            }
+            else if (m_Colors[chars])
+            {
+                if (canprint)
+                    m_pWindow->addch(u, spaces+index, toupper(m_Lines[u]->text[index]));
+                incolortag = true;
+                colorchars = m_Colors[chars]->count-1; // -1 because we just printed one ;)
+            }
+            else if (canprint)
+                m_pWindow->addch(u, spaces+index, m_Lines[u]->text[index]);
+            index++;
+            chars++;
+        }
+    }
+}
+
+unsigned CFormattedText::GetLines()
+{
+    unsigned ret = m_Lines.size();
+    if (ret && m_Lines[ret-1]->text.empty()) // Latest line may be empty
+        ret--;
+    return ret;
+}
 
 // -------------------------------------
 // Widget window class
@@ -1425,11 +1637,11 @@ chtype CTextLabel::m_cDefaultDefocusedColors;
 CTextLabel::CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                        char absrel) : CWidgetWindow(owner, 1, ncols, begin_y, begin_x, absrel, false,
                                                    false, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                      m_iMaxHeight(nlines)
+                                      m_iMaxHeight(nlines), m_uCurLines(1), m_FMText(this)
 {
 }
 
-#if 1
+#ifdef old
 void CTextLabel::AddText(std::string text)
 {
     unsigned lines = 0, curlines = 0, len = 0;
@@ -1492,7 +1704,7 @@ void CTextLabel::AddText(std::string text)
         resize(lines, width());
 }
 
-#else
+#elif 0
 
 void CTextLabel::AddText(std::string text)
 {
@@ -1548,12 +1760,29 @@ void CTextLabel::AddText(std::string text)
     if (lines != curlines)
         resize(lines, width());
 }
+
+#else
+
+void CTextLabel::AddText(std::string text)
+{
+    unsigned curlines = m_uCurLines;
+    m_FMText.AddText(text);
+    
+    if ((curlines != m_FMText.GetLines()) && (m_FMText.GetLines() <= m_iMaxHeight)) // UNDONE
+    {
+        m_uCurLines = m_FMText.GetLines();
+        resize(m_uCurLines, width());
+    }
+}
+
+
 #endif
 
 void CTextLabel::Draw()
 {
     erase();
-    
+    m_FMText.Print();
+    /*
     if (!m_FormattedText.empty())
     {
         int lines = 0;
@@ -1562,7 +1791,7 @@ void CTextLabel::Draw()
         {
             AddStrFormat(lines, 0, it->c_str(), 0, width());
         }
-    }
+}*/
 }
 
 int CTextLabel::CalcHeight(int ncols, const std::string &text)

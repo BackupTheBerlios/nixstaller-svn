@@ -32,6 +32,7 @@ NCURSES FRONTEND
 - Translations
 - CalcSize for labels
 - Buttonbar
+- File manager should check if dir exist?
 
 FLTK FRONTEND
 - Translate password dialog

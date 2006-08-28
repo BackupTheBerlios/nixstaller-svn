@@ -316,6 +316,8 @@ public:
 
 #endif
 
+#include <set>
+
 class CWidgetWindow;
 
 class CWidgetHandler
@@ -385,6 +387,40 @@ public:
     virtual void ActivateChild(CWidgetWindow *p);
     
     bool Run(void);
+};
+
+class CFormattedText
+{
+    struct color_entry_s
+    {
+        unsigned count;
+        int color;
+        color_entry_s(unsigned cn, int c) : count(cn), color(c) { };
+    };
+
+    struct line_entry_s
+    {
+        std::string text;
+        line_entry_s(const std::string &s) : text(s) { };
+        line_entry_s(void) { };
+    };
+    
+    CWidgetWindow *m_pWindow;
+    std::string m_szRawText;
+    std::vector<line_entry_s *> m_Lines;
+    unsigned m_iCurrentLine;
+    std::map<int, color_entry_s*> m_Colors;
+    std::set<unsigned> m_CenteredIndexes;
+    unsigned m_uWidth;
+    
+public:
+    CFormattedText(CWidgetWindow *w, const std::string &str="");
+
+    ~CFormattedText(void);
+
+    void AddText(const std::string &str);
+    void Print(void);
+    unsigned GetLines(void);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
@@ -501,6 +537,8 @@ class CTextLabel: public CWidgetWindow
     std::list<std::string> m_FormattedText;
     std::list<std::string>::iterator m_CurLineIter;
     int m_iMaxHeight;
+    unsigned m_uCurLines;
+    CFormattedText m_FMText;
     
 protected:
     virtual void Draw(void);
