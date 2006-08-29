@@ -411,15 +411,15 @@ class CFormattedText
     unsigned m_iCurrentLine;
     std::map<int, color_entry_s*> m_Colors;
     std::set<unsigned> m_CenteredIndexes;
-    unsigned m_uWidth;
+    unsigned m_uWidth, m_uMaxHeight;
     
 public:
-    CFormattedText(CWidgetWindow *w, const std::string &str="");
-
+    CFormattedText(CWidgetWindow *w, const std::string &str="", unsigned maxh=std::numeric_limits<unsigned>::max());
     ~CFormattedText(void);
 
     void AddText(const std::string &str);
-    void Print(void);
+    void Print(unsigned startline=0, unsigned startw=0, unsigned endline=std::numeric_limits<unsigned>::max(),
+               unsigned endw=std::numeric_limits<unsigned>::max());
     unsigned GetLines(void);
 };
 
