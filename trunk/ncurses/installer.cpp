@@ -412,7 +412,7 @@ CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *
     }
     
     m_pMenu = new CMenu(this, 7, menuw, begy, 0, 'r');
-    m_pInfoWindow = new CTextWindow(this, 7, infow, begy, menuw+2, true, false, 'r');
+    m_pInfoWindow = new CTextWindow(this, 7, infow, begy, menuw+2, false, false, 'r');
     ActivateChild(m_pMenu);
 }
 

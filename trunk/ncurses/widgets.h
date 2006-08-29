@@ -408,19 +408,23 @@ class CFormattedText
     CWidgetWindow *m_pWindow;
     std::string m_szRawText;
     std::vector<line_entry_s *> m_Lines;
-    unsigned m_iCurrentLine;
+    unsigned m_uCurrentLine;
     std::map<int, color_entry_s*> m_Colors;
     std::set<unsigned> m_CenteredIndexes;
-    unsigned m_uWidth, m_uMaxHeight;
+    unsigned m_uWidth, m_uMaxHeight, m_uLongestLine;
+    bool m_bWrap;
     
 public:
-    CFormattedText(CWidgetWindow *w, const std::string &str="", unsigned maxh=std::numeric_limits<unsigned>::max());
-    ~CFormattedText(void);
+    CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, unsigned maxh=std::numeric_limits<unsigned>::max());
+    ~CFormattedText(void) { Clear(); };
 
     void AddText(const std::string &str);
     void Print(unsigned startline=0, unsigned startw=0, unsigned endline=std::numeric_limits<unsigned>::max(),
                unsigned endw=std::numeric_limits<unsigned>::max());
     unsigned GetLines(void);
+    unsigned GetLongestLine(void) { return m_uLongestLine; };
+    bool Empty(void) { return !GetLines(); };
+    void Clear(void);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
@@ -559,20 +563,16 @@ public:
 class CTextWindow: public CWidgetWindow
 {
     CScrollbar *m_pVScrollbar, *m_pHScrollbar;
-    int m_iLongestLine;
-    std::list<std::string>::iterator m_CurrentLineIt;
-    std::string m_szText;
-    std::list<std::string> m_FormattedText; // list containing lines of formatted text
+    CFormattedText *m_pFMText;
+    CWidgetWindow *m_pTextWin; // Window containing the actual text
     bool m_bWrap, m_bFollow;
-    
-    void FormatText(void);
+    unsigned m_uCurrentLine;
+
     void ScrollToBottom(void);
     void HScroll(int n);
     void VScroll(int n);
     
 protected:
-    CWidgetWindow *m_pTextWin; // Window containing the actual text
-    int m_iCurrentLine;
     
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
@@ -582,7 +582,8 @@ public:
     
     CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
                 char absrel = 'a', bool box=true);
-                                     
+    ~CTextWindow(void) { delete m_pFMText; };
+    
     void AddText(std::string text);
     void Clear(void);
     void SetText(const std::string &text) { Clear(); AddText(text); };
