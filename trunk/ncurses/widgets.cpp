@@ -1076,19 +1076,40 @@ CFormattedText::CFormattedText(CWidgetWindow *w, const std::string &str, bool wr
         AddText(str);
 }
 
-std::map<int, CFormattedText::color_entry_s *>::iterator
-CFormattedText::GetNextColorTagPos(std::map<int, CFormattedText::color_entry_s *>::iterator cur, unsigned curpos)
+std::map<unsigned, CFormattedText::color_entry_s *>::iterator
+        CFormattedText::GetNextColorTag(std::map<unsigned, CFormattedText::color_entry_s *>::iterator cur, unsigned curpos)
 {
-    std::map<int, color_entry_s *>::iterator ret = m_Colors.end();
-    if (cur != m_Colors.begin())
+    std::map<unsigned, color_entry_s *>::iterator ret = m_ColorTags.end();
+    if (cur != m_ColorTags.begin())
         cur++; // Start searching on next iter
     
-    for (std::map<int, color_entry_s *>::iterator it=cur; it!=m_Colors.end(); it++)
+    for (std::map<unsigned, color_entry_s *>::iterator it=cur; it!=m_ColorTags.end(); it++)
     {
         if (!it->second)
             continue;
         
-        if ((it->first > curpos) || (it->second->count >= (curpos - it->first))) // In reach
+        if ((it->first > curpos) || (it->second->count >= (curpos - it->first)+1)) // In reach
+        {
+            ret = it;
+            break;
+        }
+    }
+    
+    return ret;
+}
+
+std::map<unsigned, int>::iterator CFormattedText::GetNextRevTag(std::map<unsigned, int>::iterator cur, unsigned curpos)
+{
+    std::map<unsigned, int>::iterator ret = m_ReversedTags.end();
+    if (cur != m_ReversedTags.begin())
+        cur++; // Start searching on next iter
+    
+    for (std::map<unsigned, int>::iterator it=cur; it!=m_ReversedTags.end(); it++)
+    {
+        if (!it->second)
+            continue;
+        
+        if ((it->first > curpos) || (it->second >= (curpos - it->first)+1)) // In reach
         {
             ret = it;
             break;
@@ -1106,8 +1127,8 @@ void CFormattedText::AddText(const std::string &str)
     unsigned offset = m_szRawText.length();
     
     unsigned strstart = 0, strend, length = str.length();
-    unsigned addedchars = m_szRawText.length();
-    unsigned startcolor = 0;
+    unsigned addedchars = offset;
+    unsigned startcolor = 0, startrev = 0;
     int fgcolor = -1, bgcolor = -1;
 
     while (strstart < length)
@@ -1134,9 +1155,21 @@ void CFormattedText::AddText(const std::string &str)
             else if (!str.compare(strstart+1, 5, "/col>")) // End color tag
             {
                 if ((fgcolor != -1) && (bgcolor != -1))
-                    m_Colors[startcolor] = new color_entry_s(addedchars-startcolor, fgcolor, bgcolor);
+                    m_ColorTags[startcolor] = new color_entry_s(addedchars-startcolor, fgcolor, bgcolor);
                 strstart += 6;
                 fgcolor = bgcolor = -1;
+                continue;
+            }
+            else if (!str.compare(strstart+1, 4, "rev>")) // Reverse tag
+            {
+                startrev = addedchars;
+                strstart += 5; // "<rev>";
+                continue;
+            }
+            else if (!str.compare(strstart+1, 5, "/rev>")) // End reverse tag
+            {
+                m_ReversedTags[startrev] = addedchars-startrev;
+                strstart += 6; // "</rev>";
                 continue;
             }
             else if (!str.compare(strstart+1, 2, "C>"))
@@ -1175,13 +1208,8 @@ void CFormattedText::AddText(const std::string &str)
             if (!m_Lines[m_uCurrentLine]->text.empty())
                 strend -= ((strend-strstart) - (m_Lines[m_uCurrentLine]->text.length()-1));
             
-            assert(strend > strstart);
-            
             if (strend >= length)
                 strend = length - 1;
-            
-            if (strend <= strstart)
-                debugline("rawtext: %s\n", m_szRawText.c_str());
             
             unsigned newline = m_szRawText.substr(strstart, (strend-strstart)+1).find("\n");
             if (newline != std::string::npos)
@@ -1190,8 +1218,6 @@ void CFormattedText::AddText(const std::string &str)
                 add = true; // Found a newline, so create a new line entry at the end of the loop
             }
             
-            debugline("rwtext: %s\n", m_szRawText.substr(strstart, (strend-strstart)+1).c_str());
-            debugline("strstart, strend: %u %u\n", strstart, strend);
             if ((strend + 1) != length)
             {
                 unsigned begwind = strend;
@@ -1201,18 +1227,14 @@ void CFormattedText::AddText(const std::string &str)
                 if ((begwind >= strstart) && (begwind != strend))
                 {
                     unsigned endwind = m_szRawText.find_first_of(" \t\n", begwind+1);
-                    debugline("begwind, endwind: %u %u\n", begwind, endwind);
                     if (endwind == std::string::npos)
                         endwind = length; // NOT -1, because normally endwind would be point to a whitespace after the word
                     
-                    debugline("len of last w: %u('%s')\n", endwind-begwind-1, m_szRawText.substr(begwind+1, (endwind-begwind)-1).c_str());
                     if (((endwind - begwind)-1 <= m_uWidth) && (endwind-1 != strend)) 
                         strend = begwind;
                 }
             }
             
-            debugline("strstart, strend: %u %u\n", strstart, strend);
-    
             if ((strend - strstart) > 0)
             {
                 bool toolong = ((m_Lines[m_uCurrentLine]->text.length() + (strend-strstart)+1) > m_uWidth);
@@ -1221,25 +1243,18 @@ void CFormattedText::AddText(const std::string &str)
                     strend++; // Don't add leading whitespace to a new line
     
                 if (!toolong) // If it's not too long add to current line
-                {
-                    debugline("Add line: %s\n", m_szRawText.substr(strstart, (strend - strstart) + 1).c_str());
                     m_Lines[m_uCurrentLine]->text += m_szRawText.substr(strstart, (strend - strstart) + 1);
-                }
                 
                 if (((strend+1)>=length) || add || toolong)//(m_Lines[m_uCurrentLine]->text.length() >= m_uWidth))
                 {
                     if (m_Lines.size() >= m_uMaxHeight)
                         break;
     
-                    debugline("newline\n");
                     m_Lines.push_back(new line_entry_s);
                     m_uCurrentLine++;
                     
                     if (toolong) // New line was too long, add to new one
-                    {
                         m_Lines[m_uCurrentLine]->text = m_szRawText.substr(strstart, (strend - strstart) + 1);
-                        debugline("Add line(toolong %u): %s\n", m_uWidth, m_szRawText.substr(strstart, (strend - strstart) + 1).c_str());
-                    }
                 }
                 
                 unsigned newlen = m_Lines[m_uCurrentLine]->text.length();
@@ -1262,8 +1277,6 @@ void CFormattedText::AddText(const std::string &str)
             else
                 m_Lines[m_uCurrentLine]->text = m_szRawText.substr(strstart);
             
-            debugline("Added line %s[%u]\n", m_Lines[m_uCurrentLine]->text.c_str(), m_uCurrentLine);
-            
             unsigned newlen = m_Lines[m_uCurrentLine]->text.length();
             if (newlen > m_uLongestLine)
                 m_uLongestLine = newlen;
@@ -1282,8 +1295,7 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
     if (m_Lines.empty())
         return;
     
-    unsigned chars = 0, index, colorchars = 0, y=0, endcolortag=0;
-    bool incolortag = false;
+    unsigned chars = 0, index, y=0;
     
     if ((endline + (startline+1)) < endline)
         endline = std::numeric_limits<unsigned>::max(); // Overflow
@@ -1300,9 +1312,11 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             chars += m_Lines[u]->text.length();
     }
     
-    std::map<int, color_entry_s *>::iterator colorit = GetNextColorTagPos(m_Colors.begin(), 0);
-    if ((colorit != m_Colors.end()) && (colorit->first > chars))
-        ;// Enable colors
+    std::map<unsigned, color_entry_s *>::iterator colorit = GetNextColorTag(m_ColorTags.begin(), 0);
+    std::map<unsigned, int>::iterator revit = GetNextRevTag(m_ReversedTags.begin(), 0);
+    
+    bool initcolortag = (colorit != m_ColorTags.end());
+    bool initrevtag = (revit != m_ReversedTags.end());
     
     for (unsigned u=startline; u<endline; u++, y++)
     {
@@ -1310,21 +1324,25 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
         
         index = startw;
         
-        if (len < endw)
+        if (m_bWrap) // Only enable centering while wrapping for now
         {
             for (std::set<unsigned>::iterator it=m_CenteredIndexes.begin(); it!=m_CenteredIndexes.end(); it++)
             {
-                if ((*it >= chars) && (*it <= (chars+m_uWidth)) && (*it <= (chars+len)))
+                //unsigned centerw = (m_bWrap) ? m_uWidth : Max(m_uWidth, m_uLongestLine);
+                unsigned centerw = m_uWidth;
+                if ((*it >= chars) && (*it <= (chars+centerw)) && (*it <= (chars+len)))
                 {
-                    // Add spaces so it centers
                     std::string tmp = m_Lines[u]->text;
                     EatWhite(tmp);
-                    spaces = (m_uWidth-tmp.length())/2;
                     
-                    if (spaces < startw)
+                    spaces = (centerw-tmp.length())/2;
+                    
+                    if (spaces <= startw)
                         spaces = 0; // Can't center, starting width is too high
                     else
                         spaces -= startw;
+                    
+                    break;
                 }
             }
         }
@@ -1342,43 +1360,56 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
         
         chars += index;
         
-        // Check for tags in this line that are not printed
-        if ((colorit != m_Colors.end()) && (colorit->first <= chars) && (colorit->second->count < (chars-colorit->first)))
-        {
-            colorit = GetNextColorTagPos(colorit, chars);
-            if ((colorit != m_Colors.end()) && (colorit->first < chars))
-                m_pWindow->attron(COLOR_PAIR(CWidgetWindow::GetColorPair(colorit->second->fgcolor, colorit->second->bgcolor)));
-        }
-        
         while (index < count)
         {
             // Line may containing trailing whitespace or newline which should not be printed.
             bool canprint = (!m_bWrap || (index <= m_uWidth)) && (((index+1)!=len) || !isspace(m_Lines[u]->text[index]));
             
-            if ((colorit != m_Colors.end()) && (colorit->first <= chars) && (colorit->second->count < (chars-colorit->first)))
+            if ((colorit != m_ColorTags.end()) && (colorit->first <= chars) && (colorit->second->count < (chars-colorit->first)+1))
             {
-                int curcolpair = CWidgetWindow::GetColorPair(colorit->second->fgcolor, colorit->second->bgcolor);
-                colorit = GetNextColorTagPos(colorit, chars);
-                
-                if ((colorit == m_Colors.end()) || (colorit->first > chars)) // No color tag or not in reach yet
-                    m_pWindow->attroff(COLOR_PAIR(curcolpair));
-                else
-                    m_pWindow->attron(COLOR_PAIR(CWidgetWindow::GetColorPair(colorit->second->fgcolor, colorit->second->bgcolor)));
+                m_pWindow->attroff(CWidgetWindow::GetColorPair(colorit->second->fgcolor,
+                                   colorit->second->bgcolor));
+                colorit = GetNextColorTag(colorit, chars);
+                initcolortag = (colorit != m_ColorTags.end());
             }
             
-            if ((colorit != m_Colors.end()) && (colorit->first <= chars))
+            if ((revit != m_ReversedTags.end()) && (revit->first <= chars) && (revit->second < (chars-revit->first)+1))
             {
-                if (canprint)
-                    m_pWindow->addch(y, spaces+x, toupper(m_Lines[u]->text[index]));
+                m_pWindow->attroff(A_REVERSE);
+                revit = GetNextRevTag(revit, chars);
+                initrevtag = (revit != m_ReversedTags.end());
             }
-            else if (canprint)
+
+            if (initcolortag && (colorit != m_ColorTags.end()) && (colorit->first <= chars))
+            {
+                m_pWindow->attron(CWidgetWindow::GetColorPair(colorit->second->fgcolor,
+                                  colorit->second->bgcolor));
+                initcolortag = false;
+            }
+            
+            if (initrevtag && (revit != m_ReversedTags.end()) && (revit->first <= chars))
+            {
+                m_pWindow->attron(A_REVERSE);
+                initrevtag = false;
+            }
+
+            if (canprint)
                 m_pWindow->addch(y, spaces+x, m_Lines[u]->text[index]);
+            
             index++;
             chars++;
             x++;
         }
         chars += (len-count);
     }
+    
+    // Disable enabled tags
+    if (colorit != m_ColorTags.end())
+        m_pWindow->attroff(CWidgetWindow::GetColorPair(colorit->second->fgcolor,
+                           colorit->second->bgcolor));
+    
+    if (revit != m_ReversedTags.end())
+        m_pWindow->attroff(A_REVERSE);
 }
 
 unsigned CFormattedText::GetLines()
@@ -1391,13 +1422,13 @@ unsigned CFormattedText::GetLines()
 
 void CFormattedText::Clear()
 {
-    for (std::map<int, color_entry_s *>::iterator it=m_Colors.begin(); it!=m_Colors.end(); it++)
+    for (std::map<unsigned, color_entry_s *>::iterator it=m_ColorTags.begin(); it!=m_ColorTags.end(); it++)
         delete it->second;
     
     for (std::vector<line_entry_s *>::iterator it=m_Lines.begin(); it!=m_Lines.end(); it++)
         delete *it;
     
-    m_Colors.clear();
+    m_ColorTags.clear();
     m_Lines.clear();
     m_szRawText.clear();
     m_CenteredIndexes.clear();

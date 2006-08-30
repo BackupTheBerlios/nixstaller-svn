@@ -409,12 +409,14 @@ class CFormattedText
     std::string m_szRawText;
     std::vector<line_entry_s *> m_Lines;
     unsigned m_uCurrentLine;
-    std::map<int, color_entry_s*> m_Colors;
+    std::map<unsigned, color_entry_s*> m_ColorTags; // Index is used for starting position
+    std::map<unsigned, int> m_ReversedTags; // Index is the starting position, char count is the value
     std::set<unsigned> m_CenteredIndexes;
     unsigned m_uWidth, m_uMaxHeight, m_uLongestLine;
     bool m_bWrap;
     
-    std::map<int, color_entry_s *>::iterator GetNextColorTagPos(std::map<int, color_entry_s *>::iterator cur, unsigned curpos);
+    std::map<unsigned, color_entry_s *>::iterator GetNextColorTag(std::map<unsigned, color_entry_s *>::iterator cur, unsigned curpos);
+    std::map<unsigned, int>::iterator GetNextRevTag(std::map<unsigned, int>::iterator cur, unsigned curpos);
     
 public:
     CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, unsigned maxh=std::numeric_limits<unsigned>::max());
