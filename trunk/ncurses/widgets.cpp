@@ -1076,6 +1076,28 @@ CFormattedText::CFormattedText(CWidgetWindow *w, const std::string &str, bool wr
         AddText(str);
 }
 
+std::map<int, CFormattedText::color_entry_s *>::iterator
+CFormattedText::GetNextColorTagPos(std::map<int, CFormattedText::color_entry_s *>::iterator cur, unsigned curpos)
+{
+    std::map<int, color_entry_s *>::iterator ret = m_Colors.end();
+    if (cur != m_Colors.begin())
+        cur++; // Start searching on next iter
+    
+    for (std::map<int, color_entry_s *>::iterator it=cur; it!=m_Colors.end(); it++)
+    {
+        if (!it->second)
+            continue;
+        
+        if ((it->first > curpos) || (it->second->count >= (curpos - it->first))) // In reach
+        {
+            ret = it;
+            break;
+        }
+    }
+    
+    return ret;
+}
+
 void CFormattedText::AddText(const std::string &str)
 {
     if (m_Lines.size() > m_uMaxHeight)
@@ -1086,7 +1108,7 @@ void CFormattedText::AddText(const std::string &str)
     unsigned strstart = 0, strend, length = str.length();
     unsigned addedchars = m_szRawText.length();
     unsigned startcolor = 0;
-    int curcolor = -1;
+    int fgcolor = -1, bgcolor = -1;
 
     while (strstart < length)
     {
@@ -1096,17 +1118,25 @@ void CFormattedText::AddText(const std::string &str)
             {
                 startcolor = addedchars;
                 strstart += 5; // length of <col= == 5
+                
+                // Get foreground color
+                strend = str.find(":", strstart);
+                fgcolor = atoi(str.substr(strstart, (strend-strstart)+1).c_str());
+                
+                // Get background color
+                strstart = strend+1;
                 strend = str.find(">", strstart);
-                curcolor = atoi(str.substr(strstart, (strend-strstart)+1).c_str());
+                bgcolor = atoi(str.substr(strstart, (strend-strstart)+1).c_str());
+                
                 strstart = strend+1;
                 continue;
             }
             else if (!str.compare(strstart+1, 5, "/col>")) // End color tag
             {
-                if (curcolor != -1)
-                    m_Colors[startcolor] = new color_entry_s(addedchars-startcolor, curcolor);
+                if ((fgcolor != -1) && (bgcolor != -1))
+                    m_Colors[startcolor] = new color_entry_s(addedchars-startcolor, fgcolor, bgcolor);
                 strstart += 6;
-                curcolor = -1;
+                fgcolor = bgcolor = -1;
                 continue;
             }
             else if (!str.compare(strstart+1, 2, "C>"))
@@ -1270,18 +1300,9 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             chars += m_Lines[u]->text.length();
     }
     
-    // Check for tags in lines that are not printed
-    for (std::map<int, color_entry_s *>::iterator it=m_Colors.begin(); it!=m_Colors.end(); it++)
-    {
-        if (it->first > chars) // Map is sorted and index has to be processed later
-            break;
-        
-        if (!it->second)
-            continue;
-        
-        if (it->second->count >= (chars - it->first)) // In reach
-            colorchars = it->first + it->second->count;
-    }
+    std::map<int, color_entry_s *>::iterator colorit = GetNextColorTagPos(m_Colors.begin(), 0);
+    if ((colorit != m_Colors.end()) && (colorit->first > chars))
+        ;// Enable colors
     
     for (unsigned u=startline; u<endline; u++, y++)
     {
@@ -1322,23 +1343,11 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
         chars += index;
         
         // Check for tags in this line that are not printed
-        
-        if (!colorchars)
+        if ((colorit != m_Colors.end()) && (colorit->first <= chars) && (colorit->second->count < (chars-colorit->first)))
         {
-            for (std::map<int, color_entry_s *>::iterator it=m_Colors.begin(); it!=m_Colors.end(); it++)
-            {
-                if (it->first > chars) // Map is sorted and index has to be processed later
-                    break;
-            
-                if (!it->second)
-                    continue;
-            
-                if (it->second->count >= (chars - it->first)) // In reach
-                {
-                    colorchars = it->first + it->second->count;
-                    break;
-                }
-            }
+            colorit = GetNextColorTagPos(colorit, chars);
+            if ((colorit != m_Colors.end()) && (colorit->first < chars))
+                m_pWindow->attron(COLOR_PAIR(CWidgetWindow::GetColorPair(colorit->second->fgcolor, colorit->second->bgcolor)));
         }
         
         while (index < count)
@@ -1346,23 +1355,21 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             // Line may containing trailing whitespace or newline which should not be printed.
             bool canprint = (!m_bWrap || (index <= m_uWidth)) && (((index+1)!=len) || !isspace(m_Lines[u]->text[index]));
             
-            if (colorchars && (colorchars < chars))
+            if ((colorit != m_Colors.end()) && (colorit->first <= chars) && (colorit->second->count < (chars-colorit->first)))
             {
-                colorchars = 0;
-                // ...
+                int curcolpair = CWidgetWindow::GetColorPair(colorit->second->fgcolor, colorit->second->bgcolor);
+                colorit = GetNextColorTagPos(colorit, chars);
+                
+                if ((colorit == m_Colors.end()) || (colorit->first > chars)) // No color tag or not in reach yet
+                    m_pWindow->attroff(COLOR_PAIR(curcolpair));
+                else
+                    m_pWindow->attron(COLOR_PAIR(CWidgetWindow::GetColorPair(colorit->second->fgcolor, colorit->second->bgcolor)));
             }
             
-            if (colorchars)
+            if ((colorit != m_Colors.end()) && (colorit->first <= chars))
             {
                 if (canprint)
                     m_pWindow->addch(y, spaces+x, toupper(m_Lines[u]->text[index]));
-            }
-            else if (m_Colors[chars])
-            {
-                if (canprint)
-                    m_pWindow->addch(y, spaces+x, toupper(m_Lines[u]->text[index]));
-                incolortag = true;
-                colorchars = chars + m_Colors[chars]->count-1; // -1 because we just (tried to) print one ;)
             }
             else if (canprint)
                 m_pWindow->addch(y, spaces+x, m_Lines[u]->text[index]);

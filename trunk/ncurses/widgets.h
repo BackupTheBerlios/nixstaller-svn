@@ -394,8 +394,8 @@ class CFormattedText
     struct color_entry_s
     {
         unsigned count;
-        int color;
-        color_entry_s(unsigned cn, int c) : count(cn), color(c) { };
+        int fgcolor, bgcolor;
+        color_entry_s(unsigned cn, int fg, int bg) : count(cn), fgcolor(fg), bgcolor(bg) { };
     };
 
     struct line_entry_s
@@ -413,6 +413,8 @@ class CFormattedText
     std::set<unsigned> m_CenteredIndexes;
     unsigned m_uWidth, m_uMaxHeight, m_uLongestLine;
     bool m_bWrap;
+    
+    std::map<int, color_entry_s *>::iterator GetNextColorTagPos(std::map<int, color_entry_s *>::iterator cur, unsigned curpos);
     
 public:
     CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, unsigned maxh=std::numeric_limits<unsigned>::max());
