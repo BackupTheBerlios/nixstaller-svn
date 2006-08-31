@@ -206,7 +206,6 @@ bool CNCursBase::HandleKey(chtype ch)
         m_pAboutScreen->Enable(false);
         ::erase(); // Clear whole screen
         pWidgetManager->Refresh();
-        
         return true;
     }
     

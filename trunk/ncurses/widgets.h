@@ -335,7 +335,7 @@ protected:
     std::list<CWidgetWindow *> m_ChildList;
     std::list<CWidgetWindow *>::iterator m_FocusedChild;
 
-    bool SetNextWidget(bool rec=true);
+    bool SetNextWidget(bool rec=true); // rec(ursive): If the next widget of all child widgets should be enabled 
     bool SetPrevWidget(bool rec=true);
     
     virtual void Focus(void);
@@ -418,6 +418,30 @@ class CFormattedText
     std::map<unsigned, color_entry_s *>::iterator GetNextColorTag(std::map<unsigned, color_entry_s *>::iterator cur, unsigned curpos);
     std::map<unsigned, int>::iterator GetNextRevTag(std::map<unsigned, int>::iterator cur, unsigned curpos);
     
+    // For sorting, makes sure that empty lines are at the end
+    static bool LessThan(line_entry_s *f, line_entry_s *s)
+    {
+        std::string tmp=f->text;
+        EatWhite(tmp);
+        
+        std::string tmp2=s->text;
+        EatWhite(tmp2);
+
+        return ((f->text < s->text) && !tmp.empty()) || tmp2.empty();
+    };
+    
+//     // For sorting, makes sure that empty lines are at the end
+//     static bool LessThan(const std::string &f, const std::string &s)
+//     {
+//         std::string tmp=f;
+//         EatWhite(tmp);
+//         
+//         std::string tmp2=s;
+//         EatWhite(tmp2);
+// 
+//         return ((f < s) && !tmp.empty()) || tmp2.empty();
+//     };
+
 public:
     CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, unsigned maxh=std::numeric_limits<unsigned>::max());
     ~CFormattedText(void) { Clear(); };

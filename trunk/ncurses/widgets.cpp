@@ -817,8 +817,8 @@ void CWidgetHandler::Enable(bool e)
         // Disabled widgets shouldn't have focus
         if (*m_pOwner->m_FocusedChild == this)
         {
-            if (!m_pOwner->SetPrevWidget())
-                m_pOwner->SetNextWidget();
+            if (!m_pOwner->SetPrevWidget(false))
+                m_pOwner->SetNextWidget(false);
         }
     }
 }
@@ -1125,6 +1125,7 @@ void CFormattedText::AddText(const std::string &str)
         return;
     
     unsigned offset = m_szRawText.length();
+    
     std::string newtext;
     
     unsigned strstart = 0, strend, length = str.length();
@@ -1181,7 +1182,7 @@ void CFormattedText::AddText(const std::string &str)
             }
         }
         
-        newtext += str[strstart];
+        m_szRawText += str[strstart];
         addedchars++;
         strstart++;
     }
@@ -1289,6 +1290,35 @@ void CFormattedText::AddText(const std::string &str)
         }
         while ((strend != std::string::npos) && ((strend+1) < length) && (m_uCurrentLine < m_uMaxHeight));
     }
+    
+    bool m_bSort = true;
+    
+    if (m_bSort)
+    {
+        std::vector<line_entry_s *> origvec = m_Lines;
+        std::sort(m_Lines.begin(), m_Lines.end(), LessThan);
+
+        // Restore all tag positions
+        unsigned chars = 0;
+        for (unsigned u=0; u<m_Lines.size(); u++)
+        {
+            if (origvec[u] != m_Lines[u])
+            {
+                for (std::map<unsigned, color_entry_s *>::iterator it=m_ColorTags.begin(); it!=m_ColorTags.end(); it++)
+                {
+                    if ((it->first >= chars) && (it->first < (chars+origvec[u]->text.length())))
+                    {
+                        //std::vector<line_entry_s *>::iterator newit = std::lower_bound(m_Lines.begin(), m_Lines.end(), *(origvec.begin()+u), LessThan);
+                        std::vector<line_entry_s *>::iterator newit = std::find(m_Lines.begin(), m_Lines.end(), *(origvec.begin()+u));
+                        debugline("color tag moved from line %u to %u('%s')\n", u, std::distance(m_Lines.begin(), newit), origvec[u]->text.c_str());
+                        AddColorTag(std::distance(m_Lines.begin(), newit), (it->first-chars), it->second->count, it->second->fgcolor, it->second->bgcolor);
+                        DelColorTag(u, (it->first-chars));
+                    }
+                }
+            }
+            chars += m_Lines[u]->text.length();
+        }
+    }
 }
 
 void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline, unsigned endw)
@@ -1318,6 +1348,32 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
     
     bool initcolortag = (colorit != m_ColorTags.end());
     bool initrevtag = (revit != m_ReversedTags.end());
+    
+    /*
+    std::vector<std::string> Sorted;
+    for (unsigned u=startline; u<endline; u++)
+    {
+        Sorted.push_back(m_Lines[u]->text);
+    }
+    
+    std::sort(Sorted.begin(), Sorted.end(), LessThan);
+    std::map<unsigned, unsigned> sortedpos;
+    for (unsigned u=startline; u<endline; u++)
+    {
+        for (unsigned u2=0; u2<Sorted.size(); u2++)
+        {
+            if (Sorted[u2] == m_Lines[u]->text)
+            {
+                sortedpos[u] = u2;
+                //debugline("%u --> %u : %s\n", u, u2, m_Lines[u]->text.c_str());
+                break;
+            }
+        }
+    }
+    
+    debugline("Sorted:\n");
+    for (unsigned u2=0; u2<Sorted.size(); u2++)
+    debugline("%d. %s\n", u2, Sorted[u2].c_str());*/
     
     for (unsigned u=startline; u<endline; u++, y++)
     {
@@ -1395,7 +1451,8 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             }
 
             if (canprint)
-                m_pWindow->addch(y, spaces+index, m_Lines[u]->text[index]);
+                m_pWindow->addch(y, spaces+x, m_Lines[u]->text[index]);
+                //m_pWindow->addch(sortedpos[u], spaces+x, m_Lines[u]->text[index]);
             
             index++;
             chars++;
@@ -2119,7 +2176,7 @@ void CTextWindow::LoadFile(const char *fname)
 void CTextWindow::Draw()
 {
     erase();
-    m_pFMText->Print(m_uCurrentLine, (unsigned)m_pHScrollbar->GetValue(), height(), width());
+    m_pFMText->Print(m_uCurrentLine, (unsigned)m_pHScrollbar->GetValue(), m_pTextWin->height(), m_pTextWin->width());
     m_pVScrollbar->Enable((HasBox() && (m_pFMText->GetLines() > m_pTextWin->height())));
     m_pHScrollbar->Enable(!m_bWrap && HasBox() && (m_pFMText->GetLongestLine() > m_pTextWin->width()));
 }
