@@ -429,6 +429,8 @@ public:
     unsigned GetLongestLine(void) { return m_uLongestLine; };
     bool Empty(void) { return !GetLines(); };
     void Clear(void);
+    void AddRevTag(unsigned line, unsigned pos, unsigned c);
+    void AddColorTag(unsigned line, unsigned pos, unsigned c, int fg, int bg);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow

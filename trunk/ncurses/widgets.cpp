@@ -1435,6 +1435,40 @@ void CFormattedText::Clear()
     m_uCurrentLine = m_uLongestLine = 0;
 }
 
+void CFormattedText::AddRevTag(unsigned line, unsigned pos, unsigned c)
+{
+    unsigned chars = 0;
+    for (unsigned u=0; u<m_Lines.size(); u++)
+    {
+        if (u < lines)
+            chars += m_Lines[u]->text.length();
+        else
+        {
+            chars += pos;
+            break;
+        }
+    }
+
+    m_RevTags[chars] = c;
+}
+
+void CFormattedText::AddColorTag(unsigned line, unsigned pos, unsigned c, int fg, int bg)
+{
+    unsigned chars = 0;
+    for (unsigned u=0; u<m_Lines.size(); u++)
+    {
+        if (u < lines)
+            chars += m_Lines[u]->text.length();
+        else
+        {
+            chars += pos;
+            break;
+        }
+    }
+
+    m_ColorTags[chars] = new color_entry_s(c, fg, bg);
+}
+
 // -------------------------------------
 // Widget window class
 // -------------------------------------
