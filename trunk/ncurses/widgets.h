@@ -427,10 +427,17 @@ public:
                unsigned endw=std::numeric_limits<unsigned>::max());
     unsigned GetLines(void);
     unsigned GetLongestLine(void) { return m_uLongestLine; };
+    const std::string &GetText(unsigned line) { return m_Lines[line]->text; };
     bool Empty(void) { return !GetLines(); };
     void Clear(void);
+    
+    void AddCenterTag(unsigned line);
     void AddRevTag(unsigned line, unsigned pos, unsigned c);
     void AddColorTag(unsigned line, unsigned pos, unsigned c, int fg, int bg);
+    
+    void DelCenterTag(unsigned line);
+    void DelRevTag(unsigned line, unsigned pos);
+    void DelColorTag(unsigned line, unsigned pos);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
@@ -599,10 +606,10 @@ public:
 
 class CMenu: public CWidgetWindow
 {
-    std::vector<std::string> m_MenuItems;
+    std::vector<CFormattedText *> m_MenuItems;
     int m_iCursorLine;
     int m_iStartEntry; // First entry to display(for scrolling)
-    int m_iLongestLine;
+    unsigned m_uLongestLine;
     CScrollbar *m_pVScrollbar, *m_pHScrollbar;
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     
@@ -610,8 +617,21 @@ class CMenu: public CWidgetWindow
     void VScroll(int n);
     int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
 
+    //static bool SortMenu(CFormattedText *first, CFormattedText *sec) { return (first->GetText(0) < sec->GetText(0)); };
+    static bool SortMenu(CFormattedText *first, std::string txt) { return (first->GetText(0) < txt); };
+    
+    // Functor for std::find_if to find text in CFormattedText
+    class CFindMenu
+    {
+        std::string text;
+        
+    public:
+        CFindMenu(const std::string &s) : text(s) { }; 
+        bool operator()(CFormattedText *f) { return f->GetText(0) == text; };
+    };
+    
     // Used for std::lower_bound()
-    static bool LowerChar(const std::string &str, chtype ch) { return (str[0] < ch); };
+    static bool LowerChar(CFormattedText *fm, char ch) { return (fm->GetText(0)[0] < ch); };
 
 protected:
     virtual bool HandleKey(chtype ch);
@@ -625,7 +645,7 @@ public:
     
     void AddItem(std::string s);
     void Clear(void);
-    const std::string &GetCurrentItemName(void) { return m_MenuItems[GetCurrent()]; };
+    const std::string &GetCurrentItemName(void) { return m_MenuItems[GetCurrent()]->GetText(0); };
     void SetCurrent(const std::string &str);
     void SetCurrent(const char *str) { SetCurrent(std::string(str)); };
     bool Empty(void) { return m_MenuItems.empty(); };

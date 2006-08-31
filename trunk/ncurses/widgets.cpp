@@ -1125,6 +1125,7 @@ void CFormattedText::AddText(const std::string &str)
         return;
     
     unsigned offset = m_szRawText.length();
+    std::string newtext;
     
     unsigned strstart = 0, strend, length = str.length();
     unsigned addedchars = offset;
@@ -1180,7 +1181,7 @@ void CFormattedText::AddText(const std::string &str)
             }
         }
         
-        m_szRawText += str[strstart];
+        newtext += str[strstart];
         addedchars++;
         strstart++;
     }
@@ -1394,7 +1395,7 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             }
 
             if (canprint)
-                m_pWindow->addch(y, spaces+x, m_Lines[u]->text[index]);
+                m_pWindow->addch(y, spaces+index, m_Lines[u]->text[index]);
             
             index++;
             chars++;
@@ -1435,12 +1436,26 @@ void CFormattedText::Clear()
     m_uCurrentLine = m_uLongestLine = 0;
 }
 
+void CFormattedText::AddCenterTag(unsigned line)
+{
+    unsigned chars = 0;
+    for (unsigned u=0; u<m_Lines.size(); u++)
+    {
+        if (u < line)
+            chars += m_Lines[u]->text.length();
+        else
+            break;
+    }
+
+    m_CenteredIndexes.insert(chars+1);
+}
+
 void CFormattedText::AddRevTag(unsigned line, unsigned pos, unsigned c)
 {
     unsigned chars = 0;
     for (unsigned u=0; u<m_Lines.size(); u++)
     {
-        if (u < lines)
+        if (u < line)
             chars += m_Lines[u]->text.length();
         else
         {
@@ -1449,7 +1464,7 @@ void CFormattedText::AddRevTag(unsigned line, unsigned pos, unsigned c)
         }
     }
 
-    m_RevTags[chars] = c;
+    m_ReversedTags[chars] = c;
 }
 
 void CFormattedText::AddColorTag(unsigned line, unsigned pos, unsigned c, int fg, int bg)
@@ -1457,7 +1472,7 @@ void CFormattedText::AddColorTag(unsigned line, unsigned pos, unsigned c, int fg
     unsigned chars = 0;
     for (unsigned u=0; u<m_Lines.size(); u++)
     {
-        if (u < lines)
+        if (u < line)
             chars += m_Lines[u]->text.length();
         else
         {
@@ -1467,6 +1482,54 @@ void CFormattedText::AddColorTag(unsigned line, unsigned pos, unsigned c, int fg
     }
 
     m_ColorTags[chars] = new color_entry_s(c, fg, bg);
+}
+
+void CFormattedText::DelCenterTag(unsigned line)
+{
+    unsigned chars = 0;
+    for (unsigned u=0; u<m_Lines.size(); u++)
+    {
+        if (u < line)
+            chars += m_Lines[u]->text.length();
+        else
+            break;
+    }
+
+    m_CenteredIndexes.erase(chars+1);
+}
+
+void CFormattedText::DelRevTag(unsigned line, unsigned pos)
+{
+    unsigned chars = 0;
+    for (unsigned u=0; u<m_Lines.size(); u++)
+    {
+        if (u < line)
+            chars += m_Lines[u]->text.length();
+        else
+        {
+            chars += pos;
+            break;
+        }
+    }
+
+    m_ReversedTags.erase(chars);
+}
+
+void CFormattedText::DelColorTag(unsigned line, unsigned pos)
+{
+    unsigned chars = 0;
+    for (unsigned u=0; u<m_Lines.size(); u++)
+    {
+        if (u < line)
+            chars += m_Lines[u]->text.length();
+        else
+        {
+            chars += pos;
+            break;
+        }
+    }
+
+    m_ColorTags.erase(chars);
 }
 
 // -------------------------------------
@@ -2071,7 +2134,7 @@ chtype CMenu::m_cDefaultDefocusedColors;
 CMenu::CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true,
                                             true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                              m_iCursorLine(0), m_iStartEntry(0), m_iLongestLine(0)
+                              m_iCursorLine(0), m_iStartEntry(0)
 {
     m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
     m_pVScrollbar = new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 100, true, 'r');
@@ -2080,7 +2143,7 @@ CMenu::CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin
 
 void CMenu::HScroll(int n)
 {
-    if (m_iLongestLine <= m_pTextWin->width())
+    if (m_uLongestLine <= m_pTextWin->width())
         return;
     
     m_pHScrollbar->Scroll(n);
@@ -2091,6 +2154,7 @@ void CMenu::VScroll(int n)
 {
     bool scroll = false;
     int newline = m_iCursorLine + n;
+    unsigned cur = m_iCursorLine;
     
     if (newline < 0)
     {
@@ -2130,6 +2194,12 @@ void CMenu::VScroll(int n)
             m_iCursorLine = ((oldstart + newline) - GetCurrent());
     }
     
+    //if (cur != GetCurrent())
+    {
+        m_MenuItems[cur]->DelRevTag(0, 0);
+        m_MenuItems[GetCurrent()]->AddRevTag(0, 0, m_MenuItems[GetCurrent()]->GetText(0).length());
+    }
+
     refresh();
 }
 
@@ -2178,14 +2248,14 @@ bool CMenu::HandleKey(chtype ch)
                 handled = false;
             else // Go to item which starts with typed character
             {
-                std::vector<std::string>::iterator cur = (m_MenuItems.begin() + GetCurrent());
+                std::vector<CFormattedText *>::iterator cur = (m_MenuItems.begin() + GetCurrent());
                 
                 // First try from current position
-                std::vector<std::string>::iterator it = std::lower_bound(cur+1, m_MenuItems.end(), ch, LowerChar);
-                if ((it == m_MenuItems.end()) || ((*it)[0] != ch))
+                std::vector<CFormattedText *>::iterator it = std::lower_bound(cur+1, m_MenuItems.end(), ch, LowerChar);
+                if ((it == m_MenuItems.end()) || ((*it)->GetText(0)[0] != ch))
                     it = std::lower_bound(m_MenuItems.begin(), cur, ch, LowerChar); // Failed, start from the begin
                 
-                if ((it != m_MenuItems.end()) && ((*it)[0] == ch))
+                if ((it != m_MenuItems.end()) && ((*it)->GetText(0)[0] == ch))
                 {
                     VScroll(std::distance(cur, it));
                     PushEvent(EVENT_DATACHANGED);
@@ -2207,14 +2277,15 @@ void CMenu::Draw()
     {
         for(int i=m_iStartEntry; ((i<m_MenuItems.size()) && (lines<m_pTextWin->height())); i++, lines++)
         {
-            if (m_iCursorLine == lines)
-                m_pTextWin->attron(A_REVERSE);
+/*            if (m_iCursorLine == lines)
+                m_pTextWin->attron(A_REVERSE);*/
             
-            m_pTextWin->AddStrFormat(lines, 0, m_MenuItems[i].c_str(), (int)m_pHScrollbar->GetValue(),
-                                     m_pTextWin->width());
+            m_MenuItems[i]->Print(0, (unsigned)m_pHScrollbar->GetValue(), 1, m_pTextWin->width());
+/*            m_pTextWin->AddStrFormat(lines, 0, m_MenuItems[i].c_str(), (int)m_pHScrollbar->GetValue(),
+                                     m_pTextWin->width());*/
             
-            if (m_iCursorLine == lines)
-                m_pTextWin->attroff(A_REVERSE);
+/*            if (m_iCursorLine == lines)
+                m_pTextWin->attroff(A_REVERSE);*/
         }
     }
 }
@@ -2222,10 +2293,10 @@ void CMenu::Draw()
 void CMenu::AddItem(std::string s)
 {
     // Search a place that won't mess up sorted vector
-    std::vector<std::string>::iterator it = std::lower_bound(m_MenuItems.begin(), m_MenuItems.end(), s);
+    std::vector<CFormattedText *>::iterator it = std::lower_bound(m_MenuItems.begin(), m_MenuItems.end(), s, SortMenu);
     
-    if ((it == m_MenuItems.end()) || (*it != s)) // Don't add duplicates
-        m_MenuItems.insert(it, s);
+    if ((it == m_MenuItems.end()) || ((*it)->GetText(0) != s)) // Don't add duplicates
+        m_MenuItems.insert(it, new CFormattedText(m_pTextWin, s, false));
     
     int h = m_MenuItems.size() - m_pTextWin->height();
     if (h < 0)
@@ -2233,25 +2304,25 @@ void CMenu::AddItem(std::string s)
     m_pVScrollbar->SetMinMax(0, h);
 
     unsigned len = GetUnFormatLen(s);
-    if (len > m_iLongestLine)
+    if (len > m_uLongestLine)
     {
-        m_iLongestLine = len;
+        m_uLongestLine = len;
         
-        if (m_iLongestLine > m_pTextWin->width())
-            m_pHScrollbar->SetMinMax(0, (m_iLongestLine - m_pTextWin->width()));
+        if (m_uLongestLine > m_pTextWin->width())
+            m_pHScrollbar->SetMinMax(0, (m_uLongestLine - m_pTextWin->width()));
     }
     
     m_pVScrollbar->Enable((m_MenuItems.size() > m_pTextWin->height()));
-    m_pHScrollbar->Enable((m_iLongestLine > m_pTextWin->width()));
+    m_pHScrollbar->Enable((m_uLongestLine > m_pTextWin->width()));
 }
 
 void CMenu::SetCurrent(const std::string &str)
 {
-    std::vector<std::string>::iterator it = std::find(m_MenuItems.begin(), m_MenuItems.end(), str);
+    std::vector<CFormattedText *>::iterator it; std::find_if(m_MenuItems.begin(), m_MenuItems.end(), CFindMenu(str));
     
     if (it != m_MenuItems.end())
     {
-        std::vector<std::string>::iterator cur = (m_MenuItems.begin() + GetCurrent());
+        std::vector<CFormattedText *>::iterator cur = (m_MenuItems.begin() + GetCurrent());
         VScroll(std::distance(cur, it));
         PushEvent(EVENT_DATACHANGED);
     }
@@ -2262,7 +2333,7 @@ void CMenu::SetCurrent(const std::string &str)
 void CMenu::Clear()
 {
     m_MenuItems.clear();
-    m_iCursorLine = m_iStartEntry = m_iLongestLine = 0;
+    m_iCursorLine = m_iStartEntry = m_uLongestLine = 0;
     m_pHScrollbar->SetCurrent(0);
     m_pVScrollbar->SetCurrent(0);
 }
