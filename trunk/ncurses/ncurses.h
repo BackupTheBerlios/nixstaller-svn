@@ -138,7 +138,7 @@ public:
     
     virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
     
-    static int CalcHeight(const char *desc) { return (desc && *desc) ? 3 : 1; };
+    static int CalcHeight(int w, const char *desc);
 };
 
 class CLuaCheckbox: public CBaseLuaCheckbox
@@ -153,8 +153,7 @@ public:
     virtual bool Enabled(int n) { return m_pCheckbox->IsEnabled(n); };
     virtual void Enable(int n) { m_pCheckbox->EnableBox(n); };
 
-    static int CalcHeight(const char *desc, const std::list<std::string> &l)
-    { return (((desc && *desc) ? 2 : 0) + l.size()); };
+    static int CalcHeight(int w, const char *desc, const std::list<std::string> &l);
 };
 
 class CLuaRadioButton: public CBaseLuaRadioButton
@@ -169,8 +168,7 @@ public:
     virtual int EnabledButton() { return m_pRadioButton->EnabledButton(); };
     virtual void Enable(int n) { m_pRadioButton->EnableButton(n); };
 
-    static int CalcHeight(const char *desc, const std::list<std::string> &l)
-    { return (((desc && *desc) ? 2 : 0) + l.size()); };
+    static int CalcHeight(int w, const char *desc, const std::list<std::string> &l);
 };
 
 // We inherit from CWidgetWindow so that events can be recieved
@@ -183,12 +181,12 @@ protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
-    CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxx, const char *desc, const char *val);
+    CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc, const char *val);
 
     virtual const char *GetDir(void) { return m_pDirInput->GetText().c_str(); };
     virtual void SetDir(const char *dir) { m_pDirInput->SetText(dir); };
     
-    static int CalcHeight(const char *desc) { return (desc && *desc) ? 3 : 1; };
+    static int CalcHeight(int w, const char *desc);
 };
 
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CWidgetWindow
@@ -202,11 +200,11 @@ protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
-    CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc);
+    CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc);
     
     virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l=NULL);
     
-    static int CalcHeight(const char *desc) { return (desc && *desc) ? 10 : 7; };
+    static int CalcHeight(int w, const char *desc);
 };
 
 // -------------------------

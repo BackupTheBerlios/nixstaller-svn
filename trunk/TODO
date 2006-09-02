@@ -42,7 +42,7 @@ DOCS
 - Max config var description length
 
 FOR RELEASE
-- CFLAGS: Add -Os; remove -g
+- CFLAGS: Add -Os -DNDEBUG; remove -g
 
 ----------------------------- LATER ------------------------------------
 

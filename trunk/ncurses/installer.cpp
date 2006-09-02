@@ -190,7 +190,7 @@ bool CInstaller::Init(int argc, char **argv)
     m_pPrevButton = new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r');
     m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
     
-    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-y-1;
 
     (m_pWelcomeScreen = new CWelcomeScreen(this, h, w, y, x))->Enable(false);
     (m_pLicenseScreen = new CLicenseScreen(this, h, w, y, x))->Enable(false);
@@ -310,6 +310,14 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const 
         m_pInput->SetText(val);
 }
 
+int CLuaInputField::CalcHeight(int w, const char *desc)
+{
+    if (desc && *desc)
+        return CTextLabel::CalcHeight(w, desc) + 1;
+    
+    return 1;
+}
+
 // -------------------------------------
 // Lua checkbox class
 // -------------------------------------
@@ -330,6 +338,14 @@ CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char
     
     for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
         m_pCheckbox->Add(*it);
+}
+
+int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::list<std::string> &l)
+{
+    if (desc && *desc)
+        return CTextLabel::CalcHeight(w, desc) + l.size();
+    
+    return l.size();
 }
 
 // -------------------------------------
@@ -354,12 +370,20 @@ CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, cons
         m_pRadioButton->Add(*it);
 }
 
+int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::list<std::string> &l)
+{
+    if (desc && *desc)
+        return CTextLabel::CalcHeight(w, desc) + l.size();
+    
+    return l.size();
+}
+
 // -------------------------------------
 // Lua directory selector class
 // -------------------------------------
 
-CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
-                                 const char *val) : CWidgetWindow(owner, 3, maxx, y, x, 'r', false)
+CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc,
+                                 const char *val) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false)
 {
     int begy = 0;
     
@@ -394,11 +418,19 @@ bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
+int CLuaDirSelector::CalcHeight(int w, const char *desc)
+{
+    if (desc && *desc)
+        return CTextLabel::CalcHeight(w, desc) + 1;
+    
+    return 1;
+}
+
 // -------------------------------------
 // Lua config menu class
 // -------------------------------------
 
-CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxx, const char *desc) : CWidgetWindow(owner, 10, maxx, y, x, 'r', false)
+CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false)
 {
     int begy = 0;
     const int menuw = 20;
@@ -476,6 +508,14 @@ void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EV
     m_pMenu->AddItem(name);
     
     SetInfo();
+}
+
+int CLuaCFGMenu::CalcHeight(int w, const char *desc)
+{
+    if (desc && *desc)
+        return CTextLabel::CalcHeight(w, desc) + 7;
+    
+    return 7;
 }
 
 // -------------------------------------
@@ -735,7 +775,7 @@ void CCFGScreen::Activate()
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
 {
-    int h = CLuaInputField::CalcHeight(desc);
+    int h = CLuaInputField::CalcHeight(width()-3, desc);
     
     if ((h + m_iStartY) < height())
     {
@@ -752,7 +792,7 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
 
 CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::list<std::string> &l)
 {
-    int h = CLuaCheckbox::CalcHeight(desc, l);
+    int h = CLuaCheckbox::CalcHeight(width()-3, desc, l);
     
     if ((h + m_iStartY) < height())
     {
@@ -769,12 +809,12 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::list<s
 
 CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::list<std::string> &l)
 {
-    int h = CLuaRadioButton::CalcHeight(desc, l);
+    int h = CLuaRadioButton::CalcHeight(width()-3, desc, l);
     
-    if ((h + m_iStartY) < height())
+    if ((h + m_iStartY) <= height())
     {
         CLuaRadioButton *radio = new CLuaRadioButton(this, m_iStartY, 1, width()-3, desc, l);
-        m_iStartY += (h + 1);
+        m_iStartY += h;
         return radio;
     }
     
@@ -786,12 +826,12 @@ CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::
 
 CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char *val)
 {
-    int h = CLuaDirSelector::CalcHeight(desc);
+    int h = CLuaDirSelector::CalcHeight(width()-3, desc);
     
-    if ((h + m_iStartY) < height())
+    if ((h + m_iStartY) <= height())
     {
-        CLuaDirSelector *sel = new CLuaDirSelector(this, m_iStartY, 1, width()-3, desc, val);
-        m_iStartY += (h + 1);
+        CLuaDirSelector *sel = new CLuaDirSelector(this, m_iStartY, 1, h, width()-3, desc, val);
+        m_iStartY += h;
         return sel;
     }
     
@@ -803,12 +843,12 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
 
 CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
 {
-    int h = CLuaCFGMenu::CalcHeight(desc);
+    int h = CLuaCFGMenu::CalcHeight(width()-3, desc);
     
-    if ((h + m_iStartY) < height())
+    if ((h + m_iStartY) <= height())
     {
-        CLuaCFGMenu *menu = new CLuaCFGMenu(this, m_iStartY, 1, width()-3, desc);
-        m_iStartY += (h + 1);
+        CLuaCFGMenu *menu = new CLuaCFGMenu(this, m_iStartY, 1, h, width()-3, desc);
+        m_iStartY += h;
         return menu;
     }
     

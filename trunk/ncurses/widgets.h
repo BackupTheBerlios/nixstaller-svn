@@ -417,7 +417,7 @@ protected:
 
 private:
     CWidgetWindow *m_pWindow;
-    std::string m_szRawText;
+    unsigned m_uTextLength;
     unsigned m_uCurrentLine;
     unsigned m_uWidth, m_uMaxHeight, m_uLongestLine;
     bool m_bWrap, m_bHandleTags;
@@ -429,6 +429,8 @@ public:
     CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, unsigned maxh=std::numeric_limits<unsigned>::max());
     virtual ~CFormattedText(void) { Clear(); };
 
+    static unsigned CalcLines(const std::string &str, bool wrap, unsigned width);
+    
     virtual void AddText(const std::string &str);
     void SetText(const std::string &str) { Clear(); AddText(str); };
     void Print(unsigned startline=0, unsigned startw=0, unsigned endline=std::numeric_limits<unsigned>::max(),
@@ -474,10 +476,6 @@ protected:
     virtual void LeaveFocus(void) { bkgd(m_cDefocusedColors); refresh(); CWidgetHandler::LeaveFocus(); refresh(); };
     virtual void Draw(void) { };
     
-    static unsigned GetUnFormatLen(const std::string &str); // Length without tags
-    static unsigned GetWordLen(const std::string &str) // Length without tags and trailing newline
-    { return GetUnFormatLen(str) - (!str.empty() && (str[str.length()-1] == '\n')); };
-    
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
     static void SetCursorPos(int y, int x) { m_iCursorY = y; m_iCursorX = x; }; // Lock cursor position
@@ -498,8 +496,6 @@ public:
 
     virtual int refresh();
 
-    void AddStrFormat(int y, int x, std::string ftext, int start=-1, int n=-1);
-    
     bool HasBox(void) { return m_bBox; };
     void SetBox(bool box) { m_bBox = box; };
 
@@ -525,6 +521,7 @@ public:
 class CButton: public CWidgetWindow
 {
     std::string m_szTitle;
+    CFormattedText m_FMText;
     
 protected:
     virtual bool HandleKey(chtype ch);
@@ -577,8 +574,8 @@ public:
     void SetText(const std::string &text) { m_FormattedText.clear(); AddText(text); };
     void SetText(const char *text) { m_FormattedText.clear(); AddText(text); };
     
-    static int CalcHeight(int ncols, const std::string &text);
-    static int CalcHeight(int ncols, const char *text) { return CalcHeight(ncols, std::string(text)); };
+    static unsigned CalcHeight(int ncols, const std::string &text) { return CFormattedText::CalcLines(text, true, ncols); }
+    static unsigned CalcHeight(int ncols, const char *text) { return CFormattedText::CalcLines(text, true, ncols); }
 };
 
 class CTextWindow: public CWidgetWindow
@@ -644,7 +641,7 @@ class CMenu: public CWidgetWindow
             std::string tmp2=s;
             EatWhite(tmp2);
 
-            return tmp2.empty() || (!tmp.empty() && (f->text < s));
+            return !tmp2.empty() && (!tmp.empty() && (f->text < s));
         };
     
         static bool LessThanCh(line_entry_s *f, char ch)
