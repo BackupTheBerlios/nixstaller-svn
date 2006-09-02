@@ -420,7 +420,7 @@ private:
     std::string m_szRawText;
     unsigned m_uCurrentLine;
     unsigned m_uWidth, m_uMaxHeight, m_uLongestLine;
-    bool m_bWrap;
+    bool m_bWrap, m_bHandleTags;
     
     TColorTagList::iterator GetNextColorTag(TColorTagList::iterator cur, unsigned curpos);
     TRevTagList::iterator GetNextRevTag(TRevTagList::iterator cur, unsigned curpos);
@@ -430,6 +430,7 @@ public:
     virtual ~CFormattedText(void) { Clear(); };
 
     virtual void AddText(const std::string &str);
+    void SetText(const std::string &str) { Clear(); AddText(str); };
     void Print(unsigned startline=0, unsigned startw=0, unsigned endline=std::numeric_limits<unsigned>::max(),
                unsigned endw=std::numeric_limits<unsigned>::max());
     unsigned GetLines(void);
@@ -659,18 +660,8 @@ class CMenu: public CWidgetWindow
         
         virtual void AddText(const std::string &str);
         void HighLight(unsigned line, bool h);
-        unsigned Search(unsigned min, unsigned max, const std::string &key)
-        {
-            std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
-            std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanStr);
-            return ((*it)->text == key) ? std::distance(m_Lines.begin(), it) : GetLines();
-        }
-        unsigned Search(unsigned min, unsigned max, char key)
-        {
-            std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
-            std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanCh);
-            return (((*it)->text[0] == key) ? std::distance(m_Lines.begin(), it) : GetLines());
-        }
+        unsigned Search(unsigned min, unsigned max, const std::string &key);
+        unsigned Search(unsigned min, unsigned max, char key);
     };
     
     bool m_bInitCursor; // Does the current line needs to be highlighted?
@@ -683,23 +674,7 @@ class CMenu: public CWidgetWindow
     void HScroll(int n);
     void VScroll(int n);
     int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
-
-    //static bool SortMenu(CFormattedText *first, CFormattedText *sec) { return (first->GetText(0) < sec->GetText(0)); };
-    static bool SortMenu(CFormattedText *first, std::string txt) { return (first->GetText(0) < txt); };
     
-    // Functor for std::find_if to find text in CFormattedText
-    class CFindMenu
-    {
-        std::string text;
-        
-    public:
-        CFindMenu(const std::string &s) : text(s) { }; 
-        bool operator()(CFormattedText *f) { return f->GetText(0) == text; };
-    };
-    
-    // Used for std::lower_bound()
-    static bool LowerChar(CFormattedText *fm, char ch) { return (fm->GetText(0)[0] < ch); };
-
 protected:
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
@@ -724,10 +699,12 @@ class CInputField: public CWidgetWindow
     std::string m_szText;
     int m_iMaxChars;
     int m_iCursorPos, m_iScrollOffset;
+    CFormattedText m_FMText;
     
     void Addch(chtype ch);
     void Delch(bool backspace);
     void MoveCursor(int n, bool relative=true);
+    void ChangeFMText(void);
     
 protected:
     virtual void Focus(void);
@@ -742,8 +719,8 @@ public:
                 int max=-1, chtype out=0);
     
     const std::string &GetText(void) { return m_szText; };
-    void SetText(const std::string &s) { m_szText = s; MoveCursor(m_szText.length(), false); };
-    void SetText(const char *s) { m_szText = s; MoveCursor(m_szText.length(), false); };
+    void SetText(const std::string &s) { m_szText = s; ChangeFMText(); MoveCursor(m_szText.length(), false); };
+    void SetText(const char *s) { m_szText = s; ChangeFMText(); MoveCursor(m_szText.length(), false); };
 };
 
 class CProgressbar: public CWidgetWindow

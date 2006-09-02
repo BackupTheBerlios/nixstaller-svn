@@ -1070,7 +1070,7 @@ bool CWidgetManager::SetPrevChildWidget()
 // -------------------------------------
 
 CFormattedText::CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap,
-                               unsigned maxh) : m_pWindow(w), m_uWidth(w->width()), m_uMaxHeight(maxh), m_bWrap(wrap)
+                               unsigned maxh) : m_pWindow(w), m_uWidth(w->width()), m_uMaxHeight(maxh), m_bWrap(wrap), m_bHandleTags(true)
 {
     if (!str.empty())
         AddText(str);
@@ -1136,7 +1136,21 @@ void CFormattedText::AddText(const std::string &str)
     {
         if (str[strstart] == '<')
         {
-            if (!str.compare(strstart+1, 4, "col=")) // Color tag
+            if (!str.compare(strstart+1, 5, "notg>")) // Stop processing tags
+            {
+                strstart += 6; // "<notg>"
+                m_bHandleTags = false;
+                continue;
+            }
+            else if (!str.compare(strstart+1, 6, "/notg>")) // Stop processing tags - end tag
+            {
+                strstart += 7; // "</notg>"
+                m_bHandleTags = true;
+                continue;
+            }
+            else if (!m_bHandleTags)
+                ; // Nothing
+            else if (!str.compare(strstart+1, 4, "col=")) // Color tag
             {
                 startcolor = addedchars;
                 strstart += 5; // length of <col= == 5
@@ -2130,7 +2144,7 @@ void CTextWindow::Draw()
 }
 
 // -------------------------------------
-// Menu class
+// Menu text sub class
 // -------------------------------------
 
 void CMenu::CMenuText::AddText(const std::string &str)
@@ -2212,6 +2226,24 @@ void CMenu::CMenuText::HighLight(unsigned line, bool h)
     else
         DelRevTag(line, 0);
 }
+
+unsigned CMenu::CMenuText::Search(unsigned min, unsigned max, const std::string &key)
+{
+    std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
+    std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanStr);
+    return ((*it)->text == key) ? std::distance(m_Lines.begin(), it) : GetLines();
+}
+
+unsigned CMenu::CMenuText::Search(unsigned min, unsigned max, char key)
+{
+    std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
+    std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanCh);
+    return (((*it)->text[0] == key) ? std::distance(m_Lines.begin(), it) : GetLines());
+}
+
+// -------------------------------------
+// Menu class
+// -------------------------------------
 
 chtype CMenu::m_cDefaultFocusedColors;
 chtype CMenu::m_cDefaultDefocusedColors;
@@ -2410,6 +2442,7 @@ void CMenu::Clear()
 {
     m_pMenuText->Clear();
     m_iCursorLine = m_iStartEntry = 0;
+    m_bInitCursor = true;
     m_pHScrollbar->SetCurrent(0);
     m_pVScrollbar->SetCurrent(0);
 }
@@ -2426,7 +2459,7 @@ CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_
                                                               absrel, false, true, m_cDefaultFocusedColors,
                                                               m_cDefaultDefocusedColors),
                                                 m_chOutChar(out), m_iMaxChars(max), m_iCursorPos(0),
-                                                m_iScrollOffset(0)
+                                                m_iScrollOffset(0), m_FMText(this, "", false)
 {
 }
 
@@ -2440,6 +2473,8 @@ void CInputField::Addch(chtype ch)
         m_szText += ch;
     else
         m_szText.insert(pos, 1, ch);
+    
+    ChangeFMText();
     
     MoveCursor(1);
 }
@@ -2456,6 +2491,8 @@ void CInputField::Delch(bool backspace)
     
     if (pos <= m_szText.length())
         m_szText.erase(pos, 1);
+    
+    ChangeFMText();
     
     if (backspace)
         MoveCursor(-1);
@@ -2503,6 +2540,20 @@ void CInputField::MoveCursor(int n, bool relative)
     }
     
     refresh();
+}
+
+void CInputField::ChangeFMText()
+{
+    std::string text;
+    
+    if (m_chOutChar)
+        text.append(m_szText.length(), m_chOutChar);
+    else
+        text = "<notg>" + m_szText;
+    
+    //text.append(width(), '_');
+    
+    m_FMText.SetText(text);
 }
 
 void CInputField::Focus()
@@ -2565,20 +2616,8 @@ bool CInputField::HandleKey(chtype ch)
 void CInputField::Draw()
 {
     erase();
-
-    std::string out;
-
-    if (!m_szText.empty())
-    {
-        if (m_chOutChar)
-            out.append(m_szText.length(), m_chOutChar);
-        else
-            out = m_szText;
-    }
+    m_FMText.Print(0, m_iScrollOffset, 1, width());
     
-    out.append(width(), '_');
-    AddStrFormat(0, 0, out.c_str(), m_iScrollOffset, width());
-
     if (Focused())
         SetCursorPos(begy(), begx() + m_iCursorPos);
 }
