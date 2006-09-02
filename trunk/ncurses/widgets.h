@@ -391,13 +391,7 @@ public:
 
 class CFormattedText
 {
-    struct color_entry_s
-    {
-        unsigned count;
-        int fgcolor, bgcolor;
-        color_entry_s(unsigned cn, int fg, int bg) : count(cn), fgcolor(fg), bgcolor(bg) { };
-    };
-
+protected:
     struct line_entry_s
     {
         std::string text;
@@ -405,48 +399,37 @@ class CFormattedText
         line_entry_s(void) { };
     };
     
+    struct color_entry_s
+    {
+        unsigned count;
+        int fgcolor, bgcolor;
+        color_entry_s(unsigned cn, int fg, int bg) : count(cn), fgcolor(fg), bgcolor(bg) { };
+    };
+
+    typedef std::map<unsigned, color_entry_s *> TColorTagList; // Index is used for starting position
+    typedef std::map<unsigned, unsigned> TRevTagList; // Index is the starting position, char count is the value
+    typedef std::set<unsigned> TCenterTagList;
+
+    std::vector<line_entry_s *> m_Lines;
+    TColorTagList m_ColorTags;
+    TRevTagList m_ReversedTags;
+    TCenterTagList m_CenteredIndexes;
+
+private:
     CWidgetWindow *m_pWindow;
     std::string m_szRawText;
-    std::vector<line_entry_s *> m_Lines;
     unsigned m_uCurrentLine;
-    std::map<unsigned, color_entry_s*> m_ColorTags; // Index is used for starting position
-    std::map<unsigned, int> m_ReversedTags; // Index is the starting position, char count is the value
-    std::set<unsigned> m_CenteredIndexes;
     unsigned m_uWidth, m_uMaxHeight, m_uLongestLine;
     bool m_bWrap;
     
-    std::map<unsigned, color_entry_s *>::iterator GetNextColorTag(std::map<unsigned, color_entry_s *>::iterator cur, unsigned curpos);
-    std::map<unsigned, int>::iterator GetNextRevTag(std::map<unsigned, int>::iterator cur, unsigned curpos);
+    TColorTagList::iterator GetNextColorTag(TColorTagList::iterator cur, unsigned curpos);
+    TRevTagList::iterator GetNextRevTag(TRevTagList::iterator cur, unsigned curpos);
     
-    // For sorting, makes sure that empty lines are at the end
-    static bool LessThan(line_entry_s *f, line_entry_s *s)
-    {
-        std::string tmp=f->text;
-        EatWhite(tmp);
-        
-        std::string tmp2=s->text;
-        EatWhite(tmp2);
-
-        return ((f->text < s->text) && !tmp.empty()) || tmp2.empty();
-    };
-    
-//     // For sorting, makes sure that empty lines are at the end
-//     static bool LessThan(const std::string &f, const std::string &s)
-//     {
-//         std::string tmp=f;
-//         EatWhite(tmp);
-//         
-//         std::string tmp2=s;
-//         EatWhite(tmp2);
-// 
-//         return ((f < s) && !tmp.empty()) || tmp2.empty();
-//     };
-
 public:
     CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, unsigned maxh=std::numeric_limits<unsigned>::max());
-    ~CFormattedText(void) { Clear(); };
+    virtual ~CFormattedText(void) { Clear(); };
 
-    void AddText(const std::string &str);
+    virtual void AddText(const std::string &str);
     void Print(unsigned startline=0, unsigned startw=0, unsigned endline=std::numeric_limits<unsigned>::max(),
                unsigned endw=std::numeric_limits<unsigned>::max());
     unsigned GetLines(void);
@@ -630,12 +613,72 @@ public:
 
 class CMenu: public CWidgetWindow
 {
-    std::vector<CFormattedText *> m_MenuItems;
+    class CMenuText: public CFormattedText
+    {
+        template <typename C> struct unsorted_tag_s
+        {
+            C entry;
+            unsigned lineoffset;
+            line_entry_s *line;
+            unsorted_tag_s(C c, unsigned l, line_entry_s *pl) : entry(c), lineoffset(l), line(pl) { };
+        };
+    
+        // For sorting, makes sure that empty lines are at the end
+        static bool LessThan(line_entry_s *f, line_entry_s *s)
+        {
+            std::string tmp=f->text;
+            EatWhite(tmp);
+        
+            std::string tmp2=s->text;
+            EatWhite(tmp2);
+
+            return tmp2.empty() || (!tmp.empty() && (f->text < s->text));
+        };
+        
+        static bool LessThanStr(line_entry_s *f, const std::string &s)
+        {
+            std::string tmp=f->text;
+            EatWhite(tmp);
+        
+            std::string tmp2=s;
+            EatWhite(tmp2);
+
+            return tmp2.empty() || (!tmp.empty() && (f->text < s));
+        };
+    
+        static bool LessThanCh(line_entry_s *f, char ch)
+        {
+            std::string tmp=f->text;
+            EatWhite(tmp);
+
+            return (!tmp.empty() && (f->text[0] < ch));
+        };
+        
+    public:
+        CMenuText(CWidgetWindow *w) : CFormattedText(w, "", false) { };
+        
+        virtual void AddText(const std::string &str);
+        void HighLight(unsigned line, bool h);
+        unsigned Search(unsigned min, unsigned max, const std::string &key)
+        {
+            std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
+            std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanStr);
+            return ((*it)->text == key) ? std::distance(m_Lines.begin(), it) : GetLines();
+        }
+        unsigned Search(unsigned min, unsigned max, char key)
+        {
+            std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
+            std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanCh);
+            return (((*it)->text[0] == key) ? std::distance(m_Lines.begin(), it) : GetLines());
+        }
+    };
+    
+    bool m_bInitCursor; // Does the current line needs to be highlighted?
     int m_iCursorLine;
     int m_iStartEntry; // First entry to display(for scrolling)
-    unsigned m_uLongestLine;
     CScrollbar *m_pVScrollbar, *m_pHScrollbar;
     CWidgetWindow *m_pTextWin; // Window containing the actual text
+    CMenuText *m_pMenuText;
     
     void HScroll(int n);
     void VScroll(int n);
@@ -665,14 +708,14 @@ public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
-    virtual ~CMenu(void) { Clear(); };
+    virtual ~CMenu(void) { Clear(); delete m_pMenuText; };
     
     void AddItem(std::string s);
     void Clear(void);
-    const std::string &GetCurrentItemName(void) { return m_MenuItems[GetCurrent()]->GetText(0); };
+    const std::string &GetCurrentItemName(void) { return m_pMenuText->GetText(GetCurrent()); };
     void SetCurrent(const std::string &str);
     void SetCurrent(const char *str) { SetCurrent(std::string(str)); };
-    bool Empty(void) { return m_MenuItems.empty(); };
+    bool Empty(void) { return m_pMenuText->Empty(); };
 };
 
 class CInputField: public CWidgetWindow
