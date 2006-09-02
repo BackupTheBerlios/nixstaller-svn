@@ -33,6 +33,7 @@ NCURSES FRONTEND
 - CalcSize for labels
 - Buttonbar
 - File manager should check if dir exist?
+- Place some <notgs>'s for lua widgets
 
 FLTK FRONTEND
 - Translate password dialog

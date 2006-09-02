@@ -170,8 +170,8 @@ bool CInstaller::InitLua()
     m_LuaVM.InitClass("installscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pInstallScreen, "installscreen", "InstallScreen");
     
-/*    m_LuaVM.InitClass("finishscreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(new CLangScreen(this, h, w, y, x), "finishscreen", "FinishScreen");*/
+    m_LuaVM.InitClass("finishscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pFinishScreen, "finishscreen", "FinishScreen");
     
     if (!CBaseInstall::InitLua())
         return false;
@@ -196,6 +196,7 @@ bool CInstaller::Init(int argc, char **argv)
     (m_pLicenseScreen = new CLicenseScreen(this, h, w, y, x))->Enable(false);
     (m_pSelectDirScreen = new CSelectDirScreen(this, h, w, y, x))->Enable(false);
     (m_pInstallScreen = new CInstallScreen(this, h, w, y, x))->Enable(false);
+    (m_pFinishScreen = new CFinishScreen(this, h, w, y, x))->Enable(false);
     
     if (!CBaseInstall::Init(argc, argv))
         return false;
@@ -210,6 +211,7 @@ bool CInstaller::Init(int argc, char **argv)
         m_InstallScreens.push_back(m_pLicenseScreen);
         m_InstallScreens.push_back(m_pSelectDirScreen);
         m_InstallScreens.push_back(m_pInstallScreen);
+        m_InstallScreens.push_back(m_pFinishScreen);
     }
     else
     {
@@ -265,6 +267,7 @@ bool CInstaller::Init(int argc, char **argv)
 void CInstaller::Install()
 {
     CBaseInstall::Install();
+    // UNDONE
 }
 
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
@@ -453,7 +456,6 @@ void CLuaCFGMenu::SetInfo()
     std::string item = m_pMenu->GetCurrentItemName();
     if (!item.empty() && m_Variabeles[item])
     {
-        debugline("desc lines: %d('%s')\n", CTextLabel::CalcHeight(m_pInfoWindow->width(), m_Variabeles[item]->desc), m_Variabeles[item]->desc.c_str());
         m_pInfoWindow->SetText(m_Variabeles[item]->desc);
         m_pInfoWindow->refresh();
     }
@@ -590,6 +592,7 @@ void CWelcomeScreen::DrawInit()
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+    m_pTextWin->LoadFile(m_szFileName.c_str());
 }
 
 bool CWelcomeScreen::CanActivate()
@@ -598,9 +601,9 @@ bool CWelcomeScreen::CanActivate()
         return false;
 
     if (FileExists(m_pInstaller->GetLangWelcomeFName()))
-        m_pTextWin->LoadFile(m_pInstaller->GetLangWelcomeFName());
+        m_szFileName = m_pInstaller->GetLangWelcomeFName();
     else if (FileExists(m_pInstaller->GetWelcomeFName()))
-        m_pTextWin->LoadFile(m_pInstaller->GetWelcomeFName());
+        m_szFileName = m_pInstaller->GetWelcomeFName();
     else
         return false;
     
@@ -631,6 +634,7 @@ void CLicenseScreen::DrawInit()
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+    m_pTextWin->LoadFile(m_szFileName.c_str());
 }
 
 bool CLicenseScreen::Next()
@@ -644,9 +648,9 @@ bool CLicenseScreen::CanActivate()
         return false;
 
     if (FileExists(m_pInstaller->GetLangLicenseFName()))
-        m_pTextWin->LoadFile(m_pInstaller->GetLangLicenseFName());
+        m_szFileName = m_pInstaller->GetLangLicenseFName();
     else if (FileExists(m_pInstaller->GetLicenseFName()))
-        m_pTextWin->LoadFile(m_pInstaller->GetLicenseFName());
+        m_szFileName = m_pInstaller->GetLicenseFName();
     else
         return false;
     
@@ -739,6 +743,48 @@ void CInstallScreen::Activate()
 {
     CBaseScreen::Activate();
     m_pInstaller->Install();
+}
+
+// -------------------------------------
+// Finish message screen
+// -------------------------------------
+
+bool CFinishScreen::HandleKey(chtype ch)
+{
+    if (CBaseScreen::HandleKey(ch))
+        return true;
+    
+    if (ENTER(ch))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
+    return false;
+}
+
+void CFinishScreen::DrawInit()
+{
+    SetInfo("<C>Please read the following text");
+    
+    int y = m_pLabel->rely() + m_pLabel->height() + 1;
+    m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+    m_pTextWin->LoadFile(m_szFileName.c_str());
+}
+
+bool CFinishScreen::CanActivate()
+{
+    if (!CBaseScreen::CanActivate())
+        return false;
+
+    if (FileExists(m_pInstaller->GetLangFinishFName()))
+        m_szFileName = m_pInstaller->GetLangFinishFName();
+    else if (FileExists(m_pInstaller->GetFinishFName()))
+        m_szFileName = m_pInstaller->GetFinishFName();
+    else
+        return false;
+    
+    return true;
 }
 
 // -------------------------------------

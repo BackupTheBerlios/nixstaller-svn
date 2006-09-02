@@ -66,7 +66,7 @@ protected:
 public:
     CAboutScreen(CWidgetManager *owner);
 
-    void Run(void) { while (m_pWidgetManager->Run() && !m_bFinished) {}; };
+    void Run(void) { while (m_pWidgetManager->Run() && !m_bFinished) {}; m_bFinished = false; };
 };
 
 class CNCursBase: virtual public CMain, public CWidgetWindow
@@ -92,6 +92,7 @@ class CWelcomeScreen;
 class CLicenseScreen;
 class CSelectDirScreen;
 class CInstallScreen;
+class CFinishScreen;
 class CCFGScreen;
 
 class CInstaller: public CNCursBase, public CBaseInstall
@@ -104,6 +105,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     CLicenseScreen *m_pLicenseScreen;
     CSelectDirScreen *m_pSelectDirScreen;
     CInstallScreen *m_pInstallScreen;
+    CFinishScreen *m_pFinishScreen;
     
     void Prev(void);
     void Next(void);
@@ -252,6 +254,7 @@ public:
 class CWelcomeScreen: public CBaseScreen
 {
     CTextWindow *m_pTextWin;
+    std::string m_szFileName;
 
 protected:
     virtual bool HandleKey(chtype ch);
@@ -267,6 +270,7 @@ public:
 class CLicenseScreen: public CBaseScreen
 {
     CTextWindow *m_pTextWin;
+    std::string m_szFileName;
 
 protected:
     virtual bool HandleKey(chtype ch);
@@ -314,6 +318,22 @@ public:
     void SetProgress(int n) { m_pProgressbar->SetCurrent(n); m_pProgressbar->refresh(); };
     
     virtual void Activate(void);
+};
+
+class CFinishScreen: public CBaseScreen
+{
+    CTextWindow *m_pTextWin;
+    std::string m_szFileName;
+
+protected:
+    virtual bool HandleKey(chtype ch);
+    virtual void DrawInit(void);
+
+public:
+    CFinishScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
+                  int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+
+    virtual bool CanActivate(void);
 };
 
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
