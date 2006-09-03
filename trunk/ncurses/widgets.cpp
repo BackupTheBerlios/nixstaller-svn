@@ -678,9 +678,10 @@ bool CWidgetHandler::SetNextWidget(bool rec)
     {
         if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (!rec || (*it)->SetNextWidget()))
         {
-            if ((m_FocusedChild != it) && (m_FocusedChild != m_ChildList.end()))
+            if (m_FocusedChild != it)
             {
-                (*m_FocusedChild)->LeaveFocus();
+                if (m_FocusedChild != m_ChildList.end())
+                    (*m_FocusedChild)->LeaveFocus();
                 (*it)->Focus();
                 m_FocusedChild = it;
             }
@@ -710,9 +711,10 @@ bool CWidgetHandler::SetPrevWidget(bool rec)
     {
         if ((*it)->CanFocus() && (*it)->Enabled() && !(*it)->m_bDeleteMe && (!rec || (*it)->SetPrevWidget()))
         {
-            if ((m_FocusedChild != it) && (m_FocusedChild != m_ChildList.end()))
+            if (m_FocusedChild != it)
             {
-                (*m_FocusedChild)->LeaveFocus();
+                if (m_FocusedChild != m_ChildList.end())
+                    (*m_FocusedChild)->LeaveFocus();
                 (*it)->Focus();
                 m_FocusedChild = it;
             }
@@ -1009,9 +1011,10 @@ bool CWidgetManager::SetNextChildWidget()
         
         if ((*cur)->CanFocus() && (*cur)->Enabled() && !(*cur)->m_bDeleteMe && (*cur)->SetNextWidget())
         {
-            if ((cur != (*m_FocusedChild)->m_FocusedChild) && ((*m_FocusedChild)->m_FocusedChild != (*m_FocusedChild)->m_ChildList.end()))
+            if (cur != (*m_FocusedChild)->m_FocusedChild)
             {
-                (*(*m_FocusedChild)->m_FocusedChild)->LeaveFocus();
+                if ((*m_FocusedChild)->m_FocusedChild != (*m_FocusedChild)->m_ChildList.end())
+                    (*(*m_FocusedChild)->m_FocusedChild)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
                 (*cur)->Focus();
             }
@@ -1043,9 +1046,10 @@ bool CWidgetManager::SetPrevChildWidget()
     {
         if ((*cur)->CanFocus() && (*cur)->Enabled() && !(*cur)->m_bDeleteMe && (*cur)->SetPrevWidget())
         {
-            if ((cur != (*m_FocusedChild)->m_FocusedChild) && ((*m_FocusedChild)->m_FocusedChild != (*m_FocusedChild)->m_ChildList.end()))
+            if (cur != (*m_FocusedChild)->m_FocusedChild)
             {
-                (*(*m_FocusedChild)->m_FocusedChild)->LeaveFocus();
+                if ((*m_FocusedChild)->m_FocusedChild != (*m_FocusedChild)->m_ChildList.end())
+                    (*(*m_FocusedChild)->m_FocusedChild)->LeaveFocus();
                 (*m_FocusedChild)->m_FocusedChild = cur;
                 (*cur)->Focus();
             }
@@ -1278,8 +1282,6 @@ void CFormattedText::AddText(const std::string &str)
     unsigned startcolor = 0, startrev = 0;
     int fgcolor = -1, bgcolor = -1;
     
-    unsigned curlines = GetLines();
-
     while (strstart < length)
     {
         if (str[strstart] == '<')
@@ -1451,8 +1453,6 @@ void CFormattedText::AddText(const std::string &str)
         }
         while ((strend != std::string::npos) && ((strend+1) < length) && (m_uCurrentLine < m_uMaxHeight));
     }
-    
-    assert((GetLines()-curlines) == CalcLines(str, m_bWrap, m_uWidth));
 }
 
 void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline, unsigned endw)
@@ -1837,9 +1837,8 @@ chtype CButton::m_cDefaultDefocusedColors;
 
 CButton::CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, const char *text,
                  char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, false, true,
-                 m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_FMText(this, "", true)
+                 m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_FMText(this, text, true)
 {
-    m_FMText.SetText(text);
     m_FMText.AddCenterTag(0);
 }
 

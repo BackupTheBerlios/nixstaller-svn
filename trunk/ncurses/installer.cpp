@@ -59,6 +59,28 @@ void CInstaller::Prev()
             ActivateChild(*it); // Give screen focus
             (*it)->Activate();
             m_CurrentScreenIt = it;
+            
+            bool first = (it == m_InstallScreens.begin());
+            if (!first)
+            {
+                first = true;
+                it--;
+                while (it != m_InstallScreens.begin())
+                {
+                    if ((*it)->CanActivate())
+                    {
+                        first = false;
+                        break;
+                    }
+                    it--;
+                }
+            }
+            
+            if (first)
+            {
+                m_pPrevButton->Enable(false);
+                refresh();
+            }
             break;
         }
     }
@@ -71,6 +93,8 @@ void CInstaller::Next()
     
     std::list<CBaseScreen *>::iterator it = m_CurrentScreenIt;
     
+    bool NeedRefresh = false;
+    
     while (*it != m_InstallScreens.back())
     {
         it++;
@@ -82,6 +106,41 @@ void CInstaller::Next()
             ActivateChild(*it); // Give screen focus
             (*it)->Activate();
             m_CurrentScreenIt = it;
+            
+            bool last; // Last screen?
+            
+            // Enable previous button if it's disabled and the install screen isn't activated before
+            if (!m_pPrevButton->Enabled() && (*it != m_pInstallScreen) && (std::find(m_InstallScreens.begin(), it, m_pInstallScreen) == it))
+            {
+                m_pPrevButton->Enable(true);
+                NeedRefresh = true;
+            }
+            
+            last = (*it == m_InstallScreens.back());
+            if (!last)
+            {
+                last = true;
+                it++;
+                while (it != m_InstallScreens.end())
+                {
+                    if ((*it)->CanActivate())
+                    {
+                        last = false;
+                        break;
+                    }
+                    it++;
+                }
+            }
+            
+            if (last)
+            {
+                m_pNextButton->SetTitle("Finish");
+                NeedRefresh = true;
+            }
+            
+            if (NeedRefresh)
+                refresh();
+            
             return;
         }
     }
@@ -190,6 +249,8 @@ bool CInstaller::Init(int argc, char **argv)
     m_pPrevButton = new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r');
     m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
     
+    m_pPrevButton->Enable(false);
+    
     const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-y-1;
 
     (m_pWelcomeScreen = new CWelcomeScreen(this, h, w, y, x))->Enable(false);
@@ -266,8 +327,19 @@ bool CInstaller::Init(int argc, char **argv)
 
 void CInstaller::Install()
 {
+    m_bInstallFiles = true;
+    m_pPrevButton->Enable(false);
+    m_pNextButton->Enable(false);
+    
+    refresh();
+    
     CBaseInstall::Install();
-    // UNDONE
+    
+    m_bInstallFiles = false;
+    m_pCancelButton->Enable(false);
+    m_pNextButton->Enable(true);
+    
+    refresh();
 }
 
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
@@ -600,14 +672,15 @@ bool CWelcomeScreen::CanActivate()
     if (!CBaseScreen::CanActivate())
         return false;
 
-    if (FileExists(m_pInstaller->GetLangWelcomeFName()))
-        m_szFileName = m_pInstaller->GetLangWelcomeFName();
-    else if (FileExists(m_pInstaller->GetWelcomeFName()))
-        m_szFileName = m_pInstaller->GetWelcomeFName();
-    else
-        return false;
+    if (m_szFileName.empty()) // Function might be called more than once
+    {
+        if (FileExists(m_pInstaller->GetLangWelcomeFName()))
+            m_szFileName = m_pInstaller->GetLangWelcomeFName();
+        else if (FileExists(m_pInstaller->GetWelcomeFName()))
+            m_szFileName = m_pInstaller->GetWelcomeFName();
+    }
     
-    return true;
+    return !m_szFileName.empty();
 }
 
 // -------------------------------------
@@ -647,14 +720,15 @@ bool CLicenseScreen::CanActivate()
     if (!CBaseScreen::CanActivate())
         return false;
 
-    if (FileExists(m_pInstaller->GetLangLicenseFName()))
-        m_szFileName = m_pInstaller->GetLangLicenseFName();
-    else if (FileExists(m_pInstaller->GetLicenseFName()))
-        m_szFileName = m_pInstaller->GetLicenseFName();
-    else
-        return false;
+    if (m_szFileName.empty())
+    {
+        if (FileExists(m_pInstaller->GetLangLicenseFName()))
+            m_szFileName = m_pInstaller->GetLangLicenseFName();
+        else if (FileExists(m_pInstaller->GetLicenseFName()))
+            m_szFileName = m_pInstaller->GetLicenseFName();
+    }
     
-    return true;
+    return !m_szFileName.empty();
 }
 
 // -------------------------------------
@@ -777,14 +851,15 @@ bool CFinishScreen::CanActivate()
     if (!CBaseScreen::CanActivate())
         return false;
 
-    if (FileExists(m_pInstaller->GetLangFinishFName()))
-        m_szFileName = m_pInstaller->GetLangFinishFName();
-    else if (FileExists(m_pInstaller->GetFinishFName()))
-        m_szFileName = m_pInstaller->GetFinishFName();
-    else
-        return false;
+    if (m_szFileName.empty())
+    {
+        if (FileExists(m_pInstaller->GetLangFinishFName()))
+            m_szFileName = m_pInstaller->GetLangFinishFName();
+        else if (FileExists(m_pInstaller->GetFinishFName()))
+            m_szFileName = m_pInstaller->GetFinishFName();
+    }
     
-    return true;
+    return !m_szFileName.empty();
 }
 
 // -------------------------------------

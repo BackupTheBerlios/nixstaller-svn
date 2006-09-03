@@ -361,7 +361,7 @@ public:
     virtual void ActivateChild(CWidgetWindow *p);
     
     bool Enabled(void) { return m_bEnabled; };
-    void Enable(bool e);
+    virtual void Enable(bool e);
     
     bool Focused(void) { return m_bFocused; };
     bool CanFocus(void) { return m_bCanFocus; };
@@ -514,6 +514,7 @@ public:
     int rely(void) { return (par) ? (begy() - par->begy()) : begy(); };
     
     virtual int mvwin(int begin_y, int begin_x);
+    virtual void Enable(bool e) { CWidgetHandler::Enable(e); if (!e) erase(); };
     
     static int GetColorPair(int fg, int bg);
 };
@@ -534,6 +535,7 @@ public:
             const char *text, char absrel = 'a');
     
     void Push(void) { PushEvent(EVENT_CALLBACK); };
+    void SetTitle(const std::string &str) { m_FMText.SetText(str); m_FMText.AddCenterTag(0); };
 };
 
 class CScrollbar: public CWidgetWindow
@@ -556,8 +558,6 @@ public:
 
 class CTextLabel: public CWidgetWindow
 {
-    std::list<std::string> m_FormattedText;
-    std::list<std::string>::iterator m_CurLineIter;
     int m_iMaxHeight;
     unsigned m_uCurLines;
     CFormattedText m_FMText;
@@ -571,8 +571,8 @@ public:
     CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     
     void AddText(std::string text);
-    void SetText(const std::string &text) { m_FormattedText.clear(); AddText(text); };
-    void SetText(const char *text) { m_FormattedText.clear(); AddText(text); };
+    void SetText(const std::string &text) { m_FMText.Clear(); AddText(text); };
+    void SetText(const char *text) { m_FMText.Clear(); AddText(text); };
     
     static unsigned CalcHeight(int ncols, const std::string &text) { return CFormattedText::CalcLines(text, true, ncols); }
     static unsigned CalcHeight(int ncols, const char *text) { return CFormattedText::CalcLines(text, true, ncols); }
