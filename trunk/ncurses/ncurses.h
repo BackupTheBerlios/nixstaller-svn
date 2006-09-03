@@ -74,6 +74,8 @@ class CNCursBase: virtual public CMain, public CWidgetWindow
     CAboutScreen *m_pAboutScreen;
     
 protected:
+    CWidgetManager *m_pWidgetManager;
+
     virtual char *GetPassword(const char *str);
     virtual void MsgBox(const char *str, ...);
     virtual bool YesNoBox(const char *str, ...);
@@ -114,6 +116,7 @@ protected:
     virtual void ChangeStatusText(const char *str);
     virtual void AddInstOutput(const std::string &str);
     virtual void SetProgress(int percent);
+    virtual void InstallThink(void) { m_pWidgetManager->Run(); };
     
     virtual bool HandleKey(chtype ch);
     virtual bool HandleEvent(CWidgetHandler *p, int type);

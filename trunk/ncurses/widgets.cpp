@@ -931,39 +931,36 @@ bool CWidgetManager::Run()
         return false;
     
     // Check for widgets that should be removed
-    bool done = false;
-    while(!done)
+    std::list<CWidgetWindow *>::iterator it = m_ChildList.begin(), tmp;
+    for (;it!=m_ChildList.end(); it++)
     {
-        std::list<CWidgetWindow *>::iterator it = m_ChildList.begin();
-        for (;it!=m_ChildList.end(); it++)
+        if ((*it)->m_bDeleteMe)
         {
-            if ((*it)->m_bDeleteMe)
+            if (m_FocusedChild == it)
             {
-                if (m_FocusedChild == it)
-                {
-                    if (!SetPrevWidget(false))
-                        SetNextWidget(false);
-                }
-             
-                bool changed = (m_FocusedChild != it);
-                m_ChildList.erase(it);
-    
-                if (!changed)
-                {
-                    // Have to do this after the child was removed from the list, otherwise it would be invalid
-                    m_FocusedChild = m_ChildList.end();
-                }
-             
-                delete *it;
-                break; // Iter was removed, start over
+                if (!SetPrevWidget(false))
+                    SetNextWidget(false);
+            }
+            
+            bool changed = (m_FocusedChild != it);
+            
+            tmp = it;
+            it--; // Decrease, so that for loop doesn't try to increment deleted iter
+            
+            delete *tmp;
+            m_ChildList.erase(tmp);
+
+            if (!changed)
+            {
+                // Have to do this after the child was removed from the list, otherwise it would be invalid
+                m_FocusedChild = m_ChildList.end();
             }
         }
-        done = (it == m_ChildList.end());
     }
     
     if (m_FocusedChild != m_ChildList.end())
     {
-        chtype ch = (*m_FocusedChild)->getch();
+        chtype ch = getch();
         if (ch != ERR)
         {
             if (!(*m_FocusedChild)->HandleKey(ch))

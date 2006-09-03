@@ -177,7 +177,10 @@ void CBaseInstall::ExtractFiles()
             
             char line[512];
             while (fgets(line, sizeof(line), pipe))
+            {
+                InstallThink();
                 UpdateExtrStatus(line);
+            }
             
             // Check if command exitted normally and close pipe
             int state = pclose(pipe);
@@ -218,8 +221,11 @@ void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool requir
     {
         char buf[1024];
         while(fgets(buf, sizeof(buf), pPipe))
+        {
+            InstallThink();
             AddInstOutput(buf);
-                
+        }
+        
         // Check if command exitted normally and close pipe
         int state = pclose(pPipe);
         if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution fails
@@ -413,6 +419,8 @@ void CBaseInstall::Install(void)
     if (chdir(m_szDestDir.c_str())) 
         ThrowError(true, "Could not open directory '%s'", m_szDestDir.c_str());
     
+    m_SUHandler.SetThinkFunc(SUThinkFunc, this);
+
     if (m_LuaVM.InitCall("Install"))
         m_LuaVM.DoCall();
     else

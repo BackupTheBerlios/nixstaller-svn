@@ -113,7 +113,7 @@ bool CAboutScreen::HandleEvent(CWidgetHandler *p, int type)
 // NCurses base interface class
 // -------------------------------------
 
-CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-4), Min(60, MaxX()-4), 0, 0)
+CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-4), Min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
 {
     m_pAboutScreen = new CAboutScreen(owner);
     m_pAboutScreen->Enable(false);

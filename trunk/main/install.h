@@ -75,6 +75,7 @@ protected:
     virtual void ChangeStatusText(const char *str) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
+    virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
 
     virtual bool InitLua(void);
     virtual bool ReadConfig(void);
@@ -116,7 +117,8 @@ public:
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
     static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddInstOutput(std::string(s)); };
-
+    static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->InstallThink(); };
+    
     // Functions for lua binding
     static int LuaNewCFGScreen(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
