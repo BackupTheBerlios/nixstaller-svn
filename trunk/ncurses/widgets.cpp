@@ -1271,7 +1271,7 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
 
 void CFormattedText::AddText(const std::string &str)
 {
-    if (m_Lines.size() > m_uMaxHeight)
+    if ((m_Lines.size() > m_uMaxHeight) || (str.empty()))
         return;
     
     std::string newtext;
@@ -1402,7 +1402,7 @@ void CFormattedText::AddText(const std::string &str)
                 bool toolong = ((m_Lines[m_uCurrentLine]->text.length() + (strend-strstart)+1) > m_uWidth);
                 
                 if (((strend+1) < length) && isspace(newtext[strend+1]))
-                    strend++; // Don't add leading whitespace to a new line
+                    strend++; // Don't add trailing whitespace to a new line
     
                 if (!toolong) // If it's not too long add to current line
                     m_Lines[m_uCurrentLine]->text += newtext.substr(strstart, (strend - strstart) + 1);
@@ -1418,6 +1418,8 @@ void CFormattedText::AddText(const std::string &str)
                     if (toolong) // New line was too long, add to new one
                         m_Lines[m_uCurrentLine]->text = newtext.substr(strstart, (strend - strstart) + 1);
                 }
+                
+                debugline("LINE : %s\n", m_Lines[m_uCurrentLine]->text.c_str());
                 
                 unsigned newlen = m_Lines[m_uCurrentLine]->text.length();
                 if (newlen > m_uLongestLine)
@@ -1450,6 +1452,8 @@ void CFormattedText::AddText(const std::string &str)
         }
         while ((strend != std::string::npos) && ((strend+1) < length) && (m_uCurrentLine < m_uMaxHeight));
     }
+    
+    //for (unsigned u=0;u<m_Lines.size();u++) debugline("LINE: %s\n", m_Lines[u]->text.c_str());
 }
 
 void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline, unsigned endw)

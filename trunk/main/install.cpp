@@ -38,6 +38,8 @@
 #include "main.h"
 #include <sys/utsname.h>
 #include <libgen.h>
+#include <poll.h>
+#include <errno.h>
 
 // -------------------------------------
 // Base Installer Class
@@ -175,11 +177,35 @@ void CBaseInstall::ExtractFiles()
             if (!pipe)
                 ThrowError(true, "Error during extracting files (could not open pipe)");
             
-            char line[512];
-            while (fgets(line, sizeof(line), pipe))
+            int pfd = fileno(pipe); // UNDONE: Check on errors
+            pollfd pollstruct = { pfd, POLLIN, 10 };
+            char buf[512];
+            
+            while (true)
             {
                 InstallThink();
-                UpdateExtrStatus(line);
+            
+                // Does the pipe from popen has text?
+                int ret = poll(&pollstruct, 1, 0);
+            
+                if (ret > 0)
+                {
+                    if (pollstruct.revents & POLLIN)
+                    {
+                        // It does, read it
+                        if (fgets(buf, sizeof(buf), pipe))
+                        {
+                            debugline("Extr: %s\n", buf);
+                            UpdateExtrStatus(buf);
+                        }
+                        else
+                            break;
+                    }
+                    else
+                        break;
+                }
+                else if (ret < 0)
+                    ThrowError("Error with poll: %s\n", strerror(errno)); // UNDONE
             }
             
             // Check if command exitted normally and close pipe
@@ -219,11 +245,33 @@ void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool requir
     FILE *pPipe = popen(command, "r");
     if (pPipe)
     {
+        // Get file descriptor used by popen
+        int pfd = fileno(pPipe); // UNDONE: Check on errors
+        pollfd pollstruct = { pfd, POLLIN, 0 };
         char buf[1024];
-        while(fgets(buf, sizeof(buf), pPipe))
+        
+        while (true)
         {
             InstallThink();
-            AddInstOutput(buf);
+            
+            // Does the pipe from popen has text?
+            int ret = poll(&pollstruct, 1, 0);
+            
+            if (ret > 0)
+            {
+                if (pollstruct.revents & POLLIN)
+                {
+                    // It does, read it
+                    if (fgets(buf, sizeof(buf), pPipe))
+                        AddInstOutput(buf);
+                    else
+                        break;
+                }
+                else
+                    break;
+            }
+            else if (ret < 0)
+                ThrowError("Error with poll: %s\n", strerror(errno)); // UNDONE
         }
         
         // Check if command exitted normally and close pipe

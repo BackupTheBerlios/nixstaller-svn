@@ -244,10 +244,14 @@ int CLibSU::WaitForChild()
 
     while (1) 
     {
-        if (m_pThinkFunc) (m_pThinkFunc)(m_pCustomThinkData);
+        if (m_pThinkFunc)
+            (m_pThinkFunc)(m_pCustomThinkData);
 
+        FD_ZERO(&fds);
         FD_SET(m_iPTYFD, &fds);
-        int ret = select(m_iPTYFD+1, &fds, 0L, 0L, 0L);
+        timeval tv = { 0, 10 }; // Max wait time is 10 usec
+        
+        int ret = select(m_iPTYFD+1, &fds, 0L, 0L, &tv);
         if (ret == -1) 
         {
             if (errno != EINTR) 
@@ -269,7 +273,8 @@ int CLibSU::WaitForChild()
                 {
                     fputs(line.c_str(), stdout);
                 }
-                if (m_pOutputFunc) (m_pOutputFunc)(line.c_str(), m_pCustomOutputData);
+                if (m_pOutputFunc)
+                    (m_pOutputFunc)(line.c_str(), m_pCustomOutputData);
                 line = ReadLine(false);
             }
         }

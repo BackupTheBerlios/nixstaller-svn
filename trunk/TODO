@@ -12,6 +12,7 @@ OVERALL
 - GetTranslation - Global or not?
 - Clean SVN trunk
 - bsdiff support 
+- Alternative way to see which archivetype is used in startupinstaller.sh
 
 MAIN
 - Better error handling for register
