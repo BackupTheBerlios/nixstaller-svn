@@ -246,7 +246,6 @@ class CLangScreen: public CBaseScreen
     CMenu *m_pLangMenu;
     
 protected:
-    virtual bool HandleEvent(CWidgetHandler *p, int type);
     virtual void DrawInit(void);
     
 public:
@@ -310,6 +309,7 @@ class CInstallScreen: public CBaseScreen
     CTextLabel *m_pProgLabel, *m_pStatLabel;
     
 protected:
+    virtual bool HandleKey(chtype ch);
     virtual void DrawInit(void);
     
 public:
@@ -348,7 +348,7 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     friend class CInstaller;
     
 protected:
-    virtual bool HandleEvent(CWidgetHandler *p, int type);
+    virtual bool HandleKey(chtype ch);
     virtual void DrawInit(void);
 
 public:

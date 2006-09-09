@@ -205,8 +205,9 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
                 EndProg();
             return true;
         }
-        else if (p == *m_CurrentScreenIt)
+        else
         {
+            // All unhandled callback events will focus next button. This is usefull when user presses enter key in menus and such
             ActivateChild(m_pNextButton);
             return true;
         }
@@ -623,17 +624,6 @@ void CBaseScreen::Activate(void)
 // Language selection screen
 // -------------------------------------
 
-bool CLangScreen::HandleEvent(CWidgetHandler *p, int type)
-{
-    if ((type == EVENT_CALLBACK) && (p == m_pLangMenu))
-    {
-        PushEvent(EVENT_CALLBACK);
-        return true;
-    }
-    
-    return false;
-}
-
 void CLangScreen::DrawInit()
 {
     SetInfo("<C>Please select a language");
@@ -745,12 +735,7 @@ bool CSelectDirScreen::HandleEvent(CWidgetHandler *p, int type)
 {
     if (type == EVENT_CALLBACK)
     {
-        if (p == m_pFileField)
-        {
-            PushEvent(EVENT_CALLBACK);
-            return true;
-        }
-        else if (p == m_pChangeDirButton)
+        if (p == m_pChangeDirButton)
         {
             std::string newdir = FileDialog(m_pInstaller->m_szDestDir.c_str(), "Select destination directory");
             if (!newdir.empty())
@@ -794,6 +779,20 @@ bool CSelectDirScreen::Next()
 // -------------------------------------
 // Install screen
 // -------------------------------------
+
+bool CInstallScreen::HandleKey(chtype ch)
+{
+    if (CBaseScreen::HandleKey(ch))
+        return true;
+    
+    if (ENTER(ch))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
+    return false;
+}
 
 void CInstallScreen::DrawInit()
 {
@@ -872,8 +871,17 @@ bool CFinishScreen::CanActivate()
 // Configuring parameters screen
 // -------------------------------------
 
-bool CCFGScreen::HandleEvent(CWidgetHandler *p, int type)
+bool CCFGScreen::HandleKey(chtype ch)
 {
+    if (CBaseScreen::HandleKey(ch))
+        return true;
+    
+    if (ENTER(ch))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
     return false;
 }
 
