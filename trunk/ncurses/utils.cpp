@@ -260,7 +260,7 @@ void debugline(const char *t, ...)
     vasprintf(&txt, t, v);
     va_end(v);
     
-    bool plain = isendwin();
+    /*bool plain = isendwin();
     if (!plain)
         endwin(); // Disable ncurses mode
     
@@ -269,7 +269,10 @@ void debugline(const char *t, ...)
     fflush(stdout);
     
     if (!plain)
-        refresh(); // Reenable ncurses mode
+    refresh(); // Reenable ncurses mode*/
+    
+    static FILE *f=fopen("log.txt", "w");
+    if (f) { fprintf(f, txt); fflush(f); }
     
     free(txt);
 }

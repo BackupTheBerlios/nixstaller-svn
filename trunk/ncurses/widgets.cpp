@@ -828,7 +828,7 @@ void CWidgetHandler::Enable(bool e)
 
 void CWidgetManager::Init()
 {
-    nodelay(stdscr, true);
+    timeout(5); // block max 5 milliseconds while checking for key input
     
     // Init all default colors
     CWidgetWindow::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
@@ -1237,14 +1237,16 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
     
                 if (!toolong) // If it's not too long add to current line
                     curlinelen += ((strend - strstart) + 1);
+                else
+                {
+                    lines++;
+                    curlinelen = (strend - strstart) + 1;;
+                }
                 
-                if (((strend+1)>=length) || add || toolong)
+                if (((strend+1)>=length) || add)
                 {
                     curlinelen = 0;
                     lines++;
-                    
-                    if (toolong) // New line was too long, add to new one
-                        curlinelen = (strend - strstart) + 1;
                 }
             }
             
@@ -1351,6 +1353,9 @@ void CFormattedText::AddText(const std::string &str)
     length = newtext.length();
     strstart = 0;
     
+    if (!length)
+        return;
+    
     if (m_Lines.empty())
     {
         m_Lines.push_back(new line_entry_s);
@@ -1406,20 +1411,21 @@ void CFormattedText::AddText(const std::string &str)
     
                 if (!toolong) // If it's not too long add to current line
                     m_Lines[m_uCurrentLine]->text += newtext.substr(strstart, (strend - strstart) + 1);
+                else
+                {
+                    m_Lines.push_back(new line_entry_s);
+                    m_uCurrentLine++;
+                    m_Lines[m_uCurrentLine]->text = newtext.substr(strstart, (strend - strstart) + 1);
+                }
                 
-                if (((strend+1)>=length) || add || toolong)//(m_Lines[m_uCurrentLine]->text.length() >= m_uWidth))
+                if (((strend+1)>=length) || add) // Add newline if all text is processed or a newline was encountered
                 {
                     if (m_Lines.size() >= m_uMaxHeight)
                         break;
     
                     m_Lines.push_back(new line_entry_s);
                     m_uCurrentLine++;
-                    
-                    if (toolong) // New line was too long, add to new one
-                        m_Lines[m_uCurrentLine]->text = newtext.substr(strstart, (strend - strstart) + 1);
                 }
-                
-                debugline("LINE : %s\n", m_Lines[m_uCurrentLine]->text.c_str());
                 
                 unsigned newlen = m_Lines[m_uCurrentLine]->text.length();
                 if (newlen > m_uLongestLine)
@@ -1452,8 +1458,6 @@ void CFormattedText::AddText(const std::string &str)
         }
         while ((strend != std::string::npos) && ((strend+1) < length) && (m_uCurrentLine < m_uMaxHeight));
     }
-    
-    //for (unsigned u=0;u<m_Lines.size();u++) debugline("LINE: %s\n", m_Lines[u]->text.c_str());
 }
 
 void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline, unsigned endw)
@@ -1599,6 +1603,7 @@ void CFormattedText::Clear()
     m_CenteredIndexes.clear();
     m_Lines.clear();
     m_uTextLength = m_uCurrentLine = m_uLongestLine = 0;
+    m_bHandleTags = true;
 }
 
 void CFormattedText::AddCenterTag(unsigned line)
@@ -2348,13 +2353,17 @@ void CMenu::Draw()
     m_pMenuText->Print(m_iStartEntry, (unsigned)m_pHScrollbar->GetValue(), m_pTextWin->height(), m_pTextWin->width());
 }
 
-void CMenu::AddItem(std::string s)
+void CMenu::AddItem(std::string s, bool tags)
 {
     // Menu works with signed ints while text works with unsigned ints
     if ((m_pMenuText->GetLines()+1) >= std::numeric_limits<int>::max())
     {
         // UNDONE: Exception?
+        return;
     }
+    
+    if (!tags) // Don't want to process tags?
+        s.insert(0, "<notg>");
     
     m_pMenuText->AddText(s);
     

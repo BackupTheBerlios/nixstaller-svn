@@ -682,7 +682,7 @@ public:
     CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     virtual ~CMenu(void) { Clear(); delete m_pMenuText; };
     
-    void AddItem(std::string s);
+    void AddItem(std::string s, bool tags=false);
     void Clear(void);
     const std::string &GetCurrentItemName(void) { return m_pMenuText->GetText(GetCurrent()); };
     void SetCurrent(const std::string &str);
@@ -910,8 +910,8 @@ public:
 
     CMenuDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *info);
 
-    void AddItem(const std::string &s) { m_pMenu->AddItem(s); };
-    void AddItem(const char *s) { m_pMenu->AddItem(s); };
+    void AddItem(const std::string &s, bool tags=false) { m_pMenu->AddItem(s, tags); };
+    void AddItem(const char *s, bool tags=false) { m_pMenu->AddItem(s, tags); };
     void SetItem(const std::string &s) { m_pMenu->SetCurrent(s); };
     void SetItem(const char *s) { m_pMenu->SetCurrent(s); };
     

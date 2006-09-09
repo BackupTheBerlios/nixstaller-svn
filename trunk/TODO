@@ -21,26 +21,22 @@ MAIN
 - Lua code for all install vars
 - Use lua config code
 - Remove old config code
-- InstallThink virtual function
 - BUG: Executing commands as root to quickly may mess things up(put a delay, open single root console?)
-- BUG: Install commands block when they don't give any output
 
 NCURSES FRONTEND
 - Error handling in file manager
 - Multiple focused widgets?
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
-- Finishscreen
 - Remove CDK code
 - Throw exception when lua widget doesn't fit on new screen
 - Translations
-- CalcSize for labels
 - Buttonbar
 - File manager should check if dir exist?
-- Place some <notgs>'s for lua widgets
 
 FLTK FRONTEND
 - Translate password dialog
 - Lua widgets
+- InstallThink virtual function
 
 DOCS
 - Max config var description length

@@ -349,7 +349,7 @@ CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
     screen->Enable(false);
     
     if (title)
-        screen->SetTitle(CreateText("<C>%s", title));
+        screen->SetTitle(CreateText("<C><notg>%s", title));
     
     return screen;
 }
@@ -366,6 +366,7 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const 
     if (desc && *desc)
     {
         CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, begx, 'r');
+        pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
@@ -374,6 +375,7 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const 
     {
         unsigned w = Min(strlen(label), maxx/3); 
         CTextLabel *pLabel = new CTextLabel(owner, 2, w, begy, begx, 'r');
+        pLabel->AddText("<notg>");
         pLabel->AddText(label);
         begx += (pLabel->width() + 1);
         fieldw -= (pLabel->width() + 1);
@@ -388,7 +390,7 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const 
 int CLuaInputField::CalcHeight(int w, const char *desc)
 {
     if (desc && *desc)
-        return CTextLabel::CalcHeight(w, desc) + 1;
+        return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + 1;
     
     return 1;
 }
@@ -405,6 +407,7 @@ CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char
     if (desc && *desc)
     {
         CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, x, 'r');
+        pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
@@ -418,7 +421,7 @@ CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::list<std::string> &l)
 {
     if (desc && *desc)
-        return CTextLabel::CalcHeight(w, desc) + l.size();
+        return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + l.size();
     
     return l.size();
 }
@@ -435,6 +438,7 @@ CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, cons
     if (desc && *desc)
     {
         CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, x, 'r');
+        pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
@@ -448,7 +452,7 @@ CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, cons
 int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::list<std::string> &l)
 {
     if (desc && *desc)
-        return CTextLabel::CalcHeight(w, desc) + l.size();
+        return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + l.size();
     
     return l.size();
 }
@@ -465,6 +469,7 @@ CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int 
     if (desc && *desc)
     {
         CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
+        pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
@@ -496,7 +501,7 @@ bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
 int CLuaDirSelector::CalcHeight(int w, const char *desc)
 {
     if (desc && *desc)
-        return CTextLabel::CalcHeight(w, desc) + 1;
+        return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + 1;
     
     return 1;
 }
@@ -514,6 +519,7 @@ CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx, co
     if (desc && *desc)
     {
         CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
+        pDesc->SetText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
@@ -528,7 +534,7 @@ void CLuaCFGMenu::SetInfo()
     std::string item = m_pMenu->GetCurrentItemName();
     if (!item.empty() && m_Variabeles[item])
     {
-        m_pInfoWindow->SetText(m_Variabeles[item]->desc);
+        m_pInfoWindow->SetText("<notg>" + m_Variabeles[item]->desc);
         m_pInfoWindow->refresh();
     }
 }
@@ -587,7 +593,7 @@ void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EV
 int CLuaCFGMenu::CalcHeight(int w, const char *desc)
 {
     if (desc && *desc)
-        return CTextLabel::CalcHeight(w, desc) + 7;
+        return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + 7;
     
     return 7;
 }
@@ -809,7 +815,7 @@ void CInstallScreen::DrawInit()
 
 void CInstallScreen::ChangeStatusText(const char *txt)
 {
-    m_pStatLabel->SetText(CreateText("<C>%s", txt));
+    m_pStatLabel->SetText(CreateText("<C><notg>%s", txt));
     m_pStatLabel->refresh();
 }
 
