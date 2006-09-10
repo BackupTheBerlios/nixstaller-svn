@@ -460,7 +460,7 @@ public:
     typedef std::map<int, std::map<int, int> > ColorMapType;
 
 private:
-    bool m_bBox;
+    bool m_bBox, m_bInitBBar;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     chtype m_cFocusedColors, m_cDefocusedColors;
@@ -792,10 +792,6 @@ class CButtonBar: public CWidgetWindow
 {
     CTextLabel *m_pButtonText;
     
-protected:
-    virtual void Draw(void);
-    virtual void SetButtonBar(void) { };
-    
 public:
     static chtype m_cDefaultColors;
     
@@ -910,6 +906,7 @@ class CFileDialog: public CWidgetBox // Currently only browses directories
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     virtual bool HandleKey(chtype ch);
+    virtual void SetButtonBar(void);
     
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
