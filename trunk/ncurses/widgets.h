@@ -370,6 +370,8 @@ public:
     void BindKeyWidget(CWidgetHandler *p) { m_pBoundKeyWidget = p; };
 };
 
+class CButtonBar;
+
 class CWidgetManager: public CWidgetHandler
 {
     bool m_bQuit;
@@ -379,6 +381,8 @@ protected:
     bool SetPrevChildWidget(void);
 
 public:
+    static CButtonBar *m_pButtonBar;
+    
     CWidgetManager(void) : CWidgetHandler(NULL, false), m_bQuit(false) { };
     
     void Init(void);
@@ -460,6 +464,7 @@ private:
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     chtype m_cFocusedColors, m_cDefocusedColors;
+    std::list<std::pair<const char *, const char *> > m_Buttons; // Buttons for button bar
 
     friend class CWidgetHandler;
     friend class CWidgetManager;
@@ -471,10 +476,12 @@ private:
 protected:
     std::string m_szTitle;
     
-    // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
-    virtual void Focus(void) { bkgd(m_cFocusedColors); refresh(); CWidgetHandler::Focus(); refresh(); };
-    virtual void LeaveFocus(void) { bkgd(m_cDefocusedColors); refresh(); CWidgetHandler::LeaveFocus(); refresh(); };
+    virtual void Focus(void);
+    virtual void LeaveFocus(void);
     virtual void Draw(void) { };
+    virtual void SetButtonBar(void);
+    
+    void AddButton(const char *button, const char *desc) { m_Buttons.push_back(std::pair<const char *, const char *>(button, desc)); };
     
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
@@ -483,7 +490,7 @@ protected:
     static void ApplyCursorPos(void) { ::move(m_iCursorY, m_iCursorX); };
     
     CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
-                  bool box, chtype fcolor, chtype dfcolor);
+                  bool box, bool canfocus, chtype fcolor, chtype dfcolor);
     CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
                   bool box, bool canfocus, chtype fcolor, chtype dfcolor);
     
@@ -779,6 +786,23 @@ public:
     void Add(const std::string &text) { m_ButtonList.push_back(text); };
     void EnableButton(int n) { m_iCheckedButton = n; };
     int EnabledButton(void) { return m_iCheckedButton; };
+};
+
+class CButtonBar: public CWidgetWindow
+{
+    CTextLabel *m_pButtonText;
+    
+protected:
+    virtual void Draw(void);
+    virtual void SetButtonBar(void) { };
+    
+public:
+    static chtype m_cDefaultColors;
+    
+    CButtonBar(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x);
+    
+    void Clear(void) { m_pButtonText->SetText(""); };
+    void AddButton(const char *button, const char *desc);
 };
 
 class CWidgetBox: public CWidgetWindow

@@ -826,6 +826,8 @@ void CWidgetHandler::Enable(bool e)
 // Widget manager class
 // -------------------------------------
 
+CButtonBar *CWidgetManager::m_pButtonBar = NULL;
+
 void CWidgetManager::Init()
 {
     timeout(5); // block max 5 milliseconds while checking for key input
@@ -857,6 +859,8 @@ void CWidgetManager::Init()
 
     CRadioButton::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CRadioButton::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    
+    CButtonBar::m_cDefaultColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_RED) | A_BOLD;
 
     CMessageBox::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CMessageBox::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
@@ -878,6 +882,8 @@ void CWidgetManager::Init()
     
     CMenuDialog::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CMenuDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
+    
+    m_pButtonBar = new CButtonBar(this, 2, MaxX(), MaxY()-2, 0);
 }
 
 void CWidgetManager::Refresh()
@@ -1717,14 +1723,15 @@ chtype CWidgetWindow::m_cDefaultDefocusedColors;
 int CWidgetWindow::m_iCursorY = -1;
 int CWidgetWindow::m_iCursorX = -1;
 
-CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box,
-                             chtype fcolor, chtype dfcolor) : CWidgetHandler(owner),
+CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box, bool canfocus,
+                             chtype fcolor, chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                               NCursesWindow(nlines, ncols, begin_y, begin_x),
                                                               m_bBox(box), m_sCurColor(0), m_cLLCorner(0),
                                                               m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
     owner->AddChild(this);
+    SetButtonBar();
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
@@ -1736,6 +1743,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
 {
     SetColors(fcolor, dfcolor);
     owner->AddChild(this);
+    SetButtonBar();
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -1745,6 +1753,7 @@ CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int b
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
     owner->AddChild(this);
+    SetButtonBar();
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
@@ -1755,6 +1764,43 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
     owner->AddChild(this);
+    SetButtonBar();
+}
+
+void CWidgetWindow::Focus()
+{
+    if (CWidgetManager::m_pButtonBar && CanFocus()) // HACK: If buttonbar is NULL this widget is the buttonbar itself
+    {
+        CWidgetManager::m_pButtonBar->Clear();
+        for (std::list<std::pair<const char *, const char *> >::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); it++)
+            CWidgetManager::m_pButtonBar->AddButton(it->first, it->second);
+        CWidgetManager::m_pButtonBar->refresh();
+    }
+
+    // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
+    bkgd(m_cFocusedColors);
+    refresh();
+    CWidgetHandler::Focus();
+    refresh();
+}
+
+void CWidgetWindow::LeaveFocus()
+{
+//     if (CWidgetManager::m_pButtonBar && CanFocus() && Focused()) // HACK: If buttonbar is NULL this widget is the buttonbar itself
+//     {
+//         CWidgetManager::m_pButtonBar->Pop();
+//         CWidgetManager::m_pButtonBar->refresh();
+//     }
+
+    bkgd(m_cDefocusedColors);
+    refresh();
+    CWidgetHandler::LeaveFocus();
+    refresh();
+}
+
+void CWidgetWindow::SetButtonBar()
+{
+    AddButton("ESC", "Quit");
 }
 
 int CWidgetWindow::refresh()
@@ -2777,12 +2823,38 @@ void CRadioButton::Draw()
 }
 
 // -------------------------------------
+// Button bar class
+// -------------------------------------
+
+chtype CButtonBar::m_cDefaultColors;
+
+CButtonBar::CButtonBar(CWidgetManager *owner, int nlines, int ncols, int begin_y,
+                       int begin_x) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, false, false,
+                                                    m_cDefaultColors, m_cDefaultColors)
+{
+    m_pButtonText = new CTextLabel(this, height(), width(), 0, 0, 'r');
+    m_pButtonText->SetColors(m_cDefaultColors, m_cDefaultColors);
+}
+
+void CButtonBar::Draw()
+{
+    erase();
+/*    if (!m_ButtonTexts.empty())
+    m_ButtonTexts.top()->Print();*/
+}
+
+void CButtonBar::AddButton(const char *button, const char *desc)
+{
+    m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col>", button, desc));
+}
+
+// -------------------------------------
 // Widget Box base class
 // -------------------------------------
 
 CWidgetBox::CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
                        const char *info, chtype fcolor,
-                       chtype dfcolor) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x, true,
+                       chtype dfcolor) : CWidgetWindow(owner, maxlines, ncols, begin_y, begin_x, true, true,
                                                        fcolor, dfcolor), m_bFinished(false),
                                          m_bCanceled(false), m_pWidgetManager(owner)
 {
