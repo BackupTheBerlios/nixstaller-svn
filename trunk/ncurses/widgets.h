@@ -317,6 +317,7 @@ public:
 #endif
 
 #include <set>
+#include <stack>
 
 class CWidgetWindow;
 
@@ -752,6 +753,7 @@ class CCheckbox: public CWidgetWindow
 protected:
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
+    virtual void SetButtonBar(void) { debugline("bbar\n"); AddButton("SPACE", "Enable/Disable"); };
 
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
@@ -790,7 +792,15 @@ public:
 
 class CButtonBar: public CWidgetWindow
 {
+    typedef std::pair<const char *, const char *> TButtonEntry;
+    typedef std::list<TButtonEntry> TButtonList;
+    
     CTextLabel *m_pButtonText;
+    std::stack<TButtonList> m_ButtonTexts;
+    bool m_bDirty; // True when button text has to be set
+    
+protected:
+    virtual void Draw(void);
     
 public:
     static chtype m_cDefaultColors;
@@ -798,7 +808,9 @@ public:
     CButtonBar(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x);
     
     void Clear(void) { m_pButtonText->SetText(""); };
+    void Push(void);
     void AddButton(const char *button, const char *desc);
+    void Pop(void);
 };
 
 class CWidgetBox: public CWidgetWindow

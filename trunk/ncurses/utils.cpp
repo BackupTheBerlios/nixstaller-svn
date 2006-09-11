@@ -399,7 +399,7 @@ std::string InputDialog(const char *title, const char *start, int max, bool sec)
 std::string FileDialog(const char *start, const char *info)
 {
     int width = Min(70, MaxX());
-    int height = Min(30, MaxY());
+    int height = Min(30, MaxY()-2);
     CFileDialog *filedialog = new CFileDialog(pWidgetManager, height, width, 0, 0, start, info);
     std::string ret = filedialog->Run();
     

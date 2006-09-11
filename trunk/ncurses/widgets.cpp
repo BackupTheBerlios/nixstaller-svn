@@ -884,6 +884,10 @@ void CWidgetManager::Init()
     CMenuDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
     
     m_pButtonBar = new CButtonBar(this, 1, MaxX(), MaxY()-1, 0);
+    
+    // Default buttons
+    m_pButtonBar->AddButton("ESC", "Quit");
+    m_pButtonBar->AddButton("F3", "About");
 }
 
 void CWidgetManager::Refresh()
@@ -1765,15 +1769,24 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
 
 void CWidgetWindow::Focus()
 {
-    if (CWidgetManager::m_pButtonBar && CanFocus()) // HACK: If buttonbar is NULL this widget is the buttonbar itself
+    //if (m_bInitBBar)
     {
-        if (m_bInitBBar)
-        {
-            SetButtonBar();
-            m_bInitBBar = false;
-        }
+        m_Buttons.clear();
+        SetButtonBar();
+        m_bInitBBar = false;
+    }
 
-        CWidgetManager::m_pButtonBar->Clear();
+    if (!m_Buttons.empty())
+        debugline("bools: %d %d %d %d\n", CWidgetManager::m_pButtonBar!=NULL, !m_Buttons.empty(), !Focused(), CanFocus());
+    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && !Focused() && CanFocus()) // HACK: If buttonbar is NULL this widget is the buttonbar itself
+    {
+        debugline("Push'in bbar\n");
+        CWidgetManager::m_pButtonBar->Push();
+        
+        // Default buttons
+        CWidgetManager::m_pButtonBar->AddButton("ESC", "Quit");
+        CWidgetManager::m_pButtonBar->AddButton("F3", "About");
+        
         for (std::list<std::pair<const char *, const char *> >::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); it++)
             CWidgetManager::m_pButtonBar->AddButton(it->first, it->second);
         CWidgetManager::m_pButtonBar->refresh();
@@ -1788,6 +1801,14 @@ void CWidgetWindow::Focus()
 
 void CWidgetWindow::LeaveFocus()
 {
+    // HACK: If buttonbar is NULL this widget is the buttonbar itself
+    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && Focused() && CanFocus())
+    {
+        debugline("Pop'in bbar\n");
+        CWidgetManager::m_pButtonBar->Pop();
+        CWidgetManager::m_pButtonBar->refresh();
+    }
+    
     bkgd(m_cDefocusedColors);
     refresh();
     CWidgetHandler::LeaveFocus();
@@ -1796,8 +1817,8 @@ void CWidgetWindow::LeaveFocus()
 
 void CWidgetWindow::SetButtonBar()
 {
-    AddButton("ESC", "Quit");
-    AddButton("F3", "About");
+/*    AddButton("ESC", "Quit");
+    AddButton("F3", "About");*/
 }
 
 int CWidgetWindow::refresh()
@@ -2827,16 +2848,42 @@ chtype CButtonBar::m_cDefaultColors;
 
 CButtonBar::CButtonBar(CWidgetManager *owner, int nlines, int ncols, int begin_y,
                        int begin_x) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, false, false,
-                                                    m_cDefaultColors, m_cDefaultColors)
+                                                    m_cDefaultColors, m_cDefaultColors), m_bDirty(false)
 {
     m_pButtonText = new CTextLabel(this, height(), width(), 0, 0, 'r');
     m_pButtonText->SetColors(m_cDefaultColors, m_cDefaultColors);
 }
 
+void CButtonBar::Draw()
+{
+    erase();
+    if (m_bDirty && !m_ButtonTexts.empty())
+    {
+        Clear();
+        for (TButtonList::iterator it=m_ButtonTexts.top().begin(); it!=m_ButtonTexts.top().end(); it++)
+            m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", it->first, it->second));
+    }
+}
+
+void CButtonBar::Push()
+{
+    m_ButtonTexts.push(TButtonList());
+}
+
 void CButtonBar::AddButton(const char *button, const char *desc)
 {
-    debugline("AddButton(%s, %s)\n", button, desc);
-    m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", button, desc));
+    if (m_ButtonTexts.empty())
+        Push();
+    
+    m_ButtonTexts.top().push_back(TButtonEntry(button, desc));
+    m_bDirty = true;
+    //m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", button, desc));
+}
+
+void CButtonBar::Pop()
+{
+    if (!m_ButtonTexts.empty())
+        m_ButtonTexts.pop();
 }
 
 // -------------------------------------
