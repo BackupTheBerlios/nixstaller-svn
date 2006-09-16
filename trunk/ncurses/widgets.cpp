@@ -736,6 +736,9 @@ void CWidgetHandler::Focus()
     
     if (m_FocusedChild != m_ChildList.end())
         (*m_FocusedChild)->Focus();
+    
+    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        assert(m_ChildList.empty() || it == m_FocusedChild || !(*it)->Focused());
 }
 
 void CWidgetHandler::LeaveFocus()
@@ -744,6 +747,9 @@ void CWidgetHandler::LeaveFocus()
     
     if (m_FocusedChild != m_ChildList.end())
         (*m_FocusedChild)->LeaveFocus();
+    
+    for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
+        assert(m_ChildList.empty() || (*it)->Focused() == false);
 }
 
 void CWidgetHandler::PushEvent(int type)
@@ -754,11 +760,16 @@ void CWidgetHandler::PushEvent(int type)
         owner = owner->m_pOwner;
 }
 
-void CWidgetHandler::AddChild(CWidgetWindow *p)
+void CWidgetHandler::_AddChild(CWidgetWindow *p)
 {
+    assert(this == p->m_pOwner);
+    
+    p->CreateInit();
+    
+    // Try to focus this widget
     if (m_FocusedChild != m_ChildList.end())
     {
-        if (p->CanFocus() && p->Enabled() && ((*m_FocusedChild)->CanFocus()) && ((*m_FocusedChild)->Enabled()))
+        if (p->CanFocus() && p->Enabled() && (*m_FocusedChild)->CanFocus())
             (*m_FocusedChild)->LeaveFocus();
     }
     
@@ -768,9 +779,8 @@ void CWidgetHandler::AddChild(CWidgetWindow *p)
     {
         m_FocusedChild = m_ChildList.end();
         m_FocusedChild--;
+        p->Focus();
     }
-    
-    p->Focus();
 }
 
 void CWidgetHandler::RemoveChild(CWidgetWindow *p)
@@ -797,13 +807,13 @@ void CWidgetHandler::ActivateChild(CWidgetWindow *p)
 {
     if (!p->Focused())
     {
-        if ((m_FocusedChild != m_ChildList.end()) && (*m_FocusedChild)->CanFocus() &&
-             (*m_FocusedChild)->Enabled())
+        if ((m_FocusedChild != m_ChildList.end()) && (*m_FocusedChild)->CanFocus())
         {
             (*m_FocusedChild)->LeaveFocus();
         }
-        p->Focus();
         m_FocusedChild = std::find(m_ChildList.begin(), m_ChildList.end(), p);
+        assert(m_FocusedChild != m_ChildList.end());
+        p->Focus();
     }
 }
 
@@ -883,7 +893,7 @@ void CWidgetManager::Init()
     CMenuDialog::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CMenuDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
     
-    m_pButtonBar = new CButtonBar(this, 1, MaxX(), MaxY()-1, 0);
+    m_pButtonBar = AddChild(new CButtonBar(this, 1, MaxX(), MaxY()-1, 0));
     
     // Default buttons
     m_pButtonBar->AddButton("ESC", "Quit");
@@ -919,6 +929,8 @@ void CWidgetManager::RemoveChild(CWidgetWindow *p)
 
 void CWidgetManager::ActivateChild(CWidgetWindow *p)
 {
+    bool dorefresh = false;
+    
     if (m_ChildList.back() != p)
     { 
         for (std::list<CWidgetWindow *>::iterator it=m_ChildList.begin(); it!=m_ChildList.end(); it++)
@@ -926,13 +938,17 @@ void CWidgetManager::ActivateChild(CWidgetWindow *p)
             if (*it == p)
             {
                 m_ChildList.erase(it);
-                AddChild(p);
-                Refresh();
+                m_ChildList.push_back(p); // Put it on top
+                dorefresh = true;
                 break;
             }
         }
     }
+    
     CWidgetHandler::ActivateChild(p);
+    
+    if (dorefresh)
+        Refresh();
 }
 
 bool CWidgetManager::Run()
@@ -1730,54 +1746,50 @@ int CWidgetWindow::m_iCursorX = -1;
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box, bool canfocus,
                              chtype fcolor, chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                               NCursesWindow(nlines, ncols, begin_y, begin_x),
-                                                              m_bBox(box), m_bInitBBar(true), m_sCurColor(0), m_cLLCorner(0),
+                                                              m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0),
                                                               m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
-    owner->AddChild(this);
+//     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
                              bool box, bool canfocus, chtype fcolor,
                              chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
-                                               m_bBox(box), m_bInitBBar(true), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
+                                               m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
                                                m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
-    owner->AddChild(this);
+//     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
                              bool box) : CWidgetHandler(owner), NCursesWindow(nlines, ncols, begin_y, begin_x),
-                                         m_bBox(box), m_bInitBBar(true), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0),
+                                         m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0),
                                          m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
-    owner->AddChild(this);
+//     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
                              bool box) : CWidgetHandler(owner),
                                          NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
-                                         m_bBox(box), m_bInitBBar(true), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
+                                         m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
                                          m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
-    owner->AddChild(this);
+//     owner->AddChild(this);
 }
 
 void CWidgetWindow::Focus()
 {
-    //if (m_bInitBBar)
-    {
-        m_Buttons.clear();
-        SetButtonBar();
-        m_bInitBBar = false;
-    }
+    assert(m_bInitialized);
 
     if (!m_Buttons.empty())
         debugline("bools: %d %d %d %d\n", CWidgetManager::m_pButtonBar!=NULL, !m_Buttons.empty(), !Focused(), CanFocus());
+    
     if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && !Focused() && CanFocus()) // HACK: If buttonbar is NULL this widget is the buttonbar itself
     {
         debugline("Push'in bbar\n");
@@ -1801,6 +1813,9 @@ void CWidgetWindow::Focus()
 
 void CWidgetWindow::LeaveFocus()
 {
+    if (!m_Buttons.empty())
+        debugline("bools2: %d %d %d %d\n", CWidgetManager::m_pButtonBar!=NULL, !m_Buttons.empty(), Focused(), CanFocus());
+    
     // HACK: If buttonbar is NULL this widget is the buttonbar itself
     if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && Focused() && CanFocus())
     {
@@ -1812,6 +1827,7 @@ void CWidgetWindow::LeaveFocus()
     bkgd(m_cDefocusedColors);
     refresh();
     CWidgetHandler::LeaveFocus();
+    
     refresh();
 }
 
@@ -2037,14 +2053,14 @@ CTextWindow::CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_
                                                   m_bWrap(wrap), m_bFollow(follow), m_uCurrentLine(0)
 {
     if (box)
-        m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false); // Create a new text window
+        m_pTextWin = AddChild(new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false)); // Create a new text window
     else
         m_pTextWin = this; // Use current
     
     m_pFMText = new CFormattedText(m_pTextWin, "", m_bWrap);
     
-    m_pVScrollbar = new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 0, true, 'r');
-    m_pHScrollbar = new CScrollbar(this, 1, ncols-2, nlines-1, 1, 0, 0, false, 'r');
+    m_pVScrollbar = AddChild(new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 0, true, 'r'));
+    m_pHScrollbar = AddChild(new CScrollbar(this, 1, ncols-2, nlines-1, 1, 0, 0, false, 'r'));
 }
 
 void CTextWindow::HScroll(int n)
@@ -2268,10 +2284,10 @@ CMenu::CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin
                                             true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                               m_bInitCursor(true), m_iCursorLine(0), m_iStartEntry(0)
 {
-    m_pTextWin = new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false);
+    m_pTextWin = AddChild(new CWidgetWindow(this, nlines-2, ncols-2, 1, 1, 'r', false));
     m_pMenuText = new CMenuText(m_pTextWin);
-    m_pVScrollbar = new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 100, true, 'r');
-    m_pHScrollbar = new CScrollbar(this, 1, ncols-2, nlines-1, 1, 0, 100, false, 'r');
+    m_pVScrollbar = AddChild(new CScrollbar(this, nlines-2, 1, 1, ncols-1, 0, 100, true, 'r'));
+    m_pHScrollbar = AddChild(new CScrollbar(this, 1, ncols-2, nlines-1, 1, 0, 100, false, 'r'));
 }
 
 void CMenu::HScroll(int n)
@@ -2850,7 +2866,7 @@ CButtonBar::CButtonBar(CWidgetManager *owner, int nlines, int ncols, int begin_y
                        int begin_x) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, false, false,
                                                     m_cDefaultColors, m_cDefaultColors), m_bDirty(false)
 {
-    m_pButtonText = new CTextLabel(this, height(), width(), 0, 0, 'r');
+    m_pButtonText = AddChild(new CTextLabel(this, height(), width(), 0, 0, 'r'));
     m_pButtonText->SetColors(m_cDefaultColors, m_cDefaultColors);
 }
 
@@ -2898,7 +2914,7 @@ CWidgetBox::CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin
 {
     if (info)
     {
-        m_pLabel = new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r');
+        m_pLabel = AddChild(new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r'));
         m_pLabel->AddText(info);
     }
     else
@@ -2911,7 +2927,7 @@ CWidgetBox::CWidgetBox(CWidgetManager *owner, int maxlines, int ncols, int begin
 {
     if (info)
     {
-        m_pLabel = new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r');
+        m_pLabel = AddChild(new CTextLabel(this, maxlines-4, ncols-4, 2, 2, 'r'));
         m_pLabel->AddText(info);
     }
     else
@@ -2954,7 +2970,7 @@ CMessageBox::CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int beg
                                                         text, m_cDefaultFocusedColors,
                                                         m_cDefaultDefocusedColors)
 {
-    m_pOKButton = new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (ncols-10)/2, "OK", 'r');
+    m_pOKButton = AddChild(new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (ncols-10)/2, "OK", 'r'));
     Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
 }
 
@@ -3000,8 +3016,8 @@ CYesNoBox::CYesNoBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y
 {
     int x = (maxx()-((2*10)+2))/2; // Center 2 buttons of 10 length and one 2 sized space
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
-    m_pNoButton = new CButton(this, 1, 10, y, x, "No", 'r');
-    m_pYesButton = new CButton(this, 1, 10, y, (x+m_pNoButton->maxx()+2), "Yes", 'r');
+    m_pNoButton = AddChild(new CButton(this, 1, 10, y, x, "No", 'r'));
+    m_pYesButton = AddChild(new CButton(this, 1, 10, y, (x+m_pNoButton->maxx()+2), "Yes", 'r'));
     
     Fit(y+m_pNoButton->maxy()+2);
 }
@@ -3049,15 +3065,15 @@ CChoiceBox::CChoiceBox(CWidgetManager *owner, int maxlines, int ncols, int begin
     int x = (maxx()-((bcount*w)+bcount-1))/2; // Center bcount buttons, with bcount-1 2 sized spaces.
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
 
-    m_pButtons[0] = new CButton(this, 1, w, y, x, but1, 'r');
+    m_pButtons[0] = AddChild(new CButton(this, 1, w, y, x, but1, 'r'));
     
     x += (w + 2);
-    m_pButtons[1] = new CButton(this, 1, w, y, x, but2, 'r');
+    m_pButtons[1] = AddChild(new CButton(this, 1, w, y, x, but2, 'r'));
     
     if (but3)
     {
         x += (w + 2);
-        m_pButtons[2] = new CButton(this, 1, w, y, x, but3, 'r');
+        m_pButtons[2] = AddChild(new CButton(this, 1, w, y, x, but3, 'r'));
     }
     else
         m_pButtons[2] = NULL;
@@ -3109,14 +3125,14 @@ CInputDialog::CInputDialog(CWidgetManager *owner, int maxlines, int ncols, int b
 {
     char out = (sec) ? '*' : 0;
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
-    m_pTextField = new CInputField(this, 1, ncols-4, y, 2, 'r', max, out);
+    m_pTextField = AddChild(new CInputField(this, 1, ncols-4, y, 2, 'r', max, out));
     
     unsigned buttonw = Max(strlen("OK"), strlen("Cancel")) + 4;
     int x = (ncols - (2 * buttonw + 2)) / 2;
     y += (m_pTextField->maxy() + 2);
-    m_pOKButton = new CButton(this, 1, buttonw, y, x, "OK", 'r');
+    m_pOKButton = AddChild(new CButton(this, 1, buttonw, y, x, "OK", 'r'));
     
-    m_pCancelButton = new CButton(this, 1, buttonw, y, x+buttonw+2, "Cancel", 'r');
+    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, y, x+buttonw+2, "Cancel", 'r'));
     
     ActivateChild(m_pTextField);
     
@@ -3172,17 +3188,17 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int beg
                                                         m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
                                              m_szStartDir(s), m_szSelectedDir(s), m_szInfo(info)
 {
-    m_pFileMenu = new CMenu(this, maxlines-10, ncols-4, (m_pLabel->rely()+m_pLabel->maxy()+2), 2, 'r');
+    m_pFileMenu = AddChild(new CMenu(this, maxlines-10, ncols-4, (m_pLabel->rely()+m_pLabel->maxy()+2), 2, 'r'));
     
-    m_pFileField = new CInputField(this, 1, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+2), 2, 'r');
+    m_pFileField = AddChild(new CInputField(this, 1, ncols-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+2), 2, 'r'));
     m_pFileField->SetText(m_szStartDir);
     
     unsigned buttonw = Max(strlen("Open directory"), strlen("Cancel")) + 4;
     const int startx = (ncols - (2 * buttonw + 2)) / 2;
     const int starty = (m_pFileField->rely()+m_pFileField->maxy()+2);
     
-    m_pOpenButton = new CButton(this, 1, buttonw, starty, startx, "Open directory", 'r');
-    m_pCancelButton = new CButton(this, 1, buttonw, starty, startx+buttonw+2, "Cancel", 'r');
+    m_pOpenButton = AddChild(new CButton(this, 1, buttonw, starty, startx, "Open directory", 'r'));
+    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, starty, startx+buttonw+2, "Cancel", 'r'));
     
     ActivateChild(m_pFileMenu);
     
@@ -3335,14 +3351,14 @@ CMenuDialog::CMenuDialog(CWidgetManager *owner, int maxlines, int ncols, int beg
 {
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
     const int menuh = maxlines - y - 4;
-    m_pMenu = new CMenu(this, menuh, ncols-4, y, 2, 'r');
+    m_pMenu = AddChild(new CMenu(this, menuh, ncols-4, y, 2, 'r'));
     
     unsigned buttonw = Max(strlen("OK"), strlen("Cancel")) + 4;
     int x = (ncols - (2 * buttonw + 2)) / 2;
     y += (menuh + 1);
     
-    m_pOKButton = new CButton(this, 1, buttonw, y, x, "OK", 'r');
-    m_pCancelButton = new CButton(this, 1, buttonw, y, x+buttonw+2, "Cancel", 'r');
+    m_pOKButton = AddChild(new CButton(this, 1, buttonw, y, x, "OK", 'r'));
+    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, y, x+buttonw+2, "Cancel", 'r'));
     
     ActivateChild(m_pMenu);
     

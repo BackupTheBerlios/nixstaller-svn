@@ -316,7 +316,7 @@ void MessageBox(const char *msg, ...)
     va_end(v);
     
     int width = Min(35, MaxX());
-    CMessageBox *msgbox = new CMessageBox(pWidgetManager, MaxY(), width, 0, 0, text);
+    CMessageBox *msgbox = pWidgetManager->AddChild(new CMessageBox(pWidgetManager, MaxY(), width, 0, 0, text));
     msgbox->Run();
     
     free(text);
@@ -333,7 +333,7 @@ void WarningBox(const char *msg, ...)
     va_end(v);
     
     int width = Min(35, MaxX());
-    CWarningBox *warnbox = new CWarningBox(pWidgetManager, MaxY(), width, 0, 0, text);
+    CWarningBox *warnbox = pWidgetManager->AddChild(new CWarningBox(pWidgetManager, MaxY(), width, 0, 0, text));
     warnbox->Run();
     
     free(text);
@@ -351,7 +351,7 @@ bool YesNoBox(const char *msg, ...)
     
     int width = Min(40, MaxX());
     
-    CYesNoBox *yesnobox = new CYesNoBox(pWidgetManager, MaxY(), width, 0, 0, text);
+    CYesNoBox *yesnobox = pWidgetManager->AddChild(new CYesNoBox(pWidgetManager, MaxY(), width, 0, 0, text));
     bool ret = yesnobox->Run();
     
     free(text);
@@ -371,7 +371,7 @@ int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *b
     
     int width = Min(65, MaxX());
     
-    CChoiceBox *choicebox = new CChoiceBox(pWidgetManager, MaxY(), width, 0, 0, text, but1, but2, but3);
+    CChoiceBox *choicebox = pWidgetManager->AddChild(new CChoiceBox(pWidgetManager, MaxY(), width, 0, 0, text, but1, but2, but3));
     int ret = choicebox->Run();
     
     free(text);
@@ -384,7 +384,7 @@ std::string InputDialog(const char *title, const char *start, int max, bool sec)
 {
     int width = Min(60, MaxX());
     int height = Min(30, MaxY());
-    CInputDialog *textdialog = new CInputDialog(pWidgetManager, height, width, 0, 0, title, max, sec);
+    CInputDialog *textdialog = pWidgetManager->AddChild(new CInputDialog(pWidgetManager, height, width, 0, 0, title, max, sec));
     
     if (start)
         textdialog->SetText(start);
@@ -400,7 +400,7 @@ std::string FileDialog(const char *start, const char *info)
 {
     int width = Min(70, MaxX());
     int height = Min(30, MaxY()-2);
-    CFileDialog *filedialog = new CFileDialog(pWidgetManager, height, width, 0, 0, start, info);
+    CFileDialog *filedialog = pWidgetManager->AddChild(new CFileDialog(pWidgetManager, height, width, 0, 0, start, info));
     std::string ret = filedialog->Run();
     
     pWidgetManager->RemoveChild(filedialog);
@@ -412,7 +412,7 @@ std::string MenuDialog(const char *title, const std::list<std::string> &l, const
 {
     int width = Min(50, MaxX());
     int height = Min(15, MaxY());
-    CMenuDialog *dialog = new CMenuDialog(pWidgetManager, height, width, 0, 0, title);
+    CMenuDialog *dialog = pWidgetManager->AddChild(new CMenuDialog(pWidgetManager, height, width, 0, 0, title));
     
     for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
         dialog->AddItem(*it);

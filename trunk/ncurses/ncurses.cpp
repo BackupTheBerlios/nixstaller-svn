@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
     CNCursBase *pInterface;
     //if ((argc > 1) && !strcmp(argv[1], "inst"))
-        pInterface = new CInstaller(pWidgetManager);
+        pInterface = pWidgetManager->AddChild(new CInstaller(pWidgetManager));
     //else
     //pInterface = new CAppManager;
     
@@ -88,10 +88,10 @@ CAboutScreen::CAboutScreen(CWidgetManager *owner) : CWidgetBox(owner, 20, 50, 0,
 {
     SetTitle("About");
     
-    m_pTextWin = new CTextWindow(this, 15, 46, 2, 2, false, false, 'r');
+    m_pTextWin = AddChild(new CTextWindow(this, 15, 46, 2, 2, false, false, 'r'));
     m_pTextWin->LoadFile("about");
 
-    m_pOKButton = new CButton(this, 1, 10, (m_pTextWin->rely()+m_pTextWin->maxy()+2), (width()-10)/2, "OK", 'r');
+    m_pOKButton = AddChild(new CButton(this, 1, 10, (m_pTextWin->rely()+m_pTextWin->maxy()+2), (width()-10)/2, "OK", 'r'));
     Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
     
     ActivateChild(m_pTextWin);
@@ -115,7 +115,7 @@ bool CAboutScreen::HandleEvent(CWidgetHandler *p, int type)
 
 CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-4), Min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
 {
-    m_pAboutScreen = new CAboutScreen(owner);
+    m_pAboutScreen = owner->AddChild(new CAboutScreen(owner));
     m_pAboutScreen->Enable(false);
     
     // Center & apply

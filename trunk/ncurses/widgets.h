@@ -328,6 +328,7 @@ class CWidgetHandler
     CWidgetHandler *m_pBoundKeyWidget; // Widgets which will recieve key events from this widget
     
     friend class CWidgetManager;
+    friend class CInstaller;
 
 protected:
     CWidgetHandler *m_pOwner;
@@ -356,7 +357,15 @@ public:
 
     virtual ~CWidgetHandler(void);
     
-    void AddChild(CWidgetWindow *p);
+    // _AddChild will actually add the widget to the child list
+    // AddChild is just a simple wrapper that will also return the added child
+    void _AddChild(CWidgetWindow *p);
+    template <typename C> C AddChild(C p)
+    {
+        _AddChild(p);
+        return p;
+    }
+    
     virtual void RemoveChild(CWidgetWindow *p);
     
     virtual void ActivateChild(CWidgetWindow *p);
@@ -461,7 +470,7 @@ public:
     typedef std::map<int, std::map<int, int> > ColorMapType;
 
 private:
-    bool m_bBox, m_bInitBBar;
+    bool m_bBox, m_bInitialized;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     chtype m_cFocusedColors, m_cDefocusedColors;
@@ -477,6 +486,7 @@ private:
 protected:
     std::string m_szTitle;
     
+    virtual void CreateInit(void) { m_bInitialized = true; SetButtonBar(); };
     virtual void Focus(void);
     virtual void LeaveFocus(void);
     virtual void Draw(void) { };
@@ -608,7 +618,7 @@ public:
     
     CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
                 char absrel = 'a', bool box=true);
-    ~CTextWindow(void) { delete m_pFMText; };
+    virtual ~CTextWindow(void) { delete m_pFMText; };
     
     void AddText(std::string text);
     void Clear(void);
@@ -753,7 +763,7 @@ class CCheckbox: public CWidgetWindow
 protected:
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
-    virtual void SetButtonBar(void) { debugline("bbar\n"); AddButton("SPACE", "Enable/Disable"); };
+    virtual void SetButtonBar(void) { AddButton("SPACE", "Enable/Disable"); };
 
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;

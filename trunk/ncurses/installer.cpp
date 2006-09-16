@@ -173,7 +173,40 @@ bool CInstaller::HandleKey(chtype ch)
         m_pCancelButton->Push();
         return true;
     }
-    
+    else if (ch == KEY_F(1))
+    {
+        std::stack<std::list<CWidgetWindow *> *> pstack;
+        pstack.push(&m_ChildList);
+        while (!pstack.empty())
+        {
+            std::list<CWidgetWindow *> *list = pstack.top();
+            pstack.pop();
+
+            for (std::list<CWidgetWindow *>::iterator it=list->begin(); it!=list->end(); it++)
+            {
+                if (!(*it)->m_ChildList.empty())
+                {
+                    pstack.push(&(*it)->m_ChildList);
+                    //break;
+                }
+                else
+                {
+                    if ((*it)->Focused()/* && (*it)->m_pOwner->m_FocusedChild != it*/)
+                    {
+                        CWidgetHandler *o = (*it)->m_pOwner;
+                        while (o && o->Enabled() && o->Focused()) o = o->m_pOwner;
+                        if (o && o->m_pOwner)
+                        {
+                            MessageBox("Crap");
+                            o->LeaveFocus();
+                            refresh();
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
     return false;
 }
 
@@ -246,24 +279,24 @@ bool CInstaller::Init(int argc, char **argv)
     // Button width; longest text + 4 chars for focusing
     int bw = strlen("Cancel") + 4;
 
-    m_pCancelButton = new CButton(this, 1, bw, height()-2, 2, "Cancel", 'r');
-    m_pPrevButton = new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r');
-    m_pNextButton = new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r');
+    m_pCancelButton = AddChild(new CButton(this, 1, bw, height()-2, 2, "Cancel", 'r'));
+    m_pPrevButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r'));
+    m_pNextButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r'));
     
     m_pPrevButton->Enable(false);
     
     const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-y-1;
 
-    (m_pWelcomeScreen = new CWelcomeScreen(this, h, w, y, x))->Enable(false);
-    (m_pLicenseScreen = new CLicenseScreen(this, h, w, y, x))->Enable(false);
-    (m_pSelectDirScreen = new CSelectDirScreen(this, h, w, y, x))->Enable(false);
-    (m_pInstallScreen = new CInstallScreen(this, h, w, y, x))->Enable(false);
-    (m_pFinishScreen = new CFinishScreen(this, h, w, y, x))->Enable(false);
+    (m_pWelcomeScreen = AddChild(new CWelcomeScreen(this, h, w, y, x)))->Enable(false);
+    (m_pLicenseScreen = AddChild(new CLicenseScreen(this, h, w, y, x)))->Enable(false);
+    (m_pSelectDirScreen = AddChild(new CSelectDirScreen(this, h, w, y, x)))->Enable(false);
+    (m_pInstallScreen = AddChild(new CInstallScreen(this, h, w, y, x)))->Enable(false);
+    (m_pFinishScreen = AddChild(new CFinishScreen(this, h, w, y, x)))->Enable(false);
     
     if (!CBaseInstall::Init(argc, argv))
         return false;
     
-    m_InstallScreens.push_back(new CLangScreen(this, h, w, y, x));
+    m_InstallScreens.push_back(AddChild(new CLangScreen(this, h, w, y, x)));
 
     unsigned count = m_LuaVM.OpenArray("ScreenList");
     if (!count)
@@ -346,7 +379,7 @@ void CInstaller::Install()
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 {
     const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
-    CCFGScreen *screen = new CCFGScreen(this, h, w, y, x);
+    CCFGScreen *screen = AddChild(new CCFGScreen(this, h, w, y, x));
     screen->Enable(false);
     
     if (title)
@@ -366,7 +399,7 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const 
     
     if (desc && *desc)
     {
-        CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, begx, 'r');
+        CTextLabel *pDesc = owner->AddChild(new CTextLabel(owner, 2, maxx, begy, begx, 'r'));
         pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
@@ -375,14 +408,14 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const 
     if (label && *label)
     {
         unsigned w = Min(strlen(label), maxx/3); 
-        CTextLabel *pLabel = new CTextLabel(owner, 2, w, begy, begx, 'r');
+        CTextLabel *pLabel = owner->AddChild(new CTextLabel(owner, 2, w, begy, begx, 'r'));
         pLabel->AddText("<notg>");
         pLabel->AddText(label);
         begx += (pLabel->width() + 1);
         fieldw -= (pLabel->width() + 1);
     }
     
-    m_pInput = new CInputField(owner, 1, fieldw, begy, begx, 'r', max);
+    m_pInput = owner->AddChild(new CInputField(owner, 1, fieldw, begy, begx, 'r', max));
     
     if (val)
         m_pInput->SetText(val);
@@ -407,13 +440,13 @@ CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char
     
     if (desc && *desc)
     {
-        CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, x, 'r');
+        CTextLabel *pDesc = owner->AddChild(new CTextLabel(owner, 2, maxx, begy, x, 'r'));
         pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
     
-    m_pCheckbox = new CCheckbox(owner, l.size(), maxx, begy, x, 'r');
+    m_pCheckbox = owner->AddChild(new CCheckbox(owner, l.size(), maxx, begy, x, 'r'));
     
     for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
         m_pCheckbox->Add(*it);
@@ -438,13 +471,13 @@ CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, cons
     
     if (desc && *desc)
     {
-        CTextLabel *pDesc = new CTextLabel(owner, 2, maxx, begy, x, 'r');
+        CTextLabel *pDesc = owner->AddChild(new CTextLabel(owner, 2, maxx, begy, x, 'r'));
         pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
     
-    m_pRadioButton = new CRadioButton(owner, l.size(), maxx, begy, x, 'r');
+    m_pRadioButton = owner->AddChild(new CRadioButton(owner, l.size(), maxx, begy, x, 'r'));
     
     for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
         m_pRadioButton->Add(*it);
@@ -469,7 +502,7 @@ CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int 
     
     if (desc && *desc)
     {
-        CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
+        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx, 0, 0, 'r'));
         pDesc->AddText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
@@ -477,13 +510,13 @@ CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int 
     
     const int buttonw = 20;
     
-    m_pDirInput = new CInputField(this, 1, maxx-buttonw-2-x, begy, 0, 'r', 1024);
+    m_pDirInput = AddChild(new CInputField(this, 1, maxx-buttonw-2-x, begy, 0, 'r', 1024));
     if (val && *val)
         m_pDirInput->SetText(val);
     
     // UNDONE
     int begx = m_pDirInput->width() + 2;
-    m_pDirButton = new CButton(this, 1, buttonw, begy, begx, "Browse", 'r');
+    m_pDirButton = AddChild(new CButton(this, 1, buttonw, begy, begx, "Browse", 'r'));
 }
 
 bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
@@ -519,14 +552,14 @@ CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx, co
     
     if (desc && *desc)
     {
-        CTextLabel *pDesc = new CTextLabel(this, 2, maxx, 0, 0, 'r');
+        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx, 0, 0, 'r'));
         pDesc->SetText("<notg>");
         pDesc->AddText(desc);
         begy += pDesc->height();
     }
     
-    m_pMenu = new CMenu(this, 7, menuw, begy, 0, 'r');
-    m_pInfoWindow = new CTextWindow(this, 7, infow, begy, menuw+2, false, false, 'r');
+    m_pMenu = AddChild(new CMenu(this, 7, menuw, begy, 0, 'r'));
+    m_pInfoWindow = AddChild(new CTextWindow(this, 7, infow, begy, menuw+2, false, false, 'r'));
     ActivateChild(m_pMenu);
 }
 
@@ -605,7 +638,7 @@ int CLuaCFGMenu::CalcHeight(int w, const char *desc)
 
 void CBaseScreen::SetInfo(const char *text)
 {
-    m_pLabel = new CTextLabel(this, height(), width(), 0, 0, 'r');
+    m_pLabel = AddChild(new CTextLabel(this, height(), width(), 0, 0, 'r'));
     m_pLabel->AddText(text);
 }
 
@@ -629,7 +662,7 @@ void CLangScreen::DrawInit()
     SetInfo("<C>Please select a language");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
-    m_pLangMenu = new CMenu(this, height()-y, width(), y, 0, 'r');
+    m_pLangMenu = AddChild(new CMenu(this, height()-y, width(), y, 0, 'r'));
     
     for (std::list<std::string>::iterator p=m_pInstaller->m_Languages.begin();
          p!=m_pInstaller->m_Languages.end();p++)
@@ -659,7 +692,7 @@ void CWelcomeScreen::DrawInit()
     SetInfo("<C>Welcome");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
-    m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+    m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
     m_pTextWin->LoadFile(m_szFileName.c_str());
 }
 
@@ -702,7 +735,7 @@ void CLicenseScreen::DrawInit()
     SetInfo("<C>License agreement");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
-    m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+    m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
     m_pTextWin->LoadFile(m_szFileName.c_str());
 }
 
@@ -757,10 +790,10 @@ void CSelectDirScreen::DrawInit()
     
     int y = (height()-3)/2;
     int w = width() - (buttonw + 2);
-    m_pFileField = new CInputField(this, 1, w, y, 0, 'r', 1024);
+    m_pFileField = AddChild(new CInputField(this, 1, w, y, 0, 'r', 1024));
     m_pFileField->SetText(m_pInstaller->m_szDestDir.c_str());
     
-    m_pChangeDirButton = new CButton(this, 1, buttonw, y, w+2, "<C>Select a directory", 'r');
+    m_pChangeDirButton = AddChild(new CButton(this, 1, buttonw, y, w+2, "<C>Select a directory", 'r'));
 }
 
 bool CSelectDirScreen::Next()
@@ -796,20 +829,20 @@ bool CInstallScreen::HandleKey(chtype ch)
 
 void CInstallScreen::DrawInit()
 {
-    m_pProgLabel = new CTextLabel(this, 1, width(), 0, 0, 'r');
+    m_pProgLabel = AddChild(new CTextLabel(this, 1, width(), 0, 0, 'r'));
     m_pProgLabel->AddText("<C>Progress");
     
     int x=2, y=1;
 
-    m_pProgressbar = new CProgressbar(this, 3, width()-x-2, y, x, 1, 100, 'r');
+    m_pProgressbar = AddChild(new CProgressbar(this, 3, width()-x-2, y, x, 1, 100, 'r'));
     
     y += 3;
     
-    m_pStatLabel = new CTextLabel(this, 1, width(), y, 0, 'r');
+    m_pStatLabel = AddChild(new CTextLabel(this, 1, width(), y, 0, 'r'));
     
     y++;
     
-    m_pTextWin = new CTextWindow(this, height()-y, width()-x-2, y, x, true, true, 'r');
+    m_pTextWin = AddChild(new CTextWindow(this, height()-y, width()-x-2, y, x, true, true, 'r'));
 }
 
 void CInstallScreen::ChangeStatusText(const char *txt)
@@ -847,7 +880,7 @@ void CFinishScreen::DrawInit()
     SetInfo("<C>Please read the following text");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
-    m_pTextWin = new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r');
+    m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
     m_pTextWin->LoadFile(m_szFileName.c_str());
 }
 
@@ -965,7 +998,7 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
     
     if ((h + m_iStartY) <= height())
     {
-        CLuaDirSelector *sel = new CLuaDirSelector(this, m_iStartY, 1, h, width()-3, desc, val);
+        CLuaDirSelector *sel = AddChild(new CLuaDirSelector(this, m_iStartY, 1, h, width()-3, desc, val));
         m_iStartY += h;
         return sel;
     }
@@ -982,7 +1015,7 @@ CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
     
     if ((h + m_iStartY) <= height())
     {
-        CLuaCFGMenu *menu = new CLuaCFGMenu(this, m_iStartY, 1, h, width()-3, desc);
+        CLuaCFGMenu *menu = AddChild(new CLuaCFGMenu(this, m_iStartY, 1, h, width()-3, desc));
         m_iStartY += h;
         return menu;
     }
