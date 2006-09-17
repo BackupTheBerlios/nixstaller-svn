@@ -317,7 +317,13 @@ public:
 #endif
 
 #include <set>
-#include <stack>
+
+struct SButtonBarEntry
+{
+    const char *button, *desc;
+    bool global;
+    SButtonBarEntry(const char *b, const char *d, bool g) : button(b), desc(d), global(g) { };
+};
 
 class CWidgetWindow;
 
@@ -474,7 +480,7 @@ private:
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     chtype m_cFocusedColors, m_cDefocusedColors;
-    std::list<std::pair<const char *, const char *> > m_Buttons; // Buttons for button bar
+    std::list<SButtonBarEntry> m_Buttons; // Buttons for button bar
 
     friend class CWidgetHandler;
     friend class CWidgetManager;
@@ -486,13 +492,13 @@ private:
 protected:
     std::string m_szTitle;
     
-    virtual void CreateInit(void) { m_bInitialized = true; SetButtonBar(); };
+    virtual void CreateInit(void) { m_bInitialized = true; };
     virtual void Focus(void);
     virtual void LeaveFocus(void);
     virtual void Draw(void) { };
-    virtual void SetButtonBar(void);
     
-    void AddButton(const char *button, const char *desc) { m_Buttons.push_back(std::pair<const char *, const char *>(button, desc)); };
+    void AddButton(const char *button, const char *desc) { m_Buttons.push_back(SButtonBarEntry(button, desc, false)); };
+    void AddGlobalButton(const char *button, const char *desc) { m_Buttons.push_back(SButtonBarEntry(button, desc, true)); };
     
     int Box(void) { return ::wborder(w, 0, 0, 0, 0, m_cULCorner, m_cURCorner, m_cLLCorner, m_cLRCorner); };
     
@@ -691,6 +697,7 @@ class CMenu: public CWidgetWindow
     int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
     
 protected:
+    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("Arrows", "Scroll"); };
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
     
@@ -761,9 +768,9 @@ class CCheckbox: public CWidgetWindow
     int m_iSelectedButton;
 
 protected:
+    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("SPACE", "Enable/Disable"); };
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
-    virtual void SetButtonBar(void) { AddButton("SPACE", "Enable/Disable"); };
 
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
@@ -785,6 +792,7 @@ class CRadioButton: public CWidgetWindow
     int m_iSelectedButton;
 
 protected:
+    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("SPACE", "Enable/Disable"); };
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
 
@@ -802,11 +810,11 @@ public:
 
 class CButtonBar: public CWidgetWindow
 {
-    typedef std::pair<const char *, const char *> TButtonEntry;
-    typedef std::list<TButtonEntry> TButtonList;
+    typedef std::list<SButtonBarEntry> TButtonList;
     
     CTextLabel *m_pButtonText;
-    std::stack<TButtonList> m_ButtonTexts;
+    std::list<TButtonList> m_ButtonTexts;
+    
     bool m_bDirty; // True when button text has to be set
     
 protected:
@@ -820,6 +828,7 @@ public:
     void Clear(void) { m_pButtonText->SetText(""); };
     void Push(void);
     void AddButton(const char *button, const char *desc);
+    void AddGlobalButton(const char *button, const char *desc); // This will always be displayed untill the bar is pop'ed
     void Pop(void);
 };
 
@@ -926,9 +935,9 @@ class CFileDialog: public CWidgetBox // Currently only browses directories
     void UpdateDirField(void) { m_pFileField->SetText(m_szSelectedDir); };
     
 protected:
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     virtual bool HandleKey(chtype ch);
-    virtual void SetButtonBar(void);
     
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
@@ -946,6 +955,7 @@ class CMenuDialog: public CWidgetBox
     std::string m_szSelection;
     
 protected:
+    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddGlobalButton("ESC", "Cancel"); };
     virtual bool HandleEvent(CWidgetHandler *p, int type);
 
 public:

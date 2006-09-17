@@ -173,40 +173,6 @@ bool CInstaller::HandleKey(chtype ch)
         m_pCancelButton->Push();
         return true;
     }
-    else if (ch == KEY_F(1))
-    {
-        std::stack<std::list<CWidgetWindow *> *> pstack;
-        pstack.push(&m_ChildList);
-        while (!pstack.empty())
-        {
-            std::list<CWidgetWindow *> *list = pstack.top();
-            pstack.pop();
-
-            for (std::list<CWidgetWindow *>::iterator it=list->begin(); it!=list->end(); it++)
-            {
-                if (!(*it)->m_ChildList.empty())
-                {
-                    pstack.push(&(*it)->m_ChildList);
-                    //break;
-                }
-                else
-                {
-                    if ((*it)->Focused()/* && (*it)->m_pOwner->m_FocusedChild != it*/)
-                    {
-                        CWidgetHandler *o = (*it)->m_pOwner;
-                        while (o && o->Enabled() && o->Focused()) o = o->m_pOwner;
-                        if (o && o->m_pOwner)
-                        {
-                            MessageBox("Crap");
-                            o->LeaveFocus();
-                            refresh();
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    }
     return false;
 }
 

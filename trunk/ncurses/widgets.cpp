@@ -732,6 +732,13 @@ bool CWidgetHandler::SetPrevWidget(bool rec)
 
 void CWidgetHandler::Focus()
 {
+    CWidgetHandler *o = m_pOwner;
+    while (o && o->Enabled() && o->Focused())
+        o = o->m_pOwner;
+    
+    if (o && o->m_pOwner) // Some parent is disabled/not focused, don't try to focus this widget
+        return;
+    
     m_bFocused = true;
     
     if (m_FocusedChild != m_ChildList.end())
@@ -896,8 +903,8 @@ void CWidgetManager::Init()
     m_pButtonBar = AddChild(new CButtonBar(this, 1, MaxX(), MaxY()-1, 0));
     
     // Default buttons
-    m_pButtonBar->AddButton("ESC", "Quit");
-    m_pButtonBar->AddButton("F3", "About");
+    m_pButtonBar->AddGlobalButton("ESC", "Quit");
+    m_pButtonBar->AddGlobalButton("F3", "About");
 }
 
 void CWidgetManager::Refresh()
@@ -1750,7 +1757,6 @@ CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int b
                                                               m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
-//     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
@@ -1761,7 +1767,6 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                                                m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
-//     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
@@ -1770,7 +1775,6 @@ CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int b
                                          m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
-//     owner->AddChild(this);
 }
 
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
@@ -1780,46 +1784,43 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                                          m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
-//     owner->AddChild(this);
 }
 
 void CWidgetWindow::Focus()
 {
     assert(m_bInitialized);
 
-    if (!m_Buttons.empty())
-        debugline("bools: %d %d %d %d\n", CWidgetManager::m_pButtonBar!=NULL, !m_Buttons.empty(), !Focused(), CanFocus());
+    bool wasfocused = Focused();
     
-    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && !Focused() && CanFocus()) // HACK: If buttonbar is NULL this widget is the buttonbar itself
-    {
-        debugline("Push'in bbar\n");
-        CWidgetManager::m_pButtonBar->Push();
-        
-        // Default buttons
-        CWidgetManager::m_pButtonBar->AddButton("ESC", "Quit");
-        CWidgetManager::m_pButtonBar->AddButton("F3", "About");
-        
-        for (std::list<std::pair<const char *, const char *> >::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); it++)
-            CWidgetManager::m_pButtonBar->AddButton(it->first, it->second);
-        CWidgetManager::m_pButtonBar->refresh();
-    }
-
     // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
     bkgd(m_cFocusedColors);
     refresh();
     CWidgetHandler::Focus();
     refresh();
+    
+    // HACK: If buttonbar is NULL this widget is the buttonbar itself
+    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && !wasfocused && Focused() && CanFocus())
+    {
+        debugline("Push'in bbar\n");
+        CWidgetManager::m_pButtonBar->Push();
+        
+        for (std::list<SButtonBarEntry>::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); it++)
+        {
+            if (it->global)
+                CWidgetManager::m_pButtonBar->AddGlobalButton(it->button, it->desc);
+            else
+                CWidgetManager::m_pButtonBar->AddButton(it->button, it->desc);
+        }
+        CWidgetManager::m_pButtonBar->refresh();
+    }
 }
 
 void CWidgetWindow::LeaveFocus()
 {
-    if (!m_Buttons.empty())
-        debugline("bools2: %d %d %d %d\n", CWidgetManager::m_pButtonBar!=NULL, !m_Buttons.empty(), Focused(), CanFocus());
-    
     // HACK: If buttonbar is NULL this widget is the buttonbar itself
     if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && Focused() && CanFocus())
     {
-        debugline("Pop'in bbar\n");
+        debugline("Pop'in bbar:\n");
         CWidgetManager::m_pButtonBar->Pop();
         CWidgetManager::m_pButtonBar->refresh();
     }
@@ -1829,12 +1830,6 @@ void CWidgetWindow::LeaveFocus()
     CWidgetHandler::LeaveFocus();
     
     refresh();
-}
-
-void CWidgetWindow::SetButtonBar()
-{
-/*    AddButton("ESC", "Quit");
-    AddButton("F3", "About");*/
 }
 
 int CWidgetWindow::refresh()
@@ -2876,14 +2871,29 @@ void CButtonBar::Draw()
     if (m_bDirty && !m_ButtonTexts.empty())
     {
         Clear();
-        for (TButtonList::iterator it=m_ButtonTexts.top().begin(); it!=m_ButtonTexts.top().end(); it++)
-            m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", it->first, it->second));
+        for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
+            m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", it->button, it->desc));
     }
 }
 
 void CButtonBar::Push()
 {
-    m_ButtonTexts.push(TButtonList());
+    m_ButtonTexts.push_back(TButtonList());
+    
+    // Check for global buttons
+    for (std::list<TButtonList>::iterator it=m_ButtonTexts.begin(); it!=m_ButtonTexts.end(); it++)
+    {
+        for (TButtonList::iterator it2=it->begin(); it2!=it->end(); it2++)
+        {
+            if (it2->global)
+                AddButton(it2->button, it2->desc);
+        }
+    }
+    
+    debugline("Push:");
+    for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
+        debugline("%s: %s ", it->button, it->desc);
+    debugline("\n");
 }
 
 void CButtonBar::AddButton(const char *button, const char *desc)
@@ -2891,15 +2901,29 @@ void CButtonBar::AddButton(const char *button, const char *desc)
     if (m_ButtonTexts.empty())
         Push();
     
-    m_ButtonTexts.top().push_back(TButtonEntry(button, desc));
+    m_ButtonTexts.back().push_back(SButtonBarEntry(button, desc, false));
     m_bDirty = true;
-    //m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", button, desc));
+}
+
+void CButtonBar::AddGlobalButton(const char *button, const char *desc)
+{
+    if (m_ButtonTexts.empty())
+        Push();
+    
+    m_ButtonTexts.back().push_back(SButtonBarEntry(button, desc, true));
+    m_bDirty = true;
 }
 
 void CButtonBar::Pop()
 {
     if (!m_ButtonTexts.empty())
-        m_ButtonTexts.pop();
+    {
+        debugline("Pop:");
+        for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
+            debugline("%s: %s ", it->button, it->desc);
+        debugline("\n");
+        m_ButtonTexts.pop_back();
+    }
 }
 
 // -------------------------------------
@@ -3207,6 +3231,12 @@ CFileDialog::CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int beg
     OpenDir();
 }
 
+void CFileDialog::CreateInit()
+{
+    CWidgetBox::CreateInit();
+    AddButton("F2", "Create new directory");
+}
+
 void CFileDialog::OpenDir(std::string newdir)
 {
     if (newdir.empty())
@@ -3319,12 +3349,6 @@ bool CFileDialog::HandleKey(chtype ch)
     }
     
     return false;
-}
-
-void CFileDialog::SetButtonBar()
-{
-    CWidgetBox::SetButtonBar();
-    AddButton("F2", "Create new directory");
 }
 
 const std::string &CFileDialog::Run()
