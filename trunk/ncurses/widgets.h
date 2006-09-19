@@ -556,7 +556,7 @@ public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-            const char *text, char absrel = 'a');
+            const std::string &text, char absrel = 'a');
     
     void Push(void) { PushEvent(EVENT_CALLBACK); };
     void SetTitle(const std::string &str) { m_FMText.SetText(str); m_FMText.AddCenterTag(0); };
@@ -616,6 +616,7 @@ class CTextWindow: public CWidgetWindow
     
 protected:
     
+    virtual void CreateInit(void);
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
 
@@ -697,7 +698,7 @@ class CMenu: public CWidgetWindow
     int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
     
 protected:
-    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("Arrows", "Scroll"); };
+    virtual void CreateInit(void);
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
     
@@ -818,6 +819,7 @@ class CButtonBar: public CWidgetWindow
     bool m_bDirty; // True when button text has to be set
     
 protected:
+    virtual void CreateInit(void);
     virtual void Draw(void);
     
 public:
@@ -834,11 +836,14 @@ public:
 
 class CWidgetBox: public CWidgetWindow
 {
+    std::string m_szInfo;
+    
 protected:
     bool m_bFinished, m_bCanceled;
     CWidgetManager *m_pWidgetManager;
     CTextLabel *m_pLabel; // Derived classes will need coords from this label, so protected
 
+    virtual void CreateInit(void);
     virtual bool HandleKey(chtype ch);
     void Fit(int nlines); // Fit on screen: Resize and center this window
     
@@ -853,6 +858,7 @@ class CMessageBox: public CWidgetBox
 protected:
     CButton *m_pOKButton;
 
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
@@ -865,6 +871,9 @@ public:
 
 class CWarningBox: public CMessageBox
 {
+protected:
+    virtual void CreateInit(void);
+    
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
 
@@ -876,6 +885,7 @@ class CYesNoBox: public CWidgetBox
     CButton *m_pYesButton, *m_pNoButton;
 
 protected:
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
 
 public:
@@ -888,10 +898,12 @@ public:
 
 class CChoiceBox: public CWidgetBox
 {
+    std::string m_szButtonTitles[3];
     CButton *m_pButtons[3];
     int m_iSelectedButton;
     
 protected:
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
 
 public:
@@ -906,10 +918,12 @@ public:
 class CInputDialog: public CWidgetBox
 {
     bool m_bSecure; // For passwords; prints stars, clears text buffer
+    int m_iMax;
     CInputField *m_pTextField;
     CButton *m_pOKButton, *m_pCancelButton;
 
 protected:
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
@@ -955,7 +969,7 @@ class CMenuDialog: public CWidgetBox
     std::string m_szSelection;
     
 protected:
-    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddGlobalButton("ESC", "Cancel"); };
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
 
 public:
