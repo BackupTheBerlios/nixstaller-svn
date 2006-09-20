@@ -1754,7 +1754,7 @@ CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int b
                              chtype fcolor, chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                               NCursesWindow(nlines, ncols, begin_y, begin_x),
                                                               m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0),
-                                                              m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0)
+                                                              m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0), m_bSkipBBar(true)
 {
     SetColors(fcolor, dfcolor);
 }
@@ -1764,7 +1764,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                              chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
                                                m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
-                                               m_cULCorner(0), m_cURCorner(0)
+                                               m_cULCorner(0), m_cURCorner(0), m_bSkipBBar(true)
 {
     SetColors(fcolor, dfcolor);
 }
@@ -1772,7 +1772,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
                              bool box) : CWidgetHandler(owner), NCursesWindow(nlines, ncols, begin_y, begin_x),
                                          m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0),
-                                         m_cURCorner(0)
+                                         m_cURCorner(0), m_bSkipBBar(true)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
 }
@@ -1781,9 +1781,28 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                              bool box) : CWidgetHandler(owner),
                                          NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
                                          m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
-                                         m_cULCorner(0), m_cURCorner(0)
+                                         m_cULCorner(0), m_cURCorner(0), m_bSkipBBar(true)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
+}
+
+void CWidgetWindow::PushBBar()
+{
+    // HACK: If buttonbar is NULL this widget is the buttonbar itself
+    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && CanFocus())
+    {
+        debugline("Push'in bbar\n");
+        CWidgetManager::m_pButtonBar->Push();
+            
+        for (std::list<SButtonBarEntry>::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); it++)
+        {
+            if (it->global)
+                CWidgetManager::m_pButtonBar->AddGlobalButton(it->button, it->desc);
+            else
+                CWidgetManager::m_pButtonBar->AddButton(it->button, it->desc);
+        }
+        CWidgetManager::m_pButtonBar->refresh();
+    }
 }
 
 void CWidgetWindow::Focus()
@@ -1796,21 +1815,14 @@ void CWidgetWindow::Focus()
     CWidgetHandler::Focus();
     refresh();
     
-    // HACK: If buttonbar is NULL this widget is the buttonbar itself
-    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && !wasfocused && Focused() && CanFocus())
+    // HACK: Don't add buttonbar when widget was just created(already done in CreateInit)
+    // Also don't add bbar when widget couldn't focus
+    if (!m_bSkipBBar && !wasfocused && Focused())
     {
-        debugline("Push'in bbar\n");
-        CWidgetManager::m_pButtonBar->Push();
-        
-        for (std::list<SButtonBarEntry>::iterator it=m_Buttons.begin(); it!=m_Buttons.end(); it++)
-        {
-            if (it->global)
-                CWidgetManager::m_pButtonBar->AddGlobalButton(it->button, it->desc);
-            else
-                CWidgetManager::m_pButtonBar->AddButton(it->button, it->desc);
-        }
-        CWidgetManager::m_pButtonBar->refresh();
+        PushBBar();
     }
+    else
+        m_bSkipBBar = false;
 }
 
 void CWidgetWindow::LeaveFocus()
@@ -1835,7 +1847,7 @@ int CWidgetWindow::refresh()
     if (!Enabled() || m_bDeleteMe)
         return 0;
     
-//     assert(m_bInitialized);
+    assert(m_bInitialized);
 
     Draw();
 
