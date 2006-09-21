@@ -786,6 +786,11 @@ void CWidgetHandler::_AddChild(CWidgetWindow *p)
     {
         m_FocusedChild = m_ChildList.end();
         m_FocusedChild--;
+        
+        // HACK: Child widgets were focused before parent, so bbar is not in the right order. By refocusing all the child
+        // widgets leave focus and get focus in the right order.
+        debugline("---Refocus---\n");
+        p->LeaveFocus();
         p->Focus();
     }
 }
@@ -1754,7 +1759,7 @@ CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int b
                              chtype fcolor, chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                               NCursesWindow(nlines, ncols, begin_y, begin_x),
                                                               m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0),
-                                                              m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0), m_bSkipBBar(true)
+                                                              m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
 }
@@ -1764,7 +1769,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                              chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
                                                m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
-                                               m_cULCorner(0), m_cURCorner(0), m_bSkipBBar(true)
+                                               m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
 }
@@ -1772,7 +1777,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
                              bool box) : CWidgetHandler(owner), NCursesWindow(nlines, ncols, begin_y, begin_x),
                                          m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0),
-                                         m_cURCorner(0), m_bSkipBBar(true)
+                                         m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
 }
@@ -1781,7 +1786,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                              bool box) : CWidgetHandler(owner),
                                          NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
                                          m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
-                                         m_cULCorner(0), m_cURCorner(0), m_bSkipBBar(true)
+                                         m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
 }
@@ -1805,40 +1810,42 @@ void CWidgetWindow::PushBBar()
     }
 }
 
-void CWidgetWindow::Focus()
-{
-    bool wasfocused = Focused();
-    
-    // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
-    bkgd(m_cFocusedColors);
-    refresh();
-    CWidgetHandler::Focus();
-    refresh();
-    
-    // HACK: Don't add buttonbar when widget was just created(already done in CreateInit)
-    // Also don't add bbar when widget couldn't focus
-    if (!m_bSkipBBar && !wasfocused && Focused())
-    {
-        PushBBar();
-    }
-    else
-        m_bSkipBBar = false;
-}
-
-void CWidgetWindow::LeaveFocus()
+void CWidgetWindow::PopBBar()
 {
     // HACK: If buttonbar is NULL this widget is the buttonbar itself
-    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && Focused() && CanFocus())
+    if (CWidgetManager::m_pButtonBar && !m_Buttons.empty() && CanFocus())
     {
         debugline("Pop'in bbar:\n");
         CWidgetManager::m_pButtonBar->Pop();
         CWidgetManager::m_pButtonBar->refresh();
     }
+}
+
+void CWidgetWindow::Focus()
+{
+    // Don't add bbar when widget couldn't focus
+    if (!Focused())
+        PushBBar();
+
+    // Refresh twice: First apply colors, then redraw widget (this is required for ie A_REVERSE)
+    bkgd(m_cFocusedColors);
+    refresh();
+    CWidgetHandler::Focus();
+    refresh();
+
+    // HACK: If widget couldn't focus pop bbar
+    if (!Focused())
+        PopBBar();
+}
+
+void CWidgetWindow::LeaveFocus()
+{
+    if (Focused())
+        PopBBar();
     
     bkgd(m_cDefocusedColors);
     refresh();
     CWidgetHandler::LeaveFocus();
-    
     refresh();
 }
 

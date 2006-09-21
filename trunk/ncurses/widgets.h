@@ -481,12 +481,12 @@ private:
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     chtype m_cFocusedColors, m_cDefocusedColors;
     std::list<SButtonBarEntry> m_Buttons; // Buttons for button bar
-    bool m_bSkipBBar;
 
     friend class CWidgetHandler;
     friend class CWidgetManager;
 
     void PushBBar(void);
+    void PopBBar(void);
     
     static ColorMapType m_ColorPairs; // Map for easy getting color pairs
     static int m_iCurColorPair;
@@ -495,7 +495,7 @@ private:
 protected:
     std::string m_szTitle;
     
-    virtual void CreateInit(void) { m_bInitialized = true; PushBBar(); };
+    virtual void CreateInit(void) { m_bInitialized = true; };
     virtual void Focus(void);
     virtual void LeaveFocus(void);
     virtual void Draw(void) { };
