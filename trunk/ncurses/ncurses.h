@@ -61,6 +61,7 @@ class CAboutScreen: public CWidgetBox
     CTextWindow *m_pTextWin;
     
 protected:
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
 
 public:
@@ -179,10 +180,12 @@ public:
 // We inherit from CWidgetWindow so that events can be recieved
 class CLuaDirSelector: public CBaseLuaDirSelector, public CWidgetWindow
 {
+    std::string m_szDesc, m_szValue;
     CInputField *m_pDirInput;
     CButton *m_pDirButton;
     
 protected:
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:
@@ -196,12 +199,14 @@ public:
 
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CWidgetWindow
 {
+    std::string m_szDesc;
     CMenu *m_pMenu;
     CTextWindow *m_pInfoWindow;
     
     void SetInfo(void);
     
 protected:
+    virtual void CreateInit(void);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
 public:

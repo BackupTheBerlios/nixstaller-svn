@@ -462,23 +462,29 @@ int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::list<std::st
 // -------------------------------------
 
 CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc,
-                                 const char *val) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false)
+                                 const char *val) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false),
+                                                    m_szDesc(desc), m_szValue(val)
 {
+}
+
+void CLuaDirSelector::CreateInit()
+{
+    CWidgetWindow::CreateInit();
     int begy = 0;
     
-    if (desc && *desc)
+    if (!m_szDesc.empty())
     {
-        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx, 0, 0, 'r'));
+        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx(), 0, 0, 'r'));
         pDesc->AddText("<notg>");
-        pDesc->AddText(desc);
+        pDesc->AddText(m_szDesc);
         begy += pDesc->height();
     }
     
     const int buttonw = 20;
     
-    m_pDirInput = AddChild(new CInputField(this, 1, maxx-buttonw-2-x, begy, 0, 'r', 1024));
-    if (val && *val)
-        m_pDirInput->SetText(val);
+    m_pDirInput = AddChild(new CInputField(this, 1, maxx()-buttonw-2, begy, 0, 'r', 1024));
+    if (!m_szValue.empty())
+        m_pDirInput->SetText(m_szValue);
     
     // UNDONE
     int begx = m_pDirInput->width() + 2;
@@ -510,17 +516,24 @@ int CLuaDirSelector::CalcHeight(int w, const char *desc)
 // Lua config menu class
 // -------------------------------------
 
-CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false)
+CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx,
+                         const char *desc) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false), m_szDesc(desc)
 {
+}
+
+void CLuaCFGMenu::CreateInit()
+{
+    CWidgetWindow::CreateInit();
+    
     int begy = 0;
     const int menuw = 20;
-    const int infow = maxx - 2 - menuw;
+    const int infow = maxx() - 2 - menuw;
     
-    if (desc && *desc)
+    if (!m_szDesc.empty())
     {
-        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx, 0, 0, 'r'));
+        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx(), 0, 0, 'r'));
         pDesc->SetText("<notg>");
-        pDesc->AddText(desc);
+        pDesc->AddText(m_szDesc);
         begy += pDesc->height();
     }
     

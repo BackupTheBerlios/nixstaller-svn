@@ -86,6 +86,12 @@ int main(int argc, char **argv)
 
 CAboutScreen::CAboutScreen(CWidgetManager *owner) : CWidgetBox(owner, 20, 50, 0, 0)
 {
+}
+
+void CAboutScreen::CreateInit()
+{
+    CWidgetWindow::CreateInit();
+    
     SetTitle("About");
     
     m_pTextWin = AddChild(new CTextWindow(this, 15, 46, 2, 2, false, false, 'r'));
