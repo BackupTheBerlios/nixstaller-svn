@@ -789,7 +789,6 @@ void CWidgetHandler::_AddChild(CWidgetWindow *p)
         
         // HACK: Child widgets were focused before parent, so bbar is not in the right order. By refocusing all the child
         // widgets leave focus and get focus in the right order.
-        debugline("---Refocus---\n");
         p->LeaveFocus();
         p->Focus();
     }
@@ -906,10 +905,6 @@ void CWidgetManager::Init()
     CMenuDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
     
     m_pButtonBar = AddChild(new CButtonBar(this, 1, MaxX(), MaxY()-1, 0));
-    
-    // Default buttons
-    m_pButtonBar->AddGlobalButton("ESC", "Quit");
-    m_pButtonBar->AddGlobalButton("F3", "About");
 }
 
 void CWidgetManager::Refresh()
@@ -2081,6 +2076,8 @@ void CTextWindow::CreateInit()
     
     m_pVScrollbar = AddChild(new CScrollbar(this, height()-2, 1, 1, width()-1, 0, 0, true, 'r'));
     m_pHScrollbar = AddChild(new CScrollbar(this, 1, width()-2, height()-1, 1, 0, 0, false, 'r'));
+    
+    AddButton("Arrows", "Scroll");
 }
 
 void CTextWindow::HScroll(int n)
@@ -2906,11 +2903,15 @@ void CButtonBar::CreateInit()
 void CButtonBar::Draw()
 {
     erase();
-    if (m_bDirty && !m_ButtonTexts.empty())
+    if (m_bDirty)
     {
         Clear();
-        for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
-            m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", it->button, it->desc));
+        
+        if (!m_ButtonTexts.empty())
+        {
+            for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
+                m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", it->button, it->desc));
+        }
     }
 }
 

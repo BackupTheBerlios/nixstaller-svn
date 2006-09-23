@@ -83,6 +83,7 @@ protected:
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
     virtual void Warn(const char *str, ...);
     
+//     virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddGlobalButton("ESC", "Quit"); AddGlobalButton("F3", "About"); };
     virtual bool HandleKey(chtype ch);
     
 public:
@@ -119,6 +120,7 @@ protected:
     virtual void SetProgress(int percent);
     virtual void InstallThink(void) { m_pWidgetManager->Run(); };
     
+    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddGlobalButton("ESC", "Quit"); AddGlobalButton("F3", "About"); };
     virtual bool HandleKey(chtype ch);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
