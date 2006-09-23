@@ -121,13 +121,24 @@ bool CAboutScreen::HandleEvent(CWidgetHandler *p, int type)
 
 CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-4), Min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
 {
-    m_pAboutScreen = owner->AddChild(new CAboutScreen(owner));
-    m_pAboutScreen->Enable(false);
-    
     // Center & apply
     mvwin(((MaxY() - maxy())/2), ((MaxX() - maxx())/2));
     ::erase();
     pWidgetManager->Refresh();
+}
+
+void CNCursBase::CreateInit()
+{
+    CWidgetWindow::CreateInit();
+    
+    m_pAboutScreen = pWidgetManager->AddChild(new CAboutScreen(pWidgetManager));
+    m_pAboutScreen->Enable(false);
+
+    AddGlobalButton("ESC", "Quit");
+    AddGlobalButton("F1", "Help");
+    AddGlobalButton("TAB, ^N", "Next field");
+//     AddGlobalButton("^P", "Previous field");
+    AddGlobalButton("Enter", "Done");
 }
 
 char *CNCursBase::GetPassword(const char *str)

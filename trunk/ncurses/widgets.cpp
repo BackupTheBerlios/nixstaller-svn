@@ -2940,6 +2940,18 @@ void CButtonBar::AddButton(const char *button, const char *desc)
     if (m_ButtonTexts.empty())
         Push();
     
+    // Check if button is already there
+    for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
+    {
+        if (!strcmp(it->button, button))
+        {
+            // Overwrite
+            it->desc = desc;
+            it->global = false;
+            return;
+        }
+    }
+    
     debugline("Button: %s: %s\n", button, desc);
     
     m_ButtonTexts.back().push_back(SButtonBarEntry(button, desc, false));
@@ -2950,6 +2962,18 @@ void CButtonBar::AddGlobalButton(const char *button, const char *desc)
 {
     if (m_ButtonTexts.empty())
         Push();
+    
+    // Check if button is already there
+    for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
+    {
+        if (!strcmp(it->button, button))
+        {
+            // Overwrite
+            it->desc = desc;
+            it->global = true;
+            return;
+        }
+    }
     
     debugline("Button(global): %s: %s\n", button, desc);
     
