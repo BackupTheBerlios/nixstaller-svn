@@ -303,6 +303,13 @@ int MaxY()
 {
     static int y, x;
     getmaxyx(stdscr, y, x);
+    return y - 2; // 2 lines for buttonbar
+}
+
+int RawMaxY()
+{
+    static int y, x;
+    getmaxyx(stdscr, y, x);
     return y;
 }
 

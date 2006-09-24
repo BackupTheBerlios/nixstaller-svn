@@ -119,8 +119,11 @@ bool CAboutScreen::HandleEvent(CWidgetHandler *p, int type)
 // NCurses base interface class
 // -------------------------------------
 
-CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-4), Min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
+CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-3), Min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
 {
+    m_pAboutScreen = pWidgetManager->AddChild(new CAboutScreen(pWidgetManager));
+    m_pAboutScreen->Enable(false);
+
     // Center & apply
     mvwin(((MaxY() - maxy())/2), ((MaxX() - maxx())/2));
     ::erase();
@@ -131,13 +134,8 @@ void CNCursBase::CreateInit()
 {
     CWidgetWindow::CreateInit();
     
-    m_pAboutScreen = pWidgetManager->AddChild(new CAboutScreen(pWidgetManager));
-    m_pAboutScreen->Enable(false);
-
     AddGlobalButton("ESC", "Quit");
     AddGlobalButton("F1", "Help");
-    AddGlobalButton("TAB, ^N", "Next field");
-//     AddGlobalButton("^P", "Previous field");
     AddGlobalButton("Enter", "Done");
 }
 
@@ -211,7 +209,7 @@ bool CNCursBase::HandleKey(chtype ch)
     if (CWidgetWindow::HandleKey(ch))
         return true;
     
-    if (ch == KEY_F(3))
+    if (ch == KEY_F(1))
     {
         m_pAboutScreen->Enable(true);
         pWidgetManager->ActivateChild(m_pAboutScreen);

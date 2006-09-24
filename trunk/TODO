@@ -25,7 +25,6 @@ MAIN
 
 NCURSES FRONTEND
 - Error handling in file manager
-- Multiple focused widgets?
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
 - Remove CDK code
 - Throw exception when lua widget doesn't fit on new screen

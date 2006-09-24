@@ -45,6 +45,7 @@
 // Utils
 int MaxX(void);
 int MaxY(void);
+int RawMaxY(void);
 void MessageBox(const char *msg, ...);
 void WarningBox(const char *msg, ...);
 bool YesNoBox(const char *msg, ...);
