@@ -134,7 +134,7 @@ void CInstaller::Next()
             
             if (last)
             {
-                m_pNextButton->SetTitle("Finish");
+                m_pNextButton->SetTitle(GetTranslation("Finish"));
                 NeedRefresh = true;
             }
             
@@ -194,11 +194,11 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
         {
             char *msg;
             if (m_bInstallFiles)
-                msg = /*pInst->GetTranslation UNDONE*/("Install commands are still running\n"
+                msg = GetTranslation("Install commands are still running\n"
                         "If you abort now this may lead to a broken installation\n"
                         "Are you sure?");
             else
-                msg = /*pInst->GetTranslation UNDONE*/("This will abort the installation\nAre you sure?");
+                msg = GetTranslation("This will abort the installation\nAre you sure?");
     
             if (YesNoBox(msg))
                 EndProg();
@@ -243,11 +243,11 @@ bool CInstaller::Init(int argc, char **argv)
     SetTitle("Nixstaller");
     
     // Button width; longest text + 4 chars for focusing
-    int bw = strlen("Cancel") + 4;
+    int bw = strlen(GetTranslation("Cancel")) + 4;
 
-    m_pCancelButton = AddChild(new CButton(this, 1, bw, height()-2, 2, "Cancel", 'r'));
-    m_pPrevButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r'));
-    m_pNextButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r'));
+    m_pCancelButton = AddChild(new CButton(this, 1, bw, height()-2, 2, GetTranslation("Cancel"), 'r'));
+    m_pPrevButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), GetTranslation("Back"), 'r'));
+    m_pNextButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(bw+2), GetTranslation("Next"), 'r'));
     
     m_pPrevButton->Enable(false);
     
@@ -486,16 +486,15 @@ void CLuaDirSelector::CreateInit()
     if (!m_szValue.empty())
         m_pDirInput->SetText(m_szValue);
     
-    // UNDONE
     int begx = m_pDirInput->width() + 2;
-    m_pDirButton = AddChild(new CButton(this, 1, buttonw, begy, begx, "Browse", 'r'));
+    m_pDirButton = AddChild(new CButton(this, 1, buttonw, begy, begx, GetTranslation("Browse"), 'r'));
 }
 
 bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
 {
     if ((type == EVENT_CALLBACK) && (p == m_pDirButton))
     {
-        std::string dir = FileDialog(m_pDirInput->GetText().c_str(), "Select directory");
+        std::string dir = FileDialog(m_pDirInput->GetText().c_str(), GetTranslation("Select directory"));
         if (!dir.empty())
             m_pDirInput->SetText(dir);
         return true;
@@ -565,14 +564,14 @@ bool CLuaCFGMenu::HandleEvent(CWidgetHandler *p, int type)
                 switch (m_Variabeles[item]->type)
                 {
                     case TYPE_DIR:
-                        newval = FileDialog(m_Variabeles[item]->val.c_str(), CreateText("Please select a directory for %s", item.c_str()));
+                        newval = FileDialog(m_Variabeles[item]->val.c_str(), CreateText(GetTranslation("Please select a directory for %s"), item.c_str()));
                         break;
                     case TYPE_STRING:
-                        newval = InputDialog(CreateText("Please enter a new value for %s", item.c_str()), m_Variabeles[item]->val.c_str());
+                        newval = InputDialog(CreateText(GetTranslation("Please enter a new value for %s"), item.c_str()), m_Variabeles[item]->val.c_str());
                         break;
                     case TYPE_LIST:
                     case TYPE_BOOL:
-                        newval = MenuDialog(CreateText("Please choose a new value for %s", item.c_str()), m_Variabeles[item]->options,
+                        newval = MenuDialog(CreateText(GetTranslation("Please choose a new value for %s"), item.c_str()), m_Variabeles[item]->options,
                                             m_Variabeles[item]->val.c_str());
                         break;
                 }
@@ -668,7 +667,7 @@ bool CWelcomeScreen::HandleKey(chtype ch)
 
 void CWelcomeScreen::DrawInit()
 {
-    SetInfo("<C>Welcome");
+    SetInfo(CreateText("<C>%s", GetTranslation("Welcome")));
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
@@ -711,7 +710,7 @@ bool CLicenseScreen::HandleKey(chtype ch)
 
 void CLicenseScreen::DrawInit()
 {
-    SetInfo("<C>License agreement");
+    SetInfo(CreateText("<C>%s", GetTranslation("License agreement")));
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
@@ -720,7 +719,7 @@ void CLicenseScreen::DrawInit()
 
 bool CLicenseScreen::Next()
 {
-    return (YesNoBox("Do you accept and understand the terms of the license agreement?"));
+    return (YesNoBox(GetTranslation("Do you accept and understand the terms of the license agreement?")));
 }
 
 bool CLicenseScreen::CanActivate()
@@ -749,7 +748,7 @@ bool CSelectDirScreen::HandleEvent(CWidgetHandler *p, int type)
     {
         if (p == m_pChangeDirButton)
         {
-            std::string newdir = FileDialog(m_pInstaller->m_szDestDir.c_str(), "Select destination directory");
+            std::string newdir = FileDialog(m_pInstaller->m_szDestDir.c_str(), GetTranslation("Select destination directory"));
             if (!newdir.empty())
             {
                 m_pInstaller->m_szDestDir = newdir;
@@ -765,25 +764,25 @@ bool CSelectDirScreen::HandleEvent(CWidgetHandler *p, int type)
 void CSelectDirScreen::DrawInit()
 {
     const int buttonw = 22;
-    SetInfo("<C>Select destination directory");
+    SetInfo(CreateText("<C>%s", GetTranslation("Select destination directory")));
     
     int y = (height()-3)/2;
     int w = width() - (buttonw + 2);
     m_pFileField = AddChild(new CInputField(this, 1, w, y, 0, 'r', 1024));
     m_pFileField->SetText(m_pInstaller->m_szDestDir.c_str());
     
-    m_pChangeDirButton = AddChild(new CButton(this, 1, buttonw, y, w+2, "<C>Select a directory", 'r'));
+    m_pChangeDirButton = AddChild(new CButton(this, 1, buttonw, y, w+2, CreateText("<C>%s", GetTranslation("Select a directory")), 'r'));
 }
 
 bool CSelectDirScreen::Next()
 {
     if (!WriteAccess(m_pInstaller->m_szDestDir))
     {
-        return (ChoiceBox(m_pInstaller->GetTranslation("You don't have write permissions for this directory.\n"
+        return (ChoiceBox(GetTranslation("You don't have write permissions for this directory.\n"
                 "The files can be extracted as the root user,\n"
                 "but you'll need to enter the root password for this later."),
-                m_pInstaller->GetTranslation("Choose another directory"),
-                m_pInstaller->GetTranslation("Continue as root"), NULL) == 1);
+                GetTranslation("Choose another directory"),
+                GetTranslation("Continue as root"), NULL) == 1);
     }
     return true;
 }
@@ -809,7 +808,7 @@ bool CInstallScreen::HandleKey(chtype ch)
 void CInstallScreen::DrawInit()
 {
     m_pProgLabel = AddChild(new CTextLabel(this, 1, width(), 0, 0, 'r'));
-    m_pProgLabel->AddText("<C>Progress");
+    m_pProgLabel->AddText(CreateText("<C>%s", GetTranslation("Progress")));
     
     int x=2, y=1;
 
@@ -856,7 +855,7 @@ bool CFinishScreen::HandleKey(chtype ch)
 
 void CFinishScreen::DrawInit()
 {
-    SetInfo("<C>Please read the following text");
+    SetInfo(CreateText("<C>%s", GetTranslation("Please read the following text")));
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));

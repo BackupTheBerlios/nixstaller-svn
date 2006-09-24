@@ -674,7 +674,7 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
                     curlinelen = (strend - strstart) + 1;;
                 }
                 
-                if (((strend+1)>=length) || add)
+                if (add)
                 {
                     curlinelen = 0;
                     lines++;
@@ -2312,7 +2312,7 @@ void CButtonBar::Draw()
         if (!m_ButtonTexts.empty())
         {
             for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
-                m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", it->button, it->desc));
+                m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", GetTranslation(it->button), GetTranslation(it->desc)));
         }
         
         resize(m_pButtonText->height(), width());
@@ -2479,7 +2479,7 @@ CMessageBox::CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int beg
 void CMessageBox::CreateInit()
 {
     CWidgetBox::CreateInit();
-    m_pOKButton = AddChild(new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (width()-10)/2, "OK", 'r'));
+    m_pOKButton = AddChild(new CButton(this, 1, 10, (m_pLabel->rely()+m_pLabel->maxy()+2), (width()-10)/2, GetTranslation("OK"), 'r'));
     Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
 }
 
@@ -2510,7 +2510,7 @@ void CWarningBox::CreateInit()
 {
     CWidgetBox::CreateInit();
     
-    SetTitle("Warning");
+    SetTitle(GetTranslation("Warning"));
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
     m_pLabel->SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
     m_pOKButton->SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
@@ -2537,8 +2537,8 @@ void CYesNoBox::CreateInit()
     
     int x = (maxx()-((2*10)+2))/2; // Center 2 buttons of 10 length and one 2 sized space
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
-    m_pNoButton = AddChild(new CButton(this, 1, 10, y, x, "No", 'r'));
-    m_pYesButton = AddChild(new CButton(this, 1, 10, y, (x+m_pNoButton->maxx()+2), "Yes", 'r'));
+    m_pNoButton = AddChild(new CButton(this, 1, 10, y, x, GetTranslation("No"), 'r'));
+    m_pYesButton = AddChild(new CButton(this, 1, 10, y, (x+m_pNoButton->maxx()+2), GetTranslation("Yes"), 'r'));
     
     Fit(y+m_pNoButton->maxy()+2);
 }
@@ -2657,16 +2657,19 @@ void CInputDialog::CreateInit()
 {
     CWidgetBox::CreateInit();
     
+    const char *OKTXT = GetTranslation("OK");
+    const char *CancelTXT = GetTranslation("Cancel");
+    
     char out = (m_bSecure) ? '*' : 0;
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
     m_pTextField = AddChild(new CInputField(this, 1, width()-4, y, 2, 'r', m_iMax, out));
     
-    unsigned buttonw = Max(strlen("OK"), strlen("Cancel")) + 4;
+    unsigned buttonw = Max(strlen(OKTXT), strlen(CancelTXT)) + 4;
     int x = (width() - (2 * buttonw + 2)) / 2;
     y += (m_pTextField->maxy() + 2);
-    m_pOKButton = AddChild(new CButton(this, 1, buttonw, y, x, "OK", 'r'));
+    m_pOKButton = AddChild(new CButton(this, 1, buttonw, y, x, OKTXT, 'r'));
     
-    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, y, x+buttonw+2, "Cancel", 'r'));
+    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, y, x+buttonw+2, CancelTXT, 'r'));
     
     ActivateChild(m_pTextField);
     
@@ -2733,12 +2736,14 @@ void CFileDialog::CreateInit()
     m_pFileField = AddChild(new CInputField(this, 1, width()-4, (m_pFileMenu->rely()+m_pFileMenu->maxy()+2), 2, 'r'));
     m_pFileField->SetText(m_szStartDir);
     
-    unsigned buttonw = Max(strlen("Open directory"), strlen("Cancel")) + 4;
+    const char *OpenTXT = GetTranslation("Open directory");
+    const char *CancelTXT = GetTranslation("Cancel");
+    unsigned buttonw = Max(strlen(OpenTXT), strlen(CancelTXT)) + 4;
     const int startx = (width() - (2 * buttonw + 2)) / 2;
     const int starty = (m_pFileField->rely()+m_pFileField->maxy()+2);
     
-    m_pOpenButton = AddChild(new CButton(this, 1, buttonw, starty, startx, "Open directory", 'r'));
-    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, starty, startx+buttonw+2, "Cancel", 'r'));
+    m_pOpenButton = AddChild(new CButton(this, 1, buttonw, starty, startx, OpenTXT, 'r'));
+    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, starty, startx+buttonw+2, CancelTXT, 'r'));
     
     ActivateChild(m_pFileMenu);
     
@@ -2846,14 +2851,14 @@ bool CFileDialog::HandleKey(chtype ch)
     
     if (ch == KEY_F(2))
     {
-        std::string newdir = InputDialog("Enter name of new directory", NULL, 1024);
+        std::string newdir = InputDialog(GetTranslation("Enter name of new directory"), NULL, 1024);
         
         if (newdir.empty())
             return true;
         
         if (mkdir(newdir.c_str(), (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
         {
-            WarningBox("%s\n%.75s\n%.75s", "Could not create directory", newdir.c_str(), strerror(errno));
+            WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create directory"), newdir.c_str(), strerror(errno));
             return true;
         }
 
@@ -2891,16 +2896,17 @@ void CMenuDialog::CreateInit()
 {
     CWidgetBox::CreateInit();
     
+    const char *OKTXT = GetTranslation("OK"), *CancelTXT = GetTranslation("Cancel");
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
     const int menuh = height() - y - 4;
     m_pMenu = AddChild(new CMenu(this, menuh, width()-4, y, 2, 'r'));
     
-    unsigned buttonw = Max(strlen("OK"), strlen("Cancel")) + 4;
+    unsigned buttonw = Max(strlen(OKTXT), strlen(CancelTXT)) + 4;
     int x = (width() - (2 * buttonw + 2)) / 2;
     y += (menuh + 1);
     
-    m_pOKButton = AddChild(new CButton(this, 1, buttonw, y, x, "OK", 'r'));
-    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, y, x+buttonw+2, "Cancel", 'r'));
+    m_pOKButton = AddChild(new CButton(this, 1, buttonw, y, x, OKTXT, 'r'));
+    m_pCancelButton = AddChild(new CButton(this, 1, buttonw, y, x+buttonw+2, CancelTXT, 'r'));
     
     ActivateChild(m_pMenu);
     

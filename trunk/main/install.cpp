@@ -993,7 +993,7 @@ int CBaseInstall::LuaNewCFGScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     const char *name = (lua_gettop(L) >= 1) ? luaL_checkstring(L, 1) : NULL;
-    pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen *>(pInstaller->CreateCFGScreen(name), "cfgscreen");
+    pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen *>(pInstaller->CreateCFGScreen(GetTranslation(name)), "cfgscreen");
     return 1;
 }
 
@@ -1049,7 +1049,7 @@ int CBaseInstall::LuaSetStatusMSG(lua_State *L)
     pInstaller->VerifyIfInstalling();
     
     const char *msg = luaL_checkstring(L, 1);
-    pInstaller->UpdateStatusText(msg);
+    pInstaller->UpdateStatusText(GetTranslation(msg));
     return 0;
 }
 
@@ -1077,7 +1077,7 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
     int maxc = luaL_optint(L, 4, 1024);
     const char *val = lua_tostring(L, 5);
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField *>(screen->CreateInputField(desc, label, val, maxc), "inputfield");
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField *>(screen->CreateInputField(GetTranslation(desc), GetTranslation(label), val, maxc), "inputfield");
     
     return 1;
 }
@@ -1100,7 +1100,7 @@ int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
         lua_pop(L, 1);
     }
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaCheckbox *>(screen->CreateCheckbox(desc, l), "checkbox");
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaCheckbox *>(screen->CreateCheckbox(GetTranslation(desc), l), "checkbox");
     
     return 1;
 }
@@ -1123,7 +1123,7 @@ int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
         lua_pop(L, 1);
     }
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaRadioButton *>(screen->CreateRadioButton(desc, l), "radiobutton");
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaRadioButton *>(screen->CreateRadioButton(GetTranslation(desc), l), "radiobutton");
 
     return 1;
 }
@@ -1135,7 +1135,7 @@ int CBaseCFGScreen::LuaAddDirSelector(lua_State *L)
     const char *desc = luaL_checkstring(L, 2);
     const char *val = lua_tostring(L, 3);
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaDirSelector *>(screen->CreateDirSelector(desc, val), "dirselector");
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaDirSelector *>(screen->CreateDirSelector(GetTranslation(desc), val), "dirselector");
     
     return 1;
 }
@@ -1146,7 +1146,7 @@ int CBaseCFGScreen::LuaAddCFGMenu(lua_State *L)
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
     const char *desc = luaL_checkstring(L, 2);
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaCFGMenu *>(screen->CreateCFGMenu(desc), "configmenu");
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaCFGMenu *>(screen->CreateCFGMenu(GetTranslation(desc)), "configmenu");
     
     return 1;
 }
@@ -1290,7 +1290,7 @@ int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
     const char *desc = luaL_checkstring(L, 3);
     const char *val = lua_tostring(L, 4);
 
-    menu->AddVar(var, desc, val, TYPE_DIR);
+    menu->AddVar(var, GetTranslation(desc), val, TYPE_DIR);
     
     return 0;
 }
@@ -1303,7 +1303,7 @@ int CBaseLuaCFGMenu::LuaAddString(lua_State *L)
     const char *desc = luaL_checkstring(L, 3);
     const char *val = lua_tostring(L, 4);
 
-    menu->AddVar(var, desc, val, TYPE_STRING);
+    menu->AddVar(var, GetTranslation(desc), val, TYPE_STRING);
     
     return 0;
 }
@@ -1332,7 +1332,7 @@ int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
 
     const char *val = lua_tostring(L, 5);
     
-    menu->AddVar(var, desc, val, TYPE_LIST, &l);
+    menu->AddVar(var, GetTranslation(desc), val, TYPE_LIST, &l);
     
     return 0;
 }
@@ -1349,7 +1349,7 @@ int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
     l.push_back("Disable");
     l.push_back("Enable");
     
-    menu->AddVar(var, desc, menu->BoolToStr(val), TYPE_BOOL, &l);
+    menu->AddVar(var, GetTranslation(desc), menu->BoolToStr(val), TYPE_BOOL, &l);
     
     return 0;
 }

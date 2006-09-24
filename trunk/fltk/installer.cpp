@@ -148,13 +148,13 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
     
     char *msg;
     if (pInst->m_bInstallFiles)
-        msg = pInst->GetTranslation("Install commands are still running\n"
+        msg = GetTranslation("Install commands are still running\n"
                 "If you abort now this may lead to a broken installation\n"
                 "Are you sure?");
     else
-        msg = pInst->GetTranslation("This will abort the installation\nAre you sure?");
+        msg = GetTranslation("This will abort the installation\nAre you sure?");
     
-    if (fl_choice(msg, pInst->GetTranslation("No"), pInst->GetTranslation("Yes"), NULL))
+    if (fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL))
         EndProg();
 }
 
@@ -303,7 +303,7 @@ void CWelcomeScreen::UpdateLang()
 {
     m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangWelcomeFName()) ||
                   !m_pBuffer->loadfile(m_pOwner->GetWelcomeFName()));
-    m_pDisplay->label(m_pOwner->GetTranslation("Welcome"));
+    m_pDisplay->label(GetTranslation("Welcome"));
 }
 
 // -------------------------------------
@@ -333,8 +333,8 @@ void CLicenseScreen::UpdateLang()
     m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangLicenseFName()) ||
             !m_pBuffer->loadfile(m_pOwner->GetLicenseFName()));
     
-    m_pDisplay->label(m_pOwner->GetTranslation("License agreement"));
-    m_pCheckButton->label(m_pOwner->GetTranslation("I Agree to this license agreement"));
+    m_pDisplay->label(GetTranslation("License agreement"));
+    m_pCheckButton->label(GetTranslation("I Agree to this license agreement"));
 }
 
 bool CLicenseScreen::Activate()
@@ -371,24 +371,24 @@ void CSelectDirScreen::UpdateLang()
     if (m_pDirChooser) delete m_pDirChooser;
     m_pDirChooser = new Fl_File_Chooser(m_pOwner->m_szDestDir.c_str(), "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        m_pOwner->GetTranslation("Select destination directory"));
+                                        GetTranslation("Select destination directory"));
     m_pDirChooser->preview(false);
     m_pDirChooser->previewButton->hide();
     m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
     
-    m_pBox->label(m_pOwner->GetTranslation("Select destination directory"));
-    m_pSelDirButton->label(m_pOwner->GetTranslation("Select a directory"));
+    m_pBox->label(GetTranslation("Select destination directory"));
+    m_pSelDirButton->label(GetTranslation("Select a directory"));
 }
 
 bool CSelectDirScreen::Next()
 {
     if (!WriteAccess(m_pOwner->m_szDestDir))
     {
-        return (fl_choice(m_pOwner->GetTranslation("You don't have write permissions for this directory.\n"
+        return (fl_choice(GetTranslation("You don't have write permissions for this directory.\n"
                 "The files can be extracted as the root user,\n"
                 "but you'll need to enter the root password for this later."),
-                m_pOwner->GetTranslation("Choose another directory"),
-                m_pOwner->GetTranslation("Continue as root"), NULL) == 1);
+                GetTranslation("Choose another directory"),
+                GetTranslation("Continue as root"), NULL) == 1);
     }
     return true;
 }
@@ -474,20 +474,20 @@ Fl_Group *CSetParamsScreen::Create()
 
 void CSetParamsScreen::UpdateLang()
 {
-    m_pBoxTitle->label(m_pOwner->GetTranslation("Configure parameters"));
-    m_pChoiceBrowser->label(m_pOwner->GetTranslation("Parameters"));
-    m_pDescriptionOutput->label(m_pOwner->GetTranslation("Description"));
-    m_pDefOutput->label(m_pOwner->GetTranslation("Default"));
-    m_pParamInput->label(CreateText("%s: ", m_pOwner->GetTranslation("Value")));
-    m_pValChoiceMenu->label(CreateText("%s: ", m_pOwner->GetTranslation("Value")));
-    m_pSelDirInput->label(CreateText("%s: ", m_pOwner->GetTranslation("Value")));
-    m_pSelDirButton->label(m_pOwner->GetTranslation("Change"));
+    m_pBoxTitle->label(GetTranslation("Configure parameters"));
+    m_pChoiceBrowser->label(GetTranslation("Parameters"));
+    m_pDescriptionOutput->label(GetTranslation("Description"));
+    m_pDefOutput->label(GetTranslation("Default"));
+    m_pParamInput->label(CreateText("%s: ", GetTranslation("Value")));
+    m_pValChoiceMenu->label(CreateText("%s: ", GetTranslation("Value")));
+    m_pSelDirInput->label(CreateText("%s: ", GetTranslation("Value")));
+    m_pSelDirButton->label(GetTranslation("Change"));
     
     // Create dir selecter (need to do this when the language changes!)
     if (m_pDirChooser) delete m_pDirChooser;
     m_pDirChooser = new Fl_File_Chooser("~", "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        m_pOwner->GetTranslation("Select a directory"));
+                                        GetTranslation("Select a directory"));
     m_pDirChooser->preview(false);
     m_pDirChooser->previewButton->hide();
     m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
@@ -537,8 +537,8 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         
         if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
         {
-            m_pValChoiceMenu->add(m_pOwner->GetTranslation("Enable"));
-            m_pValChoiceMenu->add(m_pOwner->GetTranslation("Disable"));
+            m_pValChoiceMenu->add(GetTranslation("Enable"));
+            m_pValChoiceMenu->add(GetTranslation("Disable"));
             if (m_pCurrentParamEntry->value == "false") m_pValChoiceMenu->value(1);
             else m_pValChoiceMenu->value(0);
         }
@@ -557,13 +557,13 @@ void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
         m_pValChoiceMenu->show();
     }
     
-    m_pDescriptionOutput->value(m_pOwner->GetTranslation(m_pCurrentParamEntry->description.c_str()));
+    m_pDescriptionOutput->value(GetTranslation(m_pCurrentParamEntry->description.c_str()));
     
     const char *str = m_pCurrentParamEntry->defaultval.c_str();
     if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
     {
-        if (m_pCurrentParamEntry->defaultval == "true") str = m_pOwner->GetTranslation("Enabled");
-        else str = m_pOwner->GetTranslation("Disabled");
+        if (m_pCurrentParamEntry->defaultval == "true") str = GetTranslation("Enabled");
+        else str = GetTranslation("Disabled");
     }
     m_pDefOutput->value(str);
 }
@@ -572,7 +572,7 @@ void CSetParamsScreen::SetValue(const std::string &str)
 {
     if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
     {
-        if (str == m_pOwner->GetTranslation("Enable")) m_pCurrentParamEntry->value = "true";
+        if (str == GetTranslation("Enable")) m_pCurrentParamEntry->value = "true";
         else m_pCurrentParamEntry->value = "false";
     }
     else
@@ -640,8 +640,8 @@ Fl_Group *CInstallFilesScreen::Create()
 
 void CInstallFilesScreen::UpdateLang()
 {
-    m_pProgress->label(m_pOwner->GetTranslation("Progress"));
-    m_pDisplay->label(m_pOwner->GetTranslation("Status"));
+    m_pProgress->label(GetTranslation("Progress"));
+    m_pDisplay->label(GetTranslation("Status"));
 }
 
 void CInstallFilesScreen::AppendText(const char *txt)
@@ -681,7 +681,7 @@ void CFinishScreen::UpdateLang()
 {
     m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangFinishFName()) ||
             !m_pBuffer->loadfile(m_pOwner->GetFinishFName()));
-    m_pDisplay->label(m_pOwner->GetTranslation("Please read the following text"));
+    m_pDisplay->label(GetTranslation("Please read the following text"));
 }
 
 bool CFinishScreen::Activate()
@@ -689,6 +689,6 @@ bool CFinishScreen::Activate()
     if (!m_bHasText)
         return false;
 
-    m_pOwner->m_pNextButton->label(m_pOwner->GetTranslation("Finish"));
+    m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
     return true;
 }

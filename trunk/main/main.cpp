@@ -46,6 +46,7 @@
 #include "main.h"
 
 std::list<char *> StringList;
+std::map<std::string, char *> Translations;
 
 // -------------------------------------
 // Main Class
@@ -53,9 +54,9 @@ std::list<char *> StringList;
 
 CMain::~CMain()
 {
-    if (!m_Translations.empty())
+    if (!Translations.empty())
     {
-        for(std::map<std::string, char *>::iterator p=m_Translations.begin(); p!=m_Translations.end(); p++)
+        for(std::map<std::string, char *>::iterator p=Translations.begin(); p!=Translations.end(); p++)
             delete [] (*p).second;
     }
     
@@ -180,12 +181,12 @@ void CMain::SetUpSU(const char *msg)
 bool CMain::ReadLang()
 {
     // Clear all translations
-    if (!m_Translations.empty())
+    if (!Translations.empty())
     {
-        std::map<std::string, char *>::iterator p = m_Translations.begin();
-        for(;p!=m_Translations.end();p++)
+        std::map<std::string, char *>::iterator p = Translations.begin();
+        for(;p!=Translations.end();p++)
             delete [] (*p).second;
-        m_Translations.erase(m_Translations.begin(), m_Translations.end());
+        Translations.erase(Translations.begin(), Translations.end());
     }
     
     std::ifstream file(CreateText("config/lang/%s/strings", m_szCurLang.c_str()));
@@ -210,37 +211,15 @@ bool CMain::ReadLang()
             srcmsg = text;
         else
         {
-            m_Translations[srcmsg] = new char[text.length()+1];
-            text.copy(m_Translations[srcmsg], std::string::npos);
-            m_Translations[srcmsg][text.length()] = 0;
+            Translations[srcmsg] = new char[text.length()+1];
+            text.copy(Translations[srcmsg], std::string::npos);
+            Translations[srcmsg][text.length()] = 0;
         }
 
         atsrc = !atsrc;
     }
 
     return true;
-}
-
-std::string CMain::GetTranslation(std::string &s)
-{
-    std::map<std::string, char *>::iterator p = m_Translations.find(s);
-    if (p != m_Translations.end())
-        return (*p).second;
-    
-    // No translation found
-    //debugline("WARNING: No translation for %s\n", s.c_str());
-    return s;
-}
-
-char *CMain::GetTranslation(char *s)
-{
-    std::map<std::string, char *>::iterator p = m_Translations.find(s);
-    if (p != m_Translations.end())
-        return (*p).second;
-    
-    // No translation found
-    //debugline("WARNING: No translation for %s\n", s);
-    return s;
 }
 
 std::string CMain::ReadRegField(std::ifstream &file)

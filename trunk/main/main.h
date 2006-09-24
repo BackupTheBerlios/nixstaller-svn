@@ -117,6 +117,9 @@ std::string GetMD5(const std::string &file);
 mode_t StrToMode(const char *str);
 unsigned StrFindInRange(const std::string &src, const std::string &findstr, unsigned pos, unsigned n);
 unsigned StrFindInRange(const std::string &src, const char *findstr, unsigned pos, unsigned n);
+std::string GetTranslation(std::string &s);
+char *GetTranslation(char *s);
+inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 
 inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
 inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };
@@ -316,7 +319,6 @@ protected:
 public:
     std::string m_szCurLang;
     std::list<std::string> m_Languages;
-    std::map<std::string, char *> m_Translations;
     
     CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL) { };
     virtual ~CMain(void);
@@ -325,10 +327,6 @@ public:
     
     virtual bool Init(int argc, char **argv);
     virtual void UpdateLanguage(void) { ReadLang(); };
-    
-    std::string GetTranslation(std::string &s);
-    char *GetTranslation(char *s);
-    inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
     
     // Functions for lua binding
     static int LuaInitDirIter(lua_State *L);

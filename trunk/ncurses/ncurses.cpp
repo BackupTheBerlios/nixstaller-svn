@@ -92,12 +92,12 @@ void CAboutScreen::CreateInit()
 {
     CWidgetWindow::CreateInit();
     
-    SetTitle("About");
+    SetTitle(GetTranslation("About"));
     
     m_pTextWin = AddChild(new CTextWindow(this, 15, 46, 2, 2, false, false, 'r'));
     m_pTextWin->LoadFile("about");
 
-    m_pOKButton = AddChild(new CButton(this, 1, 10, (m_pTextWin->rely()+m_pTextWin->maxy()+2), (width()-10)/2, "OK", 'r'));
+    m_pOKButton = AddChild(new CButton(this, 1, 10, (m_pTextWin->rely()+m_pTextWin->maxy()+2), (width()-10)/2, GetTranslation("OK"), 'r'));
     Fit(m_pOKButton->rely()+m_pOKButton->maxy()+2);
     
     ActivateChild(m_pTextWin);

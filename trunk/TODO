@@ -9,10 +9,10 @@ OVERALL
 - Language updates: Password screen class, FLTK AppManager
 - Use vasprintf instead of vsprintf whenever possible.
 - Usage of exceptions(StrToMode)
-- GetTranslation - Global or not?
 - Clean SVN trunk
 - bsdiff support 
 - Alternative way to see which archivetype is used in startupinstaller.sh
+- Use deque/vector instead of list?
 
 MAIN
 - Better error handling for register
@@ -26,7 +26,6 @@ MAIN
 NCURSES FRONTEND
 - Error handling in file manager
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
-- Remove CDK code
 - Throw exception when lua widget doesn't fit on new screen
 - Translations
 - Buttonbar

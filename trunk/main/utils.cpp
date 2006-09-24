@@ -40,6 +40,8 @@
 #include "md5.h"
 #include "main.h"
 
+extern std::map<std::string, char *> Translations;
+
 void Intro()
 {
     printf("Nixstaller version 0.2, Copyright (C) 2006 of Rick Helmus\n"
@@ -342,3 +344,24 @@ mode_t StrToMode(const char *str)
     return octal_value;
 }
 
+std::string GetTranslation(std::string &s)
+{
+    std::map<std::string, char *>::iterator p = Translations.find(s);
+    if (p != Translations.end())
+        return (*p).second;
+    
+    // No translation found
+    debugline("WARNING: No translation for %s\n", s.c_str());
+    return s;
+}
+
+char *GetTranslation(char *s)
+{
+    std::map<std::string, char *>::iterator p = Translations.find(s);
+    if (p != Translations.end())
+        return (*p).second;
+    
+    // No translation found
+    debugline("WARNING: No translation for %s\n", s);
+    return s;
+}

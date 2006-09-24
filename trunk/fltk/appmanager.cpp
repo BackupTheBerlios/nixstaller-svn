@@ -167,7 +167,7 @@ CUninstallWindow::CUninstallWindow(CAppManager *owner) : m_pOwner(owner)
     m_pDisplay->buffer(m_pBuffer);
     m_pDisplay->wrap_mode(true, 60);
     
-    m_pOKButton = new Fl_Button((w-80)/2, (h-40), 80, 25, m_pOwner->GetTranslation("OK"));
+    m_pOKButton = new Fl_Button((w-80)/2, (h-40), 80, 25, GetTranslation("OK"));
     m_pOKButton->callback(OKButtonCB, this);
     m_pOKButton->deactivate();
     
@@ -176,18 +176,18 @@ CUninstallWindow::CUninstallWindow(CAppManager *owner) : m_pOwner(owner)
 
 bool CUninstallWindow::Start(app_entry_s *pApp)
 {
-    if (!fl_choice(CreateText(m_pOwner->GetTranslation("This will remove %s from your computer\nContinue?"),
-         pApp->name.c_str()), m_pOwner->GetTranslation("No"), m_pOwner->GetTranslation("Yes"), NULL))
+    if (!fl_choice(CreateText(GetTranslation("This will remove %s from your computer\nContinue?"),
+         pApp->name.c_str()), GetTranslation("No"), GetTranslation("Yes"), NULL))
         return false;
     
     bool checksums = false;
     if (!m_pOwner->CheckSums(pApp->name.c_str()))
     {
-        int ret = fl_choice(m_pOwner->GetTranslation("Some files have been modified after installation.\n"
+        int ret = fl_choice(GetTranslation("Some files have been modified after installation.\n"
                 "This can happen if you installed another package which uses one or\n"
                 "more files with the same name or you installed another version."),
-                m_pOwner->GetTranslation("Cancel"), m_pOwner->GetTranslation("Continue anyway"),
-                m_pOwner->GetTranslation("Only remove unchanged"));
+                GetTranslation("Cancel"), GetTranslation("Continue anyway"),
+                GetTranslation("Only remove unchanged"));
         if (ret == 0)
             return false;
         
