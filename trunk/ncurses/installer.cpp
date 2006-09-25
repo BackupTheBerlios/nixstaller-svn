@@ -193,7 +193,7 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
         else if (p == m_pCancelButton)
         {
             char *msg;
-            if (m_bInstallFiles)
+            if (m_bInstalling)
                 msg = GetTranslation("Install commands are still running\n"
                         "If you abort now this may lead to a broken installation\n"
                         "Are you sure?");
@@ -327,7 +327,6 @@ bool CInstaller::Init(int argc, char **argv)
 
 void CInstaller::Install()
 {
-    m_bInstallFiles = true;
     m_pPrevButton->Enable(false);
     m_pNextButton->Enable(false);
     
@@ -335,7 +334,6 @@ void CInstaller::Install()
     
     CBaseInstall::Install();
     
-    m_bInstallFiles = false;
     m_pCancelButton->Enable(false);
     m_pNextButton->Enable(true);
     

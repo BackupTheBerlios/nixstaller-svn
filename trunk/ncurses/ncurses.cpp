@@ -134,9 +134,9 @@ void CNCursBase::CreateInit()
 {
     CWidgetWindow::CreateInit();
     
-    AddGlobalButton("ESC", "Quit");
+    AddGlobalButton("ESC", "Exit");
     AddGlobalButton("F1", "Help");
-    AddGlobalButton("Enter", "Done");
+    AddGlobalButton("ENTER", "Done");
 }
 
 char *CNCursBase::GetPassword(const char *str)

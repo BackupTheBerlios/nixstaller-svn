@@ -1475,7 +1475,7 @@ void CTextWindow::CreateInit()
     m_pVScrollbar = AddChild(new CScrollbar(this, height()-2, 1, 1, width()-1, 0, 0, true, 'r'));
     m_pHScrollbar = AddChild(new CScrollbar(this, 1, width()-2, height()-1, 1, 0, 0, false, 'r'));
     
-    AddButton("Arrows", "Scroll");
+    AddButton("ARROWS", "Scroll");
 }
 
 void CTextWindow::HScroll(int n)
@@ -1710,7 +1710,7 @@ void CMenu::CreateInit()
     m_pVScrollbar = AddChild(new CScrollbar(this, height()-2, 1, 1, width()-1, 0, 100, true, 'r'));
     m_pHScrollbar = AddChild(new CScrollbar(this, 1, width()-2, height()-1, 1, 0, 100, false, 'r'));
 
-    AddButton("Arrows", "Scroll");
+    AddButton("ARROWS", "Scroll");
 }
 
 void CMenu::HScroll(int n)

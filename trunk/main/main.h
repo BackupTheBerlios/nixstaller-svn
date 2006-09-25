@@ -298,7 +298,7 @@ protected:
     char *m_szPassword;
 
     void SetUpSU(const char *msg);
-    bool ReadLang(void);
+    bool ReadLang();
     
     virtual char *GetPassword(const char *title) = 0;
     virtual void MsgBox(const char *str, ...) = 0;

@@ -90,6 +90,8 @@ protected:
 public:
     CNCursBase(CWidgetManager *owner);
     virtual ~CNCursBase(void) { };
+    
+    virtual void UpdateLanguage(void) { CMain::UpdateLanguage(); };
 };
 
 class CBaseScreen;
@@ -127,11 +129,10 @@ protected:
     virtual bool InitLua(void);
     
 public:
-    bool m_bInstallFiles;
-    
-    CInstaller(CWidgetManager *owner) : CNCursBase(owner), m_bInstallFiles(false) { };
+    CInstaller(CWidgetManager *owner) : CNCursBase(owner) { };
     
     virtual bool Init(int argc, char **argv);
+    virtual void UpdateLanguage(void) { CNCursBase::UpdateLanguage(); };
     virtual void Install(void);
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
 };
@@ -258,6 +259,8 @@ protected:
 public:
     CLangScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                 int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
+    
+    virtual bool Next(void) { m_pInstaller->m_szCurLang = m_pLangMenu->GetCurrentItemName(); m_pInstaller->UpdateLanguage(); return true; };
 };
 
 class CWelcomeScreen: public CBaseScreen

@@ -110,7 +110,8 @@ bool CMain::Init(int argc, char **argv)
         m_Languages.push_front(s);
     }
     
-    m_szCurLang = m_Languages.front();
+    m_szCurLang = m_Languages.front(); // UNDONE: Needs a option for default language
+    ReadLang();
 
     return true;
 }
@@ -186,7 +187,7 @@ bool CMain::ReadLang()
         std::map<std::string, char *>::iterator p = Translations.begin();
         for(;p!=Translations.end();p++)
             delete [] (*p).second;
-        Translations.erase(Translations.begin(), Translations.end());
+        Translations.clear();
     }
     
     std::ifstream file(CreateText("config/lang/%s/strings", m_szCurLang.c_str()));

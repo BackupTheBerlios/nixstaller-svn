@@ -42,7 +42,6 @@ class CBaseInstall: virtual public CMain
     std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
     char *m_szCurArchFName;
     bool m_bAlwaysRoot; // If we need root access during whole installation
-    bool m_bInstalling;
     short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
     short m_sCurrentStep;
     float m_fInstallProgress;
@@ -72,6 +71,8 @@ class CBaseInstall: virtual public CMain
     friend class CBaseLuaCFGMenu;
     
 protected:
+    bool m_bInstalling;
+
     virtual void ChangeStatusText(const char *str) = 0;
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
@@ -86,8 +87,8 @@ public:
 
 
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_bAlwaysRoot(false), m_bInstalling(false), m_sInstallSteps(0),
-                         m_sCurrentStep(0), m_fInstallProgress(0.0f) { };
+                         m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0),
+                         m_fInstallProgress(0.0f), m_bInstalling(false) { };
     virtual ~CBaseInstall(void);
 
     virtual bool Init(int argc, char **argv);

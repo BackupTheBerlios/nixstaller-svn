@@ -351,7 +351,8 @@ std::string GetTranslation(std::string &s)
         return (*p).second;
     
     // No translation found
-    debugline("WARNING: No translation for %s\n", s.c_str());
+    if (!Translations.empty())
+        debugline("WARNING: No translation for %s\n", s.c_str());
     return s;
 }
 
@@ -362,6 +363,7 @@ char *GetTranslation(char *s)
         return (*p).second;
     
     // No translation found
-    debugline("WARNING: No translation for %s\n", s);
+    if (!Translations.empty())
+        debugline("WARNING: No translation for %s\n", s);
     return s;
 }

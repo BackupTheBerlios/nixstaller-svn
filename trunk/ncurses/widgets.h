@@ -271,7 +271,7 @@ class CButton: public CWidgetWindow
     CFormattedText m_FMText;
     
 protected:
-    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("Enter", "Activate button"); };
+    virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("ENTER", "Activate button"); };
     virtual bool HandleKey(chtype ch);
     virtual void Draw(void);
     

@@ -1,7 +1,6 @@
 OVERALL
 - Check if version is specified in config file?
 - Translate param names and param choices
-- Load english text strings before language has been selected
 - Check for tar with gzip/bzip on other platforms(Solaris...)
 - Modify Makeself?
 - Check read permissions for extract dir
@@ -22,12 +21,13 @@ MAIN
 - Use lua config code
 - Remove old config code
 - BUG: Executing commands as root to quickly may mess things up(put a delay, open single root console?)
+- Default language
 
 NCURSES FRONTEND
 - Error handling in file manager
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
 - Throw exception when lua widget doesn't fit on new screen
-- Translations
+- Translations(UpdateLang() func for every install screen, button bar)
 - Buttonbar
 - File manager should check if dir exist?
 
