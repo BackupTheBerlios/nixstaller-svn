@@ -139,7 +139,8 @@ void CInstaller::UpdateLanguage(void)
     m_pNextButton->label(CreateText("%s    @->", GetTranslation("Next")));
     
     // Update all screens
-    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++) (*p)->UpdateLang();
+    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+        (*p)->UpdateLang();
 }
 
 void CInstaller::WizCancelCB(Fl_Widget *, void *p)

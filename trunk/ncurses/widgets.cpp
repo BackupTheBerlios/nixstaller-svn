@@ -301,8 +301,7 @@ void CWidgetManager::Init()
     CMenuDialog::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
     
     m_pButtonBar = AddChild(new CButtonBar(this, 2, MaxX(), RawMaxY()-2, 0));
-    m_pButtonBar->AddGlobalButton("TAB, ^N", "Next field");
-    m_pButtonBar->AddGlobalButton("^P", "Previous field");
+    m_pButtonBar->AddGlobalButton("TAB", "Next field");
 }
 
 void CWidgetManager::Refresh()

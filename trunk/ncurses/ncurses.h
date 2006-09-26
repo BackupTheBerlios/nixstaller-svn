@@ -132,7 +132,7 @@ public:
     CInstaller(CWidgetManager *owner) : CNCursBase(owner) { };
     
     virtual bool Init(int argc, char **argv);
-    virtual void UpdateLanguage(void) { CNCursBase::UpdateLanguage(); };
+    virtual void UpdateLanguage(void);
     virtual void Install(void);
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
 };
@@ -247,6 +247,7 @@ public:
     virtual bool Next(void) { return true; };
     virtual void Activate(void);
     virtual bool CanActivate(void) { return true; };
+    virtual void UpdateLanguage(void) { };
 };
 
 class CLangScreen: public CBaseScreen

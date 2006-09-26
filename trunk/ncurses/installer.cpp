@@ -243,7 +243,8 @@ bool CInstaller::Init(int argc, char **argv)
     SetTitle("Nixstaller");
     
     // Button width; longest text + 4 chars for focusing
-    int bw = strlen(GetTranslation("Cancel")) + 4;
+//     int bw = strlen(GetTranslation("Cancel")) + 4;
+    const int bw = 10;
 
     m_pCancelButton = AddChild(new CButton(this, 1, bw, height()-2, 2, GetTranslation("Cancel"), 'r'));
     m_pPrevButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), GetTranslation("Back"), 'r'));
@@ -325,6 +326,17 @@ bool CInstaller::Init(int argc, char **argv)
     return true;
 }
 
+void CInstaller::UpdateLanguage()
+{
+    CNCursBase::UpdateLanguage();
+    
+    m_pCancelButton->SetTitle(GetTranslation("Cancel"));
+    m_pPrevButton->SetTitle(GetTranslation("Back"));
+    m_pNextButton->SetTitle(GetTranslation("Next"));
+    
+    for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
+        (*it)->UpdateLanguage();
+}
 void CInstaller::Install()
 {
     m_pPrevButton->Enable(false);

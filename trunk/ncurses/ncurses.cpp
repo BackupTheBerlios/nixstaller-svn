@@ -135,7 +135,7 @@ void CNCursBase::CreateInit()
     CWidgetWindow::CreateInit();
     
     AddGlobalButton("ESC", "Exit");
-    AddGlobalButton("F1", "Help");
+    AddGlobalButton("F3", "About");
     AddGlobalButton("ENTER", "Done");
 }
 
@@ -209,7 +209,7 @@ bool CNCursBase::HandleKey(chtype ch)
     if (CWidgetWindow::HandleKey(ch))
         return true;
     
-    if (ch == KEY_F(1))
+    if (ch == KEY_F(3))
     {
         m_pAboutScreen->Enable(true);
         pWidgetManager->ActivateChild(m_pAboutScreen);
