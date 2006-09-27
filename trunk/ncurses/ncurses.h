@@ -228,6 +228,8 @@ class CBaseScreen: public CWidgetWindow
 {
     bool m_bNeedDrawInit;
     
+    friend class CInstaller;
+    
 protected:
     CInstaller *m_pInstaller;
     CTextLabel *m_pLabel;
@@ -278,6 +280,7 @@ public:
                    int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
     
     virtual bool CanActivate(void);
+    virtual void UpdateLanguage(void);
 };
 
 class CLicenseScreen: public CBaseScreen
@@ -295,6 +298,7 @@ public:
 
     virtual bool Next(void);
     virtual bool CanActivate(void);
+    virtual void UpdateLanguage(void);
 };
 
 class CSelectDirScreen: public CBaseScreen
@@ -311,6 +315,7 @@ public:
                      int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 
     virtual bool Next(void);
+    virtual void UpdateLanguage(void);
 };
 
 class CInstallScreen: public CBaseScreen
@@ -332,6 +337,7 @@ public:
     void SetProgress(int n) { m_pProgressbar->SetCurrent(n); m_pProgressbar->refresh(); };
     
     virtual void Activate(void);
+    virtual void UpdateLanguage(void);
 };
 
 class CFinishScreen: public CBaseScreen
@@ -348,6 +354,7 @@ public:
                   int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 
     virtual bool CanActivate(void);
+    virtual void UpdateLanguage(void);
 };
 
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
@@ -375,6 +382,7 @@ public:
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
     
     virtual void Activate(void);
+    virtual void UpdateLanguage(void);
 };
 
 extern CWidgetManager *pWidgetManager;
