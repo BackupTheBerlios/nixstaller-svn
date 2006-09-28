@@ -488,7 +488,7 @@ public:
 class CCheckbox: public CWidgetWindow
 {
     unsigned long m_ulCheckedboxes;
-    std::list<std::string> m_BoxList;
+    std::vector<std::string> m_BoxList;
     int m_iSelectedButton;
 
 protected:
@@ -507,12 +507,13 @@ public:
     void EnableBox(int n) { m_ulCheckedboxes |= (1<<(n-1)); };
     void DisableBox(int n) { m_ulCheckedboxes &= ~(1<<(n-1)); };
     bool IsEnabled(int n) { return (m_ulCheckedboxes & (1<<(n-1))); };
+    void SetText(int n, const std::string &text) { m_BoxList.at(n) = text; };
 };
 
 class CRadioButton: public CWidgetWindow
 {
     int m_iCheckedButton;
-    std::list<std::string> m_ButtonList;
+    std::vector<std::string> m_ButtonList;
     int m_iSelectedButton;
 
 protected:
@@ -530,6 +531,7 @@ public:
     void Add(const std::string &text) { m_ButtonList.push_back(text); };
     void EnableButton(int n) { m_iCheckedButton = n; };
     int EnabledButton(void) { return m_iCheckedButton; };
+    void SetText(int n, const std::string &text) { m_ButtonList.at(n) = text; };
 };
 
 class CButtonBar: public CWidgetWindow

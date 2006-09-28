@@ -2176,7 +2176,7 @@ bool CCheckbox::HandleKey(chtype ch)
 void CCheckbox::Draw()
 {
     int counter = 1;
-    for (std::list<std::string>::iterator it=m_BoxList.begin(); it!=m_BoxList.end(); it++)
+    for (std::vector<std::string>::iterator it=m_BoxList.begin(); it!=m_BoxList.end(); it++)
     {
         std::string out;
         if (IsEnabled(counter))
@@ -2256,7 +2256,7 @@ bool CRadioButton::HandleKey(chtype ch)
 void CRadioButton::Draw()
 {
     int counter = 1;
-    for (std::list<std::string>::iterator it=m_ButtonList.begin(); it!=m_ButtonList.end(); it++)
+    for (std::vector<std::string>::iterator it=m_ButtonList.begin(); it!=m_ButtonList.end(); it++)
     {
         std::string out;
         if (counter == EnabledButton())
