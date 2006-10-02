@@ -137,51 +137,80 @@ public:
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
 };
 
-class CLuaInputField: public CBaseLuaInputField
+class CBaseLuaWidget: public CWidgetWindow
 {
-    int m_iMaxX, m_iMaxY;
-    CInputField *m_pInput;
+    std::string m_szDescription;
+    CTextLabel *m_pDescLabel;
+    
+protected:
+    CBaseLuaWidget(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc);
+    virtual ~CBaseLuaWidget(void) { };
+    
+    virtual void CreateInit(void);
+    int DescHeight(void) { return (m_pDescLabel) ? m_pDescLabel->height() : 0; };
     
 public:
-    CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const char *label, const char *desc, const char *val, int max);
+    virtual void UpdateLanguage(void);
+};
+
+class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
+{
+    std::string m_szLabel, m_szValue;
+    CInputField *m_pInput;
+    CTextLabel *m_pLabel;
+    int m_iMax;
     
+protected:
+    virtual void CreateInit(void);
+
+public:
+    CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *label, const char *desc, const char *val, int max);
+    
+    virtual void UpdateLanguage(void);
     virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
     
     static int CalcHeight(int w, const char *desc);
 };
 
-class CLuaCheckbox: public CBaseLuaCheckbox
+class CLuaCheckbox: public CBaseLuaCheckbox, public CBaseLuaWidget
 {
-    int m_iMaxX, m_iMaxY;
     CCheckbox *m_pCheckbox;
+    const std::vector<std::string> &m_Options;
     
-public:
-    CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
-                 const std::list<std::string> &l);
+protected:
+    virtual void CreateInit(void);
 
+public:
+    CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc,
+                 const std::vector<std::string> &l);
+
+    virtual void UpdateLanguage(void);
     virtual bool Enabled(int n) { return m_pCheckbox->IsEnabled(n); };
     virtual void Enable(int n) { m_pCheckbox->EnableBox(n); };
 
-    static int CalcHeight(int w, const char *desc, const std::list<std::string> &l);
+    static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
 };
 
-class CLuaRadioButton: public CBaseLuaRadioButton
+class CLuaRadioButton: public CBaseLuaRadioButton, public CBaseLuaWidget
 {
-    int m_iMaxX, m_iMaxY;
     CRadioButton *m_pRadioButton;
+    const std::vector<std::string> &m_Options;
     
-public:
-    CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
-                    const std::list<std::string> &l);
+protected:
+    virtual void CreateInit(void);
 
+public:
+    CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc,
+                    const std::vector<std::string> &l);
+
+    virtual void UpdateLanguage(void);
     virtual int EnabledButton() { return m_pRadioButton->EnabledButton(); };
     virtual void Enable(int n) { m_pRadioButton->EnableButton(n); };
 
-    static int CalcHeight(int w, const char *desc, const std::list<std::string> &l);
+    static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
 };
 
-// We inherit from CWidgetWindow so that events can be recieved
-class CLuaDirSelector: public CBaseLuaDirSelector, public CWidgetWindow
+class CLuaDirSelector: public CBaseLuaDirSelector, public CBaseLuaWidget
 {
     std::string m_szDesc, m_szValue;
     CInputField *m_pDirInput;
@@ -194,13 +223,14 @@ protected:
 public:
     CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc, const char *val);
 
+    virtual void UpdateLanguage(void);
     virtual const char *GetDir(void) { return m_pDirInput->GetText().c_str(); };
     virtual void SetDir(const char *dir) { m_pDirInput->SetText(dir); };
     
     static int CalcHeight(int w, const char *desc);
 };
 
-class CLuaCFGMenu: public CBaseLuaCFGMenu, public CWidgetWindow
+class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
 {
     std::string m_szDesc;
     CMenu *m_pMenu;
@@ -215,6 +245,7 @@ protected:
 public:
     CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc);
     
+    virtual void UpdateLanguage(void);
     virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l=NULL);
     
     static int CalcHeight(int w, const char *desc);
@@ -362,7 +393,7 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     std::string m_szTitle;
     int m_iStartY;
     CCFGScreen *m_pNextScreen; 
-    
+    std::vector<CBaseLuaWidget *> m_LuaWidgets;
     friend class CInstaller;
     
 protected:
@@ -376,8 +407,8 @@ public:
     void SetTitle(const char *s) { m_szTitle = s; };
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
-    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l);
-    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l);
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
     

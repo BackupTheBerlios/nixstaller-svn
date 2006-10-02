@@ -1088,15 +1088,15 @@ int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
     const char *desc = lua_tostring(L, 2);
     
-    std::list<std::string> l;
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
+    std::vector<std::string> l(count);
     
     for (int i=1; i<=count; i++)
     {
         lua_rawgeti(L, 3, i);
         const char *s = luaL_checkstring(L, -1);
-        l.push_back(s);
+        l[i-1] = s;
         lua_pop(L, 1);
     }
     
@@ -1111,15 +1111,16 @@ int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
     const char *desc = lua_tostring(L, 2);
     
-    std::list<std::string> l;
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
+    std::vector<std::string> l(count);
+
     
     for (int i=1; i<=count; i++)
     {
         lua_rawgeti(L, 3, i);
         const char *s = luaL_checkstring(L, -1);
-        l.push_back(s);
+        l[i-1] = s;
         lua_pop(L, 1);
     }
     

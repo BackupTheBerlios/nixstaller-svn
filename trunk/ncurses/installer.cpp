@@ -368,36 +368,77 @@ CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 }
 
 // -------------------------------------
+// Base ncurses Lua Widget class
+// -------------------------------------
+
+CBaseLuaWidget::CBaseLuaWidget(CCFGScreen *owner, int y, int x, int maxy, int maxx,
+                               const char *desc) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false), m_pDescLabel(NULL)
+{
+    if (desc && *desc)
+        m_szDescription = desc;
+}
+
+void CBaseLuaWidget::CreateInit()
+{
+    CWidgetWindow::CreateInit();
+    
+    if (!m_szDescription.empty())
+    {
+        m_pDescLabel = AddChild(new CTextLabel(this, 2, maxx(), 0, 0, 'r'));
+        m_pDescLabel->AddText("<notg>");
+        m_pDescLabel->AddText(m_szDescription);
+    }
+}
+
+void CBaseLuaWidget::UpdateLanguage()
+{
+    if (m_pDescLabel)
+        m_pDescLabel->SetText(GetTranslation(m_szDescription));
+}
+
+// -------------------------------------
 // Lua inputfield class
 // -------------------------------------
 
-CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxx, const char *label,
-                               const char *desc, const char *val, int max)
+CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *label,
+                               const char *desc, const char *val, int max) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc),
+                                                                             m_pLabel(NULL), m_iMax(max)
 {
-    int begy = y, begx = x, fieldw = maxx - begx;
-    
-    if (desc && *desc)
-    {
-        CTextLabel *pDesc = owner->AddChild(new CTextLabel(owner, 2, maxx, begy, begx, 'r'));
-        pDesc->AddText("<notg>");
-        pDesc->AddText(desc);
-        begy += pDesc->height();
-    }
-    
     if (label && *label)
+        m_szLabel = label;
+    
+    if (val && *val)
+        m_szValue = val;
+}
+
+void CLuaInputField::CreateInit()
+{
+    CBaseLuaWidget::CreateInit();
+    
+    int begy = DescHeight(), begx = 0, fieldw = maxx();
+    
+    if (!m_szLabel.empty())
     {
-        unsigned w = Min(strlen(label), maxx/3); 
-        CTextLabel *pLabel = owner->AddChild(new CTextLabel(owner, 2, w, begy, begx, 'r'));
-        pLabel->AddText("<notg>");
-        pLabel->AddText(label);
-        begx += (pLabel->width() + 1);
-        fieldw -= (pLabel->width() + 1);
+        unsigned w = Min(m_szLabel.length(), maxx()/3);
+        m_pLabel = AddChild(new CTextLabel(this, 2, w, begy, begx, 'r'));
+        m_pLabel->AddText("<notg>");
+        m_pLabel->AddText(m_szLabel);
+        begx += (m_pLabel->width() + 1);
+        fieldw -= (m_pLabel->width() + 1);
     }
     
-    m_pInput = owner->AddChild(new CInputField(owner, 1, fieldw, begy, begx, 'r', max));
+    m_pInput = AddChild(new CInputField(this, 1, fieldw, begy, begx, 'r', m_iMax));
     
-    if (val)
-        m_pInput->SetText(val);
+    if (!m_szValue.empty())
+        m_pInput->SetText(m_szValue);
+}
+
+void CLuaInputField::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+    
+    if (m_pLabel)
+        m_pLabel->SetText(GetTranslation(m_szLabel));
 }
 
 int CLuaInputField::CalcHeight(int w, const char *desc)
@@ -412,26 +453,30 @@ int CLuaInputField::CalcHeight(int w, const char *desc)
 // Lua checkbox class
 // -------------------------------------
 
-CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
-                           const std::list<std::string> &l)
+CLuaCheckbox::CLuaCheckbox(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc,
+                           const std::vector<std::string> &l) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc), m_Options(l)
 {
-    int begy = y;
+}
+
+void CLuaCheckbox::CreateInit()
+{
+    CBaseLuaWidget::CreateInit();
     
-    if (desc && *desc)
-    {
-        CTextLabel *pDesc = owner->AddChild(new CTextLabel(owner, 2, maxx, begy, x, 'r'));
-        pDesc->AddText("<notg>");
-        pDesc->AddText(desc);
-        begy += pDesc->height();
-    }
+    m_pCheckbox = AddChild(new CCheckbox(this, m_Options.size(), maxx(), DescHeight(), 0, 'r'));
     
-    m_pCheckbox = owner->AddChild(new CCheckbox(owner, l.size(), maxx, begy, x, 'r'));
-    
-    for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
+    for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
         m_pCheckbox->Add(*it);
 }
 
-int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::list<std::string> &l)
+void CLuaCheckbox::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+    
+    for (unsigned u=0; u<m_Options.size(); u++)
+        m_pCheckbox->SetText(u, GetTranslation(m_Options[u]));
+}
+
+int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (desc && *desc)
         return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + l.size();
@@ -443,26 +488,30 @@ int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::list<std::strin
 // Lua radio button class
 // -------------------------------------
 
-CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxx, const char *desc,
-                                 const std::list<std::string> &l)
+CLuaRadioButton::CLuaRadioButton(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc,
+                                 const std::vector<std::string> &l) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc), m_Options(l)
 {
-    int begy = y;
+}
+
+void CLuaRadioButton::CreateInit()
+{
+    CBaseLuaWidget::CreateInit();
     
-    if (desc && *desc)
-    {
-        CTextLabel *pDesc = owner->AddChild(new CTextLabel(owner, 2, maxx, begy, x, 'r'));
-        pDesc->AddText("<notg>");
-        pDesc->AddText(desc);
-        begy += pDesc->height();
-    }
+    m_pRadioButton = AddChild(new CRadioButton(this, m_Options.size(), maxx(), DescHeight(), 0, 'r'));
     
-    m_pRadioButton = owner->AddChild(new CRadioButton(owner, l.size(), maxx, begy, x, 'r'));
-    
-    for (std::list<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
+    for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
         m_pRadioButton->Add(*it);
 }
 
-int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::list<std::string> &l)
+void CLuaRadioButton::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+    
+    for (unsigned u=0; u<m_Options.size(); u++)
+        m_pRadioButton->SetText(u, GetTranslation(m_Options[u]));
+}
+
+int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (desc && *desc)
         return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + l.size();
@@ -475,23 +524,14 @@ int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::list<std::st
 // -------------------------------------
 
 CLuaDirSelector::CLuaDirSelector(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc,
-                                 const char *val) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false),
-                                                    m_szDesc(desc), m_szValue(val)
+                                 const char *val) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc), m_szValue(val)
 {
 }
 
 void CLuaDirSelector::CreateInit()
 {
-    CWidgetWindow::CreateInit();
-    int begy = 0;
-    
-    if (!m_szDesc.empty())
-    {
-        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx(), 0, 0, 'r'));
-        pDesc->AddText("<notg>");
-        pDesc->AddText(m_szDesc);
-        begy += pDesc->height();
-    }
+    CBaseLuaWidget::CreateInit();
+    int begy = DescHeight();
     
     const int buttonw = 20;
     
@@ -516,10 +556,16 @@ bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
+void CLuaDirSelector::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+    m_pDirButton->SetTitle(GetTranslation("Browse"));
+}
+
 int CLuaDirSelector::CalcHeight(int w, const char *desc)
 {
     if (desc && *desc)
-        return CTextLabel::CalcHeight(w, CreateText("<notg>%s", desc)) + 1;
+        return CTextLabel::CalcHeight(w, CreateText("<notg>%s", GetTranslation(desc))) + 1;
     
     return 1;
 }
@@ -529,7 +575,7 @@ int CLuaDirSelector::CalcHeight(int w, const char *desc)
 // -------------------------------------
 
 CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx,
-                         const char *desc) : CWidgetWindow(owner, maxy, maxx, y, x, 'r', false), m_szDesc(desc)
+                         const char *desc) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc)
 {
 }
 
@@ -537,17 +583,9 @@ void CLuaCFGMenu::CreateInit()
 {
     CWidgetWindow::CreateInit();
     
-    int begy = 0;
+    int begy = DescHeight();
     const int menuw = 20;
     const int infow = maxx() - 2 - menuw;
-    
-    if (!m_szDesc.empty())
-    {
-        CTextLabel *pDesc = AddChild(new CTextLabel(this, 2, maxx(), 0, 0, 'r'));
-        pDesc->SetText("<notg>");
-        pDesc->AddText(m_szDesc);
-        begy += pDesc->height();
-    }
     
     m_pMenu = AddChild(new CMenu(this, 7, menuw, begy, 0, 'r'));
     m_pInfoWindow = AddChild(new CTextWindow(this, 7, infow, begy, menuw+2, false, false, 'r'));
@@ -559,7 +597,7 @@ void CLuaCFGMenu::SetInfo()
     std::string item = m_pMenu->GetCurrentItemName();
     if (!item.empty() && m_Variabeles[item])
     {
-        m_pInfoWindow->SetText("<notg>" + m_Variabeles[item]->desc);
+        m_pInfoWindow->SetText("<notg>" + GetTranslation(m_Variabeles[item]->desc));
         m_pInfoWindow->refresh();
     }
 }
@@ -605,6 +643,12 @@ bool CLuaCFGMenu::HandleEvent(CWidgetHandler *p, int type)
         return true;
     }
     return false;
+}
+
+void CLuaCFGMenu::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+    SetInfo();
 }
 
 void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l)
@@ -939,6 +983,8 @@ void CCFGScreen::DrawInit()
 {
     if (!m_szTitle.empty())
         SetInfo(m_szTitle.c_str());
+    
+    UpdateLanguage(); // HACK: Child widgets are created before this is called and before language is selected 
 }
 
 void CCFGScreen::Activate()
@@ -960,7 +1006,9 @@ void CCFGScreen::Activate()
 
 void CCFGScreen::UpdateLanguage()
 {
-    // ...
+    debugline("UpLang\n");
+    for (unsigned u=0; u<m_LuaWidgets.size(); u++)
+        m_LuaWidgets[u]->UpdateLanguage();
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
@@ -969,7 +1017,8 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     
     if ((h + m_iStartY) < height())
     {
-        CLuaInputField *field = new CLuaInputField(this, m_iStartY, 1, width()-3, label, desc, val, max);
+        CLuaInputField *field = new CLuaInputField(this, m_iStartY, 1, h, width()-3, label, desc, val, max);
+        m_LuaWidgets.push_back(field);
         m_iStartY += (h + 1);
         return field;
     }
@@ -980,13 +1029,14 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     return m_pNextScreen->CreateInputField(label, desc, val, max);
 }
 
-CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::list<std::string> &l)
+CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
 {
     int h = CLuaCheckbox::CalcHeight(width()-3, desc, l);
     
     if ((h + m_iStartY) < height())
     {
-        CLuaCheckbox *box = new CLuaCheckbox(this, m_iStartY, 1, width()-3, desc, l);
+        CLuaCheckbox *box = new CLuaCheckbox(this, m_iStartY, 1, h, width()-3, desc, l);
+        m_LuaWidgets.push_back(box);
         m_iStartY += (h + 1);
         return box;
     }
@@ -997,13 +1047,14 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::list<s
     return m_pNextScreen->CreateCheckbox(desc, l);
 }
 
-CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::list<std::string> &l)
+CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
 {
     int h = CLuaRadioButton::CalcHeight(width()-3, desc, l);
     
     if ((h + m_iStartY) <= height())
     {
-        CLuaRadioButton *radio = new CLuaRadioButton(this, m_iStartY, 1, width()-3, desc, l);
+        CLuaRadioButton *radio = new CLuaRadioButton(this, m_iStartY, 1, h, width()-3, desc, l);
+        m_LuaWidgets.push_back(radio);
         m_iStartY += h;
         return radio;
     }
@@ -1021,6 +1072,7 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
     if ((h + m_iStartY) <= height())
     {
         CLuaDirSelector *sel = AddChild(new CLuaDirSelector(this, m_iStartY, 1, h, width()-3, desc, val));
+        m_LuaWidgets.push_back(sel);
         m_iStartY += h;
         return sel;
     }
@@ -1038,6 +1090,7 @@ CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
     if ((h + m_iStartY) <= height())
     {
         CLuaCFGMenu *menu = AddChild(new CLuaCFGMenu(this, m_iStartY, 1, h, width()-3, desc));
+        m_LuaWidgets.push_back(menu);
         m_iStartY += h;
         return menu;
     }

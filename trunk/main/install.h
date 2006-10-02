@@ -209,8 +209,8 @@ public:
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
                                                    int max) = 0;
-    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::list<std::string> &l) = 0;
-    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::list<std::string> &l) = 0;
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) = 0;
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) = 0;
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) = 0;
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) = 0;
     

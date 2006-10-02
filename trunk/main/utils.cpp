@@ -344,7 +344,7 @@ mode_t StrToMode(const char *str)
     return octal_value;
 }
 
-std::string GetTranslation(std::string &s)
+std::string GetTranslation(const std::string &s)
 {
     std::map<std::string, char *>::iterator p = Translations.find(s);
     if (p != Translations.end())

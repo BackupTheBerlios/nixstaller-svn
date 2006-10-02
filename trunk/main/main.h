@@ -117,7 +117,7 @@ std::string GetMD5(const std::string &file);
 mode_t StrToMode(const char *str);
 unsigned StrFindInRange(const std::string &src, const std::string &findstr, unsigned pos, unsigned n);
 unsigned StrFindInRange(const std::string &src, const char *findstr, unsigned pos, unsigned n);
-std::string GetTranslation(std::string &s);
+std::string GetTranslation(const std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 
