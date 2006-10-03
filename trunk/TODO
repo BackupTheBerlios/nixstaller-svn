@@ -12,6 +12,7 @@ OVERALL
 - bsdiff support 
 - Alternative way to see which archivetype is used in startupinstaller.sh
 - Use deque/vector instead of list?
+- Add new strings to translation files
 
 MAIN
 - Better error handling for register
@@ -27,9 +28,8 @@ NCURSES FRONTEND
 - Error handling in file manager
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))
 - Throw exception when lua widget doesn't fit on new screen
-- Translations(UpdateLang() func for every install screen, button bar)
-- Buttonbar
 - File manager should check if dir exist?
+- Counter for spread lua install screens
 
 FLTK FRONTEND
 - Translate password dialog

@@ -175,7 +175,7 @@ public:
 class CLuaCheckbox: public CBaseLuaCheckbox, public CBaseLuaWidget
 {
     CCheckbox *m_pCheckbox;
-    const std::vector<std::string> &m_Options;
+    const std::vector<std::string> m_Options;
     
 protected:
     virtual void CreateInit(void);
@@ -194,7 +194,7 @@ public:
 class CLuaRadioButton: public CBaseLuaRadioButton, public CBaseLuaWidget
 {
     CRadioButton *m_pRadioButton;
-    const std::vector<std::string> &m_Options;
+    std::vector<std::string> m_Options;
     
 protected:
     virtual void CreateInit(void);
@@ -257,7 +257,7 @@ public:
 
 class CBaseScreen: public CWidgetWindow
 {
-    bool m_bNeedDrawInit;
+    bool m_bPostInit;
     
     friend class CInstaller;
     
@@ -267,11 +267,13 @@ protected:
 
     CBaseScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                 int begin_x) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, 'r'),
-                               m_bNeedDrawInit(true), m_pInstaller(owner) { SetBox(false); erase(); };
+                               m_bPostInit(true), m_pInstaller(owner) { SetBox(false); erase(); };
                                
-    virtual void DrawInit(void) = 0;
-
     void SetInfo(const char *text);
+    
+    // This is called when the screen is drawn for the first time. Mainly used if screen needs to init stuff using config
+    // variabeles.
+    virtual void PostInit(void) { };
 
 public:
     virtual ~CBaseScreen(void) { };
@@ -288,8 +290,9 @@ class CLangScreen: public CBaseScreen
     CMenu *m_pLangMenu;
     
 protected:
-    virtual void DrawInit(void);
-    
+    virtual void CreateInit(void);
+    virtual void PostInit(void);
+
 public:
     CLangScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                 int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
@@ -304,7 +307,8 @@ class CWelcomeScreen: public CBaseScreen
 
 protected:
     virtual bool HandleKey(chtype ch);
-    virtual void DrawInit(void);
+    virtual void CreateInit(void);
+    virtual void PostInit(void);
 
 public:
     CWelcomeScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
@@ -321,7 +325,8 @@ class CLicenseScreen: public CBaseScreen
 
 protected:
     virtual bool HandleKey(chtype ch);
-    virtual void DrawInit(void);
+    virtual void CreateInit(void);
+    virtual void PostInit(void);
 
 public:
     CLicenseScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
@@ -339,7 +344,8 @@ class CSelectDirScreen: public CBaseScreen
     
 protected:
     virtual bool HandleEvent(CWidgetHandler *p, int type);
-    virtual void DrawInit(void);
+    virtual void CreateInit(void);
+    virtual void PostInit(void);
 
 public:
     CSelectDirScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
@@ -357,7 +363,7 @@ class CInstallScreen: public CBaseScreen
     
 protected:
     virtual bool HandleKey(chtype ch);
-    virtual void DrawInit(void);
+    virtual void CreateInit(void);
     
 public:
     CInstallScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
@@ -378,7 +384,8 @@ class CFinishScreen: public CBaseScreen
 
 protected:
     virtual bool HandleKey(chtype ch);
-    virtual void DrawInit(void);
+    virtual void CreateInit(void);
+    virtual void PostInit(void);
 
 public:
     CFinishScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
@@ -394,17 +401,18 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     int m_iStartY;
     CCFGScreen *m_pNextScreen; 
     std::vector<CBaseLuaWidget *> m_LuaWidgets;
+    int m_iLinkedScrNr, m_iLinkedScrMax;
+    
     friend class CInstaller;
     
 protected:
     virtual bool HandleKey(chtype ch);
-    virtual void DrawInit(void);
+    virtual void CreateInit(void);
 
 public:
-    CCFGScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
-               int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x), m_iStartY(2), m_pNextScreen(NULL) { };
-    
-    void SetTitle(const char *s) { m_szTitle = s; };
+    CCFGScreen(CInstaller *owner, int nlines, int ncols, int begin_y, int begin_x,
+               const std::string &title) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x), m_szTitle(title), m_iStartY(2),
+                                           m_pNextScreen(NULL), m_iLinkedScrNr(0), m_iLinkedScrMax(0) { };
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
@@ -414,6 +422,9 @@ public:
     
     virtual void Activate(void);
     virtual void UpdateLanguage(void);
+    
+    // Incase this is a linked screen from a spreaded screen these values will be used to display current and max spreaded screen
+    void SetCounter(int n, int max) { m_iLinkedScrNr = n; m_iLinkedScrMax = max; };
 };
 
 extern CWidgetManager *pWidgetManager;
