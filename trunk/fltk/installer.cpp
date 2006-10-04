@@ -38,11 +38,31 @@
 // Main installer screen
 // -------------------------------------
 
-bool CInstaller::Init(int argc, char **argv)
+bool CInstaller::InitLua()
 {
-    if (!CBaseInstall::Init(argc, argv))
+    m_LuaVM.InitClass("welcomescreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pWelcomeScreen, "welcomescreen", "WelcomeScreen");
+    
+    m_LuaVM.InitClass("licensescreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pLicenseScreen, "licensescreen", "LicenseScreen");
+
+    m_LuaVM.InitClass("selectdirscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pSelectDirScreen, "selectdirscreen", "SelectDirScreen");
+
+    m_LuaVM.InitClass("installscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pInstallFilesScreen, "installscreen", "InstallScreen");
+    
+    m_LuaVM.InitClass("finishscreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pFinishScreen, "finishscreen", "FinishScreen");
+    
+    if (!CBaseInstall::InitLua())
         return false;
     
+    return true;
+}
+
+bool CInstaller::Init(int argc, char **argv)
+{
     // Lazy but handy macro :)
     #define MCreateWidget(w) { widget = new w(this); \
                                group = widget->Create(); \
@@ -62,10 +82,60 @@ bool CInstaller::Init(int argc, char **argv)
     m_pAboutButton->labelsize(10);
     m_pAboutButton->callback(ShowAboutCB, this);
 
+    m_pWelcomeScreen = new CWelcomeScreen(this);
+    m_pLicenseScreen = new CLicenseScreen(this);
+    m_pSelectDirScreen = new CSelectDirScreen(this);
+    m_pInstallFilesScreen = new CInstallFilesScreen(this);
+    m_pFinishScreen = new CFinishScreen(this);
+    
+    if (!CBaseInstall::Init(argc, argv))
+        return false;
+
     m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
-    CBaseScreen *widget;
     Fl_Group *group;
+
+    CBaseScreen *lang = new CLangScreen(this);
+    if ((group = lang->Create()))
+    {
+        m_pWizard->add(group);
+        m_ScreenList.push_back(lang);
+    }
+    
+    // Default screens
+    {
+        if ((group = m_pWelcomeScreen->Create()))
+        {
+            m_pWizard->add(group);
+            m_ScreenList.push_back(m_pWelcomeScreen);
+        }
+        
+        if ((group = m_pLicenseScreen->Create()))
+        {
+            m_pWizard->add(group);
+            m_ScreenList.push_back(m_pLicenseScreen);
+        }
+
+        if ((group = m_pSelectDirScreen->Create()))
+        {
+            m_pWizard->add(group);
+            m_ScreenList.push_back(m_pSelectDirScreen);
+        }
+
+        if ((group = m_pInstallFilesScreen->Create()))
+        {
+            m_pWizard->add(group);
+            m_ScreenList.push_back(m_pInstallFilesScreen);
+        }
+
+        if ((group = m_pFinishScreen->Create()))
+        {
+            m_pWizard->add(group);
+            m_ScreenList.push_back(m_pFinishScreen);
+        }
+    }
+    
+/*    CBaseScreen *widget;
     
     MCreateWidget(CLangScreen);
     MCreateWidget(CWelcomeScreen);
@@ -83,7 +153,7 @@ bool CInstaller::Init(int argc, char **argv)
     m_pWizard->add(m_pInstallFilesScreen->Create());
     m_ScreenList.push_back(m_pInstallFilesScreen);
     
-    MCreateWidget(CFinishScreen);
+    MCreateWidget(CFinishScreen);*/
     
     if (!m_ScreenList.front()->Activate())
         Next();
@@ -157,6 +227,11 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
     
     if (fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL))
         EndProg();
+}
+
+CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
+{
+    return new CCFGScreen(this, title);
 }
 
 void CInstaller::Prev()
@@ -692,4 +767,19 @@ bool CFinishScreen::Activate()
 
     m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
     return true;
+}
+
+// -------------------------------------
+// Lua config screen
+// -------------------------------------
+
+Fl_Group *CCFGScreen::Create()
+{
+    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pGroup->begin();
+
+    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "UNDONE");
+    
+    m_pGroup->end();
+    return m_pGroup;
 }

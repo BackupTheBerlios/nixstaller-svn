@@ -117,12 +117,20 @@ public:
     static void ShowAboutCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(true); };
 };
 
+class CWelcomeScreen;
+class CLicenseScreen;
+class CSelectDirScreen;
 class CInstallFilesScreen;
+class CFinishScreen;
 
 class CInstaller: public CFLTKBase, public CBaseInstall
 {
     Fl_Wizard *m_pWizard;
-    CInstallFilesScreen *m_pInstallFilesScreen; // We need this for updating stats while installing
+    CWelcomeScreen *m_pWelcomeScreen;
+    CLicenseScreen *m_pLicenseScreen;
+    CSelectDirScreen *m_pSelectDirScreen;
+    CInstallFilesScreen *m_pInstallFilesScreen;
+    CFinishScreen *m_pFinishScreen;
     std::list<CBaseScreen *> m_ScreenList;
     
 protected:
@@ -139,10 +147,11 @@ public:
     CInstaller(void) : m_bInstallFiles(false) { };
     virtual ~CInstaller(void);
 
+    virtual bool InitLua(void);
     virtual bool Init(int argc, char **argv);
     virtual void Install(void);
     virtual void UpdateLanguage(void);
-    virtual CBaseCFGScreen *CreateCFGScreen(const char *title) { };
+    virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
     
     void Prev(void);
     void Next(void);
@@ -339,6 +348,25 @@ public:
     virtual bool Activate(void);
 };
 
+class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
+{
+    Fl_Box *m_pBoxTitle;
+    int m_iStartY;
+    CCFGScreen *m_pNextScreen; 
+//     std::vector<CBaseLuaWidget *> m_LuaWidgets;
+    int m_iLinkedScrNr, m_iLinkedScrMax;
+    
+public:
+    CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner) { };
+
+    virtual Fl_Group *Create(void);
+    
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max) { };
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) { };
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) { };
+    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) { };
+    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) { };
+};
 
 // -------------------------
 // AppManager classes

@@ -43,6 +43,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <limits>
 
 enum EArchiveType { ARCH_GZIP, ARCH_BZIP2, ARCH_LZMA };
 enum ENeedRoot { NO_ROOT, NEED_ROOT, DEPENDED_ROOT };

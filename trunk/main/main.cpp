@@ -34,7 +34,6 @@
 
 #include <fstream>
 #include <sstream>
-#include <limits>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>

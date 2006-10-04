@@ -356,6 +356,7 @@ void CInstaller::UpdateLanguage()
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
         (*it)->UpdateLanguage();
 }
+
 void CInstaller::Install()
 {
     m_pPrevButton->Enable(false);

@@ -129,6 +129,7 @@ def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "
     return ret
 
 def CheckLinkedLibVersion(context, libname, optlibs=""):
+    libname = "lib" + libname
     context.Message('Checking which library version is used for %s...' % libname)
     reallibname = ''
     lastLIBS = context.env['LIBS']
@@ -159,6 +160,15 @@ int main(int argc, char **argv) {
             if ind == -1:
                 context.Result("None")
             
+            reallibname = reallibname[ind+1:].strip()
+        elif cur_os == "openbsd":
+            # OpenBSD's ldd puts the library name in the last column
+            
+            try:
+                ind = reallibname.rfind("/")
+            except:
+                ind = 0
+
             reallibname = reallibname[ind+1:].strip()
         else:
             try:
