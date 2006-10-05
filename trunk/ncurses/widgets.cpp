@@ -2304,7 +2304,8 @@ void CButtonBar::Draw()
     {
         m_bDirty = false;
 
-        resize(2, width()); // Resize to max height
+        if (height() != 2)
+            resize(2, width()); // Resize to max height
         
         Clear();
         
@@ -2314,11 +2315,14 @@ void CButtonBar::Draw()
                 m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", GetTranslation(it->button), GetTranslation(it->desc)));
         }
         
-        resize(m_pButtonText->height(), width());
-        mvwin(RawMaxY()-m_pButtonText->height(), 0);
-        
-        ::erase();
-        m_pWidgetManager->Refresh();
+        if (height() != m_pButtonText->height())
+        {
+            resize(m_pButtonText->height(), width());
+            mvwin(RawMaxY()-m_pButtonText->height(), 0);
+            
+            ::erase();
+            m_pWidgetManager->Refresh();
+        }
     }
 }
 

@@ -605,7 +605,7 @@ CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx,
 
 void CLuaCFGMenu::CreateInit()
 {
-    CWidgetWindow::CreateInit();
+    CBaseLuaWidget::CreateInit();
     
     int begy = DescHeight();
     const int menuw = 20;
@@ -1075,7 +1075,7 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
 {
     int h = CLuaInputField::CalcHeight(width()-3, desc);
     
-    if ((h + m_iStartY) < height())
+    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
     {
         CLuaInputField *field = AddChild(new CLuaInputField(this, m_iStartY, 1, h, width()-3, label, desc, val, max));
         m_LuaWidgets.push_back(field);
@@ -1093,7 +1093,7 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector
 {
     int h = CLuaCheckbox::CalcHeight(width()-3, desc, l);
     
-    if ((h + m_iStartY) < height())
+    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
     {
         CLuaCheckbox *box = AddChild(new CLuaCheckbox(this, m_iStartY, 1, h, width()-3, desc, l));
         m_LuaWidgets.push_back(box);
@@ -1111,11 +1111,11 @@ CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::
 {
     int h = CLuaRadioButton::CalcHeight(width()-3, desc, l);
     
-    if ((h + m_iStartY) <= height())
+    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
     {
         CLuaRadioButton *radio = AddChild(new CLuaRadioButton(this, m_iStartY, 1, h, width()-3, desc, l));
         m_LuaWidgets.push_back(radio);
-        m_iStartY += h;
+        m_iStartY += (h + 1);
         return radio;
     }
     
@@ -1129,11 +1129,11 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
 {
     int h = CLuaDirSelector::CalcHeight(width()-3, desc);
     
-    if ((h + m_iStartY) <= height())
+    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
     {
         CLuaDirSelector *sel = AddChild(new CLuaDirSelector(this, m_iStartY, 1, h, width()-3, desc, val));
         m_LuaWidgets.push_back(sel);
-        m_iStartY += h;
+        m_iStartY += (h + 1);
         return sel;
     }
     
@@ -1147,11 +1147,11 @@ CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
 {
     int h = CLuaCFGMenu::CalcHeight(width()-3, desc);
     
-    if ((h + m_iStartY) <= height())
+    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
     {
         CLuaCFGMenu *menu = AddChild(new CLuaCFGMenu(this, m_iStartY, 1, h, width()-3, desc));
         m_LuaWidgets.push_back(menu);
-        m_iStartY += h;
+        m_iStartY += (h + 1);
         return menu;
     }
     
