@@ -102,8 +102,12 @@ bool CInstaller::Init(int argc, char **argv)
         m_ScreenList.push_back(lang);
     }
     
-    // Default screens
+    unsigned count = m_LuaVM.OpenArray("ScreenList");
+    
+    if (!count)
     {
+        // Default screens
+
         if ((group = m_pWelcomeScreen->Create()))
         {
             m_pWizard->add(group);
@@ -133,6 +137,74 @@ bool CInstaller::Init(int argc, char **argv)
             m_pWizard->add(group);
             m_ScreenList.push_back(m_pFinishScreen);
         }
+    }
+    else
+    {
+        for (unsigned u=1; u<=count; u++)
+        {
+            debugline("Adding screen..\n");
+            CBaseScreen *screen = NULL;
+            CBaseCFGScreen *cfgscreen = NULL;
+            if (m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "welcomescreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "licensescreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "selectdirscreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "installscreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "finishscreen") ||
+                m_LuaVM.GetArrayClass<CBaseCFGScreen *>(u, &cfgscreen, "cfgscreen"))
+            {
+                if (screen)
+                {
+                    if ((group = screen->Create()))
+                    {
+                        m_pWizard->add(group);
+                        m_ScreenList.push_back(screen);
+                    }
+                }
+                else if (cfgscreen)
+                {
+                    CCFGScreen *p = (CCFGScreen *)cfgscreen;
+                    
+                    if ((group = p->Create()))
+                    {
+                        m_pWizard->add(group);
+                        m_ScreenList.push_back(p);
+
+                        int cnt = 0;
+                        while (p)
+                        {
+                            p = p->m_pNextScreen;
+                            cnt++;
+                        }
+                        
+                        p = (CCFGScreen *)cfgscreen;
+                        
+                        if (cnt > 1)
+                            p->SetCounter(1, cnt);
+    
+                        p = p->m_pNextScreen;
+                        int cur = 2; // We start at first linked screen
+    
+                        while (p)
+                        {
+                            if (cnt > 1)
+                                p->SetCounter(cur, cnt);
+                            
+                            if ((group = p->Create()))
+                            {
+                                m_pWizard->add(group);
+                                m_ScreenList.push_back(p);
+                            }
+
+                            p = p->m_pNextScreen;
+                            cur++;
+                        }
+                    }
+                }
+            }
+            else
+                ThrowError(false, "Wrong type found in ScreenList variabale");
+        }
+        m_LuaVM.CloseArray();
     }
     
 /*    CBaseScreen *widget;
@@ -271,6 +343,80 @@ void CInstaller::Next()
             break;
         }
     }
+}
+
+// -------------------------------------
+// Base FLTK Lua Widget class
+// -------------------------------------
+
+CBaseLuaWidget::CBaseLuaWidget(int x, int y, int w, int h, const char *desc) : m_iStartX(x), m_iStartY(y), m_iWidth(w), m_iHeight(h), m_pBox(NULL)
+{
+    if (desc && *desc)
+        m_szDescription = desc;
+}
+
+Fl_Group *CBaseLuaWidget::Create()
+{
+    m_pGroup = new Fl_Group(m_iStartX, m_iStartY, m_iWidth, m_iHeight);
+    m_pGroup->begin();
+    
+    if (!m_szDescription.empty())
+    {
+        m_pBox = new Fl_Box(m_iStartX, m_iStartY, m_iWidth, 40, m_szDescription.c_str());
+/*        m_pBox = new Fl_Multiline_Output(m_iStartX, m_iStartY, m_iWidth, 40);
+        m_pBox->value(m_szDescription.c_str());
+        m_pBox->box(FL_NO_BOX);*/
+    }
+    
+    m_pGroup->end();
+    
+    return m_pGroup;
+}
+
+void CBaseLuaWidget::UpdateLanguage()
+{
+    if (m_pBox)
+        m_pBox->label(MakeCString(GetTranslation(m_szDescription)));
+}
+
+// -------------------------------------
+// Lua inputfield class
+// -------------------------------------
+
+CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc,
+                               const char *val, int max) : CBaseLuaWidget(x, y, w, h, desc), m_iMax(max)
+{
+    if (label && *label)
+        m_szLabel = label;
+    
+    if (val && *val)
+        m_szValue = val;
+}
+
+Fl_Group *CLuaInputField::Create()
+{
+    Fl_Group *group = CBaseLuaWidget::Create();
+    
+    m_pInput = new Fl_Input(group->x(), group->y() + DescHeight(), group->w(), 20, MakeCString(GetTranslation(m_szLabel)));
+    m_pInput->align(FL_ALIGN_LEFT);
+    
+    if (!m_szValue.empty())
+        m_pInput->value(m_szValue.c_str());
+}
+
+void CLuaInputField::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+    
+    m_pInput->label(MakeCString(GetTranslation(m_szLabel)));
+}
+
+int CLuaInputField::CalcHeight(int w, const char *desc)
+{
+    if (desc && *desc)
+        return 40;
+    
+    return 20;
 }
 
 // -------------------------------------
@@ -730,7 +876,7 @@ void CInstallFilesScreen::AppendText(const char *txt)
 
 void CInstallFilesScreen::ChangeStatusText(const char *txt)
 {
-    m_pDisplay->label(txt);
+    m_pDisplay->label(CreateText(txt));
     Fl::wait(0.0); // Update screen
 }
 
@@ -778,7 +924,9 @@ Fl_Group *CCFGScreen::Create()
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
-    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "UNDONE");
+    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 20, "UNDONE");
+    
+    (new CLuaInputField(60, 60, MAIN_WINDOW_W-90, MAIN_WINDOW_H-120, "Kello!", "Meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\neeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeh", "Har", 1024))->Create();
     
     m_pGroup->end();
     return m_pGroup;

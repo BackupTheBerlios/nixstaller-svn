@@ -161,6 +161,42 @@ public:
     static void WizNextCB(Fl_Widget *, void *p) { ((CInstaller *)p)->Next(); };
 };
 
+class CBaseLuaWidget
+{
+    std::string m_szDescription;
+    int m_iStartX, m_iStartY, m_iWidth, m_iHeight;
+    
+protected:
+    Fl_Group *m_pGroup;
+    Fl_Box *m_pBox;
+    
+    CBaseLuaWidget(int x, int y, int w, int h, const char *desc);
+    virtual ~CBaseLuaWidget(void) { };
+
+    virtual Fl_Group *Create(void);
+    
+    int DescHeight(void) { return (m_pBox) ? m_pBox->h() : 0; };
+
+public:
+    virtual void UpdateLanguage(void);
+};
+
+class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
+{
+    std::string m_szLabel, m_szValue;
+    Fl_Input *m_pInput;
+    int m_iMax;
+    
+public:
+    CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc, const char *val, int max);
+
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLanguage(void);
+    virtual const char *GetValue(void) { return m_pInput->value(); };
+
+    static int CalcHeight(int w, const char *desc);
+};
+
 class CAppManager: public CFLTKBase, public CBaseAppManager
 {
     Fl_Button *m_pUninstallButton, *m_pExitButton;
@@ -353,11 +389,13 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     Fl_Box *m_pBoxTitle;
     int m_iStartY;
     CCFGScreen *m_pNextScreen; 
-//     std::vector<CBaseLuaWidget *> m_LuaWidgets;
+    std::vector<CBaseLuaWidget *> m_LuaWidgets;
     int m_iLinkedScrNr, m_iLinkedScrMax;
     
+    friend class CInstaller;
+    
 public:
-    CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner) { };
+    CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner), m_pNextScreen(NULL) { };
 
     virtual Fl_Group *Create(void);
     
@@ -366,6 +404,8 @@ public:
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) { };
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) { };
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) { };
+    
+    void SetCounter(int n, int max) { };
 };
 
 // -------------------------
