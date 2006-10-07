@@ -210,7 +210,7 @@ libc_ver = ''
 libstdcpp_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', 'include/', 'include/ncurses', 'include/lua', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
+env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua'])
 
 # Current version
 curnixstversion = '0.2'
