@@ -30,6 +30,7 @@ NCURSES FRONTEND
 - Throw exception when lua widget doesn't fit on new screen
 - File manager should check if dir exist?
 - Counter for spread lua install screens
+- Use ncurses with termcap fallback for freebsd
 
 FLTK FRONTEND
 - Translate password dialog

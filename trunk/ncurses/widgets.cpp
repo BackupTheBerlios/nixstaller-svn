@@ -168,25 +168,12 @@ void CWidgetHandler::_AddChild(CWidgetWindow *p)
     assert(this == p->m_pOwner);
     
     p->CreateInit();
-
-    // Try to focus this widget
-    if (m_FocusedChild != m_ChildList.end())
-    {
-        if (p->CanFocus() && p->Enabled() && (*m_FocusedChild)->CanFocus())
-            (*m_FocusedChild)->LeaveFocus();
-    }
     
     m_ChildList.push_back(p);
-    
     if (p->CanFocus() && p->Enabled())
     {
-        m_FocusedChild = m_ChildList.end();
-        m_FocusedChild--;
-        
-        // HACK: Child widgets were focused before parent, so bbar is not in the right order. By refocusing all the child
-        // widgets leave focus and get focus in the right order.
-        p->LeaveFocus();
-        p->Focus();
+        m_NeedFocChild = m_ChildList.end();
+        m_NeedFocChild--;
     }
 }
 
@@ -222,6 +209,7 @@ void CWidgetHandler::ActivateChild(CWidgetWindow *p)
         assert(m_FocusedChild != m_ChildList.end());
         p->Focus();
     }
+    m_NeedFocChild = m_ChildList.end();
 }
 
 void CWidgetHandler::Enable(bool e)
@@ -312,6 +300,33 @@ void CWidgetManager::Refresh()
     {
         if ((*it)->Enabled() && !(*it)->m_bDeleteMe)
             (*it)->refresh();
+    }
+}
+
+void CWidgetManager::_AddChild(CWidgetWindow *p)
+{
+    CWidgetHandler::_AddChild(p);
+    
+    if (m_NeedFocChild != m_ChildList.end())
+    {
+        std::list<CWidgetWindow *>::iterator it = m_NeedFocChild;
+        m_NeedFocChild = m_ChildList.end(); // refresh maybe called again before if loop has finished
+        
+        if (m_FocusedChild != m_ChildList.end())
+        {
+            if ((*it)->CanFocus() && (*it)->Enabled() && (*m_FocusedChild)->CanFocus())
+                (*m_FocusedChild)->LeaveFocus();
+        }
+        
+        if ((*it)->Enabled())
+        {
+            m_FocusedChild = it;
+            
+            // HACK: Child widgets were focused before parent, so bbar is not in the right order. By refocusing all the child
+            // widgets leave focus and get focus in the right order.
+//             p->LeaveFocus();
+            (*it)->Focus();
+        }
     }
 }
 
@@ -1150,7 +1165,7 @@ int CWidgetWindow::m_iCursorX = -1;
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x, bool box, bool canfocus,
                              chtype fcolor, chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                               NCursesWindow(nlines, ncols, begin_y, begin_x),
-                                                              m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0),
+                                                              m_bBox(box), m_bInitialized(false), m_bFocusing(false), m_sCurColor(0), m_cLLCorner(0),
                                                               m_cLRCorner(0), m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
@@ -1160,7 +1175,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
                              bool box, bool canfocus, chtype fcolor,
                              chtype dfcolor) : CWidgetHandler(owner, canfocus),
                                                NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
-                                               m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
+                                               m_bBox(box), m_bInitialized(false), m_bFocusing(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
                                                m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(fcolor, dfcolor);
@@ -1168,7 +1183,7 @@ CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int be
 
 CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int begin_y, int begin_x,
                              bool box) : CWidgetHandler(owner), NCursesWindow(nlines, ncols, begin_y, begin_x),
-                                         m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0),
+                                         m_bBox(box), m_bInitialized(false), m_bFocusing(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0), m_cULCorner(0),
                                          m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
@@ -1177,7 +1192,7 @@ CWidgetWindow::CWidgetWindow(CWidgetManager *owner, int nlines, int ncols, int b
 CWidgetWindow::CWidgetWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
                              bool box) : CWidgetHandler(owner),
                                          NCursesWindow(*owner, nlines, ncols, begin_y, begin_x, absrel),
-                                         m_bBox(box), m_bInitialized(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
+                                         m_bBox(box), m_bInitialized(false), m_bFocusing(false), m_sCurColor(0), m_cLLCorner(0), m_cLRCorner(0),
                                          m_cULCorner(0), m_cURCorner(0)
 {
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
@@ -1215,7 +1230,11 @@ void CWidgetWindow::PopBBar()
 
 void CWidgetWindow::Focus()
 {
-    // Don't add bbar when widget couldn't focus
+    if (m_bFocusing) // HACK: When the buttonbar is push'ed it refreshes the whole screen and might therefore call Focus of this widget again
+        return;
+    
+    m_bFocusing = true;
+    
     if (!Focused())
         PushBBar();
 
@@ -1228,6 +1247,8 @@ void CWidgetWindow::Focus()
     // HACK: If widget couldn't focus pop bbar
     if (!Focused())
         PopBBar();
+    
+    m_bFocusing = false;
 }
 
 void CWidgetWindow::LeaveFocus()
@@ -1247,6 +1268,28 @@ int CWidgetWindow::refresh()
         return 0;
     
     assert(m_bInitialized);
+
+    if (m_NeedFocChild != m_ChildList.end())
+    {
+        std::list<CWidgetWindow *>::iterator it = m_NeedFocChild;
+        m_NeedFocChild = m_ChildList.end(); // refresh maybe called again before if loop has finished
+        
+        if (m_FocusedChild != m_ChildList.end())
+        {
+            if ((*it)->CanFocus() && (*it)->Enabled() && (*m_FocusedChild)->CanFocus())
+                (*m_FocusedChild)->LeaveFocus();
+        }
+        
+        if ((*it)->Enabled())
+        {
+            m_FocusedChild = it;
+            
+            // HACK: Child widgets were focused before parent, so bbar is not in the right order. By refocusing all the child
+            // widgets leave focus and get focus in the right order.
+//             p->LeaveFocus();
+            (*it)->Focus();
+        }
+    }
 
     Draw();
 
@@ -2315,7 +2358,7 @@ void CButtonBar::Draw()
                 m_pButtonText->AddText(CreateText("%s: <col=7:1>%s</col> ", GetTranslation(it->button), GetTranslation(it->desc)));
         }
         
-        if (height() != m_pButtonText->height())
+//         if (height() != m_pButtonText->height())
         {
             resize(m_pButtonText->height(), width());
             mvwin(RawMaxY()-m_pButtonText->height(), 0);
@@ -2328,6 +2371,7 @@ void CButtonBar::Draw()
 
 void CButtonBar::Push()
 {
+    debugline("Cur BBar size: %u\n", m_ButtonTexts.size());
     m_ButtonTexts.push_back(TButtonList());
     
     // Check for global buttons
@@ -2396,6 +2440,7 @@ void CButtonBar::Pop()
 {
     if (!m_ButtonTexts.empty())
     {
+        debugline("Cur BBar size: %u\n", m_ButtonTexts.size());
         debugline("Pop:");
         for (TButtonList::iterator it=m_ButtonTexts.back().begin(); it!=m_ButtonTexts.back().end(); it++)
             debugline("%s: %s ", it->button, it->desc);

@@ -60,7 +60,7 @@ protected:
     bool m_bDeleteMe; // Delete it later, incase we are in a loop from ie Run()
 
     std::list<CWidgetWindow *> m_ChildList;
-    std::list<CWidgetWindow *>::iterator m_FocusedChild;
+    std::list<CWidgetWindow *>::iterator m_FocusedChild, m_NeedFocChild;
 
     bool SetNextWidget(bool rec=true); // rec(ursive): If the next widget of all child widgets should be enabled 
     bool SetPrevWidget(bool rec=true);
@@ -75,7 +75,7 @@ protected:
     CWidgetHandler(CWidgetHandler *owner, bool canfocus=true) : m_bEnabled(true), m_bFocused(false),
                                                                 m_bCanFocus(canfocus), m_pBoundKeyWidget(NULL),
                                                                 m_pOwner(owner), m_bDeleteMe(false),
-                                                                m_FocusedChild(m_ChildList.end()) { };
+                                                                m_FocusedChild(m_ChildList.end()), m_NeedFocChild(m_ChildList.end()) { };
 
 public:
     enum { EVENT_CALLBACK, EVENT_DATACHANGED };
@@ -84,7 +84,7 @@ public:
     
     // _AddChild will actually add the widget to the child list
     // AddChild is just a simple wrapper that will also return the added child
-    void _AddChild(CWidgetWindow *p);
+    virtual void _AddChild(CWidgetWindow *p);
     template <typename C> C AddChild(C p)
     {
         _AddChild(p);
@@ -122,6 +122,8 @@ public:
     
     void Init(void);
     void Refresh(void);
+    
+    virtual void _AddChild(CWidgetWindow *p);
     virtual void RemoveChild(CWidgetWindow *p);
     virtual void ActivateChild(CWidgetWindow *p);
     
@@ -195,7 +197,7 @@ public:
     typedef std::map<int, std::map<int, int> > ColorMapType;
 
 private:
-    bool m_bBox, m_bInitialized;
+    bool m_bBox, m_bInitialized, m_bFocusing;
     short m_sCurColor; // Current color pair used in formatted text
     chtype m_cLLCorner, m_cLRCorner, m_cULCorner, m_cURCorner;
     chtype m_cFocusedColors, m_cDefocusedColors;
@@ -542,7 +544,7 @@ class CButtonBar: public CWidgetWindow
     std::list<TButtonList> m_ButtonTexts;
     CWidgetManager *m_pWidgetManager;
     bool m_bDirty; // True when button text has to be set
-    
+
 protected:
     virtual void CreateInit(void);
     virtual void Draw(void);

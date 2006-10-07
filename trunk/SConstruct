@@ -393,10 +393,6 @@ env.Prepend(LIBS = Split('main su lua'))
 if cur_os == 'netbsd':
     env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib'))
 
-# Builds ncurses frontend
-#ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurs.cpp ncurses/utils.cpp '
-#                       'ncurses/widgets.cpp'), LIBS=Split('$LIBS cdk ncurses'))
-
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
 
 # Builds fltk frontend
