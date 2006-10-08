@@ -88,10 +88,13 @@ bool CInstaller::Init(int argc, char **argv)
     m_pInstallFilesScreen = new CInstallFilesScreen(this);
     m_pFinishScreen = new CFinishScreen(this);
     
+    m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pWizard->end();
+
     if (!CBaseInstall::Init(argc, argv))
         return false;
 
-    m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+//     m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
     Fl_Group *group;
 
@@ -142,7 +145,6 @@ bool CInstaller::Init(int argc, char **argv)
     {
         for (unsigned u=1; u<=count; u++)
         {
-            debugline("Adding screen..\n");
             CBaseScreen *screen = NULL;
             CBaseCFGScreen *cfgscreen = NULL;
             if (m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "welcomescreen") ||
@@ -206,6 +208,8 @@ bool CInstaller::Init(int argc, char **argv)
         }
         m_LuaVM.CloseArray();
     }
+    
+    m_pWizard->end();
     
 /*    CBaseScreen *widget;
     
@@ -303,7 +307,9 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
 
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 {
-    return new CCFGScreen(this, title);
+    CCFGScreen *scr = new CCFGScreen(this, title);
+    m_pWizard->add(scr->Create());
+    return scr;
 }
 
 void CInstaller::Prev()
@@ -355,18 +361,27 @@ CBaseLuaWidget::CBaseLuaWidget(int x, int y, int w, int h, const char *desc) : m
         m_szDescription = desc;
 }
 
+void CBaseLuaWidget::MakeTitle()
+{
+    if (m_szDescription.empty())
+        return;
+    
+    if (!m_pBox)
+    {
+        m_pBox = new Fl_Box(m_pGroup->x(), m_pGroup->y(), m_iWidth, TitleHeight(m_iWidth, m_szDescription.c_str()), MakeCString(m_szDescription));
+        m_pBox->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_WRAP);
+    }
+    else
+        m_pBox->label(MakeCString(m_szDescription));
+}
+
 Fl_Group *CBaseLuaWidget::Create()
 {
     m_pGroup = new Fl_Group(m_iStartX, m_iStartY, m_iWidth, m_iHeight);
     m_pGroup->begin();
     
     if (!m_szDescription.empty())
-    {
-        m_pBox = new Fl_Box(m_iStartX, m_iStartY, m_iWidth, 40, m_szDescription.c_str());
-/*        m_pBox = new Fl_Multiline_Output(m_iStartX, m_iStartY, m_iWidth, 40);
-        m_pBox->value(m_szDescription.c_str());
-        m_pBox->box(FL_NO_BOX);*/
-    }
+        MakeTitle();
     
     m_pGroup->end();
     
@@ -375,13 +390,27 @@ Fl_Group *CBaseLuaWidget::Create()
 
 void CBaseLuaWidget::UpdateLanguage()
 {
-    if (m_pBox)
-        m_pBox->label(MakeCString(GetTranslation(m_szDescription)));
+    MakeTitle();
+}
+
+int CBaseLuaWidget::TitleHeight(int w, const char *desc)
+{
+    if (desc && *desc)
+    {
+        if (fl_width(desc) > w)
+            return 40; // We allow max 2 lines UNDONE ?
+        else
+            return 20;
+    }
+    
+    return 0;
 }
 
 // -------------------------------------
 // Lua inputfield class
 // -------------------------------------
+
+int CLuaInputField::m_iFieldHeight = 20;
 
 CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc,
                                const char *val, int max) : CBaseLuaWidget(x, y, w, h, desc), m_iMax(max)
@@ -397,11 +426,13 @@ Fl_Group *CLuaInputField::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
     
-    m_pInput = new Fl_Input(group->x(), group->y() + DescHeight(), group->w(), 20, MakeCString(GetTranslation(m_szLabel)));
+    group->add(m_pInput = new Fl_Input(group->x(), group->y() + DescHeight(), group->w(), m_iFieldHeight, MakeCString(GetTranslation(m_szLabel))));
     m_pInput->align(FL_ALIGN_LEFT);
     
     if (!m_szValue.empty())
         m_pInput->value(m_szValue.c_str());
+    
+    return group;
 }
 
 void CLuaInputField::UpdateLanguage()
@@ -413,10 +444,53 @@ void CLuaInputField::UpdateLanguage()
 
 int CLuaInputField::CalcHeight(int w, const char *desc)
 {
-    if (desc && *desc)
-        return 40;
+    return m_iFieldHeight + TitleHeight(w, desc);
+}
+
+// -------------------------------------
+// Lua checkbox class
+// -------------------------------------
+
+int CLuaCheckbox::m_iButtonHeight = 20;
+int CLuaCheckbox::m_iButtonSpace = 10;
+
+CLuaCheckbox::CLuaCheckbox(int x, int y, int w, int h, const char *desc,
+                           const std::vector<std::string> &l) : CBaseLuaWidget(x, y, w, h, desc), m_Options(l)
+{
+}
+
+Fl_Group *CLuaCheckbox::Create()
+{
+    Fl_Group *group = CBaseLuaWidget::Create();
+    int y = group->y() + DescHeight(), w = 0;
     
-    return 20;
+    // Find longest text
+    for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
+        w = Max(w, fl_width(it->c_str()));
+
+    for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
+    {
+        Fl_Check_Button *button = new Fl_Check_Button(group->x(), y, 60, m_iButtonHeight, MakeCString(*it));
+        button->type(FL_TOGGLE_BUTTON);
+        m_Buttons.push_back(button);
+        group->add(button);
+        y += (m_iButtonHeight + m_iButtonSpace);
+    }
+    
+    return group;
+}
+
+void CLuaCheckbox::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+}
+
+int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
+{
+    if (!l.empty())
+        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc);
+    else
+        return TitleHeight(w, desc);
 }
 
 // -------------------------------------
@@ -921,13 +995,56 @@ bool CFinishScreen::Activate()
 
 Fl_Group *CCFGScreen::Create()
 {
+    if (m_pGroup)
+        return m_pGroup;
+    
     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     m_pGroup->begin();
 
-    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 20, "UNDONE");
+    m_iStartY = 60;
     
-    (new CLuaInputField(60, 60, MAIN_WINDOW_W-90, MAIN_WINDOW_H-120, "Kello!", "Meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\neeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeh", "Har", 1024))->Create();
+    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 20, "UNDONE");
     
     m_pGroup->end();
     return m_pGroup;
+}
+
+CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
+{
+    int h = CLuaInputField::CalcHeight(m_pGroup->w() - 80, desc);
+    
+    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    {
+        CLuaInputField *field = new CLuaInputField(60, m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max);
+        Fl_Group *group = field->Create();
+        if (group)
+            m_pGroup->add(group);
+        m_iStartY += (h + 10);
+        return field;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+    return m_pNextScreen->CreateInputField(label, desc, val, max);
+}
+
+CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
+{
+    int h = CLuaCheckbox::CalcHeight(m_pGroup->w() - 80, desc, l);
+    
+    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    {
+        CLuaCheckbox *box = new CLuaCheckbox(60, m_iStartY, m_pGroup->w()-80, h, desc, l);
+        Fl_Group *group = box->Create();
+        if (group)
+            m_pGroup->add(group);
+        m_iStartY += (h + 10);
+        return box;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+    return m_pNextScreen->CreateCheckbox(desc, l);
 }

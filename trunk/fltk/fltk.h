@@ -166,6 +166,8 @@ class CBaseLuaWidget
     std::string m_szDescription;
     int m_iStartX, m_iStartY, m_iWidth, m_iHeight;
     
+    void MakeTitle(void); // How many lines does the title use? (Max 2)
+    
 protected:
     Fl_Group *m_pGroup;
     Fl_Box *m_pBox;
@@ -176,6 +178,7 @@ protected:
     virtual Fl_Group *Create(void);
     
     int DescHeight(void) { return (m_pBox) ? m_pBox->h() : 0; };
+    static int TitleHeight(int w, const char *desc);
 
 public:
     virtual void UpdateLanguage(void);
@@ -186,6 +189,7 @@ class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
     std::string m_szLabel, m_szValue;
     Fl_Input *m_pInput;
     int m_iMax;
+    static int m_iFieldHeight;
     
 public:
     CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc, const char *val, int max);
@@ -195,6 +199,23 @@ public:
     virtual const char *GetValue(void) { return m_pInput->value(); };
 
     static int CalcHeight(int w, const char *desc);
+};
+
+class CLuaCheckbox: public CBaseLuaCheckbox, public CBaseLuaWidget
+{
+    const std::vector<std::string> m_Options;
+    std::vector<Fl_Check_Button *> m_Buttons;
+    static int m_iButtonHeight, m_iButtonSpace;
+    
+public:
+    CLuaCheckbox(int x, int y, int w, int h, const char *desc, const std::vector<std::string> &l);
+
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLanguage(void);
+    virtual bool Enabled(int n) { return m_Buttons[n-1]->value(); };
+    virtual void Enable(int n) { m_Buttons[n-1]->value(1); };
+
+    static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
 };
 
 class CAppManager: public CFLTKBase, public CBaseAppManager
@@ -242,7 +263,7 @@ public:
     CBaseScreen(CInstaller *owner) : m_pGroup(NULL), m_pOwner(owner) { };
     virtual ~CBaseScreen(void) { };
     
-    virtual Fl_Group *Create(void) = NULL;
+    virtual Fl_Group *Create(void) = 0;
     Fl_Group *GetGroup(void) const { return m_pGroup; };
     virtual void UpdateLang(void) { }; // Called after language is changed
     virtual bool Prev(void) { return true; };
@@ -399,8 +420,8 @@ public:
 
     virtual Fl_Group *Create(void);
     
-    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max) { };
-    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) { };
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) { };
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) { };
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) { };
