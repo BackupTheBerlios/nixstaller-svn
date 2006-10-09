@@ -51,6 +51,7 @@
 #include <FL/Fl_Text_Buffer.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Round_Button.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Output.H>
 #include <FL/Fl_Secret_Input.H>
@@ -212,8 +213,25 @@ public:
 
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
-    virtual bool Enabled(int n) { return m_Buttons[n-1]->value(); };
-    virtual void Enable(int n) { m_Buttons[n-1]->value(1); };
+    virtual bool Enabled(int n) { return m_Buttons.at(n-1)->value(); };
+    virtual void Enable(int n) { m_Buttons.at(n-1)->value(1); };
+
+    static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
+};
+
+class CLuaRadioButton: public CBaseLuaRadioButton, public CBaseLuaWidget
+{
+    const std::vector<std::string> m_Options;
+    std::vector<Fl_Round_Button *> m_Buttons;
+    static int m_iButtonHeight, m_iButtonSpace;
+    
+public:
+    CLuaRadioButton(int x, int y, int w, int h, const char *desc, const std::vector<std::string> &l);
+
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLanguage(void);
+    virtual int EnabledButton(void) { return m_Buttons.at(0)->value(); /* UNDONE */ };
+    virtual void Enable(int n) { m_Buttons.at(n-1)->value(1); };
 
     static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
 };
@@ -422,7 +440,7 @@ public:
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
-    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) { };
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) { };
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) { };
     

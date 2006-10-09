@@ -482,10 +482,56 @@ Fl_Group *CLuaCheckbox::Create()
 
 void CLuaCheckbox::UpdateLanguage()
 {
-    CBaseLuaWidget::UpdateLanguage();
+    CBaseLuaWidget::UpdateLanguage(); /* UNDONE */
 }
 
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
+{
+    if (!l.empty())
+        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc);
+    else
+        return TitleHeight(w, desc);
+}
+
+// -------------------------------------
+// Lua checkbox class
+// -------------------------------------
+
+int CLuaRadioButton::m_iButtonHeight = 20;
+int CLuaRadioButton::m_iButtonSpace = 10;
+
+CLuaRadioButton::CLuaRadioButton(int x, int y, int w, int h, const char *desc,
+                                 const std::vector<std::string> &l) : CBaseLuaWidget(x, y, w, h, desc), m_Options(l)
+{
+}
+
+Fl_Group *CLuaRadioButton::Create()
+{
+    Fl_Group *group = CBaseLuaWidget::Create();
+    int y = group->y() + DescHeight(), w = 0;
+    
+    // Find longest text
+    for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
+        w = Max(w, fl_width(it->c_str()));
+
+    for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
+    {
+        Fl_Round_Button *button = new Fl_Round_Button(group->x(), y, 60, m_iButtonHeight, MakeCString(*it));
+        button->type(FL_RADIO_BUTTON);
+        m_Buttons.push_back(button);
+        group->add(button);
+        y += (m_iButtonHeight + m_iButtonSpace);
+    }
+    
+    return group;
+}
+
+void CLuaRadioButton::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage(); /* UNDONE */
+}
+
+int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (!l.empty())
         return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc);
@@ -1047,4 +1093,24 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector
         m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
     
     return m_pNextScreen->CreateCheckbox(desc, l);
+}
+
+CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
+{
+    int h = CLuaRadioButton::CalcHeight(m_pGroup->w() - 80, desc, l);
+    
+    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    {
+        CLuaRadioButton *radio = new CLuaRadioButton(60, m_iStartY, m_pGroup->w()-80, h, desc, l);
+        Fl_Group *group = radio->Create();
+        if (group)
+            m_pGroup->add(group);
+        m_iStartY += (h + 10);
+        return radio;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+    return m_pNextScreen->CreateRadioButton(desc, l);
 }
