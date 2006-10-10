@@ -230,10 +230,32 @@ public:
 
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
-    virtual int EnabledButton(void) { return m_Buttons.at(0)->value(); /* UNDONE */ };
-    virtual void Enable(int n) { m_Buttons.at(n-1)->value(1); };
+    virtual int EnabledButton(void);
+    virtual void Enable(int n) { m_Buttons.at(n-1)->setonly(); };
 
     static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
+};
+
+class CLuaDirSelector: public CBaseLuaDirSelector, public CBaseLuaWidget
+{
+    std::string m_szValue;
+    Fl_Input *m_pDirInput;
+    Fl_Button *m_pDirButton;
+    Fl_File_Chooser *m_pDirChooser;
+    static int m_iFieldHeight, m_iButtonWidth;
+    
+    void OpenDirChooser(void);
+    
+public:
+    CLuaDirSelector(int x, int y, int w, int h, const char *desc, const char *val);
+
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLanguage(void);
+    virtual const char *GetDir(void) { return m_pDirInput->value(); };
+    virtual void SetDir(const char *dir) { m_pDirInput->value(dir); };
+
+    static int CalcHeight(int w, const char *desc);
+    static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CLuaDirSelector *)p)->OpenDirChooser(); };
 };
 
 class CAppManager: public CFLTKBase, public CBaseAppManager
@@ -390,7 +412,6 @@ public:
 
 class CInstallFilesScreen: public CBaseScreen
 {
-protected:
     Fl_Progress *m_pProgress;
     Fl_Text_Buffer *m_pBuffer;
     Fl_Text_Display *m_pDisplay;
@@ -437,11 +458,12 @@ public:
     CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner), m_pNextScreen(NULL) { };
 
     virtual Fl_Group *Create(void);
+    virtual void UpdateLang(void);
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l);
-    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) { };
+    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) { };
     
     void SetCounter(int n, int max) { };

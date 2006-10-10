@@ -212,7 +212,7 @@ public:
 
 class CLuaDirSelector: public CBaseLuaDirSelector, public CBaseLuaWidget
 {
-    std::string m_szDesc, m_szValue;
+    std::string m_szValue;
     CInputField *m_pDirInput;
     CButton *m_pDirButton;
     
