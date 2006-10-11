@@ -1,0 +1,105 @@
+<html>
+
+<head>
+  <title>About Nixstaller</title>
+</head>
+
+The project 'nixstaller' is about providing a way to easily create user friendly installers for UNIX content(mainly software) on UNIX like systems(currently only Linux, FreeBSD and NetBSD).<br>
+
+<p> <h2>Features</h2>
+Here is a list of most of the features Nixstaller currently has:
+
+<h3>Supported Operating Systems</h3>
+Currently Nixstaller is tested on the following systems:<br>
+<br>
+<table border="1">
+  <tbody>
+    <tr>
+      <th>OS</th>
+      <th>Arch</th>
+      <th>Tested on</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>NetBSD</td>
+      <td>x86</td>
+      <td>1.6.2, 2.02, 3.0</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>FreeBSD</td>
+      <td>x86</td>
+      <td>5.3, 6.0</td>
+      <td>FreeBSD 4.X doesn't work yet</td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td>x86</td>
+      <td>Kubuntu Breezy, Gentoo, Knoppix 3.3-2003-11-19</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Since almost anything is statically liked it's very likely that similar systems work as well.<br>
+Please contact me if you want to help me with porting to another architecture/OS.<br>
+<br>
+
+<h3>Frontends</h3>
+The frontends are simply programs which the user will get to see when they run the installer. Currently there are 2 graphical frontends used for the installer: the first is using <A href="http://www.fltk.org">FLTK</A> and the second <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> via
+<A href="http://invisible-island.net/cdk/">CDK</A><br>
+Qt and GTK2 frontends are planned for later versions.<br>
+<br>
+Each frontend has the following features:
+<ul>
+   <li>Can be translated(no UTF yet). Dutch and English translations are supplied by default</li>
+   <li>Screen where the user can choose the language</li>
+   <li>Optional intro screen with customizable image and text</li>
+   <li>Optional screen where a user have to accept a license agreement</li>
+   <li>Optional screen where the user has to select a destination directory</li>
+   <li>Optional screen where the user can set parameters used by installation commands</li>
+   <li>Installation progress screen</li>
+   <li>Optional screen which appears when the installation is done</li>
+</ul>
+<br>
+
+Most of the required libs for the frontends are linked statically, so users of the installer don't have to worry about any dependencies.<br>
+<br>
+
+<p> <h2>Configuration</h2>
+Ofcourse can nixstaller be configured;
+<ul>
+   <li> Can use either gzip or bzip2 to compress the files </li>
+   <li> You can specify which frontends you want to be included </li>
+   <li> A way to specify which frontends for which Operating Systems should be included </li>
+   <li> Extraction directory can be specified: Specified by the user, to a default directory(IE for binaries), temporary(IE for compiling the package) </li>
+   <li> A way to specify any shell commands that will be executed after the files are extracted. You can also specify the used parameters for each command(IE --prefix for './configure') so that the user can configure them before the installation begins. This feature is especially handy for compiling a package on the user's system. </li>
+ </ul>
+
+<p> <h2>How it works</h2>
+When creating the installer a self extractable archive will be created (powered by
+<A href="http://www.megastep.org/makeself/">makeself</A>). The only thing the user has to do is running this script, it then will do:
+<ul>
+   <li> Extract some required files for the graphical frontends(configuration file, translations, archive containing the files to be installed(this is not extracted before installation) etc). Default the files will go in a subdirectory on /tmp.  </li>
+   <li> Search for the right frontend(depending on which are included, if X is running etc). </li>
+   <li> Launch this frontend. </li>
+   <li> Clean the files used by the installer. </li>
+ </ul>
+
+
+<p> <h2>Requirements</h2>
+<p> <h3>The end user</h3>
+Additional libraries used by the frontends(such as ncurses, CDK, FLTK etc) are all linked statically. Some system libraries(libm, libc) or the X libraries are kept dynamic, since some functions need runtime support and these libraries don't change that often anyway.<br>
+This simply means that the end user hardly needs to worry about any dependencies.<br>
+Note that it's possible to supply different binaries for different OSes/architectures/libc's.<br>
+<br>
+
+<p> <h3>The install creator</h3>
+The same as the end user. All supported frontends are precompiled in the nixstaller package.<br>
+The scripts use plain SH, which should be available by default.<br>
+<br>
+
+<p> <h3>People who want to compile nixstaller</h3>
+If you want to build you will need at least SCons version 0.96.91 (which needs python) and in case you want to build the required libraries you need those as well. The <A href="http://nixstaller.berlios.de/viewpage.php?page_id=3">manual</A> has a section about compiling Nixstaller and where to get all the required libraries.<br>
+
+</html>

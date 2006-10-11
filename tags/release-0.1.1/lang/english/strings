@@ -1,0 +1,400 @@
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+Welcome
+Welcome
+
+License agreement
+License agreement
+
+Select destination directory
+Select destination directory
+
+Configure parameters
+Configure parameters
+
+Select a directory
+Select a directory
+
+Please enter new value
+Please enter new value
+
+Please choose new value
+Please choose new value
+
+Install output
+Install output
+
+Please read the following text
+Please read the following text
+
+Enter name of new directory
+Enter name of new directory
+
+Password dialog
+Password dialog
+
+
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+Next
+Next
+
+Back
+Back
+
+OK
+OK
+
+Cancel
+Cancel
+
+Yes
+Yes
+
+No
+No
+
+Agree
+Agree
+
+Decline
+Decline
+
+Open directory
+Open directory
+
+Select directory
+Select directory
+
+Exit
+Exit
+
+Edit parameter
+Edit parameter
+
+Continue
+Continue
+
+Finish
+Finish
+
+About
+About
+
+Continue as root
+Continue as root
+
+Choose another directory
+Choose another directory
+
+Close
+Close
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Default
+Default
+
+Current
+Current
+
+Description
+Description
+
+Enabled
+Enabled
+
+Disabled
+Disabled
+
+Enable
+Enable
+
+Disable
+Disable
+
+Status
+Status
+
+Extracting files
+Extracting files
+
+Progress
+Progress
+
+I Agree to this license agreement
+I Agree to this license agreement
+
+Parameters
+Parameters
+
+Value
+Value
+
+Change
+Change
+
+Password
+Password
+
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+[
+This will install %s to the following directory:
+%s
+Continue?
+]
+[
+This will install %s to the following directory:
+%s
+Continue?
+]
+
+[
+This will install %s
+Continue?
+]
+[
+This will install %s
+Continue?
+]
+
+Installation of %s complete!
+Installation of %s complete!
+
+[
+Install commands are still running
+If you abort now this may lead to a broken installation
+Are you sure?
+]
+[
+Install commands are still running
+If you abort now this may lead to a broken installation
+Are you sure?
+]
+
+[
+This will abort the installation
+Are you sure?
+]
+[
+This will abort the installation
+Are you sure?
+]
+
+[
+Root access is required to continue
+Abort installation?
+]
+[
+Root access is required to continue
+Abort installation?
+]
+
+[
+Incorrect password given for root user
+Please retype
+]
+[
+Incorrect password given for root user
+Please retype
+]
+
+[
+Directory does not exist
+Do you want to create it?
+]
+[
+Directory does not exist
+Do you want to create it?
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+
+[
+This installation requires root(administrator) privileges in order to continue
+Please enter the password of the root user
+]
+[
+This installation requires root(administrator) privileges in order to continue
+Please enter the password of the root user
+]
+
+
+#-----------------------------------------------
+# Button bar (ncurses only)
+#-----------------------------------------------
+
+TAB
+TAB
+
+ENTER
+ENTER
+
+ARROWS
+ARROWS
+
+ESC
+ESC
+
+Next button
+Next button
+
+Activate button
+Activate button
+
+Scroll text
+Scroll text
+
+Exit program
+Exit program
+
+Navigate menu
+Navigate menu
+
+Scroll install output
+Scroll install output
+
+Create directory
+Create directory
+
+#-----------------------------------------------
+# Error messages
+#-----------------------------------------------
+
+Error: %s
+Error: %s
+
+[
+Could not use su to gain root access
+Make sure you can use su(adding the current user to the wheel group may help)
+]
+[
+Could not use su to gain root access
+Make sure you can use su(adding the current user to the wheel group may help)
+]
+
+Could not create directory
+Could not create directory
+
+Could not change to directory
+Could not change to directory
+
+Could not read current directory
+Could not read current directory
+
+Could not open directory '%s'
+Could not open directory '%s'
+
+Could not read directory '%s'
+Could not read directory '%s'
+
+Could not read directory
+Could not read directory
+
+Could not init ncurses
+Could not init ncurses
+
+Could not init CDK
+Could not init CDK
+
+Could not load language file for %s
+Could not load language file for %s
+
+Error during extracting files
+Error during extracting files
+
+Failed to execute install command
+Failed to execute install command
+
+Could not execute installation commands (could not open pipe)
+Could not execute installation commands (could not open pipe)
+
+
+#-----------------------------------------------
+# Error messages for CDK widget creation
+#-----------------------------------------------
+
+Can't create text viewer
+Can't create text viewer
+
+Could not create text label
+Could not create text label
+
+Could not create button box
+Could not create button box
+
+Could not create scroll window
+Could not create scroll window
+
+Could not create alpha list
+Could not create alpha list
+
+Could not create dialog window
+Could not create dialog window
+
+Could not create window
+Could not create window
+
+Could not create input entry
+Could not create input entry
+
+Could not create histogram
+Could not create histogram
+
+Could not create button bar
+Could not create button bar
+
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Add to Favorites
+
+All Files (*)
+All Files (*)
+
+Custom Filter
+Custom Filter
+
+Favorites
+Favorites
+
+Filename:
+Filename:
+
+File Systems
+File Systems
+
+Manage Favorites
+Manage Favorites
+
+Show:
+Show:
+
+Create new directory
+Create new directory
+
+#-----------------------------------------------
+# Put your own translations here
+#-----------------------------------------------

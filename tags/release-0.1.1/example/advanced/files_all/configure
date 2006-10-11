@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Get value from --prefix arg
+PREFIX=`expr "x$1" : 'x[^=]*=\(.*\)'`
+
+echo "Checking if you're still alive...yes"
+echo "Checking if you're computer still works...yes"
+
+echo "Generating Makefile..."
+
+echo "default:" > Makefile
+echo "	g++ bar.cpp -o bar" >> Makefile
+echo
+echo "install:" >> Makefile
+echo "	cp bar $PREFIX" >> Makefile
+echo "	cp README $PREFIX" >> Makefile
+
+echo "Good! Now lets compile..."
