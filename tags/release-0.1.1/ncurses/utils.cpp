@@ -130,12 +130,6 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title, bool show
     if (lines == -1)
         return NO_FILE;
 
-    CDKVIEWER *Viewer = newCDKViewer(CDKScreen, CENTER, 2, GetDefaultHeight(), GetDefaultWidth(), buttons, buttoncount,
-                                     A_REVERSE, true, false);
-
-    if (Viewer == NULL)
-        throwerror(false, "Can't create text viewer");
-
     ButtonBar.Push();
     if (buttoncount > 1) ButtonBar.AddButton("TAB", "Next button");
     ButtonBar.AddButton("ENTER", "Activate button");
@@ -144,6 +138,12 @@ int ViewFile(char *file, char **buttons, int buttoncount, char *title, bool show
     if (showexit) ButtonBar.AddButton("ESC", "Exit program");
     else ButtonBar.AddButton("ESC", "Close");
     ButtonBar.Draw();
+
+    CDKVIEWER *Viewer = newCDKViewer(CDKScreen, CENTER, 2, GetDefaultHeight(), GetDefaultWidth(), buttons, buttoncount,
+                                     A_REVERSE, true, false);
+
+    if (Viewer == NULL)
+        throwerror(false, "Can't create text viewer");
 
     setCDKViewerBackgroundColor(Viewer, "</B/5");
     bindCDKObject(vVIEWER, Viewer, 'a', ShowAboutK, NULL);

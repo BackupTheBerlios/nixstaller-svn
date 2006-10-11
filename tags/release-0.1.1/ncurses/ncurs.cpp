@@ -97,7 +97,7 @@ bool SelectLanguage()
     if (InstallInfo.languages.size() == 1)
     {
         InstallInfo.cur_lang = InstallInfo.languages.front();
-        if (!ReadLang()) throwerror(true, "Could not load language file for %s", InstallInfo.cur_lang.c_str());
+        if (!ReadLang() && (InstallInfo.cur_lang != "english")) throwerror(true, "Could not load language file for %s", InstallInfo.cur_lang.c_str());
         return true;
     }
     
