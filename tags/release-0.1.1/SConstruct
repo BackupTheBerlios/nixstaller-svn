@@ -39,6 +39,7 @@ distfiles = [
 'internal/startupinstaller.sh',
 'internal/intro.txt',
 'lang/dutch/strings',
+'lang/norwegian/strings',
 'lang/english/strings',
 'lib/freebsd/x86/',
 'lib/linux/x86/',
@@ -133,7 +134,7 @@ opts = Options()
 opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
 opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
 
-env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-Wl,--as-needed -static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
 
 Help(opts.GenerateHelpText(env))
 
@@ -153,7 +154,7 @@ env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['main/', 'libsu/', 'include/', 'include/ncurses', 'include/'+cur_os, inc_dir, inc_dir+'cdk'])
 
 # Current version
-curnixstversion = '0.1'
+curnixstversion = '0.1.1'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
     print 'Stripping all binaries in the bin/%s directory...' % cur_os
@@ -212,7 +213,7 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
 appname Nixstaller
 archtype bzip2
 installdir select
-languages english dutch
+languages english dutch norwegian
 targetos linux freebsd netbsd
 """)
     cfgfile.close()
@@ -220,6 +221,16 @@ targetos linux freebsd netbsd
     print "Copying welcome message..."
     shutil.copy("internal/intro.txt", workdir + "welcome")
     print "%s --> %s" % ("internal/intro.txt", workdir + "welcome")
+
+    print "Copying language files..."
+
+    os.makedirs(workdir + "/lang/english")
+    os.makedirs(workdir + "/lang/norwegian")
+    os.makedirs(workdir + "/lang/dutch")
+    
+    shutil.copy("lang/english/strings", workdir + "/lang/english")
+    shutil.copy("lang/norwegian/strings", workdir + "/lang/norwegian")
+    shutil.copy("lang/dutch/strings", workdir + "/lang/dutch")
 
     print "Generating installer"
     os.system("./geninstall.sh %s %s" % (workdir, outputfile))
