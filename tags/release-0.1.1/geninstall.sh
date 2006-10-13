@@ -34,7 +34,7 @@
 
 ARGS="$*"
 OUTNAME=$2
-CURDIR=$PWD
+CURDIR=`pwd`
 ARCHNAME_BASE="instarchive"
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
@@ -159,7 +159,6 @@ packdir()
             ;;
         bzip2 )
             tar cf - --exclude .. --exclude . * .?*  | bzip2 -9 > ${2}
-            #cat ${2} | bzip2 -cq > blaat
             bzip2 -cd ${2} | tar tf - | awk '{if (system(sprintf("test -d \"%s\"", $0))) printf("\"%s\"\n", $0) | "xargs du"}' > "${2}.sizes"
             ;;
         * )
@@ -180,7 +179,7 @@ echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
 CONFDIR=${CONFDIR%*/}
 
 # If target dir doesn't have '/' insert the current dir to it
-CONFDIR=`echo ${CONFDIR} | grep '^/' || echo ${PWD}/$CONFDIR`
+CONFDIR=`echo ${CONFDIR} | grep '^/' || echo $CURDIR/$CONFDIR`
 
 checkargs $*
 
