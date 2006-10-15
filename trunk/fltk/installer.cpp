@@ -88,7 +88,7 @@ bool CInstaller::Init(int argc, char **argv)
     m_pInstallFilesScreen = new CInstallFilesScreen(this);
     m_pFinishScreen = new CFinishScreen(this);
     
-    m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
+    m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-40), (MAIN_WINDOW_H-60), NULL);
     m_pWizard->end();
 
     if (!CBaseInstall::Init(argc, argv))
@@ -630,18 +630,88 @@ int CLuaDirSelector::CalcHeight(int w, const char *desc)
 }
 
 // -------------------------------------
+// Lua config menu class
+// -------------------------------------
+
+int CLuaCFGMenu::m_iMenuHeight = 140;
+int CLuaCFGMenu::m_iMenuWidth = 220;
+int CLuaCFGMenu::m_iDescHeight = 110;
+
+CLuaCFGMenu::CLuaCFGMenu(int x, int y, int w, int h, const char *desc) : CBaseLuaWidget(x, y, w, h, desc)
+{
+}
+
+Fl_Group *CLuaCFGMenu::Create()
+{
+    Fl_Group *group = CBaseLuaWidget::Create();
+    int x = group->x(), y = group->y() + DescHeight();
+    
+    group->add(m_pMenu = new Fl_Hold_Browser(x, y, m_iMenuWidth, m_iMenuHeight));
+    
+    x += m_iMenuWidth + 20;
+    int w = group->w() - (x - group->x());
+    
+    group->add(m_pDescOutput = new Fl_Text_Display(x, y, w, m_iDescHeight));
+    m_pDescOutput->buffer(m_pDescBuffer = new Fl_Text_Buffer);
+    
+    return group;
+}
+
+void CLuaCFGMenu::UpdateLanguage()
+{
+    CBaseLuaWidget::UpdateLanguage();
+}
+
+int CLuaCFGMenu::CalcHeight(int w, const char *desc)
+{
+    return m_iMenuHeight + TitleHeight(w, desc);
+}
+
+// -------------------------------------
+// Base install screen
+// -------------------------------------
+
+// Used when label is aligned outside widget.
+int CBaseScreen::CenterX(int w, const char *label, bool left)
+{
+    int textw = fl_width(label);
+    int ret = ((MAIN_WINDOW_W-(w+textw)) / 2);
+    if (left) // if the label is left aligned the x pos should be adjusted so it starts after the label
+        ret += textw;
+    
+    return ret;
+}
+
+int CBaseScreen::CenterX2(int w, const char *l1, const char *l2, bool left1, bool left2)
+{
+    int t1 = fl_width(l1), t2 = fl_width(l2);
+    int ret = ((MAIN_WINDOW_W-w-t1-t2) / 3);
+    
+    if (left1) // if the label is left aligned the x pos should be adjusted so it starts after the label
+        ret += t1;
+    
+    if (left2)
+        ret += t2;
+    
+    return ret;
+}
+// -------------------------------------
 // Language selection screen
 // -------------------------------------
 
 Fl_Group *CLangScreen::Create(void)
 {
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
+    CBaseScreen::Create();
+
+//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
-    new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Please select a language");
+    new Fl_Box(CenterX(260), 40, 260, 100, "Please select a language");
     
-    m_pChoiceMenu = new Fl_Choice(((MAIN_WINDOW_W-60)/2), (MAIN_WINDOW_H-50)/2, 120, 25,"Language: ");
+    m_pChoiceMenu = new Fl_Choice(CenterX(120, "Language: ", true), (MAIN_WINDOW_H-50)/2, 120, 25, "Language: ");
     m_pChoiceMenu->callback(LangMenuCB, this);
+    
+    Fl_Box *dummy = new Fl_Box(120, m_pChoiceMenu->y()+40, fl_width("Language: "), 20);
+    dummy->box(FL_UP_BOX);
     
     for (std::list<std::string>::iterator p=m_pOwner->m_Languages.begin();
          p!=m_pOwner->m_Languages.end();p++)
@@ -673,20 +743,22 @@ bool CLangScreen::Activate()
 
 Fl_Group *CWelcomeScreen::Create(void)
 {
+    CBaseScreen::Create();
+    
     Fl::visual(FL_RGB);
     
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
+//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
+    int x = m_pGroup->x() + 20, y = m_pGroup->y() + 40, h = m_pGroup->h()-(y-m_pGroup->y())-20;
     m_pImage = Fl_Shared_Image::get(m_pOwner->GetIntroPicFName());
     if (m_pImage)
     {
-        m_pImageBox = new Fl_Box(40, 60, 165, (MAIN_WINDOW_H-120));
+        m_pImageBox = new Fl_Box(x, y, 165, h);
 
         // Scale image if its to big
         if (m_pImage->w() > m_pImageBox->w() || m_pImage->h() > m_pImageBox->h())
         {
-            int w, h;
+            int imgw, imgh;
             float wfact, hfact;
 
             // Check which scale factor is the biggest and use that one. This makes sure that the image will fit.
@@ -695,16 +767,16 @@ Fl_Group *CWelcomeScreen::Create(void)
 
             if (wfact >= hfact)
             {
-                w = m_pImageBox->w();
-                h = (int)(float(m_pImage->h()) / wfact);
+                imgw = m_pImageBox->w();
+                imgh = (int)(float(m_pImage->h()) / wfact);
             }
             else
             {
-                w = (int)(float(m_pImage->w()) / hfact);
-                h = m_pImageBox->h();
+                imgw = (int)(float(m_pImage->w()) / hfact);
+                imgh = m_pImageBox->h();
             }
 
-            Fl_Image *temp = m_pImage->copy(w, h);
+            Fl_Image *temp = m_pImage->copy(imgw, imgh);
             m_pImage->release();
             m_pImage = (Fl_Shared_Image *)temp;
         }
@@ -717,11 +789,13 @@ Fl_Group *CWelcomeScreen::Create(void)
         m_pImageBox->image(m_pImage);
         m_pImageBox->align(FL_ALIGN_CENTER);
 
-        m_pDisplay = new Fl_Text_Display(m_pImageBox->w() + 60, 60, (MAIN_WINDOW_W-20-m_pImageBox->w()-60),
-                                         (MAIN_WINDOW_H-120), "Welcome");
+        x += m_pImageBox->w() + 20;
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, h, "Welcome");
     }
     else
-        m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Welcome");
+    {
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Welcome");
+    }
     
     m_pBuffer = new Fl_Text_Buffer;
     m_pDisplay->buffer(m_pBuffer);
@@ -744,15 +818,18 @@ void CWelcomeScreen::UpdateLang()
 
 Fl_Group *CLicenseScreen::Create(void)
 {
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
+    CBaseScreen::Create();
+
+//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
     m_pBuffer = new Fl_Text_Buffer;
     
-    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-160), "License agreement");
+    int y = m_pGroup->y()+20, h = m_pGroup->h()-(y-m_pGroup->y())-60;
+    m_pDisplay = new Fl_Text_Display(m_pGroup->x()+20, y, m_pGroup->w()-m_pGroup->x()-20, h, "License agreement");
     m_pDisplay->buffer(m_pBuffer);
     
-    m_pCheckButton = new Fl_Check_Button((MAIN_WINDOW_W-350)/2, (MAIN_WINDOW_H-80), 350, 25,
+    y += h + 20;
+    m_pCheckButton = new Fl_Check_Button(CenterX(50, "I Agree to this license agreement", false), y, 50, 25,
                                          "I Agree to this license agreement");
     m_pCheckButton->callback(LicenseCheckCB, this);
     
@@ -785,13 +862,19 @@ bool CLicenseScreen::Activate()
 
 Fl_Group *CSelectDirScreen::Create()
 {
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
+    CBaseScreen::Create();
+    
+//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
-    m_pBox = new Fl_Box((MAIN_WINDOW_W-260)/2, 40, 260, 100, "Select destination directory");
-    m_pSelDirInput = new Fl_Output(80, ((MAIN_WINDOW_H-60)-20)/2, 300, 25, "dir: ");
+    m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, "Select destination directory");
+    
+    int x = CenterX2(300+20+160, "dir: ", "", true, false);
+    int y = CenterY(25);
+    m_pSelDirInput = new Fl_Output(x, y, 300, 25, "dir: ");
     m_pSelDirInput->value(m_pOwner->m_szDestDir.c_str());
-    m_pSelDirButton = new Fl_Button((MAIN_WINDOW_W-200), ((MAIN_WINDOW_H-60)-20)/2, 160, 25, "Select a directory");
+    
+    x += 300 + 20;
+    m_pSelDirButton = new Fl_Button(x, y, 160, 25, "Select a directory");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
     m_pGroup->end();
@@ -1055,8 +1138,9 @@ void CSetParamsScreen::ParamInputCB(Fl_Widget *w, void *p)
 
 Fl_Group *CInstallFilesScreen::Create()
 {
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
+    CBaseScreen::Create();
+    
+//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
     m_pProgress = new Fl_Progress(50, 60, (MAIN_WINDOW_W-100), 30, "Install progress");
     m_pProgress->minimum(0);
@@ -1100,8 +1184,8 @@ void CInstallFilesScreen::ChangeStatusText(const char *txt)
 
 Fl_Group *CFinishScreen::Create(void)
 {
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
+    CBaseScreen::Create();
+//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
     m_pBuffer = new Fl_Text_Buffer;
 
@@ -1138,8 +1222,9 @@ Fl_Group *CCFGScreen::Create()
     if (m_pGroup)
         return m_pGroup;
     
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
+    CBaseScreen::Create();
+    
+//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
     m_iStartY = 60;
     
@@ -1254,4 +1339,29 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
         m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
     
     return m_pNextScreen->CreateDirSelector(desc, val);
+}
+
+CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
+{
+    int h = CLuaCFGMenu::CalcHeight(m_pGroup->w() - 80, desc);
+    
+    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    {
+        CLuaCFGMenu *menu = new CLuaCFGMenu(60, m_iStartY, m_pGroup->w()-80, h, desc);
+        Fl_Group *group = menu->Create();
+        
+        if (group)
+        {
+            m_pGroup->add(group);
+            m_LuaWidgets.push_back(menu);
+        }
+        
+        m_iStartY += (h + 10);
+        return menu;
+    }
+    
+    if (!m_pNextScreen)
+        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+    return m_pNextScreen->CreateCFGMenu(desc);
 }

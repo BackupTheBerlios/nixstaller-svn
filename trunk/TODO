@@ -36,6 +36,8 @@ FLTK FRONTEND
 - Translate password dialog
 - Lua widgets
 - InstallThink virtual function
+- Standard sizes for groups and such
+- GetTranslation in Create() functions
 
 DOCS
 - Max config var description length

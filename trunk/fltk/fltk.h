@@ -258,6 +258,23 @@ public:
     static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CLuaDirSelector *)p)->OpenDirChooser(); };
 };
 
+class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
+{
+    Fl_Hold_Browser *m_pMenu;
+    Fl_Text_Display *m_pDescOutput;
+    Fl_Text_Buffer *m_pDescBuffer;
+    static int m_iMenuHeight, m_iMenuWidth, m_iDescHeight;
+    
+public:
+    CLuaCFGMenu(int x, int y, int w, int h, const char *desc);
+    
+    virtual Fl_Group *Create(void);
+    virtual void UpdateLanguage(void);
+    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l=NULL) { };
+    
+    static int CalcHeight(int w, const char *desc);
+};
+
 class CAppManager: public CFLTKBase, public CBaseAppManager
 {
     Fl_Button *m_pUninstallButton, *m_pExitButton;
@@ -299,11 +316,20 @@ protected:
     Fl_Group *m_pGroup;
     CInstaller *m_pOwner;
     
+    int CenterX(int w) { return ((MAIN_WINDOW_W-w)/2); };
+    int CenterX(int w, const char *label, bool left);
+    
+    // For centering 2 widgets
+    int CenterX2(int w) { return ((MAIN_WINDOW_W-w)/3); };
+    int CenterX2(int w, const char *l1, const char *l2, bool left1, bool left2);
+    
+    int CenterY(int h) { return ((m_pGroup->y()+m_pGroup->h())-h)/2; };
+    
 public:
     CBaseScreen(CInstaller *owner) : m_pGroup(NULL), m_pOwner(owner) { };
     virtual ~CBaseScreen(void) { };
     
-    virtual Fl_Group *Create(void) = 0;
+    virtual Fl_Group *Create(void) { return (m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-40), (MAIN_WINDOW_H-60), NULL)); };
     Fl_Group *GetGroup(void) const { return m_pGroup; };
     virtual void UpdateLang(void) { }; // Called after language is changed
     virtual bool Prev(void) { return true; };
@@ -464,7 +490,7 @@ public:
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
-    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) { };
+    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
     
     void SetCounter(int n, int max) { };
 };
