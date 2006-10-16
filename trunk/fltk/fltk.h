@@ -473,7 +473,7 @@ public:
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 {
     Fl_Box *m_pBoxTitle;
-    int m_iStartY;
+    int m_iStartX, m_iStartY;
     CCFGScreen *m_pNextScreen; 
     std::vector<CBaseLuaWidget *> m_LuaWidgets;
     int m_iLinkedScrNr, m_iLinkedScrMax;

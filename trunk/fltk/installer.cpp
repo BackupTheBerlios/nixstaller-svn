@@ -429,7 +429,6 @@ Fl_Group *CLuaInputField::Create()
     Fl_Group *group = CBaseLuaWidget::Create();
     
     group->add(m_pInput = new Fl_Input(group->x(), group->y() + DescHeight(), group->w(), m_iFieldHeight, MakeCString(GetTranslation(m_szLabel))));
-    m_pInput->align(FL_ALIGN_LEFT);
     
     if (!m_szValue.empty())
         m_pInput->value(m_szValue.c_str());
@@ -685,7 +684,7 @@ int CBaseScreen::CenterX(int w, const char *label, bool left)
 int CBaseScreen::CenterX2(int w, const char *l1, const char *l2, bool left1, bool left2)
 {
     int t1 = fl_width(l1), t2 = fl_width(l2);
-    int ret = ((MAIN_WINDOW_W-w-t1-t2) / 3);
+    int ret = ((MAIN_WINDOW_W-w-t1-t2) / 2);
     
     if (left1) // if the label is left aligned the x pos should be adjusted so it starts after the label
         ret += t1;
@@ -709,9 +708,6 @@ Fl_Group *CLangScreen::Create(void)
     
     m_pChoiceMenu = new Fl_Choice(CenterX(120, "Language: ", true), (MAIN_WINDOW_H-50)/2, 120, 25, "Language: ");
     m_pChoiceMenu->callback(LangMenuCB, this);
-    
-    Fl_Box *dummy = new Fl_Box(120, m_pChoiceMenu->y()+40, fl_width("Language: "), 20);
-    dummy->box(FL_UP_BOX);
     
     for (std::list<std::string>::iterator p=m_pOwner->m_Languages.begin();
          p!=m_pOwner->m_Languages.end();p++)
@@ -1142,14 +1138,17 @@ Fl_Group *CInstallFilesScreen::Create()
     
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
-    m_pProgress = new Fl_Progress(50, 60, (MAIN_WINDOW_W-100), 30, "Install progress");
+    int x = m_pGroup->x()+20, y = m_pGroup->y()+20;
+    m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, "Install progress");
     m_pProgress->minimum(0);
     m_pProgress->maximum(100);
     m_pProgress->value(0);
     
     m_pBuffer = new Fl_Text_Buffer;
     
-    m_pDisplay = new Fl_Text_Display(50, 110, (MAIN_WINDOW_W-100), (MAIN_WINDOW_H-170), "Status");
+    y += 50;
+    
+    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Status");
     m_pDisplay->buffer(m_pBuffer);
     m_pDisplay->wrap_mode(true, 60);
     
@@ -1189,7 +1188,8 @@ Fl_Group *CFinishScreen::Create(void)
     
     m_pBuffer = new Fl_Text_Buffer;
 
-    m_pDisplay = new Fl_Text_Display(60, 60, (MAIN_WINDOW_W-90), (MAIN_WINDOW_H-120), "Please read the following text");
+    int x = m_pGroup->x()+20, y = m_pGroup->y()+40;
+    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Please read the following text");
     m_pDisplay->buffer(m_pBuffer);
     
     m_pGroup->end();
@@ -1226,9 +1226,10 @@ Fl_Group *CCFGScreen::Create()
     
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
-    m_iStartY = 60;
+    m_pBoxTitle = new Fl_Box(CenterX(260), m_pGroup->y()+20, 260, 20, "UNDONE");
     
-    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 20, "UNDONE");
+    m_iStartX = m_pGroup->x() + 20;
+    m_iStartY = m_pBoxTitle->y() + 20;
     
     m_pGroup->end();
     return m_pGroup;
@@ -1247,7 +1248,8 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     
     if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
     {
-        CLuaInputField *field = new CLuaInputField(60, m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max);
+        CLuaInputField *field = new CLuaInputField(m_iStartX+fl_width(label), m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max);
+        
         Fl_Group *group = field->Create();
         
         if (group)
@@ -1272,7 +1274,7 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector
     
     if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
     {
-        CLuaCheckbox *box = new CLuaCheckbox(60, m_iStartY, m_pGroup->w()-80, h, desc, l);
+        CLuaCheckbox *box = new CLuaCheckbox(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, l);
         Fl_Group *group = box->Create();
         
         if (group)
@@ -1297,7 +1299,7 @@ CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::
     
     if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
     {
-        CLuaRadioButton *radio = new CLuaRadioButton(60, m_iStartY, m_pGroup->w()-80, h, desc, l);
+        CLuaRadioButton *radio = new CLuaRadioButton(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, l);
         Fl_Group *group = radio->Create();
         
         if (group)
@@ -1322,7 +1324,7 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
     
     if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
     {
-        CLuaDirSelector *dir = new CLuaDirSelector(60, m_iStartY, m_pGroup->w()-80, h, desc, val);
+        CLuaDirSelector *dir = new CLuaDirSelector(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, val);
         Fl_Group *group = dir->Create();
         
         if (group)
@@ -1347,7 +1349,7 @@ CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
     
     if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
     {
-        CLuaCFGMenu *menu = new CLuaCFGMenu(60, m_iStartY, m_pGroup->w()-80, h, desc);
+        CLuaCFGMenu *menu = new CLuaCFGMenu(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc);
         Fl_Group *group = menu->Create();
         
         if (group)
