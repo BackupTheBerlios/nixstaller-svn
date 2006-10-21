@@ -250,24 +250,6 @@ std::string &EatWhite(std::string &str, bool skipnewlines)
     return str;
 }
 
-// Put every line from a string in a list
-void MakeStringList(const std::string &str, std::vector<char *> &strlist)
-{
-    std::istringstream strstrm(str);
-    std::string line;
-    while(strstrm && std::getline(strstrm, line))
-        strlist.push_back(MakeCString(line));
-}
-
-// Put every line from a string in a list (C strings)
-void MakeStringList(const char *str, std::vector<char *> &strlist)
-{
-    std::istringstream strstrm(str);
-    std::string line;
-    while(strstrm && std::getline(strstrm, line))
-        strlist.push_back(MakeCString(line));
-}
-
 // Used by config file parsing, gets string between a text block
 void GetTextFromBlock(std::ifstream &file, std::string &text)
 {

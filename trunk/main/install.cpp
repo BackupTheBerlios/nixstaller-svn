@@ -526,6 +526,7 @@ bool CBaseInstall::InitLua()
     
     m_LuaVM.InitClass("inputfield");
     m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "Get", this);
+    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaSetSpace, "SetSpacing", this);
     
     m_LuaVM.InitClass("checkbox");
     m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaGet, "Get", this);
@@ -1164,6 +1165,15 @@ int CBaseLuaInputField::LuaGet(lua_State *L)
     return 1;
 }
 
+int CBaseLuaInputField::LuaSetSpace(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseLuaInputField *field = pInstaller->m_LuaVM.CheckClass<CBaseLuaInputField *>("inputfield", 1);
+    int percent = luaL_checkint(L, 2);
+    field->SetSpacing(percent);
+    return 0;
+}
+
 // -------------------------------------
 // Base Lua Checkbox Class
 // -------------------------------------
@@ -1238,7 +1248,7 @@ CBaseLuaCFGMenu::~CBaseLuaCFGMenu()
         delete it->second;
 }
 
-void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l)
+void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l)
 {
     if (m_Variabeles[name])
     {
@@ -1247,10 +1257,9 @@ void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val
     }
     
     const char *value = val;
-    std::list<std::string> opts;
     
     if (l)
-        l->sort();
+        std::sort(l->begin(), l->end());
     
     if (!value || !*value)
     {
@@ -1278,8 +1287,9 @@ void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val
     
     if (l)
     {
-        for (std::list<std::string>::iterator it=l->begin(); it!=l->end(); it++)
-            m_Variabeles[name]->options.push_back(*it);
+        m_Variabeles[name]->options = *l;
+/*        for (TOptionsType::iterator it=l->begin(); it!=l->end(); it++)
+            m_Variabeles[name]->options.push_back(*it);*/
     }
 }
 
@@ -1318,7 +1328,7 @@ int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
     
     luaL_checktype(L, 4, LUA_TTABLE);
     int count = luaL_getn(L, 4);
-    std::list<std::string> l;
+    TOptionsType l;
     
     for (int i=1; i<=count; i++)
     {
@@ -1346,7 +1356,7 @@ int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
     const char *desc = luaL_checkstring(L, 3);
     bool val = (lua_isboolean(L, 4)) ? lua_toboolean(L, 4) : false;
 
-    std::list<std::string> l;
+    TOptionsType l;
     l.push_back("Disable");
     l.push_back("Enable");
     

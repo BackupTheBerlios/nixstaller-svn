@@ -188,6 +188,7 @@ public:
 class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
 {
     std::string m_szLabel, m_szValue;
+    Fl_Box *m_pLabel;
     Fl_Input *m_pInput;
     int m_iMax;
     static int m_iFieldHeight;
@@ -198,6 +199,7 @@ public:
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
     virtual const char *GetValue(void) { return m_pInput->value(); };
+    virtual void SetSpacing(int percent);
 
     static int CalcHeight(int w, const char *desc);
 };
@@ -206,7 +208,7 @@ class CLuaCheckbox: public CBaseLuaCheckbox, public CBaseLuaWidget
 {
     const std::vector<std::string> m_Options;
     std::vector<Fl_Check_Button *> m_Buttons;
-    static int m_iButtonHeight, m_iButtonSpace;
+    static int m_iButtonHeight, m_iButtonSpace, m_iBoxSpace;
     
 public:
     CLuaCheckbox(int x, int y, int w, int h, const char *desc, const std::vector<std::string> &l);
@@ -223,7 +225,7 @@ class CLuaRadioButton: public CBaseLuaRadioButton, public CBaseLuaWidget
 {
     const std::vector<std::string> m_Options;
     std::vector<Fl_Round_Button *> m_Buttons;
-    static int m_iButtonHeight, m_iButtonSpace;
+    static int m_iButtonHeight, m_iButtonSpace, m_iBoxSpace;
     
 public:
     CLuaRadioButton(int x, int y, int w, int h, const char *desc, const std::vector<std::string> &l);
@@ -263,16 +265,28 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
     Fl_Hold_Browser *m_pMenu;
     Fl_Text_Display *m_pDescOutput;
     Fl_Text_Buffer *m_pDescBuffer;
-    static int m_iMenuHeight, m_iMenuWidth, m_iDescHeight;
+    Fl_Button *m_pBrowseButton;
+    Fl_Choice *m_pChoiceMenu;
+    Fl_Input *m_pInputField;
+    
+    static int m_iMenuHeight, m_iMenuWidth, m_iDescHeight, m_iButtonWidth, m_iButtonHeight;
+    
+    void SetInfo(void);
+    void SetInputMethod(void);
+    void SetString(const char *s);
+    void SetChoice(int n);
     
 public:
     CLuaCFGMenu(int x, int y, int w, int h, const char *desc);
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
-    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l=NULL) { };
+    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);
     
     static int CalcHeight(int w, const char *desc);
+    static void MenuCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetInfo(); ((CLuaCFGMenu *)p)->SetInputMethod(); };
+    static void InputFieldCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetString(((Fl_Input *)w)->value()); };
+    static void ChoiceCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetChoice(((Fl_Choice *)w)->value()); };
 };
 
 class CAppManager: public CFLTKBase, public CBaseAppManager

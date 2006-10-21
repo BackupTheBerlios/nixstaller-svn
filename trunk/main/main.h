@@ -110,8 +110,6 @@ bool IsDir(const char *file);
 void *guaranteed_memset(void *v,int c,size_t n);
 void CleanPasswdString(char *str);
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
-void MakeStringList(const std::string &str, std::vector<char *> &strlist);
-void MakeStringList(const char *str, std::vector<char *> &strlist);
 void GetTextFromBlock(std::ifstream &file, std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
@@ -121,6 +119,7 @@ unsigned StrFindInRange(const std::string &src, const char *findstr, unsigned po
 std::string GetTranslation(const std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
+inline char *MakeTranslation(const char *s) { return GetTranslation(MakeCString(s)); }
 
 inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
 inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };

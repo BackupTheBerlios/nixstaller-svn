@@ -415,7 +415,7 @@ int CBaseLuaWidget::TitleHeight(int w, const char *desc)
 int CLuaInputField::m_iFieldHeight = 20;
 
 CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc,
-                               const char *val, int max) : CBaseLuaWidget(x, y, w, h, desc), m_iMax(max)
+                               const char *val, int max) : CBaseLuaWidget(x, y, w, h, desc), m_pLabel(NULL), m_iMax(max)
 {
     if (label && *label)
         m_szLabel = label;
@@ -427,8 +427,18 @@ CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, co
 Fl_Group *CLuaInputField::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
+    int x = group->x(), y = group->y() + DescHeight(), w = (((float)m_pGroup->w() / 100.0f) * (float)GetDefaultSpacing());
     
-    group->add(m_pInput = new Fl_Input(group->x(), group->y() + DescHeight(), group->w(), m_iFieldHeight, MakeCString(GetTranslation(m_szLabel))));
+    if (!m_szLabel.empty())
+    {
+        group->add(m_pLabel = new Fl_Box(x, y, w, m_iFieldHeight, MakeCString(GetTranslation(m_szLabel))));
+        m_pLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    }
+    
+    x += w + 10;
+    w = m_pGroup->w() - (x - m_pGroup->x());
+    
+    group->add(m_pInput = new Fl_Input(x, y, w, m_iFieldHeight));
     
     if (!m_szValue.empty())
         m_pInput->value(m_szValue.c_str());
@@ -440,7 +450,25 @@ void CLuaInputField::UpdateLanguage()
 {
     CBaseLuaWidget::UpdateLanguage();
     
-    m_pInput->label(MakeCString(GetTranslation(m_szLabel)));
+    if (m_pLabel)
+        m_pLabel->label(MakeCString(GetTranslation(m_szLabel)));
+}
+
+void CLuaInputField::SetSpacing(int percent)
+{
+    int x = m_pGroup->x(), w = (((float)m_pGroup->w() / 100.0f) * (float)percent);
+    
+    if (m_pLabel)
+    {
+        m_pLabel->resize(x, m_pLabel->y(), w, m_pLabel->h());
+        m_pLabel->redraw();
+    }
+    
+    x += w + 10;
+    w = m_pGroup->w() - (x - m_pGroup->x());
+    
+    m_pInput->resize(x, m_pInput->y(), w, m_pGroup->h());
+    m_pInput->redraw();
 }
 
 int CLuaInputField::CalcHeight(int w, const char *desc)
@@ -453,7 +481,8 @@ int CLuaInputField::CalcHeight(int w, const char *desc)
 // -------------------------------------
 
 int CLuaCheckbox::m_iButtonHeight = 20;
-int CLuaCheckbox::m_iButtonSpace = 10;
+int CLuaCheckbox::m_iButtonSpace = 5;
+int CLuaCheckbox::m_iBoxSpace = 10;
 
 CLuaCheckbox::CLuaCheckbox(int x, int y, int w, int h, const char *desc,
                            const std::vector<std::string> &l) : CBaseLuaWidget(x, y, w, h, desc), m_Options(l)
@@ -463,15 +492,21 @@ CLuaCheckbox::CLuaCheckbox(int x, int y, int w, int h, const char *desc,
 Fl_Group *CLuaCheckbox::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int y = group->y() + DescHeight(), w = 0;
+    int x = group->x(), y = group->y() + DescHeight(), w = 0;
     
     // Find longest text
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
-        w = Max(w, fl_width(it->c_str()));
+        w = Max(w, 40 + fl_width(it->c_str()));
+
+    group->box(FL_ENGRAVED_BOX);
+    group->size(w, group->h());
+    
+    x += 5;
+    y += 5;
 
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
     {
-        Fl_Check_Button *button = new Fl_Check_Button(group->x(), y, 60, m_iButtonHeight, GetTranslation(MakeCString(*it)));
+        Fl_Check_Button *button = new Fl_Check_Button(x, y, 60, m_iButtonHeight, GetTranslation(MakeCString(*it)));
         button->type(FL_TOGGLE_BUTTON);
         m_Buttons.push_back(button);
         group->add(button);
@@ -492,7 +527,7 @@ void CLuaCheckbox::UpdateLanguage()
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (!l.empty())
-        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc);
+        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc) + m_iBoxSpace;
     else
         return TitleHeight(w, desc);
 }
@@ -502,7 +537,8 @@ int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::str
 // -------------------------------------
 
 int CLuaRadioButton::m_iButtonHeight = 20;
-int CLuaRadioButton::m_iButtonSpace = 10;
+int CLuaRadioButton::m_iButtonSpace = 5;
+int CLuaRadioButton::m_iBoxSpace = 10;
 
 CLuaRadioButton::CLuaRadioButton(int x, int y, int w, int h, const char *desc,
                                  const std::vector<std::string> &l) : CBaseLuaWidget(x, y, w, h, desc), m_Options(l)
@@ -512,15 +548,21 @@ CLuaRadioButton::CLuaRadioButton(int x, int y, int w, int h, const char *desc,
 Fl_Group *CLuaRadioButton::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int y = group->y() + DescHeight(), w = 0;
+    int x = group->x(), y = group->y() + DescHeight(), w = 0;
     
     // Find longest text
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
-        w = Max(w, fl_width(it->c_str()));
+        w = Max(w, 40 + fl_width(it->c_str()));
 
+    group->box(FL_ENGRAVED_BOX);
+    group->size(w, group->h());
+    
+    x += 5;
+    y += 5;
+    
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
     {
-        Fl_Round_Button *button = new Fl_Round_Button(group->x(), y, 60, m_iButtonHeight, MakeCString(*it));
+        Fl_Round_Button *button = new Fl_Round_Button(x, y, w, m_iButtonHeight, MakeCString(*it));
         button->type(FL_RADIO_BUTTON);
         m_Buttons.push_back(button);
         group->add(button);
@@ -555,7 +597,7 @@ int CLuaRadioButton::EnabledButton()
 int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (!l.empty())
-        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc);
+        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc) + m_iBoxSpace;
     else
         return TitleHeight(w, desc);
 }
@@ -635,9 +677,83 @@ int CLuaDirSelector::CalcHeight(int w, const char *desc)
 int CLuaCFGMenu::m_iMenuHeight = 140;
 int CLuaCFGMenu::m_iMenuWidth = 220;
 int CLuaCFGMenu::m_iDescHeight = 110;
+int CLuaCFGMenu::m_iButtonWidth = 140;
+int CLuaCFGMenu::m_iButtonHeight = 25;
 
 CLuaCFGMenu::CLuaCFGMenu(int x, int y, int w, int h, const char *desc) : CBaseLuaWidget(x, y, w, h, desc)
 {
+}
+
+void CLuaCFGMenu::SetInfo()
+{
+    if (!m_pMenu->size())
+        return;
+    
+    const char *item = m_pMenu->text(m_pMenu->value());
+    if (item && *item && m_Variabeles[item])
+        m_pDescBuffer->text(GetTranslation(m_Variabeles[item]->desc.c_str()));
+    else
+        m_pDescBuffer->text("");
+}
+
+void CLuaCFGMenu::SetInputMethod()
+{
+    const char *item = m_pMenu->text(m_pMenu->value());
+    if (!item || !*item || !m_Variabeles[item])
+        return;
+    
+    m_pBrowseButton->hide();
+    m_pChoiceMenu->hide();
+    m_pInputField->hide();
+    
+    switch(m_Variabeles[item]->type)
+    {
+        case TYPE_DIR:
+            m_pBrowseButton->show();
+            break;
+        case TYPE_LIST:
+        {
+            m_pChoiceMenu->clear();
+            
+            int cur = 0, n = 0;
+            for (TOptionsType::iterator it=m_Variabeles[item]->options.begin(); it!=m_Variabeles[item]->options.end(); it++)
+            {
+                m_pChoiceMenu->add(it->c_str());
+                if (!cur && (*it == m_Variabeles[item]->val))
+                    cur = n;
+                n++;
+            }
+            
+            if (m_pChoiceMenu->size())
+                m_pChoiceMenu->value(cur);
+            
+            m_pChoiceMenu->show();
+            break;
+        }
+        case TYPE_STRING:
+            m_pInputField->value(m_Variabeles[item]->val.c_str());
+            m_pInputField->show();
+            break;
+    }
+}
+
+void CLuaCFGMenu::SetString(const char *s)
+{
+    const char *item = m_pMenu->text(m_pMenu->value());
+    if (!item || !*item || !m_Variabeles[item])
+        return;
+    
+    m_Variabeles[item]->val = s;
+}
+
+void CLuaCFGMenu::SetChoice(int n)
+{
+    debugline("SetChoice: %d\n", n);
+    const char *item = m_pMenu->text(m_pMenu->value());
+    if (!item || !*item || !m_Variabeles[item])
+        return;
+    
+    m_Variabeles[item]->val = m_Variabeles[item]->options[n];
 }
 
 Fl_Group *CLuaCFGMenu::Create()
@@ -646,6 +762,7 @@ Fl_Group *CLuaCFGMenu::Create()
     int x = group->x(), y = group->y() + DescHeight();
     
     group->add(m_pMenu = new Fl_Hold_Browser(x, y, m_iMenuWidth, m_iMenuHeight));
+    m_pMenu->callback(MenuCB, this);
     
     x += m_iMenuWidth + 20;
     int w = group->w() - (x - group->x());
@@ -653,12 +770,43 @@ Fl_Group *CLuaCFGMenu::Create()
     group->add(m_pDescOutput = new Fl_Text_Display(x, y, w, m_iDescHeight));
     m_pDescOutput->buffer(m_pDescBuffer = new Fl_Text_Buffer);
     
+    x += ((m_pGroup->w() - (x - m_pGroup->x())) - m_iButtonWidth)/2;
+    y += m_iDescHeight + 10;
+    group->add(m_pBrowseButton = new Fl_Button(x, y, m_iButtonWidth, m_iButtonHeight, GetTranslation("Modify")));
+    
+    x = m_pDescOutput->x();
+    x += ((m_pGroup->w() - (x - m_pGroup->x())) - m_iButtonWidth)/2;
+    group->add(m_pChoiceMenu = new Fl_Choice(x, y, m_iButtonWidth, m_iButtonHeight));
+    m_pChoiceMenu->when(FL_WHEN_CHANGED);
+    m_pChoiceMenu->callback(ChoiceCB, this);
+    
+    x = m_pDescOutput->x() + 10;
+    w = group->w() - (x - group->x());
+    group->add(m_pInputField = new Fl_Input(x, y, w, m_iButtonHeight));
+    m_pInputField->when(FL_WHEN_CHANGED);
+    m_pInputField->callback(InputFieldCB, this);
+
     return group;
 }
 
 void CLuaCFGMenu::UpdateLanguage()
 {
     CBaseLuaWidget::UpdateLanguage();
+    m_pBrowseButton->label(GetTranslation("Browse"));
+    SetInfo();
+}
+
+void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l)
+{
+    CBaseLuaCFGMenu::AddVar(name, desc, val, type, l);
+    m_pMenu->add(name);
+    
+    if (m_pMenu->size() == 1) // Init menu: highlight first item
+    {
+        m_pMenu->value(1);
+        SetInfo();
+        SetInputMethod();
+    }
 }
 
 int CLuaCFGMenu::CalcHeight(int w, const char *desc)
@@ -706,7 +854,7 @@ Fl_Group *CLangScreen::Create(void)
     
     new Fl_Box(CenterX(260), 40, 260, 100, "Please select a language");
     
-    m_pChoiceMenu = new Fl_Choice(CenterX(120, "Language: ", true), (MAIN_WINDOW_H-50)/2, 120, 25, "Language: ");
+    m_pChoiceMenu = new Fl_Choice(CenterX(120, "Language: ", true), CenterY(25), 120, 25, "Language: ");
     m_pChoiceMenu->callback(LangMenuCB, this);
     
     for (std::list<std::string>::iterator p=m_pOwner->m_Languages.begin();
@@ -1248,7 +1396,7 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     
     if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
     {
-        CLuaInputField *field = new CLuaInputField(m_iStartX+fl_width(label), m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max);
+        CLuaInputField *field = new CLuaInputField(m_iStartX, m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max);
         
         Fl_Group *group = field->Create();
         

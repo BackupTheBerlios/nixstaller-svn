@@ -433,19 +433,19 @@ void CLuaInputField::CreateInit()
 {
     CBaseLuaWidget::CreateInit();
     
-    int begy = DescHeight(), begx = 0, fieldw = maxx();
+    int y = DescHeight(), w = (((float)width() / 100.0f) * (float)GetDefaultSpacing());
     
     if (!m_szLabel.empty())
     {
-        unsigned w = Min(m_szLabel.length(), maxx()/3);
-        m_pLabel = AddChild(new CTextLabel(this, 2, w, begy, begx, 'r'));
+        m_pLabel = AddChild(new CTextLabel(this, 2, w, y, 0, 'r'));
         m_pLabel->AddText("<notg>");
         m_pLabel->AddText(m_szLabel);
-        begx += (m_pLabel->width() + 1);
-        fieldw -= (m_pLabel->width() + 1);
     }
     
-    m_pInput = AddChild(new CInputField(this, 1, fieldw, begy, begx, 'r', m_iMax));
+    int x = w + 2;
+    w = width() - x;
+    
+    m_pInput = AddChild(new CInputField(this, 1, w, y, x, 'r', m_iMax));
     
     if (!m_szValue.empty())
         m_pInput->SetText(m_szValue);
@@ -457,6 +457,33 @@ void CLuaInputField::UpdateLanguage()
     
     if (m_pLabel)
         m_pLabel->SetText(GetTranslation(m_szLabel));
+}
+
+void CLuaInputField::SetSpacing(int percent)
+{
+    int w = (((float)width() / 100.0f) * (float)percent);
+    
+    if (m_pLabel)
+    {
+        m_pLabel->resize(m_pLabel->height(), w);
+//         m_pLabel->mvwin(m_pLabel->begy(), begx);
+    }
+    
+    int x = begx() + w + 2;
+    w = width() - (x - begx());
+    
+    // Check if we should first move or resize: if moving/resizing makes the widget go outside the parent it will fail
+    
+    if ((x + m_pInput->width()) < (begx() + width())) // Safe to move
+    {
+        m_pInput->mvwin(m_pInput->begy(), x);
+        m_pInput->resize(m_pInput->height(), w);
+    }
+    else // Resize it first
+    {
+        m_pInput->resize(m_pInput->height(), w);
+        m_pInput->mvwin(m_pInput->begy(), x);
+    }
 }
 
 int CLuaInputField::CalcHeight(int w, const char *desc)
@@ -618,6 +645,9 @@ void CLuaCFGMenu::CreateInit()
 
 void CLuaCFGMenu::SetInfo()
 {
+    if (m_pMenu->Empty())
+        return;
+    
     std::string item = m_pMenu->GetCurrentItemName();
     if (!item.empty() && m_Variabeles[item])
     {
@@ -675,7 +705,7 @@ void CLuaCFGMenu::UpdateLanguage()
     SetInfo();
 }
 
-void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l)
+void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l)
 {
     CBaseLuaCFGMenu::AddVar(name, desc, val, type, l);
     m_pMenu->AddItem(name);

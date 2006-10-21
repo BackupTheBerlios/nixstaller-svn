@@ -52,7 +52,7 @@ bool YesNoBox(const char *msg, ...);
 int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
 std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
 std::string FileDialog(const char *start, const char *info);
-std::string MenuDialog(const char *title, const std::list<std::string> &l, const char *def=NULL);
+std::string MenuDialog(const char *title, const std::vector<std::string> &l, const char *def=NULL);
 
 #include "widgets.h"
 
@@ -168,6 +168,7 @@ public:
     
     virtual void UpdateLanguage(void);
     virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
+    virtual void SetSpacing(int percent);
     
     static int CalcHeight(int w, const char *desc);
 };
@@ -246,7 +247,7 @@ public:
     CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *desc);
     
     virtual void UpdateLanguage(void);
-    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, std::list<std::string> *l=NULL);
+    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);
     
     static int CalcHeight(int w, const char *desc);
 };
