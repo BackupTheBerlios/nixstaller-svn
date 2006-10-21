@@ -13,7 +13,8 @@ OVERALL
 - Alternative way to see which archivetype is used in startupinstaller.sh
 - Use deque/vector instead of list?
 - Add new strings to translation files
-
+- Remove unnessesary virtuals
+        
 MAIN
 - Better error handling for register
 - Check path for rm
@@ -37,7 +38,7 @@ FLTK FRONTEND
 - Lua widgets
 - InstallThink virtual function
 - Standard sizes for groups and such
-- GetTranslation in Create() functions
+- GetTranslation/MakeCString in Create() functions
 
 DOCS
 - Max config var description length
