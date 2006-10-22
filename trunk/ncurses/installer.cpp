@@ -263,7 +263,9 @@ bool CInstaller::Init(int argc, char **argv)
     if (!CBaseInstall::Init(argc, argv))
         return false;
     
-    m_InstallScreens.push_back(AddChild(new CLangScreen(this, h, w, y, x)));
+     CLangScreen *langscr = AddChild(new CLangScreen(this, h, w, y, x));
+     langscr->Enable(false);
+     m_InstallScreens.push_back(langscr);
 
     unsigned count = m_LuaVM.OpenArray("ScreenList");
     if (!count)
@@ -333,6 +335,7 @@ bool CInstaller::Init(int argc, char **argv)
     {
         if (initscreen && (*it)->CanActivate())
         {
+            (*it)->Enable(true);
             ActivateChild(*it); // Give screen focus
             (*it)->Activate();
             m_CurrentScreenIt = it;

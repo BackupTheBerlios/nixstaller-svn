@@ -69,6 +69,7 @@ public:
     CAboutScreen(CWidgetManager *owner);
 
     void Run(void) { while (m_pWidgetManager->Run() && !m_bFinished) {}; m_bFinished = false; };
+    void UpdateLanguage(void);
 };
 
 class CNCursBase: virtual public CMain, public CWidgetWindow
@@ -91,7 +92,7 @@ public:
     CNCursBase(CWidgetManager *owner);
     virtual ~CNCursBase(void) { };
     
-    virtual void UpdateLanguage(void) { CMain::UpdateLanguage(); };
+    virtual void UpdateLanguage(void);
 };
 
 class CBaseScreen;
@@ -299,6 +300,7 @@ public:
                 int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
     
     virtual bool Next(void) { m_pInstaller->m_szCurLang = m_pLangMenu->GetCurrentItemName(); m_pInstaller->UpdateLanguage(); return true; };
+    virtual bool CanActivate(void) { return (CBaseScreen::CanActivate() && (m_pInstaller->m_Languages.size() > 1)); };
 };
 
 class CWelcomeScreen: public CBaseScreen
@@ -353,6 +355,7 @@ public:
                      int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 
     virtual bool Next(void);
+    virtual bool CanActivate(void) { return (m_pInstaller->m_InstallInfo.dest_dir_type == "select"); };
     virtual void UpdateLanguage(void);
 };
 

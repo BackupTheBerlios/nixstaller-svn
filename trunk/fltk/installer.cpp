@@ -366,7 +366,7 @@ void CBaseLuaWidget::MakeTitle()
     if (m_szDescription.empty())
         return;
     
-    const char *desc = GetTranslation(MakeCString(m_szDescription));
+    const char *desc = MakeTranslation(m_szDescription);
     
     if (!m_pBox)
     {
@@ -431,7 +431,7 @@ Fl_Group *CLuaInputField::Create()
     
     if (!m_szLabel.empty())
     {
-        group->add(m_pLabel = new Fl_Box(x, y, w, m_iFieldHeight, MakeCString(GetTranslation(m_szLabel))));
+        group->add(m_pLabel = new Fl_Box(x, y, w, m_iFieldHeight, MakeTranslation(m_szLabel)));
         m_pLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
     }
     
@@ -451,7 +451,7 @@ void CLuaInputField::UpdateLanguage()
     CBaseLuaWidget::UpdateLanguage();
     
     if (m_pLabel)
-        m_pLabel->label(MakeCString(GetTranslation(m_szLabel)));
+        m_pLabel->label(MakeTranslation(m_szLabel));
 }
 
 void CLuaInputField::SetSpacing(int percent)
@@ -506,7 +506,7 @@ Fl_Group *CLuaCheckbox::Create()
 
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
     {
-        Fl_Check_Button *button = new Fl_Check_Button(x, y, 60, m_iButtonHeight, GetTranslation(MakeCString(*it)));
+        Fl_Check_Button *button = new Fl_Check_Button(x, y, 60, m_iButtonHeight, MakeTranslation(*it));
         button->type(FL_TOGGLE_BUTTON);
         m_Buttons.push_back(button);
         group->add(button);
@@ -521,7 +521,7 @@ void CLuaCheckbox::UpdateLanguage()
     CBaseLuaWidget::UpdateLanguage();
     
     for (unsigned u=0; u<m_Buttons.size(); u++)
-        m_Buttons[u]->label(GetTranslation(MakeCString(m_Options[u])));
+        m_Buttons[u]->label(MakeTranslation(m_Options[u]));
 }
 
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
@@ -562,7 +562,7 @@ Fl_Group *CLuaRadioButton::Create()
     
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
     {
-        Fl_Round_Button *button = new Fl_Round_Button(x, y, w, m_iButtonHeight, MakeCString(*it));
+        Fl_Round_Button *button = new Fl_Round_Button(x, y, w, m_iButtonHeight, MakeTranslation(*it));
         button->type(FL_RADIO_BUTTON);
         m_Buttons.push_back(button);
         group->add(button);
@@ -580,7 +580,7 @@ void CLuaRadioButton::UpdateLanguage()
     CBaseLuaWidget::UpdateLanguage();
     
     for (unsigned u=0; u<m_Buttons.size(); u++)
-        m_Buttons[u]->label(GetTranslation(MakeCString(m_Options[u])));
+        m_Buttons[u]->label(MakeTranslation(m_Options[u]));
 }
 
 int CLuaRadioButton::EnabledButton()
@@ -680,8 +680,21 @@ int CLuaCFGMenu::m_iDescHeight = 110;
 int CLuaCFGMenu::m_iButtonWidth = 140;
 int CLuaCFGMenu::m_iButtonHeight = 25;
 
-CLuaCFGMenu::CLuaCFGMenu(int x, int y, int w, int h, const char *desc) : CBaseLuaWidget(x, y, w, h, desc)
+CLuaCFGMenu::CLuaCFGMenu(int x, int y, int w, int h, const char *desc) : CBaseLuaWidget(x, y, w, h, desc), m_pDirChooser(NULL)
 {
+}
+
+void CLuaCFGMenu::CreateDirSelector()
+{
+    if (m_pDirChooser)
+        delete m_pDirChooser;
+    
+    m_pDirChooser = new Fl_File_Chooser("~", "*",
+                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                                        GetTranslation("Select a directory"));
+    m_pDirChooser->preview(false);
+    m_pDirChooser->previewButton->hide();
+    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
 }
 
 void CLuaCFGMenu::SetInfo()
@@ -693,7 +706,7 @@ void CLuaCFGMenu::SetInfo()
     if (item && *item && m_Variabeles[item])
         m_pDescBuffer->text(GetTranslation(m_Variabeles[item]->desc.c_str()));
     else
-        m_pDescBuffer->text("");
+        m_pDescBuffer->text(NULL);
 }
 
 void CLuaCFGMenu::SetInputMethod()
@@ -712,6 +725,7 @@ void CLuaCFGMenu::SetInputMethod()
             m_pBrowseButton->show();
             break;
         case TYPE_LIST:
+        case TYPE_BOOL:
         {
             m_pChoiceMenu->clear();
             
@@ -737,6 +751,22 @@ void CLuaCFGMenu::SetInputMethod()
     }
 }
 
+void CLuaCFGMenu::OpenDir()
+{
+    const char *item = m_pMenu->text(m_pMenu->value());
+    if (!item || !*item || !m_Variabeles[item])
+        return;
+    
+    m_pDirChooser->directory(m_Variabeles[item]->val.c_str());
+    m_pDirChooser->show();
+    while(m_pDirChooser->visible())
+        Fl::wait();
+    
+    const char *newdir = m_pDirChooser->value();
+    if (newdir && *newdir)
+        m_Variabeles[item]->val = newdir;
+}
+
 void CLuaCFGMenu::SetString(const char *s)
 {
     const char *item = m_pMenu->text(m_pMenu->value());
@@ -748,7 +778,6 @@ void CLuaCFGMenu::SetString(const char *s)
 
 void CLuaCFGMenu::SetChoice(int n)
 {
-    debugline("SetChoice: %d\n", n);
     const char *item = m_pMenu->text(m_pMenu->value());
     if (!item || !*item || !m_Variabeles[item])
         return;
@@ -773,6 +802,7 @@ Fl_Group *CLuaCFGMenu::Create()
     x += ((m_pGroup->w() - (x - m_pGroup->x())) - m_iButtonWidth)/2;
     y += m_iDescHeight + 10;
     group->add(m_pBrowseButton = new Fl_Button(x, y, m_iButtonWidth, m_iButtonHeight, GetTranslation("Modify")));
+    m_pBrowseButton->callback(BrowseCB, this);
     
     x = m_pDescOutput->x();
     x += ((m_pGroup->w() - (x - m_pGroup->x())) - m_iButtonWidth)/2;
@@ -786,6 +816,8 @@ Fl_Group *CLuaCFGMenu::Create()
     m_pInputField->when(FL_WHEN_CHANGED);
     m_pInputField->callback(InputFieldCB, this);
 
+    CreateDirSelector();
+    
     return group;
 }
 
@@ -793,6 +825,7 @@ void CLuaCFGMenu::UpdateLanguage()
 {
     CBaseLuaWidget::UpdateLanguage();
     m_pBrowseButton->label(GetTranslation("Browse"));
+    CreateDirSelector(); // Recreate, so that it will use the new translations
     SetInfo();
 }
 
@@ -934,11 +967,11 @@ Fl_Group *CWelcomeScreen::Create(void)
         m_pImageBox->align(FL_ALIGN_CENTER);
 
         x += m_pImageBox->w() + 20;
-        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, h, "Welcome");
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, h, GetTranslation("Welcome"));
     }
     else
     {
-        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Welcome");
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, GetTranslation("Welcome"));
     }
     
     m_pBuffer = new Fl_Text_Buffer;
@@ -973,8 +1006,8 @@ Fl_Group *CLicenseScreen::Create(void)
     m_pDisplay->buffer(m_pBuffer);
     
     y += h + 20;
-    m_pCheckButton = new Fl_Check_Button(CenterX(50, "I Agree to this license agreement", false), y, 50, 25,
-                                         "I Agree to this license agreement");
+    const char *txt = GetTranslation("I Agree to this license agreement");
+    m_pCheckButton = new Fl_Check_Button(CenterX(50, txt, false), y, 50, 25, txt);
     m_pCheckButton->callback(LicenseCheckCB, this);
     
     m_pGroup->end();
@@ -1010,15 +1043,15 @@ Fl_Group *CSelectDirScreen::Create()
     
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
-    m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, "Select destination directory");
+    m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, GetTranslation("Select destination directory"));
     
-    int x = CenterX2(300+20+160, "dir: ", "", true, false);
+    int x = CenterX2(300+20+160, "", "", false, false);
     int y = CenterY(25);
-    m_pSelDirInput = new Fl_Output(x, y, 300, 25, "dir: ");
+    m_pSelDirInput = new Fl_Output(x, y, 300, 25);
     m_pSelDirInput->value(m_pOwner->m_szDestDir.c_str());
     
     x += 300 + 20;
-    m_pSelDirButton = new Fl_Button(x, y, 160, 25, "Select a directory");
+    m_pSelDirButton = new Fl_Button(x, y, 160, 25, GetTranslation("Select a directory"));
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
     m_pGroup->end();
@@ -1070,214 +1103,7 @@ void CSelectDirScreen::OpenDirChooser(void)
 }
 
 // -------------------------------------
-// Configuring parameters screen
-// -------------------------------------
-
-Fl_Group *CSetParamsScreen::Create()
-{
-    std::list<command_entry_s *>::iterator p;
-    bool empty = true;
-    
-    for (p=m_pOwner->m_InstallInfo.command_entries.begin();p!=m_pOwner->m_InstallInfo.command_entries.end(); p++)
-    {
-        if (!(*p)->parameter_entries.empty()) { empty = false; break; }
-    }
-    
-    if (empty) return NULL;
-    
-    m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    m_pGroup->begin();
-
-    m_pBoxTitle = new Fl_Box((MAIN_WINDOW_W-260)/2, 20, 260, 100, "Configure parameters");
-    
-    const int iChoiceW = 250, iDescW = 250;
-    int x = 40, y = 120;
-
-    m_pChoiceBrowser = new Fl_Hold_Browser(x, y, iChoiceW, 145, "Parameters");
-    
-    for (p=m_pOwner->m_InstallInfo.command_entries.begin();p!=m_pOwner->m_InstallInfo.command_entries.end(); p++)
-    {
-        for (std::map<std::string, param_entry_s *>::iterator p2=(*p)->parameter_entries.begin();
-             p2!=(*p)->parameter_entries.end();p2++)
-            m_pChoiceBrowser->add(p2->first.c_str(), *p);
-    }
-    
-    m_pChoiceBrowser->callback(ParamBrowserCB, this);
-    m_pChoiceBrowser->align(FL_ALIGN_TOP);
-    
-    x += (iChoiceW + 20);
-    m_pDescriptionOutput = new Fl_Multiline_Output(x, y, iDescW, 100, "Description");
-    m_pDescriptionOutput->align(FL_ALIGN_TOP);
-    m_pDescriptionOutput->wrap(1);
-
-    y += 120;
-    m_pDefOutput = new Fl_Output(x, y, iDescW, 25, "Default");
-    m_pDefOutput->align(FL_ALIGN_TOP);
-    
-    x=100;
-    y+=40;
-
-    // List of parameter options
-    m_pParamInput = new Fl_Input(x, y, 250, 25, "Value: ");
-    m_pParamInput->callback(ParamInputCB, this);
-    m_pParamInput->when(FL_WHEN_CHANGED);
-
-    // Input field for a parameter
-    m_pValChoiceMenu = new Fl_Choice(x, y, 150, 25,"Value: ");
-    m_pValChoiceMenu->callback(ValChoiceMenuCB, this);
-
-    // Dir selecter for parameter
-    m_pSelDirInput = new Fl_Output(x, y, 250, 25, "Value: ");
-    m_pSelDirButton = new Fl_Button(x + 275, y, 120, 25, "Change");
-    m_pSelDirButton->callback(OpenDirSelWinCB, this);
-    
-    m_pGroup->end();
-    return m_pGroup;
-}
-
-void CSetParamsScreen::UpdateLang()
-{
-    m_pBoxTitle->label(GetTranslation("Configure parameters"));
-    m_pChoiceBrowser->label(GetTranslation("Parameters"));
-    m_pDescriptionOutput->label(GetTranslation("Description"));
-    m_pDefOutput->label(GetTranslation("Default"));
-    m_pParamInput->label(CreateText("%s: ", GetTranslation("Value")));
-    m_pValChoiceMenu->label(CreateText("%s: ", GetTranslation("Value")));
-    m_pSelDirInput->label(CreateText("%s: ", GetTranslation("Value")));
-    m_pSelDirButton->label(GetTranslation("Change"));
-    
-    // Create dir selecter (need to do this when the language changes!)
-    if (m_pDirChooser) delete m_pDirChooser;
-    m_pDirChooser = new Fl_File_Chooser("~", "*",
-                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        GetTranslation("Select a directory"));
-    m_pDirChooser->preview(false);
-    m_pDirChooser->previewButton->hide();
-    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
-}
-
-bool CSetParamsScreen::Activate()
-{
-    // Get first param entry
-    for (std::list<command_entry_s*>::iterator p=m_pOwner->m_InstallInfo.command_entries.begin();
-         p!=m_pOwner->m_InstallInfo.command_entries.end(); p++)
-    {
-        if (!(*p)->parameter_entries.empty())
-        {
-            SetInput((*p)->parameter_entries.begin()->first.c_str(), *p);
-            break;
-        }
-    }
-    
-    m_pChoiceBrowser->value(1);
-    
-    return true;
-};
-
-void CSetParamsScreen::SetInput(const char *txt, command_entry_s *pCommandEntry)
-{
-    m_pCurrentParamEntry = pCommandEntry->parameter_entries[txt];
-    if (m_pCurrentParamEntry->param_type == PTYPE_STRING)
-    {
-        m_pValChoiceMenu->hide();
-        m_pSelDirButton->hide();
-        m_pSelDirInput->hide();
-        m_pParamInput->show();
-        m_pParamInput->value(m_pCurrentParamEntry->value.c_str());
-    }
-    else if (m_pCurrentParamEntry->param_type == PTYPE_DIR)
-    {
-        m_pValChoiceMenu->hide();
-        m_pParamInput->hide();
-        m_pSelDirButton->show();
-        m_pSelDirInput->show();
-        m_pSelDirInput->value(m_pCurrentParamEntry->value.c_str());
-    }
-    else
-    {
-        short s=0;
-        m_pValChoiceMenu->clear();
-        
-        if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
-        {
-            m_pValChoiceMenu->add(GetTranslation("Enable"));
-            m_pValChoiceMenu->add(GetTranslation("Disable"));
-            if (m_pCurrentParamEntry->value == "false") m_pValChoiceMenu->value(1);
-            else m_pValChoiceMenu->value(0);
-        }
-        else
-        {
-            for (std::list<std::string>::iterator p=m_pCurrentParamEntry->options.begin();
-                 p!=m_pCurrentParamEntry->options.end();p++,s++)
-            {
-                m_pValChoiceMenu->add(MakeCString(*p));
-                if (*p == m_pCurrentParamEntry->value) { debugline("val: %s", p->c_str()); m_pValChoiceMenu->value(s); }
-            }
-        }
-        m_pParamInput->hide();
-        m_pSelDirButton->hide();
-        m_pSelDirInput->hide();
-        m_pValChoiceMenu->show();
-    }
-    
-    m_pDescriptionOutput->value(GetTranslation(m_pCurrentParamEntry->description.c_str()));
-    
-    const char *str = m_pCurrentParamEntry->defaultval.c_str();
-    if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
-    {
-        if (m_pCurrentParamEntry->defaultval == "true") str = GetTranslation("Enabled");
-        else str = GetTranslation("Disabled");
-    }
-    m_pDefOutput->value(str);
-}
-
-void CSetParamsScreen::SetValue(const std::string &str)
-{
-    if (m_pCurrentParamEntry->param_type == PTYPE_BOOL)
-    {
-        if (str == GetTranslation("Enable")) m_pCurrentParamEntry->value = "true";
-        else m_pCurrentParamEntry->value = "false";
-    }
-    else
-        m_pCurrentParamEntry->value = str;
-}
-
-void CSetParamsScreen::OpenDirChooser(void)
-{
-    m_pDirChooser->directory(GetFirstValidDir(m_pCurrentParamEntry->value).c_str());
-    m_pDirChooser->show();
-    while(m_pDirChooser->visible()) Fl::wait();
-    
-    if (m_pDirChooser->value())
-    {
-        SetValue(m_pDirChooser->value());
-        m_pSelDirInput->value(m_pDirChooser->value());
-    }
-}
-
-void CSetParamsScreen::ParamBrowserCB(Fl_Widget *w, void *p)
-{
-    std::map<std::string, param_entry_s *>::iterator it;
-    short s=0, value=((Fl_Hold_Browser*)w)->value();
-    command_entry_s *pCommandEntry = ((command_entry_s *)((Fl_Hold_Browser*)w)->data(value));
-
-    for (it=pCommandEntry->parameter_entries.begin(); s<(value-1); it++, s++);
-    
-    ((CSetParamsScreen *)p)->SetInput(it->first.c_str(), pCommandEntry);
-}
-
-void CSetParamsScreen::ValChoiceMenuCB(Fl_Widget *w, void *p)
-{
-    ((CSetParamsScreen *)p)->SetValue(((Fl_Menu_*)w)->mvalue()->text);
-}
-
-void CSetParamsScreen::ParamInputCB(Fl_Widget *w, void *p)
-{
-    ((CSetParamsScreen *)p)->SetValue(((Fl_Input*)w)->value());
-}
-
-// -------------------------------------
-// Base Install screen
+// Install Files screen
 // -------------------------------------
 
 Fl_Group *CInstallFilesScreen::Create()
@@ -1287,7 +1113,7 @@ Fl_Group *CInstallFilesScreen::Create()
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
     int x = m_pGroup->x()+20, y = m_pGroup->y()+20;
-    m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, "Install progress");
+    m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, GetTranslation("Install progress"));
     m_pProgress->minimum(0);
     m_pProgress->maximum(100);
     m_pProgress->value(0);
@@ -1296,7 +1122,7 @@ Fl_Group *CInstallFilesScreen::Create()
     
     y += 50;
     
-    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Status");
+    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, GetTranslation("Status"));
     m_pDisplay->buffer(m_pBuffer);
     m_pDisplay->wrap_mode(true, 60);
     
@@ -1337,7 +1163,8 @@ Fl_Group *CFinishScreen::Create(void)
     m_pBuffer = new Fl_Text_Buffer;
 
     int x = m_pGroup->x()+20, y = m_pGroup->y()+40;
-    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Please read the following text");
+    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20,
+                                     GetTranslation("Please read the following text"));
     m_pDisplay->buffer(m_pBuffer);
     
     m_pGroup->end();
@@ -1365,6 +1192,17 @@ bool CFinishScreen::Activate()
 // Lua config screen
 // -------------------------------------
 
+void CCFGScreen::SetTitle()
+{
+    if (!m_szTitle.empty())
+    {
+        if (m_iLinkedScrMax)
+            m_pBoxTitle->label(CreateText("%s (%d/%d)", GetTranslation(m_szTitle.c_str()), m_iLinkedScrNr, m_iLinkedScrMax));
+        else
+            m_pBoxTitle->label(GetTranslation(m_szTitle.c_str()));
+    }
+}
+
 Fl_Group *CCFGScreen::Create()
 {
     if (m_pGroup)
@@ -1374,7 +1212,7 @@ Fl_Group *CCFGScreen::Create()
     
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
-    m_pBoxTitle = new Fl_Box(CenterX(260), m_pGroup->y()+20, 260, 20, "UNDONE");
+    m_pBoxTitle = new Fl_Box(CenterX(260), m_pGroup->y()+20, 260, 20, MakeTranslation(m_szTitle));
     
     m_iStartX = m_pGroup->x() + 20;
     m_iStartY = m_pBoxTitle->y() + 20;
@@ -1385,9 +1223,16 @@ Fl_Group *CCFGScreen::Create()
 
 void CCFGScreen::UpdateLang()
 {
-    debugline("UpLang\n");
     for (unsigned u=0; u<m_LuaWidgets.size(); u++)
         m_LuaWidgets[u]->UpdateLanguage();
+    
+    SetTitle();
+}
+
+bool CCFGScreen::Activate()
+{
+    SetTitle();
+    return true;
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)

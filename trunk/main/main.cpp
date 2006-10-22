@@ -99,9 +99,6 @@ bool CMain::Init(int argc, char **argv)
         }
     }
      
-    if (!ReadConfig())
-        return false;
-    
     if (m_Languages.empty())
     {
         char *s = new char[8];
@@ -365,7 +362,6 @@ int CMain::LuaInitDirIter(lua_State *L)
     
     DIR **d = (DIR **)lua_newuserdata(L, sizeof(DIR *));
     
-    //luaL_getmetatable(L, "LuaBook.dir");
     if (luaL_newmetatable(L, "diriter") == 1) // Table didn't exist yet?
     {
         lua_pushstring(L, "__gc");

@@ -79,11 +79,11 @@ class CAskPassWindow
     
 public:
     CAskPassWindow(const char *msg=NULL);
-    ~CAskPassWindow(void) { CleanPasswdString(m_szPassword); };
 
     void SetMsg(const char *msg) { m_pAskPassBox->label(msg); };
     char *Activate(void);
     void SetPassword(bool unset);
+    void UpdateLanguage(void);
 
     static void AskPassOKButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(false); };
     static void AskPassCancelButtonCB(Fl_Widget *w, void *p) { ((CAskPassWindow *)p)->SetPassword(true); };
@@ -92,6 +92,7 @@ public:
 class CFLTKBase: virtual public CMain
 {
     Fl_Window *m_pAboutWindow;
+    Fl_Text_Display *m_pAboutDisp;
     Fl_Return_Button *m_pAboutOKButton;
     
 protected:
@@ -138,6 +139,7 @@ protected:
     virtual void ChangeStatusText(const char *str);
     virtual void AddInstOutput(const std::string &str);
     virtual void SetProgress(int percent);
+    virtual void InstallThink(void) { Fl::wait(0.0f); };
     
 public:
     bool m_bInstallFiles;
@@ -268,11 +270,14 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
     Fl_Button *m_pBrowseButton;
     Fl_Choice *m_pChoiceMenu;
     Fl_Input *m_pInputField;
+    Fl_File_Chooser *m_pDirChooser;
     
     static int m_iMenuHeight, m_iMenuWidth, m_iDescHeight, m_iButtonWidth, m_iButtonHeight;
     
+    void CreateDirSelector(void);
     void SetInfo(void);
     void SetInputMethod(void);
+    void OpenDir(void);
     void SetString(const char *s);
     void SetChoice(int n);
     
@@ -285,6 +290,7 @@ public:
     
     static int CalcHeight(int w, const char *desc);
     static void MenuCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetInfo(); ((CLuaCFGMenu *)p)->SetInputMethod(); };
+    static void BrowseCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->OpenDir(); };
     static void InputFieldCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetString(((Fl_Input *)w)->value()); };
     static void ChoiceCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetChoice(((Fl_Choice *)w)->value()); };
 };
@@ -414,40 +420,10 @@ public:
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual bool Next(void);
+    virtual bool Activate(void) { return (m_pOwner->m_InstallInfo.dest_dir_type == "select"); };
     
     void OpenDirChooser(void);
     static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSelectDirScreen *)p)->OpenDirChooser(); };
-};
-
-class CSetParamsScreen: public CBaseScreen
-{
-    Fl_Box *m_pBoxTitle;
-    Fl_Input *m_pParamInput;
-    Fl_Choice *m_pValChoiceMenu;
-    Fl_Hold_Browser *m_pChoiceBrowser;
-    Fl_Multiline_Output *m_pDescriptionOutput;
-    Fl_Output *m_pDefOutput;
-    Fl_File_Chooser *m_pDirChooser;
-    Fl_Button *m_pSelDirButton;
-    Fl_Output *m_pSelDirInput;
-    param_entry_s *m_pCurrentParamEntry;
-    
-public:
-    CSetParamsScreen(CInstaller *owner) : CBaseScreen(owner), m_pDirChooser(NULL), m_pCurrentParamEntry(NULL) { };
-    
-    virtual Fl_Group *Create(void);
-    virtual void UpdateLang(void);
-    virtual bool Activate(void);
-    //virtual bool Next(void);
-    
-    void SetInput(const char *txt, command_entry_s *pCommandEntry);
-    void SetValue(const std::string &str);
-    void OpenDirChooser(void);
-    
-    static void ParamBrowserCB(Fl_Widget *w, void *p);
-    static void ValChoiceMenuCB(Fl_Widget *w, void *p);
-    static void ParamInputCB(Fl_Widget *w, void *p);
-    static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSetParamsScreen *)p)->OpenDirChooser(); };
 };
 
 class CInstallFilesScreen: public CBaseScreen
@@ -486,6 +462,7 @@ public:
 
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 {
+    std::string m_szTitle;
     Fl_Box *m_pBoxTitle;
     int m_iStartX, m_iStartY;
     CCFGScreen *m_pNextScreen; 
@@ -494,11 +471,15 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     
     friend class CInstaller;
     
+    void SetTitle(void);
+    
 public:
-    CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner), m_pNextScreen(NULL) { };
+    CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner), m_szTitle(title), m_pNextScreen(NULL),
+                                                       m_iLinkedScrNr(0), m_iLinkedScrMax(0) { };
 
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
+    virtual bool Activate(void);
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
@@ -506,7 +487,7 @@ public:
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
     
-    void SetCounter(int n, int max) { };
+    void SetCounter(int n, int max) { m_iLinkedScrNr = n; m_iLinkedScrMax = max; };
 };
 
 // -------------------------
@@ -534,8 +515,7 @@ public:
 };
 
 #ifndef RELEASE
-inline void debugline(const char *t, ...)
-{ static char txt[1024]; va_list v; va_start(v, t); vsprintf(txt, t, v); va_end(v); printf("DEBUG: %s", txt); };
+void debugline(const char *t, ...);
 #endif
 
 #endif

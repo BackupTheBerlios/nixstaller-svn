@@ -115,6 +115,12 @@ bool CAboutScreen::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
+void CAboutScreen::UpdateLanguage()
+{
+    SetTitle(GetTranslation("About"));
+    m_pOKButton->SetTitle(GetTranslation("OK"));
+}
+
 // -------------------------------------
 // NCurses base interface class
 // -------------------------------------
@@ -225,4 +231,11 @@ bool CNCursBase::HandleKey(chtype ch)
     }
     
     return false;
+}
+
+void CNCursBase::UpdateLanguage()
+{
+    CMain::UpdateLanguage();
+    
+    m_pAboutScreen->UpdateLanguage();
 }

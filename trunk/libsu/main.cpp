@@ -327,17 +327,19 @@ int CLibSU::CheckPidExited(pid_t pid)
 
 void CLibSU::SetError(CLibSU::ESuErrors errtype, const char *msg, ...)
 {
-    char buffer[1024];
+    char *buffer;
     va_list v;
+    
+    va_start(v, msg);
+    vasprintf(&buffer, msg, v);
+    va_end(v);
     
     m_eError = errtype;
     
-    va_start(v, msg);
-        vsprintf(buffer, msg, v);
-    va_end(v);
-    
     m_szErrorMsg = buffer;
     log(buffer);
+    
+    free(buffer);
 }
 
 int CLibSU::TalkWithSU(const char *password)

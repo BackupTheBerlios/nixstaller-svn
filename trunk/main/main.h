@@ -45,38 +45,9 @@
 #include <map>
 #include <limits>
 
-enum EArchiveType { ARCH_GZIP, ARCH_BZIP2, ARCH_LZMA };
-enum ENeedRoot { NO_ROOT, NEED_ROOT, DEPENDED_ROOT };
-enum EParamType { PTYPE_STRING, PTYPE_DIR, PTYPE_LIST, PTYPE_BOOL };
-enum EDestDirType { DEST_TEMP, DEST_SELECT, DEST_DEFAULT };
-
-struct param_entry_s
-{
-    std::string parameter, defaultval, description, varname;
-    std::list<std::string> options;
-    std::string value;
-    EParamType param_type;
-    param_entry_s(void) : param_type(PTYPE_BOOL) { };
-};
-
-struct command_entry_s
-{
-    ENeedRoot need_root;
-    std::string command, description, path;
-    std::map<std::string, param_entry_s *> parameter_entries;
-    std::string dep_param;
-    bool exit_on_failure;
-    command_entry_s(void) : need_root(NO_ROOT), path("/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."),
-                            exit_on_failure(true) { };
-};
-
 struct install_info_s
 {
-    std::string version, program_name, description, url, intropicname;
-    EArchiveType archive_type;
-    EDestDirType dest_dir_type;
-    std::list<command_entry_s *> command_entries;
-    install_info_s(void) : archive_type(ARCH_GZIP), dest_dir_type(DEST_SELECT) { };
+    std::string version, program_name, description, url, intropicname, archive_type, dest_dir_type;
 };
 
 struct arch_size_entry_s
@@ -119,7 +90,7 @@ unsigned StrFindInRange(const std::string &src, const char *findstr, unsigned po
 std::string GetTranslation(const std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
-inline char *MakeTranslation(const char *s) { return GetTranslation(MakeCString(s)); }
+inline char *MakeTranslation(const std::string &s) { return GetTranslation(MakeCString(s)); }
 
 inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
 inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };
@@ -305,7 +276,6 @@ protected:
     virtual bool YesNoBox(const char *str, ...) = 0;
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) = 0;
     virtual void Warn(const char *str, ...) = 0;
-    virtual bool ReadConfig(void) = 0;
     
     // App register stuff
     std::string ReadRegField(std::ifstream &file);
@@ -354,8 +324,6 @@ class CBaseAppManager: virtual public CMain
     app_entry_s *GetAppEntry(const char *progname);
     
 protected:
-    virtual bool ReadConfig(void) { return true; }; // UNDONE
-    
     void RemoveFromRegister(app_entry_s *pApp);
     void Uninstall(app_entry_s *pApp, bool checksum);
     void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);

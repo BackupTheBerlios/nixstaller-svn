@@ -51,7 +51,6 @@ class CBaseInstall: virtual public CMain
     void ExtractFiles(void);
     void ExecuteCommand(const char *cmd, const char *path, bool required);
     void ExecuteCommandAsRoot(const char *cmd, const char *path, bool required);
-    void ExecuteInstCommands(void);
     const char *GetDefaultPath(void) const { return "/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
     void VerifyIfInstalling(void);
     void UpdateStatusText(const char *str);
@@ -79,7 +78,6 @@ protected:
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
 
     virtual bool InitLua(void);
-    virtual bool ReadConfig(void);
 
 public:
     install_info_s m_InstallInfo;
@@ -89,7 +87,7 @@ public:
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
                          m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0),
                          m_fInstallProgress(0.0f), m_bInstalling(false) { };
-    virtual ~CBaseInstall(void);
+    virtual ~CBaseInstall(void) { };
 
     virtual bool Init(int argc, char **argv);
     virtual void Install(void);
@@ -105,12 +103,6 @@ public:
     { return CreateText("%s/config/lang/%s/finish", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
     const char *GetIntroPicFName(void)
     { return CreateText("%s/%s", m_szOwnDir.c_str(), m_InstallInfo.intropicname.c_str()); };
-
-    param_entry_s *GetParamByName(std::string str);
-    param_entry_s *GetParamByVar(std::string str);
-    const char *GetParamDefault(param_entry_s *pParam);
-    const char *GetParamValue(param_entry_s *pParam);
-    std::string GetParameters(command_entry_s *pCommandEntry);
 
     void UpdateExtrStatus(const char *s);
 

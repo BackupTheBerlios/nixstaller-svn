@@ -64,6 +64,22 @@ void EndProg(bool err)
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
+#ifndef RELEASE
+void debugline(const char *t, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, t);
+    vasprintf(&txt, t, v);
+    va_end(v);
+    
+    printf("DEBUG: %s", txt);
+    
+    free(txt);
+}
+#endif
+
 // -------------------------------------
 // FLTK Base screen class
 // -------------------------------------
@@ -74,7 +90,7 @@ CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
     Fl::scheme("plastic");
     
     // Create about dialog
-    m_pAboutWindow = new Fl_Window(400, 200, "About nixstaller");
+    m_pAboutWindow = new Fl_Window(400, 200, GetTranslation("About nixstaller"));
     m_pAboutWindow->set_modal();
     m_pAboutWindow->hide();
     m_pAboutWindow->begin();
@@ -82,10 +98,10 @@ CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
     Fl_Text_Buffer *pBuffer = new Fl_Text_Buffer;
     pBuffer->loadfile("about");
     
-    Fl_Text_Display *pAboutDisp = new Fl_Text_Display(20, 20, 360, 150, "About");
-    pAboutDisp->buffer(pBuffer);
+    m_pAboutDisp = new Fl_Text_Display(20, 20, 360, 150, GetTranslation("About"));
+    m_pAboutDisp->buffer(pBuffer);
     
-    m_pAboutOKButton = new Fl_Return_Button((400-80)/2, 170, 80, 25, "OK");
+    m_pAboutOKButton = new Fl_Return_Button((400-80)/2, 170, 80, 25, GetTranslation("OK"));
     m_pAboutOKButton->callback(AboutOKCB, this);
     
     m_pAboutWindow->end();
@@ -190,6 +206,11 @@ void CFLTKBase::UpdateLanguage()
     
     // Update main buttons
     m_pAboutButton->label(GetTranslation("About"));
+    
+    // About window
+    m_pAboutWindow->label(GetTranslation("About Nixstaller"));
+    m_pAboutDisp->label(GetTranslation("About"));
+    m_pAboutOKButton->label(GetTranslation("OK"));
 }
 
 void CFLTKBase::ShowAbout(bool show)
@@ -210,20 +231,20 @@ void CFLTKBase::ShowAbout(bool show)
 
 CAskPassWindow::CAskPassWindow(const char *msg) : m_szPassword(NULL)
 {
-    m_pAskPassWindow = new Fl_Window(400, 190, "Password dialog");
+    m_pAskPassWindow = new Fl_Window(400, 190, GetTranslation("Password dialog"));
     m_pAskPassWindow->set_modal();
     m_pAskPassWindow->begin();
     
     m_pAskPassBox = new Fl_Box(10, 20, 370, 40, msg);
     m_pAskPassBox->align(FL_ALIGN_WRAP);
     
-    m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25, "Password: ");
+    m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25);
     m_pAskPassInput->take_focus();
     
-    m_pAskPassOKButton = new Fl_Return_Button(60, 150, 100, 25, "OK");
+    m_pAskPassOKButton = new Fl_Return_Button(60, 150, 100, 25, GetTranslation("OK"));
     m_pAskPassOKButton->callback(AskPassOKButtonCB, this);
     
-    m_pAskPassCancelButton = new Fl_Button(240, 150, 100, 25, "Cancel");
+    m_pAskPassCancelButton = new Fl_Button(240, 150, 100, 25, GetTranslation("Cancel"));
     m_pAskPassCancelButton->callback(AskPassCancelButtonCB, this);
     
     m_pAskPassWindow->end();
@@ -270,4 +291,11 @@ void CAskPassWindow::SetPassword(bool unset)
     }
     m_pAskPassWindow->hide();
     m_pAskPassInput->value(NULL);
+}
+
+void CAskPassWindow::UpdateLanguage()
+{
+    m_pAskPassWindow->label(GetTranslation("Password dialog"));
+    m_pAskPassOKButton->label(GetTranslation("OK"));
+    m_pAskPassCancelButton->label(GetTranslation("Cancel"));
 }

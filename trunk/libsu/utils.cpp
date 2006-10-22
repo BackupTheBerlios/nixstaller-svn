@@ -32,7 +32,7 @@ void log(const char *txt, ...)
 
     FILE *LogFile = NULL;
     static bool InitLogFile = true;
-    static char buffer[1024];
+    char *buffer;
     static char fname[512];
     static va_list v;
     
@@ -46,15 +46,16 @@ void log(const char *txt, ...)
     else
         LogFile = fopen(fname, "a");
     
-    if (!LogFile) return;
+    if (!LogFile)
+        return;
     
     va_start(v, txt);
-        vsprintf(buffer, txt, v);
+    vasprintf(&buffer, txt, v);
     va_end(v);
     
     fprintf(LogFile, "%s\n", buffer);
     fclose(LogFile);
-    LogFile = NULL;
+    free(buffer);
 #endif
 }
 
