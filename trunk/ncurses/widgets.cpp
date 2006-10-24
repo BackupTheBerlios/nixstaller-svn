@@ -2906,7 +2906,7 @@ bool CFileDialog::HandleKey(chtype ch)
         
         if (mkdir(newdir.c_str(), (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
         {
-            WarningBox("%s\n%.75s\n%.75s", GetTranslation("Could not create directory"), newdir.c_str(), strerror(errno));
+            WarningBox("%s\n%s\n%s", GetTranslation("Could not create directory"), newdir.c_str(), strerror(errno));
             return true;
         }
 

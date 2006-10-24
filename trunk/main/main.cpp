@@ -131,7 +131,7 @@ void CMain::ThrowError(bool dialog, const char *error, ...)
         vasprintf(&txt, translated, v);
     va_end(v);
 
-    if (dialog) Warn(txt);
+    if (dialog) WarnBox(txt);
     else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
 
     EndProg(true);
@@ -164,7 +164,7 @@ void CMain::SetUpSU(const char *msg)
 
                 // Some error appeared
                 if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    Warn(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                    WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
                     ThrowError(true, GetTranslation("Could not use su to gain root access"

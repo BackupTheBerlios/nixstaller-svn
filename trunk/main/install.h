@@ -76,9 +76,8 @@ protected:
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
-
     virtual bool InitLua(void);
-
+    
 public:
     install_info_s m_InstallInfo;
     std::string m_szDestDir, m_szBinDir;
@@ -105,6 +104,7 @@ public:
     { return CreateText("%s/%s", m_szOwnDir.c_str(), m_InstallInfo.intropicname.c_str()); };
 
     void UpdateExtrStatus(const char *s);
+    bool VerifyDestDir(const std::string &dir);
 
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title) = 0;
     
@@ -113,6 +113,7 @@ public:
     static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->InstallThink(); };
     
     // Functions for lua binding
+    static int LuaGetTempDir(lua_State *L);
     static int LuaNewCFGScreen(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);

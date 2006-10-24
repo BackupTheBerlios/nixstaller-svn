@@ -167,7 +167,7 @@ int CFLTKBase::ChoiceBox(const char *str, const char *button1, const char *butto
     return ret;
 }
 
-void CFLTKBase::Warn(const char *str, ...)
+void CFLTKBase::WarnBox(const char *str, ...)
 {
     char *text;
     va_list v;

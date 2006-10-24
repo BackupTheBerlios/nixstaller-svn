@@ -211,26 +211,6 @@ bool CInstaller::Init(int argc, char **argv)
     
     m_pWizard->end();
     
-/*    CBaseScreen *widget;
-    
-    MCreateWidget(CLangScreen);
-    MCreateWidget(CWelcomeScreen);
-    MCreateWidget(CLicenseScreen);
-    
-    if (m_InstallInfo.dest_dir_type == DEST_SELECT)
-    {
-        MCreateWidget(CSelectDirScreen);
-    }
-    
-    MCreateWidget(CSetParamsScreen);
-    
-    //MCreateWidget(CInstallFilesScreen);
-    m_pInstallFilesScreen = new CInstallFilesScreen(this);
-    m_pWizard->add(m_pInstallFilesScreen->Create());
-    m_ScreenList.push_back(m_pInstallFilesScreen);
-    
-    MCreateWidget(CFinishScreen);*/
-    
     if (!m_ScreenList.front()->Activate())
         Next();
     
@@ -1076,7 +1056,7 @@ void CSelectDirScreen::UpdateLang()
 
 bool CSelectDirScreen::Next()
 {
-    if (!WriteAccess(m_pOwner->m_szDestDir))
+/*    if (!WriteAccess(m_pOwner->m_szDestDir))
     {
         return (fl_choice(GetTranslation("You don't have write permissions for this directory.\n"
                 "The files can be extracted as the root user,\n"
@@ -1084,7 +1064,8 @@ bool CSelectDirScreen::Next()
                 GetTranslation("Choose another directory"),
                 GetTranslation("Continue as root"), NULL) == 1);
     }
-    return true;
+    return true;*/
+    return m_pOwner->VerifyDestDir(m_pOwner->m_szDestDir);
 }
 
 void CSelectDirScreen::OpenDirChooser(void)

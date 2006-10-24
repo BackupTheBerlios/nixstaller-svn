@@ -47,7 +47,7 @@
 
 struct install_info_s
 {
-    std::string version, program_name, description, url, intropicname, archive_type, dest_dir_type;
+    std::string version, program_name, description, url, intropicname, archive_type, dest_dir;
 };
 
 struct arch_size_entry_s
@@ -275,7 +275,7 @@ protected:
     virtual void MsgBox(const char *str, ...) = 0;
     virtual bool YesNoBox(const char *str, ...) = 0;
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) = 0;
-    virtual void Warn(const char *str, ...) = 0;
+    virtual void WarnBox(const char *str, ...) = 0;
     
     // App register stuff
     std::string ReadRegField(std::ifstream &file);

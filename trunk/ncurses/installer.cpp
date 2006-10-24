@@ -923,7 +923,7 @@ void CSelectDirScreen::PostInit()
 
 bool CSelectDirScreen::Next()
 {
-    if (!WriteAccess(m_pInstaller->m_szDestDir))
+/*    if (!WriteAccess(m_pInstaller->m_szDestDir))
     {
         return (ChoiceBox(GetTranslation("You don't have write permissions for this directory.\n"
                 "The files can be extracted as the root user,\n"
@@ -931,7 +931,8 @@ bool CSelectDirScreen::Next()
                 GetTranslation("Choose another directory"),
                 GetTranslation("Continue as root"), NULL) == 1);
     }
-    return true;
+    return true;*/
+    return m_pInstaller->VerifyDestDir(m_pInstaller->m_szDestDir);
 }
 
 void CSelectDirScreen::UpdateLanguage()

@@ -104,7 +104,7 @@ protected:
     virtual void MsgBox(const char *str, ...);
     virtual bool YesNoBox(const char *str, ...);
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
-    virtual void Warn(const char *str, ...);
+    virtual void WarnBox(const char *str, ...);
     
 public:
     CFLTKBase(void);
@@ -420,7 +420,6 @@ public:
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual bool Next(void);
-    virtual bool Activate(void) { return (m_pOwner->m_InstallInfo.dest_dir_type == "select"); };
     
     void OpenDirChooser(void);
     static void OpenDirSelWinCB(Fl_Widget *w, void *p) { ((CSelectDirScreen *)p)->OpenDirChooser(); };

@@ -33,13 +33,15 @@
 */
 
 #include <fstream>
-#include <sstream>
 #include <sys/wait.h>
-#include "main.h"
 #include <sys/utsname.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <libgen.h>
 #include <poll.h>
 #include <errno.h>
+
+#include "main.h"
 
 // -------------------------------------
 // Base Installer Class
@@ -60,9 +62,9 @@ bool CBaseInstall::Init(int argc, char **argv)
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") && (m_InstallInfo.archive_type != "lzma"))
         ThrowError(false, "Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
     
-    m_LuaVM.GetStrVar(&m_InstallInfo.dest_dir_type, "installdir");
+//     m_LuaVM.GetStrVar(&m_InstallInfo.dest_dir_type, "installdir");
     
-    if (m_InstallInfo.dest_dir_type == "temp")
+/*    if (m_InstallInfo.dest_dir_type == "temp")
         m_szDestDir = m_szOwnDir;
     else if (m_InstallInfo.dest_dir_type == "select")
     {
@@ -79,8 +81,17 @@ bool CBaseInstall::Init(int argc, char **argv)
     {
         if (!m_LuaVM.GetStrVar(&m_szDestDir, "destdir"))
             ThrowError(false, "No value for destdir specified");
-    }
+    }*/
     
+    if (!m_LuaVM.GetStrVar(&m_szDestDir, "destdir"))
+    {
+        const char *env = getenv("HOME");
+        if (env)
+            m_szDestDir = env;
+        else
+            m_szDestDir = "/";
+    }
+
     unsigned count = m_LuaVM.OpenArray("languages");
     if (count)
     {
@@ -95,7 +106,6 @@ bool CBaseInstall::Init(int argc, char **argv)
         
         m_LuaVM.CloseArray();
     }
-    
     
     count = m_LuaVM.OpenArray("frontends");
     if (count)
@@ -112,20 +122,18 @@ bool CBaseInstall::Init(int argc, char **argv)
         m_LuaVM.CloseArray();
     }
     
-
-    // Check if destination directory is readable
-    if ((m_InstallInfo.dest_dir_type == "default") && !ReadAccess(m_szDestDir))
-        ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                                    "However you don't have read permissions to this directory\n"
-                                    "Please restart the installer as a user who does or as the root user",
-                   m_szDestDir.c_str()));
+//     // Check if destination directory is readable
+//     if ((m_InstallInfo.dest_dir_type == "default") && !ReadAccess(m_szDestDir))
+//         ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
+//                                     "However you don't have read permissions to this directory\n"
+//                                     "Please restart the installer as a user who does or as the root user",
+//                    m_szDestDir.c_str()));
 
 #ifndef RELEASE
     debugline("appname: %s\n", m_InstallInfo.program_name.c_str());
     debugline("version: %s\n", m_InstallInfo.version.c_str());
     debugline("archtype: %s\n", m_InstallInfo.archive_type.c_str());
     debugline("installdir: %s\n", m_szDestDir.c_str());
-    debugline("dir type: %s\n", m_InstallInfo.dest_dir_type.c_str());
     debugline("languages: ");
     for (std::list<std::string>::iterator it=m_Languages.begin(); it!=m_Languages.end(); it++)
         debugline("%s ", it->c_str());
@@ -387,7 +395,7 @@ void CBaseInstall::UpdateStatusText(const char *msg)
 
 void CBaseInstall::Install(void)
 {
-    if ((m_InstallInfo.dest_dir_type == "select") || (m_InstallInfo.dest_dir_type == "default"))
+/*    if ((m_InstallInfo.dest_dir_type == "select") || (m_InstallInfo.dest_dir_type == "default"))
     {
         if (!ChoiceBox(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
              m_InstallInfo.program_name.c_str(), MakeCString(m_szDestDir)), GetTranslation("Exit program"),
@@ -399,7 +407,7 @@ void CBaseInstall::Install(void)
         if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), m_InstallInfo.program_name.c_str()),
              GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
             EndProg();
-    }
+    }*/
     
     m_bInstalling = true;
     
@@ -410,14 +418,22 @@ void CBaseInstall::Install(void)
     InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
                 m_szCPUArch.c_str()));
 
-    bool needroot = false;
-
-    if (!needroot)
-        needroot = (FileExists(m_szDestDir) && !WriteAccess(m_szDestDir));
-
-    if (needroot)
-        SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
-                "Please enter the password of the root user");
+    if (FileExists(m_szDestDir))
+    {
+        if (!ReadAccess(m_szDestDir))
+        {
+            // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
+            ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
+                                        "However you don't have read permissions to this directory\n"
+                                        "Please restart the installer as a user who does or as the root user",
+                    m_szDestDir.c_str()));
+        }
+        else if (!WriteAccess(m_szDestDir))
+        {
+            SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
+                    "Please enter the password of the root user");
+        }
+    }
     
     if (chdir(m_szDestDir.c_str())) 
         ThrowError(true, "Could not open directory '%s'", m_szDestDir.c_str());
@@ -428,7 +444,6 @@ void CBaseInstall::Install(void)
         m_LuaVM.DoCall();
     else
         ExtractFiles(); // Default behaviour
-    //ExecuteInstCommands();
     
     AddInstOutput("Registering installation...");
     RegisterInstall();
@@ -502,6 +517,7 @@ bool CBaseInstall::InitLua()
     m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddList, "AddList", this);
     m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddBool, "AddBool", this);
 
+    m_LuaVM.RegisterFunction(LuaGetTempDir, "GetTempDir", NULL, this);
     m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
     m_LuaVM.RegisterFunction(LuaExtractFiles, "ExtractFiles", NULL, this);
     m_LuaVM.RegisterFunction(LuaExecuteCMD, "Execute", NULL, this);
@@ -515,6 +531,45 @@ bool CBaseInstall::InitLua()
     
     if (FileExists("config/run.lua"))
         return m_LuaVM.LoadFile("config/run.lua");
+    
+    return true;
+}
+
+bool CBaseInstall::VerifyDestDir(const std::string &dir)
+{
+    if (FileExists(dir))
+    {
+        if (!ReadAccess(dir))
+        {
+            MsgBox(GetTranslation("You don't have read permissions for this directory.\n"
+                                  "Please choose another directory or rerun this program as a user who has read permissions."));
+            return false;
+        }
+        if (!WriteAccess(dir))
+        {
+            return (ChoiceBox(GetTranslation("You don't have write permissions for this directory.\n"
+                                             "The files can be extracted as the root user,\n"
+                                             "but you'll need to enter the root password for this later."),
+                    GetTranslation("Choose another directory"),
+                    GetTranslation("Continue as root"), NULL) == 1);
+        }
+    }
+    else
+    {
+        // Create directory?
+        if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir.c_str())))
+        {
+            if (mkdir(dir.c_str(), (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
+            {
+                WarnBox("%s\n%s\n%s", GetTranslation("Could not create directory"), dir.c_str(), strerror(errno));
+                return false;
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
     
     return true;
 }
@@ -610,6 +665,13 @@ void CBaseInstall::RegisterInstall(void)
     WriteRegEntry("version", m_InstallInfo.version, file);
     WriteRegEntry("url", m_InstallInfo.url, file);
     WriteRegEntry("description", m_InstallInfo.description, file);
+}
+
+int CBaseInstall::LuaGetTempDir(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    lua_pushstring(L, CreateText("%s", pInstaller->m_szOwnDir.c_str())); // UNDONE
+    return 1;
 }
 
 int CBaseInstall::LuaNewCFGScreen(lua_State *L)

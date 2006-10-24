@@ -196,7 +196,7 @@ int CNCursBase::ChoiceBox(const char *str, const char *button1, const char *butt
     return ret;
 }
 
-void CNCursBase::Warn(const char *str, ...)
+void CNCursBase::WarnBox(const char *str, ...)
 {
     char *text;
     va_list v;

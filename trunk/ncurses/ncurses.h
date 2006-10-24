@@ -83,7 +83,7 @@ protected:
     virtual void MsgBox(const char *str, ...);
     virtual bool YesNoBox(const char *str, ...);
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
-    virtual void Warn(const char *str, ...);
+    virtual void WarnBox(const char *str, ...);
     
     virtual void CreateInit(void);
     virtual bool HandleKey(chtype ch);
@@ -355,7 +355,6 @@ public:
                      int begin_x) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x) { };
 
     virtual bool Next(void);
-    virtual bool CanActivate(void) { return (m_pInstaller->m_InstallInfo.dest_dir_type == "select"); };
     virtual void UpdateLanguage(void);
 };
 
