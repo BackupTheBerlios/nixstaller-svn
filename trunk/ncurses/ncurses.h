@@ -301,6 +301,8 @@ public:
     
     virtual bool Next(void) { m_pInstaller->m_szCurLang = m_pLangMenu->GetCurrentItemName(); m_pInstaller->UpdateLanguage(); return true; };
     virtual bool CanActivate(void) { return (CBaseScreen::CanActivate() && (m_pInstaller->m_Languages.size() > 1)); };
+    virtual void Activate(void);
+    virtual void UpdateLanguage(void);
 };
 
 class CWelcomeScreen: public CBaseScreen

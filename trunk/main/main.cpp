@@ -103,10 +103,14 @@ bool CMain::Init(int argc, char **argv)
     {
         char *s = new char[8];
         strcpy(s, "english");
-        m_Languages.push_front(s);
+        m_Languages.push_back(s);
     }
     
-    m_szCurLang = m_Languages.front(); // UNDONE: Needs a option for default language
+    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang") ||
+        (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end()))
+        m_szCurLang = "english"; // Default to english if wrong or unknown language is specified
+    
+    debugline("defaultlang: %s\n", m_szCurLang.c_str());
     ReadLang();
 
     return true;
@@ -351,6 +355,7 @@ bool CMain::InitLua()
     m_LuaVM.SetArrayStr("fltk", "frontends", 1);
     m_LuaVM.SetArrayStr("ncurses", "frontends", 2);
     m_LuaVM.RegisterString("gzip", "archivetype");
+    m_LuaVM.RegisterString("english", "defaultlang");
     
     return true;
 }

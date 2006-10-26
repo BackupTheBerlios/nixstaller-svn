@@ -359,12 +359,14 @@ public:
 
 class CLangScreen: public CBaseScreen
 {
+    Fl_Box *m_pTitleBox;
     Fl_Choice *m_pChoiceMenu;
     
 public:
     CLangScreen(CInstaller *owner) : CBaseScreen(owner) { };
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
+    virtual void UpdateLang(void);
     virtual bool Activate(void);
     void SetLang(void) { m_pOwner->m_szCurLang = m_pChoiceMenu->mvalue()->text; };
     

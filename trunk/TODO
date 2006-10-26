@@ -9,14 +9,13 @@ OVERALL
 - Alternative way to see which archivetype is used in startupinstaller.sh
 - Use deque/vector instead of list?
 - Add new strings to translation files
-- Remove unnessesary virtuals
+- Remove unnessesary virtuals?
 - Check for first valid dir with cfg menu?
 - Remove m_szDestDir and use the lua var "destdir" instead
 
 MAIN
 - Error handling in lua class(exceptions, type checking)
 - BUG: Executing commands as root to quickly may mess things up(put a delay, open single root console?)
-- Default language(Load at start, update language screens)
 - Overide some lua funcs?(ie. exit)
 - Create directory with root access in VerifyDestDir()?
 
@@ -26,7 +25,8 @@ NCURSES FRONTEND
 - Throw exception when lua widget doesn't fit on new screen
 - File manager should check if dir exist?
 - Use ncurses with termcap fallback for freebsd
-
+- Check for unsupported chars of cur terminal?
+        
 FLTK FRONTEND
 - Throw exception when lua widget doesn't fit on new screen
 

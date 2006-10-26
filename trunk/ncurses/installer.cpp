@@ -246,9 +246,9 @@ bool CInstaller::Init(int argc, char **argv)
 //     int bw = strlen(GetTranslation("Cancel")) + 4;
     const int bw = 14;
 
-    m_pCancelButton = AddChild(new CButton(this, 1, bw, height()-2, 2, GetTranslation("Cancel"), 'r'));
-    m_pPrevButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), GetTranslation("Back"), 'r'));
-    m_pNextButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(bw+2), GetTranslation("Next"), 'r'));
+    m_pCancelButton = AddChild(new CButton(this, 1, bw, height()-2, 2, "Cancel", 'r'));
+    m_pPrevButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(2*(bw+2)), "Back", 'r'));
+    m_pNextButton = AddChild(new CButton(this, 1, bw, height()-2, width()-(bw+2), "Next", 'r'));
     
     m_pPrevButton->Enable(false);
     
@@ -263,9 +263,11 @@ bool CInstaller::Init(int argc, char **argv)
     if (!CBaseInstall::Init(argc, argv))
         return false;
     
-     CLangScreen *langscr = AddChild(new CLangScreen(this, h, w, y, x));
-     langscr->Enable(false);
-     m_InstallScreens.push_back(langscr);
+    CLangScreen *langscr = AddChild(new CLangScreen(this, h, w, y, x));
+    langscr->Enable(false);
+    m_InstallScreens.push_back(langscr);
+
+    UpdateLanguage();
 
     unsigned count = m_LuaVM.OpenArray("ScreenList");
     if (!count)
@@ -594,7 +596,7 @@ void CLuaDirSelector::CreateInit()
         m_pDirInput->SetText(m_szValue);
     
     int begx = m_pDirInput->width() + 2;
-    m_pDirButton = AddChild(new CButton(this, 1, buttonw, begy, begx, GetTranslation("Browse"), 'r'));
+    m_pDirButton = AddChild(new CButton(this, 1, buttonw, begy, begx, "Browse", 'r'));
 }
 
 bool CLuaDirSelector::HandleEvent(CWidgetHandler *p, int type)
@@ -753,7 +755,7 @@ void CLangScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
     
-    SetInfo(CreateText("<C>%s", GetTranslation("Please select a language")));
+    SetInfo(CreateText("<C>%s", "Please select a language"));
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pLangMenu = AddChild(new CMenu(this, height()-y, width(), y, 0, 'r'));
@@ -761,9 +763,26 @@ void CLangScreen::CreateInit()
 
 void CLangScreen::PostInit()
 {
-    for (std::list<std::string>::iterator p=m_pInstaller->m_Languages.begin();
+    for (std::vector<std::string>::iterator p=m_pInstaller->m_Languages.begin();
          p!=m_pInstaller->m_Languages.end();p++)
+    {
         m_pLangMenu->AddItem(*p);
+        if (*p == m_pInstaller->m_szCurLang)
+            m_pLangMenu->SetCurrent(*p);
+    }
+}
+
+void CLangScreen::Activate()
+{
+    CBaseScreen::Activate();
+    
+    if (!m_pLangMenu->Empty()) // Activate may be called before PostInit
+        m_pLangMenu->SetCurrent(m_pInstaller->m_szCurLang);
+}
+
+void CLangScreen::UpdateLanguage()
+{
+    SetInfo(CreateText("<C>%s", GetTranslation("Please select a language")));
 }
 
 // -------------------------------------
@@ -788,7 +807,7 @@ void CWelcomeScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
 
-    SetInfo(CreateText("<C>%s", GetTranslation("Welcome")));
+    SetInfo(CreateText("<C>%s", "Welcome"));
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
@@ -842,7 +861,7 @@ void CLicenseScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
 
-    SetInfo(CreateText("<C>%s", GetTranslation("License agreement")));
+    SetInfo(CreateText("<C>%s", "License agreement"));
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
@@ -907,13 +926,13 @@ void CSelectDirScreen::CreateInit()
     CBaseScreen::CreateInit();
 
     const int buttonw = 22;
-    SetInfo(CreateText("<C>%s", GetTranslation("Select destination directory")));
+    SetInfo(CreateText("<C>%s", "Select destination directory"));
     
     int y = (height()-3)/2;
     int w = width() - (buttonw + 2);
     m_pFileField = AddChild(new CInputField(this, 1, w, y, 0, 'r', 1024));
     
-    m_pChangeDirButton = AddChild(new CButton(this, 1, buttonw, y, w+2, GetTranslation("Select a directory"), 'r'));
+    m_pChangeDirButton = AddChild(new CButton(this, 1, buttonw, y, w+2, "Select a directory", 'r'));
 }
 
 void CSelectDirScreen::PostInit()
@@ -923,15 +942,6 @@ void CSelectDirScreen::PostInit()
 
 bool CSelectDirScreen::Next()
 {
-/*    if (!WriteAccess(m_pInstaller->m_szDestDir))
-    {
-        return (ChoiceBox(GetTranslation("You don't have write permissions for this directory.\n"
-                "The files can be extracted as the root user,\n"
-                "but you'll need to enter the root password for this later."),
-                GetTranslation("Choose another directory"),
-                GetTranslation("Continue as root"), NULL) == 1);
-    }
-    return true;*/
     return m_pInstaller->VerifyDestDir(m_pInstaller->m_szDestDir);
 }
 
@@ -964,7 +974,7 @@ void CInstallScreen::CreateInit()
     CBaseScreen::CreateInit();
 
     m_pProgLabel = AddChild(new CTextLabel(this, 1, width(), 0, 0, 'r'));
-    m_pProgLabel->AddText(CreateText("<C>%s", GetTranslation("Progress")));
+    m_pProgLabel->AddText(CreateText("<C>%s", "Progress"));
     
     int x=2, y=1;
 
@@ -1018,7 +1028,7 @@ void CFinishScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
 
-    SetInfo(CreateText("<C>%s", GetTranslation("Please read the following text")));
+    SetInfo(CreateText("<C>%s", "Please read the following text"));
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));

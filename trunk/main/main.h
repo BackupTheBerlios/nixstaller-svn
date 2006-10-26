@@ -288,7 +288,7 @@ protected:
     
 public:
     std::string m_szCurLang;
-    std::list<std::string> m_Languages;
+    std::vector<std::string> m_Languages;
     
     CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL) { };
     virtual ~CMain(void);

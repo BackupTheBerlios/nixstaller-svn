@@ -62,84 +62,6 @@ bool CBaseInstall::Init(int argc, char **argv)
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") && (m_InstallInfo.archive_type != "lzma"))
         ThrowError(false, "Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
     
-//     m_LuaVM.GetStrVar(&m_InstallInfo.dest_dir_type, "installdir");
-    
-/*    if (m_InstallInfo.dest_dir_type == "temp")
-        m_szDestDir = m_szOwnDir;
-    else if (m_InstallInfo.dest_dir_type == "select")
-    {
-        if (!m_LuaVM.GetStrVar(&m_szDestDir, "destdir"))
-        {
-            const char *env = getenv("HOME");
-            if (env)
-                m_szDestDir = env;
-            else
-                m_szDestDir = "/";
-        }
-    }
-    else if (m_InstallInfo.dest_dir_type == "default")
-    {
-        if (!m_LuaVM.GetStrVar(&m_szDestDir, "destdir"))
-            ThrowError(false, "No value for destdir specified");
-    }*/
-    
-    if (!m_LuaVM.GetStrVar(&m_szDestDir, "destdir"))
-    {
-        const char *env = getenv("HOME");
-        if (env)
-            m_szDestDir = env;
-        else
-            m_szDestDir = "/";
-    }
-
-    unsigned count = m_LuaVM.OpenArray("languages");
-    if (count)
-    {
-        std::string lang;
-        for (unsigned u=1; u<count; u++)
-        {
-            if (m_LuaVM.GetArrayStr(u, &lang))
-                m_Languages.push_back(lang);
-            else
-                ThrowError(false, "Non string found in languages variabele");
-        }
-        
-        m_LuaVM.CloseArray();
-    }
-    
-    count = m_LuaVM.OpenArray("frontends");
-    if (count)
-    {
-        std::string fr;
-        for (unsigned u=1; u<count; u++)
-        {
-            if (m_LuaVM.GetArrayStr(u, &fr))
-                m_Languages.push_back(fr);
-            else
-                ThrowError(false, "Non string found in frontends variabele");
-        }
-        
-        m_LuaVM.CloseArray();
-    }
-    
-//     // Check if destination directory is readable
-//     if ((m_InstallInfo.dest_dir_type == "default") && !ReadAccess(m_szDestDir))
-//         ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
-//                                     "However you don't have read permissions to this directory\n"
-//                                     "Please restart the installer as a user who does or as the root user",
-//                    m_szDestDir.c_str()));
-
-#ifndef RELEASE
-    debugline("appname: %s\n", m_InstallInfo.program_name.c_str());
-    debugline("version: %s\n", m_InstallInfo.version.c_str());
-    debugline("archtype: %s\n", m_InstallInfo.archive_type.c_str());
-    debugline("installdir: %s\n", m_szDestDir.c_str());
-    debugline("languages: ");
-    for (std::list<std::string>::iterator it=m_Languages.begin(); it!=m_Languages.end(); it++)
-        debugline("%s ", it->c_str());
-    debugline("\n");
-#endif
-    
     return true;
 }
 
@@ -529,10 +451,47 @@ bool CBaseInstall::InitLua()
     if (!m_LuaVM.LoadFile("config/config.lua"))
         return false;
     
-    if (FileExists("config/run.lua"))
-        return m_LuaVM.LoadFile("config/run.lua");
+    bool ret = true;
     
-    return true;
+    if (FileExists("config/run.lua"))
+        ret = m_LuaVM.LoadFile("config/run.lua");
+    
+    if (!m_LuaVM.GetStrVar(&m_szDestDir, "destdir"))
+    {
+        const char *env = getenv("HOME");
+        if (env)
+            m_szDestDir = env;
+        else
+            m_szDestDir = "/";
+    }
+
+    unsigned count = m_LuaVM.OpenArray("languages");
+    if (count)
+    {
+        std::string lang;
+        for (unsigned u=1; u<=count; u++)
+        {
+            if (m_LuaVM.GetArrayStr(u, &lang))
+                m_Languages.push_back(lang);
+            else
+                ThrowError(false, "Non string found in languages variabele");
+        }
+        
+        m_LuaVM.CloseArray();
+    }
+
+#ifndef RELEASE
+    debugline("appname: %s\n", m_InstallInfo.program_name.c_str());
+    debugline("version: %s\n", m_InstallInfo.version.c_str());
+    debugline("archtype: %s\n", m_InstallInfo.archive_type.c_str());
+    debugline("installdir: %s\n", m_szDestDir.c_str());
+    debugline("languages: ");
+    for (std::vector<std::string>::iterator it=m_Languages.begin(); it!=m_Languages.end(); it++)
+        debugline("%s ", it->c_str());
+    debugline("\n");
+#endif
+
+    return ret;
 }
 
 bool CBaseInstall::VerifyDestDir(const std::string &dir)

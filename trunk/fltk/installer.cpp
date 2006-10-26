@@ -63,11 +63,6 @@ bool CInstaller::InitLua()
 
 bool CInstaller::Init(int argc, char **argv)
 {
-    // Lazy but handy macro :)
-    #define MCreateWidget(w) { widget = new w(this); \
-                               group = widget->Create(); \
-                               if (group) { m_pWizard->add(group); m_ScreenList.push_back(widget); } }
-                               
     m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     m_pMainWindow->callback(WizCancelCB);
 
@@ -105,6 +100,8 @@ bool CInstaller::Init(int argc, char **argv)
         m_ScreenList.push_back(lang);
     }
     
+    UpdateLanguage();
+
     unsigned count = m_LuaVM.OpenArray("ScreenList");
     
     if (!count)
@@ -622,7 +619,7 @@ Fl_Group *CLuaDirSelector::Create()
         m_pDirInput->value(m_szValue.c_str());
     
     x = group->w() - m_iButtonWidth;
-    group->add(m_pDirButton = new Fl_Button(x, y, m_iButtonWidth, m_iFieldHeight, GetTranslation("Browse")));
+    group->add(m_pDirButton = new Fl_Button(x, y, m_iButtonWidth, m_iFieldHeight, "Browse"));
     m_pDirButton->callback(OpenDirSelWinCB, this);
     
     return group;
@@ -781,7 +778,7 @@ Fl_Group *CLuaCFGMenu::Create()
     
     x += ((m_pGroup->w() - (x - m_pGroup->x())) - m_iButtonWidth)/2;
     y += m_iDescHeight + 10;
-    group->add(m_pBrowseButton = new Fl_Button(x, y, m_iButtonWidth, m_iButtonHeight, GetTranslation("Modify")));
+    group->add(m_pBrowseButton = new Fl_Button(x, y, m_iButtonWidth, m_iButtonHeight, "Modify"));
     m_pBrowseButton->callback(BrowseCB, this);
     
     x = m_pDescOutput->x();
@@ -865,12 +862,12 @@ Fl_Group *CLangScreen::Create(void)
 
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
-    new Fl_Box(CenterX(260), 40, 260, 100, "Please select a language");
+    m_pTitleBox = new Fl_Box(CenterX(260), 40, 260, 100, "Please select a language");
     
     m_pChoiceMenu = new Fl_Choice(CenterX(120, "Language: ", true), CenterY(25), 120, 25, "Language: ");
     m_pChoiceMenu->callback(LangMenuCB, this);
     
-    for (std::list<std::string>::iterator p=m_pOwner->m_Languages.begin();
+    for (std::vector<std::string>::iterator p=m_pOwner->m_Languages.begin();
          p!=m_pOwner->m_Languages.end();p++)
         m_pChoiceMenu->add(MakeCString(*p));
 
@@ -890,8 +887,32 @@ bool CLangScreen::Next()
 
 bool CLangScreen::Activate()
 {
-    // Default to first language if there is just one
-    return (m_pOwner->m_Languages.size() > 1);
+    if (m_pOwner->m_Languages.size() <= 1) // Nothing to select...
+        return false;
+    
+    unsigned size = m_pOwner->m_Languages.size();
+    for (unsigned u=0; u<size; u++)
+    {
+        if (m_pOwner->m_Languages[u] == m_pOwner->m_szCurLang)
+        {
+            m_pChoiceMenu->value(u);
+            break;
+        }
+    }
+    
+    return true;
+}
+
+void CLangScreen::UpdateLang()
+{
+    m_pTitleBox->label(GetTranslation("Please select a language"));
+    
+    const char *label = CreateText("%s: ", GetTranslation("Language"));
+    m_pChoiceMenu->label(label);
+    
+    // Re center
+    m_pChoiceMenu->position(CenterX(120, label, true), m_pChoiceMenu->y());
+    m_pChoiceMenu->redraw();
 }
 
 // -------------------------------------
@@ -947,11 +968,11 @@ Fl_Group *CWelcomeScreen::Create(void)
         m_pImageBox->align(FL_ALIGN_CENTER);
 
         x += m_pImageBox->w() + 20;
-        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, h, GetTranslation("Welcome"));
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, h, "Welcome");
     }
     else
     {
-        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, GetTranslation("Welcome"));
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Welcome");
     }
     
     m_pBuffer = new Fl_Text_Buffer;
@@ -986,7 +1007,7 @@ Fl_Group *CLicenseScreen::Create(void)
     m_pDisplay->buffer(m_pBuffer);
     
     y += h + 20;
-    const char *txt = GetTranslation("I Agree to this license agreement");
+    const char *txt = "I Agree to this license agreement";
     m_pCheckButton = new Fl_Check_Button(CenterX(50, txt, false), y, 50, 25, txt);
     m_pCheckButton->callback(LicenseCheckCB, this);
     
@@ -1023,7 +1044,7 @@ Fl_Group *CSelectDirScreen::Create()
     
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
-    m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, GetTranslation("Select destination directory"));
+    m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, "Select destination directory");
     
     int x = CenterX2(300+20+160, "", "", false, false);
     int y = CenterY(25);
@@ -1031,7 +1052,7 @@ Fl_Group *CSelectDirScreen::Create()
     m_pSelDirInput->value(m_pOwner->m_szDestDir.c_str());
     
     x += 300 + 20;
-    m_pSelDirButton = new Fl_Button(x, y, 160, 25, GetTranslation("Select a directory"));
+    m_pSelDirButton = new Fl_Button(x, y, 160, 25, "Select a directory");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
     m_pGroup->end();
@@ -1056,15 +1077,6 @@ void CSelectDirScreen::UpdateLang()
 
 bool CSelectDirScreen::Next()
 {
-/*    if (!WriteAccess(m_pOwner->m_szDestDir))
-    {
-        return (fl_choice(GetTranslation("You don't have write permissions for this directory.\n"
-                "The files can be extracted as the root user,\n"
-                "but you'll need to enter the root password for this later."),
-                GetTranslation("Choose another directory"),
-                GetTranslation("Continue as root"), NULL) == 1);
-    }
-    return true;*/
     return m_pOwner->VerifyDestDir(m_pOwner->m_szDestDir);
 }
 
@@ -1094,7 +1106,7 @@ Fl_Group *CInstallFilesScreen::Create()
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
     int x = m_pGroup->x()+20, y = m_pGroup->y()+20;
-    m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, GetTranslation("Install progress"));
+    m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, "Install progress");
     m_pProgress->minimum(0);
     m_pProgress->maximum(100);
     m_pProgress->value(0);
@@ -1103,7 +1115,7 @@ Fl_Group *CInstallFilesScreen::Create()
     
     y += 50;
     
-    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, GetTranslation("Status"));
+    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Status");
     m_pDisplay->buffer(m_pBuffer);
     m_pDisplay->wrap_mode(true, 60);
     
@@ -1145,7 +1157,7 @@ Fl_Group *CFinishScreen::Create(void)
 
     int x = m_pGroup->x()+20, y = m_pGroup->y()+40;
     m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20,
-                                     GetTranslation("Please read the following text"));
+                                     "Please read the following text");
     m_pDisplay->buffer(m_pBuffer);
     
     m_pGroup->end();
