@@ -112,7 +112,7 @@ void CBaseInstall::ExtractFiles()
     
     UpdateStatusText("Extracting files");
     
-    m_bAlwaysRoot = !WriteAccess(m_szDestDir);
+    m_bAlwaysRoot = !WriteAccess(GetDestDir());
     
     if (m_bAlwaysRoot)
         m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
@@ -340,25 +340,25 @@ void CBaseInstall::Install(void)
     InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
                 m_szCPUArch.c_str()));
 
-    if (FileExists(m_szDestDir))
+    const char *destdir = GetDestDir();
+    if (FileExists(destdir))
     {
-        if (!ReadAccess(m_szDestDir))
+        if (!ReadAccess(destdir))
         {
             // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
             ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
                                         "However you don't have read permissions to this directory\n"
-                                        "Please restart the installer as a user who does or as the root user",
-                    m_szDestDir.c_str()));
+                                        "Please restart the installer as a user who does or as the root user", destdir));
         }
-        else if (!WriteAccess(m_szDestDir))
+        else if (!WriteAccess(destdir))
         {
             SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
                     "Please enter the password of the root user");
         }
     }
     
-    if (chdir(m_szDestDir.c_str())) 
-        ThrowError(true, "Could not open directory '%s'", m_szDestDir.c_str());
+    if (chdir(destdir)) 
+        ThrowError(true, "Could not open directory '%s'", destdir);
     
     m_SUHandler.SetThinkFunc(SUThinkFunc, this);
 
@@ -456,13 +456,14 @@ bool CBaseInstall::InitLua()
     if (FileExists("config/run.lua"))
         ret = m_LuaVM.LoadFile("config/run.lua");
     
-    if (!m_LuaVM.GetStrVar(&m_szDestDir, "destdir"))
+    std::string dir;
+    if (!GetDestDir())
     {
         const char *env = getenv("HOME");
         if (env)
-            m_szDestDir = env;
+            SetDestDir(env);
         else
-            m_szDestDir = "/";
+            SetDestDir("/");
     }
 
     unsigned count = m_LuaVM.OpenArray("languages");
@@ -484,7 +485,7 @@ bool CBaseInstall::InitLua()
     debugline("appname: %s\n", m_InstallInfo.program_name.c_str());
     debugline("version: %s\n", m_InstallInfo.version.c_str());
     debugline("archtype: %s\n", m_InstallInfo.archive_type.c_str());
-    debugline("installdir: %s\n", m_szDestDir.c_str());
+    debugline("installdir: %s\n", GetDestDir());
     debugline("languages: ");
     for (std::vector<std::string>::iterator it=m_Languages.begin(); it!=m_Languages.end(); it++)
         debugline("%s ", it->c_str());
@@ -494,8 +495,10 @@ bool CBaseInstall::InitLua()
     return ret;
 }
 
-bool CBaseInstall::VerifyDestDir(const std::string &dir)
+bool CBaseInstall::VerifyDestDir(void)
 {
+    const char *dir = GetDestDir();
+    
     if (FileExists(dir))
     {
         if (!ReadAccess(dir))
@@ -516,11 +519,11 @@ bool CBaseInstall::VerifyDestDir(const std::string &dir)
     else
     {
         // Create directory?
-        if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir.c_str())))
+        if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir)))
         {
-            if (mkdir(dir.c_str(), (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
+            if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
             {
-                WarnBox("%s\n%s\n%s", GetTranslation("Could not create directory"), dir.c_str(), strerror(errno));
+                WarnBox("%s\n%s\n%s", GetTranslation("Could not create directory"), dir, strerror(errno));
                 return false;
             }
             
@@ -543,7 +546,7 @@ void CBaseInstall::WriteSums(const char *filename, std::ofstream &outfile, const
         if (var)
             dir = *var;
         else
-            dir = m_szDestDir;
+            dir = GetDestDir();
         
         if (dir[dir.length()-1] != '/')
             dir += '/';
@@ -719,9 +722,13 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
     const char *desc = luaL_checkstring(L, 2);
     const char *label = luaL_checkstring(L, 3);
     int maxc = luaL_optint(L, 4, 1024);
-    const char *val = lua_tostring(L, 5);
+    const char *val = luaL_optstring(L, 5, "");
+    const char *type = luaL_optstring(L, 6, "string");
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField *>(screen->CreateInputField(GetTranslation(desc), GetTranslation(label), val, maxc), "inputfield");
+    if (strcmp(type, "string") && strcmp(type, "number") && strcmp(type, "float"))
+        type = "string";
+    
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField *>(screen->CreateInputField(GetTranslation(desc), GetTranslation(label), val, maxc, type), "inputfield");
     
     return 1;
 }
@@ -730,7 +737,7 @@ int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = lua_tostring(L, 2);
+    const char *desc = luaL_optstring(L, 2, "");
     
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
@@ -753,7 +760,7 @@ int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = lua_tostring(L, 2);
+    const char *desc = luaL_optstring(L, 2, "");
     
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
@@ -778,7 +785,7 @@ int CBaseCFGScreen::LuaAddDirSelector(lua_State *L)
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
     const char *desc = luaL_checkstring(L, 2);
-    const char *val = lua_tostring(L, 3);
+    const char *val = luaL_optstring(L, 3, "");
     
     pInstaller->m_LuaVM.CreateClass<CBaseLuaDirSelector *>(screen->CreateDirSelector(GetTranslation(desc), val), "dirselector");
     
@@ -931,8 +938,6 @@ void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val
     if (l)
     {
         m_Variabeles[name]->options = *l;
-/*        for (TOptionsType::iterator it=l->begin(); it!=l->end(); it++)
-            m_Variabeles[name]->options.push_back(*it);*/
     }
 }
 

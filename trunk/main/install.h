@@ -80,7 +80,7 @@ protected:
     
 public:
     install_info_s m_InstallInfo;
-    std::string m_szDestDir, m_szBinDir;
+    std::string m_szBinDir;
 
 
     CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
@@ -104,7 +104,11 @@ public:
     { return CreateText("%s/%s", m_szOwnDir.c_str(), m_InstallInfo.intropicname.c_str()); };
 
     void UpdateExtrStatus(const char *s);
-    bool VerifyDestDir(const std::string &dir);
+    
+    void SetDestDir(const std::string &dir) { SetDestDir(dir.c_str()); }
+    void SetDestDir(const char *dir) { m_LuaVM.RegisterString(dir, "destdir"); };
+    const char *GetDestDir(void) { return m_LuaVM.GetStrVar("destdir"); };
+    bool VerifyDestDir();
 
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title) = 0;
     
@@ -207,7 +211,7 @@ public:
     virtual ~CBaseCFGScreen(void) { };
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
-                                                   int max) = 0;
+                                                 int max, const char *type) = 0;
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) = 0;
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) = 0;
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) = 0;

@@ -392,13 +392,16 @@ int CBaseLuaWidget::TitleHeight(int w, const char *desc)
 int CLuaInputField::m_iFieldHeight = 20;
 
 CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc,
-                               const char *val, int max) : CBaseLuaWidget(x, y, w, h, desc), m_pLabel(NULL), m_iMax(max)
+                               const char *val, int max, const char *type) : CBaseLuaWidget(x, y, w, h, desc), m_pLabel(NULL), m_iMax(max)
 {
     if (label && *label)
         m_szLabel = label;
     
     if (val && *val)
         m_szValue = val;
+    
+    if (type && *type)
+        m_szType = type;
 }
 
 Fl_Group *CLuaInputField::Create()
@@ -415,7 +418,12 @@ Fl_Group *CLuaInputField::Create()
     x += w + 10;
     w = m_pGroup->w() - (x - m_pGroup->x());
     
-    group->add(m_pInput = new Fl_Input(x, y, w, m_iFieldHeight));
+    if (m_szType == "number")
+        group->add(m_pInput = new Fl_Int_Input(x, y, w, m_iFieldHeight));
+    else if (m_szType == "float")
+        group->add(m_pInput = new Fl_Float_Input(x, y, w, m_iFieldHeight));
+    else
+        group->add(m_pInput = new Fl_Input(x, y, w, m_iFieldHeight));
     
     if (!m_szValue.empty())
         m_pInput->value(m_szValue.c_str());
@@ -583,8 +591,8 @@ int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::vector<std::
 // Lua directory selector class
 // -------------------------------------
 
-int CLuaDirSelector::m_iFieldHeight = 20;
-int CLuaDirSelector::m_iButtonWidth = 120;
+int CLuaDirSelector::m_iFieldHeight = 35;
+int CLuaDirSelector::m_iButtonWidth = 120, CLuaDirSelector::m_iButtonHeight = 25;
 
 CLuaDirSelector::CLuaDirSelector(int x, int y, int w, int h, const char *desc,
                                  const char *val) : CBaseLuaWidget(x, y, w, h, desc), m_pDirChooser(NULL)
@@ -613,13 +621,14 @@ Fl_Group *CLuaDirSelector::Create()
     Fl_Group *group = CBaseLuaWidget::Create();
     int x = group->x(), y = group->y() + DescHeight(), w = group->w() - x - m_iButtonWidth - 20;
     
-    group->add(m_pDirInput = new Fl_Input(x, y, w, m_iFieldHeight));
+    group->add(m_pDirInput = new Fl_File_Input(x, y, w, m_iFieldHeight));
     
     if (!m_szValue.empty())
         m_pDirInput->value(m_szValue.c_str());
     
     x = group->w() - m_iButtonWidth;
-    group->add(m_pDirButton = new Fl_Button(x, y, m_iButtonWidth, m_iFieldHeight, "Browse"));
+    y += (m_iFieldHeight - m_iButtonHeight) / 2; // Center between inputfield
+    group->add(m_pDirButton = new Fl_Button(x, y, m_iButtonWidth, m_iButtonHeight, "Browse"));
     m_pDirButton->callback(OpenDirSelWinCB, this);
     
     return group;
@@ -1047,11 +1056,12 @@ Fl_Group *CSelectDirScreen::Create()
     m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, "Select destination directory");
     
     int x = CenterX2(300+20+160, "", "", false, false);
-    int y = CenterY(25);
-    m_pSelDirInput = new Fl_Output(x, y, 300, 25);
-    m_pSelDirInput->value(m_pOwner->m_szDestDir.c_str());
+    int y = CenterY(35);
+    m_pSelDirInput = new Fl_File_Input(x, y, 300, 35);
+    m_pSelDirInput->value(m_pOwner->GetDestDir());
     
     x += 300 + 20;
+    y = CenterY(25);
     m_pSelDirButton = new Fl_Button(x, y, 160, 25, "Select a directory");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
@@ -1064,7 +1074,7 @@ void CSelectDirScreen::UpdateLang()
     if (m_pDirChooser)
         delete m_pDirChooser;
     
-    m_pDirChooser = new Fl_File_Chooser(m_pOwner->m_szDestDir.c_str(), "*",
+    m_pDirChooser = new Fl_File_Chooser(m_pOwner->GetDestDir(), "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
                                         GetTranslation("Select destination directory"));
     m_pDirChooser->preview(false);
@@ -1077,7 +1087,8 @@ void CSelectDirScreen::UpdateLang()
 
 bool CSelectDirScreen::Next()
 {
-    return m_pOwner->VerifyDestDir(m_pOwner->m_szDestDir);
+    m_pOwner->SetDestDir(m_pSelDirInput->value());
+    return m_pOwner->VerifyDestDir();
 }
 
 void CSelectDirScreen::OpenDirChooser(void)
@@ -1091,7 +1102,6 @@ void CSelectDirScreen::OpenDirChooser(void)
     if (!dir || !dir[0])
         return;
         
-    m_pOwner->m_szDestDir = dir;
     m_pSelDirInput->value(dir);
 }
 
@@ -1228,13 +1238,13 @@ bool CCFGScreen::Activate()
     return true;
 }
 
-CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
+CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)
 {
     int h = CLuaInputField::CalcHeight(m_pGroup->w() - 80, desc);
     
     if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
     {
-        CLuaInputField *field = new CLuaInputField(m_iStartX, m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max);
+        CLuaInputField *field = new CLuaInputField(m_iStartX, m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max, type);
         
         Fl_Group *group = field->Create();
         
@@ -1251,7 +1261,7 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     if (!m_pNextScreen)
         m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
     
-    return m_pNextScreen->CreateInputField(label, desc, val, max);
+    return m_pNextScreen->CreateInputField(label, desc, val, max, type);
 }
 
 CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector<std::string> &l)

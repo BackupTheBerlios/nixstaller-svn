@@ -232,7 +232,7 @@ bool CInstaller::InitLua()
     m_LuaVM.InitClass("finishscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pFinishScreen, "finishscreen", "FinishScreen");
     
-    if (!CBaseInstall::InitLua())
+    if (!CNCursBase::InitLua() || !CBaseInstall::InitLua())
         return false;
     
     return true;
@@ -423,8 +423,8 @@ void CBaseLuaWidget::UpdateLanguage()
 // Lua inputfield class
 // -------------------------------------
 
-CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *label,
-                               const char *desc, const char *val, int max) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc),
+CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *label, const char *desc,
+                               const char *val, int max, const char *type) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc),
                                                                              m_pLabel(NULL), m_iMax(max)
 {
     if (label && *label)
@@ -432,6 +432,14 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int ma
     
     if (val && *val)
         m_szValue = val;
+    
+    if (!strcmp(type, "number"))
+        m_eInpType = CInputField::INPUT_INT;
+    else if (!strcmp(type, "float"))
+        m_eInpType = CInputField::INPUT_FLOAT;
+    else
+        m_eInpType = CInputField::INPUT_STRING;
+
 }
 
 void CLuaInputField::CreateInit()
@@ -450,7 +458,7 @@ void CLuaInputField::CreateInit()
     int x = w + 2;
     w = width() - x;
     
-    m_pInput = AddChild(new CInputField(this, 1, w, y, x, 'r', m_iMax));
+    m_pInput = AddChild(new CInputField(this, 1, w, y, x, 'r', m_iMax, m_eInpType));
     
     if (!m_szValue.empty())
         m_pInput->SetText(m_szValue);
@@ -908,12 +916,10 @@ bool CSelectDirScreen::HandleEvent(CWidgetHandler *p, int type)
     {
         if (p == m_pChangeDirButton)
         {
-            std::string newdir = FileDialog(m_pInstaller->m_szDestDir.c_str(), GetTranslation("Select destination directory"));
+            std::string newdir = FileDialog(m_pInstaller->GetDestDir(), GetTranslation("Select destination directory"));
             if (!newdir.empty())
-            {
-                m_pInstaller->m_szDestDir = newdir;
-                m_pFileField->SetText(m_pInstaller->m_szDestDir.c_str());
-            }
+                m_pFileField->SetText(newdir);
+
             return true;
         }
     }
@@ -937,12 +943,13 @@ void CSelectDirScreen::CreateInit()
 
 void CSelectDirScreen::PostInit()
 {
-    m_pFileField->SetText(m_pInstaller->m_szDestDir.c_str());
+    m_pFileField->SetText(m_pInstaller->GetDestDir());
 }
 
 bool CSelectDirScreen::Next()
 {
-    return m_pInstaller->VerifyDestDir(m_pInstaller->m_szDestDir);
+    m_pInstaller->SetDestDir(m_pFileField->GetText());
+    return m_pInstaller->VerifyDestDir();
 }
 
 void CSelectDirScreen::UpdateLanguage()
@@ -1115,13 +1122,13 @@ void CCFGScreen::UpdateLanguage()
         m_LuaWidgets[u]->UpdateLanguage();
 }
 
-CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max)
+CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)
 {
     int h = CLuaInputField::CalcHeight(width()-3, desc);
     
     if (!m_pNextScreen && ((h + m_iStartY) <= height()))
     {
-        CLuaInputField *field = AddChild(new CLuaInputField(this, m_iStartY, 1, h, width()-3, label, desc, val, max));
+        CLuaInputField *field = AddChild(new CLuaInputField(this, m_iStartY, 1, h, width()-3, label, desc, val, max, type));
         m_LuaWidgets.push_back(field);
         m_iStartY += (h + 1);
         return field;
@@ -1130,7 +1137,7 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     if (!m_pNextScreen)
         m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
     
-    return m_pNextScreen->CreateInputField(label, desc, val, max);
+    return m_pNextScreen->CreateInputField(label, desc, val, max, type);
 }
 
 CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector<std::string> &l)

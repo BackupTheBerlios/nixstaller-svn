@@ -38,6 +38,7 @@
 #include "libsu.h"
 #include "lua.hpp"
 
+#include <syslog.h>
 #include <stdarg.h>
 #include <string>
 #include <list>
@@ -152,6 +153,7 @@ public:
     bool GetNumVar(lua_Number *out, const char *var, const char *tab=NULL);
     bool GetNumVar(lua_Integer *out, const char *var, const char *tab=NULL);
     bool GetStrVar(std::string *out, const char *var, const char *tab=NULL);
+    const char *GetStrVar(const char *var, const char *tab=NULL);
     
     unsigned OpenArray(const char *var, const char *tab=NULL);
     bool GetArrayNum(unsigned &index, lua_Number *out);
@@ -290,7 +292,7 @@ public:
     std::string m_szCurLang;
     std::vector<std::string> m_Languages;
     
-    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL) { };
+    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL) { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
     virtual ~CMain(void);
     
     void ThrowError(bool dialog, const char *error, ...);
@@ -314,6 +316,7 @@ public:
     static int LuaCHDir(lua_State *L);
     static int LuaGetFileSize(lua_State *L);
     static int LuaMSGBox(lua_State *L);
+    static int LuaLog(lua_State *L);
 };
     
 #include "install.h"
@@ -333,7 +336,6 @@ protected:
     virtual void SetProgress(int percent) = 0;
     
 public:
-    
     virtual ~CBaseAppManager(void) { };
 };
 

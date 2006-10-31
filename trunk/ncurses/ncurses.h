@@ -87,6 +87,8 @@ protected:
     
     virtual void CreateInit(void);
     virtual bool HandleKey(chtype ch);
+
+    virtual bool InitLua(void);
     
 public:
     CNCursBase(CWidgetManager *owner);
@@ -160,12 +162,14 @@ class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
     CInputField *m_pInput;
     CTextLabel *m_pLabel;
     int m_iMax;
+    CInputField::EInputType m_eInpType;
     
 protected:
     virtual void CreateInit(void);
 
 public:
-    CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *label, const char *desc, const char *val, int max);
+    CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *label, const char *desc, const char *val,
+                   int max, const char *type);
     
     virtual void UpdateLanguage(void);
     virtual const char *GetValue(void) { return m_pInput->GetText().c_str(); };
@@ -419,7 +423,7 @@ public:
                const std::string &title) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x), m_szTitle(title), m_iStartY(2),
                                            m_pNextScreen(NULL), m_iLinkedScrNr(0), m_iLinkedScrMax(0) { };
     
-    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);

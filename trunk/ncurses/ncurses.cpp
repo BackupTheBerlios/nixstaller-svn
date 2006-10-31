@@ -39,6 +39,7 @@ CWidgetManager *pWidgetManager;
 
 int main(int argc, char **argv)
 {
+    setlocale(LC_ALL, "");
     Intro();
     
     // Init ncurses
@@ -231,6 +232,14 @@ bool CNCursBase::HandleKey(chtype ch)
     }
     
     return false;
+}
+
+bool CNCursBase::InitLua()
+{
+    // Overide print function
+    m_LuaVM.RegisterFunction(LuaLog, "print", NULL, this);
+    
+    return CMain::InitLua();
 }
 
 void CNCursBase::UpdateLanguage()

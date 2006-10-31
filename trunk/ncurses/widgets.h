@@ -443,11 +443,16 @@ public:
 
 class CInputField: public CWidgetWindow
 {
+public:
+    enum EInputType { INPUT_STRING, INPUT_INT, INPUT_FLOAT };
+    
+private:
     chtype m_chOutChar;
     std::string m_szText;
     int m_iMaxChars;
     int m_iCursorPos, m_iScrollOffset;
     CFormattedText m_FMText;
+    EInputType m_eInpType;
     
     void Addch(chtype ch);
     void Delch(bool backspace);
@@ -464,7 +469,7 @@ public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a',
-                int max=-1, chtype out=0);
+                int max=-1, chtype out=0, EInputType type=INPUT_FLOAT);
     
     const std::string &GetText(void) { return m_szText; };
     void SetText(const std::string &s) { m_szText = s; ChangeFMText(); MoveCursor(m_szText.length(), false); };

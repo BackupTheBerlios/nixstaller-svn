@@ -1009,7 +1009,10 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             }
 
             if (canprint)
-                m_pWindow->addch(y, spaces+x, m_Lines[u]->text[index]);
+            {
+                // Use addstr instead of addch, since it handles multibyte characters for us
+                m_pWindow->addstr(y, spaces+x, &m_Lines[u]->text[index], 1);
+            }
             
             index++;
             chars++;
@@ -1957,12 +1960,12 @@ void CMenu::Clear()
 chtype CInputField::m_cDefaultFocusedColors;
 chtype CInputField::m_cDefaultDefocusedColors;
 
-CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel,
-                         int max, chtype out) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x,
-                                                              absrel, false, true, m_cDefaultFocusedColors,
-                                                              m_cDefaultDefocusedColors),
-                                                m_chOutChar(out), m_iMaxChars(max), m_iCursorPos(0),
-                                                m_iScrollOffset(0), m_FMText(this, "", false)
+CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel, int max,
+                         chtype out, EInputType type) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x,
+                                                                      absrel, false, true, m_cDefaultFocusedColors,
+                                                                      m_cDefaultDefocusedColors),
+                                                        m_chOutChar(out), m_iMaxChars(max), m_iCursorPos(0),
+                                                        m_iScrollOffset(0), m_FMText(this, "", false), m_eInpType(type)
 {
 }
 
@@ -2107,6 +2110,37 @@ bool CInputField::HandleKey(chtype ch)
                 handled = false;
             else
             {
+/*                if ((m_eInpType == INPUT_INT) || (m_eInpType == INPUT_FLOAT))
+                {
+                    lconv *lc = localeconv();
+                    
+                    char *dec = ".", *minus = "-";
+                            
+                if ((m_eInpType == INPUT_INT) && !isdigit(ch))
+                    break;
+                else if ((m_eInpType == INPUT_FLOAT) && !isdigit(ch) && (ch != '.') && (ch !='E'))
+                    break;*/
+                
+                if ((m_eInpType == INPUT_INT) || (m_eInpType == INPUT_FLOAT))
+                {
+                    std::string legal = "1234567890";
+
+                    lconv *lc = localeconv();
+                    assert(lc != NULL);
+                    
+                    std::string decpoint = std::string(lc->decimal_point) + std::string(lc->mon_decimal_point) + std::string(".");
+                    std::string plusminsign = std::string(lc->positive_sign) + std::string(lc->negative_sign) + std::string("-+");
+                    
+                    if ((m_eInpType == INPUT_FLOAT) && (m_szText.find_first_of(decpoint) == std::string::npos))
+                        legal += decpoint;
+                    
+                    if (((m_iCursorPos+m_iScrollOffset) == 0) && (m_szText.find_first_of(plusminsign) == std::string::npos))
+                        legal += plusminsign;
+                    
+                    if (legal.find(ch) == std::string::npos)
+                        break; // Illegal char
+                }
+                
                 Addch(ch);
                 PushEvent(EVENT_DATACHANGED);
             }
@@ -2799,7 +2833,7 @@ void CFileDialog::CreateInit()
     
     OpenDir();
     
-    AddButton("F2", "Create new directory");
+    AddGlobalButton("F2", "Create new directory");
 }
 
 void CFileDialog::OpenDir(std::string newdir)

@@ -310,6 +310,26 @@ bool CLuaVM::GetStrVar(std::string *out, const char *var, const char *tab)
     return (goodtype);
 }
 
+const char *CLuaVM::GetStrVar(const char *var, const char *tab)
+{
+    const char *out = NULL;
+    GetGlobal(var, tab);
+    
+    if (lua_isnil(m_pLuaState, -1))
+    {
+        lua_pop(m_pLuaState, 1);
+        return NULL;
+    }
+    
+    bool goodtype = lua_isstring(m_pLuaState, -1);
+    if (goodtype)
+        out = lua_tostring(m_pLuaState, -1);
+    
+    lua_pop(m_pLuaState, 1);
+    
+    return out;
+}
+
 unsigned CLuaVM::OpenArray(const char *var, const char *tab)
 {
     GetGlobal(var, tab);

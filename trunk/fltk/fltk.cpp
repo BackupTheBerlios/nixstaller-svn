@@ -41,10 +41,10 @@ int main(int argc, char **argv)
 {
     Intro();
     
-    if ((argc > 1) && !strcmp(argv[1], "inst"))
+//     if ((argc > 1) && !strcmp(argv[1], "inst"))
         pInterface = new CInstaller;
-    else
-        pInterface = new CAppManager;
+/*    else
+        pInterface = new CAppManager;*/
     
     // Init
     if (!pInterface->Init(argc, argv))

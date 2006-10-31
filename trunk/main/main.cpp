@@ -60,6 +60,7 @@ CMain::~CMain()
     }
     
     FreeStrings();
+    closelog();
 }
 
 bool CMain::Init(int argc, char **argv)
@@ -347,6 +348,7 @@ bool CMain::InitLua()
     m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
     m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
     m_LuaVM.RegisterFunction(LuaMSGBox, "MSGBox", NULL, this);
+    m_LuaVM.RegisterFunction(LuaLog, "Log", NULL, this);
     
     // Set some default values for config variabeles
     m_LuaVM.SetArrayStr("english", "languages", 1);
@@ -708,6 +710,19 @@ int CMain::LuaMSGBox(lua_State *L)
         msg += luaL_checkstring(L, i);
     
     pMain->MsgBox(msg.c_str());
+    
+    return 0;
+}
+
+int CMain::LuaLog(lua_State *L)
+{
+    std::string msg = luaL_checkstring(L, 1);
+    int args = lua_gettop(L);
+    
+    for (int i=2; i<=args; i++)
+        msg += luaL_checkstring(L, i);
+    
+    syslog(0, msg.c_str());
     
     return 0;
 }

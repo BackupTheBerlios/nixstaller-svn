@@ -55,6 +55,8 @@
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Output.H>
 #include <FL/Fl_Secret_Input.H>
+#include <FL/Fl_Int_Input.H>
+#include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Multiline_Output.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Browser.H>
@@ -189,14 +191,14 @@ public:
 
 class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
 {
-    std::string m_szLabel, m_szValue;
+    std::string m_szLabel, m_szValue, m_szType;
     Fl_Box *m_pLabel;
     Fl_Input *m_pInput;
     int m_iMax;
     static int m_iFieldHeight;
     
 public:
-    CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc, const char *val, int max);
+    CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc, const char *val, int max, const char *type);
 
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
@@ -243,10 +245,10 @@ public:
 class CLuaDirSelector: public CBaseLuaDirSelector, public CBaseLuaWidget
 {
     std::string m_szValue;
-    Fl_Input *m_pDirInput;
+    Fl_File_Input *m_pDirInput;
     Fl_Button *m_pDirButton;
     Fl_File_Chooser *m_pDirChooser;
-    static int m_iFieldHeight, m_iButtonWidth;
+    static int m_iFieldHeight, m_iButtonWidth, m_iButtonHeight;
     
     void OpenDirChooser(void);
     
@@ -414,7 +416,7 @@ class CSelectDirScreen: public CBaseScreen
     Fl_File_Chooser *m_pDirChooser;
     Fl_Box *m_pBox;
     Fl_Button *m_pSelDirButton;
-    Fl_Output *m_pSelDirInput;
+    Fl_File_Input *m_pSelDirInput;
     
 public:
     CSelectDirScreen(CInstaller *owner) : CBaseScreen(owner), m_pDirChooser(NULL) { };
@@ -482,7 +484,7 @@ public:
     virtual void UpdateLang(void);
     virtual bool Activate(void);
     
-    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max);
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
