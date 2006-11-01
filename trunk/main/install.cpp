@@ -807,11 +807,26 @@ int CBaseCFGScreen::LuaAddCFGMenu(lua_State *L)
 // Base Lua Inputfield Class
 // -------------------------------------
 
+CBaseLuaInputField::CBaseLuaInputField(const char *t)
+{
+    if (!t || !t[0] || (strcmp(t, "number") && strcmp(t, "float") && strcmp(t, "string")))
+        m_szType = "string";
+    else
+        m_szType = t;
+}
+
 int CBaseLuaInputField::LuaGet(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseLuaInputField *field = pInstaller->m_LuaVM.CheckClass<CBaseLuaInputField *>("inputfield", 1);
-    lua_pushstring(L, field->GetValue());
+    
+    if (field->GetType() == "string")
+        lua_pushstring(L, field->GetValue());
+    else if (field->GetType() == "number")
+        lua_pushinteger(L, atoi(field->GetValue()));
+    else if (field->GetType() == "float")
+        lua_pushnumber(L, atof(field->GetValue()));
+    
     return 1;
 }
 

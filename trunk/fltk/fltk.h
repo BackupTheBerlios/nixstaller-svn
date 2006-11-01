@@ -191,7 +191,7 @@ public:
 
 class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
 {
-    std::string m_szLabel, m_szValue, m_szType;
+    std::string m_szLabel, m_szValue;
     Fl_Box *m_pLabel;
     Fl_Input *m_pInput;
     int m_iMax;

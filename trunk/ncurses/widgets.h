@@ -469,7 +469,7 @@ public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
     
     CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a',
-                int max=-1, chtype out=0, EInputType type=INPUT_FLOAT);
+                int max=-1, chtype out=0, EInputType type=INPUT_STRING);
     
     const std::string &GetText(void) { return m_szText; };
     void SetText(const std::string &s) { m_szText = s; ChangeFMText(); MoveCursor(m_szText.length(), false); };

@@ -2110,17 +2110,6 @@ bool CInputField::HandleKey(chtype ch)
                 handled = false;
             else
             {
-/*                if ((m_eInpType == INPUT_INT) || (m_eInpType == INPUT_FLOAT))
-                {
-                    lconv *lc = localeconv();
-                    
-                    char *dec = ".", *minus = "-";
-                            
-                if ((m_eInpType == INPUT_INT) && !isdigit(ch))
-                    break;
-                else if ((m_eInpType == INPUT_FLOAT) && !isdigit(ch) && (ch != '.') && (ch !='E'))
-                    break;*/
-                
                 if ((m_eInpType == INPUT_INT) || (m_eInpType == INPUT_FLOAT))
                 {
                     std::string legal = "1234567890";

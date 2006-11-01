@@ -392,16 +392,14 @@ int CBaseLuaWidget::TitleHeight(int w, const char *desc)
 int CLuaInputField::m_iFieldHeight = 20;
 
 CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc,
-                               const char *val, int max, const char *type) : CBaseLuaWidget(x, y, w, h, desc), m_pLabel(NULL), m_iMax(max)
+                               const char *val, int max, const char *type) : CBaseLuaInputField(type), CBaseLuaWidget(x, y, w, h, desc),
+                                                                             m_pLabel(NULL), m_iMax(max)
 {
     if (label && *label)
         m_szLabel = label;
     
     if (val && *val)
         m_szValue = val;
-    
-    if (type && *type)
-        m_szType = type;
 }
 
 Fl_Group *CLuaInputField::Create()
@@ -418,9 +416,9 @@ Fl_Group *CLuaInputField::Create()
     x += w + 10;
     w = m_pGroup->w() - (x - m_pGroup->x());
     
-    if (m_szType == "number")
+    if (GetType() == "number")
         group->add(m_pInput = new Fl_Int_Input(x, y, w, m_iFieldHeight));
-    else if (m_szType == "float")
+    else if (GetType() == "float")
         group->add(m_pInput = new Fl_Float_Input(x, y, w, m_iFieldHeight));
     else
         group->add(m_pInput = new Fl_Input(x, y, w, m_iFieldHeight));

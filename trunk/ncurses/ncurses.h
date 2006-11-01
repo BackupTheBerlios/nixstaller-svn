@@ -162,7 +162,6 @@ class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
     CInputField *m_pInput;
     CTextLabel *m_pLabel;
     int m_iMax;
-    CInputField::EInputType m_eInpType;
     
 protected:
     virtual void CreateInit(void);

@@ -129,7 +129,13 @@ public:
 
 class CBaseLuaInputField
 {
+    std::string m_szType;
+    
+protected:
+    const std::string &GetType(void) { return m_szType; };
+    
 public:
+    CBaseLuaInputField(const char *t);
     virtual ~CBaseLuaInputField(void) { };
     virtual const char *GetValue(void) = 0;
     virtual void SetSpacing(int percent) = 0;

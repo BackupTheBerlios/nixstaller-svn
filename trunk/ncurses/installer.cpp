@@ -424,7 +424,8 @@ void CBaseLuaWidget::UpdateLanguage()
 // -------------------------------------
 
 CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int maxx, const char *label, const char *desc,
-                               const char *val, int max, const char *type) : CBaseLuaWidget(owner, y, x, maxy, maxx, desc),
+                               const char *val, int max, const char *type) : CBaseLuaInputField(type),
+                                                                             CBaseLuaWidget(owner, y, x, maxy, maxx, desc),
                                                                              m_pLabel(NULL), m_iMax(max)
 {
     if (label && *label)
@@ -432,14 +433,6 @@ CLuaInputField::CLuaInputField(CCFGScreen *owner, int y, int x, int maxy, int ma
     
     if (val && *val)
         m_szValue = val;
-    
-    if (!strcmp(type, "number"))
-        m_eInpType = CInputField::INPUT_INT;
-    else if (!strcmp(type, "float"))
-        m_eInpType = CInputField::INPUT_FLOAT;
-    else
-        m_eInpType = CInputField::INPUT_STRING;
-
 }
 
 void CLuaInputField::CreateInit()
@@ -458,7 +451,14 @@ void CLuaInputField::CreateInit()
     int x = w + 2;
     w = width() - x;
     
-    m_pInput = AddChild(new CInputField(this, 1, w, y, x, 'r', m_iMax, m_eInpType));
+    CInputField::EInputType it = CInputField::INPUT_STRING;
+    
+    if (GetType() == "number")
+        it = CInputField::INPUT_INT;
+    else if (GetType() == "float")
+        it = CInputField::INPUT_FLOAT;
+    
+    m_pInput = AddChild(new CInputField(this, 1, w, y, x, 'r', m_iMax, 0, it));
     
     if (!m_szValue.empty())
         m_pInput->SetText(m_szValue);
