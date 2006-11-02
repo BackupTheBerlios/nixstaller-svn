@@ -93,7 +93,7 @@ void CLuaVM::GetGlobal(const char *var, const char *tab)
         if (!lua_isnil(m_pLuaState, -1))
         {
             lua_getfield(m_pLuaState, -1, var);
-            lua_remove(m_pLuaState, -2); // Remove tabel from stack(we don't need it anymore)
+            lua_remove(m_pLuaState, -2); // Remove table from stack(we don't need it anymore)
         }
     }
     else

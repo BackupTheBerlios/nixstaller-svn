@@ -632,7 +632,15 @@ void CBaseInstall::RegisterInstall(void)
 int CBaseInstall::LuaGetTempDir(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
-    lua_pushstring(L, CreateText("%s", pInstaller->m_szOwnDir.c_str())); // UNDONE
+    const char *ret = CreateText("%s/tmp", pInstaller->m_szOwnDir.c_str());
+    
+    if (!FileExists(ret))
+    {
+        if (mkdir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)))
+            pInstaller->ThrowError(false, "Could not create temporary directory"); // UNDONE
+    }
+    
+    lua_pushstring(L, ret);
     return 1;
 }
 

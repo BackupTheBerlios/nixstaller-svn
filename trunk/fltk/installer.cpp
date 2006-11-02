@@ -423,6 +423,8 @@ Fl_Group *CLuaInputField::Create()
     else
         group->add(m_pInput = new Fl_Input(x, y, w, m_iFieldHeight));
     
+    m_pInput->maximum_size(m_iMax);
+    
     if (!m_szValue.empty())
         m_pInput->value(m_szValue.c_str());
     

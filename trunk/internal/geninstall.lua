@@ -186,7 +186,7 @@ function Init()
     table.sort(LCDirs, function(a, b) return a > b end)
     
     for _, s in ipairs(LCDirs) do
-        -- Check if we can a bin from the directory
+        -- Check if we can use a bin from the directory
         local bin = binpath .. "/" .. s .. "/lzma"
         if (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin))) then
             LZMABin = bin
