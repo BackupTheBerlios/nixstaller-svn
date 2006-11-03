@@ -40,7 +40,8 @@ CWidgetManager *pWidgetManager;
 int main(int argc, char **argv)
 {
     setlocale(LC_ALL, "");
-    Intro();
+    
+    PreInit(argc, argv);
     
     // Init ncurses
     

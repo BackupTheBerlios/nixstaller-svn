@@ -67,7 +67,7 @@ struct app_entry_s
 
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
-void Intro(void);
+void PreInit(int argc, char **argv);
 char *CreateText(const char *s, ...);
 inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
 char *CreateTmpText(const char *s, ...);
@@ -260,8 +260,6 @@ public:
 
 class CMain
 {
-    void CreateInstall(int argc, char **argv);
-    
 protected:
     CLuaVM m_LuaVM;
     const std::string m_szRegVer;
@@ -318,7 +316,21 @@ public:
     static int LuaMSGBox(lua_State *L);
     static int LuaLog(lua_State *L);
 };
+
+class CLuaRunner: public CMain
+{
+    virtual char *GetPassword(const char *) { return 0; };
+    virtual void MsgBox(const char *str, ...) { };
+    virtual bool YesNoBox(const char *str, ...) { return false; };
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) { return 0; };
+    virtual void WarnBox(const char *str, ...) { };
     
+    void CreateInstall(int argc, char **argv);
+
+public:
+    virtual bool Init(int argc, char **argv);
+};
+
 #include "install.h"
 
 class CBaseAppManager: virtual public CMain

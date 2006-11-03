@@ -42,12 +42,21 @@
 
 extern std::map<std::string, char *> Translations;
 
-void Intro()
+void PreInit(int argc, char **argv)
 {
     printf("Nixstaller version 0.2, Copyright (C) 2006 of Rick Helmus\n"
             "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
             "This is free software, and you are welcome to redistribute it\n"
             "under certain conditions; see the about section for details.\n");
+    
+    if ((argc >= 4) && !strcmp(argv[1], "-c"))
+    {
+        // HACK: Run lua script and exit
+        CLuaRunner *p = new CLuaRunner;
+        p->Init(argc, argv);
+        delete p;
+        EndProg();
+    }
 }
 
 

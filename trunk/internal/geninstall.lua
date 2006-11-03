@@ -173,7 +173,7 @@ function Init()
     
     dofile(confdir .. "/config.lua")
     
-    -- Find a LZMA bin which we can use
+    -- Find a LZMA and edelta bin which we can use
     local LCDirs = { } -- List containing all libc subdirectories for this system
     local binpath = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
     for s in io.dir(binpath) do
@@ -191,11 +191,19 @@ function Init()
         if (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin))) then
             LZMABin = bin
         end
+        
+        local bin = binpath .. "/" .. s .. "/edelta"
+        if (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin))) then
+            EdeltaBin = bin
+        end
     end
     
     if (not LZMABin) then
         ThrowError("Could not find a suitable LZMA encoder")
+    elseif (not EdeltaBin) then
+        ThrowError("Could not find a suitable edelta encoder")
     end
+    
 print(string.format([[
 Configuration:
 ---------------------------------
@@ -248,6 +256,8 @@ function PrepareArchive()
                 ThrowError("No bins for %s/%s", OS, ARCH)
             end
             
+            local fr_diff_src = { }
+            
             for LC in io.dir(tmpdir) do
                 local lcpath = tmpdir .. "/" .. LC
                 if (string.find(LC, "^libc") and os.isdir(lcpath)) then
@@ -270,13 +280,23 @@ function PrepareArchive()
                                 if os.fileexists(binpath) then
                                     local destpath = string.format("%s/tmp/bin/%s/%s/%s/%s", confdir, OS, ARCH, LC, LCPP)
                                     os.mkdirrec(destpath)
-                                    if (archivetype == "lzma") then
-                                        if os.execute(string.format("%s e %s %s/%s.lzma 2>/dev/null", LZMABin,
-                                                      binpath, destpath, binname)) == 0 then
-                                            frfound = true
+                                    
+                                    if not fr_diff_src[binname] then
+                                        fr_diff_src[binname] = binpath
+    
+                                        if (archivetype == "lzma") then
+                                            if os.execute(string.format("%s e %s %s/%s.lzma 2>/dev/null", LZMABin,
+                                                        binpath, destpath, binname)) == 0 then
+                                                frfound = true
+                                            end
+                                        else
+                                            if os.copy(binpath, destpath) ~= nil then
+                                                frfound = true
+                                            end
                                         end
                                     else
-                                        if os.copy(binpath, destpath) ~= nil then
+                                        if os.execute(string.format("%s delta %s %s %s/%s.tmp", EdeltaBin,
+                                                                     fr_diff_src[binname], binpath, destpath, binname)) == 0 then
                                             frfound = true
                                         end
                                     end
@@ -292,6 +312,7 @@ function PrepareArchive()
                     if (archivetype == "lzma") then
                         RequiredCopy(lcpath .. "/lzma-decode", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
                     end
+                    RequiredCopy(lcpath .. "/edelta", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
                 end
             end
         end

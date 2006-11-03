@@ -91,14 +91,16 @@ bool CMain::Init(int argc, char **argv)
     if (!InitLua())
         return false;
     
-    if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
+/*    if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
         if (!strcmp(argv[1], "-c"))
         {
+            printf("Switching to script runner\n");
+
             CreateInstall(argc, argv);
             EndProg();
         }
-    }
+    }*/
      
     if (m_Languages.empty())
     {
@@ -115,15 +117,6 @@ bool CMain::Init(int argc, char **argv)
     ReadLang();
 
     return true;
-}
-
-void CMain::CreateInstall(int argc, char **argv)
-{
-    m_LuaVM.RegisterString(argv[3], "confdir");
-    m_LuaVM.RegisterString(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
-    
-    if (!m_LuaVM.LoadFile(argv[2]))
-        ThrowError(false, "\nError parsing lua file!\n");
 }
 
 void CMain::ThrowError(bool dialog, const char *error, ...)
@@ -725,4 +718,28 @@ int CMain::LuaLog(lua_State *L)
     syslog(0, msg.c_str());
     
     return 0;
+}
+
+// -------------------------------------
+// Lua Runner Class
+// -------------------------------------
+
+void CLuaRunner::CreateInstall(int argc, char **argv)
+{
+    m_LuaVM.RegisterString(argv[3], "confdir");
+    m_LuaVM.RegisterString(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
+    
+    if (!m_LuaVM.LoadFile(argv[2]))
+        ThrowError(false, "\nError parsing lua file!\n");
+}
+
+
+bool CLuaRunner::Init(int argc, char **argv)
+{
+    if (!CMain::Init(argc, argv))
+        return false;
+    
+    CreateInstall(argc, argv);
+    
+    return true;
 }
