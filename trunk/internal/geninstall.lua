@@ -251,15 +251,15 @@ function PrepareArchive()
     -- Copy all specified frontends for every given OS/ARCH and every availiable libc/libstdc++ version
     for _, OS in pairs(targetos) do
         for _, ARCH in pairs(targetarch) do
-            local tmpdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
-            if (not os.fileexists(tmpdir)) then
+            local osdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
+            if (not os.fileexists(osdir)) then
                 ThrowError("No bins for %s/%s", OS, ARCH)
             end
             
             local fr_diff_src = { }
             
-            for LC in io.dir(tmpdir) do
-                local lcpath = tmpdir .. "/" .. LC
+            for LC in io.dir(osdir) do
+                local lcpath = osdir .. "/" .. LC
                 if (string.find(LC, "^libc") and os.isdir(lcpath)) then
                     for LCPP in io.dir(lcpath) do
                         local lcpppath = lcpath .. "/" .. LCPP
@@ -283,6 +283,10 @@ function PrepareArchive()
                                     
                                     if not fr_diff_src[binname] then
                                         fr_diff_src[binname] = binpath
+                                        
+                                        local ed_src = io.open(string.format("%s/tmp/bin/%s/%s/edelta_src", confdir, OS, ARCH), "a")
+                                        ed_src:write(string.format("%s bin/%s/%s/%s/%s/%s\n", binname, OS, ARCH, LC, LCPP, binname))
+                                        ed_src:close()
     
                                         if (archivetype == "lzma") then
                                             if os.execute(string.format("%s e %s %s/%s.lzma 2>/dev/null", LZMABin,
@@ -295,9 +299,16 @@ function PrepareArchive()
                                             end
                                         end
                                     else
-                                        if os.execute(string.format("%s delta %s %s %s/%s.tmp", EdeltaBin,
-                                                                     fr_diff_src[binname], binpath, destpath, binname)) == 0 then
+                                        local destbin = destpath .. "/" .. binname
+                                        
+                                        if os.execute(string.format("%s -q delta %s %s %s", EdeltaBin,
+                                                                     fr_diff_src[binname], binpath, destbin)) == 0 then
                                             frfound = true
+                                        end
+                                        
+                                        if (archivetype == "lzma") then
+                                            os.execute(string.format("%s e %s %s 2>/dev/null", LZMABin, destbin, destbin .. ".lzma"))
+                                            os.remove(destbin)
                                         end
                                     end
                                 end
@@ -325,6 +336,15 @@ function PrepareArchive()
             print(string.format("Warning could not copy intro picture: %s", msg))
         end
     end
+                    
+    local inffile, msg = io.open(string.format("%s/tmp/info", confdir), "w")
+
+    if inffile == nil then
+        ThrowError("Could not create internal info file for archive: %s", msg)
+    end
+                
+    inffile:write(archivetype)
+    inffile:close()
 end
 
 function CreateArchive()

@@ -35,6 +35,16 @@
 
 # Does some simple checking, and tries to launch the right installer frontend
 
+# Unpacks $1.lzma to lzma and removes $1.lzma
+# $1: File to handle
+# $2: libc directory to be used for lzma
+unlzma()
+{
+    if [ ! -z $1 -a -e $1.lzma ]; then
+        $2/lzma-decode $1.lzma $1 2>&1 >/dev/null && rm $1.lzma
+    fi
+}
+
 configure()
 {
     echo "Collecting info for this system..."
@@ -53,58 +63,127 @@ configure()
     echo "C libraries: "`echo $LIBCS | tr 'n\' ' '`
     
     # Get all C++ libs. Sorted so higher versions come first
-    LIBSTDCPPS=`ls '/usr/lib/libstdc++.so.'* | sort -nr`
+    #LIBSTDCPPS=`ls '/usr/lib/libstdc++.so.'* | sort -nr`
+    LIBSTDCPPS="/usr/lib/libstdc++.so.5"
     echo "C++ libraries: "`echo $LIBSTDCPPS | tr 'n\' ' '`
 }
 
+# Uses edelta to reconstruct frontend binaries
+# $1: libc directory to be used(for lzma and edelta)
+# $2: source file
+# $3: diff file
+edelta()
+{
+    unlzma $3
+    
+    echo "patching $3 with $2"
+    mv $3 $3.tmp
+    $1/edelta -q patch $2 $3 $3.tmp
+}
+
 # Check which archive type to use
-ARCH_TYPE=`awk '$1=="archtype"{print $2}' config/install.cfg`
+# ARCH_TYPE=`awk '$1=="archtype"{print $2}' config/install.cfg`
+ARCH_TYPE=`cat info`
 if [ -z "$ARCH_TYPE" ]; then
     ARCH_TYPE="gzip"
 fi
 
 configure
 
-# Try to launch a frontend
-for LC in $LIBCS
+# Get source frontend to use for edelta
+NCURS_SRC=`awk '$1=="ncurs"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
+FLTK_SRC=`awk '$1=="fltk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
+
+FRONTENDS="fltk ncurs"
+
+for FR in $FRONTENDS
 do
-    LCDIR="./bin/$CURRENT_OS/$CURRENT_ARCH/"`basename $LC`
-    echo "Trying libc: " $LCDIR
-    
-    if [ ! -d ${LCDIR} ]; then
+    if [ -z $DISPLAY -a $FR != "ncurs" ]; then
         continue
     fi
-
-    for LCPP in $LIBSTDCPPS
+    
+    case $FR in
+        "fltk") ED_SRC=$FLTK_SRC ;;
+        "ncurs") ED_SRC=$NCURS_SRC ;;
+    esac
+    
+    for LC in $LIBCS
     do
-        LCPPDIR=${LCDIR}/`basename $LCPP`
-        echo "Trying libstdc++: " $LCPPDIR
+        LCDIR="bin/$CURRENT_OS/$CURRENT_ARCH/"`basename $LC`
+        echo "Trying libc for $FR: " $LCDIR
         
-        if [ ! -d ${LCPPDIR} ]; then
+        if [ ! -d ${LCDIR} ]; then
             continue
         fi
-        
-        # X Running?
-        if [ ! -z $DISPLAY -a -e ${LCPPDIR}/fltk ]; then
-            FRONTEND="${LCPPDIR}/fltk"
-        elif [ -e "${LCPPDIR}/ncurs" ]; then
-            FRONTEND="${LCPPDIR}/ncurs"
-        else
-            continue
+    
+        if [ $ARCH_TYPE = "lzma" -a ! -e ${LCDIR}/lzma-decode ]; then
+            continue # No usable lzma-decoder
         fi
         
-        # If the package is compressed with lzma, the frontends will be aswell. So unpack them if required
-        if [ $ARCH_TYPE = "lzma" ]; then
-            ${LCDIR}/lzma-decode $FRONTEND ${FRONTEND}.2
-            FRONTEND=${FRONTEND}.2
-            chmod +x $FRONTEND
-        fi
+#         if [ ! -z $ED_SRC -a $FRONTEND != $ED_SRC -a ! -e ${LCDIR}/edelta ]; then
+#             continue # No usable edelta bin
+#         fi
         
-        # Run it
-        $FRONTEND inst
-        exit 0
+        #unlzma $NCURS_SRC ${LCDIR}
+        unlzma $ED_SRC ${LCDIR}
+        #edelta ${LCDIR} $FLTK_SRC $NCURS_SRC
+        
+        for LCPP in $LIBSTDCPPS
+        do
+            LCPPDIR=${LCDIR}/`basename $LCPP`
+            echo "Trying libstdc++ for $FR: " $LCPPDIR
+            
+            if [ ! -d ${LCPPDIR} ]; then
+                continue
+            fi
+            
+            unlzma ${LCPPDIR}/$FR ${LCDIR}
+            
+            if [ -e ${LCPPDIR}/$FR ]; then
+                FRONTEND="${LCPPDIR}/$FR"
+                if [ ! -z $ED_SRC -a $FRONTEND != $ED_SRC ]; then
+                    edelta ${LCDIR} $ED_SRC $FRONTEND
+                fi
+                
+                # Run it
+                chmod +x $FRONTEND # deltas en lzma packed bins probably aren't executable yet
+                ./$FRONTEND
+                exit $?
+            fi
+        done
     done
 done
+
+#     for LCPP in $LIBSTDCPPS
+#     do
+#         LCPPDIR=${LCDIR}/`basename $LCPP`
+#         echo "Trying libstdc++: " $LCPPDIR
+#         
+#         if [ ! -d ${LCPPDIR} ]; then
+#             continue
+#         fi
+#         
+#         unlzma ${LCPPDIR}/fltk ${LCDIR}
+#         unlzma ${LCPPDIR}/ncurs ${LCDIR}
+#         
+#         # X Running?
+#         if [ ! -z $DISPLAY -a -e ${LCPPDIR}/fltk ]; then
+#             FRONTEND="${LCPPDIR}/fltk"
+#             if [ ! -z $FLTK_SRC -a $FRONTEND != $FLTK_SRC ]; then
+#                 edelta ${LCDIR} $FLTK_SRC $FRONTEND
+#             fi
+#         elif [ -e "${LCPPDIR}/ncurs" ]; then
+#             FRONTEND="${LCPPDIR}/ncurs"
+#         else
+#             continue
+#         fi
+#         
+#         # Run it
+#         chmod +x $FRONTEND # deltas en lzma packed bins probably aren't executable yet
+#         ./$FRONTEND
+#         exit 0
+#     done
+# done
 
 echo "Error: Couldn't find any suitable frontend for your system"
 exit 1

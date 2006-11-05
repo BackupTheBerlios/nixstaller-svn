@@ -47,6 +47,30 @@
 std::list<char *> StringList;
 std::map<std::string, char *> Translations;
 
+int main(int argc, char **argv)
+{
+    setlocale(LC_ALL, "");
+
+    printf("Nixstaller version 0.2, Copyright (C) 2006 of Rick Helmus\n"
+           "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
+           "This is free software, and you are welcome to redistribute it\n"
+           "under certain conditions; see the about section for details.\n");
+    
+    // Caller (usually geninstall.sh) wants to run a lua script?
+    if ((argc >= 4) && !strcmp(argv[1], "-c"))
+    {
+        // HACK: Run lua script and exit
+        CLuaRunner *p = new CLuaRunner;
+        p->Init(argc, argv);
+        delete p;
+        EndProg();
+    }
+    else
+        return RunFrontend(argc, argv);
+    
+    return EXIT_SUCCESS; // Never reached
+}
+
 // -------------------------------------
 // Main Class
 // -------------------------------------

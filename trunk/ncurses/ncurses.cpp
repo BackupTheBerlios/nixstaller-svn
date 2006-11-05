@@ -37,12 +37,8 @@
 NCursesWindow *pRootWin;
 CWidgetManager *pWidgetManager;
 
-int main(int argc, char **argv)
+int RunFrontend(int argc, char **argv)
 {
-    setlocale(LC_ALL, "");
-    
-    PreInit(argc, argv);
-    
     // Init ncurses
     
     ::endwin();

@@ -37,10 +37,8 @@
 
 CFLTKBase *pInterface = NULL;
 
-int main(int argc, char **argv)
+int RunFrontend(int argc, char **argv)
 {
-    PreInit(argc, argv);
-    
 //     if ((argc > 1) && !strcmp(argv[1], "inst"))
         pInterface = new CInstaller;
 /*    else

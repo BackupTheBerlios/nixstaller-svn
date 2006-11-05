@@ -1,0 +1,6 @@
+Modified version of 'edelta' (http://www.diku.dk/~jacobg/edelta/).
+All the zlib code IO code is modified to regular file IO, this makes it
+possible for other encoders(ie lzma) to compress it better and reduce much of
+the size of the edelta bin.
+
+
