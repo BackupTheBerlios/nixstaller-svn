@@ -36,7 +36,8 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
-
+#include <assert.h>
+        
 #include "md5.h"
 #include "main.h"
 
@@ -192,11 +193,20 @@ std::string GetFirstValidDir(const std::string &dir)
     if ((dir[0] == '/') && (dir.length() == 1))
         return dir; // Root dir given
 
-    if (FileExists(dir))
-        return dir;
-    
     std::string subdir = dir;
-
+    
+    if (dir[0] != '/') // No absolute path given
+    {
+        char curdir[1024];
+        if (getcwd(curdir, sizeof(curdir)) == 0) // Failed for some stupid reason...sigh
+            subdir.insert(0, "/");
+        else
+            subdir.insert(0, curdir + std::string("/"));
+    }
+    
+    if (FileExists(subdir))
+        return subdir;
+    
     // Remove trailing /
     if (subdir[subdir.length()-1] == '/')
         subdir.erase(subdir.length()-1, 1);
@@ -205,19 +215,20 @@ std::string GetFirstValidDir(const std::string &dir)
     do
     {
         pos = subdir.rfind('/');
+        assert(pos != std::string::npos);
+        
         if (pos == std::string::npos)
         {
-            // No absolute path given...just return current dir
-            char curdir[1024];
-            if (getcwd(curdir, sizeof(curdir)) == 0)
-                return "/";
-            return curdir;
+            // Shouldn't happen
+            return subdir;
         }
         else if (pos == 0) // Reached the root dir('/')
             return "/";
+        
         subdir.erase(pos);
     }
     while (!FileExists(subdir));
+    
     return subdir;
 }
 

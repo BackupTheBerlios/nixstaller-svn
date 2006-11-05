@@ -2793,9 +2793,9 @@ chtype CFileDialog::m_cDefaultDefocusedColors;
 
 CFileDialog::CFileDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *s,
                          const char *info) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, info,
-                                                        m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                             m_szStartDir(s), m_szSelectedDir(s), m_szInfo(info)
+                                                        m_cDefaultFocusedColors, m_cDefaultDefocusedColors), m_szInfo(info)
 {
+    m_szStartDir = m_szSelectedDir = GetFirstValidDir(s);
 }
 
 void CFileDialog::CreateInit()

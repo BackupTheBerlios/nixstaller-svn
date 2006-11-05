@@ -603,6 +603,7 @@ CLuaDirSelector::CLuaDirSelector(int x, int y, int w, int h, const char *desc,
 
 void CLuaDirSelector::OpenDirChooser(void)
 {
+    m_pDirChooser->directory(GetFirstValidDir(m_pDirInput->value()).c_str());
     m_pDirChooser->show();
     
     while(m_pDirChooser->visible())
@@ -743,7 +744,7 @@ void CLuaCFGMenu::OpenDir()
     if (!item || !*item || !m_Variabeles[item])
         return;
     
-    m_pDirChooser->directory(m_Variabeles[item]->val.c_str());
+    m_pDirChooser->directory(GetFirstValidDir(m_Variabeles[item]->val).c_str());
     m_pDirChooser->show();
     while(m_pDirChooser->visible())
         Fl::wait();
@@ -1093,6 +1094,7 @@ bool CSelectDirScreen::Next()
 
 void CSelectDirScreen::OpenDirChooser(void)
 {
+    m_pDirChooser->directory(GetFirstValidDir(m_pSelDirInput->value()).c_str());
     m_pDirChooser->show();
     
     while(m_pDirChooser->visible())

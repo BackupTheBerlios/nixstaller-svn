@@ -37,7 +37,7 @@
 NCursesWindow *pRootWin;
 CWidgetManager *pWidgetManager;
 
-int RunFrontend(int argc, char **argv)
+bool RunFrontend(int argc, char **argv)
 {
     // Init ncurses
     
@@ -63,7 +63,8 @@ int RunFrontend(int argc, char **argv)
     // Init
     if (!pInterface->Init(argc, argv))
     {
-        pInterface->ThrowError(false, "Error: Init failed, aborting\n"); // UNDONE
+//         pInterface->ThrowError(false, "Error: Init failed, aborting\n"); // UNDONE
+        return false;
     }
 
     pWidgetManager->Refresh();
@@ -75,7 +76,7 @@ int RunFrontend(int argc, char **argv)
     
     pWidgetManager = NULL;
     
-    return EXIT_SUCCESS;
+    return true;
 }
 
 // -------------------------------------

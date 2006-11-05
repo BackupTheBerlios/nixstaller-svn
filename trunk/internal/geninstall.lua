@@ -159,6 +159,25 @@ function StrPack(tab)
     return ret
 end
 
+-- Used to traverse library specific directories for frontends(libc's, libstdc's)
+function TraverseBinLibDir(bindir, lib)
+    local dirs = { }
+    for d in io.dir(bindir) do
+        if (string.find(d, lib) and os.isdir(bindir .. "/" .. d)) then
+            table.insert(dirs, d)
+        end
+    end
+    
+    -- Sort in reverse dir, so that we start with libraries with the highest version
+    table.sort(dirs, function(a,b) return a > b end)
+    
+    local index = 0
+    return function()
+        index = index + 1
+        return dirs[index]
+    end
+end
+
 function Init()
     -- Strip all trailing /'s
     local _, i = string.find(string.reverse(confdir), "^/+")
@@ -174,26 +193,27 @@ function Init()
     dofile(confdir .. "/config.lua")
     
     -- Find a LZMA and edelta bin which we can use
-    local LCDirs = { } -- List containing all libc subdirectories for this system
-    local binpath = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
-    for s in io.dir(binpath) do
-        if (string.find(s, "^libc") and os.isdir(binpath .. "/" .. s)) then
-            table.insert(LCDirs, s)
-        end
-    end
+    local basebindir = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
+    local validbin = function(bin)
+                        -- Does the bin exists and 'ldd' can find all dependend libs?
+                        return (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin)))
+                     end
     
-    -- Sort in reverse order, this way we start with binaries which use the highest libc version
-    table.sort(LCDirs, function(a, b) return a > b end)
-    
-    for _, s in ipairs(LCDirs) do
-        -- Check if we can use a bin from the directory
-        local bin = binpath .. "/" .. s .. "/lzma"
-        if (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin))) then
-            LZMABin = bin
+    for lc in TraverseBinLibDir(basebindir, "^libc") do
+        local lcdir = basebindir .. "/" .. lc
+        for lcpp in TraverseBinLibDir(lcdir, "^libstdc++") do
+            local bin = lcdir .. "/" .. lcpp .. "/lzma"
+            
+            -- File exists and 'ldd' doesn't report missing lib deps?
+            if (validbin(bin)) then
+                LZMABin = bin
+            end
         end
         
-        local bin = binpath .. "/" .. s .. "/edelta"
-        if (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin))) then
+        local bin = lcdir .. "/edelta"
+        
+        -- File exists and 'ldd' doesn't report missing lib deps?
+        if (validbin(bin)) then
             EdeltaBin = bin
         end
     end
@@ -337,6 +357,7 @@ function PrepareArchive()
         end
     end
                     
+    -- Internal config file(only stores archive type for now)
     local inffile, msg = io.open(string.format("%s/tmp/info", confdir), "w")
 
     if inffile == nil then

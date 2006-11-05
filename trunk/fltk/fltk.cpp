@@ -37,7 +37,7 @@
 
 CFLTKBase *pInterface = NULL;
 
-int RunFrontend(int argc, char **argv)
+bool RunFrontend(int argc, char **argv)
 {
 //     if ((argc > 1) && !strcmp(argv[1], "inst"))
         pInterface = new CInstaller;
@@ -47,13 +47,13 @@ int RunFrontend(int argc, char **argv)
     // Init
     if (!pInterface->Init(argc, argv))
     {
-        printf("Error: Init failed, aborting\n"); // UNDONE
-        return 1;
+//         printf("Error: Init failed, aborting\n"); // UNDONE
+        return false;
     }
 
     pInterface->Run(argv);
     
-    return EXIT_SUCCESS;
+    return true;
 }
 
 void EndProg(bool err)

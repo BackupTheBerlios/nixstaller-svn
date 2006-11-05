@@ -66,9 +66,15 @@ int main(int argc, char **argv)
         EndProg();
     }
     else
-        return RunFrontend(argc, argv);
+    {
+        if (!RunFrontend(argc, argv))
+        {
+            printf("Error: Init failed, aborting\n"); // UNDONE
+            return EXIT_FAILURE;
+        }
+    }
     
-    return EXIT_SUCCESS; // Never reached
+    return EXIT_SUCCESS;
 }
 
 // -------------------------------------

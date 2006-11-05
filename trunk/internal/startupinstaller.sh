@@ -63,8 +63,7 @@ configure()
     echo "C libraries: "`echo $LIBCS | tr 'n\' ' '`
     
     # Get all C++ libs. Sorted so higher versions come first
-    #LIBSTDCPPS=`ls '/usr/lib/libstdc++.so.'* | sort -nr`
-    LIBSTDCPPS="/usr/lib/libstdc++.so.5"
+    LIBSTDCPPS=`ls '/usr/lib/libstdc++.so.'* | sort -nr`
     echo "C++ libraries: "`echo $LIBSTDCPPS | tr 'n\' ' '`
 }
 
@@ -76,7 +75,6 @@ edelta()
 {
     unlzma $3
     
-    echo "patching $3 with $2"
     mv $3 $3.tmp
     $1/edelta -q patch $2 $3 $3.tmp
 }
@@ -120,13 +118,7 @@ do
             continue # No usable lzma-decoder
         fi
         
-#         if [ ! -z $ED_SRC -a $FRONTEND != $ED_SRC -a ! -e ${LCDIR}/edelta ]; then
-#             continue # No usable edelta bin
-#         fi
-        
-        #unlzma $NCURS_SRC ${LCDIR}
         unlzma $ED_SRC ${LCDIR}
-        #edelta ${LCDIR} $FLTK_SRC $NCURS_SRC
         
         for LCPP in $LIBSTDCPPS
         do
@@ -153,37 +145,6 @@ do
         done
     done
 done
-
-#     for LCPP in $LIBSTDCPPS
-#     do
-#         LCPPDIR=${LCDIR}/`basename $LCPP`
-#         echo "Trying libstdc++: " $LCPPDIR
-#         
-#         if [ ! -d ${LCPPDIR} ]; then
-#             continue
-#         fi
-#         
-#         unlzma ${LCPPDIR}/fltk ${LCDIR}
-#         unlzma ${LCPPDIR}/ncurs ${LCDIR}
-#         
-#         # X Running?
-#         if [ ! -z $DISPLAY -a -e ${LCPPDIR}/fltk ]; then
-#             FRONTEND="${LCPPDIR}/fltk"
-#             if [ ! -z $FLTK_SRC -a $FRONTEND != $FLTK_SRC ]; then
-#                 edelta ${LCDIR} $FLTK_SRC $FRONTEND
-#             fi
-#         elif [ -e "${LCPPDIR}/ncurs" ]; then
-#             FRONTEND="${LCPPDIR}/ncurs"
-#         else
-#             continue
-#         fi
-#         
-#         # Run it
-#         chmod +x $FRONTEND # deltas en lzma packed bins probably aren't executable yet
-#         ./$FRONTEND
-#         exit 0
-#     done
-# done
 
 echo "Error: Couldn't find any suitable frontend for your system"
 exit 1
