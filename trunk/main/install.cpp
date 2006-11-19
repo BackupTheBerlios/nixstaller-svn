@@ -148,7 +148,39 @@ void CBaseInstall::ExtractFiles()
         else
         {
             command += " 2>&1"; // tar may output files to stderr
+#if 1
+            CPipedCMD pipe(command.c_str(), "r");
+            std::string line;
+            short buffer = 100;
             
+            while (pipe)
+            {
+                InstallThink();
+                
+                if (pipe.HasData())
+                {
+                    int ch = pipe.GetCh();
+                    
+                    if (ch != EOF)
+                    {
+                        line += (char)ch;
+                        buffer--;
+                        if (((char)ch == '\n') || !buffer)
+                        {
+                            UpdateExtrStatus(line.c_str());
+                            line.clear();
+                            buffer = 100;
+                        }
+                    }
+                }
+            }
+            
+            if (!line.empty())
+                UpdateExtrStatus(line.c_str());
+            
+            pipe.Close(); // By calling Close() explicity its able to throw exceptions
+            
+#else
             FILE *pipe = popen(command.c_str(), "r");
             if (!pipe)
                 ThrowError(true, "Error during extracting files (could not open pipe)");
@@ -188,6 +220,7 @@ void CBaseInstall::ExtractFiles()
             int state = pclose(pipe);
             if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
                 ThrowError(true, "Failed to execute install command (could not execute tar)");
+#endif
         }
         m_CurArchIter++;
     }
@@ -218,6 +251,35 @@ void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool requir
     
     AddInstOutput(CreateText("\nExecute: %s\n\n", cmd));
     
+    CPipedCMD pipe(command, "r");
+    std::string line;
+            
+    while (pipe)
+    {
+        InstallThink();
+                
+        if (pipe.HasData())
+        {
+            int ch = pipe.GetCh();
+                    
+            if (ch != EOF)
+            {
+                line += (char)ch;
+                if ((char)ch == '\n')
+                {
+                    AddInstOutput(line.c_str());
+                    line.clear();
+                }
+            }
+        }
+    }
+            
+    if (!line.empty())
+        AddInstOutput(line.c_str());
+            
+    pipe.Close(); // By calling Close() explicity its able to throw exceptions
+
+#if 0
     FILE *pPipe = popen(command, "r");
     if (pPipe)
     {
@@ -260,6 +322,7 @@ void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool requir
     }
     else
         ThrowError(true, "Could not execute installation commands (could not open pipe)");
+#endif
 }
 
 void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, const char *path, bool required)

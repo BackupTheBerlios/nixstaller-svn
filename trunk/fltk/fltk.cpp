@@ -273,7 +273,7 @@ void CAskPassWindow::SetPassword(bool unset)
     
         if (passwd && passwd[0])
         {
-            m_szPassword = strdup(passwd);
+            m_szPassword = StrDup(passwd);
 
             // Can't use FLTK's replace() to delete input field text, since it stores undo info
             int length = strlen(passwd);

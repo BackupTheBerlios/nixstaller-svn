@@ -45,7 +45,9 @@
 #include <vector>
 #include <map>
 #include <limits>
-
+        
+#include "exception.h"
+        
 struct install_info_s
 {
     std::string version, program_name, description, url, intropicname, archive_type, dest_dir;
@@ -64,37 +66,6 @@ struct app_entry_s
     std::map<std::string, std::string> FileSums;
     app_entry_s(void) : name("-"), version("-"), description("-"), url("-") { };
 };
-
-extern std::list<char *> StringList; // List of all strings created by CreateText
-
-void PreInit(int argc, char **argv);
-char *CreateText(const char *s, ...);
-inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
-char *CreateTmpText(const char *s, ...);
-void FreeStrings(void);
-bool FileExists(const char *file);
-inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
-bool WriteAccess(const char *file);
-inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str()); };
-bool ReadAccess(const char *file);
-inline bool ReadAccess(const std::string &file) { return ReadAccess(file.c_str()); };
-bool IsDir(const char *file);
-void *guaranteed_memset(void *v,int c,size_t n);
-void CleanPasswdString(char *str);
-std::string &EatWhite(std::string &str, bool skipnewlines=false);
-void GetTextFromBlock(std::ifstream &file, std::string &text);
-std::string GetFirstValidDir(const std::string &dir);
-std::string GetMD5(const std::string &file);
-mode_t StrToMode(const char *str);
-unsigned StrFindInRange(const std::string &src, const std::string &findstr, unsigned pos, unsigned n);
-unsigned StrFindInRange(const std::string &src, const char *findstr, unsigned pos, unsigned n);
-std::string GetTranslation(const std::string &s);
-char *GetTranslation(char *s);
-inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
-inline char *MakeTranslation(const std::string &s) { return GetTranslation(MakeCString(s)); }
-
-inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
-inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };
 
 // These functions should be defined for each frontend
 void EndProg(bool err=false);
@@ -332,8 +303,6 @@ public:
     virtual bool Init(int argc, char **argv);
 };
 
-#include "install.h"
-
 class CBaseAppManager: virtual public CMain
 {
     const char *GetSumListFile(const char *progname);
@@ -351,6 +320,9 @@ protected:
 public:
     virtual ~CBaseAppManager(void) { };
 };
+
+#include "utils.h"
+#include "install.h"
 
 //#define RELEASE /* Enable on a release build */
 

@@ -37,29 +37,12 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
+#include <errno.h>
         
 #include "md5.h"
 #include "main.h"
 
 extern std::map<std::string, char *> Translations;
-
-void PreInit(int argc, char **argv)
-{
-    printf("Nixstaller version 0.2, Copyright (C) 2006 of Rick Helmus\n"
-            "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
-            "This is free software, and you are welcome to redistribute it\n"
-            "under certain conditions; see the about section for details.\n");
-    
-    if ((argc >= 4) && !strcmp(argv[1], "-c"))
-    {
-        // HACK: Run lua script and exit
-        CLuaRunner *p = new CLuaRunner;
-        p->Init(argc, argv);
-        delete p;
-        EndProg();
-    }
-}
-
 
 #ifdef WITH_LIB_ARCHIVE
 
@@ -368,4 +351,150 @@ char *GetTranslation(char *s)
     if (!Translations.empty())
         debugline("WARNING: No translation for %s\n", s);
     return s;
+}
+
+char *StrDup(const char *str)
+{
+    char *ret = strdup(str);
+    
+    if (!ret)
+        throw std::bad_alloc();
+    
+    return ret;
+}
+
+std::string GetCWD()
+{
+    static char buffer[1024];
+    
+    if (!getcwd(buffer, sizeof(buffer)))
+        throw Exceptions::CExCurDir(errno);
+    
+    return buffer;
+}
+
+void CHDir(const char *dir)
+{
+    if (chdir(dir))
+        throw Exceptions::CExReadDir(errno, dir);
+}
+
+
+// -------------------------------------
+// Directory iterator
+// -------------------------------------
+
+CDirIter::CDirIter(const std::string &dir) : m_pEntry(NULL)
+{
+    m_pDir = opendir(dir.c_str());
+    
+    if (m_pDir)
+        m_pEntry = GetNextDirEnt();
+    else
+        throw Exceptions::CExOpenDir(errno, dir.c_str());
+}
+
+dirent *CDirIter::GetNextDirEnt()
+{
+    dirent *entry = readdir(m_pDir);
+    
+    while (entry && !strcmp(entry->d_name, "."))
+        entry = readdir(m_pDir);
+    
+    return entry;
+}
+
+CDirIter &CDirIter::operator ++()
+{
+    if (m_pEntry)
+        m_pEntry = GetNextDirEnt();
+    else
+        throw Exceptions::CExOverflow("Tried to increment directory iter after last directory was reached");
+    
+    return *this;
+}
+
+dirent *CDirIter::operator ->()
+{
+    if (End())
+        throw Exceptions::CExNullEntry();
+    
+    return m_pEntry;
+}
+
+// -------------------------------------
+// Frontend class for popen
+// -------------------------------------
+
+CPipedCMD::CPipedCMD(const char *cmd, const char *mode) : m_szCommand(cmd), m_iPipeFD(-1), m_bChEOF(false)
+{
+    m_pPipe = popen(cmd, mode);
+    
+    if (!m_pPipe)
+        throw Exceptions::CExOpenPipe(errno);
+}
+
+void CPipedCMD::InitPoll()
+{
+    m_iPipeFD = fileno(m_pPipe);
+    
+    if (m_iPipeFD == -1)
+        throw Exceptions::CExPoll(errno);
+    
+    m_PollData.fd = m_iPipeFD;
+    m_PollData.events = POLLIN | POLLHUP;
+}
+
+int CPipedCMD::GetCh()
+{
+    int ret;
+    if (read(m_iPipeFD, &ret, 1) == 0)
+    {
+        ret = EOF;
+        m_bChEOF = true;
+    }
+    
+    return ret;
+}
+
+bool CPipedCMD::HasData()
+{
+    if (m_iPipeFD == -1)
+        InitPoll();
+    
+    if (EndOfFile())
+        return false;
+                    
+    int ret = poll(&m_PollData, 1, 0);
+    
+    if (ret == -1) // Error occured
+        throw Exceptions::CExPoll(errno);
+    else if (ret == 0)
+        return false;
+    else if (((m_PollData.revents & POLLIN) == POLLIN) || ((m_PollData.revents & POLLHUP) == POLLHUP))
+    {
+        return true;
+    }
+    
+    return false;
+}
+
+void CPipedCMD::Close(bool canthrow)
+{
+    if (m_pPipe)
+    {
+        int ret = pclose(m_pPipe);
+        m_pPipe = NULL;
+        
+        if (canthrow)
+        {
+            if (ret >= 0)
+            {
+                if (!WIFEXITED(ret) || (WEXITSTATUS(ret) == 127)) // 127 == Command not found
+                    throw Exceptions::CExCommand(MakeCString(m_szCommand));
+            }
+            else
+                throw Exceptions::CExClosePipe(errno);
+        }
+    }
 }

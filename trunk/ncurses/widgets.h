@@ -127,7 +127,7 @@ public:
     virtual void RemoveChild(CWidgetWindow *p);
     virtual void ActivateChild(CWidgetWindow *p);
     
-    bool Run(void);
+    bool Run(unsigned delay=5); // delay == millisec to wait for input
 };
 
 class CFormattedText

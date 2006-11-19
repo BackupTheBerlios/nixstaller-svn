@@ -2,7 +2,7 @@ OVERALL
 - Translate param names and param choices
 - Modify Makeself?
 - Check read permissions for extract dir
-- Usage of exceptions(StrToMode, check lua functions)
+- Usage of exceptions(StrToMode)
 - Use deque/vector instead of list?
 - Add new strings to translation files
 - Remove unnessesary virtuals?
@@ -15,7 +15,7 @@ MAIN
 - BUG: Executing commands as root to quickly may mess things up(put a delay, open single root console?)
 - Overide some lua funcs?(ie. exit)
 - Create directory with root access in VerifyDestDir()?
-- create safe StrDup?
+- Use PipedCMD class in ExtractFiles and ExecuteCommand
         
 NCURSES FRONTEND
 - Error handling in file manager

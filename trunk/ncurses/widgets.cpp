@@ -235,8 +235,6 @@ CButtonBar *CWidgetManager::m_pButtonBar = NULL;
 
 void CWidgetManager::Init()
 {
-    timeout(5); // block max 5 milliseconds while checking for key input
-    
     // Init all default colors
     CWidgetWindow::m_cDefaultFocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_YELLOW, COLOR_BLUE) | A_BOLD;
     CWidgetWindow::m_cDefaultDefocusedColors = ' ' | CWidgetWindow::GetColorPair(COLOR_WHITE, COLOR_BLUE) | A_BOLD;
@@ -370,7 +368,7 @@ void CWidgetManager::ActivateChild(CWidgetWindow *p)
         Refresh();
 }
 
-bool CWidgetManager::Run()
+bool CWidgetManager::Run(unsigned delay)
 {
     if (m_bQuit)
         return false;
@@ -402,6 +400,8 @@ bool CWidgetManager::Run()
             }
         }
     }
+    
+    timeout(delay);
     
     if (m_FocusedChild != m_ChildList.end())
     {
@@ -1933,13 +1933,14 @@ void CMenu::AddItem(std::string s, bool tags)
 void CMenu::SetCurrent(const std::string &str)
 {
     int line = static_cast<int>(m_pMenuText->Search(0, m_pMenuText->GetLines(), str));
+    
+    assert(line < m_pMenuText->GetLines());
+    
     if (line < m_pMenuText->GetLines())
     {
         VScroll(line - GetCurrent());
         PushEvent(EVENT_DATACHANGED);
     }
-    else // Not found
-        ; // UNDONE: Exception?
 }
 
 void CMenu::Clear()
@@ -2835,25 +2836,35 @@ void CFileDialog::OpenDir(std::string newdir)
             newdir += '/' + m_pFileMenu->GetCurrentItemName();
     }
     
-    if (chdir(newdir.c_str()))
+    CHDir(newdir.c_str());
+    m_szSelectedDir = GetCWD();
+    
+    CDirIter dir(m_szSelectedDir);
+    struct stat filestat;
+    bool isrootdir = (m_szSelectedDir == "/");
+
+    m_pFileMenu->Clear();
+    
+    while (dir)
     {
-        /* UNDONE
-        WarningBox("%s\n%s\n%s", GetTranslation("Could not change to directory"), newdir.c_str(), strerror(errno));
-        return false;*/
-        return;
+        // Valid directory?
+        if ((lstat(dir->d_name, &filestat) == 0) && S_ISDIR(filestat.st_mode) && (!isrootdir || strcmp(dir->d_name, "..")))
+        {
+            m_pFileMenu->AddItem(dir->d_name);
+            debugline("Added dir: %s\n", dir->d_name);
+        }
+        
+        dir++;
     }
     
-    char tmp[1024];
-    if (getcwd(tmp, sizeof(tmp))) m_szSelectedDir = tmp;
-    else { /*WarningBox("Could not read current directory"); return false;UNDONE*/ return; }
-    
+#if 0
     struct dirent *dirstruct;
     struct stat filestat;
     DIR *dp = opendir(m_szSelectedDir.c_str());
     bool isrootdir = (m_szSelectedDir == "/");
 
     if (!dp)
-        return; // UNDONE
+        throw Exception::CExOpenDir(errno, m_szSelectedDir.c_str());
 
     m_pFileMenu->Clear();
     
@@ -2874,8 +2885,9 @@ void CFileDialog::OpenDir(std::string newdir)
         m_pFileMenu->AddItem(dirstruct->d_name);
     }
 
-    closedir (dp);
-    
+    closedir(dp);
+#endif
+                                                 
     m_pFileMenu->refresh();
     
     // Update AFTER file menu, since it may sort items in Draw()

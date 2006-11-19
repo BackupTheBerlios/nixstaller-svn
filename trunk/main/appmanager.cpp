@@ -111,7 +111,7 @@ void CBaseAppManager::Uninstall(app_entry_s *pApp, bool checksum)
     // Check if we got permission to remove all files
     for (it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
     {
-        char *fname = strdup(it->first.c_str());
+        char *fname = StrDup(it->first.c_str());
         char *dname = dirname(fname);
         if (dname && dname[0] && (!WriteAccess(dname) || !ReadAccess(dname)))
         {

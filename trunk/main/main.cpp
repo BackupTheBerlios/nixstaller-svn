@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
     printf("Nixstaller version 0.2, Copyright (C) 2006 of Rick Helmus\n"
            "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
-           "This is free software, and you are welcome to redistribute it\n"
+           "Nixstaller is free software, and you are welcome to redistribute it\n"
            "under certain conditions; see the about section for details.\n");
     
     // Caller (usually geninstall.sh) wants to run a lua script?
@@ -557,8 +557,7 @@ int CMain::LuaCPFile(lua_State *L)
             srcfiles.push_back(infile);
     }
     
-    char *dest = strdup(luaL_checkstring(L, args));
-    // UNDONE: Check if dest is NULL
+    char *dest = StrDup(luaL_checkstring(L, args));
     
     // Strip trailing /'s
     unsigned len = strlen(dest);

@@ -146,7 +146,7 @@ void CNCursBase::CreateInit()
 
 char *CNCursBase::GetPassword(const char *str)
 {
-    return strdup(::InputDialog(str, NULL, -1, true).c_str());
+    return StrDup(::InputDialog(str, NULL, -1, true).c_str());
 }
 
 void CNCursBase::MsgBox(const char *str, ...)

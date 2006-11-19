@@ -190,7 +190,7 @@ opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/i
 opts.Add('CC', 'The C compiler', 'gcc')
 opts.Add('CXX', 'The C++ compiler', 'g++')
 
-env = Environment(options = opts, CCFLAGS = "-Wall -Wno-sign-compare  -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
+env = Environment(options = opts, CCFLAGS = "-Wall -Wno-sign-compare -g3", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
 
 Export("env")
 
