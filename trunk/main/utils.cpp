@@ -187,7 +187,7 @@ std::string GetFirstValidDir(const std::string &dir)
             subdir.insert(0, curdir + std::string("/"));
     }
     
-    if (FileExists(subdir))
+    if (ReadAccess(subdir))
         return subdir;
     
     // Remove trailing /
@@ -210,7 +210,7 @@ std::string GetFirstValidDir(const std::string &dir)
         
         subdir.erase(pos);
     }
-    while (!FileExists(subdir));
+    while (!ReadAccess(subdir));
     
     return subdir;
 }

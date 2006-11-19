@@ -148,7 +148,7 @@ void CBaseInstall::ExtractFiles()
         else
         {
             command += " 2>&1"; // tar may output files to stderr
-#if 1
+            
             CPipedCMD pipe(command.c_str(), "r");
             std::string line;
             short buffer = 100;
@@ -179,48 +179,6 @@ void CBaseInstall::ExtractFiles()
                 UpdateExtrStatus(line.c_str());
             
             pipe.Close(); // By calling Close() explicity its able to throw exceptions
-            
-#else
-            FILE *pipe = popen(command.c_str(), "r");
-            if (!pipe)
-                ThrowError(true, "Error during extracting files (could not open pipe)");
-            
-            int pfd = fileno(pipe); // UNDONE: Check on errors
-            pollfd pollstruct = { pfd, POLLIN, 10 };
-            char buf[512];
-            
-            while (true)
-            {
-                InstallThink();
-            
-                // Does the pipe from popen has text?
-                int ret = poll(&pollstruct, 1, 0);
-            
-                if (ret > 0)
-                {
-                    if (pollstruct.revents & POLLIN)
-                    {
-                        // It does, read it
-                        if (fgets(buf, sizeof(buf), pipe))
-                        {
-                            debugline("Extr: %s\n", buf);
-                            UpdateExtrStatus(buf);
-                        }
-                        else
-                            break;
-                    }
-                    else
-                        break;
-                }
-                else if (ret < 0)
-                    ThrowError("Error with poll: %s\n", strerror(errno)); // UNDONE
-            }
-            
-            // Check if command exitted normally and close pipe
-            int state = pclose(pipe);
-            if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution failes
-                ThrowError(true, "Failed to execute install command (could not execute tar)");
-#endif
         }
         m_CurArchIter++;
     }
@@ -278,51 +236,6 @@ void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool requir
         AddInstOutput(line.c_str());
             
     pipe.Close(); // By calling Close() explicity its able to throw exceptions
-
-#if 0
-    FILE *pPipe = popen(command, "r");
-    if (pPipe)
-    {
-        // Get file descriptor used by popen
-        int pfd = fileno(pPipe); // UNDONE: Check on errors
-        pollfd pollstruct = { pfd, POLLIN, 0 };
-        char buf[1024];
-        
-        while (true)
-        {
-            InstallThink();
-            
-            // Does the pipe from popen has text?
-            int ret = poll(&pollstruct, 1, 0);
-            
-            if (ret > 0)
-            {
-                if (pollstruct.revents & POLLIN)
-                {
-                    // It does, read it
-                    if (fgets(buf, sizeof(buf), pPipe))
-                        AddInstOutput(buf);
-                    else
-                        break;
-                }
-                else
-                    break;
-            }
-            else if (ret < 0)
-                ThrowError("Error with poll: %s\n", strerror(errno)); // UNDONE
-        }
-        
-        // Check if command exitted normally and close pipe
-        int state = pclose(pPipe);
-        if (!WIFEXITED(state) || (WEXITSTATUS(state) == 127)) // SH returns 127 if command execution fails
-        {
-            if (required)
-                ThrowError(true, "Failed to execute install command");
-        }
-    }
-    else
-        ThrowError(true, "Could not execute installation commands (could not open pipe)");
-#endif
 }
 
 void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, const char *path, bool required)

@@ -2580,7 +2580,7 @@ CWarningBox::CWarningBox(CWidgetManager *owner, int maxlines, int ncols, int beg
 
 void CWarningBox::CreateInit()
 {
-    CWidgetBox::CreateInit();
+    CMessageBox::CreateInit();
     
     SetTitle(GetTranslation("Warning"));
     SetColors(m_cDefaultFocusedColors, m_cDefaultDefocusedColors);
@@ -2836,62 +2836,47 @@ void CFileDialog::OpenDir(std::string newdir)
             newdir += '/' + m_pFileMenu->GetCurrentItemName();
     }
     
-    CHDir(newdir.c_str());
-    m_szSelectedDir = GetCWD();
-    
-    CDirIter dir(m_szSelectedDir);
-    struct stat filestat;
-    bool isrootdir = (m_szSelectedDir == "/");
-
-    m_pFileMenu->Clear();
-    
-    while (dir)
+    try
     {
-        // Valid directory?
-        if ((lstat(dir->d_name, &filestat) == 0) && S_ISDIR(filestat.st_mode) && (!isrootdir || strcmp(dir->d_name, "..")))
+        CHDir(newdir.c_str());
+        m_szSelectedDir = GetCWD();
+        
+        CDirIter dir(m_szSelectedDir);
+        struct stat filestat;
+        bool isrootdir = (m_szSelectedDir == "/");
+    
+        m_pFileMenu->Clear();
+        
+        while (dir)
         {
-            m_pFileMenu->AddItem(dir->d_name);
-            debugline("Added dir: %s\n", dir->d_name);
+            // Valid directory?
+            if ((lstat(dir->d_name, &filestat) == 0) && S_ISDIR(filestat.st_mode) && (!isrootdir || strcmp(dir->d_name, "..")))
+            {
+                m_pFileMenu->AddItem(dir->d_name);
+            }
+            
+            dir++;
         }
         
-        dir++;
+        m_pFileMenu->refresh();
+        
+        // Update AFTER file menu, since it may sort items in Draw()
+        UpdateDirField();
     }
-    
-#if 0
-    struct dirent *dirstruct;
-    struct stat filestat;
-    DIR *dp = opendir(m_szSelectedDir.c_str());
-    bool isrootdir = (m_szSelectedDir == "/");
-
-    if (!dp)
-        throw Exception::CExOpenDir(errno, m_szSelectedDir.c_str());
-
-    m_pFileMenu->Clear();
-    
-    while ((dirstruct = readdir (dp)) != 0)
+    catch(Exceptions::CExIO &e)
     {
-        if (lstat(dirstruct->d_name, &filestat) != 0)
-            continue;
+        // Couldn't open directory(probably no read access)
+        WarningBox(e.what());
         
-        if (!S_ISDIR(filestat.st_mode))
-            continue; // Has to be a directory...
-
-        if (!strcmp(dirstruct->d_name, "."))
-            continue;
-
-        if (isrootdir && !strcmp(dirstruct->d_name, ".."))
-            continue;
-        
-        m_pFileMenu->AddItem(dirstruct->d_name);
+        // If no directory is open yet, just open /
+        if (m_pFileMenu->Empty())
+        {
+            if (newdir == "/")
+                throw; // Couldn't even open / ...
+            
+            OpenDir("/");
+        }
     }
-
-    closedir(dp);
-#endif
-                                                 
-    m_pFileMenu->refresh();
-    
-    // Update AFTER file menu, since it may sort items in Draw()
-    UpdateDirField();
 }
 
 bool CFileDialog::HandleEvent(CWidgetHandler *p, int type)

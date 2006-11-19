@@ -15,7 +15,7 @@ MAIN
 - BUG: Executing commands as root to quickly may mess things up(put a delay, open single root console?)
 - Overide some lua funcs?(ie. exit)
 - Create directory with root access in VerifyDestDir()?
-- Use PipedCMD class in ExtractFiles and ExecuteCommand
+- Usage of new IO functions using exceptions(GetCWD, CHDir...)
         
 NCURSES FRONTEND
 - Error handling in file manager

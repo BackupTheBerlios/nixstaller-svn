@@ -62,7 +62,14 @@ public:
     virtual const char *what(void) throw() { return m_szMessage; };
 };
 
-class CExOpenDir: public CException
+// Class for grouping IO exceptions
+class CExIO: public CException
+{
+protected:
+    CExIO(const char *msg=NULL) : CException(msg) { };
+};
+
+class CExOpenDir: public CExIO
 {
     int m_iError; // Error code given by errno
     const char *m_szDir;
@@ -72,7 +79,7 @@ public:
     virtual const char *what(void) throw() { return FormatText("Could not open directory %s: %s", m_szDir, strerror(m_iError)); };
 };
 
-class CExReadDir: public CException
+class CExReadDir: public CExIO
 {
     int m_iError; // Error code given by errno
     const char *m_szDir;
@@ -82,7 +89,7 @@ public:
     virtual const char *what(void) throw() { return FormatText("Could not read directory %s: %s", m_szDir, strerror(m_iError)); };
 };
 
-class CExCurDir: public CException
+class CExCurDir: public CExIO
 {
     int m_iError; // Error code given by errno
     
@@ -128,7 +135,7 @@ public:
     CExNullEntry(void) : CException("Tried to access NULL entry") { };
 };
 
-class CExOpenPipe: public CException
+class CExOpenPipe: public CExIO
 {
     int m_iError;
     
@@ -147,7 +154,7 @@ public:
     virtual const char *what(void) throw() { return FormatText("Poll returned a error: %s", strerror(m_iError)); };
 };
 
-class CExClosePipe: public CException
+class CExClosePipe: public CExIO
 {
     int m_iError; // Error code given by errno
 
