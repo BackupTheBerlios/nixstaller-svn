@@ -44,7 +44,6 @@ class CException: public std::exception
     const char *m_szMessage;
     
 protected:
-    CException(const char *msg=NULL) : m_szMessage(msg) { };
     const char *FormatText(const char *str, ...)
     {
         static char buffer[512];
@@ -59,6 +58,7 @@ protected:
     const char *Message(void) { return m_szMessage; };
     
 public:
+    CException(const char *msg=NULL) : m_szMessage(msg) { };
     virtual const char *what(void) throw() { return m_szMessage; };
 };
 

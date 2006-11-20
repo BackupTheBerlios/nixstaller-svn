@@ -321,10 +321,13 @@ void CBaseInstall::Install(void)
     {
         if (!ReadAccess(destdir))
         {
-            // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
-            ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
+            throw CException(CreateText("This installer will install files to the following directory:\n%s\n"
                                         "However you don't have read permissions to this directory\n"
                                         "Please restart the installer as a user who does or as the root user", destdir));
+/*            // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
+            ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
+                                        "However you don't have read permissions to this directory\n"
+                                        "Please restart the installer as a user who does or as the root user", destdir));*/
         }
         else if (!WriteAccess(destdir))
         {
