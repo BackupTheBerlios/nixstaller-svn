@@ -37,12 +37,17 @@
         
 #include <exception>
 
+/* NOTES
+    * CException is used for the base class of every exception
+    * Base classes from CException should use virtual inheritance(According to boost catch()
+      may have trouble with finding the right type otherwise)
+    * No exception specifiers are used since they are useless; they add extra overhead and react in a dumb way when a 'wrong' exception is found.
+*/
+        
 namespace Exceptions {
 
 class CException: public std::exception
 {
-    const char *m_szMessage;
-    
 protected:
     const char *FormatText(const char *str, ...)
     {
@@ -55,69 +60,94 @@ protected:
         
         return buffer;
     }
+};
+
+// Exception base class for errno based handling(C functions)
+class CExErrno: virtual public CException
+{
+    int m_iError; // errno code
+    
+protected:
+    CExErrno(int err) : m_iError(err) { };
+    const char *Error(void) { return Error(); };
+};
+
+// Exception base class which just returns a given message
+class CExMessage: virtual public CException
+{
+    const char *m_szMessage;
+    
+protected:
+    CExMessage(const char *msg) : m_szMessage(msg) { };
     const char *Message(void) { return m_szMessage; };
     
 public:
-    CException(const char *msg=NULL) : m_szMessage(msg) { };
-    virtual const char *what(void) throw() { return m_szMessage; };
+    virtual const char *what() throw() { return m_szMessage; };
 };
+
 
 // Class for grouping IO exceptions
-class CExIO: public CException
+class CExIO: virtual public CException
 {
-protected:
-    CExIO(const char *msg=NULL) : CException(msg) { };
 };
 
-class CExOpenDir: public CExIO
+class CExOpenDir: public CExErrno, public CExIO
 {
-    int m_iError; // Error code given by errno
     const char *m_szDir;
     
 public:
-    CExOpenDir(int err, const char *dir) : m_iError(err), m_szDir(dir) { };
-    virtual const char *what(void) throw() { return FormatText("Could not open directory %s: %s", m_szDir, strerror(m_iError)); };
+    CExOpenDir(int err, const char *dir) : CExErrno(err), m_szDir(dir) { };
+    virtual const char *what(void) throw() { return FormatText("Could not open directory %s: %s", m_szDir, Error()); };
 };
 
-class CExReadDir: public CExIO
+class CExReadDir: public CExErrno, public CExIO
 {
-    int m_iError; // Error code given by errno
     const char *m_szDir;
     
 public:
-    CExReadDir(int err, const char *dir) : m_iError(err), m_szDir(dir) { };
-    virtual const char *what(void) throw() { return FormatText("Could not read directory %s: %s", m_szDir, strerror(m_iError)); };
+    CExReadDir(int err, const char *dir) : CExErrno(err), m_szDir(dir) { };
+    virtual const char *what(void) throw() { return FormatText("Could not read directory %s: %s", m_szDir, Error()); };
 };
 
-class CExCurDir: public CExIO
+// Thrown when target extraction dir could not be read and cannot be selected by user.
+class CExReadExtrDir: public CExIO
 {
-    int m_iError; // Error code given by errno
+    const char *m_szDir;
     
 public:
-    CExCurDir(int err) : m_iError(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not read current directory: %s", strerror(m_iError)); };
+    CExReadExtrDir(const char *dir) : m_szDir(dir) { };
+    virtual const char *what(void) throw()
+    { return FormatText("This installer will install files to the following directory:\n%s\n"
+                        "However you don't have read permissions to this directory\n"
+                        "Please restart the installer as a user who does or as the root user", m_szDir); };
+};
+
+class CExCurDir: public CExErrno, public CExIO
+{
+public:
+    CExCurDir(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Could not read current directory: %s", Error()); };
 };
 
 
-class CExOverflow: public CException
+class CExOverflow: public CExMessage
 {
 public:
-    CExOverflow(const char *msg) : CException(msg) { };
+    CExOverflow(const char *msg) : CExMessage(msg) { };
     virtual const char *what(void) throw() { return FormatText("Overflow detected: %s", Message()); };
 };
 
-class CExLua: public CException
+class CExLua: public CExMessage
 {
 public:
-    CExLua(const char *msg) : CException(msg) { };
+    CExLua(const char *msg) : CExMessage(msg) { };
     virtual const char *what(void) throw() { return FormatText("Lua error detected: %s", Message()); };
 };
 
-class CExSU: public CException
+class CExSU: public CExMessage
 {
 public:
-    CExSU(const char *msg) : CException(msg) { };
-    virtual const char *what(void) throw() { return FormatText("Error detected during using su: %s", Message()); };
+    CExSU(const char *msg) : CExMessage(msg) { };
 };
 
 class CExCommand: public CException
@@ -129,40 +159,46 @@ public:
     virtual const char *what(void) throw() { return FormatText("Could not execute command: %s", m_szCommand); };
 };
 
-class CExNullEntry: public CException
+class CExNullEntry: public CExMessage
 {
 public:
-    CExNullEntry(void) : CException("Tried to access NULL entry") { };
+    CExNullEntry(void) : CExMessage("Tried to access NULL entry") { };
 };
 
-class CExOpenPipe: public CExIO
+class CExOpenPipe: public CExErrno, public CExIO
 {
-    int m_iError;
-    
 public:
-    CExOpenPipe(int err) : m_iError(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not open pipe: %s", strerror(m_iError)); };
+    CExOpenPipe(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Could not open pipe: %s", Error()); };
 };
 
-
-class CExPoll: public CException
+class CExPoll: public CExErrno
 {
-    int m_iError; // Error code given by errno
-    
 public:
-    CExPoll(int err) : m_iError(err) { };
-    virtual const char *what(void) throw() { return FormatText("Poll returned a error: %s", strerror(m_iError)); };
+    CExPoll(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Poll returned a error: %s", Error()); };
 };
 
-class CExClosePipe: public CExIO
+class CExClosePipe: public CExErrno, public CExIO
 {
-    int m_iError; // Error code given by errno
-
 public:
-    CExClosePipe(int err) : m_iError(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not close pipe: %s", strerror(m_iError)); };
+    CExClosePipe(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Could not close pipe: %s", Error()); };
 };
 
+class CExUName: public CExErrno
+{
+public:
+    CExUName(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("uname returned a error: %s", Error()); };
+};
+
+class CExMKDir: public CExErrno, public CExIO
+{
+public:
+    CExMKDir(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Could not create directory: %s", Error()); };
+};
 
 }
 

@@ -38,7 +38,7 @@
 // Main installer screen
 // -------------------------------------
 
-bool CInstaller::InitLua()
+void CInstaller::InitLua()
 {
     m_LuaVM.InitClass("welcomescreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pWelcomeScreen, "welcomescreen", "WelcomeScreen");
@@ -55,13 +55,10 @@ bool CInstaller::InitLua()
     m_LuaVM.InitClass("finishscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pFinishScreen, "finishscreen", "FinishScreen");
     
-    if (!CBaseInstall::InitLua())
-        return false;
-    
-    return true;
+    CBaseInstall::InitLua();
 }
 
-bool CInstaller::Init(int argc, char **argv)
+void CInstaller::Init(int argc, char **argv)
 {
     m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
     m_pMainWindow->callback(WizCancelCB);
@@ -86,8 +83,7 @@ bool CInstaller::Init(int argc, char **argv)
     m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-40), (MAIN_WINDOW_H-60), NULL);
     m_pWizard->end();
 
-    if (!CBaseInstall::Init(argc, argv))
-        return false;
+    CBaseInstall::Init(argc, argv);
 
 //     m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
@@ -201,7 +197,7 @@ bool CInstaller::Init(int argc, char **argv)
                 }
             }
             else
-                ThrowError(false, "Wrong type found in ScreenList variabale");
+                throw Exceptions::CExLua("Wrong type found in ScreenList variabale");
         }
         m_LuaVM.CloseArray();
     }
@@ -212,7 +208,6 @@ bool CInstaller::Init(int argc, char **argv)
         Next();
     
     m_pMainWindow->end();
-    return true;
 }
 
 CInstaller::~CInstaller()

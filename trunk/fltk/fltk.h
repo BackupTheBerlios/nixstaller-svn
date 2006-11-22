@@ -152,8 +152,8 @@ public:
     CInstaller(void) : m_bInstallFiles(false) { };
     virtual ~CInstaller(void);
 
-    virtual bool InitLua(void);
-    virtual bool Init(int argc, char **argv);
+    virtual void InitLua(void);
+    virtual void Init(int argc, char **argv);
     virtual void Install(void);
     virtual void UpdateLanguage(void);
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title);

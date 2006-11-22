@@ -17,6 +17,7 @@ MAIN
 - Create directory with root access in VerifyDestDir()?
 - Usage of new IO functions using exceptions(GetCWD, CHDir...)
         
+        
 NCURSES FRONTEND
 - Error handling in file manager
 - Handle sizes(minimal screen size, automatic button/dialog sizes(?))

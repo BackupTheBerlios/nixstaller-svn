@@ -45,12 +45,7 @@ bool RunFrontend(int argc, char **argv)
         pInterface = new CAppManager;*/
     
     // Init
-    if (!pInterface->Init(argc, argv))
-    {
-//         printf("Error: Init failed, aborting\n"); // UNDONE
-        return false;
-    }
-
+    pInterface->Init(argc, argv);
     pInterface->Run(argv);
     
     return true;

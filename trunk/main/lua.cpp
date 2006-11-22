@@ -100,13 +100,13 @@ void CLuaVM::GetGlobal(const char *var, const char *tab)
         lua_getglobal(m_pLuaState, var);
 }
 
-bool CLuaVM::Init()
+void CLuaVM::Init()
 {
     // Initialize lua
     m_pLuaState = lua_open();
     
     if (!m_pLuaState)
-        return false;
+        throw Exceptions::CExLua("Could not open lua VM");
         
     const luaL_Reg *lib = libtable;
     for (; lib->func; lib++)
@@ -116,22 +116,17 @@ bool CLuaVM::Init()
         lua_call(m_pLuaState, 1, 0);
         lua_settop(m_pLuaState, 0);  // Clear stack
     }
-    
-    return true;
 }
 
-bool CLuaVM::LoadFile(const char *name)
+void CLuaVM::LoadFile(const char *name)
 {
     if (luaL_dofile(m_pLuaState, name))
     {
         const char *errmsg = lua_tostring(m_pLuaState, -1);
         if (!errmsg)
             errmsg = "Unknown error!";
-        //ThrowError(false, "While parsing %s: %s", name, errmsg);
-        fprintf(stderr, "While parsing %s: %s\n", name, errmsg);
-        return false;
+        throw Exceptions::CExLua(CreateText("While parsing %s: %s\n", name, errmsg));
     }
-    return true;
 }
 
 void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab, void *data)
@@ -248,7 +243,7 @@ void CLuaVM::PushArg(const char *s)
 void CLuaVM::DoCall(void)
 {
     if (lua_pcall(m_pLuaState, m_iPushedArgs, 0, 0) != 0)
-        fprintf(stderr, "error running function : %s", lua_tostring(m_pLuaState, -1)); // UNDONE
+        throw Exceptions::CExLua(CreateText("Error running function: %s", lua_tostring(m_pLuaState, -1)));
     
     m_iPushedArgs = 0;
 }
@@ -455,3 +450,14 @@ void CLuaVM::SetArrayStr(const char *s, const char *tab, int index)
     lua_setglobal(m_pLuaState, tab);
 }
 
+void CLuaVM::LuaError(const char *msg, ...)
+{
+    static char fmt[1024];
+    va_list v;
+    
+    va_start(v, msg);
+    vsnprintf(fmt, sizeof(fmt), msg, v);
+    va_end(v);
+    
+    luaL_error(m_pLuaState, fmt);
+}

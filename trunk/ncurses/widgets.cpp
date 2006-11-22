@@ -1906,8 +1906,7 @@ void CMenu::AddItem(std::string s, bool tags)
     // Menu works with signed ints while text works with unsigned ints
     if ((m_pMenuText->GetLines()+1) >= std::numeric_limits<int>::max())
     {
-        // UNDONE: Exception?
-        return;
+        throw Exceptions::CExOverflow("Reached signed int max");
     }
     
     if (!tags) // Don't want to process tags?

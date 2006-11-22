@@ -37,7 +37,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/utsname.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <libgen.h>
@@ -93,12 +92,11 @@ CMain::~CMain()
     closelog();
 }
 
-bool CMain::Init(int argc, char **argv)
+void CMain::Init(int argc, char **argv)
 {
     // Get current OS and cpu arch name
-    struct utsname inf;
-    if (uname(&inf) == -1)
-        return false;
+    utsname inf;
+    UName(inf);
     
     m_szOS = inf.sysname;
     std::transform(m_szOS.begin(), m_szOS.end(), m_szOS.begin(), tolower);
@@ -108,18 +106,11 @@ bool CMain::Init(int argc, char **argv)
     if ((m_szCPUArch[0] == 'i') && (m_szCPUArch.compare(2, 2, "86") == 0))
         m_szCPUArch = "x86";
 
-    char curdir[1024];
-    if (getcwd(curdir, sizeof(curdir)) == 0)
-        ThrowError(false, "Could not read current directory");
-
-    m_szOwnDir = curdir;
+    m_szOwnDir = GetCWD();
     
     // Initialize lua
-    if (!m_LuaVM.Init())
-        return false;
-
-    if (!InitLua())
-        return false;
+    m_LuaVM.Init();
+    InitLua();
     
 /*    if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
     {
@@ -145,8 +136,6 @@ bool CMain::Init(int argc, char **argv)
     
     debugline("defaultlang: %s\n", m_szCurLang.c_str());
     ReadLang();
-
-    return true;
 }
 
 void CMain::ThrowError(bool dialog, const char *error, ...)
@@ -195,8 +184,8 @@ void CMain::SetUpSU(const char *msg)
                     WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
-                    ThrowError(true, GetTranslation("Could not use su to gain root access"
-                            "Make sure you can use su(adding the current user to the wheel group may help"));
+                    throw CExSU("Could not use su to gain root access"
+                                "Make sure you can use su (adding the current user to the wheel group may help)");
                 }
             }
         }
@@ -352,7 +341,7 @@ const char *CMain::GetSumListFile(const char *progname)
     return CreateText("%s/list", dir);
 }
 
-bool CMain::InitLua()
+void CMain::InitLua()
 {
     // Register some globals for lua
     m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
@@ -381,8 +370,6 @@ bool CMain::InitLua()
     m_LuaVM.SetArrayStr("ncurses", "frontends", 2);
     m_LuaVM.RegisterString("gzip", "archivetype");
     m_LuaVM.RegisterString("english", "defaultlang");
-    
-    return true;
 }
 
 // Directory iter functions. Based on examples from "Programming in lua"
@@ -757,18 +744,12 @@ void CLuaRunner::CreateInstall(int argc, char **argv)
 {
     m_LuaVM.RegisterString(argv[3], "confdir");
     m_LuaVM.RegisterString(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
-    
-    if (!m_LuaVM.LoadFile(argv[2]))
-        ThrowError(false, "\nError parsing lua file!\n");
+    m_LuaVM.LoadFile(argv[2]);
 }
 
 
-bool CLuaRunner::Init(int argc, char **argv)
+void CLuaRunner::Init(int argc, char **argv)
 {
-    if (!CMain::Init(argc, argv))
-        return false;
-    
+    CMain::Init(argc, argv);
     CreateInstall(argc, argv);
-    
-    return true;
 }

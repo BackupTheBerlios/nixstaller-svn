@@ -322,7 +322,7 @@ mode_t StrToMode(const char *str)
     {
         octal_value = 8 * octal_value + *str++ - '0';
         if (07777 < octal_value)
-            return 0; // UNDONE
+            throw Exceptions::CExOverflow("Too high octal number given for string-->file permission mode conversion");
     }
     while ('0' <= *str && *str < '8');
 
@@ -379,6 +379,17 @@ void CHDir(const char *dir)
         throw Exceptions::CExReadDir(errno, dir);
 }
 
+void MKDir(const char *dir, int mode)
+{
+    if (mkdir(dir, mode) < 0)
+        throw Exceptions::CExMKDir(errno);
+}
+
+void UName(utsname &u)
+{
+    if (uname(&u) == -1)
+        throw Exceptions::CExUName(errno);
+}
 
 // -------------------------------------
 // Directory iterator

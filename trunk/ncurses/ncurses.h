@@ -88,7 +88,7 @@ protected:
     virtual void CreateInit(void);
     virtual bool HandleKey(chtype ch);
 
-    virtual bool InitLua(void);
+    virtual void InitLua(void);
     
 public:
     CNCursBase(CWidgetManager *owner);
@@ -129,12 +129,12 @@ protected:
     virtual bool HandleKey(chtype ch);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
     
-    virtual bool InitLua(void);
+    virtual void InitLua(void);
     
 public:
     CInstaller(CWidgetManager *owner) : CNCursBase(owner) { };
     
-    virtual bool Init(int argc, char **argv);
+    virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void);
     virtual void Install(void);
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title);

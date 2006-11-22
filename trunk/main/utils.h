@@ -37,6 +37,7 @@
 
 #include <dirent.h>
 #include <poll.h>
+#include <sys/utsname.h>
         
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
@@ -65,6 +66,8 @@ inline char *MakeTranslation(const std::string &s) { return GetTranslation(MakeC
 char *StrDup(const char *str);
 std::string GetCWD(void);
 void CHDir(const char *dir);
+void MKDir(const char *dir, int mode);
+void UName(utsname &u);
 
 inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
 inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };

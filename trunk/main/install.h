@@ -76,7 +76,7 @@ protected:
     virtual void AddInstOutput(const std::string &str) = 0;
     virtual void SetProgress(int percent) = 0;
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
-    virtual bool InitLua(void);
+    virtual void InitLua(void);
     
 public:
     install_info_s m_InstallInfo;
@@ -88,7 +88,7 @@ public:
                          m_fInstallProgress(0.0f), m_bInstalling(false) { };
     virtual ~CBaseInstall(void) { };
 
-    virtual bool Init(int argc, char **argv);
+    virtual void Init(int argc, char **argv);
     virtual void Install(void);
 
     const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_szOwnDir.c_str()); };

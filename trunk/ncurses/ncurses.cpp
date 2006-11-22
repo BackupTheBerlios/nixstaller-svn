@@ -61,11 +61,7 @@ bool RunFrontend(int argc, char **argv)
     //pInterface = new CAppManager;
     
     // Init
-    if (!pInterface->Init(argc, argv))
-    {
-//         pInterface->ThrowError(false, "Error: Init failed, aborting\n"); // UNDONE
-        return false;
-    }
+    pInterface->Init(argc, argv);
 
     pWidgetManager->Refresh();
     while (pWidgetManager->Run());
@@ -232,12 +228,11 @@ bool CNCursBase::HandleKey(chtype ch)
     return false;
 }
 
-bool CNCursBase::InitLua()
+void CNCursBase::InitLua()
 {
     // Overide print function
     m_LuaVM.RegisterFunction(LuaLog, "print", NULL, this);
-    
-    return CMain::InitLua();
+    CMain::InitLua();
 }
 
 void CNCursBase::UpdateLanguage()

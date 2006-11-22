@@ -215,7 +215,7 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
-bool CInstaller::InitLua()
+void CInstaller::InitLua()
 {
     m_LuaVM.InitClass("welcomescreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pWelcomeScreen, "welcomescreen", "WelcomeScreen");
@@ -232,13 +232,11 @@ bool CInstaller::InitLua()
     m_LuaVM.InitClass("finishscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pFinishScreen, "finishscreen", "FinishScreen");
     
-    if (!CNCursBase::InitLua() || !CBaseInstall::InitLua())
-        return false;
-    
-    return true;
+    CNCursBase::InitLua();
+    CBaseInstall::InitLua();
 }
 
-bool CInstaller::Init(int argc, char **argv)
+void CInstaller::Init(int argc, char **argv)
 {
     SetTitle("Nixstaller");
     
@@ -260,8 +258,7 @@ bool CInstaller::Init(int argc, char **argv)
     (m_pInstallScreen = AddChild(new CInstallScreen(this, h, w, y, x)))->Enable(false);
     (m_pFinishScreen = AddChild(new CFinishScreen(this, h, w, y, x)))->Enable(false);
     
-    if (!CBaseInstall::Init(argc, argv))
-        return false;
+    CBaseInstall::Init(argc, argv);
     
     CLangScreen *langscr = AddChild(new CLangScreen(this, h, w, y, x));
     langscr->Enable(false);
@@ -327,7 +324,7 @@ bool CInstaller::Init(int argc, char **argv)
                 }
             }
             else
-                ThrowError(false, "Wrong type found in ScreenList variabale");
+                throw Exceptions::CExLua("Wrong type found in ScreenList variabale");
         }
         m_LuaVM.CloseArray();
     }
@@ -346,8 +343,6 @@ bool CInstaller::Init(int argc, char **argv)
         else
             (*it)->Enable(false);
     }
-    
-    return true;
 }
 
 void CInstaller::UpdateLanguage()

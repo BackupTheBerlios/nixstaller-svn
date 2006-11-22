@@ -87,8 +87,8 @@ public:
     CLuaVM(void) : m_iPushedArgs(0) { };
     ~CLuaVM(void) { lua_close(m_pLuaState); };
 
-    bool Init(void);
-    bool LoadFile(const char *name);
+    void Init(void);
+    void LoadFile(const char *name);
     
     void RegisterFunction(lua_CFunction f, const char *name, const char *tab=NULL, void *data=NULL);
     void RegisterNumber(lua_Number n, const char *name, const char *tab=NULL);
@@ -195,6 +195,8 @@ public:
     bool GetArgNum(lua_Integer *out);
     bool GetArgStr(std::string *out);
     bool GetArgStr(char *out);
+    
+    void LuaError(const char *msg, ...);
 };
 
 class CMain;
@@ -256,7 +258,7 @@ protected:
     const char *GetRegConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
     
-    virtual bool InitLua(void);
+    virtual void InitLua(void);
     
 public:
     std::string m_szCurLang;
@@ -267,7 +269,7 @@ public:
     
     void ThrowError(bool dialog, const char *error, ...);
     
-    virtual bool Init(int argc, char **argv);
+    virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void) { ReadLang(); };
     
     // Functions for lua binding
@@ -300,7 +302,7 @@ class CLuaRunner: public CMain
     void CreateInstall(int argc, char **argv);
 
 public:
-    virtual bool Init(int argc, char **argv);
+    virtual void Init(int argc, char **argv);
 };
 
 class CBaseAppManager: virtual public CMain

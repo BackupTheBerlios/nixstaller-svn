@@ -47,12 +47,11 @@
 // Base Installer Class
 // -------------------------------------
 
-bool CBaseInstall::Init(int argc, char **argv)
+void CBaseInstall::Init(int argc, char **argv)
 {   
     m_szBinDir = dirname(argv[0]);
     
-    if (!CMain::Init(argc, argv)) // Init main, will also read config files
-        return false;
+    CMain::Init(argc, argv); // Init main, will also read config files
     
     // Obtain install variabeles from lua
     m_LuaVM.GetStrVar(&m_InstallInfo.program_name, "appname");
@@ -60,9 +59,7 @@ bool CBaseInstall::Init(int argc, char **argv)
     
     m_LuaVM.GetStrVar(&m_InstallInfo.archive_type, "archivetype");
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") && (m_InstallInfo.archive_type != "lzma"))
-        ThrowError(false, "Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
-    
-    return true;
+        throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
 }
 
 void CBaseInstall::SetNextStep()
@@ -262,8 +259,7 @@ void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, const char *path, bool 
         {
             CleanPasswdString(m_szPassword);
             m_szPassword = NULL;
-            ThrowError(true, "%s\n('%s')", GetTranslation("Failed to execute install command"),
-                       m_SUHandler.GetErrorMsgC());
+            throw Exceptions::CExCommand(cmd);
         }
     }
 }
@@ -271,7 +267,7 @@ void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, const char *path, bool 
 void CBaseInstall::VerifyIfInstalling()
 {
     if (!m_bInstalling)
-        ThrowError(false, "Error: function called when install is not in progress\n");
+        m_LuaVM.LuaError("Error: function called when install is not in progress\n");
 }
 
 void CBaseInstall::UpdateStatusText(const char *msg)
@@ -321,9 +317,7 @@ void CBaseInstall::Install(void)
     {
         if (!ReadAccess(destdir))
         {
-            throw CException(CreateText("This installer will install files to the following directory:\n%s\n"
-                                        "However you don't have read permissions to this directory\n"
-                                        "Please restart the installer as a user who does or as the root user", destdir));
+            throw Exceptions::CExReadExtrDir(destdir);
 /*            // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
             ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
                                         "However you don't have read permissions to this directory\n"
@@ -383,10 +377,9 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
     SetProgress(m_fExtrPercent/(float)m_sInstallSteps);
 }
 
-bool CBaseInstall::InitLua()
+void CBaseInstall::InitLua()
 {
-    if (!CMain::InitLua())
-        return false;
+    CMain::InitLua();
     
     m_LuaVM.InitClass("cfgscreen");
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddInput, "AddInput", this);
@@ -427,13 +420,10 @@ bool CBaseInstall::InitLua()
     m_LuaVM.RegisterFunction(LuaSetStatusMSG, "SetStatus", NULL, this);
     m_LuaVM.RegisterFunction(LuaSetStepCount, "SetStepCount", NULL, this);
     
-    if (!m_LuaVM.LoadFile("config/config.lua"))
-        return false;
-    
-    bool ret = true;
+    m_LuaVM.LoadFile("config/config.lua");
     
     if (FileExists("config/run.lua"))
-        ret = m_LuaVM.LoadFile("config/run.lua");
+        m_LuaVM.LoadFile("config/run.lua");
     
     std::string dir;
     if (!GetDestDir())
@@ -454,7 +444,10 @@ bool CBaseInstall::InitLua()
             if (m_LuaVM.GetArrayStr(u, &lang))
                 m_Languages.push_back(lang);
             else
-                ThrowError(false, "Non string found in languages variabele");
+            {
+                m_LuaVM.CloseArray();
+                throw Exceptions::CExLua("Non string found in languages variabele");
+            }
         }
         
         m_LuaVM.CloseArray();
@@ -470,8 +463,6 @@ bool CBaseInstall::InitLua()
         debugline("%s ", it->c_str());
     debugline("\n");
 #endif
-
-    return ret;
 }
 
 bool CBaseInstall::VerifyDestDir(void)
@@ -615,8 +606,15 @@ int CBaseInstall::LuaGetTempDir(lua_State *L)
     
     if (!FileExists(ret))
     {
-        if (mkdir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)))
-            pInstaller->ThrowError(false, "Could not create temporary directory"); // UNDONE
+        try
+        {
+            MKDir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
+        }
+        catch (Exceptions::CExMKDir &e)
+        {
+            // Convert to lua error(lua will catch every other exception)
+            luaL_error(L, e.what());
+        }
     }
     
     lua_pushstring(L, ret);
