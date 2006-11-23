@@ -571,7 +571,8 @@ int CLuaRadioButton::EnabledButton()
             return u;
     }
     
-    return -1; // UNDONE: Exception?
+    assert(false);
+    return 0; // Shouldn't happen...
 }
 
 int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
