@@ -32,6 +32,7 @@
     this exception.
 */
 
+#ifdef WITH_APPMANAGER
 #include "fltk.h"
 #include <FL/x.H>
 
@@ -216,3 +217,4 @@ void CUninstallWindow::AddOutput(const std::string &file)
     m_pDisplay->scroll(m_pBuffer->length(), m_pDisplay->word_end(m_pBuffer->length()));
     Fl::wait(0.0); // Update screen
 }
+#endif

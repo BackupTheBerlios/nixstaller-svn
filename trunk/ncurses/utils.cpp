@@ -76,6 +76,16 @@ void EndProg(bool err)
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
+void ReportError(const char *msg)
+{
+    extern bool g_bGotGUI;
+    
+    if (g_bGotGUI)
+        MessageBox(msg);
+    else
+        fprintf(stderr, msg);
+}
+
 int MaxX()
 {
     static int y, x;

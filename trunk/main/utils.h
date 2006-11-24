@@ -66,7 +66,9 @@ inline char *MakeTranslation(const std::string &s) { return GetTranslation(MakeC
 char *StrDup(const char *str);
 std::string GetCWD(void);
 void CHDir(const char *dir);
+inline void CHDir(const std::string &dir) { CHDir(dir.c_str()); };
 void MKDir(const char *dir, int mode);
+inline void MKDir(const std::string &dir, int mode) { MKDir(dir.c_str(), mode); };
 void UName(utsname &u);
 
 inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };

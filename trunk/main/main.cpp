@@ -62,15 +62,23 @@ int main(int argc, char **argv)
         CLuaRunner *p = new CLuaRunner;
         p->Init(argc, argv);
         delete p;
-        EndProg();
     }
     else
     {
-        if (!RunFrontend(argc, argv))
+        try
+        {
+            RunFrontend(argc, argv);
+        }
+        catch(Exceptions::CException &e)
+        {
+            ReportError(e.what());
+            return EXIT_FAILURE;
+        }
+/*        if (!RunFrontend(argc, argv))
         {
             printf("Error: Init failed, aborting\n"); // UNDONE
             return EXIT_FAILURE;
-        }
+        }*/
     }
     
     return EXIT_SUCCESS;
@@ -184,8 +192,8 @@ void CMain::SetUpSU(const char *msg)
                     WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
-                    throw CExSU("Could not use su to gain root access"
-                                "Make sure you can use su (adding the current user to the wheel group may help)");
+                    throw Exceptions::CExSU("Could not use su to gain root access"
+                                            "Make sure you can use su (adding the current user to the wheel group may help)");
                 }
             }
         }
@@ -236,6 +244,7 @@ bool CMain::ReadLang()
     return true;
 }
 
+#ifdef WITH_APPMANAGER
 std::string CMain::ReadRegField(std::ifstream &file)
 {
     std::string line, ret;
@@ -340,6 +349,7 @@ const char *CMain::GetSumListFile(const char *progname)
         ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
     return CreateText("%s/list", dir);
 }
+#endif
 
 void CMain::InitLua()
 {
@@ -456,23 +466,33 @@ int CMain::LuaMKDir(lua_State *L)
     bool ignoreumask = lua_toboolean(L, 3);
     mode_t dirmode, oldumask;
 
-    if (modestr)
-        dirmode = StrToMode(modestr);
-    else
-        dirmode = 0777; // This is the default mode for the mkdir command
-
-    if (ignoreumask)
-        oldumask = umask(0);
-    
-    int ret = mkdir(file, dirmode);
-    
-    if (ignoreumask)
-        umask(oldumask);
-
-    if (ret != 0)
+    try
     {
+        if (modestr)
+            dirmode = StrToMode(modestr);
+        else
+            dirmode = 0777; // This is the default mode for the mkdir command
+    
+        if (ignoreumask)
+            oldumask = umask(0);
+        
+        MKDir(file, dirmode);
+        
+        if (ignoreumask)
+            umask(oldumask);
+    }
+    // Lua isn't nice for exceptions, so convert it to lua error
+    catch(Exceptions::CExOverflow &e)
+    {
+        luaL_error(L, "Wrong permission mask given(\"%s\")", modestr);
+    }
+    catch(Exceptions::CExMKDir &e)
+    {
+        if (ignoreumask)
+            umask(oldumask);
+        
         lua_pushnil(L);
-        lua_pushstring(L, strerror(errno));
+        lua_pushstring(L, e.what());
         return 2;
     }
 
@@ -487,45 +507,51 @@ int CMain::LuaMKDirRec(lua_State *L)
     bool ignoreumask = lua_toboolean(L, 3);
     mode_t dirmode, oldumask;
 
-    if (modestr)
-        dirmode = StrToMode(modestr);
-    else
-        dirmode = 0777; // This is the default mode for the mkdir command
-
-    if (ignoreumask)
-        oldumask = umask(0);
-    
-    size_t len = strlen(file), u = 0;
-    while (true)
+    try
     {
-        // Don't check if first char is '/', since that should exist anyway
-        if ((u && (file[u] == '/')) || (u == (len-1)))
-        {
-            char tmp[u+2];
-            strncpy(tmp, file, u+1);
-            tmp[u+1] = 0;
-            if (!FileExists(tmp))
-            {
-                if (mkdir(tmp, dirmode) != 0)
-                {
-                    if (ignoreumask)
-                        umask(oldumask);
-
-                    lua_pushnil(L);
-                    lua_pushfstring(L, "Could not create directory %s: %s", tmp, strerror(errno));
-                    return 2;
-                }
-            }
-        }
-        u++;
+        if (modestr)
+            dirmode = StrToMode(modestr);
+        else
+            dirmode = 0777; // This is the default mode for the mkdir command
+    
+        if (ignoreumask)
+            oldumask = umask(0);
         
-        if (u == len)
-            break;
+        size_t len = strlen(file), u = 0;
+        while (true)
+        {
+            // Don't check if first char is '/', since that should exist anyway
+            if ((u && (file[u] == '/')) || (u == (len-1)))
+            {
+                char tmp[u+2];
+                strncpy(tmp, file, u+1);
+                tmp[u+1] = 0;
+                if (!FileExists(tmp))
+                    MKDir(tmp, dirmode);
+            }
+            u++;
+            
+            if (u == len)
+                break;
+        }
+        
+        if (ignoreumask)
+            umask(oldumask);
+    }
+    catch(Exceptions::CExOverflow &e)
+    {
+        luaL_error(L, "Wrong permission mask given(\"%s\")", modestr);
+    }
+    catch(Exceptions::CExMKDir &e)
+    {
+        if (ignoreumask)
+            umask(oldumask);
+        
+        lua_pushnil(L);
+        lua_pushstring(L, e.what());
+        return 2;
     }
     
-    if (ignoreumask)
-        umask(oldumask);
-
     lua_pushboolean(L, true);
     return 1;
 }
@@ -667,29 +693,39 @@ int CMain::LuaCHMod(lua_State *L)
 
 int CMain::LuaGetCWD(lua_State *L)
 {
-    char curdir[1024];
-    if (getcwd(curdir, sizeof(curdir)) == 0)
+    try
+    {
+        std::string curdir = GetCWD();
+        lua_pushstring(L, curdir.c_str());
+        return 1;
+    }
+    catch(Exceptions::CExReadDir &e)
     {
         lua_pushnil(L);
-        lua_pushfstring(L, "Could not get current directory: %s", strerror(errno));
+        lua_pushfstring(L, "Could not get current directory: %s", e.what());
         return 2;
     }
     
-    lua_pushstring(L, curdir);
-    return 1;
+    return 0; // Not reached
 }
 
 int CMain::LuaCHDir(lua_State *L)
 {
     const char *dir = luaL_checkstring(L, 1);
-    if (chdir(dir) != 0)
+    
+    try
+    {
+        CHDir(dir);
+        lua_pushboolean(L, true);
+        return 1;
+    }
+    catch(Exceptions::CExReadDir &e)
     {
         lua_pushnil(L);
-        lua_pushfstring(L, "Could not change current directory: %s", strerror(errno));
+        lua_pushfstring(L, "Could not change current directory: %s", e.what());
         return 2;
     }
     
-    lua_pushboolean(L, true);
     return 1;
 }
 

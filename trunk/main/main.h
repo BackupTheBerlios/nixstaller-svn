@@ -38,6 +38,7 @@
 #include "libsu.h"
 #include "lua.hpp"
 
+#include <assert.h>
 #include <syslog.h>
 #include <stdarg.h>
 #include <string>
@@ -70,6 +71,7 @@ struct app_entry_s
 // These functions should be defined for each frontend
 void EndProg(bool err=false);
 bool RunFrontend(int argc, char **argv);
+void ReportError(const char *msg);
 
 #ifndef HAVE_VASPRINTF
 extern "C" int vasprintf (char **result, const char *format, va_list args);

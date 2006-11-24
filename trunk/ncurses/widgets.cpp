@@ -2837,7 +2837,7 @@ void CFileDialog::OpenDir(std::string newdir)
     
     try
     {
-        CHDir(newdir.c_str());
+        CHDir(newdir);
         m_szSelectedDir = GetCWD();
         
         CDirIter dir(m_szSelectedDir);
@@ -2862,7 +2862,7 @@ void CFileDialog::OpenDir(std::string newdir)
         // Update AFTER file menu, since it may sort items in Draw()
         UpdateDirField();
     }
-    catch(Exceptions::CExIO &e)
+    catch(/*Exceptions::CExIO*/std::exception &e)
     {
         // Couldn't open directory(probably no read access)
         WarningBox(e.what());
@@ -2871,7 +2871,7 @@ void CFileDialog::OpenDir(std::string newdir)
         if (m_pFileMenu->Empty())
         {
             if (newdir == "/")
-                throw; // Couldn't even open / ...
+                ;//throw; // Couldn't even open / ...
             
             OpenDir("/");
         }
@@ -2923,13 +2923,17 @@ bool CFileDialog::HandleKey(chtype ch)
         if (newdir.empty())
             return true;
         
-        if (mkdir(newdir.c_str(), (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
+        try
         {
-            WarningBox("%s\n%s\n%s", GetTranslation("Could not create directory"), newdir.c_str(), strerror(errno));
-            return true;
+            MKDir(newdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
+            OpenDir(newdir);
         }
-
-        OpenDir(newdir);
+        catch(Exceptions::CExMKDir &e)
+        {
+            WarningBox("%s\n%s\n%s", GetTranslation("Could not create directory"), newdir.c_str(), e.what());
+        }
+            
+        return true;
     }
     
     return false;

@@ -57,6 +57,11 @@ void EndProg(bool err)
     exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
+void ReportError(const char *msg)
+{
+    fl_message(msg);
+}
+
 #ifndef RELEASE
 void debugline(const char *t, ...)
 {

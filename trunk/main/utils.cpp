@@ -180,11 +180,8 @@ std::string GetFirstValidDir(const std::string &dir)
     
     if (dir[0] != '/') // No absolute path given
     {
-        char curdir[1024];
-        if (getcwd(curdir, sizeof(curdir)) == 0) // Failed for some stupid reason...sigh
-            subdir.insert(0, "/");
-        else
-            subdir.insert(0, curdir + std::string("/"));
+        std::string curdir = GetCWD();
+        subdir.insert(0, curdir + std::string("/"));
     }
     
     if (ReadAccess(subdir))

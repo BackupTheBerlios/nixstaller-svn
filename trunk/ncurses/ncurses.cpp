@@ -36,6 +36,7 @@
 
 NCursesWindow *pRootWin;
 CWidgetManager *pWidgetManager;
+bool g_bGotGUI;
 
 bool RunFrontend(int argc, char **argv)
 {
@@ -45,6 +46,7 @@ bool RunFrontend(int argc, char **argv)
     
     // Create root window
     pRootWin = new NCursesWindow(::stdscr);
+    g_bGotGUI = true;
     NCursesWindow::useColors(); // Use colors when possible
     
     pWidgetManager = new CWidgetManager;
@@ -71,7 +73,8 @@ bool RunFrontend(int argc, char **argv)
     ::endwin();
     
     pWidgetManager = NULL;
-    
+    g_bGotGUI = false;
+
     return true;
 }
 

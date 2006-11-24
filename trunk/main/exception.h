@@ -42,6 +42,8 @@
     * Base classes from CException should use virtual inheritance(According to boost catch()
       may have trouble with finding the right type otherwise)
     * No exception specifiers are used since they are useless; they add extra overhead and react in a dumb way when a 'wrong' exception is found.
+    * The exception type that is caught MUST have a what() function, otherwise the one from std::exception is used(even when the thrown class has its own)
+      This function may be pure virtual.
 */
         
 namespace Exceptions {
@@ -60,6 +62,9 @@ protected:
         
         return buffer;
     }
+    
+public:
+    virtual const char *what(void) throw() = 0;
 };
 
 // Exception base class for errno based handling(C functions)
@@ -69,7 +74,7 @@ class CExErrno: virtual public CException
     
 protected:
     CExErrno(int err) : m_iError(err) { };
-    const char *Error(void) { return Error(); };
+    const char *Error(void) { return strerror(m_iError); };
 };
 
 // Exception base class which just returns a given message
@@ -80,9 +85,7 @@ class CExMessage: virtual public CException
 protected:
     CExMessage(const char *msg) : m_szMessage(msg) { };
     const char *Message(void) { return m_szMessage; };
-    
-public:
-    virtual const char *what() throw() { return m_szMessage; };
+    virtual const char *what(void) throw() { return Message(); };
 };
 
 
@@ -100,7 +103,7 @@ public:
     virtual const char *what(void) throw() { return FormatText("Could not open directory %s: %s", m_szDir, Error()); };
 };
 
-class CExReadDir: public CExErrno, public CExIO
+class CExReadDir: public CExIO, public CExErrno
 {
     const char *m_szDir;
     

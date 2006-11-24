@@ -139,7 +139,7 @@ void CBaseInstall::ExtractFiles()
             {
                 CleanPasswdString(m_szPassword);
                 m_szPassword = NULL;
-                ThrowError(true, "Error during extracting files");
+                throw Exceptions::CExCommand(command.c_str());
             }
         }
         else
@@ -330,8 +330,7 @@ void CBaseInstall::Install(void)
         }
     }
     
-    if (chdir(destdir)) 
-        ThrowError(true, "Could not open directory '%s'", destdir);
+    CHDir(destdir);
     
     m_SUHandler.SetThinkFunc(SUThinkFunc, this);
 
@@ -340,11 +339,11 @@ void CBaseInstall::Install(void)
     else
         ExtractFiles(); // Default behaviour
     
-    AddInstOutput("Registering installation...");
-    RegisterInstall();
-    CalcSums();
-    //Register.CheckSums(m_InstallInfo.program_name.c_str());
-    AddInstOutput("done\n");
+//     AddInstOutput("Registering installation...");
+//     RegisterInstall();
+//     CalcSums();
+//     //Register.CheckSums(m_InstallInfo.program_name.c_str());
+//     AddInstOutput("done\n");
 
     SetProgress(100);
     MsgBox(GetTranslation("Installation of %s complete!"), m_InstallInfo.program_name.c_str());
@@ -491,21 +490,23 @@ bool CBaseInstall::VerifyDestDir(void)
         // Create directory?
         if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir)))
         {
-            if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) != 0)
+            try
             {
-                WarnBox("%s\n%s\n%s", GetTranslation("Could not create directory"), dir, strerror(errno));
-                return false;
+                MKDir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
+                return true;
             }
-            
-            return true;
+            catch(Exceptions::CExMKDir &e)
+            {
+                WarnBox("%s\n%s\n%s", GetTranslation("Could not create directory"), dir, e.what());
+            }
         }
-        
         return false;
     }
     
     return true;
 }
 
+#ifdef WITH_APPMANAGER
 void CBaseInstall::WriteSums(const char *filename, std::ofstream &outfile, const std::string *var)
 {
     std::ifstream infile(filename);
@@ -598,6 +599,7 @@ void CBaseInstall::RegisterInstall(void)
     WriteRegEntry("url", m_InstallInfo.url, file);
     WriteRegEntry("description", m_InstallInfo.description, file);
 }
+#endif
 
 int CBaseInstall::LuaGetTempDir(lua_State *L)
 {

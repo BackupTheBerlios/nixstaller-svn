@@ -32,6 +32,8 @@
     this exception.
 */
 
+#ifdef WITH_APPMANAGER
+
 #include <fstream>
 #include <sstream>
 #include <sys/types.h>
@@ -389,3 +391,4 @@ bool CRegister::CheckSums(const char *progname)
     
     return true;
 }
+#endif
