@@ -81,7 +81,16 @@ void ReportError(const char *msg)
     extern bool g_bGotGUI;
     
     if (g_bGotGUI)
-        MessageBox(msg);
+    {
+        try
+        {
+            MessageBox(msg);
+        }
+        catch(NCursesException)
+        {
+            fprintf(stderr, msg);
+        }
+    }
     else
         fprintf(stderr, msg);
 }
@@ -116,7 +125,7 @@ void MessageBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(35, MaxX());
+    int width = Min(45, MaxX());
     CMessageBox *msgbox = pWidgetManager->AddChild(new CMessageBox(pWidgetManager, MaxY(), width, 0, 0, text));
     msgbox->Run();
     
@@ -133,7 +142,7 @@ void WarningBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(35, MaxX());
+    int width = Min(45, MaxX());
     CWarningBox *warnbox = pWidgetManager->AddChild(new CWarningBox(pWidgetManager, MaxY(), width, 0, 0, text));
     warnbox->Run();
     
@@ -150,7 +159,7 @@ bool YesNoBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(40, MaxX());
+    int width = Min(45, MaxX());
     
     CYesNoBox *yesnobox = pWidgetManager->AddChild(new CYesNoBox(pWidgetManager, MaxY(), width, 0, 0, text));
     bool ret = yesnobox->Run();

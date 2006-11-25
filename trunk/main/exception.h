@@ -203,6 +203,13 @@ public:
     virtual const char *what(void) throw() { return FormatText("Could not create directory: %s", Error()); };
 };
 
+class CExFrontend: public CExMessage
+{
+public:
+    CExFrontend(const char *msg) : CExMessage(msg) { };
+};
+
+
 }
 
 

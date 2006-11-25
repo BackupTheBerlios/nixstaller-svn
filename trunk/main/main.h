@@ -70,7 +70,8 @@ struct app_entry_s
 
 // These functions should be defined for each frontend
 void EndProg(bool err=false);
-bool RunFrontend(int argc, char **argv);
+void StartFrontend(int argc, char **argv);
+void StopFrontend(void);
 void ReportError(const char *msg);
 
 #ifndef HAVE_VASPRINTF
@@ -86,8 +87,8 @@ class CLuaVM
     void GetGlobal(const char *var, const char *tab);
     
 public:
-    CLuaVM(void) : m_iPushedArgs(0) { };
-    ~CLuaVM(void) { lua_close(m_pLuaState); };
+    CLuaVM(void) : m_pLuaState(NULL), m_iPushedArgs(0) { };
+    ~CLuaVM(void) { if (m_pLuaState) lua_close(m_pLuaState); };
 
     void Init(void);
     void LoadFile(const char *name);

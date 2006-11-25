@@ -2,7 +2,6 @@ OVERALL
 - Translate param names and param choices
 - Modify Makeself?
 - Check read permissions for extract dir
-- Usage of exceptions(StrToMode)
 - Use deque/vector instead of list?
 - Add new strings to translation files
 - Remove unnessesary virtuals?
@@ -18,8 +17,6 @@ MAIN
         
         
 NCURSES FRONTEND
-- Error handling in file manager
-- Handle sizes(minimal screen size, automatic button/dialog sizes(?))
 - Use ncurses with termcap fallback for freebsd
         
 FLTK FRONTEND

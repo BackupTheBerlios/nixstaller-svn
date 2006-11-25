@@ -38,44 +38,53 @@ NCursesWindow *pRootWin;
 CWidgetManager *pWidgetManager;
 bool g_bGotGUI;
 
-bool RunFrontend(int argc, char **argv)
+void StartFrontend(int argc, char **argv)
 {
-    // Init ncurses
+    try
+    {
+        // Init ncurses
+        
+        ::endwin();
+        
+        // Create root window
+        pRootWin = new NCursesWindow(::stdscr);
+        g_bGotGUI = true;
+        NCursesWindow::useColors(); // Use colors when possible
+        
+        pWidgetManager = new CWidgetManager;
+        pWidgetManager->Init();
+        
+        curs_set(0); // Hide cursor when possible
+        
+        pRootWin->bkgd(' '|CWidgetWindow::GetColorPair(0, 0)); // No background
     
-    ::endwin();
+        CNCursBase *pInterface;
+        //if ((argc > 1) && !strcmp(argv[1], "inst"))
+            pInterface = pWidgetManager->AddChild(new CInstaller(pWidgetManager));
+        //else
+        //pInterface = new CAppManager;
+        
+        // Init
+        pInterface->Init(argc, argv);
     
-    // Create root window
-    pRootWin = new NCursesWindow(::stdscr);
-    g_bGotGUI = true;
-    NCursesWindow::useColors(); // Use colors when possible
-    
-    pWidgetManager = new CWidgetManager;
-    pWidgetManager->Init();
-    
-    curs_set(0); // Hide cursor when possible
-    
-    pRootWin->bkgd(' '|CWidgetWindow::GetColorPair(0, 0)); // No background
+        pWidgetManager->Refresh();
+        while (pWidgetManager->Run());
+    }
+    catch(NCursesException &e)
+    {
+        // Convert to exception that main() can use...
+        throw Exceptions::CExFrontend(CreateText("Ncurses detected the following error:\n%s\nNote: Your terminal size might be too small", e.message));
+    }
+}
 
-    CNCursBase *pInterface;
-    //if ((argc > 1) && !strcmp(argv[1], "inst"))
-        pInterface = pWidgetManager->AddChild(new CInstaller(pWidgetManager));
-    //else
-    //pInterface = new CAppManager;
-    
-    // Init
-    pInterface->Init(argc, argv);
-
-    pWidgetManager->Refresh();
-    while (pWidgetManager->Run());
-    
+void StopFrontend()
+{
     delete pWidgetManager;
     delete pRootWin;
     ::endwin();
     
     pWidgetManager = NULL;
     g_bGotGUI = false;
-
-    return true;
 }
 
 // -------------------------------------

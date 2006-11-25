@@ -37,7 +37,7 @@
 
 CFLTKBase *pInterface = NULL;
 
-bool RunFrontend(int argc, char **argv)
+void StartFrontend(int argc, char **argv)
 {
 //     if ((argc > 1) && !strcmp(argv[1], "inst"))
         pInterface = new CInstaller;
@@ -47,8 +47,11 @@ bool RunFrontend(int argc, char **argv)
     // Init
     pInterface->Init(argc, argv);
     pInterface->Run(argv);
-    
-    return true;
+}
+
+void StopFrontend()
+{
+    delete pInterface;
 }
 
 void EndProg(bool err)

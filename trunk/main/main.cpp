@@ -55,33 +55,34 @@ int main(int argc, char **argv)
            "Nixstaller is free software, and you are welcome to redistribute it\n"
            "under certain conditions; see the about section for details.\n");
     
-    // Caller (usually geninstall.sh) wants to run a lua script?
-    if ((argc >= 4) && !strcmp(argv[1], "-c"))
+    bool runscript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
+    int ret = EXIT_SUCCESS;
+    
+    try
     {
-        // HACK: Run lua script and exit
-        CLuaRunner *p = new CLuaRunner;
-        p->Init(argc, argv);
-        delete p;
+        if (runscript)
+        {
+            CLuaRunner lr;
+            lr.Init(argc, argv);
+        }
+        else
+        {
+            StartFrontend(argc, argv);
+        }
     }
-    else
+    catch(Exceptions::CException &e)
     {
-        try
-        {
-            RunFrontend(argc, argv);
-        }
-        catch(Exceptions::CException &e)
-        {
+        if (runscript)
+            fprintf(stderr, e.what()); // No specific way to complain, just use stderr
+        else
             ReportError(e.what());
-            return EXIT_FAILURE;
-        }
-/*        if (!RunFrontend(argc, argv))
-        {
-            printf("Error: Init failed, aborting\n"); // UNDONE
-            return EXIT_FAILURE;
-        }*/
+        
+        ret = EXIT_FAILURE;
     }
     
-    return EXIT_SUCCESS;
+    StopFrontend();
+    
+    return ret;
 }
 
 // -------------------------------------
