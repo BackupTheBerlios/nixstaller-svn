@@ -36,8 +36,11 @@
 #define MAIN_H
 
 #include "libsu.h"
-#include "lua.hpp"
-
+// #include "lua.hpp"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+        
 #include <assert.h>
 #include <syslog.h>
 #include <stdarg.h>
@@ -85,6 +88,7 @@ class CLuaVM
     
     void StackDump(const char *msg);
     void GetGlobal(const char *var, const char *tab);
+    static int DoFunctionCall(lua_State *L);
     
 public:
     CLuaVM(void) : m_pLuaState(NULL), m_iPushedArgs(0) { };

@@ -52,6 +52,7 @@ void StartFrontend(int argc, char **argv)
 void StopFrontend()
 {
     delete pInterface;
+    pInterface = NULL;
 }
 
 void EndProg(bool err)

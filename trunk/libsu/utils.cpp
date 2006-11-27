@@ -39,7 +39,7 @@ void log(const char *txt, ...)
     if (InitLogFile)
     {
         getcwd(fname, sizeof(fname));
-        strcat(fname, "/log.txt");
+        strncat(fname, "/lsulog.txt", sizeof(fname)-strlen("/lsulog.txt"));
         LogFile = fopen(fname, "w"); // Clear file on start
         InitLogFile = false;
     }

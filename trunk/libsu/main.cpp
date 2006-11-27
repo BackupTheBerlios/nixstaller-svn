@@ -30,7 +30,7 @@
 
 using namespace LIBSU;
 
-static const char *TermStr = "I'm Done Now :)"; // Lets just hope other program don't output this ;)
+static const char *TermStr = "I'm Done Now :)\n"; // Lets just hope other program don't output this ;)
 
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szUser("root"), m_szPath("/bin:/usr/bin"),
                                     m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
@@ -102,8 +102,6 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
         return -1;
     } 
 
-    log("Pid: %d\n", m_iPid);
-    
     // Parent
     if (m_iPid) 
     {
@@ -111,8 +109,6 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
         return 0;
     }
 
-    log("Child running...\n");
-    
     // Child
     if (SetupTTY(slave) < 0)
     {
@@ -125,17 +121,13 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     char **argp = (char **)malloc((args.size()+2)*sizeof(char *));
     int i = 0;
 
-    argp[i] = new char[command.length()+1];
-    command.copy(argp[i], std::string::npos);
-    argp[i][command.length()] = 0;
+    argp[i] = strdup(command.c_str());
     i++;
 
     log("args: ");
     for (std::list<std::string>::const_iterator it=args.begin(); it!=args.end(); it++)
     {
-        argp[i] = new char[it->length()+1];
-        it->copy(argp[i], std::string::npos);
-        argp[i][it->length()] = 0;
+        argp[i] = strdup(it->c_str());
         log("%s ", argp[i]);
         i++;
     }
@@ -146,7 +138,7 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     setenv("PATH", m_szPath.c_str(), 1);
     execv(command.c_str(), (char * const *)argp);
     SetError(SU_ERROR_EXECUTE, "execv(\"%s\"): %s", m_szPath.c_str(), perror);
-    return -1; // Shut up compiler. Never reached.
+    return -1;
 }
 
 std::string CLibSU::ReadLine(bool block)
@@ -154,14 +146,13 @@ std::string CLibSU::ReadLine(bool block)
     std::string::size_type pos;
     std::string ret;
 
-    if (!m_szInBuf.empty()) 
+    if (!m_szInBuf.empty())
     {
         pos = m_szInBuf.find('\n');
-        if (pos == std::string::npos) 
+        if (pos == std::string::npos)
         {
-            // Commented out, otherwise it may return non-complete lines(there may be chars letf until next \n)
-            //ret = m_szInBuf;
-            //m_szInBuf.clear();
+            ret = m_szInBuf;
+            m_szInBuf.clear();
         }
         else
         {
@@ -169,7 +160,7 @@ std::string CLibSU::ReadLine(bool block)
             m_szInBuf.erase(0, pos+1);
             return ret;
         }
-        log("ret(1) in ReadLine: %s(%d)\n", ret.c_str(), ret.length());
+        log("ret in ReadLine: %s(%d, buffered)\n", ret.c_str(), ret.length());
         //return ret;
     }
 
@@ -204,7 +195,11 @@ std::string CLibSU::ReadLine(bool block)
         {
             if (errno == EINTR)
                 continue;
-            else break;
+            else
+            {
+                log("Read had an error: %s", strerror(errno));
+                break;
+            }
         }
         if (nbytes == 0)
             break;        // eof
@@ -227,7 +222,7 @@ std::string CLibSU::ReadLine(bool block)
         break;
     }
     
-    log("ret(2) in ReadLine: %s(%d)\n", ret.c_str(), ret.length());
+    log("ret in ReadLine: %s(%d, direct)\n", ret.c_str(), ret.length());
     return ret;
 }
 
@@ -262,10 +257,10 @@ int CLibSU::WaitForChild()
             ret = 0;
         }
 
-        if (ret) 
+        if (ret) // There is input available
         {
             std::string line = ReadLine(false);
-            while (!line.empty()) 
+            while (!line.empty())
             {
                 if (!m_szExit.empty() && (line == m_szExit))
                     kill(m_iPid, SIGTERM);
@@ -301,7 +296,7 @@ int CLibSU::WaitForChild()
             break;
         }
     }
-    log("retval: %d\n", retval);
+    
     return retval;
 }
 

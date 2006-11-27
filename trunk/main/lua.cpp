@@ -100,6 +100,23 @@ void CLuaVM::GetGlobal(const char *var, const char *tab)
         lua_getglobal(m_pLuaState, var);
 }
 
+int CLuaVM::DoFunctionCall(lua_State *L)
+{
+    lua_CFunction f = lua_tocfunction(L, lua_upvalueindex(2));
+    
+    try
+    {
+        int ret = f(L);
+        return ret;
+    }
+    catch(Exceptions::CException &e)
+    {
+        // Lua doesn't handle exceptions in a nice way (catches all), so convert to lua error
+        luaL_error(L, "Cought exception in lua function: %s", e.what());
+    }
+    return 0; // Never reached
+}
+
 void CLuaVM::Init()
 {
     // Initialize lua
@@ -131,16 +148,12 @@ void CLuaVM::LoadFile(const char *name)
 
 void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab, void *data)
 {
+    // data is NULL by default, but because we want the real function at a fixed closure position (2) we push the userdata always.
     if (!tab)
     {
-        if (data)
-        {
-            lua_pushlightuserdata(m_pLuaState, data);
-            lua_pushcclosure(m_pLuaState, f, 1);
-        }
-        else
-            lua_pushcfunction(m_pLuaState, f);
-        
+        lua_pushlightuserdata(m_pLuaState, data);
+        lua_pushcfunction(m_pLuaState, f);
+        lua_pushcclosure(m_pLuaState, DoFunctionCall, 2);
         lua_setglobal(m_pLuaState, name);
     }
     else
@@ -153,13 +166,21 @@ void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab
             lua_newtable(m_pLuaState);
         }
         
-        if (data)
+        lua_pushlightuserdata(m_pLuaState, data);
+        lua_pushcfunction(m_pLuaState, f);
+        lua_pushcclosure(m_pLuaState, DoFunctionCall, 2);
+
+/*        if (data)
         {
             lua_pushlightuserdata(m_pLuaState, data);
-            lua_pushcclosure(m_pLuaState, f, 1);
+            lua_pushcfunction(m_pLuaState, f);
+            lua_pushcclosure(m_pLuaState, DoFunctionCall, 2);
         }
         else
+        {
             lua_pushcfunction(m_pLuaState, f);
+            lua_pushcclosure(m_pLuaState, DoFunctionCall, 1);
+        }*/
         
         lua_setfield(m_pLuaState, -2, name);
         

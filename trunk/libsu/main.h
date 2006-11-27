@@ -65,7 +65,7 @@ extern "C" char * ptsname(int fd) __THROW;
 extern "C" int unlockpt(int fd) __THROW;
 #endif
 
-#ifdef HAVE__GETPTY
+#ifdef HAVE_GETPTY
 extern "C" char *_getpty(int *, int, mode_t, int);
 #endif
 
