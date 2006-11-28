@@ -33,13 +33,14 @@ void log(const char *txt, ...)
     FILE *LogFile = NULL;
     static bool InitLogFile = true;
     char *buffer;
-    static char fname[512];
+//     static char fname[512];
+    const char *fname = "/tmp/libsu.log";
     static va_list v;
     
     if (InitLogFile)
     {
-        getcwd(fname, sizeof(fname));
-        strncat(fname, "/lsulog.txt", sizeof(fname)-strlen("/lsulog.txt"));
+/*        getcwd(fname, sizeof(fname));
+        strncat(fname, "/../lsulog.txt", sizeof(fname)-strlen("/../lsulog.txt"));*/
         LogFile = fopen(fname, "w"); // Clear file on start
         InitLogFile = false;
     }

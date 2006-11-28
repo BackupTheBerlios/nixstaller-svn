@@ -15,15 +15,15 @@ MAIN
 - Overide some lua funcs?(ie. exit)
 - Create directory with root access in VerifyDestDir()?
 - Check buffer in ExecuteCommand/ExtractFiles
-- BUG: passwd dialog doesn't want to cancel(ncurses only?)
         
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up(put a delay, open single root console?)
 - Use better way of reading terminal(same way as PipedCMD?)
-- Use locale fix from latest kdesu
+- Use locale fix from latest kdesu?
 
 NCURSES FRONTEND
 - Use ncurses with termcap fallback for freebsd
+- BUG: passwd dialog doesn't want to cancel
         
 FLTK FRONTEND
 - Change "Next" button to "Finish" in instscreen if it is the last screen

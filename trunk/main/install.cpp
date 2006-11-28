@@ -357,6 +357,7 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
     if (!s || !s[0])
         return;
     
+    debugline("UpdateExtrStatus: %s\n", s);
     std::string stat = s;
                 
     if (stat.compare(0, 2, "x ") == 0)

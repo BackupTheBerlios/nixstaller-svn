@@ -215,7 +215,7 @@ int CLibSU::SetupTTY(int fd)
     int slave = open(m_szTTYName.c_str(), O_RDWR);
     if (slave < 0) 
     {
-        SetError(SU_ERROR_INTERNAL, "Could not open slave side: %s", perror);
+        SetError(SU_ERROR_INTERNAL, "Could not open slave side: %s", strerror(errno));
         return -1;
     }
     close(fd);
@@ -243,13 +243,13 @@ int CLibSU::SetupTTY(int fd)
     struct termios tio;
     if (tcgetattr(0, &tio) < 0) 
     {
-        SetError(SU_ERROR_INTERNAL, "tcgetattr(): %s", perror);
+        SetError(SU_ERROR_INTERNAL, "tcgetattr(): %s", strerror(errno));
         return -1;
     }
     tio.c_oflag &= ~OPOST;
     if (tcsetattr(0, TCSANOW, &tio) < 0) 
     {
-        SetError(SU_ERROR_INTERNAL, "tcsetattr(): %s", perror);
+        SetError(SU_ERROR_INTERNAL, "tcsetattr(): %s", strerror(errno));
         return -1;
     }
 
@@ -293,7 +293,7 @@ int CLibSU::WaitSlave()
         }
         if (tcgetattr(slave, &tio) < 0) 
         {
-            SetError(SU_ERROR_INTERNAL, "tcgetattr(): %s", perror);
+            SetError(SU_ERROR_INTERNAL, "tcgetattr(): %s", strerror(errno));
             close(slave);
             return -1;
         }

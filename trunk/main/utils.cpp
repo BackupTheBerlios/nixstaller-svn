@@ -34,6 +34,7 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fstream>
 #include <sstream>
 #include <assert.h>

@@ -98,7 +98,7 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
            
     if (m_iPid == -1) 
     {
-        SetError(SU_ERROR_INTERNAL, "fork(): %s ", perror);
+        SetError(SU_ERROR_INTERNAL, "fork(): %s ", strerror(errno));
         return -1;
     } 
 
@@ -137,7 +137,7 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     
     setenv("PATH", m_szPath.c_str(), 1);
     execv(command.c_str(), (char * const *)argp);
-    SetError(SU_ERROR_EXECUTE, "execv(\"%s\"): %s", m_szPath.c_str(), perror);
+    SetError(SU_ERROR_EXECUTE, "execv(\"%s\"): %s", m_szPath.c_str(), strerror(errno));
     return -1;
 }
 
@@ -158,16 +158,15 @@ std::string CLibSU::ReadLine(bool block)
         {
             ret = m_szInBuf.substr(0, pos+1);
             m_szInBuf.erase(0, pos+1);
-            return ret;
         }
-        log("ret in ReadLine: %s(%d, buffered)\n", ret.c_str(), ret.length());
-        //return ret;
+        log("ret in ReadLine: %s(%d, buffered)\nBuffer: %s\n", ret.c_str(), ret.length(), m_szInBuf.c_str());
+        return ret;
     }
 
     int flags = fcntl(m_iPTYFD, F_GETFL);
     if (flags < 0) 
     {
-        SetError(SU_ERROR_INTERNAL, "fcntl(F_GETFL): %s", perror);
+        SetError(SU_ERROR_INTERNAL, "fcntl(F_GETFL): %s", strerror(errno));
         return ret;
     }
     int oflags = flags;
@@ -222,7 +221,7 @@ std::string CLibSU::ReadLine(bool block)
         break;
     }
     
-    log("ret in ReadLine: %s(%d, direct)\n", ret.c_str(), ret.length());
+    log("ret in ReadLine: %s(%d, direct)\nBuffer: %s\n", ret.c_str(), ret.length(), m_szInBuf.c_str());
     return ret;
 }
 
@@ -244,20 +243,20 @@ int CLibSU::WaitForChild()
 
         FD_ZERO(&fds);
         FD_SET(m_iPTYFD, &fds);
-        timeval tv = { 0, 10 }; // Max wait time is 10 usec
+        timeval tv = { 0, 0 };
         
         int ret = select(m_iPTYFD+1, &fds, 0L, 0L, &tv);
         if (ret == -1) 
         {
             if (errno != EINTR) 
             {
-                SetError(SU_ERROR_INTERNAL, "select(): %s", perror);
+                SetError(SU_ERROR_INTERNAL, "select(): %s", strerror(errno));
                 return -1;
             }
             ret = 0;
         }
 
-        if (ret) // There is input available
+        if (ret) // There is output available
         {
             std::string line = ReadLine(false);
             while (!line.empty())
@@ -268,10 +267,24 @@ int CLibSU::WaitForChild()
                 {
                     fputs(line.c_str(), stdout);
                 }
-                if (m_pOutputFunc)
-                    (m_pOutputFunc)(line.c_str(), m_pCustomOutputData);
-                line = ReadLine(false);
+                
+                if (m_pThinkFunc)
+                    (m_pThinkFunc)(m_pCustomThinkData);
+
+                unsigned pos = line.find('\n');
+                if (pos != std::string::npos)
+                {
+                    if (m_pOutputFunc)
+                        (m_pOutputFunc)(line.substr(0, pos).c_str(), m_pCustomOutputData);
+                    
+                    line.erase(0, pos+1);
+                }
+                
+                line += ReadLine(false);
             }
+            
+            if (!line.empty() && m_pOutputFunc)
+                (m_pOutputFunc)(line.c_str(), m_pCustomOutputData);
         }
 
         ret = CheckPidExited(m_iPid);
@@ -307,7 +320,7 @@ int CLibSU::CheckPidExited(pid_t pid)
 
     if (ret < 0) 
     {
-        SetError(SU_ERROR_INTERNAL, "waitpid(): %s", perror);
+        SetError(SU_ERROR_INTERNAL, "waitpid(): %s", strerror(errno));
         return PID_ERROR;
     }
     if (ret == pid) 
@@ -398,7 +411,7 @@ int CLibSU::TalkWithSU(const char *password)
                     }
                     if (!CheckPid(m_iPid))
                     {
-                        SetError(SU_ERROR_INTERNAL, "su has exited while waiting for pwd");
+                        SetError(SU_ERROR_INTERNAL, "su has exited while waiting for password");
                         return SUCOM_ERROR;
                     }
                     if ((WaitSlave() == 0) && CheckPid(m_iPid))
