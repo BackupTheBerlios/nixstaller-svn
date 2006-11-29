@@ -239,13 +239,13 @@ void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, const char *path, bool 
 {
     VerifyIfInstalling();
     
-    if (!m_szPassword)
+    if (!m_szPassword || !m_szPassword[0])
         SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
                 "Please enter the password of the root user");
     
     m_SUHandler.SetOutputFunc(CMDSUOutFunc, this);
 
-    if (!path || !*path)
+    if (!path || !path[0])
         path = GetDefaultPath();
     
     m_SUHandler.SetPath(path);

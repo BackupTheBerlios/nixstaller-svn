@@ -197,7 +197,12 @@ void CInstaller::Init(int argc, char **argv)
                 }
             }
             else
+            {
+                m_LuaVM.CloseArray();
+                m_pWizard->end();
+                m_pMainWindow->end();
                 throw Exceptions::CExLua("Wrong type found in ScreenList variabale");
+            }
         }
         m_LuaVM.CloseArray();
     }
@@ -316,7 +321,7 @@ void CInstaller::Next()
                 while ((p != m_ScreenList.end()) && (!(*p)->Activate())) { m_pWizard->next(); p++; }
 
                 if (p == m_ScreenList.end())
-                    EndProg();
+                    m_pMainWindow->hide();
             }
             break;
         }

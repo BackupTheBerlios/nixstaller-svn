@@ -145,7 +145,8 @@ void CInstaller::Next()
         }
     }
     
-    EndProg();
+    // No screens left
+    m_pWidgetManager->Quit();
 }
 
 void CInstaller::ChangeStatusText(const char *str)

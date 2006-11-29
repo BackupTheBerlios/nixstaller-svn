@@ -56,7 +56,7 @@ int main(int argc, char **argv)
            "under certain conditions; see the about section for details.\n");
     
     bool runscript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
-    int ret = EXIT_SUCCESS;
+    int ret = EXIT_FAILURE;
     
     try
     {
@@ -69,6 +69,11 @@ int main(int argc, char **argv)
         {
             StartFrontend(argc, argv);
         }
+        ret = EXIT_SUCCESS;
+    }
+    catch(Exceptions::CExUser &e)
+    {
+        debugline("User cancel\n");
     }
     catch(Exceptions::CException &e)
     {
@@ -76,8 +81,6 @@ int main(int argc, char **argv)
             fprintf(stderr, e.what()); // No specific way to complain, just use stderr
         else
             ReportError(e.what());
-        
-        ret = EXIT_FAILURE;
     }
     
     StopFrontend();
@@ -121,17 +124,6 @@ void CMain::Init(int argc, char **argv)
     m_LuaVM.Init();
     InitLua();
     
-/*    if (argc >= 4) // 3 arguments at least: "-c", the path to the lua script and the path to the project directory
-    {
-        if (!strcmp(argv[1], "-c"))
-        {
-            printf("Switching to script runner\n");
-
-            CreateInstall(argc, argv);
-            EndProg();
-        }
-    }*/
-     
     if (m_Languages.empty())
     {
         char *s = new char[8];

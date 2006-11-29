@@ -44,6 +44,8 @@
     * No exception specifiers are used since they are useless; they add extra overhead and react in a dumb way when a 'wrong' exception is found.
     * The exception type that is caught MUST have a what() function, otherwise the one from std::exception is used(even when the thrown class has its own)
       This function may be pure virtual.
+    * All registrated lua function who throw CException type exceptions are catched by DoFunctionCall and transformed to a luaL_error call. This because lua
+      will catch every exception by its own and call lua_error afterwards, without any message.
 */
         
 namespace Exceptions {
@@ -209,6 +211,10 @@ public:
     CExFrontend(const char *msg) : CExMessage(msg) { };
 };
 
+// Thrown when user wants to quit
+class CExUser: public CException
+{
+};
 
 }
 

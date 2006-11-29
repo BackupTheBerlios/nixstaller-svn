@@ -122,6 +122,7 @@ public:
     
     void Init(void);
     void Refresh(void);
+    void Quit(void) { m_bQuit = true; };
     
     virtual void _AddChild(CWidgetWindow *p);
     virtual void RemoveChild(CWidgetWindow *p);

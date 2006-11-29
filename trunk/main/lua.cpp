@@ -170,20 +170,7 @@ void CLuaVM::RegisterFunction(lua_CFunction f, const char *name, const char *tab
         lua_pushcfunction(m_pLuaState, f);
         lua_pushcclosure(m_pLuaState, DoFunctionCall, 2);
 
-/*        if (data)
-        {
-            lua_pushlightuserdata(m_pLuaState, data);
-            lua_pushcfunction(m_pLuaState, f);
-            lua_pushcclosure(m_pLuaState, DoFunctionCall, 2);
-        }
-        else
-        {
-            lua_pushcfunction(m_pLuaState, f);
-            lua_pushcclosure(m_pLuaState, DoFunctionCall, 1);
-        }*/
-        
         lua_setfield(m_pLuaState, -2, name);
-        
         lua_setglobal(m_pLuaState, tab);
     }
 }
