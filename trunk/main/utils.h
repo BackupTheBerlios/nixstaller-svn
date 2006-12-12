@@ -71,8 +71,33 @@ void MKDir(const char *dir, int mode);
 inline void MKDir(const std::string &dir, int mode) { MKDir(dir.c_str(), mode); };
 void UName(utsname &u);
 
-inline int Min(int n1, int n2) { return (n1 < n2) ? n1 : n2; };
-inline int Max(int n1, int n2) { return (n1 > n2) ? n1 : n2; };
+template <typename To, typename From> To SafeConvert(From from)
+{
+    bool fromsigned = std::numeric_limits<From>::is_signed;
+    bool tosigned = std::numeric_limits<To>::is_signed;
+    
+    if (fromsigned && tosigned)
+    {
+        if (from > std::numeric_limits<To>::max())
+            throw Exceptions::CExOverflow("Detected a overflow with type conversion");
+        else if (from < std::numeric_limits<To>::min())
+            throw Exceptions::CExOverflow("Detected a underflow with type conversion");
+    }
+    else if (fromsigned && !tosigned)
+    {
+        if (from < 0)
+            throw Exceptions::CExOverflow("Detected a underflow with type conversion");
+        else if (from > std::numeric_limits<To>::max())
+            throw Exceptions::CExOverflow("Detected a overflow with type conversion");
+    }
+    else if (!fromsigned)
+    {
+        if (from > std::numeric_limits<To>::max())
+            throw Exceptions::CExOverflow("Detected a overflow with type conversion");
+    }
+    
+    return static_cast<To>(from);
+}
 
 class CDirIter
 {

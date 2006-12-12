@@ -143,14 +143,14 @@ protected:
     
     struct color_entry_s
     {
-        unsigned count;
+        TSTLStrSize count;
         int fgcolor, bgcolor;
-        color_entry_s(unsigned cn, int fg, int bg) : count(cn), fgcolor(fg), bgcolor(bg) { };
+        color_entry_s(TSTLStrSize cn, int fg, int bg) : count(cn), fgcolor(fg), bgcolor(bg) { };
     };
 
-    typedef std::map<unsigned, color_entry_s *> TColorTagList; // Index is used for starting position
-    typedef std::map<unsigned, unsigned> TRevTagList; // Index is the starting position, char count is the value
-    typedef std::set<unsigned> TCenterTagList;
+    typedef std::map<TSTLStrSize, color_entry_s *> TColorTagList; // Index is used for starting position
+    typedef std::map<TSTLStrSize, TSTLStrSize> TRevTagList; // Index is the starting position, char count is the value
+    typedef std::set<TSTLStrSize> TCenterTagList;
 
     std::vector<line_entry_s *> m_Lines;
     TColorTagList m_ColorTags;
@@ -159,37 +159,36 @@ protected:
 
 private:
     CWidgetWindow *m_pWindow;
-    unsigned m_uTextLength;
-    unsigned m_uCurrentLine;
-    unsigned m_uWidth, m_uMaxHeight, m_uLongestLine;
+    TSTLStrSize m_TextLength, m_LongestLine, m_Width;
+    TSTLVecSize m_CurrentLine, m_MaxHeight;
     bool m_bWrap, m_bHandleTags;
     
-    TColorTagList::iterator GetNextColorTag(TColorTagList::iterator cur, unsigned curpos);
-    TRevTagList::iterator GetNextRevTag(TRevTagList::iterator cur, unsigned curpos);
+    TColorTagList::iterator GetNextColorTag(TColorTagList::iterator cur, TSTLStrSize curpos);
+    TRevTagList::iterator GetNextRevTag(TRevTagList::iterator cur, TSTLStrSize curpos);
     
 public:
-    CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, unsigned maxh=std::numeric_limits<unsigned>::max());
+    CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap, TSTLVecSize maxh=std::numeric_limits<TSTLVecSize>::max());
     virtual ~CFormattedText(void) { Clear(); };
 
-    static unsigned CalcLines(const std::string &str, bool wrap, unsigned width);
+    static TSTLVecSize CalcLines(const std::string &str, bool wrap, TSTLStrSize width);
     
     virtual void AddText(const std::string &str);
     void SetText(const std::string &str) { Clear(); AddText(str); };
-    void Print(unsigned startline=0, unsigned startw=0, unsigned endline=std::numeric_limits<unsigned>::max(),
-               unsigned endw=std::numeric_limits<unsigned>::max());
-    unsigned GetLines(void);
-    unsigned GetLongestLine(void) { return m_uLongestLine; };
-    const std::string &GetText(unsigned line) { return m_Lines[line]->text; };
+    void Print(TSTLVecSize startline=0, TSTLStrSize startw=0, TSTLVecSize endline=std::numeric_limits<TSTLVecSize>::max(),
+               TSTLStrSize endw=std::numeric_limits<TSTLStrSize>::max());
+    TSTLStrSize GetLines(void);
+    TSTLVecSize GetLongestLine(void) { return m_LongestLine; };
+    const std::string &GetText(TSTLVecSize line) { return m_Lines[line]->text; };
     bool Empty(void) { return !GetLines(); };
     void Clear(void);
     
-    void AddCenterTag(unsigned line);
-    void AddRevTag(unsigned line, unsigned pos, unsigned c);
-    void AddColorTag(unsigned line, unsigned pos, unsigned c, int fg, int bg);
+    void AddCenterTag(TSTLVecSize line);
+    void AddRevTag(TSTLVecSize line, TSTLStrSize pos, TSTLStrSize c);
+    void AddColorTag(TSTLVecSize line, TSTLStrSize pos, TSTLStrSize c, int fg, int bg);
     
-    void DelCenterTag(unsigned line);
-    void DelRevTag(unsigned line, unsigned pos);
-    void DelColorTag(unsigned line, unsigned pos);
+    void DelCenterTag(TSTLVecSize line);
+    void DelRevTag(TSTLVecSize line, TSTLStrSize pos);
+    void DelColorTag(TSTLVecSize line, TSTLStrSize pos);
 };
 
 class CWidgetWindow: public CWidgetHandler, public NCursesWindow
@@ -300,8 +299,8 @@ public:
     CScrollbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, float min, float max,
                bool vertical, char absrel = 'a');
     
-    void SetMinMax(int min, int max) { m_fMinVal = min; m_fMaxVal = max; };
-    void SetCurrent(int cur) { m_fCurVal = cur; };
+    void SetMinMax(float min, float max) { m_fMinVal = min; m_fMaxVal = max; };
+    void SetCurrent(float cur) { m_fCurVal = cur; };
     float GetValue(void) { return m_fCurVal; };
     void Scroll(float n); // Scroll n steps. Negative n is up, positive down.
 };
@@ -309,7 +308,7 @@ public:
 class CTextLabel: public CWidgetWindow
 {
     int m_iMaxHeight;
-    unsigned m_uCurLines;
+    TSTLVecSize m_CurLines;
     CFormattedText m_FMText;
     
 protected:
@@ -324,8 +323,8 @@ public:
     void SetText(const std::string &text) { m_FMText.Clear(); AddText(text); };
     void SetText(const char *text) { m_FMText.Clear(); AddText(text); };
     
-    static unsigned CalcHeight(int ncols, const std::string &text) { return CFormattedText::CalcLines(text, true, ncols); }
-    static unsigned CalcHeight(int ncols, const char *text) { return CFormattedText::CalcLines(text, true, ncols); }
+    static TSTLVecSize CalcHeight(int ncols, const std::string &text) { return CFormattedText::CalcLines(text, true, ncols); }
+    static TSTLVecSize CalcHeight(int ncols, const char *text) { return CFormattedText::CalcLines(text, true, ncols); }
 };
 
 class CTextWindow: public CWidgetWindow
@@ -334,7 +333,7 @@ class CTextWindow: public CWidgetWindow
     CFormattedText *m_pFMText;
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     bool m_bWrap, m_bFollow;
-    unsigned m_uCurrentLine;
+    TSTLVecSize m_CurrentLine;
 
     void ScrollToBottom(void);
     void HScroll(int n);
@@ -367,9 +366,9 @@ class CMenu: public CWidgetWindow
         template <typename C> struct unsorted_tag_s
         {
             C entry;
-            unsigned lineoffset;
+            TSTLVecSize lineoffset;
             line_entry_s *line;
-            unsorted_tag_s(C c, unsigned l, line_entry_s *pl) : entry(c), lineoffset(l), line(pl) { };
+            unsorted_tag_s(C c, TSTLVecSize l, line_entry_s *pl) : entry(c), lineoffset(l), line(pl) { };
         };
     
         // For sorting, makes sure that empty lines are at the end
@@ -407,21 +406,21 @@ class CMenu: public CWidgetWindow
         CMenuText(CWidgetWindow *w) : CFormattedText(w, "", false) { };
         
         virtual void AddText(const std::string &str);
-        void HighLight(unsigned line, bool h);
-        unsigned Search(unsigned min, unsigned max, const std::string &key);
-        unsigned Search(unsigned min, unsigned max, char key);
+        void HighLight(TSTLVecSize line, bool h);
+        TSTLVecSize Search(TSTLVecSize min, TSTLVecSize max, const std::string &key);
+        TSTLVecSize Search(TSTLVecSize min, TSTLVecSize max, char key);
     };
     
     bool m_bInitCursor; // Does the current line needs to be highlighted?
-    int m_iCursorLine;
-    int m_iStartEntry; // First entry to display(for scrolling)
+    TSTLVecSize m_CursorLine;
+    TSTLVecSize m_StartEntry; // First entry to display(for scrolling)
     CScrollbar *m_pVScrollbar, *m_pHScrollbar;
     CWidgetWindow *m_pTextWin; // Window containing the actual text
     CMenuText *m_pMenuText;
     
     void HScroll(int n);
     void VScroll(int n);
-    int GetCurrent(void) { return m_iStartEntry+m_iCursorLine; };
+    TSTLVecSize GetCurrent(void) { return m_StartEntry+m_CursorLine; };
     
 protected:
     virtual void CreateInit(void);
@@ -451,7 +450,7 @@ private:
     chtype m_chOutChar;
     std::string m_szText;
     int m_iMaxChars;
-    int m_iCursorPos, m_iScrollOffset;
+    TSTLStrSize m_CursorPos, m_ScrollOffset;
     CFormattedText m_FMText;
     EInputType m_eInpType;
     
@@ -488,16 +487,22 @@ public:
     static chtype m_cDefaultFillColors, m_cDefaultEmptyColors;
     
     CProgressbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-                 int min, int max, char absrel = 'a');
+                 float min, float max, char absrel = 'a');
     
-    void SetCurrent(int n) { m_fCurrent = (float)n; };
+    void SetCurrent(float n) { m_fCurrent = n; };
 };
 
 class CCheckbox: public CWidgetWindow
 {
-    unsigned long m_ulCheckedboxes;
-    std::vector<std::string> m_BoxList;
-    int m_iSelectedButton;
+    struct SEntry
+    {
+        std::string name;
+        bool enabled;
+        SEntry(const std::string &n) : name(n), enabled(false) { };
+    };
+    
+    std::vector<SEntry> m_BoxList;
+    TSTLVecSize m_SelectedButton;
 
 protected:
     virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("SPACE", "Enable/Disable"); };
@@ -510,19 +515,19 @@ public:
     CCheckbox(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
               char absrel = 'a');
 
-    void Add(const char *text) { m_BoxList.push_back(text); };
-    void Add(const std::string &text) { m_BoxList.push_back(text); };
-    void EnableBox(int n) { m_ulCheckedboxes |= (1<<(n-1)); };
-    void DisableBox(int n) { m_ulCheckedboxes &= ~(1<<(n-1)); };
-    bool IsEnabled(int n) { return (m_ulCheckedboxes & (1<<(n-1))); };
-    void SetText(unsigned n, const std::string &text) { m_BoxList.at(n) = text; };
+    void Add(const char *text) { m_BoxList.push_back(SEntry(text)); };
+    void Add(const std::string &text) { m_BoxList.push_back(SEntry(text)); };
+    void EnableBox(TSTLVecSize n) { m_BoxList.at(n).enabled = true; };
+    void DisableBox(TSTLVecSize n) { m_BoxList.at(n).enabled = false; };
+    bool IsEnabled(TSTLVecSize n) { return (m_BoxList.at(n).enabled); };
+    void SetText(TSTLVecSize n, const std::string &text) { m_BoxList.at(n).name = text; };
 };
 
 class CRadioButton: public CWidgetWindow
 {
-    int m_iCheckedButton;
+    TSTLVecSize m_CheckedButton;
     std::vector<std::string> m_ButtonList;
-    int m_iSelectedButton;
+    TSTLVecSize m_SelectedButton;
 
 protected:
     virtual void CreateInit(void) { CWidgetWindow::CreateInit(); AddButton("SPACE", "Enable/Disable"); };
@@ -537,9 +542,9 @@ public:
 
     void Add(const char *text) { m_ButtonList.push_back(text); };
     void Add(const std::string &text) { m_ButtonList.push_back(text); };
-    void EnableButton(int n) { m_iCheckedButton = n; };
-    int EnabledButton(void) { return m_iCheckedButton; };
-    void SetText(unsigned n, const std::string &text) { m_ButtonList.at(n) = text; };
+    void EnableButton(TSTLVecSize n) { m_CheckedButton = n; };
+    TSTLVecSize EnabledButton(void) { return m_CheckedButton; };
+    void SetText(TSTLVecSize n, const std::string &text) { m_ButtonList.at(n) = text; };
 };
 
 class CButtonBar: public CWidgetWindow

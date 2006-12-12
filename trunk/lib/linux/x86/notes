@@ -10,6 +10,8 @@ version: 1.2.8
 
 FLTK:
 version: 1.1.7
+CXXFLAGS="-fexceptions" ./configure
+Note: FLTK is made without exception support, so enabled it that way
 
 BZIP2:
 version: 1.0.3
@@ -28,7 +30,6 @@ version: 5.4
 
 X11 (libX11, libXext)
 version: 6.8.2
-notes: compiled from portage
 
 GCC (libstdc++, libutil)
 version: 3.4.4

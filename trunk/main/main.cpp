@@ -83,7 +83,8 @@ int main(int argc, char **argv)
             ReportError(e.what());
     }
     
-    StopFrontend();
+    if (!runscript)
+        StopFrontend();
     
     return ret;
 }
@@ -139,22 +140,6 @@ void CMain::Init(int argc, char **argv)
     ReadLang();
 }
 
-void CMain::ThrowError(bool dialog, const char *error, ...)
-{
-    char *txt;
-    const char *translated = GetTranslation(error);
-    va_list v;
-    
-    va_start(v, error);
-        vasprintf(&txt, translated, v);
-    va_end(v);
-
-    if (dialog) WarnBox(txt);
-    else { fprintf(stderr, GetTranslation("Error: %s"), txt); fprintf(stderr, "\n"); }
-
-    EndProg(true);
-}
-
 void CMain::SetUpSU(const char *msg)
 {
     m_SUHandler.SetUser("root");
@@ -169,11 +154,11 @@ void CMain::SetUpSU(const char *msg)
             m_szPassword = GetPassword(GetTranslation(msg));
             
             // Check if password is invalid
-            if (!m_szPassword)
+            if (!m_szPassword || !m_szPassword[0])
             {
                 if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
                     GetTranslation("No"), GetTranslation("Yes"), NULL))
-                    EndProg();
+                    throw Exceptions::CExUser();
             }
             else
             {
@@ -474,11 +459,6 @@ int CMain::LuaMKDir(lua_State *L)
         if (ignoreumask)
             umask(oldumask);
     }
-    // Lua isn't nice for exceptions, so convert it to lua error
-    catch(Exceptions::CExOverflow &e)
-    {
-        luaL_error(L, "Wrong permission mask given(\"%s\")", modestr);
-    }
     catch(Exceptions::CExMKDir &e)
     {
         if (ignoreumask)
@@ -531,10 +511,6 @@ int CMain::LuaMKDirRec(lua_State *L)
         if (ignoreumask)
             umask(oldumask);
     }
-    catch(Exceptions::CExOverflow &e)
-    {
-        luaL_error(L, "Wrong permission mask given(\"%s\")", modestr);
-    }
     catch(Exceptions::CExMKDir &e)
     {
         if (ignoreumask)
@@ -566,7 +542,7 @@ int CMain::LuaCPFile(lua_State *L)
     char *dest = StrDup(luaL_checkstring(L, args));
     
     // Strip trailing /'s
-    unsigned len = strlen(dest);
+    size_t len = strlen(dest);
     while(dest && *dest && (dest[len-1] == '/'))
     {
         dest[len-1] = 0;
@@ -612,7 +588,7 @@ int CMain::LuaCPFile(lua_State *L)
         
         bool goterr = false;
         char buffer[1024];
-        unsigned size;
+        size_t size;
         while((size = read(in, buffer, sizeof(buffer))))
         {
             if (size < 0)

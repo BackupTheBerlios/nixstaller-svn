@@ -50,6 +50,9 @@
 #include <map>
 #include <limits>
         
+typedef std::vector<std::string>::size_type TSTLVecSize;
+typedef std::string::size_type TSTLStrSize;
+
 #include "exception.h"
         
 struct install_info_s
@@ -72,7 +75,6 @@ struct app_entry_s
 };
 
 // These functions should be defined for each frontend
-void EndProg(bool err=false);
 void StartFrontend(int argc, char **argv);
 void StopFrontend(void);
 void ReportError(const char *msg);
@@ -85,7 +87,7 @@ class CLuaVM
 {
     lua_State *m_pLuaState;
     int m_iPushedArgs;
-    
+
     void StackDump(const char *msg);
     void GetGlobal(const char *var, const char *tab);
     static int DoFunctionCall(lua_State *L);
@@ -208,6 +210,8 @@ public:
 
 class CMain;
 
+#ifdef WITH_APPMANAGER
+
 class CRegister
 {
     CMain *m_pOwner;
@@ -238,6 +242,7 @@ public:
     void CalcSums(const char *dir);
     bool CheckSums(const char *progname);
 };
+#endif
 
 class CMain
 {
@@ -273,8 +278,6 @@ public:
     
     CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL) { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
     virtual ~CMain(void);
-    
-    void ThrowError(bool dialog, const char *error, ...);
     
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void) { ReadLang(); };
@@ -312,6 +315,8 @@ public:
     virtual void Init(int argc, char **argv);
 };
 
+#ifdef WITH_APPMANAGER
+
 class CBaseAppManager: virtual public CMain
 {
     const char *GetSumListFile(const char *progname);
@@ -329,6 +334,8 @@ protected:
 public:
     virtual ~CBaseAppManager(void) { };
 };
+
+#endif
 
 #include "utils.h"
 #include "install.h"

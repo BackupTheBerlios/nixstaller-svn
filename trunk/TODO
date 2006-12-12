@@ -9,25 +9,26 @@ OVERALL
 - Use deltas <--> patches for different frontends?
 - Test/clean/check new edelta code
 - Update lib-notes file for each OS/ARCH
-        
+- Delay for updating GUI in frontends while installing
+- Replace vec [] access with at() ?
+- Fix unsigned/signed code(check int casts)
+
 MAIN
 - Error handling in lua class(exceptions, type checking)
 - Overide some lua funcs?(ie. exit)
 - Create directory with root access in VerifyDestDir()?
-- Check buffer in ExecuteCommand/ExtractFiles
+- Convert LuaDirIter to CDirIter?
         
 LIBSU
-- BUG: Executing commands as root to quickly may mess things up(put a delay, open single root console?)
-- Use better way of reading terminal(same way as PipedCMD?)
+- BUG: Executing commands as root to quickly may mess things up - fixed?
 - Use locale fix from latest kdesu?
 
 NCURSES FRONTEND
 - Use ncurses with termcap fallback for freebsd
-- BUG: passwd dialog doesn't want to cancel
         
 FLTK FRONTEND
-- Change "Next" button to "Finish" in instscreen if it is the last screen
-        
+- Compile FLTK with exception support for freebsd, netbsd, sunos
+                
 DOCS
 - Max config var description length
 
@@ -43,4 +44,16 @@ REGISTER
 - Better error handling for register
 - Check path for rm
 - exceptions
+        
+NCURSES
+- Automaticly size messageboxes
+- Check chtype
+        
+DESIGN
+- Reorganize var and type names? (type prefixes etc)
+- Virtual functions that need to call parent function --> make additional function in base class
+that will be called instead of virtual function, this function should call the virtual instead.
+- Split code in more files (SConstruct aswell?)
+- Use C++ style casts(static_cast)
+- More usage of const?
         

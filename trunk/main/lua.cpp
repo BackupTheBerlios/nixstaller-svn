@@ -109,6 +109,12 @@ int CLuaVM::DoFunctionCall(lua_State *L)
         int ret = f(L);
         return ret;
     }
+    catch(Exceptions::CExUser &e)
+    {
+        // HACK: LoadFile/DoCall uses this to identify user exception.
+        lua_pushstring(L, "CExUser");
+        lua_error(L);
+    }
     catch(Exceptions::CException &e)
     {
         // Lua doesn't handle exceptions in a nice way (catches all), so convert to lua error
@@ -142,6 +148,9 @@ void CLuaVM::LoadFile(const char *name)
         const char *errmsg = lua_tostring(m_pLuaState, -1);
         if (!errmsg)
             errmsg = "Unknown error!";
+        else if (!strcmp(errmsg, "CExUser"))
+            throw Exceptions::CExUser();
+            
         throw Exceptions::CExLua(CreateText("While parsing %s: %s\n", name, errmsg));
     }
 }
@@ -251,7 +260,15 @@ void CLuaVM::PushArg(const char *s)
 void CLuaVM::DoCall(void)
 {
     if (lua_pcall(m_pLuaState, m_iPushedArgs, 0, 0) != 0)
-        throw Exceptions::CExLua(CreateText("Error running function: %s", lua_tostring(m_pLuaState, -1)));
+    {
+        const char *errmsg = lua_tostring(m_pLuaState, -1);
+        if (!errmsg)
+            errmsg = "Unknown error!";
+        else if (!strcmp(errmsg, "CExUser"))
+            throw Exceptions::CExUser();
+            
+        throw Exceptions::CExLua(CreateText("Error running function: %s", errmsg));
+    }
     
     m_iPushedArgs = 0;
 }

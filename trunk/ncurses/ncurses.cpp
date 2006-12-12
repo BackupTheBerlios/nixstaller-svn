@@ -68,7 +68,8 @@ void StartFrontend(int argc, char **argv)
         pInterface->Init(argc, argv);
     
         pWidgetManager->Refresh();
-        while (pWidgetManager->Run());
+        while (pWidgetManager->Run())
+            ;
     }
     catch(NCursesException &e)
     {
@@ -132,7 +133,7 @@ void CAboutScreen::UpdateLanguage()
 // NCurses base interface class
 // -------------------------------------
 
-CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, Min(30, MaxY()-3), Min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
+CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, std::min(30, MaxY()-3), std::min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
 {
     m_pAboutScreen = pWidgetManager->AddChild(new CAboutScreen(pWidgetManager));
     m_pAboutScreen->Enable(false);

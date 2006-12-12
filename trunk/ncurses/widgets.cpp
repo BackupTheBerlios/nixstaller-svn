@@ -406,7 +406,7 @@ bool CWidgetManager::Run(unsigned delay)
     if (m_FocusedChild != m_ChildList.end())
     {
         chtype ch = getch();
-        if (ch != ERR)
+        if (ch != static_cast<chtype>(ERR))
         {
             if (!(*m_FocusedChild)->HandleKey(ch))
             {
@@ -513,14 +513,14 @@ bool CWidgetManager::SetPrevChildWidget()
 // -------------------------------------
 
 CFormattedText::CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap,
-                               unsigned maxh) : m_pWindow(w), m_uTextLength(0), m_uWidth(w->width()), m_uMaxHeight(maxh), m_uLongestLine(0),
-                                                m_bWrap(wrap), m_bHandleTags(true)
+                               TSTLVecSize maxh) : m_pWindow(w), m_TextLength(0), m_LongestLine(0), m_Width(w->width()), m_MaxHeight(maxh),
+                                                   m_bWrap(wrap), m_bHandleTags(true)
 {
     if (!str.empty())
         AddText(str);
 }
 
-CFormattedText::TColorTagList::iterator CFormattedText::GetNextColorTag(TColorTagList::iterator cur, unsigned curpos)
+CFormattedText::TColorTagList::iterator CFormattedText::GetNextColorTag(TColorTagList::iterator cur, TSTLStrSize curpos)
 {
     TColorTagList::iterator ret = m_ColorTags.end();
     if (cur != m_ColorTags.begin())
@@ -541,7 +541,7 @@ CFormattedText::TColorTagList::iterator CFormattedText::GetNextColorTag(TColorTa
     return ret;
 }
 
-CFormattedText::TRevTagList::iterator CFormattedText::GetNextRevTag(TRevTagList::iterator cur, unsigned curpos)
+CFormattedText::TRevTagList::iterator CFormattedText::GetNextRevTag(TRevTagList::iterator cur, TSTLStrSize curpos)
 {
     TRevTagList::iterator ret = m_ReversedTags.end();
     if (cur != m_ReversedTags.begin())
@@ -562,11 +562,11 @@ CFormattedText::TRevTagList::iterator CFormattedText::GetNextRevTag(TRevTagList:
     return ret;
 }
 
-unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned width)
+TSTLVecSize CFormattedText::CalcLines(const std::string &str, bool wrap, TSTLStrSize width)
 {
     std::string newtext;
     
-    unsigned strstart = 0, strend, length = str.length();
+    TSTLStrSize strstart = 0, strend, length = str.length();
     bool handletags = true;
 
     while (strstart < length)
@@ -630,8 +630,8 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
     // Now process tagless text
     strstart = 0;
     length = newtext.length();
-    unsigned curlinelen = 0;
-    unsigned lines = 1;
+    TSTLStrSize curlinelen = 0;
+    TSTLVecSize lines = 1;
     
     if (wrap)
     {
@@ -640,7 +640,7 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
             strend = strstart + (width-1);
             
             if (strend < strstart) // Overflow
-                strend = std::numeric_limits<unsigned>::max()-1;
+                strend = std::numeric_limits<TSTLStrSize>::max()-1;
             
             if (curlinelen)
                 strend -= ((strend-strstart) - (curlinelen-1));
@@ -648,7 +648,7 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
             if (strend >= length)
                 strend = length - 1;
             
-            unsigned newline = newtext.substr(strstart, (strend-strstart)+1).find("\n");
+            TSTLStrSize newline = newtext.substr(strstart, (strend-strstart)+1).find("\n");
             bool add = false;
             if (newline != std::string::npos)
             {
@@ -658,13 +658,13 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
             
             if ((strend + 1) != length)
             {
-                unsigned begwind = strend;
+                TSTLStrSize begwind = strend;
                 while ((begwind >= strstart) && !isspace(newtext[begwind]))
                     begwind--;
                 
                 if ((begwind >= strstart) && (begwind != strend))
                 {
-                    unsigned endwind = newtext.find_first_of(" \t\n", begwind+1);
+                    TSTLStrSize endwind = newtext.find_first_of(" \t\n", begwind+1);
                     if (endwind == std::string::npos)
                         endwind = length; // NOT -1, because normally endwind would be point to a whitespace after the word
                     
@@ -718,12 +718,12 @@ unsigned CFormattedText::CalcLines(const std::string &str, bool wrap, unsigned w
 
 void CFormattedText::AddText(const std::string &str)
 {
-    if ((m_Lines.size() > m_uMaxHeight) || (str.empty()))
+    if ((m_Lines.size() > m_MaxHeight) || (str.empty()))
         return;
     
     std::string newtext;
-    unsigned strstart = 0, strend, length = str.length();
-    unsigned startcolor = 0, startrev = 0;
+    TSTLStrSize strstart = 0, strend, length = str.length();
+    TSTLStrSize startcolor = 0, startrev = 0;
     int fgcolor = -1, bgcolor = -1;
     
     while (strstart < length)
@@ -746,7 +746,7 @@ void CFormattedText::AddText(const std::string &str)
                 ; // Nothing
             else if (!str.compare(strstart+1, 4, "col=")) // Color tag
             {
-                startcolor = m_uTextLength;
+                startcolor = m_TextLength;
                 strstart += 5; // length of <col= == 5
                 
                 // Get foreground color
@@ -764,33 +764,33 @@ void CFormattedText::AddText(const std::string &str)
             else if (!str.compare(strstart+1, 5, "/col>")) // End color tag
             {
                 if ((fgcolor != -1) && (bgcolor != -1))
-                    m_ColorTags[startcolor] = new color_entry_s(m_uTextLength-startcolor, fgcolor, bgcolor);
+                    m_ColorTags[startcolor] = new color_entry_s(m_TextLength-startcolor, fgcolor, bgcolor);
                 strstart += 6;
                 fgcolor = bgcolor = -1;
                 continue;
             }
             else if (!str.compare(strstart+1, 4, "rev>")) // Reverse tag
             {
-                startrev = m_uTextLength;
+                startrev = m_TextLength;
                 strstart += 5; // "<rev>";
                 continue;
             }
             else if (!str.compare(strstart+1, 5, "/rev>")) // End reverse tag
             {
-                m_ReversedTags[startrev] = m_uTextLength-startrev;
+                m_ReversedTags[startrev] = m_TextLength-startrev;
                 strstart += 6; // "</rev>";
                 continue;
             }
             else if (!str.compare(strstart+1, 2, "C>"))
             {
-                m_CenteredIndexes.insert(m_uTextLength);
+                m_CenteredIndexes.insert(m_TextLength);
                 strstart += 3;
                 continue;
             }
         }
         
         newtext += str[strstart];
-        m_uTextLength++;
+        m_TextLength++;
         strstart++;
     }
     
@@ -804,25 +804,25 @@ void CFormattedText::AddText(const std::string &str)
     if (m_Lines.empty())
     {
         m_Lines.push_back(new line_entry_s);
-        m_uCurrentLine = 0;
+        m_CurrentLine = 0;
     }
     
     if (m_bWrap)
     {
         do
         {
-            strend = strstart + (m_uWidth-1);
+            strend = strstart + (m_Width-1);
             
             if (strend < strstart) // Overflow
-                strend = std::numeric_limits<unsigned>::max()-1;
+                strend = std::numeric_limits<TSTLStrSize>::max()-1;
             
-            if (!m_Lines[m_uCurrentLine]->text.empty())
-                strend -= ((strend-strstart) - (m_Lines[m_uCurrentLine]->text.length()-1));
+            if (!m_Lines[m_CurrentLine]->text.empty())
+                strend -= ((strend-strstart) - (m_Lines[m_CurrentLine]->text.length()-1));
             
             if (strend >= length)
                 strend = length - 1;
             
-            unsigned newline = newtext.substr(strstart, (strend-strstart)+1).find("\n");
+            TSTLStrSize newline = newtext.substr(strstart, (strend-strstart)+1).find("\n");
             bool add = false;
             if (newline != std::string::npos)
             {
@@ -832,49 +832,49 @@ void CFormattedText::AddText(const std::string &str)
             
             if ((strend + 1) != length)
             {
-                unsigned begwind = strend;
+                TSTLStrSize begwind = strend;
                 while ((begwind >= strstart) && !isspace(newtext[begwind]))
                     begwind--;
                 
                 if ((begwind >= strstart) && (begwind != strend))
                 {
-                    unsigned endwind = newtext.find_first_of(" \t\n", begwind+1);
+                    TSTLStrSize endwind = newtext.find_first_of(" \t\n", begwind+1);
                     if (endwind == std::string::npos)
                         endwind = length; // NOT -1, because normally endwind would be point to a whitespace after the word
                     
-                    if (((endwind - begwind)-1 <= m_uWidth) && (endwind-1 != strend)) 
+                    if (((endwind - begwind)-1 <= m_Width) && (endwind-1 != strend)) 
                         strend = begwind;
                 }
             }
             
             if ((strend - strstart) > 0)
             {
-                bool toolong = ((m_Lines[m_uCurrentLine]->text.length() + (strend-strstart)+1) > m_uWidth);
+                bool toolong = ((m_Lines[m_CurrentLine]->text.length() + (strend-strstart)+1) > m_Width);
                 
                 if (((strend+1) < length) && isspace(newtext[strend+1]))
                     strend++; // Don't add trailing whitespace to a new line
     
                 if (!toolong) // If it's not too long add to current line
-                    m_Lines[m_uCurrentLine]->text += newtext.substr(strstart, (strend - strstart) + 1);
+                    m_Lines[m_CurrentLine]->text += newtext.substr(strstart, (strend - strstart) + 1);
                 else
                 {
                     m_Lines.push_back(new line_entry_s);
-                    m_uCurrentLine++;
-                    m_Lines[m_uCurrentLine]->text = newtext.substr(strstart, (strend - strstart) + 1);
+                    m_CurrentLine++;
+                    m_Lines[m_CurrentLine]->text = newtext.substr(strstart, (strend - strstart) + 1);
                 }
                 
                 if (add)
                 {
-                    if (m_Lines.size() >= m_uMaxHeight)
+                    if (m_Lines.size() >= m_MaxHeight)
                         break;
     
                     m_Lines.push_back(new line_entry_s);
-                    m_uCurrentLine++;
+                    m_CurrentLine++;
                 }
                 
-                unsigned newlen = m_Lines[m_uCurrentLine]->text.length();
-                if (newlen > m_uLongestLine)
-                    m_uLongestLine = newlen;
+                TSTLStrSize newlen = m_Lines[m_CurrentLine]->text.length();
+                if (newlen > m_LongestLine)
+                    m_LongestLine = newlen;
             }
             
             strstart = strend + 1;
@@ -888,32 +888,33 @@ void CFormattedText::AddText(const std::string &str)
             strend = newtext.find("\n", strstart);
             
             if (strend != std::string::npos)
-                m_Lines[m_uCurrentLine]->text = newtext.substr(strstart, (strend-strstart)+1);
+                m_Lines[m_CurrentLine]->text = newtext.substr(strstart, (strend-strstart)+1);
             else
-                m_Lines[m_uCurrentLine]->text = newtext.substr(strstart);
+                m_Lines[m_CurrentLine]->text = newtext.substr(strstart);
             
-            unsigned newlen = m_Lines[m_uCurrentLine]->text.length();
-            if (newlen > m_uLongestLine)
-                m_uLongestLine = newlen;
+            TSTLStrSize newlen = m_Lines[m_CurrentLine]->text.length();
+            if (newlen > m_LongestLine)
+                m_LongestLine = newlen;
 
-            m_uCurrentLine++;
+            m_CurrentLine++;
             m_Lines.push_back(new line_entry_s);
             
             strstart = strend + 1;
         }
-        while ((strend != std::string::npos) && ((strend+1) < length) && (m_uCurrentLine < m_uMaxHeight));
+        while ((strend != std::string::npos) && ((strend+1) < length) && (m_CurrentLine < m_MaxHeight));
     }
 }
 
-void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline, unsigned endw)
+void CFormattedText::Print(TSTLVecSize startline, TSTLStrSize startw, TSTLVecSize endline, TSTLStrSize endw)
 {
     if (m_Lines.empty())
         return;
     
-    unsigned chars = 0, index, y=0;
+    TSTLStrSize chars = 0, index;
+    TSTLVecSize y=0;
     
     if ((endline + (startline+1)) < endline)
-        endline = std::numeric_limits<unsigned>::max(); // Overflow
+        endline = std::numeric_limits<TSTLVecSize>::max(); // Overflow
     else
         endline += (startline+1);
     
@@ -923,8 +924,8 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
     // Add characters we don't print
     if (startline > 0)
     {
-        for (unsigned u=0; u<startline; u++)
-            chars += m_Lines[u]->text.length();
+        for (TSTLVecSize n=0; n<startline; n++)
+            chars += m_Lines[n]->text.length();
     }
     
     TColorTagList::iterator colorit = GetNextColorTag(m_ColorTags.begin(), 0);
@@ -933,9 +934,9 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
     bool initcolortag = (colorit != m_ColorTags.end());
     bool initrevtag = (revit != m_ReversedTags.end());
     
-    for (unsigned u=startline; u<endline; u++, y++)
+    for (TSTLVecSize n=startline; n<endline; n++, y++)
     {
-        unsigned len = m_Lines[u]->text.length(), spaces = 0;
+        TSTLStrSize len = m_Lines[n]->text.length(), spaces = 0;
         
         index = startw;
         
@@ -943,11 +944,10 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
         {
             for (TCenterTagList::iterator it=m_CenteredIndexes.begin(); it!=m_CenteredIndexes.end(); it++)
             {
-                //unsigned centerw = (m_bWrap) ? m_uWidth : Max(m_uWidth, m_uLongestLine);
-                unsigned centerw = m_uWidth;
+                TSTLStrSize centerw = m_Width;
                 if ((*it >= chars) && (*it <= (chars+centerw)) && (*it <= (chars+len)))
                 {
-                    std::string tmp = m_Lines[u]->text;
+                    std::string tmp = m_Lines[n]->text;
                     EatWhite(tmp);
                     
                     spaces = (centerw-tmp.length())/2;
@@ -962,11 +962,11 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             }
         }
         
-        unsigned count = (len > endw) ? endw : len;
-        unsigned x = 0;
+        TSTLStrSize count = (len > endw) ? endw : len;
+        TSTLStrSize x = 0;
         
-        if (((index+1) + count) < count)
-            count = std::numeric_limits<unsigned>::max(); // Overflow
+        if (((index+1) + count) < count) // Overflow
+            count = std::numeric_limits<TSTLStrSize>::max(); // Overflow
         else
             count += (index+1);
     
@@ -978,7 +978,7 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
         while (index < count)
         {
             // Line may containing trailing whitespace or newline which should not be printed.
-            bool canprint = (!m_bWrap || (index <= m_uWidth)) && (((index+1)!=len) || !isspace(m_Lines[u]->text[index]));
+            bool canprint = (!m_bWrap || (index <= m_Width)) && (((index+1)!=len) || !isspace(m_Lines[n]->text[index]));
             
             if ((colorit != m_ColorTags.end()) && (colorit->first <= chars) && (colorit->second->count < (chars-colorit->first)+1))
             {
@@ -1011,7 +1011,7 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
             if (canprint)
             {
                 // Use addstr instead of addch, since it handles multibyte characters for us
-                m_pWindow->addstr(y, spaces+x, &m_Lines[u]->text[index], 1);
+                m_pWindow->addstr(y, spaces+x, &m_Lines[n]->text[index], 1);
             }
             
             index++;
@@ -1030,9 +1030,9 @@ void CFormattedText::Print(unsigned startline, unsigned startw, unsigned endline
         m_pWindow->attroff(A_REVERSE);
 }
 
-unsigned CFormattedText::GetLines()
+TSTLVecSize CFormattedText::GetLines()
 {
-    unsigned ret = m_Lines.size();
+    TSTLVecSize ret = m_Lines.size();
     if (ret && m_Lines[ret-1]->text.empty()) // Last line may be empty
         ret--;
     return ret;
@@ -1050,17 +1050,17 @@ void CFormattedText::Clear()
     m_ReversedTags.clear();
     m_CenteredIndexes.clear();
     m_Lines.clear();
-    m_uTextLength = m_uCurrentLine = m_uLongestLine = 0;
+    m_TextLength = m_CurrentLine = m_LongestLine = 0;
     m_bHandleTags = true;
 }
 
-void CFormattedText::AddCenterTag(unsigned line)
+void CFormattedText::AddCenterTag(TSTLVecSize line)
 {
-    unsigned chars = 0;
-    for (unsigned u=0; u<m_Lines.size(); u++)
+    TSTLStrSize chars = 0, size = m_Lines.size();
+    for (TSTLStrSize n=0; n<size; n++)
     {
-        if (u < line)
-            chars += m_Lines[u]->text.length();
+        if (n < line)
+            chars += m_Lines[n]->text.length();
         else
             break;
     }
@@ -1068,13 +1068,13 @@ void CFormattedText::AddCenterTag(unsigned line)
     m_CenteredIndexes.insert(chars+1);
 }
 
-void CFormattedText::AddRevTag(unsigned line, unsigned pos, unsigned c)
+void CFormattedText::AddRevTag(TSTLVecSize line, TSTLStrSize pos, TSTLStrSize c)
 {
-    unsigned chars = 0;
-    for (unsigned u=0; u<m_Lines.size(); u++)
+    TSTLStrSize chars = 0, size = m_Lines.size();
+    for (TSTLStrSize n=0; n<size; n++)
     {
-        if (u < line)
-            chars += m_Lines[u]->text.length();
+        if (n < line)
+            chars += m_Lines[n]->text.length();
         else
         {
             chars += pos;
@@ -1085,13 +1085,13 @@ void CFormattedText::AddRevTag(unsigned line, unsigned pos, unsigned c)
     m_ReversedTags[chars] = c;
 }
 
-void CFormattedText::AddColorTag(unsigned line, unsigned pos, unsigned c, int fg, int bg)
+void CFormattedText::AddColorTag(TSTLVecSize line, TSTLStrSize pos, TSTLStrSize c, int fg, int bg)
 {
-    unsigned chars = 0;
-    for (unsigned u=0; u<m_Lines.size(); u++)
+    TSTLStrSize chars = 0, size = m_Lines.size();
+    for (TSTLStrSize n=0; n<size; n++)
     {
-        if (u < line)
-            chars += m_Lines[u]->text.length();
+        if (n < line)
+            chars += m_Lines[n]->text.length();
         else
         {
             chars += pos;
@@ -1105,13 +1105,13 @@ void CFormattedText::AddColorTag(unsigned line, unsigned pos, unsigned c, int fg
     m_ColorTags[chars] = new color_entry_s(c, fg, bg);
 }
 
-void CFormattedText::DelCenterTag(unsigned line)
+void CFormattedText::DelCenterTag(TSTLVecSize line)
 {
-    unsigned chars = 0;
-    for (unsigned u=0; u<m_Lines.size(); u++)
+    TSTLStrSize chars = 0, size = m_Lines.size();
+    for (TSTLStrSize n=0; n<size; n++)
     {
-        if (u < line)
-            chars += m_Lines[u]->text.length();
+        if (n < line)
+            chars += m_Lines[n]->text.length();
         else
             break;
     }
@@ -1119,13 +1119,13 @@ void CFormattedText::DelCenterTag(unsigned line)
     m_CenteredIndexes.erase(chars+1);
 }
 
-void CFormattedText::DelRevTag(unsigned line, unsigned pos)
+void CFormattedText::DelRevTag(TSTLVecSize line, TSTLStrSize pos)
 {
-    unsigned chars = 0;
-    for (unsigned u=0; u<m_Lines.size(); u++)
+    TSTLStrSize chars = 0, size = m_Lines.size();
+    for (TSTLStrSize n=0; n<size; n++)
     {
-        if (u < line)
-            chars += m_Lines[u]->text.length();
+        if (n < line)
+            chars += m_Lines[n]->text.length();
         else
         {
             chars += pos;
@@ -1136,13 +1136,13 @@ void CFormattedText::DelRevTag(unsigned line, unsigned pos)
     m_ReversedTags.erase(chars);
 }
 
-void CFormattedText::DelColorTag(unsigned line, unsigned pos)
+void CFormattedText::DelColorTag(TSTLVecSize line, TSTLStrSize pos)
 {
-    unsigned chars = 0;
-    for (unsigned u=0; u<m_Lines.size(); u++)
+    TSTLStrSize chars = 0, size = m_Lines.size();
+    for (TSTLStrSize n=0; n<size; n++)
     {
-        if (u < line)
-            chars += m_Lines[u]->text.length();
+        if (n < line)
+            chars += m_Lines[n]->text.length();
         else
         {
             chars += pos;
@@ -1447,7 +1447,7 @@ void CScrollbar::Draw()
     if (posy < 0.0f)
         posy = 0.0f;
     
-    addch((int)posy, (int)posx, ACS_CKBOARD);
+    addch(SafeConvert<int>(posy), SafeConvert<int>(posx), ACS_CKBOARD);
 }
 
 void CScrollbar::Scroll(float n)
@@ -1470,19 +1470,19 @@ chtype CTextLabel::m_cDefaultDefocusedColors;
 CTextLabel::CTextLabel(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                        char absrel) : CWidgetWindow(owner, 1, ncols, begin_y, begin_x, absrel, false,
                                                    false, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                      m_iMaxHeight(nlines), m_uCurLines(1), m_FMText(this, "", true, nlines)
+                                      m_iMaxHeight(nlines), m_CurLines(1), m_FMText(this, "", true, nlines)
 {
 }
 
 void CTextLabel::AddText(std::string text)
 {
-    unsigned curlines = m_uCurLines;
+    TSTLVecSize curlines = m_CurLines;
     m_FMText.AddText(text);
     
     if (curlines != m_FMText.GetLines())
     {
-        m_uCurLines = m_FMText.GetLines();
-        resize(m_uCurLines, width());
+        m_CurLines = m_FMText.GetLines();
+        resize(SafeConvert<int>(m_CurLines), width());
     }
 }
 
@@ -1502,7 +1502,7 @@ chtype CTextWindow::m_cDefaultDefocusedColors;
 CTextWindow::CTextWindow(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, bool wrap, bool follow,
                          char absrel, bool box) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, box,
                                                                 box, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                                                  m_bWrap(wrap), m_bFollow(follow), m_uCurrentLine(0)
+                                                  m_bWrap(wrap), m_bFollow(follow), m_CurrentLine(0)
 {
 }
 
@@ -1525,7 +1525,7 @@ void CTextWindow::CreateInit()
 
 void CTextWindow::HScroll(int n)
 {
-    if (m_bWrap || (m_pFMText->GetLongestLine() <= m_pTextWin->width()))
+    if (m_bWrap || (m_pFMText->GetLongestLine() <= static_cast<TSTLVecSize>(m_pTextWin->width())))
         return;
     
     m_pHScrollbar->Scroll(n);
@@ -1538,23 +1538,23 @@ void CTextWindow::VScroll(int n)
         return;
     
     m_pVScrollbar->Scroll(n);
-    unsigned diff = (unsigned)m_pVScrollbar->GetValue() - m_uCurrentLine;
+    TSTLVecSize diff = SafeConvert<TSTLVecSize>(m_pVScrollbar->GetValue()) - m_CurrentLine;
     
     if (diff)
     {
-        m_uCurrentLine = (unsigned)m_pVScrollbar->GetValue();
+        m_CurrentLine = SafeConvert<TSTLVecSize>(m_pVScrollbar->GetValue());
         refresh();
     }
 }
 
 void CTextWindow::ScrollToBottom()
 {
-    int h = m_pFMText->GetLines() - m_pTextWin->height();
+    int h = SafeConvert<int>(m_pFMText->GetLines()) - m_pTextWin->height();
     if (h < 0)
         h = 0;
     
     m_pVScrollbar->SetCurrent(h);
-    m_uCurrentLine = (unsigned)m_pVScrollbar->GetValue();
+    m_CurrentLine = SafeConvert<TSTLVecSize>(m_pVScrollbar->GetValue());
 }
 
 bool CTextWindow::HandleKey(chtype ch)
@@ -1595,12 +1595,12 @@ bool CTextWindow::HandleKey(chtype ch)
 void CTextWindow::AddText(std::string text)
 {
     m_pFMText->AddText(text);
-
-    if (m_pFMText->GetLines() > m_pTextWin->height())
-        m_pVScrollbar->SetMinMax(0, (m_pFMText->GetLines() - m_pTextWin->height()));
     
-    if (m_pFMText->GetLongestLine() > m_pTextWin->width())
-        m_pHScrollbar->SetMinMax(0, (m_pFMText->GetLongestLine() - m_pTextWin->width()));
+    if (m_pFMText->GetLines() > static_cast<TSTLVecSize>(m_pTextWin->height()))
+        m_pVScrollbar->SetMinMax(0.0f, (SafeConvert<int>(m_pFMText->GetLines()) - m_pTextWin->height()));
+    
+    if (m_pFMText->GetLongestLine() > static_cast<TSTLVecSize>(m_pTextWin->width()))
+        m_pHScrollbar->SetMinMax(0.0f, (SafeConvert<int>(m_pFMText->GetLongestLine()) - m_pTextWin->width()));
     
     if (m_bFollow)
         ScrollToBottom();
@@ -1609,7 +1609,7 @@ void CTextWindow::AddText(std::string text)
 void CTextWindow::Clear()
 {
     m_pFMText->Clear();
-    m_uCurrentLine = 0;
+    m_CurrentLine = 0;
     m_pVScrollbar->SetMinMax(0, 0);
     m_pHScrollbar->SetMinMax(0, 0);
 }
@@ -1629,9 +1629,9 @@ void CTextWindow::LoadFile(const char *fname)
 void CTextWindow::Draw()
 {
     erase();
-    m_pFMText->Print(m_uCurrentLine, (unsigned)m_pHScrollbar->GetValue(), m_pTextWin->height(), m_pTextWin->width());
-    m_pVScrollbar->Enable((HasBox() && (m_pFMText->GetLines() > m_pTextWin->height())));
-    m_pHScrollbar->Enable(!m_bWrap && HasBox() && (m_pFMText->GetLongestLine() > m_pTextWin->width()));
+    m_pFMText->Print(m_CurrentLine, SafeConvert<TSTLVecSize>(m_pHScrollbar->GetValue()), m_pTextWin->height(), m_pTextWin->width());
+    m_pVScrollbar->Enable((HasBox() && (m_pFMText->GetLines() > SafeConvert<TSTLVecSize>(m_pTextWin->height()))));
+    m_pHScrollbar->Enable(!m_bWrap && HasBox() && (m_pFMText->GetLongestLine() > SafeConvert<TSTLVecSize>(m_pTextWin->width())));
 }
 
 // -------------------------------------
@@ -1642,21 +1642,21 @@ void CMenu::CMenuText::AddText(const std::string &str)
 {
     CFormattedText::AddText(str);
     
-    unsigned chars = 0;
+    TSTLStrSize chars = 0;
     
     std::list<unsorted_tag_s<color_entry_s *> > ColTagList;
-    std::list<unsorted_tag_s<unsigned> > RevTagList;
-    std::list<unsorted_tag_s<unsigned> > CenterTagList;
+    std::list<unsorted_tag_s<TSTLStrSize> > RevTagList;
+    std::list<unsorted_tag_s<TSTLStrSize> > CenterTagList;
     
-    for (unsigned u=0; u<m_Lines.size(); u++)
+    for (TSTLVecSize n=0; n<m_Lines.size(); n++)
     {
-        unsigned len = m_Lines[u]->text.length();
+        TSTLStrSize len = m_Lines[n]->text.length();
         
         for (TColorTagList::iterator colit=m_ColorTags.begin(); colit!=m_ColorTags.end(); colit++)
         {
             if ((colit->first >= chars) && (colit->first < (chars+len)))
             {
-                ColTagList.push_back(unsorted_tag_s<color_entry_s *>(colit->second, colit->first-chars, m_Lines[u]));
+                ColTagList.push_back(unsorted_tag_s<color_entry_s *>(colit->second, colit->first-chars, m_Lines[n]));
                 TColorTagList::iterator tmpit = colit;
                 colit--;
                 m_ColorTags.erase(tmpit);
@@ -1667,7 +1667,7 @@ void CMenu::CMenuText::AddText(const std::string &str)
         {
             if ((revit->first >= chars) && (revit->first < (chars+len)))
             {
-                RevTagList.push_back(unsorted_tag_s<unsigned>(revit->second, revit->first-chars, m_Lines[u]));
+                RevTagList.push_back(unsorted_tag_s<TSTLStrSize>(revit->second, revit->first-chars, m_Lines[n]));
                 TRevTagList::iterator tmpit = revit;
                 revit--;
                 m_ReversedTags.erase(tmpit);
@@ -1678,7 +1678,7 @@ void CMenu::CMenuText::AddText(const std::string &str)
         {
             if ((*centit >= chars) && (*centit < (chars+len)))
             {
-                CenterTagList.push_back(unsorted_tag_s<unsigned>(*centit, 0, m_Lines[u]));
+                CenterTagList.push_back(unsorted_tag_s<TSTLStrSize>(*centit, 0, m_Lines[n]));
                 TCenterTagList::iterator tmpit = centit;
                 centit--;
                 m_CenteredIndexes.erase(tmpit);
@@ -1697,20 +1697,20 @@ void CMenu::CMenuText::AddText(const std::string &str)
         AddColorTag(std::distance(m_Lines.begin(), newlineit), it->lineoffset, it->entry->count, it->entry->fgcolor, it->entry->bgcolor);
     }
     
-    for (std::list<unsorted_tag_s<unsigned> >::iterator it=RevTagList.begin(); it!=RevTagList.end(); it++)
+    for (std::list<unsorted_tag_s<TSTLStrSize> >::iterator it=RevTagList.begin(); it!=RevTagList.end(); it++)
     {
         std::vector<line_entry_s *>::iterator newlineit = std::find(m_Lines.begin(), m_Lines.end(), it->line);
         AddRevTag(std::distance(m_Lines.begin(), newlineit), it->lineoffset, it->entry);
     }
 
-    for (std::list<unsorted_tag_s<unsigned> >::iterator it=CenterTagList.begin(); it!=CenterTagList.end(); it++)
+    for (std::list<unsorted_tag_s<TSTLStrSize> >::iterator it=CenterTagList.begin(); it!=CenterTagList.end(); it++)
     {
         std::vector<line_entry_s *>::iterator newlineit = std::find(m_Lines.begin(), m_Lines.end(), it->line);
         AddCenterTag(std::distance(m_Lines.begin(), newlineit));
     }
 }
 
-void CMenu::CMenuText::HighLight(unsigned line, bool h)
+void CMenu::CMenuText::HighLight(TSTLVecSize line, bool h)
 {
     if (h)
         AddRevTag(line, 0, m_Lines[line]->text.length());
@@ -1718,14 +1718,14 @@ void CMenu::CMenuText::HighLight(unsigned line, bool h)
         DelRevTag(line, 0);
 }
 
-unsigned CMenu::CMenuText::Search(unsigned min, unsigned max, const std::string &key)
+TSTLVecSize CMenu::CMenuText::Search(TSTLVecSize min, TSTLVecSize max, const std::string &key)
 {
     std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
     std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanStr);
     return ((*it)->text == key) ? std::distance(m_Lines.begin(), it) : GetLines();
 }
 
-unsigned CMenu::CMenuText::Search(unsigned min, unsigned max, char key)
+TSTLVecSize CMenu::CMenuText::Search(TSTLVecSize min, TSTLVecSize max, char key)
 {
     std::vector<line_entry_s *>::iterator beg = m_Lines.begin()+min, end = m_Lines.begin()+max;
     std::vector<line_entry_s *>::iterator it=std::lower_bound(beg, end, key, LessThanCh);
@@ -1742,7 +1742,7 @@ chtype CMenu::m_cDefaultDefocusedColors;
 CMenu::CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel, true,
                                             true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                              m_bInitCursor(true), m_iCursorLine(0), m_iStartEntry(0)
+                              m_bInitCursor(true), m_CursorLine(0), m_StartEntry(0)
 {
 }
 
@@ -1760,7 +1760,7 @@ void CMenu::CreateInit()
 
 void CMenu::HScroll(int n)
 {
-    if (m_pMenuText->GetLongestLine() <= m_pTextWin->width())
+    if (m_pMenuText->GetLongestLine() <= static_cast<TSTLVecSize>(m_pTextWin->width()))
         return;
     
     m_pHScrollbar->Scroll(n);
@@ -1769,15 +1769,69 @@ void CMenu::HScroll(int n)
 
 void CMenu::VScroll(int n)
 {
+#if 1
+    TSTLVecSize lines = m_pMenuText->GetLines(), cur = GetCurrent(), curstart = m_StartEntry;
+    int h = m_pTextWin->height()-1; // -1 because last y pos is window border
+
+    if (n < 0)
+    {
+        TSTLStrSize nabs = abs(n);
+        if (nabs > m_CursorLine)
+        {
+            TSTLStrSize rest = (nabs - m_CursorLine);
+            
+            if (rest > m_StartEntry)
+            {
+                m_StartEntry = 0;
+                m_pVScrollbar->SetCurrent(0);
+            }
+            else
+                m_StartEntry -= rest;
+            
+            m_CursorLine = 0;
+        }
+        else
+            m_CursorLine -= nabs;
+    }
+    else
+    {
+        TSTLVecSize newpos = m_CursorLine + n;
+        if (((newpos+m_StartEntry) >= lines) || (newpos < m_CursorLine)) // Don't go past menu size and prevent overflows
+            newpos = ((lines-1) - m_StartEntry);
+        
+        m_CursorLine = newpos;
+    }
+
+    if (m_CursorLine > static_cast<TSTLStrSize>(h))
+    {
+        m_StartEntry += (m_CursorLine - h);
+        
+        TSTLStrSize max = lines - h;
+        if (m_StartEntry > max)
+            m_StartEntry = max;
+                
+        m_CursorLine = h;
+    }
+    
+    if (curstart != m_StartEntry)
+        m_pVScrollbar->SetCurrent(SafeConvert<float>(m_StartEntry));
+    
+    if (cur != GetCurrent())
+    {
+        m_pMenuText->HighLight(cur, false);
+        m_pMenuText->HighLight(GetCurrent(), true);
+    }
+
+#else
     bool scroll = false;
-    int newline = m_iCursorLine + n;
+    int newline = m_CursorLine + n;
     int cur = GetCurrent();
     
     if (newline < 0)
     {
-        if ((m_iStartEntry + newline) < 0)
+        if ((m_StartEntry + newline) < 0)
         {
-            m_iStartEntry = m_iCursorLine = 0;
+            m_StartEntry = m_CursorLine = 0;
             m_pVScrollbar->SetCurrent(0);
         }
         else
@@ -1785,36 +1839,36 @@ void CMenu::VScroll(int n)
     }
     else if (newline >= m_pTextWin->height())
     {
-        if ((m_iStartEntry + newline) >= m_pMenuText->GetLines())
+        if ((m_StartEntry + newline) >= m_pMenuText->GetLines())
         {
-            m_iStartEntry = (m_pMenuText->GetLines() - m_pTextWin->height());
-            if (m_iStartEntry < 0)
-                m_iStartEntry = 0;
-            m_iCursorLine = m_pTextWin->height()-1;
-            m_pVScrollbar->SetCurrent(m_pMenuText->GetLines() - m_pTextWin->height());
+            m_StartEntry = (m_pMenuText->GetLines() - m_pTextWin->height());
+            if (m_StartEntry < 0)
+                m_StartEntry = 0;
+            m_CursorLine = m_pTextWin->height()-1;
+            m_pVScrollbar->SetCurrent(SafeConvert<float>(m_pMenuText->GetLines() - m_pTextWin->height()));
         }
         else
             scroll = true;
     }
     else if (newline >= m_pMenuText->GetLines())
-        m_iCursorLine = ((m_pMenuText->GetLines()-1)-m_iStartEntry);
+        m_CursorLine = ((m_pMenuText->GetLines()-1)-m_StartEntry);
     else
-        m_iCursorLine = newline;
+        m_CursorLine = newline;
 
     if (scroll)
     {
-        int oldstart = m_iStartEntry;
+        int oldstart = m_StartEntry;
         m_pVScrollbar->Scroll(n);
-        m_iStartEntry = (int)m_pVScrollbar->GetValue();
+        m_StartEntry = (int)m_pVScrollbar->GetValue();
         
         if (GetCurrent() != (oldstart + newline)) // Not scrolled enough yet?
         {
-            m_iCursorLine += ((oldstart + newline) - GetCurrent()); // Add(or substract) remaining
+            m_CursorLine += ((oldstart + newline) - GetCurrent()); // Add(or substract) remaining
             
-            if (m_iCursorLine < 0)
-                m_iCursorLine = 0;
-            else if (m_iCursorLine >= m_pTextWin->height())
-                m_iCursorLine = m_pTextWin->height()-1;
+            if (m_CursorLine < 0)
+                m_CursorLine = 0;
+            else if (m_CursorLine >= m_pTextWin->height())
+                m_CursorLine = m_pTextWin->height()-1;
         }
     }
     
@@ -1823,7 +1877,7 @@ void CMenu::VScroll(int n)
         m_pMenuText->HighLight(cur, false);
         m_pMenuText->HighLight(GetCurrent(), true);
     }
-
+#endif
     refresh();
 }
 
@@ -1860,11 +1914,11 @@ bool CMenu::HandleKey(chtype ch)
             break;
         }
         case KEY_NPAGE:
-            VScroll(m_pTextWin->height());
+            VScroll(m_pTextWin->height()-1);
             PushEvent(EVENT_DATACHANGED);
             break;
         case KEY_PPAGE:
-            VScroll(-m_pTextWin->height());
+            VScroll(-m_pTextWin->height()+1);
             PushEvent(EVENT_DATACHANGED);
             break;
         default:
@@ -1873,13 +1927,13 @@ bool CMenu::HandleKey(chtype ch)
             else // Go to item which starts with typed character
             {
                 // First try from current position
-                unsigned line = m_pMenuText->Search(GetCurrent()+1, m_pMenuText->GetLines(), ch);
+                TSTLVecSize line = m_pMenuText->Search(GetCurrent()+1, m_pMenuText->GetLines(), ch);
                 if (line == m_pMenuText->GetLines()) // Not found, start from begin
                     line = m_pMenuText->Search(0, GetCurrent(), ch);
                 
                 if (line != m_pMenuText->GetLines())
                 {
-                    VScroll((int)line - GetCurrent());
+                    VScroll(SafeConvert<int>(line - GetCurrent()));
                     PushEvent(EVENT_DATACHANGED);
                 }
             }
@@ -1898,31 +1952,25 @@ void CMenu::Draw()
     }
     
     m_pTextWin->erase();
-    m_pMenuText->Print(m_iStartEntry, (unsigned)m_pHScrollbar->GetValue(), m_pTextWin->height(), m_pTextWin->width());
+    m_pMenuText->Print(m_StartEntry, SafeConvert<TSTLVecSize>(m_pHScrollbar->GetValue()), m_pTextWin->height(), m_pTextWin->width());
 }
 
 void CMenu::AddItem(std::string s, bool tags)
 {
-    // Menu works with signed ints while text works with unsigned ints
-    if ((m_pMenuText->GetLines()+1) >= std::numeric_limits<int>::max())
-    {
-        throw Exceptions::CExOverflow("Reached signed int max");
-    }
-    
     if (!tags) // Don't want to process tags?
         s.insert(0, "<notg>");
     
     m_pMenuText->AddText(s);
     
-    int h = (int)m_pMenuText->GetLines() - m_pTextWin->height();
+    int h = SafeConvert<int>(m_pMenuText->GetLines()) - m_pTextWin->height();
     if (h < 0)
         h = 0;
     m_pVScrollbar->SetMinMax(0, h);
-    m_pVScrollbar->Enable((m_pMenuText->GetLines() > m_pTextWin->height()));
+    m_pVScrollbar->Enable((m_pMenuText->GetLines() > SafeConvert<TSTLVecSize>(m_pTextWin->height())));
     
-    if (m_pMenuText->GetLongestLine() > m_pTextWin->width())
+    if (m_pMenuText->GetLongestLine() > static_cast<TSTLVecSize>(m_pTextWin->width()))
     {
-        m_pHScrollbar->SetMinMax(0, (m_pMenuText->GetLongestLine() - m_pTextWin->width()));
+        m_pHScrollbar->SetMinMax(0, SafeConvert<float>(m_pMenuText->GetLongestLine() - m_pTextWin->width()));
         m_pHScrollbar->Enable(true);
     }
     else
@@ -1931,13 +1979,13 @@ void CMenu::AddItem(std::string s, bool tags)
 
 void CMenu::SetCurrent(const std::string &str)
 {
-    int line = static_cast<int>(m_pMenuText->Search(0, m_pMenuText->GetLines(), str));
+    TSTLVecSize line = m_pMenuText->Search(0, m_pMenuText->GetLines(), str);
     
     assert(line < m_pMenuText->GetLines());
     
     if (line < m_pMenuText->GetLines())
     {
-        VScroll(line - GetCurrent());
+        VScroll(SafeConvert<int>(line - GetCurrent()));
         PushEvent(EVENT_DATACHANGED);
     }
 }
@@ -1945,7 +1993,7 @@ void CMenu::SetCurrent(const std::string &str)
 void CMenu::Clear()
 {
     m_pMenuText->Clear();
-    m_iCursorLine = m_iStartEntry = 0;
+    m_CursorLine = m_StartEntry = 0;
     m_bInitCursor = true;
     m_pHScrollbar->SetCurrent(0);
     m_pVScrollbar->SetCurrent(0);
@@ -1964,17 +2012,17 @@ CInputField::CInputField(CWidgetWindow *owner, int nlines, int ncols, int begin_
                          chtype out, EInputType type) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x,
                                                                       absrel, false, true, m_cDefaultFocusedColors,
                                                                       m_cDefaultDefocusedColors),
-                                                        m_chOutChar(out), m_iMaxChars(max), m_iCursorPos(0),
-                                                        m_iScrollOffset(0), m_FMText(this, "", false), m_eInpType(type)
+                                                        m_chOutChar(out), m_iMaxChars(max), m_CursorPos(0),
+                                                        m_ScrollOffset(0), m_FMText(this, "", false), m_eInpType(type)
 {
 }
 
 void CInputField::Addch(chtype ch)
 {
-    if ((m_iMaxChars != -1) && (m_szText.length() >= m_iMaxChars))
+    if ((m_iMaxChars > -1) && (m_szText.length() >= static_cast<TSTLStrSize>(m_iMaxChars)))
         return;
 
-    unsigned pos = m_iScrollOffset + m_iCursorPos;
+    TSTLStrSize pos = m_ScrollOffset + m_CursorPos;
     if (pos == m_szText.length())
         m_szText += ch;
     else
@@ -1990,9 +2038,9 @@ void CInputField::Delch(bool backspace)
     if (m_szText.length() < 1)
         return;
     
-    unsigned pos = m_iScrollOffset + m_iCursorPos;
+    TSTLStrSize pos = m_ScrollOffset + m_CursorPos;
     
-    if (backspace)
+    if (backspace && pos)
         pos--;
     
     if (pos <= m_szText.length())
@@ -2003,46 +2051,57 @@ void CInputField::Delch(bool backspace)
     if (backspace)
         MoveCursor(-1);
     else if (pos <= m_szText.length())
-    {
-        if (m_iScrollOffset)
-            m_iScrollOffset--;
         refresh(); // MoveCursor would call it otherwise
-    }
 }
 
 void CInputField::MoveCursor(int n, bool relative)
 {
+    TSTLStrSize len = m_szText.length();
     int w = width()-1; // -1, because we want to scroll before char is at last available position
     
     if (relative)
-        m_iCursorPos += n;
+    {
+        if (n < 0)
+        {
+            TSTLStrSize nabs = abs(n);
+            if (nabs > m_CursorPos)
+            {
+                TSTLStrSize rest = (nabs - m_CursorPos);
+                
+                if (rest > m_ScrollOffset)
+                    m_ScrollOffset = 0;
+                else
+                    m_ScrollOffset -= rest;
+                
+                m_CursorPos = 0;
+            }
+            else
+                m_CursorPos -= nabs;
+        }
+        else
+        {
+            TSTLStrSize newpos = m_CursorPos + n;
+            if (((newpos+m_ScrollOffset) > len) || (newpos < m_CursorPos)) // Don't go past str length and prevent overflows
+                newpos = (len - m_ScrollOffset);
+            
+            m_CursorPos = newpos;
+        }
+    }
     else
     {
-        m_iScrollOffset = 0;
-        m_iCursorPos = n;
+        m_ScrollOffset = 0;
+        m_CursorPos = n;
     }
-    
-    if ((m_iScrollOffset + m_iCursorPos) > (int)m_szText.length())
-        m_iCursorPos = (m_szText.length() - m_iScrollOffset);
 
-    if (m_iCursorPos < 0)
+    if (m_CursorPos > static_cast<TSTLStrSize>(w))
     {
-        m_iScrollOffset += m_iCursorPos;
+        m_ScrollOffset += (m_CursorPos - w);
         
-        if (m_iScrollOffset < 0)
-            m_iScrollOffset = 0;
-        
-        m_iCursorPos = 0;
-    }
-    else if (m_iCursorPos > w)
-    {
-        m_iScrollOffset += (m_iCursorPos - w);
-        
-        unsigned max = m_szText.length() - w;
-        if (m_iScrollOffset > max)
-            m_iScrollOffset = max;
-        
-        m_iCursorPos = w;
+        TSTLStrSize max = len - w;
+        if (m_ScrollOffset > max)
+            m_ScrollOffset = max;
+                
+        m_CursorPos = w;
     }
     
     refresh();
@@ -2066,7 +2125,7 @@ void CInputField::Focus()
 {
     CWidgetWindow::Focus();
     curs_set(1);
-    SetCursorPos(begy(), begx()+m_iCursorPos);
+    SetCursorPos(begy(), begx()+m_CursorPos);
 }
 
 bool CInputField::HandleKey(chtype ch)
@@ -2085,7 +2144,7 @@ bool CInputField::HandleKey(chtype ch)
             MoveCursor(1);
             break;
         case KEY_HOME:
-            m_iCursorPos = m_iScrollOffset = 0;
+            m_CursorPos = m_ScrollOffset = 0;
             refresh();
             break;
         case KEY_END:
@@ -2123,7 +2182,7 @@ bool CInputField::HandleKey(chtype ch)
                     if ((m_eInpType == INPUT_FLOAT) && (m_szText.find_first_of(decpoint) == std::string::npos))
                         legal += decpoint;
                     
-                    if (((m_iCursorPos+m_iScrollOffset) == 0) && (m_szText.find_first_of(plusminsign) == std::string::npos))
+                    if (((m_CursorPos+m_ScrollOffset) == 0) && (m_szText.find_first_of(plusminsign) == std::string::npos))
                         legal += plusminsign;
                     
                     if (legal.find(ch) == std::string::npos)
@@ -2142,10 +2201,10 @@ bool CInputField::HandleKey(chtype ch)
 void CInputField::Draw()
 {
     erase();
-    m_FMText.Print(0, m_iScrollOffset, 1, width());
+    m_FMText.Print(0, m_ScrollOffset, 1, width());
     
     if (Focused())
-        SetCursorPos(begy(), begx() + m_iCursorPos);
+        SetCursorPos(begy(), begx() + m_CursorPos);
 }
 
 // -------------------------------------
@@ -2156,17 +2215,17 @@ chtype CProgressbar::m_cDefaultFillColors;
 chtype CProgressbar::m_cDefaultEmptyColors;
 
 CProgressbar::CProgressbar(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
-                           int min, int max, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y,
-                                                                          begin_x, absrel, true, false,
-                                                                          m_cDefaultEmptyColors,
-                                                                          m_cDefaultEmptyColors),
-                                                            m_fMin(min), m_fMax(max), m_fCurrent(0.0f)
+                           float min, float max, char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y,
+                                                                              begin_x, absrel, true, false,
+                                                                              m_cDefaultEmptyColors,
+                                                                              m_cDefaultEmptyColors),
+                                                                m_fMin(min), m_fMax(max), m_fCurrent(0.0f)
 {
 }
 
 void CProgressbar::Draw()
 {
-    float maxw = (float)width() - 2.0f; // -2 for the borders
+    float maxw = SafeConvert<float>(width()) - 2.0f; // -2 for the borders
     float fac = fabs(m_fCurrent / (m_fMax-m_fMin));
     float w = (maxw * fac);
     
@@ -2175,7 +2234,7 @@ void CProgressbar::Draw()
     
     attron(m_cDefaultFillColors);
     
-    for (int i=0; i<(int)w; i++)
+    for (int i=0; i<SafeConvert<int>(w); i++)
         addch(1, i+1, ' ');
     
     attroff(m_cDefaultFillColors);
@@ -2191,7 +2250,7 @@ chtype CCheckbox::m_cDefaultDefocusedColors;
 CCheckbox::CCheckbox(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                      char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel,
                      false, true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                     m_ulCheckedboxes(0), m_iSelectedButton(1)
+                     m_SelectedButton(1)
 {
 }
 
@@ -2205,14 +2264,14 @@ bool CCheckbox::HandleKey(chtype ch)
     switch (ch)
     {
         case KEY_UP:
-            m_iSelectedButton--;
-            if (m_iSelectedButton < 1)
-                m_iSelectedButton = m_BoxList.size();
+            m_SelectedButton--;
+            if (m_SelectedButton < 1)
+                m_SelectedButton = m_BoxList.size();
             break;
         case KEY_DOWN:
-            m_iSelectedButton++;
-            if (m_iSelectedButton > m_BoxList.size())
-                m_iSelectedButton = 1;
+            m_SelectedButton++;
+            if (m_SelectedButton > m_BoxList.size())
+                m_SelectedButton = 1;
             break;
         case KEY_ENTER:
         case '\n':
@@ -2222,10 +2281,10 @@ bool CCheckbox::HandleKey(chtype ch)
             break;
         }
         case ' ':
-            if (IsEnabled(m_iSelectedButton))
-                DisableBox(m_iSelectedButton);
+            if (IsEnabled(m_SelectedButton))
+                DisableBox(m_SelectedButton);
             else
-                EnableBox(m_iSelectedButton);
+                EnableBox(m_SelectedButton);
             PushEvent(EVENT_DATACHANGED);
             break;
         default:
@@ -2241,8 +2300,8 @@ bool CCheckbox::HandleKey(chtype ch)
 
 void CCheckbox::Draw()
 {
-    int counter = 1;
-    for (std::vector<std::string>::iterator it=m_BoxList.begin(); it!=m_BoxList.end(); it++)
+    TSTLVecSize counter = 1;
+    for (std::vector<SEntry>::iterator it=m_BoxList.begin(); it!=m_BoxList.end(); it++)
     {
         std::string out;
         if (IsEnabled(counter))
@@ -2250,14 +2309,14 @@ void CCheckbox::Draw()
         else
             out = "[ ] ";
         
-        out += *it;
+        out += it->name;
         
-        if (counter == m_iSelectedButton)
+        if (counter == m_SelectedButton)
             attron(A_REVERSE);
         
         addstr(counter-1, 0, out.c_str());
         
-        if (counter == m_iSelectedButton)
+        if (counter == m_SelectedButton)
             attroff(A_REVERSE);
 
         counter++;
@@ -2274,7 +2333,7 @@ chtype CRadioButton::m_cDefaultDefocusedColors;
 CRadioButton::CRadioButton(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x,
                            char absrel) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, absrel,
                            false, true, m_cDefaultFocusedColors, m_cDefaultDefocusedColors),
-                           m_iCheckedButton(1), m_iSelectedButton(1)
+                           m_CheckedButton(1), m_SelectedButton(1)
 {
 }
 
@@ -2288,14 +2347,14 @@ bool CRadioButton::HandleKey(chtype ch)
     switch (ch)
     {
         case KEY_UP:
-            m_iSelectedButton--;
-            if (m_iSelectedButton < 1)
-                m_iSelectedButton = m_ButtonList.size();
+            m_SelectedButton--;
+            if (m_SelectedButton < 1)
+                m_SelectedButton = m_ButtonList.size();
             break;
         case KEY_DOWN:
-            m_iSelectedButton++;
-            if (m_iSelectedButton > m_ButtonList.size())
-                m_iSelectedButton = 1;
+            m_SelectedButton++;
+            if (m_SelectedButton > m_ButtonList.size())
+                m_SelectedButton = 1;
             break;
         case KEY_ENTER:
         case '\n':
@@ -2305,7 +2364,7 @@ bool CRadioButton::HandleKey(chtype ch)
             break;
         }
         case ' ':
-            EnableButton(m_iSelectedButton);
+            EnableButton(m_SelectedButton);
             PushEvent(EVENT_DATACHANGED);
             break;
         default:
@@ -2321,7 +2380,7 @@ bool CRadioButton::HandleKey(chtype ch)
 
 void CRadioButton::Draw()
 {
-    int counter = 1;
+    TSTLVecSize counter = 1;
     for (std::vector<std::string>::iterator it=m_ButtonList.begin(); it!=m_ButtonList.end(); it++)
     {
         std::string out;
@@ -2332,12 +2391,12 @@ void CRadioButton::Draw()
         
         out += *it;
         
-        if (counter == m_iSelectedButton)
+        if (counter == m_SelectedButton)
             attron(A_REVERSE);
         
         addstr(counter-1, 0, out.c_str());
         
-        if (counter == m_iSelectedButton)
+        if (counter == m_SelectedButton)
             attroff(A_REVERSE);
         
         counter++;
@@ -2657,7 +2716,7 @@ void CChoiceBox::CreateInit()
     
     // Find out longest text
     int w;
-    w = Max(Max(m_szButtonTitles[0].length(), m_szButtonTitles[1].length()), m_szButtonTitles[2].length());
+    w = std::max(std::max(m_szButtonTitles[0].length(), m_szButtonTitles[1].length()), m_szButtonTitles[2].length());
     
     w += 4; // Buttons use 4 additional tokens for focusing
     
@@ -2735,7 +2794,7 @@ void CInputDialog::CreateInit()
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
     m_pTextField = AddChild(new CInputField(this, 1, width()-4, y, 2, 'r', m_iMax, out));
     
-    unsigned buttonw = Max(strlen(OKTXT), strlen(CancelTXT)) + 4;
+    size_t buttonw = std::max(strlen(OKTXT), strlen(CancelTXT)) + 4;
     int x = (width() - (2 * buttonw + 2)) / 2;
     y += (m_pTextField->maxy() + 2);
     m_pOKButton = AddChild(new CButton(this, 1, buttonw, y, x, OKTXT, 'r'));
@@ -2809,7 +2868,7 @@ void CFileDialog::CreateInit()
     
     const char *OpenTXT = GetTranslation("Open directory");
     const char *CancelTXT = GetTranslation("Cancel");
-    unsigned buttonw = Max(strlen(OpenTXT), strlen(CancelTXT)) + 4;
+    size_t buttonw = std::max(strlen(OpenTXT), strlen(CancelTXT)) + 4;
     const int startx = (width() - (2 * buttonw + 2)) / 2;
     const int starty = (m_pFileField->rely()+m_pFileField->maxy()+2);
     
@@ -2972,7 +3031,7 @@ void CMenuDialog::CreateInit()
     const int menuh = height() - y - 4;
     m_pMenu = AddChild(new CMenu(this, menuh, width()-4, y, 2, 'r'));
     
-    unsigned buttonw = Max(strlen(OKTXT), strlen(CancelTXT)) + 4;
+    size_t buttonw = std::max(strlen(OKTXT), strlen(CancelTXT)) + 4;
     int x = (width() - (2 * buttonw + 2)) / 2;
     y += (menuh + 1);
     

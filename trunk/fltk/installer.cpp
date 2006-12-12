@@ -50,7 +50,7 @@ void CInstaller::InitLua()
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pSelectDirScreen, "selectdirscreen", "SelectDirScreen");
 
     m_LuaVM.InitClass("installscreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(m_pInstallFilesScreen, "installscreen", "InstallScreen");
+    m_LuaVM.RegisterUData<CBaseScreen *>(m_pInstallScreen, "installscreen", "InstallScreen");
     
     m_LuaVM.InitClass("finishscreen");
     m_LuaVM.RegisterUData<CBaseScreen *>(m_pFinishScreen, "finishscreen", "FinishScreen");
@@ -77,7 +77,7 @@ void CInstaller::Init(int argc, char **argv)
     m_pWelcomeScreen = new CWelcomeScreen(this);
     m_pLicenseScreen = new CLicenseScreen(this);
     m_pSelectDirScreen = new CSelectDirScreen(this);
-    m_pInstallFilesScreen = new CInstallFilesScreen(this);
+    m_pInstallScreen = new CInstallFilesScreen(this);
     m_pFinishScreen = new CFinishScreen(this);
     
     m_pWizard = new Fl_Wizard(20, 20, (MAIN_WINDOW_W-40), (MAIN_WINDOW_H-60), NULL);
@@ -122,10 +122,10 @@ void CInstaller::Init(int argc, char **argv)
             m_ScreenList.push_back(m_pSelectDirScreen);
         }
 
-        if ((group = m_pInstallFilesScreen->Create()))
+        if ((group = m_pInstallScreen->Create()))
         {
             m_pWizard->add(group);
-            m_ScreenList.push_back(m_pInstallFilesScreen);
+            m_ScreenList.push_back(m_pInstallScreen);
         }
 
         if ((group = m_pFinishScreen->Create()))
@@ -209,8 +209,14 @@ void CInstaller::Init(int argc, char **argv)
     
     m_pWizard->end();
     
-    if (!m_ScreenList.front()->Activate())
-        Next();
+    for (std::list<CBaseScreen *>::iterator it=m_ScreenList.begin(); it!=m_ScreenList.end(); it++)
+    {
+        if ((*it)->CanActivate())
+        {
+            (*it)->Activate();
+            break;
+        }
+    }
     
     m_pMainWindow->end();
 }
@@ -223,17 +229,17 @@ CInstaller::~CInstaller()
 
 void CInstaller::ChangeStatusText(const char *str)
 {
-    m_pInstallFilesScreen->ChangeStatusText(str);
+    m_pInstallScreen->ChangeStatusText(str);
 }
 
 void CInstaller::AddInstOutput(const std::string &str)
 {
-    m_pInstallFilesScreen->AppendText(str);
+    m_pInstallScreen->AppendText(str);
 }
 
 void CInstaller::SetProgress(int percent)
 {
-    m_pInstallFilesScreen->SetProgress(percent);
+    m_pInstallScreen->SetProgress(percent);
 }
     
 void CInstaller::Install()
@@ -247,9 +253,6 @@ void CInstaller::Install()
     m_bInstallFiles = false;
     m_pCancelButton->deactivate();
     m_pNextButton->activate();
-    
-    if (!FileExists(GetFinishFName()) && !FileExists(GetLangFinishFName()))
-        m_pNextButton->label(GetTranslation("Finish"));
 }
 
 void CInstaller::UpdateLanguage(void)
@@ -279,7 +282,7 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
         msg = GetTranslation("This will abort the installation\nAre you sure?");
     
     if (fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL))
-        EndProg();
+        throw Exceptions::CExUser();
 }
 
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
@@ -291,42 +294,176 @@ CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 
 void CInstaller::Prev()
 {
-    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+    std::list<CBaseScreen *>::iterator cur;
+    for(cur=m_ScreenList.begin(); cur!=m_ScreenList.end(); cur++)
     {
-        if ((*p)->GetGroup() == m_pWizard->value())
+        if ((*cur)->GetGroup() == m_pWizard->value())
+            break;
+    }
+    
+    if (cur == m_ScreenList.begin())
+        return;
+    
+    if (!(*cur)->Prev())
+        return;
+    
+    std::list<CBaseScreen *>::iterator it = cur;
+    
+    while (it != m_ScreenList.begin())
+    {
+        it--;
+        
+        if ((*it)->CanActivate())
         {
-            if (p == m_ScreenList.begin()) break;
-            if ((*p)->Prev())
+            m_pWizard->prev();
+            
+            bool first = (it == m_ScreenList.begin());
+            if (!first)
             {
-                p--;
-                m_pWizard->prev();
-                while (!(*p)->Activate() && (p != m_ScreenList.begin())) { m_pWizard->prev(); p--; }
+                first = true;
+                it--;
+                while (it != m_ScreenList.begin())
+                {
+                    if ((*it)->CanActivate())
+                    {
+                        first = false;
+                        break;
+                    }
+                    it--;
+                }
             }
+            
+            if (first)
+                m_pPrevButton->deactivate();
+            
             break;
         }
     }
 }
+
+// void CInstaller::Prev()
+// {
+//     for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+//     {
+//         if ((*p)->GetGroup() == m_pWizard->value())
+//         {
+//             if (p == m_ScreenList.begin())
+//                 break;
+//             
+//             if ((*p)->Prev())
+//             {
+//                 p--;
+//                 m_pWizard->prev();
+//                 while (!(*p)->Activate() && (p != m_ScreenList.begin())) { m_pWizard->prev(); p--; }
+//             }
+//             
+//             break;
+//         }
+//     }
+// }
 
 void CInstaller::Next()
 {
-    for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+    std::list<CBaseScreen *>::iterator cur;
+    
+    for(cur=m_ScreenList.begin(); cur!=m_ScreenList.end(); cur++)
     {
-        if ((*p)->GetGroup() == m_pWizard->value())
-        {
-            if (p == m_ScreenList.end()) break;
-            if ((*p)->Next())
-            {
-                p++;
-                m_pWizard->next();
-                while ((p != m_ScreenList.end()) && (!(*p)->Activate())) { m_pWizard->next(); p++; }
-
-                if (p == m_ScreenList.end())
-                    m_pMainWindow->hide();
-            }
+        if ((*cur)->GetGroup() == m_pWizard->value())
             break;
+    }
+    
+    assert(cur != m_ScreenList.end());
+    
+    if ((*cur != m_ScreenList.back()) && (!(*cur)->Next()))
+        return;
+    
+    std::list<CBaseScreen *>::iterator it = cur;
+    
+    while (*it != m_ScreenList.back())
+    {
+        it++;
+        if ((*it)->CanActivate())
+        {
+            m_pWizard->next();
+            (*it)->Activate();
+            
+            bool last; // Last screen?
+            
+            // Enable previous button if it's disabled and the install screen isn't activated before
+            if (!m_pPrevButton->active() && (*it != m_pInstallScreen) && (std::find(m_ScreenList.begin(), it, m_pInstallScreen) == it))
+                m_pPrevButton->activate();
+            
+            // Check if this is the last screen
+            last = (*it == m_ScreenList.back());
+            if (!last)
+            {
+                last = true;
+                it++;
+                while (it != m_ScreenList.end())
+                {
+                    if ((*it)->CanActivate())
+                    {
+                        last = false;
+                        break;
+                    }
+                    it++;
+                }
+            }
+            
+            if (last)
+                m_pNextButton->label(GetTranslation("Finish"));
+            
+            return;
         }
     }
+    
+    // No screens left
+    m_pMainWindow->hide(); // Close main window, will shutdown the rest
 }
+
+// void CInstaller::Next()
+// {
+//     for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
+//     {
+//         if ((*p)->GetGroup() == m_pWizard->value())
+//         {
+//             if (p == m_ScreenList.end())
+//                 break;
+//             
+//             if ((*p)->Next())
+//             {
+//                 p++;
+//                 m_pWizard->next();
+//                 while ((p != m_ScreenList.end()) && (!(*p)->Activate()))
+//                 {
+//                     m_pWizard->next();
+//                     p++;
+//                 }
+// 
+//                 bool last = (*p == m_ScreenList.back());
+//                 if (!last)
+//                 {
+//                     last = true;
+//                     it++;
+//                     while (it != m_ScreenList.end())
+//                     {
+//                         if ((*it)->CanActivate())
+//                         {
+//                             last = false;
+//                             break;
+//                         }
+//                         it++;
+//                     }
+//                 }
+//                 if (p == m_ScreenList.end())
+//                     m_pMainWindow->hide(); // Close main window, will shutdown the rest
+//                 else if (*p == m_ScreenList.back()) // Last screen?
+//                     m_pNextButton->label(GetTranslation("Finish"));
+//             }
+//             break;
+//         }
+//     }
+// }
 
 // -------------------------------------
 // Base FLTK Lua Widget class
@@ -405,7 +542,7 @@ CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, co
 Fl_Group *CLuaInputField::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int x = group->x(), y = group->y() + DescHeight(), w = (((float)m_pGroup->w() / 100.0f) * (float)GetDefaultSpacing());
+    int x = group->x(), y = group->y() + DescHeight(), w = (m_pGroup->w() * GetDefaultSpacing()) / 100;
     
     if (!m_szLabel.empty())
     {
@@ -441,7 +578,7 @@ void CLuaInputField::UpdateLanguage()
 
 void CLuaInputField::SetSpacing(int percent)
 {
-    int x = m_pGroup->x(), w = (((float)m_pGroup->w() / 100.0f) * (float)percent);
+    int x = m_pGroup->x(), w = (m_pGroup->w() * percent) / 100;
     
     if (m_pLabel)
     {
@@ -481,7 +618,7 @@ Fl_Group *CLuaCheckbox::Create()
     
     // Find longest text
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
-        w = Max(w, 40 + fl_width(it->c_str()));
+        w = std::max(w, static_cast<int>(40 + fl_width(it->c_str())));
 
     group->box(FL_ENGRAVED_BOX);
     group->size(w, group->h());
@@ -505,8 +642,9 @@ void CLuaCheckbox::UpdateLanguage()
 {
     CBaseLuaWidget::UpdateLanguage();
     
-    for (unsigned u=0; u<m_Buttons.size(); u++)
-        m_Buttons[u]->label(MakeTranslation(m_Options[u]));
+    TSTLVecSize size = m_Buttons.size();
+    for (TSTLVecSize n=0; n<size; n++)
+        m_Buttons[n]->label(MakeTranslation(m_Options[n]));
 }
 
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
@@ -537,7 +675,7 @@ Fl_Group *CLuaRadioButton::Create()
     
     // Find longest text
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
-        w = Max(w, 40 + fl_width(it->c_str()));
+        w = std::max(w, static_cast<int>(40 + fl_width(it->c_str())));
 
     group->box(FL_ENGRAVED_BOX);
     group->size(w, group->h());
@@ -564,16 +702,18 @@ void CLuaRadioButton::UpdateLanguage()
 {
     CBaseLuaWidget::UpdateLanguage();
     
-    for (unsigned u=0; u<m_Buttons.size(); u++)
-        m_Buttons[u]->label(MakeTranslation(m_Options[u]));
+    TSTLVecSize size = m_Buttons.size();
+    for (TSTLVecSize n=0; n<size; n++)
+        m_Buttons[n]->label(MakeTranslation(m_Options[n]));
 }
 
 int CLuaRadioButton::EnabledButton()
 {
-    for (unsigned u=0; u<m_Buttons.size(); u++)
+    TSTLVecSize size = m_Buttons.size();
+    for (TSTLVecSize n=0; n<size; n++)
     {
-        if (m_Buttons[u]->value())
-            return u;
+        if (m_Buttons[n]->value())
+            return n;
     }
     
     assert(false);
@@ -672,6 +812,15 @@ CLuaCFGMenu::CLuaCFGMenu(int x, int y, int w, int h, const char *desc) : CBaseLu
 {
 }
 
+const char *CLuaCFGMenu::GetCurItem()
+{
+    const char *item = (const char *)m_pMenu->data(m_pMenu->value());
+    if (!item || !*item || !m_Variabeles[item])
+        return NULL;
+    
+    return item;
+}
+
 void CLuaCFGMenu::CreateDirSelector()
 {
     if (m_pDirChooser)
@@ -690,8 +839,8 @@ void CLuaCFGMenu::SetInfo()
     if (!m_pMenu->size())
         return;
     
-    const char *item = m_pMenu->text(m_pMenu->value());
-    if (item && *item && m_Variabeles[item])
+    const char *item = GetCurItem();
+    if (item)
         m_pDescBuffer->text(GetTranslation(m_Variabeles[item]->desc.c_str()));
     else
         m_pDescBuffer->text(NULL);
@@ -699,8 +848,8 @@ void CLuaCFGMenu::SetInfo()
 
 void CLuaCFGMenu::SetInputMethod()
 {
-    const char *item = m_pMenu->text(m_pMenu->value());
-    if (!item || !*item || !m_Variabeles[item])
+    const char *item = GetCurItem();
+    if (!item)
         return;
     
     m_pBrowseButton->hide();
@@ -741,8 +890,8 @@ void CLuaCFGMenu::SetInputMethod()
 
 void CLuaCFGMenu::OpenDir()
 {
-    const char *item = m_pMenu->text(m_pMenu->value());
-    if (!item || !*item || !m_Variabeles[item])
+    const char *item = GetCurItem();
+    if (!item)
         return;
     
     m_pDirChooser->directory(GetFirstValidDir(m_Variabeles[item]->val).c_str());
@@ -757,8 +906,8 @@ void CLuaCFGMenu::OpenDir()
 
 void CLuaCFGMenu::SetString(const char *s)
 {
-    const char *item = m_pMenu->text(m_pMenu->value());
-    if (!item || !*item || !m_Variabeles[item])
+    const char *item = GetCurItem();
+    if (!item)
         return;
     
     m_Variabeles[item]->val = s;
@@ -766,8 +915,8 @@ void CLuaCFGMenu::SetString(const char *s)
 
 void CLuaCFGMenu::SetChoice(int n)
 {
-    const char *item = m_pMenu->text(m_pMenu->value());
-    if (!item || !*item || !m_Variabeles[item])
+    const char *item = GetCurItem();
+    if (!item)
         return;
     
     m_Variabeles[item]->val = m_Variabeles[item]->options[n];
@@ -815,12 +964,17 @@ void CLuaCFGMenu::UpdateLanguage()
     m_pBrowseButton->label(GetTranslation("Browse"));
     CreateDirSelector(); // Recreate, so that it will use the new translations
     SetInfo();
+    
+    // Update var menu
+    int size = m_pMenu->size();
+    for (int n=1; n<=size; n++)
+        m_pMenu->text(n, GetTranslation((const char *)m_pMenu->data(n))); // User data contains the real name
 }
 
 void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l)
 {
     CBaseLuaCFGMenu::AddVar(name, desc, val, type, l);
-    m_pMenu->add(name);
+    m_pMenu->add(GetTranslation(name), (void *)name);
     
     if (m_pMenu->size() == 1) // Init menu: highlight first item
     {
@@ -842,7 +996,7 @@ int CLuaCFGMenu::CalcHeight(int w, const char *desc)
 // Used when label is aligned outside widget.
 int CBaseScreen::CenterX(int w, const char *label, bool left)
 {
-    int textw = fl_width(label);
+    int textw = SafeConvert<int>(fl_width(label));
     int ret = ((MAIN_WINDOW_W-(w+textw)) / 2);
     if (left) // if the label is left aligned the x pos should be adjusted so it starts after the label
         ret += textw;
@@ -852,7 +1006,7 @@ int CBaseScreen::CenterX(int w, const char *label, bool left)
 
 int CBaseScreen::CenterX2(int w, const char *l1, const char *l2, bool left1, bool left2)
 {
-    int t1 = fl_width(l1), t2 = fl_width(l2);
+    int t1 = SafeConvert<int>(fl_width(l1)), t2 = SafeConvert<int>(fl_width(l2));
     int ret = ((MAIN_WINDOW_W-w-t1-t2) / 2);
     
     if (left1) // if the label is left aligned the x pos should be adjusted so it starts after the label
@@ -896,22 +1050,17 @@ bool CLangScreen::Next()
     return true;
 }
 
-bool CLangScreen::Activate()
+void CLangScreen::Activate()
 {
-    if (m_pOwner->m_Languages.size() <= 1) // Nothing to select...
-        return false;
-    
-    unsigned size = m_pOwner->m_Languages.size();
-    for (unsigned u=0; u<size; u++)
+    TSTLVecSize size = m_pOwner->m_Languages.size();
+    for (TSTLVecSize n=0; n<size; n++)
     {
-        if (m_pOwner->m_Languages[u] == m_pOwner->m_szCurLang)
+        if (m_pOwner->m_Languages[n] == m_pOwner->m_szCurLang)
         {
-            m_pChoiceMenu->value(u);
+            m_pChoiceMenu->value(n);
             break;
         }
     }
-    
-    return true;
 }
 
 void CLangScreen::UpdateLang()
@@ -1035,14 +1184,10 @@ void CLicenseScreen::UpdateLang()
     m_pCheckButton->label(GetTranslation("I Agree to this license agreement"));
 }
 
-bool CLicenseScreen::Activate()
+void CLicenseScreen::Activate()
 {
-    if (!m_bHasText) return false;
-    
     if (!m_pCheckButton->value())
         m_pOwner->m_pNextButton->deactivate();
-    
-    return true;
 }
 
 // -------------------------------------
@@ -1185,15 +1330,6 @@ void CFinishScreen::UpdateLang()
     m_pDisplay->label(GetTranslation("Please read the following text"));
 }
 
-bool CFinishScreen::Activate()
-{
-    if (!m_bHasText)
-        return false;
-
-    m_pOwner->m_pNextButton->label(GetTranslation("Finish"));
-    return true;
-}
-
 // -------------------------------------
 // Lua config screen
 // -------------------------------------
@@ -1229,16 +1365,11 @@ Fl_Group *CCFGScreen::Create()
 
 void CCFGScreen::UpdateLang()
 {
-    for (unsigned u=0; u<m_LuaWidgets.size(); u++)
-        m_LuaWidgets[u]->UpdateLanguage();
+    TSTLVecSize size = m_LuaWidgets.size();
+    for (TSTLVecSize n=0; n<size; n++)
+        m_LuaWidgets[n]->UpdateLanguage();
     
     SetTitle();
-}
-
-bool CCFGScreen::Activate()
-{
-    SetTitle();
-    return true;
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)

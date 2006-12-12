@@ -116,6 +116,7 @@ void CInstaller::Next()
                 NeedRefresh = true;
             }
             
+            // Check if this is the last screen
             last = (*it == m_InstallScreens.back());
             if (!last)
             {
@@ -202,7 +203,8 @@ bool CInstaller::HandleEvent(CWidgetHandler *p, int type)
                 msg = GetTranslation("This will abort the installation\nAre you sure?");
     
             if (YesNoBox(msg))
-                EndProg();
+                throw Exceptions::CExUser();
+            
             return true;
         }
         else
@@ -435,7 +437,7 @@ void CLuaInputField::CreateInit()
 {
     CBaseLuaWidget::CreateInit();
     
-    int y = DescHeight(), w = (((float)width() / 100.0f) * (float)GetDefaultSpacing());
+    int y = DescHeight(), w = (width() * GetDefaultSpacing()) / 100;
     
     if (!m_szLabel.empty())
     {
@@ -470,12 +472,11 @@ void CLuaInputField::UpdateLanguage()
 
 void CLuaInputField::SetSpacing(int percent)
 {
-    int w = (((float)width() / 100.0f) * (float)percent);
+    int w = (width() * percent) / 100;
     
     if (m_pLabel)
     {
         m_pLabel->resize(m_pLabel->height(), w);
-//         m_pLabel->mvwin(m_pLabel->begy(), begx);
     }
     
     int x = begx() + w + 2;
@@ -528,8 +529,9 @@ void CLuaCheckbox::UpdateLanguage()
     
     if (!m_Options.empty())
     {
-        for (unsigned u=0; u<m_Options.size(); u++)
-            m_pCheckbox->SetText(u, GetTranslation(m_Options[u]));
+        TSTLVecSize size = m_Options.size(), n;
+        for (n=0; n<size; n++)
+            m_pCheckbox->SetText(n, GetTranslation(m_Options[n]));
     }
 }
 
@@ -566,8 +568,9 @@ void CLuaRadioButton::UpdateLanguage()
     
     if (!m_Options.empty())
     {
-        for (unsigned u=0; u<m_Options.size(); u++)
-            m_pRadioButton->SetText(u, GetTranslation(m_Options[u]));
+        TSTLVecSize size = m_Options.size(), n;
+        for (n=0; n<size; n++)
+            m_pRadioButton->SetText(n, GetTranslation(m_Options[n]));
     }
 }
 
@@ -1114,8 +1117,9 @@ void CCFGScreen::Activate()
 
 void CCFGScreen::UpdateLanguage()
 {
-    for (unsigned u=0; u<m_LuaWidgets.size(); u++)
-        m_LuaWidgets[u]->UpdateLanguage();
+    TSTLVecSize size = m_LuaWidgets.size(), n;
+    for (n=0; n<size; n++)
+        m_LuaWidgets[n]->UpdateLanguage();
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)

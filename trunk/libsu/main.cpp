@@ -30,7 +30,7 @@
 
 using namespace LIBSU;
 
-static const char *TermStr = "I'm Done Now :)\n"; // Lets just hope other program don't output this ;)
+static const char *TermStr = "I'm Done Now :)\n"; // Lets just hope another program doesn't output this ;)
 
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szUser("root"), m_szPath("/bin:/usr/bin"),
                                     m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
@@ -256,7 +256,7 @@ int CLibSU::WaitForChild()
             ret = 0;
         }
 
-        if (ret) // There is output available
+        if (ret) // There is input available
         {
             std::string line = ReadLine(false);
             while (!line.empty())

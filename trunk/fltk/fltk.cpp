@@ -55,12 +55,6 @@ void StopFrontend()
     pInterface = NULL;
 }
 
-void EndProg(bool err)
-{
-    delete pInterface;
-    exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
-}
-
 void ReportError(const char *msg)
 {
     fl_message(msg);

@@ -62,13 +62,6 @@ void CBaseInstall::Init(int argc, char **argv)
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
 }
 
-void CBaseInstall::SetNextStep()
-{
-    m_sCurrentStep++;
-    m_fInstallProgress += (1.0f/(float)m_sInstallSteps)*100.0f;
-    SetProgress(m_fInstallProgress);
-}
-
 void CBaseInstall::InitArchive(char *archname)
 {
     if (!FileExists(archname))
@@ -80,14 +73,14 @@ void CBaseInstall::InitArchive(char *archname)
     char *fname = CreateText("%s.sizes", archname);
     std::ifstream file(fname);
     std::string arfilename;
-    unsigned int size;
+    unsigned long size;
 
     // Read first column to size and the other column(s) to arfilename
     while(file && (file >> size) && std::getline(file, arfilename))
     {
         EatWhite(arfilename);
         m_ArchList[archname].filesizes[arfilename] = size;
-        m_iTotalArchSize += size;
+        m_ulTotalArchSize += size;
     }
     
     if (!m_szCurArchFName)
@@ -148,7 +141,6 @@ void CBaseInstall::ExtractFiles()
             
             CPipedCMD pipe(command.c_str(), "r");
             std::string line;
-            short buffer = 100;
             
             while (pipe)
             {
@@ -161,12 +153,10 @@ void CBaseInstall::ExtractFiles()
                     if (ch != EOF)
                     {
                         line += (char)ch;
-                        buffer--;
-                        if (((char)ch == '\n') || !buffer)
+                        if ((char)ch == '\n')
                         {
                             UpdateExtrStatus(line.c_str());
                             line.clear();
-                            buffer = 100;
                         }
                     }
                 }
@@ -179,8 +169,6 @@ void CBaseInstall::ExtractFiles()
         }
         m_CurArchIter++;
     }
-    
-    //SetNextStep();
 }
 
 void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool required)
@@ -275,7 +263,7 @@ void CBaseInstall::UpdateStatusText(const char *msg)
     if (m_sCurrentStep > 0)
     {
         m_fInstallProgress += (1.0f/(float)m_sInstallSteps)*100.0f;
-        SetProgress(m_fInstallProgress);
+        SetProgress(SafeConvert<int>(m_fInstallProgress));
     }
     
     m_sCurrentStep++;
@@ -371,10 +359,10 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
         return;
     }
     
-    m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_iTotalArchSize)*100.0f;
+    m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_ulTotalArchSize)*100.0f;
 
     AddInstOutput("Extracting file: " + stat + '\n');
-    SetProgress(m_fExtrPercent/(float)m_sInstallSteps);
+    SetProgress(SafeConvert<int>(m_fExtrPercent/(float)m_sInstallSteps));
 }
 
 void CBaseInstall::InitLua()
@@ -608,17 +596,7 @@ int CBaseInstall::LuaGetTempDir(lua_State *L)
     const char *ret = CreateText("%s/tmp", pInstaller->m_szOwnDir.c_str());
     
     if (!FileExists(ret))
-    {
-        try
-        {
-            MKDir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
-        }
-        catch (Exceptions::CExMKDir &e)
-        {
-            // Convert to lua error(lua will catch every other exception)
-            luaL_error(L, e.what());
-        }
-    }
+        MKDir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
     
     lua_pushstring(L, ret);
     return 1;

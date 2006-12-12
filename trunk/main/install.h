@@ -36,7 +36,7 @@ class CBaseCFGScreen;
 
 class CBaseInstall: virtual public CMain
 {
-    int m_iTotalArchSize;
+    unsigned long m_ulTotalArchSize;
     float m_fExtrPercent;
     std::map<char *, arch_size_entry_s> m_ArchList;
     std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
@@ -46,7 +46,6 @@ class CBaseInstall: virtual public CMain
     short m_sCurrentStep;
     float m_fInstallProgress;
      
-    void SetNextStep(void);
     void InitArchive(char *archname);
     void ExtractFiles(void);
     void ExecuteCommand(const char *cmd, const char *path, bool required);
@@ -83,7 +82,7 @@ public:
     std::string m_szBinDir;
 
 
-    CBaseInstall(void) : m_iTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
+    CBaseInstall(void) : m_ulTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
                          m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0),
                          m_fInstallProgress(0.0f), m_bInstalling(false) { };
     virtual ~CBaseInstall(void) { };

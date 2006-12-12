@@ -133,7 +133,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     CWelcomeScreen *m_pWelcomeScreen;
     CLicenseScreen *m_pLicenseScreen;
     CSelectDirScreen *m_pSelectDirScreen;
-    CInstallFilesScreen *m_pInstallFilesScreen;
+    CInstallFilesScreen *m_pInstallScreen;
     CFinishScreen *m_pFinishScreen;
     std::list<CBaseScreen *> m_ScreenList;
     
@@ -276,6 +276,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
     
     static int m_iMenuHeight, m_iMenuWidth, m_iDescHeight, m_iButtonWidth, m_iButtonHeight;
     
+    const char *GetCurItem(void);
     void CreateDirSelector(void);
     void SetInfo(void);
     void SetInputMethod(void);
@@ -297,6 +298,7 @@ public:
     static void ChoiceCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetChoice(((Fl_Choice *)w)->value()); };
 };
 
+#ifdef WITH_APPMANAGER
 class CAppManager: public CFLTKBase, public CBaseAppManager
 {
     Fl_Button *m_pUninstallButton, *m_pExitButton;
@@ -326,7 +328,7 @@ public:
     static void UninstallCB(Fl_Widget *, void *p) { ((CAppManager *)p)->StartUninstall(); };
     static void ExitCB(Fl_Widget *, void *) { EndProg(); };
 };
-
+#endif
 
 // -------------------------
 // Installer screens
@@ -356,7 +358,8 @@ public:
     virtual void UpdateLang(void) { }; // Called after language is changed
     virtual bool Prev(void) { return true; };
     virtual bool Next(void) { return true; };
-    virtual bool Activate(void) { return true; };
+    virtual void Activate(void) { };
+    virtual bool CanActivate(void) { return true; };
 };
 
 class CLangScreen: public CBaseScreen
@@ -369,7 +372,8 @@ public:
     virtual Fl_Group *Create(void);
     virtual bool Next(void);
     virtual void UpdateLang(void);
-    virtual bool Activate(void);
+    virtual bool CanActivate(void) { return (m_pOwner->m_Languages.size() > 1); };
+    virtual void Activate(void);
     void SetLang(void) { m_pOwner->m_szCurLang = m_pChoiceMenu->mvalue()->text; };
     
     static void LangMenuCB(Fl_Widget *w, void *p) { ((CLangScreen *)p)->SetLang(); };
@@ -388,7 +392,7 @@ public:
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual bool Activate(void) { return m_bHasText; };
+    virtual bool CanActivate(void) { return m_bHasText; };
 };
 
 class CLicenseScreen: public CBaseScreen
@@ -404,7 +408,8 @@ public:
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual bool Prev(void) { m_pOwner->m_pNextButton->activate(); return true; };
-    virtual bool Activate(void);
+    virtual bool CanActivate(void) { return m_bHasText; }
+    virtual void Activate(void);
     
     void LicenseCheck(bool on) { (on)?m_pOwner->m_pNextButton->activate():m_pOwner->m_pNextButton->deactivate(); };
         
@@ -440,7 +445,7 @@ public:
     virtual ~CInstallFilesScreen(void) { };
     
     virtual Fl_Group *Create(void);
-    virtual bool Activate(void) { m_pOwner->Install(); return true; };
+    virtual void Activate(void) { m_pOwner->Install(); };
     virtual void UpdateLang(void);
     
     void AppendText(const char *txt);
@@ -460,7 +465,7 @@ public:
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual bool Activate(void);
+    virtual bool CanActivate(void) { return m_bHasText; };
 };
 
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
@@ -482,7 +487,7 @@ public:
 
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual bool Activate(void);
+    virtual void Activate(void) { SetTitle(); };
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
@@ -496,6 +501,7 @@ public:
 // -------------------------
 // AppManager classes
 // -------------------------
+#ifdef WITH_APPMANAGER
 
 class CUninstallWindow
 {
@@ -516,6 +522,7 @@ public:
      
     static void OKButtonCB(Fl_Widget *w, void *p) { ((CUninstallWindow *)p)->Close(); };
 };
+#endif
 
 #ifndef RELEASE
 void debugline(const char *t, ...);

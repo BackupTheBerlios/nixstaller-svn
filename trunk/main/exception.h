@@ -52,20 +52,22 @@ namespace Exceptions {
 
 class CException: public std::exception
 {
+    char m_szBuffer[512];
+    
 protected:
     const char *FormatText(const char *str, ...)
     {
-        static char buffer[512];
-        static va_list v;
+        va_list v;
     
         va_start(v, str);
-        vsnprintf(buffer, sizeof(buffer), str, v);
+        vsnprintf(m_szBuffer, sizeof(m_szBuffer), str, v);
         va_end(v);
         
-        return buffer;
+        return m_szBuffer;
     }
     
 public:
+    CException(void) { /*assert(false); */ };
     virtual const char *what(void) throw() = 0;
 };
 
@@ -214,6 +216,7 @@ public:
 // Thrown when user wants to quit
 class CExUser: public CException
 {
+    virtual const char *what(void) throw() { return ""; };
 };
 
 }

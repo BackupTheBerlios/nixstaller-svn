@@ -62,20 +62,6 @@ void debugline(const char *t, ...)
 }
 #endif
 
-void EndProg(bool err)
-{
-    extern NCursesWindow *pRootWin;
-    
-    delete pWidgetManager;
-    delete pRootWin;
-    ::endwin();
-    
-    pWidgetManager = NULL;
-    
-    debugline("EndProg");
-    exit((err) ? EXIT_FAILURE : EXIT_SUCCESS);
-}
-
 void ReportError(const char *msg)
 {
     extern bool g_bGotGUI;
@@ -125,7 +111,7 @@ void MessageBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(45, MaxX());
+    int width = std::min(45, MaxX());
     CMessageBox *msgbox = pWidgetManager->AddChild(new CMessageBox(pWidgetManager, MaxY(), width, 0, 0, text));
     msgbox->Run();
     
@@ -142,7 +128,7 @@ void WarningBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(45, MaxX());
+    int width = std::min(45, MaxX());
     CWarningBox *warnbox = pWidgetManager->AddChild(new CWarningBox(pWidgetManager, MaxY(), width, 0, 0, text));
     warnbox->Run();
     
@@ -159,7 +145,7 @@ bool YesNoBox(const char *msg, ...)
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(45, MaxX());
+    int width = std::min(45, MaxX());
     
     CYesNoBox *yesnobox = pWidgetManager->AddChild(new CYesNoBox(pWidgetManager, MaxY(), width, 0, 0, text));
     bool ret = yesnobox->Run();
@@ -179,7 +165,7 @@ int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *b
     vasprintf(&text, msg, v);
     va_end(v);
     
-    int width = Min(65, MaxX());
+    int width = std::min(65, MaxX());
     
     CChoiceBox *choicebox = pWidgetManager->AddChild(new CChoiceBox(pWidgetManager, MaxY(), width, 0, 0, text, but1, but2, but3));
     int ret = choicebox->Run();
@@ -192,8 +178,8 @@ int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *b
 
 std::string InputDialog(const char *title, const char *start, int max, bool sec)
 {
-    int width = Min(60, MaxX());
-    int height = Min(30, MaxY());
+    int width = std::min(60, MaxX());
+    int height = std::min(30, MaxY());
     CInputDialog *textdialog = pWidgetManager->AddChild(new CInputDialog(pWidgetManager, height, width, 0, 0, title, max, sec));
     
     if (start)
@@ -208,8 +194,8 @@ std::string InputDialog(const char *title, const char *start, int max, bool sec)
         
 std::string FileDialog(const char *start, const char *info)
 {
-    int width = Min(70, MaxX());
-    int height = Min(30, MaxY()-2);
+    int width = std::min(70, MaxX());
+    int height = std::min(30, MaxY()-2);
     CFileDialog *filedialog = pWidgetManager->AddChild(new CFileDialog(pWidgetManager, height, width, 0, 0, start, info));
     std::string ret = filedialog->Run();
     
@@ -220,8 +206,8 @@ std::string FileDialog(const char *start, const char *info)
 
 std::string MenuDialog(const char *title, const std::vector<std::string> &l, const char *def)
 {
-    int width = Min(50, MaxX());
-    int height = Min(15, MaxY());
+    int width = std::min(50, MaxX());
+    int height = std::min(15, MaxY());
     CMenuDialog *dialog = pWidgetManager->AddChild(new CMenuDialog(pWidgetManager, height, width, 0, 0, title));
     
     for (std::vector<std::string>::const_iterator it=l.begin(); it!=l.end(); it++)
