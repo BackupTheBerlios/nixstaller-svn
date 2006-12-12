@@ -843,7 +843,7 @@ void CLuaCFGMenu::SetInfo()
     if (item)
         m_pDescBuffer->text(GetTranslation(m_Variabeles[item]->desc.c_str()));
     else
-        m_pDescBuffer->text(NULL);
+        m_pDescBuffer->text(NULL); // May happen if user didn't click on a menu entry (but clicked in menu)
 }
 
 void CLuaCFGMenu::SetInputMethod()
@@ -866,17 +866,17 @@ void CLuaCFGMenu::SetInputMethod()
         {
             m_pChoiceMenu->clear();
             
-            int cur = 0, n = 0;
+            TOptionsType::size_type cur = 0, n = 0;
             for (TOptionsType::iterator it=m_Variabeles[item]->options.begin(); it!=m_Variabeles[item]->options.end(); it++)
             {
-                m_pChoiceMenu->add(it->c_str());
+                m_pChoiceMenu->add(GetTranslation(it->c_str()));
                 if (!cur && (*it == m_Variabeles[item]->val))
                     cur = n;
                 n++;
             }
             
             if (m_pChoiceMenu->size())
-                m_pChoiceMenu->value(cur);
+                m_pChoiceMenu->value(SafeConvert<int>(cur));
             
             m_pChoiceMenu->show();
             break;
