@@ -1955,12 +1955,15 @@ void CMenu::Draw()
     m_pMenuText->Print(m_StartEntry, SafeConvert<TSTLVecSize>(m_pHScrollbar->GetValue()), m_pTextWin->height(), m_pTextWin->width());
 }
 
-void CMenu::AddItem(std::string s, bool tags)
+void CMenu::AddItem(std::string s, void *udata, bool tags)
 {
     if (!tags) // Don't want to process tags?
         s.insert(0, "<notg>");
     
     m_pMenuText->AddText(s);
+    
+    if (udata)
+        m_DataMap[s] = udata;
     
     int h = SafeConvert<int>(m_pMenuText->GetLines()) - m_pTextWin->height();
     if (h < 0)
@@ -2624,6 +2627,14 @@ bool CMessageBox::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
+void CMessageBox::Run()
+{
+    m_bFinished = m_bCanceled = false;
+    
+    while (m_pWidgetManager->Run() && !m_bFinished) 
+        ;
+}
+
 // -------------------------------------
 // Warning Box class
 // -------------------------------------
@@ -2687,6 +2698,16 @@ bool CYesNoBox::HandleEvent(CWidgetHandler *p, int type)
     }
     
     return false;
+}
+
+bool CYesNoBox::Run()
+{
+    m_bFinished = m_bCanceled = false;
+    
+    while (m_pWidgetManager->Run() && !m_bFinished) 
+        ;
+    
+    return !m_bCanceled;
 }
 
 // -------------------------------------
@@ -2762,6 +2783,8 @@ bool CChoiceBox::HandleEvent(CWidgetHandler *p, int type)
 
 int CChoiceBox::Run()
 {
+    m_bFinished = m_bCanceled = false;
+    
     while (m_pWidgetManager->Run() && !m_bFinished)
         ;
     
@@ -2834,6 +2857,8 @@ bool CInputDialog::HandleEvent(CWidgetHandler *p, int type)
 
 const std::string &CInputDialog::Run()
 {
+    m_bFinished = m_bCanceled = false;
+    
     while (m_pWidgetManager->Run() && !m_bFinished)
         ;
     
@@ -3000,6 +3025,8 @@ bool CFileDialog::HandleKey(chtype ch)
 
 const std::string &CFileDialog::Run()
 {
+    m_bFinished = m_bCanceled = false;
+    
     while (m_pWidgetManager->Run() && !m_bFinished)
         ;
     
@@ -3015,6 +3042,7 @@ const std::string &CFileDialog::Run()
 
 chtype CMenuDialog::m_cDefaultFocusedColors;
 chtype CMenuDialog::m_cDefaultDefocusedColors;
+std::string CMenuDialog::m_szBlank;
 
 CMenuDialog::CMenuDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x,
                          const char *info) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, info,
@@ -3074,10 +3102,10 @@ bool CMenuDialog::HandleEvent(CWidgetHandler *p, int type)
     return false;
 }
 
-const std::string &CMenuDialog::Run()
+void CMenuDialog::Run()
 {
+    m_bFinished = m_bCanceled = false;
+    
     while (m_pWidgetManager->Run() && !m_bFinished)
         ;
-    
-    return m_szSelection;
 }

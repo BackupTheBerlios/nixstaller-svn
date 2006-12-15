@@ -668,6 +668,25 @@ void CLuaCFGMenu::SetInfo()
     }
 }
 
+void CLuaCFGMenu::ShowMenuDialog(const std::string &item)
+{
+    int width = std::min(50, MaxX());
+    int height = std::min(15, MaxY());
+    CMenuDialog *dialog = pWidgetManager->AddChild(new CMenuDialog(pWidgetManager, height, width, 0, 0,
+                                                   CreateText(GetTranslation("Please choose a new value for %s"), item.c_str())));
+    
+    for (std::vector<std::string>::const_iterator it=m_Variabeles[item]->options.begin(); it!=m_Variabeles[item]->options.end(); it++)
+        dialog->AddItem(GetTranslation(*it), (void *)(&(*it)));
+    
+    if (!m_Variabeles[item]->val.empty())
+        dialog->SetItem(m_Variabeles[item]->val);
+    
+    dialog->refresh();
+    dialog->Run();
+    
+    pWidgetManager->RemoveChild(dialog);
+}
+
 bool CLuaCFGMenu::HandleEvent(CWidgetHandler *p, int type)
 {
     if (p == m_pMenu)
@@ -688,8 +707,9 @@ bool CLuaCFGMenu::HandleEvent(CWidgetHandler *p, int type)
                         break;
                     case TYPE_LIST:
                     case TYPE_BOOL:
-                        newval = MenuDialog(CreateText(GetTranslation("Please choose a new value for %s"), item.c_str()), m_Variabeles[item]->options,
-                                            m_Variabeles[item]->val.c_str());
+/*                        newval = MenuDialog(CreateText(GetTranslation("Please choose a new value for %s"), item.c_str()), m_Variabeles[item]->options,
+                                            m_Variabeles[item]->val.c_str());*/
+                        ShowMenuDialog(item);
                         break;
                 }
                 

@@ -411,6 +411,7 @@ class CMenu: public CWidgetWindow
         TSTLVecSize Search(TSTLVecSize min, TSTLVecSize max, char key);
     };
     
+    std::map<std::string, void*> m_DataMap;
     bool m_bInitCursor; // Does the current line needs to be highlighted?
     TSTLVecSize m_CursorLine;
     TSTLVecSize m_StartEntry; // First entry to display(for scrolling)
@@ -433,9 +434,10 @@ public:
     CMenu(CWidgetWindow *owner, int nlines, int ncols, int begin_y, int begin_x, char absrel = 'a');
     virtual ~CMenu(void) { Clear(); delete m_pMenuText; };
     
-    void AddItem(std::string s, bool tags=false);
+    void AddItem(std::string s, void *udata=NULL, bool tags=false);
     void Clear(void);
     const std::string &GetCurrentItemName(void) { return m_pMenuText->GetText(GetCurrent()); };
+    void *GetCurrentItemData(void) { return m_DataMap[GetCurrentItemName()]; }
     void SetCurrent(const std::string &str);
     void SetCurrent(const char *str) { SetCurrent(std::string(str)); };
     bool Empty(void) { return m_pMenuText->Empty(); };
@@ -604,7 +606,7 @@ public:
     
     CMessageBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *text);
     
-    void Run(void) { while (m_pWidgetManager->Run() && !m_bFinished) {}; };
+    void Run(void);
 };
 
 class CWarningBox: public CMessageBox
@@ -631,7 +633,7 @@ public:
     
     CYesNoBox(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *text);
 
-    bool Run(void) { while (m_pWidgetManager->Run() && !m_bFinished); return !m_bCanceled; };
+    bool Run(void);
 };
 
 class CChoiceBox: public CWidgetBox
@@ -712,15 +714,19 @@ protected:
 
 public:
     static chtype m_cDefaultFocusedColors, m_cDefaultDefocusedColors;
+    static std::string m_szBlank;
 
     CMenuDialog(CWidgetManager *owner, int maxlines, int ncols, int begin_y, int begin_x, const char *info);
 
-    void AddItem(const std::string &s, bool tags=false) { m_pMenu->AddItem(s, tags); };
-    void AddItem(const char *s, bool tags=false) { m_pMenu->AddItem(s, tags); };
+    void AddItem(const std::string &s, void *udata=NULL, bool tags=false) { m_pMenu->AddItem(s, udata, tags); };
+    void AddItem(const char *s, void *udata=NULL, bool tags=false) { m_pMenu->AddItem(s, udata, tags); };
     void SetItem(const std::string &s) { m_pMenu->SetCurrent(s); };
     void SetItem(const char *s) { m_pMenu->SetCurrent(s); };
     
-    const std::string &Run(void);
+    void Run(void);
+    
+    const std::string &GetItem(void) { return (!m_bCanceled) ? m_pMenu->GetCurrentItemName() : m_szBlank; };
+    void *GetData(void) { return (!m_bCanceled) ? m_pMenu->GetCurrentItemData() : NULL; };
 };
 
 #endif

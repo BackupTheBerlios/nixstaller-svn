@@ -52,7 +52,6 @@ bool YesNoBox(const char *msg, ...);
 int ChoiceBox(const char *msg, const char *but1, const char *but2, const char *but3=NULL, ...);
 std::string InputDialog(const char *title, const char *start=NULL, int max=-1, bool sec=false);
 std::string FileDialog(const char *start, const char *info);
-std::string MenuDialog(const char *title, const std::vector<std::string> &l, const char *def=NULL);
 
 #include "widgets.h"
 
@@ -242,6 +241,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
     CTextWindow *m_pInfoWindow;
     
     void SetInfo(void);
+    void ShowMenuDialog(const std::string &item);
     
 protected:
     virtual void CreateInit(void);
