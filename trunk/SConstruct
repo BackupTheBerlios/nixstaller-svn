@@ -379,7 +379,7 @@ else:
     Execute(Delete('.sconsign.dblite'))
 
 # Builds LZMA encode/decode programs
-lzma = env.SConscript('lzma/SConstruct', duplicate=0)
+lzma, lzma_dec = env.SConscript('lzma/SConstruct', duplicate=0)
 
 # Builds bsdiff binaries
 edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
@@ -405,8 +405,4 @@ c_bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 cpp_bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
 
 # Default to all
-Default(lzma, edelta, fltk, ncurses, main, libsu, env.Install(cpp_bin_dir, Flatten(lzma)), env.Install(c_bin_dir, Flatten(edelta)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, fltk), env.Install(cpp_bin_dir, ncurses))
-
-#if 'lzma' in BUILD_TARGETS:
-# HACK: Move lzma-decode manually to c_bin_dir, since it will be put in cpp_bin_dir by Install()
-shutil.move(cpp_bin_dir+'/lzma-decode', c_bin_dir)
+Default(lzma, lzma_dec, edelta, fltk, ncurses, main, libsu, env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, fltk), env.Install(cpp_bin_dir, ncurses))

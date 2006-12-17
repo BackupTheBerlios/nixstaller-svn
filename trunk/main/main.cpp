@@ -366,6 +366,9 @@ int CMain::LuaInitDirIter(lua_State *L)
     const char *path = luaL_checkstring(L, 1);
     
     CDirIter **d = (CDirIter **)lua_newuserdata(L, sizeof(CDirIter *));
+    *d = NULL;
+
+    *d = new CDirIter(path);
     
     if (luaL_newmetatable(L, "diriter") == 1) // Table didn't exist yet?
     {
@@ -376,8 +379,6 @@ int CMain::LuaInitDirIter(lua_State *L)
     
     lua_setmetatable(L, -2);
     
-    *d = new CDirIter(path);
-    
     lua_pushcclosure(L, LuaDirIter, 1);
     return 1;
 }
@@ -386,18 +387,18 @@ int CMain::LuaDirIter(lua_State *L)
 {
     CDirIter *d = *(CDirIter **)lua_touserdata(L, lua_upvalueindex(1));
     
-    if (!d || !*d)
-        return 0;
-    
-    do
-    {
-        (*d)++;
-    }
-    while (d && *d && (!strcmp((*d)->d_name, ".") || !strcmp((*d)->d_name, "..")));
-    
     if (d && *d)
     {
+        // Get first valid entry
+        while (*d && (!strcmp((*d)->d_name, ".") || !strcmp((*d)->d_name, "..")))
+            (*d)++;
+
+        if (!*d)
+            return 0;
+        
         lua_pushstring(L, (*d)->d_name);
+        (*d)++;
+        
         return 1;
     }
     else

@@ -37,45 +37,47 @@ setmetatable(P, {__index = _G})
 setfenv(1, P)
     
 function Clean()
-    local newdirlist = { confdir .. "/tmp" }
-    local olddirlist = { }
+    if (os.fileexists(confdir .. "/tmp")) then
+        local newdirlist = { confdir .. "/tmp" }
+        local olddirlist = { }
+        
+        while (#newdirlist > 0) do
+            local d = newdirlist[#newdirlist]
+            local newdir = false
     
-    while (#newdirlist > 0) do
-        local d = newdirlist[#newdirlist] -- pop last element
-        local newdir = false
-
-        for f in io.dir(d) do
-            local dpath = string.format("%s/%s", d, f)
-            if (os.isdir(dpath)) then
-                local processed = false
-                for _, o in pairs(olddirlist) do
-                    if (o == dpath) then
-                        processed = true
+            for f in io.dir(d) do
+                local dpath = string.format("%s/%s", d, f)
+                if (os.isdir(dpath)) then
+                    local processed = false
+                    for _, o in pairs(olddirlist) do
+                        if (o == dpath) then
+                            processed = true
+                            break
+                        end
+                    end
+                    
+                    if not processed then
+                        table.insert(newdirlist, dpath)
+                        newdir = true
                         break
                     end
+                else
+                    os.remove(dpath)
                 end
-                
-                if not processed then
-                    table.insert(newdirlist, dpath)
-                    newdir = true
-                    break
-                end
-            else
-                os.remove(dpath)
             end
-        end
-        
-        if not newdir then
-            local d = table.remove(newdirlist)
-            table.insert(olddirlist, d)
-            os.remove(d)
+            
+            if not newdir then
+                local d = table.remove(newdirlist)
+                table.insert(olddirlist, d)
+                os.remove(d)
+            end
         end
     end
 end
 
 function ThrowError(msg, ...)
-    Clean()
     print(debug.traceback())
+    Clean()
     error(string.format(msg .. "\n", ...))
 end
 
@@ -109,6 +111,7 @@ function PackDirectory(dir, file)
         local subdir = table.remove(dirlist) -- pop
         for f in io.dir(subdir) do
             local dpath = string.format("%s/%s", subdir, f)
+            
             if (os.isdir(dpath)) then
                 table.insert(dirlist, dpath)
             else
@@ -203,7 +206,7 @@ function Init()
         local lcdir = basebindir .. "/" .. lc
         for lcpp in TraverseBinLibDir(lcdir, "^libstdc++") do
             local bin = lcdir .. "/" .. lcpp .. "/lzma"
-            
+
             -- File exists and 'ldd' doesn't report missing lib deps?
             if (validbin(bin)) then
                 LZMABin = bin

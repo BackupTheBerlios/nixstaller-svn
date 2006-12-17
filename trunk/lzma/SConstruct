@@ -46,4 +46,5 @@ lzma = env.Program('lzma', LZMA_OBJ, chdir='7zip/Compress/LZMA_Alone')
 
 lzma_dec = env.Program('lzma-decode', LZMAC_OBJ, CCFLAGS=Split("$CCFLAGS -pedantic"), CPPDEFINES="_LZMA_PROB32")
 
-Return('lzma lzma_dec')
+Return('lzma', 'lzma_dec')
+
