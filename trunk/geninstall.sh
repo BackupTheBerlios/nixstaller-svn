@@ -19,7 +19,7 @@ do
         for BIN in ${LCPP}/$FRONTENDS
         do
             if [ -e $BIN ]; then
-                if [ ! `ldd  $BIN | grep "not found"` ]; then
+                if [ -z "`ldd $BIN | grep 'not found'`" ]; then
                     $BIN -c "$CURDIR/internal/geninstall.lua" $* || exit 1
                     exit 0
                 fi

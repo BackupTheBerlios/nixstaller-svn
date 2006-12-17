@@ -76,7 +76,7 @@ edelta()
     unlzma $3
     
     mv $3 $3.tmp
-    $1/edelta -q patch $2 $3 $3.tmp
+    $1/edelta -q patch $2 $3 $3.tmp >/dev/null
 }
 
 # Check which archive type to use

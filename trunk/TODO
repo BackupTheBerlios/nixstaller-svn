@@ -31,6 +31,7 @@ FLTK FRONTEND
                 
 DOCS
 - Max config var description length
+- Update examples
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

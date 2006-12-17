@@ -64,16 +64,16 @@ void CInstaller::Prev()
             if (!first)
             {
                 first = true;
-                it--;
-                while (it != m_InstallScreens.begin())
+                do
                 {
+                    it--;
                     if ((*it)->CanActivate())
                     {
                         first = false;
                         break;
                     }
-                    it--;
                 }
+                while (it != m_InstallScreens.begin());
             }
             
             if (first)

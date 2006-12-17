@@ -2959,7 +2959,7 @@ void CFileDialog::OpenDir(std::string newdir)
         if (m_pFileMenu->Empty())
         {
             if (newdir == "/")
-                ;//throw; // Couldn't even open / ...
+                throw; // Couldn't even open / ...
             
             OpenDir("/");
         }

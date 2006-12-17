@@ -312,25 +312,24 @@ void CInstaller::Prev()
     while (it != m_ScreenList.begin())
     {
         it--;
-        
+        m_pWizard->prev();
+
         if ((*it)->CanActivate())
         {
-            m_pWizard->prev();
-            
             bool first = (it == m_ScreenList.begin());
             if (!first)
             {
                 first = true;
-                it--;
-                while (it != m_ScreenList.begin())
+                do
                 {
+                    it--;
                     if ((*it)->CanActivate())
                     {
                         first = false;
                         break;
                     }
-                    it--;
                 }
+                while (it != m_ScreenList.begin());
             }
             
             if (first)
@@ -340,27 +339,6 @@ void CInstaller::Prev()
         }
     }
 }
-
-// void CInstaller::Prev()
-// {
-//     for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
-//     {
-//         if ((*p)->GetGroup() == m_pWizard->value())
-//         {
-//             if (p == m_ScreenList.begin())
-//                 break;
-//             
-//             if ((*p)->Prev())
-//             {
-//                 p--;
-//                 m_pWizard->prev();
-//                 while (!(*p)->Activate() && (p != m_ScreenList.begin())) { m_pWizard->prev(); p--; }
-//             }
-//             
-//             break;
-//         }
-//     }
-// }
 
 void CInstaller::Next()
 {
@@ -382,15 +360,17 @@ void CInstaller::Next()
     while (*it != m_ScreenList.back())
     {
         it++;
+        m_pWizard->next();
+
         if ((*it)->CanActivate())
         {
-            m_pWizard->next();
             (*it)->Activate();
             
             bool last; // Last screen?
             
             // Enable previous button if it's disabled and the install screen isn't activated before
-            if (!m_pPrevButton->active() && (*it != m_pInstallScreen) && (std::find(m_ScreenList.begin(), it, m_pInstallScreen) == it))
+            if (!m_pPrevButton->active() && (*it != m_pInstallScreen) &&
+                (std::find(m_ScreenList.begin(), it, m_pInstallScreen) == it))
                 m_pPrevButton->activate();
             
             // Check if this is the last screen
@@ -420,50 +400,6 @@ void CInstaller::Next()
     // No screens left
     m_pMainWindow->hide(); // Close main window, will shutdown the rest
 }
-
-// void CInstaller::Next()
-// {
-//     for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
-//     {
-//         if ((*p)->GetGroup() == m_pWizard->value())
-//         {
-//             if (p == m_ScreenList.end())
-//                 break;
-//             
-//             if ((*p)->Next())
-//             {
-//                 p++;
-//                 m_pWizard->next();
-//                 while ((p != m_ScreenList.end()) && (!(*p)->Activate()))
-//                 {
-//                     m_pWizard->next();
-//                     p++;
-//                 }
-// 
-//                 bool last = (*p == m_ScreenList.back());
-//                 if (!last)
-//                 {
-//                     last = true;
-//                     it++;
-//                     while (it != m_ScreenList.end())
-//                     {
-//                         if ((*it)->CanActivate())
-//                         {
-//                             last = false;
-//                             break;
-//                         }
-//                         it++;
-//                     }
-//                 }
-//                 if (p == m_ScreenList.end())
-//                     m_pMainWindow->hide(); // Close main window, will shutdown the rest
-//                 else if (*p == m_ScreenList.back()) // Last screen?
-//                     m_pNextButton->label(GetTranslation("Finish"));
-//             }
-//             break;
-//         }
-//     }
-// }
 
 // -------------------------------------
 // Base FLTK Lua Widget class
