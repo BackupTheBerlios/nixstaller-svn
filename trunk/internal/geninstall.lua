@@ -74,7 +74,7 @@ function Clean()
 end
 
 function ThrowError(msg, ...)
-    -- Cleanup...
+    Clean()
     print(debug.traceback())
     error(string.format(msg .. "\n", ...))
 end

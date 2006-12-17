@@ -59,12 +59,12 @@ configure()
     echo "CPU Arch: $CURRENT_ARCH"
     
     # Get all C libs. Sorted so higher versions come first
-    LIBCS=`ls /lib/libc.so.* | sort -nr`
-    echo "C libraries: "`echo $LIBCS | tr 'n\' ' '`
+    LIBCS=`echo /lib/libc.so.* | sort -nr`
+    echo "C libraries: $LIBCS"
     
     # Get all C++ libs. Sorted so higher versions come first
-    LIBSTDCPPS=`ls '/usr/lib/libstdc++.so.'* | sort -nr`
-    echo "C++ libraries: "`echo $LIBSTDCPPS | tr 'n\' ' '`
+    LIBSTDCPPS=`echo '/usr/lib/libstdc++.so.'* | sort -nr`
+    echo "C++ libraries: $LIBSTDCPPS"
 }
 
 # Uses edelta to reconstruct frontend binaries

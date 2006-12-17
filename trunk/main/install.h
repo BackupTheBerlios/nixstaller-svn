@@ -183,22 +183,24 @@ class CBaseLuaCFGMenu
 protected:
     enum EVarType { TYPE_DIR, TYPE_STRING, TYPE_LIST, TYPE_BOOL };
 
+    typedef std::vector<std::string> TOptionsType;
+
     struct entry_s
     {
         std::string val, def, desc;
-        std::vector<std::string> options;
+        TOptionsType options;
         EVarType type;
         entry_s(const char *v, const char *d, EVarType t) : val(v), def(v), desc(d), type(t) { };
     };
     
-    std::map<std::string, entry_s *> m_Variabeles;
+    typedef std::map<std::string, entry_s *> TVarType;
+
+    TVarType m_Variabeles;
     
     const char *BoolToStr(bool b) { return (b) ? "Enable" : "Disable"; };
     bool StrToBool(const char *s) { if (s && *s && !strcmp(s, "Enable")) return true; else return false; };
     bool StrToBool(const std::string &s) { if (!s.empty() && (s == "Enable")) return true; else return false; };
 
-    typedef std::vector<std::string> TOptionsType;
-    
 public:
     virtual ~CBaseLuaCFGMenu(void);
     virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);

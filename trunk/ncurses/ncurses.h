@@ -240,6 +240,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
     CMenu *m_pMenu;
     CTextWindow *m_pInfoWindow;
     
+    const char *GetCurItem(void);
     void SetInfo(void);
     void ShowMenuDialog(const std::string &item);
     

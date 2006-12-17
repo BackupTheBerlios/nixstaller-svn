@@ -1952,23 +1952,27 @@ void CMenu::Draw()
     }
     
     m_pTextWin->erase();
-    m_pMenuText->Print(m_StartEntry, SafeConvert<TSTLVecSize>(m_pHScrollbar->GetValue()), m_pTextWin->height(), m_pTextWin->width());
+    m_pMenuText->Print(m_StartEntry, SafeConvert<TSTLVecSize>(m_pHScrollbar->GetValue()), m_pTextWin->height(),
+                       m_pTextWin->width());
 }
 
 void CMenu::AddItem(std::string s, void *udata, bool tags)
 {
-    if (!tags) // Don't want to process tags?
-        s.insert(0, "<notg>");
-    
-    m_pMenuText->AddText(s);
-    
     if (udata)
         m_DataMap[s] = udata;
     
-    int h = SafeConvert<int>(m_pMenuText->GetLines()) - m_pTextWin->height();
-    if (h < 0)
+    if (!tags) // Don't want to process tags?
+        s.insert(0, "<notg>");
+
+    m_pMenuText->AddText(s);
+
+    TSTLVecSize h;
+    if (m_pMenuText->GetLines() > static_cast<TSTLVecSize>(m_pTextWin->height()))
+        h = m_pMenuText->GetLines() - m_pTextWin->height();
+    else
         h = 0;
-    m_pVScrollbar->SetMinMax(0, h);
+    
+    m_pVScrollbar->SetMinMax(0, SafeConvert<float>(h));
     m_pVScrollbar->Enable((m_pMenuText->GetLines() > SafeConvert<TSTLVecSize>(m_pTextWin->height())));
     
     if (m_pMenuText->GetLongestLine() > static_cast<TSTLVecSize>(m_pTextWin->width()))
@@ -2946,7 +2950,7 @@ void CFileDialog::OpenDir(std::string newdir)
         // Update AFTER file menu, since it may sort items in Draw()
         UpdateDirField();
     }
-    catch(/*Exceptions::CExIO*/std::exception &e)
+    catch(Exceptions::CExIO &e)
     {
         // Couldn't open directory(probably no read access)
         WarningBox(e.what());

@@ -365,7 +365,7 @@ int CMain::LuaInitDirIter(lua_State *L)
 {
     const char *path = luaL_checkstring(L, 1);
     
-    DIR **d = (DIR **)lua_newuserdata(L, sizeof(DIR *));
+    CDirIter **d = (CDirIter **)lua_newuserdata(L, sizeof(CDirIter *));
     
     if (luaL_newmetatable(L, "diriter") == 1) // Table didn't exist yet?
     {
@@ -376,9 +376,7 @@ int CMain::LuaInitDirIter(lua_State *L)
     
     lua_setmetatable(L, -2);
     
-    *d = opendir(path);
-    if (*d == NULL)
-        luaL_error(L, "cannot open %s: %s", path, strerror(errno));
+    *d = new CDirIter(path);
     
     lua_pushcclosure(L, LuaDirIter, 1);
     return 1;
@@ -386,15 +384,20 @@ int CMain::LuaInitDirIter(lua_State *L)
 
 int CMain::LuaDirIter(lua_State *L)
 {
-    DIR *d = *(DIR **)lua_touserdata(L, lua_upvalueindex(1));
-    struct dirent *entry = readdir(d);
+    CDirIter *d = *(CDirIter **)lua_touserdata(L, lua_upvalueindex(1));
     
-    while (entry && (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")))
-        entry = readdir(d);
+    if (!d || !*d)
+        return 0;
     
-    if (entry)
+    do
     {
-        lua_pushstring(L, entry->d_name);
+        (*d)++;
+    }
+    while (d && *d && (!strcmp((*d)->d_name, ".") || !strcmp((*d)->d_name, "..")));
+    
+    if (d && *d)
+    {
+        lua_pushstring(L, (*d)->d_name);
         return 1;
     }
     else
@@ -403,9 +406,8 @@ int CMain::LuaDirIter(lua_State *L)
 
 int CMain::LuaDirIterGC(lua_State *L)
 {
-    DIR *d = *(DIR **)lua_touserdata(L, 1);
-    if (d)
-        closedir(d);
+    CDirIter *d = *(CDirIter **)lua_touserdata(L, 1);
+    delete d;
     return 0;
 }
 

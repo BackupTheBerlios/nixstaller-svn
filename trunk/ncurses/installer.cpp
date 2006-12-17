@@ -642,6 +642,11 @@ CLuaCFGMenu::CLuaCFGMenu(CCFGScreen *owner, int y, int x, int maxy, int maxx,
 {
 }
 
+const char *CLuaCFGMenu::GetCurItem()
+{
+    return ((m_pMenu->GetCurrentItemData()) ? (const char *)m_pMenu->GetCurrentItemData() : "");
+}
+
 void CLuaCFGMenu::CreateInit()
 {
     CBaseLuaWidget::CreateInit();
@@ -660,7 +665,7 @@ void CLuaCFGMenu::SetInfo()
     if (m_pMenu->Empty())
         return;
     
-    std::string item = m_pMenu->GetCurrentItemName();
+    std::string item = GetCurItem();
     if (!item.empty() && m_Variabeles[item])
     {
         m_pInfoWindow->SetText("<notg>" + GetTranslation(m_Variabeles[item]->desc));
@@ -675,14 +680,18 @@ void CLuaCFGMenu::ShowMenuDialog(const std::string &item)
     CMenuDialog *dialog = pWidgetManager->AddChild(new CMenuDialog(pWidgetManager, height, width, 0, 0,
                                                    CreateText(GetTranslation("Please choose a new value for %s"), item.c_str())));
     
-    for (std::vector<std::string>::const_iterator it=m_Variabeles[item]->options.begin(); it!=m_Variabeles[item]->options.end(); it++)
+    for (std::vector<std::string>::const_iterator it=m_Variabeles[item]->options.begin();
+         it!=m_Variabeles[item]->options.end(); it++)
         dialog->AddItem(GetTranslation(*it), (void *)(&(*it)));
     
     if (!m_Variabeles[item]->val.empty())
-        dialog->SetItem(m_Variabeles[item]->val);
+        dialog->SetItem(GetTranslation(m_Variabeles[item]->val));
     
     dialog->refresh();
     dialog->Run();
+    
+    if (dialog->GetData())
+        m_Variabeles[item]->val = *(std::string *)dialog->GetData();
     
     pWidgetManager->RemoveChild(dialog);
 }
@@ -691,7 +700,7 @@ bool CLuaCFGMenu::HandleEvent(CWidgetHandler *p, int type)
 {
     if (p == m_pMenu)
     {
-        std::string item = m_pMenu->GetCurrentItemName();
+        std::string item = GetCurItem();
         if (!item.empty() && m_Variabeles[item])
         {
             if (type == EVENT_CALLBACK)
@@ -735,12 +744,17 @@ void CLuaCFGMenu::UpdateLanguage()
 {
     CBaseLuaWidget::UpdateLanguage();
     SetInfo();
+    
+    m_pMenu->Clear();
+    
+    for (TVarType::iterator it=m_Variabeles.begin(); it!=m_Variabeles.end(); it++)
+        m_pMenu->AddItem(GetTranslation(it->first), ((void *)it->first.c_str()));
 }
 
 void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l)
 {
     CBaseLuaCFGMenu::AddVar(name, desc, val, type, l);
-    m_pMenu->AddItem(name);
+    m_pMenu->AddItem(GetTranslation(name), ((void *)name));
     
     SetInfo();
 }
