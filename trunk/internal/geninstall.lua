@@ -199,7 +199,7 @@ function Init()
     local basebindir = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
-                        return (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\"", bin)))
+                        return (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\" >/dev/null", bin)))
                      end
     
     for lc in TraverseBinLibDir(basebindir, "^libc") do

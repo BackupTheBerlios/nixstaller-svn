@@ -1,9 +1,7 @@
 OVERALL
 - Modify Makeself?
 - Check read permissions for extract dir
-- Use deque/vector instead of list?
 - Add new strings to translation files
-- Remove unnessesary virtuals?
 - Add lua headers/libs to SVN, compile as C++ lib
 - Use deltas <--> patches for different frontends?
 - Test/clean/check new edelta code

@@ -27,3 +27,6 @@ do
         done
     done
 done
+
+echo "Could not find a suitable binary for this platform ($CURRENT_ARCH, $CURRENT_OS)"
+exit 1
