@@ -1,0 +1,98 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename nixstaller.info
+@settitle Nixstaller Manual
+@c %**end of header
+
+@c @include macros.texi
+
+@ifhtml
+    @include macros-html.texi
+@end ifhtml
+
+@ifnothtml
+    @include macros-default.texi
+@end ifnothtml
+
+@titlepage
+@title Nixstaller 0.2 Manual
+@author Rick Helmus
+@end titlepage
+
+@c Output the table of the contents at the beginning.
+@contents
+
+@ifnottex
+    @node Top
+    @top About
+@end ifnottex
+
+This document describes how to use Nixstaller to create installers for UNIX like systems.
+
+Here is a short description for what you can find in this document:
+@menu
+* Features:: What Nixstaller can do.
+* Installing:: How to install Nixstaller.
+* Quickstart:: If you're in a hurry or want a quick reference.
+* Index:: Complete Index
+@end menu
+
+@node Features
+@chapter Features
+
+@section Main Features
+Here is a list with the main features. Read further for more info to see what they do and how to use them.
+
+@itemize @bullet
+@item 2 different frontends used for the installer: @uref{http://www.fltk.org,FLTK} and @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}.
+@item Support for most common UNIX like systems (see table below).
+@item A installer itself has the following features:
+@itemize
+@item Can be fully translated (no UTF yet). Translations for English and Dutch are supplied by default.
+@item Different kind of installer screens:
+@itemize
+@item A screen where the user can select a language.
+@item A introduction screen with an optional image and text.
+@item A screen where the user can read/accept a provided license.
+@item A screen where the user can select a destination directory to put the installation files.
+@item A screen which shows the progress of the installation.
+@item A screen which can show text after the installation.
+@item A generic screen which can be made with a script.
+@end itemize
+Most screens are optional and can be shown in any particalur order.
+@end itemize
+@item Frontends are build in a way that they can be used on many different systems by linking less common libraries staticly.
+@item The files can be packed with gzip-, bzip2 and lzma compression.
+@item Installation files can be extracted to various directories; a temporary directory (usefull for @samp{./configure && make && make install} like installers), a directory which can be selected by the user and a default directory.
+@item @uref{http://www.lua.org,Lua} support is provided to configure the installer and to program the installation procedure. This allows very flexible configurations.
+@end itemize
+
+@section Changelog
+@subsection 0.1 --> 0.2
+@itemize
+@item Lua support.
+@item Support for Nexenta/Solaris 10 and AMD64 support for Linux, FreeBSD an NetBSD.
+@item New manuals created by @uref{http://www.gnu.org/software/texinfo,GNU's Texinfo}.
+@end itemize
+
+
+
+@node Installing
+@chapter Installing
+
+...
+
+@node Quickstart
+@chapter Quickstart
+
+...
+
+
+
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye
