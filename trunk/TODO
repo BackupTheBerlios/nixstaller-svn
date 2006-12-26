@@ -8,8 +8,9 @@ OVERALL
 - Update lib-notes file for each OS/ARCH
 - Delay for updating GUI in frontends while installing
 - Replace vec [] access with at() ?
-- Fix unsigned/signed code(check int casts)
 - Test installer scripts
+- Fix/Test CPU detection in sh scripts
+- Comment the '%s' in strings files.
 
 MAIN
 - Error handling in lua class(exceptions, type checking)
@@ -29,7 +30,7 @@ FLTK FRONTEND
                 
 DOCS
 - Max config var description length
-- Update examples
+- Update examples and screenshots
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

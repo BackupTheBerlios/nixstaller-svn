@@ -109,6 +109,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
     std::list<CBaseScreen *> m_InstallScreens;
     std::list<CBaseScreen *>::iterator m_CurrentScreenIt;
+    suseconds_t m_ThinkTime;
     
     CWelcomeScreen *m_pWelcomeScreen;
     CLicenseScreen *m_pLicenseScreen;
@@ -123,7 +124,7 @@ protected:
     virtual void ChangeStatusText(const char *str);
     virtual void AddInstOutput(const std::string &str);
     virtual void SetProgress(int percent);
-    virtual void InstallThink(void) { m_pWidgetManager->Run(0); };
+    virtual void InstallThink(void);
     
     virtual bool HandleKey(chtype ch);
     virtual bool HandleEvent(CWidgetHandler *p, int type);
@@ -131,7 +132,7 @@ protected:
     virtual void InitLua(void);
     
 public:
-    CInstaller(CWidgetManager *owner) : CNCursBase(owner) { };
+    CInstaller(CWidgetManager *owner) : CNCursBase(owner), m_ThinkTime(0) { };
     
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void);

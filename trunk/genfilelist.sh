@@ -72,10 +72,6 @@ do
     esac
 done
 
-if [ -z "$1" ]; then
-    usage
-fi
-
 FILESDIR="$1"
 
 if [ ! -d "$FILESDIR" ]; then

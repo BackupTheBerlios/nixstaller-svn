@@ -40,7 +40,7 @@
 # $2: libc directory to be used for lzma
 unlzma()
 {
-    if [ ! -z $1 -a -e $1.lzma ]; then
+    if [ ! -z "$1" -a -e $1.lzma ]; then
         $2/lzma-decode $1.lzma $1 2>&1 >/dev/null && rm $1.lzma
     fi
 }
@@ -55,7 +55,7 @@ configure()
     
     CURRENT_ARCH=`uname -m`
     # iX86 --> x86
-    echo $CURRENT_ARCH | grep "i*86" >/dev/null && CURRENT_ARCH="x86"
+    echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86"
     echo "CPU Arch: $CURRENT_ARCH"
     
     # Get all C libs. Sorted so higher versions come first
@@ -96,7 +96,7 @@ FRONTENDS="fltk ncurs"
 
 for FR in $FRONTENDS
 do
-    if [ -z $DISPLAY -a $FR != "ncurs" ]; then
+    if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
         continue
     fi
     
@@ -133,7 +133,7 @@ do
             
             if [ -e ${LCPPDIR}/$FR ]; then
                 FRONTEND="${LCPPDIR}/$FR"
-                if [ ! -z $ED_SRC -a $FRONTEND != $ED_SRC ]; then
+                if [ ! -z "$ED_SRC" -a $FRONTEND != $ED_SRC ]; then
                     edelta ${LCDIR} $ED_SRC $FRONTEND
                 fi
                 

@@ -165,6 +165,16 @@ void CInstaller::SetProgress(int percent)
     m_pInstallScreen->SetProgress(percent);
 }
 
+void CInstaller::InstallThink(void)
+{
+    suseconds_t curtick = GetTicks();
+    if (m_ThinkTime < curtick)
+    {
+        m_ThinkTime = curtick + 50; // Update every 10 msec
+        m_pWidgetManager->Run(0);
+    }
+}
+
 bool CInstaller::HandleKey(chtype ch)
 {
     if (CNCursBase::HandleKey(ch))

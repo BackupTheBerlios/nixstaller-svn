@@ -34,6 +34,8 @@ Here is a short description for what you can find in this document:
 * Features:: What Nixstaller can do.
 * Installing:: How to install Nixstaller.
 * Quickstart:: If you're in a hurry or want a quick reference.
+* Basics:: Explains the basics behind Nixstaller.
+* Lua Guide:: Explains the Lua scripting language.
 * Index:: Complete Index
 @end menu
 
@@ -45,14 +47,14 @@ Here is a list with the main features. Read further for more info to see what th
 
 @itemize @bullet
 @item 2 different frontends used for the installer: @uref{http://www.fltk.org,FLTK} and @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}.
-@item Support for most common UNIX like systems (see table below).
+@item Support for most common UNIX like systems: NetBSD(x86 and amd64), Linux(x86 and amd64), FreeBSD(x86 and amd64) and Solaris 10/Nexenta(x86).
 @item A installer itself has the following features:
 @itemize
 @item Can be fully translated (no UTF yet). Translations for English and Dutch are supplied by default.
 @item Different kind of installer screens:
 @itemize
 @item A screen where the user can select a language.
-@item A introduction screen with an optional image and text.
+@item An introduction screen with an optional image and text.
 @item A screen where the user can read/accept a provided license.
 @item A screen where the user can select a destination directory to put the installation files.
 @item A screen which shows the progress of the installation.
@@ -79,15 +81,341 @@ Most screens are optional and can be shown in any particalur order.
 
 @node Installing
 @chapter Installing
+Installing Nixstaller is easy: just extract the files to a directory and your done. All the work (ie. calling scripts) is done inside this directory.
 
-...
 
 @node Quickstart
 @chapter Quickstart
+@itemize
+@item @ref{Installing, Install} Nixstaller.
+@item Go to a terminal and @command{cd} to the directory where you extracted Nixstaller.
+@item @command{cp -R example/simple/ release/}
+@item Edit @file{release/config.lua} and optionally @file{release/run.lua}
+@item Put some files in @file{release/files_all/} and perhaps in @file{release/files_linux_all}, @file{release/files_freebsd_x86} etc.
+@item @command{./geninstall.sh release/}
+@item @command{./setup.sh}
+@end itemize
 
-...
+@c UNDONE
+Also read the tutorials.
+
+@node Basics
+@chapter Basics
+
+@section Installation package
+The final product of Nixstaller is a @emph{install package}. The package itself is simply a self-extracting archive in the form of a shell script. When the package(the shell script) is executed it will extract a few files to a temporary directory and will call another script. This second script will detect a usable frontend and will call it.
+A install package itself contains the following files:
+@itemize
+@item One or more frontends. Depending on the configuration there can be multiple frontends for different systems.
+@item One or two lua scripts which tell what the installer should do.
+@item Translation files. (optional)
+@item Some text files used for displaying a introduction text, license info and/or a finish message. (optional)
+@item An archive file containing the files to be used for the installation.
+@item A script that is called when the package is extracted.
+@end itemize
+
+In the following sections these items will be further explained.
+
+@section Frontends
+The @emph{frontend} is a program from which the user can interact. When the install package is executed by the user a suitable frontend will be launched. This is determined by if X is running and which frontends are included in the package for the user's system.
+
+Currently there are 2 frontends for Nixstaller.
+@ifhtml
+One is powered by @uref{http://www.fltk.org,FLTK}:
+
+@image{fltk,,,,png}
+
+and the other by @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}:
+
+@image{ncurs,,,,png}
+
+@end ifhtml
+@ifnothtml
+The first is powered by FLTK and the second is powered by ncurses.
+@end ifnothtml
+You can select which frontend(s) you want to include.
+
+@section Lua scripts
+@c UNDONE
+The installation is controlled by one or two lua scripts. In chapter X and chapter Y. This is in detail explained.
+
+@section Translations
+The text used by the frontends can be translated via @emph{translation files}. This file is simply called @file{strings} and will contain all (English) strings used by the installer with the translation beneath them. Any line that starts with a @samp{#} will be ignored.
+
+Currently there are already 2 translations: Dutch and English. You can find these in the @file{lang/} directory. You can 'translate' the English @file{'strings'} file in order to modify the English texts used by the installer.
+
+Here is a example taken from the file:
+@codeblock{License agreement
+Licentie overeenkomst}
+
+@samp{Licentie overeenkomst} is dutch for @samp{License agreement}. It's very important that the English text (the first line) is exactly the same as used by the installer.
+If you read further in this file you will see the following sentence:
+@codeblock{Installation of %s complete!
+Installatie van %s gereed!}
+
+Notice the @samp{%s}? The @samp{%s} will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name. What will be replaced is usually commented in the @file{strings} file itself.
 
 
+@strong{IMPORTANT}: Currently there is no UTF support yet. This means that you can't use any 'special' characters yet (such as accented characters).
+
+@subsection Multiline translations
+Some translations need more than one line. If this is the case the text should be put between 2 square brackets.
+For example:
+@codeblock{[
+Directory does not exist
+Do you want to create it?
+]
+[
+Directory bestaat niet
+Wilt u het aanmaken?
+]}
+
+If you want to put a @samp{]} in the translation itself you should put a backslash before it: @samp{\]}.
+
+@subsection Other things that can be translated
+There are other things to be translated as well:
+@itemize
+@item The welcome message 
+@item The license agreement 
+@item The 'finish message' 
+@item Text used by Lua scripts
+@end itemize
+
+@c UNDONE
+The first 3 items will be explained in the next section. Lua scripts will be handled in chapter X.
+
+@section Welcome message, license agreement and the @samp{finish message}
+@table @strong
+@item Welcome message
+This is the message that is displayed on the @samp{Introduction installscreen}.
+@item License agreement
+This is the text used to display the License Agreement.
+@item Finish message
+This is the message that is displayed after the installation has (succesfully) finished.
+@end table
+
+Each of these items are stored in plain text files. The @emph{welcome message} is in the file @file{welcome}, the @emph{license agreement} is in a file called @file{license} and the @emph{finish message} is in the file @file{finish}.
+@c UNDONE
+For translations of any of these texts there should be a copy of the file put in a seperate directory. Chapter X describes the file layout and mentions where to put all the files.
+
+@node Lua Guide
+@chapter Lua Guide
+@section Introduction
+Lua (@url{http://www.lua.org}) is used for configuring properties of the @emph{Install Package} and to control the installation process. Lua is a simple and easy to learn scripting language. In the next section a brief guide is given about Lua. Another good resource is the @uref{http://www.lua.org/pil,Lua Book}. Note that the online version describes version @emph{5.0} while Nixstaller uses @emph{5.1}. Though not much has been changed, especially not the basics.
+
+@section Lua Basics
+@subsection Comments
+Lua files can contain @emph{comments}. Comments are for example used to describe pieces of code or to quickly 'disable' some code.
+
+Some examples:
+@codeblock{-- This is a comment line, comment lines always start with @samp{--}
+a = b + 5     -- Comment can be after a code line aswell
+-- b = b + 1   -- A 'disabled' line}
+
+There can also be @emph{comment blocks}:
+@codeblock{--[
+Text between the two square brackets is comment.
+This is usefull if you want to write a few lines or disable multiple code lines.
+--]}
+
+@subsection Variabeles
+To store data @emph{variables} are used. A variable name is a combination of letters, underscores and/or numbers. Note that the variable name cannot start with a number.
+To create a variable you simply assign data to it. To remove a variable you assign @code{nil} to it.
+
+@subsubsection Types
+Variabeles are not bound to a single type(typeless, languages as C are typed). There are various types in the Lua environment:
+@table @strong
+@item Numbers
+Numbers can be both a decimal type or a integral type. Examples:
+@codeblock{a = 15
+b = 1.5}
+@item Strings
+Strings are used to store an array of characters. The text used for a string should be either enclosed by single quotes ('') or double quotes (""). Example:
+@codeblock{text1 = "Hello"}
+@item Boolean
+@c UNDONE
+A Boolean is either @code{true} or @code{false}. They are used to enable/disable flags and test them in conditional lines. Example:
+@codeblock{a = true
+b = false}
+@item tables
+@c UNDONE
+Tables are a generic type and can be used in many different ways. See ... for a detailed explanation.
+@item Functions
+@c UNDONE
+Functions can also be stored in variables. Section X is about functions.
+@item @samp{nil}
+As said before, @code{nil} is used to delete a variable. @code{nil} is also sometimes used to indicate @samp{Nothing}. Example:
+@end table
+
+@subsubsection Operators
+Operators are used to operate on variables. For example to multiply 2 numbers or to add (concat) 2 strings to each other. The following table lists every operator and its function. The items are shown in order of priority.
+@starttable{.25,.25,.25,.25}
+@addtableheaderrow{Operator}
+    @addtableheadercol{Used on}
+    @addtableheadercol{Effect}
+@endtablerow
+
+@addtablerow{@code{^}}
+    @addtablecol{Numbers}
+    @addtablecol{Calculates the power}
+@endtablerow
+
+@c UNDONE
+@addtablerow{@code{not}, -}
+    @addtablecol{Numbers}
+    @addtablecol{@code{not} returns @code{true} when a expression is false(see section X).@*
+The minus in this case is the operator used for negative values.}
+@endtablerow
+
+@addtablerow{@code{/}, @code{*}}
+    @addtablecol{Numbers}
+    @addtablecol{Arithmetic operations (@abbr{resp.} divide, multiply)}
+@endtablerow
+
+@addtablerow{@code{+}, @code{-}}
+    @addtablecol{Numbers}
+    @addtablecol{Arithmetic operations (@abbr{resp.} add, substract)}
+@endtablerow
+
+@addtablerow{..}
+    @addtablecol{Strings}
+    @addtablecol{Concats 2 strings}
+@endtablerow
+
+@c UNDONE
+@addtablerow{@code{>}, @code{<}, @code{>=}, @code{<=}, @code{==}, @code{~=}}
+    @addtablecol{Strings, Numbers, Tables}
+    @addtablecol{Used to compare values @*
+See section X}
+@endtablerow
+
+@addtablerow{@code{and}}
+    @addtablecol{Anything}
+    @addtablecol{Checks if 2 expressions are @code{true} @*
+See section X}
+@endtablerow
+
+@addtablerow{@code{or}}
+    @addtablecol{Anything}
+    @addtablecol{Checks if 1 of 2 expressions is @code{true} @*
+See section X}
+@endtablerow
+@endtable
+
+Parenthesis(@samp{()}) can be used to give an expression the highest priority.
+
+Some examples:
+@codeblock{a = 5 * 2       -- a = 10
+b = 20 / 5      -- b = 4
+c = (a + b) * 2 -- c = 28
+d = 5^2         -- d = 25}
+
+@subsection Testing variables and values
+In lua there are a few operators to test variables and values:
+@table @strong
+@item <
+Less than
+@item >
+More than
+@item ==
+Equal to
+@item ~=
+Unequal to
+@item <=
+Less or equal to
+@item >=
+More or equal to
+@item and
+Tests if 2 expressions are true
+@item or
+Tests if one of 2 expressions is true
+@item not
+Tests if a expression is not true
+@end table
+
+@c UNDONE
+All of these work on @code{numbers} and @code{strings} and some might work on @code{tables} (see section X).
+
+When a test succeeds @code{true} will be returned, when it fails @code{false} will be returned. Except for @code{or} and @code{and}. @code{or} will return the first expression if its true, otherwise the second. @code{and} will return the first expression if its false, otherwise the second.
+
+Here are some examples:
+@codeblock{a = 55
+b = 100
+c = a > b    -- c = false
+@*
+text1 = "Apple"
+text2 = "Orange"
+c = text1 < text2   -- c = true (alphabetical comparisation)
+@*
+c = 5 > 2 and "5" < "2"   -- false (second expression is false)}
+
+As mentioned, the @code{or} and @code{and} operators will return one of the expressions. With that knowledge a nice trick can be made:
+@codeblock{a = 5
+b = 2
+c = 6
+d = 12
+n = (a > b) and c or d   -- n = d(12)}
+This might look a bit odd. If you're a C(or C++) programmer you may recognize this: its similar to @code{(expr) ? a : b}. If not, here is what happens:
+@itemize
+@item @code{(a > b)}: this is false,
+@item @code{... and c}: this is ignored since the previous expression was false. The first expression is returned (@code{false}).
+@item @code{... or d}: The previous expression was @code{false}, so @code{or} will return @code{d} (12).
+@item @code{n = ...}: @samp{12} was returned, so @code{n} is now @samp{12}.
+@end itemize
+
+@c UNDONE
+If you find this confusing, you can use @code{if statements} (see section X) instead. This little trick is mainly used as a shortcut.
+
+@subsubsection If statements
+@code{if statements} are used to test some expression and if @code{true} it will execute some other code.
+The general syntax is like this:
+@codeblock{if expr1 then
+    -- Code here for when expr1 is true
+elseif expr2 then
+    -- Code here for when expr2 is true
+else
+    -- Code here for when expr1 and expr2 is not true
+end}
+
+The @code{elseif} and @code{else} part is optional. The keyword @code{end} is used to end the @samp{if-then block}.
+
+Here are some examples (with comments) to illustrate some usage of if statements.
+@c UNDONE
+@codeblock{n = false
+if n then
+    -- Impossible
+else
+    -- Do something here
+end
+@*
+-- This is the same as the 'and-or' trick of section X
+if (a > b) then
+    n = c
+else
+    n = d
+end
+@*
+if (msg == "yes") and (not flag) then
+    flag = true
+elseif (msg == "no") and (flag) then
+    flag = false
+end}
+
+@c UNDONE
+@strong{Note}: I used parenthesis(@samp{()}) around some expressions and will in later examples. This is merely for clarity in most cases. In above examples the parenthesis don't have any effect. See section X for more details.
+
+@subsection Functions
+
+@section Lua Library
+@subsection Functions That Interact With The OS
+
+@subsection I/O Functions
+
+@subsection Math Functions
+
+@subsection Installation Functions
+
+@subsection Other Functions
 
 
 @node Index

@@ -189,6 +189,10 @@ opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/
 opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
 opts.Add('CC', 'The C compiler', 'gcc')
 opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('LCVER', 'Manually overide used libc version', '')
+opts.Add('LCPPVER', 'Manually overide used libstdc++ version', '')
+opts.Add('OS', 'Manually overide target OS', '')
+opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
 env = Environment(options = opts, CCFLAGS = "-Wall -g3", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz')
@@ -197,10 +201,17 @@ Export("env")
 
 Help(opts.GenerateHelpText(env))
 
-# Get current OS...if this != to uname I should fix it :-)
-cur_os = sys.platform.rstrip('1234567890')
-cur_arch = platform.machine()
-
+if not env['OS']:
+    # Get current OS...if this != to uname I should fix it :-)
+    cur_os = sys.platform.rstrip('1234567890')
+else:
+    cur_os = env['OS']
+    
+if not env['CPU']:
+    cur_arch = platform.machine()
+else:
+    cur_arch = env['CPU']
+    
 if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
     cur_arch = "x86"
     
@@ -332,12 +343,21 @@ if not env.GetOption('clean'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
     if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
         conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
+    
+    if not conf.env['LCVER']:
+        libc_ver = conf.CheckLinkedLibVersion('c')
+    else:
+        libc_ver = env['LCVER']
         
-    libc_ver = conf.CheckLinkedLibVersion('c')
     if not libc_ver:
         print "Couldn't detect libc version!"
         Exit(1)
-    libstdcpp_ver = conf.CheckLinkedLibVersion('stdc++', 'm')
+    
+    if not env['LCPPVER']:
+        libstdcpp_ver = conf.CheckLinkedLibVersion('stdc++', 'm')
+    else:
+        libstdcpp_ver = env['LCPPVER']
+        
     if not libstdcpp_ver:
         print "Couldn't detect libstdc++ version!"
         Exit(1)

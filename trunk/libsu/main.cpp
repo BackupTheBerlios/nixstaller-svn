@@ -271,7 +271,7 @@ int CLibSU::WaitForChild()
                 if (m_pThinkFunc)
                     (m_pThinkFunc)(m_pCustomThinkData);
 
-                unsigned pos = line.find('\n');
+                std::string::size_type pos = line.find('\n');
                 if (pos != std::string::npos)
                 {
                     if (m_pOutputFunc)
@@ -354,7 +354,7 @@ int CLibSU::TalkWithSU(const char *password)
 {	
     enum { WaitForPrompt, CheckStar, WaitTillDone } state = WaitForPrompt;
     int colon;
-    unsigned i, j;
+    std::string::size_type i, j;
 
     std::string line;
     while (true)
@@ -600,7 +600,8 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     if (removepass && password)
     {
         char *ptr = const_cast<char *>(password);
-        for (unsigned i=0; i<strlen(password); i++)
+        size_t len = strlen(password);
+        for (size_t i=0; i<len; i++)
             ptr[i] = '\000';
     }
 

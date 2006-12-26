@@ -36,7 +36,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <fstream>
-#include <sstream>
 #include <assert.h>
 #include <errno.h>
         
@@ -146,7 +145,7 @@ std::string GetFirstValidDir(const std::string &dir)
     if (subdir[subdir.length()-1] == '/')
         subdir.erase(subdir.length()-1, 1);
     
-    std::string::size_type pos;
+    TSTLStrSize pos;
     do
     {
         pos = subdir.rfind('/');
@@ -192,7 +191,7 @@ void CleanPasswdString(char *str)
 std::string &EatWhite(std::string &str, bool skipnewlines)
 {
     const char *filter = (skipnewlines) ? " \t" : " \t\r\n";
-    std::string::size_type pos = str.find_first_not_of(filter);
+    TSTLStrSize pos = str.find_first_not_of(filter);
 
     if (pos != std::string::npos)
         str.erase(0, pos);
@@ -341,6 +340,23 @@ void UName(utsname &u)
 {
     if (uname(&u) == -1)
         throw Exceptions::CExUName(errno);
+}
+
+suseconds_t GetTicks(void)
+{
+    // Based on the SDL code for SDL_GetTicks()
+    
+    static struct timeval start, current;
+    static bool started = false;
+    
+    if (!started)
+    {
+        gettimeofday(&start, NULL);
+        started = true;
+    }
+        
+    gettimeofday(&current, NULL);
+    return (current.tv_sec-start.tv_sec)*1000+(current.tv_usec-start.tv_usec)/1000;
 }
 
 // -------------------------------------

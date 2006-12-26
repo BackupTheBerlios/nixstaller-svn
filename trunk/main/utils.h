@@ -38,7 +38,8 @@
 #include <dirent.h>
 #include <poll.h>
 #include <sys/utsname.h>
-        
+#include <sys/time.h>
+
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
 char *CreateText(const char *s, ...);
@@ -70,6 +71,7 @@ inline void CHDir(const std::string &dir) { CHDir(dir.c_str()); };
 void MKDir(const char *dir, int mode);
 inline void MKDir(const std::string &dir, int mode) { MKDir(dir.c_str(), mode); };
 void UName(utsname &u);
+suseconds_t GetTicks(void);
 
 template <typename To, typename From> To SafeConvert(From from)
 {
