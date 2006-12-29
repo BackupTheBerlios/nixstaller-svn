@@ -312,7 +312,7 @@ c = (a + b) * 2 -- c = 28
 d = 5^2         -- d = 25
 txt1 = "Hello"
 txt2 = "World"
-txt = txt1 .. txt2    -- txt = "Hello World"}
+txt = txt1 .. " ".. txt2    -- txt = "Hello World"}
 
 @subsection Testing variables and values
 
@@ -413,7 +413,193 @@ end}
 @c UNDONE
 @strong{Note}: I used parenthesis(@samp{()}) around some expressions and will in later examples. This is merely for clarity in most cases. In above examples the parenthesis don't have any effect. See section X for more details.
 
+@subsection Loops
+@emph{Loops} are used to execute some code lines more than once. In the following sections the different kind of loops available in Lua are explained.
+
+@subsubsection @code{while} loops
+The @code{while} loop looks like this:
+@codeblock{while expr1 do
+    -- Do some code
+end}
+
+As long as @samp{expr1} is not @code{false} it will execute the code in the @samp{while-do-end} block.
+Here is a short example:
+@codeblock
+{n = 1
+while (n <= 10) do
+    -- Some code
+@*
+    n = n + 1
+end}
+In this example the @code{while} loop repeats itself until @code{n} is more than @samp{10}.
+
+@subsubsection @code{repeat} loops
+Another loop is the @samp{repeat-until} loop. This will repeat the code block @emph{until} some expression is @code{true}.
+Example:
+@codeblock
+{n = 1
+repeat
+    -- Some code
+@*
+    n = n + 1
+until n > 10}
+This does exactly the same as the @code{while} example. So why choose @code{repeat} over @code{while}? A reason is when you want to execute the code in the block atleast once. With a @code{while} loop the expression has to be @code{true} before the loop can even begin. With the @code{repeat} - @code{until} statement however it will check the expression at the end of the block and therefore execute the code atleast once.
+
+@subsubsection @code{for} loops
+@c UNDONE
+There are 2 kind of @code{for} loops: the @emph{numeric} and the @emph{generic}. We will discuss the first here, the @emph{generic} @code{for} loop will be explained in section X.
+
+The @emph{numeric} @code{for} loop looks like this:
+@codeblock
+{for var=expr1,expr2,expr3 do
+    -- Some code
+end}
+
+@table @emph
+@item var=expr1
+This will assign @emph{expr1} to the variable @code{var}. Note that this variable @strong{only} exists in the @code{for} loop.
+@item expr2
+As long as @emph{expr2} is unequal to @code{var} the loop repeats itself.
+@item expr3
+This is optional. @emph{expr3} is used to specify how much @code{var} should increment (or decrement incase a negative value is specified). If not specified it defaults to @samp{1}.
+@end table
+
+Now some examples:
+@codeblock
+{for n=1,10 do
+    -- Some code here that will be executed 10 times
+end
+@*
+for n=2,20,2 do
+    -- Some code that will be executed 10 times. (n = incremented by 2 each time)
+end}
+
+Here are some points to remember with @code{for} loops:
+@itemize
+@item As been said the variable used for the loop only exists inside the loop. If you need the value outside the loop you should copy it to another variable.
+@item All the three expressions are evaluated just once. This is important to know when you use functions (see section X) for an expression.
+@item Do not modify the variable used by the @code{for} loop by hand.
+@end itemize
+
+@subsubsection @code{break}
+@c UNDONE
+To escape from a loop in Lua you can use @code{break} (or @code{return} which is handled in section X).
+Here is an example:
+@codeblock
+{n = 1
+while (true)  -- Infinite loop
+    if (n == 50) then
+        break -- Not infinite afterall
+    end
+    n = n + 1
+end}
+This will escape from the loop when n equals to @samp{50}.
+Note that you can only use @code{break} at the end of a code block. In this case it was at the end of the @samp{if-then} block. If this wasn't the case Lua would throw an error.
+
 @subsection Functions
+@emph{Functions} are a way to create @samp{commands}. With functions a piece of code can be executed on all kinds of places.
+
+@subsubsection Basics
+Before a function can be used you have to @emph{declare} it:
+@codeblock
+{function funcname(args)
+    -- Code
+end}
+@table @emph
+@item funcname
+This is how the function will be called.
+@item args
+Which @emph{arguments} or @emph{parameters} this function expects. More on this later.
+@end table
+
+@subsubsection Functions arguments
+Some functions may need data from the caller. To pass this data @emph{function parameters} are used. These are variables which are @emph{local} (not exist outside the function) to this function. Here is an example to acclompish this:
+@codeblock
+{
+counter = 0
+@*
+function increment(n) -- Function that increments @samp{counter} by @code{n}
+    counter = counter + n
+end
+@*
+@*
+increment(5)
+-- counter is now 5
+increment(-2)
+-- counter is now 3}
+You can also specify multiple function arguments: just seperate them with a comma (@samp{,}).
+
+@c UNDONE
+Functions can also have a variable number of arguments. See section X for more info.
+
+@subsubsection Return values
+When a function is called it can also return data to the caller. Here is how it generally looks:
+@codeblock
+{function func()
+    -- Code here
+    return arg1, arg2, arg3 -- etc
+end}
+
+Lua has the feature that it can return multiple values. Here are some examples that show how it's used:
+@codeblock
+{function sum(a, b)
+    return a + b
+end
+@*
+function f()
+    return "Hello", " ", "World"
+end
+@*
+@*
+n1 = 5
+n2 = 10
+n3 = sum(n1, n2)    -- n3 = 15
+@*
+str1, str2, str3 = f() -- str1 = "Hello", str2 = " ", str3 = "World"}
+
+@subsection Local variables
+For now mostly @emph{global} variables were used. There is another type of variable: the @emph{local} variable. The variable used in a numeric @code{for} loop is local, so are the function arguments. Local variables only exist in a code block (and the underlying code blocks). To create local variables you have to @emph{define} them with the @code{local} keyword. Local variables are mostly used inside functions, so that they don't corrupt the global environment.
+As usual, here are some examples:
+@codeblock
+{function f()
+    local a             -- a will only exist in this function
+    local b, c          -- More variables can be defined at once
+    local c, d = 5, 6   -- And can also be assigned: c = 5, d = 6
+@*
+    -- Some code
+end
+@*
+count = 0    -- Global variable
+@*
+function g()
+    local count     -- Overide count
+    count = 1       -- Modify our own count
+end
+@*
+-- count is still 0 here}
+
+@section Advanced Lua
+
+@subsection More About Functions
+
+@subsubsection Closures
+
+@subsubsection Local Functions
+
+
+@subsection Tables
+
+@subsubsection Table Seen As An Array
+
+@subsubsection Table Seen As A Record
+
+@subsubsection Table Seen As A Package
+
+
+@subsection Generic @code{for}
+
+
+@subsection
 
 @section Lua Library
 @subsection Functions That Interact With The OS
