@@ -237,14 +237,15 @@ Strings are used to store an array of characters. The text used for a string sho
 A Boolean is either @code{true} or @code{false}. They are used to enable/disable flags and test them in conditional lines. Example:
 @codeblock{a = true
 b = false}
-@item tables
+@item Tables
 @c UNDONE
 Tables are a generic type and can be used in many different ways. See ... for a detailed explanation.
 @item Functions
 @c UNDONE
 Functions can also be stored in variables. Section X is about functions.
-@item @samp{nil}
+@item @samp{@strong{nil}}
 As said before, @code{nil} is used to delete a variable. @code{nil} is also sometimes used to indicate @samp{Nothing}. Example:
+@codeblock{a = nil    -- a will now be collected by Lua's garbage collector}
 @end table
 
 @subsubsection Operators
@@ -308,9 +309,14 @@ Some examples:
 @codeblock{a = 5 * 2       -- a = 10
 b = 20 / 5      -- b = 4
 c = (a + b) * 2 -- c = 28
-d = 5^2         -- d = 25}
+d = 5^2         -- d = 25
+txt1 = "Hello"
+txt2 = "World"
+txt = txt1 .. txt2    -- txt = "Hello World"}
 
 @subsection Testing variables and values
+
+@subsubsection Operators for testing
 In lua there are a few operators to test variables and values:
 @table @strong
 @item <
@@ -318,7 +324,7 @@ Less than
 @item >
 More than
 @item ==
-Equal to
+Equal to (@strong{a single @samp{=} does not compare, just assign})
 @item ~=
 Unequal to
 @item <=
@@ -355,7 +361,7 @@ b = 2
 c = 6
 d = 12
 n = (a > b) and c or d   -- n = d(12)}
-This might look a bit odd. If you're a C(or C++) programmer you may recognize this: its similar to @code{(expr) ? a : b}. If not, here is what happens:
+This might look a bit odd. If you're a C (or C++) programmer you may recognize this: it's similar to @code{(expr) ? a : b}. If you're not, here is what happens:
 @itemize
 @item @code{(a > b)}: this is false,
 @item @code{... and c}: this is ignored since the previous expression was false. The first expression is returned (@code{false}).
@@ -372,12 +378,15 @@ The general syntax is like this:
 @codeblock{if expr1 then
     -- Code here for when expr1 is true
 elseif expr2 then
-    -- Code here for when expr2 is true
+    -- Code here for when expr2 is true and expr2 isn't
 else
-    -- Code here for when expr1 and expr2 is not true
+    -- Code here for when expr1 and expr2 are not true
 end}
 
 The @code{elseif} and @code{else} part is optional. The keyword @code{end} is used to end the @samp{if-then block}.
+An expression is false when the value is @code{false} or @code{nil}. In any other case it's @code{true}.
+
+@strong{NOTE}: In some other (scripting) languages zero (@samp{0}) and an empty @code{string} are @code{false}, however this is not the case in Lua.
 
 Here are some examples (with comments) to illustrate some usage of if statements.
 @c UNDONE
