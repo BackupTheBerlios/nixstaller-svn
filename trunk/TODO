@@ -32,6 +32,9 @@ DOCS
 - Max config var description length
 - Update examples and screenshots
 - Check for clickable sections in TOC
+- Add info for default func arguments
+- Check for right vertical spacing, paragraphs etc
+- String indexes
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

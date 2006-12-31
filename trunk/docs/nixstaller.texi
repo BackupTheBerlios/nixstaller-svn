@@ -48,7 +48,7 @@ Here is a list with the main features. Read further for more info to see what th
 @itemize @bullet
 @item 2 different frontends used for the installer: @uref{http://www.fltk.org,FLTK} and @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}.
 @item Support for most common UNIX like systems: NetBSD(x86 and amd64), Linux(x86 and amd64), FreeBSD(x86 and amd64) and Solaris 10/Nexenta(x86).
-@item A installer itself has the following features:
+@item An installer itself has the following features:
 @itemize
 @item Can be fully translated (no UTF yet). Translations for English and Dutch are supplied by default.
 @item Different kind of installer screens:
@@ -65,7 +65,7 @@ Most screens are optional and can be shown in any particalur order.
 @end itemize
 @item Frontends are build in a way that they can be used on many different systems by linking less common libraries staticly.
 @item The files can be packed with gzip-, bzip2 and lzma compression.
-@item Installation files can be extracted to various directories; a temporary directory (usefull for @samp{./configure && make && make install} like installers), a directory which can be selected by the user and a default directory.
+@item Installation files can be extracted to various directories; a temporary directory (useful for @samp{./configure && make && make install} like installers), a directory which can be selected by the user and a default directory.
 @item @uref{http://www.lua.org,Lua} support is provided to configure the installer and to program the installation procedure. This allows very flexible configurations.
 @end itemize
 
@@ -215,15 +215,15 @@ a = b + 5     -- Comment can be after a code line aswell
 There can also be @emph{comment blocks}:
 @codeblock{--[
 Text between the two square brackets is comment.
-This is usefull if you want to write a few lines or disable multiple code lines.
+This is useful if you want to write a few lines or disable multiple code lines.
 --]}
 
-@subsection Variabeles
+@subsection Variables
 To store data @emph{variables} are used. A variable name is a combination of letters, underscores and/or numbers. Note that the variable name cannot start with a number.
 To create a variable you simply assign data to it. To remove a variable you assign @code{nil} to it.
 
 @subsubsection Types
-Variabeles are not bound to a single type(typeless, languages as C are typed). There are various types in the Lua environment:
+Variables are not bound to a single type(typeless, languages as C are typed). There are various types in the Lua environment:
 @table @strong
 @item Numbers
 Numbers can be both a decimal type or a integral type. Examples:
@@ -262,10 +262,11 @@ Operators are used to operate on variables. For example to multiply 2 numbers or
 @endtablerow
 
 @c UNDONE
-@addtablerow{@code{not}, -}
+@addtablerow{@code{not}, @code{-}, @code{#}}
     @addtablecol{Numbers}
     @addtablecol{@code{not} returns @code{true} when a expression is false(see section X).@*
-The minus in this case is the operator used for negative values.}
+The minus in this case is the operator used for negative values.@*
+The @samp{#} is used to retrieve the number of entries in a table (see section X)}
 @endtablerow
 
 @addtablerow{@code{/}, @code{*}}
@@ -313,6 +314,10 @@ d = 5^2         -- d = 25
 txt1 = "Hello"
 txt2 = "World"
 txt = txt1 .. " ".. txt2    -- txt = "Hello World"}
+Note that the @samp{..} operator can convert numbers to strings aswell:
+@codeblock
+{n = 5
+txt = "The number is: " .. n    -- txt = "The number is: 5"}
 
 @subsection Testing variables and values
 
@@ -509,7 +514,7 @@ end}
 @item funcname
 This is how the function will be called.
 @item args
-Which @emph{arguments} or @emph{parameters} this function expects. More on this later.
+Which @emph{arguments} or @emph{parameters} this function expects.
 @end table
 
 @subsubsection Functions arguments
@@ -540,7 +545,7 @@ When a function is called it can also return data to the caller. Here is how it 
     return arg1, arg2, arg3 -- etc
 end}
 
-Lua has the feature that it can return multiple values. Here are some examples that show how it's used:
+Unlike some other language, lua has the feature to return multiple values. Here are some examples about returning values:
 @codeblock
 {function sum(a, b)
     return a + b
@@ -577,36 +582,332 @@ function g()
 end
 @*
 -- count is still 0 here}
+As shown above @code{local} variables can have the same name as a existing global variable. In such cases @code{local} variables have a higher priority then underlying global variables.
 
 @section Advanced Lua
+@c UNDONE
+In this section some of the more advanced features of Lua will be shown. Atleast the first 2 sections of tables is important. For less advanced installers these might be enough for now.
 
-@subsection More About Functions
+@comment @subsection More About Functions
+@comment 
+@comment @subsubsection Closures
+@comment @c UNDONE: Refer to Lua Book?
+@comment A @emph{closure} is the concept where a function is returned by another function. Here is how it generally looks:
+@comment @codeblock
+@comment {function f()
+@comment     -- Some code and most lickely some locals
+@comment     return function()
+@comment         -- Code for 'child' function 
+@comment     end
+@comment end}
+@comment 
+@comment 
+@comment The function that is returned has access to all 
+@comment 
+@comment @subsubsection Local Functions
 
-@subsubsection Closures
+@subsection Functions As Variables
+@c UNDONE
+As said before in section X, functions are a variable type. The way we did to create functions so far is actually a shortcut to assign a function to a (global) variable:
+@codeblock
+{function f()
+    -- ...
+end}
+Is essentially the same as:
+@codeblock
+{f = function()
+    -- ...
+end}
 
-@subsubsection Local Functions
+With that knowledge some interesting things can be made. @*
+For example, a function can be passed to another function:
+@codeblock
+{function sum(a, b)
+    return a + b
+end
+@*
+x = 0
+@*
+function modifyx(func, val1, val2)
+    x = func(val1, val2)
+end
+@*
+modifyx(sum, 1, 1)
+-- x is now 2}
 
+Another example is to use @emph{anonymous functions}. These are, as the name suggests, functions without a name. A good reason to use them is when you want to pass (a simple) function like we did above. Here is the anonymous version:
+@codeblock
+{x = 0
+@*
+function modifyx(func, val1, val2)
+    x = func(val1, val2)
+end
+@*
+modifyx(function(a, b)
+            return a + b
+        end, 1, 1)
+-- x is now 2}
+This does essentially the same, just with a anonymous function.
 
 @subsection Tables
+Tables are generic types also called @emph{objects}. Tables can be used to create new datatypes, store blocks of data (arrays) and even for OOP(Object Orientated Programming). Not all features of tables are described. Just the few that are in the authors opinion important to know for now. A good reference for lua tables is the @uref{http://www.lua.org, Lua Book}.
 
-@subsubsection Table Seen As An Array
+@subsubsection Creating A table
+Before we go in to details, lets start with how to create a table. Unlike other types, you have to @emph{construct} tables. The simplest way of doing this is like this:
+@codeblock{t = @{ @}}
+The 2 curley braces are the key to construct a new table. There are other ways to construct a table, these will be handled in the next sections.
+@*
+Another thing to remember is that variables can only @emph{point} to a table. The following example shows an error:
+@codeblock
+{t = @{ @}   -- Construct a new table
+t2 = t    -- Copy table (ERROR)}
+In this example, @code{t2} will @strong{not} be a copy of @code{t}. Instead @code{t2} will @emph{point} to the same table as @code{t} does. @*
+When all references to a table are gone, for example by setting @code{t} and @code{t2} to @code{nil}, the table will be removed by Lua's garbage collector.
+
+@subsubsection Tables Seen As An Array
+As been said, tables can be used in many ways. Lets start with the @emph{array} like feature. You can see an array like a datablock. This block can expanded, indexed and traversed. Here are the usual examples:
+@codeblock
+{
+t = @{ @} -- Construct new table
+-- Create 3 table entries
+t[1] = 5
+t[2] = 6
+t[3] = 7}
+In this example the table referenced by @code{t} has 3 entries. Each are @emph{indexed} by numbers: @code{t[1]} points to 5, @code{t[2]} to 6 and @code{t[3]} to 7. Unlike languages such as C the arrays from Lua can be indexed with any type (except @code{nil}). And as usual, the data can be from any type and @code{nil} can be used to remove the data. Some more examples:
+@codeblock
+{t = @{ @}
+t["Name"] = "Rick"
+t["Phone"] = 123456789
+t["Country"] = "The Netherlands"}
+This time we used @code{string}s to index a table. Mixes of types can be used for indexing aswell.
+@*
+Usually though we use numbers only as indexes. Records (see below) are mainly used for strings. When you use numbers to index an array it's recommended to start with @samp{1} instead of @samp{0} like some other languages do. A reason for this is that most Lua functions that operate on tables (or arrays) expect that @samp{1} is the first index.
 
 @subsubsection Table Seen As A Record
+As explained in the previous section tables can be @emph{indexed}. Another way to assign data to a table is by using @emph{records}. This is the general syntax:
+@codeblock{tablename.fieldname}
+And an example:
+@codeblock
+{t = @{ @}
+t.Name = "Rick"
+t.Phone = 123456789
+t.Country = "The Netherlands"}
+Looks familiar? It's infact the same as the example shown with the array indexed by strings. In other words
+@codeblock{t["field"] = 1}
+is the same as
+@codeblock{t.field = 1}
+The reason for this alternative syntax is to have a shortcut specifically for records
 
 @subsubsection Table Seen As A Package
+Another popular way is to use tables for @emph{packages} or @emph{modules}. A good example are the Lua libraries discussed later. 
+@c UNDONE
+A package is basicly a record which is defined somewhere else. This record contains mostly functions and sometimes other variables. Section X describes that functions are variable types. Using that knowledge we can create a package like this:
+@codeblock
+{mypackage = @{ @}
+mypackage.f = function()
+                -- Some code
+              end
+mypackage.v = "Hello World"
+@*
+mypackage.f()    -- Call f() from mypackage}
+For functions in packages Lua has a shortcut:
+@codeblock
+{-- Same as above
+function mypackage.f()
+    -- Some code
+end}
 
+@subsubsection Traversing Tables
+To traverse a table we can use the @emph{generic} @code{for} loop combined with a @emph{iterator function}. The syntax looks like this:
+@codeblock
+{for vars in expression do
+    -- Code
+end}
+@table @emph
+@item vars
+These are 1 or more variables (depending on the used iterator). Multiple variables are as usual seperated with a comma.
+@item expression
+Normally the iterator function
+@end table
+So what is a iterator function? To say it easy: when you call it, it will return the next entry of a table. It can do so because it will store its current state by each call.
+@*
+@c UNDONE
+There are different kinds of iterators in Lua. We'll discuss 2 types here and some others are explained in section X.
+@*
+The first we discuss is the @code{pairs} function. This function, combined with a (generic) @code{for} loop, can traverse @emph{any} table. Here is a example:
+@codeblock
+{t = @{ @}
+t[1] = 55
+t[2] = 105
+t.name = "Rick"
+@*
+for i,v in pairs(t) do
+    print("Table entry: " .. i)
+    print("Contains: " .. v)
+end}
+@c UNDONE
+You might be wondering where @code{print} comes from. It's a Lua function which prints text to the standard output (usually a terminal). This function is discussed further in section X@*
+Running the program it produces the following output:
+@codeblock
+{Table entry: 1
+Contains: 55
+Table entry: 2
+Contains: 105
+Table entry: name
+Contains: Rick}
+As you can see the first variable (@code{i}) is used to store the current index of the table. The second variable (@code{v}) is used to store the value of the current entry.
+@*
+The second iterator function is @code{ipairs}. This function is almost identical to @code{pairs}. The only difference is that it will @emph{only} list numeric indexes. This is useful for arrays. If we change the above example to use @code{ipairs} instead of @code{pairs} it will produce the following output:
+@codeblock
+{Table entry: 1
+Contains: 55
+Table entry: 2
+Contains: 105}
+As you can see it omits the @code{"name"} index. Note that, as other Lua functions, @code{ipairs} expects that @samp{1} is used as the first index for an array.
 
-@subsection Generic @code{for}
+@subsubsection Table Constructers
+For now we only used one way to construct tables. Another way is to assign data right away when the table is constructed. For this you can use different ways to acclompish this.
+@*
+The first way is specifically for arrays indexed by numbers, example:
+@codeblock
+{array = @{ 5, 10, "Hello World" @}}
+This is equivalent to
+@codeblock
+{array = @{ @}
+array[1] = 5
+array[2] = 10
+array[3] = "Hello World"}
+As you see, it starts with index @samp{1}.
+@*
+Another way is handy for records and such:
+@codeblock
+{record = @{ Name="Rick", Country="The Netherlands" @}
+-- or like this:
+record2 = @{ "Name"="Rick", "Country"="The Netherlands" @}}
+which would be equivalent to
+@codeblock
+{record = @{ @}
+record.Name = "Rick"
+record.Country = "The Netherlands"
+-- or like this:
+record2["Name"] = "Rick"
+record2["Country"] = "The Netherlands"}
+@*
+Table constructors can be nested, like this:
+@codeblock
+{table = @{ @{5, 10@}, @{15, 20@} @}
+print(table[1][1], table[1][2])   -- prints @samp{5     10}
+print(table[2][1], table[2][2])   -- prints @samp{15    20}}
 
+@subsubsection The @samp{#} operator
+There is one special operator for Lua tables: the @samp{#} operator. This operator return the number of entries in a table. Example:
+@codeblock
+{t = @{ 5, 10, 15 @}
+print("t got " .. #t .. " elements")    -- Prints 't got 3 elements'}
 
-@subsection
+@subsection Variadic Functions
+@emph{Variadic functions} are functions with a @emph{variable} number of arguments. Here is a example that displays how to use them:
+@codeblock
+{function f(...)
+    for i, v in pairs(arg) do
+        print("Arg " .. i .. " contains " .. v)
+    end
+end
+@*
+f("Hello", " ", "World")}
+When executed, the following output is produced:
+@codeblock
+{Arg 1 contains Hello
+Arg 2 contains
+Arg 3 contains World
+Arg n contains 3}
+@table @emph
+@item @samp{...}
+This is a way to say to Lua that you don't know which arguments are to be expected.
+@item arg
+In variadic functions this variable is an array with all passed arguments.
+@item n
+As you may have noticed from the output there is also an entry called @samp{n}. This holds the total number of arguments in the array.
+@end table
+@*
+You can also pass the arguments to another function:
+@codeblock
+{function f(...)
+    -- Do some stuff
+    @*
+    print(...)    -- The print function is also variadic
+end}
 
 @section Lua Library
+@c UNDONE
+Now we discussed the basics of Lua we start with the Lua library. The Lua library contains many different functions. Most are inside modules (see section X). A special note for people who already know Lua: Nixstaller has lots of additional functions added to existing modules, so this section is handy to read for everyone.@*
+@*
+For each function a definition will be given with a description beneath. In the definition the expected arguments for this function are given aswell. Optional arguments are between square brackets, three dots (@samp{...}) means that it is a variadic function. If an argument has a default value it will be shown with @samp{=val} right next to the argument.
+
+@subsection String Functions
+In this section functions will be discussed that can modify strings, get info from strings, format strings, search strings etc. All these functions are in the @code{string} package. @*
+@*
+Note that strings itself are @emph{immutable}. This means that once a string is created, you cannot modify it (well you can delete it by reassigning the variable to @code{nil}). For this reason every function that will operate on strings will return a new (sub)string.
+
+@subsubsection Basic String Functions
+We start with the more easy and common functions.
+
+@deffn Function string.byte (s [, i=1 [, j=i]])
+This will return the byte codes (such as ASCII values) used from string @code{s} starting with index @code{i} till @code{j}. Byte codes can differ from platform to platform.
+@end deffn
+
+@deffn Function string.char (...)
+Expects numeric arguments which are byte values (for example returned from @code{string.byte}). It will return a string consisting of each argument converted to the correspending character.@*
+Example:
+@codeblock
+{print (string.char(string.byte("Hello World", 1, -1)))   -- Prints Hello World}
+@end deffn
+
+@deffn Function string.len (s)
+Returns the length of the string @code{s}.
+@end deffn
+
+@deffn Function string.lower (s)
+Returns a lowercased version of string @code{s}. Characters that don't have a lowercased version are left alone.
+@end deffn
+
+@deffn Function string.upper (s)
+Returns a uppercased version of string @code{s}. Characters that don't have an uppercased version are left alone.@*
+Example:
+@codeblock
+{
+s = "Hello World!"
+print(string.lower(s))    -- Prints hello world!
+print(string.upper(s))    -- Prints HELLO WORLD!}
+@end deffn
+
+@deffn Function string.rep (s, n)
+Returns a string that is a copy of string @code{s} replicated @code{n} times.@*
+Example:
+@codeblock
+{print(string.rep("A", 5))    -- Prints AAAAA}
+@end deffn
+
+@deffn Function string.reverse (s)
+Returns a reversed version of string @code{s}.
+@end deffn
+
+@deffn Function string.sub (s, i [, j=-1])
+Returns a @emph{substring} from string @code{s} starting at index @code{i} till index @code{j}. When @code{i} is negative it will start at the end.@*
+Examples:
+@codeblock
+{s = "Hello World"
+print(string.sub(s, 2))    -- Prints ello World
+print(string.sub(s, 1, 2)) -- Prints He}
+
+
+@subsection Table Functions
+
+@subsection Math Functions
+
 @subsection Functions That Interact With The OS
 
 @subsection I/O Functions
-
-@subsection Math Functions
 
 @subsection Installation Functions
 
