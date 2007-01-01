@@ -898,8 +898,38 @@ Examples:
 @codeblock
 {s = "Hello World"
 print(string.sub(s, 2))    -- Prints ello World
-print(string.sub(s, 1, 2)) -- Prints He}
+print(string.sub(s, 1, 2)) -- Prints He
+print(string.sub(s, -5))   -- Prints World}
+@end deffn
 
+@deffn Function string.format (s, ...)
+This functions returns a string that is formatted according to rules similar to the C functions from the printf family. There are several @emph{modifiers} to control the formatting. For every modifier that is found the next function argument is used.@*
+The following modifiers are available:
+@table @samp
+@item %s
+Will be replaced by a string.
+@item %d
+@item %i
+@item %u
+Will be replaced by a round number.
+@item %o
+Will be replaced with an octal number.
+@item %x
+@item %X
+Will be replaced with a hexadecimal number. Use @samp{%X} for capital characters.
+@item %e
+@item %E
+Will be replaced with a number with scientific notation. @samp{%E} is for a capital exponent character (@samp{E}).
+@item %f
+Will be replaced by a @emph{floating point} or @emph{real} number. That is simply said a number which can contain a decimal point.
+@item %g
+@item %G
+The same as @samp{%e} and @samp{%E} or @samp{%f}. This depends on the given precision, which is 6 by default (below we'll dicuss how you can change this). If the exponent of the number is below -4 or above the precision @samp{%e} (or @samp{%E}) is used. Otherwise @samp{%f} will be used.
+@item %q
+Will produce a string that is @samp{safe} for Lua. This means that special characters such as newlines, quotes, backslashes etc are properly @samp{escaped}. Mostly this means that a backslash is put infront of the character.
+@end table
+
+@end deffn
 
 @subsection Table Functions
 
