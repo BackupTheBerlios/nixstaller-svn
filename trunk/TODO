@@ -35,6 +35,7 @@ DOCS
 - Add info for default func arguments
 - Check for right vertical spacing, paragraphs etc
 - String indexes
+- Escape characters
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

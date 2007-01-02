@@ -903,31 +903,65 @@ print(string.sub(s, -5))   -- Prints World}
 @end deffn
 
 @deffn Function string.format (s, ...)
-This functions returns a string that is formatted according to rules similar to the C functions from the printf family. There are several @emph{modifiers} to control the formatting. For every modifier that is found the next function argument is used.@*
-The following modifiers are available:
+This functions returns a string that is formatted according to rules similar to the C functions from the @code{printf} family. The first argument should be a string which can be formatted according to some rules. These rules are specified in the form of @emph{modifiers}. These modifiers have the following syntax:
+@codeblock{%[flags][width][.precision]type}
+
+@table @samp
+@item %
+The first token should always be a percent sign (@samp{%}).
+@item [flags]
+Optional. For numeric types only. Can be one of these:
+@table @samp
+@item +
+Used to force the usage of the @samp{+} or @samp{-} character in numbers.
+@item -
+When a width is given (see below) user left alginment instead of right alignment.
+@item #
+Alternate form. In the authors opinion not really important. See the man pages of @code{printf} if you're interested.
+@item 0
+(as in zero) If a width is given (see below), it will use zeros instead of blanks for padding.
+@end table
+@item [width]
+Optional. If a number is given it will make the converted text atleast @samp{n} wide by filling it with spaces if necessary.
+@item [.precision]
+Optional. Should be a number. The meaning depends on the type and is given below for each one.
+@item type
+This specifies what the control modifier should do and can be one of the following:
 @table @samp
 @item %s
-Will be replaced by a string.
+Will be replaced by a string. If a precision is given it will use that as a max string length.
 @item %d
 @item %i
 @item %u
-Will be replaced by a round number.
+Will be replaced by a round number. If a precision is given it will use that as a minimum digit count (adding zeros if necessary).
 @item %o
-Will be replaced with an octal number.
+Will be replaced with an octal number. If a precision is given it will use that as a minimum digit count (adding zeros if necessary).
 @item %x
 @item %X
-Will be replaced with a hexadecimal number. Use @samp{%X} for capital characters.
+Will be replaced with a hexadecimal number. Use @samp{%X} for capital characters. If a precision is given it will use that as a minimum digit count (adding zeros if necessary).
 @item %e
 @item %E
-Will be replaced with a number with scientific notation. @samp{%E} is for a capital exponent character (@samp{E}).
+Will be replaced with a number with scientific notation. @samp{%E} is for a capital exponent character (@samp{E}). If a precision is specified it will use as a maximum of numbers to appear after the decimal point.
 @item %f
-Will be replaced by a @emph{floating point} or @emph{real} number. That is simply said a number which can contain a decimal point.
+Will be replaced by a @emph{floating point} or @emph{real} number. That is simply said a number which can contain a decimal point. If a precision is specified it will use as a maximum of numbers to appear after the decimal point.
 @item %g
 @item %G
-The same as @samp{%e} and @samp{%E} or @samp{%f}. This depends on the given precision, which is 6 by default (below we'll dicuss how you can change this). If the exponent of the number is below -4 or above the precision @samp{%e} (or @samp{%E}) is used. Otherwise @samp{%f} will be used.
+The same as @samp{%e} and @samp{%E} or @samp{%f}. This depends on the given precision, which is 6 by default. If the exponent of the number is below -4 or above the precision @samp{%e} (or @samp{%E}) is used. Otherwise @samp{%f} will be used.
 @item %q
-Will produce a string that is @samp{safe} for Lua. This means that special characters such as newlines, quotes, backslashes etc are properly @samp{escaped}. Mostly this means that a backslash is put infront of the character.
+Will produce a string that is @samp{safe} for Lua. This means that special characters such as newlines, quotes, backslashes etc are properly escaped.
 @end table
+@end table
+The returned string from @code{string.format} will contain all the results from the control modifier, at the place where the control modifier orginally was placed. Each control modifier will use the next given function argument.@*
+@*
+To clear things up, here are some examples:
+@codeblock
+{name = "Rick"
+age = 21
+print(string.format("Hello you are %s and %d years old.", name, age))    -- Prints "Hello you are Rick and 21 years old"
+f = 12.25/5.55
+-- The first %f will be replaced with @samp{2.207207}, the second with @samp{2.21}) :
+print(string.format("The result of 12.25 / 5.55 = %f or shortened: %.2f", f, f))
+print(string.format("An aligned number: %3d", 5))    -- Prints "An aligned number:   5"}
 
 @end deffn
 
