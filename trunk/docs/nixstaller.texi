@@ -266,7 +266,7 @@ Operators are used to operate on variables. For example to multiply 2 numbers or
     @addtablecol{Numbers}
     @addtablecol{@code{not} returns @code{true} when a expression is false(see section X).@*
 The minus in this case is the operator used for negative values.@*
-The @samp{#} is used to retrieve the number of entries in a table (see section X)}
+The @samp{#} is used to retrieve the number of entries in a table (see section X) or the length of a string.}
 @endtablerow
 
 @addtablerow{@code{/}, @code{*}}
@@ -800,10 +800,13 @@ print(table[1][1], table[1][2])   -- prints @samp{5     10}
 print(table[2][1], table[2][2])   -- prints @samp{15    20}}
 
 @subsubsection The @samp{#} operator
-There is one special operator for Lua tables: the @samp{#} operator. This operator return the number of entries in a table. Example:
+There is one special operator for Lua tables: the @samp{#} operator. This operator return the number of entries with a numeric index in a table. It stops counting if the next index has no value (@code{nil}).@*
+Example:
 @codeblock
 {t = @{ 5, 10, 15 @}
-print("t got " .. #t .. " elements")    -- Prints 't got 3 elements'}
+print("t got " .. #t .. " elements")    -- Prints "t got 3 elements"
+t[5] = 25
+print("t got " .. #t .. " elements")    -- Prints "t got 3 elements", because index 4 is nil}
 
 @subsection Variadic Functions
 @emph{Variadic functions} are functions with a @emph{variable} number of arguments. Here is a example that displays how to use them:
@@ -847,7 +850,7 @@ For each function a definition will be given with a description beneath. In the 
 @subsection String Functions
 In this section functions will be discussed that can modify strings, get info from strings, format strings, search strings etc. All these functions are in the @code{string} package. @*
 @*
-Note that strings itself are @emph{immutable}. This means that once a string is created, you cannot modify it (well you can delete it by reassigning the variable to @code{nil}). For this reason every function that will operate on strings will return a new (sub)string.
+Note that strings itself are @emph{immutable}. This means that once a string is created, you cannot modify it (well you can delete it by reassigning the variable to @code{nil}). For this reason every function that will operate on strings will return a new (sub)string. Some functions use @emph{string indexes}. A string starts always at index @samp{1}. A negative index is used to start counting backwards, meaning that @samp{-1} equals to the string length, @samp{-2} equals to the string length-1 etc.
 
 @subsubsection Basic String Functions
 We start with the more easy and common functions.
@@ -864,7 +867,7 @@ Example:
 @end deffn
 
 @deffn Function string.len (s)
-Returns the length of the string @code{s}.
+Returns the length of the string @code{s}. The @samp{#} operator does the same.
 @end deffn
 
 @deffn Function string.lower (s)
@@ -915,7 +918,7 @@ Optional. For numeric types only. Can be one of these:
 @item +
 Used to force the usage of the @samp{+} or @samp{-} character in numbers.
 @item -
-When a width is given (see below) user left alginment instead of right alignment.
+When a width is given (see below) uses left alignment instead of right alignment.
 @item #
 Alternate form. In the authors opinion not really important. See the man pages of @code{printf} if you're interested.
 @item 0
@@ -951,23 +954,100 @@ The same as @samp{%e} and @samp{%E} or @samp{%f}. This depends on the given prec
 Will produce a string that is @samp{safe} for Lua. This means that special characters such as newlines, quotes, backslashes etc are properly escaped.
 @end table
 @end table
-The returned string from @code{string.format} will contain all the results from the control modifier, at the place where the control modifier orginally was placed. Each control modifier will use the next given function argument.@*
+The returned string from @code{string.format} will contain all the result(s) from the control modifier(s), at the place where the control modifier(s) orginally were placed. Each control modifier will use the next given function argument.@*
 @*
 To clear things up, here are some examples:
 @codeblock
 {name = "Rick"
 age = 21
-print(string.format("Hello you are %s and %d years old.", name, age))    -- Prints "Hello you are Rick and 21 years old"
+print(string.format("Hello you are %s and %d years old.", name, age))    -- Prints "Hello you are Rick and 21 years old."
 f = 12.25/5.55
--- The first %f will be replaced with @samp{2.207207}, the second with @samp{2.21}) :
+-- The first %f will be replaced with @samp{2.207207}, the second with @samp{2.21})
 print(string.format("The result of 12.25 / 5.55 = %f or shortened: %.2f", f, f))
 print(string.format("An aligned number: %3d", 5))    -- Prints "An aligned number:   5"}
 
 @end deffn
 
+@subsubsection Advanced String Functions
+Lua has a few advanced functions to find and replace (sub)strings. For now I will skip these and just point you to the right sections: @uref{This chapter in the Lua book, http://www.lua.org/pil/20.html} and parts of the @uref{Lua Manual, http://www.lua.org/manual/5.1/}.
+
 @subsection Table Functions
+Lua has a few functions to help you when working with tables. These functions are all in the @emph{table} module.
+
+@deffn Function table.concat (t, [, sep=""[, i=1[, j=#t]]])
+Returns a string that has all elements of table @code{t} next to eachother. Each entry can be seperated by the string @code{sep}. The @code{i} and @code{j} variables are used to indicate a starting and ending index.
+Examples:
+@codeblock
+{t = @{ "Hello", "World", "!" @}
+t2 = @{ 5, 10, 15 @}
+s = table.concat(t)    -- s = "HelloWorld!"
+s2 = table.concat(t, " ")    -- s2 = "Hello World !"
+s3 = table.concat(t2, ", ", 2)    -- s3 = "10, 15"}
+@end deffn
+
+@deffn Function table.insert (t[, p], x)
+This function only works with arrays with numeric indexes. The function will insert variable @code{x} into table @code{t} at position @code{p}. When only 2 function arguments are given the second will be used as value to insert and the position will be at the end of the table.
+Examples:
+@codeblock
+{t = @{ "Apples", "Oranges" @}
+table.insert(t, 1, "Bananas")    -- t = @{ "Bananas", "Apples", "Oranges" @}
+table.insert(t, "Melons")        -- t = @{ "Bananas", "Apples", "Oranges", "Melons" @}}
+@end deffn
+
+@deffn Function table.maxn (t)
+This function only works with arrays that have numeric indexes. The function loops through the whole table to find the highest used index.
+@end deffn
+
+@deffn Function table.remove (t[, p=#t])
+Removes the entry from table @code{t} at position @code{p}. The entry that is removed is used as return value.
+Example:
+@codeblock
+{t = @{ 5, 10, 15 @}
+table.remove(t, 1)    -- t = @{ 10, 15 @}
+table.remove(t)       -- t = @{ 10 @}}
+@end deffn
+
+@deffn Function table.sort (t[, c])
+Only works with arrays with numeric indexes. This function will sort all the entries from the table @code{t}. The optional argument @code{c} can be used to specify a function that is a replacement of the @samp{<} operator. This function is called to check if one table entry is smaller than another. The function recieves 2 arguments, the first and second entry, and should return @code{true} if the first entry is less than the second.
+Examples:
+@codeblock
+{fruits = @{ "Lemon", "Apple", "Orange" @}
+table.sort(fruits)    -- fruits = @{ "Apple", "Lemon", "Orange" @}
+@*
+function comp(e1, e2)
+    return e1 > e2    -- Reversed sorting
+end
+@*
+table.sort(fruits, comp)    -- fruits = @{ "Orange", "Lemon", "Apple" @}}
+@end deffn
 
 @subsection Math Functions
+Lua supports many different math related functions through the @code{math} module. Since not many of these functions are important for Nixstaller only a few will be discussed.
+
+@deffn Function math.abs (n)
+Returns the absolute value of @code{n}
+@end deffn
+
+@deffn Function math.fmod (x, y)
+Returns the modulus (remainder) of x and y.
+@end deffn
+
+@deffn Function math.max (n, ...)
+Returns the biggest value from the given arguments.
+@end deffn
+
+@deffn Function math.min (n, ...)
+Returns the smallest value from the given arguments.
+@end deffn
+
+@deffn Function math.random ([l[, h]])
+If no arguments are given returns a @samp{random} number between 0 and 1. If @code{l} is given it will return a random number (rounded) between 1 and @code{l}. If both @code{l} and @code{h} are given it will return a random number between these values.
+@end deffn
+
+@deffn Function math.randomseed (n)
+@c UNDONE
+Sets the @samp{seed} for the @code{math.random} function. For each seed an unique series of numbers will be returned by the @code{math.random} function. So if the seed is always the same (ie not changed) @code{math.random} will always return the same values. To get @samp{real} random numbers a way is to set the seed to the system time when the Lua script is started. The system time can be retrieved by the @code{os.time} function, which is discussed in section X.
+@end deffn
 
 @subsection Functions That Interact With The OS
 
