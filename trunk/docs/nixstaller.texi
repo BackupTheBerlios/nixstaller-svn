@@ -650,7 +650,7 @@ modifyx(function(a, b)
 This does essentially the same, just with a anonymous function.
 
 @subsection Tables
-Tables are generic types also called @emph{objects}. Tables can be used to create new datatypes, store blocks of data (arrays) and even for OOP(Object Orientated Programming). Not all features of tables are described. Just the few that are in the authors opinion important to know for now. A good reference for lua tables is the @uref{http://www.lua.org, Lua Book}.
+Tables are generic types also called @emph{objects}. Tables can be used to create new datatypes, store blocks of data (arrays) and even for OOP(Object Orientated Programming). Not all features of tables are described. Just the few that are in the authors opinion important to know for now. A good reference for lua tables is the @uref{http://www.lua.org,Lua Book}.
 
 @subsubsection Creating A table
 Before we go in to details, lets start with how to create a table. Unlike other types, you have to @emph{construct} tables. The simplest way of doing this is like this:
@@ -969,7 +969,7 @@ print(string.format("An aligned number: %3d", 5))    -- Prints "An aligned numbe
 @end deffn
 
 @subsubsection Advanced String Functions
-Lua has a few advanced functions to find and replace (sub)strings. For now I will skip these and just point you to the right sections: @uref{This chapter in the Lua book, http://www.lua.org/pil/20.html} and parts of the @uref{Lua Manual, http://www.lua.org/manual/5.1/}.
+Lua has a few advanced functions to find and replace (sub)strings. For now I will skip these and just point you to the right sections: @uref{http://www.lua.org/pil/20.html,This chapter in the Lua book} and parts of the @uref{http://www.lua.org/manual/5.1/,Lua Manual}.
 
 @subsection Table Functions
 Lua has a few functions to help you when working with tables. These functions are all in the @emph{table} module.
@@ -1050,6 +1050,111 @@ Sets the @samp{seed} for the @code{math.random} function. For each seed an uniqu
 @end deffn
 
 @subsection Functions That Interact With The OS
+In the @code{os} module you can find functions that will handle OS specific things. Nixstaller has included some extra functions to this module.
+
+@defvr Variable os.osname
+This is a string containing the name of the current Operating System.
+@end defvr
+
+@defvr Variable os.arch
+This is a string containing the name of the current CPU architecture, such as x86 or x86_64.
+@end defvr
+
+@deffn Function os.chdir (d)
+Tries to change the current directory to directory @code{d}. On failure it will return @code{nil} and the error message, on success it will return @code{true}.
+@end deffn
+
+@deffn Function os.chmod (f, p)
+Changes the permissions from file or directory @code{f} using the unix like permission bits taken from string @code{p}. On failure it will return @code{nil} and a string containing the error message, on success it will return @code{true}.
+Example:
+@codeblock
+{os.chmod("mydir/", "777")    -- The directory 'mydir' has now read access for everyone}
+@end deffn
+
+@deffn Function os.clock ()
+Returns the time used by the CPU in seconds.
+@end deffn
+
+@deffn Function os.copy (f[, ...], d)
+Copies the file @code{f} to destination @code{d}. If @code{d} is a directory it will copy the file to that directory, if @code{d} is a file it will overwrite the contents of that file with the contents of @code{f}. You can also specify 3 or more arguments: in this case the last argument, @code{d}, should be a directory and all the previous arguments files that should be copied to this directory.
+examples:
+@codeblock
+{os.copy("file1", os.getenv("HOME"))         -- Copies 'file1' to the users home directory
+os.copy("file1", "file2")                   -- Replaces 'file2' with 'fil1'
+os.copy("file1", "file2", "file3", "/tmp")  -- Copies 'file1', 'file2' and 'file3' to /tmp}
+@strong{Note}: The source and destination files/directories should exist or else Lua will throw an error.
+For (other) copy failures @code{nil} and the error message will be returned. On success @code{true} is returned.
+@end deffn
+
+@deffn Function os.difftime (t2, t1)
+Returns the difference in seconds from @code{t2} and @code{t1}. Mostly this is the same as @code{t2 - t1}.
+@end deffn
+
+@deffn Function os.execute (c)
+@c UNDONE
+Executes the shell command @code{c}. It's recommended to use install.execute() instead (see section X).
+@end deffn
+
+@deffn Function os.exit ([n=0])
+Terminates the program with exit code @code{n}.
+@end deffn
+
+@deffn Function os.fileexists (f)
+Returns @code{true} if the file or directory @code{f} exists.
+@end deffn
+
+@deffn Function os.filesize (f)
+Returns the filesize in bytes of file @code{f} or @code{nil} plus the error message on failure.
+@end deffn
+
+@deffn Function os.getcwd ()
+Returns a string containing the current directory. On failure it will return @code{nil} and the error message.
+@end deffn
+
+@deffn Function os.getenv (v)
+Returns a string containing the value of the shell variable @code{v}. If this variable does not exists it will return @code{nil}.
+@end deffn
+
+@deffn Function os.isdir (f)
+Returns @code{true} if @code{f} is a directory.
+@end deffn
+
+@deffn Function os.mkdir (d[, m="0777"[, b])
+Tries to create the directory @code{d}. If @code{m} is given it should be a string with the unix style permission bits. If @code{b} is @code{true} the @samp{umask} of the current system will be ignored. See the manual page of @code{umask} for details. The function will return @code{nil} and an error message on failure, on success it will return @code{true}.
+Example:
+@codeblock
+{-- Creates directory in the users home directory with rwx access for the user only.
+os.mkdir(os.getenv("HOME") .. "/.myconfig", "700")}
+@end deffn
+
+@deffn Function os.mkdirrec (d[, m="0777"[, b])
+Tries to create directory @code{d} and its parent directories if non existant. @code{m} and @code{b} have the same function as with @code{os.mkdir}. Returns @code{nil} and an error message on failure, on success it will return @code{true}.
+@end deffn
+
+@deffn Function os.readperm (f)
+Returns @code{true} if the file or directory @code{f} can be read.
+@end deffn
+
+@deffn Function os.remove (f)
+Removes the file or directory @code{f}. Directories needs to be empty to be removed. On error it returns @code{nil} and a string containing the error message.
+@end deffn
+
+@deffn Function os.rename (f, f2)
+Renames the file or directory @code{f} to @code{f2}. Returns @code{nil} and a string containing the error message.
+@end deffn
+
+@deffn Function os.time ()
+Returns the current system time. This can for example be used as an argument for @code{math.randomseed}. There is also a second version which will put information in a table, such as the current day and month. For this see the @uref{http://www.lua.org/manual/5.1/,Lua Manual}.
+@end deffn
+
+@deffn Function os.tmpname ()
+Returns a random file name which can be used for files in the @code{/tmp} directory. This only returns a filename; you still have to create it (see the io package) and remove it manually.
+@end deffn
+
+@deffn Function os.writeperm (f)
+Returns @code{true} if the file or directory @code{f} has write access for the current user.
+@end deffn
+
 
 @subsection I/O Functions
 
