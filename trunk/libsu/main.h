@@ -69,6 +69,10 @@ extern "C" int unlockpt(int fd) __THROW;
 extern "C" char *_getpty(int *, int, mode_t, int);
 #endif
 
+#ifndef HAVE_VASPRINTF
+extern "C" int vasprintf (char **result, const char *format, va_list args);
+#endif
+
 #ifdef HAVE__PTY_H
     #include <pty.h>
 #endif

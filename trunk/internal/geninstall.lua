@@ -136,9 +136,17 @@ function PackDirectory(dir, file)
     sizesfile:close()
     tarlistfile:close()
     
-    -- Tar all files from the temp list file. Note that solaris(sunos) tar uses -I instead of -T used by other
+    -- Tar all files from the temp list file. Note that solaris (sunos) tar uses -I instead of -T used by other
     -- systems as list file option
-    os.execute(string.format("tar c %s %s -f %s.tmp", (os.osname == "sunos") and "-I" or "-T", tarlistfname, file))
+    local listopt = "-T" -- Default to -T
+    if (os.osname == "sunos") then
+        -- Check if we're using GNU tar (Nexenta uses this by default, Solaris 10 doesn't)
+        if (os.execute("tar --version | grep GNU 2>&1 >/dev/null")) then
+            listop = "-I"
+        end
+    end
+        
+    os.execute(string.format("tar c %s %s -f %s.tmp", listopt, tarlistfname, file))
     
     if archivetype == "gzip" then
         os.execute(string.format("gzip -c9 %s.tmp > %s", file, file))

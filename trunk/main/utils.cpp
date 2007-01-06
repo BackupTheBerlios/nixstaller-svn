@@ -336,7 +336,7 @@ void MKDir(const char *dir, int mode)
         throw Exceptions::CExMKDir(errno);
 }
 
-void UName(utsname &u)
+void UName(struct utsname &u)
 {
     if (uname(&u) == -1)
         throw Exceptions::CExUName(errno);

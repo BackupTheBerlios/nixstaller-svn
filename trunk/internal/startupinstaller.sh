@@ -52,12 +52,23 @@ configure()
     OS=`uname`
     CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
     echo "Operating system: $CURRENT_OS"
+
+    # Nexenta (and Solaris) have 2 terminfo directories: one in
+    # /usr/share/terminfo and one in /usr/share/lib/terminfo. Solaris ncurses
+    # works with both, Nexenta only with the second on a regular terminal.
+    # Another catch is that Solaris (but not Nexenta...) doesn't work with the
+    # terminal 'sun-color' but does with 'sun'. So we overide the 2 here...
+    # UNDONE
     
     CURRENT_ARCH=`uname -m`
     # iX86 --> x86
     echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86"
+
+    # Solaris uses i86pc instead of x86 (or i*86), convert
+    echo $CURRENT_ARCH | grep "i86pc" >/dev/null && CURRENT_ARCH="x86"   
+
     echo "CPU Arch: $CURRENT_ARCH"
-    
+  
     # Get all C libs. Sorted so higher versions come first
     LIBCS=`echo /lib/libc.so.* | sort -nr`
     echo "C libraries: $LIBCS"

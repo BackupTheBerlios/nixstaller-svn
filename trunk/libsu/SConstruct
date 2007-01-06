@@ -37,6 +37,8 @@ if not env.GetOption('clean'):
     
     conf.CheckFunc('getpeereid')
     
+    conf.CheckFunc('vasprintf')
+
     conf.CheckLib('util')
 
     if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
@@ -49,7 +51,7 @@ else:
     Execute(Delete('.sconsign.dblite'))
 
 # Builds the lib
-env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp'))
+env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp vasprintf.c'))
 
 # Builds test program
 env.Program("libtest", 'libtest.cpp', LIBPATH=".", LIBS=Split('$LIBS su'))

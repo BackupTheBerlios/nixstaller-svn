@@ -67,7 +67,7 @@ protected:
     }
     
 public:
-    CException(void) { /*assert(false); */ };
+    CException(void) { assert(false); };
     virtual const char *what(void) throw() = 0;
 };
 

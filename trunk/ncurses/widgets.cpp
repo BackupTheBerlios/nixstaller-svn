@@ -1933,7 +1933,7 @@ bool CMenu::HandleKey(chtype ch)
                 
                 if (line != m_pMenuText->GetLines())
                 {
-                    VScroll(SafeConvert<int>(line - GetCurrent()));
+                    VScroll(SafeConvert<int>(line) - SafeConvert<int>(GetCurrent()));
                     PushEvent(EVENT_DATACHANGED);
                 }
             }

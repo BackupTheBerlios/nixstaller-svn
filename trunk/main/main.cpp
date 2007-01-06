@@ -86,6 +86,7 @@ int main(int argc, char **argv)
     if (!runscript)
         StopFrontend();
     
+    FreeStrings();
     return ret;
 }
 
@@ -101,14 +102,14 @@ CMain::~CMain()
             delete [] (*p).second;
     }
     
-    FreeStrings();
+//    FreeStrings();
     closelog();
 }
 
 void CMain::Init(int argc, char **argv)
 {
     // Get current OS and cpu arch name
-    utsname inf;
+    struct utsname inf;
     UName(inf);
     
     m_szOS = inf.sysname;
@@ -117,6 +118,8 @@ void CMain::Init(int argc, char **argv)
     m_szCPUArch = inf.machine;
     // Convert iX86 to x86
     if ((m_szCPUArch[0] == 'i') && (m_szCPUArch.compare(2, 2, "86") == 0))
+        m_szCPUArch = "x86";
+    else if (m_szCPUArch == "i86pc")
         m_szCPUArch = "x86";
 
     m_szOwnDir = GetCWD();

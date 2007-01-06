@@ -83,7 +83,7 @@ public:
 
 
     CBaseInstall(void) : m_ulTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_bAlwaysRoot(false), m_sInstallSteps(0), m_sCurrentStep(0),
+                         m_bAlwaysRoot(false), m_sInstallSteps(1), m_sCurrentStep(0),
                          m_fInstallProgress(0.0f), m_bInstalling(false) { };
     virtual ~CBaseInstall(void) { };
 
