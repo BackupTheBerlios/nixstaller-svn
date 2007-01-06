@@ -35,12 +35,12 @@ DOCS
 - Add info for default func arguments
 - Check for right vertical spacing, paragraphs etc
 - Escape characters
-- Add the right returned values from lua os functions
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
 - Disable libsu logging
-        
+- Disable debug Lua lib
+
 ----------------------------- LATER ------------------------------------
 
 REGISTER

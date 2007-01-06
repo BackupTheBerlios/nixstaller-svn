@@ -588,24 +588,6 @@ As shown above @code{local} variables can have the same name as a existing globa
 @c UNDONE
 In this section some of the more advanced features of Lua will be shown. Atleast the first 2 sections of tables is important. For less advanced installers these might be enough for now.
 
-@comment @subsection More About Functions
-@comment 
-@comment @subsubsection Closures
-@comment @c UNDONE: Refer to Lua Book?
-@comment A @emph{closure} is the concept where a function is returned by another function. Here is how it generally looks:
-@comment @codeblock
-@comment {function f()
-@comment     -- Some code and most lickely some locals
-@comment     return function()
-@comment         -- Code for 'child' function 
-@comment     end
-@comment end}
-@comment 
-@comment 
-@comment The function that is returned has access to all 
-@comment 
-@comment @subsubsection Local Functions
-
 @subsection Functions As Variables
 @c UNDONE
 As said before in section X, functions are a variable type. The way we did to create functions so far is actually a shortcut to assign a function to a (global) variable:
@@ -716,6 +698,25 @@ For functions in packages Lua has a shortcut:
 function mypackage.f()
     -- Some code
 end}
+
+@subsubsection Table Seen As A Class
+Tables can also be threaded as @emph{classes}. Simply put these are data types much like records; they have their own variables, called @emph{members} and their own functions, called @emph{methods}. Each class has to be created, mostly through another function.@*
+@*
+In this guide we'll skip the details about creating classes and terms such as inheritance. Instead the only thing that is discussed is how to use them, since a few functions from the Lua Library deal with classes.@*
+@*
+Usually calling function methods from a class is slightly different than that from packages: with packages you used the @samp{.} operator, however with classes you use the @samp{:} operator instead.@*
+@*
+@c UNDONE
+Here follows an example using the @code{io} package from the Lua library. In section X all the IO functionality is discussed.
+@codeblock
+{-- The following line opens the file 'myfile.txt' for reading (specified by "r"). The io.open function returns a class that can be used to operate on the opened file.
+file = io.open("myfile.txt", "r")
+@*
+-- One of the methods of the class is read(), using this function we can read everything from the file to a string:
+text = file:read("*all")
+@*
+-- And when we're done, we use the close method to close the file and free the used resources:
+file:close()}
 
 @subsubsection Traversing Tables
 To traverse a table we can use the @emph{generic} @code{for} loop combined with a @emph{iterator function}. The syntax looks like this:
@@ -1050,14 +1051,25 @@ Sets the @samp{seed} for the @code{math.random} function. For each seed an uniqu
 @end deffn
 
 @subsection Functions That Interact With The OS
-In the @code{os} module you can find functions that will handle OS specific things. Nixstaller has included some extra functions to this module.
-
-@defvr Variable os.osname
-This is a string containing the name of the current Operating System.
-@end defvr
+In the @code{os} package you can find functions that will handle OS specific things. Nixstaller has included some extra functions to this module.@*
+@*
+On failure (ie a file doesn't exist), some functions will return 2 things: @code{nil} and a string containing an error message. On success these functions will return @code{true}. With this you can easily handle errors like so:
+@codeblock
+{-- Function taken from internal Nixstaller code
+-- (ThrowError is just a function that cleans some stuff up and calls error())
+function RequiredCopy(src, dest)
+    local stat, msg = os.copy(src, dest)
+    if (not stat) then
+        ThrowError("Error could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
+    end
+end}
 
 @defvr Variable os.arch
 This is a string containing the name of the current CPU architecture, such as x86 or x86_64.
+@end defvr
+
+@defvr Variable os.osname
+This is a string containing the name of the current Operating System.
 @end defvr
 
 @deffn Function os.chdir (d)
@@ -1068,7 +1080,7 @@ Tries to change the current directory to directory @code{d}. On failure it will 
 Changes the permissions from file or directory @code{f} using the unix like permission bits taken from string @code{p}. On failure it will return @code{nil} and a string containing the error message, on success it will return @code{true}.
 Example:
 @codeblock
-{os.chmod("mydir/", "777")    -- The directory 'mydir' has now read access for everyone}
+{os.chmod("mydir/", "777")    -- The directory 'mydir' has now full access for everyone}
 @end deffn
 
 @deffn Function os.clock ()
@@ -1082,7 +1094,7 @@ examples:
 {os.copy("file1", os.getenv("HOME"))         -- Copies 'file1' to the users home directory
 os.copy("file1", "file2")                   -- Replaces 'file2' with 'fil1'
 os.copy("file1", "file2", "file3", "/tmp")  -- Copies 'file1', 'file2' and 'file3' to /tmp}
-@strong{Note}: The source and destination files/directories should exist or else Lua will throw an error.
+@strong{Note}: The source and destination files/directories should exist or else Lua will throw an error and abort the program.
 For (other) copy failures @code{nil} and the error message will be returned. On success @code{true} is returned.
 @end deffn
 
@@ -1092,7 +1104,7 @@ Returns the difference in seconds from @code{t2} and @code{t1}. Mostly this is t
 
 @deffn Function os.execute (c)
 @c UNDONE
-Executes the shell command @code{c}. It's recommended to use install.execute() instead (see section X).
+Executes the shell command @code{c}. This function returns the exit code from the executed command. It's recommended to use install.execute() instead (see section X).
 @end deffn
 
 @deffn Function os.exit ([n=0])
@@ -1112,7 +1124,7 @@ Returns a string containing the current directory. On failure it will return @co
 @end deffn
 
 @deffn Function os.getenv (v)
-Returns a string containing the value of the shell variable @code{v}. If this variable does not exists it will return @code{nil}.
+Returns a string containing the value of the shell variable @code{v}. If this variable does not exists, @code{nil} will be returned.
 @end deffn
 
 @deffn Function os.isdir (f)
@@ -1136,11 +1148,11 @@ Returns @code{true} if the file or directory @code{f} can be read.
 @end deffn
 
 @deffn Function os.remove (f)
-Removes the file or directory @code{f}. Directories needs to be empty to be removed. On error it returns @code{nil} and a string containing the error message.
+Removes the file or directory @code{f}. Directories needs to be empty to be removed. On error it returns @code{nil} and a string containing the error message. On success @code{true} will be returned.
 @end deffn
 
 @deffn Function os.rename (f, f2)
-Renames the file or directory @code{f} to @code{f2}. Returns @code{nil} and a string containing the error message.
+Renames the file or directory @code{f} to @code{f2}. On error it will return @code{nil} and a string containing the error message, on success @code{true}.
 @end deffn
 
 @deffn Function os.time ()
