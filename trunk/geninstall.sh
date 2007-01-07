@@ -16,9 +16,10 @@ for LC in `ls -d bin/${CURRENT_OS}/${CURRENT_ARCH}/libc* 2>/dev/null | sort -nr`
 do
     for LCPP in `ls -d ${LC}/'libstdc++'* 2>/dev/null | sort -nr`
     do
-        for BIN in ${LCPP}/$FRONTENDS
+        for F in $FRONTENDS
         do
-            if [ -e $BIN ]; then
+            BIN=${LCPP}/$F
+            if [ -f $BIN ]; then
                 if [ -z "`ldd $BIN | grep 'not found'`" ]; then
                     $BIN -c "$CURDIR/internal/geninstall.lua" $* || exit 1
                     exit 0

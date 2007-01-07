@@ -25,7 +25,6 @@
 */
 
 #include <main.h>
-#include <stdarg.h>
 #include <sys/time.h>
 
 using namespace LIBSU;

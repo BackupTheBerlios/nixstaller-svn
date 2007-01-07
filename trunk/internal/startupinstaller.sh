@@ -40,7 +40,7 @@
 # $2: libc directory to be used for lzma
 unlzma()
 {
-    if [ ! -z "$1" -a -e $1.lzma ]; then
+    if [ ! -z "$1" -a -f $1.lzma ]; then
         $2/lzma-decode $1.lzma $1 2>&1 >/dev/null && rm $1.lzma
     fi
 }
@@ -75,6 +75,12 @@ configure()
     
     # Get all C++ libs. Sorted so higher versions come first
     LIBSTDCPPS=`echo '/usr/lib/libstdc++.so.'* | sort -nr`
+
+    # Found any C++ libs?
+    if [ $LIBSTDCPPS = '/usr/lib/libstdc++.so.*' ]; then
+        LIBSTDCPPS=`echo '/usr/sfw/lib/libstdc++.so.'* | sort -nr` # Probably Solaris, so try a Solaris specific dir aswell
+    fi
+
     echo "C++ libraries: $LIBSTDCPPS"
 }
 
@@ -125,7 +131,7 @@ do
             continue
         fi
     
-        if [ $ARCH_TYPE = "lzma" -a ! -e ${LCDIR}/lzma-decode ]; then
+        if [ $ARCH_TYPE = "lzma" -a ! -f ${LCDIR}/lzma-decode ]; then
             continue # No usable lzma-decoder
         fi
         
@@ -142,15 +148,15 @@ do
             
             unlzma ${LCPPDIR}/$FR ${LCDIR}
             
-            if [ -e ${LCPPDIR}/$FR ]; then
-                FRONTEND="${LCPPDIR}/$FR"
-                if [ ! -z "$ED_SRC" -a $FRONTEND != $ED_SRC ]; then
-                    edelta ${LCDIR} $ED_SRC $FRONTEND
+            if [ -f ${LCPPDIR}/$FR ]; then
+                FRBIN="${LCPPDIR}/$FR"
+                if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
+                    edelta ${LCDIR} $ED_SRC $FRBIN
                 fi
                 
                 # Run it
-                chmod +x $FRONTEND # deltas en lzma packed bins probably aren't executable yet
-                ./$FRONTEND
+                chmod +x $FRBIN # deltas en lzma packed bins probably aren't executable yet
+                ./$FRBIN
                 exit $?
             fi
         done

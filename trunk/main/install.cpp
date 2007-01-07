@@ -350,7 +350,28 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
                 
     if (stat.compare(0, 2, "x ") == 0)
         stat.erase(0, 2);
-                               
+
+    if (m_szOS == "sunos") // HACK: Solaris tar outputs additional information after file name, remove it
+    {
+        // Format is "x <filename>, <n> bytes, <n> tape blocks. The "x " part is already removed.
+        
+        // Search for second last comma
+        TSTLStrSize commapos = stat.rfind(",");
+        if (commapos != std::string::npos)
+            commapos = stat.rfind(",", commapos-1);
+        
+        if (commapos != std::string::npos)
+        {
+            debugline("Results: %u and %u\n",(stat.find("bytes", commapos)), (stat.find("tape blocks", commapos)));
+            // Unfortunaly file names can contain comma's so verify a little more...
+            if ((stat.find("bytes", commapos) != std::string::npos) && (stat.find("tape blocks", commapos) != std::string::npos))
+            {
+                // Should be safe now...
+                stat.erase(commapos);
+            }
+        }
+    }
+    
     EatWhite(stat);
 
     if (m_ArchList[m_szCurArchFName].filesizes.find(stat) == m_ArchList[m_szCurArchFName].filesizes.end())

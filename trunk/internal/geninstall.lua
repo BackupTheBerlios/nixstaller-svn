@@ -141,12 +141,12 @@ function PackDirectory(dir, file)
     local listopt = "-T" -- Default to -T
     if (os.osname == "sunos") then
         -- Check if we're using GNU tar (Nexenta uses this by default, Solaris 10 doesn't)
-        if (os.execute("tar --version | grep GNU 2>&1 >/dev/null")) then
-            listop = "-I"
+        if (os.execute("tar --version 2>&1 | grep GNU >/dev/null")) then
+            listopt = "-I"
         end
     end
         
-    os.execute(string.format("tar c %s %s -f %s.tmp", listopt, tarlistfname, file))
+    os.execute(string.format("tar cf %s.tmp %s %s", file, listopt, tarlistfname))
     
     if archivetype == "gzip" then
         os.execute(string.format("gzip -c9 %s.tmp > %s", file, file))
