@@ -141,7 +141,7 @@ function PackDirectory(dir, file)
     local listopt = "-T" -- Default to -T
     if (os.osname == "sunos") then
         -- Check if we're using GNU tar (Nexenta uses this by default, Solaris 10 doesn't)
-        if (os.execute("tar --version 2>&1 | grep GNU >/dev/null")) then
+        if (os.execute("tar --version 2>&1 | grep GNU >/dev/null") ~= 0) then
             listopt = "-I"
         end
     end
@@ -207,7 +207,7 @@ function Init()
     local basebindir = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
-                        return (os.fileexists(bin) and os.execute(string.format("ldd %s | grep \"not found\" >/dev/null", bin)))
+                        return (os.fileexists(bin) and (os.execute(string.format("ldd %s | grep \"not found\" >/dev/null", bin) ~= 0)))
                      end
     
     for lc in TraverseBinLibDir(basebindir, "^libc") do

@@ -77,7 +77,7 @@ configure()
     LIBSTDCPPS=`echo '/usr/lib/libstdc++.so.'* | sort -nr`
 
     # Found any C++ libs?
-    if [ $LIBSTDCPPS = '/usr/lib/libstdc++.so.*' ]; then
+    if [ "$LIBSTDCPPS" = '/usr/lib/libstdc++.so.*' ]; then
         LIBSTDCPPS=`echo '/usr/sfw/lib/libstdc++.so.'* | sort -nr` # Probably Solaris, so try a Solaris specific dir aswell
     fi
 
