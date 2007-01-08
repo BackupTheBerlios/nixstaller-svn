@@ -391,43 +391,43 @@ void CBaseInstall::InitLua()
     CMain::InitLua();
     
     m_LuaVM.InitClass("cfgscreen");
-    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddInput, "AddInput", this);
-    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCheckbox, "AddCheckbox", this);
-    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddRadioButton, "AddRadioButton", this);
-    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddDirSelector, "AddDirSelector", this);
-    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCFGMenu, "AddCFGMenu", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddInput, "addinput", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCheckbox, "addcheckbox", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddRadioButton, "addradiobutton", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddDirSelector, "adddirselector", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCFGMenu, "addcfgmenu", this);
     
     m_LuaVM.InitClass("inputfield");
-    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "Get", this);
-    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaSetSpace, "SetSpacing", this);
+    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "get", this);
+    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaSetSpace, "setspacing", this);
     
     m_LuaVM.InitClass("checkbox");
-    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaGet, "Get", this);
-    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaSet, "Set", this);
+    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaGet, "get", this);
+    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaSet, "set", this);
     
     m_LuaVM.InitClass("radiobutton");
-    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaGet, "Get", this);
-    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaSet, "Set", this);
+    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaGet, "get", this);
+    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaSet, "set", this);
 
     m_LuaVM.InitClass("dirselector");
-    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaGet, "Get", this);
-    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaSet, "Set", this);
+    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaGet, "get", this);
+    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaSet, "set", this);
 
     m_LuaVM.InitClass("configmenu");
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaGet, "Get", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddDir, "AddDir", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddString, "AddString", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddList, "AddList", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddBool, "AddBool", this);
+    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaGet, "get", this);
+    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddDir, "adddir", this);
+    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddString, "addstring", this);
+    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddList, "addlist", this);
+    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddBool, "addbool", this);
 
-    m_LuaVM.RegisterFunction(LuaGetTempDir, "GetTempDir", NULL, this);
-    m_LuaVM.RegisterFunction(LuaNewCFGScreen, "NewCFGScreen", NULL, this);
-    m_LuaVM.RegisterFunction(LuaExtractFiles, "ExtractFiles", NULL, this);
-    m_LuaVM.RegisterFunction(LuaExecuteCMD, "Execute", NULL, this);
-    m_LuaVM.RegisterFunction(LuaExecuteCMDAsRoot, "ExecuteAsRoot", NULL, this);
-    m_LuaVM.RegisterFunction(LuaAskRootPW, "AskRootPW", NULL, this);
-    m_LuaVM.RegisterFunction(LuaSetStatusMSG, "SetStatus", NULL, this);
-    m_LuaVM.RegisterFunction(LuaSetStepCount, "SetStepCount", NULL, this);
+    m_LuaVM.RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
+    m_LuaVM.RegisterFunction(LuaNewCFGScreen, "newcfgscreen", "install", this);
+    m_LuaVM.RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
+    m_LuaVM.RegisterFunction(LuaExecuteCMD, "execute", "install", this);
+    m_LuaVM.RegisterFunction(LuaExecuteCMDAsRoot, "executeasroot", "install", this);
+    m_LuaVM.RegisterFunction(LuaAskRootPW, "askrootpw", "install", this);
+    m_LuaVM.RegisterFunction(LuaSetStatusMSG, "setstatus", "install", this);
+    m_LuaVM.RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
     
     m_LuaVM.LoadFile("config/config.lua");
     

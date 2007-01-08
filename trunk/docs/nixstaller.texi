@@ -1131,6 +1131,10 @@ Returns a string containing the value of the shell variable @code{v}. If this va
 Returns @code{true} if @code{f} is a directory.
 @end deffn
 
+@deffn Function os.log (s, ...)
+Logs the text from string @code{s} and all the function arguments after that, using @code{syslog}. You can use this function to debug for example.
+@end deffn
+
 @deffn Function os.mkdir (d[, m="0777"[, b])
 Tries to create the directory @code{d}. If @code{m} is given it should be a string with the unix style permission bits. If @code{b} is @code{true} the @samp{umask} of the current system will be ignored. See the manual page of @code{umask} for details. The function will return @code{nil} and an error message on failure, on success it will return @code{true}.
 Example:
@@ -1169,8 +1173,242 @@ Returns @code{true} if the file or directory @code{f} has write access for the c
 
 
 @subsection I/O Functions
+The @code{io} package provides several Input/Output functions. As with some functions from the @code{os} package, some functions return @code{nil} and a string containing an error message on failure and @code{true} on success.@*
+@*
+At the first some functions of the @code{io} package will be discussed. After that the @code{file} class will be explained. Instead of adding examples for most functions, this section ends with a few bigger examples. This because most functions need eachother.
+
+@deffn Function io.dir (d)
+@c UNDONE
+This function is a function iterator (see section X) that is used to scan directory @code{d}. On success the function will return a string containing the next file or directory name. On failure (ie. the directory does not exist) it will return @code{nil} and a string containing the error message.@*
+Example:
+@codeblock
+{-- This will list every file and directory in the current directory
+for d in io.dir(".") do
+    print(d)
+end}
+@end deffn
+
+@deffn Function io.open (f[, m="r"])
+Tries to open the file @code{f}. The optional argument @code{m} defines how to open the file. This should be a string containing one of these:
+@table @code
+@item "r"
+Opens the file in read mode. All reads start from the beginning of the file. Fails if the file doesn't exist.
+@item "w"
+Opens the file in write mode. If the file exists all the previous contents will be removed first. The file will be created if the file doesn't exist.
+@item "r+"
+Opens the file for reading and writing. The previous contents will be kept and reading/writing will start at the beginning. Fails if the file doesn't exist.
+@item "w+"
+Opens the file for writing and reading. The file will be cleared if it exists or created if it doesn't exist. Writing/Reading starts from the beginning.
+@item "a"
+Opens the file in append mode. If a file exists it the contents will be kept and writing starts from the end of the file. If the file doesn't exist it will be created.
+@item "a+"
+Opens the file in append and read mode. This is the same as the "a" option except that a file can be read aswell (reading also starts at the end of the file).
+@end table
+A @samp{b} can be appended to the mode string indicating that it's a binary file. This isn't necessary on most UNIX like systems though because binary and text files are threaded equally.@*
+@*
+@c UNDONE
+On success, this function will return a @emph{file handle}. This is a class (see section X) with member functions to operate on the file. File handles are discussed in section X. When the file could not be opened, @code{nil} and an error message is returned.
+@end deffn
+
+@deffn Function io.popen (c[, m="r"])
+@c UNDONE
+This will execute the shell command @code{c} in a seperate process. The function returns a @emph{file handle} like @code{io.open} does. More on file handles in section X.@*
+@*
+If @code{m} is "r" all data from the command that is written to the standard output can be read. If "w" is specified the standard input from the file is linked to the data provided from writes.
+@end deffn
+
+@deffn Function io.tmpfile ()
+@c UNDONE
+Creates a temporary file and returns a @emph{file handle}. This file has a random name and is opened as "r+b" (see section X). On exit the file is removed automaticly.
+@end deffn
+
+@deffn Function io.type (t)
+This function checks the file handle @code{f}. If the file is opened it will return the string "file", if it's closed "closed file" or @code{nil} if @code{t} is not a file handle.
+@end deffn
+
+@subsubsection File Handles
+@c UNDONE
+File handles are classes (see section X) that can operate on files, such as reading or writing. They are returned from @code{io.open}, @code{io.popen} and @code{io.tmpfile}. The file handle class is referred with the name @code{file} each time below.
+
+@deffn Function file:close ()
+Closes the file. When a file is closed you cannot read or write from/to it anymore. Note that each file eventually is closed automaticly.
+@end deffn
+
+@deffn Function file:flush ()
+Normally writes are @emph{buffered}. This function forces to write and clean the buffer.
+@end deffn
+
+@deffn Function file:lines ()
+@c UNDONE
+This is an iterator function (see section X) that can be used in a generic @code{for} loop to get each line from the file. Note that the trailing newlines are deleted from the output.
+@end deffn
+
+@deffn Function file:read (...)
+This file is used to read from the file. The used arguments should be one of the following formats:
+@table @strong
+@item "*n"
+Reads a number and will return it.
+@item "*a"
+Reads the whole file and returns it as a string.
+@item "*l"
+Reads and returns (the rest of) a line, without a trailing newline.
+@item A number
+Reads the specified amount of bytes and returns it as a string.
+@end table
+If no function arguments are used, the @samp{*l} option is used. This function is variadic, so multiple formats can be specified in one call. On error @code{nil} is returned.
+@end deffn
+
+@deffn Function file:seek ([b="cur"[, o=0]])
+This function can be used to set/get the current file position. This position is used to start reading or writing. The parameter @code{b} is used to specify a base location and @code{o} is a number which specifies the offset from that. @code{b} can be any of these strings:
+@table @strong
+@item "set"
+The base is at the beginning of the file.
+@item "cur"
+The base starts from the current location.
+@item "end"
+The base starts from the end of the file.
+@end table
+The return value is the position after the change has been applied. So @code{file:seek("set")} will return @samp{0}, @code{file:seek("cur")} returns the current position and @code{file:seek("end")} the end position. Note that this function does not work with file handles gained from the @code{io.popen} function.
+@end deffn
+
+@deffn Function file:setvbuf (m[, s=?])
+Writing to a file is @emph{buffered}. This is to gain performance. The first parameter, @code{m}, is a string which defines how to buffer:
+@table @strong
+@item "no"
+Writes are unbuffered, meaning the data will be written immediately.
+@item "full"
+Writes are fully buffered, this is the default. Data will only be written when the buffer is full, @code{file:flush} is called or when the file is closed.
+@item "line"
+Like "full", but the data is also written after each newline.
+@end table
+The optional @code{s} argument specifies the buffer size in bytes. By default this is a value which suids the system the most.
+@end deffn
+
+@deffn Function file:write (...)
+Writes each function argument to the file. Numbers and strings are valid argument types.
+@end deffn
+
+@subsubsection Examples
+Here follow a few examples of the IO related functions that were discussed.@*
+@*
+@codeblock
+{-- This code will open a file, read and display its contents and close it
+f, msg = io.fopen("test.txt", "r")    -- f will contain the file handle, msg an error message on failure
+@*
+-- File could not be opened? (ie doesn't exists)
+if (not f) then
+    print("Could not open file: " .. msg)
+    exit(1)    --- UNDONE: see section X
+end
+@*
+print(f:read("*a"))
+@*
+f:close()
+}
+@*
+Here is another example showing how to copy a file; it reads one line and writes it to a second file
+@codeblock
+{-- Function that copies the contents of file src to file dest
+function copy(src, dest)
+    local f_src = io.open(src, "r")
+    local f_dest = io.open(dest, "w")
+@*
+    if (not f_src or not f_dest) then
+        print("Error opening files")
+        return
+    end
+@*
+    for line in f_src:lines() do
+        f_dest:write(line)
+@*
+        -- lines() will not return the trailing newline, so we have to add it manually
+        f_dest:write("\\n")
+    end
+@*
+    f_src:close()
+    f_dest:close()
+end}
+@*
+The last example is about @code{io.popen}:
+@codeblock
+{-- This code will execute @samp{ls -a} and print its output
+cmd = io.popen("ls -a", "r")
+@*
+if (cmd) then
+    local line = cmd:read()
+    while (line) do
+        print(line)
+        line = cmd:read()
+    end
+    cmd:close()
+else
+    print("Could not execute command")
+end
+@*
+This will 'open' the unix command @samp{cat} and feed it some data:
+cmd = io.popen("cat", "w")
+@*
+if (cmd) then
+    for i=1,10 do
+        cmd:write("Line " .. i .. "\\n")
+    end
+else
+    print("Could not execute command")
+end}
 
 @subsection Installation Functions
+@c UNDONE
+This section describes all the install related functions. They are obviously Lua extensions so you won't find them in any other Lua manual. @strong{All} these functions should only be called from the @code{install()} function. It's better to use this section as a reference after you've read chapter X.
+
+@subsubsection The @code{install} Module
+
+@deffn Function install.askrootpw ()
+This function will ask the user to type the systems root password. Normally this is done automaticly if,
+@itemize
+@item @code{executeasroot()} is called,
+@item when @code{install.destdir} is set to a directory which cannot be written to by the user.
+@end itemize
+A good reason to call this functions is when you're sure the script will execute one or more commands as root @emph{after} @code{install.extractfiles()} is called. This way the user can abort if he or she doesn't want to or cannot type the root password before the installation begins.@*
+@*
+When this function is called more than once it won't do anything (the password is cached).
+@end deffn
+
+@deffn Function install.execute (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
+This function will execute the shell command defined by string @code{s}. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. The optional argument, @code{r}, tells that the installation should be aborted when the command failed to execute.@*
+@*
+This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.
+@end deffn
+
+@deffn Function install.executeasroot (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
+This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so.
+@end deffn
+
+@deffn Function install.extractfiles ()
+This function will extract all installation files to the directory that was specified by the global variable @code{destdir}. This function will automaticly call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
+@end deffn
+
+@deffn Function install.gettempdir ()
+This function is used to assign a temporary directory the the @code{destdir} variable. Setting @code{destdir} to a temporary directory is useful for installers that need to do additional tasks with the installation files such as compilation.
+@end deffn
+
+@deffn Function install.newcfgscreen ([t])
+@c UNDONE
+This function will return a class for a new @emph{configuration screen}. The members of this class are described in section X. The optional argument, @code{t}, specifies a (short) title for this screen.
+@end deffn
+
+@deffn Function install.setstatus (s)
+You can use this function to specify the current status of the installation. This way the user can see what the installer is doing. @*
+Example:
+@codeblock
+{-- Somewhere inside the install() function
+-- ...
+install.setstatus("Copying files")
+os.copy(file1, file2, "/usr/local/share")}
+@end deffn
+
+@deffn Function install.setstepcount (n=1)
+This function is used to specify how many @emph{steps} the installation has, specified by parameter @code{n}. This is used to divide the progress bar and to put a text in the form of (x/X) on the screen, where @samp{x} is the current step and @samp{X} the total count of steps. On each @code{install.setstatus} call (including from @code{install.extractfiles()}) the current step will be incremented by one.
+@end deffn
 
 @subsection Other Functions
 

@@ -350,8 +350,12 @@ void CMain::InitLua()
     m_LuaVM.RegisterFunction(LuaGetCWD, "getcwd", "os");
     m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
     m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
-    m_LuaVM.RegisterFunction(LuaMSGBox, "MSGBox", NULL, this);
-    m_LuaVM.RegisterFunction(LuaLog, "Log", NULL, this);
+    m_LuaVM.RegisterFunction(LuaLog, "log", "os", this);
+    
+    m_LuaVM.RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
+    m_LuaVM.RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
+    m_LuaVM.RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
+    m_LuaVM.RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     
     // Set some default values for config variabeles
     m_LuaVM.SetArrayStr("english", "languages", 1);
@@ -368,11 +372,21 @@ int CMain::LuaInitDirIter(lua_State *L)
 {
     const char *path = luaL_checkstring(L, 1);
     
-    CDirIter **d = (CDirIter **)lua_newuserdata(L, sizeof(CDirIter *));
-    *d = NULL;
-
-    *d = new CDirIter(path);
+    CDirIter *it = NULL;
+    try
+    {
+        it = new CDirIter(path);
+    }
+    catch (Exceptions::CExOpenDir &e)
+    {
+        lua_pushnil(L);
+        lua_pushstring(L, e.what());
+        return 2;
+    }
     
+    CDirIter **d = (CDirIter **)lua_newuserdata(L, sizeof(CDirIter *));
+    *d = it;
+
     if (luaL_newmetatable(L, "diriter") == 1) // Table didn't exist yet?
     {
         lua_pushstring(L, "__gc");
@@ -720,6 +734,63 @@ int CMain::LuaGetFileSize(lua_State *L)
     return 1;
 }
 
+int CMain::LuaLog(lua_State *L)
+{
+    std::string msg = luaL_checkstring(L, 1);
+    int args = lua_gettop(L);
+    
+    for (int i=2; i<=args; i++)
+        msg += luaL_checkstring(L, i);
+    
+    syslog(0, msg.c_str());
+    
+    return 0;
+}
+
+int CMain::LuaYesNoBox(lua_State *L)
+{
+    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
+    std::string msg = luaL_checkstring(L, 1);
+    int args = lua_gettop(L);
+    
+    for (int i=2; i<=args; i++)
+        msg += luaL_checkstring(L, i);
+    
+    lua_pushboolean(L, pMain->YesNoBox(msg.c_str()));
+    
+    return 1;
+}
+
+int CMain::LuaChoiceBox(lua_State *L)
+{
+    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
+    std::string msg = luaL_checkstring(L, 1);
+    const char *but1 = luaL_checkstring(L, 2);
+    const char *but2 = luaL_checkstring(L, 3);
+    const char *but3 = lua_tostring(L, 4);
+    
+    debugline("but1: %s\n", but1);
+    debugline("but2: %s\n", but2);
+    if (but3) debugline("but3: %s\n", but3);
+    lua_pushinteger(L, pMain->ChoiceBox(msg.c_str(), but1, but2, but3));
+    
+    return 1;
+}
+
+int CMain::LuaWarnBox(lua_State *L)
+{
+    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
+    std::string msg = luaL_checkstring(L, 1);
+    int args = lua_gettop(L);
+    
+    for (int i=2; i<=args; i++)
+        msg += luaL_checkstring(L, i);
+    
+    pMain->WarnBox(msg.c_str());
+    
+    return 0;
+}
+
 int CMain::LuaMSGBox(lua_State *L)
 {
     CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
@@ -730,19 +801,6 @@ int CMain::LuaMSGBox(lua_State *L)
         msg += luaL_checkstring(L, i);
     
     pMain->MsgBox(msg.c_str());
-    
-    return 0;
-}
-
-int CMain::LuaLog(lua_State *L)
-{
-    std::string msg = luaL_checkstring(L, 1);
-    int args = lua_gettop(L);
-    
-    for (int i=2; i<=args; i++)
-        msg += luaL_checkstring(L, i);
-    
-    syslog(0, msg.c_str());
     
     return 0;
 }

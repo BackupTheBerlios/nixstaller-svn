@@ -673,26 +673,23 @@ TSTLVecSize CFormattedText::CalcLines(const std::string &str, bool wrap, TSTLStr
                 }
             }
             
-            if ((strend - strstart) > 0)
+            bool toolong = (curlinelen + ((strend-strstart)+1)) > width;
+            
+            if (((strend+1) < length) && isspace(newtext[strend+1]))
+                strend++; // Don't add leading whitespace to a new line
+
+            if (!toolong) // If it's not too long add to current line
+                curlinelen += ((strend - strstart) + 1);
+            else
             {
-                bool toolong = (curlinelen + ((strend-strstart)+1)) > width;
-                
-                if (((strend+1) < length) && isspace(newtext[strend+1]))
-                    strend++; // Don't add leading whitespace to a new line
-    
-                if (!toolong) // If it's not too long add to current line
-                    curlinelen += ((strend - strstart) + 1);
-                else
-                {
-                    lines++;
-                    curlinelen = (strend - strstart) + 1;;
-                }
-                
-                if (add)
-                {
-                    curlinelen = 0;
-                    lines++;
-                }
+                lines++;
+                curlinelen = (strend - strstart) + 1;
+            }
+            
+            if (add)
+            {
+                curlinelen = 0;
+                lines++;
             }
             
             strstart = strend + 1;
@@ -847,35 +844,32 @@ void CFormattedText::AddText(const std::string &str)
                 }
             }
             
-            if ((strend - strstart) > 0)
+            bool toolong = ((m_Lines[m_CurrentLine]->text.length() + (strend-strstart)+1) > m_Width);
+            
+            if (((strend+1) < length) && isspace(newtext[strend+1]))
+                strend++; // Don't add trailing whitespace to a new line
+
+            if (!toolong) // If it's not too long add to current line
+                m_Lines[m_CurrentLine]->text += newtext.substr(strstart, (strend - strstart) + 1);
+            else
             {
-                bool toolong = ((m_Lines[m_CurrentLine]->text.length() + (strend-strstart)+1) > m_Width);
-                
-                if (((strend+1) < length) && isspace(newtext[strend+1]))
-                    strend++; // Don't add trailing whitespace to a new line
-    
-                if (!toolong) // If it's not too long add to current line
-                    m_Lines[m_CurrentLine]->text += newtext.substr(strstart, (strend - strstart) + 1);
-                else
-                {
-                    m_Lines.push_back(new line_entry_s);
-                    m_CurrentLine++;
-                    m_Lines[m_CurrentLine]->text = newtext.substr(strstart, (strend - strstart) + 1);
-                }
-                
-                if (add)
-                {
-                    if (m_Lines.size() >= m_MaxHeight)
-                        break;
-    
-                    m_Lines.push_back(new line_entry_s);
-                    m_CurrentLine++;
-                }
-                
-                TSTLStrSize newlen = m_Lines[m_CurrentLine]->text.length();
-                if (newlen > m_LongestLine)
-                    m_LongestLine = newlen;
+                m_Lines.push_back(new line_entry_s);
+                m_CurrentLine++;
+                m_Lines[m_CurrentLine]->text = newtext.substr(strstart, (strend - strstart) + 1);
             }
+            
+            if (add)
+            {
+                if (m_Lines.size() >= m_MaxHeight)
+                    break;
+
+                m_Lines.push_back(new line_entry_s);
+                m_CurrentLine++;
+            }
+            
+            TSTLStrSize newlen = m_Lines[m_CurrentLine]->text.length();
+            if (newlen > m_LongestLine)
+                m_LongestLine = newlen;
             
             strstart = strend + 1;
         }
@@ -977,10 +971,11 @@ void CFormattedText::Print(TSTLVecSize startline, TSTLStrSize startw, TSTLVecSiz
         
         while (index < count)
         {
-            // Line may containing trailing whitespace or newline which should not be printed.
+            // Line may contain trailing whitespace or newline which should not be printed.
             bool canprint = (!m_bWrap || (index <= m_Width)) && (((index+1)!=len) || !isspace(m_Lines[n]->text[index]));
             
-            if ((colorit != m_ColorTags.end()) && (colorit->first <= chars) && (colorit->second->count < (chars-colorit->first)+1))
+            if ((colorit != m_ColorTags.end()) && (colorit->first <= chars) &&
+                (colorit->second->count < (chars-colorit->first)+1))
             {
                 m_pWindow->attroff(CWidgetWindow::GetColorPair(colorit->second->fgcolor,
                                    colorit->second->bgcolor));
@@ -1398,6 +1393,7 @@ void CButton::Draw()
 {
     erase();
     m_FMText.Print();
+    debugline("button: %s\n", m_FMText.GetText(0).c_str());
     
     if (Focused())
     {
@@ -2726,9 +2722,9 @@ CChoiceBox::CChoiceBox(CWidgetManager *owner, int maxlines, int ncols, int begin
                        const char *but3) : CWidgetBox(owner, maxlines, ncols, begin_y, begin_x, text,
                                                       m_cDefaultFocusedColors, m_cDefaultDefocusedColors)
 {
-    m_szButtonTitles[0] = but1;
-    m_szButtonTitles[1] = but2;
-    m_szButtonTitles[2] = (but3) ? but3 : "";
+    m_ButtonTitles[0] = but1;
+    m_ButtonTitles[1] = but2;
+    m_ButtonTitles[2] = (but3) ? but3 : "";
 }
 
 void CChoiceBox::CreateInit()
@@ -2737,26 +2733,25 @@ void CChoiceBox::CreateInit()
     
     // Button 3 is optional
 //     int bcount = (but3) ? 3 : 2;
-    int bcount = (!m_szButtonTitles[2].empty()) ? 3 : 2;
+    int bcount = (!m_ButtonTitles[2].empty()) ? 3 : 2;
     
     // Find out longest text
-    int w;
-    w = std::max(std::max(m_szButtonTitles[0].length(), m_szButtonTitles[1].length()), m_szButtonTitles[2].length());
+    int w = std::max(std::max(m_ButtonTitles[0].length(), m_ButtonTitles[1].length()), m_ButtonTitles[2].length());
     
     w += 4; // Buttons use 4 additional tokens for focusing
     
     int x = (maxx()-((bcount*w)+bcount-1))/2; // Center bcount buttons, with bcount-1 2 sized spaces.
     int y = (m_pLabel->rely()+m_pLabel->maxy()+2);
 
-    m_pButtons[0] = AddChild(new CButton(this, 1, w, y, x, m_szButtonTitles[0], 'r'));
+    m_pButtons[0] = AddChild(new CButton(this, 1, w, y, x, m_ButtonTitles[0], 'r'));
     
     x += (w + 2);
-    m_pButtons[1] = AddChild(new CButton(this, 1, w, y, x, m_szButtonTitles[1], 'r'));
+    m_pButtons[1] = AddChild(new CButton(this, 1, w, y, x, m_ButtonTitles[1], 'r'));
     
-    if (!m_szButtonTitles[2].empty())
+    if (!m_ButtonTitles[2].empty())
     {
         x += (w + 2);
-        m_pButtons[2] = AddChild(new CButton(this, 1, w, y, x, m_szButtonTitles[2], 'r'));
+        m_pButtons[2] = AddChild(new CButton(this, 1, w, y, x, m_ButtonTitles[2], 'r'));
     }
     else
         m_pButtons[2] = NULL;

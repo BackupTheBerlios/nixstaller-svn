@@ -638,7 +638,7 @@ public:
 
 class CChoiceBox: public CWidgetBox
 {
-    std::string m_szButtonTitles[3];
+    std::string m_ButtonTitles[3];
     CButton *m_pButtons[3];
     int m_iSelectedButton;
     

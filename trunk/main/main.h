@@ -298,6 +298,9 @@ public:
     static int LuaCHDir(lua_State *L);
     static int LuaGetFileSize(lua_State *L);
     static int LuaMSGBox(lua_State *L);
+    static int LuaYesNoBox(lua_State *L);
+    static int LuaChoiceBox(lua_State *L);
+    static int LuaWarnBox(lua_State *L);
     static int LuaLog(lua_State *L);
 };
 
