@@ -191,7 +191,7 @@ public:
 
     virtual void UpdateLanguage(void);
     virtual bool Enabled(int n) { return m_pCheckbox->IsEnabled(n); };
-    virtual void Enable(int n) { m_pCheckbox->EnableBox(n); };
+    virtual void Enable(int n, bool e) { if (e) m_pCheckbox->EnableBox(n); else m_pCheckbox->DisableBox(n); };
 
     static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
 };

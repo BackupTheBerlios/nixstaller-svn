@@ -220,7 +220,7 @@ public:
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
     virtual bool Enabled(int n) { return m_Buttons.at(n-1)->value(); };
-    virtual void Enable(int n) { m_Buttons.at(n-1)->value(1); };
+    virtual void Enable(int n, bool e) { m_Buttons.at(n-1)->value(e); };
 
     static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
 };

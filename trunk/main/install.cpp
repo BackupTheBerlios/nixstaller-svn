@@ -771,8 +771,8 @@ int CBaseCFGScreen::LuaAddDirSelector(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = luaL_checkstring(L, 2);
-    const char *val = luaL_optstring(L, 3, "");
+    const char *desc = luaL_optstring(L, 2, "");
+    const char *val = luaL_optstring(L, 3, getenv("HOME"));
     
     pInstaller->m_LuaVM.CreateClass<CBaseLuaDirSelector *>(screen->CreateDirSelector(GetTranslation(desc), val), "dirselector");
     
@@ -783,7 +783,7 @@ int CBaseCFGScreen::LuaAddCFGMenu(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = luaL_checkstring(L, 2);
+    const char *desc = luaL_optstring(L, 2, "");
     
     pInstaller->m_LuaVM.CreateClass<CBaseLuaCFGMenu *>(screen->CreateCFGMenu(GetTranslation(desc)), "configmenu");
     
@@ -844,7 +844,11 @@ int CBaseLuaCheckbox::LuaSet(lua_State *L)
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseLuaCheckbox *box = pInstaller->m_LuaVM.CheckClass<CBaseLuaCheckbox *>("checkbox", 1);
     int n = luaL_checkint(L, 2);
-    box->Enable(n);
+    
+    luaL_checktype(L, 3, LUA_TBOOLEAN);
+    bool e = lua_toboolean(L, 3);
+    
+    box->Enable(n, e);
     return 0;
 }
 

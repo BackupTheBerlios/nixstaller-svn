@@ -150,7 +150,7 @@ class CBaseLuaCheckbox
 public:
     virtual ~CBaseLuaCheckbox(void) { };
     virtual bool Enabled(int n) = 0;
-    virtual void Enable(int n) = 0;
+    virtual void Enable(int n, bool b) = 0;
     
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);

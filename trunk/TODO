@@ -19,6 +19,9 @@ MAIN
 - Create directory with root access in VerifyDestDir()?
 - Convert LuaDirIter to CDirIter? - Needs testing
 - Check install steps (inits properly?)
+- Check empty titles for Lua widgets (spaces well with empty titles?)
+- Check new checkbox argument
+- Check default(empty) dir for lua dir selector
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
