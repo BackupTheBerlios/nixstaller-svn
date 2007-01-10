@@ -1423,7 +1423,7 @@ Creates a new @samp{config menu}. The string parameter @code{t} sets a title. Th
 @deffn Function cfgscreen:addcheckbox (t, o)
 Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
 @deffn Function chkbox:get (n)
-Returns @code{true} if option @code{n} is enabled or @code{false} when disabled.
+Returns @code{true} if the option from array index @code{n} is enabled or @code{false} when disabled.
 @end deffn
 @deffn Function chkbox:set (n, e)
 If @code{e} is @code{true} the option at position @code{n} will be enabled, if @code{false} it will be disabled.
@@ -1440,6 +1440,34 @@ Sets the directory to string @code{d}.
 @end deffn
 @end deffn
 
+@deffn Function cfgscreen:addinput ([t[, l[, m=1024[, v[, tp="string"]]]])
+This will add an input field to the config screen. The parameter @code{t} specifies a title. @code{l} can be used to specify a label (text which is put in front of the input field). @code{m} specifies the max character count that can be typed. @code{v} specifies an initial value. The last parameter, @code{tp}, specifies the type of the inputfield and can be one of these:
+@table @strong
+@item "string"
+The user can type any (alphanumeric) character as input.
+@item "number"
+The user can type any number but not fractions.
+@item "float"
+The user can type any number including fractions.
+@end table
+The function will return a class with the following method functions (input should be replaced with the actual variable name which points to this class):
+@deffn Function input:get ()
+Returns the current value hold by the input field.
+@end deffn
+@deffn Function input:setspacing (n)
+This function can be used to set the distance from the windows left border to the start position of the input field. The parameter @code{n} specifies the distance, with a range from 1-100. This function is used to make sure that each input field can start from a fixed position. Normally this depends on the length of the given label. So to make sure that each input field will start at the same position on the install screen, you should call this function for every input field with the same value.
+@end deffn
+@end deffn
+
+@deffn Function cfgscreen:addradiobutton (t[, o])
+This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title. The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
+@deffn Function radio:get ()
+Returns the array index number of the option that is enabled.
+@end deffn
+@deffn Function radio:set (n)
+Enables the option at array index @code{n}.
+@end deffn
+@end deffn
 
 @subsection Other Functions
 

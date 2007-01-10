@@ -706,8 +706,8 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = luaL_checkstring(L, 2);
-    const char *label = luaL_checkstring(L, 3);
+    const char *desc = luaL_optstring(L, 2, "");
+    const char *label = luaL_optstring(L, 3, "");
     int maxc = luaL_optint(L, 4, 1024);
     const char *val = luaL_optstring(L, 5, "");
     const char *type = luaL_optstring(L, 6, "string");
@@ -724,7 +724,7 @@ int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = luaL_optstring(L, 2, "");
+    const char *desc = luaL_checkstring(L, 2, "");
     
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
@@ -747,7 +747,7 @@ int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = luaL_optstring(L, 2, "");
+    const char *desc = luaL_checkstring(L, 2, "");
     
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
@@ -822,6 +822,10 @@ int CBaseLuaInputField::LuaSetSpace(lua_State *L)
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseLuaInputField *field = pInstaller->m_LuaVM.CheckClass<CBaseLuaInputField *>("inputfield", 1);
     int percent = luaL_checkint(L, 2);
+    
+    if ((percent < 1) || (percent > 100))
+        luaL_error("Wrong value specified, should be between 1-100");
+    
     field->SetSpacing(percent);
     return 0;
 }
