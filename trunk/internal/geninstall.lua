@@ -110,7 +110,15 @@ function PackDirectory(dir, file)
     while (#dirlist > 0) do
         local subdir = table.remove(dirlist) -- pop
         for f in io.dir(subdir) do
-            local dpath = string.format("%s/%s", subdir, f)
+            local dpath
+             
+            -- Don't add "." to path, otherwise tar output may not be parsed well
+            if (subdir ~= ".") then
+                dpath = string.format("%s/%s", subdir, f)
+            else
+                dpath = f
+            end
+            
             
             if (os.isdir(dpath)) then
                 table.insert(dirlist, dpath)
