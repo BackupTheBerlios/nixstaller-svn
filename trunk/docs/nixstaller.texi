@@ -1469,6 +1469,39 @@ Enables the option at array index @code{n}.
 @end deffn
 @end deffn
 
+@subsubsection The @code{config menu} Class
+@c UNDONE
+This (sub)section describes the @code{config menu} class, which is created by @code{cfgscreen:addcfgmenu} (see section X). This menu is used to let the user configure various parameters through a menu. A type for these parameters is specified so that the user can change them in a logic way; file paths with a file manager, parameters with predefined options through a listbox etc.
+The class contains the following methods (replace cfgmenu with the variable name pointing to the class):
+
+@deffn Function cfgmenu:addbool (p, d[, v=false])
+This function will add a parameter that can be enabled or disabled by the user. Argument @code{p} should be a @code{string} containing the name of the parameter. Argument @code{d} should be a @code{string} with a description. The optional argument @code{v} is a @code{boolean} telling the initial value: @code{true} if enabled, @code{false} when disabled.
+@end deffn
+
+@deffn Function cfgmenu:adddir (p, d[, v])
+This function adds a parameter that will contain a @code{string} that holds a directory path. The user can modify this through a file browser. Argument @code{p} should be a string containing the parameter name, @code{d} a string with a description and @code{v} a string with an initial path.
+@end deffn
+
+@deffn Function cfgmenu:addlist (p, d, l)
+This function adds a parameter which the user can edit with a predefined list of options. @code{p} specifies the variable name, @code{d} a description and @code{l} should be an array with strings for each option name.
+@end deffn
+
+@deffn Function cfgmenu:addstring (p, d[, v])
+This function adds a parameter that can the user can modify through an input field. Argument @code{p} sets the parameter name, @code{d} the description and @code{v} should be a string with the initial value.
+@end deffn
+
+@deffn Function cfgmenu:get (p)
+Returns the value from parameter @code{p}. If the type of @code{p} is a boolean, @code{true} will be returned when the parameter is enabled and @code{false} if disabled. In all other cases a @code{string} will be returned.
+@end deffn
+
+@subsection GUI Functions
+@c UNDONE
+There are several functions available through the @code{gui} package which interact with the user. Like the @code{install} package, all of these functions should only be called in the @code{install} function (see section X).
+
+@deffn Function gui.choicebox (m, b1, b2[, b3])
+Creates a window that will show the message identified by function argument @code{m}. @code{b1}, @code{b2} and (optionally) @code{b3} is each a string used for a button name (so the window can have 2 or 3 buttons). On failure the function will return the number of the last button (@samp{3}). On success the number of the clicked button is returned.
+@end deffn
+
 @subsection Other Functions
 
 

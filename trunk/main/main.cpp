@@ -764,15 +764,19 @@ int CMain::LuaYesNoBox(lua_State *L)
 int CMain::LuaChoiceBox(lua_State *L)
 {
     CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    std::string msg = luaL_checkstring(L, 1);
+    const char *msg = luaL_checkstring(L, 1);
     const char *but1 = luaL_checkstring(L, 2);
     const char *but2 = luaL_checkstring(L, 3);
     const char *but3 = lua_tostring(L, 4);
     
-    debugline("but1: %s\n", but1);
-    debugline("but2: %s\n", but2);
-    if (but3) debugline("but3: %s\n", but3);
-    lua_pushinteger(L, pMain->ChoiceBox(msg.c_str(), but1, but2, but3));
+    int ret = pMain->ChoiceBox(msg, but1, but2, but3) + 1; // +1: Convert 0-2 range to 1-3
+    
+    // UNDONE: FLTK doesn't return alternative number while ncurses returns -1.
+    // For now we'll strick with the FLTK behaviour: return the last button.
+    if (ret == 0) // Ncurses returns -1 and we added 1 thus zero...
+        ret = 3;
+    
+    lua_pushinteger(L, ret);
     
     return 1;
 }

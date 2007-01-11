@@ -157,10 +157,10 @@ int CFLTKBase::ChoiceBox(const char *str, const char *button1, const char *butto
         vasprintf(&text, str, v);
     va_end(v);
     
-    int ret = fl_choice(text, button1, button2, button3);
+    int ret = fl_choice(text, button3, button2, button1); // FLTK displays buttons in other order
     free(text);
     
-    return ret;
+    return (2 - ret);
 }
 
 void CFLTKBase::WarnBox(const char *str, ...)
