@@ -700,11 +700,11 @@ function mypackage.f()
 end}
 
 @subsubsection Table Seen As A Class
-Tables can also be threaded as @emph{classes}. Simply put these are data types much like records; they have their own variables, called @emph{members} and their own functions, called @emph{methods}. Each class has to be created, mostly through another function.@*
+Tables can also be threaded as @emph{classes}. Simply put, these are data types much like records; they have their own variables, called @emph{members} and their own functions, called @emph{methods}. Each class has to be created, mostly through another function.@*
 @*
-In this guide we'll skip the details about creating classes and terms such as inheritance. Instead the only thing that is discussed is how to use them, since a few functions from the Lua Library deal with classes.@*
+In this guide we'll skip the details about defining new classes and terms such as inheritance. Instead the only thing that is discussed is how to use them, since a few functions from the Lua Library deal with classes.@*
 @*
-Usually calling function methods from a class is slightly different than that from packages: with packages you used the @samp{.} operator, however with classes you use the @samp{:} operator instead.@*
+Usually calling function methods from a class is slightly different than that from packages: with packages you used the @samp{.} operator, with classes you use the @samp{:} operator instead.@*
 @*
 @c UNDONE
 Here follows an example using the @code{io} package from the Lua library. In section X all the IO functionality is discussed.
@@ -1360,7 +1360,7 @@ end}
 @c UNDONE
 This section describes all the install related functions. They are obviously Lua extensions so you won't find them in any other Lua manual. @strong{All} these functions should only be called from the @code{install()} function. It's better to use this section as a reference after you've read chapter X.@*
 @*
-First all the functions from the @code{install} package are described. After that the @samp{config screen class} (used to create new installer screens) and the @samp{config menu class} (a menu class to be used in a custom install screen) are discussed. As last a few examples are given.
+First all the functions from the @code{install} package are described. After that the @samp{config screen class} (used to create new installer screens) and the @samp{config menu class} (a menu class to be used in a custom install screen) are discussed. For examples of these functions you should read the tutorials (see section X).
 
 @subsubsection The @code{install} Module
 
@@ -1494,16 +1494,114 @@ This function adds a parameter that can the user can modify through an input fie
 Returns the value from parameter @code{p}. If the type of @code{p} is a boolean, @code{true} will be returned when the parameter is enabled and @code{false} if disabled. In all other cases a @code{string} will be returned.
 @end deffn
 
+
 @subsection GUI Functions
 @c UNDONE
 There are several functions available through the @code{gui} package which interact with the user. Like the @code{install} package, all of these functions should only be called in the @code{install} function (see section X).
 
 @deffn Function gui.choicebox (m, b1, b2[, b3])
 Creates a window that will show the message identified by function argument @code{m}. @code{b1}, @code{b2} and (optionally) @code{b3} is each a string used for a button name (so the window can have 2 or 3 buttons). On failure the function will return the number of the last button (@samp{3}). On success the number of the clicked button is returned.
+Examples:
+@codeblock
+{-- somewhere in the install() function
+gui.choicebox("Could not copy file, what should I do?", "Abort", "Retry", "Ignore") -- 3 buttons
+@*
+-- ....
+gui.choicebox("Could not execute command, what do you want?", "Ignore", "Abort") -- 2 buttons}
+@end deffn
+
+@deffn Function gui.msgbox (m, ...)
+Will display a dialog with the text specified by argument @code{m}. The variadic arguments can be used to concat other texts to this message.@*
+Example:
+@codeblock {gui.msgbox("Thank you for downloading myapp 0.1! For updates please check www.myapp.org")}
+@end deffn
+
+@deffn Function gui.warnbox (m, ...)
+The same as @code{gui.msgbox}, but used to alert the user. For example in ncurses the dialog has another color (red) and with the FLTK frontend a warning sign will be shown.
+@end deffn
+
+@deffn Function gui.yesnobox (m, ...)
+This function will show a dialog with a message used from parameter @code{m} and arguments after that if available (will concat text). The dialog has a yes and a no button. If the user presses "No" @code{false} will be returned, if "Yes" @code{true} is returned.
+Example:
+@codeblock{-- Somewhere in install() 
+if (gui.yesnobox("Do you want to install some add-ons?")) then
+    -- Copy some files
+end}
 @end deffn
 
 @subsection Other Functions
+The last few functions are not in any package but are global functions.
 
+@deffn Function assert (f[, ...[, m="Assert failed!"]])
+This function is mainly used to debug Lua scripts. If @code{r} is @code{false} or @code{nil} this function will call @code{error} with @code{m} as argument. If @code{r} is another value the function will return @code{r} and the variadic arguments between @code{f} and @code{m} (if existant). This is mostly used in combination with functions that will return @code{nil} on error (many functions from the @code{os} package do this for example).@*
+Example:
+@codeblock{assert(os.rename("file1", "file2"))    -- If this function fails the script will be aborted}
+@end deffn
+
+@deffn Function dofile (f)
+Executes the Lua script specified by argument @code{f}. You can use this if you want to split script files for example.@*
+Example:
+@codeblock
+{if (os.osname == "linux") then
+    dofile("linux.lua")
+elseif (os.osname == "solaris") then
+    dofile("solaris.lua")
+else
+    dofile("generic.lua")
+end}
+@end deffn
+
+@deffn Function error (m[, l=1])
+This function will abort the install and display an error specified by string @code{m} prefixed with the script name and line number. The optional argument, @code{l}, is used to specify the function level which is used when displaying the error: if it's @samp{0} no line number will be displayed, @samp{1} is used for the current line number (default), @samp{2} for the line number of the function that called the current function etc. @*
+Example:
+@codeblock
+{if (not os.copy("file.txt", "somedir/")) then
+    error("Could not copy file")
+end}
+@end deffn
+
+@deffn Function ipairs (t)
+Iterator function that can be used to traverse an array with numeric indexes. Returns 2 values: the first is the current array index and the second is the current entry at that array index. When the next entry is @code{nil}, the function will return @code{nil}. This way it will terminate a generic for loop. Argument @code{t} specifies the table to use.@*
+Example:
+@codeblock{t = @{ 5, 10, 15, 20 @}
+for i, e in ipairs(t) do
+    print(string.format("t[%d] = %d", i, e))
+end}
+Results in
+@codeblock{t[1] = 5
+t[2] = 10
+t[3] = 15
+t[4] = 20}
+@end deffn
+
+@deffn Function pairs (t)
+As the above function as @code{ipairs} (well mostly, see the @uref{http://www.lua.org/manual/5.1, Lua manual for details}). This function also accepts other key index types than numbers.@*
+Example:
+@codeblock{t = @{ @}
+t.name = "Rick"
+t.age = 21
+t.country = "The Netherlands"
+for i, e in pairs(t) do
+    print(string.format("t.%s = %s", i, e))
+end}
+Results in
+@codeblock
+{t.name = Rick
+t.age = 21
+t.country = The Netherlands}
+@end deffn
+
+@deffn Function print (s[, ...])
+This function will print all the given arguments to the standard output (usually the terminal). Since the ncurses frontend already uses the terminal it will call @code{os.log} instead. This function is mainly only used for debugging, since the user probably won't notice the output.
+@end deffn
+
+@deffn Function unpack (t[, i=1[, j=#t]])
+Returns each entry from table @code{t}. This table should be an array with numeric indexes. @code{i} and @code{j} specify the range to use.@*
+Example:
+@codeblock
+{t = @{ "Hello", " ", "World" @}
+print(unpack(t))    -- Prints "Hello World"}
+@end deffn
 
 @node Index
 @unnumbered Index

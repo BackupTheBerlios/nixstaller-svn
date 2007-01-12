@@ -23,6 +23,7 @@ MAIN
 - Check new checkbox argument
 - Check default(empty) dir for lua dir selector
 - Check range checking of input:setspacing
+- Convert all Lua functions/variables to lowercase
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
