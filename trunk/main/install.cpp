@@ -58,7 +58,8 @@ void CBaseInstall::Init(int argc, char **argv)
     m_LuaVM.GetStrVar(&m_InstallInfo.intropicname, "intropic");
     
     m_LuaVM.GetStrVar(&m_InstallInfo.archive_type, "archivetype");
-    if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") && (m_InstallInfo.archive_type != "lzma"))
+    if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") &&
+        (m_InstallInfo.archive_type != "lzma"))
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
 }
 
@@ -296,7 +297,7 @@ void CBaseInstall::Install(void)
     // Init all archives (if file doesn't exist nothing will be done)
     InitArchive(CreateText("%s/instarchive_all", m_szOwnDir.c_str()));
     InitArchive(CreateText("%s/instarchive_all_%s", m_szOwnDir.c_str(), m_szCPUArch.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s", m_szOwnDir.c_str(), m_szOS.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s_all", m_szOwnDir.c_str(), m_szOS.c_str()));
     InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
                 m_szCPUArch.c_str()));
 
@@ -434,7 +435,6 @@ void CBaseInstall::InitLua()
     if (FileExists("config/run.lua"))
         m_LuaVM.LoadFile("config/run.lua");
     
-    std::string dir;
     if (!GetDestDir())
     {
         const char *env = getenv("HOME");

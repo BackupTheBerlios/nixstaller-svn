@@ -388,29 +388,37 @@ function PrepareArchive()
 end
 
 function CreateArchive()
-    local src, dest
+    local archdir
     local basename = "instarchive"
 
     print("Generating archive...")
     
     -- Platform indepent files
-    src = confdir .. "/files_all"
-    dest = string.format("%s/tmp/%s_all", confdir, basename)
-    if os.isdir(src) then
-        PackDirectory(src, dest)
+    archdir = confdir .. "/files_all"
+    if os.isdir(archdir) then
+        PackDirectory(archdir, string.format("%s/tmp/%s_all", confdir, basename))
     end
     
-    -- Pack every OS/ARCH dependent file
+    -- CPU dependent files
+    for _, ARCH in pairs(targetarch) do
+        archdir = string.format("%s/files_all_%s", confdir, ARCH) 
+        if os.isdir(archdir) then
+            PackDirectory(archdir, string.format("%s/tmp/%s_all_%s", confdir, basename, ARCH))
+        end
+    end
+    
     for _, OS in pairs(targetos) do
-        local archname = string.format("%s/files_%s_all", confdir, OS) 
-        if os.isdir(archname) then
-            PackDirectory(archname, string.format("%s/tmp/%s_%s", confdir, basename, OS))
+        -- OS dependent files
+        archdir = string.format("%s/files_%s_all", confdir, OS) 
+        if os.isdir(archdir) then
+            PackDirectory(archdir, string.format("%s/tmp/%s_%s_all", confdir, basename, OS))
         end
         
+        -- OS/ARCH dependent files
         for _, ARCH in pairs(targetarch) do
-            archname = string.format("%s/files_%s_%s", confdir, OS, ARCH) 
-            if os.isdir(archname) then
-                PackDirectory(archname, string.format("%s/tmp/%s_%s_%s", confdir, basename, OS, ARCH))
+            archdir = string.format("%s/files_%s_%s", confdir, OS, ARCH) 
+            if os.isdir(archdir) then
+                PackDirectory(archdir, string.format("%s/tmp/%s_%s_%s", confdir, basename, OS, ARCH))
             end
         end
     end

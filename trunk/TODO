@@ -12,6 +12,8 @@ OVERALL
 - Fix/Test CPU detection in sh scripts
 - Comment the '%s' in strings files.
 - Add new error detection in Lua scripts for dir Iter
+- Test instarchive platform handling
+- Better util.a configure testing?
 
 MAIN
 - Error handling in lua class(exceptions, type checking)
@@ -24,6 +26,7 @@ MAIN
 - Check default(empty) dir for lua dir selector
 - Check range checking of input:setspacing
 - Convert all Lua functions/variables to lowercase
+- Make lua os.setenv function
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
@@ -39,10 +42,8 @@ DOCS
 - Max config var description length
 - Update examples and screenshots
 - Check for clickable sections in TOC
-- Add info for default func arguments
 - Check for right vertical spacing, paragraphs etc
-- Escape characters
-- Dir Iter
+- Add norwegian translation references if author sends updated version
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
