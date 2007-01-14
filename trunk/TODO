@@ -14,6 +14,7 @@ OVERALL
 - Add new error detection in Lua scripts for dir Iter
 - Test instarchive platform handling
 - Better util.a configure testing?
+- Change default archtype to lzma
 
 MAIN
 - Error handling in lua class(exceptions, type checking)

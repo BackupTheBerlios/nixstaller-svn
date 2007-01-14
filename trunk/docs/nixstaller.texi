@@ -14,6 +14,15 @@
     @include macros-default.texi
 @end ifnothtml
 
+@macro luafunc{f}
+@deffn Function \f\
+@anchor{\f\}
+@end macro
+
+@macro endluafunc
+@end deffn
+@end macro
+
 @titlepage
 @title Nixstaller 0.2 Manual
 @author Rick Helmus
@@ -290,15 +299,28 @@ The creation and behaviour of the installer is controlled by 2 Lua scripts: @fil
 The first Lua script, @file{config.lua}, is as the name says used for configuration. This file is pretty small and should only contain a few variable assignments. The following variables can or should be in @file{config.lua}:
 @table @code
 @item appname
+This variable is a @ref{Strings,,string} which should contain the name of your application.
 @item archivetype
+This variable tells which type of compression is used for archiving the installation files. It can be one of these @ref{Strings,,strings}:
+@table @code
+@item "gzip"
+Gzip is very fast at both compression and decompression.
+@item "bzip2"
+Bzip2 usually compresses better (makes the archive smaller) than gzip, but is slower and uses more memory.
+@item "lzma"
+LZMA compresses the best of all three. Compression is fairly slow, but decompression is rather fast.
+@end table
+If this variable is not specified it will default to "lzma". If you're testing your installer it might be a good idea to use "gzip" and switch to "lzma" when the installer is done. That way you have fast compression while testing and good compression for the user.
 @item defaultlang
+This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english".
 @item destdir
+This variable should contain a @ref{Strings,,string} that specifies the destination path for @ref{install.extractfiles ()}. For installers that will operate on the installation files and install them later (ie compiling) you can use the @ref{install.gettempdir ()} function. This function returns a temporary path that will be removed when the installation is finished.
 @item frontends
 @item intropic
 @item languages
 @item targetarch
 @item targetos
-@end itemize
+@end table
 
 @subsection Second Lua Script: @file{run.lua}
 
@@ -355,9 +377,11 @@ To create a variable you simply assign data to it. To remove a variable you assi
 Variables are not bound to a single type(typeless, languages as C are typed). There are various types in the Lua environment:
 @table @strong
 @item Numbers
+@anchor{Numbers}
 Numbers can be both a decimal type or a integral type. Examples:
 @codeblock{a = 15
 b = 1.5}
+@anchor{Strings}
 @item Strings
 Strings are used to store an array of characters. The text used for a string should be either enclosed by single quotes ('') or double quotes (""). Example:
 @codeblock{text1 = "Hello"}
@@ -800,6 +824,7 @@ modifyx(function(a, b)
 This does essentially the same, just with an anonymous function.
 
 @subsection Tables
+@anchor{Tables}
 Tables are generic types also called @emph{objects}. Tables can be used to create new datatypes, store blocks of data (arrays) and even for OOP(Object Orientated Programming). Not all features of tables are described. Just the few that are in the authors opinion important to know for now. A good reference for lua tables is the @uref{http://www.lua.org,Lua Book}.
 
 @subsubsection Creating A @code{table}
@@ -1029,46 +1054,46 @@ Note that a string itself is @emph{immutable}. This means that once a string is 
 @subsection Basic String Functions
 We start with the more easy and common functions.
 
-@deffn Function string.byte (s [, i=1 [, j=i]])
+@luafunc string.byte (s [, i=1 [, j=i]])
 This will return the byte codes (such as ASCII values) used from string @code{s} starting with index @code{i} till @code{j}. Byte codes can differ from platform to platform.
-@end deffn
+@endluafunc
 
-@deffn Function string.char (...)
+@luafunc string.char (...)
 Expects numeric arguments which are byte values (for example returned from @code{string.byte}). It will return a string consisting of each argument converted to the correspending character. @*
 Example:
 @codeblock
 {print (string.char(string.byte("Hello World", 1, -1)))   -- Prints Hello World}
-@end deffn
+@endluafunc
 
-@deffn Function string.len (s)
+@luafunc string.len (s)
 Returns the length of the string @code{s}. The @samp{#} operator does the same.
-@end deffn
+@endluafunc
 
-@deffn Function string.lower (s)
+@luafunc string.lower (s)
 Returns a lowercased version of string @code{s}. Characters that don't have a lowercased version are untouched.
-@end deffn
+@endluafunc
 
-@deffn Function string.upper (s)
+@luafunc string.upper (s)
 Returns a uppercased version of string @code{s}. Characters that don't have an uppercased version are untouched.@*
 Example:
 @codeblock
 {s = "Hello World!"
 print(string.lower(s))    -- Prints hello world!
 print(string.upper(s))    -- Prints HELLO WORLD!}
-@end deffn
+@endluafunc
 
-@deffn Function string.rep (s, n)
+@luafunc string.rep (s, n)
 Returns a string that is a copy of string @code{s} replicated @code{n} times.@*
 Example:
 @codeblock
 {print(string.rep("A", 5))    -- Prints AAAAA}
-@end deffn
+@endluafunc
 
-@deffn Function string.reverse (s)
+@luafunc string.reverse (s)
 Returns a reversed version of string @code{s}.
-@end deffn
+@endluafunc
 
-@deffn Function string.sub (s, i [, j=-1])
+@luafunc string.sub (s, i [, j=-1])
 Returns a @emph{substring} from string @code{s} starting at index @code{i} till index @code{j}. When @code{i} is negative it will start at the end.@*
 Examples:
 @codeblock
@@ -1076,9 +1101,9 @@ Examples:
 print(string.sub(s, 2))    -- Prints ello World
 print(string.sub(s, 1, 2)) -- Prints He
 print(string.sub(s, -5))   -- Prints World}
-@end deffn
+@endluafunc
 
-@deffn Function string.format (s, ...)
+@luafunc string.format (s, ...)
 This function returns a string that is formatted according to rules similar to the C functions from the @code{printf} family. The first argument should be a string which can be formatted according to some rules. These rules are specified in the form of @emph{modifiers}. These modifiers have the following syntax:
 @codeblock{%[flags][width][.precision]type}
 
@@ -1139,7 +1164,7 @@ f = 12.25/5.55
 print(string.format("The result of 12.25 / 5.55 = %f or shortened: %.2f", f, f))
 print(string.format("An aligned number: %3d", 5))    -- Prints "An aligned number:   5"}
 
-@end deffn
+@endluafunc
 
 @subsection Advanced String Functions
 Lua has a few advanced functions to find and replace (sub)strings. For now I will skip these and just point you to the right sections: @uref{http://www.lua.org/pil/20.html,This chapter in the Lua book} and parts of the @uref{http://www.lua.org/manual/5.1/,Lua Manual}.
@@ -1148,7 +1173,7 @@ Lua has a few advanced functions to find and replace (sub)strings. For now I wil
 @section Table Functions
 Lua has a few functions to help you when working with tables. These functions are all in the @emph{table} module.
 
-@deffn Function table.concat (t, [, sep=""[, i=1[, j=#t]]])
+@luafunc table.concat (t, [, sep=""[, i=1[, j=#t]]])
 Returns a string that has all elements of table @code{t} next to eachother. Each entry can be seperated by the string @code{sep}. The @code{i} and @code{j} variables are used to indicate a starting and ending index.
 Examples:
 @codeblock
@@ -1157,31 +1182,31 @@ t2 = @{ 5, 10, 15 @}
 s = table.concat(t)    -- s = "HelloWorld!"
 s2 = table.concat(t, " ")    -- s2 = "Hello World !"
 s3 = table.concat(t2, ", ", 2)    -- s3 = "10, 15"}
-@end deffn
+@endluafunc
 
-@deffn Function table.insert (t[, p], x)
+@luafunc table.insert (t[, p], x)
 This function only works with arrays with numeric indexes. The function will insert variable @code{x} into table @code{t} at position @code{p}. When only 2 function arguments are given the second will be used as value to insert and the position will be at the end of the table.
 Examples:
 @codeblock
 {t = @{ "Apples", "Oranges" @}
 table.insert(t, 1, "Bananas")    -- t = @{ "Bananas", "Apples", "Oranges" @}
 table.insert(t, "Melons")        -- t = @{ "Bananas", "Apples", "Oranges", "Melons" @}}
-@end deffn
+@endluafunc
 
-@deffn Function table.maxn (t)
+@luafunc table.maxn (t)
 This function only works with arrays that have numeric indexes. The function loops through the whole table to find the highest used index.
-@end deffn
+@endluafunc
 
-@deffn Function table.remove (t[, p=#t])
+@luafunc table.remove (t[, p=#t])
 Removes the entry from table @code{t} at position @code{p}. The entry that is removed is used as return value.
 Example:
 @codeblock
 {t = @{ 5, 10, 15 @}
 table.remove(t, 1)    -- t = @{ 10, 15 @}
 table.remove(t)       -- t = @{ 10 @}}
-@end deffn
+@endluafunc
 
-@deffn Function table.sort (t[, c])
+@luafunc table.sort (t[, c])
 Only works with arrays with numeric indexes. This function will sort all the entries from the table @code{t}. The optional argument @code{c} can be used to specify a function that is a replacement of the @samp{<} operator. This function is called to check if one table entry is smaller than another. The function recieves 2 arguments, the first and second entry, and should return @code{true} if the first entry is less than the second.
 Examples:
 @codeblock
@@ -1193,36 +1218,36 @@ function comp(e1, e2)
 end
 @*
 table.sort(fruits, comp)    -- fruits = @{ "Orange", "Lemon", "Apple" @}}
-@end deffn
+@endluafunc
 
 
 @section Math Functions
 Lua supports many different math related functions through the @code{math} module. Since not many of these functions are important for Nixstaller only a few will be discussed.
 
-@deffn Function math.abs (n)
+@luafunc math.abs (n)
 Returns the absolute value of @code{n}
-@end deffn
+@endluafunc
 
-@deffn Function math.fmod (x, y)
+@luafunc math.fmod (x, y)
 Returns the modulus (remainder) of x and y.
-@end deffn
+@endluafunc
 
-@deffn Function math.max (n, ...)
+@luafunc math.max (n, ...)
 Returns the biggest value from the given arguments.
-@end deffn
+@endluafunc
 
-@deffn Function math.min (n, ...)
+@luafunc math.min (n, ...)
 Returns the smallest value from the given arguments.
-@end deffn
+@endluafunc
 
-@deffn Function math.random ([l[, h]])
+@luafunc math.random ([l[, h]])
 If no arguments are given returns a @samp{random} number between 0 and 1. If @code{l} is given it will return a random number (rounded) between 1 and @code{l}. If both @code{l} and @code{h} are given it will return a random number between these values.
-@end deffn
+@endluafunc
 
-@deffn Function math.randomseed (n)
+@luafunc math.randomseed (n)
 @c UNDONE
 Sets the @samp{seed} for the @code{math.random} function. For each seed an unique series of numbers will be returned by the @code{math.random} function. So if the seed is always the same (ie not changed) @code{math.random} will always return the same values. To get @samp{real} random numbers a way is to set the seed to the system time when the Lua script is started. The system time can be retrieved by the @code{os.time} function, which is discussed in section X.
-@end deffn
+@endluafunc
 
 
 @section Functions That Interact With The OS
@@ -1247,22 +1272,22 @@ This is a string containing the name of the current CPU architecture, such as x8
 This is a string containing the name of the current Operating System.
 @end defvr
 
-@deffn Function os.chdir (d)
+@luafunc os.chdir (d)
 Tries to change the current directory to directory @code{d}. On failure it will return @code{nil} and the error message, on success it will return @code{true}.
-@end deffn
+@endluafunc
 
-@deffn Function os.chmod (f, p)
+@luafunc os.chmod (f, p)
 Changes the permissions from file or directory @code{f} using the unix like permission bits taken from string @code{p}. On failure it will return @code{nil} and a string containing the error message, on success it will return @code{true}.
 Example:
 @codeblock
 {os.chmod("mydir/", "777")    -- The directory 'mydir' has now full access for everyone}
-@end deffn
+@endluafunc
 
-@deffn Function os.clock ()
+@luafunc os.clock ()
 Returns the time used by the CPU in seconds.
-@end deffn
+@endluafunc
 
-@deffn Function os.copy (f[, ...], d)
+@luafunc os.copy (f[, ...], d)
 Copies the file @code{f} to destination @code{d}. If @code{d} is a directory it will copy the file to that directory, if @code{d} is a file it will overwrite the contents of that file with the contents of @code{f}. You can also specify 3 or more arguments: in this case the last argument, @code{d}, should be a directory and all the previous arguments files that should be copied to this directory.
 examples:
 @codeblock
@@ -1271,80 +1296,80 @@ os.copy("file1", "file2")                   -- Replaces 'file2' with 'fil1'
 os.copy("file1", "file2", "file3", "/tmp")  -- Copies 'file1', 'file2' and 'file3' to /tmp}
 @strong{Note}: The source and destination files/directories should exist or else Lua will throw an error and abort the program.
 For (other) copy failures @code{nil} and the error message will be returned. On success @code{true} is returned.
-@end deffn
+@endluafunc
 
-@deffn Function os.difftime (t2, t1)
+@luafunc os.difftime (t2, t1)
 Returns the difference in seconds from @code{t2} and @code{t1}. Mostly this is the same as @code{t2 - t1}.
-@end deffn
+@endluafunc
 
-@deffn Function os.execute (c)
+@luafunc os.execute (c)
 @c UNDONE
 Executes the shell command @code{c}. This function returns the exit code from the executed command. It's recommended to use install.execute() instead (see section X).
-@end deffn
+@endluafunc
 
-@deffn Function os.exit ([n=0])
+@luafunc os.exit ([n=0])
 Terminates the program with exit code @code{n}.
-@end deffn
+@endluafunc
 
-@deffn Function os.fileexists (f)
+@luafunc os.fileexists (f)
 Returns @code{true} if the file or directory @code{f} exists.
-@end deffn
+@endluafunc
 
-@deffn Function os.filesize (f)
+@luafunc os.filesize (f)
 Returns the filesize in bytes of file @code{f} or @code{nil} plus the error message on failure.
-@end deffn
+@endluafunc
 
-@deffn Function os.getcwd ()
+@luafunc os.getcwd ()
 Returns a string containing the current directory. On failure it will return @code{nil} and the error message.
-@end deffn
+@endluafunc
 
-@deffn Function os.getenv (v)
+@luafunc os.getenv (v)
 Returns a string containing the value of the shell variable @code{v}. If this variable does not exists, @code{nil} will be returned.
-@end deffn
+@endluafunc
 
-@deffn Function os.isdir (f)
+@luafunc os.isdir (f)
 Returns @code{true} if @code{f} is a directory.
-@end deffn
+@endluafunc
 
-@deffn Function os.log (s, ...)
+@luafunc os.log (s, ...)
 Logs the text from string @code{s} and all the function arguments after that, using @code{syslog}. You can use this function to debug for example.
-@end deffn
+@endluafunc
 
-@deffn Function os.mkdir (d[, m="0777"[, b])
+@luafunc os.mkdir (d[, m="0777"[, b])
 Tries to create the directory @code{d}. If @code{m} is given it should be a string with the unix style permission bits. If @code{b} is @code{true} the @samp{umask} of the current system will be ignored. See the manual page of @code{umask} for details. The function will return @code{nil} and an error message on failure, on success it will return @code{true}.
 Example:
 @codeblock
 {-- Creates directory in the users home directory with rwx access for the user only.
 os.mkdir(os.getenv("HOME") .. "/.myconfig", "700")}
-@end deffn
+@endluafunc
 
-@deffn Function os.mkdirrec (d[, m="0777"[, b])
+@luafunc os.mkdirrec (d[, m="0777"[, b])
 Tries to create directory @code{d} and its parent directories if non existant. @code{m} and @code{b} have the same function as with @code{os.mkdir}. Returns @code{nil} and an error message on failure, on success it will return @code{true}.
-@end deffn
+@endluafunc
 
-@deffn Function os.readperm (f)
+@luafunc os.readperm (f)
 Returns @code{true} if the file or directory @code{f} can be read.
-@end deffn
+@endluafunc
 
-@deffn Function os.remove (f)
+@luafunc os.remove (f)
 Removes the file or directory @code{f}. Directories needs to be empty to be removed. On error it returns @code{nil} and a string containing the error message. On success @code{true} will be returned.
-@end deffn
+@endluafunc
 
-@deffn Function os.rename (f, f2)
+@luafunc os.rename (f, f2)
 Renames the file or directory @code{f} to @code{f2}. On error it will return @code{nil} and a string containing the error message, on success @code{true}.
-@end deffn
+@endluafunc
 
-@deffn Function os.time ()
+@luafunc os.time ()
 Returns the current system time. This can for example be used as an argument for @code{math.randomseed}. There is also a second version which will put information in a table, such as the current day and month. For this see the @uref{http://www.lua.org/manual/5.1/,Lua Manual}.
-@end deffn
+@endluafunc
 
-@deffn Function os.tmpname ()
+@luafunc os.tmpname ()
 Returns a random file name which can be used for files in the @code{/tmp} directory. This only returns a filename; you still have to create it (see the io package) and remove it manually.
-@end deffn
+@endluafunc
 
-@deffn Function os.writeperm (f)
+@luafunc os.writeperm (f)
 Returns @code{true} if the file or directory @code{f} has write access for the current user.
-@end deffn
+@endluafunc
 
 
 @section I/O Functions
@@ -1352,7 +1377,7 @@ The @code{io} package provides several Input/Output functions. As with some func
 @*
 At first some functions of the @code{io} package will be discussed. After that the @code{file} class will be explained. Instead of adding examples for most functions, this section ends with a few bigger examples. This is because most functions need eachother.
 
-@deffn Function io.dir (d)
+@luafunc io.dir (d)
 @c UNDONE
 This function is a function iterator (see section X) that is used to scan directory @code{d}. On success the function will return a string containing the next file or directory name. On failure (ie. the directory does not exist) it will return @code{nil} and a string containing the error message.@*
 Example:
@@ -1361,9 +1386,9 @@ Example:
 for d in io.dir(".") do
     print(d)
 end}
-@end deffn
+@endluafunc
 
-@deffn Function io.open (f[, m="r"])
+@luafunc io.open (f[, m="r"])
 Tries to open the file @code{f}. The optional argument @code{m} defines how to open the file. This should be a string containing one of these:
 @table @code
 @item "r"
@@ -1383,42 +1408,42 @@ A @samp{b} can be appended to the mode string indicating that it's a binary file
 @*
 @c UNDONE
 On success, this function will return a @emph{file handle}. This is a class (see section X) with member functions to operate on the file. File handles are discussed in section X. When the file could not be opened, @code{nil} and an error message is returned.
-@end deffn
+@endluafunc
 
-@deffn Function io.popen (c[, m="r"])
+@luafunc io.popen (c[, m="r"])
 @c UNDONE
 This will execute the shell command @code{c} in a seperate process. The function returns a @emph{file handle} like @code{io.open} does. More on file handles in section X.@*
 @*
 If @code{m} is "r" all data from the command that is written to the standard output can be read. If "w" is specified the standard input from the file is linked to the data provided from writes.
-@end deffn
+@endluafunc
 
-@deffn Function io.tmpfile ()
+@luafunc io.tmpfile ()
 @c UNDONE
 Creates a temporary file and returns a @emph{file handle}. This file has a random name and is opened as "r+b" (see section X). On exit the file is removed automaticly.
-@end deffn
+@endluafunc
 
-@deffn Function io.type (t)
+@luafunc io.type (t)
 This function checks the file handle @code{f}. If the file is opened it will return the string "file", if it's closed "closed file" or @code{nil} if @code{t} is not a file handle.
-@end deffn
+@endluafunc
 
 @subsection File Handles
 @c UNDONE
 File handles are classes (see section X) that can operate on files, such as reading or writing. They are returned from @code{io.open}, @code{io.popen} and @code{io.tmpfile}. The file handle class is referred with the name @code{file} each time below.
 
-@deffn Function file:close ()
+@luafunc file:close ()
 Closes the file. When a file is closed you cannot read or write from/to it anymore. Note that each file eventually is closed automaticly.
-@end deffn
+@endluafunc
 
-@deffn Function file:flush ()
+@luafunc file:flush ()
 Normally writes are @emph{buffered}. This function forces to write and clean the buffer.
-@end deffn
+@endluafunc
 
-@deffn Function file:lines ()
+@luafunc file:lines ()
 @c UNDONE
 This is an iterator function (see section X) that can be used in a generic @code{for} loop to get each line from the file. Note that the trailing newlines are deleted from the output.
-@end deffn
+@endluafunc
 
-@deffn Function file:read (...)
+@luafunc file:read (...)
 This file is used to read from the file. The used arguments should be one of the following formats:
 @table @strong
 @item "*n"
@@ -1431,9 +1456,9 @@ Reads and returns (the rest of) a line, without a trailing newline.
 Reads the specified amount of bytes and returns it as a string.
 @end table
 If no function arguments are used, the @samp{*l} option is used. This function is variadic, so multiple formats can be specified in one call. On error @code{nil} is returned.
-@end deffn
+@endluafunc
 
-@deffn Function file:seek ([b="cur"[, o=0]])
+@luafunc file:seek ([b="cur"[, o=0]])
 This function can be used to set/get the current file position. This position is used to start reading or writing. The parameter @code{b} is used to specify a base location and @code{o} is a number which specifies the offset from that. @code{b} can be any of these strings:
 @table @strong
 @item "set"
@@ -1444,9 +1469,9 @@ The base starts from the current location.
 The base starts from the end of the file.
 @end table
 The return value is the position after the change has been applied. So @code{file:seek("set")} will return @samp{0}, @code{file:seek("cur")} returns the current position and @code{file:seek("end")} the end position. Note that this function does not work with file handles gained from the @code{io.popen} function.
-@end deffn
+@endluafunc
 
-@deffn Function file:setvbuf (m[, s=?])
+@luafunc file:setvbuf (m[, s=?])
 Writing to a file is @emph{buffered}. This is to gain performance. The first parameter, @code{m}, is a string which defines how to buffer:
 @table @strong
 @item "no"
@@ -1457,11 +1482,11 @@ Writes are fully buffered, this is the default. Data will only be written when t
 Like "full", but the data is also written after each newline.
 @end table
 The optional @code{s} argument specifies the buffer size in bytes. By default this is a value which suids the system the most.
-@end deffn
+@endluafunc
 
-@deffn Function file:write (...)
+@luafunc file:write (...)
 Writes each function argument to the file. Numbers and strings are valid argument types.
-@end deffn
+@endluafunc
 
 @subsection Examples
 Here follow a few examples of the IO related functions that were discussed.@*
@@ -1540,7 +1565,7 @@ First all the functions from the @code{install} package are described. After tha
 
 @subsection The @code{install} Module
 
-@deffn Function install.askrootpw ()
+@luafunc install.askrootpw ()
 This function will ask the user to type the systems root password. Normally this is done automaticly if,
 @itemize
 @item @code{executeasroot()} is called,
@@ -1549,32 +1574,32 @@ This function will ask the user to type the systems root password. Normally this
 A good reason to call this functions is when you're sure the script will execute one or more commands as root @emph{after} @code{install.extractfiles()} is called. This way the user can abort if he or she doesn't want to or cannot type the root password before the installation begins.@*
 @*
 When this function is called more than once it won't do anything (the password is cached).
-@end deffn
+@endluafunc
 
-@deffn Function install.execute (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
+@luafunc install.execute (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
 This function will execute the shell command defined by string @code{s}. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. The optional argument, @code{r}, tells that the installation should be aborted when the command failed to execute.@*
 @*
 This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.
-@end deffn
+@endluafunc
 
-@deffn Function install.executeasroot (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
+@luafunc install.executeasroot (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
 This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so.
-@end deffn
+@endluafunc
 
-@deffn Function install.extractfiles ()
+@luafunc install.extractfiles ()
 This function will extract all installation files to the directory that was specified by the global variable @code{destdir}. This function will automaticly call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
-@end deffn
+@endluafunc
 
-@deffn Function install.gettempdir ()
+@luafunc install.gettempdir ()
 This function is used to assign a temporary directory the the @code{destdir} variable. Setting @code{destdir} to a temporary directory is useful for installers that need to do additional tasks with the installation files such as compilation.
-@end deffn
+@endluafunc
 
-@deffn Function install.newcfgscreen ([t])
+@luafunc install.newcfgscreen ([t])
 @c UNDONE
 This function will return a class for a new @emph{configuration screen}. The members of this class are described in section X. The optional argument, @code{t}, specifies a (short) title for this screen.
-@end deffn
+@endluafunc
 
-@deffn Function install.setstatus (s)
+@luafunc install.setstatus (s)
 You can use this function to specify the current status of the installation. This way the user can see what the installer is doing. @*
 Example:
 @codeblock
@@ -1582,41 +1607,41 @@ Example:
 -- ...
 install.setstatus("Copying files")
 os.copy(file1, file2, "/usr/local/share")}
-@end deffn
+@endluafunc
 
-@deffn Function install.setstepcount (n=1)
+@luafunc install.setstepcount (n=1)
 This function is used to specify how many @emph{steps} the installation has, specified by parameter @code{n}. This is used to divide the progress bar and to put a text in the form of (x/X) on the screen, where @samp{x} is the current step and @samp{X} the total count of steps. On each @code{install.setstatus} call (including from @code{install.extractfiles()}) the current step will be incremented by one.
-@end deffn
+@endluafunc
 
 @subsection The @code{config screen} class
 The class described here is returned after a call to @code{install.newcfgscreen}. The function definitions below use @samp{cfgscreen} as classname, though you should replace that name with the name of the variable that contains the class.
 
-@deffn Function cfgscreen:addcfgmenu ([t])
+@luafunc cfgscreen:addcfgmenu ([t])
 @c UNDONE
 Creates a new @samp{config menu}. The string parameter @code{t} sets a title. The menu is used to let the user configure certain parameters. These parameters can be paths (configured through a file manager), strings, boolean flags (can be enabled or disabled) or a list with options. The function will return a class containing function methods to add parameters, see section X for info about these.
-@end deffn
+@endluafunc
 
-@deffn Function cfgscreen:addcheckbox (t, o)
+@luafunc cfgscreen:addcheckbox (t, o)
 Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
-@deffn Function chkbox:get (n)
+@luafunc chkbox:get (n)
 Returns @code{true} if the option from array index @code{n} is enabled or @code{false} when disabled.
-@end deffn
-@deffn Function chkbox:set (n, e)
+@endluafunc
+@luafunc chkbox:set (n, e)
 If @code{e} is @code{true} the option at position @code{n} will be enabled, if @code{false} it will be disabled.
-@end deffn
-@end deffn
+@endluafunc
+@endluafunc
 
-@deffn Function cfgscreen:adddirselector ([t[, d=os.getenv("HOME")]])
+@luafunc cfgscreen:adddirselector ([t[, d=os.getenv("HOME")]])
 This function will add an inputfield which holds the current selected directory name and a button next to it which will launch a file dialog. This way the user can either select a directory by typing it or by browsing. Argument @code{t} sets an optional title and argument @code{d} sets an initial directory, defaulting to the user's home directory. The function will return a class with the following methods (where dirsel should be replaced by the actual variable name):
-@deffn Function dirsel:get ()
+@luafunc dirsel:get ()
 Returns a string containing the current selected directory.
-@end deffn
-@deffn Function dirsel:set (d)
+@endluafunc
+@luafunc dirsel:set (d)
 Sets the directory to string @code{d}.
-@end deffn
-@end deffn
+@endluafunc
+@endluafunc
 
-@deffn Function cfgscreen:addinput ([t[, l[, m=1024[, v[, tp="string"]]]])
+@luafunc cfgscreen:addinput ([t[, l[, m=1024[, v[, tp="string"]]]])
 This will add an input field to the config screen. The parameter @code{t} specifies a title. @code{l} can be used to specify a label (text which is put in front of the input field). @code{m} specifies the max character count that can be typed. @code{v} specifies an initial value. The last parameter, @code{tp}, specifies the type of the inputfield and can be one of these:
 @table @strong
 @item "string"
@@ -1627,55 +1652,55 @@ The user can type any number but not fractions.
 The user can type any number including fractions.
 @end table
 The function will return a class with the following method functions (input should be replaced with the actual variable name which points to this class):
-@deffn Function input:get ()
+@luafunc input:get ()
 Returns the current value hold by the input field.
-@end deffn
-@deffn Function input:setspacing (n)
+@endluafunc
+@luafunc input:setspacing (n)
 This function can be used to set the distance from the windows left border to the start position of the input field. The parameter @code{n} specifies the distance, with a range from 1-100. This function is used to make sure that each input field can start from a fixed position. Normally this depends on the length of the given label. So to make sure that each input field will start at the same position on the install screen, you should call this function for every input field with the same value.
-@end deffn
-@end deffn
+@endluafunc
+@endluafunc
 
-@deffn Function cfgscreen:addradiobutton (t[, o])
+@luafunc cfgscreen:addradiobutton (t[, o])
 This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title. The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
-@deffn Function radio:get ()
+@luafunc radio:get ()
 Returns the array index number of the option that is enabled.
-@end deffn
-@deffn Function radio:set (n)
+@endluafunc
+@luafunc radio:set (n)
 Enables the option at array index @code{n}.
-@end deffn
-@end deffn
+@endluafunc
+@endluafunc
 
 @subsection The @code{config menu} Class
 @c UNDONE
 This (sub)section describes the @code{config menu} class, which is created by @code{cfgscreen:addcfgmenu} (see section X). This menu is used to let the user configure various parameters through a menu. A type for these parameters is specified so that the user can change them in a logic way; file paths with a file manager, parameters with predefined options through a listbox etc.
 The class contains the following methods (replace cfgmenu with the variable name pointing to the class):
 
-@deffn Function cfgmenu:addbool (p, d[, v=false])
+@luafunc cfgmenu:addbool (p, d[, v=false])
 This function will add a parameter that can be enabled or disabled by the user. Argument @code{p} should be a @code{string} containing the name of the parameter. Argument @code{d} should be a @code{string} with a description. The optional argument @code{v} is a @code{boolean} telling the initial value: @code{true} if enabled, @code{false} when disabled.
-@end deffn
+@endluafunc
 
-@deffn Function cfgmenu:adddir (p, d[, v])
+@luafunc cfgmenu:adddir (p, d[, v])
 This function adds a parameter that will contain a @code{string} that holds a directory path. The user can modify this through a file browser. Argument @code{p} should be a string containing the parameter name, @code{d} a string with a description and @code{v} a string with an initial path.
-@end deffn
+@endluafunc
 
-@deffn Function cfgmenu:addlist (p, d, l)
+@luafunc cfgmenu:addlist (p, d, l)
 This function adds a parameter which the user can edit with a predefined list of options. @code{p} specifies the variable name, @code{d} a description and @code{l} should be an array with strings for each option name.
-@end deffn
+@endluafunc
 
-@deffn Function cfgmenu:addstring (p, d[, v])
+@luafunc cfgmenu:addstring (p, d[, v])
 This function adds a parameter that can the user can modify through an input field. Argument @code{p} sets the parameter name, @code{d} the description and @code{v} should be a string with the initial value.
-@end deffn
+@endluafunc
 
-@deffn Function cfgmenu:get (p)
+@luafunc cfgmenu:get (p)
 Returns the value from parameter @code{p}. If the type of @code{p} is a boolean, @code{true} will be returned when the parameter is enabled and @code{false} if disabled. In all other cases a @code{string} will be returned.
-@end deffn
+@endluafunc
 
 
 @section GUI Functions
 @c UNDONE
 There are several functions available through the @code{gui} package which interact with the user. Like the @code{install} package, all of these functions should only be called in the @code{install} function (see section X).
 
-@deffn Function gui.choicebox (m, b1, b2[, b3])
+@luafunc gui.choicebox (m, b1, b2[, b3])
 Creates a window that will show the message identified by function argument @code{m}. @code{b1}, @code{b2} and (optionally) @code{b3} is each a string used for a button name (so the window can have 2 or 3 buttons). On failure the function will return the number of the last button (@samp{3}). On success the number of the clicked button is returned.
 Examples:
 @codeblock
@@ -1684,38 +1709,38 @@ gui.choicebox("Could not copy file, what should I do?", "Abort", "Retry", "Ignor
 @*
 -- ....
 gui.choicebox("Could not execute command, what do you want?", "Ignore", "Abort") -- 2 buttons}
-@end deffn
+@endluafunc
 
-@deffn Function gui.msgbox (m, ...)
+@luafunc gui.msgbox (m, ...)
 Will display a dialog with the text specified by argument @code{m}. The variadic arguments can be used to concat other texts to this message.@*
 Example:
 @codeblock {gui.msgbox("Thank you for downloading myapp 0.1! For updates please check www.myapp.org")}
-@end deffn
+@endluafunc
 
-@deffn Function gui.warnbox (m, ...)
+@luafunc gui.warnbox (m, ...)
 The same as @code{gui.msgbox}, but used to alert the user. For example in ncurses the dialog has another color (red) and with the FLTK frontend a warning sign will be shown.
-@end deffn
+@endluafunc
 
-@deffn Function gui.yesnobox (m, ...)
+@luafunc gui.yesnobox (m, ...)
 This function will show a dialog with a message used from parameter @code{m} and arguments after that if available (will concat text). The dialog has a yes and a no button. If the user presses "No" @code{false} will be returned, if "Yes" @code{true} is returned.
 Example:
 @codeblock{-- Somewhere in install() 
 if (gui.yesnobox("Do you want to install some add-ons?")) then
     -- Copy some files
 end}
-@end deffn
+@endluafunc
 
 
 @section Other Functions
 The last few functions are not in any package but are global functions.
 
-@deffn Function assert (f[, ...[, m="Assert failed!"]])
+@luafunc assert (f[, ...[, m="Assert failed!"]])
 This function is mainly used to debug Lua scripts. If @code{r} is @code{false} or @code{nil} this function will call @code{error} with @code{m} as argument. If @code{r} is another value the function will return @code{r} and the variadic arguments between @code{f} and @code{m} (if existant). This is mostly used in combination with functions that will return @code{nil} on error (many functions from the @code{os} package do this for example).@*
 Example:
 @codeblock{assert(os.rename("file1", "file2"))    -- If this function fails the script will be aborted}
-@end deffn
+@endluafunc
 
-@deffn Function dofile (f)
+@luafunc dofile (f)
 Executes the Lua script specified by argument @code{f}. You can use this if you want to split script files for example.@*
 Example:
 @codeblock
@@ -1726,18 +1751,18 @@ elseif (os.osname == "solaris") then
 else
     dofile("generic.lua")
 end}
-@end deffn
+@endluafunc
 
-@deffn Function error (m[, l=1])
+@luafunc error (m[, l=1])
 This function will abort the install and display an error specified by string @code{m} prefixed with the script name and line number. The optional argument, @code{l}, is used to specify the function level which is used when displaying the error: if it's @samp{0} no line number will be displayed, @samp{1} is used for the current line number (default), @samp{2} for the line number of the function that called the current function etc. @*
 Example:
 @codeblock
 {if (not os.copy("file.txt", "somedir/")) then
     error("Could not copy file")
 end}
-@end deffn
+@endluafunc
 
-@deffn Function ipairs (t)
+@luafunc ipairs (t)
 Iterator function that can be used to traverse an array with numeric indexes. Returns 2 values: the first is the current array index and the second is the current entry at that array index. When the next entry is @code{nil}, the function will return @code{nil}. This way it will terminate a generic for loop. Argument @code{t} specifies the table to use.@*
 Example:
 @codeblock{t = @{ 5, 10, 15, 20 @}
@@ -1749,9 +1774,9 @@ Results in
 t[2] = 10
 t[3] = 15
 t[4] = 20}
-@end deffn
+@endluafunc
 
-@deffn Function pairs (t)
+@luafunc pairs (t)
 As the above function as @code{ipairs} (well mostly, see the @uref{http://www.lua.org/manual/5.1, Lua manual for details}). This function also accepts other key index types than numbers.@*
 Example:
 @codeblock{t = @{ @}
@@ -1766,19 +1791,19 @@ Results in
 {t.name = Rick
 t.age = 21
 t.country = The Netherlands}
-@end deffn
+@endluafunc
 
-@deffn Function print (s[, ...])
+@luafunc print (s[, ...])
 This function will print all the given arguments to the standard output (usually the terminal). Since the ncurses frontend already uses the terminal it will call @code{os.log} instead. This function is mainly only used for debugging, since the user probably won't notice the output.
-@end deffn
+@endluafunc
 
-@deffn Function unpack (t[, i=1[, j=#t]])
+@luafunc unpack (t[, i=1[, j=#t]])
 Returns each entry from table @code{t}. This table should be an array with numeric indexes. @code{i} and @code{j} specify the range to use.@*
 Example:
 @codeblock
 {t = @{ "Hello", " ", "World" @}
 print(unpack(t))    -- Prints "Hello World"}
-@end deffn
+@endluafunc
 
 
 

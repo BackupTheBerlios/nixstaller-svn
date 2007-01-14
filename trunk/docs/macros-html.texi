@@ -1,0 +1,59 @@
+@macro starttable{row1, row2, row3, row4, row5}
+@html
+<table border="1">
+  <tbody>
+@end html
+@end macro
+
+
+@macro addtablecol{col}
+@html
+<td>\col\</td>
+@end html
+@end macro
+
+
+@macro addtableheadercol{col}
+@html
+<th>\col\</th>
+@end html
+@end macro
+
+
+@macro endtablerow
+@html
+</tr>
+@end html
+@end macro
+
+
+@macro addtableheaderrow{col}
+@html
+<tr>
+<th>\col\</th>
+@end html
+@end macro
+
+
+@macro addtablerow{col}
+@html
+<tr>
+<td>\col\</td>
+@end html
+@end macro
+
+
+@macro endtable
+@html
+  </tbody>
+</table>
+@end html
+@end macro
+
+
+@macro codeblock{text}
+@html
+<pre><p class="codeblock">\text\
+</p></pre>
+@end html
+@end macro
