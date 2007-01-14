@@ -45,13 +45,13 @@
 #define NCURSES_UNCTRL_H_incl	1
 
 #undef  NCURSES_VERSION
-#define NCURSES_VERSION "5.5"
+#define NCURSES_VERSION "5.6"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <ncurses/curses.h>
+#include <curses.h>
 
 #undef unctrl
 NCURSES_EXPORT(NCURSES_CONST char *) unctrl (chtype);

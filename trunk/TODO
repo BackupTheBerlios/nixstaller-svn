@@ -30,7 +30,7 @@ LIBSU
 - Use locale fix from latest kdesu?
 
 NCURSES FRONTEND
-- Use ncurses with termcap fallback for freebsd
+- Update headers for linux ncurses
         
 FLTK FRONTEND
 - Compile FLTK with exception support for freebsd, netbsd, sunos

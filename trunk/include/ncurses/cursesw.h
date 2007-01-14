@@ -35,14 +35,14 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include <ncurses/etip.h>
+#include <etip.h>
 
 #if HAVE_STRSTREAM_H && (USE_STRSTREAM_VSCAN||USE_STRSTREAM_VSCAN_CAST)
 #include <strstream.h>
 #endif
 
 extern "C" {
-#  include   <ncurses/curses.h>
+#  include   <curses.h>
 }
 
 /* SCO 3.2v4 curses.h includes term.h, which defines lines as a macro.

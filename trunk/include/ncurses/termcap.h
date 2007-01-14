@@ -37,9 +37,9 @@
 #define NCURSES_TERMCAP_H_incl	1
 
 #undef  NCURSES_VERSION
-#define NCURSES_VERSION "5.5"
+#define NCURSES_VERSION "5.6"
 
-#include <ncurses/ncurses_dll.h>
+#include <ncurses_dll.h>
 
 #ifdef __cplusplus
 extern "C"

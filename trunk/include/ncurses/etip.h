@@ -117,7 +117,7 @@
 #  include <generic.h>
 #endif
 
-#include <ncurses/ncurses_dll.h>
+#include <ncurses_dll.h>
 
 extern "C" {
 #if HAVE_VALUES_H
@@ -125,7 +125,7 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include <ncurses/eti.h>
+#include <eti.h>
 #include <errno.h>
 }
 

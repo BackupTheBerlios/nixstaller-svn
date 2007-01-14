@@ -39,8 +39,10 @@
 #define ENTER(x)            ((x==KEY_ENTER)||(x=='\n')||(x=='\r'))
 #define ESCAPE              CTRL('[')
 
+#include <ncurses.h>
+#include <cursesw.h>
+
 #include "main.h"
-#include <cursslk.h>
 
 // Utils
 int MaxX(void);
