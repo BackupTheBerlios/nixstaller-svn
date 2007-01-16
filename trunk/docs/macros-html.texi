@@ -1,59 +1,55 @@
-@macro starttable{row1, row2, row3, row4, row5}
+@macro htmltext{t}
 @html
-<table border="1">
-  <tbody>
+\t\
 @end html
+@end macro
+
+
+@macro starttable{row1, row2, row3, row4, row5}
+@htmltext{<table border="1"> <tbody>}
 @end macro
 
 
 @macro addtablecol{col}
-@html
-<td>\col\</td>
-@end html
+@htmltext{<td>}
+\col\
+@htmltext{</td>}
 @end macro
 
 
 @macro addtableheadercol{col}
-@html
-<th>\col\</th>
-@end html
+@htmltext{<th>}
+\col\
+@htmltext{</th>}
 @end macro
 
 
 @macro endtablerow
-@html
-</tr>
-@end html
+@htmltext{</tr>}
 @end macro
 
 
 @macro addtableheaderrow{col}
-@html
-<tr>
-<th>\col\</th>
-@end html
+@htmltext{<tr><th>}
+\col\
+@htmltext{</th>}
 @end macro
 
 
 @macro addtablerow{col}
-@html
-<tr>
-<td>\col\</td>
-@end html
+@htmltext{<tr><td>}
+\col\
+@htmltext{</td>}
 @end macro
 
 
 @macro endtable
-@html
-  </tbody>
-</table>
-@end html
+@htmltext{</tbody></table>}
 @end macro
 
 
 @macro codeblock{text}
-@html
-<pre><p class="codeblock">\text\
-</p></pre>
-@end html
+@htmltext{<pre><p class="codeblock">}
+\text\
+@htmltext{</p></pre>}
 @end macro

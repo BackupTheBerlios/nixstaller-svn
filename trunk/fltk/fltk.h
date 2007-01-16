@@ -183,8 +183,6 @@ protected:
     virtual Fl_Group *Create(void);
     
     int DescHeight(void) { return (m_pBox) ? m_pBox->h() : 0; };
-    static int TitleHeight(int w, const char *desc);
-
 public:
     virtual void UpdateLanguage(void);
 };

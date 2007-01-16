@@ -4,20 +4,11 @@
 @settitle Nixstaller Manual
 @c %**end of header
 
-@c @include macros.texi
-
-@ifhtml
-    @include macros-html.texi
-@end ifhtml
-
-@ifnothtml
-    @include macros-default.texi
-@end ifnothtml
-
 @macro luafunc{f}
 @deffn Function \f\
-@anchor{\f\}
+@c @anchor{\f\}
 @end macro
+
 
 @macro endluafunc
 @end deffn
@@ -32,9 +23,8 @@
 @contents
 
 @ifnottex
-    @node Top
-    @top About
-@end ifnottex
+@node Top
+@top About
 
 This document describes how to use Nixstaller to create installers for UNIX like systems.
 
@@ -50,7 +40,17 @@ Here is a short description for what you can find in this document:
 * Lua Library Reference:: Explains Most of the Lua Library Functions, including extensions from Nixstaller.
 * Index:: Complete Index
 @end menu
+@end ifnottex
 
+@c @include macros.texi
+
+@ifhtml
+    @include macros-html.texi
+@end ifhtml
+
+@ifnothtml
+    @include macros-default.texi
+@end ifnothtml
 
 
 @node Features
@@ -63,10 +63,10 @@ Here is a list with the main features. Read further for more info to see what th
 @item 2 different frontends used for the installer: @uref{http://www.fltk.org,FLTK} and @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}.
 @item Support for most common UNIX like systems: NetBSD(x86 and amd64), Linux(x86 and amd64), FreeBSD(x86 and amd64) and Solaris 10/Nexenta(x86).
 @item An installer itself has the following features:
-@itemize
+@itemize @bullet
 @item Can be fully translated (no UTF yet). Translations for English and Dutch are supplied by default.
 @item Different kind of installer screens:
-@itemize
+@itemize @bullet
 @item A screen where the user can select a language.
 @item An introduction screen with an optional image and text.
 @item A screen where the user can read/accept a provided license.
@@ -85,8 +85,8 @@ Most screens are optional and can be shown in any particalur order.
 
 
 @section Changelog
-@subsection 0.1 --> 0.2
-@itemize
+@subsection 0.1 @minus{}@minus{}> 0.2
+@itemize @bullet
 @item Lua support.
 @item Support for Nexenta/Solaris 10 and AMD64 support for Linux, FreeBSD an NetBSD.
 @item New manuals created by @uref{http://www.gnu.org/software/texinfo,GNU's Texinfo}.
@@ -102,7 +102,7 @@ Installing Nixstaller is easy: just extract the files to a directory and your do
 
 @node Quickstart
 @chapter Quickstart
-@itemize
+@itemize @bullet
 @item @ref{Installing, Install} Nixstaller.
 @item Go to a terminal and @command{cd} to the directory where you extracted Nixstaller.
 @item @command{cp -R example/simple/ release/}
@@ -124,7 +124,7 @@ Also read the tutorials.
 @section Installation package
 The final product of Nixstaller is a @emph{install package}. The package itself is simply a self-extracting archive in the form of a shell script. When the package(the shell script) is executed it will extract a few files to a temporary directory and will call another script. This second script will detect a usable frontend and will call it.
 A install package itself contains the following files:
-@itemize
+@itemize @bullet
 @item One or more frontends. Depending on the configuration there can be multiple frontends for different systems.
 @item One or two lua scripts which tell what the installer should do.
 @item Translation files. (optional)
@@ -196,7 +196,7 @@ If you want to put a @samp{]} in the translation itself you should put a backsla
 
 @subsection Other things that can be translated
 There are other things to be translated as well:
-@itemize
+@itemize @bullet
 @item The welcome message 
 @item The license agreement 
 @item The 'finish message' 
@@ -232,13 +232,13 @@ In this chapter the creation of an installer is discussed. In the previous chapt
 
 @section Projects
 A project for an installer is nothing more than a directory with a certain file layout. This layout generally looks like this:
-@itemize
+@itemize @bullet
     @item @file{Project Directory/}
-    @itemize
+    @itemize @bullet
         @item @file{lang/}
-        @itemize
+        @itemize @bullet
             @item @file{<language name>/}
-            @itemize
+            @itemize @bullet
                 @item @file{strings}
                 @item @file{welcome}
                 @item @file{license}
@@ -264,7 +264,7 @@ All these files and directories except @file{config.lua} are optional.
 
 
 @section The @file{lang} Directory
-This directory should contain a subdirectory for every language that you want to supply for translations used by the installer. Nixstaller comes with Dutch translations and English 'translations'. You can find these in the @file{lang/} directory from the Nixstaller directory. The English 'translations' are used to modify English strings in Nixstaller.@*
+This directory should contain a subdirectory for every language that you want to supply for translations used by the installer. Nixstaller comes with Dutch translations and English 'translations'. The English 'translations' are used to modify English strings in Nixstaller. You can find the languages in the @file{lang/} directory from the Nixstaller directory. Simply copy these directories to your @file{lang/} directory in your project directory to include them. @*
 @*
 The previous chapter explained what the @file{strings} file is. Translated version of the @file{welcome}, @file{license} and @code{finish} files can be put in each language-subdirectory.
 
@@ -314,15 +314,91 @@ If this variable is not specified it will default to "lzma". If you're testing y
 @item defaultlang
 This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english".
 @item destdir
-This variable should contain a @ref{Strings,,string} that specifies the destination path for @ref{install.extractfiles ()}. For installers that will operate on the installation files and install them later (ie compiling) you can use the @ref{install.gettempdir ()} function. This function returns a temporary path that will be removed when the installation is finished.
+This variable should contain a @ref{Strings,,string} that specifies the destination path for @ref{install.extractfiles}. For installers that will operate on the installation files and install them later (@abbr{ie} compiling) you can use the @ref{install.gettempdir} function. This function returns a temporary path that will be removed when the installation is finished.
 @item frontends
+This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Currently only these are valid: "ncurses" and "fltk". The default is @code{@{ "fltk", "ncurses" @}}.
 @item intropic
+An optional variable containing a @ref{Strings,,string} with the path to a Intro Picture.
 @item languages
+An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of the languages to include for translations. The language names should be the same as the name of the subdirectories in the @file{lang/} directory from your project directory. The default is @code{@{ "english", "dutch" @}}.
 @item targetarch
+A variable that should contain an array (@pxref{Tables}) of @ref{Strings,,strings} for the CPU architectures this installer should support. Nixstaller currently only supports @samp{x86} and this variable will default to this if not specified.
 @item targetos
+An array (@pxref{Tables}) of @ref{Strings,,strings} holding the names of the OSs (Operating Systems) which the installer should support. The OS names should be the lowercased output from the shell command @command{uname}. If not specified the variable will default to @code{@{"linux", "freebsd", "openbsd" @}}.
 @end table
+Here is an example @file{config.lua} file with all the above variables:
+@codeblock{@minus{}@minus{} Example showing every variable
+appname = "Test App"
+archivetype = "gzip"
+defaultlang = "english"
+destdir = install.gettempdir()
+frontends = @{ "fltk" @}
+intropic = "intro.png"
+languages = @{ "english" @}
+targetarch = @{ "x86" @}
+targetos = @{ "sunos", "netbsd", "linux" @}}
 
 @subsection Second Lua Script: @file{run.lua}
+The second Lua script is used to control the installer. This file is unlike the @file{config.lua} optional, but it's pretty common to have one. Generally speaking, the following three things can be done in this file:
+@itemize @bullet
+@item Creating new installation screens.
+@item Defining which installation screens to use and when to show them.
+@item Controlling the installation process.
+@end itemize
+
+@subsubsection Creating New Installation Screens
+You can create new installation screens so that the user can configure variables which can affect the installation.@*
+@*
+To create a new screen we call the @ref{install.newcfgscreen} function. This function returns a variable pointing to a @ref{Classes,,class} that we can use to modify this screen.@*
+@*
+Lets start an example @file{run.lua} file with the following line:
+@codeblock{myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")}
+This will create a fairly empty install screen with a title saying
+@quotation
+Hello!@*
+You can use this screen to configure some settings.
+@end quotation
+Also the screen isn't shown yet, but we get back to that later.@*
+@*
+Now to make the screen more useful you can add several @emph{widgets}. Here is a table showing them:
+@starttable{.33,.33,.33}
+@addtableheaderrow{Widget}
+    @addtableheadercol{Description}
+    @addtableheadercol{Function}
+@endtablerow
+
+@addtablerow{Config menu}
+    @addtablecol{A menu that will let the user configure certain parameters in a logic way.}
+    @addtablecol{@ref{cfgscreen:addcfgmenu}}
+@endtablerow
+
+@addtablerow{Check box}
+    @addtablecol{One or more options that the user can enable.}
+    @addtablecol{@ref{cfgscreen:addcheckbox}}
+@endtablerow
+
+@addtablerow{Directory Selector}
+    @addtablecol{Adds an inputfield to specify a directory path and a button next to it to open a directory browser.}
+    @addtablecol{@ref{cfgscreen:adddirselector}}
+@endtablerow
+
+@addtablerow{Input Field}
+    @addtablecol{A single line inputfield where the user can specify text.}
+    @addtablecol{@ref{cfgscreen:addinput}}
+@endtablerow
+
+@addtablerow{Radiobutton}
+    @addtablecol{A list of options from which the user can enable one.}
+    @addtablecol{@ref{cfgscreen:addradiobutton}}
+@endtablerow
+
+@endtable
+For a detailed explanation see the links shown in the @samp{Function} column. So lets expand our @file{run.lua} file so it will add a few widgets to the new installation screen:
+@codeblock{@minus{}@minus{} As before
+myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")
+@*
+myscreen:addinput("", "Full Name:")
+myscreen:addcheckbox("Gender", @{ "Male", "Female" @})}
 
 
 @section Creating the Installer
@@ -359,15 +435,15 @@ Lua (@url{http://www.lua.org}) is used for configuring properties of the @emph{I
 Lua files can contain @emph{comments}. Comments are for example used to describe pieces of code or to quickly 'disable' some code.
 
 Some examples:
-@codeblock{-- This is a comment line, comment lines always start with @samp{--}
-a = b + 5     -- Comment can be after a code line aswell
--- b = b + 1   -- A 'disabled' line}
+@codeblock{@minus{}@minus{} This is a comment line, comment lines always start with @samp{@minus{}@minus{}}
+a = b + 5     @minus{}@minus{} Comment can be after a code line aswell
+@minus{}@minus{} b = b + 1   @minus{}@minus{} A 'disabled' line}
 
 There can also be @emph{comment blocks}:
-@codeblock{--[
+@codeblock{@minus{}@minus{}[
 Text between the two square brackets is comment.
 This is useful if you want to write a few lines or disable multiple code lines.
---]}
+@minus{}@minus{}]}
 
 @subsection Variables
 To store data @emph{variables} are used. A variable name is a combination of letters, underscores and/or numbers. Note that the variable name cannot start with a number.
@@ -376,8 +452,8 @@ To create a variable you simply assign data to it. To remove a variable you assi
 @subsubsection Types
 Variables are not bound to a single type(typeless, languages as C are typed). There are various types in the Lua environment:
 @table @strong
-@item Numbers
 @anchor{Numbers}
+@item Numbers
 Numbers can be both a decimal type or a integral type. Examples:
 @codeblock{a = 15
 b = 1.5}
@@ -386,8 +462,7 @@ b = 1.5}
 Strings are used to store an array of characters. The text used for a string should be either enclosed by single quotes ('') or double quotes (""). Example:
 @codeblock{text1 = "Hello"}
 If you want to assign lots of text you can also use the @samp{[[} and @samp{]]} operators. These will add all the text between them, including newlines. Example:
-@codeblock
-{longtext = [[Hello
+@codeblock{longtext = [[Hello
 this
 is
 a string
@@ -422,7 +497,7 @@ Tables are a generic type and can be used in many different ways. See ... for a 
 Functions can also be stored in variables. Section X is about functions.
 @item @samp{@strong{nil}}
 As said before, @code{nil} is used to delete a variable. @code{nil} is also sometimes used to indicate @samp{Nothing}. Example:
-@codeblock{a = nil    -- a will now be collected by Lua's garbage collector}
+@codeblock{a = nil    @minus{}@minus{} a will now be collected by Lua's garbage collector}
 @end table
 
 @subsubsection Operators
@@ -484,17 +559,16 @@ See section X}
 Parenthesis(@samp{()}) can be used to give an expression the highest priority.
 
 Some examples:
-@codeblock{a = 5 * 2       -- a = 10
-b = 20 / 5      -- b = 4
-c = (a + b) * 2 -- c = 28
-d = 5^2         -- d = 25
+@codeblock{a = 5 * 2       @minus{}@minus{} a = 10
+b = 20 / 5      @minus{}@minus{} b = 4
+c = (a + b) * 2 @minus{}@minus{} c = 28
+d = 5^2         @minus{}@minus{} d = 25
 txt1 = "Hello"
 txt2 = "World"
-txt = txt1 .. " ".. txt2    -- txt = "Hello World"}
+txt = txt1 .. " ".. txt2    @minus{}@minus{} txt = "Hello World"}
 Note that the @samp{..} operator can convert numbers to strings aswell:
-@codeblock
-{n = 5
-txt = "The number is: " .. n    -- txt = "The number is: 5"}
+@codeblock{n = 5
+txt = "The number is: " .. n    @minus{}@minus{} txt = "The number is: 5"}
 
 @subsection Testing variables and values
 
@@ -529,22 +603,22 @@ When a test succeeds @code{true} will be returned, when it fails @code{false} wi
 Here are some examples:
 @codeblock{a = 55
 b = 100
-c = a > b    -- c = false
+c = a > b    @minus{}@minus{} c = false
 @*
 text1 = "Apple"
 text2 = "Orange"
-c = text1 < text2   -- c = true (alphabetical comparisation)
+c = text1 < text2   @minus{}@minus{} c = true (alphabetical comparisation)
 @*
-c = 5 > 2 and "5" < "2"   -- false (second expression is false)}
+c = 5 > 2 and "5" < "2"   @minus{}@minus{} false (second expression is false)}
 
 As mentioned, the @code{or} and @code{and} operators will return one of the expressions. With that knowledge a nice trick can be made:
 @codeblock{a = 5
 b = 2
 c = 6
 d = 12
-n = (a > b) and c or d   -- n = d(12)}
+n = (a > b) and c or d   @minus{}@minus{} n = d(12)}
 This might look a bit odd. If you're a C (or C++) programmer you may recognize this: it's similar to @code{(expr) ? a : b}. If you're not, here is what happens:
-@itemize
+@itemize @bullet
 @item @code{(a > b)}: this is false,
 @item @code{... and c}: this is ignored since the previous expression was false. The first expression is returned (@code{false}).
 @item @code{... or d}: The previous expression was @code{false}, so @code{or} will return @code{d} (12).
@@ -558,11 +632,11 @@ If you find this confusing, you can use @code{if statements} (see section X) ins
 @code{if statements} are used to test some expression and if @code{true} it will execute some other code.
 The general syntax is like this:
 @codeblock{if expr1 then
-    -- Code here for when expr1 is true
+    @minus{}@minus{} Code here for when expr1 is true
 elseif expr2 then
-    -- Code here for when expr2 is true and expr2 isn't
+    @minus{}@minus{} Code here for when expr2 is true and expr2 isn't
 else
-    -- Code here for when expr1 and expr2 are not true
+    @minus{}@minus{} Code here for when expr1 and expr2 are not true
 end}
 
 The @code{elseif} and @code{else} part is optional. The keyword @code{end} is used to end the @samp{if-then block}.
@@ -574,12 +648,12 @@ Here are some examples (with comments) to illustrate some usage of if statements
 @c UNDONE
 @codeblock{n = false
 if n then
-    -- Impossible
+    @minus{}@minus{} Impossible
 else
-    -- Do something here
+    @minus{}@minus{} Do something here
 end
 @*
--- This is the same as the 'and-or' trick of section X
+@minus{}@minus{} This is the same as the 'and-or' trick of section X
 if (a > b) then
     n = c
 else
@@ -601,15 +675,14 @@ end}
 @subsubsection @code{while} loops
 The @code{while} loop looks like this:
 @codeblock{while expr1 do
-    -- Do some code
+    @minus{}@minus{} Do some code
 end}
 
 As long as @samp{expr1} is not @code{false} it will execute the code in the @samp{while-do-end} block.
 Here is a short example:
-@codeblock
-{n = 1
+@codeblock{n = 1
 while (n <= 10) do
-    -- Some code
+    @minus{}@minus{} Some code
 @*
     n = n + 1
 end}
@@ -618,10 +691,9 @@ In this example the @code{while} loop repeats itself until @code{n} is more than
 @subsubsection @code{repeat} loops
 Another loop is the @samp{repeat-until} loop. This will repeat the code block @emph{until} some expression is @code{true}.
 Example:
-@codeblock
-{n = 1
+@codeblock{n = 1
 repeat
-    -- Some code
+    @minus{}@minus{} Some code
 @*
     n = n + 1
 until n > 10}
@@ -632,9 +704,8 @@ This does exactly the same as the @code{while} example. So why choose @code{repe
 There are 2 kind of @code{for} loops: the @emph{numeric} and the @emph{generic}. We will discuss the first here, the @emph{generic} @code{for} loop will be explained in section X.
 
 The @emph{numeric} @code{for} loop looks like this:
-@codeblock
-{for var=expr1,expr2,expr3 do
-    -- Some code
+@codeblock{for var=expr1,expr2,expr3 do
+    @minus{}@minus{} Some code
 end}
 
 @table @emph
@@ -647,17 +718,16 @@ This is optional. @emph{expr3} is used to specify how much @code{var} should inc
 @end table
 
 Now some examples:
-@codeblock
-{for n=1,10 do
-    -- Some code here that will be executed 10 times
+@codeblock{for n=1,10 do
+    @minus{}@minus{} Some code here that will be executed 10 times
 end
 @*
 for n=2,20,2 do
-    -- Some code that will be executed 10 times. (n = incremented by 2 each time)
+    @minus{}@minus{} Some code that will be executed 10 times. (n = incremented by 2 each time)
 end}
 
 Here are some points to remember with @code{for} loops:
-@itemize
+@itemize @bullet
 @item As been said the variable used for the loop only exists inside the loop. If you need the value outside the loop you should copy it to another variable.
 @item All the three expressions are evaluated just once. This is important to know when you use functions (see section X) for an expression.
 @item Do not modify the variable used by the @code{for} loop by hand.
@@ -667,11 +737,10 @@ Here are some points to remember with @code{for} loops:
 @c UNDONE
 To escape from a loop in Lua you can use @code{break} (or @code{return} which is handled in section X).
 Here is an example:
-@codeblock
-{n = 1
-while (true)  -- Infinite loop
+@codeblock{n = 1
+while (true)  @minus{}@minus{} Infinite loop
     if (n == 50) then
-        break -- Not infinite afterall
+        break @minus{}@minus{} Not infinite afterall
     end
     n = n + 1
 end}
@@ -683,9 +752,8 @@ Note that you can only use @code{break} at the end of a code block. In this case
 
 @subsubsection Basics
 Before a function can be used you have to @emph{declare} it:
-@codeblock
-{function funcname(args)
-    -- Code
+@codeblock{function funcname(args)
+    @minus{}@minus{} Code
 end}
 @table @emph
 @item funcname
@@ -696,31 +764,28 @@ Which @emph{arguments} or @emph{parameters} this function expects.
 
 @subsubsection Functions arguments
 Some functions may need data from the caller. To pass this data @emph{function parameters} are used. These are variables which are @emph{local} (not exist outside the function) to this function. Here is an example to acclompish this:
-@codeblock
-{counter = 0
+@codeblock{counter = 0
 @*
-function increment(n) -- Function that increments @samp{counter} by @code{n}
+function increment(n) @minus{}@minus{} Function that increments @samp{counter} by @code{n}
     counter = counter + n
 end
 @*
 @*
 increment(5)
--- counter is now 5
+@minus{}@minus{} counter is now 5
 increment(-2)
--- counter is now 3}
+@minus{}@minus{} counter is now 3}
 You can also specify multiple function arguments: just seperate them with a comma (@samp{,}).@*
 @*
 If the user doesn't specify one or more parameters then they will be @code{nil}. With that info we can make it so that some arguments have default values incase they are not given by the caller. For example:
-@codeblock
-{function increment(n)
+@codeblock{function increment(n)
     if (not n) then
         n = 1
     end
     counter = counter + n
 end}
 Now if @code{increment} isn't specified with any arguments (@samp{increment()}) it will increment @code{counter} by @samp{1}. We can also use a shorter syntax using the @code{or} operator:
-@codeblock
-{function increment(n)
+@codeblock{function increment(n)
     n = n or 1
     counter = counter + n
 end}
@@ -731,15 +796,13 @@ Functions can also have a variable number of arguments. See section X for more i
 
 @subsubsection Return values
 When a function is called it can also return data to the caller. Here is how it generally looks:
-@codeblock
-{function func()
-    -- Code here
-    return arg1, arg2, arg3 -- etc
+@codeblock{function func()
+    @minus{}@minus{} Code here
+    return arg1, arg2, arg3 @minus{}@minus{} etc
 end}
 
 Unlike some other language, lua has the feature to return multiple values. Here are some examples about returning values:
-@codeblock
-{function sum(a, b)
+@codeblock{function sum(a, b)
     return a + b
 end
 @*
@@ -750,30 +813,29 @@ end
 @*
 n1 = 5
 n2 = 10
-n3 = sum(n1, n2)    -- n3 = 15
+n3 = sum(n1, n2)    @minus{}@minus{} n3 = 15
 @*
-str1, str2, str3 = f() -- str1 = "Hello", str2 = " ", str3 = "World"}
+str1, str2, str3 = f() @minus{}@minus{} str1 = "Hello", str2 = " ", str3 = "World"}
 
 @subsection Local variables
 For now mostly @emph{global} variables were used. There is another type of variable: the @emph{local} variable. The variable used in a numeric @code{for} loop is local, so are the function arguments. Local variables only exist in a code block (and the underlying code blocks). To create local variables you have to @emph{define} them with the @code{local} keyword. Local variables are mostly used inside functions, so that they don't corrupt the global environment.
 As usual, here are some examples:
-@codeblock
-{function f()
-    local a             -- a will only exist in this function
-    local b, c          -- More variables can be defined at once
-    local c, d = 5, 6   -- And can also be assigned: c = 5, d = 6
+@codeblock{function f()
+    local a             @minus{}@minus{} a will only exist in this function
+    local b, c          @minus{}@minus{} More variables can be defined at once
+    local c, d = 5, 6   @minus{}@minus{} And can also be assigned: c = 5, d = 6
 @*
-    -- Some code
+    @minus{}@minus{} Some code
 end
 @*
-count = 0    -- Global variable
+count = 0    @minus{}@minus{} Global variable
 @*
 function g()
-    local count     -- Overide count
-    count = 1       -- Modify our own count
+    local count     @minus{}@minus{} Overide count
+    count = 1       @minus{}@minus{} Modify our own count
 end
 @*
--- count is still 0 here}
+@minus{}@minus{} count is still 0 here}
 As shown above @code{local} variables can have the same name as a existing global variable. In such cases @code{local} variables have a higher priority then underlying global variables.
 
 
@@ -784,19 +846,16 @@ In this section some of the more advanced features of Lua will be shown. Atleast
 @subsection Functions As Variables
 @c UNDONE
 As said before in section X, functions are a variable type. The way we did to create functions so far is actually a shortcut to assign a function to a (global) variable:
-@codeblock
-{function f()
-    -- ...
+@codeblock{function f()
+    @minus{}@minus{} ...
 end}
 Is essentially the same as:
-@codeblock
-{f = function()
-    -- ...
+@codeblock{f = function()
+    @minus{}@minus{} ...
 end}
 
 With that knowledge some interesting things can be made. For example, a function can be passed to another function:
-@codeblock
-{function sum(a, b)
+@codeblock{function sum(a, b)
     return a + b
 end
 @*
@@ -807,11 +866,10 @@ function modifyx(func, val1, val2)
 end
 @*
 modifyx(sum, 1, 1)
--- x is now 2}
+@minus{}@minus{} x is now 2}
 
 Another example is to use @emph{anonymous functions}. These are, as the name suggests, functions without a name. A good reason to use them is when you want to pass (a simple) function like we did above. Here is the anonymous version:
-@codeblock
-{x = 0
+@codeblock{x = 0
 @*
 function modifyx(func, val1, val2)
     x = func(val1, val2)
@@ -820,11 +878,11 @@ end
 modifyx(function(a, b)
             return a + b
         end, 1, 1)
--- x is now 2}
+@minus{}@minus{} x is now 2}
 This does essentially the same, just with an anonymous function.
 
-@subsection Tables
 @anchor{Tables}
+@subsection Tables
 Tables are generic types also called @emph{objects}. Tables can be used to create new datatypes, store blocks of data (arrays) and even for OOP(Object Orientated Programming). Not all features of tables are described. Just the few that are in the authors opinion important to know for now. A good reference for lua tables is the @uref{http://www.lua.org,Lua Book}.
 
 @subsubsection Creating A @code{table}
@@ -833,25 +891,22 @@ Before we go in to details, lets start with how to create a table. Unlike other 
 The 2 curley braces are the key to construct a new table. There are other ways to construct a table, these will be handled in the next sections.@*
 @*
 Another thing to remember is that variables can only @emph{point} to a table. The following example shows an error:
-@codeblock
-{t = @{ @}   -- Construct a new table
-t2 = t    -- Copy table (ERROR)}
+@codeblock{t = @{ @}   @minus{}@minus{} Construct a new table
+t2 = t    @minus{}@minus{} Copy table (ERROR)}
 In this example, @code{t2} will @strong{not} be a copy of @code{t}. Instead @code{t2} will @emph{point} to the same table as @code{t} does. @*
 @*
 When all references to a table are gone, for example by setting @code{t} and @code{t2} to @code{nil}, the table will be removed by Lua's garbage collector.
 
 @subsubsection Tables Seen As An Array
 As been said, tables can be used in many ways. Lets start with the @emph{array} like feature. You can see an array like a datablock. This block can expanded, indexed and traversed. Here are the usual examples:
-@codeblock
-{
-t = @{ @} -- Construct new table
--- Create 3 table entries
+@codeblock{
+t = @{ @} @minus{}@minus{} Construct new table
+@minus{}@minus{} Create 3 table entries
 t[1] = 5
 t[2] = 6
 t[3] = 7}
 In this example the table referenced by @code{t} has 3 entries. Each are @emph{indexed} by numbers: @code{t[1]} points to 5, @code{t[2]} to 6 and @code{t[3]} to 7. Unlike languages such as C the arrays from Lua can be indexed with any type (except @code{nil}). And as usual, the data can be from any type and @code{nil} can be used to remove the data. Some more examples:
-@codeblock
-{t = @{ @}
+@codeblock{t = @{ @}
 t["Name"] = "Rick"
 t["Phone"] = 123456789
 t["Country"] = "The Netherlands"}
@@ -863,8 +918,7 @@ Usually though we use numbers only as indexes. Records (see below) are mainly us
 As explained in the previous section tables can be @emph{indexed}. Another way to assign data to a table is by using @emph{records}. This is the general syntax:
 @codeblock{tablename.fieldname}
 And an example:
-@codeblock
-{t = @{ @}
+@codeblock{t = @{ @}
 t.Name = "Rick"
 t.Phone = 123456789
 t.Country = "The Netherlands"}
@@ -878,21 +932,20 @@ The reason for this alternative syntax is to have a shortcut specifically for re
 Another popular way is to use tables for @emph{packages} or @emph{modules}. A good example are the Lua libraries discussed later. 
 @c UNDONE
 A package is basicly a record which is defined somewhere else. This record contains mostly functions and sometimes other variables. Section X describes that functions are variable types. Using that knowledge we can create a package like this:
-@codeblock
-{mypackage = @{ @}
+@codeblock{mypackage = @{ @}
 mypackage.f = function()
-                -- Some code
+                @minus{}@minus{} Some code
               end
 mypackage.v = "Hello World"
 @*
-mypackage.f()    -- Call f() from mypackage}
+mypackage.f()    @minus{}@minus{} Call f() from mypackage}
 For functions in packages Lua has a shortcut:
-@codeblock
-{-- Same as above
+@codeblock{@minus{}@minus{} Same as above
 function mypackage.f()
-    -- Some code
+    @minus{}@minus{} Some code
 end}
 
+@anchor{Classes}
 @subsubsection Table Seen As A Class
 Tables can also be threaded as @emph{classes}. Simply put, these are data types much like records; they have their own variables, called @emph{members} and their own functions, called @emph{methods}. Each class has to be created, mostly through another function.@*
 @*
@@ -902,21 +955,20 @@ Usually calling function methods from a class is slightly different than that fr
 @*
 @c UNDONE
 Here follows an example using the @code{io} package from the Lua library. In section X all the IO functionality is discussed.
-@codeblock
-{-- The following line opens the file 'myfile.txt' for reading (specified by "r"). The io.open function returns a class that can be used to operate on the opened file.
+@codeblock{@minus{}@minus{} The following line opens the file 'myfile.txt' for reading (specified by "r").
+@minus{}@minus{} The io.open function returns a class that can be used to operate on the opened file.
 file = io.open("myfile.txt", "r")
 @*
--- One of the methods of the class is read(), using this function we can read everything from the file to a string:
+@minus{}@minus{} One of the methods of the class is read(), using this function we can read everything from the file to a string:
 text = file:read("*all")
 @*
--- And when we're done, we use the close method to close the file and free the used resources:
+@minus{}@minus{} And when we're done, we use the close method to close the file and free the used resources:
 file:close()}
 
 @subsubsection Traversing Tables
 To traverse a table we can use the @emph{generic} @code{for} loop combined with a @emph{iterator function}. The syntax looks like this:
-@codeblock
-{for vars in expression do
-    -- Code
+@codeblock{for vars in expression do
+    @minus{}@minus{} Code
 end}
 @table @emph
 @item vars
@@ -928,8 +980,7 @@ Normally the iterator function
 So what is a iterator function? To say it easy: when you call it, it will return the next entry of a table. It can do so because it will store its current state by each call. There are different kinds of iterators in Lua. We'll discuss 2 types here and some others are explained in section X. @*
 @*
 The first we discuss is the @code{pairs} function. This function, combined with a (generic) @code{for} loop, can traverse @emph{any} table. Here is a example:
-@codeblock
-{t = @{ @}
+@codeblock{t = @{ @}
 t[1] = 55
 t[2] = 105
 t.name = "Rick"
@@ -942,8 +993,7 @@ end}
 You might be wondering where @code{print} comes from. It's a Lua function which prints text to the standard output (usually a terminal). This function is discussed further in section X @*
 @*
 Running the program it produced the following output:
-@codeblock
-{Table entry: 1
+@codeblock{Table entry: 1
 Contains: 55
 Table entry: 2
 Contains: 105
@@ -952,8 +1002,7 @@ Contains: Rick}
 As you can see the first variable (@code{i}) is used to store the current index of the table. The second variable (@code{v}) is used to store the value of the current entry. @*
 @*
 The second iterator function is @code{ipairs}. This function is almost identical to @code{pairs}. The only difference is that it will @emph{only} list numeric indexes. This is useful for arrays. If we change the above example to use @code{ipairs} instead of @code{pairs} it will produce the following output:
-@codeblock
-{Table entry: 1
+@codeblock{Table entry: 1
 Contains: 55
 Table entry: 2
 Contains: 105}
@@ -963,50 +1012,43 @@ As you can see it omits the @code{"name"} index. Note that, as other Lua functio
 For now we only used one way to construct tables. Another way is to assign data right away when the table is constructed. For this you can use different ways to acclompish this. @*
 @*
 The first way is specifically for arrays indexed by numbers, example:
-@codeblock
-{array = @{ 5, 10, "Hello World" @}}
+@codeblock{array = @{ 5, 10, "Hello World" @}}
 This is equivalent to
-@codeblock
-{array = @{ @}
+@codeblock{array = @{ @}
 array[1] = 5
 array[2] = 10
 array[3] = "Hello World"}
 As you see, it starts with index @samp{1}.
 @*
 Another way is handy for records and such:
-@codeblock
-{record = @{ Name="Rick", Country="The Netherlands" @}
--- or like this:
+@codeblock{record = @{ Name="Rick", Country="The Netherlands" @}
+@minus{}@minus{} or like this:
 record2 = @{ "Name"="Rick", "Country"="The Netherlands" @}}
 which would be equivalent to
-@codeblock
-{record = @{ @}
+@codeblock{record = @{ @}
 record.Name = "Rick"
 record.Country = "The Netherlands"
--- or like this:
+@minus{}@minus{} or like this:
 record2["Name"] = "Rick"
 record2["Country"] = "The Netherlands"}
 @*
 Table constructors can be nested, like this:
-@codeblock
-{table = @{ @{5, 10@}, @{15, 20@} @}
-print(table[1][1], table[1][2])   -- prints @samp{5     10}
-print(table[2][1], table[2][2])   -- prints @samp{15    20}}
+@codeblock{table = @{ @{5, 10@}, @{15, 20@} @}
+print(table[1][1], table[1][2])   @minus{}@minus{} prints @samp{5     10}
+print(table[2][1], table[2][2])   @minus{}@minus{} prints @samp{15    20}}
 
 @subsubsection The @samp{#} operator
 There is one special operator for Lua tables: the @samp{#} operator. This operator return the number of entries with a numeric index in a table. It stops counting if the next index has no value (@code{nil}).@*
 @*
 Example:
-@codeblock
-{t = @{ 5, 10, 15 @}
-print("t got " .. #t .. " elements")    -- Prints "t got 3 elements"
+@codeblock{t = @{ 5, 10, 15 @}
+print("t got " .. #t .. " elements")    @minus{}@minus{} Prints "t got 3 elements"
 t[5] = 25
-print("t got " .. #t .. " elements")    -- Prints "t got 3 elements", because index 4 is nil}
+print("t got " .. #t .. " elements")    @minus{}@minus{} Prints "t got 3 elements", because index 4 is nil}
 
 @subsection Variadic Functions
 @emph{Variadic functions} are functions with a @emph{variable} number of arguments. Here is a example that displays how to use them:
-@codeblock
-{function f(...)
+@codeblock{function f(...)
     for i, v in pairs(arg) do
         print("Arg " .. i .. " contains " .. v)
     end
@@ -1014,8 +1056,7 @@ end
 @*
 f("Hello", " ", "World")}
 When executed, the following output is produced:
-@codeblock
-{Arg 1 contains Hello
+@codeblock{Arg 1 contains Hello
 Arg 2 contains
 Arg 3 contains World
 Arg n contains 3}
@@ -1029,11 +1070,10 @@ As you may have noticed from the output there is also an entry called @samp{n}. 
 @end table
 @*
 You can also pass the arguments to another function:
-@codeblock
-{function f(...)
-    -- Do some stuff
+@codeblock{function f(...)
+    @minus{}@minus{} Do some stuff
     @*
-    print(...)    -- The print function is also variadic
+    print(...)    @minus{}@minus{} The print function is also variadic
 end}
 
 
@@ -1061,8 +1101,7 @@ This will return the byte codes (such as ASCII values) used from string @code{s}
 @luafunc string.char (...)
 Expects numeric arguments which are byte values (for example returned from @code{string.byte}). It will return a string consisting of each argument converted to the correspending character. @*
 Example:
-@codeblock
-{print (string.char(string.byte("Hello World", 1, -1)))   -- Prints Hello World}
+@codeblock{print (string.char(string.byte("Hello World", 1, -1)))   @minus{}@minus{} Prints Hello World}
 @endluafunc
 
 @luafunc string.len (s)
@@ -1076,17 +1115,15 @@ Returns a lowercased version of string @code{s}. Characters that don't have a lo
 @luafunc string.upper (s)
 Returns a uppercased version of string @code{s}. Characters that don't have an uppercased version are untouched.@*
 Example:
-@codeblock
-{s = "Hello World!"
-print(string.lower(s))    -- Prints hello world!
-print(string.upper(s))    -- Prints HELLO WORLD!}
+@codeblock{s = "Hello World!"
+print(string.lower(s))    @minus{}@minus{} Prints hello world!
+print(string.upper(s))    @minus{}@minus{} Prints HELLO WORLD!}
 @endluafunc
 
 @luafunc string.rep (s, n)
 Returns a string that is a copy of string @code{s} replicated @code{n} times.@*
 Example:
-@codeblock
-{print(string.rep("A", 5))    -- Prints AAAAA}
+@codeblock{print(string.rep("A", 5))    @minus{}@minus{} Prints AAAAA}
 @endluafunc
 
 @luafunc string.reverse (s)
@@ -1096,11 +1133,10 @@ Returns a reversed version of string @code{s}.
 @luafunc string.sub (s, i [, j=-1])
 Returns a @emph{substring} from string @code{s} starting at index @code{i} till index @code{j}. When @code{i} is negative it will start at the end.@*
 Examples:
-@codeblock
-{s = "Hello World"
-print(string.sub(s, 2))    -- Prints ello World
-print(string.sub(s, 1, 2)) -- Prints He
-print(string.sub(s, -5))   -- Prints World}
+@codeblock{s = "Hello World"
+print(string.sub(s, 2))    @minus{}@minus{} Prints ello World
+print(string.sub(s, 1, 2)) @minus{}@minus{} Prints He
+print(string.sub(s, -5))   @minus{}@minus{} Prints World}
 @endluafunc
 
 @luafunc string.format (s, ...)
@@ -1155,14 +1191,13 @@ Will produce a string that is @samp{safe} for Lua. This means that special chara
 The returned string from @code{string.format} will contain all the result(s) from the control modifier(s), at the place where the control modifier(s) orginally were placed. Each control modifier will use the next given function argument.@*
 @*
 To clear things up, here are some examples:
-@codeblock
-{name = "Rick"
+@codeblock{name = "Rick"
 age = 21
-print(string.format("Hello you are %s and %d years old.", name, age))    -- Prints "Hello you are Rick and 21 years old."
+print(string.format("Hello you are %s and %d years old.", name, age))    @minus{}@minus{} Prints "Hello you are Rick and 21 years old."
 f = 12.25/5.55
--- The first %f will be replaced with @samp{2.207207}, the second with @samp{2.21})
+@minus{}@minus{} The first %f will be replaced with @samp{2.207207}, the second with @samp{2.21})
 print(string.format("The result of 12.25 / 5.55 = %f or shortened: %.2f", f, f))
-print(string.format("An aligned number: %3d", 5))    -- Prints "An aligned number:   5"}
+print(string.format("An aligned number: %3d", 5))    @minus{}@minus{} Prints "An aligned number:   5"}
 
 @endluafunc
 
@@ -1176,21 +1211,19 @@ Lua has a few functions to help you when working with tables. These functions ar
 @luafunc table.concat (t, [, sep=""[, i=1[, j=#t]]])
 Returns a string that has all elements of table @code{t} next to eachother. Each entry can be seperated by the string @code{sep}. The @code{i} and @code{j} variables are used to indicate a starting and ending index.
 Examples:
-@codeblock
-{t = @{ "Hello", "World", "!" @}
+@codeblock{t = @{ "Hello", "World", "!" @}
 t2 = @{ 5, 10, 15 @}
-s = table.concat(t)    -- s = "HelloWorld!"
-s2 = table.concat(t, " ")    -- s2 = "Hello World !"
-s3 = table.concat(t2, ", ", 2)    -- s3 = "10, 15"}
+s = table.concat(t)    @minus{}@minus{} s = "HelloWorld!"
+s2 = table.concat(t, " ")    @minus{}@minus{} s2 = "Hello World !"
+s3 = table.concat(t2, ", ", 2)    @minus{}@minus{} s3 = "10, 15"}
 @endluafunc
 
 @luafunc table.insert (t[, p], x)
 This function only works with arrays with numeric indexes. The function will insert variable @code{x} into table @code{t} at position @code{p}. When only 2 function arguments are given the second will be used as value to insert and the position will be at the end of the table.
 Examples:
-@codeblock
-{t = @{ "Apples", "Oranges" @}
-table.insert(t, 1, "Bananas")    -- t = @{ "Bananas", "Apples", "Oranges" @}
-table.insert(t, "Melons")        -- t = @{ "Bananas", "Apples", "Oranges", "Melons" @}}
+@codeblock{t = @{ "Apples", "Oranges" @}
+table.insert(t, 1, "Bananas")    @minus{}@minus{} t = @{ "Bananas", "Apples", "Oranges" @}
+table.insert(t, "Melons")        @minus{}@minus{} t = @{ "Bananas", "Apples", "Oranges", "Melons" @}}
 @endluafunc
 
 @luafunc table.maxn (t)
@@ -1200,24 +1233,22 @@ This function only works with arrays that have numeric indexes. The function loo
 @luafunc table.remove (t[, p=#t])
 Removes the entry from table @code{t} at position @code{p}. The entry that is removed is used as return value.
 Example:
-@codeblock
-{t = @{ 5, 10, 15 @}
-table.remove(t, 1)    -- t = @{ 10, 15 @}
-table.remove(t)       -- t = @{ 10 @}}
+@codeblock{t = @{ 5, 10, 15 @}
+table.remove(t, 1)    @minus{}@minus{} t = @{ 10, 15 @}
+table.remove(t)       @minus{}@minus{} t = @{ 10 @}}
 @endluafunc
 
 @luafunc table.sort (t[, c])
 Only works with arrays with numeric indexes. This function will sort all the entries from the table @code{t}. The optional argument @code{c} can be used to specify a function that is a replacement of the @samp{<} operator. This function is called to check if one table entry is smaller than another. The function recieves 2 arguments, the first and second entry, and should return @code{true} if the first entry is less than the second.
 Examples:
-@codeblock
-{fruits = @{ "Lemon", "Apple", "Orange" @}
-table.sort(fruits)    -- fruits = @{ "Apple", "Lemon", "Orange" @}
+@codeblock{fruits = @{ "Lemon", "Apple", "Orange" @}
+table.sort(fruits)    @minus{}@minus{} fruits = @{ "Apple", "Lemon", "Orange" @}
 @*
 function comp(e1, e2)
-    return e1 > e2    -- Reversed sorting
+    return e1 > e2    @minus{}@minus{} Reversed sorting
 end
 @*
-table.sort(fruits, comp)    -- fruits = @{ "Orange", "Lemon", "Apple" @}}
+table.sort(fruits, comp)    @minus{}@minus{} fruits = @{ "Orange", "Lemon", "Apple" @}}
 @endluafunc
 
 
@@ -1254,9 +1285,8 @@ Sets the @samp{seed} for the @code{math.random} function. For each seed an uniqu
 In the @code{os} package you can find functions that will handle OS specific things. Nixstaller has included some extra functions to this module.@*
 @*
 On failure (ie a file doesn't exist), some functions will return 2 things: @code{nil} and a string containing an error message. On success these functions will return @code{true}. With this you can easily handle errors like so:
-@codeblock
-{-- Function taken from internal Nixstaller code
--- (ThrowError is just a function that cleans some stuff up and calls error())
+@codeblock{@minus{}@minus{} Function taken from internal Nixstaller code
+@minus{}@minus{} (ThrowError is just a function that cleans some stuff up and calls error())
 function RequiredCopy(src, dest)
     local stat, msg = os.copy(src, dest)
     if (not stat) then
@@ -1279,8 +1309,7 @@ Tries to change the current directory to directory @code{d}. On failure it will 
 @luafunc os.chmod (f, p)
 Changes the permissions from file or directory @code{f} using the unix like permission bits taken from string @code{p}. On failure it will return @code{nil} and a string containing the error message, on success it will return @code{true}.
 Example:
-@codeblock
-{os.chmod("mydir/", "777")    -- The directory 'mydir' has now full access for everyone}
+@codeblock{os.chmod("mydir/", "777")    @minus{}@minus{} The directory 'mydir' has now full access for everyone}
 @endluafunc
 
 @luafunc os.clock ()
@@ -1290,10 +1319,9 @@ Returns the time used by the CPU in seconds.
 @luafunc os.copy (f[, ...], d)
 Copies the file @code{f} to destination @code{d}. If @code{d} is a directory it will copy the file to that directory, if @code{d} is a file it will overwrite the contents of that file with the contents of @code{f}. You can also specify 3 or more arguments: in this case the last argument, @code{d}, should be a directory and all the previous arguments files that should be copied to this directory.
 examples:
-@codeblock
-{os.copy("file1", os.getenv("HOME"))         -- Copies 'file1' to the users home directory
-os.copy("file1", "file2")                   -- Replaces 'file2' with 'fil1'
-os.copy("file1", "file2", "file3", "/tmp")  -- Copies 'file1', 'file2' and 'file3' to /tmp}
+@codeblock{os.copy("file1", os.getenv("HOME"))         @minus{}@minus{} Copies 'file1' to the users home directory
+os.copy("file1", "file2")                   @minus{}@minus{} Replaces 'file2' with 'fil1'
+os.copy("file1", "file2", "file3", "/tmp")  @minus{}@minus{} Copies 'file1', 'file2' and 'file3' to /tmp}
 @strong{Note}: The source and destination files/directories should exist or else Lua will throw an error and abort the program.
 For (other) copy failures @code{nil} and the error message will be returned. On success @code{true} is returned.
 @endluafunc
@@ -1338,8 +1366,7 @@ Logs the text from string @code{s} and all the function arguments after that, us
 @luafunc os.mkdir (d[, m="0777"[, b])
 Tries to create the directory @code{d}. If @code{m} is given it should be a string with the unix style permission bits. If @code{b} is @code{true} the @samp{umask} of the current system will be ignored. See the manual page of @code{umask} for details. The function will return @code{nil} and an error message on failure, on success it will return @code{true}.
 Example:
-@codeblock
-{-- Creates directory in the users home directory with rwx access for the user only.
+@codeblock{@minus{}@minus{} Creates directory in the users home directory with rwx access for the user only.
 os.mkdir(os.getenv("HOME") .. "/.myconfig", "700")}
 @endluafunc
 
@@ -1381,8 +1408,7 @@ At first some functions of the @code{io} package will be discussed. After that t
 @c UNDONE
 This function is a function iterator (see section X) that is used to scan directory @code{d}. On success the function will return a string containing the next file or directory name. On failure (ie. the directory does not exist) it will return @code{nil} and a string containing the error message.@*
 Example:
-@codeblock
-{-- This will list every file and directory in the current directory
+@codeblock{@minus{}@minus{} This will list every file and directory in the current directory
 for d in io.dir(".") do
     print(d)
 end}
@@ -1491,14 +1517,13 @@ Writes each function argument to the file. Numbers and strings are valid argumen
 @subsection Examples
 Here follow a few examples of the IO related functions that were discussed.@*
 @*
-@codeblock
-{-- This code will open a file, read and display its contents and close it
-f, msg = io.fopen("test.txt", "r")    -- f will contain the file handle, msg an error message on failure
+@codeblock{@minus{}@minus{} This code will open a file, read and display its contents and close it
+f, msg = io.fopen("test.txt", "r")    @minus{}@minus{} f will contain the file handle, msg an error message on failure
 @*
--- File could not be opened? (ie doesn't exists)
+@minus{}@minus{} File could not be opened? (ie doesn't exists)
 if (not f) then
     print("Could not open file: " .. msg)
-    exit(1)    --- UNDONE: see section X
+    exit(1)    @minus{}@minus{}- UNDONE: see section X
 end
 @*
 print(f:read("*a"))
@@ -1507,8 +1532,7 @@ f:close()
 }
 @*
 Here is another example showing how to copy a file; it reads one line and writes it to a second file
-@codeblock
-{-- Function that copies the contents of file src to file dest
+@codeblock{@minus{}@minus{} Function that copies the contents of file src to file dest
 function copy(src, dest)
     local f_src = io.open(src, "r")
     local f_dest = io.open(dest, "w")
@@ -1521,7 +1545,7 @@ function copy(src, dest)
     for line in f_src:lines() do
         f_dest:write(line)
 @*
-        -- lines() will not return the trailing newline, so we have to add it manually
+        @minus{}@minus{} lines() will not return the trailing newline, so we have to add it manually
         f_dest:write("\\n")
     end
 @*
@@ -1530,8 +1554,7 @@ function copy(src, dest)
 end}
 @*
 The last example is about @code{io.popen}:
-@codeblock
-{-- This code will execute @samp{ls -a} and print its output
+@codeblock{@minus{}@minus{} This code will execute @samp{ls -a} and print its output
 cmd = io.popen("ls -a", "r")
 @*
 if (cmd) then
@@ -1567,7 +1590,7 @@ First all the functions from the @code{install} package are described. After tha
 
 @luafunc install.askrootpw ()
 This function will ask the user to type the systems root password. Normally this is done automaticly if,
-@itemize
+@itemize @bullet
 @item @code{executeasroot()} is called,
 @item when @code{install.destdir} is set to a directory which cannot be written to by the user.
 @end itemize
@@ -1586,14 +1609,17 @@ This function writes all the output from the command to a status window so the u
 This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so.
 @endluafunc
 
+@anchor{install.extractfiles}
 @luafunc install.extractfiles ()
 This function will extract all installation files to the directory that was specified by the global variable @code{destdir}. This function will automaticly call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
 @endluafunc
 
+@anchor{install.gettempdir}
 @luafunc install.gettempdir ()
 This function is used to assign a temporary directory the the @code{destdir} variable. Setting @code{destdir} to a temporary directory is useful for installers that need to do additional tasks with the installation files such as compilation.
 @endluafunc
 
+@anchor{install.newcfgscreen}
 @luafunc install.newcfgscreen ([t])
 @c UNDONE
 This function will return a class for a new @emph{configuration screen}. The members of this class are described in section X. The optional argument, @code{t}, specifies a (short) title for this screen.
@@ -1602,9 +1628,8 @@ This function will return a class for a new @emph{configuration screen}. The mem
 @luafunc install.setstatus (s)
 You can use this function to specify the current status of the installation. This way the user can see what the installer is doing. @*
 Example:
-@codeblock
-{-- Somewhere inside the install() function
--- ...
+@codeblock{@minus{}@minus{} Somewhere inside the install() function
+@minus{}@minus{} ...
 install.setstatus("Copying files")
 os.copy(file1, file2, "/usr/local/share")}
 @endluafunc
@@ -1616,11 +1641,13 @@ This function is used to specify how many @emph{steps} the installation has, spe
 @subsection The @code{config screen} class
 The class described here is returned after a call to @code{install.newcfgscreen}. The function definitions below use @samp{cfgscreen} as classname, though you should replace that name with the name of the variable that contains the class.
 
+@anchor{cfgscreen:addcfgmenu}
 @luafunc cfgscreen:addcfgmenu ([t])
 @c UNDONE
 Creates a new @samp{config menu}. The string parameter @code{t} sets a title. The menu is used to let the user configure certain parameters. These parameters can be paths (configured through a file manager), strings, boolean flags (can be enabled or disabled) or a list with options. The function will return a class containing function methods to add parameters, see section X for info about these.
 @endluafunc
 
+@anchor{cfgscreen:addcheckbox}
 @luafunc cfgscreen:addcheckbox (t, o)
 Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
 @luafunc chkbox:get (n)
@@ -1631,6 +1658,7 @@ If @code{e} is @code{true} the option at position @code{n} will be enabled, if @
 @endluafunc
 @endluafunc
 
+@anchor{cfgscreen:adddirselector}
 @luafunc cfgscreen:adddirselector ([t[, d=os.getenv("HOME")]])
 This function will add an inputfield which holds the current selected directory name and a button next to it which will launch a file dialog. This way the user can either select a directory by typing it or by browsing. Argument @code{t} sets an optional title and argument @code{d} sets an initial directory, defaulting to the user's home directory. The function will return a class with the following methods (where dirsel should be replaced by the actual variable name):
 @luafunc dirsel:get ()
@@ -1641,8 +1669,9 @@ Sets the directory to string @code{d}.
 @endluafunc
 @endluafunc
 
-@luafunc cfgscreen:addinput ([t[, l[, m=1024[, v[, tp="string"]]]])
-This will add an input field to the config screen. The parameter @code{t} specifies a title. @code{l} can be used to specify a label (text which is put in front of the input field). @code{m} specifies the max character count that can be typed. @code{v} specifies an initial value. The last parameter, @code{tp}, specifies the type of the inputfield and can be one of these:
+@anchor{cfgscreen:addinput}
+@luafunc cfgscreen:addinput ([l[, t[, m=1024[, v[, tp="string"]]]])
+This will add an input field to the config screen. The parameter @code{l} is used to specify a label (text which is put in front of the input field). The parameter @code{t} specifies a title (set to "" for none). @code{m} specifies the max character count that can be typed. @code{v} specifies an initial value. The last parameter, @code{tp}, specifies the type of the inputfield and can be one of these:
 @table @strong
 @item "string"
 The user can type any (alphanumeric) character as input.
@@ -1660,8 +1689,9 @@ This function can be used to set the distance from the windows left border to th
 @endluafunc
 @endluafunc
 
+@anchor{cfgscreen:addradiobutton}
 @luafunc cfgscreen:addradiobutton (t[, o])
-This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title. The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
+This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
 @luafunc radio:get ()
 Returns the array index number of the option that is enabled.
 @endluafunc
@@ -1703,12 +1733,11 @@ There are several functions available through the @code{gui} package which inter
 @luafunc gui.choicebox (m, b1, b2[, b3])
 Creates a window that will show the message identified by function argument @code{m}. @code{b1}, @code{b2} and (optionally) @code{b3} is each a string used for a button name (so the window can have 2 or 3 buttons). On failure the function will return the number of the last button (@samp{3}). On success the number of the clicked button is returned.
 Examples:
-@codeblock
-{-- somewhere in the install() function
-gui.choicebox("Could not copy file, what should I do?", "Abort", "Retry", "Ignore") -- 3 buttons
+@codeblock{@minus{}@minus{} somewhere in the install() function
+gui.choicebox("Could not copy file, what should I do?", "Abort", "Retry", "Ignore") @minus{}@minus{} 3 buttons
 @*
--- ....
-gui.choicebox("Could not execute command, what do you want?", "Ignore", "Abort") -- 2 buttons}
+@minus{}@minus{} ....
+gui.choicebox("Could not execute command, what do you want?", "Ignore", "Abort") @minus{}@minus{} 2 buttons}
 @endluafunc
 
 @luafunc gui.msgbox (m, ...)
@@ -1724,9 +1753,9 @@ The same as @code{gui.msgbox}, but used to alert the user. For example in ncurse
 @luafunc gui.yesnobox (m, ...)
 This function will show a dialog with a message used from parameter @code{m} and arguments after that if available (will concat text). The dialog has a yes and a no button. If the user presses "No" @code{false} will be returned, if "Yes" @code{true} is returned.
 Example:
-@codeblock{-- Somewhere in install() 
+@codeblock{@minus{}@minus{} Somewhere in install() 
 if (gui.yesnobox("Do you want to install some add-ons?")) then
-    -- Copy some files
+    @minus{}@minus{} Copy some files
 end}
 @endluafunc
 
@@ -1737,14 +1766,13 @@ The last few functions are not in any package but are global functions.
 @luafunc assert (f[, ...[, m="Assert failed!"]])
 This function is mainly used to debug Lua scripts. If @code{r} is @code{false} or @code{nil} this function will call @code{error} with @code{m} as argument. If @code{r} is another value the function will return @code{r} and the variadic arguments between @code{f} and @code{m} (if existant). This is mostly used in combination with functions that will return @code{nil} on error (many functions from the @code{os} package do this for example).@*
 Example:
-@codeblock{assert(os.rename("file1", "file2"))    -- If this function fails the script will be aborted}
+@codeblock{assert(os.rename("file1", "file2"))    @minus{}@minus{} If this function fails the script will be aborted}
 @endluafunc
 
 @luafunc dofile (f)
 Executes the Lua script specified by argument @code{f}. You can use this if you want to split script files for example.@*
 Example:
-@codeblock
-{if (os.osname == "linux") then
+@codeblock{if (os.osname == "linux") then
     dofile("linux.lua")
 elseif (os.osname == "solaris") then
     dofile("solaris.lua")
@@ -1756,8 +1784,7 @@ end}
 @luafunc error (m[, l=1])
 This function will abort the install and display an error specified by string @code{m} prefixed with the script name and line number. The optional argument, @code{l}, is used to specify the function level which is used when displaying the error: if it's @samp{0} no line number will be displayed, @samp{1} is used for the current line number (default), @samp{2} for the line number of the function that called the current function etc. @*
 Example:
-@codeblock
-{if (not os.copy("file.txt", "somedir/")) then
+@codeblock{if (not os.copy("file.txt", "somedir/")) then
     error("Could not copy file")
 end}
 @endluafunc
@@ -1787,8 +1814,7 @@ for i, e in pairs(t) do
     print(string.format("t.%s = %s", i, e))
 end}
 Results in
-@codeblock
-{t.name = Rick
+@codeblock{t.name = Rick
 t.age = 21
 t.country = The Netherlands}
 @endluafunc
@@ -1800,9 +1826,8 @@ This function will print all the given arguments to the standard output (usually
 @luafunc unpack (t[, i=1[, j=#t]])
 Returns each entry from table @code{t}. This table should be an array with numeric indexes. @code{i} and @code{j} specify the range to use.@*
 Example:
-@codeblock
-{t = @{ "Hello", " ", "World" @}
-print(unpack(t))    -- Prints "Hello World"}
+@codeblock{t = @{ "Hello", " ", "World" @}
+print(unpack(t))    @minus{}@minus{} Prints "Hello World"}
 @endluafunc
 
 

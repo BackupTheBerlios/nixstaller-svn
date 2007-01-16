@@ -706,8 +706,8 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
-    const char *desc = luaL_optstring(L, 2, "");
-    const char *label = luaL_optstring(L, 3, "");
+    const char *label = luaL_optstring(L, 2, "");
+    const char *desc = luaL_optstring(L, 3, "");
     int maxc = luaL_optint(L, 4, 1024);
     const char *val = luaL_optstring(L, 5, "");
     const char *type = luaL_optstring(L, 6, "string");
@@ -715,7 +715,7 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
     if (strcmp(type, "string") && strcmp(type, "number") && strcmp(type, "float"))
         type = "string";
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField *>(screen->CreateInputField(GetTranslation(desc), GetTranslation(label), val, maxc, type), "inputfield");
+    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField *>(screen->CreateInputField(GetTranslation(label), GetTranslation(desc), val, maxc, type), "inputfield");
     
     return 1;
 }

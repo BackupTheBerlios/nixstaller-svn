@@ -521,7 +521,7 @@ public:
     void Add(const std::string &text) { m_BoxList.push_back(SEntry(text)); };
     void EnableBox(TSTLVecSize n) { m_BoxList.at(n).enabled = true; };
     void DisableBox(TSTLVecSize n) { m_BoxList.at(n).enabled = false; };
-    bool IsEnabled(TSTLVecSize n) { return (m_BoxList.at(n).enabled); };
+    bool IsEnabled(TSTLVecSize n) { return (m_BoxList.at(n-1).enabled); };
     void SetText(TSTLVecSize n, const std::string &text) { m_BoxList.at(n).name = text; };
 };
 

@@ -34,6 +34,34 @@
 
 #include "fltk.h"
 
+int TitleHeight(int w, const char *desc)
+{
+    int lines = 1;
+    const int defheight = 20;
+
+    if (desc && *desc)
+    {
+        const size_t length = strlen(desc);
+        double widthfromline = 0.0;
+        for (size_t chars=0; chars<length; chars++)
+        {
+            if ((desc[chars] == '\n') || (widthfromline > static_cast<double>(w)))
+            {
+                lines++;
+                widthfromline = 0;
+            }
+            else
+                widthfromline += fl_width(desc[chars]);
+            
+            chars++;
+        }
+        
+        return lines * defheight;
+    }
+    
+    return 0;
+}
+
 // -------------------------------------
 // Main installer screen
 // -------------------------------------
@@ -216,6 +244,7 @@ void CInstaller::Init(int argc, char **argv)
             (*it)->Activate();
             break;
         }
+        m_pWizard->next();
     }
     
     m_pMainWindow->end();
@@ -288,7 +317,7 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 {
     CCFGScreen *scr = new CCFGScreen(this, title);
-    m_pWizard->add(scr->Create());
+    /*m_pWizard->add*/(scr->Create());
     return scr;
 }
 
@@ -443,19 +472,6 @@ Fl_Group *CBaseLuaWidget::Create()
 void CBaseLuaWidget::UpdateLanguage()
 {
     MakeTitle();
-}
-
-int CBaseLuaWidget::TitleHeight(int w, const char *desc)
-{
-    if (desc && *desc)
-    {
-        if (fl_width(desc) > w)
-            return 40; // We allow max 2 lines UNDONE ?
-        else
-            return 20;
-    }
-    
-    return 0;
 }
 
 // -------------------------------------
@@ -1290,10 +1306,15 @@ Fl_Group *CCFGScreen::Create()
     
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
-    m_pBoxTitle = new Fl_Box(CenterX(260), m_pGroup->y()+20, 260, 20, MakeTranslation(m_szTitle));
+    
+    const char *text = MakeTranslation(m_szTitle);
+    const int w = 260;
+    const int h = TitleHeight(w, text);
+    
+    m_pBoxTitle = new Fl_Box(CenterX(w), m_pGroup->y()+20, w, h, text);
     
     m_iStartX = m_pGroup->x() + 20;
-    m_iStartY = m_pBoxTitle->y() + 20;
+    m_iStartY = m_pBoxTitle->y() + h;
     
     m_pGroup->end();
     return m_pGroup;
