@@ -152,6 +152,8 @@ function PackDirectory(dir, file)
         if (os.execute("tar --version 2>&1 | grep GNU >/dev/null") ~= 0) then
             listopt = "-I"
         end
+    elseif (os.osname == "openbsd") then
+        listopt = "-I"
     end
         
     os.execute(string.format("tar cf %s.tmp %s %s", file, listopt, tarlistfname))

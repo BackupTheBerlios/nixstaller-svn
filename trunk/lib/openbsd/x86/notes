@@ -1,0 +1,33 @@
+Notes for netbsd libs:
+
+Host system: x86 OpenBSD 4.0
+
+JPEG:
+version: 6b
+
+PNG:
+version: 1.2.15
+
+FLTK:
+configure command:  CXXFLAGS="-fexceptions"  CPPFLAGS="-I/usr/local/include -I/usr/local/include/libpng" LDFLAGS="-L/usr/local/lib" ./configure (configure script wouldn't detect png and jpeg libs otherwise)
+version: 1.1.7
+
+ZLIB:
+version: 1.2.3
+
+NCURSES:
+configure options: --enable-termcap
+version: 5.6
+other: had to enable termcap fallback, since no terminfo exists by default
+
+LUA:
+version: 5.1
+notes: src/Makefile was edited to use g++ instead of gcc and to use -Os instead of -O2
+
+X.ORG (libX11, libXext)
+version: 6.9.0
+notes: used from basesystem
+
+GCC (libstdc++, libutil)
+version: 3.3.5
+notes: used from basesystem

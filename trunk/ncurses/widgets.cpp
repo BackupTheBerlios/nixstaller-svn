@@ -2115,7 +2115,7 @@ void CInputField::ChangeFMText()
     std::string text;
     
     if (m_chOutChar)
-        text.append(m_szText.length(), m_chOutChar);
+        text.append(m_szText.length(), SafeConvert<char>(m_chOutChar));
     else
         text = "<notg>" + m_szText;
     

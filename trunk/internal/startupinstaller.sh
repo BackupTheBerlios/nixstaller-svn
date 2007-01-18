@@ -71,6 +71,12 @@ configure()
   
     # Get all C libs. Sorted so higher versions come first
     LIBCS=`echo /lib/libc.so.* | sort -nr`
+
+    # Found any C libs?
+    if [ "$LIBCS" = '/lib/libc.so.*' ]; then
+        LIBCS=`echo '/usr/lib/libc.so.'* | sort -nr` # Probably OpenBSD
+    fi
+
     echo "C libraries: $LIBCS"
     
     # Get all C++ libs. Sorted so higher versions come first
