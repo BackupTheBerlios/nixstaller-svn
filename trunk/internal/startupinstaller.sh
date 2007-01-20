@@ -102,6 +102,23 @@ edelta()
     $1/edelta -q patch $2 $3 $3.tmp >/dev/null
 }
 
+# Gets valid bin dir
+# $1: Full libname (ie /lib/libc.so.5)
+# $2: Unversioned short libname (ie libc)
+# $3: Path where directory resides
+getbinlibdir()
+{
+    local BASE=`basename $1`
+    local MAJOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { print $(NF-1) }'`
+    local MINOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { print $(NF) }'`
+
+    if [ ! -z $MINOR ]; then
+        echo ${3}/$2.so.$MAJOR.* | awk '{ print $1 }'
+    else
+        echo "${3}/$BASE"
+    fi
+}
+
 # Check which archive type to use
 # ARCH_TYPE=`awk '$1=="archtype"{print $2}' config/install.cfg`
 ARCH_TYPE=`cat info`
@@ -130,7 +147,8 @@ do
     
     for LC in $LIBCS
     do
-        LCDIR="bin/$CURRENT_OS/$CURRENT_ARCH/"`basename $LC`
+        LCDIR="`getbinlibdir ${LC} libc bin/$CURRENT_OS/$CURRENT_ARCH`"
+        
         echo "Trying libc for $FR: " $LCDIR
         
         if [ ! -d ${LCDIR} ]; then
@@ -145,7 +163,8 @@ do
         
         for LCPP in $LIBSTDCPPS
         do
-            LCPPDIR=${LCDIR}/`basename $LCPP`
+            LCPPDIR="`getbinlibdir ${LCPP} libstdc++ ${LCDIR}`"
+#             LCPPDIR=${LCDIR}/`basename $LCPP`
             echo "Trying libstdc++ for $FR: " $LCPPDIR
             
             if [ ! -d ${LCPPDIR} ]; then
