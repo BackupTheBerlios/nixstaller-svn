@@ -109,11 +109,11 @@ edelta()
 getbinlibdir()
 {
     local BASE=`basename $1`
-    local MAJOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { print $(NF-1) }'`
-    local MINOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { print $(NF) }'`
+    local MAJOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+1) }'`
+    local MINOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+2) }'`
 
     if [ ! -z $MINOR ]; then
-        echo ${3}/$2.so.$MAJOR.* | awk '{ print $1 }'
+        echo ${3}/$2.so.$MAJOR.* | sort -nr | awk '{ print $1 }'
     else
         echo "${3}/$BASE"
     fi
@@ -164,7 +164,7 @@ do
         for LCPP in $LIBSTDCPPS
         do
             LCPPDIR="`getbinlibdir ${LCPP} libstdc++ ${LCDIR}`"
-#             LCPPDIR=${LCDIR}/`basename $LCPP`
+            
             echo "Trying libstdc++ for $FR: " $LCPPDIR
             
             if [ ! -d ${LCPPDIR} ]; then

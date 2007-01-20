@@ -50,6 +50,14 @@ FOR RELEASE
 - Disable debug Lua lib
 
 ----------------------------- LATER ------------------------------------
+OVERALL
+- Use ldd to detect right frontend in staruinstaller.sh?
+- Make shared 'library' for scripts
+
+
+MAIN
+-
+
 
 REGISTER
 - Check if version is specified in config file?
