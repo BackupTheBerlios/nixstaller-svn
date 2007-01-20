@@ -355,8 +355,8 @@ function PrepareArchive()
                                 end
                                 
                                 if not frfound then
-                                    print(string.format("Warning: no frontend '%s' found for %s/%s/%s/%s", binname, OS,
-                                          ARCH, LC, LCPP))
+                                    print(string.format("Warning: no frontend '%s' found for %s/%s/%s/%s",
+                                                        FR, OS, ARCH, LC, LCPP))
                                 end
                             end
                         end

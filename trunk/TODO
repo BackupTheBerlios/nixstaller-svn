@@ -1,35 +1,29 @@
 OVERALL
 - Modify Makeself?
-- Check read permissions for extract dir
+- Check read permissions for extract dir?
 - Add new strings to translation files
-- Add lua headers/libs to SVN, compile as C++ lib
 - Use deltas <--> patches for different frontends?
 - Test/clean/check new edelta code
 - Update lib-notes file for each OS/ARCH
 - Delay for updating GUI in frontends while installing
 - Replace vec [] access with at() ?
 - Test installer scripts
-- Fix/Test CPU detection in sh scripts
 - Comment the '%s' in strings files.
 - Add new error detection in Lua scripts for dir Iter
 - Test instarchive platform handling
 - Better util.a configure testing?
 - Change default archtype to lzma
 - OBSD bins? (if not remove from manual)
+- Change file headers and copyright year
 
 MAIN
-- Error handling in lua class(exceptions, type checking)
 - Overide some lua funcs?(ie. exit)
 - Create directory with root access in VerifyDestDir()?
 - Convert LuaDirIter to CDirIter? - Needs testing
 - Check install steps (inits properly?)
-- Check empty titles for Lua widgets (spaces well with empty titles?)
 - Check new checkbox argument
 - Check default(empty) dir for lua dir selector
 - Check range checking of input:setspacing
-- Convert all Lua functions/variables to lowercase
-- Make lua os.setenv function
-- Fix label <--> desc switch for input field
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
@@ -37,18 +31,18 @@ LIBSU
 
 NCURSES FRONTEND
 - Update headers for linux ncurses
-        
+
 FLTK FRONTEND
-- Compile FLTK with exception support for freebsd, netbsd, sunos
-- FLTK crashes when escape is pressed
+- Compile FLTK with exception support for netbsd
                 
 DOCS
 - Max config var description length
 - Update examples and screenshots
-- Check for clickable sections in TOC
 - Check for right vertical spacing, paragraphs etc
 - Add norwegian translation references if author sends updated version
 - Move destdir to run.lua
+- inputfield's spacing is default 25
+- lua os.setenv function
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

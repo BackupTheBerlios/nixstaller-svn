@@ -120,6 +120,12 @@ int CLuaVM::DoFunctionCall(lua_State *L)
         // Lua doesn't handle exceptions in a nice way (catches all), so convert to lua error
         luaL_error(L, "Cought exception in lua function: %s", e.what());
     }
+#ifndef RELEASE
+    catch(...)
+    {
+        assert(false);
+    }
+#endif
     return 0; // Never reached
 }
 
@@ -449,13 +455,17 @@ void CLuaVM::RegisterClassFunc(const char *type, lua_CFunction f, const char *na
     
     lua_pushstring(m_pLuaState, name);
     
-    if (data)
+    lua_pushlightuserdata(m_pLuaState, data);
+    lua_pushcfunction(m_pLuaState, f);
+    lua_pushcclosure(m_pLuaState, DoFunctionCall, 2);
+    
+/*    if (data)
     {
         lua_pushlightuserdata(m_pLuaState, data);
         lua_pushcclosure(m_pLuaState, f, 1);
     }
     else
-        lua_pushcfunction(m_pLuaState, f);
+        lua_pushcfunction(m_pLuaState, f);*/
     
     lua_settable(m_pLuaState, -3);
 }

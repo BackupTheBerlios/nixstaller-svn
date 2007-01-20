@@ -46,6 +46,9 @@ void CInstaller::Prev()
     if (!(*m_CurrentScreenIt)->Prev())
         return;
     
+    if (*m_CurrentScreenIt == m_InstallScreens.back())
+        m_pNextButton->SetTitle(GetTranslation("Next")); // Change from "Finish"
+    
     std::list<CBaseScreen *>::iterator it = m_CurrentScreenIt;
     
     while (it != m_InstallScreens.begin())
@@ -110,7 +113,8 @@ void CInstaller::Next()
             bool last; // Last screen?
             
             // Enable previous button if it's disabled and the install screen isn't activated before
-            if (!m_pPrevButton->Enabled() && (*it != m_pInstallScreen) && (std::find(m_InstallScreens.begin(), it, m_pInstallScreen) == it))
+            if (!m_pPrevButton->Enabled() && (*it != m_pInstallScreen) &&
+                (std::find(m_InstallScreens.begin(), it, m_pInstallScreen) == it))
             {
                 m_pPrevButton->Enable(true);
                 NeedRefresh = true;
@@ -263,7 +267,7 @@ void CInstaller::Init(int argc, char **argv)
     
     m_pPrevButton->Enable(false);
     
-    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-y-1;
+    const int x=2, y=1, w=width()-4, h=m_pCancelButton->rely()-y-1;
 
     (m_pWelcomeScreen = AddChild(new CWelcomeScreen(this, h, w, y, x)))->Enable(false);
     (m_pLicenseScreen = AddChild(new CLicenseScreen(this, h, w, y, x)))->Enable(false);
@@ -387,7 +391,7 @@ void CInstaller::Install()
 
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 {
-    const int x=2, y=2, w=width()-4, h=m_pCancelButton->rely()-3;
+    const int x=2, y=1, w=width()-4, h=m_pCancelButton->rely()-y-1;
     
     if (title && strncmp(title, "<C><notg>", 9))
         title = CreateText("<C><notg>%s", title);
@@ -415,7 +419,7 @@ void CBaseLuaWidget::CreateInit()
     
     if (!m_szDescription.empty())
     {
-        m_pDescLabel = AddChild(new CTextLabel(this, 2, maxx(), 0, 0, 'r'));
+        m_pDescLabel = AddChild(new CTextLabel(this, maxy(), maxx(), 0, 0, 'r'));
         m_pDescLabel->AddText("<notg>");
         m_pDescLabel->AddText(m_szDescription);
     }
@@ -783,7 +787,7 @@ int CLuaCFGMenu::CalcHeight(int w, const char *desc)
 
 void CBaseScreen::SetInfo(const char *text)
 {
-    m_pLabel = AddChild(new CTextLabel(this, height(), width(), 0, 0, 'r'));
+    m_pLabel = AddChild(new CTextLabel(this, height()-1, width(), 1, 0, 'r'));
     m_pLabel->AddText(text);
 }
 
@@ -1111,8 +1115,14 @@ void CFinishScreen::UpdateLanguage()
 }
 
 // -------------------------------------
-// Configuring parameters screen
+// Custom screen
 // -------------------------------------
+
+void CCFGScreen::AddLuaWidget(CBaseLuaWidget *widget, int h)
+{
+    m_LuaWidgets.push_back(widget);
+    m_iStartY += (widget->height() + 1);
+}
 
 bool CCFGScreen::HandleKey(chtype ch)
 {
@@ -1133,7 +1143,10 @@ void CCFGScreen::CreateInit()
     CBaseScreen::CreateInit();
 
     if (!m_szTitle.empty())
+    {
         SetInfo(GetTranslation(m_szTitle.c_str()));
+        m_iStartY = m_pLabel->rely() + m_pLabel->height() + 1;
+    }
 }
 
 void CCFGScreen::Activate()
@@ -1154,8 +1167,11 @@ void CCFGScreen::Activate()
     
     if (m_iLinkedScrMax)
     {
-        m_pLabel->SetText(CreateText("%s (%d/%d)", GetTranslation(m_szTitle.c_str()), m_iLinkedScrNr, m_iLinkedScrMax));
-        m_pLabel->refresh();
+        if (!m_pSCRCounter)
+            m_pSCRCounter = AddChild(new CTextLabel(this, 1, 7, 0, maxx()-7, 'r'));
+        m_pSCRCounter->SetText(CreateText("(%d/%d)", m_iLinkedScrNr, m_iLinkedScrMax));
+/*        m_pLabel->SetText(CreateText("%s (%d/%d)", GetTranslation(m_szTitle.c_str()), m_iLinkedScrNr, m_iLinkedScrMax));
+        m_pLabel->refresh();*/
     }
 }
 
@@ -1164,94 +1180,118 @@ void CCFGScreen::UpdateLanguage()
     TSTLVecSize size = m_LuaWidgets.size(), n;
     for (n=0; n<size; n++)
         m_LuaWidgets[n]->UpdateLanguage();
+    SetInfo(GetTranslation(m_szTitle.c_str()));
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)
 {
-    int h = CLuaInputField::CalcHeight(width()-3, desc);
-    
-    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
+    const int h = CLuaInputField::CalcHeight(width()-3, desc);
+
+    if (!WidgetFits(h))
     {
-        CLuaInputField *field = AddChild(new CLuaInputField(this, m_iStartY, 1, h, width()-3, label, desc, val, max, type));
-        m_LuaWidgets.push_back(field);
-        m_iStartY += (h + 1);
-        return field;
+        if (m_LuaWidgets.empty())
+            throw Exceptions::CExOverflow("Not enough space for widget.");
+        else
+        {
+            if (!m_pNextScreen)
+                m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+            return m_pNextScreen->CreateInputField(label, desc, val, max, type);
+        }
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
-    
-    return m_pNextScreen->CreateInputField(label, desc, val, max, type);
+    CLuaInputField *field = AddChild(new CLuaInputField(this, m_iStartY, 1, h, width()-3, label, desc, val, max, type));
+    AddLuaWidget(field, h);
+    return field;
 }
 
 CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
 {
-    int h = CLuaCheckbox::CalcHeight(width()-3, desc, l);
+    const int h = CLuaCheckbox::CalcHeight(width()-3, desc, l);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
+    if (!WidgetFits(h))
     {
-        CLuaCheckbox *box = AddChild(new CLuaCheckbox(this, m_iStartY, 1, h, width()-3, desc, l));
-        m_LuaWidgets.push_back(box);
-        m_iStartY += (h + 1);
-        return box;
+        if (m_LuaWidgets.empty())
+            throw Exceptions::CExOverflow("Not enough space for widget.");
+        else
+        {
+            if (!m_pNextScreen)
+                m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+            return m_pNextScreen->CreateCheckbox(desc, l);
+        }
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
-    
-    return m_pNextScreen->CreateCheckbox(desc, l);
+    CLuaCheckbox *box = AddChild(new CLuaCheckbox(this, m_iStartY, 1, h, width()-3, desc, l));
+    AddLuaWidget(box, h);
+    return box;
 }
 
 CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
 {
-    int h = CLuaRadioButton::CalcHeight(width()-3, desc, l);
+    const int h = CLuaRadioButton::CalcHeight(width()-3, desc, l);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
+    if (!WidgetFits(h))
     {
-        CLuaRadioButton *radio = AddChild(new CLuaRadioButton(this, m_iStartY, 1, h, width()-3, desc, l));
-        m_LuaWidgets.push_back(radio);
-        m_iStartY += (h + 1);
-        return radio;
+        if (m_LuaWidgets.empty())
+            throw Exceptions::CExOverflow("Not enough space for widget.");
+        else
+        {
+            if (!m_pNextScreen)
+                m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+            return m_pNextScreen->CreateRadioButton(desc, l);
+        }
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    CLuaRadioButton *radio = AddChild(new CLuaRadioButton(this, m_iStartY, 1, h, width()-3, desc, l));
+    AddLuaWidget(radio, h);
     
-    return m_pNextScreen->CreateRadioButton(desc, l);
+    return radio;
 }
 
 CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char *val)
 {
-    int h = CLuaDirSelector::CalcHeight(width()-3, desc);
+    const int h = CLuaDirSelector::CalcHeight(width()-3, desc);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
+    if (!WidgetFits(h))
     {
-        CLuaDirSelector *sel = AddChild(new CLuaDirSelector(this, m_iStartY, 1, h, width()-3, desc, val));
-        m_LuaWidgets.push_back(sel);
-        m_iStartY += (h + 1);
-        return sel;
+        if (m_LuaWidgets.empty())
+            throw Exceptions::CExOverflow("Not enough space for widget.");
+        else
+        {
+            if (!m_pNextScreen)
+                m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+            return m_pNextScreen->CreateDirSelector(desc, val);
+        }
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
-    
-    return m_pNextScreen->CreateDirSelector(desc, val);
+    CLuaDirSelector *sel = AddChild(new CLuaDirSelector(this, m_iStartY, 1, h, width()-3, desc, val));
+    AddLuaWidget(sel, h);
+
+    return sel;
 }
 
 CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
 {
-    int h = CLuaCFGMenu::CalcHeight(width()-3, desc);
+    const int h = CLuaCFGMenu::CalcHeight(width()-3, desc);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= height()))
+    if (!WidgetFits(h))
     {
-        CLuaCFGMenu *menu = AddChild(new CLuaCFGMenu(this, m_iStartY, 1, h, width()-3, desc));
-        m_LuaWidgets.push_back(menu);
-        m_iStartY += (h + 1);
-        return menu;
+        if (m_LuaWidgets.empty())
+            throw Exceptions::CExOverflow("Not enough space for widget.");
+        else
+        {
+            if (!m_pNextScreen)
+                m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    
+            return m_pNextScreen->CreateCFGMenu(desc);
+        }
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pInstaller->CreateCFGScreen(m_szTitle.c_str());
+    CLuaCFGMenu *menu = AddChild(new CLuaCFGMenu(this, m_iStartY, 1, h, width()-3, desc));
+    AddLuaWidget(menu, h);
     
-    return m_pNextScreen->CreateCFGMenu(desc);
+    return menu;
 }

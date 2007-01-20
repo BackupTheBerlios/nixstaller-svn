@@ -351,6 +351,7 @@ void CMain::InitLua()
     m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
     m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
     m_LuaVM.RegisterFunction(LuaLog, "log", "os", this);
+    m_LuaVM.RegisterFunction(LuaSetEnv, "setenv", "os", this);
     
     m_LuaVM.RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
     m_LuaVM.RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
@@ -743,6 +744,20 @@ int CMain::LuaLog(lua_State *L)
         msg += luaL_checkstring(L, i);
     
     syslog(0, msg.c_str());
+    
+    return 0;
+}
+
+int CMain::LuaSetEnv(lua_State *L)
+{
+    const char *env = luaL_checkstring(L, 1);
+    const char *val = luaL_checkstring(L, 2);
+    bool overwrite = true;
+    
+    if (lua_isboolean(L, 3))
+        overwrite = lua_toboolean(L, 3);
+    
+    setenv(CreateText(env), CreateText(val), overwrite);
     
     return 0;
 }

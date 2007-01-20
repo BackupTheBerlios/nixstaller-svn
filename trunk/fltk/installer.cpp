@@ -37,7 +37,7 @@
 int TitleHeight(int w, const char *desc)
 {
     int lines = 1;
-    const int defheight = 20;
+    const int defheight = fl_height();
 
     if (desc && *desc)
     {
@@ -48,14 +48,11 @@ int TitleHeight(int w, const char *desc)
             if ((desc[chars] == '\n') || (widthfromline > static_cast<double>(w)))
             {
                 lines++;
-                widthfromline = 0;
+                widthfromline = 0.0;
             }
             else
                 widthfromline += fl_width(desc[chars]);
-            
-            chars++;
         }
-        
         return lines * defheight;
     }
     
@@ -89,7 +86,7 @@ void CInstaller::InitLua()
 void CInstaller::Init(int argc, char **argv)
 {
     m_pMainWindow = new Fl_Window(MAIN_WINDOW_W, MAIN_WINDOW_H, "Nixstaller");
-    m_pMainWindow->callback(WizCancelCB);
+    m_pMainWindow->callback(WizCancelCB, this);
 
     m_pCancelButton = new Fl_Button(20, (MAIN_WINDOW_H-30), 120, 25, "Cancel");
     m_pCancelButton->callback(WizCancelCB, this);
@@ -317,7 +314,7 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 {
     CCFGScreen *scr = new CCFGScreen(this, title);
-    /*m_pWizard->add*/(scr->Create());
+    scr->Create();
     return scr;
 }
 
@@ -335,6 +332,9 @@ void CInstaller::Prev()
     
     if (!(*cur)->Prev())
         return;
+    
+    if (*cur == m_ScreenList.back())
+        m_pNextButton->label(GetTranslation("Next")); // Change from "Finish"
     
     std::list<CBaseScreen *>::iterator it = cur;
     
@@ -450,7 +450,7 @@ void CBaseLuaWidget::MakeTitle()
     if (!m_pBox)
     {
         m_pBox = new Fl_Box(m_pGroup->x(), m_pGroup->y(), m_iWidth, TitleHeight(m_iWidth, desc), desc);
-        m_pBox->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_WRAP);
+        m_pBox->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_WRAP);
     }
     else
         m_pBox->label(desc);
@@ -567,12 +567,14 @@ Fl_Group *CLuaCheckbox::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
     int x = group->x(), y = group->y() + DescHeight(), w = 0;
+    const int basew = 40;
     
     // Find longest text
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
-        w = std::max(w, static_cast<int>(40 + fl_width(it->c_str())));
+        w = std::max(w, static_cast<int>(basew + fl_width(it->c_str())));
 
-    group->box(FL_ENGRAVED_BOX);
+    w = std::max(w, basew + static_cast<int>(DescWidth()));
+    
     group->size(w, group->h());
     
     x += 5;
@@ -624,11 +626,14 @@ Fl_Group *CLuaRadioButton::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
     int x = group->x(), y = group->y() + DescHeight(), w = 0;
+    const int basew = 40;
     
     // Find longest text
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
-        w = std::max(w, static_cast<int>(40 + fl_width(it->c_str())));
+        w = std::max(w, static_cast<int>(basew + fl_width(it->c_str())));
 
+    w = std::max(w, basew + static_cast<int>(DescWidth()));
+    
     group->box(FL_ENGRAVED_BOX);
     group->size(w, group->h());
     
@@ -694,7 +699,20 @@ CLuaDirSelector::CLuaDirSelector(int x, int y, int w, int h, const char *desc,
         m_szValue = val;
 }
 
-void CLuaDirSelector::OpenDirChooser(void)
+void CLuaDirSelector::CreateDirSelector()
+{
+    if (m_pDirChooser)
+        delete m_pDirChooser;
+    
+    m_pDirChooser = new Fl_File_Chooser(m_szValue.c_str(), "*",
+                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                                        GetTranslation("Select directory"));
+    m_pDirChooser->preview(false);
+    m_pDirChooser->previewButton->hide();
+    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
+}
+
+void CLuaDirSelector::OpenDirChooser()
 {
     m_pDirChooser->directory(GetFirstValidDir(m_pDirInput->value()).c_str());
     m_pDirChooser->show();
@@ -715,6 +733,8 @@ Fl_Group *CLuaDirSelector::Create()
     Fl_Group *group = CBaseLuaWidget::Create();
     int x = group->x(), y = group->y() + DescHeight(), w = group->w() - x - m_iButtonWidth - 20;
     
+    CreateDirSelector();
+    
     group->add(m_pDirInput = new Fl_File_Input(x, y, w, m_iFieldHeight));
     
     if (!m_szValue.empty())
@@ -734,15 +754,7 @@ void CLuaDirSelector::UpdateLanguage()
     m_pDirButton->label(GetTranslation("Browse"));
     
     // Dir chooser needs to be recreated
-    if (m_pDirChooser)
-        delete m_pDirChooser;
-    
-    m_pDirChooser = new Fl_File_Chooser(m_szValue.c_str(), "*",
-                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        GetTranslation("Select directory"));
-    m_pDirChooser->preview(false);
-    m_pDirChooser->previewButton->hide();
-    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
+    CreateDirSelector();
 }
 
 int CLuaDirSelector::CalcHeight(int w, const char *desc)
@@ -1146,9 +1158,24 @@ void CLicenseScreen::Activate()
 // Destination dir selector screen
 // -------------------------------------
 
+void CSelectDirScreen::CreateDirSelector()
+{
+    if (m_pDirChooser)
+        delete m_pDirChooser;
+    
+    m_pDirChooser = new Fl_File_Chooser(m_pOwner->GetDestDir(), "*",
+                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                                        GetTranslation("Select destination directory"));
+    m_pDirChooser->preview(false);
+    m_pDirChooser->previewButton->hide();
+    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
+}
+
 Fl_Group *CSelectDirScreen::Create()
 {
     CBaseScreen::Create();
+    
+    CreateDirSelector();
     
 //     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
 
@@ -1170,16 +1197,7 @@ Fl_Group *CSelectDirScreen::Create()
 
 void CSelectDirScreen::UpdateLang()
 {
-    if (m_pDirChooser)
-        delete m_pDirChooser;
-    
-    m_pDirChooser = new Fl_File_Chooser(m_pOwner->GetDestDir(), "*",
-                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        GetTranslation("Select destination directory"));
-    m_pDirChooser->preview(false);
-    m_pDirChooser->previewButton->hide();
-    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
-    
+    CreateDirSelector(); // Recreate to update languages
     m_pBox->label(GetTranslation("Select destination directory"));
     m_pSelDirButton->label(GetTranslation("Select a directory"));
 }
@@ -1289,12 +1307,31 @@ void CFinishScreen::UpdateLang()
 void CCFGScreen::SetTitle()
 {
     if (!m_szTitle.empty())
+        m_pBoxTitle->label(GetTranslation(m_szTitle.c_str()));
+}
+
+CBaseLuaWidget *CCFGScreen::AddLuaWidget(CBaseLuaWidget *widget, int h)
+{
+    if (WidgetFits(h))
     {
-        if (m_iLinkedScrMax)
-            m_pBoxTitle->label(CreateText("%s (%d/%d)", GetTranslation(m_szTitle.c_str()), m_iLinkedScrNr, m_iLinkedScrMax));
-        else
-            m_pBoxTitle->label(GetTranslation(m_szTitle.c_str()));
+        if (!m_pNextScreen)
+        {
+            Fl_Group *group = widget->Create();
+            
+            if (!widget)
+                throw Exceptions::CExFrontend("Could not create FLTK group for widget (bug?).");
+            
+            m_pGroup->add(group);
+            m_LuaWidgets.push_back(widget);
+            
+            m_iStartY += (h + 10);
+            return widget;
+        }
     }
+    else if (!m_pNextScreen && m_LuaWidgets.empty())
+        throw Exceptions::CExOverflow("Not enough space for widget.");
+    
+    return NULL;
 }
 
 Fl_Group *CCFGScreen::Create()
@@ -1316,8 +1353,17 @@ Fl_Group *CCFGScreen::Create()
     m_iStartX = m_pGroup->x() + 20;
     m_iStartY = m_pBoxTitle->y() + h;
     
+    m_pSCRCounter = new Fl_Box(m_pGroup->x(), m_pGroup->x(), m_pGroup->w(), fl_height());
+    m_pSCRCounter->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+
     m_pGroup->end();
     return m_pGroup;
+}
+
+void CCFGScreen::Activate()
+{
+    if (m_iLinkedScrMax)
+        m_pSCRCounter->label(CreateText("(%d/%d)", m_iLinkedScrNr, m_iLinkedScrMax));
 }
 
 void CCFGScreen::UpdateLang()
@@ -1331,126 +1377,86 @@ void CCFGScreen::UpdateLang()
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)
 {
-    int h = CLuaInputField::CalcHeight(m_pGroup->w() - 80, desc);
-    
-    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    const int h = CLuaInputField::CalcHeight(m_pGroup->w() - 80, desc);
+    CLuaInputField *field = new CLuaInputField(m_iStartX, m_iStartY, m_pGroup->w() - 80, h, label, desc,
+                                               val, max, type);
+    if (!AddLuaWidget(field, h))
     {
-        CLuaInputField *field = new CLuaInputField(m_iStartX, m_iStartY, m_pGroup->w() - 80, h, label, desc, val, max, type);
-        
-        Fl_Group *group = field->Create();
-        
-        if (group)
-        {
-            m_pGroup->add(group);
-            m_LuaWidgets.push_back(field);
-        }
-        
-        m_iStartY += (h + 10);
-        return field;
+        delete field;
+        if (!m_pNextScreen)
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+        return m_pNextScreen->CreateInputField(label, desc, val, max, type);
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
-    
-    return m_pNextScreen->CreateInputField(label, desc, val, max, type);
+    return field;
 }
 
 CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
 {
-    int h = CLuaCheckbox::CalcHeight(m_pGroup->w() - 80, desc, l);
+    const int h = CLuaCheckbox::CalcHeight(m_pGroup->w() - 80, desc, l);
+    CLuaCheckbox *box = new CLuaCheckbox(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, l);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    if (!AddLuaWidget(box, h))
     {
-        CLuaCheckbox *box = new CLuaCheckbox(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, l);
-        Fl_Group *group = box->Create();
-        
-        if (group)
-        {
-            m_pGroup->add(group);
-            m_LuaWidgets.push_back(box);
-        }
-        
-        m_iStartY += (h + 10);
-        return box;
+        delete box;
+        if (!m_pNextScreen)
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+        return m_pNextScreen->CreateCheckbox(desc, l);
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
-    
-    return m_pNextScreen->CreateCheckbox(desc, l);
+    return box;
 }
 
 CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
 {
-    int h = CLuaRadioButton::CalcHeight(m_pGroup->w() - 80, desc, l);
+    const int w = m_pGroup->w() - m_iStartX;
+    const int h = CLuaRadioButton::CalcHeight(w, desc, l);
+    CLuaRadioButton *radio = new CLuaRadioButton(m_iStartX, m_iStartY, w, h, desc, l);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    if (!AddLuaWidget(radio, h))
     {
-        CLuaRadioButton *radio = new CLuaRadioButton(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, l);
-        Fl_Group *group = radio->Create();
-        
-        if (group)
-        {
-            m_pGroup->add(group);
-            m_LuaWidgets.push_back(radio);
-        }
-        
-        m_iStartY += (h + 10);
-        return radio;
+        delete radio;
+        if (!m_pNextScreen)
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+        return m_pNextScreen->CreateRadioButton(desc, l);
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
-    
-    return m_pNextScreen->CreateRadioButton(desc, l);
+    return radio;
 }
 
 CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char *val)
 {
-    int h = CLuaDirSelector::CalcHeight(m_pGroup->w() - 80, desc);
+    const int h = CLuaDirSelector::CalcHeight(m_pGroup->w() - 80, desc);
+    CLuaDirSelector *dir = new CLuaDirSelector(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, val);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    if (!AddLuaWidget(dir, h))
     {
-        CLuaDirSelector *dir = new CLuaDirSelector(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc, val);
-        Fl_Group *group = dir->Create();
-        
-        if (group)
-        {
-            m_pGroup->add(group);
-            m_LuaWidgets.push_back(dir);
-        }
-        
-        m_iStartY += (h + 10);
-        return dir;
+        delete dir;
+        if (!m_pNextScreen)
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+        return m_pNextScreen->CreateDirSelector(desc, val);
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
-    
-    return m_pNextScreen->CreateDirSelector(desc, val);
+    return dir;
 }
 
 CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
 {
-    int h = CLuaCFGMenu::CalcHeight(m_pGroup->w() - 80, desc);
+    const int h = CLuaCFGMenu::CalcHeight(m_pGroup->w() - 80, desc);
+    CLuaCFGMenu *menu = new CLuaCFGMenu(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc);
     
-    if (!m_pNextScreen && ((h + m_iStartY) <= m_pGroup->h()))
+    if (!AddLuaWidget(menu, h))
     {
-        CLuaCFGMenu *menu = new CLuaCFGMenu(m_iStartX, m_iStartY, m_pGroup->w()-80, h, desc);
-        Fl_Group *group = menu->Create();
-        
-        if (group)
-        {
-            m_pGroup->add(group);
-            m_LuaWidgets.push_back(menu);
-        }
-        
-        m_iStartY += (h + 10);
-        return menu;
+        delete menu;
+        if (!m_pNextScreen)
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+    
+        return m_pNextScreen->CreateCFGMenu(desc);
     }
     
-    if (!m_pNextScreen)
-        m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
-    
-    return m_pNextScreen->CreateCFGMenu(desc);
+    return menu;
 }

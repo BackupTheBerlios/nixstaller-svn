@@ -178,13 +178,15 @@ protected:
     Fl_Box *m_pBox;
     
     CBaseLuaWidget(int x, int y, int w, int h, const char *desc);
-    virtual ~CBaseLuaWidget(void) { };
+    // Delete manually, so that this class can be deleted safely
+    virtual ~CBaseLuaWidget(void) { Fl::delete_widget(m_pGroup); m_pGroup = NULL; };
 
-    virtual Fl_Group *Create(void);
-    
     int DescHeight(void) { return (m_pBox) ? m_pBox->h() : 0; };
+    int DescWidth(void) { return static_cast<int>(fl_width(m_szDescription.c_str())); };
+    
 public:
     virtual void UpdateLanguage(void);
+    virtual Fl_Group *Create(void);
 };
 
 class CLuaInputField: public CBaseLuaInputField, public CBaseLuaWidget
@@ -248,6 +250,7 @@ class CLuaDirSelector: public CBaseLuaDirSelector, public CBaseLuaWidget
     Fl_File_Chooser *m_pDirChooser;
     static int m_iFieldHeight, m_iButtonWidth, m_iButtonHeight;
     
+    void CreateDirSelector(void);
     void OpenDirChooser(void);
     
 public:
@@ -421,6 +424,8 @@ class CSelectDirScreen: public CBaseScreen
     Fl_Button *m_pSelDirButton;
     Fl_File_Input *m_pSelDirInput;
     
+    void CreateDirSelector(void);
+    
 public:
     CSelectDirScreen(CInstaller *owner) : CBaseScreen(owner), m_pDirChooser(NULL) { };
     
@@ -469,7 +474,7 @@ public:
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 {
     std::string m_szTitle;
-    Fl_Box *m_pBoxTitle;
+    Fl_Box *m_pBoxTitle, *m_pSCRCounter;
     int m_iStartX, m_iStartY;
     CCFGScreen *m_pNextScreen; 
     std::vector<CBaseLuaWidget *> m_LuaWidgets;
@@ -478,14 +483,16 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     friend class CInstaller;
     
     void SetTitle(void);
+    CBaseLuaWidget *AddLuaWidget(CBaseLuaWidget *widget, int h);
+    bool WidgetFits(int h) { return ((h + m_iStartY) <= m_pGroup->h()); }
     
 public:
-    CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner), m_szTitle(title), m_pNextScreen(NULL),
-                                                       m_iLinkedScrNr(0), m_iLinkedScrMax(0) { };
+    CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner), m_szTitle(title), m_pSCRCounter(NULL),
+                                                       m_pNextScreen(NULL), m_iLinkedScrNr(0), m_iLinkedScrMax(0) { };
 
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
-    virtual void Activate(void) { SetTitle(); };
+    virtual void Activate(void);
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);

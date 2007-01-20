@@ -414,6 +414,11 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     CCFGScreen *m_pNextScreen; 
     std::vector<CBaseLuaWidget *> m_LuaWidgets;
     int m_iLinkedScrNr, m_iLinkedScrMax;
+    CTextLabel *m_pSCRCounter;
+
+    
+    void AddLuaWidget(CBaseLuaWidget *widget, int h);
+    bool WidgetFits(int h) const { return ((h + m_iStartY) <= height()); };
     
     friend class CInstaller;
     
@@ -423,8 +428,8 @@ protected:
 
 public:
     CCFGScreen(CInstaller *owner, int nlines, int ncols, int begin_y, int begin_x,
-               const std::string &title) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x), m_szTitle(title), m_iStartY(2),
-                                           m_pNextScreen(NULL), m_iLinkedScrNr(0), m_iLinkedScrMax(0) { };
+               const std::string &title) : CBaseScreen(owner, nlines, ncols, begin_y, begin_x), m_szTitle(title), m_iStartY(0),
+                                           m_pNextScreen(NULL), m_iLinkedScrNr(0), m_iLinkedScrMax(0), m_pSCRCounter(NULL) { };
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);

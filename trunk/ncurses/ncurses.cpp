@@ -74,7 +74,8 @@ void StartFrontend(int argc, char **argv)
     catch(NCursesException &e)
     {
         // Convert to exception that main() can use...
-        throw Exceptions::CExFrontend(CreateText("Ncurses detected the following error:\n%s\nNote: Your terminal size might be too small", e.message));
+        throw Exceptions::CExFrontend(CreateText("Ncurses detected the following error:\n%s\n"
+                                                 "Note: Your terminal size might be too small", e.message));
     }
 }
 
@@ -133,7 +134,7 @@ void CAboutScreen::UpdateLanguage()
 // NCurses base interface class
 // -------------------------------------
 
-CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, std::min(30, MaxY()-3), std::min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
+CNCursBase::CNCursBase(CWidgetManager *owner) : CWidgetWindow(owner, std::min(32, MaxY()-3), std::min(60, MaxX()-4), 0, 0), m_pWidgetManager(owner)
 {
     m_pAboutScreen = pWidgetManager->AddChild(new CAboutScreen(pWidgetManager));
     m_pAboutScreen->Enable(false);
