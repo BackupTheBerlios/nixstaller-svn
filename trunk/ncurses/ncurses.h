@@ -126,7 +126,7 @@ protected:
     virtual void ChangeStatusText(const char *str);
     virtual void AddInstOutput(const std::string &str);
     virtual void SetProgress(int percent);
-    virtual void InstallThink(void);
+    virtual void InstallThink(void) { m_pWidgetManager->Run(0); };
     
     virtual bool HandleKey(chtype ch);
     virtual bool HandleEvent(CWidgetHandler *p, int type);

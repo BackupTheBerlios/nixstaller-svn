@@ -124,6 +124,7 @@ public:
     static int LuaAskRootPW(lua_State *L);
     static int LuaSetStatusMSG(lua_State *L);
     static int LuaSetStepCount(lua_State *L);
+    static int LuaPrintInstOutput(lua_State *L);
 };
 
 class CBaseLuaInputField

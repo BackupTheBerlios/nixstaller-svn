@@ -242,7 +242,7 @@ int CLibSU::WaitForChild()
 
         FD_ZERO(&fds);
         FD_SET(m_iPTYFD, &fds);
-        timeval tv = { 0, 0 };
+        timeval tv = { 0, 10 };
         
         int ret = select(m_iPTYFD+1, &fds, 0L, 0L, &tv);
         if (ret == -1) 

@@ -429,6 +429,7 @@ void CBaseInstall::InitLua()
     m_LuaVM.RegisterFunction(LuaAskRootPW, "askrootpw", "install", this);
     m_LuaVM.RegisterFunction(LuaSetStatusMSG, "setstatus", "install", this);
     m_LuaVM.RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
+    m_LuaVM.RegisterFunction(LuaPrintInstOutput, "print", "install", this);
     
     m_LuaVM.LoadFile("config/config.lua");
     
@@ -626,7 +627,7 @@ int CBaseInstall::LuaGetTempDir(lua_State *L)
 int CBaseInstall::LuaNewCFGScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
-    const char *name = (lua_gettop(L) >= 1) ? luaL_checkstring(L, 1) : NULL;
+    const char *name = luaL_optstring(L, 1, "");
     pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen *>(pInstaller->CreateCFGScreen(GetTranslation(name)), "cfgscreen");
     return 1;
 }
@@ -694,7 +695,18 @@ int CBaseInstall::LuaSetStepCount(lua_State *L)
     pInstaller->VerifyIfInstalling();
     
     int n = luaL_checkint(L, 1);
-    pInstaller->m_sInstallSteps = n + !pInstaller->m_ArchList.empty();
+    pInstaller->m_sInstallSteps = n /*+ !pInstaller->m_ArchList.empty()*/;
+    return 0;
+}
+
+int CBaseInstall::LuaPrintInstOutput(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    
+    pInstaller->VerifyIfInstalling();
+
+    const char *msg = luaL_checkstring(L, 1);
+    pInstaller->AddInstOutput(msg);
     return 0;
 }
 
@@ -957,7 +969,7 @@ int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
     CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClass<CBaseLuaCFGMenu *>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
-    const char *val = luaL_optstring(L, 4, "/");
+    const char *val = luaL_optstring(L, 4, getenv("HOME"));
 
     menu->AddVar(var, GetTranslation(desc), val, TYPE_DIR);
     

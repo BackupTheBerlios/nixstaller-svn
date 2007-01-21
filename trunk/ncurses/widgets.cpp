@@ -513,8 +513,8 @@ bool CWidgetManager::SetPrevChildWidget()
 // -------------------------------------
 
 CFormattedText::CFormattedText(CWidgetWindow *w, const std::string &str, bool wrap,
-                               TSTLVecSize maxh) : m_pWindow(w), m_TextLength(0), m_LongestLine(0), m_Width(w->width()), m_MaxHeight(maxh),
-                                                   m_bWrap(wrap), m_bHandleTags(true)
+                               TSTLVecSize maxh) : m_pWindow(w), m_TextLength(0), m_LongestLine(0), m_Width(w->width()),
+                                                   m_MaxHeight(maxh), m_bWrap(wrap), m_bHandleTags(true)
 {
     if (!str.empty())
         AddText(str);
@@ -846,6 +846,9 @@ void CFormattedText::AddText(const std::string &str)
             
             bool toolong = ((m_Lines[m_CurrentLine]->text.length() + (strend-strstart)+1) > m_Width);
             
+            if ((toolong || add) && (m_Lines.size() >= m_MaxHeight))
+                break;
+            
             if (((strend+1) < length) && isspace(newtext[strend+1]))
                 strend++; // Don't add trailing whitespace to a new line
 
@@ -860,9 +863,6 @@ void CFormattedText::AddText(const std::string &str)
             
             if (add)
             {
-                if (m_Lines.size() >= m_MaxHeight)
-                    break;
-
                 m_Lines.push_back(new line_entry_s);
                 m_CurrentLine++;
             }

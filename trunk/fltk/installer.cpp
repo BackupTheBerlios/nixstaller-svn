@@ -213,6 +213,7 @@ void CInstaller::Init(int argc, char **argv)
                             {
                                 m_pWizard->add(group);
                                 m_ScreenList.push_back(p);
+                                group->show(); // Was hidden in CreateCFGScreen()
                             }
 
                             p = p->m_pNextScreen;
@@ -314,7 +315,13 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
 CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 {
     CCFGScreen *scr = new CCFGScreen(this, title);
-    scr->Create();
+    Fl_Group *group = scr->Create();
+    
+    if (!group)
+        throw Exceptions::CExFrontend("Could not create group for config screen (bug?)");
+    
+    group->hide();
+    
     return scr;
 }
 
@@ -481,7 +488,8 @@ void CBaseLuaWidget::UpdateLanguage()
 int CLuaInputField::m_iFieldHeight = 20;
 
 CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, const char *desc,
-                               const char *val, int max, const char *type) : CBaseLuaInputField(type), CBaseLuaWidget(x, y, w, h, desc),
+                               const char *val, int max, const char *type) : CBaseLuaInputField(type),
+                                                                             CBaseLuaWidget(x, y, w, h, desc),
                                                                              m_pLabel(NULL), m_iMax(max)
 {
     if (label && *label)
@@ -575,6 +583,7 @@ Fl_Group *CLuaCheckbox::Create()
 
     w = std::max(w, basew + static_cast<int>(DescWidth()));
     
+    group->box(FL_ENGRAVED_BOX);
     group->size(w, group->h());
     
     x += 5;
@@ -989,8 +998,6 @@ Fl_Group *CLangScreen::Create(void)
 {
     CBaseScreen::Create();
 
-//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    
     m_pTitleBox = new Fl_Box(CenterX(260), 40, 260, 100, "Please select a language");
     
     m_pChoiceMenu = new Fl_Choice(CenterX(120, "Language: ", true), CenterY(25), 120, 25, "Language: ");
@@ -1049,8 +1056,6 @@ Fl_Group *CWelcomeScreen::Create(void)
     
     Fl::visual(FL_RGB);
     
-//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-
     int x = m_pGroup->x() + 20, y = m_pGroup->y() + 40, h = m_pGroup->h()-(y-m_pGroup->y())-20;
     m_pImage = Fl_Shared_Image::get(m_pOwner->GetIntroPicFName());
     if (m_pImage)
@@ -1122,8 +1127,6 @@ Fl_Group *CLicenseScreen::Create(void)
 {
     CBaseScreen::Create();
 
-//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-    
     m_pBuffer = new Fl_Text_Buffer;
     
     int y = m_pGroup->y()+20, h = m_pGroup->h()-(y-m_pGroup->y())-60;
@@ -1175,10 +1178,6 @@ Fl_Group *CSelectDirScreen::Create()
 {
     CBaseScreen::Create();
     
-    CreateDirSelector();
-    
-//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-
     m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, "Select destination directory");
     
     int x = CenterX2(300+20+160, "", "", false, false);
@@ -1192,6 +1191,9 @@ Fl_Group *CSelectDirScreen::Create()
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
     m_pGroup->end();
+    
+    CreateDirSelector();
+
     return m_pGroup;
 }
 
@@ -1231,8 +1233,6 @@ Fl_Group *CInstallFilesScreen::Create()
 {
     CBaseScreen::Create();
     
-//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-
     int x = m_pGroup->x()+20, y = m_pGroup->y()+20;
     m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, "Install progress");
     m_pProgress->minimum(0);
@@ -1279,7 +1279,6 @@ void CInstallFilesScreen::ChangeStatusText(const char *txt)
 Fl_Group *CFinishScreen::Create(void)
 {
     CBaseScreen::Create();
-//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
     
     m_pBuffer = new Fl_Text_Buffer;
 
@@ -1340,9 +1339,6 @@ Fl_Group *CCFGScreen::Create()
         return m_pGroup;
     
     CBaseScreen::Create();
-    
-//     m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-30), (MAIN_WINDOW_H-60), NULL);
-
     
     const char *text = MakeTranslation(m_szTitle);
     const int w = 260;

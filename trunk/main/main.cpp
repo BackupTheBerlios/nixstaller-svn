@@ -338,7 +338,9 @@ void CMain::InitLua()
     m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
     m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
     m_LuaVM.RegisterString(m_szOwnDir.c_str(), "curdir");
+    
     m_LuaVM.RegisterFunction(LuaInitDirIter, "dir", "io");
+    
     m_LuaVM.RegisterFunction(LuaFileExists, "fileexists", "os");
     m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "os");
     m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "os");
@@ -358,13 +360,15 @@ void CMain::InitLua()
     m_LuaVM.RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
     m_LuaVM.RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     
+    m_LuaVM.RegisterFunction(LuaExit, "exit");
+    
     // Set some default values for config variabeles
     m_LuaVM.SetArrayStr("english", "languages", 1);
     m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1);
     m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1);
     m_LuaVM.SetArrayStr("fltk", "frontends", 1);
     m_LuaVM.SetArrayStr("ncurses", "frontends", 2);
-    m_LuaVM.RegisterString("gzip", "archivetype");
+    m_LuaVM.RegisterString("lzma", "archivetype");
     m_LuaVM.RegisterString("english", "defaultlang");
 }
 
@@ -822,6 +826,12 @@ int CMain::LuaMSGBox(lua_State *L)
     pMain->MsgBox(msg.c_str());
     
     return 0;
+}
+
+int CMain::LuaExit(lua_State *L)
+{
+    throw Exceptions::CExUser();
+    return 0; // Not reached
 }
 
 // -------------------------------------

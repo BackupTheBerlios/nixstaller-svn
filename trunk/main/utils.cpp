@@ -342,23 +342,6 @@ void UName(struct utsname &u)
         throw Exceptions::CExUName(errno);
 }
 
-suseconds_t GetTicks(void)
-{
-    // Based on the SDL code for SDL_GetTicks()
-    
-    static struct timeval start, current;
-    static bool started = false;
-    
-    if (!started)
-    {
-        gettimeofday(&start, NULL);
-        started = true;
-    }
-        
-    gettimeofday(&current, NULL);
-    return (current.tv_sec-start.tv_sec)*1000+(current.tv_usec-start.tv_usec)/1000;
-}
-
 // -------------------------------------
 // Directory iterator
 // -------------------------------------
@@ -444,7 +427,7 @@ bool CPipedCMD::HasData()
     if (EndOfFile())
         return false;
                     
-    int ret = poll(&m_PollData, 1, 0);
+    int ret = poll(&m_PollData, 1, 10);
     
     if (ret == -1) // Error occured
         throw Exceptions::CExPoll(errno);

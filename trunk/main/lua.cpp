@@ -120,12 +120,7 @@ int CLuaVM::DoFunctionCall(lua_State *L)
         // Lua doesn't handle exceptions in a nice way (catches all), so convert to lua error
         luaL_error(L, "Cought exception in lua function: %s", e.what());
     }
-#ifndef RELEASE
-    catch(...)
-    {
-        assert(false);
-    }
-#endif
+
     return 0; // Never reached
 }
 

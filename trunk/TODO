@@ -1,33 +1,20 @@
 OVERALL
 - Modify Makeself?
-- Check read permissions for extract dir?
 - Add new strings to translation files
-- Use deltas <--> patches for different frontends?
 - Test/clean/check new edelta code
 - Update lib-notes file for each OS/ARCH
-- Delay for updating GUI in frontends while installing
 - Replace vec [] access with at() ?
 - Test installer scripts
 - Comment the '%s' in strings files.
-- Add new error detection in Lua scripts for dir Iter
+- Add new error detection in Lua scripts for dir Iter?
 - Test instarchive platform handling
-- Better util.a configure testing?
-- Change default archtype to lzma
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
 
 MAIN
-- Overide some lua funcs?(ie. exit)
-- Create directory with root access in VerifyDestDir()?
-- Convert LuaDirIter to CDirIter? - Needs testing
-- Check install steps (inits properly?)
-- Check new checkbox argument
-- Check default(empty) dir for lua dir selector
-- Check range checking of input:setspacing
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
-- Use locale fix from latest kdesu?
 
 NCURSES FRONTEND
 - Update headers for linux ncurses
@@ -43,6 +30,7 @@ DOCS
 - Move destdir to run.lua
 - inputfield's spacing is default 25
 - lua os.setenv function
+- Keep install.setstatus short
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
@@ -50,10 +38,19 @@ FOR RELEASE
 - Disable debug Lua lib
 
 ----------------------------- LATER ------------------------------------
+
 OVERALL
 - Use ldd to detect right frontend in staruinstaller.sh?
 - Make shared 'library' for scripts
-
+- sudo support
+- Detect ssh'd terminals with X tunnel
+- Qt/KDE and GTK2 frontends
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Dep handling?
+- Use deltas <--> patches for different frontends?
+- Remove double GetTranslation calls
+- Better util.a configure testing?
 
 MAIN
 -
