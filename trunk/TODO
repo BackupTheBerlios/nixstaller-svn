@@ -7,7 +7,6 @@ OVERALL
 - Test installer scripts
 - Comment the '%s' in strings files.
 - Add new error detection in Lua scripts for dir Iter?
-- Test instarchive platform handling
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
 
@@ -31,6 +30,8 @@ DOCS
 - inputfield's spacing is default 25
 - lua os.setenv function
 - Keep install.setstatus short
+- exec cmd can have multilines
+- Nixstaller ver lua var
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
@@ -40,9 +41,8 @@ FOR RELEASE
 ----------------------------- LATER ------------------------------------
 
 OVERALL
-- Use ldd to detect right frontend in staruinstaller.sh?
+- Use ldd to detect right frontend in startinstaller.sh?
 - Make shared 'library' for scripts
-- sudo support
 - Detect ssh'd terminals with X tunnel
 - Qt/KDE and GTK2 frontends
 - Fix installation if destdir has no read access?
@@ -52,8 +52,14 @@ OVERALL
 - Remove double GetTranslation calls
 - Better util.a configure testing?
 
+
 MAIN
--
+- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+
+
+LIBSU
+- Clean up/redesign
+- sudo support
 
 
 REGISTER

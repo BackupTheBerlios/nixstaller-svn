@@ -83,12 +83,6 @@ void CBaseInstall::InitArchive(char *archname)
         m_ArchList[archname].filesizes[arfilename] = size;
         m_ulTotalArchSize += size;
     }
-    
-    if (!m_szCurArchFName)
-    {
-        m_szCurArchFName = archname;
-        m_CurArchIter = m_ArchList.begin();
-    }
 }
 
 void CBaseInstall::ExtractFiles()
@@ -108,9 +102,9 @@ void CBaseInstall::ExtractFiles()
     if (m_bAlwaysRoot)
         m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
 
-    while (m_CurArchIter != m_ArchList.end())
+    for (TArchType::iterator it=m_ArchList.begin(); it!=m_ArchList.end(); it++)
     {
-        m_szCurArchFName = m_CurArchIter->first;
+        m_szCurArchFName = it->first;
         
         // Set extract command
         std::string command = "cat " + std::string(m_szCurArchFName);
@@ -123,8 +117,9 @@ void CBaseInstall::ExtractFiles()
         {
             command = "(" + m_szBinDir + "/../lzma-decode " + std::string(m_szCurArchFName) +
                     " arch.tar && tar xvf arch.tar && rm arch.tar)";
-            debugline("Extr cmd: %s", command.c_str());
         }
+        
+        debugline("Extr cmd: %s", command.c_str());
         
         if (m_bAlwaysRoot)
         {
@@ -140,7 +135,7 @@ void CBaseInstall::ExtractFiles()
         {
             command += " 2>&1"; // tar may output files to stderr
             
-            CPipedCMD pipe(command.c_str(), "r");
+            CPipedCMD pipe(command.c_str());
             std::string line;
             
             while (pipe)
@@ -168,7 +163,6 @@ void CBaseInstall::ExtractFiles()
             
             pipe.Close(); // By calling Close() explicity its able to throw exceptions
         }
-        m_CurArchIter++;
     }
 }
 
@@ -195,7 +189,7 @@ void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool requir
     
     AddInstOutput(CreateText("\nExecute: %s\n\n", cmd));
     
-    CPipedCMD pipe(command, "r");
+    CPipedCMD pipe(command);
     std::string line;
             
     while (pipe)

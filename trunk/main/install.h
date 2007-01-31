@@ -36,10 +36,11 @@ class CBaseCFGScreen;
 
 class CBaseInstall: virtual public CMain
 {
+    typedef std::map<char *, arch_size_entry_s> TArchType;
+    
     unsigned long m_ulTotalArchSize;
     float m_fExtrPercent;
-    std::map<char *, arch_size_entry_s> m_ArchList;
-    std::map<char *, arch_size_entry_s>::iterator m_CurArchIter;
+    TArchType m_ArchList;
     char *m_szCurArchFName;
     bool m_bAlwaysRoot; // If we need root access during whole installation
     short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)

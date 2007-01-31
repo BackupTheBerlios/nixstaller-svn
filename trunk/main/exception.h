@@ -179,11 +179,11 @@ public:
     virtual const char *what(void) throw() { return FormatText("Could not open pipe: %s", Error()); };
 };
 
-class CExPoll: public CExErrno
+class CExReadPipe: public CExErrno
 {
 public:
-    CExPoll(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Poll returned a error: %s", Error()); };
+    CExReadPipe(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Could not read pipe: %s", Error()); };
 };
 
 class CExClosePipe: public CExErrno, public CExIO
@@ -191,6 +191,35 @@ class CExClosePipe: public CExErrno, public CExIO
 public:
     CExClosePipe(int err) : CExErrno(err) { };
     virtual const char *what(void) throw() { return FormatText("Could not close pipe: %s", Error()); };
+};
+
+class CExFork: public CExErrno
+{
+public:
+    CExFork(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Could not fork child: %s", Error()); };
+};
+
+class CExCloseFD: public CExErrno
+{
+public:
+    CExCloseFD(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Could not close file descriptor: %s", Error()); };
+};
+
+class CExPoll: public CExErrno
+{
+public:
+    CExPoll(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw() { return FormatText("Poll returned an error: %s", Error()); };
+};
+
+class CExWaitPID: public CExErrno
+{
+public:
+    CExWaitPID(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw()
+    { return FormatText("Encountered an error while waiting on child process: %s", Error()); };
 };
 
 class CExUName: public CExErrno

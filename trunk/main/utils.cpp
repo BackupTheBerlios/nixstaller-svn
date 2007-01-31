@@ -342,6 +342,38 @@ void UName(struct utsname &u)
         throw Exceptions::CExUName(errno);
 }
 
+void Pipe(int fd[2])
+{
+    if (pipe(fd) == -1)
+        throw Exceptions::CExOpenPipe(errno);
+}
+
+pid_t Fork()
+{
+    pid_t ret = fork();
+    
+    if (ret == -1)
+        throw Exceptions::CExFork(errno);
+    
+    return ret;
+}
+
+void Close(int fd)
+{
+    if (close(fd) == -1)
+        throw Exceptions::CExCloseFD(errno);
+}
+
+pid_t WaitPID(pid_t pid, int *status, int options)
+{
+    pid_t ret = waitpid(pid, status, options);
+    
+    if (ret == -1)
+        throw Exceptions::CExWaitPID(errno);
+    
+    return ret;
+}
+
 // -------------------------------------
 // Directory iterator
 // -------------------------------------
@@ -388,29 +420,37 @@ dirent *CDirIter::operator ->()
 // Frontend class for popen
 // -------------------------------------
 
-CPipedCMD::CPipedCMD(const char *cmd, const char *mode) : m_szCommand(cmd), m_iPipeFD(-1), m_bChEOF(false)
+CPipedCMD::CPipedCMD(const char *cmd) : m_szCommand(cmd), m_ChildPID(0), m_bChEOF(false)
 {
-    m_pPipe = popen(cmd, mode);
+    Pipe(m_iPipeFD);
     
-    if (!m_pPipe)
-        throw Exceptions::CExOpenPipe(errno);
-}
-
-void CPipedCMD::InitPoll()
-{
-    m_iPipeFD = fileno(m_pPipe);
+    m_ChildPID = Fork();
     
-    if (m_iPipeFD == -1)
-        throw Exceptions::CExPoll(errno);
-    
-    m_PollData.fd = m_iPipeFD;
-    m_PollData.events = POLLIN | POLLHUP;
+    if (m_ChildPID == 0) // Child
+    {
+        if (setsid() == -1)
+            _exit(127);
+        
+        // Redirect to stdout
+        dup2(m_iPipeFD[1], STDOUT_FILENO);
+        close(m_iPipeFD[0]);
+        close(m_iPipeFD[1]);
+        
+        execlp("/bin/sh", "sh", "-c", cmd, NULL);
+        _exit(127);
+    }
+    else if (m_ChildPID > 0) // Parent
+    {
+        ::Close(m_iPipeFD[1]);
+        m_PollData.fd = m_iPipeFD[0];
+        m_PollData.events = POLLIN | POLLHUP;
+    }
 }
 
 int CPipedCMD::GetCh()
 {
     int ret;
-    if (read(m_iPipeFD, &ret, 1) == 0)
+    if (read(m_iPipeFD[0], &ret, 1) == 0)
     {
         ret = EOF;
         m_bChEOF = true;
@@ -421,9 +461,6 @@ int CPipedCMD::GetCh()
 
 bool CPipedCMD::HasData()
 {
-    if (m_iPipeFD == -1)
-        InitPoll();
-    
     if (EndOfFile())
         return false;
                     
@@ -434,29 +471,44 @@ bool CPipedCMD::HasData()
     else if (ret == 0)
         return false;
     else if (((m_PollData.revents & POLLIN) == POLLIN) || ((m_PollData.revents & POLLHUP) == POLLHUP))
-    {
         return true;
-    }
     
     return false;
 }
 
 void CPipedCMD::Close(bool canthrow)
 {
-    if (m_pPipe)
+    if (!m_ChildPID)
+        return;
+    
+    if (canthrow) 
+        ::Close(m_iPipeFD[0]);
+    else
+        close(m_iPipeFD[0]);
+    
+    pid_t ret;
+    int stat;
+    do
     {
-        int ret = pclose(m_pPipe);
-        m_pPipe = NULL;
-        
-        if (canthrow)
-        {
-            if (ret >= 0)
-            {
-                if (!WIFEXITED(ret) || (WEXITSTATUS(ret) == 127)) // 127 == Command not found
-                    throw Exceptions::CExCommand(MakeCString(m_szCommand));
-            }
-            else
-                throw Exceptions::CExClosePipe(errno);
-        }
+        ret = (canthrow) ? WaitPID(m_ChildPID, &stat, 0) : waitpid(m_ChildPID, &stat, 0);
+    }
+    while ((ret == -1) && (errno == EINTR));
+    
+    m_ChildPID = 0;
+    
+    if (canthrow)
+    {
+        if (!WIFEXITED(stat) || (WEXITSTATUS(stat) == 127)) // 127 == Command not found
+            throw Exceptions::CExCommand(MakeCString(m_szCommand));
     }
 }
+
+void CPipedCMD::Abort(bool canthrow)
+{
+    if (m_ChildPID)
+    {
+        kill(-m_ChildPID, SIGTERM);
+        Close(canthrow);
+    }
+}
+

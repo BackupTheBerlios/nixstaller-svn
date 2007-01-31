@@ -33,7 +33,6 @@
 
 namespace LIBSU
 {
-
 #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
 
 // UNDONE: Check what should be private/protected/public
@@ -48,10 +47,9 @@ public:
     
     CLibSU(bool Disable0Core=false);
     CLibSU(const char *command, const char *user=NULL, const char *path="/bin:/usr/bin", bool Disable0Core=false);
-    virtual ~CLibSU(void) { if (m_iPTYFD) close(m_iPTYFD); };
+    ~CLibSU(void) { if (m_iPTYFD) close(m_iPTYFD); };
     
-    void SetCommand(const char *command) { m_szCommand = command; };
-    void SetCommand(const std::string &command) { m_szCommand = command; };
+    void SetCommand(const std::string &command);
     void SetUser(const char *user) { m_szUser = user; };
     void SetUser(const std::string &user) { m_szUser = user; };
     void SetPath(const char *path) { m_szPath = path; };
@@ -74,7 +72,7 @@ private:
     enum EPidStatus { PID_ERROR=-1, PID_NOTEXITED=-2, PID_KILLED=-3 } ;
     enum ESuComErrors { SUCOM_ERROR=-1, SUCOM_OK=0, SUCOM_NULLPASS=1, SUCOM_NOTAUTHORIZED=2 } ;
 
-    int m_iPTYFD, m_iPid;
+    int m_iPTYFD, m_iPid, m_iPipe[2];
     bool m_bTerminal;
     std::string m_szPTYName, m_szTTYName, m_szInBuf;
     std::string m_szCommand, m_szUser, m_szPath;

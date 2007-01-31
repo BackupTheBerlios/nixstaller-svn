@@ -112,6 +112,7 @@ __END_DECLS
 void log(const char *txt, ...);
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
+char *FormatText(const char *str, ...);
 }
 
 #endif

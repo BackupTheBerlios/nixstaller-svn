@@ -335,6 +335,8 @@ const char *CMain::GetSumListFile(const char *progname)
 void CMain::InitLua()
 {
     // Register some globals for lua
+    m_LuaVM.RegisterString("0.2", "version");
+    
     m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
     m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
     m_LuaVM.RegisterString(m_szOwnDir.c_str(), "curdir");
@@ -761,7 +763,7 @@ int CMain::LuaSetEnv(lua_State *L)
     if (lua_isboolean(L, 3))
         overwrite = lua_toboolean(L, 3);
     
-    setenv(CreateText(env), CreateText(val), overwrite);
+    setenv(/*CreateText*/(env), /*CreateText*/(val), overwrite);
     
     return 0;
 }
@@ -791,7 +793,7 @@ int CMain::LuaChoiceBox(lua_State *L)
     int ret = pMain->ChoiceBox(msg, but1, but2, but3) + 1; // +1: Convert 0-2 range to 1-3
     
     // UNDONE: FLTK doesn't return alternative number while ncurses returns -1.
-    // For now we'll strick with the FLTK behaviour: return the last button.
+    // For now we'll stick with the FLTK behaviour: return the last button.
     if (ret == 0) // Ncurses returns -1 and we added 1 thus zero...
         ret = 3;
     

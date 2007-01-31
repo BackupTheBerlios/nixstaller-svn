@@ -66,4 +66,16 @@ bool FileExists(const char *file)
     return (lstat(file, &st) == 0);
 }
 
+char *FormatText(const char *str, ...)
+{
+    char *ret;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&ret, str, v);
+    va_end(v);
+    
+    return ret;
+}
+
 }

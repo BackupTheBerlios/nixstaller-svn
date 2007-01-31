@@ -75,7 +75,8 @@ protected:
     CWidgetHandler(CWidgetHandler *owner, bool canfocus=true) : m_bEnabled(true), m_bFocused(false),
                                                                 m_bCanFocus(canfocus), m_pBoundKeyWidget(NULL),
                                                                 m_pOwner(owner), m_bDeleteMe(false),
-                                                                m_FocusedChild(m_ChildList.end()), m_NeedFocChild(m_ChildList.end()) { };
+                                                                m_FocusedChild(m_ChildList.end()),
+                                                                m_NeedFocChild(m_ChildList.end()) { };
 
 public:
     enum { EVENT_CALLBACK, EVENT_DATACHANGED };

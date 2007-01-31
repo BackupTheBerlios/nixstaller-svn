@@ -122,22 +122,22 @@ public:
 class CPipedCMD
 {
     std::string m_szCommand;
-    FILE *m_pPipe;
-    int m_iPipeFD;
+
+    int m_iPipeFD[2];
+    pid_t m_ChildPID;
     pollfd m_PollData;
     bool m_bChEOF;
     
-    void InitPoll(void);
-    
 public:
-    CPipedCMD(const char *cmd, const char *mode);
-    ~CPipedCMD(void) { Close(false); };
-
-    int GetCh(void);
+    CPipedCMD(const char *cmd);
+    ~CPipedCMD(void) { Abort(false); };
+    
     bool HasData(void);
-    bool EndOfFile(void) { return (!m_pPipe || feof(m_pPipe) || m_bChEOF); };
-    void Close(bool canthrow = true); // canthrow should be false when called from the destructor
-
+    bool EndOfFile(void) { return ((m_ChildPID == 0) || m_bChEOF); };
+    int GetCh(void);
+    void Close(bool canthrow=true); // As pclose: waits for child to exit
+    void Abort(bool canthrow=true);
+    
     operator bool(void) { return !EndOfFile(); };
 };
 

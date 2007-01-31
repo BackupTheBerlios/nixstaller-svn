@@ -44,7 +44,6 @@ CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m
         if (setrlimit(RLIMIT_CORE, &rlim))
         {
             SetError(SU_ERROR_INTERNAL, "rlimit(): %s", strerror(errno));
-            exit(1);
         }
     }
 }
@@ -65,8 +64,31 @@ CLibSU::CLibSU(const char *command, const char *user, const char *path,
         if (setrlimit(RLIMIT_CORE, &rlim))
         {
             SetError(SU_ERROR_INTERNAL, "rlimit(): %s", strerror(errno));
-            exit(1);
         }
+    }
+}
+
+void CLibSU::SetCommand(const std::string &command)
+{
+    m_szCommand.clear();
+    
+    // As the command is executed with single quotes (sh -c 'cmd') all the single quotes need to be transformed to use them.
+    // For this we use replace them by following string which concats single quotes.
+    const char *quotehack = "\'\"\'\"\'";
+    const std::string::size_type length = command.length();
+    std::string::size_type ind = 0;
+    
+    while (ind < length)
+    {
+        if (command[ind] == '\'')
+        {
+            m_szCommand += quotehack;
+        }
+        else
+        {
+            m_szCommand += command[ind];
+        }
+        ind++;
     }
 }
 
@@ -74,6 +96,12 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
 {
     log("Running '%s'\n", command.c_str());
 
+    if (m_iPTYFD)
+    {
+        close(m_iPTYFD);
+        m_iPTYFD = 0;
+    }
+    
     if (CreatePT() < 0)
         return -1;
         
@@ -93,6 +121,12 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
         return -1;
     }
 
+    if (pipe(m_iPipe) == -1) 
+    {
+        SetError(SU_ERROR_INTERNAL, "pipe(): %s ", strerror(errno));
+        return -1;
+    } 
+
     m_iPid = fork();
            
     if (m_iPid == -1) 
@@ -105,6 +139,7 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     if (m_iPid) 
     {
         close(slave);
+        close(m_iPipe[0]);
         return 0;
     }
 
@@ -115,6 +150,11 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
         return -1;
     }
 
+    // Redirect to stdin
+    dup2(m_iPipe[0], STDIN_FILENO);
+    close(m_iPipe[0]);
+    close(m_iPipe[1]);
+    
     // From now on, terminal output goes through the tty.
 
     char **argp = (char **)malloc((args.size()+2)*sizeof(char *));
@@ -240,28 +280,34 @@ int CLibSU::WaitForChild()
         if (m_pThinkFunc)
             (m_pThinkFunc)(m_pCustomThinkData);
 
-        FD_ZERO(&fds);
-        FD_SET(m_iPTYFD, &fds);
-        timeval tv = { 0, 10 };
-        
-        int ret = select(m_iPTYFD+1, &fds, 0L, 0L, &tv);
-        if (ret == -1) 
+        int ret = 0;
+        if (m_szInBuf.empty()) // HACK: Shouldn't be here
         {
-            if (errno != EINTR) 
+            FD_ZERO(&fds);
+            FD_SET(m_iPTYFD, &fds);
+            timeval tv = { 0, 10 };
+            
+            ret = select(m_iPTYFD+1, &fds, 0L, 0L, &tv);
+            if (ret == -1) 
             {
-                SetError(SU_ERROR_INTERNAL, "select(): %s", strerror(errno));
-                return -1;
+                if (errno != EINTR) 
+                {
+                    SetError(SU_ERROR_INTERNAL, "select(): %s", strerror(errno));
+                    return -1;
+                }
+                ret = 0;
             }
-            ret = 0;
         }
-
+        else
+            ret = 1;
+        
         if (ret) // There is input available
         {
             std::string line = ReadLine(false);
             while (!line.empty())
             {
                 if (!m_szExit.empty() && (line == m_szExit))
-                    kill(m_iPid, SIGTERM);
+                    kill(-m_iPid, SIGTERM);
                 if (m_bTerminal)
                 {
                     fputs(line.c_str(), stdout);
@@ -308,6 +354,10 @@ int CLibSU::WaitForChild()
             break;
         }
     }
+    
+    close(m_iPipe[1]); // Important: kills read command in shell script executed by su
+    close(m_iPTYFD);
+    m_iPTYFD = 0;
     
     return retval;
 }
@@ -374,7 +424,7 @@ int CLibSU::TalkWithSU(const char *password)
                 // In case no password is needed.
                 if (line == TermStr)
                 {
-                    UnReadLine(line);
+                    //UnReadLine(line);
                     return SUCOM_OK;
                 }
 
@@ -499,7 +549,8 @@ bool CLibSU::NeedPassword()
     
     if (ret == SUCOM_NULLPASS)
     {
-        if (kill(m_iPid, SIGKILL) >= 0) WaitForChild();
+        if (kill(-m_iPid, SIGKILL) >= 0)
+            WaitForChild();
         return true;
     }
 
@@ -542,13 +593,13 @@ bool CLibSU::TestSU(const char *password)
     
     if (ret == SUCOM_NULLPASS)
     {
-        if (kill(m_iPid, SIGKILL) >= 0) WaitForChild();
+        if (kill(-m_iPid, SIGKILL) >= 0) WaitForChild();
         return false;
     }
 
     if (ret == SUCOM_NOTAUTHORIZED)
     {
-        kill(m_iPid, SIGKILL);
+        kill(-m_iPid, SIGKILL);
         WaitForChild();
         return false;
     }
@@ -560,12 +611,24 @@ bool CLibSU::TestSU(const char *password)
 bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 {
     std::list<std::string> args;
+    
+    // First a magic string is printed to indicate that su is ready to execute commands.
+    // Then the command is executed in the background and kills the script when it's done.
+    // On the foreground read is called, as soon as read ends it will kill anything in the process group.
+    // The read call is only killed incase the other end of the pipe is closed (ie on program exit).
+    char *cmdfmt = FormatText("printf \"%s\"; sh -c \'"
+            "(%s ; kill $PPID) &"
+            "read\n"
+            "kill 0 -s SIGTERM\'",
+            TermStr, m_szCommand.c_str());
 
     args.push_back(m_szUser);
     args.push_back("-c");
-    args.push_back(std::string("printf \"") + TermStr + "\"; sh -c \"" + m_szCommand + "\""); // Insert our magic terminate indicator to command
+    args.push_back(cmdfmt);
     args.push_back("-");
 
+    free(cmdfmt);
+    
     std::string command;
     if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
     else if (FileExists("/bin/su")) command = "/bin/su";
@@ -592,7 +655,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     
     if (ret == SUCOM_NULLPASS)
     {
-        if (kill(m_iPid, SIGKILL) >= 0) WaitForChild();
+        if (kill(-m_iPid, SIGKILL) >= 0) WaitForChild();
         return false;
     }
 
@@ -606,7 +669,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 
     if (ret == SUCOM_NOTAUTHORIZED)
     {
-        kill(m_iPid, SIGKILL);
+        kill(-m_iPid, SIGKILL);
         WaitForChild();
         return false;
     }
