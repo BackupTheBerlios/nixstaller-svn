@@ -86,7 +86,7 @@ CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
     Fl::scheme("plastic");
     
     // Create about dialog
-    m_pAboutWindow = new Fl_Window(400, 200, GetTranslation("About nixstaller"));
+    m_pAboutWindow = new Fl_Window(400, 200, GetTranslation("About"));
     m_pAboutWindow->set_modal();
     m_pAboutWindow->hide();
     m_pAboutWindow->begin();
@@ -204,7 +204,7 @@ void CFLTKBase::UpdateLanguage()
     m_pAboutButton->label(GetTranslation("About"));
     
     // About window
-    m_pAboutWindow->label(GetTranslation("About Nixstaller"));
+    m_pAboutWindow->label(GetTranslation("About"));
     m_pAboutDisp->label(GetTranslation("About"));
     m_pAboutOKButton->label(GetTranslation("OK"));
 }

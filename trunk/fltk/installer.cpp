@@ -715,7 +715,7 @@ void CLuaDirSelector::CreateDirSelector()
     
     m_pDirChooser = new Fl_File_Chooser(m_szValue.c_str(), "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                        GetTranslation("Select directory"));
+                                        GetTranslation("Select a directory"));
     m_pDirChooser->preview(false);
     m_pDirChooser->previewButton->hide();
     m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
@@ -1148,7 +1148,7 @@ void CLicenseScreen::UpdateLang()
             !m_pBuffer->loadfile(m_pOwner->GetLicenseFName()));
     
     m_pDisplay->label(GetTranslation("License agreement"));
-    m_pCheckButton->label(GetTranslation("I Agree to this license agreement"));
+    m_pCheckButton->label(GetTranslation("I agree to this license agreement"));
 }
 
 void CLicenseScreen::Activate()

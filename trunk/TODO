@@ -9,6 +9,7 @@ OVERALL
 - Add new error detection in Lua scripts for dir Iter?
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
+- Popup dialog when install starts? (If yes add translations)
 
 MAIN
 
@@ -17,10 +18,12 @@ LIBSU
 
 NCURSES FRONTEND
 - Update headers for linux ncurses
+- Check file selector button
 
 FLTK FRONTEND
 - Compile FLTK with exception support for netbsd
-                
+- Check file selector button
+
 DOCS
 - Max config var description length
 - Update examples and screenshots

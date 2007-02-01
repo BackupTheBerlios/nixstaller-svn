@@ -383,9 +383,6 @@ CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
 {
     const int x=2, y=1, w=width()-4, h=m_pCancelButton->rely()-y-1;
     
-    if (title && strncmp(title, "<C><notg>", 9))
-        title = CreateText("<C><notg>%s", title);
-    
     CCFGScreen *screen = AddChild(new CCFGScreen(this, h, w, y, x, title));
     screen->Enable(false);
     
@@ -682,7 +679,8 @@ void CLuaCFGMenu::ShowMenuDialog(const std::string &item)
     int width = std::min(50, MaxX());
     int height = std::min(15, MaxY());
     CMenuDialog *dialog = pWidgetManager->AddChild(new CMenuDialog(pWidgetManager, height, width, 0, 0,
-                                                   CreateText(GetTranslation("Please choose a new value for %s"), item.c_str())));
+                                                   CreateText(GetTranslation("Please choose a new value for %s"),
+                                                   GetTranslation(item.c_str()))));
     
     for (std::vector<std::string>::const_iterator it=m_Variabeles[item]->options.begin();
          it!=m_Variabeles[item]->options.end(); it++)
@@ -713,15 +711,13 @@ bool CLuaCFGMenu::HandleEvent(CWidgetHandler *p, int type)
                 switch (m_Variabeles[item]->type)
                 {
                     case TYPE_DIR:
-                        newval = FileDialog(m_Variabeles[item]->val.c_str(), CreateText(GetTranslation("Please select a directory for %s"), item.c_str()));
+                        newval = FileDialog(m_Variabeles[item]->val.c_str(), CreateText(GetTranslation("Please select a directory for %s"), GetTranslation(item.c_str())));
                         break;
                     case TYPE_STRING:
                         newval = InputDialog(CreateText(GetTranslation("Please enter a new value for %s"), item.c_str()), m_Variabeles[item]->val.c_str());
                         break;
                     case TYPE_LIST:
                     case TYPE_BOOL:
-/*                        newval = MenuDialog(CreateText(GetTranslation("Please choose a new value for %s"), item.c_str()), m_Variabeles[item]->options,
-                                            m_Variabeles[item]->val.c_str());*/
                         ShowMenuDialog(item);
                         break;
                 }
@@ -777,8 +773,12 @@ int CLuaCFGMenu::CalcHeight(int w, const char *desc)
 
 void CBaseScreen::SetInfo(const char *text)
 {
-    m_pLabel = AddChild(new CTextLabel(this, height()-1, width(), 1, 0, 'r'));
-    m_pLabel->AddText(text);
+    if (text && *text)
+    {
+        if (!m_pLabel)
+            m_pLabel = AddChild(new CTextLabel(this, height()-1, width(), 1, 0, 'r'));
+        m_pLabel->SetText(CreateText("<C><notg>%s", text));
+    }
 }
 
 void CBaseScreen::Activate(void)
@@ -800,7 +800,7 @@ void CLangScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
     
-    SetInfo(CreateText("<C>%s", "Please select a language"));
+    SetInfo("Please select a language");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pLangMenu = AddChild(new CMenu(this, height()-y, width(), y, 0, 'r'));
@@ -827,7 +827,7 @@ void CLangScreen::Activate()
 
 void CLangScreen::UpdateLanguage()
 {
-    SetInfo(CreateText("<C>%s", GetTranslation("Please select a language")));
+    SetInfo(GetTranslation("Please select a language"));
 }
 
 // -------------------------------------
@@ -852,7 +852,7 @@ void CWelcomeScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
 
-    SetInfo(CreateText("<C>%s", "Welcome"));
+    SetInfo("Welcome");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
@@ -881,7 +881,7 @@ bool CWelcomeScreen::CanActivate()
 
 void CWelcomeScreen::UpdateLanguage()
 {
-    SetInfo(CreateText("<C>%s", GetTranslation("Welcome")));
+    SetInfo(GetTranslation("Welcome"));
 }
 
 // -------------------------------------
@@ -906,7 +906,7 @@ void CLicenseScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
 
-    SetInfo(CreateText("<C>%s", "License agreement"));
+    SetInfo("License agreement");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
@@ -940,7 +940,7 @@ bool CLicenseScreen::CanActivate()
 
 void CLicenseScreen::UpdateLanguage()
 {
-    SetInfo(CreateText("<C>%s", GetTranslation("License agreement")));
+    SetInfo(GetTranslation("License agreement"));
 }
 
 // -------------------------------------
@@ -969,13 +969,13 @@ void CSelectDirScreen::CreateInit()
     CBaseScreen::CreateInit();
 
     const int buttonw = 22;
-    SetInfo(CreateText("<C>%s", "Select destination directory"));
+    SetInfo("Select destination directory");
     
     int y = (height()-3)/2;
     int w = width() - (buttonw + 2);
     m_pFileField = AddChild(new CInputField(this, 1, w, y, 0, 'r', 1024));
     
-    m_pChangeDirButton = AddChild(new CButton(this, 1, buttonw, y, w+2, "Select a directory", 'r'));
+    m_pChangeDirButton = AddChild(new CButton(this, 1, buttonw, y, w+2, "Browse", 'r'));
 }
 
 void CSelectDirScreen::PostInit()
@@ -991,8 +991,8 @@ bool CSelectDirScreen::Next()
 
 void CSelectDirScreen::UpdateLanguage()
 {
-    SetInfo(CreateText("<C>%s", GetTranslation("Select destination directory")));
-    m_pChangeDirButton->SetTitle(GetTranslation("Select a directory"));
+    SetInfo(GetTranslation("Select destination directory"));
+    m_pChangeDirButton->SetTitle(GetTranslation("Browse"));
 }
 
 // -------------------------------------
@@ -1072,7 +1072,7 @@ void CFinishScreen::CreateInit()
 {
     CBaseScreen::CreateInit();
 
-    SetInfo(CreateText("<C>%s", "Please read the following text"));
+    SetInfo("Please read the following text");
     
     int y = m_pLabel->rely() + m_pLabel->height() + 1;
     m_pTextWin = AddChild(new CTextWindow(this, height()-y, width(), y, 0, true, false, 'r'));
@@ -1101,7 +1101,7 @@ bool CFinishScreen::CanActivate()
 
 void CFinishScreen::UpdateLanguage()
 {
-    SetInfo(CreateText("<C>%s", GetTranslation("Please read the following text")));
+    SetInfo(GetTranslation("Please read the following text"));
 }
 
 // -------------------------------------

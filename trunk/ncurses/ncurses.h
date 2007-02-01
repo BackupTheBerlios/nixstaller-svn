@@ -276,7 +276,7 @@ protected:
 
     CBaseScreen(CInstaller *owner, int nlines, int ncols, int begin_y,
                 int begin_x) : CWidgetWindow(owner, nlines, ncols, begin_y, begin_x, 'r'),
-                               m_bPostInit(true), m_pInstaller(owner) { SetBox(false); erase(); };
+                               m_bPostInit(true), m_pInstaller(owner), m_pLabel(NULL) { SetBox(false); erase(); };
                                
     void SetInfo(const char *text);
     
