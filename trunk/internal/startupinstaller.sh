@@ -108,15 +108,18 @@ edelta()
 # $3: Path where directory resides
 getbinlibdir()
 {
-    local BASE=`basename $1`
-    local MAJOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+1) }'`
-    local MINOR=`echo $BASE | awk 'BEGIN { FS="." } ; /.so.[0-9]*.[0-9]/ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+2) }'`
+    BASE=`basename $1`
+    MAJOR=`echo $BASE | awk 'BEGIN { FS="." } /.so./ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+1) }'`
+    MINOR=`echo $BASE | awk 'BEGIN { FS="." } /.so./ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+2) }'`
 
-    if [ ! -z $MINOR ]; then
+    if [ ! -z "$MINOR" ]; then
         echo ${3}/$2.so.$MAJOR.* | sort -nr | awk '{ print $1 }'
     else
         echo "${3}/$BASE"
     fi
+
+    # Remove unwanted globals
+    unset BASE MAJOR MINOR
 }
 
 # Check which archive type to use
@@ -151,7 +154,7 @@ do
         
         echo "Trying libc for $FR: " $LCDIR
         
-        if [ ! -d ${LCDIR} ]; then
+        if [ ! -d "${LCDIR}" ]; then
             continue
         fi
     
@@ -181,7 +184,7 @@ do
                 
                 # Run it
                 chmod +x $FRBIN # deltas en lzma packed bins probably aren't executable yet
-                ./$FRBIN
+                $PWD/$FRBIN
                 exit $?
             fi
         done
