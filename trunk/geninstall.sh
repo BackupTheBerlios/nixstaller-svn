@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 # Use some SH first to bootstrap...
 

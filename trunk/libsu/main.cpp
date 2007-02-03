@@ -121,12 +121,6 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
         return -1;
     }
 
-    if (pipe(m_iPipe) == -1) 
-    {
-        SetError(SU_ERROR_INTERNAL, "pipe(): %s ", strerror(errno));
-        return -1;
-    } 
-
     m_iPid = fork();
            
     if (m_iPid == -1) 
@@ -136,10 +130,9 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     } 
 
     // Parent
-    if (m_iPid) 
+    if (m_iPid)
     {
         close(slave);
-        close(m_iPipe[0]);
         return 0;
     }
 
@@ -150,11 +143,6 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
         return -1;
     }
 
-    // Redirect to stdin
-    dup2(m_iPipe[0], STDIN_FILENO);
-    close(m_iPipe[0]);
-    close(m_iPipe[1]);
-    
     // From now on, terminal output goes through the tty.
 
     char **argp = (char **)malloc((args.size()+2)*sizeof(char *));
@@ -275,7 +263,7 @@ int CLibSU::WaitForChild()
     timespec tsec = { 0, 200000000 };
     nanosleep(&tsec, NULL);
 
-    while (1) 
+    while (true)
     {
         if (m_pThinkFunc)
             (m_pThinkFunc)(m_pCustomThinkData);
@@ -333,6 +321,7 @@ int CLibSU::WaitForChild()
         }
 
         ret = CheckPidExited(m_iPid);
+        
         if (ret == PID_ERROR)
         {
             if (errno == ECHILD) retval = 0;
@@ -355,7 +344,6 @@ int CLibSU::WaitForChild()
         }
     }
     
-    close(m_iPipe[1]); // Important: kills read command in shell script executed by su
     close(m_iPTYFD);
     m_iPTYFD = 0;
     
@@ -613,14 +601,20 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     std::list<std::string> args;
     
     // First a magic string is printed to indicate that su is ready to execute commands.
-    // Then the command is executed in the background and kills the script when it's done.
+    // Then the command is executed in the background, the exit status is stored to a temp file
+    // and finally a signal to the main script is send indicating that it's done.
     // On the foreground read is called, as soon as read ends it will kill anything in the process group.
-    // The read call is only killed incase the other end of the pipe is closed (ie on program exit).
+    // The read call stops on input or EOF. In this case we are interested in EOF; as soon the main program exits,
+    // stdin is closed and therefore read exits aswell. This is merely a trap for unexpected ending of the program.
     char *cmdfmt = FormatText("printf \"%s\"; sh -c \'"
-            "(%s ; kill $PPID) &"
-            "read\n"
-            "kill 0 -s SIGTERM\'",
-            TermStr, m_szCommand.c_str());
+            "EXITFILE=`mktemp tmp.XXXXXX`\n"
+            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET\" USR1\n"
+            "trap \"rm $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS\n"
+            "(%s ; echo $? > $EXITFILE ; kill -USR1 $$) &\n"
+            "read dummy\n"
+            "kill -TERM 0\n"
+            "\'",
+        TermStr, m_szCommand.c_str());
 
     args.push_back(m_szUser);
     args.push_back("-c");
@@ -674,11 +668,14 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
         return false;
     }
 
-    if (WaitForChild() == 127)
+    int stat = WaitForChild();
+    if (stat != 0)
     {
         SetError(SU_ERROR_EXECUTE, "Couldn't execute \'%s\'", m_szCommand.c_str());
         return false;
     }
+    else
+        log("Child exited with status %d\n", stat);
     
     return true;
 }

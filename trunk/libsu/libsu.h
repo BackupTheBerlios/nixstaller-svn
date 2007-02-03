@@ -72,7 +72,7 @@ private:
     enum EPidStatus { PID_ERROR=-1, PID_NOTEXITED=-2, PID_KILLED=-3 } ;
     enum ESuComErrors { SUCOM_ERROR=-1, SUCOM_OK=0, SUCOM_NULLPASS=1, SUCOM_NOTAUTHORIZED=2 } ;
 
-    int m_iPTYFD, m_iPid, m_iPipe[2];
+    int m_iPTYFD, m_iPid;
     bool m_bTerminal;
     std::string m_szPTYName, m_szTTYName, m_szInBuf;
     std::string m_szCommand, m_szUser, m_szPath;
