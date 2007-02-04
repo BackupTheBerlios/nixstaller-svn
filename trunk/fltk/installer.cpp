@@ -1134,7 +1134,7 @@ Fl_Group *CLicenseScreen::Create(void)
     m_pDisplay->buffer(m_pBuffer);
     
     y += h + 20;
-    const char *txt = "I Agree to this license agreement";
+    const char *txt = "I agree to this license agreement";
     m_pCheckButton = new Fl_Check_Button(CenterX(50, txt, false), y, 50, 25, txt);
     m_pCheckButton->callback(LicenseCheckCB, this);
     

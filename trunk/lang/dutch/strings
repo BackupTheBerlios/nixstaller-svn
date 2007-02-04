@@ -1,42 +1,4 @@
 #-----------------------------------------------
-# Window titles
-#-----------------------------------------------
-
-Welcome
-Welkom
-
-License agreement
-Licentie overeenkomst
-
-Select destination directory
-Selecteer bestemmings directory
-
-Configure parameters
-Parameters instellen
-
-Select a directory
-Selecteer een directory
-
-Please enter new value
-Geef een nieuwe waarde
-
-Please choose new value
-Selecteer een nieuwe waarde
-
-Install output
-Installatie uitvoer
-
-Please read the following text
-Lees de volgende tekst
-
-Enter name of new directory
-Type de naam van de nieuwe directory
-
-Password dialog
-Wachtwoord venster
-
-
-#-----------------------------------------------
 # Button names
 #-----------------------------------------------
 
@@ -58,119 +20,31 @@ Ja
 No
 Nee
 
-Agree
-Akkoord
-
-Decline
-Niet akkoord
-
-Open directory
-Open directory
+Finish
+Beïndigen
 
 Select directory
 Selecteer directory
 
-Exit
-Sluiten
+Browse
+Blader
 
-Edit parameter
-Verander parameter
+Open directory
+Open directory
 
-Continue
-Doorgaan
-
-Finish
-Beïndigen
-
-About
-Over
+Choose another directory
+Kies andere directory
 
 Continue as root
 Hervat als root
-
-Choose another directory
-Kies een andere directory
 
 Close
 Sluit
 
 
 #-----------------------------------------------
-# Other
-#-----------------------------------------------
-
-Default
-Standaard
-
-Current
-Huidig
-
-Description
-Beschrijving
-
-Enabled
-Ingeschakeld
-
-Disabled
-Uitgeschakeld
-
-Enable
-Inschakelen
-
-Disable
-Uitschakelen
-
-Status
-Status
-
-Extracting files
-Bestanden uitpakken
-
-Progress
-Vooruitgang
-
-I Agree to this license agreement
-Ik ga akkoord met deze licentie overeenkomst
-
-Parameters
-Parameters
-
-Value
-Waarde
-
-Change
-Verander
-
-Password
-Wachtwoord
-
-
-#-----------------------------------------------
 # Messages
 #-----------------------------------------------
-
-[
-This will install %s to the following directory:
-%s
-Continue?
-]
-[
-%s zal in de volgende directory worden geïnstalleerd:
-%s
-Doorgaan?
-]
-
-[
-This will install %s
-Continue?
-]
-[
-%s zal nu worden geïnstalleerd
-Doorgaan?
-]
-
-Installation of %s complete!
-Installatie van %s gereed!
 
 [
 Install commands are still running
@@ -207,16 +81,20 @@ Please retype
 ]
 [
 Onjuist wachtwoord gegeven voor root gebruiker
-Type het opnieuw in
+Type het opnieuw
 ]
 
+# %s is replaced by appname
+Installation of %s complete!
+Installatie van %s gereed!
+
 [
-Directory does not exist
-Do you want to create it?
+You don't have read permissions for this directory
+Please choose another directory or rerun this program as a user who has read permissions.
 ]
 [
-Directory bestaat niet
-Wilt u het aanmaken?
+U heeft geen toegang om deze directory te lezen
+Kies een andere directory of start dit programma opnieuw met een gebruiker die wel toegang heeft.
 ]
 
 [
@@ -239,50 +117,131 @@ Deze installatie heeft root(systeembeheerder) rechten nodig om door te kunnen ga
 Type het wachtwoord van de root gebruiker
 ]
 
+# %s is replaced by directory name
+Directory %s does not exist, do you want to create it?
+Directory %s bestaat niet, wilt u deze aanmaken?
+
 
 #-----------------------------------------------
-# Button bar (ncurses only)
+# Window titles
 #-----------------------------------------------
 
-TAB
-TAB
+# %s is replaced by parameter name from configmenu
+Please choose a new value for %s
+Kies een nieuwe waarde voor %s
 
-ENTER
-ENTER
+# %s is replaced by parameter name from configmenu
+Please select a directory for %s
+Selecteer een directory for %s
 
-ARROWS
-PIJLEN
+# %s is replaced by parameter name from configmenu
+Please enter a new value for %s
+Typ een nieuwe waarde voor %s
 
-ESC
-ESC
+Please select a language
+Kies een taal
 
-Next button
-Volgende knop
+Welcome
+Welkom
 
-Activate button
-Activeer knop
+Do you accept and understand the terms of the license agreement?
+Accepteert en begrijpt u de licentie overeenkomst? 
 
-Scroll text
-Beweeg tekst
+License agreement
+Licentie overeenkomst
 
-Exit program
-Beïndig programma
+Select destination directory
+Selecteer bestemmings directory
 
-Navigate menu
-Navigeer menu
+Please read the following text
+Lees de volgende tekst
 
-Scroll install output
-Bekijk installatie uitvoer
+Warning
+Waarschuwing
 
-Create directory
-Maak directory
+Enter name of new directory
+Type de naam van de nieuwe directory
+
+About
+Over
+
+Select a directory
+Selecteer een directory
+
+Password dialog
+Wachtwoord venster
+
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Progress
+Vooruitgang
+
+Language
+Taal
+
+I agree to this license agreement
+Ik ga akkoord met deze licentie overeenkomst
+
+Status
+Status
+
+Extracting files
+Bestanden uitpakken
+
+Enable
+Inschakelen
+
+Disable
+Uitschakelen
+
 
 #-----------------------------------------------
 # Error messages
 #-----------------------------------------------
 
-Error: %s
-Fout: %s
+Could not create directory
+Kon directory niet maken
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+Deze installer zal de bestanden installeren naar de volgende directory:
+%s
+U heeft echter geen lees rechten van deze directory
+Herstart de installer met een gebruiker die dit wel heeft
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Kon directory niet openen %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Kon directory niet lezen %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Kon huidige directory niet lezen: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Lua fout ontdekt: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Kon opdracht niet uitvoeren: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Kon directory niet maken: %s
 
 [
 Could not use su to gain root access
@@ -292,77 +251,6 @@ Make sure you can use su(adding the current user to the wheel group may help)
 Kon su niet gebruiken om root rechten te krijgen
 Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen)
 ]
-
-Could not create directory
-Kon directory niet maken
-
-Could not change to directory
-Kon niet naar de directory gaan
-
-Could not read current directory
-Kon huidige directory niet lezen
-
-Could not open directory '%s'
-Kon directory '%s' niet openen
-
-Could not read directory '%s'
-Kon directory '%s' niet lezen
-
-Could not read directory
-Kon directory niet lezen
-
-Could not init ncurses
-Kon ncurses niet initializeren
-
-Could not init CDK
-Kon CDK niet initializeren
-
-Could not load language file for %s
-Kon vertalings bestand niet laden voor %s
-
-Error during extracting files
-Fout tijdens het uitpakken van bestanden
-
-Failed to execute install command
-Kon installatie commando niet uitvoeren
-
-Could not execute installation commands (could not open pipe)
-Kon installatie opdrachten niet uitvoeren (kon geen pipe openen)
-
-
-#-----------------------------------------------
-# Error messages for CDK widget creation
-#-----------------------------------------------
-
-Can't create text viewer
-Kan geen tekst bekijker maken
-
-Could not create text label
-Kon geen tekst balk maken
-
-Could not create button box
-Kon geen button box maken
-
-Could not create scroll window
-Kon geen scroll venster maken
-
-Could not create alpha list
-Kon geen alpha list maken
-
-Could not create dialog window
-Kon geen dialoog venster maken
-
-Could not create window
-Kon geen venster maken
-
-Could not create input entry
-Kon geen invoer veld maken
-
-Could not create histogram
-Kon geen histogram maken
-
-Could not create button bar
-Kon de knoppen balk niet maken
 
 
 #-----------------------------------------------
@@ -395,6 +283,45 @@ Filter:
 
 Create new directory
 Maak een nieuwe directory
+
+
+#-----------------------------------------------
+# Button bar from ncurses frontend
+#-----------------------------------------------
+
+Next field
+Volgend veld
+
+TAB
+TAB
+
+Exit
+Sluiten
+
+ESC
+ESC
+
+F2
+F2
+
+F3
+F3
+
+Done
+Klaar
+
+ENTER
+ENTER
+
+Scroll
+Beweeg
+
+ARROWS
+PIJLEN
+
+Activate button
+Activeer knop
+
 
 #-----------------------------------------------
 # Put your own translations here

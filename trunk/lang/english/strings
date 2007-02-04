@@ -168,9 +168,6 @@ About
 Select a directory
 Select a directory
 
-Select destination directory
-Select destination directory
-
 Password dialog
 Password dialog
 
@@ -194,6 +191,12 @@ Status
 Extracting files
 Extracting files
 
+Enable
+Enable
+
+Disable
+Disable
+
 
 #-----------------------------------------------
 # Error messages
@@ -201,6 +204,53 @@ Extracting files
 
 Could not create directory
 Could not create directory
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Could not open directory %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Could not read directory %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Could not read current directory: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Lua error detected: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Could not execute command: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Could not create directory: %s
+
+[
+Could not use su to gain root access
+Make sure you can use su(adding the current user to the wheel group may help)
+]
+[
+Could not use su to gain root access
+Make sure you can use su(adding the current user to the wheel group may help)
+]
 
 
 #-----------------------------------------------

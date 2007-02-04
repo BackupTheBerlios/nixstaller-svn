@@ -116,7 +116,7 @@ void CBaseInstall::ExtractFiles()
         else if (m_InstallInfo.archive_type == "lzma")
         {
             command = "(" + m_szBinDir + "/../lzma-decode " + std::string(m_szCurArchFName) +
-                    " arch.tar && tar xvf arch.tar && rm arch.tar)";
+                    " arch.tar 2>&1 >/dev/null && tar xvf arch.tar && rm arch.tar)";
         }
         
         debugline("Extr cmd: %s", command.c_str());

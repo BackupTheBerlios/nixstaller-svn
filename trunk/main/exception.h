@@ -226,7 +226,7 @@ class CExUName: public CExErrno
 {
 public:
     CExUName(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("uname returned a error: %s", Error()); };
+    virtual const char *what(void) throw() { return FormatText("uname returned an error: %s", Error()); };
 };
 
 class CExMKDir: public CExErrno, public CExIO

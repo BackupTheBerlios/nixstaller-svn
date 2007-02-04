@@ -78,9 +78,9 @@ int main(int argc, char **argv)
     catch(Exceptions::CException &e)
     {
         if (runscript)
-            fprintf(stderr, e.what()); // No specific way to complain, just use stderr
+            fprintf(stderr, GetTranslation(e.what())); // No specific way to complain, just use stderr
         else
-            ReportError(e.what());
+            ReportError(GetTranslation(e.what()));
     }
     
     if (!runscript)
