@@ -1,15 +1,12 @@
 OVERALL
 - Modify Makeself?
-- Add new strings to translation files
 - Test/clean/check new edelta code
 - Update lib-notes file for each OS/ARCH
 - Replace vec [] access with at() ?
 - Test installer scripts
-- Comment the '%s' in strings files.
-- Add new error detection in Lua scripts for dir Iter?
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
-- Popup dialog when install starts? (If yes add translations)
+- Popup dialog when install starts? (If yes add norwegian translations)
 
 MAIN
 
@@ -18,11 +15,11 @@ LIBSU
 
 NCURSES FRONTEND
 - Update headers for linux ncurses
-- Check file selector button
+- Check file selector button(Browse vs Select directory)
 
 FLTK FRONTEND
 - Compile FLTK with exception support for netbsd
-- Check file selector button
+- Check file selector button(Browse vs Select directory)
 
 DOCS
 - Max config var description length

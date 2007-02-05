@@ -121,6 +121,16 @@ Type het wachtwoord van de root gebruiker
 Directory %s does not exist, do you want to create it?
 Directory %s bestaat niet, wilt u deze aanmaken?
 
+# %s is replaced by appname
+[
+This will install %s
+Continue?
+]
+[
+%s zal nu worden geïnstalleerd
+Doorgaan?
+]
+
 
 #-----------------------------------------------
 # Window titles

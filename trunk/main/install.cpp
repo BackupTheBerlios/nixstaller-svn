@@ -272,19 +272,9 @@ void CBaseInstall::UpdateStatusText(const char *msg)
 
 void CBaseInstall::Install(void)
 {
-/*    if ((m_InstallInfo.dest_dir_type == "select") || (m_InstallInfo.dest_dir_type == "default"))
-    {
-        if (!ChoiceBox(CreateText(GetTranslation("This will install %s to the following directory:\n%s\nContinue?"),
-             m_InstallInfo.program_name.c_str(), MakeCString(m_szDestDir)), GetTranslation("Exit program"),
-             GetTranslation("Continue"), NULL))
-            EndProg();
-    }
-    else
-    {
-        if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), m_InstallInfo.program_name.c_str()),
-             GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
-            EndProg();
-    }*/
+    if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), m_InstallInfo.program_name.c_str()),
+         GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
+        throw Exceptions::CExUser();
     
     m_bInstalling = true;
     

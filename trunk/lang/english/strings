@@ -121,6 +121,16 @@ Please enter the password of the root user
 Directory %s does not exist, do you want to create it?
 Directory %s does not exist, do you want to create it?
 
+# %s is replaced by appname
+[
+This will install %s
+Continue?
+]
+[
+This will install %s
+Continue?
+]
+
 
 #-----------------------------------------------
 # Window titles

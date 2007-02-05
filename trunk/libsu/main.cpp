@@ -610,7 +610,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
             "EXITFILE=`mktemp tmp.XXXXXX`\n"
             "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET\" USR1\n"
             "trap \"rm $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS\n"
-            "(%s ; echo $? > $EXITFILE ; kill -USR1 $$) &\n"
+            "(%s ; echo $? > $EXITFILE ; kill -USR1 $$ ; sleep 1) &\n"
             "read dummy\n"
             "kill -TERM 0\n"
             "\'",
