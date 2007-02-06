@@ -10,8 +10,8 @@ version: 1.2.8
 
 FLTK:
 version: 1.1.7
-CXXFLAGS="-fexceptions" ./configure
-Note: FLTK is made without exception support, so enabled it that way
+configure command: CXXFLAGS="-fexceptions" ./configure
+Note: FLTK is by default made without exception support, so enabled it that with env var
 
 BZIP2:
 version: 1.0.3
@@ -19,14 +19,9 @@ version: 1.0.3
 ZLIB:
 version: 1.2.3
 
-libarchive
-version: 1.02.034
-
-CDK:
-version: 5.0-20050424
-
 NCURSES:
-version: 5.4
+version: 5.6
+configure command: ./configure --without-gpm
 
 X11 (libX11, libXext)
 version: 6.8.2
