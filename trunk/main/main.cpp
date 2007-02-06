@@ -366,6 +366,7 @@ void CMain::InitLua()
     
     // Set some default values for config variabeles
     m_LuaVM.SetArrayStr("english", "languages", 1);
+    m_LuaVM.SetArrayStr("dutch", "languages", 2);
     m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1);
     m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1);
     m_LuaVM.SetArrayStr("fltk", "frontends", 1);

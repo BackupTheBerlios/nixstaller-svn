@@ -9,6 +9,7 @@ OVERALL
 - Popup dialog when install starts? (If yes add norwegian translations)
 
 MAIN
+- Case of lua vars
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
@@ -55,6 +56,7 @@ OVERALL
 
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+- Move cfg screen array handling to libmain
 
 
 LIBSU

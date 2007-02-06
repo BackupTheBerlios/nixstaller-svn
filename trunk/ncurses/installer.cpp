@@ -273,7 +273,7 @@ void CInstaller::Init(int argc, char **argv)
 
     UpdateLanguage();
 
-    unsigned count = m_LuaVM.OpenArray("ScreenList");
+    unsigned count = m_LuaVM.OpenArray("screenlist");
     if (!count)
     {
         // Default install screens
@@ -331,7 +331,7 @@ void CInstaller::Init(int argc, char **argv)
                 }
             }
             else
-                throw Exceptions::CExLua("Wrong type found in ScreenList variabale");
+                throw Exceptions::CExLua("Wrong type found in screenlist variabale");
         }
         m_LuaVM.CloseArray();
     }
