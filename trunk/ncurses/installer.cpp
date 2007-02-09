@@ -536,6 +536,16 @@ void CLuaCheckbox::UpdateLanguage()
     }
 }
 
+bool CLuaCheckbox::Enabled(const char *s)
+{
+    std::vector<std::string>::const_iterator it = std::find(m_Options.begin(), m_Options.end(), s);
+    
+    if (it != m_Options.end())
+        return Enabled(std::distance(m_Options.begin(), it) + 1);
+    
+    return false;
+}
+
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (desc && *desc)

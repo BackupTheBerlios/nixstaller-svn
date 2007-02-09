@@ -834,8 +834,17 @@ int CBaseLuaCheckbox::LuaGet(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseLuaCheckbox *box = pInstaller->m_LuaVM.CheckClass<CBaseLuaCheckbox *>("checkbox", 1);
-    int n = luaL_checkint(L, 2);
-    lua_pushboolean(L, box->Enabled(n));
+    
+    if (lua_isstring(L, 2))
+    {
+        if (lua_isnumber(L, 2))
+            lua_pushboolean(L, box->Enabled(lua_tointeger(L, 2)));
+        else
+            lua_pushboolean(L, box->Enabled(lua_tostring(L, 2)));
+    }
+    else
+        luaL_typerror(L, 2, "Number or String");
+    
     return 1;
 }
 

@@ -562,13 +562,14 @@ int CLuaInputField::CalcHeight(int w, const char *desc)
 // Lua checkbox class
 // -------------------------------------
 
-int CLuaCheckbox::m_iButtonHeight = 20;
-int CLuaCheckbox::m_iButtonSpace = 5;
+int CLuaCheckbox::m_iButtonHeight;
+int CLuaCheckbox::m_iButtonSpace = 2;
 int CLuaCheckbox::m_iBoxSpace = 10;
 
 CLuaCheckbox::CLuaCheckbox(int x, int y, int w, int h, const char *desc,
                            const std::vector<std::string> &l) : CBaseLuaWidget(x, y, w, h, desc), m_Options(l)
 {
+    m_iButtonHeight = fl_height();
 }
 
 Fl_Group *CLuaCheckbox::Create()
@@ -583,8 +584,7 @@ Fl_Group *CLuaCheckbox::Create()
 
     w = std::max(w, basew + static_cast<int>(DescWidth()));
     
-    group->box(FL_ENGRAVED_BOX);
-    group->size(w, group->h());
+    group->size(std::min(w, group->w()), group->h());
     
     x += 5;
     y += 5;
@@ -610,10 +610,20 @@ void CLuaCheckbox::UpdateLanguage()
         m_Buttons[n]->label(MakeTranslation(m_Options[n]));
 }
 
+bool CLuaCheckbox::Enabled(const char *s)
+{
+    std::vector<std::string>::const_iterator it = std::find(m_Options.begin(), m_Options.end(), s);
+    
+    if (it != m_Options.end())
+        return Enabled(std::distance(m_Options.begin(), it) + 1);
+    
+    return false;
+}
+
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (!l.empty())
-        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc) + m_iBoxSpace;
+        return (fl_height() * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc) + m_iBoxSpace;
     else
         return TitleHeight(w, desc);
 }
@@ -644,7 +654,7 @@ Fl_Group *CLuaRadioButton::Create()
     w = std::max(w, basew + static_cast<int>(DescWidth()));
     
     group->box(FL_ENGRAVED_BOX);
-    group->size(w, group->h());
+    group->size(std::min(w, group->w()), group->h());
     
     x += 5;
     y += 5;
@@ -1323,7 +1333,7 @@ CBaseLuaWidget *CCFGScreen::AddLuaWidget(CBaseLuaWidget *widget, int h)
             m_pGroup->add(group);
             m_LuaWidgets.push_back(widget);
             
-            m_iStartY += (h + 10);
+            m_iStartY += (h + 15);
             return widget;
         }
     }
@@ -1347,7 +1357,7 @@ Fl_Group *CCFGScreen::Create()
     m_pBoxTitle = new Fl_Box(CenterX(w), m_pGroup->y()+20, w, h, text);
     
     m_iStartX = m_pGroup->x() + 20;
-    m_iStartY = m_pBoxTitle->y() + h;
+    m_iStartY = m_pBoxTitle->y() + h + 20;
     
     m_pSCRCounter = new Fl_Box(m_pGroup->x(), m_pGroup->x(), m_pGroup->w(), fl_height());
     m_pSCRCounter->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);

@@ -13,14 +13,17 @@ MAIN
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
+- tmp files not always cleared?
 
 NCURSES FRONTEND
 - Update headers for linux ncurses
 - Check file selector button(Browse vs Select directory)
+- Sync checkbox changes with radiobutton lua class
 
 FLTK FRONTEND
 - Compile FLTK with exception support for netbsd
 - Check file selector button(Browse vs Select directory)
+- Sync checkbox changes with radiobutton lua class
 
 DOCS
 - Max config var description length
