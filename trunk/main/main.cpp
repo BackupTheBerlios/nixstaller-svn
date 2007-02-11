@@ -558,9 +558,9 @@ int CMain::LuaCPFile(lua_State *L)
     std::list<const char *> srcfiles;
     const char *infile;
     int in, out;
-    unsigned args = lua_gettop(L);
+    int args = lua_gettop(L);
      
-    for (unsigned u=1;u<args;u++)
+    for (int u=1;u<args;u++)
     {
         infile = luaL_checkstring(L, u);
         if (infile)

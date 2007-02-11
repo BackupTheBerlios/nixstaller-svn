@@ -179,7 +179,7 @@ protected:
     
     CBaseLuaWidget(int x, int y, int w, int h, const char *desc);
     // Delete manually, so that this class can be deleted safely
-    virtual ~CBaseLuaWidget(void) { Fl::delete_widget(m_pGroup); m_pGroup = NULL; };
+    virtual ~CBaseLuaWidget(void) { if (m_pGroup) Fl::delete_widget(m_pGroup); m_pGroup = NULL; };
 
     int DescHeight(void) { return (m_pBox) ? m_pBox->h() : 0; };
     int DescWidth(void) { return static_cast<int>(fl_width(m_szDescription.c_str())); };
@@ -212,7 +212,11 @@ class CLuaCheckbox: public CBaseLuaCheckbox, public CBaseLuaWidget
 {
     const std::vector<std::string> m_Options;
     std::vector<Fl_Check_Button *> m_Buttons;
-    static int m_iButtonHeight, m_iButtonSpace, m_iBoxSpace;
+    
+    static int ButtonOffset(void) { return 15; };
+    static int ButtonHeight(void) { return fl_height(); };
+    static int ButtonSpace(void) { return 2; };
+    static int BoxSpace(void) { return 10; };
     
 public:
     CLuaCheckbox(int x, int y, int w, int h, const char *desc, const std::vector<std::string> &l);
@@ -230,14 +234,18 @@ class CLuaRadioButton: public CBaseLuaRadioButton, public CBaseLuaWidget
 {
     const std::vector<std::string> m_Options;
     std::vector<Fl_Round_Button *> m_Buttons;
-    static int m_iButtonHeight, m_iButtonSpace, m_iBoxSpace;
+    
+    static int ButtonOffset(void) { return 15; };
+    static int ButtonHeight(void) { return fl_height(); };
+    static int ButtonSpace(void) { return 2; };
+    static int BoxSpace(void) { return 10; };
     
 public:
     CLuaRadioButton(int x, int y, int w, int h, const char *desc, const std::vector<std::string> &l);
 
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
-    virtual int EnabledButton(void);
+    virtual const char *EnabledButton(void);
     virtual void Enable(int n) { m_Buttons.at(n-1)->setonly(); };
 
     static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
@@ -338,6 +346,11 @@ public:
 
 class CBaseScreen
 {
+    std::string m_szTitle;
+    Fl_Box *m_pBoxTitle;
+    
+    void MakeTitle(void);
+    
 protected:
     Fl_Group *m_pGroup;
     CInstaller *m_pOwner;
@@ -351,13 +364,19 @@ protected:
     
     int CenterY(int h) { return ((m_pGroup->y()+m_pGroup->h())-h)/2; };
     
+    void MakeTitle(const char *text) { m_szTitle = text; MakeTitle(); };
+    int GetTitleY(void) { return m_pBoxTitle->y(); };
+    int GetTitleH(void) { return m_pBoxTitle->h(); };
+    
+    virtual void UpdateLang() { };
+    
 public:
-    CBaseScreen(CInstaller *owner) : m_pGroup(NULL), m_pOwner(owner) { };
+    CBaseScreen(CInstaller *owner) : m_pBoxTitle(NULL), m_pGroup(NULL), m_pOwner(owner) { };
     virtual ~CBaseScreen(void) { };
     
     virtual Fl_Group *Create(void) { return (m_pGroup = new Fl_Group(20, 20, (MAIN_WINDOW_W-40), (MAIN_WINDOW_H-60), NULL)); };
     Fl_Group *GetGroup(void) const { return m_pGroup; };
-    virtual void UpdateLang(void) { }; // Called after language is changed
+    void UpdateLanguage(void) { MakeTitle(); UpdateLang(); }; // Called after language is changed
     virtual bool Prev(void) { return true; };
     virtual bool Next(void) { return true; };
     virtual void Activate(void) { };
@@ -366,7 +385,6 @@ public:
 
 class CLangScreen: public CBaseScreen
 {
-    Fl_Box *m_pTitleBox;
     Fl_Choice *m_pChoiceMenu;
     
 public:
@@ -421,7 +439,6 @@ public:
 class CSelectDirScreen: public CBaseScreen
 {
     Fl_File_Chooser *m_pDirChooser;
-    Fl_Box *m_pBox;
     Fl_Button *m_pSelDirButton;
     Fl_File_Input *m_pSelDirInput;
     
@@ -475,7 +492,7 @@ public:
 class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 {
     std::string m_szTitle;
-    Fl_Box *m_pBoxTitle, *m_pSCRCounter;
+    Fl_Box *m_pSCRCounter;
     int m_iStartX, m_iStartY;
     CCFGScreen *m_pNextScreen; 
     std::vector<CBaseLuaWidget *> m_LuaWidgets;
@@ -483,7 +500,6 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     
     friend class CInstaller;
     
-    void SetTitle(void);
     CBaseLuaWidget *AddLuaWidget(CBaseLuaWidget *widget, int h);
     bool WidgetFits(int h) { return ((h + m_iStartY) <= m_pGroup->h()); }
     

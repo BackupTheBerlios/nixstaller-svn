@@ -163,7 +163,7 @@ class CBaseLuaRadioButton
 {
 public:
     virtual ~CBaseLuaRadioButton(void) { };
-    virtual int EnabledButton(void) = 0;
+    virtual const char *EnabledButton(void) = 0;
     virtual void Enable(int n) = 0;
     
     static int LuaGet(lua_State *L);

@@ -1,4 +1,4 @@
 appname = "VIM 7.0"
 archivetype = "gzip"
--- intropic = "intro.png"
+intropic = "vim48x48.png"
 -- frontends = { "ncurses" }

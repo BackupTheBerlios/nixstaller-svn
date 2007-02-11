@@ -852,12 +852,17 @@ int CBaseLuaCheckbox::LuaSet(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseLuaCheckbox *box = pInstaller->m_LuaVM.CheckClass<CBaseLuaCheckbox *>("checkbox", 1);
-    int n = luaL_checkint(L, 2);
+    int args = lua_gettop(L);
     
-    luaL_checktype(L, 3, LUA_TBOOLEAN);
-    bool e = lua_toboolean(L, 3);
+    luaL_checktype(L, args, LUA_TBOOLEAN);
+    bool e = lua_toboolean(L, args);
+
+    for (int i=2; i<args; i++)
+    {
+        int n = luaL_checkint(L, i);
+        box->Enable(n, e);
+    }
     
-    box->Enable(n, e);
     return 0;
 }
 
@@ -869,7 +874,7 @@ int CBaseLuaRadioButton::LuaGet(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     CBaseLuaRadioButton *box = pInstaller->m_LuaVM.CheckClass<CBaseLuaRadioButton *>("radiobutton", 1);
-    lua_pushinteger(L, box->EnabledButton());
+    lua_pushstring(L, box->EnabledButton());
     return 1;
 }
 

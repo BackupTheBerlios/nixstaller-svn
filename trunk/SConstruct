@@ -331,15 +331,15 @@ if not env.GetOption('clean'):
                 try:
                     shutil.copy(lname, lib_dir)
                     print "Copied %s to %s" % (lname, lib_dir)
-                    #conf.env.Append(LIBS='util')
+                    conf.env.Append(LIBS='util')
                 except (IOError, os.error), why:
                     print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
                     Exit(1)
         else:
             print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
             Exit(1)
-    #else:
-        #conf.env.Append(LIBS='util')
+    else:
+        conf.env.Append(LIBS='util')
 
     if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')

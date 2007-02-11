@@ -293,7 +293,7 @@ void CInstaller::UpdateLanguage(void)
     
     // Update all screens
     for(std::list<CBaseScreen *>::iterator p=m_ScreenList.begin();p!=m_ScreenList.end();p++)
-        (*p)->UpdateLang();
+        (*p)->UpdateLanguage();
 }
 
 void CInstaller::WizCancelCB(Fl_Widget *, void *p)
@@ -441,7 +441,7 @@ void CInstaller::Next()
 // Base FLTK Lua Widget class
 // -------------------------------------
 
-CBaseLuaWidget::CBaseLuaWidget(int x, int y, int w, int h, const char *desc) : m_iStartX(x), m_iStartY(y), m_iWidth(w), m_iHeight(h), m_pBox(NULL)
+CBaseLuaWidget::CBaseLuaWidget(int x, int y, int w, int h, const char *desc) : m_iStartX(x), m_iStartY(y), m_iWidth(w), m_iHeight(h), m_pGroup(NULL), m_pBox(NULL)
 {
     if (desc && *desc)
         m_szDescription = desc;
@@ -457,7 +457,7 @@ void CBaseLuaWidget::MakeTitle()
     if (!m_pBox)
     {
         m_pBox = new Fl_Box(m_pGroup->x(), m_pGroup->y(), m_iWidth, TitleHeight(m_iWidth, desc), desc);
-        m_pBox->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_WRAP);
+        m_pBox->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_WRAP);
     }
     else
         m_pBox->label(desc);
@@ -562,20 +562,15 @@ int CLuaInputField::CalcHeight(int w, const char *desc)
 // Lua checkbox class
 // -------------------------------------
 
-int CLuaCheckbox::m_iButtonHeight;
-int CLuaCheckbox::m_iButtonSpace = 2;
-int CLuaCheckbox::m_iBoxSpace = 10;
-
 CLuaCheckbox::CLuaCheckbox(int x, int y, int w, int h, const char *desc,
                            const std::vector<std::string> &l) : CBaseLuaWidget(x, y, w, h, desc), m_Options(l)
 {
-    m_iButtonHeight = fl_height();
 }
 
 Fl_Group *CLuaCheckbox::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int x = group->x(), y = group->y() + DescHeight(), w = 0;
+    int x = group->x() + ButtonOffset(), y = group->y() + DescHeight() + 5, w = 0;
     const int basew = 40;
     
     // Find longest text
@@ -584,18 +579,13 @@ Fl_Group *CLuaCheckbox::Create()
 
     w = std::max(w, basew + static_cast<int>(DescWidth()));
     
-    group->size(std::min(w, group->w()), group->h());
-    
-    x += 5;
-    y += 5;
-
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
     {
-        Fl_Check_Button *button = new Fl_Check_Button(x, y, 60, m_iButtonHeight, MakeTranslation(*it));
+        Fl_Check_Button *button = new Fl_Check_Button(x, y, 60, ButtonHeight(), MakeTranslation(*it));
         button->type(FL_TOGGLE_BUTTON);
         m_Buttons.push_back(button);
         group->add(button);
-        y += (m_iButtonHeight + m_iButtonSpace);
+        y += (ButtonHeight() + ButtonSpace());
     }
     
     return group;
@@ -623,18 +613,14 @@ bool CLuaCheckbox::Enabled(const char *s)
 int CLuaCheckbox::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (!l.empty())
-        return (fl_height() * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc) + m_iBoxSpace;
+        return (ButtonHeight() * l.size()) + (ButtonSpace() * (l.size()-1)) + TitleHeight(w, desc) + BoxSpace();
     else
         return TitleHeight(w, desc);
 }
 
 // -------------------------------------
-// Lua checkbox class
+// Lua radiobutton class
 // -------------------------------------
-
-int CLuaRadioButton::m_iButtonHeight = 20;
-int CLuaRadioButton::m_iButtonSpace = 5;
-int CLuaRadioButton::m_iBoxSpace = 10;
 
 CLuaRadioButton::CLuaRadioButton(int x, int y, int w, int h, const char *desc,
                                  const std::vector<std::string> &l) : CBaseLuaWidget(x, y, w, h, desc), m_Options(l)
@@ -644,7 +630,7 @@ CLuaRadioButton::CLuaRadioButton(int x, int y, int w, int h, const char *desc,
 Fl_Group *CLuaRadioButton::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int x = group->x(), y = group->y() + DescHeight(), w = 0;
+    int x = group->x() + ButtonOffset(), y = group->y() + DescHeight() + 5, w = 0;
     const int basew = 40;
     
     // Find longest text
@@ -653,19 +639,13 @@ Fl_Group *CLuaRadioButton::Create()
 
     w = std::max(w, basew + static_cast<int>(DescWidth()));
     
-    group->box(FL_ENGRAVED_BOX);
-    group->size(std::min(w, group->w()), group->h());
-    
-    x += 5;
-    y += 5;
-    
     for (std::vector<std::string>::const_iterator it=m_Options.begin(); it!=m_Options.end(); it++)
     {
-        Fl_Round_Button *button = new Fl_Round_Button(x, y, w, m_iButtonHeight, MakeTranslation(*it));
+        Fl_Round_Button *button = new Fl_Round_Button(x, y, w, ButtonHeight(), MakeTranslation(*it));
         button->type(FL_RADIO_BUTTON);
         m_Buttons.push_back(button);
         group->add(button);
-        y += (m_iButtonHeight + m_iButtonSpace);
+        y += (ButtonHeight() + ButtonSpace());
     }
     
     if (!m_Buttons.empty())
@@ -683,13 +663,13 @@ void CLuaRadioButton::UpdateLanguage()
         m_Buttons[n]->label(MakeTranslation(m_Options[n]));
 }
 
-int CLuaRadioButton::EnabledButton()
+const char *CLuaRadioButton::EnabledButton()
 {
     TSTLVecSize size = m_Buttons.size();
     for (TSTLVecSize n=0; n<size; n++)
     {
         if (m_Buttons[n]->value())
-            return n;
+            return m_Options.at(n).c_str();
     }
     
     assert(false);
@@ -699,7 +679,7 @@ int CLuaRadioButton::EnabledButton()
 int CLuaRadioButton::CalcHeight(int w, const char *desc, const std::vector<std::string> &l)
 {
     if (!l.empty())
-        return (m_iButtonHeight * l.size()) + (m_iButtonSpace * (l.size()-1)) + TitleHeight(w, desc) + m_iBoxSpace;
+        return (ButtonHeight() * l.size()) + (ButtonSpace() * (l.size()-1)) + TitleHeight(w, desc) + BoxSpace();
     else
         return TitleHeight(w, desc);
 }
@@ -1000,6 +980,24 @@ int CBaseScreen::CenterX2(int w, const char *l1, const char *l2, bool left1, boo
     
     return ret;
 }
+
+void CBaseScreen::MakeTitle()
+{
+    const char *desc = MakeTranslation(m_szTitle);
+    const int lsize = 17;
+    
+    if (!m_pBoxTitle)
+    {
+        int h = (int)((float)TitleHeight(m_pGroup->w(), desc) * ((float)lsize/14.0f)); // 14 is default font size
+        m_pBoxTitle = new Fl_Box(m_pGroup->x(), m_pGroup->y() + 20, m_pGroup->w(), h, desc);
+        m_pBoxTitle->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_WRAP);
+        m_pBoxTitle->labelsize(lsize);
+    }
+    else
+        m_pBoxTitle->label(desc);
+}
+
+
 // -------------------------------------
 // Language selection screen
 // -------------------------------------
@@ -1008,7 +1006,7 @@ Fl_Group *CLangScreen::Create(void)
 {
     CBaseScreen::Create();
 
-    m_pTitleBox = new Fl_Box(CenterX(260), 40, 260, 100, "Please select a language");
+    MakeTitle("Please select a language");
     
     m_pChoiceMenu = new Fl_Choice(CenterX(120, "Language: ", true), CenterY(25), 120, 25, "Language: ");
     m_pChoiceMenu->callback(LangMenuCB, this);
@@ -1046,8 +1044,6 @@ void CLangScreen::Activate()
 
 void CLangScreen::UpdateLang()
 {
-    m_pTitleBox->label(GetTranslation("Please select a language"));
-    
     const char *label = CreateText("%s: ", GetTranslation("Language"));
     m_pChoiceMenu->label(label);
     
@@ -1107,12 +1103,14 @@ Fl_Group *CWelcomeScreen::Create(void)
         m_pImageBox->align(FL_ALIGN_CENTER);
 
         x += m_pImageBox->w() + 20;
-        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, h, "Welcome");
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, h);
     }
     else
     {
-        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20, "Welcome");
+        m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20);
     }
+    
+    MakeTitle("Welcome");
     
     m_pBuffer = new Fl_Text_Buffer;
     m_pDisplay->buffer(m_pBuffer);
@@ -1126,7 +1124,6 @@ void CWelcomeScreen::UpdateLang()
 {
     m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangWelcomeFName()) ||
                   !m_pBuffer->loadfile(m_pOwner->GetWelcomeFName()));
-    m_pDisplay->label(GetTranslation("Welcome"));
 }
 
 // -------------------------------------
@@ -1137,10 +1134,12 @@ Fl_Group *CLicenseScreen::Create(void)
 {
     CBaseScreen::Create();
 
+    MakeTitle("License agreement");
+    
     m_pBuffer = new Fl_Text_Buffer;
     
-    int y = m_pGroup->y()+20, h = m_pGroup->h()-(y-m_pGroup->y())-60;
-    m_pDisplay = new Fl_Text_Display(m_pGroup->x()+20, y, m_pGroup->w()-m_pGroup->x()-20, h, "License agreement");
+    int y = m_pGroup->y()+40, h = m_pGroup->h()-(y-m_pGroup->y())-60;
+    m_pDisplay = new Fl_Text_Display(m_pGroup->x()+20, y, m_pGroup->w()-m_pGroup->x()-20, h);
     m_pDisplay->buffer(m_pBuffer);
     
     y += h + 20;
@@ -1157,7 +1156,6 @@ void CLicenseScreen::UpdateLang()
     m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangLicenseFName()) ||
             !m_pBuffer->loadfile(m_pOwner->GetLicenseFName()));
     
-    m_pDisplay->label(GetTranslation("License agreement"));
     m_pCheckButton->label(GetTranslation("I agree to this license agreement"));
 }
 
@@ -1188,7 +1186,7 @@ Fl_Group *CSelectDirScreen::Create()
 {
     CBaseScreen::Create();
     
-    m_pBox = new Fl_Box(CenterX(260), 40, 260, 100, "Select destination directory");
+    MakeTitle("Select destination directory");
     
     int x = CenterX2(300+20+160, "", "", false, false);
     int y = CenterY(35);
@@ -1210,7 +1208,6 @@ Fl_Group *CSelectDirScreen::Create()
 void CSelectDirScreen::UpdateLang()
 {
     CreateDirSelector(); // Recreate to update languages
-    m_pBox->label(GetTranslation("Select destination directory"));
     m_pSelDirButton->label(GetTranslation("Select a directory"));
 }
 
@@ -1264,7 +1261,7 @@ Fl_Group *CInstallFilesScreen::Create()
 
 void CInstallFilesScreen::UpdateLang()
 {
-    m_pProgress->label(GetTranslation("Progress"));
+    m_pProgress->label(GetTranslation("Install progress"));
     m_pDisplay->label(GetTranslation("Status"));
 }
 
@@ -1290,11 +1287,12 @@ Fl_Group *CFinishScreen::Create(void)
 {
     CBaseScreen::Create();
     
+    MakeTitle("Please read the following text");
+    
     m_pBuffer = new Fl_Text_Buffer;
 
     int x = m_pGroup->x()+20, y = m_pGroup->y()+40;
-    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20,
-                                     "Please read the following text");
+    m_pDisplay = new Fl_Text_Display(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, m_pGroup->h()-(y-m_pGroup->y())-20);
     m_pDisplay->buffer(m_pBuffer);
     
     m_pGroup->end();
@@ -1306,18 +1304,11 @@ void CFinishScreen::UpdateLang()
 {
     m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangFinishFName()) ||
             !m_pBuffer->loadfile(m_pOwner->GetFinishFName()));
-    m_pDisplay->label(GetTranslation("Please read the following text"));
 }
 
 // -------------------------------------
 // Lua config screen
 // -------------------------------------
-
-void CCFGScreen::SetTitle()
-{
-    if (!m_szTitle.empty())
-        m_pBoxTitle->label(GetTranslation(m_szTitle.c_str()));
-}
 
 CBaseLuaWidget *CCFGScreen::AddLuaWidget(CBaseLuaWidget *widget, int h)
 {
@@ -1333,7 +1324,7 @@ CBaseLuaWidget *CCFGScreen::AddLuaWidget(CBaseLuaWidget *widget, int h)
             m_pGroup->add(group);
             m_LuaWidgets.push_back(widget);
             
-            m_iStartY += (h + 15);
+            m_iStartY += (h + 20);
             return widget;
         }
     }
@@ -1350,14 +1341,10 @@ Fl_Group *CCFGScreen::Create()
     
     CBaseScreen::Create();
     
-    const char *text = MakeTranslation(m_szTitle);
-    const int w = 260;
-    const int h = TitleHeight(w, text);
-    
-    m_pBoxTitle = new Fl_Box(CenterX(w), m_pGroup->y()+20, w, h, text);
+    MakeTitle(m_szTitle.c_str());
     
     m_iStartX = m_pGroup->x() + 20;
-    m_iStartY = m_pBoxTitle->y() + h + 20;
+    m_iStartY = GetTitleY() + GetTitleH() + 20;
     
     m_pSCRCounter = new Fl_Box(m_pGroup->x(), m_pGroup->x(), m_pGroup->w(), fl_height());
     m_pSCRCounter->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
@@ -1377,8 +1364,6 @@ void CCFGScreen::UpdateLang()
     TSTLVecSize size = m_LuaWidgets.size();
     for (TSTLVecSize n=0; n<size; n++)
         m_LuaWidgets[n]->UpdateLanguage();
-    
-    SetTitle();
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)
@@ -1390,7 +1375,7 @@ CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *
     {
         delete field;
         if (!m_pNextScreen)
-            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_szTitle.c_str());
     
         return m_pNextScreen->CreateInputField(label, desc, val, max, type);
     }
@@ -1407,7 +1392,7 @@ CBaseLuaCheckbox *CCFGScreen::CreateCheckbox(const char *desc, const std::vector
     {
         delete box;
         if (!m_pNextScreen)
-            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_szTitle.c_str());
     
         return m_pNextScreen->CreateCheckbox(desc, l);
     }
@@ -1425,7 +1410,7 @@ CBaseLuaRadioButton *CCFGScreen::CreateRadioButton(const char *desc, const std::
     {
         delete radio;
         if (!m_pNextScreen)
-            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_szTitle.c_str());
     
         return m_pNextScreen->CreateRadioButton(desc, l);
     }
@@ -1442,7 +1427,7 @@ CBaseLuaDirSelector *CCFGScreen::CreateDirSelector(const char *desc, const char 
     {
         delete dir;
         if (!m_pNextScreen)
-            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_szTitle.c_str());
     
         return m_pNextScreen->CreateDirSelector(desc, val);
     }
@@ -1459,7 +1444,7 @@ CBaseLuaCFGMenu *CCFGScreen::CreateCFGMenu(const char *desc)
     {
         delete menu;
         if (!m_pNextScreen)
-            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_pBoxTitle->label());
+            m_pNextScreen = (CCFGScreen *)m_pOwner->CreateCFGScreen(m_szTitle.c_str());
     
         return m_pNextScreen->CreateCFGMenu(desc);
     }

@@ -7,6 +7,7 @@ OVERALL
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
 - Popup dialog when install starts? (If yes add norwegian translations)
+- Cancel commands not only if exit status is 127
 
 MAIN
 - Case of lua vars
@@ -36,6 +37,7 @@ DOCS
 - Keep install.setstatus short
 - exec cmd can have multilines
 - Nixstaller ver lua var
+- New string get methods for lua radiobutton/checkbox
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
@@ -85,4 +87,7 @@ that will be called instead of virtual function, this function should call the v
 - Split code in more files (SConstruct aswell?)
 - Use C++ style casts(static_cast)
 - More usage of const?
+- Move m_Options from lua checkbox/radiobutton to base class
+- Move global static ints for widget spacing etc to static functions
+
         

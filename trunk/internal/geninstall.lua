@@ -372,7 +372,7 @@ function PrepareArchive()
     
     -- Intro picture
     if intropic ~= nil then
-        ret, msg = os.copy(string.format("%s/%s" , curdir, intropic), string.format("%s/tmp/", confdir))
+        ret, msg = os.copy(string.format("%s/%s" , confdir, intropic), string.format("%s/tmp/", confdir))
         if ret == nil then
             print(string.format("Warning could not copy intro picture: %s", msg))
         end

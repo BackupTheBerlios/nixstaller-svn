@@ -212,7 +212,7 @@ public:
                     const std::vector<std::string> &l);
 
     virtual void UpdateLanguage(void);
-    virtual int EnabledButton() { return m_pRadioButton->EnabledButton(); };
+    virtual const char *EnabledButton() { return m_Options.at(m_pRadioButton->EnabledButton() - 1).c_str(); };
     virtual void Enable(int n) { m_pRadioButton->EnableButton(n); };
 
     static int CalcHeight(int w, const char *desc, const std::vector<std::string> &l);
