@@ -419,7 +419,7 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
 
     
     void AddLuaWidget(CBaseLuaWidget *widget, int h);
-    bool WidgetFits(int h) const { return ((h + m_iStartY) <= height()); };
+    bool WidgetFits(int h) const { return (!m_pNextScreen && (h + m_iStartY) <= height()); };
     
     friend class CInstaller;
     

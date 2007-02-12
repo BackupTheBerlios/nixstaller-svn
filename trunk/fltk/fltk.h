@@ -501,7 +501,7 @@ class CCFGScreen: public CBaseScreen, public CBaseCFGScreen
     friend class CInstaller;
     
     CBaseLuaWidget *AddLuaWidget(CBaseLuaWidget *widget, int h);
-    bool WidgetFits(int h) { return ((h + m_iStartY) <= m_pGroup->h()); }
+    bool WidgetFits(int h) { return (!m_pNextScreen && (h + m_iStartY) <= m_pGroup->h()); }
     
 public:
     CCFGScreen(CInstaller *owner, const char *title) : CBaseScreen(owner), m_szTitle(title), m_pSCRCounter(NULL),

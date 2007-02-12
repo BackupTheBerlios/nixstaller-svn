@@ -2,7 +2,6 @@ OVERALL
 - Modify Makeself?
 - Test/clean/check new edelta code
 - Update lib-notes file for each OS/ARCH
-- Replace vec [] access with at() ?
 - Test installer scripts
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
@@ -17,14 +16,11 @@ LIBSU
 - tmp files not always cleared?
 
 NCURSES FRONTEND
-- Update headers for linux ncurses
 - Check file selector button(Browse vs Select directory)
-- Sync checkbox changes with radiobutton lua class
 
 FLTK FRONTEND
 - Compile FLTK with exception support for netbsd
 - Check file selector button(Browse vs Select directory)
-- Sync checkbox changes with radiobutton lua class
 
 DOCS
 - Max config var description length
@@ -38,6 +34,7 @@ DOCS
 - exec cmd can have multilines
 - Nixstaller ver lua var
 - New string get methods for lua radiobutton/checkbox
+- FAQ entry for GNU and packages
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
@@ -57,7 +54,8 @@ OVERALL
 - Use deltas <--> patches for different frontends?
 - Remove double GetTranslation calls
 - Better util.a configure testing?
-
+- Replace vec [] access with at() ?
+        
 
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
@@ -79,6 +77,7 @@ REGISTER
 NCURSES
 - Automaticly size messageboxes
 - Check chtype
+- Clean CFormattedText mess
         
 DESIGN
 - Reorganize var and type names? (type prefixes etc)

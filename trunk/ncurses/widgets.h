@@ -520,10 +520,10 @@ public:
 
     void Add(const char *text) { m_BoxList.push_back(SEntry(text)); };
     void Add(const std::string &text) { m_BoxList.push_back(SEntry(text)); };
-    void EnableBox(TSTLVecSize n) { m_BoxList.at(n).enabled = true; };
-    void DisableBox(TSTLVecSize n) { m_BoxList.at(n).enabled = false; };
+    void EnableBox(TSTLVecSize n) { m_BoxList.at(n-1).enabled = true; };
+    void DisableBox(TSTLVecSize n) { m_BoxList.at(n-1).enabled = false; };
     bool IsEnabled(TSTLVecSize n) { return (m_BoxList.at(n-1).enabled); };
-    void SetText(TSTLVecSize n, const std::string &text) { m_BoxList.at(n).name = text; };
+    void SetText(TSTLVecSize n, const std::string &text) { m_BoxList.at(n-1).name = text; };
 };
 
 class CRadioButton: public CWidgetWindow
@@ -547,7 +547,7 @@ public:
     void Add(const std::string &text) { m_ButtonList.push_back(text); };
     void EnableButton(TSTLVecSize n) { m_CheckedButton = n; };
     TSTLVecSize EnabledButton(void) { return m_CheckedButton; };
-    void SetText(TSTLVecSize n, const std::string &text) { m_ButtonList.at(n) = text; };
+    void SetText(TSTLVecSize n, const std::string &text) { m_ButtonList.at(n-1) = text; };
 };
 
 class CButtonBar: public CWidgetWindow

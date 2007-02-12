@@ -532,7 +532,7 @@ void CLuaCheckbox::UpdateLanguage()
     {
         TSTLVecSize size = m_Options.size(), n;
         for (n=0; n<size; n++)
-            m_pCheckbox->SetText(n, GetTranslation(m_Options[n]));
+            m_pCheckbox->SetText(n+1, GetTranslation(m_Options[n]));
     }
 }
 
@@ -581,7 +581,7 @@ void CLuaRadioButton::UpdateLanguage()
     {
         TSTLVecSize size = m_Options.size(), n;
         for (n=0; n<size; n++)
-            m_pRadioButton->SetText(n, GetTranslation(m_Options[n]));
+            m_pRadioButton->SetText(n+1, GetTranslation(m_Options[n]));
     }
 }
 
@@ -1170,6 +1170,7 @@ void CCFGScreen::Activate()
         if (!m_pSCRCounter)
             m_pSCRCounter = AddChild(new CTextLabel(this, 1, 7, 0, maxx()-7, 'r'));
         m_pSCRCounter->SetText(CreateText("(%d/%d)", m_iLinkedScrNr, m_iLinkedScrMax));
+        m_pSCRCounter->refresh();
 /*        m_pLabel->SetText(CreateText("%s (%d/%d)", GetTranslation(m_szTitle.c_str()), m_iLinkedScrNr, m_iLinkedScrMax));
         m_pLabel->refresh();*/
     }

@@ -1,18 +1,18 @@
 destdir = install.gettempdir()
 
-cfgscreen = install.newcfgscreen("Configuration options for VIM installation")
+cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
 
-prefixfield = cfgscreen:adddirselector("Base destination directory for VIM.", "/usr")
+prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be used to populate subdirectories such as bin/ to store executables and etc for configuration files.", "/usr")
 
-scriptbox = cfgscreen:addcheckbox("VIM can use several scripting languages for command interpreting. Please note that the selected languages need to be installed in order to work", { "MzScheme", "perl", "python", "ruby", "tcl" })
+scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. Please note that the selected languages need to be installed in order to work.", { "MzScheme", "perl", "python", "ruby", "tcl" })
 
-guibox = cfgscreen:addcheckbox("VIM can use several different GUI frontends. You can specify here which toolkits can be used to find a suitable GUI. If the toolkit cannot be used it will be skipped and the next is checked.", { "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" })
+guibox = cfgscreen:addcheckbox("Vim can use several different GUI frontends. You can specify here which toolkits can be used to find a suitable GUI. If the toolkit cannot be used it will be skipped and the next is checked.", { "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" })
 guibox:set(1, 2, 3, 4, 5, 6, true)
 
-idebox = cfgscreen:addcheckbox("VIM can be integrated in several Integrated Development Environments (IDEs). Here you can select for which you want to include support.", { "Sun Visual Workshop", "NetBeans", "Sniff Interface" })
+idebox = cfgscreen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). Here you can select for which you want to include support.", { "Sun Visual Workshop", "NetBeans", "Sniff Interface" })
 idebox:set(2, true)
 
-advmenu = cfgscreen:addcfgmenu("Advanced options")
+advmenu = cfgscreen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
 advmenu:addstring("CC", "Used C compiler")
 advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
 advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
@@ -85,10 +85,18 @@ function getideconf()
 end
 
 function handleadvmenu()
-    os.setenv("CC", advmenu:get("CC"))
-    os.setenv("CFLAGS", advmenu:get("CFLAGS"))
-    os.setenv("CPPFLAGS", advmenu:get("CPPFLAGS"))
-    os.setenv("LDFLAGS", advmenu:get("LDFLAGS"))
+    if (#advmenu:get("CC") > 0) then
+        os.setenv("CC", advmenu:get("CC"))
+    end
+    if (#advmenu:get("CFLAGS") > 0) then
+        os.setenv("CFLAGS", advmenu:get("CFLAGS"))
+    end
+    if (#advmenu:get("CPPFLAGS") > 0) then
+        os.setenv("CPPFLAGS", advmenu:get("CPPFLAGS"))
+    end
+    if (#advmenu:get("LDFLAGS") > 0) then
+        os.setenv("LDFLAGS", advmenu:get("LDFLAGS"))
+    end
 end
 
 function getconfigureopts()
@@ -96,11 +104,8 @@ function getconfigureopts()
 end
 
 function Install()
-    gui.warnbox("opts: ", getconfigureopts())
     local prefix = prefixfield:get()
     handleadvmenu()
-    
-    gui.warnbox("env: ", advmenu:get("CC"), advmenu:get("CFLAGS"), advmenu:get("CPPFLAGS"), advmenu:get("LDFLAGS"))
     
     -- 1: Extracting Files (Automaticly set by install.extractfiles)
     -- 2: ./configure
@@ -115,10 +120,10 @@ function Install()
     install.extractfiles()
     os.chdir("vim70/")
     
-    install.setstatus("Configuring VIM for this system")
+    install.setstatus("Configuring Vim for this system")
     install.execute(string.format("./configure %s", getconfigureopts()))
     
-    install.setstatus("Compiling VIM")
+    install.setstatus("Compiling Vim")
     install.execute("make")
     
     install.setstatus("Installing files")

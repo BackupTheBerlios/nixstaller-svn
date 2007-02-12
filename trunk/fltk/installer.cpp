@@ -1314,19 +1314,16 @@ CBaseLuaWidget *CCFGScreen::AddLuaWidget(CBaseLuaWidget *widget, int h)
 {
     if (WidgetFits(h))
     {
-        if (!m_pNextScreen)
-        {
-            Fl_Group *group = widget->Create();
-            
-            if (!widget)
-                throw Exceptions::CExFrontend("Could not create FLTK group for widget (bug?).");
-            
-            m_pGroup->add(group);
-            m_LuaWidgets.push_back(widget);
-            
-            m_iStartY += (h + 20);
-            return widget;
-        }
+        Fl_Group *group = widget->Create();
+        
+        if (!widget)
+            throw Exceptions::CExFrontend("Could not create FLTK group for widget (bug?).");
+        
+        m_pGroup->add(group);
+        m_LuaWidgets.push_back(widget);
+        
+        m_iStartY += (h + 20);
+        return widget;
     }
     else if (!m_pNextScreen && m_LuaWidgets.empty())
         throw Exceptions::CExOverflow("Not enough space for widget.");

@@ -675,7 +675,7 @@ TSTLVecSize CFormattedText::CalcLines(const std::string &str, bool wrap, TSTLStr
             
             bool toolong = (curlinelen + ((strend-strstart)+1)) > width;
             
-            if (((strend+1) < length) && isspace(newtext[strend+1]))
+            if (((strend+1) < length) && isspace(newtext[strend+1]) && (newtext[strend] != '\n'))
                 strend++; // Don't add leading whitespace to a new line
 
             if (!toolong) // If it's not too long add to current line
@@ -849,7 +849,7 @@ void CFormattedText::AddText(const std::string &str)
             if ((toolong || add) && (m_Lines.size() >= m_MaxHeight))
                 break;
             
-            if (((strend+1) < length) && isspace(newtext[strend+1]))
+            if (((strend+1) < length) && isspace(newtext[strend+1]) && (newtext[strend] != '\n'))
                 strend++; // Don't add trailing whitespace to a new line
 
             if (!toolong) // If it's not too long add to current line
@@ -1625,7 +1625,8 @@ void CTextWindow::LoadFile(const char *fname)
 void CTextWindow::Draw()
 {
     erase();
-    m_pFMText->Print(m_CurrentLine, SafeConvert<TSTLVecSize>(m_pHScrollbar->GetValue()), m_pTextWin->height(), m_pTextWin->width());
+    m_pFMText->Print(m_CurrentLine, SafeConvert<TSTLVecSize>(m_pHScrollbar->GetValue()), m_pTextWin->height(),
+                     m_pTextWin->width());
     m_pVScrollbar->Enable((HasBox() && (m_pFMText->GetLines() > SafeConvert<TSTLVecSize>(m_pTextWin->height()))));
     m_pHScrollbar->Enable(!m_bWrap && HasBox() && (m_pFMText->GetLongestLine() > SafeConvert<TSTLVecSize>(m_pTextWin->width())));
 }
