@@ -176,7 +176,7 @@ do
             
             unlzma ${LCPPDIR}/$FR ${LCDIR}
             
-            if [ -f ${LCPPDIR}/$FR ]; then
+            if [ -f "${LCPPDIR}/$FR" ]; then
                 FRBIN="${LCPPDIR}/$FR"
                 if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
                     edelta ${LCDIR} $ED_SRC $FRBIN
