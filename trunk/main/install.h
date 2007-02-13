@@ -49,8 +49,8 @@ class CBaseInstall: virtual public CMain
      
     void InitArchive(char *archname);
     void ExtractFiles(void);
-    void ExecuteCommand(const char *cmd, const char *path, bool required);
-    void ExecuteCommandAsRoot(const char *cmd, const char *path, bool required);
+    void ExecuteCommand(const char *cmd, bool required, const char *path);
+    void ExecuteCommandAsRoot(const char *cmd, bool required, const char *path);
     const char *GetDefaultPath(void) const { return "/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
     void VerifyIfInstalling(void);
     void UpdateStatusText(const char *str);

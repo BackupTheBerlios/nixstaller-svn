@@ -123,7 +123,7 @@ void CInstaller::Init(int argc, char **argv)
     
     UpdateLanguage();
 
-    unsigned count = m_LuaVM.OpenArray("screenlist");
+    unsigned count = m_LuaVM.OpenArray("ScreenList");
     
     if (!count)
     {
@@ -901,7 +901,7 @@ Fl_Group *CLuaCFGMenu::Create()
     
     x += ((m_pGroup->w() - (x - m_pGroup->x())) - m_iButtonWidth)/2;
     y += m_iDescHeight + 10;
-    group->add(m_pBrowseButton = new Fl_Button(x, y, m_iButtonWidth, m_iButtonHeight, "Modify"));
+    group->add(m_pBrowseButton = new Fl_Button(x, y, m_iButtonWidth, m_iButtonHeight, "Browse"));
     m_pBrowseButton->callback(BrowseCB, this);
     
     x = m_pDescOutput->x();
@@ -1195,7 +1195,7 @@ Fl_Group *CSelectDirScreen::Create()
     
     x += 300 + 20;
     y = CenterY(25);
-    m_pSelDirButton = new Fl_Button(x, y, 160, 25, "Select a directory");
+    m_pSelDirButton = new Fl_Button(x, y, 160, 25, "Browse");
     m_pSelDirButton->callback(OpenDirSelWinCB, this);
     
     m_pGroup->end();
@@ -1208,7 +1208,7 @@ Fl_Group *CSelectDirScreen::Create()
 void CSelectDirScreen::UpdateLang()
 {
     CreateDirSelector(); // Recreate to update languages
-    m_pSelDirButton->label(GetTranslation("Select a directory"));
+    m_pSelDirButton->label(GetTranslation("Browse"));
 }
 
 bool CSelectDirScreen::Next()

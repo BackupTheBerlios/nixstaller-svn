@@ -18,7 +18,7 @@ advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
 advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
 advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
 
-screenlist = { WelcomeScreen, cfgscreen, InstallScreen, FinishScreen }
+ScreenList = { WelcomeScreen, cfgscreen, InstallScreen, FinishScreen }
 
 function getprefixconf()
     return string.format("--prefix=%s", prefixfield:get())

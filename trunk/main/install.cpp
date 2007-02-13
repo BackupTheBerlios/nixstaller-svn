@@ -166,13 +166,13 @@ void CBaseInstall::ExtractFiles()
     }
 }
 
-void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool required)
+void CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path)
 {
     VerifyIfInstalling();
     
     if (m_bAlwaysRoot)
     {
-        ExecuteCommandAsRoot(cmd, path, required);
+        ExecuteCommandAsRoot(cmd, required, path);
         return;
     }
     
@@ -215,10 +215,11 @@ void CBaseInstall::ExecuteCommand(const char *cmd, const char *path, bool requir
     if (!line.empty())
         AddInstOutput(line.c_str());
             
-    pipe.Close(); // By calling Close() explicity its able to throw exceptions
+    if (required)
+        pipe.Close(); // By calling Close() explicity its able to throw exceptions
 }
 
-void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, const char *path, bool required)
+void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const char *path)
 {
     VerifyIfInstalling();
     
@@ -627,13 +628,15 @@ int CBaseInstall::LuaExecuteCMD(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     const char *cmd = luaL_checkstring(L, 1);
-    const char *path = lua_tostring(L, 2);
+    
     bool required = true;
     
-    if (lua_isboolean(L, 3))
-        required = lua_toboolean(L, 3);
+    if (lua_isboolean(L, 2))
+        required = lua_toboolean(L, 2);
     
-    pInstaller->ExecuteCommand(cmd, path, required);
+    const char *path = lua_tostring(L, 3);
+    
+    pInstaller->ExecuteCommand(cmd, required, path);
     return 0;
 }
 
@@ -641,13 +644,15 @@ int CBaseInstall::LuaExecuteCMDAsRoot(lua_State *L)
 {
     CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
     const char *cmd = luaL_checkstring(L, 1);
-    const char *path = lua_tostring(L, 2);
+    
     bool required = true;
     
-    if (lua_isboolean(L, 3))
-        required = lua_toboolean(L, 3);
+    if (lua_isboolean(L, 2))
+        required = lua_toboolean(L, 2);
     
-    pInstaller->ExecuteCommandAsRoot(cmd, path, required);
+    const char *path = lua_tostring(L, 3);
+    
+    pInstaller->ExecuteCommandAsRoot(cmd, required, path);
     return 0;
 }
 

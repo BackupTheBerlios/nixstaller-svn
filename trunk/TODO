@@ -15,11 +15,9 @@ LIBSU
 - tmp files not always cleared?
 
 NCURSES FRONTEND
-- Check file selector button(Browse vs Select directory)
 
 FLTK FRONTEND
 - Compile FLTK with exception support for netbsd
-- Check file selector button(Browse vs Select directory)
 
 DOCS
 - Max config var description length
@@ -34,6 +32,7 @@ DOCS
 - Nixstaller ver lua var
 - New string get methods for lua radiobutton/checkbox
 - FAQ entry for GNU and packages
+- install.execute(asroot) has path and req param switched
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
