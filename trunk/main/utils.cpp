@@ -498,7 +498,7 @@ void CPipedCMD::Close(bool canthrow)
     
     if (canthrow)
     {
-        if (!WIFEXITED(stat) || (WEXITSTATUS(stat) == 127)) // 127 == Command not found
+        if (!WIFEXITED(stat) || (WEXITSTATUS(stat) != 0))
             throw Exceptions::CExCommand(MakeCString(m_szCommand));
     }
 }

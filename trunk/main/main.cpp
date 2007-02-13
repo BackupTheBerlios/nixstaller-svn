@@ -387,9 +387,10 @@ int CMain::LuaInitDirIter(lua_State *L)
     }
     catch (Exceptions::CExOpenDir &e)
     {
-        lua_pushnil(L);
-        lua_pushstring(L, e.what());
-        return 2;
+//         lua_pushnil(L);
+//         lua_pushstring(L, e.what());
+//         return 2;
+        // Don't do anything here, closure function will fail
     }
     
     CDirIter **d = (CDirIter **)lua_newuserdata(L, sizeof(CDirIter *));

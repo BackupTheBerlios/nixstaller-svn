@@ -6,7 +6,6 @@ OVERALL
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
 - Popup dialog when install starts? (If yes add norwegian translations)
-- Cancel commands not only if exit status is 127
 
 MAIN
 - Case of lua vars
@@ -60,6 +59,7 @@ OVERALL
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Move cfg screen array handling to libmain
+- Cancel commands not only if exit status is 127 <-- Other err message
 
 
 LIBSU

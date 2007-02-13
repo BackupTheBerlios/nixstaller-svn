@@ -432,6 +432,7 @@ function CreateInstaller()
                              curdir, confdir, curdir, outname))
 end
 
+Clean()
 Init()
 PrepareArchive()
 CreateArchive()
