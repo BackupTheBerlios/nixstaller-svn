@@ -314,7 +314,7 @@ If this variable is not specified it will default to "lzma". If you're testing y
 @item defaultlang
 This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english".
 @item destdir
-This variable should contain a @ref{Strings,,string} that specifies the destination path for @ref{install.extractfiles}. For installers that will operate on the installation files and install them later (@abbr{ie} compiling) you can use the @ref{install.gettempdir} function. This function returns a temporary path that will be removed when the installation is finished.
+This variable should contain a @ref{Strings,,string} that specifies the destination path for @ref{install.extractfiles}. For installers that will operate on the installation files and install them later (@abbr{ie} compiling) you can use the @ref{install.gettempdir} function. This function returns a temporary directory that will be removed when the installation is finished.
 @item frontends
 This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Currently only these are valid: "ncurses" and "fltk". The default is @code{@{ "fltk", "ncurses" @}}.
 @item intropic
@@ -331,7 +331,6 @@ Here is an example @file{config.lua} file with all the above variables:
 appname = "Test App"
 archivetype = "gzip"
 defaultlang = "english"
-destdir = install.gettempdir()
 frontends = @{ "fltk" @}
 intropic = "intro.png"
 languages = @{ "english" @}
@@ -339,28 +338,40 @@ targetarch = @{ "x86" @}
 targetos = @{ "sunos", "netbsd", "linux" @}}
 
 @subsection Second Lua Script: @file{run.lua}
-The second Lua script is used to control the installer. This file is unlike the @file{config.lua} optional, but it's pretty common to have one. Generally speaking, the following three things can be done in this file:
+The second Lua script is used to control the installer. This file is unlike the @file{config.lua} optional, but it's pretty common to have one. Generally speaking, the following things can be accompished using this file:
 @itemize @bullet
+@item Configuring installation screens.
 @item Creating new installation screens.
-@item Defining which installation screens to use and when to show them.
 @item Controlling the installation process.
 @end itemize
 
-@subsubsection Creating New Installation Screens
-You can create new installation screens so that the user can configure variables which can affect the installation.@*
+There are 2 (optional) functions that are called automaticly and should be used to configure the installation process.
+
+@subsubsection First function: @code{Init()}
+This function is, as the name suggests, used for initialization.@*
 @*
-To create a new screen we call the @ref{install.newcfgscreen} function. This function returns a variable pointing to a @ref{Classes,,class} that we can use to modify this screen.@*
+The @code{destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it (see below) or point it to a temporary directory. The latter is accompished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).@*
+
+@c UNDONE
+As explained in section X there are a few (predefined) installation screens. To select which you want you should put some variables in the @code{ScreenList} table. These are the variable names of each screen:
+@table @code
+@item WelcomeScreen
+@c UNDONE
+The screen that is usually shown at first. This screen can be used to display a graphic image (defined via @code{intropic}, see section X) and display an introduction message (via the @file{welcome} file, see section X). If this file doesn't exist the screen won't be displayed.
+@item LicenseScreen
+@c UNDONE
+Is used to display a license agreement specified through the @file{license} file (see section X). If this file doesn't exist the screen won't be displayed.
+@item SelectDirScreen
+This screen lets the user select a directory that will be stored in the @code{destdir} variable.
+@item InstallScreen
+When this screen is shown the installation begins and displays the current status. Obviously every installer should have one.
+@item FinishScreen
+@c UNDONE
+Displays the message defined through the @file{finish} file (see section X). If this file doesn't exist the screen won't be displayed.
+@end table
+
+You can create new installation screens so that the user can configure variables which can affect the installation. To create a new screen we call the @ref{install.newcfgscreen} function. This function returns a variable pointing to a @ref{Classes,,class} that we can use to modify this screen. The screen can contain several @emph{widgets}. Here is a table showing them:
 @*
-Lets start an example @file{run.lua} file with the following line:
-@codeblock{myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")}
-This will create a fairly empty install screen with a title saying
-@quotation
-Hello!@*
-You can use this screen to configure some settings.
-@end quotation
-Also the screen isn't shown yet, but we get back to that later.@*
-@*
-Now to make the screen more useful you can add several @emph{widgets}. Here is a table showing them:
 @starttable{.33,.33,.33}
 @addtableheaderrow{Widget}
     @addtableheadercol{Description}
@@ -393,13 +404,40 @@ Now to make the screen more useful you can add several @emph{widgets}. Here is a
 @endtablerow
 
 @endtable
-For a detailed explanation see the links shown in the @samp{Function} column. So lets expand our @file{run.lua} file so it will add a few widgets to the new installation screen:
-@codeblock{@minus{}@minus{} As before
-myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")
+For a detailed explanation of a widget see the links shown in the @samp{Function} column.@*
 @*
-myscreen:addinput("", "Full Name:")
-myscreen:addcheckbox("Gender", @{ "Male", "Female" @})}
+Now lets finish this section with an example showing all the given information in action:
+@codeblock{@minus{}@minus{} Example run.lua file
+function Init()
+    destdir = install.gettempdir()
+@*
+    myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")
+    namefield = myscreen:addinput("Your name")
+@*
+    ScreenList = @{ WelcomeScreen, myscreen, InstallScreen @}
+done}
 
+Firstly @code{destdir} is set so that files are extracted to a temporary directory. Then a new screen is created which shows the following title:
+@quotation
+Hello!@*
+You can use this screen to configure some settings.
+@end quotation
+After that an inputfield widget is created on our new screen labeled with "Your name". The last line defines which screens should be shown and in which order. In our case first the welcome screen will be displayed, following by our custom screen and ending with the installation screen.
+
+@subsubsection Second function: @code{Install()}
+This function is automaticly executed when the installation begins. Main purposes are to extract the installation files and execute commands.@*
+@*
+Extraction of the installation files is accompished via the @ref{install.extractfiles} function. When this function is called the files are extracted to the directory specified by the @code{destdir} variable (see previous section). If the @code{Install()} function is not defined one will be created automaticly which will only call @ref{install.extractfiles}.@*
+@*
+For command execution three functions are generally used:
+@table
+@item @ref{install.execute}
+This function will execute a shell command and show all the generated output in a window.
+@item @ref{install.executeasroot}
+As @code{install.execute}, but using @samp{su} to execute it as the root user. If the root password is not given yet the user will be asked to type it.
+@item @ref{install.askrootpw}
+Asks the user to type the root password. If this has been done before the function doesn't do anything. Mostly this function is used somewhere at the beginning of the @code{Install} function so that the user knows root access is required before the installation begins and can abort if he or she wants to.
+@end table
 
 @section Creating the Installer
 
@@ -1588,6 +1626,7 @@ First all the functions from the @code{install} package are described. After tha
 
 @subsection The @code{install} Module
 
+@anchor{install.askrootpw}
 @luafunc install.askrootpw ()
 This function will ask the user to type the systems root password. Normally this is done automaticly if,
 @itemize @bullet
@@ -1599,12 +1638,14 @@ A good reason to call this functions is when you're sure the script will execute
 When this function is called more than once it won't do anything (the password is cached).
 @endluafunc
 
+@anchor{install.execute}
 @luafunc install.execute (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
 This function will execute the shell command defined by string @code{s}. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. The optional argument, @code{r}, tells that the installation should be aborted when the command failed to execute.@*
 @*
 This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.
 @endluafunc
 
+@anchor{install.executeasroot}
 @luafunc install.executeasroot (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
 This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so.
 @endluafunc

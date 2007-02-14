@@ -6,6 +6,7 @@ OVERALL
 - OBSD bins? (if not remove from manual)
 - Change file headers and copyright year
 - Popup dialog when install starts? (If yes add norwegian translations)
+- Check exit status (switch back to 127?)
 
 MAIN
 - Case of lua vars

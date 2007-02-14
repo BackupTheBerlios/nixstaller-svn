@@ -1,24 +1,34 @@
-destdir = install.gettempdir()
-
-cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
-
-prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be used to populate subdirectories such as bin/ to store executables and etc for configuration files.", "/usr")
-
-scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. Please note that the selected languages need to be installed in order to work.", { "MzScheme", "perl", "python", "ruby", "tcl" })
-
-guibox = cfgscreen:addcheckbox("Vim can use several different GUI frontends. You can specify here which toolkits can be used to find a suitable GUI. If the toolkit cannot be used it will be skipped and the next is checked.", { "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" })
-guibox:set(1, 2, 3, 4, 5, 6, true)
-
-idebox = cfgscreen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). Here you can select for which you want to include support.", { "Sun Visual Workshop", "NetBeans", "Sniff Interface" })
-idebox:set(2, true)
-
-advmenu = cfgscreen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
-advmenu:addstring("CC", "Used C compiler")
-advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
-advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
-advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
-
-ScreenList = { WelcomeScreen, cfgscreen, InstallScreen, FinishScreen }
+function Init()
+    destdir = install.gettempdir()
+    
+    cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
+    
+    prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
+                                           "used to populate subdirectories such as bin/ to store executables " ..
+                                           "and etc for configuration files.", "/usr")
+    
+    scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
+                                      "Please note that the selected languages need to be installed in " ..
+                                      "order to work.", { "MzScheme", "perl", "python", "ruby", "tcl" })
+    
+    guibox = cfgscreen:addcheckbox("Vim can use several different GUI frontends. You can specify here which " ..
+                                   "toolkits can be used to find a suitable GUI. If the toolkit cannot be used " ..
+                                   "it will be skipped and the next is checked.", { "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" })
+    guibox:set(1, 2, 3, 4, 5, 6, true)
+    
+    idebox = cfgscreen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). " ..
+                                   "Here you can select for which you want to include support.",
+                                   { "Sun Visual Workshop", "NetBeans", "Sniff Interface" })
+    idebox:set(2, true)
+    
+    advmenu = cfgscreen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
+    advmenu:addstring("CC", "Used C compiler")
+    advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
+    advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
+    advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
+    
+    ScreenList = { WelcomeScreen, cfgscreen, InstallScreen, FinishScreen }
+end
 
 function getprefixconf()
     return string.format("--prefix=%s", prefixfield:get())

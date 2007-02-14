@@ -419,7 +419,11 @@ void CBaseInstall::InitLua()
     m_LuaVM.LoadFile("config/config.lua");
     
     if (FileExists("config/run.lua"))
+    {
         m_LuaVM.LoadFile("config/run.lua");
+        if (m_LuaVM.InitCall("Init"))
+            m_LuaVM.DoCall();
+    }
     
     if (!GetDestDir())
     {
