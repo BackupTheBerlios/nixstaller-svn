@@ -16,6 +16,7 @@ LIBSU
 - tmp files not always cleared?
 
 NCURSES FRONTEND
+- Check missing headers
 
 FLTK FRONTEND
 - Compile FLTK with exception support for netbsd
@@ -34,6 +35,7 @@ DOCS
 - New string get methods for lua radiobutton/checkbox
 - FAQ entry for GNU and packages
 - install.execute(asroot) has path and req param switched
+- ScreenList default
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
