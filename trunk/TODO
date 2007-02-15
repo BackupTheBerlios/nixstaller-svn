@@ -24,7 +24,7 @@ DOCS
 - Max config var description length
 - Update examples and screenshots
 - Check for right vertical spacing, paragraphs etc
-- Add norwegian translation references if author sends updated version
+- Add norwegian translation references if author sends updated version (tutorials)
 - Move destdir to run.lua
 - inputfield's spacing is default 25
 - lua os.setenv function

@@ -295,6 +295,7 @@ You can add an image to the Intro Screen. You have to specify the file name in t
 @c UNDONE
 The creation and behaviour of the installer is controlled by 2 Lua scripts: @file{config.lua} and @file{run.lua}. If you're not familiar with Lua or programming in general it's recommended to read section X or atleast keep it close. Section Y is a complete reference for all the Lua functionality (including extensions from Nixstaller). You will probably want to check this after you read this and the @ref{Tutorials,,tutorials chapter}.
 
+@anchor{config.lua}
 @subsection First Lua Script: @file{config.lua}
 The first Lua script, @file{config.lua}, is as the name says used for configuration. This file is pretty small and should only contain a few variable assignments. The following variables can or should be in @file{config.lua}:
 @table @code
@@ -425,11 +426,13 @@ You can use this screen to configure some settings.
 After that an inputfield widget is created on our new screen labeled with "Your name". The last line defines which screens should be shown and in which order. In our case first the welcome screen will be displayed, following by our custom screen and ending with the installation screen.
 
 @subsubsection Second function: @code{Install()}
-This function is automaticly executed when the installation begins. Main purposes are to extract the installation files and execute commands.@*
+This function is automaticly executed when the installation begins. Main purposes are to extract the installation files and execute installation commands.@*
 @*
 Extraction of the installation files is accompished via the @ref{install.extractfiles} function. When this function is called the files are extracted to the directory specified by the @code{destdir} variable (see previous section). If the @code{Install()} function is not defined one will be created automaticly which will only call @ref{install.extractfiles}.@*
 @*
-For command execution three functions are generally used:
+There are various Lua functions that can be used for installation. Files can be read or created with the @ref{io, io package}, there are functions that work with the OS (Operating System) of the user in the @ref{os, os package}.@*
+@*
+A common thing is to execute various shell commands. For this three functions are generally used:
 @table
 @item @ref{install.execute}
 This function will execute a shell command and show all the generated output in a window.
@@ -439,7 +442,39 @@ As @code{install.execute}, but using @samp{su} to execute it as the root user. I
 Asks the user to type the root password. If this has been done before the function doesn't do anything. Mostly this function is used somewhere at the beginning of the @code{Install} function so that the user knows root access is required before the installation begins and can abort if he or she wants to.
 @end table
 
+To let the user know whats happening there are three functions that can be used:
+@table
+@item @ref{install.print}
+Displays a given string on the status window from the install screen.
+@item @ref{install.setstatus}
+Can be used to set a short status message on the top of the install screen.
+@item @ref{install.setstepcount}
+Sets how many @emph{steps} the installation has. Follow the link for more information.
+@end table
+
+To finish this section here is an example of an @code{Install()} function.
+@codeblock{@minus{}@minus{} Example Install() function
+function Install()
+    install.setstepcount(2) @minus{}@minus{} Note that extracting files counts automaticly as one step
+    install.extractfiles()
+    install.setstatus("Executing random command")
+    install.execute("ls -a") @minus{}@minus{} Contents of directory pointed by destdir variable will be displayed
+@*
+    @minus{}@minus{} Example of how to use data from the widget used in the example from previous section.
+    gui.msgbox("Your name is: ", namefield:get())
+end}
+
+We start with defining the number of installation steps (2). Then the installation files are extracted to the directory that is defined by the @code{destdir} variable (see previous section). Then the status message is changed and a random shell command is executed. The last line shows how to retrieve a value with the @ref{input:get, get method function} from the inputfield class.
+
 @section Creating the Installer
+After you have fully setup your project directory it's time to build the installer script.@*
+@*
+This is pretty easy and is done via a shell script. It's important to call this script from the main directory of Nixstaller. The script is called @command{geninstall.sh} and has one required argument and one optional argument. The first argument is the path to the project directory, the second is the name of the installer script. The default name is @samp{setup.sh}.@*
+@*
+Here is an example that shows the shell commands that need to be executed when the path to the Nixstaller directory is @file{/home/rick/nixstaller} and the project directory is at @file{/home/rick/code/setup}:
+@codeblock{cd /home/rick/nixstaller
+./geninstall.sh /home/rick/code/setup}
+The resulting script, @samp{setup.sh}, is placed in the current directory.
 
 
 @section Examples
@@ -447,17 +482,78 @@ Asks the user to type the root password. If this has been done before the functi
 For examples of project directory layouts see the @samp{example/} directory in the main Nixstaller directory. The tutorials (see section X) will also present some examples step by step.
 
 
-
 @node Tutorials
 @chapter Tutorials
 
 @section First Tutorial: A Simple Installer
+This first tutorial describes the steps that need to be made to create a simple example installer.@*
+@*
+We want to let the installer be able to do the following things:
+@itemize @bullet
+@item Let the user select a language.
+@item Show a short introduction message.
+@item Let the user select a destination directory (or in other words, let the user define the @code{destdir} variable).
+@item Extract the installation files to the selected directory.
+@end itemize
+
+@subsection Project Directory
+First we need to create a new directory that is used to store all the files that are necessary to build the installer. In this tutorial we call this directory @file{setup/}.
+
+@subsection Language Selection
+To include language support for dutch (english is always available) simply copy the @file{lang/dutch} directory to a  subdirectory in the @file{setup/} directory which is also called @file{lang/}.
+
+@subsection Introduction Message
+Create a text file called @file{welcome} and put a text of choice in it, for example:
+@quotation
+This will install random software, press next to continue.
+@end quotation
+
+@subsection Selectable Destination Directory
+@c UNDONE
+For this the SelectDirScreen is used (see section X). Forunaly this screen is shown by default so we don't need to do anything.
+
+@subsection Extract the installation files
+This is done by default if no @code{Install()} function is defined, so we don't have to worry about this one either.
+
+@subsection @file{config.lua}
+To configure our installer create a new text file called @samp{config.lua}. After that you can paste this text in to it:
+@codeblock{@minus{}@minus{} Example config.lua from first tutorial
+appname = "My Software 1.0"}
+That wasn't much text right? For this tutorial it's enough, however there are some more things that can be configured. This is explained @ref{config.lua, here}.
+
+@subsection Installation Files
+For this installer we simply provide one text file called @file{README}. Create a new subdirectory in the project directory and call it @file{files_all/}. Then create the @file{README} file (put some random text in it if you want) and save it to the @file{files_all/} directory.
+
+@subsection Creating the installer
+If all went fine the directory structure should look like this:
+@itemize @bullet
+    @item @file{setup/}
+    @itemize @bullet
+        @item @file{lang/}
+        @itemize @bullet
+            @item @file{dutch/}
+            @itemize @bullet
+                @item @file{strings}
+            @end itemize
+        @end itemize
+        @itemize @bullet
+            @item @file{files_all/}
+            @itemize @bullet
+                @item @file{README}
+            @end itemize
+        @end itemize
+        @item @file{welcome}
+        @item @file{config.lua}
+    @end itemize
+@end itemize
+
+@c UNDONE
+Now call @file{geninstall.sh} from the main Nixstaller directory and supply the project directory as first argument (see also section X). This should supply you with an installer called @file{setup.sh}.
+
+@section Second Tutorial: A More Advanced Installer: Cube
 
 
-@section Second Tutorial: A More Advanced Installer
-
-
-@section Third Tutorial: Installer for X (UNDONE)
+@section Third Tutorial: Installer for Vim
 
 
 
@@ -1319,6 +1415,7 @@ Sets the @samp{seed} for the @code{math.random} function. For each seed an uniqu
 @endluafunc
 
 
+@anchor{os}
 @section Functions That Interact With The OS
 In the @code{os} package you can find functions that will handle OS specific things. Nixstaller has included some extra functions to this module.@*
 @*
@@ -1437,6 +1534,7 @@ Returns @code{true} if the file or directory @code{f} has write access for the c
 @endluafunc
 
 
+@anchor{io}
 @section I/O Functions
 The @code{io} package provides several Input/Output functions. As with some functions from the @code{os} package, some functions return @code{nil} and a string containing an error message on failure and @code{true} on success.@*
 @*
@@ -1666,10 +1764,12 @@ This function is used to assign a temporary directory the the @code{destdir} var
 This function will return a class for a new @emph{configuration screen}. The members of this class are described in section X. The optional argument, @code{t}, specifies a (short) title for this screen.
 @endluafunc
 
+@anchor{install.print}
 @luafunc install.print (s)
 Prints the message specified by argument @code{s} on the status window from the install screen.
 @endluafunc
 
+@anchor{install.setstatus}
 @luafunc install.setstatus (s)
 You can use this function to specify the current status of the installation. This way the user can see what the installer is doing. @*
 Example:
@@ -1679,6 +1779,7 @@ install.setstatus("Copying files")
 os.copy(file1, file2, "/usr/local/share")}
 @endluafunc
 
+@anchor{install.setstepcount}
 @luafunc install.setstepcount (n)
 This function is used to specify how many @emph{steps} the installation has, specified by parameter @code{n}. This is used to divide the progress bar and to put a text in the form of (x/X) on the screen, where @samp{x} is the current step and @samp{X} the total count of steps. On each @code{install.setstatus} call the current step will be incremented by one. By default the step count is 1.@*
 @*
@@ -1728,6 +1829,7 @@ The user can type any number but not fractions.
 The user can type any number including fractions.
 @end table
 The function will return a class with the following method functions (input should be replaced with the actual variable name which points to this class):
+@anchor{input:get}
 @luafunc input:get ()
 Returns the current value hold by the input field.
 @endluafunc
