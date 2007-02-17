@@ -29,8 +29,6 @@ DOCS
 - Add norwegian translation references if author sends updated version (tutorials)
 - New string get methods for lua radiobutton/checkbox
 - FAQ entry for GNU and packages
-- ScreenList default
-- finish file for vim
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

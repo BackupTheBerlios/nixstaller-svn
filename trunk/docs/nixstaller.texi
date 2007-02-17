@@ -369,6 +369,8 @@ When this screen is shown the installation begins and displays the current statu
 Displays the message defined through the @file{finish} file (see section X). If this file doesn't exist the screen won't be displayed.
 @end table
 
+By default @code{ScreenList} contains all of these screens.@*
+@*
 You can create new installation screens so that the user can configure variables which can affect the installation. To create a new screen we call the @ref{install.newcfgscreen} function. This function returns a variable pointing to a @ref{Classes,,class} that we can use to modify this screen. The screen can contain several @emph{widgets}. Here is a table showing them:
 @*
 @starttable{.33,.33,.33}
@@ -656,6 +658,7 @@ In the last tutorial we make a fairly advanced installer for the advanced text e
         @item Edit several environment variables that affect compilation.
     @end itemize
     @item Extract the files to a temporary directory and configure, compile and install Vim.
+    @item Show the README after installation.
 @end itemize
 
 @subsection Project Directory
@@ -672,7 +675,9 @@ it an entire IDE. It's not just for programmers, though. Vim is perfect for all 
 from composing email to editing configuration files.
 @*
 (From www.vim.org)}
-Because we want a logo we copy the file @file{vim48x48.png} to the project directory. This file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.
+Because we want a logo we copy the file @file{vim48x48.png} to the project directory. This file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.@*
+@*
+To show the README after installation we include the @samp{FinishScreen}. This screen will display the contents of a file called @file{finish} which should be placed in the project directory. Just copy the @file{README} file from the vim package to the project directory and rename it to @samp{finish}.
 
 @subsection @file{config.lua}
 For our installer the @file{config.lua} file should look like this:
@@ -1017,7 +1022,36 @@ function Install()
     end
 end}
 
+@subsection Creating the Installer
+The project directory should have the following structure:
 
+@itemize @bullet
+    @item @file{vim/}
+    @itemize @bullet
+        @item @file{lang/}
+        @itemize @bullet
+            @item @file{dutch/}
+            @itemize @bullet
+                @item @file{strings}
+            @end itemize
+        @end itemize
+        @itemize @bullet
+            @item @file{files_all/}
+            @itemize @bullet
+                @item @file{vim70/}
+                @itemize @bullet
+                    @item @emph{Vim files}
+                @end itemize
+            @end itemize
+        @end itemize
+        @item @file{welcome}
+        @item @file{finish}
+        @item @file{config.lua}
+        @item @file{run.lua}
+    @end itemize
+@end itemize
+
+Calling @file{geninstall.sh} from the Nixstaller directory with the path to project directory as first argument and @samp{vim70.sh} as second argument should produce the installer.
 
 @node Lua Basics
 @chapter Lua Basics
