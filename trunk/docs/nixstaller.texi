@@ -314,8 +314,6 @@ LZMA compresses the best of all three. Compression is fairly slow, but decompres
 If this variable is not specified it will default to "lzma". If you're testing your installer it might be a good idea to use "gzip" and switch to "lzma" when the installer is done. That way you have fast compression while testing and good compression for the user.
 @item defaultlang
 This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english".
-@item destdir
-This variable should contain a @ref{Strings,,string} that specifies the destination path for @ref{install.extractfiles}. For installers that will operate on the installation files and install them later (@abbr{ie} compiling) you can use the @ref{install.gettempdir} function. This function returns a temporary directory that will be removed when the installation is finished.
 @item frontends
 This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Currently only these are valid: "ncurses" and "fltk". The default is @code{@{ "fltk", "ncurses" @}}.
 @item intropic
@@ -485,6 +483,7 @@ For examples of project directory layouts see the @samp{example/} directory in t
 @node Tutorials
 @chapter Tutorials
 
+@anchor{first tutorial}
 @section First Tutorial: A Simple Installer
 This first tutorial describes the steps that need to be made to create a simple example installer.@*
 @*
@@ -551,9 +550,472 @@ If all went fine the directory structure should look like this:
 Now call @file{geninstall.sh} from the main Nixstaller directory and supply the project directory as first argument (see also section X). This should supply you with an installer called @file{setup.sh}.
 
 @section Second Tutorial: A More Advanced Installer: Cube
+In this tutorial we'll be making a slightly more advanced installer for the game @uref{http://www.cubeengine.com/, Cube}. The installer has the following tasks:
+@itemize @bullet
+@item Let the user select a language.
+@item Show a short introduction message describing Cube.
+@item Let the user select a destination directory.
+@item Let the user choose to install a script to his or her home directory that will launch Cube.
+@item Install the files and optionally create the launcher script.
+@end itemize
 
+@subsection Project Directory
+As described in the @ref{first tutorial} first create a project directory and copy the language files to it. Then create the @file{welcome} file with the following contents:
+@codeblock{This installer will install Cube to your computer.
+Cube is an open source FPS (First Person Shooter) which supports both single play and networked games.
+Another main feature is the easy ingame map editing (online too!).}
+
+@subsection @file{config.lua}
+This file will be slightly more complex than that from the first tutorial:
+@codeblock{@minus{}@minus{} Example config.lua file from second tutorial
+appname = "Cube"
+targetos = @{ "linux", "freebsd" @}}
+We've limited the supporting operating system to Linux and FreeBSD, simply because there are only Cube binaries for these 2 systems.
+
+@subsection @file{run.lua}
+Absent in the previous tutorial, we create another Lua script file called @file{run.lua}. Here is how it should look like:
+@codeblock{function Init()
+    screen = install.newcfgscreen("Installation options")
+    scriptbox = screen:addradiobutton("Install launcher script to your home directory that launches Cube?",
+                                      @{ "Yes", "No" @})
+@*
+    ScreenList = @{ WelcomeScreen, SelectDirScreen, screen, InstallScreen @}
+end
+@*
+function Install()
+    install.extractfiles()
+@*
+    if (scriptbox:get() == "Yes") then
+        local filename = string.format("%s/cube.sh", os.getenv("HOME"))
+        script = io.open(filename, "w")
+@*
+        if (not script) then
+            install.print("Failed to create launcher script")
+            return @minus{}@minus{} Exit from function
+        end
+@*
+        script:write(string.format(
+[[#!/bin/sh
+cd %s/cube/
+./cube_unix
+]], destdir))
+        script:close()
+@*
+        os.chmod(filename, 700)
+    end
+end}
+
+First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newcfgscreen}. Then a radiobutton widget is added to this screen through the @ref{cfgscreen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{ScreenList} variable.@*
+@*
+@c UNDONE
+The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{destdir} variable. After that we check what the user choose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assing it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automaticly included to this string (see also section X). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
+
+@subsection Creating the Installer
+Assuming that the project directory is called @file{Cube/} the layout of this directory should look like this:
+
+@itemize @bullet
+    @item @file{cube/}
+    @itemize @bullet
+        @item @file{lang/}
+        @itemize @bullet
+            @item @file{dutch/}
+            @itemize @bullet
+                @item @file{strings}
+            @end itemize
+        @end itemize
+        @itemize @bullet
+            @item @file{files_all/}
+            @itemize @bullet
+                @item @file{cube/}
+                @itemize @bullet
+                    @item @emph{Cube files}
+                @end itemize
+            @end itemize
+        @end itemize
+        @item @file{welcome}
+        @item @file{config.lua}
+        @item @file{run.lua}
+    @end itemize
+@end itemize
+
+The @file{cube/} subdirectory from the @file{files_all/} directory comes from the @file{cube_2005_08_29_unix.tar.gz} file. This file can be obtained through the @uref{http://www.cubeengine.com,Cube website}.@*
+@*
+Now call @file{geninstall.sh} from the Nixstaller directory, supply it with 2 arguments: the first should be the path to your project directory, the second @file{cube.sh}. After some waiting (the default lzma compression takes some time) you should now have an installer called @file{cube.sh}.
 
 @section Third Tutorial: Installer for Vim
+In the last tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim}. The installer should have the following features:
+@itemize @bullet
+    @item Let the user select a language.
+    @item Show a welcome screen with the Vim logo and a short message.
+    @item Let the user configure several compilation settings:
+    @itemize @bullet
+        @item The prefix path that is used as a base to install the files to (defaults to @file{/usr}).
+        @item Which script languages to support for Vim commands.
+        @item Which toolkits should be checked to use for @samp{gvim} (graphical vim).
+        @item Integration support for Sun Studio, NetBeans and Sniff.
+        @item Edit several environment variables that affect compilation.
+    @end itemize
+    @item Extract the files to a temporary directory and configure, compile and install Vim.
+@end itemize
+
+@subsection Project Directory
+As usual start with creating a project directory (ie @file{vim/}), copy language files to it and copy this text to the @file{welcome} file:
+@codeblock{This installer will guide you through the installation of Vim.
+After you have read the following text press the Next button to start the installation.
+@*
+What Is Vim?
+@*
+Vim is a highly configurable text editor built to enable efficient text editing. It is an improved version
+of the vi editor distributed with most UNIX systems.
+Vim is often called a "programmer's editor," and so useful for programming that many consider
+it an entire IDE. It's not just for programmers, though. Vim is perfect for all kinds of text editing,
+from composing email to editing configuration files.
+@*
+(From www.vim.org)}
+Because we want a logo we copy the file @file{vim48x48.png} to the project directory. This file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.
+
+@subsection @file{config.lua}
+For our installer the @file{config.lua} file should look like this:
+@codeblock{appname = "VIM 7.0"
+intropic = "vim48x48.png"}
+The @code{intropic} variable is used to specify the file name of the logo. Note that this logo should @emph{always} be in your project directory.
+
+@subsection @file{run.lua}
+Now we start with the advanced things. The file will be quite big compared to the previous tutorials. The biggest part comes from parsing the configuration options and translating them to install commands. The file will contain several functions, these are discussed one at a time.
+
+@subsubsection Function @code{Init()}
+The file starts with;
+@codeblock{function Init()
+    destdir = install.gettempdir()
+@*
+    cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
+@*
+    prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
+                                           "used to populate subdirectories such as bin/ to store executables " ..
+                                           "and etc for configuration files.", "/usr")
+@*
+    scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
+                                      "Please note that the selected languages need to be installed in " ..
+                                      "order to work.", @{ "MzScheme", "perl", "python", "ruby", "tcl" @})
+@*
+    guibox = cfgscreen:addcheckbox("Vim can use several different GUI frontends. You can specify here which " ..
+                                   "toolkits can be used to find a suitable GUI. If the toolkit cannot be used " ..
+                                   "it will be skipped and the next is checked.", @{ "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" @})
+    guibox:set(1, 2, 3, 4, 5, 6, true)
+@*
+    idebox = cfgscreen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). " ..
+                                   "Here you can select for which you want to include support.",
+                                   @{ "Sun Visual Workshop", "NetBeans", "Sniff Interface" @})
+    idebox:set(2, true)
+@*
+    advmenu = cfgscreen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
+    advmenu:addstring("CC", "Used C compiler")
+    advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
+    advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
+    advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
+@*
+    ScreenList = @{ WelcomeScreen, cfgscreen, InstallScreen, FinishScreen @}
+end}
+Thats already some text to read :-) We start with setting the @code{destdir} variable to a temporary directory.@*
+@*
+After that a new configuration screen is created and assigned to the @code{cfgscreen} variable. Then the widgets are created through the @ref{cfgscreen:addcheckbox} and @ref{cfgscreen:addcfgmenu} functions. Note that the descriptions are splitted with the @code{..} operator. This operator concats 2 strings and we use it purely here to make the code lines shorter. The last widget acts like a configuration menu. In this menu the user can select several parameters and edit them.@*
+@*
+The last line defines the install screens we want to show.
+
+@subsubsection Function @code{getprefixconf()}
+We create a new function that will return a string that is used as an argument to the @code{configure} command which is used in the @code{Install()} function. The argument is used to set the prefix directory. Here is the function:
+@codeblock{function getprefixconf()
+    return string.format("@minus{}@minus{}prefix=%s", prefixfield:get())
+end}
+
+@subsubsection Function @code{getscriptconf()}
+As the previous function returns a string that is used by the @code{configure} command. This function will return the arguments related to the configuration of embedded scripting languages:
+@codeblock{function getscriptconf()
+    local ret = "" @minus{}@minus{} Need to initialize variable as a string, otherwise concatting it won't work
+@*
+    if (scriptbox:get("MzScheme")) then
+        ret = ret .. "@minus{}@minus{}enable-MzScheme "
+    end
+    if (scriptbox:get("perl")) then
+        ret = ret .. "@minus{}@minus{}enable-perl "
+    end
+    if (scriptbox:get("python")) then
+        ret = ret .. "@minus{}@minus{}enable-python "
+    end
+    if (scriptbox:get("ruby")) then
+        ret = ret .. "@minus{}@minus{}enable-ruby "
+    end
+    if (scriptbox:get("tcl")) then
+        ret = ret .. "@minus{}@minus{}enable-tcl "
+    end
+@*
+    return ret
+end}
+The first line is important: Lua needs to know that a variable is used as a string, otherwise the concat operator(@code{..}) won't work. Simply assigning an empty string will do the job.@*
+@*
+As an example if the user enabled @samp{perl} and @samp{ruby} then this function would return this string: "@minus{}@minus{}enable-perl @minus{}@minus{}enable ruby ".
+
+@subsubsection Function @code{getguiconf()}
+This function is very similar to the previous function, but returns a string to be used for toolkit configuration that is used for @samp{gvim} (graphical vim). Here is the code:
+@codeblock{function getguiconf()
+    local ret = ""
+@*
+    if (not guibox:get("GTK")) then
+        ret = ret .. "@minus{}@minus{}disable-gtk-check "
+    end
+    if (not guibox:get("GTK2")) then
+        ret = ret .. "@minus{}@minus{}disable-gtk2-check "
+    end
+    if (not guibox:get("Gnome")) then
+        ret = ret .. "@minus{}@minus{}disable-gnome-check "
+    end
+    if (not guibox:get("Athena (XAW)")) then
+        ret = ret .. "@minus{}@minus{}disable-athena-check "
+    end
+    if (not guibox:get("nexTaw")) then
+        ret = ret .. "@minus{}@minus{}disable-nextaw-check "
+    end
+@*
+    return ret
+end}
+Note that we check if an option is disabled instead of enabled. This is because these options are enabled by default.
+
+@subsubsection Function @code{getideconf()}
+This function, similar to the previous 2, is used to get a string to be used for IDE integration:
+@codeblock{function getideconf()
+    local ret = ""
+@*
+    if (idebox:get("Sun Visual Workshop")) then
+        ret = ret .. "@minus{}@minus{}enable-workshop "
+    end
+    if (not idebox:get("NetBeans")) then
+        ret = ret .. "@minus{}@minus{}disable-netbeans "
+    end
+    if (idebox:get("Sniff Interface")) then
+        ret = ret .. "@minus{}@minus{}enable-sniff "
+    end
+@*
+    return ret
+end}
+
+@subsubsection Function @code{getconfigureopts()}
+This function returns the string that should be given as a shell argument to the @code{configure} command. The function uses the previous three functions, seperated by a space, to form the right string. This is the function:
+@codeblock{function getconfigureopts()
+    return getprefixconf() .. " " .. getscriptconf() .. " " .. getguiconf() .. " " .. getideconf()
+end}
+
+@subsubsection Function @code{handleadvmenu()}
+This function will set several shell environment variables that can be configured through the @samp{Advanced compilation options} menu. Before a variable is set, it will be checked if the user didn't leave it blank. This is done because if the environment variable was already set (ie because the user set it in the shell from where the installer was executed) it would be cleared otherwise. Here is the function code:
+@codeblock{function handleadvmenu()
+    if (#advmenu:get("CC") > 0) then
+        os.setenv("CC", advmenu:get("CC"))
+    end
+    if (#advmenu:get("CFLAGS") > 0) then
+        os.setenv("CFLAGS", advmenu:get("CFLAGS"))
+    end
+    if (#advmenu:get("CPPFLAGS") > 0) then
+        os.setenv("CPPFLAGS", advmenu:get("CPPFLAGS"))
+    end
+    if (#advmenu:get("LDFLAGS") > 0) then
+        os.setenv("LDFLAGS", advmenu:get("LDFLAGS"))
+    end
+end}
+The length operator, @samp{#}, is used to get the string length from each variable. If it's more than zero than the string isn't blank and it is used to set the environment variable.
+
+@subsubsection Function @code{Install()}
+The last function will do the actual installation. Here is how it looks like:
+@codeblock{function Install()
+    local prefix = prefixfield:get()
+    handleadvmenu()
+@*
+    @minus{}@minus{} 1: Extracting Files (Automaticly set by install.extractfiles)
+    @minus{}@minus{} 2: ./configure
+    @minus{}@minus{} 3: make
+    @minus{}@minus{} 4: make install
+    install.setstepcount(4)
+@*
+    if (os.writeperm(prefix) == false) then
+        install.askrootpw()
+    end
+@*
+    install.extractfiles()
+    os.chdir("vim70/")
+@*
+    install.setstatus("Configuring Vim for this system")
+    install.execute(string.format("./configure %s", getconfigureopts()))
+@*
+    install.setstatus("Compiling Vim")
+    install.execute("make")
+@*
+    install.setstatus("Installing files")
+    if (os.writeperm(prefix) == false) then
+        install.executeasroot("make install")
+    else
+        install.execute("make install")
+    end
+end}
+
+At first the prefix directory is stored to the local @code{prefix} variable.@*
+@*
+After that the options from the @samp{Advanced compilation options} menu are processed.@*
+@*
+Then the stepcount is set. Each step is documented by the comments shown above the @ref{install.setstepcount} function.@*
+@*
+Then we check if we got write access to the prefix directory. If not we need root access later and we ask the password here.@*
+@*
+After the files are extracted through the @ref{install.extractfiles} function we change directory to the @file{vim70/} directory. The status message is changed so that the user knows whats going on and the @code{configure} command is executed with the right arguments.@*
+@*
+After configuration @code{make} is called to start the compilation and the status message is changed again.@*
+@*
+After @code{make} is done the install process is started. If the prefix directory is write protected for the current user we call @code{make install} as root, otherwise it's executed as the current user.
+
+@subsubsection Everything Put Together
+The @file{run.lua} file is now completely discussed and should look like this:
+@codeblock{function Init()
+    destdir = install.gettempdir()
+@*
+    cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
+@*
+    prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
+                                           "used to populate subdirectories such as bin/ to store executables " ..
+                                           "and etc for configuration files.", "/usr")
+@*
+    scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
+                                      "Please note that the selected languages need to be installed in " ..
+                                      "order to work.", @{ "MzScheme", "perl", "python", "ruby", "tcl" @})
+@*
+    guibox = cfgscreen:addcheckbox("Vim can use several different GUI frontends. You can specify here which " ..
+                                   "toolkits can be used to find a suitable GUI. If the toolkit cannot be used " ..
+                                   "it will be skipped and the next is checked.", @{ "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" @})
+    guibox:set(1, 2, 3, 4, 5, 6, true)
+@*
+    idebox = cfgscreen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). " ..
+                                   "Here you can select for which you want to include support.",
+                                   @{ "Sun Visual Workshop", "NetBeans", "Sniff Interface" @})
+    idebox:set(2, true)
+@*
+    advmenu = cfgscreen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
+    advmenu:addstring("CC", "Used C compiler")
+    advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
+    advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
+    advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
+@*
+    ScreenList = @{ WelcomeScreen, cfgscreen, InstallScreen, FinishScreen @}
+end
+@*
+function getprefixconf()
+    return string.format("@minus{}@minus{}prefix=%s", prefixfield:get())
+end
+@*
+function getscriptconf()
+    local ret = "" @minus{}@minus{} Need to initialize variable as a string, otherwise concatting it won't work
+@*
+    if (scriptbox:get("MzScheme")) then
+        ret = ret .. "@minus{}@minus{}enable-MzScheme "
+    end
+    if (scriptbox:get("perl")) then
+        ret = ret .. "@minus{}@minus{}enable-perl "
+    end
+    if (scriptbox:get("python")) then
+        ret = ret .. "@minus{}@minus{}enable-python "
+    end
+    if (scriptbox:get("ruby")) then
+        ret = ret .. "@minus{}@minus{}enable-ruby "
+    end
+    if (scriptbox:get("tcl")) then
+        ret = ret .. "@minus{}@minus{}enable-tcl "
+    end
+@*
+    return ret
+end
+@*
+function getguiconf()
+    local ret = ""
+@*
+    if (not guibox:get("GTK")) then
+        ret = ret .. "@minus{}@minus{}disable-gtk-check "
+    end
+    if (not guibox:get("GTK2")) then
+        ret = ret .. "@minus{}@minus{}disable-gtk2-check "
+    end
+    if (not guibox:get("Gnome")) then
+        ret = ret .. "@minus{}@minus{}disable-gnome-check "
+    end
+    if (not guibox:get("Athena (XAW)")) then
+        ret = ret .. "@minus{}@minus{}disable-athena-check "
+    end
+    if (not guibox:get("nexTaw")) then
+        ret = ret .. "@minus{}@minus{}disable-nextaw-check "
+    end
+@*
+    return ret
+end
+@*
+function getideconf()
+    local ret = ""
+@*
+    if (idebox:get("Sun Visual Workshop")) then
+        ret = ret .. "@minus{}@minus{}enable-workshop "
+    end
+    if (not idebox:get("NetBeans")) then
+        ret = ret .. "@minus{}@minus{}disable-netbeans "
+    end
+    if (idebox:get("Sniff Interface")) then
+        ret = ret .. "@minus{}@minus{}enable-sniff "
+    end
+@*
+    return ret
+end
+@*
+function getconfigureopts()
+    return getprefixconf() .. " " .. getscriptconf() .. " " .. getguiconf() .. " " .. getideconf()
+end
+@*
+function handleadvmenu()
+    if (#advmenu:get("CC") > 0) then
+        os.setenv("CC", advmenu:get("CC"))
+    end
+    if (#advmenu:get("CFLAGS") > 0) then
+        os.setenv("CFLAGS", advmenu:get("CFLAGS"))
+    end
+    if (#advmenu:get("CPPFLAGS") > 0) then
+        os.setenv("CPPFLAGS", advmenu:get("CPPFLAGS"))
+    end
+    if (#advmenu:get("LDFLAGS") > 0) then
+        os.setenv("LDFLAGS", advmenu:get("LDFLAGS"))
+    end
+end
+@*
+function Install()
+    local prefix = prefixfield:get()
+    handleadvmenu()
+@*
+    @minus{}@minus{} 1: Extracting Files (Automaticly set by install.extractfiles)
+    @minus{}@minus{} 2: ./configure
+    @minus{}@minus{} 3: make
+    @minus{}@minus{} 4: make install
+    install.setstepcount(4)
+@*
+    if (os.writeperm(prefix) == false) then
+        install.askrootpw()
+    end
+@*
+    install.extractfiles()
+    os.chdir("vim70/")
+@*
+    install.setstatus("Configuring Vim for this system")
+    install.execute(string.format("./configure %s", getconfigureopts()))
+@*
+    install.setstatus("Compiling Vim")
+    install.execute("make")
+@*
+    install.setstatus("Installing files")
+    if (os.writeperm(prefix) == false) then
+        install.executeasroot("make install")
+    else
+        install.execute("make install")
+    end
+end}
 
 
 
@@ -1441,6 +1903,7 @@ This is a string containing the name of the current Operating System.
 Tries to change the current directory to directory @code{d}. On failure it will return @code{nil} and the error message, on success it will return @code{true}.
 @endluafunc
 
+@anchor{os.chmod}
 @luafunc os.chmod (f, p)
 Changes the permissions from file or directory @code{f} using the unix like permission bits taken from string @code{p}. On failure it will return @code{nil} and a string containing the error message, on success it will return @code{true}.
 Example:
@@ -1519,6 +1982,10 @@ Removes the file or directory @code{f}. Directories needs to be empty to be remo
 
 @luafunc os.rename (f, f2)
 Renames the file or directory @code{f} to @code{f2}. On error it will return @code{nil} and a string containing the error message, on success @code{true}.
+@endluafunc
+
+@luafunc os.setenv (e, v[, o=true])
+This function is used to change or add a shell environment variable. The name of this variable is specified by the argument @code{e}. The value should be a string and is specified by @code{v}. The optional argument, @code{o}, is used to specify if the value should be overwritten incase the variable already exists.
 @endluafunc
 
 @luafunc os.time ()
@@ -1737,14 +2204,15 @@ When this function is called more than once it won't do anything (the password i
 @endluafunc
 
 @anchor{install.execute}
-@luafunc install.execute (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
-This function will execute the shell command defined by string @code{s}. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. The optional argument, @code{r}, tells that the installation should be aborted when the command failed to execute.@*
+@luafunc install.execute (c[, r=true[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
+@c UNDONE
+This function will execute the shell command defined by string @code{s}. The optional argument, @code{r}, tells that the installation should be aborted when the command failes to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (see section X).@*
 @*
 This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.
 @endluafunc
 
 @anchor{install.executeasroot}
-@luafunc install.executeasroot (c[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."[, r=true]])
+@luafunc install.executeasroot (c[, r=true[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
 This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so.
 @endluafunc
 
@@ -1771,7 +2239,7 @@ Prints the message specified by argument @code{s} on the status window from the 
 
 @anchor{install.setstatus}
 @luafunc install.setstatus (s)
-You can use this function to specify the current status of the installation. This way the user can see what the installer is doing. @*
+You can use this function to specify a (short) message of the current status of the installation. This way the user can see what the installer is doing. @*
 Example:
 @codeblock{@minus{}@minus{} Somewhere inside the Install() function
 @minus{}@minus{} ...
@@ -1834,7 +2302,7 @@ The function will return a class with the following method functions (input shou
 Returns the current value hold by the input field.
 @endluafunc
 @luafunc input:setspacing (n)
-This function can be used to set the distance from the windows left border to the start position of the input field. The parameter @code{n} specifies the distance, with a range from 1-100. This function is used to make sure that each input field can start from a fixed position. Normally this depends on the length of the given label. So to make sure that each input field will start at the same position on the install screen, you should call this function for every input field with the same value.
+This function can be used to set the distance from the windows left border to the start position of the input field. The parameter @code{n} specifies the distance, with a range from 1-100. This function is used to make sure that each input field can start from a fixed position. So to make sure that each input field will start at the same position on the install screen, you should call this function for every input field with the same value. The default value is @samp{25}.
 @endluafunc
 @endluafunc
 
@@ -1911,6 +2379,10 @@ end}
 
 @section Other Functions
 The last few functions are not in any package but are global functions.
+
+@defvr Variable version
+This variable contains a string used to identify the current Nixstaller version. The current value is "0.2".
+@end defvr
 
 @luafunc assert (f[, ...[, m="Assert failed!"]])
 This function is mainly used to debug Lua scripts. If @code{r} is @code{false} or @code{nil} this function will call @code{error} with @code{m} as argument. If @code{r} is another value the function will return @code{r} and the variadic arguments between @code{f} and @code{m} (if existant). This is mostly used in combination with functions that will return @code{nil} on error (many functions from the @code{os} package do this for example).@*

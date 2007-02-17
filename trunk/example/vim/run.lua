@@ -94,6 +94,10 @@ function getideconf()
     return ret
 end
 
+function getconfigureopts()
+    return getprefixconf() .. " " .. getscriptconf() .. " " .. getguiconf() .. " " .. getideconf()
+end
+
 function handleadvmenu()
     if (#advmenu:get("CC") > 0) then
         os.setenv("CC", advmenu:get("CC"))
@@ -107,10 +111,6 @@ function handleadvmenu()
     if (#advmenu:get("LDFLAGS") > 0) then
         os.setenv("LDFLAGS", advmenu:get("LDFLAGS"))
     end
-end
-
-function getconfigureopts()
-    return getprefixconf() .. " " .. getscriptconf() .. " " .. getguiconf() .. " " .. getideconf()
 end
 
 function Install()

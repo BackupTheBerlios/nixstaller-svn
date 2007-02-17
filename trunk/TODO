@@ -7,6 +7,7 @@ OVERALL
 - Change file headers and copyright year
 - Popup dialog when install starts? (If yes add norwegian translations)
 - Check exit status (switch back to 127?)
+- Update SConstruct nixstaller file list.
 
 MAIN
 - Case of lua vars
@@ -23,19 +24,13 @@ FLTK FRONTEND
 
 DOCS
 - Max config var description length
-- Update examples and screenshots
+- Update screenshots
 - Check for right vertical spacing, paragraphs etc
 - Add norwegian translation references if author sends updated version (tutorials)
-- Move destdir to run.lua
-- inputfield's spacing is default 25
-- lua os.setenv function
-- Keep install.setstatus short
-- exec cmd can have multilines
-- Nixstaller ver lua var
 - New string get methods for lua radiobutton/checkbox
 - FAQ entry for GNU and packages
-- install.execute(asroot) has path and req param switched
 - ScreenList default
+- finish file for vim
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

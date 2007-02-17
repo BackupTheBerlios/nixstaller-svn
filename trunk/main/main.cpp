@@ -765,7 +765,7 @@ int CMain::LuaSetEnv(lua_State *L)
     if (lua_isboolean(L, 3))
         overwrite = lua_toboolean(L, 3);
     
-    setenv(/*CreateText*/(env), /*CreateText*/(val), overwrite);
+    setenv(env, val, overwrite);
     
     return 0;
 }
