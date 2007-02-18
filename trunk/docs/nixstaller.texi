@@ -112,8 +112,7 @@ Installing Nixstaller is easy: just extract the files to a directory and your do
 @item @command{./setup.sh}
 @end itemize
 
-@c UNDONE
-Also read the tutorials.
+Also read the @ref{Tutorials, tutorials}.
 
 
 
@@ -157,8 +156,7 @@ You can select which frontend(s) you want to include.
 
 
 @section Lua scripts
-@c UNDONE
-The installation is controlled by one or two lua scripts. In chapter X and chapter Y this is in detail explained.
+The installation is controlled by one or two lua scripts. These are explained in the @ref{Creating Installers} chapter.
 
 
 @section Translations
@@ -203,10 +201,10 @@ There are other things to be translated as well:
 @item Text used by Lua scripts
 @end itemize
 
-@c UNDONE
-The first 3 items will be explained in the next section. Lua scripts will be handled in chapter X.
+The first 3 items will be explained in the next section. Lua scripts will be handled in the chapter @ref{Creating Installers}.
 
 
+@anchor{welcome license finish}
 @section Welcome message, license agreement and the @samp{finish message}
 @table @strong
 @item Welcome message
@@ -217,9 +215,7 @@ This is the text used to display the License Agreement.
 This is the message that is displayed after the installation has (succesfully) finished.
 @end table
 
-Each of these items are stored in plain text files. The @emph{welcome message} is in the file @file{welcome}, the @emph{license agreement} is in a file called @file{license} and the @emph{finish message} is in the file @file{finish}.
-@c UNDONE
-For translations of any of these texts there should be a copy of the file put in a seperate directory. Chapter X describes the file layout and mentions where to put all the files.
+Each of these items are stored in plain text files. The @emph{welcome message} is in the file @file{welcome}, the @emph{license agreement} is in a file called @file{license} and the @emph{finish message} is in the file @file{finish}. For translations of any of these texts there should be a copy of the file put in a seperate directory. Chapter @ref{Creating Installers} describes the file layout and mentions where to put all the files.
 
 
 
@@ -283,7 +279,7 @@ A combination of the previous two. Examples: @file{files_linux_x86/}, @file{file
 @end table
 
 
-@section The @file{welcome}, @file{license} and @code{finish} Files
+@section The @file{welcome}, @file{license} and @file{finish} Files
 These files were already discussed in the previous chapter. Simply put them in the root of your project directory.
 
 
@@ -292,8 +288,9 @@ You can add an image to the Intro Screen. You have to specify the file name in t
 
 
 @section Lua Scripts
-@c UNDONE
-The creation and behaviour of the installer is controlled by 2 Lua scripts: @file{config.lua} and @file{run.lua}. If you're not familiar with Lua or programming in general it's recommended to read section X or atleast keep it close. Section Y is a complete reference for all the Lua functionality (including extensions from Nixstaller). You will probably want to check this after you read this and the @ref{Tutorials,,tutorials chapter}.
+The creation and behaviour of the installer is controlled by 2 Lua scripts: @file{config.lua} and @file{run.lua}. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or atleast keep it close.@*
+@*
+The appendix @ref{Lua Library Reference} is a complete reference for all the Lua functionality (including extensions from Nixstaller). You will probably want to check this after you read this and the @ref{Tutorials,,tutorials chapter}.
 
 @anchor{config.lua}
 @subsection First Lua Script: @file{config.lua}
@@ -323,7 +320,7 @@ An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of th
 @item targetarch
 A variable that should contain an array (@pxref{Tables}) of @ref{Strings,,strings} for the CPU architectures this installer should support. Nixstaller currently only supports @samp{x86} and this variable will default to this if not specified.
 @item targetos
-An array (@pxref{Tables}) of @ref{Strings,,strings} holding the names of the OSs (Operating Systems) which the installer should support. The OS names should be the lowercased output from the shell command @command{uname}. If not specified the variable will default to @code{@{"linux", "freebsd", "openbsd" @}}.
+An array (@pxref{Tables}) of @ref{Strings,,strings} holding the names of the OSs (Operating Systems) which the installer should support. The OS names should be the lowercased output from the shell command @command{uname}. If not specified the variable will default to the current OS.
 @end table
 Here is an example @file{config.lua} file with all the above variables:
 @codeblock{@minus{}@minus{} Example showing every variable
@@ -351,25 +348,22 @@ This function is, as the name suggests, used for initialization.@*
 @*
 The @code{destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it (see below) or point it to a temporary directory. The latter is accompished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).@*
 
-@c UNDONE
-As explained in section X there are a few (predefined) installation screens. To select which you want you should put some variables in the @code{ScreenList} table. These are the variable names of each screen:
+There are a few (predefined) installation screens. To select which you want you should put some variables in the @code{ScreenList} table. These are the variable names of each screen:
+@anchor{instscreens}
 @table @code
 @item WelcomeScreen
-@c UNDONE
-The screen that is usually shown at first. This screen can be used to display a graphic image (defined via @code{intropic}, see section X) and display an introduction message (via the @file{welcome} file, see section X). If this file doesn't exist the screen won't be displayed.
+The screen that is usually shown at first. This screen can be used to display a graphic image (defined via @code{intropic}, see @ref{config.lua}) and display an introduction message (via the @file{welcome} file, see @ref{welcome license finish, this section}). If this file doesn't exist the screen won't be displayed.
 @item LicenseScreen
-@c UNDONE
-Is used to display a license agreement specified through the @file{license} file (see section X). If this file doesn't exist the screen won't be displayed.
+Is used to display a license agreement specified through the @file{license} file (see @ref{welcome license finish, this section})). If this file doesn't exist the screen won't be displayed.
 @item SelectDirScreen
 This screen lets the user select a directory that will be stored in the @code{destdir} variable.
 @item InstallScreen
 When this screen is shown the installation begins and displays the current status. Obviously every installer should have one.
 @item FinishScreen
-@c UNDONE
-Displays the message defined through the @file{finish} file (see section X). If this file doesn't exist the screen won't be displayed.
+Displays the message defined through the @file{finish} file (see @ref{welcome license finish, this section})). If this file doesn't exist the screen won't be displayed.
 @end table
 
-By default @code{ScreenList} contains all of these screens.@*
+By default @code{ScreenList} contains all these screens.@*
 @*
 You can create new installation screens so that the user can configure variables which can affect the installation. To create a new screen we call the @ref{install.newcfgscreen} function. This function returns a variable pointing to a @ref{Classes,,class} that we can use to modify this screen. The screen can contain several @emph{widgets}. Here is a table showing them:
 @*
@@ -466,6 +460,7 @@ end}
 
 We start with defining the number of installation steps (2). Then the installation files are extracted to the directory that is defined by the @code{destdir} variable (see previous section). Then the status message is changed and a random shell command is executed. The last line shows how to retrieve a value with the @ref{input:get, get method function} from the inputfield class.
 
+@anchor{Creating the Installer}
 @section Creating the Installer
 After you have fully setup your project directory it's time to build the installer script.@*
 @*
@@ -478,8 +473,7 @@ The resulting script, @samp{setup.sh}, is placed in the current directory.
 
 
 @section Examples
-@c UNDONE
-For examples of project directory layouts see the @samp{example/} directory in the main Nixstaller directory. The tutorials (see section X) will also present some examples step by step.
+For examples of project directory layouts see the @samp{example/} directory in the main Nixstaller directory. The @ref{Tutorials, tutorials} will also present some examples step by step.
 
 
 @node Tutorials
@@ -510,8 +504,7 @@ This will install random software, press next to continue.
 @end quotation
 
 @subsection Selectable Destination Directory
-@c UNDONE
-For this the SelectDirScreen is used (see section X). Forunaly this screen is shown by default so we don't need to do anything.
+For this the SelectDirScreen is used (@pxref{instscreens, here}). Fortunaly this screen is shown by default so we don't need to do anything.
 
 @subsection Extract the installation files
 This is done by default if no @code{Install()} function is defined, so we don't have to worry about this one either.
@@ -548,8 +541,7 @@ If all went fine the directory structure should look like this:
     @end itemize
 @end itemize
 
-@c UNDONE
-Now call @file{geninstall.sh} from the main Nixstaller directory and supply the project directory as first argument (see also section X). This should supply you with an installer called @file{setup.sh}.
+Now call @file{geninstall.sh} from the main Nixstaller directory and supply the project directory as first argument (@pxref{Creating the Installer}). This should supply you with an installer called @file{setup.sh}.
 
 @section Second Tutorial: A More Advanced Installer: Cube
 In this tutorial we'll be making a slightly more advanced installer for the game @uref{http://www.cubeengine.com/, Cube}. The installer has the following tasks:
@@ -609,8 +601,7 @@ end}
 
 First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newcfgscreen}. Then a radiobutton widget is added to this screen through the @ref{cfgscreen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{ScreenList} variable.@*
 @*
-@c UNDONE
-The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{destdir} variable. After that we check what the user choose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assing it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automaticly included to this string (see also section X). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
+The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{destdir} variable. After that we check what the user choose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assing it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automaticly included to this string (@pxref{Strings}). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
 
 @subsection Creating the Installer
 Assuming that the project directory is called @file{Cube/} the layout of this directory should look like this:
@@ -697,7 +688,7 @@ The file starts with;
 @*
     prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
                                            "used to populate subdirectories such as bin/ to store executables " ..
-                                           "and etc for configuration files.", "/usr")
+                                           "and etc/ for configuration files.", "/usr")
 @*
     scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
                                       "Please note that the selected languages need to be installed in " ..
@@ -883,7 +874,7 @@ The @file{run.lua} file is now completely discussed and should look like this:
 @*
     prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
                                            "used to populate subdirectories such as bin/ to store executables " ..
-                                           "and etc for configuration files.", "/usr")
+                                           "and etc/ for configuration files.", "/usr")
 @*
     scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
                                       "Please note that the selected languages need to be installed in " ..
@@ -1054,10 +1045,10 @@ The project directory should have the following structure:
 Calling @file{geninstall.sh} from the Nixstaller directory with the path to project directory as first argument and @samp{vim70.sh} as second argument should produce the installer.
 
 @node Lua Basics
-@chapter Lua Basics
+@appendix Lua Basics
 
 @section Introduction
-Lua (@url{http://www.lua.org}) is used for configuring properties of the @emph{Install Package} and to control the installation process. Lua is a simple and easy to learn scripting language. In the next section a brief guide is given about Lua. Another good resource is the @uref{http://www.lua.org/pil,Lua Book}. Note that the online version describes version @emph{5.0} while Nixstaller uses @emph{5.1}. Though not much has been changed, especially not the basics.
+Lua (@url{http://www.lua.org}) is used for configuring properties of the @emph{Install Package} and to control the installation process. Lua is a simple and easy to learn scripting language. In this appendix a brief guide is given about Lua. Another good resource is the @uref{http://www.lua.org/pil,Lua Book}. Note that the online version describes version @emph{5.0} while Nixstaller uses @emph{5.1}. Though not much has been changed, especially not the basics.
 
 
 @section Lua Basics
@@ -1115,16 +1106,13 @@ Will be replaced by a double quote.
 Note that escape sequences are ignored with the @code{[[} and @code{]]} operators.
 
 @item Boolean
-@c UNDONE
 A Boolean is either @code{true} or @code{false}. They are used to enable/disable flags and test them in conditional lines. Example:
 @codeblock{a = true
 b = false}
 @item Tables
-@c UNDONE
-Tables are a generic type and can be used in many different ways. See ... for a detailed explanation.
+Tables are a generic type and can be used in many different ways. @xref{Tables} for a detailed explanation.
 @item Functions
-@c UNDONE
-Functions can also be stored in variables. Section X is about functions.
+Functions can also be stored in variables. @xref{Functions} for more info.
 @item @samp{@strong{nil}}
 As said before, @code{nil} is used to delete a variable. @code{nil} is also sometimes used to indicate @samp{Nothing}. Example:
 @codeblock{a = nil    @minus{}@minus{} a will now be collected by Lua's garbage collector}
@@ -1143,12 +1131,11 @@ Operators are used to operate on variables. For example to multiply 2 numbers or
     @addtablecol{Calculates the power}
 @endtablerow
 
-@c UNDONE
 @addtablerow{@code{not}, @code{-}, @code{#}}
     @addtablecol{Numbers}
-    @addtablecol{@code{not} returns @code{true} when a expression is false(see section X).@*
+    @addtablecol{@code{not} returns @code{true} when an expression is false (@pxref{Testing variables and values, this}).@*
 The minus in this case is the operator used for negative values.@*
-The @samp{#} is used to retrieve the number of entries in a table (see section X) or the length of a string.}
+The @samp{#} is used to retrieve the number of entries in a @ref{Tables, table} or the length of a @ref{Strings, string}.}
 @endtablerow
 
 @addtablerow{@code{/}, @code{*}}
@@ -1166,23 +1153,22 @@ The @samp{#} is used to retrieve the number of entries in a table (see section X
     @addtablecol{Concats 2 strings}
 @endtablerow
 
-@c UNDONE
 @addtablerow{@code{>}, @code{<}, @code{>=}, @code{<=}, @code{==}, @code{~=}}
     @addtablecol{Strings, Numbers, Tables}
     @addtablecol{Used to compare values @*
-See section X}
+@xref{Testing variables and values}}
 @endtablerow
 
 @addtablerow{@code{and}}
     @addtablecol{Anything}
     @addtablecol{Checks if 2 expressions are @code{true} @*
-See section X}
+@xref{Testing variables and values}}
 @endtablerow
 
 @addtablerow{@code{or}}
     @addtablecol{Anything}
     @addtablecol{Checks if 1 of 2 expressions is @code{true} @*
-See section X}
+@xref{Testing variables and values}}
 @endtablerow
 @endtable
 
@@ -1200,6 +1186,7 @@ Note that the @samp{..} operator can convert numbers to strings aswell:
 @codeblock{n = 5
 txt = "The number is: " .. n    @minus{}@minus{} txt = "The number is: 5"}
 
+@anchor{Testing variables and values}
 @subsection Testing variables and values
 
 @subsubsection Operators for testing
@@ -1218,15 +1205,14 @@ Less or equal to
 @item >=
 More or equal to
 @item and
-Tests if 2 expressions are true
+Tests if 2 expressions are @code{true}
 @item or
-Tests if one of 2 expressions is true
+Tests if one of 2 expressions is @code{true}
 @item not
-Tests if a expression is not true
+Tests if a expression is not @code{true}
 @end table
 
-@c UNDONE
-All of these work on @code{numbers} and @code{strings} and some might work on @code{tables} (see section X).
+All of these work on @code{numbers} and @code{strings}.The equal and not equal operators also work on @code{tables}.
 
 When a test succeeds @code{true} will be returned, when it fails @code{false} will be returned. Except for @code{or} and @code{and}. @code{or} will return the first expression if its true, otherwise the second. @code{and} will return the first expression if its false, otherwise the second.
 
@@ -1241,6 +1227,7 @@ c = text1 < text2   @minus{}@minus{} c = true (alphabetical comparisation)
 @*
 c = 5 > 2 and "5" < "2"   @minus{}@minus{} false (second expression is false)}
 
+@anchor{and or trick}
 As mentioned, the @code{or} and @code{and} operators will return one of the expressions. With that knowledge a nice trick can be made:
 @codeblock{a = 5
 b = 2
@@ -1255,9 +1242,9 @@ This might look a bit odd. If you're a C (or C++) programmer you may recognize t
 @item @code{n = ...}: @samp{12} was returned, so @code{n} is now @samp{12}.
 @end itemize
 
-@c UNDONE
-If you find this confusing, you can use @code{if statements} (see section X) instead. This little trick is mainly used as a shortcut.
+If you find this confusing, you can use @ref{If statements, if statements} instead. This little trick is mainly used as a shortcut.
 
+@anchor{If statements}
 @subsubsection If statements
 @code{if statements} are used to test some expression and if @code{true} it will execute some other code.
 The general syntax is like this:
@@ -1275,7 +1262,6 @@ An expression is false when the value is @code{false} or @code{nil}. In any othe
 @strong{NOTE}: In some other (scripting) languages zero (@samp{0}) and an empty @code{string} are @code{false}, however this is not the case in Lua.
 
 Here are some examples (with comments) to illustrate some usage of if statements.
-@c UNDONE
 @codeblock{n = false
 if n then
     @minus{}@minus{} Impossible
@@ -1283,7 +1269,7 @@ else
     @minus{}@minus{} Do something here
 end
 @*
-@minus{}@minus{} This is the same as the 'and-or' trick of section X
+@minus{}@minus{} This is the same as the @ref{and or trick}
 if (a > b) then
     n = c
 else
@@ -1296,8 +1282,7 @@ elseif (msg == "no") and (flag) then
     flag = false
 end}
 
-@c UNDONE
-@strong{Note}: I used parenthesis(@samp{()}) around some expressions and will in later examples. This is merely for clarity in most cases. In above examples the parenthesis don't have any effect. See section X for more details.
+@strong{Note}: I used parenthesis(@samp{()}) around some expressions and will in later examples. This is merely for clarity in most cases. In above examples the parenthesis don't have any effect.
 
 @subsection Loops
 @emph{Loops} are used to execute some code lines more than once. In the following sections the different kind of loops available in Lua are explained.
@@ -1330,8 +1315,7 @@ until n > 10}
 This does exactly the same as the @code{while} example. So why choose @code{repeat} over @code{while}? A reason is when you want to execute the code in the block atleast once. With a @code{while} loop the expression has to be @code{true} before the loop can even begin. With the @code{repeat} - @code{until} statement however it will check the expression at the end of the block and therefore execute the code atleast once.
 
 @subsubsection @code{for} loops
-@c UNDONE
-There are 2 kind of @code{for} loops: the @emph{numeric} and the @emph{generic}. We will discuss the first here, the @emph{generic} @code{for} loop will be explained in section X.
+There are 2 kind of @code{for} loops: the @emph{numeric} and the @emph{generic}. We will discuss the first here, the @emph{generic} @code{for} loop will be explained @ref{Traversing Tables, here}.
 
 The @emph{numeric} @code{for} loop looks like this:
 @codeblock{for var=expr1,expr2,expr3 do
@@ -1359,13 +1343,12 @@ end}
 Here are some points to remember with @code{for} loops:
 @itemize @bullet
 @item As been said the variable used for the loop only exists inside the loop. If you need the value outside the loop you should copy it to another variable.
-@item All the three expressions are evaluated just once. This is important to know when you use functions (see section X) for an expression.
+@item All the three expressions are evaluated just once. This is important to know when you use @anchor{Functions, functions} for an expression.
 @item Do not modify the variable used by the @code{for} loop by hand.
 @end itemize
 
 @subsubsection @code{break}
-@c UNDONE
-To escape from a loop in Lua you can use @code{break} (or @code{return} which is handled in section X).
+To escape from a loop in Lua you can use @code{break} (or @ref{Return values, return}).
 Here is an example:
 @codeblock{n = 1
 while (true)  @minus{}@minus{} Infinite loop
@@ -1377,6 +1360,7 @@ end}
 This will escape from the loop when n equals to @samp{50}.
 Note that you can only use @code{break} at the end of a code block. In this case it was at the end of the @samp{if-then} block. If this wasn't the case Lua would throw an error.
 
+@anchor{Functions}
 @subsection Functions
 @emph{Functions} are a way to create @samp{commands}. With functions a piece of code can be executed on all kinds of places.
 
@@ -1421,9 +1405,9 @@ Now if @code{increment} isn't specified with any arguments (@samp{increment()}) 
 end}
 Operator @code{or} will return the second expression if the first is @code{false} or @code{nil}, thus defaults to @samp{1}.@*
 @*
-@c UNDONE
-Functions can also have a variable number of arguments. See section X for more info.
+Functions can also have a variable number of arguments. @xref{Variadic Functions} for more info.
 
+@anchor{Return values}
 @subsubsection Return values
 When a function is called it can also return data to the caller. Here is how it generally looks:
 @codeblock{function func()
@@ -1470,12 +1454,10 @@ As shown above @code{local} variables can have the same name as a existing globa
 
 
 @section Advanced Lua
-@c UNDONE
-In this section some of the more advanced features of Lua will be shown. Atleast the first 2 sections of tables is important. For less advanced installers these might be enough for now.
+In this section some of the more advanced features of Lua will be shown. Atleast the first 2 sections about tables are important. For less advanced installers these might be enough for now.
 
 @subsection Functions As Variables
-@c UNDONE
-As said before in section X, functions are a variable type. The way we did to create functions so far is actually a shortcut to assign a function to a (global) variable:
+Functions are also a variable type. The way we did to create functions so far is actually a shortcut to assign a function to a (global) variable:
 @codeblock{function f()
     @minus{}@minus{} ...
 end}
@@ -1558,10 +1540,10 @@ is the same as
 @codeblock{t.field = 1}
 The reason for this alternative syntax is to have a shortcut specifically for records
 
+@anchor{modules}
 @subsubsection Table Seen As A Package
 Another popular way is to use tables for @emph{packages} or @emph{modules}. A good example are the Lua libraries discussed later. 
-@c UNDONE
-A package is basicly a record which is defined somewhere else. This record contains mostly functions and sometimes other variables. Section X describes that functions are variable types. Using that knowledge we can create a package like this:
+A package is basicly a record which is defined somewhere else. This record contains mostly functions and sometimes other variables. As said before,functions are a variable type. Using that knowledge we can create a package like this:
 @codeblock{mypackage = @{ @}
 mypackage.f = function()
                 @minus{}@minus{} Some code
@@ -1583,8 +1565,7 @@ In this guide we'll skip the details about defining new classes and terms such a
 @*
 Usually calling function methods from a class is slightly different than that from packages: with packages you used the @samp{.} operator, with classes you use the @samp{:} operator instead.@*
 @*
-@c UNDONE
-Here follows an example using the @code{io} package from the Lua library. In section X all the IO functionality is discussed.
+Here follows an example using the @code{io} package from the Lua library. @xref{io} where all the IO functionality is discussed.
 @codeblock{@minus{}@minus{} The following line opens the file 'myfile.txt' for reading (specified by "r").
 @minus{}@minus{} The io.open function returns a class that can be used to operate on the opened file.
 file = io.open("myfile.txt", "r")
@@ -1595,6 +1576,7 @@ text = file:read("*all")
 @minus{}@minus{} And when we're done, we use the close method to close the file and free the used resources:
 file:close()}
 
+@anchor{Traversing Tables}
 @subsubsection Traversing Tables
 To traverse a table we can use the @emph{generic} @code{for} loop combined with a @emph{iterator function}. The syntax looks like this:
 @codeblock{for vars in expression do
@@ -1606,8 +1588,7 @@ These are 1 or more variables (depending on the used iterator). Multiple variabl
 @item expression
 Normally the iterator function
 @end table
-@c UNDONE
-So what is a iterator function? To say it easy: when you call it, it will return the next entry of a table. It can do so because it will store its current state by each call. There are different kinds of iterators in Lua. We'll discuss 2 types here and some others are explained in section X. @*
+So what is an iterator function? To say it easy: when you call it, it will return the next entry of a table. It can do so because it will store its current state by each call. There are different kinds of iterators in Lua. We'll discuss 2 types here and some others are explained in the @ref{Lua Library Reference}.@*
 @*
 The first we discuss is the @code{pairs} function. This function, combined with a (generic) @code{for} loop, can traverse @emph{any} table. Here is a example:
 @codeblock{t = @{ @}
@@ -1619,8 +1600,7 @@ for i,v in pairs(t) do
     print("Table entry: " .. i)
     print("Contains: " .. v)
 end}
-@c UNDONE
-You might be wondering where @code{print} comes from. It's a Lua function which prints text to the standard output (usually a terminal). This function is discussed further in section X @*
+You might be wondering where @code{print} comes from. It's a Lua function which prints text to the standard output (usually a terminal). This function is discussed further @ref{print, here} @*
 @*
 Running the program it produced the following output:
 @codeblock{Table entry: 1
@@ -1676,6 +1656,7 @@ print("t got " .. #t .. " elements")    @minus{}@minus{} Prints "t got 3 element
 t[5] = 25
 print("t got " .. #t .. " elements")    @minus{}@minus{} Prints "t got 3 elements", because index 4 is nil}
 
+@anchor{Variadic Functions}
 @subsection Variadic Functions
 @emph{Variadic functions} are functions with a @emph{variable} number of arguments. Here is a example that displays how to use them:
 @codeblock{function f(...)
@@ -1707,13 +1688,14 @@ You can also pass the arguments to another function:
 end}
 
 
-@node Lua Library Reference
-@chapter Lua Library Reference
 
-@c UNDONE
-Now we discussed the basics of Lua we start with the Lua library. The Lua library contains many different functions. Most are inside modules (see section X). A special note for people who already know Lua: Nixstaller has lots of additional functions added to existing modules, so this section is handy to read for everyone.@*
+
+@node Lua Library Reference
+@appendix Lua Library Reference
+
+In the previous appendix we discussed the basics of Lua. In this chapter we start with the Lua library. The Lua library contains many different functions. Most are inside @ref{modules}. A special note for people who already know Lua: Nixstaller has lots of additional functions added to existing modules, so this section is handy to read for everyone.@*
 @*
-For each function a definition will be given with a description beneath. In the definition the expected arguments for this function are given aswell. Optional arguments are between square brackets, three dots (@samp{...}) means that it is a variadic function. If an argument has a default value it will be shown with @samp{=val} right next to the argument.
+For each function a definition will be given with a description beneath it. In the definition the expected arguments for this function are given aswell. Optional arguments are between square brackets, three dots (@samp{...}) means that it is a variadic function. If an argument has a default value it will be shown with @samp{=val} right next to the argument.
 
 
 @section String Functions
@@ -1906,8 +1888,7 @@ If no arguments are given returns a @samp{random} number between 0 and 1. If @co
 @endluafunc
 
 @luafunc math.randomseed (n)
-@c UNDONE
-Sets the @samp{seed} for the @code{math.random} function. For each seed an unique series of numbers will be returned by the @code{math.random} function. So if the seed is always the same (ie not changed) @code{math.random} will always return the same values. To get @samp{real} random numbers a way is to set the seed to the system time when the Lua script is started. The system time can be retrieved by the @code{os.time} function, which is discussed in section X.
+Sets the @samp{seed} for the @code{math.random} function. For each seed an unique series of numbers will be returned by the @code{math.random} function. So if the seed is always the same (ie not changed) @code{math.random} will always return the same values. To get @samp{real} random numbers a way is to set the seed to the system time when the Lua script is started. The system time can be retrieved by the @ref{os.time} function.
 @endluafunc
 
 
@@ -1963,10 +1944,10 @@ Returns the difference in seconds from @code{t2} and @code{t1}. Mostly this is t
 @endluafunc
 
 @luafunc os.execute (c)
-@c UNDONE
-Executes the shell command @code{c}. This function returns the exit code from the executed command. It's recommended to use install.execute() instead (see section X).
+Executes the shell command @code{c}. This function returns the exit code from the executed command. It's recommended to use @ref{install.execute}.
 @endluafunc
 
+@anchor{os.exit}
 @luafunc os.exit ()
 Terminates the program.
 @endluafunc
@@ -2022,6 +2003,7 @@ Renames the file or directory @code{f} to @code{f2}. On error it will return @co
 This function is used to change or add a shell environment variable. The name of this variable is specified by the argument @code{e}. The value should be a string and is specified by @code{v}. The optional argument, @code{o}, is used to specify if the value should be overwritten incase the variable already exists.
 @endluafunc
 
+@anchor{os.time}
 @luafunc os.time ()
 Returns the current system time. This can for example be used as an argument for @code{math.randomseed}. There is also a second version which will put information in a table, such as the current day and month. For this see the @uref{http://www.lua.org/manual/5.1/,Lua Manual}.
 @endluafunc
@@ -2042,8 +2024,7 @@ The @code{io} package provides several Input/Output functions. As with some func
 At first some functions of the @code{io} package will be discussed. After that the @code{file} class will be explained. Instead of adding examples for most functions, this section ends with a few bigger examples. This is because most functions need eachother.
 
 @luafunc io.dir (d)
-@c UNDONE
-This function is a function iterator (see section X) that is used to scan directory @code{d}. On success the function will return a string containing the next file or directory name. On failure (ie. the directory does not exist) it will return @code{nil} and a string containing the error message.@*
+This function is a function iterator (@pxref{Traversing Tables}) that is used to scan directory @code{d}. On success the function will return a string containing the next file or directory name. On failure (ie. the directory does not exist) it will return @code{nil} and a string containing the error message.@*
 Example:
 @codeblock{@minus{}@minus{} This will list every file and directory in the current directory
 for d in io.dir(".") do
@@ -2051,6 +2032,7 @@ for d in io.dir(".") do
 end}
 @endluafunc
 
+@anchor{io.open}
 @luafunc io.open (f[, m="r"])
 Tries to open the file @code{f}. The optional argument @code{m} defines how to open the file. This should be a string containing one of these:
 @table @code
@@ -2069,29 +2051,26 @@ Opens the file in append and read mode. This is the same as the "a" option excep
 @end table
 A @samp{b} can be appended to the mode string indicating that it's a binary file. This isn't necessary on most UNIX like systems though because binary and text files are threaded equally.@*
 @*
-@c UNDONE
-On success, this function will return a @emph{file handle}. This is a class (see section X) with member functions to operate on the file. File handles are discussed in section X. When the file could not be opened, @code{nil} and an error message is returned.
+On success, this function will return a @emph{file handle}. This is a @ref{Classes, class} with member functions to operate on the file. File handles are discussed @ref{File Handles, here}. When the file could not be opened, @code{nil} and an error message is returned.
 @endluafunc
 
 @luafunc io.popen (c[, m="r"])
-@c UNDONE
-This will execute the shell command @code{c} in a seperate process. The function returns a @emph{file handle} like @code{io.open} does. More on file handles in section X.@*
+This will execute the shell command @code{c} in a seperate process. The function returns a @emph{file handle} like @code{io.open} does. More on file handles @ref{File Handles, here}.@*
 @*
 If @code{m} is "r" all data from the command that is written to the standard output can be read. If "w" is specified the standard input from the file is linked to the data provided from writes.
 @endluafunc
 
 @luafunc io.tmpfile ()
-@c UNDONE
-Creates a temporary file and returns a @emph{file handle}. This file has a random name and is opened as "r+b" (see section X). On exit the file is removed automaticly.
+Creates a temporary file and returns a @emph{file handle}. This file has a random name and is opened as "r+b" (@pxref{io.open}). On exit the file is removed automaticly.
 @endluafunc
 
 @luafunc io.type (t)
 This function checks the file handle @code{f}. If the file is opened it will return the string "file", if it's closed "closed file" or @code{nil} if @code{t} is not a file handle.
 @endluafunc
 
+@anchor{File Handles}
 @subsection File Handles
-@c UNDONE
-File handles are classes (see section X) that can operate on files, such as reading or writing. They are returned from @code{io.open}, @code{io.popen} and @code{io.tmpfile}. The file handle class is referred with the name @code{file} each time below.
+File handles are @ref{Classes, classes} that can operate on files, such as reading or writing. They are returned from @code{io.open}, @code{io.popen} and @code{io.tmpfile}. The file handle class is referred with the name @code{file} each time below.
 
 @luafunc file:close ()
 Closes the file. When a file is closed you cannot read or write from/to it anymore. Note that each file eventually is closed automaticly.
@@ -2102,8 +2081,7 @@ Normally writes are @emph{buffered}. This function forces to write and clean the
 @endluafunc
 
 @luafunc file:lines ()
-@c UNDONE
-This is an iterator function (see section X) that can be used in a generic @code{for} loop to get each line from the file. Note that the trailing newlines are deleted from the output.
+This is an iterator function (@pxref{Traversing Tables}) that can be used in a generic @code{for} loop to get each line from the file. Note that the trailing newlines are deleted from the output.
 @endluafunc
 
 @luafunc file:read (...)
@@ -2160,7 +2138,7 @@ f, msg = io.fopen("test.txt", "r")    @minus{}@minus{} f will contain the file h
 @minus{}@minus{} File could not be opened? (ie doesn't exists)
 if (not f) then
     print("Could not open file: " .. msg)
-    exit(1)    @minus{}@minus{}- UNDONE: see section X
+    exit(1)    @minus{}@minus{} @xref{os.exit}
 end
 @*
 print(f:read("*a"))
@@ -2218,10 +2196,9 @@ end}
 
 
 @section Installation Functions
-@c UNDONE
-This section describes all the install related functions. They are obviously Lua extensions so you won't find them in any other Lua manual. @strong{All} these functions should only be called from the @code{Install()} function. It's better to use this section as a reference after you've read chapter X.@*
+This section describes all the install related functions. They are obviously Lua extensions so you won't find them in any other Lua manual. @strong{All} these functions should only be called from the @code{Install()} function. It's better to use this section as a reference after you've @ref{Creating Installers}.@*
 @*
-First all the functions from the @code{install} package are described. After that the @samp{config screen class} (used to create new installer screens) and the @samp{config menu class} (a menu class to be used in a custom install screen) are discussed. For examples of these functions you should read the tutorials (see section X).
+First all the functions from the @code{install} package are described. After that the @samp{config screen class} (used to create new installer screens) and the @samp{config menu class} (a menu class to be used in a custom install screen) are discussed. For examples of these functions you should read the @ref{Tutorials, tutorials}.
 
 @subsection The @code{install} Module
 
@@ -2239,8 +2216,7 @@ When this function is called more than once it won't do anything (the password i
 
 @anchor{install.execute}
 @luafunc install.execute (c[, r=true[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
-@c UNDONE
-This function will execute the shell command defined by string @code{s}. The optional argument, @code{r}, tells that the installation should be aborted when the command failes to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (see section X).@*
+This function will execute the shell command defined by string @code{s}. The optional argument, @code{r}, tells that the installation should be aborted when the command failes to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (@pxref{Strings}).@*
 @*
 This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.
 @endluafunc
@@ -2262,8 +2238,7 @@ This function is used to assign a temporary directory the the @code{destdir} var
 
 @anchor{install.newcfgscreen}
 @luafunc install.newcfgscreen ([t])
-@c UNDONE
-This function will return a class for a new @emph{configuration screen}. The members of this class are described in section X. The optional argument, @code{t}, specifies a (short) title for this screen.
+This function will return a class for a new @emph{configuration screen}. The members of this class are described @anchor{cfgscreen, here}. The optional argument, @code{t}, specifies a (short) title for this screen.
 @endluafunc
 
 @anchor{install.print}
@@ -2288,23 +2263,27 @@ This function is used to specify how many @emph{steps} the installation has, spe
 Note that @code{install.extractfiles} will call this function aswell, so you most lickely want to increment @code{n} by one.
 @endluafunc
 
+@anchor{cfgscreen}
 @subsection The @code{config screen} class
 The class described here is returned after a call to @code{install.newcfgscreen}. The function definitions below use @samp{cfgscreen} as classname, though you should replace that name with the name of the variable that contains the class.
 
 @anchor{cfgscreen:addcfgmenu}
 @luafunc cfgscreen:addcfgmenu ([t])
-@c UNDONE
-Creates a new @samp{config menu}. The string parameter @code{t} sets a title. The menu is used to let the user configure certain parameters. These parameters can be paths (configured through a file manager), strings, boolean flags (can be enabled or disabled) or a list with options. The function will return a class containing function methods to add parameters, see section X for info about these.
+Creates a new @samp{config menu}. The string parameter @code{t} sets a title. The menu is used to let the user configure certain parameters. These parameters can be paths (configured through a file manager), strings, boolean flags (can be enabled or disabled) or a list with options. The function will return a class containing function methods to add parameters. These are described @ref{cfgmenu, here}.
 @endluafunc
 
 @anchor{cfgscreen:addcheckbox}
 @luafunc cfgscreen:addcheckbox (t, o)
 Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
-@luafunc chkbox:get (n)
-Returns @code{true} if the option from array index @code{n} is enabled or @code{false} when disabled.
+@luafunc chkbox:get (s)
+Returns @code{true} if the option @code{s} is enabled or @code{false} when disabled.
 @endluafunc
-@luafunc chkbox:set (n, e)
-If @code{e} is @code{true} the option at position @code{n} will be enabled, if @code{false} it will be disabled.
+@luafunc chkbox:set (n, ..., e)
+This variadic function enables or disables one or more options. The first argument, @code{n}, and the rest before argument @code{e} are the option numbers to enable or disable. If @code{e} is @code{true} the option(s) number(s) are enabled, if @code{false} they will be disabled.@*
+@*
+Example:
+@codeblock{@minus{}@minus{} This will enable the first and third option:
+mybox:set(1, 3, true)}
 @endluafunc
 @endluafunc
 
@@ -2344,16 +2323,16 @@ This function can be used to set the distance from the windows left border to th
 @luafunc cfgscreen:addradiobutton (t[, o])
 This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
 @luafunc radio:get ()
-Returns the array index number of the option that is enabled.
+Returns the name of the option that is enabled.
 @endluafunc
 @luafunc radio:set (n)
 Enables the option at array index @code{n}.
 @endluafunc
 @endluafunc
 
+@anchor{cfgmenu}
 @subsection The @code{config menu} Class
-@c UNDONE
-This (sub)section describes the @code{config menu} class, which is created by @code{cfgscreen:addcfgmenu} (see section X). This menu is used to let the user configure various parameters through a menu. A type for these parameters is specified so that the user can change them in a logic way; file paths with a file manager, parameters with predefined options through a listbox etc.
+This (sub)section describes the @code{config menu} class, which is created by @ref{cfgscreen:addcfgmenu}. This menu is used to let the user configure various parameters through a menu. A type for these parameters is specified so that the user can change them in a logic way; file paths with a file manager, parameters with predefined options through a listbox etc.
 The class contains the following methods (replace cfgmenu with the variable name pointing to the class):
 
 @luafunc cfgmenu:addbool (p, d[, v=false])
@@ -2378,8 +2357,7 @@ Returns the value from parameter @code{p}. If the type of @code{p} is a boolean,
 
 
 @section GUI Functions
-@c UNDONE
-There are several functions available through the @code{gui} package which interact with the user. Like the @code{install} package, all of these functions should only be called in the @code{install} function (see section X).
+There are several functions available through the @code{gui} package which interact with the user. Like the @code{install} package, all of these functions should only be called in the @code{Install} function (@pxref{Creating the Installer}).
 
 @luafunc gui.choicebox (m, b1, b2[, b3])
 Creates a window that will show the message identified by function argument @code{m}. @code{b1}, @code{b2} and (optionally) @code{b3} is each a string used for a button name (so the window can have 2 or 3 buttons). On failure the function will return the number of the last button (@samp{3}). On success the number of the clicked button is returned.
@@ -2474,6 +2452,7 @@ t.age = 21
 t.country = The Netherlands}
 @endluafunc
 
+@anchor{print}
 @luafunc print (s[, ...])
 This function will print all the given arguments to the standard output (usually the terminal). Since the ncurses frontend already uses the terminal it will call @code{os.log} instead. This function is mainly only used for debugging, since the user probably won't notice the output.
 @endluafunc

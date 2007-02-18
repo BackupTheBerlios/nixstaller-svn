@@ -5,7 +5,7 @@ function Init()
     
     prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
                                            "used to populate subdirectories such as bin/ to store executables " ..
-                                           "and etc for configuration files.", "/usr")
+                                           "and etc/ for configuration files.", "/usr")
     
     scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
                                       "Please note that the selected languages need to be installed in " ..

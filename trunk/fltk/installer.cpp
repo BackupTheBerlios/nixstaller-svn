@@ -37,6 +37,9 @@
 int TitleHeight(int w, const char *desc)
 {
     int lines = 1;
+    
+    w -= 10; // HACK: FLTK seems to offset a little more
+    
     const int defheight = fl_height();
 
     if (desc && *desc)
@@ -45,7 +48,7 @@ int TitleHeight(int w, const char *desc)
         double widthfromline = 0.0;
         for (size_t chars=0; chars<length; chars++)
         {
-            if ((desc[chars] == '\n') || (widthfromline > static_cast<double>(w)))
+            if ((desc[chars] == '\n') || (widthfromline >= static_cast<double>(w)))
             {
                 lines++;
                 widthfromline = 0.0;
@@ -502,7 +505,7 @@ CLuaInputField::CLuaInputField(int x, int y, int w, int h, const char *label, co
 Fl_Group *CLuaInputField::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int x = group->x(), y = group->y() + DescHeight(), w = (m_pGroup->w() * GetDefaultSpacing()) / 100;
+    int x = group->x(), y = group->y() + DescHeight() + 5, w = (m_pGroup->w() * GetDefaultSpacing()) / 100;
     
     if (!m_szLabel.empty())
     {
@@ -730,7 +733,7 @@ void CLuaDirSelector::OpenDirChooser()
 Fl_Group *CLuaDirSelector::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int x = group->x(), y = group->y() + DescHeight(), w = group->w() - x - m_iButtonWidth - 20;
+    int x = group->x(), y = group->y() + DescHeight() + 5, w = group->w() - x - m_iButtonWidth - 20;
     
     CreateDirSelector();
     
@@ -888,7 +891,7 @@ void CLuaCFGMenu::SetChoice(int n)
 Fl_Group *CLuaCFGMenu::Create()
 {
     Fl_Group *group = CBaseLuaWidget::Create();
-    int x = group->x(), y = group->y() + DescHeight();
+    int x = group->x(), y = group->y() + DescHeight() + 5;
     
     group->add(m_pMenu = new Fl_Hold_Browser(x, y, m_iMenuWidth, m_iMenuHeight));
     m_pMenu->callback(MenuCB, this);

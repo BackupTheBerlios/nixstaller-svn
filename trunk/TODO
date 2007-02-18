@@ -17,7 +17,6 @@ LIBSU
 - tmp files not always cleared?
 
 NCURSES FRONTEND
-- Check missing headers
 
 FLTK FRONTEND
 - Compile FLTK with exception support for netbsd
@@ -27,7 +26,6 @@ DOCS
 - Update screenshots
 - Check for right vertical spacing, paragraphs etc
 - Add norwegian translation references if author sends updated version (tutorials)
-- New string get methods for lua radiobutton/checkbox
 - FAQ entry for GNU and packages
 
 FOR RELEASE
