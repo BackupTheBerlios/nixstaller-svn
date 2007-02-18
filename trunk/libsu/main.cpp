@@ -669,7 +669,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     }
 
     int stat = WaitForChild();
-    if (stat != 0)
+    if (stat == 127)
     {
         SetError(SU_ERROR_EXECUTE, "Couldn't execute \'%s\'", m_szCommand.c_str());
         return false;

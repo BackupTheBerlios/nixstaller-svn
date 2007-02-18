@@ -546,6 +546,7 @@ Now call @file{geninstall.sh} from the main Nixstaller directory and supply the 
 @section Second Tutorial: A More Advanced Installer: Cube
 In this tutorial we'll be making a slightly more advanced installer for the game @uref{http://www.cubeengine.com/, Cube}. The installer has the following tasks:
 @itemize @bullet
+@item Run on Linux and FreeBSD systems.
 @item Let the user select a language.
 @item Show a short introduction message describing Cube.
 @item Let the user select a destination directory.
@@ -564,7 +565,7 @@ This file will be slightly more complex than that from the first tutorial:
 @codeblock{@minus{}@minus{} Example config.lua file from second tutorial
 appname = "Cube"
 targetos = @{ "linux", "freebsd" @}}
-We've limited the supporting operating system to Linux and FreeBSD, simply because there are only Cube binaries for these 2 systems.
+We've limited the supporting operating systems to Linux and FreeBSD, simply because there are only Cube binaries for these 2 systems.
 
 @subsection @file{run.lua}
 Absent in the previous tutorial, we create another Lua script file called @file{run.lua}. Here is how it should look like:
@@ -638,6 +639,7 @@ Now call @file{geninstall.sh} from the Nixstaller directory, supply it with 2 ar
 @section Third Tutorial: Installer for Vim
 In the last tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim}. The installer should have the following features:
 @itemize @bullet
+    @item Run on every OS that Nixstaller supports (linux, freebsd, netbsd, openbsd and sunos).
     @item Let the user select a language.
     @item Show a welcome screen with the Vim logo and a short message.
     @item Let the user configure several compilation settings:
@@ -673,7 +675,8 @@ To show the README after installation we include the @samp{FinishScreen}. This s
 @subsection @file{config.lua}
 For our installer the @file{config.lua} file should look like this:
 @codeblock{appname = "VIM 7.0"
-intropic = "vim48x48.png"}
+intropic = "vim48x48.png"
+targetos = @{ "linux", "freebsd", "netbsd", "openbsd", "sunos" @}}
 The @code{intropic} variable is used to specify the file name of the logo. Note that this logo should @emph{always} be in your project directory.
 
 @subsection @file{run.lua}
