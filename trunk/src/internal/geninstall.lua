@@ -258,8 +258,8 @@ function PrepareArchive()
     os.copy(confdir .. "/finish", destdir)
 
     -- Some internal stuff
-    RequiredCopy(curdir .. "/internal/startupinstaller.sh", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/internal/about", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
     
     -- Language files
     for _, f in pairs(languages) do

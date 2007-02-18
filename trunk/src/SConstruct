@@ -423,8 +423,8 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widget
 # Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
-c_bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
-cpp_bin_dir = 'bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
+c_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
+cpp_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
 
 # Default to all
 Default(lzma, lzma_dec, edelta, fltk, ncurses, main, libsu, env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, fltk), env.Install(cpp_bin_dir, ncurses))
