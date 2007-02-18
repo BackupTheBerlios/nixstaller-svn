@@ -6,6 +6,7 @@ OVERALL
 - OBSD bins? (if not remove from manual)
 - Popup dialog when install starts? (If yes add norwegian translations)
 - Update SConstruct nixstaller file list.
+- Update SCons example?
 
 MAIN
 - Case of lua vars
@@ -21,15 +22,14 @@ FLTK FRONTEND
 
 DOCS
 - Max config var description length
-- Update screenshots
 - Check for right vertical spacing, paragraphs etc
-- Add norwegian translation references if author sends updated version (tutorials)
-- FAQ entry for GNU and packages
+- Add norwegian translation references if author sends updated version (tutorials, credits)
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
 - Disable libsu logging
 - Disable debug Lua lib
+- Update site: screenshots, FAQ(GPL and Nixstaller), Manual
 
 ----------------------------- LATER ------------------------------------
 

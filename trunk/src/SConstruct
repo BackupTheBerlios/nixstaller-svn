@@ -11,26 +11,18 @@ import tarfile
 # --------------------------------------------------------------------------------------
 
 distfiles_user = [
-'docs/nixstaller.html',
+'docs/html/',
+'docs/macros-default.texi',
+'docs/macros-html.texi',
+'docs/nixstaller.texi',
+'docs/mkdoc.sh',
+'docs/styles.css',
 'docs/fltk.png',
 'docs/ncurs.png',
-'example/simple/install.cfg',
+'example/simple/config.lua',
 'example/simple/welcome',
-'example/simple/files_all/foo.bin',
 'example/simple/files_all/README',
 'example/simple/lang/dutch/strings',
-'example/advanced/install.cfg',
-'example/advanced/welcome',
-'example/advanced/license',
-'example/advanced/files_all/bar.cpp',
-'example/advanced/files_all/configure',
-'example/advanced/files_all/README',
-'example/advanced/lang/dutch/strings',
-'example/advanced/lang/dutch/welcome',
-'example/scons/install.cfg',
-'example/scons/welcome',
-'example/scons/files_all/',
-'example/scons/lang/dutch/strings',
 'fltk/fltk.cpp',
 'fltk/fltk.h',
 'fltk/widgets.cpp',
@@ -392,7 +384,7 @@ if not env.GetOption('clean'):
             Exit(1)
         
     env = conf.Finish()
-else:
+elif env.GetOption('clean'):
     # Make sure that scons properly cleans everything
     Execute(Delete('main/.sconsign'))
     Execute(Delete('ncurses/.sconsign'))

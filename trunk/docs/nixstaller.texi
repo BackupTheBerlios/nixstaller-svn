@@ -36,8 +36,11 @@ Here is a short description for what you can find in this document:
 * Basics:: Explains the basics behind Nixstaller.
 * Creating Installers:: How Installers are made.
 * Tutorials:: Step by step guides for creating Installers.
+* Compilation:: Info on compiling Nixstaller.
+* Miscallenous:: Credits and Feedback.
 * Lua Basics:: Explains the basics of the Lua scripting language.
 * Lua Library Reference:: Explains Most of the Lua Library Functions, including extensions from Nixstaller.
+* License:: The Nixstaller license.
 * Index:: Complete Index
 @end menu
 @end ifnottex
@@ -1046,6 +1049,138 @@ The project directory should have the following structure:
 @end itemize
 
 Calling @file{geninstall.sh} from the Nixstaller directory with the path to project directory as first argument and @samp{vim70.sh} as second argument should produce the installer.
+
+
+
+@node Compilation
+@chapter Compilation
+
+@section Introduction
+This chapter is important for people who want to compile the frontends used by Nixstaller. Some reasons may be if you changed the source code or you're porting to a new platform for example. There are some things to watchout for, therefore if you really need to compile then read this chapter as a whole.
+
+@section Libraries
+
+@subsection Dynamic vs Static
+Dynamic libraries are good because they reduce size from the executable and when they are updated it affects the executable aswell. Drawbacks are mainly conflicting version numbers. If the major library version changes the executable cannot use it anymore.@*
+@*
+For this reason most libraries are linked staticly. This will add size to the resulting binaries, but they can run on many different systems. There are however a few libraries linked dynamicly, because they cannot or it's unreasonable to link them staticly. The C library (@samp{libc}) and the C++ libraries are examples of dynamicly linked libraries.
+
+@subsection Required Libraries
+@starttable{.25, .25, .25, .25}
+@addtableheaderrow{Library}
+    @addtableheadercol{Where to get it}
+    @addtableheadercol{Used by}
+    @addtableheadercol{Dynamic or Static}
+@endtablerow
+
+@addtablerow{zlib (libz)}
+    @addtablecol{@uref{http://www.zlib.net/}}
+    @addtablecol{FLTK frontend}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{png (libpng)}
+    @addtablecol{@uref{http://www.libpng.org/pub/png/libpng.html}}
+    @addtablecol{FLTK frontend}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{jpeg (libjpeg)}
+    @addtablecol{@uref{http://www.ijg.org/}}
+    @addtablecol{FLTK frontend}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{FLTK (libfltk, libfltk_images)}
+    @addtablecol{@uref{http://www.fltk.org/}}
+    @addtablecol{FLTK frontend}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{X11 (libX11, libXext)}
+    @addtablecol{Locally or @uref{http://www.x.org/}}
+    @addtablecol{FLTK frontend}
+    @addtablecol{Dynamic}
+@endtablerow
+
+@addtablerow{ncurses (libncurses, libncurses++)}
+    @addtablecol{@uref{http://www.gnu.org/software/ncurses/ncurses.html}}
+    @addtablecol{ncurses frontend}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{Lua (liblua)}
+    @addtablecol{@uref{http://www.lua.org/}}
+    @addtablecol{Core}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{GCC libs (libc, libstdc++, libm, libgcc, libutil)}
+    @addtablecol{@uref{http://gcc.gnu.org/}}
+    @addtablecol{Core}
+    @addtablecol{libutil static, the rest dynamic}
+@endtablerow
+
+@endtable
+
+All the static libraries with the exception from @file{libutil.a} needs to be copied to the @file{src/lib/[osname]/[archname]} directory. The @samp{[osname]} refers to the lowercased output from the command @command{uname}. @samp{archname} refers to either @samp{x86} or the output from @command{uname -m}. The main reason for putting the static libraries in a seperate directory is that 'clean' versions can be compiled and used. 'clean' in the way that the libraries have no CPU specific optimizations.@*
+@*
+The search path to X11 libraries defaults to @file{/usr/X11R6/lib}. This can be changed by the @samp{xlibsdir} parameter passed to SCons, which is discussed later.
+
+@subsection Headers
+All the header files from the static libraries can be found in the @file{src/include/} directory. You normally don't have to bother with these. The path to the X11 headers can be specified with the @samp{xincdir} parameter passed to SCons (discussed later).
+
+@subsection Notes
+In the @file{src/libs/[osname]/[archname]/} directories you can find a @file{notes} file that contain several notes about which library versions are used and how they were compiled. It's recommended that the same library versions are used incase you want to compile your own.
+
+@section SCons
+@uref{http://www.scons.org/, SCons} is used as built system to compile Nixstaller. Atleast version @samp{0.96.91} is required. SCons depends on @uref{http://www.python.org, python} so make sure to install that aswell.@*
+@*
+To start the compilation simply execute @command{scons} from the @file{src/} directory.@*
+@*
+SCons has several options that will affect the compilation, to see these run @command{scons --help} in the @file{src/} directory.@*
+@*
+There are also a few build targets:
+@table @strong
+@item stripbins
+Strips all symbols from the binaries.
+@item tardist
+Creates a tar.gz file containing the full Nixstaller distribution. Note that new files need to be added to the @code{distfiles_user} variable at the beginning of the @file{SConstruct} file.
+@item setupdist
+Creates an installer for Nixstaller.
+@end table
+
+
+
+
+@node Miscallenous
+@chapter Miscallenous
+
+@section Credits
+@itemize @bullet
+@item @uref{http://www.kdevelop.org/, KDevelop}: Great IDE which I use for programming.
+@item @uref{http://www.scons.org, SCons}: Great alternative to GNU's autotools.
+@item @strong{KDESU}: Much of the code using @samp{su} is based on this @uref{http://www.kde.org, KDE project}.
+@item @uref{http://www.megastep.org/makeself/, makeself}: Engine for the self-extracting installer.
+@item @uref{http://quanta.kdewebdev.org/, Quanta+}: Good HTML editor used for the website.
+@item @uref{http://www.texinfo.org, texinfo} and texi2html: Used to create this documentation.
+@item @uref{http://www.berlios.de, BerliOS}: Project hosting.
+@item @strong{InternetNightmare}: Suggestions, testing, feedback.
+@item @strong{offer}: Suggestions, bug reporting, feedback.
+@end itemize
+
+
+@section Feedback
+For suggestions, questions, bugs etc you can reach me through the following ways:
+@itemize @bullet
+@item E-Mail: rhelmus_AT_gmail.com
+@item Use the @uref{http://nixstaller.berlios.de/forum/index.php, online forums}
+@item Instant Message: rick_helmus8_AT_hotmail.com (MSN), 224332897(ICQ) or rhelmus_AT_gmail.com (Jabber).
+@item For bugs: the @uref{https://developer.berlios.de/projects/nixstaller/, BerliOS project page}.
+@end itemize
+
+
+
 
 @node Lua Basics
 @appendix Lua Basics
@@ -2469,11 +2604,35 @@ print(unpack(t))    @minus{}@minus{} Prints "Hello World"}
 
 
 
+
+@node License
+@appendix License
+Nixstaller is licensed under the GPLv2 license:
+
+@quotation
+Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version. 
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+St, Fifth Floor, Boston, MA 02110-1301 USA
+@end quotation
+
+
+
 @node Index
 @unnumbered Index
 
-@unnumberedsec General
-@printindex cp
+@comment @unnumberedsec General
+@comment @printindex cp
 
 
 @unnumberedsec Nixstaller Variables
