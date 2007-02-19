@@ -7,6 +7,8 @@ OVERALL
 - Popup dialog when install starts? (If yes add norwegian translations)
 - Update SConstruct nixstaller file list.
 - Update SCons example?
+- Include Vim README file in files_all dir
+- Check solaris <--> nexenta ncurses terminfo
 
 MAIN
 - Case of lua vars
@@ -45,7 +47,8 @@ OVERALL
 - Remove double GetTranslation calls
 - Better util.a configure testing?
 - Replace vec [] access with at() ?
-        
+- Build script that compiles all Nixstaller dependencies?
+
 
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)

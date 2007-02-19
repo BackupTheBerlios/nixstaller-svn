@@ -1150,6 +1150,43 @@ Creates a tar.gz file containing the full Nixstaller distribution. Note that new
 Creates an installer for Nixstaller.
 @end table
 
+After compilation is done the binaries will be put in the @file{bin/} directory. The directory structure looks like this:
+@itemize @bullet
+    @item @emph{osname/}
+    @itemize @bullet
+        @item @emph{archname/}
+        @itemize @bullet
+            @item @emph{libc.so.X/}
+            @itemize @bullet
+                @item @emph{libstdc++.so.X/}
+                @itemize @bullet
+                    @item @file{lzma}
+                    @item @file{fltk}
+                    @item @file{ncurs}
+                @end itemize
+                @item @file{edelta}
+                @item @file{lzma-decode}
+            @end itemize
+        @end itemize
+    @end itemize
+@end itemize
+
+The binaries are each put on seperate @samp{libc} and, incase of C++ binaries, in seperate @samp{libstdc++} directories aswell. The reason for this is that they are linked dynamicly. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} and @file{libstdc++.so.4} while FreeBSD 6.X is using @file{libc.so.6} and @file{libstdc++.so.5}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started (and obviously created when the binaries were in place) it will then choose the right binaries for the users system.@*
+@*
+Besides the frontends there are some other binaries. Here is an explanation for each of them:
+@table @strong
+@item lzma
+Binary used to @emph{encode} the install files using the lzma algorithm. This file is not included in the installer.
+@item fltk
+The FLTK frontend.
+@item ncurs
+The ncurses frontend.
+@item edelta
+This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend binaries. The @samp{diffs} are made from binaries for the same OS and CPU architecture but from different @file{libc} and/or @samp{libstdc++} versions. Note that this version differs from the @uref{http://www.diku.dk/~jacobg/edelta/, original version} because it's modified in such way that it doesn't use compression (which makes the binary smaller and allows us to use other compression methods than gzip).
+@item lzma-decode
+@emph{Decodes} lzma encoded files. This is a much smaller version of the normal @file{lzma} binary and is included in the installer.
+@end table
+
 
 
 
@@ -1160,11 +1197,13 @@ Creates an installer for Nixstaller.
 @itemize @bullet
 @item @uref{http://www.kdevelop.org/, KDevelop}: Great IDE which I use for programming.
 @item @uref{http://www.scons.org, SCons}: Great alternative to GNU's autotools.
-@item @strong{KDESU}: Much of the code using @samp{su} is based on this @uref{http://www.kde.org, KDE project}.
+@item @uref{http://www.kde.org, KDESU}: Much of the code using @samp{su} is based on this KDE project.
 @item @uref{http://www.megastep.org/makeself/, makeself}: Engine for the self-extracting installer.
 @item @uref{http://quanta.kdewebdev.org/, Quanta+}: Good HTML editor used for the website.
 @item @uref{http://www.texinfo.org, texinfo} and texi2html: Used to create this documentation.
 @item @uref{http://www.berlios.de, BerliOS}: Project hosting.
+@item @uref{http://www.diku.dk/~jacobg/edelta/, edelta}: Used to create @samp{binary diffs} to decrease the size of frontend binaries.
+@item @uref{http://www.7-zip.org/sdk.html, lzma}: Very good compression algorithm.
 @item @strong{InternetNightmare}: Suggestions, testing, feedback.
 @item @strong{offer}: Suggestions, bug reporting, feedback.
 @end itemize
