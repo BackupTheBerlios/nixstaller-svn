@@ -5,10 +5,10 @@ OVERALL
 - Test installer scripts
 - OBSD bins? (if not remove from manual)
 - Popup dialog when install starts? (If yes add norwegian translations)
-- Update SConstruct nixstaller file list.
 - Update SCons example?
-- Include Vim README file in files_all dir
 - Check solaris <--> nexenta ncurses terminfo
+- If norwegian translations: add them to SConstruct file list
+- Keep CHANGELOG file? (If so add to SConstruct file list)
 
 MAIN
 - Case of lua vars

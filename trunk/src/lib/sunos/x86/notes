@@ -1,14 +1,13 @@
 Notes for solaris libs:
 
-Host system: x86 Solaris Express 10
+Host system: x86 Solaris Express
 
 JPEG:
 version: 6b
-notes: Installed from www.sunfreeware.com
 
 PNG:
-version: 1.2.10
-notes: Installed from www.sunfreeware.com
+version: 1.2.16
+notes: LDFLAGS and CPPFLAGS were changed to point to prefix directory where custom zlib was installed. --disable-shared was given as configure option.
 
 FLTK:
 configure command: CC=/usr/sfw/bin/gcc CXX=/usr/sfw/bin/g++ ./configure
@@ -16,7 +15,6 @@ version: 1.1.7
 
 ZLIB:
 version: 1.2.3
-notes: Installed from www.sunfreeware.com
 
 NCURSES:
 configure command: CC=/usr/sfw/bin/gcc CXX=/usr/sfw/bin/g++ ./configure --with-terminfo-dirs=/usr/share/terminfo --with-default-terminfo-dir=/usr/share/terminfo
@@ -28,8 +26,7 @@ notes: Using ncurses on both Solaris and Nexenta took some work;
 If you know better ways or have fixes please email me.
 
 
-X.org (libX11, libXext)
-version: 6.8.2
+X (libX11, libXext)
 notes: used from basesystem
 
 GCC (libstdc++, libutil)
