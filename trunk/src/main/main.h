@@ -181,8 +181,7 @@ public:
         return (ret) ? *ret : NULL;
     }
             
-    void SetArrayNum(lua_Number n, const char *tab, int index);
-    void SetArrayStr(const char *s, const char *tab, int index);
+    void SetArrayStr(const char *s, const char *var, int index, const char *tab=NULL);
 
     void *GetClosure(void);
     bool GetArgNum(lua_Number *out);

@@ -120,7 +120,7 @@ void CMain::Init(int argc, char **argv)
         m_Languages.push_back(s);
     }
     
-    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang") ||
+    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang", "cfg") ||
         (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end()))
         m_szCurLang = "english"; // Default to english if wrong or unknown language is specified
     
@@ -347,17 +347,17 @@ void CMain::InitLua()
     m_LuaVM.RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
     m_LuaVM.RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     
-    m_LuaVM.RegisterFunction(LuaExit, "exit");
+    m_LuaVM.RegisterFunction(LuaExit, "exit"); // Override
     
     // Set some default values for config variabeles
-    m_LuaVM.SetArrayStr("english", "languages", 1);
-    m_LuaVM.SetArrayStr("dutch", "languages", 2);
-    m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1);
-    m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1);
-    m_LuaVM.SetArrayStr("fltk", "frontends", 1);
-    m_LuaVM.SetArrayStr("ncurses", "frontends", 2);
-    m_LuaVM.RegisterString("lzma", "archivetype");
-    m_LuaVM.RegisterString("english", "defaultlang");
+    m_LuaVM.SetArrayStr("english", "languages", 1, "cfg");
+    m_LuaVM.SetArrayStr("dutch", "languages", 2, "cfg");
+    m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1, "cfg");
+    m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1, "cfg");
+    m_LuaVM.SetArrayStr("fltk", "frontends", 1, "cfg");
+    m_LuaVM.SetArrayStr("ncurses", "frontends", 2, "cfg");
+    m_LuaVM.RegisterString("lzma", "archivetype", "cfg");
+    m_LuaVM.RegisterString("english", "defaultlang", "cfg");
 }
 
 // Directory iter functions. Based on examples from "Programming in lua"

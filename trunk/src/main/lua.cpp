@@ -64,9 +64,9 @@ void CLuaVM::StackDump(const char *msg)
                 debugline("%s", lua_typename(m_pLuaState, t));
                 break;
         }
-        debugline("  ");  /* put a separator */
+        debugline(" \n ");  /* put a separator */
     }
-    debugline("\n");  /* end the listing */
+    debugline("---------------\n");  /* end the listing */
 }
 #endif
 
@@ -450,9 +450,22 @@ void CLuaVM::RegisterClassFunc(const char *type, lua_CFunction f, const char *na
     lua_settable(m_pLuaState, -3);
 }
 
-void CLuaVM::SetArrayStr(const char *s, const char *tab, int index)
+void CLuaVM::SetArrayStr(const char *s, const char *var, int index, const char *tab)
 {
-    lua_getglobal(m_pLuaState, tab);
+    if (tab)
+    {
+        lua_getglobal(m_pLuaState, tab);
+    
+        if (lua_isnil(m_pLuaState, -1))
+        {
+            lua_pop(m_pLuaState, 1);
+            lua_newtable(m_pLuaState);
+        }
+        
+        lua_getfield(m_pLuaState, -1, var);
+    }
+    else
+        lua_getglobal(m_pLuaState, var);
 
     if (lua_isnil(m_pLuaState, -1))
     {
@@ -462,7 +475,14 @@ void CLuaVM::SetArrayStr(const char *s, const char *tab, int index)
 
     lua_pushstring(m_pLuaState, s);
     lua_rawseti(m_pLuaState, -2, index);
-    lua_setglobal(m_pLuaState, tab);
+    
+    if (tab)
+    {
+        lua_setfield(m_pLuaState, -2, var);
+        lua_setglobal(m_pLuaState, tab);
+    }
+    else
+        lua_setglobal(m_pLuaState, var);
 }
 
 void CLuaVM::LuaError(const char *msg, ...)

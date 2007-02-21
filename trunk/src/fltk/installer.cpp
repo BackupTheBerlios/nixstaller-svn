@@ -111,7 +111,7 @@ void CInstaller::Init(int argc, char **argv)
     
     UpdateLanguage();
 
-    unsigned count = m_LuaVM.OpenArray("ScreenList");
+    unsigned count = m_LuaVM.OpenArray("screenlist", "install");
     
     if (!count)
     {
@@ -215,7 +215,7 @@ void CInstaller::Init(int argc, char **argv)
                 m_LuaVM.CloseArray();
                 m_pWizard->end();
                 m_pMainWindow->end();
-                throw Exceptions::CExLua("Wrong type found in ScreenList variabale");
+                throw Exceptions::CExLua("Wrong type found in screenlist variabale");
             }
         }
         m_LuaVM.CloseArray();
@@ -1229,7 +1229,7 @@ Fl_Group *CInstallFilesScreen::Create()
     CBaseScreen::Create();
     
     int x = m_pGroup->x()+20, y = m_pGroup->y()+20;
-    m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, "Install progress");
+    m_pProgress = new Fl_Progress(x, y, m_pGroup->w()-(x-m_pGroup->x())-20, 30, "Progress");
     m_pProgress->minimum(0);
     m_pProgress->maximum(100);
     m_pProgress->value(0);
@@ -1249,7 +1249,7 @@ Fl_Group *CInstallFilesScreen::Create()
 
 void CInstallFilesScreen::UpdateLang()
 {
-    m_pProgress->label(GetTranslation("Install progress"));
+    m_pProgress->label(GetTranslation("Progress"));
     m_pDisplay->label(GetTranslation("Status"));
 }
 

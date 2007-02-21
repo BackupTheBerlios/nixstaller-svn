@@ -258,7 +258,7 @@ void CInstaller::Init(int argc, char **argv)
 
     UpdateLanguage();
 
-    unsigned count = m_LuaVM.OpenArray("ScreenList");
+    unsigned count = m_LuaVM.OpenArray("screenlist", "install");
     if (!count)
     {
         // Default install screens

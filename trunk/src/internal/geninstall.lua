@@ -143,11 +143,11 @@ function PackDirectory(dir, file)
         
     os.execute(string.format("tar cf %s.tmp %s %s", file, listopt, tarlistfname))
     
-    if archivetype == "gzip" then
+    if cfg.archivetype == "gzip" then
         os.execute(string.format("gzip -c9 %s.tmp > %s", file, file))
-    elseif archivetype == "bzip2" then
+    elseif cfg.archivetype == "bzip2" then
         os.execute(string.format("cat %s.tmp | bzip2 -9 > %s", file, file)) -- Use cat so that bzip won't append ".bz2" to filename
-    elseif archivetype == "lzma" then
+    elseif cfg.archivetype == "lzma" then
         os.execute(string.format("%s e %s.tmp %s 2>/dev/null", LZMABin, file, file))
     end
     
@@ -242,7 +242,7 @@ Installer name: %s
      Frontends: %s
      Intro pic: %s
 ---------------------------------
-]], outname, StrPack(targetos), StrPack(targetarch), archivetype, StrPack(languages), confdir, StrPack(frontends), intropic or "None"))
+]], outname, StrPack(cfg.targetos), StrPack(cfg.targetarch), cfg.archivetype, StrPack(cfg.languages), confdir, StrPack(cfg.frontends), cfg.intropic or "None"))
 end
 
 -- Creates directory layout for installer archive
@@ -262,7 +262,7 @@ function PrepareArchive()
     RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
     
     -- Language files
-    for _, f in pairs(languages) do
+    for _, f in pairs(cfg.languages) do
         local langsrc = confdir .. "/lang/" .. f
         local langdest = destdir .. "/lang/" .. f
         
@@ -275,81 +275,81 @@ function PrepareArchive()
     end
     
     -- Copy all specified frontends for every given OS/ARCH and every availiable libc/libstdc++ version
-    for _, OS in pairs(targetos) do
-        for _, ARCH in pairs(targetarch) do
+    for _, OS in pairs(cfg.targetos) do
+        for _, ARCH in pairs(cfg.targetarch) do
             local osdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
             if (not os.fileexists(osdir)) then
-                ThrowError("No bins for %s/%s", OS, ARCH)
-            end
-            
-            local fr_diff_src = { }
-            
-            for LC in io.dir(osdir) do
-                local lcpath = osdir .. "/" .. LC
-                if (string.find(LC, "^libc") and os.isdir(lcpath)) then
-                    for LCPP in io.dir(lcpath) do
-                        local lcpppath = lcpath .. "/" .. LCPP
-                        if (string.find(LCPP, "^libstdc++") and os.isdir(lcpppath)) then
-                            for _, FR in pairs(frontends) do
-                                local frfound = false
-                                local binname
-                                
-                                if (FR == "fltk") then
-                                    binname = "fltk"
-                                elseif (FR == "ncurses") then
-                                    binname = "ncurs"
-                                else
-                                    ThrowError("Unknown frontend: %s", FR)
-                                end
-                                
-                                binpath = string.format("%s/%s", lcpppath, binname)
-                                if os.fileexists(binpath) then
-                                    local destpath = string.format("%s/tmp/bin/%s/%s/%s/%s", confdir, OS, ARCH, LC, LCPP)
-                                    os.mkdirrec(destpath)
+                print(string.format("Warning: No frontends for %s/%s", OS, ARCH))
+            else
+                local fr_diff_src = { }
+                
+                for LC in io.dir(osdir) do
+                    local lcpath = osdir .. "/" .. LC
+                    if (string.find(LC, "^libc") and os.isdir(lcpath)) then
+                        for LCPP in io.dir(lcpath) do
+                            local lcpppath = lcpath .. "/" .. LCPP
+                            if (string.find(LCPP, "^libstdc++") and os.isdir(lcpppath)) then
+                                for _, FR in pairs(cfg.frontends) do
+                                    local frfound = false
+                                    local binname
                                     
-                                    if not fr_diff_src[binname] then
-                                        fr_diff_src[binname] = binpath
+                                    if (FR == "fltk") then
+                                        binname = "fltk"
+                                    elseif (FR == "ncurses") then
+                                        binname = "ncurs"
+                                    else
+                                        ThrowError("Unknown frontend: %s", FR)
+                                    end
+                                    
+                                    binpath = string.format("%s/%s", lcpppath, binname)
+                                    if os.fileexists(binpath) then
+                                        local destpath = string.format("%s/tmp/bin/%s/%s/%s/%s", confdir, OS, ARCH, LC, LCPP)
+                                        os.mkdirrec(destpath)
                                         
-                                        local ed_src = io.open(string.format("%s/tmp/bin/%s/%s/edelta_src", confdir, OS, ARCH), "a")
-                                        ed_src:write(string.format("%s bin/%s/%s/%s/%s/%s\n", binname, OS, ARCH, LC, LCPP, binname))
-                                        ed_src:close()
-    
-                                        if (archivetype == "lzma") then
-                                            if os.execute(string.format("%s e %s %s/%s.lzma 2>/dev/null", LZMABin,
-                                                        binpath, destpath, binname)) == 0 then
-                                                frfound = true
+                                        if not fr_diff_src[binname] then
+                                            fr_diff_src[binname] = binpath
+                                            
+                                            local ed_src = io.open(string.format("%s/tmp/bin/%s/%s/edelta_src", confdir, OS, ARCH), "a")
+                                            ed_src:write(string.format("%s bin/%s/%s/%s/%s/%s\n", binname, OS, ARCH, LC, LCPP, binname))
+                                            ed_src:close()
+        
+                                            if (cfg.archivetype == "lzma") then
+                                                if os.execute(string.format("%s e %s %s/%s.lzma 2>/dev/null", LZMABin,
+                                                            binpath, destpath, binname)) == 0 then
+                                                    frfound = true
+                                                end
+                                            else
+                                                if os.copy(binpath, destpath) ~= nil then
+                                                    frfound = true
+                                                end
                                             end
                                         else
-                                            if os.copy(binpath, destpath) ~= nil then
+                                            local destbin = destpath .. "/" .. binname
+                                            
+                                            if os.execute(string.format("%s -q delta %s %s %s", EdeltaBin,
+                                                                        fr_diff_src[binname], binpath, destbin)) == 0 then
                                                 frfound = true
                                             end
-                                        end
-                                    else
-                                        local destbin = destpath .. "/" .. binname
-                                        
-                                        if os.execute(string.format("%s -q delta %s %s %s", EdeltaBin,
-                                                                     fr_diff_src[binname], binpath, destbin)) == 0 then
-                                            frfound = true
-                                        end
-                                        
-                                        if (archivetype == "lzma") then
-                                            os.execute(string.format("%s e %s %s 2>/dev/null", LZMABin, destbin, destbin .. ".lzma"))
-                                            os.remove(destbin)
+                                            
+                                            if (cfg.archivetype == "lzma") then
+                                                os.execute(string.format("%s e %s %s 2>/dev/null", LZMABin, destbin, destbin .. ".lzma"))
+                                                os.remove(destbin)
+                                            end
                                         end
                                     end
-                                end
-                                
-                                if not frfound then
-                                    print(string.format("Warning: no frontend '%s' found for %s/%s/%s/%s",
-                                                        FR, OS, ARCH, LC, LCPP))
+                                    
+                                    if not frfound then
+                                        print(string.format("Warning: no frontend '%s' found for %s/%s/%s/%s",
+                                                            FR, OS, ARCH, LC, LCPP))
+                                    end
                                 end
                             end
                         end
+                        if (cfg.archivetype == "lzma") then
+                            RequiredCopy(lcpath .. "/lzma-decode", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
+                        end
+                        RequiredCopy(lcpath .. "/edelta", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
                     end
-                    if (archivetype == "lzma") then
-                        RequiredCopy(lcpath .. "/lzma-decode", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
-                    end
-                    RequiredCopy(lcpath .. "/edelta", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
                 end
             end
         end
@@ -370,7 +370,7 @@ function PrepareArchive()
         ThrowError("Could not create internal info file for archive: %s", msg)
     end
                 
-    inffile:write(archivetype)
+    inffile:write(cfg.archivetype)
     inffile:close()
 end
 
@@ -387,14 +387,14 @@ function CreateArchive()
     end
     
     -- CPU dependent files
-    for _, ARCH in pairs(targetarch) do
+    for _, ARCH in pairs(cfg.targetarch) do
         archdir = string.format("%s/files_all_%s", confdir, ARCH) 
         if os.isdir(archdir) then
             PackDirectory(archdir, string.format("%s/tmp/%s_all_%s", confdir, basename, ARCH))
         end
     end
     
-    for _, OS in pairs(targetos) do
+    for _, OS in pairs(cfg.targetos) do
         -- OS dependent files
         archdir = string.format("%s/files_%s_all", confdir, OS) 
         if os.isdir(archdir) then
@@ -402,7 +402,7 @@ function CreateArchive()
         end
         
         -- OS/ARCH dependent files
-        for _, ARCH in pairs(targetarch) do
+        for _, ARCH in pairs(cfg.targetarch) do
             archdir = string.format("%s/files_%s_%s", confdir, OS, ARCH) 
             if os.isdir(archdir) then
                 PackDirectory(archdir, string.format("%s/tmp/%s_%s_%s", confdir, basename, OS, ARCH))

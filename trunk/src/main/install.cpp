@@ -39,10 +39,10 @@ void CBaseInstall::Init(int argc, char **argv)
     CMain::Init(argc, argv); // Init main, will also read config files
     
     // Obtain install variabeles from lua
-    m_LuaVM.GetStrVar(&m_InstallInfo.program_name, "appname");
-    m_LuaVM.GetStrVar(&m_InstallInfo.intropicname, "intropic");
+    m_LuaVM.GetStrVar(&m_InstallInfo.program_name, "appname", "cfg");
+    m_LuaVM.GetStrVar(&m_InstallInfo.intropicname, "intropic", "cfg");
     
-    m_LuaVM.GetStrVar(&m_InstallInfo.archive_type, "archivetype");
+    m_LuaVM.GetStrVar(&m_InstallInfo.archive_type, "archivetype", "cfg");
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") &&
         (m_InstallInfo.archive_type != "lzma"))
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
@@ -419,7 +419,7 @@ void CBaseInstall::InitLua()
             SetDestDir("/");
     }
 
-    unsigned count = m_LuaVM.OpenArray("languages");
+    unsigned count = m_LuaVM.OpenArray("languages", "cfg");
     if (count)
     {
         std::string lang;

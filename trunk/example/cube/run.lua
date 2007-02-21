@@ -3,7 +3,7 @@ function Init()
     scriptbox = screen:addradiobutton("Install launcher script to your home directory that launches Cube?",
                                       { "Yes", "No" })
     
-    ScreenList = { WelcomeScreen, SelectDirScreen, screen, InstallScreen }
+    install.screenlist = { WelcomeScreen, SelectDirScreen, screen, InstallScreen }
 end
 
 function Install()
@@ -22,7 +22,7 @@ function Install()
 [[#!/bin/sh
 cd %s/cube/
 ./cube_unix
-]], destdir))
+]], install.destdir))
         script:close()
         
         os.chmod(filename, 700)

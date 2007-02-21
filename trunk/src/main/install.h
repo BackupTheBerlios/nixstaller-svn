@@ -91,8 +91,8 @@ public:
     void UpdateExtrStatus(const char *s);
     
     void SetDestDir(const std::string &dir) { SetDestDir(dir.c_str()); }
-    void SetDestDir(const char *dir) { m_LuaVM.RegisterString(dir, "destdir"); };
-    const char *GetDestDir(void) { return m_LuaVM.GetStrVar("destdir"); };
+    void SetDestDir(const char *dir) { m_LuaVM.RegisterString(dir, "destdir", "install"); };
+    const char *GetDestDir(void) { return m_LuaVM.GetStrVar("destdir", "install"); };
     bool VerifyDestDir();
 
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title) = 0;

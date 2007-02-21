@@ -1,5 +1,5 @@
 function Init()
-    destdir = install.gettempdir()
+    install.destdir = install.gettempdir()
     
     cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
     
@@ -27,7 +27,7 @@ function Init()
     advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
     advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
     
-    ScreenList = { WelcomeScreen, cfgscreen, InstallScreen, FinishScreen }
+    install.screenlist = { WelcomeScreen, cfgscreen, InstallScreen, FinishScreen }
 end
 
 function getprefixconf()

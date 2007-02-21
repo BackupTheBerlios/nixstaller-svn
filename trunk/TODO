@@ -6,9 +6,10 @@ OVERALL
 - OBSD bins? (if not remove from manual)
 - Popup dialog when install starts? (If yes add norwegian translations)
 - Update SCons example?
-- Check solaris <--> nexenta ncurses terminfo
 - If norwegian translations: add them to SConstruct file list
 - Keep CHANGELOG file? (If so add to SConstruct file list)
+- Test new config var modules
+- Test ncurses on solaris
 
 MAIN
 - Case of lua vars
@@ -26,6 +27,7 @@ DOCS
 - Max config var description length
 - Check for right vertical spacing, paragraphs etc
 - Add norwegian translation references if author sends updated version (tutorials, credits)
+- Config lua var modules
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

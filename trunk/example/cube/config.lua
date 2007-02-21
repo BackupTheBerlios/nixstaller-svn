@@ -1,3 +1,3 @@
 -- config.lua from second tutorial
-appname = "Cube"
-targetos = { "linux" }
+cfg.appname = "Cube"
+cfg.targetos = { "linux" }
