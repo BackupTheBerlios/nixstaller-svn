@@ -169,7 +169,7 @@ do
                 
                 # Run it
                 chmod +x $FRBIN # deltas en lzma packed bins probably aren't executable yet
-                $PWD/$FRBIN
+                `pwd`/$FRBIN
                 exit $?
             fi
         done

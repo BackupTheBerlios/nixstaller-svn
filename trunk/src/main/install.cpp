@@ -430,7 +430,7 @@ void CBaseInstall::InitLua()
             else
             {
                 m_LuaVM.CloseArray();
-                throw Exceptions::CExLua("Non string found in languages variabele");
+                throw Exceptions::CExLua("Non string found in cfg.languages variabele");
             }
         }
         

@@ -3,7 +3,7 @@
 # Use some SH first to bootstrap...
 
 FRONTENDS="fltk ncurs"
-CURDIR=$PWD
+CURDIR=`pwd`
 
 OS=`uname`
 CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]` # Convert to lowercase
