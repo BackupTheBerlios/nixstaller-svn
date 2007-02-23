@@ -1,18 +1,15 @@
 OVERALL
 - Modify Makeself?
 - Test/clean/check new edelta code
-- Update lib-notes file for each OS/ARCH
 - Test installer scripts
-- OBSD bins? (if not remove from manual)
 - Popup dialog when install starts? (If yes add norwegian translations)
 - Update SCons example?
 - If norwegian translations: add them to SConstruct file list
 - Keep CHANGELOG file? (If so add to SConstruct file list)
 - Test new config var modules
-- Test ncurses on solaris
+- Mention texi2html
 
 MAIN
-- Case of lua vars
 
 LIBSU
 - BUG: Executing commands as root to quickly may mess things up - fixed?
@@ -21,13 +18,11 @@ LIBSU
 NCURSES FRONTEND
 
 FLTK FRONTEND
-- Compile FLTK with exception support for netbsd
 
 DOCS
 - Max config var description length
 - Check for right vertical spacing, paragraphs etc
 - Add norwegian translation references if author sends updated version (tutorials, credits)
-- Config lua var modules
 
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g

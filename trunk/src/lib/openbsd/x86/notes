@@ -1,19 +1,19 @@
-Notes for netbsd libs:
+Notes for openbsd libs:
 
-Host system: x86 OpenBSD 4.0
+Host system: x86 OpenBSD 3.9
 
 JPEG:
 version: 6b
 
 PNG:
-version: 1.2.15
+version: 1.2.16
 
 FLTK:
-configure command:  CXXFLAGS="-fexceptions"  CPPFLAGS="-I/usr/local/include -I/usr/local/include/libpng" LDFLAGS="-L/usr/local/lib" ./configure (configure script wouldn't detect png and jpeg libs otherwise)
+configure command: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support.
 version: 1.1.7
 
 ZLIB:
-version: 1.2.3
+notes: used from basesystem
 
 NCURSES:
 configure options: --enable-termcap

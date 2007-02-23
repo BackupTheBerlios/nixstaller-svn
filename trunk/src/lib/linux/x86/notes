@@ -1,20 +1,17 @@
 Notes for linux libs:
 
-Host system: x86 Kubuntu Breezy
+Host system: x86 PCLinuxOS 0.93
 
 JPEG:
 version: 6b
 
 PNG:
-version: 1.2.8
+version: 1.2.16
+notes: LDFLAGS and CPPFLAGS were changed to point to prefix directory where custom zlib was installed.
 
 FLTK:
 version: 1.1.7
-configure command: CXXFLAGS="-fexceptions" ./configure
-Note: FLTK is by default made without exception support, so enabled it that with env var
-
-BZIP2:
-version: 1.0.3
+notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support.
 
 ZLIB:
 version: 1.2.3
@@ -24,8 +21,12 @@ version: 5.6
 configure command: ./configure --without-gpm
 
 X11 (libX11, libXext)
-version: 6.8.2
+version: 6.9.0
 
 GCC (libstdc++, libutil)
-version: 3.4.4
+version: 3.3.1 / 3.4.6(for libstdc++.so.6 bins)
 
+LUA:
+version 5.1.1
+make command: make posix
+notes: src/Makefile was edited to use g++ instead of gcc (enables C++ exception support, important) and to use the -Os CFLAG.

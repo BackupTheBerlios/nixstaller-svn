@@ -299,8 +299,10 @@ The appendix @ref{Lua Library Reference} is a complete reference for all the Lua
 @subsection First Lua Script: @file{config.lua}
 The first Lua script, @file{config.lua}, is as the name says used for configuration. This file is pretty small and should only contain a few variable assignments. The variables are all in the @code{cfg} module:
 @table @code
+@vindex cfg.appname
 @item cfg.appname
 This variable is a @ref{Strings,,string} which should contain the name of your application.
+@vindex cfg.archivetype
 @item cfg.archivetype
 This variable tells which type of compression is used for archiving the installation files. It can be one of these @ref{Strings,,strings}:
 @table @code
@@ -312,16 +314,22 @@ Bzip2 usually compresses better (makes the archive smaller) than gzip, but is sl
 LZMA compresses the best of all three. Compression is fairly slow, but decompression is rather fast.
 @end table
 If this variable is not specified it will default to "lzma". If you're testing your installer it might be a good idea to use "gzip" and switch to "lzma" when the installer is done. That way you have fast compression while testing and good compression for the user.
+@vindex cfg.defaultlang
 @item cfg.defaultlang
 This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english".
+@vindex cfg.frontends
 @item cfg.frontends
 This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Currently only these are valid: "ncurses" and "fltk". The default is @code{@{ "fltk", "ncurses" @}}.
+@vindex cfg.intropic
 @item cfg.intropic
 An optional variable containing a @ref{Strings,,string} with the path to a Intro Picture.
+@vindex cfg.languages
 @item cfg.languages
 An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of the languages to include for translations. The language names should be the same as the name of the subdirectories in the @file{lang/} directory from your project directory. The default is @code{@{ "english", "dutch" @}}.
+@vindex cfg.targetarch
 @item cfg.targetarch
 A variable that should contain an array (@pxref{Tables}) of @ref{Strings,,strings} for the CPU architectures this installer should support. Nixstaller currently only supports @samp{x86} and this variable will default to this if not specified.
+@vindex cfg.targetos
 @item cfg.targetos
 An array (@pxref{Tables}) of @ref{Strings,,strings} holding the names of the OSs (Operating Systems) which the installer should support. The OS names should be the lowercased output from the shell command @command{uname}. If not specified the variable will default to the current OS.
 @end table
@@ -354,14 +362,19 @@ The @code{install.destdir} variable is used to specify a destination path for th
 There are a few (predefined) installation screens. To select which you want you should put some variables in the @code{install.screenlist} table. These are the variable names of each screen:
 @anchor{instscreens}
 @table @code
+@vindex WelcomeScreen
 @item WelcomeScreen
 The screen that is usually shown at first. This screen can be used to display a graphic image (defined via @code{intropic}, see @ref{config.lua}) and display an introduction message (via the @file{welcome} file, see @ref{welcome license finish, this section}). If this file doesn't exist the screen won't be displayed.
+@vindex LicenseScreen
 @item LicenseScreen
 Is used to display a license agreement specified through the @file{license} file (see @ref{welcome license finish, this section})). If this file doesn't exist the screen won't be displayed.
+@vindex SelectDirScreen
 @item SelectDirScreen
 This screen lets the user select a directory that will be stored in the @code{install.destdir} variable.
+@vindex InstallScreen
 @item InstallScreen
 When this screen is shown the installation begins and displays the current status. Obviously every installer should have one.
+@vindex FinishScreen
 @item FinishScreen
 Displays the message defined through the @file{finish} file (see @ref{welcome license finish, this section})). If this file doesn't exist the screen won't be displayed.
 @end table
@@ -2372,7 +2385,7 @@ else
 end}
 
 
-@section Installation Functions
+@section Install Package
 This section describes all the install related functions and variables. They are obviously Lua extensions so you won't find them in any other Lua manual. @strong{All} these functions and variables should only be used from the @code{Install()} function. It's better to use this section as a reference after you've read @ref{Creating Installers}.@*
 @*
 First all the functions and variables from the @code{install} package are described. After that the @samp{config screen class} (used to create new installer screens) and the @samp{config menu class} (a menu class to be used in a custom install screen) are discussed. For examples of these packages you should read the @ref{Tutorials, tutorials}.
