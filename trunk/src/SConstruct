@@ -31,6 +31,8 @@ distfiles_user = [
 'example/vim/config.lua',
 'example/vim/run.lua',
 'example/vim/welcome',
+'example/vim/finish',
+'example/vim/vim48x48.png',
 'example/vim/files_all/FILES',
 'example/vim/lang/dutch/strings',
 'lang/dutch/strings',
@@ -47,7 +49,7 @@ distfiles_user = [
 'src/fltk/installer.cpp',
 'src/include/',
 'src/internal/about',
-'src/geninstall.lua',
+'src/internal/geninstall.lua',
 'src/internal/intro.txt',
 'src/internal/startupinstaller.sh',
 'src/lib/freebsd/x86/',
@@ -114,7 +116,7 @@ def getallbins(onlyforcuros):
         directory = stack.pop()
         for file in os.listdir(directory):
             fullname = os.path.join(directory, file)
-            if file == "ncurs" or file == "fltk" or file == "lzma-decode" or file == "edelta":
+            if file == "ncurs" or file == "fltk" or file == "lzma-decode" or file == "edelta" or file == "lzma":
                 bins.append(fullname)
             if os.path.isdir(fullname) and not os.path.islink(fullname):
                 stack.append(fullname)
@@ -262,9 +264,10 @@ if 'stripbins' in COMMAND_LINE_TARGETS:
     Exit(0)
 
 if 'tardist' in COMMAND_LINE_TARGETS:
-    stripallbins()
     archname = 'nixstaller-' + curnixstversion + '.tar.gz'
     tarredfile = tarfile.open(archname, 'w:gz')
+    os.chdir("../")
+    stripallbins()
     for dfile in distfiles_user+getallbins(False):
         if os.path.isdir(dfile):
             stack = [ dfile ]
@@ -282,19 +285,20 @@ if 'tardist' in COMMAND_LINE_TARGETS:
     Exit(0)
 
 if 'setupdist' in COMMAND_LINE_TARGETS:
-    workdir = "tmp-setup-dist/"
-    filesdir = workdir + "files_all/"
+    workdir = os.getcwd() + "/tmp-setup-dist/"
+    filesdir = workdir + "files_all/nixstaller-" + curnixstversion + "/"
+
     outputfile = "nixstaller-" + curnixstversion + ".sh"
-    stripallbins()
 
     if os.path.exists(workdir):
         print "Cleaning old workdir..."
         shutil.rmtree(workdir)
         
     os.mkdir(workdir)
+    os.makedirs(filesdir)
 
-    if not os.path.exists(filesdir):
-        os.mkdir(filesdir)
+    os.chdir("../")
+    stripallbins()
 
     print "Copying all files to be installed..."
     for file in distfiles_user+getallbins(False):
@@ -308,17 +312,14 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
             shutil.copy(file, filesdir + file)
 
     print "Generate install config file..."
-    cfgfile = open(workdir + "install.cfg", "w")
+    cfgfile = open(workdir + "config.lua", "w")
     cfgfile.write("""
-appname Nixstaller
-archtype bzip2
-installdir select
-languages english dutch
+cfg.appname = "Nixstaller"
 """)
     cfgfile.close()
     
     print "Copying welcome message..."
-    shutil.copy("internal/intro.txt", workdir + "welcome")
+    shutil.copy("src/internal/intro.txt", workdir + "welcome")
     print "%s --> %s" % ("internal/intro.txt", workdir + "welcome")
 
     print "Generating installer"
