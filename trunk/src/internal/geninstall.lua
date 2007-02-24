@@ -162,7 +162,7 @@ function StrPack(tab)
     for _, s in pairs(tab) do
         ret = (ret == nil) and s or ret .. " " .. s
     end
-    return ret
+    return ret or ""
 end
 
 -- Used to traverse library specific directories for frontends(libc's, libstdc's)
@@ -356,8 +356,8 @@ function PrepareArchive()
     end
     
     -- Intro picture
-    if intropic ~= nil then
-        ret, msg = os.copy(string.format("%s/%s" , confdir, intropic), string.format("%s/tmp/", confdir))
+    if cfg.intropic ~= nil then
+        ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.intropic), string.format("%s/tmp/", confdir))
         if ret == nil then
             print(string.format("Warning could not copy intro picture: %s", msg))
         end

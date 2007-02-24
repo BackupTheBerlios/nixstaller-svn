@@ -24,6 +24,14 @@ DOCS
 - Check for right vertical spacing, paragraphs etc
 - Add norwegian translation references if author sends updated version (tutorials, credits)
 
+TEST
+- Languages: add unknown languages, specify zero languages, defaultlang
+- archivetypes
+- intropic
+- install.execute / install.executeasroot+in a loop
+- getting the right lc and lcpp bins
+
+
 FOR RELEASE
 - CFLAGS: Add -Os -DNDEBUG; remove -g
 - Disable libsu logging
