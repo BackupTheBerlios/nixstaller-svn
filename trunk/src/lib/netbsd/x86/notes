@@ -1,6 +1,6 @@
 Notes for netbsd libs:
 
-Host system: x86 NetBSD 3.1 and NetBSD 1.6.2 and 2.02 to build binaries for these systems.
+Host system: x86 NetBSD 3.1
 
 JPEG:
 version: 6b
