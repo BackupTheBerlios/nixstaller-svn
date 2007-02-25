@@ -95,6 +95,7 @@ distfiles_user = [
 'src/exceptions.odt',
 'src/SConstruct',
 'COPYING',
+'CHANGELOG',
 'geninstall.sh',
 'LICENSE',
 'makeself.sh',
@@ -226,7 +227,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall -g3", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES='NDEBUG')
 
 Export("env")
 
@@ -260,6 +261,7 @@ curnixstversion = '0.2'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
     print 'Stripping all binaries in the bin/%s directory...' % cur_os
+    os.chdir('../')
     stripallbins()
     Exit(0)
 
