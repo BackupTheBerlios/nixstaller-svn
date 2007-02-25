@@ -126,7 +126,10 @@ def getallbins(onlyforcuros):
 def stripallbins():
     bins = getallbins(True)
     for file in bins:
-        Execute("strip -s %s" % file)
+        if cur_os == "sunos":
+            Execute("strip %s" % file)
+        else:
+            Execute("strip -s %s" % file)
 
 # Copies whole directory, excluding dotfiles
 def copydir(dir, dest):
