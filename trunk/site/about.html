@@ -4,102 +4,107 @@
   <title>About Nixstaller</title>
 </head>
 
-The project 'nixstaller' is about providing a way to easily create user friendly installers for UNIX content(mainly software) on UNIX like systems(currently only Linux, FreeBSD and NetBSD).<br>
-
-<p> <h2>Features</h2>
-Here is a list of most of the features Nixstaller currently has:
-
-<h3>Supported Operating Systems</h3>
-Currently Nixstaller is tested on the following systems:<br>
+Nixstaller is an Open Source project with the goal to create user friendly and flexible installers that work on various UNIX like systems.
 <br>
-<table border="1">
+<h3>Main Features</h3>
+<ul>
+   <li> Support for many common UNIX like systems (see table below) </li>
+   <li> Can be fully translated (English and Dutch translations are already provided) </li>
+   <li> The installation files can be compressed with lzma, gzip and bzip2. </li>
+   <li> The installation files that should be used can depend on the current system. </li>
+   <li> <a href="http://www.lua.org">Lua</a> support is provided to configure the installer and to program the installation procedure. This allows very flexible configurations. </li>
+   <li> Very few dependencies: the end user and install creator only needs one of the supported systems. For compilation <A href="http://www.scons.org">SCons</A> (and python) are also required. </li>
+</ul>
+
+<h3>Supported systems</h3>
+<table border="1" summary="Supported systems">
   <tbody>
     <tr>
       <th>OS</th>
       <th>Arch</th>
       <th>Tested on</th>
-      <th>Notes</th>
+      <th>Unsupported versions</th>
     </tr>
     <tr>
       <td>NetBSD</td>
       <td>x86</td>
-      <td>1.6.2, 2.02, 3.0</td>
-      <td></td>
+      <td>2.1, 3.1</td>
+      <td>Anything before 2.X</td>
     </tr>
     <tr>
       <td>FreeBSD</td>
       <td>x86</td>
-      <td>5.3, 6.0</td>
-      <td>FreeBSD 4.X doesn't work yet</td>
+      <td>5.5, 6.2</td>
+      <td>Anything before 5.X</td>
     </tr>
     <tr>
       <td>Linux</td>
       <td>x86</td>
-      <td>Kubuntu Breezy, Gentoo, Knoppix 3.3-2003-11-19</td>
-      <td></td>
+      <td>PCLinuxOS 0.93, OpenSUSE 10.2, Arch 0.8, Kubuntu Edgy, Knoppix 3.3-2003-11-19</td>
+      <td>Very old distributions (ie. systems using GCC 2.X)</td>
+    </tr>
+    <tr>
+      <td>OpenBSD</td>
+      <td>x86</td>
+      <td>3.9, 4.0</td>
+      <td>Anything before 3.9</td>
+    </tr>
+        <tr>
+    <td>Solaris</td>
+      <td>x86</td>
+      <td>Express 12-06, Nexenta 0.6</td>
+      <td>Solaris 10, others untested</td>
     </tr>
   </tbody>
 </table>
 <br>
-Since almost anything is statically liked it's very likely that similar systems work as well.<br>
 Please contact me if you want to help me with porting to another architecture/OS.<br>
-<br>
 
-<h3>Frontends</h3>
-The frontends are simply programs which the user will get to see when they run the installer. Currently there are 2 graphical frontends used for the installer: the first is using <A href="http://www.fltk.org">FLTK</A> and the second <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> via
-<A href="http://invisible-island.net/cdk/">CDK</A><br>
-Qt and GTK2 frontends are planned for later versions.<br>
-<br>
-Each frontend has the following features:
+<h3>Installation Screens</h3>
+Each installer has a set of installation screens. There are various types:
 <ul>
-   <li>Can be translated(no UTF yet). Dutch and English translations are supplied by default</li>
-   <li>Screen where the user can choose the language</li>
-   <li>Optional intro screen with customizable image and text</li>
-   <li>Optional screen where a user have to accept a license agreement</li>
-   <li>Optional screen where the user has to select a destination directory</li>
-   <li>Optional screen where the user can set parameters used by installation commands</li>
-   <li>Installation progress screen</li>
-   <li>Optional screen which appears when the installation is done</li>
+    <li> A screen where the user can select a language. </li>
+    <li> An introduction screen with an optional image and text. </li>
+    <li> A screen where the user can read/accept a provided license. </li>
+    <li> A screen where the user can select a destination directory to put the installation files. </li>
+    <li> A screen which shows the progress of the installation. </li>
+    <li> A screen which can show text after the installation. </li>
+    <li> Custom made screens which can be made via Lua scripting (see below). </li>
 </ul>
-<br>
+All the screens are optional and the order when to display them is also configurable.
 
-Most of the required libs for the frontends are linked statically, so users of the installer don't have to worry about any dependencies.<br>
-<br>
+<h3>Configuration</h3>
+Nixstaller uses the <a href="http://www.lua.org">Lua</a> scripting language.
 
-<p> <h2>Configuration</h2>
-Ofcourse can nixstaller be configured;
+<p>
+Firstly lua is used to configure some settings, such as
 <ul>
-   <li> Can use either gzip or bzip2 to compress the files </li>
-   <li> You can specify which frontends you want to be included </li>
-   <li> A way to specify which frontends for which Operating Systems should be included </li>
-   <li> Extraction directory can be specified: Specified by the user, to a default directory(IE for binaries), temporary(IE for compiling the package) </li>
-   <li> A way to specify any shell commands that will be executed after the files are extracted. You can also specify the used parameters for each command(IE --prefix for './configure') so that the user can configure them before the installation begins. This feature is especially handy for compiling a package on the user's system. </li>
+   <li> Which translations should be included. </li>
+   <li> Which compression format should be used to compress the installation files. </li>
+   <li> Which frontends to include. </li>
+   <li> When and which installation screens should be displayed. </li>
  </ul>
 
-<p> <h2>How it works</h2>
-When creating the installer a self extractable archive will be created (powered by
-<A href="http://www.megastep.org/makeself/">makeself</A>). The only thing the user has to do is running this script, it then will do:
+<p>
+Besides configuration Lua is also used to program the installer. Some examples for this are:
 <ul>
-   <li> Extract some required files for the graphical frontends(configuration file, translations, archive containing the files to be installed(this is not extracted before installation) etc). Default the files will go in a subdirectory on /tmp.  </li>
-   <li> Search for the right frontend(depending on which are included, if X is running etc). </li>
-   <li> Launch this frontend. </li>
-   <li> Clean the files used by the installer. </li>
+   <li> Create new installation screens </li>
+   <li> Extract the installation files to a directory that is specified specified by the script or user. </li>
+   <li> Communicate with the users system through various Lua library functions </li>
+   <li> Perform various shell commands such as compiling. </li>
  </ul>
 
+<h3>How it works</h3>
+Briefly said Nixstaller works like this:
+<ul>
+   <li> A project directory is made which contain several configuration files and the files that should be installed. </li>
+   <li> A script is called that scans the directory and creates the installer. The installer is a shell script with an embedded archive containing everything the installer needs. This script is made with <A href="http://www.megastep.org/makeself/">makeself</A>. </li>
+   <li> When the user executes the script it will extract the embedded archive to a temporary directory. </li>
+   <li> Another script is then called which will launch the right frontend for the users system. This depends on various things such as the operating system and if X is running. </li>
+   <li> The frontend guides the user through the installation; the user can configure various settings, read important text messages and follow the installation process. </li>
+   <li> After the installation is finished the temporary directory is removed. </li>
+ </ul>
 
-<p> <h2>Requirements</h2>
-<p> <h3>The end user</h3>
-Additional libraries used by the frontends(such as ncurses, CDK, FLTK etc) are all linked statically. Some system libraries(libm, libc) or the X libraries are kept dynamic, since some functions need runtime support and these libraries don't change that often anyway.<br>
-This simply means that the end user hardly needs to worry about any dependencies.<br>
-Note that it's possible to supply different binaries for different OSes/architectures/libc's.<br>
-<br>
-
-<p> <h3>The install creator</h3>
-The same as the end user. All supported frontends are precompiled in the nixstaller package.<br>
-The scripts use plain SH, which should be available by default.<br>
-<br>
-
-<p> <h3>People who want to compile nixstaller</h3>
-If you want to build you will need at least SCons version 0.96.91 (which needs python) and in case you want to build the required libraries you need those as well. The <A href="http://nixstaller.berlios.de/viewpage.php?page_id=3">manual</A> has a section about compiling Nixstaller and where to get all the required libraries.<br>
+This is all discussed in detail in the <A href="http://nixstaller.berlios.de/manual-0.2/nixstaller.html">user manual</A>.
 
 </html>
