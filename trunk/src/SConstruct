@@ -126,7 +126,10 @@ def getallbins(onlyforcuros):
 def stripallbins():
     bins = getallbins(True)
     for file in bins:
-        Execute("strip -s %s" % file)
+        if cur_os == "sunos":
+            Execute("strip %s" % file)
+        else:
+            Execute("strip -s %s" % file)
 
 # Copies whole directory, excluding dotfiles
 def copydir(dir, dest):
@@ -317,6 +320,7 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
     cfgfile = open(workdir + "config.lua", "w")
     cfgfile.write("""
 cfg.appname = "Nixstaller"
+cfg.targetos = { "linux", "netbsd", "freebsd", "openbsd", "sunos" }
 """)
     cfgfile.close()
     

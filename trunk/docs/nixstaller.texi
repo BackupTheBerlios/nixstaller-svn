@@ -1263,7 +1263,7 @@ For suggestions, questions, bugs etc you can reach me through the following ways
 @itemize @bullet
 @item E-Mail: rhelmus_AT_gmail.com
 @item Use the @uref{http://nixstaller.berlios.de/forum/index.php, online forums}
-@item Instant Message: rick_helmus8_AT_hotmail.com (MSN), 224332897(ICQ) or rhelmus_AT_gmail.com (Jabber).
+@item Instant Message: rick_helmus8_AT_hotmail.com (MSN), 224332897(ICQ) or rhelmus_AT_gmail.com (Google Talk).
 @item For bugs: the @uref{https://developer.berlios.de/projects/nixstaller/, BerliOS project page}.
 @end itemize
 

@@ -91,16 +91,16 @@ Besides configuration Lua is also used to program the installer. Some examples f
    <li> Create new installation screens </li>
    <li> Extract the installation files to a directory that is specified specified by the script or user. </li>
    <li> Communicate with the users system through various Lua library functions </li>
-   <li> Perform various shell commands such as compiling. </li>
+   <li> Execute various shell commands (ie to compile). </li>
  </ul>
 
 <h3>How it works</h3>
 Briefly said Nixstaller works like this:
 <ul>
    <li> A project directory is made which contain several configuration files and the files that should be installed. </li>
-   <li> A script is called that scans the directory and creates the installer. The installer is a shell script with an embedded archive containing everything the installer needs. This script is made with <A href="http://www.megastep.org/makeself/">makeself</A>. </li>
-   <li> When the user executes the script it will extract the embedded archive to a temporary directory. </li>
-   <li> Another script is then called which will launch the right frontend for the users system. This depends on various things such as the operating system and if X is running. </li>
+   <li> A script is called that scans the project directory and creates the installer. The installer is a shell script with an embedded archive containing everything it needs. This script is made with <A href="http://www.megastep.org/makeself/">makeself</A>. </li>
+   <li> When a user executes this script the embedded archive will be extracted to a temporary directory. </li>
+   <li> Another script is then called which will launch the right frontend for the users system. This depends on various things such as the operating system and if a X server is running. </li>
    <li> The frontend guides the user through the installation; the user can configure various settings, read important text messages and follow the installation process. </li>
    <li> After the installation is finished the temporary directory is removed. </li>
  </ul>
