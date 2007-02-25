@@ -320,6 +320,7 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
     cfgfile = open(workdir + "config.lua", "w")
     cfgfile.write("""
 cfg.appname = "Nixstaller"
+cfg.targetos = { "linux", "netbsd", "freebsd", "openbsd", "sunos" }
 """)
     cfgfile.close()
     
