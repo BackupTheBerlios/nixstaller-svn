@@ -181,11 +181,17 @@ Currently there are 2 frontends for Nixstaller.
 @ifhtml
 One is powered by @uref{http://www.fltk.org,FLTK}:
 
-@image{fltk,,,,png}
+@c @image{fltk,,,,png}
+@html
+<img src="fltk.png" alt="FLTK frontend picture">
+@end html
 
 and the other by @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}:
 
-@image{ncurs,,,,png}
+@c @image{ncurs,,,,png}
+@html
+<img src="ncurs.png" alt="ncurses frontend picture">
+@end html
 
 @end ifhtml
 @ifnothtml
