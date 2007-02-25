@@ -137,8 +137,6 @@ do
     do
         LCDIR="`getbinlibdir ${LC} libc bin/$CURRENT_OS/$CURRENT_ARCH`"
         
-        echo "Trying libc for $FR: " $LCDIR
-        
         if [ ! -d "${LCDIR}" ]; then
             continue
         fi
@@ -152,8 +150,6 @@ do
         for LCPP in $LIBSTDCPPS
         do
             LCPPDIR="`getbinlibdir ${LCPP} libstdc++ ${LCDIR}`"
-            
-            echo "Trying libstdc++ for $FR: " $LCPPDIR
             
             if [ ! -d ${LCPPDIR} ]; then
                 continue

@@ -1,4 +1,33 @@
 0.1.1 --> 0.2
 
 FLTK:
-* Fl_File_Input instead of Fl_input for directory selectors
+- Fl_File_Input instead of Fl_input for directory selectors
+
+ncurses:
+- Completely new frontend code, uses ncurses++ instead of CDK.
+- Upgraded to ncurses 5.6
+
+OVERALL:
+- License change: Removed CDK exception
+- Completely new configuration via Lua 5.1.1;
+    - Configuration is split to 2 files (config.lua and run.lua instead of install.cfg).
+    - New installation screens can be created.
+    - The order of and which installation screens can be configured.
+    - Installers can now be programmed instead of just configured.
+- Support for OpenBSD and Solaris Express/Nexenta
+- lzma compression support and the default is changed from gzip to lzma.
+- edelta support for 'binary diffs' (reduces size)
+- New manual, made with texinfo and texi2html
+- Directory structure: source files are moved to src/ subdirectory, Nixstaller archives have all the files in a nixstaller subdirectory.
+- Removed SCons example, added Cube and Vim examples
+- C++ library (libstdc++) is now linked dynamicly (reduces size)
+- Shell commands executed during installation are now terminated when the frontend closes.
+- C++ exception support
+- Moved many duplicate frontend code to a single library
+- Removed NetBSD 1.6.2 support
+- Removed norwegian translations (outdated)
+
+0.1 --> 0.1.1
+- Fixed: Ncurses frontend crashes if only 1 language is available. 
+- Fixed: geninstall.sh couldn't detect current directory with older versions of ksh. 
+- Added norwegian language support.

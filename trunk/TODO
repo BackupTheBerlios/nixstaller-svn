@@ -1,11 +1,10 @@
 OVERALL
-- Modify Makeself?
 - Test/clean/check new edelta code
 - Test installer scripts
-- Popup dialog when install starts? (If yes add norwegian translations)
-- Update SCons example?
-- If norwegian translations: add them to SConstruct file list
-- Keep CHANGELOG file? (If so add to SConstruct file list)
+- if Norwegian translations:
+    - Add popup dialog strings
+    - Add to SConstruct file list
+    - References in Manual
 - Test new config var modules
 - Mention texi2html
 
@@ -23,18 +22,8 @@ DOCS
 - Check for right vertical spacing, paragraphs etc
 - Add norwegian translation references if author sends updated version (tutorials, credits)
 
-TEST
-- Languages: add unknown languages, specify zero languages, defaultlang
-- archivetypes
-- intropic
-- install.execute / install.executeasroot+in a loop
-- getting the right lc and lcpp bins
-
 
 FOR RELEASE
-- CFLAGS: Add -Os -DNDEBUG; remove -g
-- Disable libsu logging
-- Disable debug Lua lib
 - Update site: screenshots, FAQ(GPL and Nixstaller), Manual, Removed NetBSD 1.6.2 support
 
 ----------------------------- LATER ------------------------------------
@@ -52,6 +41,8 @@ OVERALL
 - Better util.a configure testing?
 - Replace vec [] access with at() ?
 - Build script that compiles all Nixstaller dependencies?
+- Modify Makeself?
+- x64 bins?
 
 
 MAIN

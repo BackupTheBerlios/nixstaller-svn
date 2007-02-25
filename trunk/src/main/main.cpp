@@ -455,7 +455,7 @@ int CMain::LuaMKDir(lua_State *L)
 {
     const char *file = luaL_checkstring(L, 1);
     const char *modestr = luaL_optstring(L, 2, NULL);
-    bool ignoreumask = lua_toboolean(L, 3);
+    bool ignoreumask = lua_toboolean(L, 3), umaskchanged = false;
     mode_t dirmode, oldumask;
 
     try
@@ -466,16 +466,19 @@ int CMain::LuaMKDir(lua_State *L)
             dirmode = 0777; // This is the default mode for the mkdir command
     
         if (ignoreumask)
+        {
             oldumask = umask(0);
+            umaskchanged = true;
+        }
         
         MKDir(file, dirmode);
         
-        if (ignoreumask)
+        if (umaskchanged)
             umask(oldumask);
     }
     catch(Exceptions::CExMKDir &e)
     {
-        if (ignoreumask)
+        if (umaskchanged)
             umask(oldumask);
         
         lua_pushnil(L);

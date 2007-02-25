@@ -329,7 +329,7 @@ public:
 #include "utils.h"
 #include "install.h"
 
-//#define RELEASE /* Enable on a release build */
+#define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };
