@@ -4,43 +4,41 @@
   <title>Nixstaller FAQ</title>
 </head>
 
-<p> <h1>Frequently Asked Questions (FAQ)</h1>
-<hr>
-<br><br>
+<h3>What is Nixstaller?</h3>
+With Nixstaller you can create installers for various UNIX like systems. More details at the <A href="http://nixstaller.berlios.de/about">about page</A>.
 
-<p> <h2>What is this all about?</h2>
-With Nixstaller you can easily create installers for your Linux/Unix content(software). It is as simple as putting some files in a folder, modify a small config file and run a script.<br>
-<br>
+<h3>Why Nixstaller?</h3>
+On most UNIX systems a package manager is used for software installation. If the software you want is not available as a package for your system installation can be tricky. With Nixstaller an installer can be made that will ease the installation process. It also works on many different systems.
 
-<p> <h2>Why Nixstaller?</h2>
-Basically if your package is not available from the package manager you use(if your system even has one) the installation can be tricky for some users. Nixstaller tries to make it easier for the end user to install a package and for the developer to create a package.<br>
-<br>
-<p> <h2>What platforms does it run on?</h2>
-Currently on x86(i486, Intel compatible) on the following Operating Systems: Linux, FreeBSD and NetBSD.<br>
-<br>
-<p> <h2>What does it install?</h2>
-Currently Nixstaller will extract all the files in a temporary directory, from there it can run shell commands which are specified in a configuration file. That way it can install all kinds of things. Some examples: Simple things like games(just extract) or a package which needs to be compiled on the users system.<br>
-<br>
-<p> <h2>What do I need in able to use it?</h2>
-As a user or as a install creator: nothing but a supported *nix platform.<br>
-If you want to compile Nixstaller you should read the <A href="http://nixstaller.berlios.de/viewpage.php?page_id=3#compile">Compile section in the manual</A>.<br>
-<br>
-<p> <h2>And when do I want to compile?</h2>
-Generally only when you want to make support for another platform or when you made modifications to the source.<br>
-<br>
-<p> <h2>Can I help?</h2>
-You can help me with a few things:<br>
+<h3>What can be installed?</h3>
+Many kinds of installation procedures can be programmed thanks to the <A href="http://www.lua.org">Lua</A> scripting language. Some examples:
 <ul>
-   <li> Make additional (non UTF) translations. See the <A href="http://nixstaller.berlios.de/viewpage.php?page_id=3#lang-files">manual</A> for how to do this. </li>
-   <li> Create binaries for additional CPU architectures/operating system. See the <A href="http://nixstaller.berlios.de/viewpage.php?page_id=3#compile">compile section</A>.</li>
-   <li> Report bugs/suggestions. </li>
- </ul>
-<p> <h2>How can I contact you?</h2>
-<ul>
-   <li> Send a email to rhelmus_AT_gmail.com</li>
-   <li> Use the <A href="http://nixstaller.berlios.de/forum/index.php">forums at the site</A> </li>
-   <li> Instant Message: rick_helmus8_AT_hotmail.com(MSN), 224332897(ICQ) or rickakame(AIM) </li>
-   <li> For bugs/patches/suggestions: Use the <A href="https://developer.berlios.de/projects/nixstaller/">project page</A></li>
+   <li> An installer that extract files to a directory specified by the user. </li>
+   <li> An installer that extracts files to a temporary directory, compiles several binaries and then install these binaries and several other files to the users system. </li>
  </ul>
 
-</html>
+See also the <A href="http://nixstaller.berlios.de/files/vim70.sh">Vim example installer</A>.
+
+<h3>What software license does Nixstaller use?</h3>
+Nixstaller is released under the terms of GPLv2. Note that this doesn't affect the content used by generated installers. In other words: if you want to modify Nixstaller you have to obey the rules of the GPLv2 license but you can create installers that install files under any software license.
+
+<h3>How do I compile Nixstaller?</h3>
+Read the <A href="http://nixstaller.berlios.de/manual-0.2/nixstaller.html">manual</A> for compilation instructions.
+
+<h3>Can I help?</h3>
+You can help me with several things:
+<ul>
+   <li> Translations (non-UTF). See the <A href="http://nixstaller.berlios.de/manual-0.2/nixstaller.html">manual</A> for instructions. </li>
+   <li> Create binaries for OSs or CPU architectures that are currently unsupported. For this also refer to the <A href="http://nixstaller.berlios.de/manual-0.2/nixstaller.html">manual</A>. </li>
+   <li> Create artwork. I'm a very bad artist ;-) Things that may need some artwork are the homepage and perhaps the graphical frontends. </li>
+   <li> Report bugs and suggestions. </li>
+ </ul>
+ 
+<h3>How can I contact you?</h3>
+For suggestions, questions, bugs etc you can reach me through the following ways:
+<ul>
+    <li> E-Mail: rhelmus_AT_gmail.com</li>
+    <li> Use the <a href="http://nixstaller.berlios.de/forum/index.php">online forums</a></li>
+    <li> Instant Message: rick_helmus8_AT_hotmail.com (MSN), 224332897(ICQ) or rhelmus_AT_gmail.com (Jabber).</li>
+    <li> For bugs: the <a href="https://developer.berlios.de/projects/nixstaller/">BerliOS project page</a>.</li>
+</ul>
