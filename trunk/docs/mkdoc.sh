@@ -1,3 +1,5 @@
 #!/bin/sh
 #makeinfo --html --css-include=styles.css nixstaller.texi
-texi2html nixstaller.texi -split=chapter -subdir=html --css-include=styles.css
+OUTDIR=../../doc
+texi2html nixstaller.texi --split=chapter --subdir=$OUTDIR --css-include=styles.css
+cp fltk.png ncurs.png $OUTDIR

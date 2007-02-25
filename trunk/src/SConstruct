@@ -270,8 +270,8 @@ if 'stripbins' in COMMAND_LINE_TARGETS:
 
 if 'tardist' in COMMAND_LINE_TARGETS:
     archname = 'nixstaller-' + curnixstversion + '.tar.gz'
-    tarredfile = tarfile.open(archname, 'w:gz')
     os.chdir("../")
+    tarredfile = tarfile.open(archname, 'w:gz')
     stripallbins()
     for dfile in distfiles_user+getallbins(False):
         if os.path.isdir(dfile):
@@ -282,9 +282,9 @@ if 'tardist' in COMMAND_LINE_TARGETS:
                     if os.path.isdir(sfile):
                         stack.append(sfile)
                     else:
-                        tarredfile.add(sfile)
+                        tarredfile.add(sfile, 'nixstaller-'+curnixstversion+'/'+sfile)
         else:
-            tarredfile.add(dfile)
+            tarredfile.add(dfile, 'nixstaller-'+curnixstversion+'/'+dfile)
     tarredfile.close()
     print "Generated %s" % archname
     Exit(0)
