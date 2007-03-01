@@ -6,6 +6,8 @@
     <file>fileopen.xpm</file>
     <file>editpaste.xpm</file>
     <file>filesave.xpm</file>
+    <file>rup.png</file>
+    <file>rdown.png</file>
     <file>textfedit.ui</file>
 </qresource>
 </RCC>

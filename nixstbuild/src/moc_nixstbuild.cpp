@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'nixstbuild.h'
 **
-** Created: Sat Feb 17 23:31:42 2007
+** Created: Thu Mar 1 16:50:44 2007
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.2.0)
 **
 ** WARNING! All changes made in this file will be lost!

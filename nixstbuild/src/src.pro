@@ -11,5 +11,5 @@ CONFIG += warn_on \
           qt
 TARGET = ../bin/nixstbuild
 RESOURCES = application.qrc
-FORMS += textfedit.ui
-
+FORMS += textfedit.ui \
+screeninput.ui

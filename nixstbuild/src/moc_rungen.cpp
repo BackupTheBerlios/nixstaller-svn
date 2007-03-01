@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'rungen.h'
 **
-** Created: Sun Feb 18 13:14:01 2007
+** Created: Thu Mar 1 16:59:09 2007
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.2.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -22,7 +22,7 @@ static const uint qt_meta_data_NBRunGen[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-       5,   10, // methods
+      11,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
@@ -32,12 +32,20 @@ static const uint qt_meta_data_NBRunGen[] = {
       30,   26,    9,    9, 0x08,
       41,    9,    9,    9, 0x08,
       48,    9,    9,    9, 0x08,
+      57,    9,    9,    9, 0x08,
+      65,    9,    9,    9, 0x08,
+      76,    9,    9,    9, 0x08,
+      85,    9,    9,    9, 0x08,
+     100,   98,    9,    9, 0x08,
+     119,   98,    9,    9, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_NBRunGen[] = {
     "NBRunGen\0\0sOK()\0sCancel()\0row\0sShow(int)\0sBUp()\0sBDown()\0"
+    "sBAdd()\0sBRemove()\0ssidOK()\0ssidCancel()\0c\0ssidDefaultC(bool)\0"
+    "ssidCustomC(bool)\0"
 };
 
 const QMetaObject NBRunGen::staticMetaObject = {
@@ -70,8 +78,14 @@ int NBRunGen::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 2: sShow((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 3: sBUp(); break;
         case 4: sBDown(); break;
+        case 5: sBAdd(); break;
+        case 6: sBRemove(); break;
+        case 7: ssidOK(); break;
+        case 8: ssidCancel(); break;
+        case 9: ssidDefaultC((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 10: ssidCustomC((*reinterpret_cast< bool(*)>(_a[1]))); break;
         }
-        _id -= 5;
+        _id -= 11;
     }
     return _id;
 }

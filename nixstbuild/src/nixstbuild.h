@@ -136,7 +136,7 @@ private:
     QCheckBox *ct_feNcurses;
     QCheckBox *ct_feFltk;
     QLineEdit *ct_img;
-    
+
     // Run tab
     QTextEdit *rt_textedit;
 };

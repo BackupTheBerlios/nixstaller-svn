@@ -30,13 +30,29 @@ using namespace std;
 #include <QFrame>
 #include <QDialog>
 #include <QCheckBox>
+#include <QTreeWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QListWidget>
 
-const char *base_init = "function Init()\n\tScreenList = { WelcomeScreen, SelectDirScreen, InstallScreen }\nend\n\n";
+#include "ui_screeninput.h"
+
 const char *base_install = "function Install()\n\tinstall.extractfiles()\nend\n\n";
+
+inline QTreeWidgetItem *newItem(QTreeWidget *parent, char *caption)
+{
+    QTreeWidgetItem *nitem = new QTreeWidgetItem();
+    nitem->setText(0, caption);
+    return nitem;
+}
+
+inline QTreeWidgetItem *newItemQS(QTreeWidget *parent, QString caption)
+{
+    QTreeWidgetItem *nitem = new QTreeWidgetItem();
+    nitem->setText(0, caption);
+    return nitem;
+}
 
 NBRunGen::NBRunGen(QWidget *parent): QDialog(parent)
 {
@@ -71,7 +87,6 @@ NBRunGen::NBRunGen(QWidget *parent): QDialog(parent)
 
     setupInit();
     setupInstall();
-
 }
 
 void NBRunGen::setupInit()
@@ -83,28 +98,49 @@ void NBRunGen::setupInit()
 
     lay->addWidget(topframe);
     QVBoxLayout *clay = new QVBoxLayout(topframe);
-    init = new QCheckBox("Generate Init()");
+    init = new QCheckBox("Generate Init()", topframe);
     clay->addWidget(init);
     clay->addSpacing(4);
     QFrame *restframe = new QFrame;
     restframe->setFrameStyle(QFrame::Panel | QFrame::Plain);
     restframe->setLineWidth(1);
-/*
+
     // Configure init
-    QVBoxLayout *conflayout = new QVBoxLayout;
-    QHBoxLayout *listlay = new QHBoxLayout;
-    screenList = new QListWidget;
-    screenList->addItem("WelcomeScreen");
-    screenList->addItem("SelectDirScreen");
-    screenList->addItem("InstallScreen");
-    listlay->addWidget(screenList);
+    QVBoxLayout *screenlay = new QVBoxLayout;
+    QHBoxLayout *listlay = new QHBoxLayout(restframe);
+
     QVBoxLayout *btn_lay = new QVBoxLayout;
-    QPushButton *bup = new QPushButton("Up");
-    QPushButton *bdown = new QPushButton("Down");
+    QPushButton *bup = new QPushButton(QIcon(":/rup.png"), "");
+    QPushButton *bdown = new QPushButton(QIcon(":/rdown.png"), "");
+
+    screenlist = new QTreeWidget;
+    screenlist->addTopLevelItem(newItem(screenlist, "WelcomeScreen"));
+    screenlist->addTopLevelItem(newItem(screenlist, "LicenseScreen"));
+    screenlist->addTopLevelItem(newItem(screenlist, "SelectDirScreen"));
+    screenlist->addTopLevelItem(newItem(screenlist, "InstallScreen"));
+    screenlist->addTopLevelItem(newItem(screenlist, "FinishScreen"));
+
+    QPushButton *badd = new QPushButton("Add");
+    QPushButton *bremove = new QPushButton("Remove");
+    QHBoxLayout *barlay = new QHBoxLayout;
+    barlay->addWidget(badd); barlay->addWidget(bremove);
+
+    connect(badd, SIGNAL(clicked()), this, SLOT(sBAdd()));
+    connect(bremove, SIGNAL(clicked()), this, SLOT(sBRemove()));
+
+    screenlay->addWidget(screenlist);
+    screenlay->addLayout(barlay);
+
+    btn_lay->addWidget(bup); 
+    btn_lay->addWidget(bdown);
+    btn_lay->setAlignment(Qt::AlignVCenter);
+    listlay->addLayout(screenlay);
+    listlay->addLayout(btn_lay);
+    //conflayout->addLayout(listlay);
 
     connect(bup, SIGNAL(clicked()), this, SLOT(sBUp()));
     connect(bdown, SIGNAL(clicked()), this, SLOT(sBDown()));
-*/
+
     lay->addWidget(restframe);
     lay->setAlignment(Qt::AlignTop);
 
@@ -120,7 +156,7 @@ void NBRunGen::setupInstall()
 
     lay->addWidget(topframe);
     QVBoxLayout *clay = new QVBoxLayout(topframe);
-    install = new QCheckBox("Generate Install()");
+    install = new QCheckBox("Generate Install()", topframe);
     clay->addWidget(install);
     clay->addSpacing(4);
     QFrame *restframe = new QFrame;
@@ -137,8 +173,25 @@ void NBRunGen::sOK()
 {
     if (init->isChecked())
     {
-        gscript = base_init;
+        gscript = "function Init()\n\t";
+        gscript += "ScreenList = { ";
+
+        if (screenlist->topLevelItemCount()==0)
+        {
+            QMessageBox::warning(this, "Nixstbuil", tr("Please specify at least one screen"));
+            gscript = " ";
+            return;
+        }
+
+        for (int i = 0; i < screenlist->topLevelItemCount()-1; i++)
+        {
+            gscript += screenlist->topLevelItem(i)->text(0).toStdString() + ", ";
+        }
+
+        gscript += screenlist->topLevelItem(screenlist->topLevelItemCount()-1)->text(0).toStdString() + " }\n";
+        gscript += "end\n\n";
     }
+
     if (install->isChecked())
     {
         gscript += base_install;
@@ -160,14 +213,98 @@ void NBRunGen::sShow(int row)
 
 string NBRunGen::script()
 {
+
+    if (gscript.empty())
+    {
+        return string(" ");
+    }
+
     return gscript;
 }
 
 void NBRunGen::sBUp()
 {
+    QTreeWidgetItem *citem = screenlist->currentItem();
+    QTreeWidgetItem *nitem = citem->clone();
+    int nindex = screenlist->indexOfTopLevelItem(citem) - 1;
+
+    if (nindex<0) nindex = 0;
+
+    delete citem;
+
+    screenlist->insertTopLevelItem(nindex, nitem);
+    screenlist->setCurrentItem(nitem);
 }
 
 void NBRunGen::sBDown()
 {
+    QTreeWidgetItem *citem = screenlist->currentItem();
+    QTreeWidgetItem *nitem = citem->clone();
+    int nindex = screenlist->indexOfTopLevelItem(citem) + 1;
+
+    if (nindex > screenlist->topLevelItemCount()-1) nindex--;
+
+    delete citem;
+
+    screenlist->insertTopLevelItem(nindex, nitem);
+    screenlist->setCurrentItem(nitem);
+}
+
+void NBRunGen::sBAdd()
+{
+    currentSUi = new Ui_ScreenInputDialog();
+    currentSDlg = new QDialog();
+    currentSUi->setupUi(currentSDlg);
+
+    connect(currentSUi->rDefault, SIGNAL(clicked(bool)), this, SLOT(ssidDefaultC(bool)));
+    connect(currentSUi->rCustom, SIGNAL(clicked(bool)), this, SLOT(ssidCustomC(bool)));
+
+    connect(currentSUi->btnOK, SIGNAL(clicked()), this, SLOT(ssidOK()));
+    connect(currentSUi->btnCancel, SIGNAL(clicked()), this, SLOT(ssidCancel()));
+
+    currentSUi->dScreenBox->addItem("WelcomeScreen");
+    currentSUi->dScreenBox->addItem("LicenseScreen");
+    currentSUi->dScreenBox->addItem("SelectDirScreen");
+    currentSUi->dScreenBox->addItem("InstallScreen");
+    currentSUi->dScreenBox->addItem("FinishScreen");
+
+    currentSDlg->exec();
+
+    delete currentSDlg;
+    delete currentSUi;
+}
+
+void NBRunGen::sBRemove()
+{
+    delete screenlist->currentItem();
+}
+
+void NBRunGen::ssidOK()
+{
+    if (currentSUi->rDefault->isChecked())
+    {
+        screenlist->addTopLevelItem(newItemQS(screenlist, currentSUi->dScreenBox->currentText()));
+    } else {
+        screenlist->addTopLevelItem(newItemQS(screenlist, currentSUi->cScreenBox->text()));
+    }
+
+    currentSDlg->accept();
+}
+
+void NBRunGen::ssidCancel()
+{
+    currentSDlg->reject();
+}
+
+void NBRunGen::ssidDefaultC(bool c)
+{
+    currentSUi->dScreenBox->setEnabled(true);
+    currentSUi->cScreenBox->setEnabled(false);
+}
+
+void NBRunGen::ssidCustomC(bool c)
+{
+    currentSUi->dScreenBox->setEnabled(false);
+    currentSUi->cScreenBox->setEnabled(true);
 }
 

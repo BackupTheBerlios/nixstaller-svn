@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'textfedit.ui'
 **
-** Created: Sat Feb 17 23:31:19 2007
+** Created: Thu Mar 1 16:49:07 2007
 **      by: Qt User Interface Compiler version 4.2.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!

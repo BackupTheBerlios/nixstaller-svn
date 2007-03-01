@@ -20,6 +20,7 @@
 
 class QWidget;
 class QDialog;
+class QTreeWidget;
 class QListWidget;
 class QStackedWidget;
 
@@ -30,9 +31,12 @@ using namespace std;
 #include <QDialog>
 #include <QCheckBox>
 
+class Ui_ScreenInputDialog;
+
 class NBRunGen: public QDialog
 {
     Q_OBJECT
+
 public:
     NBRunGen(QWidget *parent = 0);
 
@@ -43,9 +47,12 @@ private:
     QWidget *install_widget;
     QStackedWidget *qstack;
     QListWidget *winlist;
+    QTreeWidget*screenlist;
     QCheckBox *init;
     QCheckBox *install;
-    QListWidget *screenList;
+
+    Ui_ScreenInputDialog *currentSUi;
+    QDialog *currentSDlg;
 
     string gscript;
 
@@ -59,4 +66,12 @@ private slots:
     void sShow(int row);
     void sBUp();
     void sBDown();
+    void sBAdd();
+    void sBRemove();
+
+    void ssidOK();
+    void ssidCancel();
+
+    void ssidDefaultC(bool c);
+    void ssidCustomC(bool c);
 };

@@ -59,8 +59,8 @@ nixstbuild::nixstbuild()
     msplitter->addWidget(tabs);
 
     addFileTab();
-    addRunTab();
     addConfigTab();
+    addRunTab();
     addTextTabs();
 
     createActions();
@@ -107,7 +107,6 @@ void nixstbuild::newFile()
     qd->mkdir("./lang");
 
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
-
 }
 
 bool nixstbuild::save()
@@ -233,8 +232,8 @@ void nixstbuild::addFileTab()
     ft_layout->setColumnStretch(1, 24);
     ft_layout->setAlignment(Qt::AlignTop);
 
-    ft_addfile = new QPushButton("Add file");
-    ft_adddir = new QPushButton("Add directory");
+    ft_addfile = new QPushButton(tr("Add file"));
+    ft_adddir = new QPushButton(tr("Add directory"));
 
     QHBoxLayout *hboxl = new QHBoxLayout;
 
@@ -425,7 +424,7 @@ void nixstbuild::saveConfig()
 
     if ((ct_feNcurses->checkState()!=Qt::Checked) && (ct_feFltk->checkState()!=Qt::Checked))
     {
-        QMessageBox::warning(this, "Frontends", "You must include at least one frontend to include in your installer package");
+        QMessageBox::warning(this, "Frontends", "You must include at least one frontend in your installer package");
         cfile.remove();
         return;
     }
