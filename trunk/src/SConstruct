@@ -230,7 +230,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=[ 'NDEBUG' ])
+env = Environment(options = opts, CCFLAGS = "-Wall -g3", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=[ 'NDEBUG' ])
 
 Export("env")
 
@@ -257,7 +257,7 @@ libc_ver = ''
 libstdcpp_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua'])
+env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
 # Current version
 curnixstversion = '0.2'
@@ -452,13 +452,14 @@ env.Prepend(LIBS = Split('main su lua'))
 if cur_os == 'netbsd':
     env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib'))
 
+gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gtk-x11-2.0'))
+
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
 
-# Builds fltk frontend
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 c_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 cpp_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
 
 # Default to all
-Default(lzma, lzma_dec, edelta, fltk, ncurses, main, libsu, env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, fltk), env.Install(cpp_bin_dir, ncurses))
+Default(lzma, lzma_dec, edelta, fltk, ncurses, gtk, main, libsu, env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, fltk), env.Install(cpp_bin_dir, ncurses), env.Install(cpp_bin_dir, gtk))
