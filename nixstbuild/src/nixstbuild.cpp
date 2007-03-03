@@ -418,9 +418,9 @@ void nixstbuild::saveConfig()
     cfile.open(QFile::WriteOnly | QFile::Text);
 
     QTextStream out(&cfile);
-    out << "appname = \"" << ct_appName->displayText() << "\"\n";
-    out << "archivetype = \"" << ct_archiveType->currentText() << "\"\n";
-    out << "defaultlang = \"" << ct_defaultLang->displayText() << "\"\n";
+    out << "cfg.appname = \"" << ct_appName->displayText() << "\"\n";
+    out << "cfg.archivetype = \"" << ct_archiveType->currentText() << "\"\n";
+    out << "cfg.defaultlang = \"" << ct_defaultLang->displayText() << "\"\n";
 
     if ((ct_feNcurses->checkState()!=Qt::Checked) && (ct_feFltk->checkState()!=Qt::Checked))
     {
@@ -429,7 +429,7 @@ void nixstbuild::saveConfig()
         return;
     }
 
-    out << "frontends = { ";
+    out << "cfg.frontends = { ";
     if (ct_feNcurses->checkState()==Qt::Checked)
     {
         out << "\"ncurses\"";
@@ -443,7 +443,7 @@ void nixstbuild::saveConfig()
 
     if (ct_img->text()!="")
     {
-        out << "intropic = \"" << ct_img->text() << "\"";
+        out << "cfg.intropic = \"" << ct_img->text() << "\"";
     }
 
     statusBar()->showMessage("Config saved", 5000);

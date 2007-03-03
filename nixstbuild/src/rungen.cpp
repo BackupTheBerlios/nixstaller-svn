@@ -54,6 +54,13 @@ inline QTreeWidgetItem *newItemQS(QTreeWidget *parent, QString caption)
     return nitem;
 }
 
+inline bool isDefault(QString screen)
+{
+    if ((screen=="WelcomeScreen") || (screen=="LicenseScreen") || (screen=="SelectDirScreen") || (screen=="InstallScreen") || (screen=="FinishScreen"))
+        return true;
+    else return false;
+}
+
 NBRunGen::NBRunGen(QWidget *parent): QDialog(parent)
 {
     QVBoxLayout *mainlay = new QVBoxLayout(this);
@@ -120,6 +127,10 @@ void NBRunGen::setupInit()
     screenlist->addTopLevelItem(newItem(screenlist, "InstallScreen"));
     screenlist->addTopLevelItem(newItem(screenlist, "FinishScreen"));
 
+    QStringList headers;
+    headers << "Screens" << "Screen text";
+    screenlist->setHeaderLabels(headers);
+
     QPushButton *badd = new QPushButton("Add");
     QPushButton *bremove = new QPushButton("Remove");
     QHBoxLayout *barlay = new QHBoxLayout;
@@ -173,15 +184,24 @@ void NBRunGen::sOK()
 {
     if (init->isChecked())
     {
-        gscript = "function Init()\n\t";
-        gscript += "ScreenList = { ";
-
         if (screenlist->topLevelItemCount()==0)
         {
             QMessageBox::warning(this, "Nixstbuil", tr("Please specify at least one screen"));
             gscript = " ";
             return;
         }
+
+        gscript = "function Init()\n\t";
+
+        for (int i = 0; i < screenlist->topLevelItemCount()-1; i++)
+        {
+            if (!isDefault(screenlist->topLevelItem(i)->text(0)))
+            {
+                gscript += screenlist->topLevelItem(i)->text(0).toStdString() + " = install.newcfgscreen(\""+ screenlist->topLevelItem(i)->text(1).toStdString()  +"\")\n\t";
+            }
+        }
+        gscript += "\n";
+        gscript += "\tScreenList = { ";
 
         for (int i = 0; i < screenlist->topLevelItemCount()-1; i++)
         {
@@ -285,7 +305,9 @@ void NBRunGen::ssidOK()
     {
         screenlist->addTopLevelItem(newItemQS(screenlist, currentSUi->dScreenBox->currentText()));
     } else {
-        screenlist->addTopLevelItem(newItemQS(screenlist, currentSUi->cScreenBox->text()));
+        QStringList text;
+        text << currentSUi->cScreenBox->text() << currentSUi->screenText->text();
+        screenlist->addTopLevelItem(new QTreeWidgetItem(screenlist, text));
     }
 
     currentSDlg->accept();
@@ -300,11 +322,13 @@ void NBRunGen::ssidDefaultC(bool c)
 {
     currentSUi->dScreenBox->setEnabled(true);
     currentSUi->cScreenBox->setEnabled(false);
+    currentSUi->screenText->setEnabled(false);
 }
 
 void NBRunGen::ssidCustomC(bool c)
 {
     currentSUi->dScreenBox->setEnabled(false);
     currentSUi->cScreenBox->setEnabled(true);
+    currentSUi->screenText->setEnabled(true);
 }
 
