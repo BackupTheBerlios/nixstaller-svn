@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'nixstbuild.h'
 **
-** Created: Sat Mar 3 11:42:51 2007
+** Created: Sun Mar 4 16:32:06 2007
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.2.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -22,7 +22,7 @@ static const uint qt_meta_data_nixstbuild[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-      14,   10, // methods
+      16,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
@@ -41,6 +41,8 @@ static const uint qt_meta_data_nixstbuild[] = {
      153,   11,   11,   11, 0x08,
      167,   11,   11,   11, 0x08,
      182,   11,   11,   11, 0x08,
+     203,  199,   11,   11, 0x08,
+     227,   11,   11,   11, 0x08,
 
        0        // eod
 };
@@ -49,7 +51,7 @@ static const char qt_meta_stringdata_nixstbuild[] = {
     "nixstbuild\0\0newFile()\0bool\0save()\0about()\0documentWasModified()\0"
     "ft_addFile()\0ft_addDir()\0saveLicense()\0saveWelcome()\0saveFinish()\0"
     "saveConfig()\0saveRun()\0generateRun()\0openIntroPic()\0"
-    "settingsDialog()\0"
+    "settingsDialog()\0pos\0fvCustomContext(QPoint)\0fvDeleteFile()\0"
 };
 
 const QMetaObject nixstbuild::staticMetaObject = {
@@ -92,8 +94,10 @@ int nixstbuild::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 11: generateRun(); break;
         case 12: openIntroPic(); break;
         case 13: settingsDialog(); break;
+        case 14: fvCustomContext((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
+        case 15: fvDeleteFile(); break;
         }
-        _id -= 14;
+        _id -= 16;
     }
     return _id;
 }

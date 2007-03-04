@@ -18,6 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+class QMenu;
 class QWidget;
 class QDialog;
 class QTreeWidget;
@@ -54,6 +55,8 @@ private:
     Ui_ScreenInputDialog *currentSUi;
     QDialog *currentSDlg;
 
+    QMenu *listContext;
+
     string gscript;
 
     void setupInit();
@@ -68,6 +71,13 @@ private slots:
     void sBDown();
     void sBAdd();
     void sBRemove();
+
+    void sListContext(const QPoint &pos);
+    void sListAddCheckbox();
+    void sListAddDirSelector();
+    void sListAddInput();
+    void sListAddRadioButton();
+    void sListAddConfigMenu();
 
     void ssidOK();
     void ssidCancel();

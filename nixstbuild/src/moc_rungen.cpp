@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'rungen.h'
 **
-** Created: Sat Mar 3 11:42:55 2007
+** Created: Sun Mar 4 14:10:04 2007
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.2.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -22,7 +22,7 @@ static const uint qt_meta_data_NBRunGen[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-      11,   10, // methods
+      17,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
@@ -34,17 +34,25 @@ static const uint qt_meta_data_NBRunGen[] = {
       48,    9,    9,    9, 0x08,
       57,    9,    9,    9, 0x08,
       65,    9,    9,    9, 0x08,
-      76,    9,    9,    9, 0x08,
-      85,    9,    9,    9, 0x08,
-     100,   98,    9,    9, 0x08,
-     119,   98,    9,    9, 0x08,
+      80,   76,    9,    9, 0x08,
+     101,    9,    9,    9, 0x08,
+     120,    9,    9,    9, 0x08,
+     142,    9,    9,    9, 0x08,
+     158,    9,    9,    9, 0x08,
+     180,    9,    9,    9, 0x08,
+     201,    9,    9,    9, 0x08,
+     210,    9,    9,    9, 0x08,
+     225,  223,    9,    9, 0x08,
+     244,  223,    9,    9, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_NBRunGen[] = {
     "NBRunGen\0\0sOK()\0sCancel()\0row\0sShow(int)\0sBUp()\0sBDown()\0"
-    "sBAdd()\0sBRemove()\0ssidOK()\0ssidCancel()\0c\0ssidDefaultC(bool)\0"
+    "sBAdd()\0sBRemove()\0pos\0sListContext(QPoint)\0sListAddCheckbox()\0"
+    "sListAddDirSelector()\0sListAddInput()\0sListAddRadioButton()\0"
+    "sListAddConfigMenu()\0ssidOK()\0ssidCancel()\0c\0ssidDefaultC(bool)\0"
     "ssidCustomC(bool)\0"
 };
 
@@ -80,12 +88,18 @@ int NBRunGen::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 4: sBDown(); break;
         case 5: sBAdd(); break;
         case 6: sBRemove(); break;
-        case 7: ssidOK(); break;
-        case 8: ssidCancel(); break;
-        case 9: ssidDefaultC((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 10: ssidCustomC((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 7: sListContext((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
+        case 8: sListAddCheckbox(); break;
+        case 9: sListAddDirSelector(); break;
+        case 10: sListAddInput(); break;
+        case 11: sListAddRadioButton(); break;
+        case 12: sListAddConfigMenu(); break;
+        case 13: ssidOK(); break;
+        case 14: ssidCancel(); break;
+        case 15: ssidDefaultC((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 16: ssidCustomC((*reinterpret_cast< bool(*)>(_a[1]))); break;
         }
-        _id -= 11;
+        _id -= 17;
     }
     return _id;
 }

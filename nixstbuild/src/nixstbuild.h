@@ -69,6 +69,8 @@ private slots:
     void generateRun();
     void openIntroPic();
     void settingsDialog();
+    void fvCustomContext(const QPoint &pos);
+    void fvDeleteFile();
 
 private:
     void createActions();
@@ -109,6 +111,7 @@ private:
     QDir *qd;
     QDirModel *qdmodel;
     QTreeView *folderview;
+    QMenu *foldermenu;
     QSplitter *msplitter;
     QTabWidget *tabs;
 

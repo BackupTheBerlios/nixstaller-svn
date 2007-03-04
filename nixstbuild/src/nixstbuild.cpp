@@ -89,6 +89,10 @@ void nixstbuild::initMainControls()
     folderview->setColumnHidden(1, true);
     folderview->setColumnHidden(2, true);
     folderview->setColumnHidden(3, true);
+
+    folderview->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(folderview, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(fvCustomContext(QPoint)));
 }
 
 void nixstbuild::closeEvent(QCloseEvent *event)
@@ -98,7 +102,7 @@ void nixstbuild::closeEvent(QCloseEvent *event)
 
 void nixstbuild::newFile()
 {
-    string cmd = "rm -r " + qd->absolutePath().toStdString();
+    string cmd = "rm -rf " + qd->absolutePath().toStdString();
     system(cmd.c_str());
     qd->cdUp();
     qd->mkdir("./.nbtemp");
@@ -189,6 +193,11 @@ void nixstbuild::createMenus()
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
+
+    foldermenu = new QMenu();
+    QAction *dela = foldermenu->addAction("Delete");
+    dela->setIcon(QIcon(":/xdel.png"));
+    connect(dela, SIGNAL(triggered()), this, SLOT(fvDeleteFile()));
 }
 
 void nixstbuild::createToolBars()
@@ -332,6 +341,20 @@ void nixstbuild::addRunTab()
     rt_mainlayout->addWidget(rt_textedit);
 
     tabs->addTab(rt_widget, "Run");
+}
+
+void nixstbuild::fvCustomContext(const QPoint &pos)
+{
+    foldermenu->popup(folderview->mapToGlobal(pos));
+}
+
+void nixstbuild::fvDeleteFile()
+{
+    QString fpath = qdmodel->filePath(folderview->currentIndex());
+    string cmd("rm -rf ");
+    cmd += fpath.toStdString();
+    system(cmd.c_str());
+    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
 
 void nixstbuild::ft_addFile()

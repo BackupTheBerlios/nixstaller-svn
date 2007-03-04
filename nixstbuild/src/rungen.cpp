@@ -25,17 +25,17 @@ using namespace std;
 #include <Qt>
 #include <QtGui>
 
-#include "rungen.h"
-
 #include <QFrame>
 #include <QDialog>
 #include <QCheckBox>
+#include <QMultiMap>
 #include <QTreeWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QListWidget>
 
+#include "rungen.h"
 #include "ui_screeninput.h"
 
 const char *base_install = "function Install()\n\tinstall.extractfiles()\nend\n\n";
@@ -156,6 +156,17 @@ void NBRunGen::setupInit()
     lay->setAlignment(Qt::AlignTop);
 
     qstack->addWidget(init_widget);
+
+    listContext = new QMenu("Add Widget");
+    screenlist->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(listContext->addAction("Add Checkbox"), SIGNAL(triggered()), this, SLOT(sListAddCheckbox()));
+    connect(listContext->addAction("Add Directory Selector"), SIGNAL(triggered()), this, SLOT(sListAddDirSelector()));
+    connect(listContext->addAction("Add Input Field"), SIGNAL(triggered()), this, SLOT(sListAddInput()));
+    connect(listContext->addAction("Add Radiobutton"), SIGNAL(triggered()), this, SLOT(sListAddRadioButton()));
+    connect(listContext->addAction("Add Config menu"), SIGNAL(triggered()), this, SLOT(sListAddConfigMenu()));
+
+    connect(screenlist, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(sListContext(QPoint)));
 }
 
 void NBRunGen::setupInstall()
@@ -186,7 +197,7 @@ void NBRunGen::sOK()
     {
         if (screenlist->topLevelItemCount()==0)
         {
-            QMessageBox::warning(this, "Nixstbuil", tr("Please specify at least one screen"));
+            QMessageBox::warning(this, "Nixstbuild", tr("Please specify at least one screen"));
             gscript = " ";
             return;
         }
@@ -227,7 +238,6 @@ void NBRunGen::sCancel()
 
 void NBRunGen::sShow(int row)
 {
-    //qstack->setCurrentIndex(winlist->currentRow());
     qstack->setCurrentIndex(row);
 }
 
@@ -297,6 +307,64 @@ void NBRunGen::sBAdd()
 void NBRunGen::sBRemove()
 {
     delete screenlist->currentItem();
+}
+
+void NBRunGen::sListContext(const QPoint &pos)
+{
+/*
+    if (!isDefault(screenlist->currentItem()->text(0)))
+        listContext->popup(screenlist->mapToGlobal(pos));
+*/
+}
+
+void NBRunGen::sListAddCheckbox()
+{
+    QTreeWidgetItem *item = screenlist->currentItem();
+    QStringList s;
+    s << "CheckBox" << "title";
+    QTreeWidgetItem *nitem = new QTreeWidgetItem(item, s);
+    nitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);
+    item->addChild(nitem);
+}
+
+void NBRunGen::sListAddDirSelector()
+{
+    QTreeWidgetItem *item = screenlist->currentItem();
+    QStringList s;
+    s << "DirSelector" << "title";
+    QTreeWidgetItem *nitem = new QTreeWidgetItem(item, s);
+    nitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);
+    item->addChild(nitem);
+}
+
+void NBRunGen::sListAddInput()
+{
+    QTreeWidgetItem *item = screenlist->currentItem();
+    QStringList s;
+    s << "InputField" << "title";
+    QTreeWidgetItem *nitem = new QTreeWidgetItem(item, s);
+    nitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);
+    item->addChild(nitem);
+}
+
+void NBRunGen::sListAddRadioButton()
+{
+    QTreeWidgetItem *item = screenlist->currentItem();
+    QStringList s;
+    s << "RadioButton" << "title";
+    QTreeWidgetItem *nitem = new QTreeWidgetItem(item, s);
+    nitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);
+    item->addChild(nitem);
+}
+
+void NBRunGen::sListAddConfigMenu()
+{
+    QTreeWidgetItem *item = screenlist->currentItem();
+    QStringList s;
+    s << "ConfigMenu" << "under construction";
+    QTreeWidgetItem *nitem = new QTreeWidgetItem(item, s);
+    nitem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);
+    item->addChild(nitem);
 }
 
 void NBRunGen::ssidOK()
