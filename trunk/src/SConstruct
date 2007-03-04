@@ -452,7 +452,7 @@ env.Prepend(LIBS = Split('main su lua'))
 if cur_os == 'netbsd':
     env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib'))
 
-gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gtk-x11-2.0'))
+gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gtk-x11-2.0'))
 
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
 

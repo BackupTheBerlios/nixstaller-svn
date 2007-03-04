@@ -38,6 +38,11 @@ NCURSES
 - Clean CFormattedText mess
 - Better monochrome support
 
+
+GTK
+- Move main window away from base frontend class?
+
+
 DESIGN
 - Reorganize var and type names? (type prefixes etc)
 - Virtual functions that need to call parent function --> make additional function in base class

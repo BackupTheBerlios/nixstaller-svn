@@ -17,41 +17,32 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FR_GTK_H
-#define FR_GTK_H
+#ifndef INSTALLER_H
+#define INSTALLER_H
 
-#include "main.h"
-#include "gtk/gtk.h"
-
-class CGTKBase: virtual public CMain
+class CInstaller: public CGTKBase, public CBaseInstall
 {
-    GtkWidget *m_pMainWindow;
-    GtkWidget *m_pAboutDialog;
-    
-    void CreateAbout(void);
-    
+    bool m_bInstallFiles;
+    GtkWidget *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
+
 protected:
-    virtual char *GetPassword(const char *str);
-    virtual void MsgBox(const char *str, ...);
-    virtual bool YesNoBox(const char *str, ...);
-    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
-    virtual void WarnBox(const char *str, ...);
+    virtual void ChangeStatusText(const char *str) {};
+    virtual void AddInstOutput(const std::string &str) {};
+    virtual void SetProgress(int percent) {};
+    virtual void InstallThink(void) { };
 
-    GtkWidget *GetMainWin(void) { return m_pMainWindow; };
-    void ShowAbout(void);
-    
 public:
-    CGTKBase(void);
-    virtual ~CGTKBase(void) {};
 
-//     virtual void UpdateLanguage(void);
+    CInstaller(void) : m_bInstallFiles(false) { };
+    virtual ~CInstaller(void) {};
 
-    void Run(void);
+//     virtual void InitLua(void) {};
+    virtual void Init(int argc, char **argv);
+    virtual void Install(void) {};
+    virtual void UpdateLanguage(void) {};
+    virtual CBaseCFGScreen *CreateCFGScreen(const char *title){};
     
-    static void DestroyCB(GtkWidget *widget, gpointer data) { gtk_main_quit (); };
+    static void AboutCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->ShowAbout(); }
 };
-
-// Utils
-void MessageBox(GtkMessageType type, const char *msg);
 
 #endif

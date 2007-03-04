@@ -18,6 +18,7 @@
 */
 
 #include "gtk.h"
+#include "installer.h"
 
 namespace {
 CGTKBase *pInterface = NULL;
@@ -27,7 +28,7 @@ void StartFrontend(int argc, char **argv)
 {
     gtk_init(&argc, &argv);
     
-    pInterface = new /*CInstaller*/CGTKBase();
+    pInterface = new CInstaller();
     pInterface->Init(argc, argv);
     pInterface->Run();
 }
@@ -41,7 +42,6 @@ void StopFrontend()
 void ReportError(const char *msg)
 {
     MessageBox(GTK_MESSAGE_ERROR, msg);
-//     fl_message(msg);
 }
 
 // -------------------------------------
@@ -50,8 +50,52 @@ void ReportError(const char *msg)
 
 CGTKBase::CGTKBase()
 {
+    g_set_application_name("Nixstaller");
     m_pMainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(G_OBJECT(m_pMainWindow), "destroy", G_CALLBACK(DestroyCB), NULL);
+    CreateAbout();
+}
+
+void CGTKBase::CreateAbout()
+{
+    const int windoww = 350, windowh = 350;
+    
+    m_pAboutDialog = gtk_dialog_new_with_buttons(GetTranslation("About"), GTK_WINDOW(m_pMainWindow),
+                                                 GtkDialogFlags(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+                                                 GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+    gtk_window_set_default_size(GTK_WINDOW(m_pAboutDialog), windoww, windowh);
+    
+    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
+    GtkTextIter iter;
+    char chbuf[1024];
+    FILE *aboutfile = fopen("about", "r");
+    
+    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+    
+    while (aboutfile && fgets(chbuf, sizeof(chbuf), aboutfile))
+    {
+        gtk_text_buffer_insert(buffer, &iter, chbuf, -1);
+        gtk_text_buffer_insert(buffer, &iter, "\n", 1);
+    }
+    
+    fclose(aboutfile);
+    
+    GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+    GtkWidget *textview = gtk_text_view_new_with_buffer(GTK_TEXT_BUFFER(buffer));
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+    gtk_container_add(GTK_CONTAINER(scrolled), textview);
+    gtk_widget_show(textview);
+    
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(m_pAboutDialog)->vbox), scrolled);
+    gtk_widget_show(scrolled);
+}
+
+void CGTKBase::ShowAbout()
+{
+    gtk_dialog_run(GTK_DIALOG(m_pAboutDialog));
+    gtk_widget_hide(m_pAboutDialog);
 }
 
 char *CGTKBase::GetPassword(const char *str)
@@ -100,6 +144,43 @@ void CGTKBase::MsgBox(const char *str, ...)
     free(text);
 }
 
+bool CGTKBase::YesNoBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, text);
+    bool yes = (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES);
+    gtk_widget_destroy(dialog);
+    
+    free(text);
+    
+    return yes;
+}
+
+int CGTKBase::ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, button3);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, text);
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog), button1, 0, button2, 1, button3, 2, NULL);
+    int ret = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    
+    free(text);
+    
+    return ret;
+}
+
 void CGTKBase::WarnBox(const char *str, ...)
 {
     char *text;
@@ -117,7 +198,5 @@ void CGTKBase::WarnBox(const char *str, ...)
 void CGTKBase::Run()
 {
     gtk_widget_show(m_pMainWindow);
-    char *p = GetPassword("Root access is required to continue\nAbort installation?");
-    if (p) MsgBox(p);
-    gtk_main ();
+    gtk_main();
 }
