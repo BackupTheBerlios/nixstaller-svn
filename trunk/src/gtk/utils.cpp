@@ -25,3 +25,37 @@ void MessageBox(GtkMessageType type, const char *msg)
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 }
+
+GtkWidget *CreateButton(GtkWidget *label, const gchar *image, bool fromstock)
+{
+    GtkWidget *button = gtk_button_new();
+    
+    if (image)
+    {
+        GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 0, 0);
+        
+        GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+        
+        GtkWidget *img = (fromstock) ? gtk_image_new_from_stock(image, GTK_ICON_SIZE_BUTTON) : gtk_image_new_from_file(image);
+        gtk_box_pack_start(GTK_BOX(hbox), img, FALSE, FALSE, 0);
+        gtk_widget_show(img);
+        
+        gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+        gtk_widget_show(label);
+
+        gtk_container_add(GTK_CONTAINER(alignment), hbox);
+        gtk_widget_show(hbox);
+    
+        gtk_container_add(GTK_CONTAINER(button), alignment);
+        gtk_widget_show(alignment);
+    }
+    else
+    {
+        gtk_container_add(GTK_CONTAINER(button), label);
+        gtk_widget_show(label);
+    }
+    
+    gtk_widget_show(button);
+    
+    return button;
+}

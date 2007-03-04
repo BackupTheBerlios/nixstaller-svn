@@ -23,8 +23,18 @@
 class CInstaller: public CGTKBase, public CBaseInstall
 {
     bool m_bInstallFiles;
-    GtkWidget *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
+    GtkWidget *m_pCancelLabel, *m_pBackLabel, *m_pNextLabel;
+    GtkWidget *m_pWizard;
+    
+    void InitAboutSection(GtkWidget *parentbox);
+    void InitScreenSection(GtkWidget *parentbox);
+    void InitButtonSection(GtkWidget *parentbox);
+    
+    void Back(void) { gtk_notebook_prev_page(GTK_NOTEBOOK(m_pWizard)); };
+    void Next(void) { gtk_notebook_next_page(GTK_NOTEBOOK(m_pWizard)); };
 
+    bool AskQuit(void);
+    
 protected:
     virtual void ChangeStatusText(const char *str) {};
     virtual void AddInstOutput(const std::string &str) {};
@@ -43,6 +53,10 @@ public:
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title){};
     
     static void AboutCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->ShowAbout(); }
+    static void CancelCB(GtkWidget *widget, gpointer data);
+    static void BackCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->Back(); }
+    static void NextCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->Next(); }
+    static gboolean DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data);
 };
 
 #endif

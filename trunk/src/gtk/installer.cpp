@@ -19,10 +19,78 @@
 
 #include "gtk.h"
 #include "installer.h"
+#include "baseinstscreen.h"
 
 // -------------------------------------
 // Install Frontend Class
 // -------------------------------------
+
+void CInstaller::InitAboutSection(GtkWidget *parentbox)
+{
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    
+    GtkWidget *button = gtk_button_new();
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(AboutCB), this);
+    gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 5);
+    
+    GtkWidget *butlabel = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(butlabel), CreateText("<span size=\"x-small\">%s</span>", GetTranslation("About")));
+    gtk_container_add(GTK_CONTAINER(button), butlabel);
+    
+    gtk_box_pack_start(GTK_BOX(parentbox), hbox, FALSE, FALSE, 0);
+}
+
+void CInstaller::InitScreenSection(GtkWidget *parentbox)
+{
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    
+    GtkWidget *frame = gtk_frame_new(NULL);
+    gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 10);
+    
+    m_pWizard = gtk_notebook_new();
+    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(m_pWizard), FALSE);
+    gtk_notebook_set_show_border(GTK_NOTEBOOK(m_pWizard), FALSE);
+    
+//     CBaseScreen *p = new CBaseScreen(this);
+//     GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+//     p->CreateScreen(vbox);
+//     gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), vbox, NULL);
+    
+    gtk_container_add(GTK_CONTAINER(frame), m_pWizard);
+    
+    gtk_box_pack_start(GTK_BOX(parentbox), hbox, TRUE, TRUE, 10);
+}
+
+void CInstaller::InitButtonSection(GtkWidget *parentbox)
+{
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    
+    GtkWidget *buttonbox = gtk_hbutton_box_new();
+    
+    m_pCancelLabel = gtk_label_new(GetTranslation("Cancel"));
+    GtkWidget *button = CreateButton(m_pCancelLabel, GTK_STOCK_CANCEL);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(CancelCB), this);
+    gtk_box_pack_start(GTK_BOX(buttonbox), button, FALSE, FALSE, 5);
+    
+    gtk_box_pack_start(GTK_BOX(hbox), buttonbox, FALSE, FALSE, 5);
+    
+    buttonbox = gtk_hbutton_box_new();
+    gtk_box_set_spacing(GTK_BOX(buttonbox), 15);
+    
+    m_pBackLabel = gtk_label_new(GetTranslation("Back"));
+    button = CreateButton(m_pBackLabel, GTK_STOCK_GO_BACK);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(BackCB), this);
+    gtk_box_pack_end(GTK_BOX(buttonbox), button, FALSE, FALSE, 5);
+
+    m_pNextLabel = gtk_label_new(GetTranslation("Next"));
+    button = CreateButton(m_pNextLabel, GTK_STOCK_GO_FORWARD);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(NextCB), this);
+    gtk_box_pack_end(GTK_BOX(buttonbox), button, FALSE, FALSE, 5);
+
+    gtk_box_pack_end(GTK_BOX(hbox), buttonbox, FALSE, FALSE, 5);
+    
+    gtk_box_pack_start(GTK_BOX(parentbox), hbox, FALSE, FALSE, 5);
+}
 
 void CInstaller::Init(int argc, char **argv)
 {
@@ -30,24 +98,46 @@ void CInstaller::Init(int argc, char **argv)
     CBaseInstall::Init(argc, argv);
     
     GtkWidget *mainwin = GetMainWin();
+    g_signal_connect(G_OBJECT(mainwin), "delete_event", G_CALLBACK(DeleteCB), this);
     gtk_window_set_default_size(GTK_WINDOW(mainwin), windoww, windowh);
     
-    GtkWidget *abouthbox = gtk_hbox_new(FALSE, 0), *aboutvbox = gtk_vbox_new(FALSE, 0);
-    
-    GtkWidget *aboutbutton = gtk_button_new()/*gtk_button_new_with_label(GetTranslation("About"))*/;
-    g_signal_connect(G_OBJECT(aboutbutton), "clicked", G_CALLBACK(AboutCB), this);
-//     gtk_widget_set_size_request(aboutbutton, -1, 20);
-    gtk_box_pack_end(GTK_BOX(abouthbox), aboutbutton, FALSE, FALSE, 5);
-    gtk_widget_show(aboutbutton);
-    
-    GtkWidget *butlabel = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(butlabel), CreateText("<span size=\"x-small\">%s</span>", GetTranslation("About")));
-    gtk_container_add(GTK_CONTAINER(aboutbutton), butlabel);
-    gtk_widget_show(butlabel);
+    GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
 
-    gtk_box_pack_start(GTK_BOX(aboutvbox), abouthbox, FALSE, FALSE, 0);
-    gtk_widget_show(abouthbox);
+    InitAboutSection(vbox);
+    InitScreenSection(vbox);
+    InitButtonSection(vbox);
+
+    gtk_widget_show_all(vbox);
+    gtk_container_add(GTK_CONTAINER(mainwin), vbox);
+}
+
+bool CInstaller::AskQuit()
+{
+    char *msg;
+/*    if (parent->m_bInstallFiles)
+    msg = GetTranslation("Install commands are still running\n"
+    "If you abort now this may lead to a broken installation\n"
+    "Are you sure?");
+    else*/
+    msg = GetTranslation("This will abort the installation\nAre you sure?");
     
-    gtk_container_add(GTK_CONTAINER(mainwin), aboutvbox);
-    gtk_widget_show(aboutvbox);
+    return YesNoBox(msg);
+}
+
+void CInstaller::CancelCB(GtkWidget *widget, gpointer data)
+{
+    CInstaller *parent = (CInstaller *)data;
+    
+    if (parent->AskQuit())
+        gtk_widget_destroy(parent->GetMainWin());
+}
+
+gboolean CInstaller::DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    CInstaller *parent = (CInstaller *)data;
+    
+    if (parent->AskQuit())
+        return FALSE;
+    else
+        return TRUE;
 }
