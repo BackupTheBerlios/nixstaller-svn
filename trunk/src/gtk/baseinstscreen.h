@@ -34,6 +34,8 @@ protected:
     virtual void UpdateTr(void) { }
     virtual void Create(GtkWidget *parentbox) = 0;
     
+    void AddWidgets(const std::vector<GtkWidget *> &l);
+    
 public:
     CBaseScreen(CInstaller *owner) : m_pOwner(owner), m_pLabel(NULL) { }
     virtual ~CBaseScreen(void) { }
@@ -44,7 +46,7 @@ public:
     virtual void Activate(void) { }
     
     void UpdateTranslations(void);
-    void CreateScreen(GtkWidget *parentbox) { m_pOwnerBox = parentbox; Create(parentbox); }
+    void CreateScreen(GtkWidget *parentbox); /*{ m_pOwnerBox = parentbox; Create(parentbox); }*/
 };
 
 #endif

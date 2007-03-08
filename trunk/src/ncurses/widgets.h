@@ -17,8 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef WIDGETS_H
+#define WIDGETS_H
 
 #include <set>
 

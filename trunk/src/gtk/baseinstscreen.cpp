@@ -39,6 +39,19 @@ void CBaseScreen::SetLabel(const gchar *text)
         gtk_label_set(GTK_LABEL(m_pLabel), text);
 }
 
+void CBaseScreen::AddWidgets(const std::vector<GtkWidget *> &l)
+{
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    
+    for (std::vector<GtkWidget *>::const_iterator it=l.begin(); it!=l.end(); it++)
+    {
+        gtk_widget_show(*it);
+        gtk_container_add(GTK_CONTAINER(hbox), *it);
+    }
+    
+    gtk_container_add(GTK_CONTAINER(m_pOwnerBox), hbox);
+}
+
 void CBaseScreen::UpdateTranslations()
 {
     if (m_pLabel)
