@@ -53,6 +53,14 @@ bool CGroup::CoreCanFocus()
     return false;
 }
 
+bool CGroup::CoreHandleKey(chtype key)
+{
+    if (m_pFocusedWidget)
+        return m_pFocusedWidget->HandleKey(key);
+
+    return false;
+}
+
 void CGroup::AddWidget(CGroup *g)
 {
     m_GroupMap[g] = g;
@@ -62,9 +70,6 @@ void CGroup::AddWidget(CGroup *g)
 void CGroup::AddWidget(CWidget *w)
 {
     m_Childs.push_back(w);
-    
-    if (w->CanFocus() && (m_Childs.size() == 1))
-        m_pFocusedWidget = w;
     
     w->SetParent(this);
     w->Init();
@@ -98,83 +103,136 @@ void CGroup::FocusWidget(CWidget *w)
     }
     
     m_pFocusedWidget = w;
-    w->Focus(true);
-    w->Draw();
+    
+    if (w) // This allows resetting the current focused widget
+    {
+        w->Focus(true);
+        w->Draw();
+    }
 }
 
-bool CGroup::SetNextWidget()
+bool CGroup::SetNextFocWidget(bool cont)
 {
+    if (m_Childs.empty())
+        return false;
+
     TChildList::iterator it = m_Childs.begin();
     
-    if (m_pFocusedWidget && (m_pFocusedWidget != m_Childs.back()))
+    if (cont && m_pFocusedWidget && Focused())
     {
         TChildList::iterator f = std::find(m_Childs.begin(), m_Childs.end(), m_pFocusedWidget);
         if (f != m_Childs.end())
         {
             it = f;
-            it++;
+            if (!IsGroupWidget(*it))
+                it++;
         }
     }
     
     for (; it!=m_Childs.end(); it++)
     {
-//          if (!(*it)->CanFocus())
-//              continue; ENABLE
-        
-        if (m_GroupMap[*it])
+//     if (!w->CanFocus())
+//         continue; UNDONE: ENABLE
+    
+        if (IsGroupWidget(*it))
         {
-            if (m_GroupMap[*it]->SetNextWidget())
-            {
-                FocusWidget(*it);
-                return true;
-            }
+            if (!GetGroupWidget(*it)->SetNextFocWidget(cont))
+                continue;
         }
-        else
-        {
-            FocusWidget(*it);
-            return true;
-        }
+
+        FocusWidget(*it);
+        return true;
     }
     
     return false;
 }
 
-bool CGroup::SetPrevWidget()
+bool CGroup::SetPrevFocWidget(bool cont)
 {
-    TChildList::iterator it = m_Childs.end();
+    if (m_Childs.empty())
+        return false;
     
-    if (m_pFocusedWidget && (m_pFocusedWidget != m_Childs.front()))
+    if (cont && (m_pFocusedWidget == m_Childs.front()))
+        return false;
+    
+    TChildList::iterator it = m_Childs.end();
+    it--;
+    
+    if (cont && m_pFocusedWidget && Focused())
     {
         TChildList::iterator f = std::find(m_Childs.begin(), m_Childs.end(), m_pFocusedWidget);
-        if (f != m_Childs.end())
+        if (f != m_Childs.begin())
+        {
             it = f;
+            if (!IsGroupWidget(*it))
+                it--;
+        }
     }
     
     do
     {
-        it--;
-
-//          if (!(*it)->CanFocus())
-//              continue; ENABLE
+        bool got = false;
         
-        if (m_GroupMap[*it])
+//         if (!w->CanFocus()) ENABLE
         {
-            if (m_GroupMap[*it]->SetPrevWidget())
+            if (IsGroupWidget(*it))
             {
-                FocusWidget(*it);
-                return true;
+                if (GetGroupWidget(*it)->SetPrevFocWidget(cont))
+                    got = true;
             }
+            else
+                got = true;
         }
-        else
+        
+        if (got)
         {
             FocusWidget(*it);
             return true;
         }
+        
+        it--;
     }
     while (it != m_Childs.begin());
     
     return false;
 }
+
+// bool CGroup::SetPrevFocWidget(bool cont)
+// {
+//     TChildList::iterator it = m_Childs.end();
+//     
+//     if (m_pFocusedWidget && (m_pFocusedWidget != m_Childs.front()))
+//     {
+//         TChildList::iterator f = std::find(m_Childs.begin(), m_Childs.end(), m_pFocusedWidget);
+//         if (f != m_Childs.end())
+//             it = f;
+//     }
+//     
+//     do
+//     {
+//         it--;
+// 
+// //          if (!(*it)->CanFocus())
+// //              continue; ENABLE
+//         
+//         if (m_GroupMap[*it])
+//         {
+//             if (m_GroupMap[*it]->SetPrevWidget())
+//             {
+//                 FocusWidget(*it);
+//                 return true;
+//             }
+//         }
+//         else
+//         {
+//             FocusWidget(*it);
+//             return true;
+//         }
+//     }
+//     while (it != m_Childs.begin());
+//     
+//     return false;
+// }
 
 void CGroup::SetValidWidget(CWidget *ignore)
 {

@@ -38,6 +38,12 @@ NCURSES
 - Clean CFormattedText mess
 - Better monochrome support
 
+NCURSES (redesign)
+- Check Quit code
+- Exceptions
+- Extended keys(Fx etc)
+- Disable widgets
+
 
 GTK
 - Move main window away from base frontend class?

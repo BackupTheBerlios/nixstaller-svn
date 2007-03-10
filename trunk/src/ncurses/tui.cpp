@@ -44,20 +44,46 @@ void CTUI::InitNCurses()
 
 void CTUI::StopNCurses()
 {
+    while (!m_RootGroups.empty())
+    {
+        delete m_RootGroups.back();
+        m_RootGroups.pop_back();
+    }
+        
     ::endwin();
 }
 
-void CTUI::Run(int delay)
+bool CTUI::Run(int delay)
 {
     timeout(delay);
     
-    for (short s=0;s<10;s++)
+    // Handle keys
+    chtype key = getch();
+    
+    if (key != static_cast<chtype>(ERR)) // Input available?
     {
-        m_RootGroups[0]->SetPrevWidget();
-        sleep(2);
+        if (m_pActiveGroup)
+        {
+            if (!m_pActiveGroup->HandleKey(key))
+            {
+                if (key == 9) // 9 is TAB
+                {
+                    if (!m_pActiveGroup->SetNextFocWidget(true))
+                        m_pActiveGroup->SetNextFocWidget(false);
+                }
+                else if (key == CTRL('p'))
+                {
+                    if (!m_pActiveGroup->SetPrevFocWidget(true))
+                        m_pActiveGroup->SetPrevFocWidget(false);
+                }
+            }
+        }
+        
+        if (key == CTRL('[')) // Escape pressed
+            return false;
     }
     
-    // Handle keys
+    return true;
 }
 
 void CTUI::AddGroup(CGroup *g)
@@ -65,6 +91,27 @@ void CTUI::AddGroup(CGroup *g)
     m_RootGroups.push_back(g);
     g->SetParent(GetRootWin());
     g->Init();
+    
+    if (!m_pActiveGroup && g->CanFocus())
+    {
+        g->Focus(true);
+        m_pActiveGroup = g;
+    }
+}
+
+void CTUI::ActivateGroup(CGroup *g)
+{
+    assert(std::find(m_RootGroups.begin(), m_RootGroups.end(), g) != m_RootGroups.end());
+    
+    if (m_pActiveGroup)
+    {
+        m_pActiveGroup->Focus(false);
+        m_pActiveGroup->Draw();
+    }
+    
+    g->Focus(true);
+    g->Draw();
+    m_pActiveGroup = g;
 }
 
 int CTUI::GetColorPair(int fg, int bg)

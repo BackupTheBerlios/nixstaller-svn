@@ -118,16 +118,19 @@ void StartFrontend(int argc, char **argv)
     
     group->Draw();
     
+    NNCurses::TUI.ActivateGroup(group);
+    
 //     sleep(2);
-    NNCurses::TUI.Run();
+//     NNCurses::TUI.Run();
+//     
+//     fgroup->RemoveWidget(FirstDelW);
+//     sgroup->RemoveWidget(SecondDelW);
+//     
+//     fgroup->Draw();
+//     sgroup->Draw();
     
-    fgroup->RemoveWidget(FirstDelW);
-    sgroup->RemoveWidget(SecondDelW);
-    
-    fgroup->Draw();
-    sgroup->Draw();
-    
-    NNCurses::TUI.Run();
+    while (NNCurses::TUI.Run())
+        ;
     
     
 //     NNCurses::CWidget *p = new NNCurses::CGroup();

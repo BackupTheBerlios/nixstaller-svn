@@ -20,9 +20,10 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#if 0
+
 namespace NNCurses {
 
-#if 0
 class CWindow: public CWidget
 {
     NCursesWindow *m_pWin;
@@ -38,6 +39,7 @@ public:
 };
 
 }
+
 #endif
 
 #endif

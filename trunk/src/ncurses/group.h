@@ -31,10 +31,14 @@ class CGroup: public CWidget
     CWidget *m_pFocusedWidget;
     std::map<CWidget *, CGroup *> m_GroupMap; // Widgets that are also groups
     
+    bool IsGroupWidget(CWidget *w) { return (m_GroupMap[w] != NULL); }
+    CGroup *GetGroupWidget(CWidget *w) { return m_GroupMap[w]; }
+    
 protected:
     virtual void CoreDraw(void);
     virtual void UpdateFocus(void);
     virtual bool CoreCanFocus(void);
+    virtual bool CoreHandleKey(chtype key);
     
 public:
     CGroup(void) : m_pFocusedWidget(NULL) { }
@@ -46,8 +50,8 @@ public:
     void Clear(void);
     
     void FocusWidget(CWidget *w);
-    bool SetNextWidget(void);
-    bool SetPrevWidget(void);
+    bool SetNextFocWidget(bool cont); // cont : Checks widget after current focused widget
+    bool SetPrevFocWidget(bool cont);
     void SetValidWidget(CWidget *ignore);
 };
 

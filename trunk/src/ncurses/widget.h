@@ -26,6 +26,8 @@ namespace NNCurses {
 
 typedef std::pair<int, int> TColorPair;
 
+class CGroup;
+
 class CWidget
 {
     CWidget *m_pParent;
@@ -41,6 +43,8 @@ class CWidget
     void Box(void);
 
 protected:
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED };
+    
 //     CWidget(void); ENABLE
     
     virtual void CoreDraw(void) { DrawWidget(); }
@@ -50,6 +54,9 @@ protected:
     
     virtual void UpdateFocus(void) { }
     virtual bool CoreCanFocus(void) { return false; }
+    
+    virtual bool CoreHandleKey(chtype key) { return false; };
+    virtual bool HandleEvent(CWidget *emitter, int event) { return false; };
     
     void RefreshColors(void);
     void RefreshSize(void);
@@ -81,6 +88,8 @@ public:
     bool CanFocus(void) { return CoreCanFocus(); }
     bool Focused(void) { return m_bFocused; }
     void Focus(bool f) { m_bFocused = f; m_bColorsChanged = true; UpdateFocus(); }
+    
+    bool HandleKey(chtype key) { return CoreHandleKey(key); }
 };
 
 // Utils

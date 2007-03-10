@@ -31,14 +31,16 @@ class CTUI
     TColorMap m_ColorPairs;
     int m_iCurColorPair;
     std::vector<CGroup *> m_RootGroups;
+    CGroup *m_pActiveGroup;
     
 public:
-    CTUI(void) : m_iCurColorPair(0) { };
+    CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL) { };
     
     void InitNCurses(void);
     void StopNCurses(void);
-    void Run(int delay=5);
+    bool Run(int delay=5);
     void AddGroup(CGroup *g);
+    void ActivateGroup(CGroup *g);
     
     WINDOW *GetRootWin(void) { return stdscr; }
     
