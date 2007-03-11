@@ -24,8 +24,10 @@ namespace NNCurses {
 
 class CGroup: public CWidget
 {
+protected:
     typedef std::vector<CWidget *> TChildList;
     
+private:
     TChildList m_Childs;
     CWidget *m_pFocusedWidget;
     std::map<CWidget *, CGroup *> m_GroupMap; // Widgets that are also groups

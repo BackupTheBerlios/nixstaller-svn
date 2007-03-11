@@ -230,7 +230,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall -g3", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=[ 'NDEBUG' ])
+env = Environment(options = opts, CCFLAGS = "-Wall -g3", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=[ 'DEBUG' ])
 
 Export("env")
 
@@ -454,7 +454,7 @@ if cur_os == 'netbsd':
 
 gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/baseinstscreen.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gtk-x11-2.0'))
 
-ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widget.cpp ncurses/group.cpp ncurses/bin.cpp ncurses/window.cpp ncurses/label.cpp ncurses/tui.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widget.cpp ncurses/group.cpp ncurses/bin.cpp ncurses/box.cpp ncurses/window.cpp ncurses/label.cpp ncurses/tui.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
 
 fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 

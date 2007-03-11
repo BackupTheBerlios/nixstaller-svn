@@ -35,6 +35,7 @@ class CWidget
     int m_iX, m_iY, m_iWidth, m_iHeight;
     int m_iMinWidth, m_iMinHeight;
     
+    bool m_bInitialized;
     bool m_bBox;
     bool m_bFocused;
 
@@ -74,7 +75,7 @@ public:
     CWidget(void);
     virtual ~CWidget(void);
 
-    void Draw(void) { CoreDraw(); };
+    void Draw(void);
     void Init(void);
     void SetSize(int x, int y, int w, int h);
     
@@ -92,9 +93,9 @@ public:
     int RequestWidth(void) { return CoreRequestWidth(); }
     int RequestHeight(void) { return CoreRequestHeight(); }
     
-    void SetParent(CWidget *p) { m_pParent = p; m_pParentWin = p->GetWin(); }
+    void SetParent(CWidget *p) { m_pParent = p; m_pParentWin = NULL; }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
-    CWidget *GetParentWidget(void) { return m_pParent; }
+    WINDOW *GetParentWin(void) { return (m_pParent) ? m_pParent->GetWin() : m_pParentWin; }
     
     bool HasBox(void) { return m_bBox; }
     void SetBox(bool b) { m_bBox = b; }

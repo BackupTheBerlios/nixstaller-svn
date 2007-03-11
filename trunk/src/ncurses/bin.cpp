@@ -61,11 +61,11 @@ void CBin::UpdateWidgetSize(CWidget *w)
 
 bool CBin::HandleEvent(CWidget *emitter, int type)
 {
-    if ((emitter == GetChild()) && (type == EVENT_SIZECHANGED))
-    {
-        UpdateMySize(emitter);
-        return true;
-    }
+//     if ((emitter == GetChild()) && (type == EVENT_SIZECHANGED))
+//     {
+//         UpdateMySize(emitter);
+//         return true;
+//     }
     
     return false;
 }
@@ -73,10 +73,7 @@ bool CBin::HandleEvent(CWidget *emitter, int type)
 void CBin::CoreAddWidget(CWidget *w)
 {
     Clear(); // Bin can only contain one other widget
-    
-    UpdateMySize(w);
-    UpdateWidgetSize(w);
-
+    m_bSync = true;
     InitChild(w);
 }
 
@@ -94,6 +91,23 @@ int CBin::CoreRequestHeight()
         return GetMinHeight();
     
     return GetIdealH(GetChild());
+}
+
+void CBin::CoreDraw()
+{
+    if (m_bSync)
+    {
+        if (!Empty())
+        {
+            CWidget *w = GetChild();
+            UpdateMySize(w);
+            UpdateWidgetSize(w);
+        }
+        
+        m_bSync = false;
+    }
+    
+    CGroup::CoreDraw();
 }
 
 }

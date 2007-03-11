@@ -17,33 +17,49 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef BIN_H
-#define BIN_H
+#ifndef BOX_H
+#define BOX_H
 
+#include "widget.h"
 #include "group.h"
 
 namespace NNCurses {
 
-class CBin: public CGroup
+class CBox: public CGroup
 {
-    bool m_bSync;
+public:
+    enum EDirection { HORIZONTAL, VERTICAL };
     
-    int GetIdealW(CWidget *w) { return std::max(w->RequestWidth(), GetMinWidth()); }
-    int GetIdealH(CWidget *w) { return std::max(w->RequestHeight(), GetMinHeight()); }
-    void UpdateMySize(CWidget *w);
-    void UpdateWidgetSize(CWidget *w);
-    CWidget *GetChild(void) { return GetChildList().front(); }
+private:
+    struct SBoxEntry
+    {
+        bool expand, fill;
+        int padding;
+        SBoxEntry(void) : expand(true), fill(true), padding(0) { }
+        SBoxEntry(bool e, bool f, int p) : expand(e), fill(f), padding(p) { }
+    };
+    
+    bool m_bUpdateLayout;
+    std::map<CWidget *, SBoxEntry> m_BoxEntries;
+    EDirection m_eDirection;
+    int m_iSpacing;
+    
+    void UpdateLayout(void);
     
 protected:
-    virtual bool HandleEvent(CWidget *emitter, int type);
-    virtual void CoreAddWidget(CWidget *w);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual void CoreDraw(void);
+    virtual void CoreAddWidget(CWidget *w) { m_bUpdateLayout = true; InitChild(w); }
     
 public:
-    CBin(void) : m_bSync(true) { }
+    CBox(EDirection dir, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_iSpacing(s) { }
+    
+    // CGroup needs 2 versions
+    void StartPack(CGroup *g, bool e, bool f, int p);
+    void StartPack(CWidget *g, bool e, bool f, int p);
 };
+
 
 
 }

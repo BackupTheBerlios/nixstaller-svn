@@ -28,22 +28,25 @@ namespace NNCurses {
 // -------------------------------------
 
 CWidget::CWidget(void) : m_pParent(NULL), m_pParentWin(NULL), m_pNCursWin(NULL), m_iX(0), m_iY(0), m_iWidth(0),
-                         m_iHeight(0), m_iMinWidth(0), m_iMinHeight(0), m_bBox(false), m_bFocused(false),
-                         m_bColorsChanged(false), m_bSizeChanged(false)
+                         m_iHeight(0), m_iMinWidth(0), m_iMinHeight(0), m_bInitialized(false), m_bBox(false),
+                         m_bFocused(false), m_bColorsChanged(false), m_bSizeChanged(false)
 {
 }
 
 CWidget::~CWidget()
 {
-    delwin(m_pNCursWin);
+    if (m_pNCursWin)
+        delwin(m_pNCursWin);
 }
 
 void CWidget::MoveWin(int x, int y)
 {
-    x += GetWX(m_pParentWin);
-    y += GetWY(m_pParentWin);
+    x += GetWX(GetParentWin());
+    y += GetWY(GetParentWin());
     
     int ret = mvwin(m_pNCursWin, y, x);
+    
+    assert(ret != ERR);
     
     if (ret != ERR)
     {
@@ -78,7 +81,10 @@ void CWidget::RefreshSize()
 {
     if (m_bSizeChanged)
     {
-        ::wresize(m_pNCursWin, Height(), Width());
+        int ret = wresize(m_pNCursWin, Height(), Width());
+        
+        assert(ret != ERR);
+        
         MoveWin(X(), Y());
 
 /*        if (!m_pParent)
@@ -118,9 +124,23 @@ void CWidget::PushEvent(int type)
         parent = parent->m_pParent;
 }
 
+void CWidget::Draw()
+{
+    if (!m_bInitialized)
+    {
+        Init();
+        m_bInitialized = true;
+    }
+    
+    CoreDraw();
+}
+
 void CWidget::Init()
 {
-    m_pNCursWin = derwin(m_pParentWin, Height(), Width(), Y(), X());
+    m_pNCursWin = derwin(GetParentWin(), Height(), Width(), Y(), X());
+    assert(m_pNCursWin != NULL);
+    
+    m_bSizeChanged = false;
     
     // UNDONE: Exception
     

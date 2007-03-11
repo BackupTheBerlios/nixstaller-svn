@@ -79,6 +79,7 @@ void StopFrontend()
 
 #include "widget.h"
 #include "window.h"
+#include "box.h"
 #include "label.h"
 #include "tui.h"
 
@@ -136,13 +137,36 @@ void StartFrontend(int argc, char **argv)
     win->SetMinHeight(20);
     NNCurses::TUI.AddGroup(win);
     
-    NNCurses::CLabel *label = new NNCurses::CLabel();
-    label->SetMinWidth(20);
-    label->SetMinHeight(3);
-    label->SetText("ugh ugh ugh u4gh ugh55 ugh ugh ugh2 ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh11 ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ");
-    label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
-    win->AddWidget(label);
+    NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL);
     
+    NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);
+//     NNCurses::CBin *hbox = new NNCurses::CBin();
+    hbox->SetDFColors(COLOR_YELLOW, COLOR_RED);
+    
+    NNCurses::CLabel *label = new NNCurses::CLabel();
+    label->SetBox(true);
+//     label->SetMinWidth(40);
+    label->SetText("ugh");
+    label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
+    hbox->StartPack(label, true, true, 0);
+    
+    label = new NNCurses::CLabel();
+    label->SetBox(true);
+//     label->SetMinWidth(40);
+    label->SetText("hoi");
+//     label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
+    hbox->StartPack(label, true, true, 0);
+
+    vbox->AddWidget(hbox);
+    
+    label = new NNCurses::CLabel();
+    label->SetBox(true);
+//     label->SetMinWidth(40);
+    label->SetText("hoi");
+//     label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
+    vbox->AddWidget(label);
+    
+    win->AddWidget(vbox);
     win->Draw();
     
     while (NNCurses::TUI.Run())

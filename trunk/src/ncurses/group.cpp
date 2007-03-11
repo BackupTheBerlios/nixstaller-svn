@@ -71,7 +71,6 @@ void CGroup::InitChild(CWidget *w)
 {
     m_Childs.push_back(w);
     w->SetParent(this);
-    w->Init();
 }
 
 void CGroup::RemoveWidget(CWidget *w)
