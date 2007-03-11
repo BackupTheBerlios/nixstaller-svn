@@ -78,47 +78,49 @@ void StopFrontend()
 #else
 
 #include "widget.h"
+#include "window.h"
+#include "label.h"
 #include "tui.h"
 
 void StartFrontend(int argc, char **argv)
 {
     NNCurses::TUI.InitNCurses();
     
-    NNCurses::CGroup *group = new NNCurses::CGroup();
-    group->SetSize(0, 0, 60, 20);
-    group->SetBox(true);
-    NNCurses::TUI.AddGroup(group);
-    
-    NNCurses::CWidget *FirstDelW, *SecondDelW;
-    NNCurses::CGroup *fgroup, *sgroup;
-    
-    for (int n=0; n<2; n++)
-    {
-        NNCurses::CGroup *g = new NNCurses::CGroup();
-        g->SetSize(2, n*10, 50, 8);
-        g->SetBox(true);
-        group->AddWidget(g);
-        
-        if (!n) fgroup = g;
-        else sgroup = g;
-
-        for (int n2=0; n2<3; n2++)
-        {
-            NNCurses::CWidget *w = new NNCurses::CWidget();
-            w->SetFColors(COLOR_YELLOW, COLOR_BLUE);
-            w->SetDFColors(COLOR_WHITE, COLOR_BLACK);
-            w->SetSize(n2*6, 1, 5, 3);
-            g->AddWidget(w);
-            w->SetBox(true);
-            
-            if ((!n) && (n2==1)) FirstDelW = w;
-            else if ((n) && (n2==2)) SecondDelW = w;
-        }
-    }
-    
-    group->Draw();
-    
-    NNCurses::TUI.ActivateGroup(group);
+//     NNCurses::CGroup *group = new NNCurses::CGroup();
+//     group->SetSize(0, 0, 60, 20);
+//     group->SetBox(true);
+//     NNCurses::TUI.AddGroup(group);
+//     
+//     NNCurses::CWidget *FirstDelW, *SecondDelW;
+//     NNCurses::CGroup *fgroup, *sgroup;
+//     
+//     for (int n=0; n<2; n++)
+//     {
+//         NNCurses::CGroup *g = new NNCurses::CGroup();
+//         g->SetSize(2, n*10, 50, 8);
+//         g->SetBox(true);
+//         group->AddWidget(g);
+//         
+//         if (!n) fgroup = g;
+//         else sgroup = g;
+// 
+//         for (int n2=0; n2<3; n2++)
+//         {
+//             NNCurses::CWidget *w = new NNCurses::CWidget();
+//             w->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+//             w->SetDFColors(COLOR_WHITE, COLOR_BLACK);
+//             w->SetSize(n2*6, 1, 5, 3);
+//             g->AddWidget(w);
+//             w->SetBox(true);
+//             
+//             if ((!n) && (n2==1)) FirstDelW = w;
+//             else if ((n) && (n2==2)) SecondDelW = w;
+//         }
+//     }
+//     
+//     group->Draw();
+//     
+//     NNCurses::TUI.ActivateGroup(group);
     
 //     sleep(2);
 //     NNCurses::TUI.Run();
@@ -129,31 +131,22 @@ void StartFrontend(int argc, char **argv)
 //     fgroup->Draw();
 //     sgroup->Draw();
     
+    NNCurses::CWindow *win = new NNCurses::CWindow();
+    win->SetMinWidth(60);
+    win->SetMinHeight(20);
+    NNCurses::TUI.AddGroup(win);
+    
+    NNCurses::CLabel *label = new NNCurses::CLabel();
+    label->SetMinWidth(20);
+    label->SetMinHeight(3);
+    label->SetText("ugh ugh ugh u4gh ugh55 ugh ugh ugh2 ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh11 ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ugh ");
+    label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
+    win->AddWidget(label);
+    
+    win->Draw();
+    
     while (NNCurses::TUI.Run())
         ;
-    
-    
-//     NNCurses::CWidget *p = new NNCurses::CGroup();
-//     p->SetSize(5, 5, 25, 15);
-//     p->SetParent(NNCurses::TUI.GetRootWin());
-//     p->Init();
-//     p->SetBox(true);
-//     p->Draw();
-//     sleep(2);
-// 
-//     
-//     NNCurses::CWidget *p2 = new NNCurses::CWidget();
-//     p2->SetSize(5, 5, 10, 5);
-//     p2->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
-//     p2->SetParent(p);
-//     p2->Init();
-//     p2->SetBox(true);
-//     p2->Draw();
-//     sleep(2);
-//     
-//     p2->Resize(0, 0, 15, 5);
-//     p2->Draw();
-//     sleep(2);
 }
 
 void StopFrontend()

@@ -17,28 +17,15 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#if 0
-
 #include "ncurses.h"
 #include "widget.h"
 #include "window.h"
 
 namespace NNCurses {
 
-CWindow::CWindow(CWindow *w) : m_pWin(NULL), m_pParentWin(w)
+void CWindow::CoreInit()
 {
-}
-
-void CWindow::CreateWin()
-{
-    m_pWin = new NCursesWindow()
-}
-
-void CWindow::UpdateSize()
-{
-    if (!m_pWin)
-        CreateWin();
+    SetBox(true);
 }
 
 }
-#endif

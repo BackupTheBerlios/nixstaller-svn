@@ -67,10 +67,9 @@ void CGroup::AddWidget(CGroup *g)
     AddWidget(static_cast<CWidget *>(g));
 }
 
-void CGroup::AddWidget(CWidget *w)
+void CGroup::InitChild(CWidget *w)
 {
     m_Childs.push_back(w);
-    
     w->SetParent(this);
     w->Init();
 }
@@ -89,9 +88,12 @@ void CGroup::RemoveWidget(CWidget *w)
 
 void CGroup::Clear()
 {
-    for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
-        delete *it;
-    m_Childs.clear();
+    while (!m_Childs.empty())
+    {
+        delete m_Childs.back();
+        m_Childs.pop_back();
+    }
+    m_GroupMap.clear();
 }
 
 void CGroup::FocusWidget(CWidget *w)

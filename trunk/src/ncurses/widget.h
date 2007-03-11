@@ -33,6 +33,8 @@ class CWidget
     CWidget *m_pParent;
     WINDOW *m_pParentWin, *m_pNCursWin;
     int m_iX, m_iY, m_iWidth, m_iHeight;
+    int m_iMinWidth, m_iMinHeight;
+    
     bool m_bBox;
     bool m_bFocused;
 
@@ -43,7 +45,7 @@ class CWidget
     void Box(void);
 
 protected:
-    enum { EVENT_CALLBACK, EVENT_DATACHANGED };
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_SIZECHANGED };
     
 //     CWidget(void); ENABLE
     
@@ -58,10 +60,15 @@ protected:
     virtual bool CoreHandleKey(chtype key) { return false; };
     virtual bool HandleEvent(CWidget *emitter, int event) { return false; };
     
+    virtual int CoreRequestWidth(void) { return GetMinWidth(); }
+    virtual int CoreRequestHeight(void) { return GetMinHeight(); }
+    
     void RefreshColors(void);
     void RefreshSize(void);
     void RefreshWidget(void);
     void DrawWidget(void); // Calls above 3 functions. Default behaviour, called from CoreDraw()
+    
+    void PushEvent(int type);
     
 public:
     CWidget(void);
@@ -78,11 +85,18 @@ public:
     int Y(void) const { return m_iY; }
     int Width(void) const { return m_iWidth; }
     int Height(void) const { return m_iHeight; }
+    int GetMinWidth(void) { return m_iMinWidth; }
+    int GetMinHeight(void) { return m_iMinHeight; }
+    void SetMinWidth(int w) { m_iMinWidth = w; }
+    void SetMinHeight(int h) { m_iMinHeight = h; }
+    int RequestWidth(void) { return CoreRequestWidth(); }
+    int RequestHeight(void) { return CoreRequestHeight(); }
     
     void SetParent(CWidget *p) { m_pParent = p; m_pParentWin = p->GetWin(); }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
     CWidget *GetParentWidget(void) { return m_pParent; }
     
+    bool HasBox(void) { return m_bBox; }
     void SetBox(bool b) { m_bBox = b; }
     
     bool CanFocus(void) { return CoreCanFocus(); }
@@ -95,6 +109,7 @@ public:
 // Utils
 void Position(CWidget *widget, int x, int y);
 void Size(CWidget *widget, int w, int h);
+bool HasSize(CWidget *widget);
 
 }
 

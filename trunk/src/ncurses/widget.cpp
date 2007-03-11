@@ -28,7 +28,8 @@ namespace NNCurses {
 // -------------------------------------
 
 CWidget::CWidget(void) : m_pParent(NULL), m_pParentWin(NULL), m_pNCursWin(NULL), m_iX(0), m_iY(0), m_iWidth(0),
-                         m_iHeight(0), m_bBox(false), m_bFocused(false), m_bColorsChanged(false), m_bSizeChanged(false)
+                         m_iHeight(0), m_iMinWidth(0), m_iMinHeight(0), m_bBox(false), m_bFocused(false),
+                         m_bColorsChanged(false), m_bSizeChanged(false)
 {
 }
 
@@ -96,7 +97,7 @@ void CWidget::RefreshWidget()
 {
     werase(m_pNCursWin);
 
-    if (m_bBox)
+    if (HasBox())
         Box();
 
     wrefresh(m_pNCursWin);
@@ -107,6 +108,14 @@ void CWidget::DrawWidget()
     RefreshColors();
     RefreshSize();
     RefreshWidget();
+}
+
+void CWidget::PushEvent(int type)
+{
+    CWidget *parent = m_pParent;
+    
+    while (parent && !parent->HandleEvent(this, type))
+        parent = parent->m_pParent;
 }
 
 void CWidget::Init()
@@ -129,6 +138,7 @@ void CWidget::SetSize(int x, int y, int w, int h)
     m_iWidth = w;
     m_iHeight = h;
     m_bSizeChanged = true;
+    PushEvent(EVENT_SIZECHANGED);
 }
 
 // void CWidget::Resize(int x, int y, int w, int h)
@@ -172,6 +182,11 @@ void Position(CWidget *widget, int x, int y)
 void Size(CWidget *widget, int w, int h)
 {
     widget->SetSize(widget->X(), widget->Y(), w, h);
+}
+
+bool HasSize(CWidget *widget)
+{
+    return (widget->X() && widget->Y() && widget->Width() && widget->Height());
 }
 
 }

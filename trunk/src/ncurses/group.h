@@ -25,7 +25,6 @@ namespace NNCurses {
 class CGroup: public CWidget
 {
     typedef std::vector<CWidget *> TChildList;
-    typedef std::vector<CGroup *> TGroupList;
     
     TChildList m_Childs;
     CWidget *m_pFocusedWidget;
@@ -40,14 +39,20 @@ protected:
     virtual bool CoreCanFocus(void);
     virtual bool CoreHandleKey(chtype key);
     
+    virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
+    
+    void InitChild(CWidget *w);
+    TChildList &GetChildList(void) { return m_Childs; }
+    
 public:
     CGroup(void) : m_pFocusedWidget(NULL) { }
     virtual ~CGroup(void) { Clear(); };
     
     void AddWidget(CGroup *g);
-    void AddWidget(CWidget *w);
+    void AddWidget(CWidget *w) { CoreAddWidget(w); };
     void RemoveWidget(CWidget *w);
     void Clear(void);
+    bool Empty(void) { return m_Childs.empty(); }
     
     void FocusWidget(CWidget *w);
     bool SetNextFocWidget(bool cont); // cont : Checks widget after current focused widget

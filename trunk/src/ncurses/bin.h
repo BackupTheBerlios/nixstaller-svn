@@ -17,18 +17,28 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef BIN_H
+#define BIN_H
 
-#include "bin.h"
+#include "group.h"
 
 namespace NNCurses {
 
-class CWindow: public CBin
+class CBin: public CGroup
 {
+    int GetIdealW(CWidget *w) { return std::max(w->RequestWidth(), GetMinWidth()); }
+    int GetIdealH(CWidget *w) { return std::max(w->RequestHeight(), GetMinHeight()); }
+    void UpdateMySize(CWidget *w);
+    void UpdateWidgetSize(CWidget *w);
+    CWidget *GetChild(void) { return GetChildList().front(); }
+    
 protected:
-    virtual void CoreInit();
+    virtual bool HandleEvent(CWidget *emitter, int type);
+    virtual void CoreAddWidget(CWidget *w);
+    virtual int CoreRequestWidth(void);
+    virtual int CoreRequestHeight(void);
 };
+
 
 }
 

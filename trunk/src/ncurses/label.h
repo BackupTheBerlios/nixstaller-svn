@@ -17,18 +17,36 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef LABEL_H
+#define LABEL_H
 
-#include "bin.h"
+#include "widget.h"
 
 namespace NNCurses {
 
-class CWindow: public CBin
+class CLabel: public CWidget
 {
+    typedef std::vector<std::string> TLinesList;
+    
+    bool m_bCenter;
+    std::string m_szText;
+    TLinesList m_Lines;
+    
+    void UpdateLines(void);
+    
 protected:
-    virtual void CoreInit();
+    virtual void CoreInit(void) { UpdateLines(); }
+    virtual void CoreDraw(void);
+    virtual int CoreRequestWidth(void);
+    virtual int CoreRequestHeight(void);
+    
+public:
+    CLabel(void) : m_bCenter(true) { }
+    
+    void Center(bool c) { m_bCenter = c; }
+    void SetText(const std::string &t) { m_szText = t; UpdateLines(); }
 };
+
 
 }
 
