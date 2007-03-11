@@ -106,6 +106,7 @@ void NBRunGen::setupInit()
     lay->addWidget(topframe);
     QVBoxLayout *clay = new QVBoxLayout(topframe);
     init = new QCheckBox("Generate Init()", topframe);
+    init->setToolTip("Generate simple Init() function that initializes selected screens.");
     clay->addWidget(init);
     clay->addSpacing(4);
     QFrame *restframe = new QFrame;
@@ -179,6 +180,7 @@ void NBRunGen::setupInstall()
     lay->addWidget(topframe);
     QVBoxLayout *clay = new QVBoxLayout(topframe);
     install = new QCheckBox("Generate Install()", topframe);
+    install->setToolTip("Generate simple Install() function that extracts files");
     clay->addWidget(install);
     clay->addSpacing(4);
     QFrame *restframe = new QFrame;

@@ -118,7 +118,7 @@ bool nixstbuild::save()
     QSettings settings("INightmare", "Nixstbuilder");
     if ((!settings.contains("geninstall")) || (settings.value("geninstall")=="") || (!QFileInfo(settings.value("geninstall").toString()).exists()))
     {
-        QMessageBox::warning(this, "Nixstbuild", "Please specefy location for genisntall.sh");
+        QMessageBox::warning(this, "Nixstbuild", "Please specify location for genisntall.sh");
         return false;
     }
 
@@ -138,7 +138,7 @@ void nixstbuild::settingsDialog()
 void nixstbuild::about()
 {
     QMessageBox::about(this, tr("About Nixstbuild"),
-            tr("<b>Nixstbuild</b> version 0.1 by InternetNightmare"));
+            tr("<b>Nixstbuild</b> version 0.1 by InternetNightmare<br><br>This software is released under GPLv2 license that can be found here:<br><a href=\"http://www.gnu.org/licenses/gpl.txt\">http://www.gnu.org/licenses/gpl.txt</a>"));
 }
 
 void nixstbuild::documentWasModified()
@@ -150,12 +150,12 @@ void nixstbuild::createActions()
 {
     newAct = new QAction(QIcon(":/filenew.xpm"), tr("&New"), this);
     newAct->setShortcut(tr("Ctrl+N"));
-    newAct->setStatusTip(tr("Create a new file"));
+    newAct->setStatusTip(tr("Create a new project"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
     saveAct = new QAction(QIcon(":/filesave.xpm"), tr("&Save"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
-    saveAct->setStatusTip(tr("Save the document to disk"));
+    saveAct->setStatusTip(tr("Build installer package"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
     settingsAct = new QAction(tr("&Settings"), this);
@@ -494,7 +494,7 @@ void nixstbuild::generateRun()
 
 void nixstbuild::openIntroPic()
 {
-    QString file = QFileDialog::getOpenFileName(0, tr("Select intro pic"));
+    QString file = QFileDialog::getOpenFileName(0, tr("Select an intro pic"));
     QFile::copy(file, qd->absolutePath()+"/"+strippedName(file));
     ct_img->setText(strippedName(file));
 }
