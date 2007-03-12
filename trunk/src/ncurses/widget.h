@@ -97,7 +97,7 @@ public:
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
     WINDOW *GetParentWin(void) { return (m_pParent) ? m_pParent->GetWin() : m_pParentWin; }
     
-    bool HasBox(void) { return m_bBox; }
+    bool HasBox(void) const { return m_bBox; }
     void SetBox(bool b) { m_bBox = b; }
     
     bool CanFocus(void) { return CoreCanFocus(); }

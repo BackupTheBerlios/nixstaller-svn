@@ -35,8 +35,9 @@ private:
     {
         bool expand, fill;
         int padding;
-        SBoxEntry(void) : expand(true), fill(true), padding(0) { }
-        SBoxEntry(bool e, bool f, int p) : expand(e), fill(f), padding(p) { }
+        bool start;
+        SBoxEntry(void) : expand(true), fill(true), padding(0), start(true) { }
+        SBoxEntry(bool e, bool f, int p, bool s) : expand(e), fill(f), padding(p), start(s) { }
     };
     
     bool m_bUpdateLayout;
@@ -44,6 +45,10 @@ private:
     EDirection m_eDirection;
     int m_iSpacing;
     
+    int FieldX(void) const { return (HasBox()) ? 1 : 0; }
+    int FieldY(void) const { return (HasBox()) ? 1 : 0; }
+    int FieldWidth(void) const { return (HasBox()) ? Width()-2 : Width(); }
+    int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
     void UpdateLayout(void);
     
 protected:
@@ -58,6 +63,8 @@ public:
     // CGroup needs 2 versions
     void StartPack(CGroup *g, bool e, bool f, int p);
     void StartPack(CWidget *g, bool e, bool f, int p);
+    void EndPack(CGroup *g, bool e, bool f, int p);
+    void EndPack(CWidget *g, bool e, bool f, int p);
 };
 
 

@@ -138,6 +138,7 @@ void StartFrontend(int argc, char **argv)
     NNCurses::TUI.AddGroup(win);
     
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL);
+    vbox->SetBox(true);
     
     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);
 //     NNCurses::CBin *hbox = new NNCurses::CBin();
@@ -161,12 +162,18 @@ void StartFrontend(int argc, char **argv)
     
     label = new NNCurses::CLabel();
     label->SetBox(true);
-//     label->SetMinWidth(40);
     label->SetText("hoi");
-//     label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
-    vbox->AddWidget(label);
+    label->SetMinHeight(3);
+    vbox->StartPack(label, true, false, 0);
+    
+    label = new NNCurses::CLabel();
+    label->SetBox(true);
+    label->SetText("hoi");
+    label->SetMinHeight(3);
+    vbox->StartPack(label, true, false, 0);
     
     win->AddWidget(vbox);
+                   
     win->Draw();
     
     while (NNCurses::TUI.Run())

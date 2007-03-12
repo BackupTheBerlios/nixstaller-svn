@@ -41,6 +41,9 @@ int CBox::CoreRequestWidth()
             ret = std::max(ret, (*it)->RequestWidth());
     }
     
+    if (HasBox())
+        ret += 2;
+    
     return std::max(ret, GetMinWidth());
 }
 
@@ -59,6 +62,9 @@ int CBox::CoreRequestHeight()
             ret = std::max(ret, (*it)->RequestHeight());
     }
     
+    if (HasBox())
+        ret += 2;
+
     return std::max(ret, GetMinHeight());
 }
 
@@ -69,21 +75,23 @@ void CBox::UpdateLayout()
     
     TChildList childs = GetChildList();
     const TSTLVecSize size = childs.size();
-    const int extraw = (Width() - RequestWidth()) / size;
-    const int extrah = (Height() - RequestHeight()) / size;
-    int x = 0, y = 0;
+    int extraw = (Width() - RequestWidth()) / size;
+    int extrah = (Height() - RequestHeight()) / size;
+    int begx = FieldX(), begy = FieldY(); // Coords for widgets that were packed at start
+    int endx = (FieldX()+FieldWidth())-1, endy = (FieldY()+FieldHeight())-1; // Coords for widgets that were packed at end
     
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
     {
+        int basex = 0, basey = 0;
         int widgetw = 0, widgeth = 0;
         const SBoxEntry &entry = m_BoxEntries[*it];
         int spacing = m_iSpacing + entry.padding;
         
         if (m_eDirection == HORIZONTAL)
         {
-            x += entry.padding;
+            basex += entry.padding;
             widgetw += (*it)->RequestWidth();
-            widgeth += Height();
+            widgeth += FieldHeight();
             
             if (entry.expand)
             {
@@ -92,14 +100,14 @@ void CBox::UpdateLayout()
                 else
                 {
                     spacing += (extraw/2);
-                    x += (extraw/2);
+                    basex += (extraw/2);
                 }
             }
         }
         else
         {
-            y += entry.padding;
-            widgetw += Width();
+            basey += entry.padding;
+            widgetw += FieldWidth();
             widgeth += (*it)->RequestHeight();
             
             if (entry.expand)
@@ -109,17 +117,35 @@ void CBox::UpdateLayout()
                 else
                 {
                     spacing += (extrah/2);
-                    y += (extrah/2);
+                    basey += (extrah/2);
                 }
             }
         }
         
-        (*it)->SetSize(x, y, widgetw, widgeth);
-        
-        if (m_eDirection == HORIZONTAL)
-            x += (spacing + widgetw);
+        if (entry.start)
+        {
+            begx += basex;
+            begy += basey;
+            
+            (*it)->SetSize(begx, begy, widgetw, widgeth);
+            
+            if (m_eDirection == HORIZONTAL)
+                begx += (spacing + widgetw);
+            else
+                begy += (spacing + widgeth);
+        }
         else
-            y += (spacing + widgeth);
+        {
+            endx -= basex;
+            endy -= basey;
+            
+            (*it)->SetSize(endx-(widgetw-1), endy-(widgeth-1), widgetw, widgeth);
+            
+            if (m_eDirection == HORIZONTAL)
+                endx -= (spacing + widgetw);
+            else
+                endy -= (spacing + widgeth);
+        }
     }
 }
 
@@ -136,15 +162,26 @@ void CBox::CoreDraw()
 
 void CBox::StartPack(CGroup *g, bool e, bool f, int p)
 {
-    m_BoxEntries[g] = SBoxEntry(e, f, p);
+    m_BoxEntries[g] = SBoxEntry(e, f, p, true);
     CGroup::AddWidget(g);
 }
 
 void CBox::StartPack(CWidget *w, bool e, bool f, int p)
 {
-    m_BoxEntries[w] = SBoxEntry(e, f, p);
+    m_BoxEntries[w] = SBoxEntry(e, f, p, true);
     CGroup::AddWidget(w);
 }
 
+void CBox::EndPack(CGroup *g, bool e, bool f, int p)
+{
+    m_BoxEntries[g] = SBoxEntry(e, f, p, false);
+    CGroup::AddWidget(g);
+}
+
+void CBox::EndPack(CWidget *w, bool e, bool f, int p)
+{
+    m_BoxEntries[w] = SBoxEntry(e, f, p, false);
+    CGroup::AddWidget(w);
+}
 
 }
