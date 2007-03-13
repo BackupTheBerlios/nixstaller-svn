@@ -36,7 +36,11 @@ int CBox::CoreRequestWidth()
         const SBoxEntry &entry = m_BoxEntries[*it];
         
         if (m_eDirection == HORIZONTAL)
-            ret += (*it)->RequestWidth() + (2 * entry.padding) + m_iSpacing;
+        {
+            ret += (*it)->RequestWidth() + (2 * entry.padding);
+            if (*it != childs.back())
+                ret += m_iSpacing;
+        }
         else
             ret = std::max(ret, (*it)->RequestWidth());
     }
@@ -57,7 +61,11 @@ int CBox::CoreRequestHeight()
         const SBoxEntry &entry = m_BoxEntries[*it];
         
         if (m_eDirection == VERTICAL)
-            ret += (*it)->RequestHeight() + (2 * entry.padding) + m_iSpacing;
+        {
+            ret += (*it)->RequestHeight() + (2 * entry.padding);
+            if (*it != childs.back())
+                ret += m_iSpacing;
+        }
         else
             ret = std::max(ret, (*it)->RequestHeight());
     }
@@ -89,7 +97,10 @@ void CBox::UpdateLayout()
         int basex = 0, basey = 0;
         int widgetw = 0, widgeth = 0;
         const SBoxEntry &entry = m_BoxEntries[*it];
-        int spacing = m_iSpacing + entry.padding;
+        int spacing = entry.padding;
+        
+        if (*it != childs.back())
+            spacing += m_iSpacing;
         
         if (remainingw)
         {
