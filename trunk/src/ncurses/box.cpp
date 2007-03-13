@@ -75,8 +75,12 @@ void CBox::UpdateLayout()
     
     TChildList childs = GetChildList();
     const TSTLVecSize size = childs.size();
-    int extraw = (Width() - RequestWidth()) / size;
-    int extrah = (Height() - RequestHeight()) / size;
+    const int diffw = Width() - RequestWidth();
+    const int diffh = Height() - RequestHeight();
+    int extraw = diffw / size;
+    int extrah = diffh / size;
+    int remainingw = diffw % size;
+    int remainingh = diffh % size;
     int begx = FieldX(), begy = FieldY(); // Coords for widgets that were packed at start
     int endx = (FieldX()+FieldWidth())-1, endy = (FieldY()+FieldHeight())-1; // Coords for widgets that were packed at end
     
@@ -86,6 +90,18 @@ void CBox::UpdateLayout()
         int widgetw = 0, widgeth = 0;
         const SBoxEntry &entry = m_BoxEntries[*it];
         int spacing = m_iSpacing + entry.padding;
+        
+        if (remainingw)
+        {
+            extraw++;
+            remainingw--;
+        }
+        
+        if  (remainingh)
+        {
+            extrah++;
+            remainingh--;
+        }
         
         if (m_eDirection == HORIZONTAL)
         {
