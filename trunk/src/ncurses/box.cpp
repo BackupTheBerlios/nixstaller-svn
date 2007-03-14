@@ -76,6 +76,19 @@ int CBox::CoreRequestHeight()
     return std::max(ret, GetMinHeight());
 }
 
+bool CBox::HandleEvent(CWidget *emitter, int type)
+{
+    TChildList childs = GetChildList();
+    if ((std::find(childs.begin(), childs.end(), emitter) != childs.end()) && (type == EVENT_REQSIZECHANGE))
+    {
+        m_bUpdateLayout = true;
+        PushEvent(EVENT_REQSIZECHANGE);
+        return true;
+    }
+    
+    return false;
+}
+
 void CBox::UpdateLayout()
 {
     if (Empty())

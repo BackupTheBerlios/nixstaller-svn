@@ -39,7 +39,7 @@ void CBin::UpdateMySize(CWidget *w)
         height += 2;
     }
     
-    Size(this, width, height);
+    SetSize(X(), Y(), width, height);
 }
 
 void CBin::UpdateWidgetSize(CWidget *w)
@@ -61,11 +61,12 @@ void CBin::UpdateWidgetSize(CWidget *w)
 
 bool CBin::HandleEvent(CWidget *emitter, int type)
 {
-//     if ((emitter == GetChild()) && (type == EVENT_SIZECHANGED))
-//     {
-//         UpdateMySize(emitter);
-//         return true;
-//     }
+    if ((emitter == GetChild()) && (type == EVENT_REQSIZECHANGE))
+    {
+        m_bSync = true;
+        PushEvent(EVENT_REQSIZECHANGE);
+        return true;
+    }
     
     return false;
 }

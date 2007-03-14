@@ -46,11 +46,12 @@ class CWidget
     void Box(void);
 
 protected:
-    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_SIZECHANGED };
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQSIZECHANGE };
     
 //     CWidget(void); ENABLE
     
     virtual void CoreDraw(void) { DrawWidget(); }
+    virtual void DoDraw(void) { }
     virtual void CoreInit(void) { }
     
     WINDOW *GetWin(void) { return m_pNCursWin; }
@@ -64,9 +65,8 @@ protected:
     virtual int CoreRequestWidth(void) { return GetMinWidth(); }
     virtual int CoreRequestHeight(void) { return GetMinHeight(); }
     
-    void RefreshColors(void);
-    void RefreshSize(void);
-    void RefreshWidget(void);
+    void InitDraw(void);
+    void RefreshWidget(void) { wrefresh(m_pNCursWin); }
     void DrawWidget(void); // Calls above 3 functions. Default behaviour, called from CoreDraw()
     
     void PushEvent(int type);

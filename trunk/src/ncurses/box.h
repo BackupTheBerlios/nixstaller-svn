@@ -54,6 +54,7 @@ private:
 protected:
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
+    virtual bool HandleEvent(CWidget *emitter, int type);
     virtual void CoreDraw(void);
     virtual void CoreAddWidget(CWidget *w) { m_bUpdateLayout = true; InitChild(w); }
     

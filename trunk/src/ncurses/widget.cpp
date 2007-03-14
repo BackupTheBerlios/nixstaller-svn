@@ -64,7 +64,7 @@ void CWidget::Box()
     wborder(m_pNCursWin, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
-void CWidget::RefreshColors()
+void CWidget::InitDraw()
 {
     if (m_bColorsChanged)
     {
@@ -75,44 +75,25 @@ void CWidget::RefreshColors()
         
         m_bColorsChanged = false;
     }
-}
-
-void CWidget::RefreshSize()
-{
+    
     if (m_bSizeChanged)
     {
         int ret = wresize(m_pNCursWin, Height(), Width());
-        
         assert(ret != ERR);
-        
         MoveWin(X(), Y());
-
-/*        if (!m_pParent)
-        {
-            werase(m_pParentWin);
-            wrefresh(m_pParentWin);
-        }
-        else
-            m_pParent->Draw();*/
-        
         m_bSizeChanged = false;
     }
-}
 
-void CWidget::RefreshWidget()
-{
     werase(m_pNCursWin);
 
     if (HasBox())
         Box();
-
-    wrefresh(m_pNCursWin);
 }
 
 void CWidget::DrawWidget()
 {
-    RefreshColors();
-    RefreshSize();
+    InitDraw();
+    DoDraw();
     RefreshWidget();
 }
 
@@ -158,25 +139,7 @@ void CWidget::SetSize(int x, int y, int w, int h)
     m_iWidth = w;
     m_iHeight = h;
     m_bSizeChanged = true;
-    PushEvent(EVENT_SIZECHANGED);
 }
-
-// void CWidget::Resize(int x, int y, int w, int h)
-// {
-//     SetSize(x, y, w, h);
-//     m_bSizeChanged = true;
-//     
-//     ::wresize(m_pNCursWin, h, w);
-//     MoveWin(x, y);
-//     
-//     if (!m_pParent)
-//     {
-//         werase(m_pParentWin);
-//         wrefresh(m_pParentWin);
-//     }
-//     else
-//         m_pParent->Draw();
-// }
 
 void CWidget::SetFColors(int fg, int bg)
 {

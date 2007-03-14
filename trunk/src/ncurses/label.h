@@ -36,15 +36,15 @@ class CLabel: public CWidget
     
 protected:
     virtual void CoreInit(void) { UpdateLines(); }
-    virtual void CoreDraw(void);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
+    virtual void DoDraw(void);
     
 public:
     CLabel(void) : m_bCenter(true) { }
     
     void Center(bool c) { m_bCenter = c; }
-    void SetText(const std::string &t) { m_szText = t; UpdateLines(); }
+    void SetText(const std::string &t);
 };
 
 

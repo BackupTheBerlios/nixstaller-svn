@@ -144,12 +144,13 @@ void StartFrontend(int argc, char **argv)
 //     NNCurses::CBin *hbox = new NNCurses::CBin();
     hbox->SetDFColors(COLOR_YELLOW, COLOR_RED);
     
-    NNCurses::CLabel *label = new NNCurses::CLabel();
+    NNCurses::CLabel *label, *l = new NNCurses::CLabel();
+    label = l;
     label->SetBox(true);
 //     label->SetMinWidth(40);
     label->SetText("ugh");
     label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
-    hbox->StartPack(label, true, true, 0);
+    hbox->StartPack(label, false, true, 0);
     
     label = new NNCurses::CLabel();
     label->SetBox(true);
@@ -170,12 +171,16 @@ void StartFrontend(int argc, char **argv)
     label->SetBox(true);
     label->SetText("hoi");
     label->SetMinHeight(3);
-    vbox->StartPack(label, true, false, 0);
+    vbox->StartPack(label, false, false, 0);
     
     win->AddWidget(vbox);
-                   
+
     win->Draw();
+    NNCurses::TUI.Run();
+    sleep (2);
     
+    l->SetText("Slightly longer now");
+    win->Draw();
     while (NNCurses::TUI.Run())
         ;
 }

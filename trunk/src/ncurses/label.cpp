@@ -76,10 +76,8 @@ int CLabel::CoreRequestHeight()
     return 1;
 }
 
-void CLabel::CoreDraw()
+void CLabel::DoDraw()
 {
-    DrawWidget();
-    
     int x = 0, y = 0;
     
     for (TLinesList::iterator it=m_Lines.begin(); it!=m_Lines.end(); it++, y++)
@@ -92,6 +90,15 @@ void CLabel::CoreDraw()
         
         mvwaddstr(GetWin(), y, x, it->c_str());
     }
+}
+
+void CLabel::SetText(const std::string &t)
+{
+    m_szText = t;
+    UpdateLines();
+    
+    if (GetMinWidth() == 0)
+        PushEvent(EVENT_REQSIZECHANGE);
 }
 
 }
