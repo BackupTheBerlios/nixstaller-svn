@@ -28,6 +28,7 @@ using namespace std;
 
 #include <QDir>
 #include <QDialog>
+#include <QToolTip>
 #include <QDirModel>
 #include <QTextEdit>
 #include <QListView>
@@ -46,6 +47,22 @@ using namespace std;
 #include "sdialog.h"
 #include "rungen.h"
 
+
+const char *templates[] = {
+    "cfgscreen:addcfgmenu(\"title\")",
+    "cfgscreen:addcheckbox(\"title\", {\"name1\"})",
+    "cfgscreen:adddirselector()",
+    "cfgscreen:addinput(\"label\")",
+    "cfgscreen:addradiobutton(\"title\", {\"opt1\", \"opt2\"})"
+};
+
+const char *template_tooltips[] = {
+    "cfgscreen:addcfgmenu( title )",
+    "cfgscreen:addcheckbox( title, { checkbox1, checkbox2, ... } )",
+    "cfgscreen:adddirselector( title, dir ) <br><i>dir</i> is optional, default value is users home directory.",
+    "cfgscreen:addinput( label, maxchars, value, type ) <br>Types:<br> <i>\"string\"</i><br> <i>\"number\"</i><br> <i>\"float\"</i>",
+    "cfgscreen:addradiobutton(\"title\", {\"opt1\", \"opt2\"} )"
+};
 
 nixstbuild::nixstbuild()
 {
@@ -198,6 +215,23 @@ void nixstbuild::createMenus()
     QAction *dela = foldermenu->addAction("Delete");
     dela->setIcon(QIcon(":/xdel.png"));
     connect(dela, SIGNAL(triggered()), this, SLOT(fvDeleteFile()));
+
+    rt_insertmenu = new QMenu();
+    rt_itcma = rt_insertmenu->addAction("Config menu");
+    connect(rt_itcma, SIGNAL(triggered()), this, SLOT(rt_iconfig()));
+    connect(rt_itcma, SIGNAL(hovered()), this, SLOT(rt_iconfigh()));
+    rt_itca = rt_insertmenu->addAction("Checkbox");
+    connect(rt_itca, SIGNAL(triggered()), this, SLOT(rt_icheckbox()));
+    connect(rt_itca, SIGNAL(hovered()), this, SLOT(rt_icheckboxh()));
+    rt_itdsa = rt_insertmenu->addAction("Directory selector");
+    connect(rt_itdsa, SIGNAL(triggered()), this, SLOT(rt_idirselector()));
+    connect(rt_itdsa, SIGNAL(hovered()), this, SLOT(rt_idirselectorh()));
+    rt_itia = rt_insertmenu->addAction("Input Field");
+    connect(rt_itia, SIGNAL(triggered()), this, SLOT(rt_iinput()));
+    connect(rt_itia, SIGNAL(hovered()), this, SLOT(rt_iinputh()));
+    rt_itra = rt_insertmenu->addAction("Radiobutton");
+    connect(rt_itra, SIGNAL(triggered()), this, SLOT(rt_iradio()));
+    connect(rt_itra, SIGNAL(hovered()), this, SLOT(rt_iradioh()));
 }
 
 void nixstbuild::createToolBars()
@@ -331,8 +365,12 @@ void nixstbuild::addRunTab()
     QPushButton *rt_generate = new QPushButton("Generate Script");
     connect(rt_generate, SIGNAL(clicked()), this, SLOT(generateRun()));
 
+    rt_insert = new QPushButton("Insert");
+    connect(rt_insert, SIGNAL(clicked()), this, SLOT(insertTemplate()));
+
     rt_btns->addWidget(rt_save);
     rt_btns->addWidget(rt_generate);
+    rt_btns->addWidget(rt_insert);
     rt_btns->setAlignment(Qt::AlignLeft);
 
     rt_textedit = new QTextEdit;
@@ -490,6 +528,61 @@ void nixstbuild::generateRun()
     NBRunGen rg(this);
     rg.exec();
     rt_textedit->setText(rg.script().c_str());
+}
+
+void nixstbuild::insertTemplate()
+{
+    rt_insertmenu->popup(rt_insert->mapToGlobal(QPoint(0, 28)));
+}
+
+void nixstbuild::rt_iconfig()
+{
+    rt_textedit->insertPlainText(templates[0]);
+}
+
+void nixstbuild::rt_icheckbox()
+{
+    rt_textedit->insertPlainText(templates[1]);
+}
+
+void nixstbuild::rt_idirselector()
+{
+    rt_textedit->insertPlainText(templates[2]);
+}
+
+void nixstbuild::rt_iinput()
+{
+    rt_textedit->insertPlainText(templates[3]);
+}
+
+void nixstbuild::rt_iradio()
+{
+    rt_textedit->insertPlainText(templates[4]);
+}
+
+void nixstbuild::rt_iconfigh()
+{
+    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itcma).topRight()), template_tooltips[0]);
+}
+
+void nixstbuild::rt_icheckboxh()
+{
+    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itca).topRight()), template_tooltips[1]);
+}
+
+void nixstbuild::rt_idirselectorh()
+{
+    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itdsa).topRight()), template_tooltips[2]);
+}
+
+void nixstbuild::rt_iinputh()
+{
+    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itia).topRight()), template_tooltips[3]);
+}
+
+void nixstbuild::rt_iradioh()
+{
+    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itra).topRight()), template_tooltips[4]);
 }
 
 void nixstbuild::openIntroPic()

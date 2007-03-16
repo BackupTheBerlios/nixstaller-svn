@@ -67,10 +67,21 @@ private slots:
     void saveConfig();
     void saveRun();
     void generateRun();
+    void insertTemplate();
     void openIntroPic();
     void settingsDialog();
     void fvCustomContext(const QPoint &pos);
     void fvDeleteFile();
+    void rt_icheckbox();
+    void rt_iradio();
+    void rt_iconfig();
+    void rt_idirselector();
+    void rt_iinput();
+    void rt_icheckboxh();
+    void rt_iradioh();
+    void rt_iconfigh();
+    void rt_idirselectorh();
+    void rt_iinputh();
 
 private:
     void createActions();
@@ -142,6 +153,13 @@ private:
 
     // Run tab
     QTextEdit *rt_textedit;
+    QPushButton *rt_insert;
+    QMenu *rt_insertmenu;
+    QAction *rt_itcma;
+    QAction *rt_itca;
+    QAction *rt_itdsa;
+    QAction *rt_itia;
+    QAction *rt_itra;
 };
 
 #endif
