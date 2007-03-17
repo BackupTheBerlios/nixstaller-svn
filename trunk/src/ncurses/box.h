@@ -49,6 +49,8 @@ private:
     int FieldY(void) const { return (HasBox()) ? 1 : 0; }
     int FieldWidth(void) const { return (HasBox()) ? Width()-2 : Width(); }
     int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
+    int RequestedWidgetsW(void);
+    int RequestedWidgetsH(void);
     void UpdateLayout(void);
     
 protected:

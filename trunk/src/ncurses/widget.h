@@ -46,7 +46,7 @@ class CWidget
     void Box(void);
 
 protected:
-    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQSIZECHANGE };
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQSIZECHANGE, EVENT_DELETE };
     
 //     CWidget(void); ENABLE
     
@@ -96,6 +96,8 @@ public:
     void SetParent(CWidget *p) { m_pParent = p; m_pParentWin = NULL; }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
     WINDOW *GetParentWin(void) { return (m_pParent) ? m_pParent->GetWin() : m_pParentWin; }
+    CWidget *GetTopWidget(void);
+    CWidget *GetParentWidget(void) { return m_pParent; }
     
     bool HasBox(void) const { return m_bBox; }
     void SetBox(bool b) { m_bBox = b; }
@@ -108,9 +110,8 @@ public:
 };
 
 // Utils
-void Position(CWidget *widget, int x, int y);
-void Size(CWidget *widget, int w, int h);
-bool HasSize(CWidget *widget);
+bool IsParent(CWidget *parent, CWidget *child);
+bool IsChild(CWidget *child, CWidget *parent);
 
 }
 

@@ -153,23 +153,39 @@ void CWidget::SetDFColors(int fg, int bg)
     m_bColorsChanged = true;
 }
 
+CWidget *CWidget::GetTopWidget()
+{
+    CWidget *w = this;
+    
+    while (w && w->m_pParent)
+    {
+        w = w->m_pParent;
+    }
+    
+    return w;
+}
+
 // -------------------------------------
 // Utils
 // -------------------------------------
 
-void Position(CWidget *widget, int x, int y)
+bool IsParent(CWidget *parent, CWidget *child)
 {
-    widget->SetSize(x, y, widget->Width(), widget->Height());
+    CWidget *w = child;
+    while (w->GetParentWidget())
+    {
+        if (w->GetParentWidget() == parent)
+            return true;
+        w = w->GetParentWidget();
+    }
+    
+    return false;
 }
 
-void Size(CWidget *widget, int w, int h)
+bool IsChild(CWidget *child, CWidget *parent)
 {
-    widget->SetSize(widget->X(), widget->Y(), w, h);
+    return IsParent(parent, child);
 }
 
-bool HasSize(CWidget *widget)
-{
-    return (widget->X() && widget->Y() && widget->Width() && widget->Height());
-}
 
 }

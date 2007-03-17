@@ -32,6 +32,7 @@ class CTUI
     int m_iCurColorPair;
     std::vector<CGroup *> m_RootGroups;
     CGroup *m_pActiveGroup;
+    std::vector<CWidget *> m_QueuedDrawWidgets;
     
 public:
     CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL) { };
@@ -45,6 +46,7 @@ public:
     WINDOW *GetRootWin(void) { return stdscr; }
     
     int GetColorPair(int fg, int bg);
+    void QueueDraw(CWidget *w);
 };
 
 extern CTUI TUI;

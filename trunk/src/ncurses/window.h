@@ -20,14 +20,17 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "bin.h"
+#include "box.h"
 
 namespace NNCurses {
 
-class CWindow: public CBin
+class CWindow: public CBox
 {
 protected:
     virtual void CoreInit();
+    
+public:
+    CWindow(void) : CBox(CBox::VERTICAL) { }
 };
 
 }

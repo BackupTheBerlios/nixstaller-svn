@@ -19,6 +19,7 @@
 
 #include "ncurses.h"
 #include "box.h"
+#include "tui.h"
 
 namespace NNCurses {
 
@@ -26,7 +27,7 @@ namespace NNCurses {
 // Widget Box Class
 // -------------------------------------
 
-int CBox::CoreRequestWidth()
+int CBox::RequestedWidgetsW()
 {
     TChildList childs = GetChildList();
     int ret = 0;
@@ -45,13 +46,10 @@ int CBox::CoreRequestWidth()
             ret = std::max(ret, (*it)->RequestWidth());
     }
     
-    if (HasBox())
-        ret += 2;
-    
-    return std::max(ret, GetMinWidth());
+    return ret;
 }
 
-int CBox::CoreRequestHeight()
+int CBox::RequestedWidgetsH()
 {
     TChildList childs = GetChildList();
     int ret = 0;
@@ -70,69 +68,53 @@ int CBox::CoreRequestHeight()
             ret = std::max(ret, (*it)->RequestHeight());
     }
     
-    if (HasBox())
-        ret += 2;
-
-    return std::max(ret, GetMinHeight());
+    return ret;
 }
-
-bool CBox::HandleEvent(CWidget *emitter, int type)
-{
-    TChildList childs = GetChildList();
-    if ((std::find(childs.begin(), childs.end(), emitter) != childs.end()) && (type == EVENT_REQSIZECHANGE))
-    {
-        m_bUpdateLayout = true;
-        PushEvent(EVENT_REQSIZECHANGE);
-        return true;
-    }
     
-    return false;
-}
-
 void CBox::UpdateLayout()
 {
     if (Empty())
         return;
-    
+
     TChildList childs = GetChildList();
     const TSTLVecSize size = childs.size();
-    const int diffw = Width() - RequestWidth();
-    const int diffh = Height() - RequestHeight();
+    const int diffw = FieldWidth() - RequestedWidgetsW();
+    const int diffh = FieldHeight() - RequestedWidgetsH();
     int extraw = diffw / size;
     int extrah = diffh / size;
     int remainingw = diffw % size;
     int remainingh = diffh % size;
     int begx = FieldX(), begy = FieldY(); // Coords for widgets that were packed at start
     int endx = (FieldX()+FieldWidth())-1, endy = (FieldY()+FieldHeight())-1; // Coords for widgets that were packed at end
-    
+
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
     {
         int basex = 0, basey = 0;
         int widgetw = 0, widgeth = 0;
         const SBoxEntry &entry = m_BoxEntries[*it];
         int spacing = entry.padding;
-        
+    
         if (*it != childs.back())
             spacing += m_iSpacing;
-        
+    
         if (remainingw)
         {
             extraw++;
             remainingw--;
         }
-        
+    
         if  (remainingh)
         {
             extrah++;
             remainingh--;
         }
-        
+    
         if (m_eDirection == HORIZONTAL)
         {
             basex += entry.padding;
             widgetw += (*it)->RequestWidth();
             widgeth += FieldHeight();
-            
+        
             if (entry.expand)
             {
                 if (entry.fill)
@@ -149,7 +131,7 @@ void CBox::UpdateLayout()
             basey += entry.padding;
             widgetw += FieldWidth();
             widgeth += (*it)->RequestHeight();
-            
+        
             if (entry.expand)
             {
                 if (entry.fill)
@@ -161,14 +143,14 @@ void CBox::UpdateLayout()
                 }
             }
         }
-        
+    
         if (entry.start)
         {
             begx += basex;
             begy += basey;
-            
+        
             (*it)->SetSize(begx, begy, widgetw, widgeth);
-            
+        
             if (m_eDirection == HORIZONTAL)
                 begx += (spacing + widgetw);
             else
@@ -178,15 +160,52 @@ void CBox::UpdateLayout()
         {
             endx -= basex;
             endy -= basey;
-            
+        
             (*it)->SetSize(endx-(widgetw-1), endy-(widgeth-1), widgetw, widgeth);
-            
+        
             if (m_eDirection == HORIZONTAL)
                 endx -= (spacing + widgetw);
             else
                 endy -= (spacing + widgeth);
         }
     }
+}
+    
+int CBox::CoreRequestWidth()
+{
+    int ret = RequestedWidgetsW();
+    
+    if (HasBox())
+        ret += 2;
+    
+    return std::max(ret, GetMinWidth());
+}
+
+int CBox::CoreRequestHeight()
+{
+    int ret = RequestedWidgetsH();
+    
+    if (HasBox())
+        ret += 2;
+
+    return std::max(ret, GetMinHeight());
+}
+
+bool CBox::HandleEvent(CWidget *emitter, int type)
+{
+    TChildList childs = GetChildList();
+    if ((std::find(childs.begin(), childs.end(), emitter) != childs.end()) && (type == EVENT_REQSIZECHANGE))
+    {
+        m_bUpdateLayout = true;
+        PushEvent(EVENT_REQSIZECHANGE);
+        
+        if (!GetParentWidget())
+            TUI.QueueDraw(this);
+        
+        return true;
+    }
+    
+    return false;
 }
 
 void CBox::CoreDraw()

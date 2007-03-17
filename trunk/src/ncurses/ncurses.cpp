@@ -173,14 +173,14 @@ void StartFrontend(int argc, char **argv)
     label->SetMinHeight(3);
     vbox->StartPack(label, false, false, 0);
     
-    win->AddWidget(vbox);
+    win->StartPack(vbox, true, true, 0);
 
     win->Draw();
     NNCurses::TUI.Run();
     sleep (2);
     
     l->SetText("Slightly longer now");
-    win->Draw();
+//     win->Draw();
     while (NNCurses::TUI.Run())
         ;
 }

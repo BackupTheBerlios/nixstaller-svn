@@ -83,6 +83,15 @@ bool CTUI::Run(int delay)
             return false;
     }
     
+    if (!m_QueuedDrawWidgets.empty())
+    {
+        for (std::vector<CWidget *>::iterator it=m_QueuedDrawWidgets.begin(); it!=m_QueuedDrawWidgets.end(); it++)
+        {
+            (*it)->Draw();
+        }
+        m_QueuedDrawWidgets.clear();
+    }
+    
     return true;
 }
 
@@ -97,6 +106,8 @@ void CTUI::AddGroup(CGroup *g)
         g->Focus(true);
         m_pActiveGroup = g;
     }
+    
+    g->SetSize(0, 0, g->RequestWidth(), g->RequestHeight());
 }
 
 void CTUI::ActivateGroup(CGroup *g)
@@ -136,6 +147,30 @@ int CTUI::GetColorPair(int fg, int bg)
     init_pair(m_iCurColorPair, fg, bg);
     m_ColorPairs[fg][bg] = m_iCurColorPair;
     return COLOR_PAIR(m_iCurColorPair);
+}
+
+void CTUI::QueueDraw(CWidget *w)
+{
+    bool done = false;
+    while (!done)
+    {
+        done = true;
+        for (std::vector<CWidget *>::iterator it=m_QueuedDrawWidgets.begin();
+             it!=m_QueuedDrawWidgets.end(); it++)
+        {
+            if (IsParent(*it, w))
+                return; // Parent is being redrawn, which will draw all childs
+            else if (IsChild(*it, w))
+            {
+                // Remove any childs
+                m_QueuedDrawWidgets.erase(it);
+                done = false;
+                break;
+            }
+        }
+    }
+    
+    m_QueuedDrawWidgets.push_back(w);
 }
 
 // -------------------------------------

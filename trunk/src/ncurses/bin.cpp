@@ -21,6 +21,7 @@
 #include "widget.h"
 #include "group.h"
 #include "bin.h"
+#include "tui.h"
 
 namespace NNCurses {
 
@@ -65,6 +66,10 @@ bool CBin::HandleEvent(CWidget *emitter, int type)
     {
         m_bSync = true;
         PushEvent(EVENT_REQSIZECHANGE);
+        
+        if (!GetParentWidget())
+            TUI.QueueDraw(this);
+
         return true;
     }
     
