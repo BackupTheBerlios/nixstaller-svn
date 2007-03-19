@@ -55,6 +55,7 @@ extern CTUI TUI;
 int GetWX(WINDOW *w);
 int GetWY(WINDOW *w);
 
+
 }
 
 #endif

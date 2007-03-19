@@ -108,6 +108,7 @@ void CTUI::AddGroup(CGroup *g)
     }
     
     g->SetSize(0, 0, g->RequestWidth(), g->RequestHeight());
+    QueueDraw(g);
 }
 
 void CTUI::ActivateGroup(CGroup *g)
@@ -190,5 +191,6 @@ int GetWY(WINDOW *w)
     getbegyx(w, y, x);
     return y;
 }
+
 
 }

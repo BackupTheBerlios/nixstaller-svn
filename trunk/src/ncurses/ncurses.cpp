@@ -141,22 +141,18 @@ void StartFrontend(int argc, char **argv)
     vbox->SetBox(true);
     
     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);
-//     NNCurses::CBin *hbox = new NNCurses::CBin();
     hbox->SetDFColors(COLOR_YELLOW, COLOR_RED);
     
     NNCurses::CLabel *label, *l = new NNCurses::CLabel();
     label = l;
     label->SetBox(true);
-//     label->SetMinWidth(40);
     label->SetText("ugh");
     label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
     hbox->StartPack(label, false, true, 0);
     
     label = new NNCurses::CLabel();
     label->SetBox(true);
-//     label->SetMinWidth(40);
     label->SetText("hoi");
-//     label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
     hbox->StartPack(label, true, true, 0);
 
     vbox->AddWidget(hbox);
@@ -164,23 +160,26 @@ void StartFrontend(int argc, char **argv)
     label = new NNCurses::CLabel();
     label->SetBox(true);
     label->SetText("hoi");
-    label->SetMinHeight(3);
-    vbox->StartPack(label, true, false, 0);
+//     label->SetMinHeight(3);
+    vbox->StartPack(label, true, true, 0);
     
     label = new NNCurses::CLabel();
     label->SetBox(true);
     label->SetText("hoi");
-    label->SetMinHeight(3);
-    vbox->StartPack(label, false, false, 0);
+//     label->SetMinHeight(3);
+    vbox->StartPack(label, true, true, 0);
     
     win->StartPack(vbox, true, true, 0);
 
-    win->Draw();
     NNCurses::TUI.Run();
     sleep (2);
     
-    l->SetText("Slightly longer now");
-//     win->Draw();
+    l->Enable(false);
+    NNCurses::TUI.Run();
+    sleep (2);
+
+    l->Enable(true);
+    
     while (NNCurses::TUI.Run())
         ;
 }

@@ -33,7 +33,20 @@ void CGroup::CoreDraw(void)
     DrawWidget();
     
     for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
-        (*it)->Draw();
+    {
+        if ((*it)->Enabled())
+            (*it)->Draw();
+    }
+}
+
+void CGroup::UpdateSize()
+{
+    for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
+    {
+        int ret = mvwin((*it)->GetWin(), Y()+(*it)->Y(), X()+(*it)->X());
+        assert(ret != ERR);
+        // UNDONE: Exception
+    }
 }
 
 void CGroup::UpdateFocus()
@@ -75,23 +88,25 @@ void CGroup::InitChild(CWidget *w)
 
 void CGroup::RemoveWidget(CWidget *w)
 {
+    CoreRemoveWidget(w);
+    
     if (m_pFocusedWidget == w)
         SetValidWidget(w);
     
     TChildList::iterator it = std::find(m_Childs.begin(), m_Childs.end(), w);
     assert(it != m_Childs.end());
     m_Childs.erase(it);
-    
-    delete w;
+    m_GroupMap[w] = NULL; // Is NULL already if w isn't a group
 }
 
 void CGroup::Clear()
 {
     while (!m_Childs.empty())
     {
+        // CWidget's destructor will call RemoveWidget() which removes widget from m_Childs list
         delete m_Childs.back();
-        m_Childs.pop_back();
     }
+
     m_GroupMap.clear();
 }
 

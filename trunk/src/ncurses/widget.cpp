@@ -29,34 +29,28 @@ namespace NNCurses {
 
 CWidget::CWidget(void) : m_pParent(NULL), m_pParentWin(NULL), m_pNCursWin(NULL), m_iX(0), m_iY(0), m_iWidth(0),
                          m_iHeight(0), m_iMinWidth(0), m_iMinHeight(0), m_bInitialized(false), m_bBox(false),
-                         m_bFocused(false), m_bColorsChanged(false), m_bSizeChanged(false)
+                         m_bFocused(false), m_bEnabled(true), m_bColorsChanged(false), m_bSizeChanged(false)
 {
 }
 
 CWidget::~CWidget()
 {
+    if (m_pParent)
+        m_pParent->RemoveWidget(this);
+
     if (m_pNCursWin)
         delwin(m_pNCursWin);
 }
 
 void CWidget::MoveWin(int x, int y)
 {
-    x += GetWX(GetParentWin());
-    y += GetWY(GetParentWin());
-    
-    int ret = mvwin(m_pNCursWin, y, x);
-    
+    int realx = x + GetWX(GetParentWin());
+    int realy = y + GetWY(GetParentWin());
+    int ret = mvwin(m_pNCursWin, realy, realx);
     assert(ret != ERR);
     
-    if (ret != ERR)
-    {
-        // Child widgets won't move without this...
-        if (m_pParent)
-        {
-            m_pNCursWin->_begx = x;
-            m_pNCursWin->_begy = y;
-        }
-    }
+    mvderwin(m_pNCursWin, y, x);
+    assert(ret != ERR);
 }
 
 void CWidget::Box()
@@ -78,9 +72,11 @@ void CWidget::InitDraw()
     
     if (m_bSizeChanged)
     {
+        MoveWin(0, 0); // Move to a safe position first
         int ret = wresize(m_pNCursWin, Height(), Width());
         assert(ret != ERR);
         MoveWin(X(), Y());
+        UpdateSize();
         m_bSizeChanged = false;
     }
 
@@ -153,11 +149,16 @@ void CWidget::SetDFColors(int fg, int bg)
     m_bColorsChanged = true;
 }
 
-CWidget *CWidget::GetTopWidget()
+WINDOW *CWidget::GetParentWin()
 {
-    CWidget *w = this;
+    return (m_pParent) ? m_pParent->GetWin() : m_pParentWin;
+}
+
+CGroup *CWidget::GetTopWidget()
+{
+    CGroup *w = m_pParent;
     
-    while (w && w->m_pParent)
+    while (w)
     {
         w = w->m_pParent;
     }
@@ -187,5 +188,9 @@ bool IsChild(CWidget *child, CWidget *parent)
     return IsParent(parent, child);
 }
 
+bool IsDirectChild(CWidget *child, CWidget *parent)
+{
+    return (child->GetParentWidget() == parent);
+}
 
 }

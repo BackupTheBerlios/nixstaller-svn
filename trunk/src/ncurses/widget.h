@@ -30,7 +30,11 @@ class CGroup;
 
 class CWidget
 {
-    CWidget *m_pParent;
+    friend class CGroup;
+    friend class CBox;
+    friend class CTUI;
+    
+    CGroup *m_pParent;
     WINDOW *m_pParentWin, *m_pNCursWin;
     int m_iX, m_iY, m_iWidth, m_iHeight;
     int m_iMinWidth, m_iMinHeight;
@@ -38,47 +42,59 @@ class CWidget
     bool m_bInitialized;
     bool m_bBox;
     bool m_bFocused;
+    bool m_bEnabled;
 
     TColorPair m_FColors, m_DFColors; // Focused and DeFocused colors
     bool m_bColorsChanged, m_bSizeChanged;
     
-    void MoveWin(int x, int y);
     void Box(void);
+    void MoveWin(int x, int y);
 
 protected:
-    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQSIZECHANGE, EVENT_DELETE };
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQSIZECHANGE, EVENT_DELETE, EVENT_ENABLE };
     
-//     CWidget(void); ENABLE
+    CWidget(void);
     
+    // Virtual Interface
     virtual void CoreDraw(void) { DrawWidget(); }
     virtual void DoDraw(void) { }
     virtual void CoreInit(void) { }
     
-    WINDOW *GetWin(void) { return m_pNCursWin; }
+    virtual void UpdateSize(void) { }
     
     virtual void UpdateFocus(void) { }
     virtual bool CoreCanFocus(void) { return false; }
     
     virtual bool CoreHandleKey(chtype key) { return false; };
-    virtual bool HandleEvent(CWidget *emitter, int event) { return false; };
+    virtual bool CoreHandleEvent(CWidget *emitter, int event) { return false; };
     
     virtual int CoreRequestWidth(void) { return GetMinWidth(); }
     virtual int CoreRequestHeight(void) { return GetMinHeight(); }
     
+    // Interface to be used by friends and derived classes
     void InitDraw(void);
     void RefreshWidget(void) { wrefresh(m_pNCursWin); }
     void DrawWidget(void); // Calls above 3 functions. Default behaviour, called from CoreDraw()
+    void Draw(void);
+
+    void Init(void);
     
+    void SetSize(int x, int y, int w, int h);
+    int RequestWidth(void) { return CoreRequestWidth(); }
+    int RequestHeight(void) { return CoreRequestHeight(); }
+
+    void SetParent(CGroup *g) { m_pParent = g; m_pParentWin = NULL; }
+    void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
+
+    bool CanFocus(void) { return CoreCanFocus(); }
+    
+    bool HandleKey(chtype key) { return CoreHandleKey(key); }
+    bool HandleEvent(CWidget *emitter, int event) { return CoreHandleEvent(emitter, event); }
     void PushEvent(int type);
     
 public:
-    CWidget(void);
     virtual ~CWidget(void);
 
-    void Draw(void);
-    void Init(void);
-    void SetSize(int x, int y, int w, int h);
-    
     void SetFColors(int fg, int bg);
     void SetDFColors(int fg, int bg);
     
@@ -90,28 +106,26 @@ public:
     int GetMinHeight(void) { return m_iMinHeight; }
     void SetMinWidth(int w) { m_iMinWidth = w; }
     void SetMinHeight(int h) { m_iMinHeight = h; }
-    int RequestWidth(void) { return CoreRequestWidth(); }
-    int RequestHeight(void) { return CoreRequestHeight(); }
     
-    void SetParent(CWidget *p) { m_pParent = p; m_pParentWin = NULL; }
-    void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
-    WINDOW *GetParentWin(void) { return (m_pParent) ? m_pParent->GetWin() : m_pParentWin; }
-    CWidget *GetTopWidget(void);
-    CWidget *GetParentWidget(void) { return m_pParent; }
+    WINDOW *GetWin(void) { return m_pNCursWin; }
+    WINDOW *GetParentWin(void);
+    CGroup *GetTopWidget(void);
+    CGroup *GetParentWidget(void) { return m_pParent; }
     
     bool HasBox(void) const { return m_bBox; }
     void SetBox(bool b) { m_bBox = b; }
     
-    bool CanFocus(void) { return CoreCanFocus(); }
     bool Focused(void) { return m_bFocused; }
     void Focus(bool f) { m_bFocused = f; m_bColorsChanged = true; UpdateFocus(); }
     
-    bool HandleKey(chtype key) { return CoreHandleKey(key); }
+    void Enable(bool e) { m_bEnabled = e; PushEvent(EVENT_ENABLE); }
+    bool Enabled(void) { return m_bEnabled; }
 };
 
 // Utils
 bool IsParent(CWidget *parent, CWidget *child);
 bool IsChild(CWidget *child, CWidget *parent);
+bool IsDirectChild(CWidget *child, CWidget *parent);
 
 }
 

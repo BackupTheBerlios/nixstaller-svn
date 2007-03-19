@@ -51,14 +51,17 @@ private:
     int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
     int RequestedWidgetsW(void);
     int RequestedWidgetsH(void);
+    TChildList::size_type ExpandedWidgets(void);
+    bool IsValidWidget(CWidget *w);
     void UpdateLayout(void);
     
 protected:
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
-    virtual bool HandleEvent(CWidget *emitter, int type);
+    virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual void CoreDraw(void);
     virtual void CoreAddWidget(CWidget *w) { m_bUpdateLayout = true; InitChild(w); }
+    virtual void CoreRemoveWidget(CWidget *w);
     
 public:
     CBox(EDirection dir, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_iSpacing(s) { }

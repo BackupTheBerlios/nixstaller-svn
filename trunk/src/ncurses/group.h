@@ -37,12 +37,13 @@ private:
     
 protected:
     virtual void CoreDraw(void);
+    virtual void UpdateSize(void);
     virtual void UpdateFocus(void);
     virtual bool CoreCanFocus(void);
     virtual bool CoreHandleKey(chtype key);
     virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
     virtual void CoreRemoveWidget(CWidget *w) { }
-    
+
     void InitChild(CWidget *w);
     TChildList &GetChildList(void) { return m_Childs; }
     

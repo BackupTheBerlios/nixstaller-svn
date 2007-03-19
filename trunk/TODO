@@ -44,8 +44,6 @@ NCURSES (redesign)
 - Exceptions
 - Extended keys(Fx etc)
 - Disable widgets
-- Make SetSize protected?
-- Exception for CBin and multiple additions?
 
 GTK
 - Move main window away from base frontend class?

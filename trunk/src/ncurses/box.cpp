@@ -34,6 +34,9 @@ int CBox::RequestedWidgetsW()
     
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
     {
+        if (!IsValidWidget(*it))
+            continue;
+        
         const SBoxEntry &entry = m_BoxEntries[*it];
         
         if (m_eDirection == HORIZONTAL)
@@ -56,6 +59,9 @@ int CBox::RequestedWidgetsH()
     
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
     {
+        if (!IsValidWidget(*it))
+            continue;
+
         const SBoxEntry &entry = m_BoxEntries[*it];
         
         if (m_eDirection == VERTICAL)
@@ -70,18 +76,42 @@ int CBox::RequestedWidgetsH()
     
     return ret;
 }
+
+CBox::TChildList::size_type CBox::ExpandedWidgets()
+{
+    TChildList childs = GetChildList();
+    TChildList::size_type ret = 0;
     
+    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    {
+        if (!IsValidWidget(*it))
+            continue;
+        
+        if (!m_BoxEntries[*it].expand)
+            continue;
+        
+        ret++;
+    }
+    
+    return ret;
+}
+
+bool CBox::IsValidWidget(CWidget *w)
+{
+    return w->Enabled();
+}
+
 void CBox::UpdateLayout()
 {
     if (Empty())
         return;
 
     TChildList childs = GetChildList();
-    const TSTLVecSize size = childs.size();
+    const TSTLVecSize size = ExpandedWidgets();
     const int diffw = FieldWidth() - RequestedWidgetsW();
     const int diffh = FieldHeight() - RequestedWidgetsH();
-    int extraw = diffw / size;
-    int extrah = diffh / size;
+    const int extraw = diffw / size;
+    const int extrah = diffh / size;
     int remainingw = diffw % size;
     int remainingh = diffh % size;
     int begx = FieldX(), begy = FieldY(); // Coords for widgets that were packed at start
@@ -89,8 +119,12 @@ void CBox::UpdateLayout()
 
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
     {
+        if (!IsValidWidget(*it))
+            continue;
+        
         int basex = 0, basey = 0;
         int widgetw = 0, widgeth = 0;
+        int basew = extraw, baseh = extrah;
         const SBoxEntry &entry = m_BoxEntries[*it];
         int spacing = entry.padding;
     
@@ -99,13 +133,13 @@ void CBox::UpdateLayout()
     
         if (remainingw)
         {
-            extraw++;
+            basew++;
             remainingw--;
         }
     
         if  (remainingh)
         {
-            extrah++;
+            baseh++;
             remainingh--;
         }
     
@@ -118,11 +152,11 @@ void CBox::UpdateLayout()
             if (entry.expand)
             {
                 if (entry.fill)
-                    widgetw += extraw;
+                    widgetw += basew;
                 else
                 {
-                    spacing += (extraw/2);
-                    basex += (extraw/2);
+                    spacing += (basew/2);
+                    basex += (basew/2);
                 }
             }
         }
@@ -135,11 +169,11 @@ void CBox::UpdateLayout()
             if (entry.expand)
             {
                 if (entry.fill)
-                    widgeth += extrah;
+                    widgeth += baseh;
                 else
                 {
-                    spacing += (extrah/2);
-                    basey += (extrah/2);
+                    spacing += (baseh/2);
+                    basey += (baseh/2);
                 }
             }
         }
@@ -170,7 +204,7 @@ void CBox::UpdateLayout()
         }
     }
 }
-    
+
 int CBox::CoreRequestWidth()
 {
     int ret = RequestedWidgetsW();
@@ -191,18 +225,21 @@ int CBox::CoreRequestHeight()
     return std::max(ret, GetMinHeight());
 }
 
-bool CBox::HandleEvent(CWidget *emitter, int type)
+bool CBox::CoreHandleEvent(CWidget *emitter, int event)
 {
-    TChildList childs = GetChildList();
-    if ((std::find(childs.begin(), childs.end(), emitter) != childs.end()) && (type == EVENT_REQSIZECHANGE))
+    if (IsDirectChild(emitter, this))
     {
-        m_bUpdateLayout = true;
-        PushEvent(EVENT_REQSIZECHANGE);
-        
-        if (!GetParentWidget())
-            TUI.QueueDraw(this);
-        
-        return true;
+        if ((event == EVENT_REQSIZECHANGE) || (event == EVENT_DELETE) || (event == EVENT_ENABLE))
+        {
+            m_bUpdateLayout = true;
+            
+            PushEvent(event);
+            
+            if (!GetParentWidget())
+                TUI.QueueDraw(this);
+            
+            return true;
+        }
     }
     
     return false;
@@ -217,6 +254,12 @@ void CBox::CoreDraw()
     }
     
     CGroup::CoreDraw();
+}
+
+void CBox::CoreRemoveWidget(CWidget *w)
+{
+    m_bUpdateLayout = true;
+    PushEvent(EVENT_DELETE);
 }
 
 void CBox::StartPack(CGroup *g, bool e, bool f, int p)
