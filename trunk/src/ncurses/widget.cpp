@@ -31,6 +31,9 @@ CWidget::CWidget(void) : m_pParent(NULL), m_pParentWin(NULL), m_pNCursWin(NULL),
                          m_iHeight(0), m_iMinWidth(0), m_iMinHeight(0), m_bInitialized(false), m_bBox(false),
                          m_bFocused(false), m_bEnabled(true), m_bColorsChanged(false), m_bSizeChanged(false)
 {
+    // Default colors
+    SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    SetDFColors(COLOR_WHITE, COLOR_BLUE);
 }
 
 CWidget::~CWidget()
@@ -137,15 +140,15 @@ void CWidget::SetSize(int x, int y, int w, int h)
     m_bSizeChanged = true;
 }
 
-void CWidget::SetFColors(int fg, int bg)
+void CWidget::SetFColors(TColorPair colors)
 {
-    m_FColors = TColorPair(fg, bg);
+    m_FColors = colors;
     m_bColorsChanged = true;
 }
 
-void CWidget::SetDFColors(int fg, int bg)
+void CWidget::SetDFColors(TColorPair colors)
 {
-    m_DFColors = TColorPair(fg, bg);
+    m_DFColors = colors;
     m_bColorsChanged = true;
 }
 

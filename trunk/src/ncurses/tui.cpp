@@ -83,13 +83,13 @@ bool CTUI::Run(int delay)
             return false;
     }
     
-    if (!m_QueuedDrawWidgets.empty())
+    while (!m_QueuedDrawWidgets.empty())
     {
-        for (std::vector<CWidget *>::iterator it=m_QueuedDrawWidgets.begin(); it!=m_QueuedDrawWidgets.end(); it++)
-        {
-            (*it)->Draw();
-        }
-        m_QueuedDrawWidgets.clear();
+        CWidget *w = m_QueuedDrawWidgets.front();
+        m_QueuedDrawWidgets.pop_front();
+        // Draw after widget has been removed from queue, this way the widget or childs from the
+        // widget can queue themselves.
+        w->Draw();
     }
     
     return true;
@@ -100,15 +100,10 @@ void CTUI::AddGroup(CGroup *g)
     m_RootGroups.push_back(g);
     g->SetParent(GetRootWin());
     g->Init();
-    
-    if (!m_pActiveGroup && g->CanFocus())
-    {
-        g->Focus(true);
-        m_pActiveGroup = g;
-    }
-    
     g->SetSize(0, 0, g->RequestWidth(), g->RequestHeight());
-    QueueDraw(g);
+    
+    if (!m_pActiveGroup)
+        ActivateGroup(g);
 }
 
 void CTUI::ActivateGroup(CGroup *g)
@@ -122,7 +117,8 @@ void CTUI::ActivateGroup(CGroup *g)
     }
     
     g->Focus(true);
-    g->Draw();
+    g->SetNextFocWidget(false);
+    QueueDraw(g);
     m_pActiveGroup = g;
 }
 
@@ -156,10 +152,12 @@ void CTUI::QueueDraw(CWidget *w)
     while (!done)
     {
         done = true;
-        for (std::vector<CWidget *>::iterator it=m_QueuedDrawWidgets.begin();
+        for (std::deque<CWidget *>::iterator it=m_QueuedDrawWidgets.begin();
              it!=m_QueuedDrawWidgets.end(); it++)
         {
-            if (IsParent(*it, w))
+            if (*it == w)
+                return;
+            else if (IsParent(*it, w))
                 return; // Parent is being redrawn, which will draw all childs
             else if (IsChild(*it, w))
             {

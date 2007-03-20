@@ -20,6 +20,7 @@
 #ifndef TUI_H
 #define TUI_H
 
+#include <deque>
 #include "group.h"
 
 namespace NNCurses {
@@ -32,7 +33,7 @@ class CTUI
     int m_iCurColorPair;
     std::vector<CGroup *> m_RootGroups;
     CGroup *m_pActiveGroup;
-    std::vector<CWidget *> m_QueuedDrawWidgets;
+    std::deque<CWidget *> m_QueuedDrawWidgets;
     
 public:
     CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL) { };

@@ -95,8 +95,12 @@ protected:
 public:
     virtual ~CWidget(void);
 
-    void SetFColors(int fg, int bg);
-    void SetDFColors(int fg, int bg);
+    void SetFColors(int fg, int bg) { SetFColors(TColorPair(fg, bg)); }
+    void SetFColors(TColorPair colors);
+    void SetDFColors(int fg, int bg) { SetDFColors(TColorPair(fg, bg)); }
+    void SetDFColors(TColorPair colors);
+    TColorPair GetFColors(void) { return m_FColors; }
+    TColorPair GetDFColors(void) { return m_DFColors; }
     
     int X(void) const { return m_iX; }
     int Y(void) const { return m_iY; }

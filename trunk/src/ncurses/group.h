@@ -34,12 +34,12 @@ private:
     
     bool IsGroupWidget(CWidget *w) { return (m_GroupMap[w] != NULL); }
     CGroup *GetGroupWidget(CWidget *w) { return m_GroupMap[w]; }
+    bool CanFocusChilds(CWidget *w);
     
 protected:
     virtual void CoreDraw(void);
     virtual void UpdateSize(void);
     virtual void UpdateFocus(void);
-    virtual bool CoreCanFocus(void);
     virtual bool CoreHandleKey(chtype key);
     virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
     virtual void CoreRemoveWidget(CWidget *w) { }

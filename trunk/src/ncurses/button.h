@@ -17,35 +17,33 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LABEL_H
-#define LABEL_H
+#ifndef BUTTON_H
+#define BUTTON_H
 
 #include "widget.h"
+#include "box.h"
 
 namespace NNCurses {
 
-class CLabel: public CWidget
+class CLabel;
+
+class CButton: public CBox
 {
-    typedef std::vector<std::string> TLinesList;
-    
-    bool m_bCenter;
-    std::string m_szText;
-    TLinesList m_Lines;
-    
-    void UpdateLines(void);
+    CLabel *m_pLabel;
+    const int m_iExtraWidth; 
     
 protected:
-    virtual void CoreInit(void) { UpdateLines(); }
-    virtual int CoreRequestWidth(void);
-    virtual int CoreRequestHeight(void);
-    virtual void DoDraw(void);
+    virtual void CoreDraw(void);
+    virtual bool CoreCanFocus(void) { return true; }
+    virtual void UpdateFocus(void);
+    virtual bool CoreHandleKey(chtype ch);
     
 public:
-    CLabel(const std::string &t) : m_bCenter(true) { SetText(t); }
+    CButton(const std::string &title) : CBox(VERTICAL), m_pLabel(NULL), m_iExtraWidth(4) { SetText(title); }
     
-    void Center(bool c) { m_bCenter = c; }
-    void SetText(const std::string &t);
+    void SetText(const std::string &title);
 };
+
 
 
 }

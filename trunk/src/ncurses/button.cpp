@@ -1,0 +1,80 @@
+/*
+    Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+
+    This file is part of Nixstaller.
+    
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version. 
+    
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+    PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+    
+    You should have received a copy of the GNU General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+    St, Fifth Floor, Boston, MA 02110-1301 USA
+*/
+
+#include "ncurses.h"
+#include "button.h"
+#include "label.h"
+#include "tui.h"
+
+namespace NNCurses {
+
+void CButton::CoreDraw()
+{
+    CBox::CoreDraw();
+    mvwaddch(GetWin(), 0, 0, '<');
+    mvwaddch(GetWin(), 0, Width()-1, '>');
+}
+
+void CButton::UpdateFocus()
+{
+    CBox::UpdateFocus();
+    
+    if (m_pLabel)
+    {
+        TColorPair colors;
+        
+        if (Focused())
+            colors = GetFColors();
+        else
+            colors = GetDFColors();
+        
+        m_pLabel->SetDFColors(colors);
+        TUI.QueueDraw(m_pLabel);
+    }
+}
+
+bool CButton::CoreHandleKey(chtype ch)
+{
+    if (CBox::CoreHandleKey(ch))
+        return true;
+    
+    if (ENTER(ch))
+    {
+        PushEvent(EVENT_CALLBACK);
+        return true;
+    }
+    
+    return false;
+}
+
+void CButton::SetText(const std::string &title)
+{
+    if (!m_pLabel)
+    {
+        m_pLabel = new CLabel(title);
+        AddWidget(m_pLabel);
+    }
+    else
+        m_pLabel->SetText(title);
+    
+    SetMinWidth(SafeConvert<int>(title.length()) + m_iExtraWidth);
+}
+
+
+}

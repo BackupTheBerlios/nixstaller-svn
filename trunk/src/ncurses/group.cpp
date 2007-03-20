@@ -28,6 +28,11 @@ namespace NNCurses {
 // Group Widget Class
 // -------------------------------------
 
+bool CGroup::CanFocusChilds(CWidget *w)
+{
+    return (IsGroupWidget(w) && !w->CanFocus());
+}
+
 void CGroup::CoreDraw(void)
 {
     DrawWidget();
@@ -55,17 +60,6 @@ void CGroup::UpdateFocus()
         m_pFocusedWidget->Focus(Focused());
 }
 
-bool CGroup::CoreCanFocus()
-{
-    for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
-    {
-        if ((*it)->CanFocus())
-            return true;
-    }
-    
-    return false;
-}
-
 bool CGroup::CoreHandleKey(chtype key)
 {
     if (m_pFocusedWidget)
@@ -84,6 +78,9 @@ void CGroup::InitChild(CWidget *w)
 {
     m_Childs.push_back(w);
     w->SetParent(this);
+    
+    if (!m_pFocusedWidget && (w->CanFocus() || CanFocusChilds(w)))
+        FocusWidget(w);
 }
 
 void CGroup::RemoveWidget(CWidget *w)
@@ -115,7 +112,7 @@ void CGroup::FocusWidget(CWidget *w)
     if (m_pFocusedWidget)
     {
         m_pFocusedWidget->Focus(false);
-        m_pFocusedWidget->Draw();
+        TUI.QueueDraw(m_pFocusedWidget);
     }
     
     m_pFocusedWidget = w;
@@ -123,7 +120,7 @@ void CGroup::FocusWidget(CWidget *w)
     if (w) // This allows resetting the current focused widget
     {
         w->Focus(true);
-        w->Draw();
+        TUI.QueueDraw(w);
     }
 }
 
@@ -140,19 +137,21 @@ bool CGroup::SetNextFocWidget(bool cont)
         if (f != m_Childs.end())
         {
             it = f;
-            if (!IsGroupWidget(*it))
+            if (!CanFocusChilds(*it))
                 it++;
         }
     }
     
     for (; it!=m_Childs.end(); it++)
     {
-//     if (!w->CanFocus())
-//         continue; UNDONE: ENABLE
-    
-        if (IsGroupWidget(*it))
+        if (!(*it)->CanFocus())
         {
-            if (!GetGroupWidget(*it)->SetNextFocWidget(cont))
+            if (CanFocusChilds(*it))
+            {
+                if (!GetGroupWidget(*it)->SetNextFocWidget(cont))
+                    continue;
+            }
+            else
                 continue;
         }
 
@@ -176,19 +175,21 @@ bool CGroup::SetPrevFocWidget(bool cont)
         if (f != m_Childs.rend())
         {
             it = f;
-            if (!IsGroupWidget(*it))
+            if (!CanFocusChilds(*it))
                 it++;
         }
     }
     
     for (; it!=m_Childs.rend(); it++)
     {
-//     if (!w->CanFocus())
-//         continue; UNDONE: ENABLE
-    
-        if (IsGroupWidget(*it))
+        if (!(*it)->CanFocus())
         {
-            if (!GetGroupWidget(*it)->SetPrevFocWidget(cont))
+            if (CanFocusChilds(*it))
+            {
+                if (!GetGroupWidget(*it)->SetPrevFocWidget(cont))
+                    continue;
+            }
+            else
                 continue;
         }
 
@@ -211,21 +212,24 @@ void CGroup::SetValidWidget(CWidget *ignore)
         {
             itprev--;
             
-            if ((*itprev)->CanFocus())
+            if ((*itprev)->CanFocus() || CanFocusChilds(*itprev))
             {
                 FocusWidget(*itprev);
                 return;
             }
         }
         
-        itnext++;
-        
-        if (itnext != m_Childs.end())
+        if (*itnext != m_Childs.back())
         {
-            if ((*itnext)->CanFocus())
+            itnext++;
+            
+            if (itnext != m_Childs.end())
             {
-                FocusWidget(*itnext);
-                return;
+                if ((*itnext)->CanFocus() || CanFocusChilds(*itnext))
+                {
+                    FocusWidget(*itnext);
+                    return;
+                }
             }
         }
     }
