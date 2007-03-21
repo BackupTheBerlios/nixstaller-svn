@@ -48,6 +48,7 @@ public:
     
     int GetColorPair(int fg, int bg);
     void QueueDraw(CWidget *w);
+    void RemoveFromQueue(CWidget *w);
 };
 
 extern CTUI TUI;

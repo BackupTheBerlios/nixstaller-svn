@@ -172,6 +172,13 @@ void CTUI::QueueDraw(CWidget *w)
     m_QueuedDrawWidgets.push_back(w);
 }
 
+void CTUI::RemoveFromQueue(CWidget *w)
+{
+    std::deque<CWidget *>::iterator it=std::find(m_QueuedDrawWidgets.begin(), m_QueuedDrawWidgets.end(), w);
+    if (it != m_QueuedDrawWidgets.end())
+        m_QueuedDrawWidgets.erase(it);
+}
+
 // -------------------------------------
 // Utils
 // -------------------------------------

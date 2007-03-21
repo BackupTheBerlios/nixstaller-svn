@@ -43,12 +43,11 @@ private:
     bool m_bUpdateLayout;
     std::map<CWidget *, SBoxEntry> m_BoxEntries;
     EDirection m_eDirection;
+    bool m_bEqual;
     int m_iSpacing;
     
-    int FieldX(void) const { return (HasBox()) ? 1 : 0; }
-    int FieldY(void) const { return (HasBox()) ? 1 : 0; }
-    int FieldWidth(void) const { return (HasBox()) ? Width()-2 : Width(); }
-    int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
+    int GetWidgetW(CWidget *w);
+    int GetWidgetH(CWidget *w);
     int RequestedWidgetsW(void);
     int RequestedWidgetsH(void);
     TChildList::size_type ExpandedWidgets(void);
@@ -63,8 +62,14 @@ protected:
     virtual void CoreAddWidget(CWidget *w) { m_bUpdateLayout = true; InitChild(w); }
     virtual void CoreRemoveWidget(CWidget *w);
     
+    virtual int FieldX(void) const { return (HasBox()) ? 1 : 0; }
+    virtual int FieldY(void) const { return (HasBox()) ? 1 : 0; }
+    virtual int FieldWidth(void) const { return (HasBox()) ? Width()-2 : Width(); }
+    virtual int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
+
+    
 public:
-    CBox(EDirection dir, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_iSpacing(s) { }
+    CBox(EDirection dir, bool equal, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_bEqual(equal), m_iSpacing(s) { }
     
     // CGroup needs 2 versions
     void StartPack(CGroup *g, bool e, bool f, int p);

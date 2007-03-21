@@ -43,6 +43,10 @@ CWidget::~CWidget()
 
     if (m_pNCursWin)
         delwin(m_pNCursWin);
+    
+    // IMPORTANT: This needs to be at the end! It ensures this widget won't be in the queue, since this or
+    // one of the derived destructors may call QueueDraw()
+    TUI.RemoveFromQueue(this);
 }
 
 void CWidget::MoveWin(int x, int y)
@@ -175,10 +179,10 @@ CGroup *CWidget::GetTopWidget()
 
 bool IsParent(CWidget *parent, CWidget *child)
 {
-    CWidget *w = child;
-    while (w->GetParentWidget())
+    CWidget *w = child->GetParentWidget();
+    while (w)
     {
-        if (w->GetParentWidget() == parent)
+        if (w == parent)
             return true;
         w = w->GetParentWidget();
     }

@@ -27,6 +27,42 @@ namespace NNCurses {
 // Widget Box Class
 // -------------------------------------
 
+int CBox::GetWidgetW(CWidget *w)
+{
+    int ret = 0;
+    
+    if (m_bEqual)
+    {
+        // UNDONE: Cache?
+        TChildList childs = GetChildList();
+        
+        for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+            ret = std::max(ret, (*it)->RequestWidth());
+    }
+    else
+        ret = w->RequestWidth();
+    
+    return ret;
+}
+
+int CBox::GetWidgetH(CWidget *w)
+{
+    int ret = 0;
+    
+    if (m_bEqual)
+    {
+        // UNDONE: Cache?
+        TChildList childs = GetChildList();
+        
+        for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+            ret = std::max(ret, (*it)->RequestHeight());
+    }
+    else
+        ret = w->RequestHeight();
+    
+    return ret;
+}
+
 int CBox::RequestedWidgetsW()
 {
     TChildList childs = GetChildList();
@@ -41,7 +77,7 @@ int CBox::RequestedWidgetsW()
         
         if (m_eDirection == HORIZONTAL)
         {
-            ret += (*it)->RequestWidth() + (2 * entry.padding);
+            ret += GetWidgetW(*it) + (2 * entry.padding);
             if (*it != childs.back())
                 ret += m_iSpacing;
         }
@@ -66,7 +102,7 @@ int CBox::RequestedWidgetsH()
         
         if (m_eDirection == VERTICAL)
         {
-            ret += (*it)->RequestHeight() + (2 * entry.padding);
+            ret += GetWidgetH(*it) + (2 * entry.padding);
             if (*it != childs.back())
                 ret += m_iSpacing;
         }
@@ -87,7 +123,7 @@ CBox::TChildList::size_type CBox::ExpandedWidgets()
         if (!IsValidWidget(*it))
             continue;
         
-        if (!m_BoxEntries[*it].expand)
+        if (!m_bEqual && !m_BoxEntries[*it].expand)
             continue;
         
         ret++;
@@ -110,10 +146,10 @@ void CBox::UpdateLayout()
     const TSTLVecSize size = ExpandedWidgets();
     const int diffw = FieldWidth() - RequestedWidgetsW();
     const int diffh = FieldHeight() - RequestedWidgetsH();
-    const int extraw = diffw / size;
-    const int extrah = diffh / size;
-    int remainingw = diffw % size;
-    int remainingh = diffh % size;
+    const int extraw = (size) ? diffw / size : 0;
+    const int extrah = (size) ? diffh / size : 0;
+    int remainingw = (size) ? diffw % size : 0;
+    int remainingh = (size) ? diffh % size : 0;
     int begx = FieldX(), begy = FieldY(); // Coords for widgets that were packed at start
     int endx = (FieldX()+FieldWidth())-1, endy = (FieldY()+FieldHeight())-1; // Coords for widgets that were packed at end
 
@@ -146,10 +182,10 @@ void CBox::UpdateLayout()
         if (m_eDirection == HORIZONTAL)
         {
             basex += entry.padding;
-            widgetw += (*it)->RequestWidth();
+            widgetw += GetWidgetW(*it);
             widgeth += FieldHeight();
         
-            if (entry.expand)
+            if (m_bEqual || entry.expand)
             {
                 if (entry.fill)
                     widgetw += basew;
@@ -164,7 +200,7 @@ void CBox::UpdateLayout()
         {
             basey += entry.padding;
             widgetw += FieldWidth();
-            widgeth += (*it)->RequestHeight();
+            widgeth += GetWidgetH(*it);
         
             if (entry.expand)
             {

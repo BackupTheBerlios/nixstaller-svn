@@ -24,9 +24,8 @@
 
 namespace NNCurses {
 
-void CButton::CoreDraw()
+void CButton::DoDraw()
 {
-    CBox::CoreDraw();
     mvwaddch(GetWin(), 0, 0, '<');
     mvwaddch(GetWin(), 0, Width()-1, '>');
 }
@@ -74,6 +73,7 @@ void CButton::SetText(const std::string &title)
         m_pLabel->SetText(title);
     
     SetMinWidth(SafeConvert<int>(title.length()) + m_iExtraWidth);
+    TUI.QueueDraw(this);
 }
 
 

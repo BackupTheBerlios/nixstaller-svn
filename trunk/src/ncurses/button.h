@@ -33,13 +33,16 @@ class CButton: public CBox
     const int m_iExtraWidth; 
     
 protected:
-    virtual void CoreDraw(void);
+    virtual void DoDraw(void);
     virtual bool CoreCanFocus(void) { return true; }
     virtual void UpdateFocus(void);
     virtual bool CoreHandleKey(chtype ch);
     
+    virtual int FieldX(void) const { return m_iExtraWidth/2; }
+    virtual int FieldWidth(void) const { return Width()-FieldX()-(m_iExtraWidth/2); }
+    
 public:
-    CButton(const std::string &title) : CBox(VERTICAL), m_pLabel(NULL), m_iExtraWidth(4) { SetText(title); }
+    CButton(const std::string &title) : CBox(VERTICAL, false), m_pLabel(NULL), m_iExtraWidth(4) { SetText(title); }
     
     void SetText(const std::string &title);
 };

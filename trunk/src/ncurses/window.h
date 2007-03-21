@@ -30,7 +30,7 @@ protected:
     virtual void CoreInit();
     
 public:
-    CWindow(void) : CBox(CBox::VERTICAL) { }
+    CWindow(void) : CBox(CBox::VERTICAL, false) { }
 };
 
 }
