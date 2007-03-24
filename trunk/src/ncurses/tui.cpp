@@ -40,6 +40,23 @@ void CTUI::InitNCurses()
 
     if (has_colors())
         start_color();
+    
+    CBox *dummybox = new CBox(CBox::VERTICAL, false);
+    dummybox->SetMinWidth(GetWWidth(GetRootWin()));
+    dummybox->SetMinHeight(GetWHeight(GetRootWin()));
+    
+    m_pButtonBar = new CButtonBar;
+    
+    // Focused colors are used for keys, defocused colors for descriptions
+    m_pButtonBar->SetFColors(COLOR_YELLOW, COLOR_RED);
+    m_pButtonBar->SetDFColors(COLOR_WHITE, COLOR_RED);
+//     for (short s=0; s<15; s++) m_pButtonBar->AddButton("ESC", "Quit");
+    dummybox->EndPack(m_pButtonBar, false, false, 0);
+    
+    AddGroup(dummybox, false);
+    
+    for (short s=0; s<15; s++)
+        m_pButtonBar->AddButton("ESC", "Quit");
 }
 
 void CTUI::StopNCurses()
@@ -95,15 +112,20 @@ bool CTUI::Run(int delay)
     return true;
 }
 
-void CTUI::AddGroup(CGroup *g)
+void CTUI::AddGroup(CGroup *g, bool activate)
 {
     m_RootGroups.push_back(g);
     g->SetParent(GetRootWin());
     g->Init();
     g->SetSize(0, 0, g->RequestWidth(), g->RequestHeight());
     
-    if (!m_pActiveGroup)
+    if (activate)
         ActivateGroup(g);
+    else
+    {
+        g->Focus(false);
+        QueueDraw(g);
+    }
 }
 
 void CTUI::ActivateGroup(CGroup *g)
@@ -113,7 +135,7 @@ void CTUI::ActivateGroup(CGroup *g)
     if (m_pActiveGroup)
     {
         m_pActiveGroup->Focus(false);
-        m_pActiveGroup->Draw();
+        QueueDraw(m_pActiveGroup);
     }
     
     g->Focus(true);
@@ -197,5 +219,18 @@ int GetWY(WINDOW *w)
     return y;
 }
 
+int GetWWidth(WINDOW *w)
+{
+    int x, y;
+    getmaxyx(w, y, x);
+    return x-GetWX(w);
+}
+
+int GetWHeight(WINDOW *w)
+{
+    int x, y;
+    getmaxyx(w, y, x);
+    return y-GetWY(w);
+}
 
 }

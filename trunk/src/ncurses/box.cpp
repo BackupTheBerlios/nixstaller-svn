@@ -137,7 +137,7 @@ bool CBox::IsValidWidget(CWidget *w)
     return w->Enabled();
 }
 
-void CBox::UpdateLayout()
+void CBox::DrawLayout()
 {
     if (Empty())
         return;
@@ -267,7 +267,7 @@ bool CBox::CoreHandleEvent(CWidget *emitter, int event)
     {
         if ((event == EVENT_REQSIZECHANGE) || (event == EVENT_DELETE) || (event == EVENT_ENABLE))
         {
-            m_bUpdateLayout = true;
+            UpdateLayout();
             
             PushEvent(event);
             
@@ -285,7 +285,7 @@ void CBox::CoreDraw()
 {
     if (m_bUpdateLayout)
     {
-        UpdateLayout();
+        DrawLayout();
         m_bUpdateLayout = false;
     }
     
@@ -294,8 +294,14 @@ void CBox::CoreDraw()
 
 void CBox::CoreRemoveWidget(CWidget *w)
 {
-    m_bUpdateLayout = true;
+    UpdateLayout();
     PushEvent(EVENT_DELETE);
+}
+
+void CBox::UpdateLayout()
+{
+    m_bUpdateLayout = true;
+    TUI.QueueDraw(this);
 }
 
 void CBox::StartPack(CGroup *g, bool e, bool f, int p)

@@ -35,7 +35,7 @@ class CButton: public CBox
 protected:
     virtual void DoDraw(void);
     virtual bool CoreCanFocus(void) { return true; }
-    virtual void UpdateFocus(void);
+    virtual void UpdateColors(void);
     virtual bool CoreHandleKey(chtype ch);
     
     virtual int FieldX(void) const { return m_iExtraWidth/2; }

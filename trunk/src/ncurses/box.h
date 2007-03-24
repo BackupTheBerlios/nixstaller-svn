@@ -52,7 +52,6 @@ private:
     int RequestedWidgetsH(void);
     TChildList::size_type ExpandedWidgets(void);
     bool IsValidWidget(CWidget *w);
-    void UpdateLayout(void);
     
 protected:
     virtual int CoreRequestWidth(void);
@@ -66,7 +65,9 @@ protected:
     virtual int FieldY(void) const { return (HasBox()) ? 1 : 0; }
     virtual int FieldWidth(void) const { return (HasBox()) ? Width()-2 : Width(); }
     virtual int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
+    virtual void DrawLayout(void);
 
+    void UpdateLayout(void);
     
 public:
     CBox(EDirection dir, bool equal, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_bEqual(equal), m_iSpacing(s) { }

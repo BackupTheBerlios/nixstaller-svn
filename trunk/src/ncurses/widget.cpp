@@ -29,11 +29,9 @@ namespace NNCurses {
 
 CWidget::CWidget(void) : m_pParent(NULL), m_pParentWin(NULL), m_pNCursWin(NULL), m_iX(0), m_iY(0), m_iWidth(0),
                          m_iHeight(0), m_iMinWidth(0), m_iMinHeight(0), m_bInitialized(false), m_bBox(false),
-                         m_bFocused(false), m_bEnabled(true), m_bColorsChanged(false), m_bSizeChanged(false)
+                         m_bFocused(false), m_bEnabled(true), m_bSizeChanged(false), m_bColorsChanged(false),
+                         m_bSetFColors(false), m_bSetDFColors(false)
 {
-    // Default colors
-    SetFColors(COLOR_YELLOW, COLOR_BLUE);
-    SetDFColors(COLOR_WHITE, COLOR_BLUE);
 }
 
 CWidget::~CWidget()
@@ -75,6 +73,8 @@ void CWidget::InitDraw()
             wbkgdset(m_pNCursWin, ' ' | TUI.GetColorPair(m_DFColors.first, m_DFColors.second) | A_BOLD);
         
         m_bColorsChanged = false;
+        
+        UpdateColors();
     }
     
     if (m_bSizeChanged)
@@ -132,6 +132,21 @@ void CWidget::Init()
     keypad(m_pNCursWin, 1);
     meta(m_pNCursWin, 1);
     
+    if (m_pParent)
+    {
+        if (!m_bSetFColors)
+        {
+            TColorPair colors = m_pParent->GetFColors();
+            SetFColors(colors);
+        }
+        
+        if (!m_bSetDFColors)
+        {
+            TColorPair colors = m_pParent->GetDFColors();
+            SetDFColors(colors);
+        }
+    }
+    
     CoreInit();
 }
 
@@ -147,13 +162,13 @@ void CWidget::SetSize(int x, int y, int w, int h)
 void CWidget::SetFColors(TColorPair colors)
 {
     m_FColors = colors;
-    m_bColorsChanged = true;
+    m_bColorsChanged = m_bSetFColors = true;
 }
 
 void CWidget::SetDFColors(TColorPair colors)
 {
     m_DFColors = colors;
-    m_bColorsChanged = true;
+    m_bColorsChanged = m_bSetDFColors = true;
 }
 
 WINDOW *CWidget::GetParentWin()

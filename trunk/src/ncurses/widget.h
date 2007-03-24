@@ -24,7 +24,7 @@
 
 namespace NNCurses {
 
-typedef std::pair<int, int> TColorPair;
+typedef std::pair<chtype, chtype> TColorPair;
 
 class CGroup;
 
@@ -43,9 +43,10 @@ class CWidget
     bool m_bBox;
     bool m_bFocused;
     bool m_bEnabled;
+    bool m_bSizeChanged;
 
     TColorPair m_FColors, m_DFColors; // Focused and DeFocused colors
-    bool m_bColorsChanged, m_bSizeChanged;
+    bool m_bColorsChanged, m_bSetFColors, m_bSetDFColors;
     
     void Box(void);
     void MoveWin(int x, int y);
@@ -61,6 +62,7 @@ protected:
     virtual void CoreInit(void) { }
     
     virtual void UpdateSize(void) { }
+    virtual void UpdateColors(void) { }
     
     virtual void UpdateFocus(void) { }
     virtual bool CoreCanFocus(void) { return false; }
@@ -80,8 +82,6 @@ protected:
     void Init(void);
     
     void SetSize(int x, int y, int w, int h);
-    int RequestWidth(void) { return CoreRequestWidth(); }
-    int RequestHeight(void) { return CoreRequestHeight(); }
 
     void SetParent(CGroup *g) { m_pParent = g; m_pParentWin = NULL; }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
@@ -110,6 +110,8 @@ public:
     int GetMinHeight(void) { return m_iMinHeight; }
     void SetMinWidth(int w) { m_iMinWidth = w; }
     void SetMinHeight(int h) { m_iMinHeight = h; }
+    int RequestWidth(void) { return CoreRequestWidth(); }
+    int RequestHeight(void) { return CoreRequestHeight(); }
     
     WINDOW *GetWin(void) { return m_pNCursWin; }
     WINDOW *GetParentWin(void);

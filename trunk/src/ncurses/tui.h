@@ -22,6 +22,7 @@
 
 #include <deque>
 #include "group.h"
+#include "buttonbar.h"
 
 namespace NNCurses {
 
@@ -34,14 +35,15 @@ class CTUI
     std::vector<CGroup *> m_RootGroups;
     CGroup *m_pActiveGroup;
     std::deque<CWidget *> m_QueuedDrawWidgets;
+    CButtonBar *m_pButtonBar;
     
 public:
-    CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL) { };
+    CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL), m_pButtonBar(NULL) { };
     
     void InitNCurses(void);
     void StopNCurses(void);
     bool Run(int delay=5);
-    void AddGroup(CGroup *g);
+    void AddGroup(CGroup *g, bool activate);
     void ActivateGroup(CGroup *g);
     
     WINDOW *GetRootWin(void) { return stdscr; }
@@ -56,7 +58,8 @@ extern CTUI TUI;
 // Utils
 int GetWX(WINDOW *w);
 int GetWY(WINDOW *w);
-
+int GetWWidth(WINDOW *w);
+int GetWHeight(WINDOW *w);
 
 }
 

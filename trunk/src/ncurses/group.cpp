@@ -79,7 +79,7 @@ void CGroup::InitChild(CWidget *w)
     m_Childs.push_back(w);
     w->SetParent(this);
     
-    if (!m_pFocusedWidget && (w->CanFocus() || CanFocusChilds(w)))
+    if (!m_pFocusedWidget && Focused() && (w->CanFocus() || CanFocusChilds(w)))
         FocusWidget(w);
 }
 

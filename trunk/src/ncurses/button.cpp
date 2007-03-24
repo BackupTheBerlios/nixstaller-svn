@@ -30,10 +30,8 @@ void CButton::DoDraw()
     mvwaddch(GetWin(), 0, Width()-1, '>');
 }
 
-void CButton::UpdateFocus()
+void CButton::UpdateColors()
 {
-    CBox::UpdateFocus();
-    
     if (m_pLabel)
     {
         TColorPair colors;

@@ -91,6 +91,8 @@ void StartFrontend(int argc, char **argv)
     NNCurses::CWindow *win = new NNCurses::CWindow();
     win->SetMinWidth(60);
     win->SetMinHeight(20);
+    win->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    win->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
     vbox->SetBox(true);
@@ -113,7 +115,7 @@ void StartFrontend(int argc, char **argv)
     
     win->AddWidget(vbox);
 
-    NNCurses::TUI.AddGroup(win);
+    NNCurses::TUI.AddGroup(win, true);
 
 //     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);
 //     hbox->SetDFColors(COLOR_YELLOW, COLOR_RED);
