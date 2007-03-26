@@ -30,6 +30,7 @@ class CWindowManager: public CGroup
     std::deque<CWidget *> m_WidgetQueue;
     
 protected:
+    virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual void CoreDraw(void);

@@ -71,7 +71,7 @@ void CButtonBar::CoreDraw()
             
             m_QueuedEntries.pop_front();
         }
-        PushEvent(EVENT_REQSIZECHANGE);
+        PushEvent(EVENT_REQUPDATE);
     }
     else
         CBox::CoreDraw();
@@ -99,7 +99,7 @@ void CButtonBar::AddButton(const std::string &n, const std::string &d)
     
     PushLabel(n, d);
     UpdateLayout();
-    PushEvent(EVENT_REQSIZECHANGE);
+    PushEvent(EVENT_REQUPDATE);
 }
 
 }

@@ -22,6 +22,23 @@
 
 namespace NNCurses {
 
+bool CWindowManager::CoreHandleEvent(CWidget *emitter, int event)
+{
+    if (event == EVENT_REQQUEUEDDRAW)
+    {
+        CWidget *focwidget = GetFocusedWidget();
+        if (focwidget)
+        {
+            if ((focwidget != emitter) && !IsChild(emitter, focwidget))
+                focwidget->RequestQueuedDraw();
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
 int CWindowManager::CoreRequestWidth()
 {
     TChildList childs = GetChildList();
@@ -74,7 +91,7 @@ void CWindowManager::CoreDrawWidgets()
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
     {
         if (*it == GetFocusedWidget())
-            continue; // We draw this the last, so it looks like it's on top
+            continue; // We draw this one as last, so it looks like it's on top
         (*it)->Draw();
     }
     
@@ -88,7 +105,7 @@ void CWindowManager::CoreAddWidget(CWidget *w)
 {
     m_WidgetQueue.push_back(w);
     InitChild(w);
-    PushEvent(EVENT_REQSIZECHANGE);
+    PushEvent(EVENT_REQUPDATE);
 }
 
 }

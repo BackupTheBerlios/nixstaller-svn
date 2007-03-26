@@ -105,18 +105,26 @@ void StartFrontend(int argc, char **argv)
     hbox->SetMinWidth(1);
     
     NNCurses::CButton *but = new NNCurses::CButton("OK");
-    vbox->StartPack(but, false, false, 1);
-//     
-//     but = new NNCurses::CButton("Cancel");
-//     hbox->StartPack(but, false, false, 1);
-//     
-//     but = new NNCurses::CButton("Something between");
-//     hbox->StartPack(but, false, false, 1);
+    hbox->StartPack(but, false, false, 1);
+    
+    but = new NNCurses::CButton("Cancel");
+    hbox->StartPack(but, false, false, 1);
+    
+    but = new NNCurses::CButton("Something between");
+    hbox->StartPack(but, false, false, 1);
 
     vbox->EndPack(hbox, false, false, 1);
     
     win->AddWidget(vbox);
-
+    
+    NNCurses::TUI.AddGroup(win, true);
+    
+    win = new NNCurses::CWindow();
+    win->SetFColors(COLOR_YELLOW, COLOR_RED);
+    win->SetDFColors(COLOR_YELLOW, COLOR_RED);
+    
+    win->AddWidget(new NNCurses::CLabel("Another window \\o/"));
+    
     NNCurses::TUI.AddGroup(win, true);
 
 //     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);

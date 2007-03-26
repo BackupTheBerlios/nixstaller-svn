@@ -120,6 +120,12 @@ void CWidget::Draw()
     CoreDraw();
 }
 
+void CWidget::RequestQueuedDraw()
+{
+    TUI.QueueDraw(this);
+    PushEvent(EVENT_REQQUEUEDDRAW);
+}
+
 void CWidget::Init()
 {
     m_pNCursWin = derwin(GetParentWin(), Height(), Width(), Y(), X());

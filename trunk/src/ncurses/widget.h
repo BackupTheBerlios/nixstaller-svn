@@ -53,7 +53,7 @@ class CWidget
     void MoveWin(int x, int y);
 
 protected:
-    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQSIZECHANGE, EVENT_DELETE, EVENT_ENABLE };
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQUPDATE, EVENT_REQQUEUEDDRAW };
     
     CWidget(void);
     
@@ -114,6 +114,8 @@ public:
     int RequestWidth(void) { return CoreRequestWidth(); }
     int RequestHeight(void) { return CoreRequestHeight(); }
     
+    void RequestQueuedDraw(void);
+
     WINDOW *GetWin(void) { return m_pNCursWin; }
     WINDOW *GetParentWin(void);
     CGroup *GetTopWidget(void);
@@ -125,7 +127,7 @@ public:
     bool Focused(void) { return m_bFocused; }
     void Focus(bool f) { m_bFocused = f; m_bColorsChanged = true; UpdateFocus(); }
     
-    void Enable(bool e) { m_bEnabled = e; PushEvent(EVENT_ENABLE); }
+    void Enable(bool e) { m_bEnabled = e; PushEvent(EVENT_REQUPDATE); }
     bool Enabled(void) { return m_bEnabled; }
 };
 

@@ -26,11 +26,8 @@ namespace NNCurses {
 
 class CWindow: public CBox
 {
-protected:
-    virtual void CoreInit();
-    
 public:
-    CWindow(void) : CBox(CBox::VERTICAL, false) { }
+    CWindow(void) : CBox(CBox::VERTICAL, false) { SetBox(true); }
 };
 
 }

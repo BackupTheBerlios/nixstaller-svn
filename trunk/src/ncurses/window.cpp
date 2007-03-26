@@ -23,9 +23,5 @@
 
 namespace NNCurses {
 
-void CWindow::CoreInit()
-{
-    SetBox(true);
-}
 
 }

@@ -20,7 +20,6 @@
 #include "ncurses.h"
 #include "button.h"
 #include "label.h"
-#include "tui.h"
 
 namespace NNCurses {
 
@@ -42,7 +41,7 @@ void CButton::UpdateColors()
             colors = GetDFColors();
         
         m_pLabel->SetDFColors(colors);
-        TUI.QueueDraw(m_pLabel);
+        m_pLabel->RequestQueuedDraw();
     }
 }
 
@@ -71,7 +70,7 @@ void CButton::SetText(const std::string &title)
         m_pLabel->SetText(title);
     
     SetMinWidth(SafeConvert<int>(title.length()) + m_iExtraWidth);
-    TUI.QueueDraw(this);
+    RequestQueuedDraw();
 }
 
 

@@ -46,9 +46,6 @@ private:
     bool m_bEqual;
     int m_iSpacing;
     
-    std::map<CWidget *, int> m_RequestedWidgetsHs;
-    int m_iRequestedH;
-    
     int GetWidgetW(CWidget *w);
     int GetWidgetH(CWidget *w);
     int RequestedWidgetsW(void);
@@ -73,7 +70,7 @@ protected:
     void UpdateLayout(void);
     
 public:
-    CBox(EDirection dir, bool equal, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_bEqual(equal), m_iSpacing(s), m_iRequestedH(0) { }
+    CBox(EDirection dir, bool equal, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_bEqual(equal), m_iSpacing(s) { }
     
     // CGroup needs 2 versions
     void StartPack(CGroup *g, bool e, bool f, int p);

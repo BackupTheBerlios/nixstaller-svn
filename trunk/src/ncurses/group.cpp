@@ -119,7 +119,7 @@ void CGroup::FocusWidget(CWidget *w)
     if (m_pFocusedWidget)
     {
         m_pFocusedWidget->Focus(false);
-        TUI.QueueDraw(m_pFocusedWidget);
+        m_pFocusedWidget->RequestQueuedDraw();
     }
     
     m_pFocusedWidget = w;
@@ -127,7 +127,7 @@ void CGroup::FocusWidget(CWidget *w)
     if (w) // This allows resetting the current focused widget
     {
         w->Focus(true);
-        TUI.QueueDraw(w);
+        w->RequestQueuedDraw();
     }
 }
 

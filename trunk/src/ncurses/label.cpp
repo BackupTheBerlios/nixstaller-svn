@@ -101,7 +101,7 @@ void CLabel::SetText(const std::string &t)
     UpdateLines();
     
     if (GetMinWidth() == 0)
-        PushEvent(EVENT_REQSIZECHANGE);
+        PushEvent(EVENT_REQUPDATE);
 }
 
 }

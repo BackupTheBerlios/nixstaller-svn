@@ -64,7 +64,8 @@ void CTUI::InitNCurses()
     m_pWinManager = new CWindowManager;
     m_pMainBox->AddWidget(m_pWinManager);
     
-    QueueDraw(m_pMainBox);
+    m_pMainBox->RequestQueuedDraw();
+
 }
 
 void CTUI::StopNCurses()
@@ -124,23 +125,20 @@ void CTUI::AddGroup(CGroup *g, bool activate)
     else
     {
         g->Focus(false);
-        QueueDraw(g);
+        g->RequestQueuedDraw();
     }
 }
 
 void CTUI::ActivateGroup(CGroup *g)
 {
-//     assert(std::find(m_RootGroups.begin(), m_RootGroups.end(), g) != m_RootGroups.end());
-    
     if (m_pActiveGroup)
     {
         m_pActiveGroup->Focus(false);
-        QueueDraw(m_pActiveGroup);
+        m_pActiveGroup->RequestQueuedDraw();
     }
     
-    g->Focus(true);
-    g->SetNextFocWidget(false);
-    QueueDraw(g);
+    m_pWinManager->FocusWidget(g);
+    g->SetNextFocWidget(false); // UNDONE: Needed?
     m_pActiveGroup = g;
 }
 

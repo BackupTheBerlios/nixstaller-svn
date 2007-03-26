@@ -19,7 +19,6 @@
 
 #include "ncurses.h"
 #include "box.h"
-#include "tui.h"
 
 namespace NNCurses {
 
@@ -104,11 +103,6 @@ int CBox::RequestedWidgetsH()
 
             ret += (GetWidgetH(*it) + (2 * entry.padding));
             
-            if (!m_RequestedWidgetsHs[*it])
-                m_RequestedWidgetsHs[*it] = GetWidgetH(*it);
-            else
-                assert(m_RequestedWidgetsHs[*it] == GetWidgetH(*it));
-            
             if (*it != childs.back())
                 ret += m_iSpacing;
         }
@@ -116,8 +110,6 @@ int CBox::RequestedWidgetsH()
             ret = std::max(ret, (*it)->RequestHeight());
     }
     
-    if (!m_iRequestedH) m_iRequestedH = ret;
-    else assert(m_iRequestedH == ret);
     return ret;
 }
 
@@ -223,6 +215,7 @@ void CBox::DrawLayout()
         }
     
         assert(widgetw>0 && widgeth>0);
+        assert(widgetw>=(*it)->RequestWidth() && widgeth>=(*it)->RequestHeight());
         
         if (entry.start)
         {
@@ -275,14 +268,14 @@ bool CBox::CoreHandleEvent(CWidget *emitter, int event)
 {
     if (IsDirectChild(emitter, this))
     {
-        if ((event == EVENT_REQSIZECHANGE) || (event == EVENT_DELETE) || (event == EVENT_ENABLE))
+        if (event == EVENT_REQUPDATE)
         {
             UpdateLayout();
             
             PushEvent(event);
             
             if (!GetParentWidget())
-                TUI.QueueDraw(this);
+                RequestQueuedDraw();
             
             return true;
         }
@@ -305,13 +298,13 @@ void CBox::CoreDraw()
 void CBox::CoreRemoveWidget(CWidget *w)
 {
     UpdateLayout();
-    PushEvent(EVENT_DELETE);
+    PushEvent(EVENT_REQUPDATE);
 }
 
 void CBox::UpdateLayout()
 {
     m_bUpdateLayout = true;
-    TUI.QueueDraw(this);
+    RequestQueuedDraw();
 }
 
 void CBox::StartPack(CGroup *g, bool e, bool f, int p)
