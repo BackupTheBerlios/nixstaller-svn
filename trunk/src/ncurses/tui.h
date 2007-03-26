@@ -21,8 +21,11 @@
 #define TUI_H
 
 #include <deque>
-#include "group.h"
-#include "buttonbar.h"
+
+class CGroup;
+class CBox;
+class CWindowManager;
+class CButtonBar;
 
 namespace NNCurses {
 
@@ -32,13 +35,14 @@ class CTUI
     
     TColorMap m_ColorPairs;
     int m_iCurColorPair;
-    std::vector<CGroup *> m_RootGroups;
     CGroup *m_pActiveGroup;
     std::deque<CWidget *> m_QueuedDrawWidgets;
+    CBox *m_pMainBox;
     CButtonBar *m_pButtonBar;
+    CWindowManager *m_pWinManager;
     
 public:
-    CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL), m_pButtonBar(NULL) { };
+    CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
     
     void InitNCurses(void);
     void StopNCurses(void);

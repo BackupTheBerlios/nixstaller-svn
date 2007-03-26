@@ -98,6 +98,8 @@ void CButtonBar::AddButton(const std::string &n, const std::string &d)
     assert(fwidth >= tlength);
     
     PushLabel(n, d);
+    UpdateLayout();
+    PushEvent(EVENT_REQSIZECHANGE);
 }
 
 }

@@ -19,6 +19,7 @@
 
 #include "ncurses.h"
 #include "widget.h"
+#include "group.h"
 #include "tui.h"
 
 namespace NNCurses {

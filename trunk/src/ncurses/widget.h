@@ -32,6 +32,7 @@ class CWidget
 {
     friend class CGroup;
     friend class CBox;
+    friend class CWindowManager;
     friend class CTUI;
     
     CGroup *m_pParent;

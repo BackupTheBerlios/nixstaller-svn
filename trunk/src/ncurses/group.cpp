@@ -30,24 +30,22 @@ namespace NNCurses {
 
 bool CGroup::CanFocusChilds(CWidget *w)
 {
-    return (IsGroupWidget(w) && !w->CanFocus());
+    return (IsGroupWidget(w) && !w->CanFocus() && !GetGroupWidget(w)->Empty());
 }
 
 void CGroup::CoreDraw(void)
 {
     DrawWidget();
-    
-    for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
-    {
-        if ((*it)->Enabled())
-            (*it)->Draw();
-    }
+    DrawChilds();
 }
 
 void CGroup::UpdateSize()
 {
     for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
     {
+        if (!(*it)->GetWin()) // Widget isn't created yet (size will be set when widget is created)
+            continue;
+        
         int ret = mvwin((*it)->GetWin(), Y()+(*it)->Y(), X()+(*it)->X());
         assert(ret != ERR);
         // UNDONE: Exception
@@ -66,6 +64,15 @@ bool CGroup::CoreHandleKey(chtype key)
         return m_pFocusedWidget->HandleKey(key);
 
     return false;
+}
+
+void CGroup::CoreDrawChilds(void)
+{
+    for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
+    {
+        if ((*it)->Enabled())
+            (*it)->Draw();
+    }
 }
 
 void CGroup::AddWidget(CGroup *g)

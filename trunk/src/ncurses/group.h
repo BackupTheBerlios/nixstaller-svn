@@ -20,6 +20,8 @@
 #ifndef GROUP_H
 #define GROUP_H
 
+#include "widget.h"
+
 namespace NNCurses {
 
 class CGroup: public CWidget
@@ -43,12 +45,16 @@ protected:
     virtual bool CoreHandleKey(chtype key);
     virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
     virtual void CoreRemoveWidget(CWidget *w) { }
+    virtual void CoreDrawChilds(void);
 
     void InitChild(CWidget *w);
     TChildList &GetChildList(void) { return m_Childs; }
+    void DrawChilds(void) { CoreDrawChilds(); }
+    CWidget *GetFocusedWidget(void) { return m_pFocusedWidget; }
     
-public:
     CGroup(void) : m_pFocusedWidget(NULL) { }
+
+public:
     virtual ~CGroup(void) { Clear(); };
     
     void AddWidget(CGroup *g);

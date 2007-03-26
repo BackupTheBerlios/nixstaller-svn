@@ -19,6 +19,10 @@
 
 #include "ncurses.h"
 #include "widget.h"
+#include "group.h"
+#include "box.h"
+#include "windowmanager.h"
+#include "buttonbar.h"
 #include "tui.h"
 
 namespace NNCurses {
@@ -41,32 +45,31 @@ void CTUI::InitNCurses()
     if (has_colors())
         start_color();
     
-    CBox *dummybox = new CBox(CBox::VERTICAL, false);
-    dummybox->SetMinWidth(GetWWidth(GetRootWin()));
-    dummybox->SetMinHeight(GetWHeight(GetRootWin()));
+    m_pMainBox = new CBox(CBox::VERTICAL, false);
+    m_pMainBox->SetParent(GetRootWin());
+    m_pMainBox->Init();
+    m_pMainBox->SetSize(0, 0, GetWWidth(GetRootWin()), GetWHeight(GetRootWin()));
     
     m_pButtonBar = new CButtonBar;
     
     // Focused colors are used for keys, defocused colors for descriptions
     m_pButtonBar->SetFColors(COLOR_YELLOW, COLOR_RED);
     m_pButtonBar->SetDFColors(COLOR_WHITE, COLOR_RED);
-//     for (short s=0; s<15; s++) m_pButtonBar->AddButton("ESC", "Quit");
-    dummybox->EndPack(m_pButtonBar, false, false, 0);
     
-    AddGroup(dummybox, false);
-    
-    for (short s=0; s<15; s++)
+    for (short s=0; s<5; s++)
         m_pButtonBar->AddButton("ESC", "Quit");
+    
+    m_pMainBox->EndPack(m_pButtonBar, false, false, 0);
+    
+    m_pWinManager = new CWindowManager;
+    m_pMainBox->AddWidget(m_pWinManager);
+    
+    QueueDraw(m_pMainBox);
 }
 
 void CTUI::StopNCurses()
 {
-    while (!m_RootGroups.empty())
-    {
-        delete m_RootGroups.back();
-        m_RootGroups.pop_back();
-    }
-        
+    delete m_pMainBox;
     ::endwin();
 }
 
@@ -114,10 +117,7 @@ bool CTUI::Run(int delay)
 
 void CTUI::AddGroup(CGroup *g, bool activate)
 {
-    m_RootGroups.push_back(g);
-    g->SetParent(GetRootWin());
-    g->Init();
-    g->SetSize(0, 0, g->RequestWidth(), g->RequestHeight());
+    m_pWinManager->AddWidget(g);
     
     if (activate)
         ActivateGroup(g);
@@ -130,7 +130,7 @@ void CTUI::AddGroup(CGroup *g, bool activate)
 
 void CTUI::ActivateGroup(CGroup *g)
 {
-    assert(std::find(m_RootGroups.begin(), m_RootGroups.end(), g) != m_RootGroups.end());
+//     assert(std::find(m_RootGroups.begin(), m_RootGroups.end(), g) != m_RootGroups.end());
     
     if (m_pActiveGroup)
     {

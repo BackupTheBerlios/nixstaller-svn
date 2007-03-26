@@ -73,10 +73,10 @@ int CBox::RequestedWidgetsW()
         if (!IsValidWidget(*it))
             continue;
         
-        const SBoxEntry &entry = m_BoxEntries[*it];
-        
         if (m_eDirection == HORIZONTAL)
         {
+            const SBoxEntry &entry = m_BoxEntries[*it];
+
             ret += GetWidgetW(*it) + (2 * entry.padding);
             if (*it != childs.back())
                 ret += m_iSpacing;
@@ -98,11 +98,17 @@ int CBox::RequestedWidgetsH()
         if (!IsValidWidget(*it))
             continue;
 
-        const SBoxEntry &entry = m_BoxEntries[*it];
-        
         if (m_eDirection == VERTICAL)
         {
-            ret += GetWidgetH(*it) + (2 * entry.padding);
+            const SBoxEntry &entry = m_BoxEntries[*it];
+
+            ret += (GetWidgetH(*it) + (2 * entry.padding));
+            
+            if (!m_RequestedWidgetsHs[*it])
+                m_RequestedWidgetsHs[*it] = GetWidgetH(*it);
+            else
+                assert(m_RequestedWidgetsHs[*it] == GetWidgetH(*it));
+            
             if (*it != childs.back())
                 ret += m_iSpacing;
         }
@@ -110,6 +116,8 @@ int CBox::RequestedWidgetsH()
             ret = std::max(ret, (*it)->RequestHeight());
     }
     
+    if (!m_iRequestedH) m_iRequestedH = ret;
+    else assert(m_iRequestedH == ret);
     return ret;
 }
 
@@ -214,6 +222,8 @@ void CBox::DrawLayout()
             }
         }
     
+        assert(widgetw>0 && widgeth>0);
+        
         if (entry.start)
         {
             begx += basex;

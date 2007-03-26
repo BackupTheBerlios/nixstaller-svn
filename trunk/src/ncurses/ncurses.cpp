@@ -90,26 +90,28 @@ void StartFrontend(int argc, char **argv)
     
     NNCurses::CWindow *win = new NNCurses::CWindow();
     win->SetMinWidth(60);
-    win->SetMinHeight(20);
+    win->SetMinHeight(5);
     win->SetFColors(COLOR_YELLOW, COLOR_BLUE);
     win->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
-    vbox->SetBox(true);
+    vbox->SetBox(false);
     
     NNCurses::CLabel *label = new NNCurses::CLabel("Some buttons below");
     vbox->AddWidget(label);
     
     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, true, 0);
+    hbox->SetMinHeight(1);
+    hbox->SetMinWidth(1);
     
     NNCurses::CButton *but = new NNCurses::CButton("OK");
-    hbox->StartPack(but, false, false, 1);
-    
-    but = new NNCurses::CButton("Cancel");
-    hbox->StartPack(but, false, false, 1);
-    
-    but = new NNCurses::CButton("Something between");
-    hbox->StartPack(but, false, false, 1);
+    vbox->StartPack(but, false, false, 1);
+//     
+//     but = new NNCurses::CButton("Cancel");
+//     hbox->StartPack(but, false, false, 1);
+//     
+//     but = new NNCurses::CButton("Something between");
+//     hbox->StartPack(but, false, false, 1);
 
     vbox->EndPack(hbox, false, false, 1);
     
