@@ -17,34 +17,36 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LABEL_H
-#define LABEL_H
+#ifndef BUTTONBAR_H
+#define BUTTONBAR_H
 
-#include "widget.h"
+#include <string>
+#include <deque>
+#include "box.h"
 
 namespace NNCurses {
 
-class CLabel: public CWidget
+class CButtonBar: public CBox
 {
-    typedef std::vector<std::string> TLinesList;
+    struct SButtonEntry
+    {
+        std::string name, description;
+        SButtonEntry(const std::string &n, const std::string &d) : name(n), description(d) { }
+    };
     
-    bool m_bCenter;
-    std::string m_szText;
-    TLinesList m_Lines;
-    
-    void UpdateLines(void);
+    std::deque<SButtonEntry> m_QueuedEntries;
+    CBox *m_pCurBox;
+
+    void PushBox(void);
+    void PushLabel(const std::string &n, const std::string &d);
     
 protected:
-    virtual void CoreInit(void) { UpdateLines(); }
-    virtual int CoreRequestWidth(void);
-    virtual int CoreRequestHeight(void);
-    virtual void DoDraw(void);
+    virtual void CoreDraw(void);
     
 public:
-    CLabel(const std::string &t) : m_bCenter(true) { SetText(t); }
+    CButtonBar(void) : CBox(VERTICAL, false), m_pCurBox(NULL) { SetMinWidth(1); SetMinHeight(1); }
     
-    void Center(bool c) { m_bCenter = c; }
-    void SetText(const std::string &t);
+    void AddButton(const std::string &n, const std::string &d);
 };
 
 

@@ -17,38 +17,10 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef BUTTONBAR_H
-#define BUTTONBAR_H
-
-#include <deque>
-#include "box.h"
+#include "tui.h"
+#include "window.h"
 
 namespace NNCurses {
 
-class CButtonBar: public CBox
-{
-    struct SButtonEntry
-    {
-        std::string name, description;
-        SButtonEntry(const std::string &n, const std::string &d) : name(n), description(d) { }
-    };
-    
-    std::deque<SButtonEntry> m_QueuedEntries;
-    CBox *m_pCurBox;
-
-    void PushBox(void);
-    void PushLabel(const std::string &n, const std::string &d);
-    
-protected:
-    virtual void CoreDraw(void);
-    
-public:
-    CButtonBar(void) : CBox(VERTICAL, false), m_pCurBox(NULL) { SetMinWidth(1); SetMinHeight(1); }
-    
-    void AddButton(const std::string &n, const std::string &d);
-};
-
 
 }
-
-#endif

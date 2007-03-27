@@ -834,7 +834,7 @@ bool CWelcomeScreen::HandleKey(chtype ch)
     if (CBaseScreen::HandleKey(ch))
         return true;
     
-    if (ENTER(ch))
+    if (IsEscape(ch))
     {
         PushEvent(EVENT_CALLBACK);
         return true;
@@ -888,7 +888,7 @@ bool CLicenseScreen::HandleKey(chtype ch)
     if (CBaseScreen::HandleKey(ch))
         return true;
     
-    if (ENTER(ch))
+    if (IsEscape(ch))
     {
         PushEvent(EVENT_CALLBACK);
         return true;
@@ -999,7 +999,7 @@ bool CInstallScreen::HandleKey(chtype ch)
     if (CBaseScreen::HandleKey(ch))
         return true;
     
-    if (ENTER(ch))
+    if (IsEscape(ch))
     {
         PushEvent(EVENT_CALLBACK);
         return true;
@@ -1054,7 +1054,7 @@ bool CFinishScreen::HandleKey(chtype ch)
     if (CBaseScreen::HandleKey(ch))
         return true;
     
-    if (ENTER(ch))
+    if (IsEscape(ch))
     {
         PushEvent(EVENT_CALLBACK);
         return true;
@@ -1114,7 +1114,7 @@ bool CCFGScreen::HandleKey(chtype ch)
     if (CBaseScreen::HandleKey(ch))
         return true;
     
-    if (ENTER(ch))
+    if (IsEscape(ch))
     {
         PushEvent(EVENT_CALLBACK);
         return true;

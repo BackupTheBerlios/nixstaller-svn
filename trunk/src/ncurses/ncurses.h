@@ -20,10 +20,6 @@
 #ifndef NCURSES_H
 #define NCURSES_H
 
-#define CTRL(x)             ((x) & 0x1f)
-#define ENTER(x)            ((x==KEY_ENTER)||(x=='\n')||(x=='\r'))
-#define ESCAPE              CTRL('[')
-
 #include "ncurses.h"
 #include "cursesw.h"
 

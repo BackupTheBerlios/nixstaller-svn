@@ -17,7 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "ncurses.h"
+#include "main.h"
+#include "tui.h"
 #include "button.h"
 #include "label.h"
 
@@ -50,7 +51,7 @@ bool CButton::CoreHandleKey(chtype ch)
     if (CBox::CoreHandleKey(ch))
         return true;
     
-    if (ENTER(ch))
+    if (IsEnter(ch))
     {
         PushEvent(EVENT_CALLBACK);
         return true;

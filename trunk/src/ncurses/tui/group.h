@@ -20,6 +20,8 @@
 #ifndef GROUP_H
 #define GROUP_H
 
+#include <vector>
+#include <map>
 #include "widget.h"
 
 namespace NNCurses {

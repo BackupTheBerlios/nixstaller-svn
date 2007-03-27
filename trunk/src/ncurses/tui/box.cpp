@@ -17,7 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "ncurses.h"
+#include <assert.h>
+#include "tui.h"
 #include "box.h"
 
 namespace NNCurses {
@@ -143,7 +144,7 @@ void CBox::DrawLayout()
         return;
 
     TChildList childs = GetChildList();
-    const TSTLVecSize size = ExpandedWidgets();
+    const TChildList::size_type size = ExpandedWidgets();
     const int diffw = FieldWidth() - RequestedWidgetsW();
     const int diffh = FieldHeight() - RequestedWidgetsH();
     const int extraw = (size) ? diffw / size : 0;

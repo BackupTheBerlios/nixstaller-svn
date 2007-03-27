@@ -77,13 +77,18 @@ void StopFrontend()
 
 #else
 
-#include "widget.h"
-#include "window.h"
-#include "box.h"
-#include "label.h"
-#include "tui.h"
-#include "button.h"
-                                                         
+#include "tui/widget.h"
+#include "tui/window.h"
+#include "tui/box.h"
+#include "tui/label.h"
+#include "tui/tui.h"
+#include "tui/button.h"
+
+void ReportError(const char *msg)
+{
+    // UNDONE
+}
+
 void StartFrontend(int argc, char **argv)
 {
     NNCurses::TUI.InitNCurses();
@@ -179,6 +184,7 @@ void StopFrontend()
 
 #endif
 
+#if 0
 // -------------------------------------
 // About screen class
 // -------------------------------------
@@ -345,3 +351,4 @@ void CNCursBase::UpdateLanguage()
     
     m_pAboutScreen->UpdateLanguage();
 }
+#endif

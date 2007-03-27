@@ -17,10 +17,9 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "ncurses.h"
-#include "widget.h"
-#include "group.h"
+#include <assert.h>
 #include "tui.h"
+#include "group.h"
 
 namespace NNCurses {
 

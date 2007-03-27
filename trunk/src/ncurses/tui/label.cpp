@@ -17,7 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "ncurses.h"
+#include "main.h"
+#include "tui.h"
 #include "label.h"
 
 namespace NNCurses {

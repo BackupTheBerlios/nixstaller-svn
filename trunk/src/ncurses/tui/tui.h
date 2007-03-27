@@ -21,13 +21,17 @@
 #define TUI_H
 
 #include <deque>
+#include <map>
 
+namespace NNCurses {
+
+#include "ncurses.h"
+
+class CWidget;
 class CGroup;
 class CBox;
 class CWindowManager;
 class CButtonBar;
-
-namespace NNCurses {
 
 class CTUI
 {
@@ -64,6 +68,9 @@ int GetWX(WINDOW *w);
 int GetWY(WINDOW *w);
 int GetWWidth(WINDOW *w);
 int GetWHeight(WINDOW *w);
+inline bool IsEnter(chtype ch) { return ((ch==KEY_ENTER) || (ch=='\n') || (ch=='\r')); }
+inline bool CTRL(chtype ch) { return ((ch) & 0x1f); }
+inline bool IsEscape(chtype ch) { return ch == CTRL('['); }
 
 }
 

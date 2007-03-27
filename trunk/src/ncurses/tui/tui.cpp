@@ -17,13 +17,12 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "ncurses.h"
+#include "tui.h"
 #include "widget.h"
 #include "group.h"
 #include "box.h"
 #include "windowmanager.h"
 #include "buttonbar.h"
-#include "tui.h"
 
 namespace NNCurses {
 
@@ -71,7 +70,7 @@ void CTUI::InitNCurses()
 void CTUI::StopNCurses()
 {
     delete m_pMainBox;
-    ::endwin();
+    endwin();
 }
 
 bool CTUI::Run(int delay)
