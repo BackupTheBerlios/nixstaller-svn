@@ -44,7 +44,7 @@ void CLabel::UpdateLines()
         if (end >= length)
             end = length - 1;
         
-        if ((((end-start)+1) > width) && !isspace(m_szText[end]))
+        if ((((end-start)+1) > SafeConvert<TSTLStrSize>(width)) && !isspace(m_szText[end]))
         {
             std::string sub = m_szText.substr(start, (end-start)+1);
             TSTLStrSize pos = sub.find_last_of(" \t\n");

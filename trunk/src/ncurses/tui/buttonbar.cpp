@@ -24,6 +24,10 @@
 
 namespace NNCurses {
 
+// -------------------------------------
+// Button Bar Class
+// -------------------------------------
+
 void CButtonBar::PushBox(void)
 {
     m_pCurBox = new CBox(HORIZONTAL, false);

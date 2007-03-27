@@ -198,36 +198,5 @@ void CTUI::RemoveFromQueue(CWidget *w)
         m_QueuedDrawWidgets.erase(it);
 }
 
-// -------------------------------------
-// Utils
-// -------------------------------------
-
-int GetWX(WINDOW *w)
-{
-    int x, y;
-    getbegyx(w, y, x);
-    return x;
-}
-
-int GetWY(WINDOW *w)
-{
-    int x, y;
-    getbegyx(w, y, x);
-    return y;
-}
-
-int GetWWidth(WINDOW *w)
-{
-    int x, y;
-    getmaxyx(w, y, x);
-    return x-GetWX(w);
-}
-
-int GetWHeight(WINDOW *w)
-{
-    int x, y;
-    getmaxyx(w, y, x);
-    return y-GetWY(w);
-}
 
 }

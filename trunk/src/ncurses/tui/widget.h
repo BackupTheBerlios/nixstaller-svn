@@ -131,10 +131,6 @@ public:
     bool Enabled(void) { return m_bEnabled; }
 };
 
-// Utils
-bool IsParent(CWidget *parent, CWidget *child);
-bool IsChild(CWidget *child, CWidget *parent);
-bool IsDirectChild(CWidget *child, CWidget *parent);
 
 }
 

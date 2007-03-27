@@ -22,6 +22,10 @@
 
 namespace NNCurses {
 
+// -------------------------------------
+// Window Manager Class
+// -------------------------------------
+
 bool CWindowManager::CoreHandleEvent(CWidget *emitter, int event)
 {
     if (event == EVENT_REQQUEUEDDRAW)

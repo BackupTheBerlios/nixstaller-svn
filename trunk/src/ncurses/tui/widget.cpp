@@ -194,31 +194,5 @@ CGroup *CWidget::GetTopWidget()
     return w;
 }
 
-// -------------------------------------
-// Utils
-// -------------------------------------
-
-bool IsParent(CWidget *parent, CWidget *child)
-{
-    CWidget *w = child->GetParentWidget();
-    while (w)
-    {
-        if (w == parent)
-            return true;
-        w = w->GetParentWidget();
-    }
-    
-    return false;
-}
-
-bool IsChild(CWidget *child, CWidget *parent)
-{
-    return IsParent(parent, child);
-}
-
-bool IsDirectChild(CWidget *child, CWidget *parent)
-{
-    return (child->GetParentWidget() == parent);
-}
 
 }

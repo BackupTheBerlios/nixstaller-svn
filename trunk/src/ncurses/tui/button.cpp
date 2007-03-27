@@ -24,6 +24,10 @@
 
 namespace NNCurses {
 
+// -------------------------------------
+// Button Class
+// -------------------------------------
+
 void CButton::DoDraw()
 {
     mvwaddch(GetWin(), 0, 0, '<');
