@@ -37,6 +37,7 @@ protected:
     virtual bool CoreCanFocus(void) { return true; }
     virtual void UpdateColors(void);
     virtual bool CoreHandleKey(chtype ch);
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     
     virtual int FieldX(void) const { return m_iExtraWidth/2; }
     virtual int FieldWidth(void) const { return Width()-FieldX()-(m_iExtraWidth/2); }

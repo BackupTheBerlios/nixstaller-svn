@@ -49,61 +49,30 @@ void CButtonBar::PushLabel(const std::string &n, const std::string &d)
     m_pCurBox->StartPack(lbox, true, false, 0);
 }
 
-void CButtonBar::CoreDraw()
-{
-    if (!m_QueuedEntries.empty())
-    {
-        if (!m_pCurBox)
-            PushBox();
-        
-        while (!m_QueuedEntries.empty())
-        {
-            SButtonEntry entry = m_QueuedEntries.front();
-            
-            int fwidth = FieldWidth();
-            std::string text = entry.name + ": " + entry.description;
-            int tlength = SafeConvert<int>(text.length());
-        
-            if (fwidth < tlength)
-                ; // UNDONE: Exception
-            else if ((m_pCurBox->RequestWidth() + tlength) > fwidth)
-                PushBox();
-            
-            assert(fwidth >= tlength);
-            
-            PushLabel(entry.name, entry.description);
-            
-            m_QueuedEntries.pop_front();
-        }
-        PushEvent(EVENT_REQUPDATE);
-    }
-    else
-        CBox::CoreDraw();
-
-//     CBox::DrawLayout();
-}
-
 void CButtonBar::AddButton(const std::string &n, const std::string &d)
 {
-//     m_QueuedEntries.push_back(SButtonEntry(n, d));
-//     UpdateLayout();
     if (!m_pCurBox)
         PushBox();
     
-    int fwidth = /*FieldWidth();*/GetWWidth(stdscr);
     std::string text = n + ": " + d;
     int tlength = SafeConvert<int>(text.length());
 
-    if (fwidth < tlength)
+    if (m_iMaxWidth < tlength)
         ; // UNDONE: Exception
-    else if ((m_pCurBox->RequestWidth() + tlength) > fwidth)
+    else if ((m_pCurBox->RequestWidth() + tlength) > m_iMaxWidth)
         PushBox();
     
-    assert(fwidth >= tlength);
+    assert(m_iMaxWidth >= tlength);
     
     PushLabel(n, d);
     UpdateLayout();
     PushEvent(EVENT_REQUPDATE);
+}
+
+void CButtonBar::ClearButtons()
+{
+    m_pCurBox = NULL;
+    Clear();
 }
 
 }

@@ -130,7 +130,7 @@ void StartFrontend(int argc, char **argv)
     
     win->AddWidget(new NNCurses::CLabel("Another window \\o/"));
     
-    NNCurses::TUI.AddGroup(win, true);
+    NNCurses::TUI.AddGroup(win, false);
 
 //     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);
 //     hbox->SetDFColors(COLOR_YELLOW, COLOR_RED);

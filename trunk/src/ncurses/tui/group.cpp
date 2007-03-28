@@ -76,6 +76,12 @@ void CGroup::CoreDrawChilds(void)
     }
 }
 
+void CGroup::CoreGetButtonDescs(TButtonDescList &list)
+{
+    if (m_pFocusedWidget)
+        m_pFocusedWidget->GetButtonDescs(list);
+}
+
 void CGroup::AddWidget(CGroup *g)
 {
     m_GroupMap[g] = g;
@@ -125,7 +131,7 @@ void CGroup::FocusWidget(CWidget *w)
     
     m_pFocusedWidget = w;
     
-    if (w) // This allows resetting the current focused widget
+    if (w) // If w == NULL the current focused widget is reset
     {
         w->Focus(true);
         w->RequestQueuedDraw();

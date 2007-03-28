@@ -32,6 +32,21 @@ CTUI TUI;
 // TUI (Text User Interface) Class
 // -------------------------------------
 
+void CTUI::UpdateButtonBar()
+{
+    m_pButtonBar->ClearButtons();
+    
+    if (!m_pActiveGroup)
+        return;
+    
+    TButtonDescList list;
+    m_pActiveGroup->GetButtonDescs(list);
+    
+    for (TButtonDescList::iterator it=list.begin(); it!=list.end(); it++)
+        m_pButtonBar->AddButton(it->first, it->second);
+}
+
+
 void CTUI::InitNCurses()
 {
     endwin();
@@ -49,14 +64,11 @@ void CTUI::InitNCurses()
     m_pMainBox->Init();
     m_pMainBox->SetSize(0, 0, GetWWidth(GetRootWin()), GetWHeight(GetRootWin()));
     
-    m_pButtonBar = new CButtonBar;
+    m_pButtonBar = new CButtonBar(GetWWidth(GetRootWin()));
     
     // Focused colors are used for keys, defocused colors for descriptions
     m_pButtonBar->SetFColors(COLOR_YELLOW, COLOR_RED);
     m_pButtonBar->SetDFColors(COLOR_WHITE, COLOR_RED);
-    
-    for (short s=0; s<5; s++)
-        m_pButtonBar->AddButton("ESC", "Quit");
     
     m_pMainBox->EndPack(m_pButtonBar, false, false, 0);
     
@@ -64,7 +76,6 @@ void CTUI::InitNCurses()
     m_pMainBox->AddWidget(m_pWinManager);
     
     m_pMainBox->RequestQueuedDraw();
-
 }
 
 void CTUI::StopNCurses()
@@ -90,16 +101,18 @@ bool CTUI::Run(int delay)
                 {
                     if (!m_pActiveGroup->SetNextFocWidget(true))
                         m_pActiveGroup->SetNextFocWidget(false);
+                    UpdateButtonBar();
                 }
                 else if (key == CTRL('p'))
                 {
                     if (!m_pActiveGroup->SetPrevFocWidget(true))
                         m_pActiveGroup->SetPrevFocWidget(false);
+                    UpdateButtonBar();
                 }
             }
         }
         
-        if (key == CTRL('[')) // Escape pressed
+        if (IsEscape(key)) // Escape pressed
             return false;
     }
     
@@ -137,8 +150,10 @@ void CTUI::ActivateGroup(CGroup *g)
     }
     
     m_pWinManager->FocusWidget(g);
-    g->SetNextFocWidget(false); // UNDONE: Needed?
+    g->SetNextFocWidget(false);
     m_pActiveGroup = g;
+    
+    UpdateButtonBar();
 }
 
 int CTUI::GetColorPair(int fg, int bg)

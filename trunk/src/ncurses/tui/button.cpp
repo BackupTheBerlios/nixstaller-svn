@@ -19,6 +19,7 @@
 
 #include "main.h"
 #include "tui.h"
+#include "widget.h"
 #include "button.h"
 #include "label.h"
 
@@ -62,6 +63,11 @@ bool CButton::CoreHandleKey(chtype ch)
     }
     
     return false;
+}
+
+void CButton::CoreGetButtonDescs(TButtonDescList &list)
+{
+    list.push_back(TButtonDescPair("ENTER", "Activate"));
 }
 
 void CButton::SetText(const std::string &title)

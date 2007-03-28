@@ -20,11 +20,15 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
+#include <string>
+#include <vector>
 #include <utility>
 
 namespace NNCurses {
 
 typedef std::pair<chtype, chtype> TColorPair;
+typedef std::pair<std::string, std::string> TButtonDescPair;
+typedef std::vector<TButtonDescPair> TButtonDescList;
 
 class CGroup;
 
@@ -74,6 +78,8 @@ protected:
     virtual int CoreRequestWidth(void) { return GetMinWidth(); }
     virtual int CoreRequestHeight(void) { return GetMinHeight(); }
     
+    virtual void CoreGetButtonDescs(TButtonDescList &list) { }
+    
     // Interface to be used by friends and derived classes
     void InitDraw(void);
     void RefreshWidget(void) { wrefresh(m_pNCursWin); }
@@ -92,6 +98,8 @@ protected:
     bool HandleKey(chtype key) { return CoreHandleKey(key); }
     bool HandleEvent(CWidget *emitter, int event) { return CoreHandleEvent(emitter, event); }
     void PushEvent(int type);
+    
+    void GetButtonDescs(TButtonDescList &list) { CoreGetButtonDescs(list); }
     
 public:
     virtual ~CWidget(void);
@@ -118,7 +126,6 @@ public:
 
     WINDOW *GetWin(void) { return m_pNCursWin; }
     WINDOW *GetParentWin(void);
-    CGroup *GetTopWidget(void);
     CGroup *GetParentWidget(void) { return m_pParent; }
     
     bool HasBox(void) const { return m_bBox; }

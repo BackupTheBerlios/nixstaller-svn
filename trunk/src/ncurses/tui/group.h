@@ -48,6 +48,7 @@ protected:
     virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
     virtual void CoreRemoveWidget(CWidget *w) { }
     virtual void CoreDrawChilds(void);
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
 
     void InitChild(CWidget *w);
     TChildList &GetChildList(void) { return m_Childs; }

@@ -36,17 +36,16 @@ class CButtonBar: public CBox
     
     std::deque<SButtonEntry> m_QueuedEntries;
     CBox *m_pCurBox;
+    int m_iMaxWidth;
 
     void PushBox(void);
     void PushLabel(const std::string &n, const std::string &d);
     
-protected:
-    virtual void CoreDraw(void);
-    
 public:
-    CButtonBar(void) : CBox(VERTICAL, false), m_pCurBox(NULL) { SetMinWidth(1); SetMinHeight(1); }
+    CButtonBar(int maxw) : CBox(VERTICAL, false), m_pCurBox(NULL), m_iMaxWidth(maxw) { SetMinWidth(1); SetMinHeight(1); }
     
     void AddButton(const std::string &n, const std::string &d);
+    void ClearButtons(void);
 };
 
 

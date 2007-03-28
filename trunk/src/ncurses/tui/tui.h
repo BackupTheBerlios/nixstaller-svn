@@ -45,6 +45,8 @@ class CTUI
     CButtonBar *m_pButtonBar;
     CWindowManager *m_pWinManager;
     
+    void UpdateButtonBar(void);
+    
 public:
     CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
     
@@ -69,7 +71,7 @@ int GetWY(WINDOW *w);
 int GetWWidth(WINDOW *w);
 int GetWHeight(WINDOW *w);
 inline bool IsEnter(chtype ch) { return ((ch==KEY_ENTER) || (ch=='\n') || (ch=='\r')); }
-inline bool CTRL(chtype ch) { return ((ch) & 0x1f); }
+inline chtype CTRL(chtype ch) { return ((ch) & 0x1f); }
 inline bool IsEscape(chtype ch) { return ch == CTRL('['); }
 bool IsParent(CWidget *parent, CWidget *child);
 bool IsChild(CWidget *child, CWidget *parent);

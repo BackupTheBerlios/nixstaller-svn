@@ -182,17 +182,5 @@ WINDOW *CWidget::GetParentWin()
     return (m_pParent) ? m_pParent->GetWin() : m_pParentWin;
 }
 
-CGroup *CWidget::GetTopWidget()
-{
-    CGroup *w = m_pParent;
-    
-    while (w)
-    {
-        w = w->m_pParent;
-    }
-    
-    return w;
-}
-
 
 }
