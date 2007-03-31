@@ -57,6 +57,16 @@ void CGroup::UpdateFocus()
 {
     if (m_pFocusedWidget)
         m_pFocusedWidget->Focus(Focused());
+    
+    for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
+    {
+        if (*it == m_pFocusedWidget)
+            continue;
+        
+        // Let all other widgets update their colors. The group has changed it's color which may affect any childs
+        (*it)->TouchColor();
+        (*it)->RequestQueuedDraw();
+    }
 }
 
 bool CGroup::CoreHandleKey(chtype key)

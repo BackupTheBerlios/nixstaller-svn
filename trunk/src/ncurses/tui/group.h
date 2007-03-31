@@ -54,6 +54,8 @@ protected:
     TChildList &GetChildList(void) { return m_Childs; }
     void DrawChilds(void) { CoreDrawChilds(); }
     CWidget *GetFocusedWidget(void) { return m_pFocusedWidget; }
+    void SetChildSize(CWidget *widget, int x, int y, int w, int h) { widget->SetSize(x, y, w, h); }
+    void DrawChild(CWidget *w) { w->Draw(); }
     
     CGroup(void) : m_pFocusedWidget(NULL) { }
 

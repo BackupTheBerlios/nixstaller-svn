@@ -80,7 +80,7 @@ void CWindowManager::CoreDraw()
         const int x = (Width() - width) / 2;
         const int y = (Height() - height) / 2;
     
-        w->SetSize(x, y, width, height);
+        SetChildSize(w, x, y, width, height);
         
         m_WidgetQueue.pop_front();
     }
@@ -96,13 +96,13 @@ void CWindowManager::CoreDrawWidgets()
     {
         if (*it == GetFocusedWidget())
             continue; // We draw this one as last, so it looks like it's on top
-        (*it)->Draw();
+        DrawChild(*it);
     }
     
     CWidget *w = GetFocusedWidget();
     
     if (w)
-        w->Draw();
+        DrawChild(w);
 }
 
 void CWindowManager::CoreAddWidget(CWidget *w)

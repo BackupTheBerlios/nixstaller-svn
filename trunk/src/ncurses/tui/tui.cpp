@@ -55,7 +55,10 @@ void CTUI::InitNCurses()
     noecho();
     cbreak();
     curs_set(0); // Hide cursor when possible
-
+    leaveok(GetRootWin(), 0);
+    keypad(GetRootWin(), TRUE);
+    meta(GetRootWin(), TRUE);
+    
     if (has_colors())
         start_color();
     

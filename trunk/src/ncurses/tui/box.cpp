@@ -223,7 +223,7 @@ void CBox::DrawLayout()
             begx += basex;
             begy += basey;
         
-            (*it)->SetSize(begx, begy, widgetw, widgeth);
+            SetChildSize(*it, begx, begy, widgetw, widgeth);
         
             if (m_eDirection == HORIZONTAL)
                 begx += (spacing + widgetw);
@@ -235,7 +235,7 @@ void CBox::DrawLayout()
             endx -= basex;
             endy -= basey;
         
-            (*it)->SetSize(endx-(widgetw-1), endy-(widgeth-1), widgetw, widgeth);
+            SetChildSize(*it, endx-(widgetw-1), endy-(widgeth-1), widgetw, widgeth);
         
             if (m_eDirection == HORIZONTAL)
                 endx -= (spacing + widgetw);

@@ -135,8 +135,8 @@ void CWidget::Init()
     // UNDONE: Exception
     
     leaveok(m_pNCursWin, 0);
-    keypad(m_pNCursWin, 1);
-    meta(m_pNCursWin, 1);
+    keypad(m_pNCursWin, TRUE);
+    meta(m_pNCursWin, TRUE);
     
     if (m_pParent)
     {

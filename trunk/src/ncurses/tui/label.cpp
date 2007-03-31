@@ -27,6 +27,7 @@ namespace NNCurses {
 // Label Widget Class
 // -------------------------------------
 
+#if 0
 void CLabel::UpdateLines()
 {
     m_Lines.clear();
@@ -77,25 +78,30 @@ int CLabel::CoreRequestHeight()
     return 1;
 }
 
+#endif
+                                                       
 void CLabel::DoDraw()
 {
-    int x = 0, y = (Height() - SafeConvert<int>(m_Lines.size())) / 2;
+    TLinesList lines = GetLineList();
+    
+    int x = 0, y = (Height() - SafeConvert<int>(lines.size())) / 2;
     
     if (y < 0)
         y = 0;
     
-    for (TLinesList::iterator it=m_Lines.begin(); it!=m_Lines.end(); it++, y++)
+    for (TLinesList::iterator it=lines.begin(); it!=lines.end(); it++, y++)
     {
         if (y == Height())
             break;
 
-        if (m_bCenter)
+        if (Center())
             x = (Width() - it->length()) / 2;
         
         mvwaddstr(GetWin(), y, x, it->c_str());
     }
 }
 
+#if 0
 void CLabel::SetText(const std::string &t)
 {
     m_szText = t;
@@ -103,6 +109,8 @@ void CLabel::SetText(const std::string &t)
     
     if (GetMinWidth() == 0)
         PushEvent(EVENT_REQUPDATE);
+    else
+        RequestQueuedDraw();
 }
-
+#endif
 }

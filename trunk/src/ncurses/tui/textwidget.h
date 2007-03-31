@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+    Copyright (C) 2007 Rick Helmus (rhelmus_AT_gmail.com)
 
     This file is part of Nixstaller.
     
@@ -17,46 +17,28 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LABEL_H
-#define LABEL_H
+#ifndef TEXTWIDGET
+#define TEXTWIDGET
 
-#include <string>
-#include <vector>
+#include "group.h"
 #include "textbase.h"
 
 namespace NNCurses {
 
-// class CLabel: public CWidget
-// {
-//     typedef std::vector<std::string> TLinesList;
-//     
-//     bool m_bCenter;
-//     std::string m_szText;
-//     TLinesList m_Lines;
-//     
-//     void UpdateLines(void);
-//     
-// protected:
-//     virtual void CoreInit(void) { UpdateLines(); }
-//     virtual int CoreRequestWidth(void);
-//     virtual int CoreRequestHeight(void);
-//     virtual void DoDraw(void);
-//     
-// public:
-//     CLabel(const std::string &t) : m_bCenter(true) { SetText(t); }
-//     
-//     void Center(bool c) { m_bCenter = c; }
-//     void SetText(const std::string &t);
-// };
-
-class CLabel: public CTextBase
+class CTextWidget: public CTextBase
 {
+    int m_iXOffset, m_iYOffset;
+    
 protected:
     virtual void DoDraw(void);
+    virtual bool CoreCanFocus(void) { return true; }
     
 public:
-    CLabel(const std::string &t, bool c=true) : CTextBase(c, true) { SetText(t); }
+    CTextWidget(bool w) : CTextBase(false, w), m_iXOffset(0), m_iYOffset(0) { }
+    void SetOffset(int x, int y) { m_iXOffset = x; m_iYOffset = y; }
+    std::pair<int, int> GetRange(void);
 };
+
 
 }
 

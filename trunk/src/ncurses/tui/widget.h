@@ -35,8 +35,6 @@ class CGroup;
 class CWidget
 {
     friend class CGroup;
-    friend class CBox;
-    friend class CWindowManager;
     friend class CTUI;
     
     CGroup *m_pParent;
@@ -100,6 +98,8 @@ protected:
     void PushEvent(int type);
     
     void GetButtonDescs(TButtonDescList &list) { CoreGetButtonDescs(list); }
+    
+    void TouchColor(void) { m_bColorsChanged = true; }
     
 public:
     virtual ~CWidget(void);

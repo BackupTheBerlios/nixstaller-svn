@@ -83,6 +83,7 @@ void StopFrontend()
 #include "tui/label.h"
 #include "tui/tui.h"
 #include "tui/button.h"
+#include "tui/textwindow.h"
 
 void ReportError(const char *msg)
 {
@@ -102,8 +103,12 @@ void StartFrontend(int argc, char **argv)
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
     vbox->SetBox(false);
     
-    NNCurses::CLabel *label = new NNCurses::CLabel("Some buttons below");
-    vbox->AddWidget(label);
+    NNCurses::CTextWindow *twin = new NNCurses::CTextWindow(35, 12, true);
+    
+    for (short s=0;s<18;s++)
+        twin->AddText(CreateText("Line %d\n", s));
+    
+    vbox->AddWidget(twin);
     
     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, true, 0);
     hbox->SetMinHeight(1);
@@ -124,13 +129,6 @@ void StartFrontend(int argc, char **argv)
     
     NNCurses::TUI.AddGroup(win, true);
     
-    win = new NNCurses::CWindow();
-    win->SetFColors(COLOR_YELLOW, COLOR_RED);
-    win->SetDFColors(COLOR_YELLOW, COLOR_RED);
-    
-    win->AddWidget(new NNCurses::CLabel("Another window \\o/"));
-    
-    NNCurses::TUI.AddGroup(win, false);
 
 //     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);
 //     hbox->SetDFColors(COLOR_YELLOW, COLOR_RED);
