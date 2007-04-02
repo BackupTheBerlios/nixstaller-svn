@@ -28,7 +28,7 @@ namespace NNCurses {
 
 void CTextWidget::DoDraw()
 {
-    TLinesList lines = GetLineList();
+    TLinesList &lines = GetLineList();
     
     int y = 0;
     TLinesList::iterator it=lines.begin() + m_iYOffset;
@@ -38,13 +38,17 @@ void CTextWidget::DoDraw()
         if (y >= Height())
             break;
         
-        int len = SafeConvert<int>(it->length());
-        if (len >= m_iXOffset)
-        {
-            int end = std::min(Width(), len-m_iXOffset);
-            mvwaddstr(GetWin(), y, 0, it->substr(m_iXOffset, end).c_str());
-//             mvwaddstr(GetWin(), y, 0, CreateText("%d", y));
-        }
+        DrawLine(y, it);
+    }
+}
+
+void CTextWidget::DrawLine(int y, TLinesList::iterator it)
+{
+    int len = SafeConvert<int>(it->length());
+    if (len >= m_iXOffset)
+    {
+        int end = std::min(Width(), len-m_iXOffset);
+        mvwaddstr(GetWin(), y, 0, it->substr(m_iXOffset, end).c_str());
     }
 }
 

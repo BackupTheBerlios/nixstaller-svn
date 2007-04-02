@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <fstream>
 #include "tui.h"
 #include "textwindow.h"
 #include "textwidget.h"
@@ -31,7 +32,7 @@ namespace NNCurses {
 CTextWindow::CTextWindow(int maxw, int maxh, bool w) : m_bUpdateLayout(true), m_iCurrent(0)
 {
     SetBox(true);
-    m_pTextWidget = new CTextWidget(w);
+    m_pTextWidget = CreateTextWidget(w);
     
     if (maxw)
         m_pTextWidget->SetMaxWidth(maxw);
@@ -48,14 +49,56 @@ CTextWindow::CTextWindow(int maxw, int maxh, bool w) : m_bUpdateLayout(true), m_
 void CTextWindow::DrawLayout()
 {
     SetChildSize(m_pTextWidget, 1, 1, Width()-2, Height()-2);
-    
+    SetChildSize(m_pVScrollbar, Width()-1, 1, 1, Height()-2);
+    SetChildSize(m_pHScrollbar, 1, Height()-1, Width()-2, 1);
+}
+
+void CTextWindow::SyncBars()
+{
     std::pair<int, int> range = m_pTextWidget->GetRange();
     
-    m_pVScrollbar->SetRange(0, range.second);
-    SetChildSize(m_pVScrollbar, Width()-1, 1, 1, Height()-2);
+    range.first -= m_pTextWidget->Width();
+    range.second -= m_pTextWidget->Height();
     
-    m_pHScrollbar->SetRange(0, range.first);
-    SetChildSize(m_pHScrollbar, 1, Height()-1, Width()-2, 1);
+    if (range.first < 0)
+        range.first = 0;
+    
+    if (range.second < 0)
+        range.second = 0;
+    
+    if (range != m_CurRange)
+    {
+        m_pVScrollbar->SetRange(0, range.second);
+        m_pHScrollbar->SetRange(0, range.first);
+        m_CurRange = range;
+    }
+}
+
+void CTextWindow::VScroll(int n, bool relative)
+{
+    if (relative)
+        m_pVScrollbar->Scroll(n);
+    else
+        m_pVScrollbar->SetCurrent(n);
+    
+    m_pTextWidget->SetOffset(m_pHScrollbar->Value(), m_pVScrollbar->Value());
+    RequestQueuedDraw();
+}
+
+void CTextWindow::HScroll(int n, bool relative)
+{
+    if (relative)
+        m_pHScrollbar->Scroll(n);
+    else
+        m_pHScrollbar->SetCurrent(n);
+
+    m_pTextWidget->SetOffset(m_pHScrollbar->Value(), m_pVScrollbar->Value());
+    RequestQueuedDraw();
+}
+
+CTextWidget *CTextWindow::CreateTextWidget(bool w)
+{
+    return new CTextWidget(w);
 }
 
 void CTextWindow::CoreDraw()
@@ -67,6 +110,46 @@ void CTextWindow::CoreDraw()
     }
     
     CGroup::CoreDraw();
+    SyncBars();
+}
+
+bool CTextWindow::CoreHandleKey(chtype key)
+{
+    if (CGroup::CoreHandleKey(key))
+        return true;
+    
+    switch (key)
+    {
+        case KEY_UP:
+            VScroll(-1, true);
+            return true;
+        case KEY_DOWN:
+            VScroll(1, true);
+            return true;
+        case KEY_LEFT:
+            HScroll(-1, true);
+            return true;
+        case KEY_RIGHT:
+            HScroll(1, true);
+            return true;
+        case KEY_PPAGE:
+            VScroll(-m_pTextWidget->Height(), true);
+            return true;
+        case KEY_NPAGE:
+            VScroll(m_pTextWidget->Height(), true);
+            return true;
+        case KEY_HOME:
+            HScroll(0, false);
+            return true;
+        case KEY_END:
+        {
+            std::pair<int, int> range = m_pTextWidget->GetRange();
+            HScroll(range.first-m_pTextWidget->Width(), false);
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 int CTextWindow::CoreRequestWidth()
@@ -83,5 +166,18 @@ void CTextWindow::AddText(const std::string &t)
 {
     m_pTextWidget->AddText(t);
 }
+
+void CTextWindow::LoadFile(const char *f)
+{
+    std::ifstream file(f);
+    std::string buf;
+    char c;
+    
+    while (file && file.get(c))
+        buf += c;
+        
+    AddText(buf);
+}
+
 
 }

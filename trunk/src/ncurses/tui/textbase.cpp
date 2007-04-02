@@ -33,45 +33,64 @@ CTextBase::CTextBase(bool c, bool w) : m_bCenter(c), m_bWrap(w), m_iMaxWidth(0),
 
 void CTextBase::UpdateText()
 {
-    TSTLStrSize length = m_QueuedText.length(), start = 0;
+    TSTLStrSize length = m_QueuedText.length(), start = 0, end;
     
-    if (!m_Lines.empty() && (m_Lines.back().find("\n") == std::string::npos))
+    if (!m_Lines.empty() && (m_Lines.back().rfind("\n") == std::string::npos))
     {
         // This makes adding text easier
         m_QueuedText = m_Lines.back() + m_QueuedText;
         m_Lines.pop_back();
     }
     
-    while (start < length)
+    if (m_bWrap)
     {
-        TSTLStrSize end = start + Width();
-        
-        if (end < start) // Overflow
-            end = length - 1;
-        
-        if (end >= length)
-            end = length - 1;
-        
-        TSTLStrSize newline = m_QueuedText.find("\n", start);
-        if (newline < end)
-            end = newline;
-        
-        if ((((end-start)+1) > SafeConvert<TSTLStrSize>(Width())) && !isspace(m_QueuedText[end]))
+        while (start < length)
         {
-            std::string sub = m_QueuedText.substr(start, (end-start)+1);
-            TSTLStrSize pos = sub.find_last_of(" \t\n");
+            end = start + Width();
             
-            if (pos != std::string::npos)
-                end = start + pos;
+            if (end < start) // Overflow
+                end = length - 1;
+            
+            if (end >= length)
+                end = length - 1;
+            
+            TSTLStrSize newline = m_QueuedText.find("\n", start);
+            if (newline < end)
+                end = newline;
+            
+            if ((((end-start)+1) > SafeConvert<TSTLStrSize>(Width())) && !isspace(m_QueuedText[end]))
+            {
+                std::string sub = m_QueuedText.substr(start, (end-start)+1);
+                TSTLStrSize pos = sub.find_last_of(" \t\n");
+                
+                if (pos != std::string::npos)
+                    end = start + pos;
+            }
+            
+            TSTLStrSize newlen = (end-start)+1;
+            m_Lines.push_back(m_QueuedText.substr(start, newlen));
+            
+            if (newlen > m_LongestLine)
+                m_LongestLine = newlen;
+            
+            start = m_QueuedText.find_first_not_of(" \t\n", end+1);
         }
-        
-        TSTLStrSize newlen = (end-start)+1;
-        m_Lines.push_back(m_QueuedText.substr(start, newlen));
-        
-        if (newlen > m_LongestLine)
-            m_LongestLine = newlen;
-        
-        start = m_QueuedText.find_first_not_of(" \t\n", end+1);
+    }
+    else
+    {
+        do
+        {
+            end = m_QueuedText.find("\n", start);
+            
+            TSTLStrSize newlen = (end-start)+1;
+            m_Lines.push_back(m_QueuedText.substr(start, newlen));
+            
+            if (newlen > m_LongestLine)
+                m_LongestLine = newlen;
+
+            start = end + 1;
+        }
+        while ((end != std::string::npos) && (start < length));
     }
     
     m_QueuedText.clear();

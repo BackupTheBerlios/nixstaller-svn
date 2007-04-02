@@ -82,14 +82,14 @@ int CLabel::CoreRequestHeight()
                                                        
 void CLabel::DoDraw()
 {
-    TLinesList lines = GetLineList();
+    const TLinesList &lines = GetLineList();
     
     int x = 0, y = (Height() - SafeConvert<int>(lines.size())) / 2;
     
     if (y < 0)
         y = 0;
     
-    for (TLinesList::iterator it=lines.begin(); it!=lines.end(); it++, y++)
+    for (TLinesList::const_iterator it=lines.begin(); it!=lines.end(); it++, y++)
     {
         if (y == Height())
             break;
