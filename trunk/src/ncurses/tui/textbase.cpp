@@ -26,12 +26,12 @@ namespace NNCurses {
 // Text Base Class
 // -------------------------------------
 
-CTextBase::CTextBase(bool c, bool w) : m_bCenter(c), m_bWrap(w), m_iMaxWidth(0),
-                                       m_iMaxHeight(0), m_LongestLine(0)
+CTextBase::CTextBase(bool c, bool w) : m_bCenter(c), m_bWrap(w), m_iMaxReqWidth(0),
+                                       m_iMaxReqHeight(0), m_LongestLine(0), m_iCurWidth(0)
 {
 }
 
-void CTextBase::UpdateText()
+void CTextBase::UpdateText(int width)
 {
     TSTLStrSize length = m_QueuedText.length(), start = 0, end;
     
@@ -46,7 +46,7 @@ void CTextBase::UpdateText()
     {
         while (start < length)
         {
-            end = start + Width();
+            end = start + width;
             
             if (end < start) // Overflow
                 end = length - 1;
@@ -58,7 +58,7 @@ void CTextBase::UpdateText()
             if (newline < end)
                 end = newline;
             
-            if ((((end-start)+1) > SafeConvert<TSTLStrSize>(Width())) && !isspace(m_QueuedText[end]))
+            if ((((end-start)+1) > SafeConvert<TSTLStrSize>(width)) && !isspace(m_QueuedText[end]))
             {
                 std::string sub = m_QueuedText.substr(start, (end-start)+1);
                 TSTLStrSize pos = sub.find_last_of(" \t\n");
@@ -82,6 +82,9 @@ void CTextBase::UpdateText()
         {
             end = m_QueuedText.find("\n", start);
             
+            if (end == std::string::npos)
+                end = length;
+            
             TSTLStrSize newlen = (end-start)+1;
             m_Lines.push_back(m_QueuedText.substr(start, newlen));
             
@@ -90,7 +93,7 @@ void CTextBase::UpdateText()
 
             start = end + 1;
         }
-        while ((end != std::string::npos) && (start < length));
+        while (start < length);
     }
     
     m_QueuedText.clear();
@@ -99,31 +102,73 @@ void CTextBase::UpdateText()
 void CTextBase::CoreDraw()
 {
     if (!m_QueuedText.empty())
-        UpdateText();
+        UpdateText(Width());
     
     DrawWidget();
 }
 
 int CTextBase::CoreRequestWidth()
 {
-    if (m_iMaxWidth)
-        return m_iMaxWidth;
+    if (m_iMaxReqWidth)
+        return m_iMaxReqWidth;
 
     if (m_LongestLine)
         return SafeConvert<int>(m_LongestLine);
     
-    return SafeConvert<int>(m_QueuedText.length());
+    if (!m_QueuedText.empty())
+    {
+        TSTLStrSize longest = 0, start = 0, end, length = m_QueuedText.length();
+        
+        do
+        {
+            end = m_QueuedText.find("\n", start);
+            
+            if (end == std::string::npos)
+                end = m_QueuedText.length() - start;
+            
+            longest = std::max(longest, (end - start));
+            start = end + 1;
+        }
+        while (start < length);
+        
+        return std::max(1, SafeConvert<int>(longest));
+    }
+    
+    return 1;
 }
 
 int CTextBase::CoreRequestHeight()
 {
-    if (m_iMaxHeight)
-        return m_iMaxHeight;
+    if (m_iMaxReqHeight)
+        return m_iMaxReqHeight;
 
-    if (!m_Lines.empty())
+    if (!m_QueuedText.empty())
+    {
+        int width = RequestWidth();
+        UpdateText(width);
+        m_iCurWidth = width;
         return SafeConvert<int>(m_Lines.size());
-
+    }
+    
     return 1;
 }
+
+void CTextBase::UpdateSize()
+{
+    if (Width() != m_iCurWidth)
+    {
+        // Big update....
+        std::string oldqueue = m_QueuedText;
+        m_QueuedText.clear();
+        
+        for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end(); it++)
+            m_QueuedText += *it;
+        
+        m_QueuedText += oldqueue;
+        m_Lines.clear();
+        m_iCurWidth = Width();
+    }
+}
+
 
 }

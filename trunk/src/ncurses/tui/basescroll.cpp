@@ -1,0 +1,87 @@
+/*
+    Copyright (C) 2007 Rick Helmus (rhelmus_AT_gmail.com)
+
+    This file is part of Nixstaller.
+    
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version. 
+    
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+    PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+    
+    You should have received a copy of the GNU General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+    St, Fifth Floor, Boston, MA 02110-1301 USA
+*/
+
+#include "tui.h"
+#include "basescroll.h"
+#include "scrollbar.h"
+
+namespace NNCurses {
+
+// -------------------------------------
+// Base Scroll Class
+// -------------------------------------
+
+CBaseScroll::CBaseScroll()
+{
+    SetBox(true);
+    AddWidget(m_pVScrollbar = new CScrollbar(CScrollbar::VERTICAL));
+    AddWidget(m_pHScrollbar = new CScrollbar(CScrollbar::HORIZONTAL));
+}
+
+void CBaseScroll::SyncBars()
+{
+    TScrollRange range = CoreGetRange();
+    TScrollRange region = CoreGetScrollRegion();
+    
+    range.first -= region.first;
+    range.second -= region.second;
+    
+    if (range.first < 0)
+        range.first = 0;
+    
+    if (range.second < 0)
+        range.second = 0;
+    
+    if (range != m_CurRange)
+    {
+        m_pVScrollbar->SetRange(0, range.first);
+        m_pHScrollbar->SetRange(0, range.second);
+        m_CurRange = range;
+    }
+}
+
+void CBaseScroll::CoreDrawLayout()
+{
+    SetChildSize(m_pVScrollbar, Width()-1, 1, 1, Height()-2);
+    SetChildSize(m_pHScrollbar, 1, Height()-1, Width()-2, 1);
+}
+
+void CBaseScroll::VScroll(int n, bool relative)
+{
+    if (relative)
+        m_pVScrollbar->Scroll(n);
+    else
+        m_pVScrollbar->SetCurrent(n);
+    
+    CoreScroll(m_pVScrollbar->Value(), m_pHScrollbar->Value());
+    RequestQueuedDraw();
+}
+
+void CBaseScroll::HScroll(int n, bool relative)
+{
+    if (relative)
+        m_pHScrollbar->Scroll(n);
+    else
+        m_pHScrollbar->SetCurrent(n);
+
+    CoreScroll(m_pVScrollbar->Value(), m_pHScrollbar->Value());
+    RequestQueuedDraw();
+}
+
+}

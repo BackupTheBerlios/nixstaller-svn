@@ -77,6 +77,17 @@ void CScrollbar::DoDraw()
     mvwaddch(GetWin(), SafeConvert<int>(posy), SafeConvert<int>(posx), ACS_CKBOARD);
 }
 
+void CScrollbar::SetRange(int min, int max)
+{
+    m_fMin = static_cast<float>(min);
+    m_fMax = static_cast<float>(max);
+    
+    if (m_fCurrent < m_fMin)
+        m_fCurrent = m_fMin;
+    else if (m_fCurrent > m_fMax)
+        m_fCurrent = m_fMax;
+}
+
 void CScrollbar::Scroll(int n)
 {
     m_fCurrent += static_cast<float>(n);

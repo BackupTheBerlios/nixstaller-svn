@@ -40,7 +40,6 @@ private:
         SBoxEntry(bool e, bool f, int p, bool s) : expand(e), fill(f), padding(p), start(s) { }
     };
     
-    bool m_bUpdateLayout;
     std::map<CWidget *, SBoxEntry> m_BoxEntries;
     EDirection m_eDirection;
     bool m_bEqual;
@@ -57,20 +56,17 @@ protected:
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
-    virtual void CoreDraw(void);
-    virtual void CoreAddWidget(CWidget *w) { m_bUpdateLayout = true; InitChild(w); }
+    virtual void CoreAddWidget(CWidget *w) {UpdateLayout(); InitChild(w); }
     virtual void CoreRemoveWidget(CWidget *w);
     
     virtual int FieldX(void) const { return (HasBox()) ? 1 : 0; }
     virtual int FieldY(void) const { return (HasBox()) ? 1 : 0; }
     virtual int FieldWidth(void) const { return (HasBox()) ? Width()-2 : Width(); }
     virtual int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
-    virtual void DrawLayout(void);
-
-    void UpdateLayout(void);
+    virtual void CoreDrawLayout(void);
     
 public:
-    CBox(EDirection dir, bool equal, int s=0) : m_bUpdateLayout(true), m_eDirection(dir), m_bEqual(equal), m_iSpacing(s) { }
+    CBox(EDirection dir, bool equal, int s=0) : m_eDirection(dir), m_bEqual(equal), m_iSpacing(s) { }
     
     // CGroup needs 2 versions
     void StartPack(CGroup *g, bool e, bool f, int p);

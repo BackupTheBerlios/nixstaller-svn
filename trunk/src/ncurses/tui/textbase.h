@@ -32,18 +32,20 @@ protected:
     
 private:
     bool m_bCenter, m_bWrap;
-    int m_iMaxWidth, m_iMaxHeight;
+    int m_iMaxReqWidth, m_iMaxReqHeight;
     TLinesList m_Lines;
     std::string m_QueuedText;
     TSTLStrSize m_LongestLine;
+    int m_iCurWidth;
     
-    void UpdateText(void);
+    void UpdateText(int width);
     
 protected:
     virtual void CoreDraw(void);
     virtual void DoDraw(void) = 0;
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
+    virtual void UpdateSize(void);
     
     CTextBase(bool c, bool w);
     
@@ -52,14 +54,14 @@ protected:
     TLinesList::size_type LineCount(void) { return m_Lines.size(); }
     bool Center(void) { return m_bCenter; }
     bool Wrap(void) { return m_bWrap; }
-    int MaxWidth(void) { return m_iMaxWidth; }
-    int MaxHeight(void) { return m_iMaxHeight; }
+    int MaxWidth(void) { return m_iMaxReqWidth; }
+    int MaxHeight(void) { return m_iMaxReqHeight; }
 
 public:
     void AddText(const std::string &t) { m_QueuedText += t; }
     void SetText(const std::string &t) { m_Lines.clear(); AddText(t); }
-    void SetMaxWidth(int w) { m_iMaxWidth = w; }
-    void SetMaxHeight(int h) { m_iMaxHeight = h; }
+    void SetMaxReqWidth(int w) { m_iMaxReqWidth = w; }
+    void SetMaxReqHeight(int h) { m_iMaxReqHeight = h; }
 };
 
 

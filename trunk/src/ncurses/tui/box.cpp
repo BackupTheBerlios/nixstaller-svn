@@ -138,7 +138,7 @@ bool CBox::IsValidWidget(CWidget *w)
     return w->Enabled();
 }
 
-void CBox::DrawLayout()
+void CBox::CoreDrawLayout()
 {
     if (Empty())
         return;
@@ -285,27 +285,10 @@ bool CBox::CoreHandleEvent(CWidget *emitter, int event)
     return false;
 }
 
-void CBox::CoreDraw()
-{
-    if (m_bUpdateLayout)
-    {
-        DrawLayout();
-        m_bUpdateLayout = false;
-    }
-    
-    CGroup::CoreDraw();
-}
-
 void CBox::CoreRemoveWidget(CWidget *w)
 {
     UpdateLayout();
     PushEvent(EVENT_REQUPDATE);
-}
-
-void CBox::UpdateLayout()
-{
-    m_bUpdateLayout = true;
-    RequestQueuedDraw();
 }
 
 void CBox::StartPack(CGroup *g, bool e, bool f, int p)

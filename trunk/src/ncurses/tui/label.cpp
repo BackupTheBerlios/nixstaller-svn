@@ -27,59 +27,6 @@ namespace NNCurses {
 // Label Widget Class
 // -------------------------------------
 
-#if 0
-void CLabel::UpdateLines()
-{
-    m_Lines.clear();
-    
-    TSTLStrSize length = m_szText.length(), start = 0;
-    int width = CoreRequestWidth();
-    
-    while (start < length)
-    {
-        TSTLStrSize end = start + width;
-        
-        if (end < start) // Overflow
-            end = length - 1;
-        
-        if (end >= length)
-            end = length - 1;
-        
-        if ((((end-start)+1) > SafeConvert<TSTLStrSize>(width)) && !isspace(m_szText[end]))
-        {
-            std::string sub = m_szText.substr(start, (end-start)+1);
-            TSTLStrSize pos = sub.find_last_of(" \t\n");
-            
-            if (pos != std::string::npos)
-                end = start + pos;
-        }
-        
-        m_Lines.push_back(m_szText.substr(start, (end-start)+1));
-        start = m_szText.find_first_not_of(" \t\n", end+1);
-    }
-}
-
-int CLabel::CoreRequestWidth()
-{
-    if (GetMinWidth())
-        return GetMinWidth();
-    
-    return m_szText.length();
-}
-
-int CLabel::CoreRequestHeight()
-{
-    if (GetMinHeight())
-        return GetMinHeight();
-    
-    if (!m_Lines.empty())
-        return SafeConvert<int>(m_Lines.size());
-    
-    return 1;
-}
-
-#endif
-                                                       
 void CLabel::DoDraw()
 {
     const TLinesList &lines = GetLineList();
@@ -101,16 +48,5 @@ void CLabel::DoDraw()
     }
 }
 
-#if 0
-void CLabel::SetText(const std::string &t)
-{
-    m_szText = t;
-    UpdateLines();
-    
-    if (GetMinWidth() == 0)
-        PushEvent(EVENT_REQUPDATE);
-    else
-        RequestQueuedDraw();
-}
-#endif
+
 }

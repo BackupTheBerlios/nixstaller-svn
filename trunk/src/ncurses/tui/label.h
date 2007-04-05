@@ -26,34 +26,11 @@
 
 namespace NNCurses {
 
-// class CLabel: public CWidget
-// {
-//     typedef std::vector<std::string> TLinesList;
-//     
-//     bool m_bCenter;
-//     std::string m_szText;
-//     TLinesList m_Lines;
-//     
-//     void UpdateLines(void);
-//     
-// protected:
-//     virtual void CoreInit(void) { UpdateLines(); }
-//     virtual int CoreRequestWidth(void);
-//     virtual int CoreRequestHeight(void);
-//     virtual void DoDraw(void);
-//     
-// public:
-//     CLabel(const std::string &t) : m_bCenter(true) { SetText(t); }
-//     
-//     void Center(bool c) { m_bCenter = c; }
-//     void SetText(const std::string &t);
-// };
-
 class CLabel: public CTextBase
 {
 protected:
     virtual void DoDraw(void);
-    
+        
 public:
     CLabel(const std::string &t, bool c=true) : CTextBase(c, true) { SetText(t); }
 };

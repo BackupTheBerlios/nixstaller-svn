@@ -17,31 +17,45 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef TEXTWIDGET
-#define TEXTWIDGET
+#ifndef BASESCROLL
+#define BASESCROLL
 
 #include "group.h"
-#include "textbase.h"
 
 namespace NNCurses {
 
-class CTextWidget: public CTextBase
+class CScrollbar;
+
+class CBaseScroll: public CGroup
 {
-    int m_iXOffset, m_iYOffset;
+protected:
+    typedef std::pair<int, int> TScrollRange;
+    
+private:
+    CScrollbar *m_pVScrollbar, *m_pHScrollbar;
+    TScrollRange m_CurRange;
+    
+    void SyncBars(void);
     
 protected:
-    virtual void DoDraw(void);
-    virtual bool CoreCanFocus(void) { return true; }
-    virtual void DrawLine(int y, TLinesList::iterator it);
-    
-public:
-    CTextWidget(bool w) : CTextBase(false, w), m_iXOffset(0), m_iYOffset(0) { }
-    void SetOffset(int x, int y) { m_iXOffset = x; m_iYOffset = y; }
-    TSTLStrSize GetWRange(void) { return GetLongestLine(); }
-    TSTLVecSize GetHRange(void) { return LineCount(); }
+    virtual void CoreDraw(void) { CGroup::CoreDraw(); SyncBars(); }
+    virtual void CoreDrawLayout(void);
+    virtual void CoreScroll(int vscroll, int hscroll) {  }
+    virtual TScrollRange CoreGetRange(void) = 0;
+    virtual TScrollRange CoreGetScrollRegion(void) = 0;
+
+    void VScroll(int n, bool relative);
+    void HScroll(int n, bool relative);
+    CScrollbar *GetVBar(void) { return m_pVScrollbar; }
+    CScrollbar *GetHBar(void) { return m_pHScrollbar; }
+
+    CBaseScroll(void);
 };
 
 
+
+
 }
+
 
 #endif

@@ -36,6 +36,12 @@ bool CGroup::CanFocusChilds(CWidget *w)
 
 void CGroup::CoreDraw(void)
 {
+    if (m_bUpdateLayout)
+    {
+        DrawLayout();
+        m_bUpdateLayout = false;
+    }
+    
     DrawWidget();
     DrawChilds();
 }

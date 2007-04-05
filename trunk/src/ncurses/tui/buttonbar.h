@@ -21,20 +21,12 @@
 #define BUTTONBAR_H
 
 #include <string>
-#include <deque>
 #include "box.h"
 
 namespace NNCurses {
 
 class CButtonBar: public CBox
 {
-    struct SButtonEntry
-    {
-        std::string name, description;
-        SButtonEntry(const std::string &n, const std::string &d) : name(n), description(d) { }
-    };
-    
-    std::deque<SButtonEntry> m_QueuedEntries;
     CBox *m_pCurBox;
     int m_iMaxWidth;
 

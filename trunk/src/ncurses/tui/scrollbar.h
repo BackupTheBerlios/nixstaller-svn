@@ -41,9 +41,9 @@ protected:
     virtual void DoDraw(void);
     
 public:
-    CScrollbar(EType t) : m_eType(t), m_fMin(0.0f), m_fMax(0.0f) { }
+    CScrollbar(EType t) : m_eType(t), m_fMin(0.0f), m_fMax(0.0f), m_fCurrent(0.0f) { }
     
-    void SetRange(int min, int max) { m_fMin = static_cast<float>(min); m_fMax = static_cast<float>(max); }
+    void SetRange(int min, int max);
     void SetCurrent(int val) { m_fCurrent = static_cast<float>(val); RequestQueuedDraw(); }
     void Scroll(int n);
     int Value(void) { return static_cast<int>(m_fCurrent); }

@@ -20,43 +20,31 @@
 #ifndef TEXTWINDOW
 #define TEXTWINDOW
 
-#include "group.h"
+#include "basescroll.h"
 
 namespace NNCurses {
 
-class CScrollbar;
 class CTextWidget;
 
-class CTextWindow: public CGroup
+class CTextField: public CBaseScroll
 {
-    CScrollbar *m_pVScrollbar, *m_pHScrollbar;
     CTextWidget *m_pTextWidget;
-    bool m_bUpdateLayout;
-    int m_iCurrent;
-    std::pair<int, int> m_CurRange;
     
-    void DrawLayout(void);
-    void SyncBars(void);
-    void VScroll(int n, bool relative);
-    void HScroll(int n, bool relative);
-    
-    virtual CTextWidget *CreateTextWidget(bool w);
-
 protected:
-    virtual void CoreDraw(void);
     virtual bool CoreHandleKey(chtype key);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
-    
-    CTextWidget *GetTextWidget(void) { return m_pTextWidget; }
+    virtual void CoreDrawLayout(void);
+    virtual void CoreScroll(int vscroll, int hscroll);
+    virtual TScrollRange CoreGetRange(void);
+    virtual TScrollRange CoreGetScrollRegion(void);
     
 public:
-    CTextWindow(int maxw, int maxh, bool w);
+    CTextField(int maxw, int maxh, bool w);
+    
     void AddText(const std::string &t);
     void LoadFile(const char *f);
 };
-
-
 
 }
 

@@ -35,10 +35,12 @@ private:
     TChildList m_Childs;
     CWidget *m_pFocusedWidget;
     std::map<CWidget *, CGroup *> m_GroupMap; // Widgets that are also groups
+    bool m_bUpdateLayout;
     
     bool IsGroupWidget(CWidget *w) { return (m_GroupMap[w] != NULL); }
     CGroup *GetGroupWidget(CWidget *w) { return m_GroupMap[w]; }
     bool CanFocusChilds(CWidget *w);
+    void DrawLayout(void) { CoreDrawLayout(); }
     
 protected:
     virtual void CoreDraw(void);
@@ -49,6 +51,7 @@ protected:
     virtual void CoreRemoveWidget(CWidget *w) { }
     virtual void CoreDrawChilds(void);
     virtual void CoreGetButtonDescs(TButtonDescList &list);
+    virtual void CoreDrawLayout(void) { }
 
     void InitChild(CWidget *w);
     TChildList &GetChildList(void) { return m_Childs; }
@@ -56,8 +59,9 @@ protected:
     CWidget *GetFocusedWidget(void) { return m_pFocusedWidget; }
     void SetChildSize(CWidget *widget, int x, int y, int w, int h) { widget->SetSize(x, y, w, h); }
     void DrawChild(CWidget *w) { w->Draw(); }
+    void UpdateLayout(void) { m_bUpdateLayout = true; }
     
-    CGroup(void) : m_pFocusedWidget(NULL) { }
+    CGroup(void) : m_pFocusedWidget(NULL), m_bUpdateLayout(true) { }
 
 public:
     virtual ~CGroup(void) { Clear(); };

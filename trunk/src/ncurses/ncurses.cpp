@@ -83,11 +83,15 @@ void StopFrontend()
 #include "tui/label.h"
 #include "tui/tui.h"
 #include "tui/button.h"
-#include "tui/textwindow.h"
-
+#include "tui/textfield.h"
+#include "tui/menu.h"
+                                                         
 void ReportError(const char *msg)
 {
     // UNDONE
+    FILE *f=fopen("log.txt", "w");
+    fprintf(f, msg);
+    fclose(f);
 }
 
 void StartFrontend(int argc, char **argv)
@@ -103,12 +107,18 @@ void StartFrontend(int argc, char **argv)
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
     vbox->SetBox(false);
     
-    NNCurses::CTextWindow *twin = new NNCurses::CTextWindow(35, 12, true);
+    NNCurses::CTextField *text = new NNCurses::CTextField(35, 6, false);
+    text->LoadFile("about");
+    vbox->AddWidget(text);
     
-    for (short s=0;s<18;s++)
-        twin->AddText(CreateText("Line %d\n", s));
+    NNCurses::CMenu *menu = new NNCurses::CMenu(35, 6);
     
-    vbox->AddWidget(twin);
+    for (short s=0; s<25; s++)
+        menu->AddEntry(CreateText("%d", s), CreateText("Menu Line %d", s));
+    
+    menu->Select("2");
+    
+    vbox->AddWidget(menu);
     
     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, true, 0);
     hbox->SetMinHeight(1);

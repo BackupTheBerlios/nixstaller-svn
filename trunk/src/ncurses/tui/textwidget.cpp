@@ -52,9 +52,4 @@ void CTextWidget::DrawLine(int y, TLinesList::iterator it)
     }
 }
 
-std::pair<int, int> CTextWidget::GetRange()
-{
-    return std::pair<int, int>(SafeConvert<int>(GetLongestLine()), SafeConvert<int>(LineCount()));
-}
-
 }

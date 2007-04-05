@@ -71,23 +71,6 @@ int CWindowManager::CoreRequestHeight()
     return ret;
 }
 
-void CWindowManager::CoreDraw()
-{
-    while (!m_WidgetQueue.empty())
-    {
-        CWidget *w = m_WidgetQueue.front();
-        const int width = w->RequestWidth(), height = w->RequestHeight();
-        const int x = (Width() - width) / 2;
-        const int y = (Height() - height) / 2;
-    
-        SetChildSize(w, x, y, width, height);
-        
-        m_WidgetQueue.pop_front();
-    }
-
-    CGroup::CoreDraw();
-}
-
 void CWindowManager::CoreDrawWidgets()
 {
     TChildList childs = GetChildList();
@@ -110,6 +93,21 @@ void CWindowManager::CoreAddWidget(CWidget *w)
     m_WidgetQueue.push_back(w);
     InitChild(w);
     PushEvent(EVENT_REQUPDATE);
+}
+
+void CWindowManager::CoreDrawLayout()
+{
+    while (!m_WidgetQueue.empty())
+    {
+        CWidget *w = m_WidgetQueue.front();
+        const int width = w->RequestWidth(), height = w->RequestHeight();
+        const int x = (Width() - width) / 2;
+        const int y = (Height() - height) / 2;
+    
+        SetChildSize(w, x, y, width, height);
+        
+        m_WidgetQueue.pop_front();
+    }
 }
 
 }

@@ -33,9 +33,9 @@ protected:
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
-    virtual void CoreDraw(void);
     virtual void CoreDrawWidgets(void);
     virtual void CoreAddWidget(CWidget *w);
+    virtual void CoreDrawLayout(void);
     
 public:
     CWindowManager(void) { }
