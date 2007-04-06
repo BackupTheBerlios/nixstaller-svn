@@ -78,10 +78,13 @@ protected:
     
     virtual void CoreGetButtonDescs(TButtonDescList &list) { }
     
+    virtual void CoreSetCursorPos(void) { move(0, 0); }
+    
     // Interface to be used by friends and derived classes
     void InitDraw(void);
+    void SetCursorPos(void) { CoreSetCursorPos(); }
     void RefreshWidget(void) { wrefresh(m_pNCursWin); }
-    void DrawWidget(void); // Calls above 3 functions. Default behaviour, called from CoreDraw()
+    void DrawWidget(void);
     void Draw(void);
 
     void Init(void);
@@ -100,6 +103,7 @@ protected:
     void GetButtonDescs(TButtonDescList &list) { CoreGetButtonDescs(list); }
     
     void TouchColor(void) { m_bColorsChanged = true; }
+    void SetColorAttr(TColorPair colors, bool e);
     
 public:
     virtual ~CWidget(void);

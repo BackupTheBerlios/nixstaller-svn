@@ -97,6 +97,7 @@ void CWidget::DrawWidget()
 {
     InitDraw();
     DoDraw();
+    SetCursorPos();
     RefreshWidget();
 }
 
@@ -106,6 +107,14 @@ void CWidget::PushEvent(int type)
     
     while (parent && !parent->HandleEvent(this, type))
         parent = parent->m_pParent;
+}
+
+void CWidget::SetColorAttr(TColorPair colors, bool e)
+{
+    if (e)
+        wattron(GetWin(), TUI.GetColorPair(colors.first, colors.second) | A_BOLD);
+    else
+        wattroff(GetWin(), TUI.GetColorPair(colors.first, colors.second) | A_BOLD);
 }
 
 void CWidget::Draw()
@@ -134,7 +143,7 @@ void CWidget::Init()
     
     // UNDONE: Exception
     
-    leaveok(m_pNCursWin, 0);
+    leaveok(m_pNCursWin, FALSE);
     keypad(m_pNCursWin, TRUE);
     meta(m_pNCursWin, TRUE);
     

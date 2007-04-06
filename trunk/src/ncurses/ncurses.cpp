@@ -85,7 +85,7 @@ void StopFrontend()
 #include "tui/button.h"
 #include "tui/textfield.h"
 #include "tui/menu.h"
-#include "tui/radiobutton.h"
+#include "tui/inputfield.h"
 
 void ReportError(const char *msg)
 {
@@ -108,20 +108,8 @@ void StartFrontend(int argc, char **argv)
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
     vbox->SetBox(false);
     
-    NNCurses::CRadioButton *cbox = new NNCurses::CRadioButton;
-    cbox->AddChoice("Howdy");
-    cbox->AddChoice("Hoh");
-    cbox->AddChoice("And stuff");
-    vbox->AddWidget(cbox);
-    
-    NNCurses::CMenu *menu = new NNCurses::CMenu(35, 6);
-    
-    for (short s=0; s<25; s++)
-        menu->AddEntry(CreateText("%d", s), CreateText("Menu Line %d", s));
-    
-    menu->Select("2");
-    
-    vbox->AddWidget(menu);
+    NNCurses::CInputField *input = new NNCurses::CInputField("Hello", NNCurses::CInputField::STRING);
+    vbox->AddWidget(input);
     
     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, true, 0);
     hbox->SetMinHeight(1);

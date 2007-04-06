@@ -45,6 +45,8 @@ class CTUI
     CButtonBar *m_pButtonBar;
     CWindowManager *m_pWinManager;
     
+    std::pair<int, int> m_CursorPos;
+    
     void UpdateButtonBar(void);
     
 public:
@@ -61,6 +63,9 @@ public:
     int GetColorPair(int fg, int bg);
     void QueueDraw(CWidget *w);
     void RemoveFromQueue(CWidget *w);
+    
+    void LockCursor(int x, int y) { m_CursorPos.first = x; m_CursorPos.second = y; }
+    void UnLockCursor(void) { m_CursorPos.first = m_CursorPos.second = 0; }
 };
 
 extern CTUI TUI;
@@ -76,6 +81,7 @@ inline bool IsEscape(chtype ch) { return ch == CTRL('['); }
 bool IsParent(CWidget *parent, CWidget *child);
 bool IsChild(CWidget *child, CWidget *parent);
 bool IsDirectChild(CWidget *child, CWidget *parent);
+void EnableReverse(CWidget *widget, bool e);
 
 }
 

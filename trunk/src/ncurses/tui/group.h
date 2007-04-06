@@ -52,6 +52,7 @@ protected:
     virtual void CoreDrawChilds(void);
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual void CoreDrawLayout(void) { }
+    virtual void CoreSetCursorPos(void);
 
     void InitChild(CWidget *w);
     TChildList &GetChildList(void) { return m_Childs; }

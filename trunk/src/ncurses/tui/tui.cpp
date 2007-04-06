@@ -54,8 +54,8 @@ void CTUI::InitNCurses()
     
     noecho();
     cbreak();
-    curs_set(0); // Hide cursor when possible
-    leaveok(GetRootWin(), 0);
+//     curs_set(0); // Hide cursor when possible
+    leaveok(GetRootWin(), FALSE);
     keypad(GetRootWin(), TRUE);
     meta(GetRootWin(), TRUE);
     
@@ -118,6 +118,8 @@ bool CTUI::Run(int delay)
         if (IsEscape(key)) // Escape pressed
             return false;
     }
+    
+    move(m_CursorPos.second, m_CursorPos.first);
     
     while (!m_QueuedDrawWidgets.empty())
     {

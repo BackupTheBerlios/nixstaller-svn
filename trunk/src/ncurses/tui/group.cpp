@@ -98,6 +98,12 @@ void CGroup::CoreGetButtonDescs(TButtonDescList &list)
         m_pFocusedWidget->GetButtonDescs(list);
 }
 
+void CGroup::CoreSetCursorPos()
+{
+    if (m_pFocusedWidget)
+        m_pFocusedWidget->SetCursorPos();
+}
+
 void CGroup::AddWidget(CGroup *g)
 {
     m_GroupMap[g] = g;

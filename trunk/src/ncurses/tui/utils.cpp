@@ -78,5 +78,12 @@ bool IsDirectChild(CWidget *child, CWidget *parent)
     return (child->GetParentWidget() == parent);
 }
 
+void EnableReverse(CWidget *widget, bool e)
+{
+    if (e)
+        wattron(widget->GetWin(), A_REVERSE);
+    else
+        wattroff(widget->GetWin(), A_REVERSE);
+}
 
 }
