@@ -74,7 +74,7 @@ void CScrollbar::DoDraw()
     if (posy < 0.0f)
         posy = 0.0f;
     
-    mvwaddch(GetWin(), SafeConvert<int>(posy), SafeConvert<int>(posx), ACS_CKBOARD);
+    AddCh(this, SafeConvert<int>(posx), SafeConvert<int>(posy), ACS_CKBOARD);
 }
 
 void CScrollbar::SetRange(int min, int max)

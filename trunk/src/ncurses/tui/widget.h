@@ -51,8 +51,7 @@ class CWidget
     TColorPair m_FColors, m_DFColors; // Focused and DeFocused colors
     bool m_bColorsChanged, m_bSetFColors, m_bSetDFColors;
     
-    void Box(void);
-    void MoveWin(int x, int y);
+    void MoveWindow(int x, int y);
 
 protected:
     enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQUPDATE, EVENT_REQQUEUEDDRAW };
@@ -78,12 +77,9 @@ protected:
     
     virtual void CoreGetButtonDescs(TButtonDescList &list) { }
     
-    virtual void CoreSetCursorPos(void) { move(0, 0); }
-    
     // Interface to be used by friends and derived classes
     void InitDraw(void);
-    void SetCursorPos(void) { CoreSetCursorPos(); }
-    void RefreshWidget(void) { wrefresh(m_pNCursWin); }
+    void RefreshWidget(void) { Refresh(this); }
     void DrawWidget(void);
     void Draw(void);
 

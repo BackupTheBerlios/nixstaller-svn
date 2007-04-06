@@ -38,18 +38,14 @@ void CTextWidget::DoDraw()
         if (y >= Height())
             break;
         
-        DrawLine(y, it);
+        int len = SafeConvert<int>(it->length());
+        if (len >= m_iXOffset)
+        {
+            int end = std::min(Width(), len-m_iXOffset);
+            AddStr(this, 0, y, it->substr(m_iXOffset, end).c_str());
+        }
     }
 }
 
-void CTextWidget::DrawLine(int y, TLinesList::iterator it)
-{
-    int len = SafeConvert<int>(it->length());
-    if (len >= m_iXOffset)
-    {
-        int end = std::min(Width(), len-m_iXOffset);
-        mvwaddstr(GetWin(), y, 0, it->substr(m_iXOffset, end).c_str());
-    }
-}
 
 }

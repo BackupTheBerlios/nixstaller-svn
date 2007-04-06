@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+    Copyright (C) 2007 Rick Helmus (rhelmus_AT_gmail.com)
 
     This file is part of Nixstaller.
     
@@ -17,36 +17,30 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main.h"
-#include "tui.h"
-#include "label.h"
+#ifndef PROGRESSBAR
+#define PROGRESSBAR
+
+#include "widget.h"
 
 namespace NNCurses {
 
-// -------------------------------------
-// Label Widget Class
-// -------------------------------------
-
-void CLabel::DoDraw()
+class CProgressBar: public CWidget
 {
-    const TLinesList &lines = GetLineList();
+    float m_fMin, m_fMax, m_fCurrent;
     
-    int x = 0, y = (Height() - SafeConvert<int>(lines.size())) / 2;
+    void EnableColors(bool e);
     
-    if (y < 0)
-        y = 0;
+protected:
+    virtual void DoDraw(void);
     
-    for (TLinesList::const_iterator it=lines.begin(); it!=lines.end(); it++, y++)
-    {
-        if (y == Height())
-            break;
-
-        if (Center())
-            x = ((Width() - it->length()) / 2);
-        
-        AddStr(this, x, y, it->c_str());
-    }
-}
+public:
+    CProgressBar(float min, float max);
+    
+    void SetCurrent(float cur) { m_fCurrent = cur; RequestQueuedDraw(); }
+    float Value(void) { return m_fCurrent; }
+};
 
 
 }
+
+#endif

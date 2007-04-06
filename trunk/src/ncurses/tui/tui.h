@@ -79,10 +79,28 @@ inline bool IsEnter(chtype ch) { return ((ch==KEY_ENTER) || (ch=='\n') || (ch=='
 inline chtype CTRL(chtype ch) { return ((ch) & 0x1f); }
 inline bool IsEscape(chtype ch) { return ch == CTRL('['); }
 inline bool IsBackspace(chtype ch) { return ((ch == KEY_BACKSPACE) || (ch == 0x07f)); }
+inline bool IsTAB(chtype ch) { return ch == 9; }
 bool IsParent(CWidget *parent, CWidget *child);
 bool IsChild(CWidget *child, CWidget *parent);
 bool IsDirectChild(CWidget *child, CWidget *parent);
-void EnableReverse(CWidget *widget, bool e);
+void AddCh(CWidget *widget, int x, int y, chtype ch);
+void AddStr(CWidget *widget, int x, int y, const char *str);
+void SetAttr(CWidget *widget, chtype attr, bool e);
+void MoveWin(CWidget *widget, int x, int y);
+void MoveDerWin(CWidget *widget, int x, int y);
+void Border(CWidget *widget);
+void EndWin(void);
+void NoEcho(void);
+void CBreak(void);
+void KeyPad(WINDOW *widget, bool on);
+void Meta(WINDOW *widget, bool on);
+void StartColor(void);
+void InitPair(short pair, short f, short b);
+void Move(int x, int y);
+void DelWin(WINDOW *win);
+void WindowResize(CWidget *widget, int w, int h);
+void WindowErase(CWidget *widget);
+void Refresh(CWidget *widget);
 
 }
 

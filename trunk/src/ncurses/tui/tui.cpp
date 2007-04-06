@@ -49,18 +49,17 @@ void CTUI::UpdateButtonBar()
 
 void CTUI::InitNCurses()
 {
-    endwin();
+    EndWin();
     initscr();
     
-    noecho();
-    cbreak();
-//     curs_set(0); // Hide cursor when possible
-    leaveok(GetRootWin(), FALSE);
-    keypad(GetRootWin(), TRUE);
-    meta(GetRootWin(), TRUE);
+    NoEcho();
+    CBreak();
+    leaveok(GetRootWin(), false);
+    KeyPad(GetRootWin(), true);
+    Meta(GetRootWin(), true);
     
     if (has_colors())
-        start_color();
+        StartColor();
     
     m_pMainBox = new CBox(CBox::VERTICAL, false);
     m_pMainBox->SetParent(GetRootWin());
@@ -84,7 +83,7 @@ void CTUI::InitNCurses()
 void CTUI::StopNCurses()
 {
     delete m_pMainBox;
-    endwin();
+    EndWin();
 }
 
 bool CTUI::Run(int delay)
@@ -100,7 +99,7 @@ bool CTUI::Run(int delay)
         {
             if (!m_pActiveGroup->HandleKey(key))
             {
-                if (key == 9) // 9 is TAB
+                if (IsTAB(key))
                 {
                     if (!m_pActiveGroup->SetNextFocWidget(true))
                         m_pActiveGroup->SetNextFocWidget(false);
@@ -119,7 +118,7 @@ bool CTUI::Run(int delay)
             return false;
     }
     
-    move(m_CursorPos.second, m_CursorPos.first);
+    Move(m_CursorPos.first, m_CursorPos.second);
     
     while (!m_QueuedDrawWidgets.empty())
     {
@@ -180,7 +179,7 @@ int CTUI::GetColorPair(int fg, int bg)
     }
     
     m_iCurColorPair++;
-    init_pair(m_iCurColorPair, fg, bg);
+    InitPair(m_iCurColorPair, fg, bg);
     m_ColorPairs[fg][bg] = m_iCurColorPair;
     return COLOR_PAIR(m_iCurColorPair);
 }

@@ -17,9 +17,21 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main.h"
 #include "tui.h"
 #include "widget.h"
 #include "group.h"
+
+namespace {
+
+void Check(int ret, const char *function)
+{
+    if (ret == ERR)
+        throw Exceptions::CExFrontend(CreateText("ncurses function \'%s\' returned an error.", function));
+}
+
+}
+
 
 namespace NNCurses {
 
@@ -78,12 +90,98 @@ bool IsDirectChild(CWidget *child, CWidget *parent)
     return (child->GetParentWidget() == parent);
 }
 
-void EnableReverse(CWidget *widget, bool e)
+void AddCh(CWidget *widget, int x, int y, chtype ch)
+{
+    /*Check*/(mvwaddch(widget->GetWin(), y, x, ch), "mvwaddch");
+}
+
+void AddStr(CWidget *widget, int x, int y, const char *str)
+{
+    /*Check*/(mvwaddstr(widget->GetWin(), y, x, str), "mvwaddstr");
+}
+
+void SetAttr(CWidget *widget, chtype attr, bool e)
 {
     if (e)
-        wattron(widget->GetWin(), A_REVERSE);
+        Check(wattron(widget->GetWin(), attr), "wattron");
     else
-        wattroff(widget->GetWin(), A_REVERSE);
+        Check(wattroff(widget->GetWin(), attr), "wattroff");
 }
+
+void MoveWin(CWidget *widget, int x, int y)
+{
+    Check(mvwin(widget->GetWin(), y, x), "mvwin");
+}
+
+void MoveDerWin(CWidget *widget, int x, int y)
+{
+    Check(mvderwin(widget->GetWin(), y, x), "mvwin");
+}
+
+void Border(CWidget *widget)
+{
+    Check(wborder(widget->GetWin(), 0, 0, 0, 0, 0, 0, 0, 0), "wborder");
+}
+
+void EndWin()
+{
+    /*Check*/(endwin(), "endwin");
+}
+
+void NoEcho()
+{
+    Check(noecho(), "noecho");
+}
+
+void CBreak()
+{
+    Check(cbreak(), "cbreak");
+}
+
+void KeyPad(WINDOW *win, bool on)
+{
+    Check(keypad(win, on), "keypad");
+}
+
+void Meta(WINDOW *win, bool on)
+{
+    Check(meta(win, on), "meta");
+}
+
+void StartColor()
+{
+    Check(start_color(), "start_color");
+}
+
+void InitPair(short pair, short f, short b)
+{
+    Check(init_pair(pair, f, b), "init_pair");
+}
+
+void Move(int x, int y)
+{
+    Check(move(y, x), "move");
+}
+
+void DelWin(WINDOW *win)
+{
+    Check(delwin(win), "delwin");
+}
+
+void WindowResize(CWidget *widget, int w, int h)
+{
+    Check(wresize(widget->GetWin(), h, w), "wresize");
+}
+
+void WindowErase(CWidget *widget)
+{
+    Check(werase(widget->GetWin()), "werase");
+}
+
+void Refresh(CWidget *widget)
+{
+    Check(wrefresh(widget->GetWin()), "wrefresh");
+}
+
 
 }

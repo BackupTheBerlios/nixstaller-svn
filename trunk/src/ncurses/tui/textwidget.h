@@ -32,7 +32,6 @@ class CTextWidget: public CTextBase
 protected:
     virtual void DoDraw(void);
     virtual bool CoreCanFocus(void) { return true; }
-    virtual void DrawLine(int y, TLinesList::iterator it);
     
 public:
     CTextWidget(bool w) : CTextBase(false, w), m_iXOffset(0), m_iYOffset(0) { }

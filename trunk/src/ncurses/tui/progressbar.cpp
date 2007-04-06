@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+    Copyright (C) 2007 Rick Helmus (rhelmus_AT_gmail.com)
 
     This file is part of Nixstaller.
     
@@ -19,34 +19,49 @@
 
 #include "main.h"
 #include "tui.h"
-#include "label.h"
+#include "progressbar.h"
 
 namespace NNCurses {
 
 // -------------------------------------
-// Label Widget Class
+// Progress Bar Class
 // -------------------------------------
 
-void CLabel::DoDraw()
+CProgressBar::CProgressBar(float min, float max) : m_fMin(min), m_fMax(max), m_fCurrent(min)
 {
-    const TLinesList &lines = GetLineList();
-    
-    int x = 0, y = (Height() - SafeConvert<int>(lines.size())) / 2;
-    
-    if (y < 0)
-        y = 0;
-    
-    for (TLinesList::const_iterator it=lines.begin(); it!=lines.end(); it++, y++)
-    {
-        if (y == Height())
-            break;
-
-        if (Center())
-            x = ((Width() - it->length()) / 2);
-        
-        AddStr(this, x, y, it->c_str());
-    }
+    SetMinWidth(1);
+    SetMinHeight(3);
+    SetBox(true);
 }
 
+void CProgressBar::EnableColors(bool e)
+{
+    TColorPair colors;
+    
+    colors.first = COLOR_BLACK;
+    
+    if (!has_colors())
+        colors.second = COLOR_WHITE;
+    else
+        colors.second = COLOR_GREEN;
+    
+    SetColorAttr(colors, e);
+}
+
+void CProgressBar::DoDraw()
+{
+    float maxw = SafeConvert<float>(Width()) - 2.0f; // -2 for the borders
+    const float range = m_fMax - m_fMin;
+    float fac = (range > 0.0f) ? (m_fCurrent / range) : 0.0f;
+    
+    EnableColors(true);
+    
+    int fill = SafeConvert<int>(maxw * fac);
+    
+    for (int i=0; i<fill; i++)
+        AddCh(this, i+1, 1, ' ');
+    
+    EnableColors(false);
+}
 
 }

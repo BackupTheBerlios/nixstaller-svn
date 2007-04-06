@@ -40,27 +40,20 @@ CWidget::~CWidget()
         m_pParent->RemoveWidget(this);
 
     if (m_pNCursWin)
-        delwin(m_pNCursWin);
+        DelWin(m_pNCursWin);
     
     // IMPORTANT: This needs to be at the end! It ensures this widget won't be in the queue, since this or
     // one of the derived destructors may call QueueDraw()
     TUI.RemoveFromQueue(this);
 }
 
-void CWidget::MoveWin(int x, int y)
+void CWidget::MoveWindow(int x, int y)
 {
     int realx = x + GetWX(GetParentWin());
     int realy = y + GetWY(GetParentWin());
-    int ret = mvwin(m_pNCursWin, realy, realx);
-    assert(ret != ERR);
     
-    mvderwin(m_pNCursWin, y, x);
-    assert(ret != ERR);
-}
-
-void CWidget::Box()
-{
-    wborder(m_pNCursWin, 0, 0, 0, 0, 0, 0, 0, 0);
+    MoveWin(this, realx, realy);
+    MoveDerWin(this, x, y);
 }
 
 void CWidget::InitDraw()
@@ -79,25 +72,23 @@ void CWidget::InitDraw()
     
     if (m_bSizeChanged)
     {
-        MoveWin(0, 0); // Move to a safe position first
-        int ret = wresize(m_pNCursWin, Height(), Width());
-        assert(ret != ERR);
-        MoveWin(X(), Y());
+        MoveWindow(0, 0); // Move to a safe position first
+        WindowResize(this, Width(), Height());
+        MoveWindow(X(), Y());
         UpdateSize();
         m_bSizeChanged = false;
     }
 
-    werase(m_pNCursWin);
+    WindowErase(this);
 
     if (HasBox())
-        Box();
+        Border(this);
 }
 
 void CWidget::DrawWidget()
 {
     InitDraw();
     DoDraw();
-    SetCursorPos();
     RefreshWidget();
 }
 
@@ -111,10 +102,7 @@ void CWidget::PushEvent(int type)
 
 void CWidget::SetColorAttr(TColorPair colors, bool e)
 {
-    if (e)
-        wattron(GetWin(), TUI.GetColorPair(colors.first, colors.second) | A_BOLD);
-    else
-        wattroff(GetWin(), TUI.GetColorPair(colors.first, colors.second) | A_BOLD);
+    SetAttr(this, TUI.GetColorPair(colors.first, colors.second) | A_BOLD, e);
 }
 
 void CWidget::Draw()
@@ -143,9 +131,9 @@ void CWidget::Init()
     
     // UNDONE: Exception
     
-    leaveok(m_pNCursWin, FALSE);
-    keypad(m_pNCursWin, TRUE);
-    meta(m_pNCursWin, TRUE);
+    leaveok(m_pNCursWin, false);
+    KeyPad(m_pNCursWin, true);
+    Meta(m_pNCursWin, true);
     
     if (m_pParent)
     {

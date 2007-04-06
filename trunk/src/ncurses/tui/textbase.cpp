@@ -115,6 +115,8 @@ int CTextBase::CoreRequestWidth()
     if (m_LongestLine)
         return SafeConvert<int>(m_LongestLine);
     
+    int min = std::max(1, GetMinWidth());
+    
     if (!m_QueuedText.empty())
     {
         TSTLStrSize longest = 0, start = 0, end, length = m_QueuedText.length();
@@ -124,17 +126,17 @@ int CTextBase::CoreRequestWidth()
             end = m_QueuedText.find("\n", start);
             
             if (end == std::string::npos)
-                end = m_QueuedText.length() - start;
+                end = m_QueuedText.length();
             
-            longest = std::max(longest, (end - start));
+            longest = std::max(longest, (end - start)+1);
             start = end + 1;
         }
         while (start < length);
         
-        return std::max(1, SafeConvert<int>(longest));
+        return std::max(min, SafeConvert<int>(longest));
     }
     
-    return 1;
+    return min;
 }
 
 int CTextBase::CoreRequestHeight()
@@ -150,7 +152,7 @@ int CTextBase::CoreRequestHeight()
         return SafeConvert<int>(m_Lines.size());
     }
     
-    return 1;
+    return std::max(1, GetMinHeight());
 }
 
 void CTextBase::UpdateSize()
@@ -170,5 +172,12 @@ void CTextBase::UpdateSize()
     }
 }
 
+void CTextBase::Clear()
+{
+    m_LongestLine = 0;
+    m_Lines.clear();
+    m_QueuedText.clear();
+    RequestQueuedDraw();
+}
 
 }

@@ -60,7 +60,7 @@ protected:
 public:
     void AddText(const std::string &t) { m_QueuedText += t; RequestQueuedDraw(); }
     void SetText(const std::string &t) { m_Lines.clear(); AddText(t); }
-    void Clear(void) { m_Lines.clear(); m_QueuedText.clear(); RequestQueuedDraw(); }
+    void Clear(void);
     void SetMaxReqWidth(int w) { m_iMaxReqWidth = w; }
     void SetMaxReqHeight(int h) { m_iMaxReqHeight = h; }
 };

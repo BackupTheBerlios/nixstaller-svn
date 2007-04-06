@@ -77,15 +77,16 @@ void StopFrontend()
 
 #else
 
+#include "tui/tui.h"
 #include "tui/widget.h"
 #include "tui/window.h"
 #include "tui/box.h"
 #include "tui/label.h"
-#include "tui/tui.h"
 #include "tui/button.h"
 #include "tui/textfield.h"
 #include "tui/menu.h"
 #include "tui/inputfield.h"
+#include "tui/progressbar.h"
 
 void ReportError(const char *msg)
 {
@@ -107,6 +108,10 @@ void StartFrontend(int argc, char **argv)
     
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
     vbox->SetBox(false);
+    
+    NNCurses::CProgressBar *prog = new NNCurses::CProgressBar(0.0f, 100.0f);
+    prog->SetCurrent(33.3f);
+    vbox->AddWidget(prog);
     
     NNCurses::CInputField *input = new NNCurses::CInputField("Hello", NNCurses::CInputField::STRING, 8, '*');
     vbox->AddWidget(input);

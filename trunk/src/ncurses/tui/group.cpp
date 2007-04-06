@@ -53,9 +53,7 @@ void CGroup::UpdateSize()
         if (!(*it)->GetWin()) // Widget isn't created yet (size will be set when widget is created)
             continue;
         
-        int ret = mvwin((*it)->GetWin(), Y()+(*it)->Y(), X()+(*it)->X());
-        assert(ret != ERR);
-        // UNDONE: Exception
+        MoveWin(*it, X()+(*it)->X(), Y()+(*it)->Y());
     }
 }
 
@@ -96,12 +94,6 @@ void CGroup::CoreGetButtonDescs(TButtonDescList &list)
 {
     if (m_pFocusedWidget)
         m_pFocusedWidget->GetButtonDescs(list);
-}
-
-void CGroup::CoreSetCursorPos()
-{
-    if (m_pFocusedWidget)
-        m_pFocusedWidget->SetCursorPos();
 }
 
 void CGroup::AddWidget(CGroup *g)

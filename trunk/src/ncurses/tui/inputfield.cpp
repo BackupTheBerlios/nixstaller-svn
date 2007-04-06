@@ -93,6 +93,9 @@ void CInputField::Move(int n, bool relative)
 
 bool CInputField::ValidChar(chtype ch)
 {
+    if (IsTAB(ch))
+        return false;
+    
     if ((m_eInputType == INT) || (m_eInputType == FLOAT))
     {
         std::string legal = "1234567890";
@@ -152,9 +155,9 @@ void CInputField::DoDraw()
         end = length;
     
     if (m_cOut)
-        mvwaddstr(GetWin(), 0, 0, std::string(end-m_StartPos, m_cOut).c_str());
+        AddStr(this, 0, 0, std::string(end-m_StartPos, m_cOut).c_str());
     else
-        mvwaddstr(GetWin(), 0, 0, m_Text.substr(m_StartPos, end).c_str());
+        AddStr(this, 0, 0, m_Text.substr(m_StartPos, end).c_str());
     
     if (Focused())
         TUI.LockCursor(GetWX(GetWin()) + SafeConvert<int>(m_CursorPos), GetWY(GetWin()));

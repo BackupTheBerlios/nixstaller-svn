@@ -87,17 +87,17 @@ void CMenu::DoDraw()
         bool highlight = ((y-1) == m_iCursorLine);
         
         if (highlight)
-            wattron(GetWin(), A_REVERSE);
+            SetAttr(this, A_REVERSE, true);
         
         int len = SafeConvert<int>(it->name.length());
         if (len >= m_iXOffset)
         {
             int end = std::min(Width(), len-m_iXOffset);
-            mvwaddstr(GetWin(), y, 1, it->name.substr(m_iXOffset, end).c_str());
+            AddStr(this, 1, y, it->name.substr(m_iXOffset, end).c_str());
         }
         
         if (highlight)
-            wattroff(GetWin(), A_REVERSE);
+            SetAttr(this, A_REVERSE, false);
     }
 }
 

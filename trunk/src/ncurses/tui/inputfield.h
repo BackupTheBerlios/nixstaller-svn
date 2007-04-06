@@ -47,7 +47,6 @@ protected:
     virtual bool CoreHandleKey(chtype key);
     virtual void UpdateFocus(void);
     virtual bool CoreCanFocus(void) { return true; }
-//     virtual void CoreSetCursorPos(void) { wmove(GetWin(), 0, m_CursorPos); }
     
 public:
     CInputField(const std::string &t, EInputType e, int max=0, char out=0);

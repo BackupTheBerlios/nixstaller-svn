@@ -58,12 +58,12 @@ void CBaseChoice::DoDraw()
         bool highlight = (cur == m_iSelection);
         
         if (highlight)
-            wattron(GetWin(), A_REVERSE);
+            SetAttr(this, A_REVERSE, true);
         
-        mvwaddstr(GetWin(), y, x, CoreGetText(*it).c_str());
+        AddStr(this, x, y, CoreGetText(*it).c_str());
         
         if (highlight)
-            wattroff(GetWin(), A_REVERSE);
+            SetAttr(this, A_REVERSE, false);
         
         x += length + 1;
     }
