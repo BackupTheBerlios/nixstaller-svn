@@ -127,7 +127,12 @@ bool CMenu::CoreHandleKey(chtype key)
             Move(ScrollFieldHeight()-1);
             return true;
         default:
-            if (isprint(key)) // Go to item which starts with typed character
+            if (IsEnter(key))
+            {
+                PushEvent(EVENT_CALLBACK);
+                return true;
+            }
+            else if (isprint(key)) // Go to item which starts with typed character
             {
                 // First try from current position
                 TMenuList::iterator cur = m_MenuList.begin() + GetCurrent();
@@ -141,6 +146,8 @@ bool CMenu::CoreHandleKey(chtype key)
                     VScroll(SafeConvert<int>(std::distance(m_MenuList.begin(), line)), false);
                     PushEvent(EVENT_DATACHANGED);
                 }
+                
+                return true;
             }
     }
 
