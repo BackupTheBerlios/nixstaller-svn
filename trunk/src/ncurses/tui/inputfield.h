@@ -28,13 +28,19 @@ namespace NNCurses {
 class CInputField: public CWidget
 {
 public:
-    enum EInputType { STRING, NUMERIC, FLOAT };
+    enum EInputType { STRING, INT, FLOAT };
     
     std::string m_Text;
+    int m_iMaxChars;
+    char m_cOut;
     EInputType m_eInputType;
     TSTLStrSize m_StartPos, m_CursorPos;
     
+    TSTLStrSize GetPosition(void) { return m_StartPos + m_CursorPos; }
     void Move(int n, bool relative);
+    bool ValidChar(chtype ch);
+    void Addch(chtype ch);
+    void Delch(TSTLStrSize pos);
     
 protected:
     virtual void DoDraw(void);
@@ -44,7 +50,7 @@ protected:
 //     virtual void CoreSetCursorPos(void) { wmove(GetWin(), 0, m_CursorPos); }
     
 public:
-    CInputField(const std::string &t, EInputType e);
+    CInputField(const std::string &t, EInputType e, int max=0, char out=0);
     
     void SetText(const std::string &t);
 };

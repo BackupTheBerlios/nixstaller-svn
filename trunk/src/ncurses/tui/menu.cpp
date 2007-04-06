@@ -195,8 +195,35 @@ CMenu::TScrollRange CMenu::CoreGetScrollRegion()
 void CMenu::AddEntry(const std::string &id, const std::string &name)
 {
     m_MenuList.insert(std::lower_bound(m_MenuList.begin(), m_MenuList.end(), name), SEntry(id, name));
+    RequestQueuedDraw();
 }
 
+void CMenu::Select(const std::string &id)
+{
+    TMenuList::iterator line = std::lower_bound(m_MenuList.begin(), m_MenuList.end(), id);
+
+    if ((line != m_MenuList.end()) && (line->id == id))
+    {
+        VScroll(SafeConvert<int>(std::distance(m_MenuList.begin(), line)), false);
+        PushEvent(EVENT_DATACHANGED);
+    }
+}
+
+void CMenu::Clear()
+{
+    m_MenuList.clear();
+    m_iXOffset = m_iYOffset = m_iCursorLine = 0;
+    RequestQueuedDraw();
+    PushEvent(EVENT_DATACHANGED);
+}
+
+void CMenu::SetName(const std::string &id, const std::string &name)
+{
+    TMenuList::iterator line = std::lower_bound(m_MenuList.begin(), m_MenuList.end(), id);
+
+    if ((line != m_MenuList.end()) && (line->id == id))
+        line->name = name;
+}
 
 }
 

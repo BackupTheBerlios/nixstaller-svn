@@ -78,6 +78,7 @@ int GetWHeight(WINDOW *w);
 inline bool IsEnter(chtype ch) { return ((ch==KEY_ENTER) || (ch=='\n') || (ch=='\r')); }
 inline chtype CTRL(chtype ch) { return ((ch) & 0x1f); }
 inline bool IsEscape(chtype ch) { return ch == CTRL('['); }
+inline bool IsBackspace(chtype ch) { return ((ch == KEY_BACKSPACE) || (ch == 0x07f)); }
 bool IsParent(CWidget *parent, CWidget *child);
 bool IsChild(CWidget *child, CWidget *parent);
 bool IsDirectChild(CWidget *child, CWidget *parent);

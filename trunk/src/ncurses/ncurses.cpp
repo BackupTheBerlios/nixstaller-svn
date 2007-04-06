@@ -108,7 +108,7 @@ void StartFrontend(int argc, char **argv)
     NNCurses::CBox *vbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
     vbox->SetBox(false);
     
-    NNCurses::CInputField *input = new NNCurses::CInputField("Hello", NNCurses::CInputField::STRING);
+    NNCurses::CInputField *input = new NNCurses::CInputField("Hello", NNCurses::CInputField::STRING, 8, '*');
     vbox->AddWidget(input);
     
     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, true, 0);

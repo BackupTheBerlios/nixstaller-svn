@@ -26,8 +26,9 @@ namespace NNCurses {
 // Input Field Class
 // -------------------------------------
 
-CInputField::CInputField(const std::string &t, EInputType e) : m_Text(t), m_eInputType(e),
-                                                               m_StartPos(0), m_CursorPos(0)
+CInputField::CInputField(const std::string &t, EInputType e, int max,
+                         char out) : m_Text(t), m_iMaxChars(max), m_cOut(out), m_eInputType(e),
+                                     m_StartPos(0), m_CursorPos(0)
 {
     SetFColors(COLOR_YELLOW, COLOR_RED);
     SetDFColors(COLOR_WHITE, COLOR_RED);
@@ -90,6 +91,59 @@ void CInputField::Move(int n, bool relative)
     RequestQueuedDraw();
 }
 
+bool CInputField::ValidChar(chtype ch)
+{
+    if ((m_eInputType == INT) || (m_eInputType == FLOAT))
+    {
+        std::string legal = "1234567890";
+
+        lconv *lc = localeconv();
+        assert(lc != NULL);
+                    
+        std::string decpoint = std::string(lc->decimal_point) + std::string(lc->mon_decimal_point) + std::string(".");
+        std::string plusminsign = std::string(lc->positive_sign) + std::string(lc->negative_sign) + std::string("-+");
+                    
+        if ((m_eInputType == FLOAT) && (m_Text.find_first_of(decpoint) == std::string::npos))
+            legal += decpoint;
+                    
+        if ((GetPosition() == 0) && (m_Text.find_first_of(plusminsign) == std::string::npos))
+            legal += plusminsign;
+                    
+        if (legal.find(ch) == std::string::npos)
+            return false; // Illegal char
+    }
+    
+    return true;
+}
+
+void CInputField::Addch(chtype ch)
+{
+    TSTLStrSize length = m_Text.length();
+    
+    if (m_iMaxChars && (length >= m_iMaxChars))
+        return;
+    
+    TSTLStrSize pos = GetPosition();
+    
+    if (pos >= length)
+        m_Text += ch;
+    else
+        m_Text.insert(pos, 1, ch);
+    
+    Move(1, true);
+    PushEvent(EVENT_DATACHANGED);
+}
+
+void CInputField::Delch(TSTLStrSize pos)
+{
+    if ((m_Text.empty()) || (pos > m_Text.size()))
+        return;
+    
+    m_Text.erase(pos, 1);
+    RequestQueuedDraw();
+    PushEvent(EVENT_DATACHANGED);
+}
+
 void CInputField::DoDraw()
 {
     TSTLStrSize end = m_StartPos + Width(), length = m_Text.length();
@@ -97,7 +151,10 @@ void CInputField::DoDraw()
     if (end > length)
         end = length;
     
-    mvwaddstr(GetWin(), 0, 0, m_Text.substr(m_StartPos, end).c_str());
+    if (m_cOut)
+        mvwaddstr(GetWin(), 0, 0, std::string(end-m_StartPos, m_cOut).c_str());
+    else
+        mvwaddstr(GetWin(), 0, 0, m_Text.substr(m_StartPos, end).c_str());
     
     if (Focused())
         TUI.LockCursor(GetWX(GetWin()) + SafeConvert<int>(m_CursorPos), GetWY(GetWin()));
@@ -115,6 +172,15 @@ bool CInputField::CoreHandleKey(chtype key)
         Move(m_Text.length(), false);
     else if (IsEnter(key))
         PushEvent(EVENT_CALLBACK);
+    else if (key == KEY_DC)
+        Delch(GetPosition());
+    else if (IsBackspace(key))
+    {
+        Delch(GetPosition()-1);
+        Move(-1, true);
+    }
+    else if (ValidChar(key))
+        Addch(key);
     else
         return false;
     

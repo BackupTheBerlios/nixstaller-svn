@@ -61,6 +61,7 @@ protected:
 public:
     void AddChoice(const std::string &c) { m_ChoiceList.push_back(SEntry(c, false)); }
     void Select(int n) { CoreSelect(m_ChoiceList.at(n-1)); }
+    void SetName(int n, const std::string &name) { m_ChoiceList.at(n).name = name; RequestQueuedDraw(); }
 };
 
 

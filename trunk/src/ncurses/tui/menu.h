@@ -32,7 +32,7 @@ class CMenu: public CBaseScroll
     {
         std::string id, name;
         bool operator <(const SEntry &s) { return name < s.name; }
-        bool operator <(const std::string &s) { return name < s; }
+        bool operator <(const std::string &s) { return id < s; }
         bool operator <(char c) { return name[0] < c; }
         SEntry(const std::string &i, const std::string &n) : id(i), name(n) { }
     };
@@ -66,7 +66,9 @@ public:
                                 m_iXOffset(0), m_iYOffset(0), m_iCursorLine(0) { }
 
     void AddEntry(const std::string &id, const std::string &name);
-    void Select(const std::string &id) { m_MarkedLine = id; RequestQueuedDraw(); }
+    void Select(const std::string &id);
+    void Clear(void);
+    void SetName(const std::string &id, const std::string &name);
 };
 
 
