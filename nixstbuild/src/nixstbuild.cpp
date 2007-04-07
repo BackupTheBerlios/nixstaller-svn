@@ -25,6 +25,7 @@ using namespace std;
 #include <QtGui>
 #include "nixstbuild.h"
 #include "ui_textfedit.h"
+#include "luahl.h"
 
 #include <QDir>
 #include <QDialog>
@@ -74,6 +75,8 @@ nixstbuild::nixstbuild()
     tabs = new QTabWidget;
     msplitter->addWidget(folderview);
     msplitter->addWidget(tabs);
+    msplitter->setStretchFactor(0, 1);
+    msplitter->setStretchFactor(1, 3);
 
     addFileTab();
     addConfigTab();
@@ -141,7 +144,12 @@ bool nixstbuild::save()
 
     string cmd = "cd " + QFileInfo(settings.value("geninstall").toString()).absolutePath().toStdString() + " && ";
     cmd += settings.value("geninstall").toString().toStdString() + " " + qd->absolutePath().toStdString();
-    system(cmd.c_str());
+    QTextEdit *consoleWin= new QTextEdit(0);
+
+    FILE *console = popen(cmd.c_str(), "r");
+
+    pclose(console);
+
     QMessageBox::information(this, "Nixstbuild", "Finished building package");
     return true;
 }
@@ -257,7 +265,6 @@ void nixstbuild::addFileTab()
     ft_arch = new QComboBox(ft_parent);
     ft_arch->insertItem(0, "all");
     ft_arch->insertItem(1, "x86");
-    ft_arch->insertItem(2, "x86_64");
 
     ft_os = new QComboBox(ft_parent);
     ft_os->insertItem(0, "all");
@@ -323,9 +330,9 @@ void nixstbuild::addConfigTab()
     ct_layout->addWidget(ct_appName, 1, 1);
     ct_layout->addWidget(new QLabel("Archive type:"), 2, 0);
     ct_archiveType = new QComboBox;
-    ct_archiveType->insertItem(0, "gzip");
+    ct_archiveType->insertItem(0, "lzma");
     ct_archiveType->insertItem(1, "bzip2");
-    ct_archiveType->insertItem(2, "lzma");
+    ct_archiveType->insertItem(2, "gzip");
     ct_layout->addWidget(ct_archiveType, 2, 1);
     ct_layout->addWidget(new QLabel("Default language:"), 3, 0);
     ct_defaultLang = new QLineEdit("english");
@@ -333,7 +340,9 @@ void nixstbuild::addConfigTab()
 
     QHBoxLayout *ct_hlayout = new QHBoxLayout;
     ct_feNcurses = new QCheckBox("ncurses");
+    ct_feNcurses->setChecked(true);
     ct_feFltk = new QCheckBox("fltk");
+    ct_feFltk->setChecked(true);
     ct_hlayout->addWidget(ct_feNcurses);
     ct_hlayout->addWidget(ct_feFltk);
     ct_layout->addWidget(new QLabel("Frontends:"), 4, 0);
@@ -374,6 +383,7 @@ void nixstbuild::addRunTab()
     rt_btns->setAlignment(Qt::AlignLeft);
 
     rt_textedit = new QTextEdit;
+    LuaHighlighter *lh = new LuaHighlighter(rt_textedit->document());
 
     rt_mainlayout->addLayout(rt_btns);
     rt_mainlayout->addWidget(rt_textedit);

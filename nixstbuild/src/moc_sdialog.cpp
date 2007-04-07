@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'sdialog.h'
 **
-** Created: Sat Mar 3 20:44:35 2007
+** Created: Sun Mar 25 20:22:08 2007
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.2.0)
 **
 ** WARNING! All changes made in this file will be lost!

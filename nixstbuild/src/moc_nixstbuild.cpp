@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'nixstbuild.h'
 **
-** Created: Sun Mar 4 16:32:06 2007
+** Created: Sun Mar 25 20:22:06 2007
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.2.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -22,7 +22,7 @@ static const uint qt_meta_data_nixstbuild[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-      16,   10, // methods
+      27,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
@@ -40,9 +40,20 @@ static const uint qt_meta_data_nixstbuild[] = {
      143,   11,   11,   11, 0x08,
      153,   11,   11,   11, 0x08,
      167,   11,   11,   11, 0x08,
-     182,   11,   11,   11, 0x08,
-     203,  199,   11,   11, 0x08,
-     227,   11,   11,   11, 0x08,
+     184,   11,   11,   11, 0x08,
+     199,   11,   11,   11, 0x08,
+     220,  216,   11,   11, 0x08,
+     244,   11,   11,   11, 0x08,
+     259,   11,   11,   11, 0x08,
+     274,   11,   11,   11, 0x08,
+     286,   11,   11,   11, 0x08,
+     299,   11,   11,   11, 0x08,
+     317,   11,   11,   11, 0x08,
+     329,   11,   11,   11, 0x08,
+     345,   11,   11,   11, 0x08,
+     358,   11,   11,   11, 0x08,
+     372,   11,   11,   11, 0x08,
+     391,   11,   11,   11, 0x08,
 
        0        // eod
 };
@@ -50,8 +61,11 @@ static const uint qt_meta_data_nixstbuild[] = {
 static const char qt_meta_stringdata_nixstbuild[] = {
     "nixstbuild\0\0newFile()\0bool\0save()\0about()\0documentWasModified()\0"
     "ft_addFile()\0ft_addDir()\0saveLicense()\0saveWelcome()\0saveFinish()\0"
-    "saveConfig()\0saveRun()\0generateRun()\0openIntroPic()\0"
-    "settingsDialog()\0pos\0fvCustomContext(QPoint)\0fvDeleteFile()\0"
+    "saveConfig()\0saveRun()\0generateRun()\0insertTemplate()\0"
+    "openIntroPic()\0settingsDialog()\0pos\0fvCustomContext(QPoint)\0"
+    "fvDeleteFile()\0rt_icheckbox()\0rt_iradio()\0rt_iconfig()\0"
+    "rt_idirselector()\0rt_iinput()\0rt_icheckboxh()\0rt_iradioh()\0"
+    "rt_iconfigh()\0rt_idirselectorh()\0rt_iinputh()\0"
 };
 
 const QMetaObject nixstbuild::staticMetaObject = {
@@ -92,12 +106,23 @@ int nixstbuild::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 9: saveConfig(); break;
         case 10: saveRun(); break;
         case 11: generateRun(); break;
-        case 12: openIntroPic(); break;
-        case 13: settingsDialog(); break;
-        case 14: fvCustomContext((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
-        case 15: fvDeleteFile(); break;
+        case 12: insertTemplate(); break;
+        case 13: openIntroPic(); break;
+        case 14: settingsDialog(); break;
+        case 15: fvCustomContext((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
+        case 16: fvDeleteFile(); break;
+        case 17: rt_icheckbox(); break;
+        case 18: rt_iradio(); break;
+        case 19: rt_iconfig(); break;
+        case 20: rt_idirselector(); break;
+        case 21: rt_iinput(); break;
+        case 22: rt_icheckboxh(); break;
+        case 23: rt_iradioh(); break;
+        case 24: rt_iconfigh(); break;
+        case 25: rt_idirselectorh(); break;
+        case 26: rt_iinputh(); break;
         }
-        _id -= 16;
+        _id -= 27;
     }
     return _id;
 }
