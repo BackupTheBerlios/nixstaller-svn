@@ -209,7 +209,7 @@ void CMenu::Select(const std::string &id)
     }
 }
 
-void CMenu::Clear()
+void CMenu::ClearEntries()
 {
     m_MenuList.clear();
     m_iXOffset = m_iYOffset = m_iCursorLine = 0;

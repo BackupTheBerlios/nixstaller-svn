@@ -26,6 +26,37 @@ namespace NNCurses {
 // Window Manager Class
 // -------------------------------------
 
+bool CWindowManager::CoreHandleKey(chtype key)
+{
+    if (CGroup::CoreHandleKey(key))
+        return true;
+    
+    CWidget *focwidget = GetFocusedWidget();
+    if (focwidget)
+    {
+        CGroup *focgroup = GetGroupWidget(focwidget);
+        if (focgroup)
+        {
+            if (IsTAB(key))
+            {
+                if (!focgroup->SetNextFocWidget(true))
+                    focgroup->SetNextFocWidget(false);
+                TUI.UpdateButtonBar();
+                return true;
+            }
+            else if (key == CTRL('p'))
+            {
+                if (!focgroup->SetPrevFocWidget(true))
+                    focgroup->SetPrevFocWidget(false);
+                TUI.UpdateButtonBar();
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
 bool CWindowManager::CoreHandleEvent(CWidget *emitter, int event)
 {
     if (event == EVENT_REQQUEUEDDRAW)
@@ -45,10 +76,10 @@ bool CWindowManager::CoreHandleEvent(CWidget *emitter, int event)
 
 int CWindowManager::CoreRequestWidth()
 {
-    TChildList childs = GetChildList();
+    const TChildList &childs = GetChildList();
     int ret = GetMinWidth();
     
-    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
         if ((*it)->Enabled())
             ret = std::max(ret, (*it)->RequestWidth());
@@ -59,10 +90,10 @@ int CWindowManager::CoreRequestWidth()
 
 int CWindowManager::CoreRequestHeight()
 {
-    TChildList childs = GetChildList();
+    const TChildList &childs = GetChildList();
     int ret = GetMinHeight();
     
-    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
         if ((*it)->Enabled())
             ret = std::max(ret, (*it)->RequestHeight());
@@ -71,28 +102,52 @@ int CWindowManager::CoreRequestHeight()
     return ret;
 }
 
-void CWindowManager::CoreDrawWidgets()
+void CWindowManager::CoreDrawChilds()
 {
-    TChildList childs = GetChildList();
+    const TChildList &childs = GetChildList();
     
-    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
-        if (*it == GetFocusedWidget())
-            continue; // We draw this one as last, so it looks like it's on top
+        if (std::find(m_ActiveWidgets.begin(), m_ActiveWidgets.end(), *it) != m_ActiveWidgets.end())
+            continue; // We draw these as last, so it looks like they are on top
         DrawChild(*it);
     }
     
-    CWidget *w = GetFocusedWidget();
-    
-    if (w)
-        DrawChild(w);
+    for (TChildList::const_iterator it=m_ActiveWidgets.begin(); it!=m_ActiveWidgets.end(); it++)
+        DrawChild(*it);
 }
 
 void CWindowManager::CoreAddWidget(CWidget *w)
 {
     m_WidgetQueue.push_back(w);
     InitChild(w);
+    UpdateLayout();
     PushEvent(EVENT_REQUPDATE);
+}
+
+void CWindowManager::CoreRemoveWidget(CWidget *w)
+{
+    TChildList::iterator it = std::find(m_ActiveWidgets.begin(), m_ActiveWidgets.end(), w);
+    
+    if (it != m_ActiveWidgets.end())
+        m_ActiveWidgets.erase(it);
+}
+
+void CWindowManager::CoreFocusWidget(CWidget *w)
+{
+    CWidget *focwidget = GetFocusedWidget();
+    
+    if (focwidget != w)
+    {
+        TChildList::iterator it = std::find(m_ActiveWidgets.begin(), m_ActiveWidgets.end(), w);
+        
+        if (it != m_ActiveWidgets.end())
+            m_ActiveWidgets.erase(it);
+        
+        m_ActiveWidgets.push_back(w);
+    }
+    
+    CGroup::CoreFocusWidget(w);
 }
 
 void CWindowManager::CoreDrawLayout()

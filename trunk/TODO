@@ -39,6 +39,7 @@ NCURSES
 - Clear functions for choiceboxes?
 - Check Quit code
 - Exceptions
+- check usage of GetChildList and similar functions (a reference should be stored of the return type)
 
 GTK
 - Move main window away from base frontend class?

@@ -17,8 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef INVISIBLEBOX
-#define INVISIBLEBOX
+#ifndef WINDOWMANAGER
+#define WINDOWMANAGER
 
 #include <deque>
 #include "group.h"
@@ -28,13 +28,17 @@ namespace NNCurses {
 class CWindowManager: public CGroup
 {
     std::deque<CWidget *> m_WidgetQueue;
+    TChildList m_ActiveWidgets; // List of last active widgets
     
 protected:
+    virtual bool CoreHandleKey(chtype key);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
-    virtual void CoreDrawWidgets(void);
+    virtual void CoreDrawChilds(void);
     virtual void CoreAddWidget(CWidget *w);
+    virtual void CoreRemoveWidget(CWidget *w);
+    virtual void CoreFocusWidget(CWidget *w);
     virtual void CoreDrawLayout(void);
     
 public:

@@ -73,7 +73,7 @@ void CTextBase::UpdateText(int width)
             if (newlen > m_LongestLine)
                 m_LongestLine = newlen;
             
-            start = m_QueuedText.find_first_not_of(" \t\n", end+1);
+            start = end + 1;
         }
     }
     else
@@ -170,6 +170,13 @@ void CTextBase::UpdateSize()
         m_Lines.clear();
         m_iCurWidth = Width();
     }
+}
+
+void CTextBase::AddText(std::string t)
+{
+    ConvertTabs(t);
+    m_QueuedText += t;
+    RequestQueuedDraw();
 }
 
 void CTextBase::Clear()

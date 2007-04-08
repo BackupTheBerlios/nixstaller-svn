@@ -41,6 +41,7 @@ protected:
 private:
     TChoiceList m_ChoiceList;
     int m_iSelection;
+    int m_iUsedWidth;
     
     void Move(int n);
     
@@ -54,7 +55,7 @@ protected:
     virtual std::string CoreGetText(const SEntry &entry) = 0;
     virtual void CoreSelect(SEntry &entry) = 0;
     
-    CBaseChoice(void) : m_iSelection(0) { }
+    CBaseChoice(void) : m_iSelection(0), m_iUsedWidth(0) { }
     
     TChoiceList &GetChoiceList(void) { return m_ChoiceList; }
 

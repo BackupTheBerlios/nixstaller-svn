@@ -183,5 +183,9 @@ void Refresh(CWidget *widget)
     Check(wrefresh(widget->GetWin()), "wrefresh");
 }
 
+void HLine(CWidget *widget, int x, int y, chtype ch, int count)
+{
+    Check(mvwhline(widget->GetWin(), y, x, ch, count), "mvwhline");
+}
 
 }

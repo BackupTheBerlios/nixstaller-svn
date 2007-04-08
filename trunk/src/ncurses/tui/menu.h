@@ -67,7 +67,7 @@ public:
 
     void AddEntry(const std::string &id, const std::string &name);
     void Select(const std::string &id);
-    void Clear(void);
+    void ClearEntries(void);
     void SetName(const std::string &id, const std::string &name);
 };
 

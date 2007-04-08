@@ -58,7 +58,7 @@ protected:
     int MaxHeight(void) { return m_iMaxReqHeight; }
 
 public:
-    void AddText(const std::string &t) { m_QueuedText += t; RequestQueuedDraw(); }
+    void AddText(std::string t);
     void SetText(const std::string &t) { m_Lines.clear(); AddText(t); }
     void Clear(void);
     void SetMaxReqWidth(int w) { m_iMaxReqWidth = w; }

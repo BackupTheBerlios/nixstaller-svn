@@ -114,6 +114,12 @@ void CTextField::AddText(const std::string &t)
     m_pTextWidget->AddText(t);
 }
 
+void CTextField::ClearText()
+{
+    m_pTextWidget->Clear();
+    RequestQueuedDraw();
+}
+
 void CTextField::LoadFile(const char *f)
 {
     std::ifstream file(f);
@@ -122,7 +128,7 @@ void CTextField::LoadFile(const char *f)
     
     while (file && file.get(c))
         buf += c;
-        
+    
     AddText(buf);
 }
 

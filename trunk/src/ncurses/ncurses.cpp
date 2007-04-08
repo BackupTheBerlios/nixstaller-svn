@@ -87,7 +87,9 @@ void StopFrontend()
 #include "tui/menu.h"
 #include "tui/inputfield.h"
 #include "tui/progressbar.h"
-
+#include "tui/dialog.h"
+#include "tui/radiobutton.h"
+                                                         
 void ReportError(const char *msg)
 {
     // UNDONE
@@ -100,6 +102,51 @@ void StartFrontend(int argc, char **argv)
 {
     NNCurses::TUI.InitNCurses();
     
+    NNCurses::CDialog *dialog = new NNCurses::CDialog();
+    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    
+    NNCurses::CLabel *label = new NNCurses::CLabel("Some important text here.");
+    dialog->StartPack(label, true, true, 0);
+    
+    NNCurses::CTextField *field = new NNCurses::CTextField(15, 5, true);
+    field->LoadFile("about");
+    dialog->AddWidget(field);
+    
+    NNCurses::CProgressBar *bar = new NNCurses::CProgressBar(0.0f, 100.0f);
+    bar->SetCurrent(25.0f);
+    dialog->AddWidget(bar);
+    
+    NNCurses::CRadioButton *radio = new NNCurses::CRadioButton;
+    radio->AddChoice("Choice 1");
+    radio->AddChoice("Choice 2");
+    radio->AddChoice("Choice 3");
+    radio->SetMinWidth(45);
+    dialog->AddWidget(radio);
+    
+    NNCurses::CButton *button = new NNCurses::CButton("OK");
+    dialog->AddButton(button);
+    
+    NNCurses::TUI.AddGroup(dialog, true);
+    
+    NNCurses::CWindow *win = new NNCurses::CWindow;
+    win->SetMinWidth(50);
+    win->SetMinHeight(3);
+    NNCurses::TUI.AddGroup(win, false);
+
+    win = new NNCurses::CWindow;
+    win->SetMinWidth(5);
+    win->SetMinHeight(15);
+    NNCurses::TUI.AddGroup(win, false);
+
+    NNCurses::TUI.Run();
+    
+    NNCurses::MessageBox("MessageBox");
+
+    while (dialog->Run())
+        ;
+    
+#if 0
     NNCurses::CWindow *win = new NNCurses::CWindow();
     win->SetMinWidth(60);
     win->SetMinHeight(5);
@@ -135,50 +182,9 @@ void StartFrontend(int argc, char **argv)
     
     NNCurses::TUI.AddGroup(win, true);
     
-
-//     NNCurses::CBox *hbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL);
-//     hbox->SetDFColors(COLOR_YELLOW, COLOR_RED);
-//     
-//     
-//     NNCurses::CLabel *label, *l = new NNCurses::CLabel();
-//     label = l;
-//     label->SetBox(true);
-//     label->SetText("ugh");
-//     label->SetDFColors(COLOR_YELLOW, COLOR_BLUE);
-//     hbox->StartPack(label, false, true, 0);
-//     
-//     label = new NNCurses::CLabel();
-//     label->SetBox(true);
-//     label->SetText("hoi");
-//     hbox->StartPack(label, true, true, 0);
-// 
-//     vbox->AddWidget(hbox);
-//     
-//     label = new NNCurses::CLabel();
-//     label->SetBox(true);
-//     label->SetText("hoi");
-// //     label->SetMinHeight(3);
-//     vbox->StartPack(label, true, true, 0);
-//     
-//     label = new NNCurses::CLabel();
-//     label->SetBox(true);
-//     label->SetText("hoi");
-// //     label->SetMinHeight(3);
-//     vbox->StartPack(label, true, true, 0);
-//     
-//     win->StartPack(vbox, true, true, 0);
-// 
-//     NNCurses::TUI.Run();
-//     sleep (2);
-//     
-//     l->Enable(false);
-//     NNCurses::TUI.Run();
-//     sleep (2);
-// 
-//     l->Enable(true);
-    
     while (NNCurses::TUI.Run())
         ;
+#endif
 }
 
 void StopFrontend()

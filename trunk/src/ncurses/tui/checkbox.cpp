@@ -28,7 +28,7 @@ namespace NNCurses {
 
 std::string CCheckbox::CoreGetText(const SEntry &entry)
 {
-    const char *base = (entry.enabled) ? "[X]" : "[ ]";
+    const char *base = (entry.enabled) ? "[X] " : "[ ] ";
     return base + entry.name;
 }
 

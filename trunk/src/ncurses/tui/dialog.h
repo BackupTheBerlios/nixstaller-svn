@@ -17,28 +17,33 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "tui.h"
-#include "radiobutton.h"
+#ifndef DIALOG
+#define DIALOG
+
+#include "window.h"
 
 namespace NNCurses {
 
-// -------------------------------------
-// Radio Button Class
-// -------------------------------------
+class CButton;
 
-std::string CRadioButton::CoreGetText(const SEntry &entry)
+class CDialog: public CWindow
 {
-    const char *base = (entry.enabled) ? "(X) " : "( ) ";
-    return base + entry.name;
-}
-
-void CRadioButton::CoreSelect(SEntry &entry)
-{
-    TChoiceList &list = GetChoiceList();
+    CBox *m_pButtonBox;
+    bool m_bDone;
     
-    list.at(m_ActiveEntry).enabled = false;
-    entry.enabled = true;
-    m_ActiveEntry = std::distance(list.begin(), std::find(list.begin(), list.end(), entry));
-}
+protected:
+    virtual bool CoreHandleEvent(CWidget *emitter, int event);
+    
+public:
+    CDialog(void);
+    
+    void AddButton(CButton *button);
+    bool Run(void);
+};
+
+// Utils
+void MessageBox(const std::string &msg);
 
 }
+
+#endif

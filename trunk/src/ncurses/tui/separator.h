@@ -17,28 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "tui.h"
-#include "radiobutton.h"
+#ifndef SEPERATOR
+#define SEPERATOR
+
+#include "widget.h"
 
 namespace NNCurses {
 
-// -------------------------------------
-// Radio Button Class
-// -------------------------------------
-
-std::string CRadioButton::CoreGetText(const SEntry &entry)
+class CSeparator: public CWidget
 {
-    const char *base = (entry.enabled) ? "(X) " : "( ) ";
-    return base + entry.name;
-}
-
-void CRadioButton::CoreSelect(SEntry &entry)
-{
-    TChoiceList &list = GetChoiceList();
+    chtype m_Fill;
     
-    list.at(m_ActiveEntry).enabled = false;
-    entry.enabled = true;
-    m_ActiveEntry = std::distance(list.begin(), std::find(list.begin(), list.end(), entry));
-}
+protected:
+    virtual void DoDraw(void) { HLine(this, 0, 0, m_Fill, Width()); }
+    
+public:
+    CSeparator(chtype fill) : m_Fill(fill) { SetMinWidth(1); SetMinHeight(1); }
+};
 
 }
+
+#endif

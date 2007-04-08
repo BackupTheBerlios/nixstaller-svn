@@ -95,26 +95,27 @@ bool CTUI::Run(int delay)
     
     if (key != static_cast<chtype>(ERR)) // Input available?
     {
-        if (m_pActiveGroup)
-        {
-            if (!m_pActiveGroup->HandleKey(key))
-            {
-                if (IsTAB(key))
-                {
-                    if (!m_pActiveGroup->SetNextFocWidget(true))
-                        m_pActiveGroup->SetNextFocWidget(false);
-                    UpdateButtonBar();
-                }
-                else if (key == CTRL('p'))
-                {
-                    if (!m_pActiveGroup->SetPrevFocWidget(true))
-                        m_pActiveGroup->SetPrevFocWidget(false);
-                    UpdateButtonBar();
-                }
-            }
-        }
+        m_pWinManager->HandleKey(key);
+//         if (m_pActiveGroup)
+//         {
+//             if (!m_pActiveGroup->HandleKey(key))
+//             {
+//                 if (IsTAB(key))
+//                 {
+//                     if (!m_pActiveGroup->SetNextFocWidget(true))
+//                         m_pActiveGroup->SetNextFocWidget(false);
+//                     UpdateButtonBar();
+//                 }
+//                 else if (key == CTRL('p'))
+//                 {
+//                     if (!m_pActiveGroup->SetPrevFocWidget(true))
+//                         m_pActiveGroup->SetPrevFocWidget(false);
+//                     UpdateButtonBar();
+//                 }
+//             }
+//         }
         
-        if (IsEscape(key)) // Escape pressed
+        if (IsEscape(key))
             return false;
     }
     
@@ -147,17 +148,17 @@ void CTUI::AddGroup(CGroup *g, bool activate)
 
 void CTUI::ActivateGroup(CGroup *g)
 {
-    if (m_pActiveGroup)
-    {
-        m_pActiveGroup->Focus(false);
-        m_pActiveGroup->RequestQueuedDraw();
-    }
-    
     m_pWinManager->FocusWidget(g);
     g->SetNextFocWidget(false);
     m_pActiveGroup = g;
-    
     UpdateButtonBar();
+}
+
+void CTUI::RemoveGroup(CGroup *g)
+{
+    if (g == m_pActiveGroup)
+        m_pActiveGroup = NULL;
+    delete g;
 }
 
 int CTUI::GetColorPair(int fg, int bg)

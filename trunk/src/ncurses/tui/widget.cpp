@@ -18,6 +18,7 @@
 */
 
 #include <assert.h>
+#include "main.h"
 #include "tui.h"
 #include "group.h"
 
@@ -125,11 +126,11 @@ void CWidget::RequestQueuedDraw()
 void CWidget::Init()
 {
     m_pNCursWin = derwin(GetParentWin(), Height(), Width(), Y(), X());
-    assert(m_pNCursWin != NULL);
+    
+    if (!m_pNCursWin)
+        throw Exceptions::CExFrontend("Could not create derived window");
     
     m_bSizeChanged = false;
-    
-    // UNDONE: Exception
     
     leaveok(m_pNCursWin, false);
     KeyPad(m_pNCursWin, true);

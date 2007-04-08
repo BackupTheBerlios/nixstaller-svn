@@ -49,6 +49,8 @@ class CTUI
     
     void UpdateButtonBar(void);
     
+    friend class CWindowManager;
+    
 public:
     CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
     
@@ -57,6 +59,7 @@ public:
     bool Run(int delay=5);
     void AddGroup(CGroup *g, bool activate);
     void ActivateGroup(CGroup *g);
+    void RemoveGroup(CGroup *g);
     
     WINDOW *GetRootWin(void) { return stdscr; }
     
@@ -101,6 +104,7 @@ void DelWin(WINDOW *win);
 void WindowResize(CWidget *widget, int w, int h);
 void WindowErase(CWidget *widget);
 void Refresh(CWidget *widget);
+void HLine(CWidget *widget, int x, int y, chtype ch, int count);
 
 }
 

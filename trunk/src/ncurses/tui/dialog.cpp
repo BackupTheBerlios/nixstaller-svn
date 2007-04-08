@@ -18,27 +18,53 @@
 */
 
 #include "tui.h"
-#include "radiobutton.h"
+#include "dialog.h"
+#include "button.h"
+#include "separator.h"
 
 namespace NNCurses {
 
 // -------------------------------------
-// Radio Button Class
+// Dialog Class
 // -------------------------------------
 
-std::string CRadioButton::CoreGetText(const SEntry &entry)
+CDialog::CDialog() : m_pButtonBox(NULL), m_bDone(false)
 {
-    const char *base = (entry.enabled) ? "(X) " : "( ) ";
-    return base + entry.name;
 }
 
-void CRadioButton::CoreSelect(SEntry &entry)
+bool CDialog::CoreHandleEvent(CWidget *emitter, int event)
 {
-    TChoiceList &list = GetChoiceList();
+    if (CBox::CoreHandleEvent(emitter, event))
+        return true;
     
-    list.at(m_ActiveEntry).enabled = false;
-    entry.enabled = true;
-    m_ActiveEntry = std::distance(list.begin(), std::find(list.begin(), list.end(), entry));
+    if (event == EVENT_CALLBACK)
+    {
+        if (IsChild(emitter, this))
+        {
+            m_bDone = true;
+            return true;
+        }
+    }
+    
+    return false;
 }
+
+void CDialog::AddButton(CButton *button)
+{
+    if (!m_pButtonBox)
+    {
+        m_pButtonBox = new CBox(HORIZONTAL, true, 0);
+        EndPack(m_pButtonBox, true, true, 0);
+        EndPack(new CSeparator(' '), true, true, 0);
+    }
+    
+    m_pButtonBox->StartPack(button, true, false, 0);
+}
+
+bool CDialog::Run()
+{
+    return (TUI.Run() && !m_bDone);
+}
+
 
 }

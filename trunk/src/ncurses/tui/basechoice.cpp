@@ -49,7 +49,7 @@ void CBaseChoice::DoDraw()
         std::string text = CoreGetText(*it);
         int length = SafeConvert<int>(text.length());
         
-        if ((x + length) > Width())
+        if ((x + length) > m_iUsedWidth)
         {
             x = 0;
             y++;
@@ -60,7 +60,7 @@ void CBaseChoice::DoDraw()
         if (highlight)
             SetAttr(this, A_REVERSE, true);
         
-        AddStr(this, x, y, CoreGetText(*it).c_str());
+        AddStr(this, x, y, text.c_str());
         
         if (highlight)
             SetAttr(this, A_REVERSE, false);
@@ -71,36 +71,42 @@ void CBaseChoice::DoDraw()
 
 int CBaseChoice::CoreRequestWidth()
 {
-    if (GetMinWidth())
-        return GetMinWidth();
-    
     int ret = 1;
     
     for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++)
         ret = std::max(ret, SafeConvert<int>(CoreGetText(*it).length()));
     
+    if (GetMinWidth())
+        ret = std::max(ret, GetMinWidth());
+
+    m_iUsedWidth = ret; // May get more, but for keeping layout code easy we just stick with this width
     return ret;
 }
 
 int CBaseChoice::CoreRequestHeight()
 {
-    if (GetMinHeight())
-        return GetMinHeight();
+    int width = RequestWidth(), lines = 1, x = 0;
     
-    int width = RequestWidth(), lines = 0, x = 0;
-    
-    for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++)
+    if (!m_ChoiceList.empty())
     {
-        x += it->name.length() + 1;
-        
-        if (x > width)
+        for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++)
         {
-            x = 0;
-            lines++;
+            int length = SafeConvert<int>(CoreGetText(*it).length());
+            
+            if ((x + length) > width)
+            {
+                x = 0;
+                lines++;
+            }
+
+            x += CoreGetText(*it).length() + 1;
         }
     }
     
-    return std::max(1, lines);
+    if (GetMinHeight())
+        lines = std::max(lines, GetMinHeight());
+
+    return lines;
 }
 
 bool CBaseChoice::CoreHandleKey(chtype key)

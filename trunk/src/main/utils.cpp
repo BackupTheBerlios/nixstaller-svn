@@ -289,6 +289,30 @@ char *GetTranslation(char *s)
     return s;
 }
 
+void ConvertTabs(std::string &text)
+{
+    TSTLStrSize length = text.length(), start = 0, startline = 0;
+    while (start < length)
+    {
+        start = text.find_first_of("\t\n", start);
+        
+        if (start != std::string::npos)
+        {
+            if (text[start] == '\n')
+                startline = 0;
+            else
+            {
+                int rest = (startline) ? (8 % startline) : 0;
+                text.replace(start, 1, 8-rest, ' ');
+            }
+        }
+        else
+            break;
+
+        start++;
+    }
+}
+
 char *StrDup(const char *str)
 {
     char *ret = strdup(str);

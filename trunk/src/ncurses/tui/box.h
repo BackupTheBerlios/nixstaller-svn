@@ -56,7 +56,7 @@ protected:
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
-    virtual void CoreAddWidget(CWidget *w) {UpdateLayout(); InitChild(w); }
+    virtual void CoreAddWidget(CWidget *w) { UpdateLayout(); PushEvent(EVENT_REQUPDATE); InitChild(w); }
     virtual void CoreRemoveWidget(CWidget *w);
     
     virtual int FieldX(void) const { return (HasBox()) ? 1 : 0; }

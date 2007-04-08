@@ -49,6 +49,7 @@ std::string GetTranslation(const std::string &s);
 char *GetTranslation(char *s);
 inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
 inline char *MakeTranslation(const std::string &s) { return GetTranslation(MakeCString(s)); }
+void ConvertTabs(std::string &text);
 char *StrDup(const char *str);
 std::string GetCWD(void);
 void CHDir(const char *dir);

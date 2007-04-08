@@ -28,7 +28,7 @@ namespace NNCurses {
 
 class CGroup: public CWidget
 {
-protected:
+public:
     typedef std::vector<CWidget *> TChildList;
     
 private:
@@ -38,7 +38,6 @@ private:
     bool m_bUpdateLayout;
     
     bool IsGroupWidget(CWidget *w) { return (m_GroupMap[w] != NULL); }
-    CGroup *GetGroupWidget(CWidget *w) { return m_GroupMap[w]; }
     bool CanFocusChilds(CWidget *w);
     void DrawLayout(void) { CoreDrawLayout(); }
     
@@ -49,17 +48,18 @@ protected:
     virtual bool CoreHandleKey(chtype key);
     virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
     virtual void CoreRemoveWidget(CWidget *w) { }
+    virtual void CoreFocusWidget(CWidget *w);
     virtual void CoreDrawChilds(void);
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual void CoreDrawLayout(void) { }
 
     void InitChild(CWidget *w);
-    TChildList &GetChildList(void) { return m_Childs; }
     void DrawChilds(void) { CoreDrawChilds(); }
     CWidget *GetFocusedWidget(void) { return m_pFocusedWidget; }
     void SetChildSize(CWidget *widget, int x, int y, int w, int h) { widget->SetSize(x, y, w, h); }
     void DrawChild(CWidget *w) { w->Draw(); }
     void UpdateLayout(void) { m_bUpdateLayout = true; }
+    CGroup *GetGroupWidget(CWidget *w) { return m_GroupMap[w]; }
     
     CGroup(void) : m_pFocusedWidget(NULL), m_bUpdateLayout(true) { }
 
@@ -70,9 +70,10 @@ public:
     void AddWidget(CWidget *w) { CoreAddWidget(w); };
     void RemoveWidget(CWidget *w);
     void Clear(void);
+    TChildList &GetChildList(void) { return m_Childs; }
     bool Empty(void) { return m_Childs.empty(); }
     
-    void FocusWidget(CWidget *w);
+    void FocusWidget(CWidget *w) { CoreFocusWidget(w); }
     bool SetNextFocWidget(bool cont); // cont : Checks widget after current focused widget
     bool SetPrevFocWidget(bool cont);
     void SetValidWidget(CWidget *ignore);

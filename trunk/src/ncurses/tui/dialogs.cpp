@@ -18,27 +18,34 @@
 */
 
 #include "tui.h"
-#include "radiobutton.h"
+#include "dialog.h"
+#include "label.h"
+#include "button.h"
 
 namespace NNCurses {
 
 // -------------------------------------
-// Radio Button Class
+// Dialog Util Functions
 // -------------------------------------
 
-std::string CRadioButton::CoreGetText(const SEntry &entry)
+void MessageBox(const std::string &msg)
 {
-    const char *base = (entry.enabled) ? "(X) " : "( ) ";
-    return base + entry.name;
+    CDialog *dialog = new CDialog;
+    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    
+    CLabel *label = new CLabel(msg);
+    dialog->AddWidget(label);
+    
+    dialog->AddButton(new CButton("OK"));
+    
+    TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    TUI.RemoveGroup(dialog);
 }
 
-void CRadioButton::CoreSelect(SEntry &entry)
-{
-    TChoiceList &list = GetChoiceList();
-    
-    list.at(m_ActiveEntry).enabled = false;
-    entry.enabled = true;
-    m_ActiveEntry = std::distance(list.begin(), std::find(list.begin(), list.end(), entry));
-}
 
 }

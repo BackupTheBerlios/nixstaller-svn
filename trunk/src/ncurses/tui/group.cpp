@@ -135,7 +135,7 @@ void CGroup::Clear()
     m_GroupMap.clear();
 }
 
-void CGroup::FocusWidget(CWidget *w)
+void CGroup::CoreFocusWidget(CWidget *w)
 {
     if (m_pFocusedWidget)
     {
