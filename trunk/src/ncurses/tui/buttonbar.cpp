@@ -40,13 +40,13 @@ void CButtonBar::PushLabel(const std::string &n, const std::string &d)
     
     CLabel *label = new CLabel(n + ": ");
     label->SetDFColors(GetFColors());
-    lbox->StartPack(label, false, false, 0);
+    lbox->StartPack(label, false, false, 0, 0);
     
     label = new CLabel(d);
     label->SetDFColors(GetDFColors());
-    lbox->StartPack(label, false, false, 0);
+    lbox->StartPack(label, false, false, 0, 0);
 
-    m_pCurBox->StartPack(lbox, true, false, 0);
+    m_pCurBox->StartPack(lbox, true, false, 0, 0);
 }
 
 void CButtonBar::AddButton(const std::string &n, const std::string &d)

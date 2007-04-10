@@ -29,7 +29,7 @@ class CButton;
 class CDialog: public CWindow
 {
     CBox *m_pButtonBox;
-    bool m_bDone;
+    CWidget *m_pActivatedWidget;
     
 protected:
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
@@ -37,12 +37,16 @@ protected:
 public:
     CDialog(void);
     
-    void AddButton(CButton *button);
+    void AddButton(CButton *button, bool expand=true, bool start=true);
     bool Run(void);
+    CWidget *ActivatedWidget(void) { return m_pActivatedWidget; }
 };
 
 // Utils
 void MessageBox(const std::string &msg);
+void WarningBox(const std::string &msg);
+bool YesNoBox(const std::string &msg);
+std::string InputBox(const std::string &msg, const std::string &init, int max=0, chtype out=0);
 
 }
 

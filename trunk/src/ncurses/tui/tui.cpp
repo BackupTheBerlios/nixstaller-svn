@@ -72,7 +72,7 @@ void CTUI::InitNCurses()
     m_pButtonBar->SetFColors(COLOR_YELLOW, COLOR_RED);
     m_pButtonBar->SetDFColors(COLOR_WHITE, COLOR_RED);
     
-    m_pMainBox->EndPack(m_pButtonBar, false, false, 0);
+    m_pMainBox->EndPack(m_pButtonBar, false, false, 0, 0);
     
     m_pWinManager = new CWindowManager;
     m_pMainBox->AddWidget(m_pWinManager);

@@ -73,16 +73,16 @@ int CBox::RequestedWidgetsW()
         if (!IsValidWidget(*it))
             continue;
         
+        const SBoxEntry &entry = m_BoxEntries[*it];
+
         if (m_eDirection == HORIZONTAL)
         {
-            const SBoxEntry &entry = m_BoxEntries[*it];
-
-            ret += GetWidgetW(*it) + (2 * entry.padding);
+            ret += GetWidgetW(*it) + (2 * entry.hpadding);
             if (*it != childs.back())
                 ret += m_iSpacing;
         }
         else
-            ret = std::max(ret, (*it)->RequestWidth());
+            ret = std::max(ret, (*it)->RequestWidth() + (2 * entry.hpadding));
     }
     
     return ret;
@@ -98,17 +98,17 @@ int CBox::RequestedWidgetsH()
         if (!IsValidWidget(*it))
             continue;
 
+        const SBoxEntry &entry = m_BoxEntries[*it];
+
         if (m_eDirection == VERTICAL)
         {
-            const SBoxEntry &entry = m_BoxEntries[*it];
-
-            ret += (GetWidgetH(*it) + (2 * entry.padding));
+            ret += (GetWidgetH(*it) + (2 * entry.vpadding));
             
             if (*it != childs.back())
                 ret += m_iSpacing;
         }
         else
-            ret = std::max(ret, (*it)->RequestHeight());
+            ret = std::max(ret, (*it)->RequestHeight() + (2 * entry.vpadding));
     }
     
     return ret;
@@ -159,11 +159,11 @@ void CBox::CoreDrawLayout()
         if (!IsValidWidget(*it))
             continue;
         
-        int basex = 0, basey = 0;
+        const SBoxEntry &entry = m_BoxEntries[*it];
+        int basex = entry.hpadding, basey = entry.vpadding;
         int widgetw = 0, widgeth = 0;
         int basew = extraw, baseh = extrah;
-        const SBoxEntry &entry = m_BoxEntries[*it];
-        int spacing = entry.padding;
+        int spacing = 0;
     
         if (*it != childs.back())
             spacing += m_iSpacing;
@@ -182,11 +182,11 @@ void CBox::CoreDrawLayout()
     
         if (m_eDirection == HORIZONTAL)
         {
-            basex += entry.padding;
+            spacing += entry.hpadding;
             widgetw += GetWidgetW(*it);
-            widgeth += FieldHeight();
+            widgeth += (FieldHeight() - (basey*entry.vpadding));
         
-            if (m_bEqual || entry.expand)
+            if (entry.expand)
             {
                 if (entry.fill)
                     widgetw += basew;
@@ -199,8 +199,8 @@ void CBox::CoreDrawLayout()
         }
         else
         {
-            basey += entry.padding;
-            widgetw += FieldWidth();
+            spacing += entry.vpadding;
+            widgetw += (FieldWidth() - (basex+entry.hpadding));
             widgeth += GetWidgetH(*it);
         
             if (entry.expand)
@@ -220,27 +220,21 @@ void CBox::CoreDrawLayout()
         
         if (entry.start)
         {
-            begx += basex;
-            begy += basey;
-        
-            SetChildSize(*it, begx, begy, widgetw, widgeth);
+            SetChildSize(*it, begx+basex, begy+basey, widgetw, widgeth);
         
             if (m_eDirection == HORIZONTAL)
-                begx += (spacing + widgetw);
+                begx += (basex + spacing + widgetw);
             else
-                begy += (spacing + widgeth);
+                begy += (basey + spacing + widgeth);
         }
         else
         {
-            endx -= basex;
-            endy -= basey;
-        
-            SetChildSize(*it, endx-(widgetw-1), endy-(widgeth-1), widgetw, widgeth);
+            SetChildSize(*it, endx-basex-(widgetw-1), endy-basey-(widgeth-1), widgetw, widgeth);
         
             if (m_eDirection == HORIZONTAL)
-                endx -= (spacing + widgetw);
+                endx -= (basex + spacing + widgetw);
             else
-                endy -= (spacing + widgeth);
+                endy -= (basey + spacing + widgeth);
         }
     }
 }
@@ -291,27 +285,27 @@ void CBox::CoreRemoveWidget(CWidget *w)
     PushEvent(EVENT_REQUPDATE);
 }
 
-void CBox::StartPack(CGroup *g, bool e, bool f, int p)
+void CBox::StartPack(CGroup *g, bool e, bool f, int vp, int hp)
 {
-    m_BoxEntries[g] = SBoxEntry(e, f, p, true);
+    m_BoxEntries[g] = SBoxEntry(e, f, vp, hp, true);
     CGroup::AddWidget(g);
 }
 
-void CBox::StartPack(CWidget *w, bool e, bool f, int p)
+void CBox::StartPack(CWidget *w, bool e, bool f, int vp, int hp)
 {
-    m_BoxEntries[w] = SBoxEntry(e, f, p, true);
+    m_BoxEntries[w] = SBoxEntry(e, f, vp, hp, true);
     CGroup::AddWidget(w);
 }
 
-void CBox::EndPack(CGroup *g, bool e, bool f, int p)
+void CBox::EndPack(CGroup *g, bool e, bool f, int vp, int hp)
 {
-    m_BoxEntries[g] = SBoxEntry(e, f, p, false);
+    m_BoxEntries[g] = SBoxEntry(e, f, vp, hp, false);
     CGroup::AddWidget(g);
 }
 
-void CBox::EndPack(CWidget *w, bool e, bool f, int p)
+void CBox::EndPack(CWidget *w, bool e, bool f, int vp, int hp)
 {
-    m_BoxEntries[w] = SBoxEntry(e, f, p, false);
+    m_BoxEntries[w] = SBoxEntry(e, f, vp, hp, false);
     CGroup::AddWidget(w);
 }
 

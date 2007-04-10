@@ -21,6 +21,7 @@
 #include "dialog.h"
 #include "label.h"
 #include "button.h"
+#include "inputfield.h"
 
 namespace NNCurses {
 
@@ -34,8 +35,7 @@ void MessageBox(const std::string &msg)
     dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
     dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     
-    CLabel *label = new CLabel(msg);
-    dialog->AddWidget(label);
+    dialog->AddWidget(new CLabel(msg));
     
     dialog->AddButton(new CButton("OK"));
     
@@ -47,5 +47,78 @@ void MessageBox(const std::string &msg)
     TUI.RemoveGroup(dialog);
 }
 
+void WarningBox(const std::string &msg)
+{
+    CDialog *dialog = new CDialog;
+    dialog->SetFColors(COLOR_YELLOW, COLOR_RED);
+    dialog->SetDFColors(COLOR_WHITE, COLOR_RED);
+    
+    dialog->AddWidget(new CLabel(msg));
+    
+    dialog->AddButton(new CButton("OK"));
+    
+    TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    TUI.RemoveGroup(dialog);
+}
+
+bool YesNoBox(const std::string &msg)
+{
+    CDialog *dialog = new CDialog;
+    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    
+    dialog->AddWidget(new CLabel(msg));
+        
+    CButton *nobutton = new CButton("No"), *yesbutton = new CButton("Yes");
+    dialog->AddButton(nobutton);
+    dialog->AddButton(yesbutton);
+    
+    TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    bool ret = (dialog->ActivatedWidget() == yesbutton);
+    
+    TUI.RemoveGroup(dialog);
+    
+    return ret;
+}
+
+std::string InputBox(const std::string &msg, const std::string &init, int max, chtype out)
+{
+    CDialog *dialog = new CDialog;
+    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    dialog->SetMinWidth(50);
+    
+    CLabel *label = new CLabel(msg, false);
+    dialog->StartPack(label, false, false, 0, 0);
+    
+    CInputField *input = new CInputField(init, CInputField::STRING, max, out);
+    dialog->StartPack(input, true, true, 1, 0);
+    
+    CButton *okbutton = new CButton("OK"), *cancelbutton = new CButton("Cancel");
+    dialog->AddButton(cancelbutton, false, false);
+    dialog->AddButton(okbutton, false, false);
+
+    
+    TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    std::string ret;
+    if (dialog->ActivatedWidget() != cancelbutton)
+        ret = input->GetText();
+    
+    TUI.RemoveGroup(dialog);
+    
+    return ret;
+}
 
 }

@@ -28,7 +28,7 @@ namespace NNCurses {
 // Dialog Class
 // -------------------------------------
 
-CDialog::CDialog() : m_pButtonBox(NULL), m_bDone(false)
+CDialog::CDialog() : m_pButtonBox(NULL), m_pActivatedWidget(NULL)
 {
 }
 
@@ -41,7 +41,7 @@ bool CDialog::CoreHandleEvent(CWidget *emitter, int event)
     {
         if (IsChild(emitter, this))
         {
-            m_bDone = true;
+            m_pActivatedWidget = emitter;
             return true;
         }
     }
@@ -49,21 +49,24 @@ bool CDialog::CoreHandleEvent(CWidget *emitter, int event)
     return false;
 }
 
-void CDialog::AddButton(CButton *button)
+void CDialog::AddButton(CButton *button, bool expand, bool start)
 {
     if (!m_pButtonBox)
     {
-        m_pButtonBox = new CBox(HORIZONTAL, true, 0);
-        EndPack(m_pButtonBox, true, true, 0);
-        EndPack(new CSeparator(' '), true, true, 0);
+        m_pButtonBox = new CBox(HORIZONTAL, true, 1);
+        EndPack(m_pButtonBox, true, true, 0, 0);
+        EndPack(new CSeparator(ACS_HLINE), true, true, 0, 0);
     }
     
-    m_pButtonBox->StartPack(button, true, false, 0);
+    if (start)
+        m_pButtonBox->StartPack(button, expand, false, 0, 0);
+    else
+        m_pButtonBox->EndPack(button, expand, false, 0, 0);
 }
 
 bool CDialog::Run()
 {
-    return (TUI.Run() && !m_bDone);
+    return (TUI.Run() && !m_pActivatedWidget);
 }
 
 

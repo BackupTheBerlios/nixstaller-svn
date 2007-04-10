@@ -50,8 +50,10 @@ protected:
     
 public:
     CInputField(const std::string &t, EInputType e, int max=0, char out=0);
+    virtual ~CInputField(void) { if (Focused()) TUI.UnLockCursor(); }
     
     void SetText(const std::string &t);
+    std::string GetText(void) const { return m_Text; }
 };
 
 

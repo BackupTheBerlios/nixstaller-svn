@@ -107,7 +107,7 @@ void StartFrontend(int argc, char **argv)
     dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     
     NNCurses::CLabel *label = new NNCurses::CLabel("Some important text here.");
-    dialog->StartPack(label, true, true, 0);
+    dialog->StartPack(label, true, true, 0, 0);
     
     NNCurses::CTextField *field = new NNCurses::CTextField(15, 5, true);
     field->LoadFile("about");
@@ -141,7 +141,7 @@ void StartFrontend(int argc, char **argv)
 
     NNCurses::TUI.Run();
     
-    NNCurses::MessageBox("MessageBox");
+    NNCurses::WarningBox(NNCurses::InputBox("Enter some text Bitte:", "", 1024, 0));
 
     while (dialog->Run())
         ;

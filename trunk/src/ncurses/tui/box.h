@@ -34,10 +34,10 @@ private:
     struct SBoxEntry
     {
         bool expand, fill;
-        int padding;
+        int vpadding, hpadding;
         bool start;
-        SBoxEntry(void) : expand(true), fill(true), padding(0), start(true) { }
-        SBoxEntry(bool e, bool f, int p, bool s) : expand(e), fill(f), padding(p), start(s) { }
+        SBoxEntry(void) : expand(true), fill(true), vpadding(0), hpadding(0), start(true) { }
+        SBoxEntry(bool e, bool f, int vp, int hp, bool s) : expand(e), fill(f), vpadding(vp), hpadding(hp), start(s) { }
     };
     
     std::map<CWidget *, SBoxEntry> m_BoxEntries;
@@ -69,10 +69,10 @@ public:
     CBox(EDirection dir, bool equal, int s=0) : m_eDirection(dir), m_bEqual(equal), m_iSpacing(s) { }
     
     // CGroup needs 2 versions
-    void StartPack(CGroup *g, bool e, bool f, int p);
-    void StartPack(CWidget *g, bool e, bool f, int p);
-    void EndPack(CGroup *g, bool e, bool f, int p);
-    void EndPack(CWidget *g, bool e, bool f, int p);
+    void StartPack(CGroup *g, bool e, bool f, int vp, int hp);
+    void StartPack(CWidget *g, bool e, bool f, int vp, int hp);
+    void EndPack(CGroup *g, bool e, bool f, int vp, int hp);
+    void EndPack(CWidget *g, bool e, bool f, int vp, int hp);
 };
 
 
