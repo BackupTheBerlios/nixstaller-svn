@@ -35,10 +35,11 @@ private:
     CScrollbar *m_pVScrollbar, *m_pHScrollbar;
     TScrollRange m_CurRange;
     
+    void DoScroll(void);
     void SyncBars(void);
     
 protected:
-    virtual void CoreDraw(void) { CGroup::CoreDraw(); SyncBars(); }
+    virtual void CoreDraw(void) { SyncBars(); CGroup::CoreDraw(); }
     virtual void CoreDrawLayout(void);
     virtual void CoreScroll(int vscroll, int hscroll) {  }
     virtual TScrollRange CoreGetRange(void) = 0;

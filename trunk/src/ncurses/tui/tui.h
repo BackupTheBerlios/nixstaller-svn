@@ -39,7 +39,6 @@ class CTUI
     
     TColorMap m_ColorPairs;
     int m_iCurColorPair;
-    CGroup *m_pActiveGroup;
     std::deque<CWidget *> m_QueuedDrawWidgets;
     CBox *m_pMainBox;
     CButtonBar *m_pButtonBar;
@@ -52,14 +51,13 @@ class CTUI
     friend class CWindowManager;
     
 public:
-    CTUI(void) : m_iCurColorPair(0), m_pActiveGroup(NULL), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
+    CTUI(void) : m_iCurColorPair(0), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
     
     void InitNCurses(void);
     void StopNCurses(void);
     bool Run(int delay=5);
     void AddGroup(CGroup *g, bool activate);
     void ActivateGroup(CGroup *g);
-    void RemoveGroup(CGroup *g);
     
     WINDOW *GetRootWin(void) { return stdscr; }
     

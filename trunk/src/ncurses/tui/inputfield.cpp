@@ -93,7 +93,7 @@ void CInputField::Move(int n, bool relative)
 
 bool CInputField::ValidChar(chtype ch)
 {
-    if (IsTAB(ch))
+    if (IsTAB(ch) || !isprint(ch))
         return false;
     
     if ((m_eInputType == INT) || (m_eInputType == FLOAT))
@@ -123,7 +123,7 @@ void CInputField::Addch(chtype ch)
 {
     TSTLStrSize length = m_Text.length();
     
-    if (m_iMaxChars && (length >= m_iMaxChars))
+    if (m_iMaxChars && (SafeConvert<int>(length) >= m_iMaxChars))
         return;
     
     TSTLStrSize pos = GetPosition();

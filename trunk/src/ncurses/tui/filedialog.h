@@ -17,39 +17,45 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef DIALOG
-#define DIALOG
+#ifndef FILEDIALOG
+#define FILEDIALOG
 
-#include "window.h"
+#include <string>
+#include "dialog.h"
+
+class CDirIter;
 
 namespace NNCurses {
 
+class CLabel;
+class CMenu;
+class CInputField;
 class CButton;
 
-class CDialog: public CWindow
+class CFileDialog: public CDialog
 {
-    CBox *m_pButtonBox;
-    CWidget *m_pActivatedWidget;
+    std::string m_Directory;
+    CLabel *m_pLabel;
+    CMenu *m_pFileMenu;
+    CInputField *m_pInputField;
+    CButton *m_pOKButton, *m_pCancelButton;
+    bool m_bCancelled;
+    
+    bool ValidDir(CDirIter &dir);
+    void OpenDir(const std::string &newdir);
     
 protected:
+    virtual bool CoreHandleKey(chtype key);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
-    virtual bool CoreRun(void);
     
 public:
-    CDialog(void);
+    CFileDialog(const std::string &msg, const std::string &start);
     
-    void AddButton(CButton *button, bool expand=true, bool start=true);
-    bool Run(void) { return CoreRun(); }
-    CWidget *ActivatedWidget(void) { return m_pActivatedWidget; }
+    std::string Value(void) const;
 };
 
-// Utils
-void MessageBox(const std::string &msg);
-void WarningBox(const std::string &msg);
-bool YesNoBox(const std::string &msg);
-std::string InputBox(const std::string &msg, const std::string &init="", int max=0, chtype out=0);
-std::string DirectoryBox(const std::string &msg, const std::string &start);
 
 }
+
 
 #endif

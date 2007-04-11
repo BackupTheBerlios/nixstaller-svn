@@ -31,8 +31,11 @@ namespace NNCurses {
 
 void CButton::DoDraw()
 {
-    AddCh(this, 0, 0, '<');
-    AddCh(this, Width()-1, 0, '>');
+    if (Focused())
+    {
+        AddCh(this, 0, 0, '<');
+        AddCh(this, Width()-1, 0, '>');
+    }
 }
 
 void CButton::UpdateColors()

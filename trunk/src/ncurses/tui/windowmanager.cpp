@@ -131,6 +131,9 @@ void CWindowManager::CoreRemoveWidget(CWidget *w)
     
     if (it != m_ActiveWidgets.end())
         m_ActiveWidgets.erase(it);
+    
+    UpdateLayout();
+    PushEvent(EVENT_REQUPDATE);
 }
 
 void CWindowManager::CoreFocusWidget(CWidget *w)

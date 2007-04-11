@@ -22,6 +22,32 @@
 #include "label.h"
 #include "button.h"
 #include "inputfield.h"
+#include "filedialog.h"
+
+namespace {
+
+NNCurses::CDialog *CreateBaseDialog(NNCurses::TColorPair fc, NNCurses::TColorPair dfc, int minw=0, int minh=0)
+{
+    NNCurses::CDialog *dialog = new NNCurses::CDialog;
+    dialog->SetFColors(fc);
+    dialog->SetDFColors(dfc);
+    
+    if (minw)
+        dialog->SetMinWidth(minw);
+    
+    if (minh)
+        dialog->SetMinHeight(minh);
+    
+    return dialog;
+}
+
+void AddMSG(NNCurses::CDialog *dialog, const std::string &text)
+{
+    dialog->StartPack(new NNCurses::CLabel(text), true, true, 1, 1);
+}
+
+}
+
 
 namespace NNCurses {
 
@@ -31,11 +57,10 @@ namespace NNCurses {
 
 void MessageBox(const std::string &msg)
 {
-    CDialog *dialog = new CDialog;
-    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
-    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE),
+                                       TColorPair(COLOR_WHITE, COLOR_BLUE), 25);
     
-    dialog->AddWidget(new CLabel(msg));
+    AddMSG(dialog, msg);
     
     dialog->AddButton(new CButton("OK"));
     
@@ -44,16 +69,15 @@ void MessageBox(const std::string &msg)
     while (dialog->Run())
         ;
     
-    TUI.RemoveGroup(dialog);
+    delete dialog;
 }
 
 void WarningBox(const std::string &msg)
 {
-    CDialog *dialog = new CDialog;
-    dialog->SetFColors(COLOR_YELLOW, COLOR_RED);
-    dialog->SetDFColors(COLOR_WHITE, COLOR_RED);
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_RED),
+                                       TColorPair(COLOR_WHITE, COLOR_RED), 30);
     
-    dialog->AddWidget(new CLabel(msg));
+    AddMSG(dialog, msg);
     
     dialog->AddButton(new CButton("OK"));
     
@@ -62,20 +86,18 @@ void WarningBox(const std::string &msg)
     while (dialog->Run())
         ;
     
-    TUI.RemoveGroup(dialog);
+    delete dialog;
 }
 
 bool YesNoBox(const std::string &msg)
 {
-    CDialog *dialog = new CDialog;
-    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
-    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE), TColorPair(COLOR_WHITE, COLOR_BLUE), 30);
     
-    dialog->AddWidget(new CLabel(msg));
+    AddMSG(dialog, msg);
         
     CButton *nobutton = new CButton("No"), *yesbutton = new CButton("Yes");
-    dialog->AddButton(nobutton);
     dialog->AddButton(yesbutton);
+    dialog->AddButton(nobutton);
     
     TUI.AddGroup(dialog, true);
     
@@ -84,27 +106,24 @@ bool YesNoBox(const std::string &msg)
     
     bool ret = (dialog->ActivatedWidget() == yesbutton);
     
-    TUI.RemoveGroup(dialog);
+    delete dialog;
     
     return ret;
 }
 
 std::string InputBox(const std::string &msg, const std::string &init, int max, chtype out)
 {
-    CDialog *dialog = new CDialog;
-    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
-    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
-    dialog->SetMinWidth(50);
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE),
+                                       TColorPair(COLOR_WHITE, COLOR_BLUE), 50);
     
-    CLabel *label = new CLabel(msg, false);
-    dialog->StartPack(label, false, false, 0, 0);
+    dialog->AddWidget(new CLabel(msg, false));
     
     CInputField *input = new CInputField(init, CInputField::STRING, max, out);
     dialog->StartPack(input, true, true, 1, 0);
     
     CButton *okbutton = new CButton("OK"), *cancelbutton = new CButton("Cancel");
-    dialog->AddButton(cancelbutton, false, false);
     dialog->AddButton(okbutton, false, false);
+    dialog->AddButton(cancelbutton, false, false);
 
     
     TUI.AddGroup(dialog, true);
@@ -114,9 +133,28 @@ std::string InputBox(const std::string &msg, const std::string &init, int max, c
     
     std::string ret;
     if (dialog->ActivatedWidget() != cancelbutton)
-        ret = input->GetText();
+        ret = input->Value();
     
-    TUI.RemoveGroup(dialog);
+    delete dialog;
+    
+    return ret;
+}
+
+std::string DirectoryBox(const std::string &msg, const std::string &start)
+{
+    CFileDialog *dialog = new CFileDialog(msg, start);
+    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    dialog->SetMinWidth(50);
+    
+    TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    std::string ret = dialog->Value();
+    
+    delete dialog;
     
     return ret;
 }

@@ -143,7 +143,7 @@ bool CMenu::CoreHandleKey(chtype key)
                 
                 if ((line != m_MenuList.end()) && (line->name[0] == key))
                 {
-                    VScroll(SafeConvert<int>(std::distance(m_MenuList.begin(), line)), false);
+                    Move(SafeConvert<int>(std::distance(cur, line)));
                     PushEvent(EVENT_DATACHANGED);
                 }
                 

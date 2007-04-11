@@ -53,7 +53,7 @@ public:
     virtual ~CInputField(void) { if (Focused()) TUI.UnLockCursor(); }
     
     void SetText(const std::string &t);
-    std::string GetText(void) const { return m_Text; }
+    std::string Value(void) const { return m_Text; }
 };
 
 

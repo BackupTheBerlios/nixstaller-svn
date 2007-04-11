@@ -180,5 +180,13 @@ WINDOW *CWidget::GetParentWin()
     return (m_pParent) ? m_pParent->GetWin() : m_pParentWin;
 }
 
+void CWidget::Enable(bool e)
+{
+    if (e != m_bEnabled)
+    {
+        m_bEnabled = e;
+        PushEvent(EVENT_REQUPDATE);
+    }
+}
 
 }

@@ -34,11 +34,23 @@ CBaseScroll::CBaseScroll()
     AddWidget(m_pHScrollbar = new CScrollbar(CScrollbar::HORIZONTAL));
 }
 
+void CBaseScroll::DoScroll()
+{
+    int v = (m_pVScrollbar->Enabled()) ? m_pVScrollbar->Value() : 0;
+    int h = (m_pHScrollbar->Enabled()) ? m_pHScrollbar->Value() : 0;
+    
+    CoreScroll(v, h);
+    RequestQueuedDraw();
+}
+
 void CBaseScroll::SyncBars()
 {
     TScrollRange range = CoreGetRange();
     TScrollRange region = CoreGetScrollRegion();
     
+    m_pVScrollbar->Enable((range.first-1) > region.first);
+    m_pHScrollbar->Enable((range.second-1) > region.second);
+
     range.first -= region.first;
     range.second -= region.second;
     
@@ -50,8 +62,8 @@ void CBaseScroll::SyncBars()
     
     if (range != m_CurRange)
     {
-        m_pVScrollbar->SetRange(0, range.first);
-        m_pHScrollbar->SetRange(0, range.second);
+        m_pVScrollbar->SetRange(0, range.first-1);
+        m_pHScrollbar->SetRange(0, range.second-1);
         m_CurRange = range;
     }
 }
@@ -64,24 +76,28 @@ void CBaseScroll::CoreDrawLayout()
 
 void CBaseScroll::VScroll(int n, bool relative)
 {
+    if (!m_pVScrollbar->Enabled())
+        return;
+    
     if (relative)
         m_pVScrollbar->Scroll(n);
     else
         m_pVScrollbar->SetCurrent(n);
     
-    CoreScroll(m_pVScrollbar->Value(), m_pHScrollbar->Value());
-    RequestQueuedDraw();
+    DoScroll();
 }
 
 void CBaseScroll::HScroll(int n, bool relative)
 {
+    if (!m_pHScrollbar->Enabled())
+        return;
+
     if (relative)
         m_pHScrollbar->Scroll(n);
     else
         m_pHScrollbar->SetCurrent(n);
 
-    CoreScroll(m_pVScrollbar->Value(), m_pHScrollbar->Value());
-    RequestQueuedDraw();
+    DoScroll();
 }
 
 }

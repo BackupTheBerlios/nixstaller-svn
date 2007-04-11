@@ -61,12 +61,17 @@ protected:
     virtual TScrollRange CoreGetRange(void);
     virtual TScrollRange CoreGetScrollRegion(void);
 
+    using CBaseScroll::Clear; // We don't want users to call this...
+    
 public:
     CMenu(int maxw, int maxh) : m_iMaxWidth(maxw), m_iMaxHeight(maxh), m_LongestLine(0),
                                 m_iXOffset(0), m_iYOffset(0), m_iCursorLine(0) { }
 
     void AddEntry(const std::string &id, const std::string &name);
+    void AddEntry(const std::string &name) { AddEntry(name, name); }
     void Select(const std::string &id);
+    std::string Value(void) { return m_MenuList.at(GetCurrent()).id; }
+    bool Empty(void) { return m_MenuList.empty(); }
     void ClearEntries(void);
     void SetName(const std::string &id, const std::string &name);
 };

@@ -36,11 +36,8 @@ void CTUI::UpdateButtonBar()
 {
     m_pButtonBar->ClearButtons();
     
-    if (!m_pActiveGroup)
-        return;
-    
     TButtonDescList list;
-    m_pActiveGroup->GetButtonDescs(list);
+    m_pWinManager->GetButtonDescs(list);
     
     for (TButtonDescList::iterator it=list.begin(); it!=list.end(); it++)
         m_pButtonBar->AddButton(it->first, it->second);
@@ -95,28 +92,10 @@ bool CTUI::Run(int delay)
     
     if (key != static_cast<chtype>(ERR)) // Input available?
     {
-        m_pWinManager->HandleKey(key);
-//         if (m_pActiveGroup)
-//         {
-//             if (!m_pActiveGroup->HandleKey(key))
-//             {
-//                 if (IsTAB(key))
-//                 {
-//                     if (!m_pActiveGroup->SetNextFocWidget(true))
-//                         m_pActiveGroup->SetNextFocWidget(false);
-//                     UpdateButtonBar();
-//                 }
-//                 else if (key == CTRL('p'))
-//                 {
-//                     if (!m_pActiveGroup->SetPrevFocWidget(true))
-//                         m_pActiveGroup->SetPrevFocWidget(false);
-//                     UpdateButtonBar();
-//                 }
-//             }
-//         }
-        
         if (IsEscape(key))
             return false;
+
+        m_pWinManager->HandleKey(key);
     }
     
     Move(m_CursorPos.first, m_CursorPos.second);
@@ -150,15 +129,7 @@ void CTUI::ActivateGroup(CGroup *g)
 {
     m_pWinManager->FocusWidget(g);
     g->SetNextFocWidget(false);
-    m_pActiveGroup = g;
     UpdateButtonBar();
-}
-
-void CTUI::RemoveGroup(CGroup *g)
-{
-    if (g == m_pActiveGroup)
-        m_pActiveGroup = NULL;
-    delete g;
 }
 
 int CTUI::GetColorPair(int fg, int bg)

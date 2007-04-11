@@ -49,6 +49,11 @@ bool CDialog::CoreHandleEvent(CWidget *emitter, int event)
     return false;
 }
 
+bool CDialog::CoreRun()
+{
+    return (TUI.Run() && !m_pActivatedWidget);
+}
+
 void CDialog::AddButton(CButton *button, bool expand, bool start)
 {
     if (!m_pButtonBox)
@@ -62,11 +67,6 @@ void CDialog::AddButton(CButton *button, bool expand, bool start)
         m_pButtonBox->StartPack(button, expand, false, 0, 0);
     else
         m_pButtonBox->EndPack(button, expand, false, 0, 0);
-}
-
-bool CDialog::Run()
-{
-    return (TUI.Run() && !m_pActivatedWidget);
 }
 
 

@@ -141,7 +141,7 @@ void StartFrontend(int argc, char **argv)
 
     NNCurses::TUI.Run();
     
-    NNCurses::WarningBox(NNCurses::InputBox("Enter some text Bitte:", "", 1024, 0));
+    NNCurses::MessageBox(NNCurses::DirectoryBox("Input something in this little Box:", "/home"));
 
     while (dialog->Run())
         ;

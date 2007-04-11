@@ -69,8 +69,8 @@ protected:
     virtual void UpdateFocus(void) { }
     virtual bool CoreCanFocus(void) { return false; }
     
-    virtual bool CoreHandleKey(chtype key) { return false; };
-    virtual bool CoreHandleEvent(CWidget *emitter, int event) { return false; };
+    virtual bool CoreHandleKey(chtype key) { return false; }
+    virtual bool CoreHandleEvent(CWidget *emitter, int event) { return false; }
     
     virtual int CoreRequestWidth(void) { return GetMinWidth(); }
     virtual int CoreRequestHeight(void) { return GetMinHeight(); }
@@ -134,7 +134,7 @@ public:
     bool Focused(void) { return m_bFocused; }
     void Focus(bool f) { m_bFocused = f; m_bColorsChanged = true; UpdateFocus(); }
     
-    void Enable(bool e) { m_bEnabled = e; PushEvent(EVENT_REQUPDATE); }
+    void Enable(bool e);
     bool Enabled(void) { return m_bEnabled; }
 };
 
