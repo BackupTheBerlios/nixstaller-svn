@@ -45,6 +45,7 @@ public:
 };
 
 // Utils
+CDialog *CreateBaseDialog(TColorPair fc, TColorPair dfc, int minw=0, int minh=0, const std::string &text="");
 void MessageBox(const std::string &msg);
 void WarningBox(const std::string &msg);
 bool YesNoBox(const std::string &msg);

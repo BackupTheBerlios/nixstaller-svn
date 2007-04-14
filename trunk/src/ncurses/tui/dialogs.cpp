@@ -24,43 +24,34 @@
 #include "inputfield.h"
 #include "filedialog.h"
 
-namespace {
-
-NNCurses::CDialog *CreateBaseDialog(NNCurses::TColorPair fc, NNCurses::TColorPair dfc, int minw=0, int minh=0)
-{
-    NNCurses::CDialog *dialog = new NNCurses::CDialog;
-    dialog->SetFColors(fc);
-    dialog->SetDFColors(dfc);
-    
-    if (minw)
-        dialog->SetMinWidth(minw);
-    
-    if (minh)
-        dialog->SetMinHeight(minh);
-    
-    return dialog;
-}
-
-void AddMSG(NNCurses::CDialog *dialog, const std::string &text)
-{
-    dialog->StartPack(new NNCurses::CLabel(text), true, true, 1, 1);
-}
-
-}
-
-
 namespace NNCurses {
 
 // -------------------------------------
 // Dialog Util Functions
 // -------------------------------------
 
+CDialog *CreateBaseDialog(TColorPair fc, TColorPair dfc, int minw, int minh, const std::string &text)
+{
+    CDialog *dialog = new CDialog;
+    dialog->SetFColors(fc);
+    dialog->SetDFColors(dfc);
+
+    if (minw)
+        dialog->SetMinWidth(minw);
+
+    if (minh)
+        dialog->SetMinHeight(minh);
+
+    if (!text.empty())
+        dialog->StartPack(new CLabel(text), true, true, 1, 1);
+
+    return dialog;
+}
+
 void MessageBox(const std::string &msg)
 {
     CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE),
-                                       TColorPair(COLOR_WHITE, COLOR_BLUE), 25);
-    
-    AddMSG(dialog, msg);
+                                       TColorPair(COLOR_WHITE, COLOR_BLUE), 25, 0, msg);
     
     dialog->AddButton(new CButton("OK"));
     
@@ -75,9 +66,7 @@ void MessageBox(const std::string &msg)
 void WarningBox(const std::string &msg)
 {
     CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_RED),
-                                       TColorPair(COLOR_WHITE, COLOR_RED), 30);
-    
-    AddMSG(dialog, msg);
+                                       TColorPair(COLOR_WHITE, COLOR_RED), 30, 0, msg);
     
     dialog->AddButton(new CButton("OK"));
     
@@ -91,10 +80,9 @@ void WarningBox(const std::string &msg)
 
 bool YesNoBox(const std::string &msg)
 {
-    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE), TColorPair(COLOR_WHITE, COLOR_BLUE), 30);
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE), TColorPair(COLOR_WHITE, COLOR_BLUE),
+                                       30, 0, msg);
     
-    AddMSG(dialog, msg);
-        
     CButton *nobutton = new CButton("No"), *yesbutton = new CButton("Yes");
     dialog->AddButton(yesbutton);
     dialog->AddButton(nobutton);

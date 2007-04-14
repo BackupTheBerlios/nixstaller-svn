@@ -54,12 +54,12 @@ void CButton::UpdateColors()
     }
 }
 
-bool CButton::CoreHandleKey(chtype ch)
+bool CButton::CoreHandleKey(chtype key)
 {
-    if (CBox::CoreHandleKey(ch))
+    if (CBox::CoreHandleKey(key))
         return true;
     
-    if (IsEnter(ch))
+    if (IsEnter(key))
     {
         PushEvent(EVENT_CALLBACK);
         return true;

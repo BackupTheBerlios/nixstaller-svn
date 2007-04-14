@@ -26,6 +26,8 @@
 
 namespace NNCurses {
 
+#include "ncurses.h"
+
 typedef std::pair<chtype, chtype> TColorPair;
 typedef std::pair<std::string, std::string> TButtonDescPair;
 typedef std::vector<TButtonDescPair> TButtonDescList;

@@ -164,7 +164,7 @@ void CTextBase::UpdateSize()
         m_QueuedText.clear();
         
         for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end(); it++)
-            m_QueuedText += *it;
+            m_QueuedText += *it + "\n";
         
         m_QueuedText += oldqueue;
         m_Lines.clear();

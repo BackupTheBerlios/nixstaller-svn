@@ -31,7 +31,7 @@ void CLabel::DoDraw()
 {
     const TLinesList &lines = GetLineList();
     
-    int x = 0, y = (Height() - SafeConvert<int>(lines.size())) / 2;
+    int x = 0, y = (Center()) ? ((Height() - SafeConvert<int>(lines.size())) / 2) : 0;
     
     if (y < 0)
         y = 0;

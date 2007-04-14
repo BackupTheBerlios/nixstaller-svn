@@ -92,10 +92,10 @@ bool CTUI::Run(int delay)
     
     if (key != static_cast<chtype>(ERR)) // Input available?
     {
+        m_pWinManager->HandleKey(key);
+        
         if (IsEscape(key))
             return false;
-
-        m_pWinManager->HandleKey(key);
     }
     
     Move(m_CursorPos.first, m_CursorPos.second);
@@ -166,7 +166,11 @@ void CTUI::QueueDraw(CWidget *w)
              it!=m_QueuedDrawWidgets.end(); it++)
         {
             if (*it == w)
-                return;
+            {
+                // Move to end of queue
+                m_QueuedDrawWidgets.erase(it);
+                break;
+            }
             else if (IsParent(*it, w))
                 return; // Parent is being redrawn, which will draw all childs
             else if (IsChild(*it, w))
