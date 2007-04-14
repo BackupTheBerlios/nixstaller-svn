@@ -49,6 +49,12 @@ bool CDialog::CoreHandleEvent(CWidget *emitter, int event)
     return false;
 }
 
+void CDialog::CoreGetButtonDescs(TButtonDescList &list)
+{
+    list.push_back(TButtonDescPair("ESC", "Cancel"));
+    CWindow::CoreGetButtonDescs(list);
+}
+
 bool CDialog::CoreRun()
 {
     return (TUI.Run() && !m_pActivatedWidget);

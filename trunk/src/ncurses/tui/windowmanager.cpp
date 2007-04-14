@@ -102,6 +102,12 @@ int CWindowManager::CoreRequestHeight()
     return ret;
 }
 
+void CWindowManager::CoreGetButtonDescs(TButtonDescList &list)
+{
+    list.push_back(TButtonDescPair("TAB", "Next field"));
+    CGroup::CoreGetButtonDescs(list);
+}
+
 void CWindowManager::CoreDrawChilds()
 {
     const TChildList &childs = GetChildList();
@@ -133,6 +139,7 @@ void CWindowManager::CoreRemoveWidget(CWidget *w)
         m_ActiveWidgets.erase(it);
     
     UpdateLayout();
+    TUI.UpdateButtonBar();
     PushEvent(EVENT_REQUPDATE);
 }
 
@@ -151,6 +158,7 @@ void CWindowManager::CoreFocusWidget(CWidget *w)
     }
     
     CGroup::CoreFocusWidget(w);
+    TUI.UpdateButtonBar();
 }
 
 void CWindowManager::CoreDrawLayout()

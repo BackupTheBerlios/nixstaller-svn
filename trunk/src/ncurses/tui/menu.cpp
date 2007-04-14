@@ -154,6 +154,12 @@ bool CMenu::CoreHandleKey(chtype key)
     return false;
 }
 
+void CMenu::CoreGetButtonDescs(TButtonDescList &list)
+{
+    list.push_back(TButtonDescPair("ARROWS/PGUP/PGDOWN", "Navigate"));
+    list.push_back(TButtonDescPair("Character", "Move to"));
+}
+
 int CMenu::CoreRequestWidth()
 {
     if (m_iMaxWidth)

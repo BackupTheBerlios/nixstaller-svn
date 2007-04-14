@@ -94,6 +94,11 @@ void CTextField::CoreDrawLayout()
     CBaseScroll::CoreDrawLayout();
 }
 
+void CTextField::CoreGetButtonDescs(TButtonDescList &list)
+{
+    list.push_back(TButtonDescPair("ARROWS/PGUP/PGDOWN/HOME/END", "Navigate"));
+}
+
 void CTextField::CoreScroll(int vscroll, int hscroll)
 {
     m_pTextWidget->SetOffset(hscroll, vscroll);

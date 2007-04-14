@@ -129,5 +129,10 @@ bool CBaseChoice::CoreHandleKey(chtype key)
     return true;
 }
 
+void CBaseChoice::CoreGetButtonDescs(TButtonDescList &list)
+{
+    list.push_back(TButtonDescPair("ARROWS", "Navigate"));
+}
+
 
 }

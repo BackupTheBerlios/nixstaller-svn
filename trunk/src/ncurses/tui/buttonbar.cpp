@@ -30,7 +30,7 @@ namespace NNCurses {
 
 void CButtonBar::PushBox(void)
 {
-    m_pCurBox = new CBox(HORIZONTAL, false);
+    m_pCurBox = new CBox(HORIZONTAL, false, 1);
     AddWidget(m_pCurBox);
 }
 
@@ -49,10 +49,13 @@ void CButtonBar::PushLabel(const std::string &n, const std::string &d)
     m_pCurBox->StartPack(lbox, true, false, 0, 0);
 }
 
-void CButtonBar::AddButton(const std::string &n, const std::string &d)
+void CButtonBar::AddButton(std::string n, std::string d)
 {
     if (!m_pCurBox)
         PushBox();
+    
+    n = GetTranslation(n);
+    d = GetTranslation(d);
     
     std::string text = n + ": " + d;
     int tlength = SafeConvert<int>(text.length());

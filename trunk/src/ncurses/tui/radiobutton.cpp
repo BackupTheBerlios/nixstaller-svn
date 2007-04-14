@@ -41,4 +41,10 @@ void CRadioButton::CoreSelect(SEntry &entry)
     m_ActiveEntry = std::distance(list.begin(), std::find(list.begin(), list.end(), entry));
 }
 
+void CRadioButton::CoreGetButtonDescs(TButtonDescList &list)
+{
+    CBaseChoice::CoreGetButtonDescs(list);
+    list.push_back(TButtonDescPair("SPACE", "Enable"));
+}
+
 }

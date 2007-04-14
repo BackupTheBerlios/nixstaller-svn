@@ -57,6 +57,7 @@ protected:
     virtual int CoreRequestHeight(void);
     virtual bool CoreHandleKey(chtype key);
     virtual bool CoreCanFocus(void) { return true; }
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual void CoreScroll(int vscroll, int hscroll);
     virtual TScrollRange CoreGetRange(void);
     virtual TScrollRange CoreGetScrollRegion(void);

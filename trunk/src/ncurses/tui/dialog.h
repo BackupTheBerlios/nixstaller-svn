@@ -33,6 +33,7 @@ class CDialog: public CWindow
     
 protected:
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual bool CoreRun(void);
     
 public:

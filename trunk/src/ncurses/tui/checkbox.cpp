@@ -43,5 +43,11 @@ void CCheckbox::GetSelections(std::vector<std::string> &out)
     }
 }
 
+void CCheckbox::CoreGetButtonDescs(TButtonDescList &list)
+{
+    CBaseChoice::CoreGetButtonDescs(list);
+    list.push_back(TButtonDescPair("SPACE", "Toggle"));
+}
+
 
 }

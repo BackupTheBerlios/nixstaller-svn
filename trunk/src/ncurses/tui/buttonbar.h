@@ -36,7 +36,7 @@ class CButtonBar: public CBox
 public:
     CButtonBar(int maxw) : CBox(VERTICAL, false), m_pCurBox(NULL), m_iMaxWidth(maxw) { SetMinWidth(1); SetMinHeight(1); }
     
-    void AddButton(const std::string &n, const std::string &d);
+    void AddButton(std::string n, std::string d);
     void ClearButtons(void);
 };
 

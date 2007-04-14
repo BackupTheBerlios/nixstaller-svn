@@ -29,6 +29,7 @@ class CCheckbox: public CBaseChoice
 protected:
     virtual std::string CoreGetText(const SEntry &entry);
     virtual void CoreSelect(SEntry &entry) { entry.enabled = !entry.enabled; }
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     
 public:
     void GetSelections(std::vector<std::string> &out);

@@ -35,6 +35,7 @@ protected:
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual void CoreDrawLayout(void);
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual void CoreScroll(int vscroll, int hscroll);
     virtual TScrollRange CoreGetRange(void);
     virtual TScrollRange CoreGetScrollRegion(void);

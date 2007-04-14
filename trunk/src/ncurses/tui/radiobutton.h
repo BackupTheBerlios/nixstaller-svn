@@ -32,6 +32,7 @@ class CRadioButton: public CBaseChoice
 protected:
     virtual std::string CoreGetText(const SEntry &entry);
     virtual void CoreSelect(SEntry &entry);
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     
 public:
     CRadioButton(void) : m_ActiveEntry(0) { }

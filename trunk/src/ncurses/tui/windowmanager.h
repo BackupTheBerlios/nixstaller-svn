@@ -35,6 +35,7 @@ protected:
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual void CoreDrawChilds(void);
     virtual void CoreAddWidget(CWidget *w);
     virtual void CoreRemoveWidget(CWidget *w);
