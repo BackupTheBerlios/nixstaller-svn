@@ -57,7 +57,7 @@ public:
     CInstaller(void);
     
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void) {}
+    virtual void UpdateLanguage(void);
     virtual void Install(void) {}
     virtual CBaseCFGScreen *CreateCFGScreen(const char *title) {}
 };

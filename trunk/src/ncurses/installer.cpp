@@ -34,7 +34,7 @@ CInstaller::CInstaller() : m_CurrentScreen(0)
     
     buttonbox->StartPack(m_pCancelButton = new NNCurses::CButton("Cancel"), false, false, 0, 1);
     buttonbox->EndPack(m_pNextButton = new NNCurses::CButton("Next"), false, false, 0, 1);
-    buttonbox->EndPack(m_pPrevButton = new NNCurses::CButton("Previous"), false, false, 0, 1);
+    buttonbox->EndPack(m_pPrevButton = new NNCurses::CButton("Back"), false, false, 0, 1);
     
     EndPack(buttonbox, false, false, 0, 0);
 }
@@ -115,4 +115,11 @@ void CInstaller::InitLua()
 void CInstaller::Init(int argc, char **argv)
 {
     CBaseInstall::Init(argc, argv);
+}
+
+void CInstaller::UpdateLanguage()
+{
+    m_pCancelButton->SetText(GetTranslation("Cancel"));
+    m_pPrevButton->SetText(GetTranslation("Back"));
+    m_pNextButton->SetText(GetTranslation("Next"));
 }

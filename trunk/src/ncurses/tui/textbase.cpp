@@ -144,11 +144,15 @@ int CTextBase::CoreRequestHeight()
     if (m_iMaxReqHeight)
         return m_iMaxReqHeight;
 
-    if (!m_QueuedText.empty())
+    if (!m_QueuedText.empty() || !m_Lines.empty())
     {
-        int width = RequestWidth();
-        UpdateText(width);
-        m_iCurWidth = width;
+        if (m_Lines.empty())
+        {
+            int width = RequestWidth();
+            UpdateText(width);
+            m_iCurWidth = width;
+        }
+        
         return SafeConvert<int>(m_Lines.size());
     }
     
@@ -164,7 +168,7 @@ void CTextBase::UpdateSize()
         m_QueuedText.clear();
         
         for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end(); it++)
-            m_QueuedText += *it + "\n";
+            m_QueuedText += *it;
         
         m_QueuedText += oldqueue;
         m_Lines.clear();

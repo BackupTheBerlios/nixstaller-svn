@@ -50,7 +50,7 @@ CDialog *CreateBaseDialog(TColorPair fc, TColorPair dfc, int minw, int minh, con
 
 void MessageBox(const std::string &msg)
 {
-    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE),
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_GREEN, COLOR_BLUE),
                                        TColorPair(COLOR_WHITE, COLOR_BLUE), 25, 0, msg);
     
     dialog->AddButton(new CButton("OK"));
@@ -80,7 +80,7 @@ void WarningBox(const std::string &msg)
 
 bool YesNoBox(const std::string &msg)
 {
-    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE), TColorPair(COLOR_WHITE, COLOR_BLUE),
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_GREEN, COLOR_BLUE), TColorPair(COLOR_WHITE, COLOR_BLUE),
                                        30, 0, msg);
     
     CButton *nobutton = new CButton("No"), *yesbutton = new CButton("Yes");
@@ -101,7 +101,7 @@ bool YesNoBox(const std::string &msg)
 
 std::string InputBox(const std::string &msg, const std::string &init, int max, chtype out)
 {
-    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_BLUE),
+    CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_GREEN, COLOR_BLUE),
                                        TColorPair(COLOR_WHITE, COLOR_BLUE), 50);
     
     dialog->AddWidget(new CLabel(msg, false));
@@ -131,7 +131,7 @@ std::string InputBox(const std::string &msg, const std::string &init, int max, c
 std::string DirectoryBox(const std::string &msg, const std::string &start)
 {
     CFileDialog *dialog = new CFileDialog(msg, start);
-    dialog->SetFColors(COLOR_YELLOW, COLOR_BLUE);
+    dialog->SetFColors(COLOR_GREEN, COLOR_BLUE);
     dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     dialog->SetMinWidth(50);
     

@@ -46,8 +46,8 @@ void StartFrontend(int argc, char **argv)
     NNCurses::TUI.InitNCurses();
     
     CInstaller *interface = new CInstaller;
-    interface->SetFColors(COLOR_YELLOW, COLOR_RED);
-    interface->SetDFColors(COLOR_WHITE, COLOR_RED);
+    interface->SetFColors(COLOR_GREEN, COLOR_BLUE);
+    interface->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     interface->SetMinWidth(60);
     interface->SetMinHeight(10);
     
@@ -74,7 +74,7 @@ char *CNCursBase::GetPassword(const char *str)
 
 void CNCursBase::ShowAbout()
 {
-    NNCurses::TColorPair fc(COLOR_YELLOW, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
+    NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
     NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 25, 0);
     
     NNCurses::CTextField *text = new NNCurses::CTextField(20, 8, false);
@@ -128,7 +128,7 @@ int CNCursBase::ChoiceBox(const char *str, const char *button1, const char *butt
     vasprintf(&text, str, v);
     va_end(v);
     
-    NNCurses::TColorPair fc(COLOR_YELLOW, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
+    NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
     NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 35, 0, text);
         
     NNCurses::CButton *buttons[3];
