@@ -37,6 +37,11 @@ configure()
     OS=`uname`
     CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
     echo "Operating system: $CURRENT_OS"
+    
+    if [ ! -e "./bin/$CURRENT_OS/" ]; then
+        echo "Warning: No installer for \"$CURRENT_OS\" found, defaulting to Linux..."
+        CURRENT_OS="linux"
+    fi
 
     # Nexenta (and Solaris) have 2 terminfo directories: one in
     # /usr/share/terminfo and one in /usr/share/lib/terminfo. Solaris ncurses
@@ -53,7 +58,12 @@ configure()
     echo $CURRENT_ARCH | grep "i86pc" >/dev/null && CURRENT_ARCH="x86"   
 
     echo "CPU Arch: $CURRENT_ARCH"
-  
+
+    if [ ! -e "./bin/$CURRENT_OS/$CURRENT_ARCH/" ]; then
+        echo "Warning: No installer for \"$CURRENT_ARCH\" found, defaulting to x86..."
+        CURRENT_ARCH="x86"
+    fi
+
     # Get all C libs. Sorted so higher versions come first
     LIBCS=`echo /lib/libc.so.* | sort -nr`
 
@@ -108,7 +118,6 @@ getbinlibdir()
 }
 
 # Check which archive type to use
-# ARCH_TYPE=`awk '$1=="archtype"{print $2}' config/install.cfg`
 ARCH_TYPE=`cat info`
 if [ -z "$ARCH_TYPE" ]; then
     ARCH_TYPE="gzip"
