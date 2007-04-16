@@ -1,0 +1,464 @@
+import sys
+import os
+import glob
+import commands
+import shutil
+import platform
+import tarfile
+
+# All the files for Nixstaller...If a directory is specified the whole directory(excluding dot files) will be copied.
+# By specifying as many files as possible you can be more sure unwanted files won't be copied.
+# --------------------------------------------------------------------------------------
+
+distfiles_user = [
+'doc/',
+'example/cube/config.lua',
+'example/cube/run.lua',
+'example/cube/welcome',
+'example/cube/files_all/FILES',
+'example/cube/lang/dutch/strings',
+'example/simple/config.lua',
+'example/simple/welcome',
+'example/simple/files_all/README',
+'example/simple/lang/dutch/strings',
+'example/vim/config.lua',
+'example/vim/run.lua',
+'example/vim/welcome',
+'example/vim/finish',
+'example/vim/vim48x48.png',
+'example/vim/files_all/FILES',
+'example/vim/lang/dutch/strings',
+'lang/dutch/strings',
+'lang/english/strings',
+'src/docs/macros-default.texi',
+'src/docs/macros-html.texi',
+'src/docs/nixstaller.texi',
+'src/docs/mkdoc.sh',
+'src/docs/styles.css',
+'src/docs/fltk.png',
+'src/docs/ncurs.png',
+'src/edelta/Contributors',
+'src/edelta/COPYING',
+'src/edelta/edelta.c',
+'src/edelta/README',
+'src/edelta/sha1.c',
+'src/edelta/version.h',
+'src/fltk/appmanager.cpp',
+'src/fltk/fltk.cpp',
+'src/fltk/fltk.h',
+'src/fltk/installer.cpp',
+'src/include/',
+'src/internal/about',
+'src/internal/geninstall.lua',
+'src/internal/intro.txt',
+'src/internal/startupinstaller.sh',
+'src/lib/freebsd/x86/',
+'src/lib/linux/x86/',
+'src/lib/netbsd/x86/',
+'src/lib/openbsd/x86/',
+'src/lib/sunos/x86/',
+'src/libmd5/md5.c',
+'src/libmd5/md5.h',
+'src/libmd5/README',
+'src/libsu/COPYING',
+'src/libsu/CREDITS',
+'src/libsu/TODO',
+'src/libsu/libsu.h',
+'src/libsu/libtest.cpp',
+'src/libsu/LICENSE',
+'src/libsu/main.cpp',
+'src/libsu/main.h',
+'src/libsu/SConstruct',
+'src/libsu/terminal.cpp',
+'src/libsu/utils.cpp',
+'src/libsu/vasprintf.c',
+'src/lzma/7zip/',
+'src/lzma/Common/',
+'src/lzma/SConstruct',
+'src/main/appmanager.cpp',
+'src/main/exception.h',
+'src/main/install.cpp',
+'src/main/install.h',
+'src/main/lua.cpp',
+'src/main/main.cpp',
+'src/main/main.h',
+'src/main/register.cpp',
+'src/main/utils.cpp',
+'src/main/utils.h',
+'src/main/vasprintf.c',
+'src/ncurses/installer.cpp',
+'src/ncurses/ncurses.cpp',
+'src/ncurses/ncurses.h',
+'src/ncurses/utils.cpp',
+'src/ncurses/widgets.cpp',
+'src/ncurses/widgets.h',
+'src/exceptions.odt',
+'src/SConstruct',
+'COPYING',
+'CHANGELOG',
+'geninstall.sh',
+'LICENSE',
+'makeself.sh',
+'makeself-header.sh',
+'TODO',
+]
+
+# --------------------------------------------------------------------------------------
+
+
+def getallbins(onlyforcuros):
+    # Traverse files, from http://effbot.org/librarybook/os-path.htm
+    if onlyforcuros:
+        stack = ['bin/'+cur_os]
+    else:
+        stack = ['bin']
+    bins = []
+    while stack:
+        directory = stack.pop()
+        for file in os.listdir(directory):
+            fullname = os.path.join(directory, file)
+            if file == "ncurs" or file == "fltk" or file == "lzma-decode" or file == "edelta" or file == "lzma":
+                bins.append(fullname)
+            if os.path.isdir(fullname) and not os.path.islink(fullname):
+                stack.append(fullname)
+    return bins
+
+def stripallbins():
+    bins = getallbins(True)
+    for file in bins:
+        if cur_os == "sunos":
+            Execute("strip %s" % file)
+        else:
+            Execute("strip -s %s" % file)
+
+# Copies whole directory, excluding dotfiles
+def copydir(dir, dest):
+    stack = [ dir ]
+    while stack:
+        directory = stack.pop()
+        if not os.path.exists(dest+directory):
+            os.makedirs(dest+directory)
+        for file in glob.glob(directory + '/*'):
+            if os.path.isdir(file):
+                stack.append(file)
+            else:
+                shutil.copy(file, dest+file)
+
+
+# Check if atleast one file exists from a given list
+def checklibexist(context, fname):
+    context.Message('Checking for %s...' % fname)
+    if (os.path.exists(lib_dir+fname)):
+        context.Result(1)
+        return True
+
+    context.Result(0)
+    return False
+
+def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "main();", autoload = 1):
+    context.env.Append(LIBPATH = libdir, CPPPATH = incdir)
+    ret = context.sconf.CheckLibWithHeader(library, header, language, call, autoload)
+    context.env['LIBPATH'].remove(libdir)
+    context.env['CPPPATH'].remove(incdir)
+    context.did_show_result = 1 # Hack, says "Error: No result" otherwise
+    return ret
+
+def CheckLinkedLibVersion(context, libname, optlibs=""):
+    libname = "lib" + libname
+    context.Message('Checking which library version is used for %s...' % libname)
+    reallibname = ''
+    lastLIBS = context.env['LIBS']
+    context.env.Append(LIBS = Split("%s %s" % (libname, optlibs)))
+    ret = context.TryLink("""
+int main(int argc, char **argv) {
+    return 0;
+}
+""", '.c')
+    context.env.Replace(LIBS = lastLIBS)
+    
+    if not ret:
+        context.Result('None')
+    else:
+        reallibname = os.popen('ldd %s | grep %s' % (context.lastTarget.path, libname), 'r').read()
+        ind = 0
+        
+        if cur_os == "netbsd":
+            try:
+                ind = reallibname.index("=> ")
+            except:
+                context.Result('None')
+            
+            # Get the part after "=> " and strip leading/trailing whitespace
+            #reallibname = reallibname[ind].strip()
+            # Remove the path from the lib
+            ind = reallibname.rfind("/", ind)
+            if ind == -1:
+                context.Result("None")
+            
+            reallibname = reallibname[ind+1:].strip()
+        elif cur_os == "openbsd":
+            # OpenBSD's ldd puts the library name in the last column
+            
+            try:
+                ind = reallibname.rfind("/")
+            except:
+                ind = 0
+
+            reallibname = reallibname[ind+1:].strip()
+        else:
+            try:
+                ind = reallibname.index(" =>")
+            except:
+                context.Result('None')
+            
+            # Get the part before " =>" and strip leading/trailing whitespace
+            reallibname = reallibname[0:ind].strip()
+        context.Result(reallibname)
+    
+    return reallibname
+    
+EnsureSConsVersion(0,96,91)
+
+opts = Options()
+opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
+opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
+opts.Add('CC', 'The C compiler', 'gcc')
+opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('LCVER', 'Manually overide used libc version', '')
+opts.Add('LCPPVER', 'Manually overide used libstdc++ version', '')
+opts.Add('OS', 'Manually overide target OS', '')
+opts.Add('CPU', 'Manually overide target arch', '')
+
+# -Wno-sign-compare
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=[ 'NDEBUG' ])
+
+Export("env")
+
+Help(opts.GenerateHelpText(env))
+
+if not env['OS']:
+    # Get current OS...if this != to uname I should fix it :-)
+    cur_os = sys.platform.rstrip('1234567890')
+else:
+    cur_os = env['OS']
+    
+if not env['CPU']:
+    cur_arch = platform.machine()
+else:
+    cur_arch = env['CPU']
+    
+if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
+    cur_arch = "x86"
+    
+# OS/Arch specific dirs
+lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
+inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
+libc_ver = ''
+libstdcpp_ver = ''
+
+env.Append(LIBPATH=[lib_dir, 'libsu/'])
+env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua'])
+
+# Current version
+curnixstversion = '0.2'
+
+if 'stripbins' in COMMAND_LINE_TARGETS:
+    print 'Stripping all binaries in the bin/%s directory...' % cur_os
+    os.chdir('../')
+    stripallbins()
+    Exit(0)
+
+if 'tardist' in COMMAND_LINE_TARGETS:
+    archname = 'nixstaller-' + curnixstversion + '.tar.gz'
+    os.chdir("../")
+    tarredfile = tarfile.open(archname, 'w:gz')
+    stripallbins()
+    for dfile in distfiles_user+getallbins(False):
+        if os.path.isdir(dfile):
+            stack = [ dfile ]
+            while stack:
+                directory = stack.pop()
+                for sfile in glob.glob(directory + '/*'):
+                    if os.path.isdir(sfile):
+                        stack.append(sfile)
+                    else:
+                        tarredfile.add(sfile, 'nixstaller-'+curnixstversion+'/'+sfile)
+        else:
+            tarredfile.add(dfile, 'nixstaller-'+curnixstversion+'/'+dfile)
+    tarredfile.close()
+    print "Generated %s" % archname
+    Exit(0)
+
+if 'setupdist' in COMMAND_LINE_TARGETS:
+    workdir = os.getcwd() + "/tmp-setup-dist/"
+    filesdir = workdir + "files_all/nixstaller-" + curnixstversion + "/"
+
+    outputfile = "nixstaller-" + curnixstversion + ".sh"
+
+    if os.path.exists(workdir):
+        print "Cleaning old workdir..."
+        shutil.rmtree(workdir)
+        
+    os.mkdir(workdir)
+    os.makedirs(filesdir)
+
+    os.chdir("../")
+    stripallbins()
+
+    print "Copying all files to be installed..."
+    for file in distfiles_user+getallbins(False):
+        dir = filesdir + os.path.dirname(file)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        if os.path.isdir(file):
+            copydir(file, filesdir)
+        else:
+            shutil.copy(file, filesdir + file)
+
+    print "Generate install config file..."
+    cfgfile = open(workdir + "config.lua", "w")
+    cfgfile.write("""
+cfg.appname = "Nixstaller"
+cfg.targetos = { "linux", "netbsd", "freebsd", "openbsd", "sunos" }
+""")
+    cfgfile.close()
+    
+    print "Copying welcome message..."
+    shutil.copy("src/internal/intro.txt", workdir + "welcome")
+    print "%s --> %s" % ("internal/intro.txt", workdir + "welcome")
+
+    print "Generating installer"
+    os.system("./geninstall.sh %s %s" % (workdir, outputfile))
+
+    print "Cleaning workdir..."
+    shutil.rmtree(workdir)
+
+    Exit(0)
+    
+# configure stuff (only do this when not cleaning)
+if not env.GetOption('clean'):
+    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv, 'CheckLinkedLibVersion' : CheckLinkedLibVersion})
+
+#    if not conf.checklibexist('libstdc++.a'):
+#       print 'Searching for libstdc++.a'
+#       lname = commands.getoutput('gcc -print-file-name=libstdc++.a')
+#       if lname:
+#           try:
+#               shutil.copy(lname, lib_dir)
+#               print "Copied %s to %s" % (lname, lib_dir)
+#           except (IOError, os.error), why:
+#               print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+#               Exit(1)
+        #else:
+            #print 'Error: Could not find any libstdc++.a! Please copy it manually to ', lib_dir
+            #Exit(1)
+
+    if not conf.checklibexist('libutil.a'):
+        print 'Searching for libutil.a'
+        lname = commands.getoutput(env['CC']+' -print-file-name=libutil.a')
+        if lname:
+            if lname == 'libutil.a':
+                # Compiler didn't found it, ignore
+                print "None found by compiler"
+            else:
+                try:
+                    shutil.copy(lname, lib_dir)
+                    print "Copied %s to %s" % (lname, lib_dir)
+                    conf.env.Append(LIBS='util')
+                except (IOError, os.error), why:
+                    print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+                    Exit(1)
+        else:
+            print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
+            Exit(1)
+    else:
+        conf.env.Append(LIBS='util')
+
+    if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
+        conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
+    if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
+        conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
+    
+    if not conf.env['LCVER']:
+        libc_ver = conf.CheckLinkedLibVersion('c')
+    else:
+        libc_ver = env['LCVER']
+        
+    if not libc_ver:
+        print "Couldn't detect libc version!"
+        Exit(1)
+    
+    if not env['LCPPVER']:
+        libstdcpp_ver = conf.CheckLinkedLibVersion('stdc++', 'm')
+    else:
+        libstdcpp_ver = env['LCPPVER']
+        
+    if not libstdcpp_ver:
+        print "Couldn't detect libstdc++ version!"
+        Exit(1)
+        
+    if 'ncurses' in BUILD_TARGETS:
+        if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
+            print "Couldn't find libncurses !"
+            Exit(1)
+    elif 'fltk' in BUILD_TARGETS:
+        if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
+            print "Couldn\'t find libz !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+            print "Couldn't find libX11 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+            print "Couldn't find libXext !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libpng !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('jpeg', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libjpeg !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('fltk', ['FL/Fl.H', 'FL/filename.H'], 'C++', 'fl_filename_isdir(0);', 0):
+            print "Couldn't find libfltk !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('fltk_images', 'FL/Fl.H', 'C++', ';', 0):
+            print "Couldn't find libfltk_images !"
+            Exit(1)
+        
+    env = conf.Finish()
+elif env.GetOption('clean'):
+    # Make sure that scons properly cleans everything
+    Execute(Delete('main/.sconsign'))
+    Execute(Delete('ncurses/.sconsign'))
+    Execute(Delete('fltk/.sconsign'))
+    Execute(Delete('.sconf_temp'))
+    Execute(Delete('.sconsign.dblite'))
+
+# Builds LZMA encode/decode programs
+lzma, lzma_dec = env.SConscript('lzma/SConstruct', duplicate=0)
+
+# Builds bsdiff binaries
+edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
+        
+# Builds libsu
+libsu = env.SConscript('libsu/SConstruct')
+
+# Builds main lib
+main = env.Library("main/main", ['main/main.cpp', 'main/lua.cpp', 'main/utils.cpp', 'main/appmanager.cpp', 'main/install.cpp', 'main/vasprintf.c', 'libmd5/md5.c'])
+
+env.Prepend(LIBS = Split('main su lua'))
+
+# UNDONE?
+if cur_os == 'netbsd':
+    env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib'))
+
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/ncurses.cpp ncurses/widgets.cpp ncurses/utils.cpp ncurses/installer.cpp'), LIBS=Split('$LIBS ncurses++ ncurses'))
+
+# Builds fltk frontend
+fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/installer.cpp fltk/appmanager.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext X11 z'), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
+
+c_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
+cpp_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
+
+# Default to all
+Default(lzma, lzma_dec, edelta, fltk, ncurses, main, libsu, env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, fltk), env.Install(cpp_bin_dir, ncurses))

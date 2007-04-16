@@ -1,0 +1,81 @@
+OVERALL
+- Test/clean/check new edelta code
+- Test installer scripts
+- if Norwegian translations:
+    - Add popup dialog strings
+    - Add to SConstruct file list
+    - References in Manual
+- Test new config var modules
+- Mention texi2html
+
+MAIN
+
+LIBSU
+- tmp files not always cleared?
+
+NCURSES FRONTEND
+
+FLTK FRONTEND
+
+DOCS
+- Max config var description length
+- Check for right vertical spacing, paragraphs etc
+- Add norwegian translation references if author sends updated version (tutorials, credits)
+
+
+FOR RELEASE
+- Update site: screenshots, FAQ(Fix About and vim links), Manual, About: Fix doc links
+
+----------------------------- LATER ------------------------------------
+
+OVERALL
+- Use ldd to detect right frontend in startinstaller.sh?
+- Make shared 'library' for scripts
+- Detect ssh'd terminals with X tunnel
+- Qt/KDE and GTK2 frontends
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Dep handling?
+- Use deltas <--> patches for different frontends?
+- Remove double GetTranslation calls
+- Better util.a configure testing?
+- Replace vec [] access with at() ?
+- Build script that compiles all Nixstaller dependencies?
+- Modify Makeself?
+- x64 bins?
+
+
+MAIN
+- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+- Move cfg screen array handling to libmain
+
+
+LIBSU
+- Clean up/redesign
+- sudo support
+
+
+REGISTER
+- Check if version is specified in config file?
+- Language updates: FLTK AppManager
+- Better error handling for register
+- Check path for rm
+- exceptions
+        
+NCURSES
+- Automaticly size messageboxes
+- Check chtype
+- Clean CFormattedText mess
+- Better monochrome support
+
+DESIGN
+- Reorganize var and type names? (type prefixes etc)
+- Virtual functions that need to call parent function --> make additional function in base class
+that will be called instead of virtual function, this function should call the virtual instead.
+- Split code in more files (SConstruct aswell?)
+- Use C++ style casts(static_cast)
+- More usage of const?
+- Move m_Options from lua checkbox/radiobutton to base class
+- Move global static ints for widget spacing etc to static functions
+
+        
