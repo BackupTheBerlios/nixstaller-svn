@@ -120,9 +120,11 @@ void CMain::Init(int argc, char **argv)
         m_Languages.push_back(s);
     }
     
-    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang", "cfg") ||
-        (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end()))
-        m_szCurLang = "english"; // Default to english if wrong or unknown language is specified
+    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang", "cfg"))
+        m_szCurLang = "english";
+    
+    if (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end())
+        m_szCurLang = m_Languages.front();
     
     debugline("defaultlang: %s\n", m_szCurLang.c_str());
     ReadLang();

@@ -256,8 +256,6 @@ void CInstaller::Init(int argc, char **argv)
     langscr->Enable(false);
     m_InstallScreens.push_back(langscr);
 
-    UpdateLanguage();
-
     unsigned count = m_LuaVM.OpenArray("screenlist", "install");
     if (!count)
     {
@@ -321,6 +319,8 @@ void CInstaller::Init(int argc, char **argv)
         m_LuaVM.CloseArray();
     }
     
+    UpdateLanguage();
+
     bool initscreen = true;
     for (std::list<CBaseScreen *>::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
     {
