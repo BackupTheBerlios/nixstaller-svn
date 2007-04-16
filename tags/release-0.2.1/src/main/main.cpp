@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 {
     setlocale(LC_ALL, "");
 
-    printf("Nixstaller version 0.2, Copyright (C) 2006 of Rick Helmus\n"
+    printf("Nixstaller version 0.2.1, Copyright (C) 2006, 2007 of Rick Helmus\n"
            "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
            "Nixstaller is free software, and you are welcome to redistribute it\n"
            "under certain conditions; see the about section for details.\n");
@@ -322,7 +322,7 @@ const char *CMain::GetSumListFile(const char *progname)
 void CMain::InitLua()
 {
     // Register some globals for lua
-    m_LuaVM.RegisterString("0.2", "version");
+    m_LuaVM.RegisterString("0.2.1", "version");
     
     m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
     m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
