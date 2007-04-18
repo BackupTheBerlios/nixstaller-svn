@@ -38,7 +38,7 @@ configure()
     CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
     echo "Operating system: $CURRENT_OS"
     
-    if [ ! -e "./bin/$CURRENT_OS/" ]; then
+    if [ ! -d "./bin/$CURRENT_OS/" ]; then
         echo "Warning: No installer for \"$CURRENT_OS\" found, defaulting to Linux..."
         CURRENT_OS="linux"
     fi
@@ -59,7 +59,7 @@ configure()
 
     echo "CPU Arch: $CURRENT_ARCH"
 
-    if [ ! -e "./bin/$CURRENT_OS/$CURRENT_ARCH/" ]; then
+    if [ ! -d "./bin/$CURRENT_OS/$CURRENT_ARCH/" ]; then
         echo "Warning: No installer for \"$CURRENT_ARCH\" found, defaulting to x86..."
         CURRENT_ARCH="x86"
     fi
