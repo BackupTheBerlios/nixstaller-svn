@@ -91,7 +91,7 @@ configure()
 # $3: diff file
 edelta()
 {
-    unlzma $3
+    unlzma $3 $1
     
     mv $3 $3.tmp
     $1/edelta -q patch $2 $3 $3.tmp >/dev/null
