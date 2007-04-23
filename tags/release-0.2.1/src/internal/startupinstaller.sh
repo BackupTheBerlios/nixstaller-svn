@@ -30,6 +30,23 @@ unlzma()
     fi
 }
 
+getlibs()
+{
+    LIB=$1
+    RET=""
+    shift
+    
+    for D in $*; do
+        DIR=`echo "$D/$LIB"* | sort -nr`
+        if [ "$DIR" != "$D/$LIB*" ]; then # Did evaluate?
+            RET="$RET $DIR"
+        fi
+    done
+    
+    echo $RET
+    unset LIB RET DIR
+}
+
 configure()
 {
     echo "Collecting info for this system..."
@@ -65,23 +82,13 @@ configure()
     fi
 
     # Get all C libs. Sorted so higher versions come first
-    LIBCS=`echo /lib/libc.so.* | sort -nr`
-
-    # Found any C libs?
-    if [ "$LIBCS" = '/lib/libc.so.*' ]; then
-        LIBCS=`echo '/usr/lib/libc.so.'* | sort -nr` # Probably OpenBSD
-    fi
+    LIBCS=`getlibs libc.so. /lib /usr/lib`
 
     echo "C libraries: $LIBCS"
     
     # Get all C++ libs. Sorted so higher versions come first
-    LIBSTDCPPS=`echo '/usr/lib/libstdc++.so.'* | sort -nr`
-
-    # Found any C++ libs?
-    if [ "$LIBSTDCPPS" = '/usr/lib/libstdc++.so.*' ]; then
-        LIBSTDCPPS=`echo '/usr/sfw/lib/libstdc++.so.'* | sort -nr` # Probably Solaris, so try a Solaris specific dir aswell
-    fi
-
+    LIBSTDCPPS=`getlibs libstdc++.so. /usr/lib /usr/sfw/lib /usr/lib/libstdc++-v3`
+    
     echo "C++ libraries: $LIBSTDCPPS"
 }
 
