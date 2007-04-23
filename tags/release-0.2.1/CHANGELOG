@@ -5,6 +5,7 @@ FLTK:
 
 OVERALL:
 - Fixed: Tried to default to english incase only one language was available even if this wasn't English.
+- Fixed: Startup script wouldn't detect libstdc++ on Gentoo (reported by Edward Rudd)
 - Startup script now defaults to Linux incase no frontends are found for the current OS and defaults to x86 incase no frontends are found for the current CPU arch.
 
 
