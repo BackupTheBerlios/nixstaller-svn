@@ -1,0 +1,36 @@
+Notes for freebsd libs:
+
+Host system: x86 FreeBSD 6.2-RELEASE and 5.5-RELEASE(only for creating 5.X compatible bins)
+
+JPEG:
+version: 6b
+notes: compiled from ports
+
+PNG:
+version: 1.2.12
+notes: compiled from ports
+
+FLTK:
+configure command: LDFLAGS="-L/usr/local/lib" CXXFLAGS="-fexceptions" CPPFLAGS="-I/usr/local/include" ./configure -disable-localjpeg --disable-localpng
+(configure script wouldn't detect png and jpeg libs otherwise)
+version: 1.1.7
+
+ZLIB:
+notes: used from basesystem
+
+NCURSES:
+version: 5.6
+configure command: ./configure --enable-termcap
+
+X11 (libX11, libXext)
+version: 6.8.2
+notes: compiled from ports
+
+GCC (libstdc++, libutil)
+version: 3.4.6
+notes: used from basesystem
+
+LUA:
+version 5.1.1
+make command: make posix
+notes: src/Makefile was edited to use g++ instead of gcc (enables C++ exception support, important) and to use the -Os CFLAG.
