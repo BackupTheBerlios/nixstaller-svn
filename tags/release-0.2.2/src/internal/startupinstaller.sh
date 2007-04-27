@@ -30,21 +30,11 @@ unlzma()
     fi
 }
 
-getlibs()
+# $1: Base directory
+# $2: Base lib name
+createliblist()
 {
-    LIB=$1
-    RET=""
-    shift
-    
-    for D in $*; do
-        DIR=`echo "$D/$LIB"* | sort -nr`
-        if [ "$DIR" != "$D/$LIB*" ]; then # Did evaluate?
-            RET="$RET $DIR"
-        fi
-    done
-    
-    echo $RET
-    unset LIB RET DIR
+    echo `find "$1/$2"* 2>/dev/null | sort -nr`
 }
 
 configure()
@@ -60,13 +50,6 @@ configure()
         CURRENT_OS="linux"
     fi
 
-    # Nexenta (and Solaris) have 2 terminfo directories: one in
-    # /usr/share/terminfo and one in /usr/share/lib/terminfo. Solaris ncurses
-    # works with both, Nexenta only with the second on a regular terminal.
-    # Another catch is that Solaris (but not Nexenta...) doesn't work with the
-    # terminal 'sun-color' but does with 'sun'. So we overide the 2 here...
-    # UNDONE
-    
     CURRENT_ARCH=`uname -m`
     # iX86 --> x86
     echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86"
@@ -80,16 +63,6 @@ configure()
         echo "Warning: No installer for \"$CURRENT_ARCH\" found, defaulting to x86..."
         CURRENT_ARCH="x86"
     fi
-
-    # Get all C libs. Sorted so higher versions come first
-    LIBCS=`getlibs libc.so. /lib /usr/lib`
-
-    echo "C libraries: $LIBCS"
-    
-    # Get all C++ libs. Sorted so higher versions come first
-    LIBSTDCPPS=`getlibs libstdc++.so. /usr/lib /usr/sfw/lib /usr/lib/libstdc++-v3`
-    
-    echo "C++ libraries: $LIBSTDCPPS"
 }
 
 # Uses edelta to reconstruct frontend binaries
@@ -124,6 +97,19 @@ getbinlibdir()
     unset BASE MAJOR MINOR
 }
 
+# $1: Executable that ldd needs to research
+haslibs()
+{
+    if [ $CURRENT_OS = "openbsd" ]; then
+        (ldd $1 >/dev/null 2>&1) && return 0
+    else
+        if [ -z "`ldd $1 | grep 'not found'`" ]; then
+           return 0
+        fi
+    fi
+    return 1
+}
+
 # Check which archive type to use
 ARCH_TYPE=`cat info`
 if [ -z "$ARCH_TYPE" ]; then
@@ -138,55 +124,110 @@ FLTK_SRC=`awk '$1=="fltk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
 
 FRONTENDS="fltk ncurs"
 
-for FR in $FRONTENDS
+for LC in `createliblist bin/$CURRENT_OS/$CURRENT_ARCH libc.so.`
 do
-    if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
+    if [ ! -d "${LC}" ]; then
         continue
     fi
+
+    if [ $ARCH_TYPE = "lzma" -a ! -f ${LC}/lzma-decode ]; then
+        continue # No usable lzma-decoder
+    fi
     
-    case $FR in
-        "fltk") ED_SRC=$FLTK_SRC ;;
-        "ncurs") ED_SRC=$NCURS_SRC ;;
-    esac
-    
-    for LC in $LIBCS
+    for LCPP in `createliblist "${LC}" libstdc++.so.`
     do
-        LCDIR="`getbinlibdir ${LC} libc bin/$CURRENT_OS/$CURRENT_ARCH`"
-        
-        if [ ! -d "${LCDIR}" ]; then
+        if [ ! -d ${LCPP} ]; then
             continue
         fi
-    
-        if [ $ARCH_TYPE = "lzma" -a ! -f ${LCDIR}/lzma-decode ]; then
-            continue # No usable lzma-decoder
-        fi
         
-        unlzma $ED_SRC ${LCDIR}
+        echo "Trying LCPP '$LCPP'"
         
-        for LCPP in $LIBSTDCPPS
+        for FR in $FRONTENDS
         do
-            LCPPDIR="`getbinlibdir ${LCPP} libstdc++ ${LCDIR}`"
-            
-            if [ ! -d ${LCPPDIR} ]; then
+            if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
                 continue
             fi
+        
+            case $FR in
+                "fltk") ED_SRC=$FLTK_SRC ;;
+                "ncurs") ED_SRC=$NCURS_SRC ;;
+            esac
             
-            unlzma ${LCPPDIR}/$FR ${LCDIR}
+            unlzma $ED_SRC ${LC}
+            unlzma "${LCPP}"/$FR ${LC}
             
-            if [ -f "${LCPPDIR}/$FR" ]; then
-                FRBIN="${LCPPDIR}/$FR"
+            if [ -f "${LCPP}/$FR" ]; then
+                FRBIN="${LCPP}/$FR"
                 if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
-                    edelta ${LCDIR} $ED_SRC $FRBIN
+                    edelta ${LC} $ED_SRC $FRBIN
                 fi
                 
+                # deltas and lzma packed bins probably aren't executable yet
+                # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
+                chmod +x $FRBIN
+                
+                haslibs $FRBIN || continue
+                
+                echo "Trying frontend '$FR' with LC '$LC' and LCPP '$LCPP'"
+                
                 # Run it
-                chmod +x $FRBIN # deltas en lzma packed bins probably aren't executable yet
                 `pwd`/$FRBIN
                 exit $?
             fi
         done
     done
 done
+
+
+# for FR in $FRONTENDS
+# do
+#     if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
+#         continue
+#     fi
+#     
+#     case $FR in
+#         "fltk") ED_SRC=$FLTK_SRC ;;
+#         "ncurs") ED_SRC=$NCURS_SRC ;;
+#     esac
+#     
+#     for LC in `createliblist 
+#     do
+#         LCDIR="`getbinlibdir ${LC} libc bin/$CURRENT_OS/$CURRENT_ARCH`"
+#         
+#         if [ ! -d "${LCDIR}" ]; then
+#             continue
+#         fi
+#     
+#         if [ $ARCH_TYPE = "lzma" -a ! -f ${LCDIR}/lzma-decode ]; then
+#             continue # No usable lzma-decoder
+#         fi
+#         
+#         unlzma $ED_SRC ${LCDIR}
+#         
+#         for LCPP in $LIBSTDCPPS
+#         do
+#             LCPPDIR="`getbinlibdir ${LCPP} libstdc++ ${LCDIR}`"
+#             
+#             if [ ! -d ${LCPPDIR} ]; then
+#                 continue
+#             fi
+#             
+#             unlzma ${LCPPDIR}/$FR ${LCDIR}
+#             
+#             if [ -f "${LCPPDIR}/$FR" ]; then
+#                 FRBIN="${LCPPDIR}/$FR"
+#                 if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
+#                     edelta ${LCDIR} $ED_SRC $FRBIN
+#                 fi
+#                 
+#                 # Run it
+#                 chmod +x $FRBIN # deltas en lzma packed bins probably aren't executable yet
+#                 `pwd`/$FRBIN
+#                 exit $?
+#             fi
+#         done
+#     done
+# done
 
 echo "Error: Couldn't find any suitable frontend for your system"
 exit 1
