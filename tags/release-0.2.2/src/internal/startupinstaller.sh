@@ -77,26 +77,6 @@ edelta()
     $1/edelta -q patch $2 $3 $3.tmp >/dev/null
 }
 
-# Gets valid bin dir
-# $1: Full libname (ie /lib/libc.so.5)
-# $2: Unversioned short libname (ie libc)
-# $3: Path where directory resides
-getbinlibdir()
-{
-    BASE=`basename $1`
-    MAJOR=`echo $BASE | awk 'BEGIN { FS="." } /.so./ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+1) }'`
-    MINOR=`echo $BASE | awk 'BEGIN { FS="." } /.so./ { for (i=1; i<=NF; i++) if ($i == "so") print $(i+2) }'`
-
-    if [ ! -z "$MINOR" ]; then
-        echo ${3}/$2.so.$MAJOR.* | sort -nr | awk '{ print $1 }'
-    else
-        echo "${3}/$BASE"
-    fi
-
-    # Remove unwanted globals
-    unset BASE MAJOR MINOR
-}
-
 # $1: Executable that ldd needs to research
 haslibs()
 {
@@ -153,6 +133,9 @@ do
                 "ncurs") ED_SRC=$NCURS_SRC ;;
             esac
             
+            haslibs ${LC}/lzma-decode || continue
+            haslibs ${LC}/edelta || continue
+
             unlzma $ED_SRC ${LC}
             unlzma "${LCPP}"/$FR ${LC}
             
@@ -177,57 +160,6 @@ do
         done
     done
 done
-
-
-# for FR in $FRONTENDS
-# do
-#     if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
-#         continue
-#     fi
-#     
-#     case $FR in
-#         "fltk") ED_SRC=$FLTK_SRC ;;
-#         "ncurs") ED_SRC=$NCURS_SRC ;;
-#     esac
-#     
-#     for LC in `createliblist 
-#     do
-#         LCDIR="`getbinlibdir ${LC} libc bin/$CURRENT_OS/$CURRENT_ARCH`"
-#         
-#         if [ ! -d "${LCDIR}" ]; then
-#             continue
-#         fi
-#     
-#         if [ $ARCH_TYPE = "lzma" -a ! -f ${LCDIR}/lzma-decode ]; then
-#             continue # No usable lzma-decoder
-#         fi
-#         
-#         unlzma $ED_SRC ${LCDIR}
-#         
-#         for LCPP in $LIBSTDCPPS
-#         do
-#             LCPPDIR="`getbinlibdir ${LCPP} libstdc++ ${LCDIR}`"
-#             
-#             if [ ! -d ${LCPPDIR} ]; then
-#                 continue
-#             fi
-#             
-#             unlzma ${LCPPDIR}/$FR ${LCDIR}
-#             
-#             if [ -f "${LCPPDIR}/$FR" ]; then
-#                 FRBIN="${LCPPDIR}/$FR"
-#                 if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
-#                     edelta ${LCDIR} $ED_SRC $FRBIN
-#                 fi
-#                 
-#                 # Run it
-#                 chmod +x $FRBIN # deltas en lzma packed bins probably aren't executable yet
-#                 `pwd`/$FRBIN
-#                 exit $?
-#             fi
-#         done
-#     done
-# done
 
 echo "Error: Couldn't find any suitable frontend for your system"
 exit 1

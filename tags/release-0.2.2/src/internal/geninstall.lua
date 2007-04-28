@@ -260,6 +260,7 @@ function PrepareArchive()
     -- Some internal stuff
     RequiredCopy(curdir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/start", confdir .. "/tmp")
     
     -- Language files
     for _, f in pairs(cfg.languages) do

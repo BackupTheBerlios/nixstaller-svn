@@ -35,11 +35,8 @@ int main(int argc, char **argv)
 {
     setlocale(LC_ALL, "");
 
-    printf("Nixstaller version 0.2.1, Copyright (C) 2006, 2007 of Rick Helmus\n"
-           "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
-           "Nixstaller is free software, and you are welcome to redistribute it\n"
-           "under certain conditions; see the about section for details.\n");
-    
+    PrintIntro();
+
     bool runscript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
     int ret = EXIT_FAILURE;
     

@@ -49,6 +49,7 @@ distfiles_user = [
 'src/fltk/installer.cpp',
 'src/include/',
 'src/internal/about',
+'src/internal/start',
 'src/internal/geninstall.lua',
 'src/internal/intro.txt',
 'src/internal/startupinstaller.sh',

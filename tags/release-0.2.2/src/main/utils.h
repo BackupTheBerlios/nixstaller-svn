@@ -27,6 +27,7 @@
 
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
+void PrintIntro(void);
 char *CreateText(const char *s, ...);
 inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
 char *CreateTmpText(const char *s, ...);
