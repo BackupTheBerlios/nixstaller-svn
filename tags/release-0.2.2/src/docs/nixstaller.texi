@@ -15,7 +15,7 @@
 @end macro
 
 @titlepage
-@title Nixstaller 0.2.1 Manual
+@title Nixstaller 0.2.2 Manual
 @author Rick Helmus
 @end titlepage
 
@@ -2667,7 +2667,7 @@ end}
 The last few functions are not in any package but are global functions.
 
 @defvr Variable version
-This variable contains a string used to identify the current Nixstaller version. The current value is "0.2.1".
+This variable contains a string used to identify the current Nixstaller version. The current value is "0.2.2".
 @end defvr
 
 @luafunc assert (f[, ...[, m="Assert failed!"]])
