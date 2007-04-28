@@ -119,9 +119,7 @@ do
         if [ ! -d ${LCPP} ]; then
             continue
         fi
-        
-        echo "Trying LCPP '$LCPP'"
-        
+              
         for FR in $FRONTENDS
         do
             if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
@@ -150,8 +148,6 @@ do
                 chmod +x $FRBIN
                 
                 haslibs $FRBIN || continue
-                
-                echo "Trying frontend '$FR' with LC '$LC' and LCPP '$LCPP'"
                 
                 # Run it
                 `pwd`/$FRBIN
