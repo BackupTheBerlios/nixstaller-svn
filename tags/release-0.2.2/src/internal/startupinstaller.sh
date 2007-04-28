@@ -26,7 +26,7 @@
 unlzma()
 {
     if [ ! -z "$1" -a -f $1.lzma ]; then
-        $2/lzma-decode $1.lzma $1 2>&1 >/dev/null && rm $1.lzma
+        "${2}/lzma-decode" "${1}.lzma" $1 2>&1 >/dev/null && rm "${1}.lzma"
     fi
 }
 
@@ -71,19 +71,19 @@ configure()
 # $3: diff file
 edelta()
 {
-    unlzma $3 $1
+    unlzma "$3" "$1"
     
-    mv $3 $3.tmp
-    $1/edelta -q patch $2 $3 $3.tmp >/dev/null
+    mv "$3" "$3.tmp"
+    "$1/edelta" -q patch "$2" "$3" "$3.tmp" >/dev/null
 }
 
 # $1: Executable that ldd needs to research
 haslibs()
 {
     if [ $CURRENT_OS = "openbsd" ]; then
-        (ldd $1 >/dev/null 2>&1) && return 0
+        (ldd "$1" >/dev/null 2>&1) && return 0
     else
-        if [ -z "`ldd $1 | grep 'not found'`" ]; then
+        if [ -z "`ldd \"$1\" | grep 'not found'`" ]; then
            return 0
         fi
     fi
@@ -110,13 +110,13 @@ do
         continue
     fi
 
-    if [ $ARCH_TYPE = "lzma" -a ! -f ${LC}/lzma-decode ]; then
+    if [ $ARCH_TYPE = "lzma" -a ! -f "${LC}/lzma-decode" ]; then
         continue # No usable lzma-decoder
     fi
     
     for LCPP in `createliblist "${LC}" libstdc++.so.`
     do
-        if [ ! -d ${LCPP} ]; then
+        if [ ! -d "${LCPP}" ]; then
             continue
         fi
               
@@ -131,11 +131,11 @@ do
                 "ncurs") ED_SRC=$NCURS_SRC ;;
             esac
             
-            haslibs ${LC}/lzma-decode || continue
-            haslibs ${LC}/edelta || continue
+            haslibs "${LC}/lzma-decode" || continue
+            haslibs "${LC}/edelta" || continue
 
-            unlzma $ED_SRC ${LC}
-            unlzma "${LCPP}"/$FR ${LC}
+            unlzma $ED_SRC "${LC}"
+            unlzma "${LCPP}"/$FR "${LC}"
             
             if [ -f "${LCPP}/$FR" ]; then
                 FRBIN="${LCPP}/$FR"

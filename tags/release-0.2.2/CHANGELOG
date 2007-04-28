@@ -1,3 +1,10 @@
+0.2.1 --> 0.2.2
+- Fixed: startupinstaller.sh would not sort files (reported by Tero Pelander).
+- Fixed: geninstall.sh didn't check given commandline arguments anymore.
+- Fixed: Missing quotes in startupinstaller.sh (reported by Tero Pelander).
+- Startup message is now read from file.
+- New way of choosing frontends: instead of trying to find available C/C++ system libraries each frontend is checked with ldd for missing libraries (suggested by Tero Pelander).
+
 0.2 --> 0.2.1
 
 FLTK:

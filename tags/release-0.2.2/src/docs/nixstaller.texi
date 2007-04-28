@@ -88,6 +88,16 @@ Most screens are optional and can be shown in any particalur order.
 
 
 @section Changelog
+@subsection 0.2.1 @minus{}@minus{}> 0.2.2
+
+@itemize @bullet
+@item Fixed: startupinstaller.sh would not sort files (reported by Tero Pelander).
+@item Fixed: geninstall.sh didn't check given commandline arguments anymore.
+@item Fixed: Missing quotes in startupinstaller.sh (reported by Tero Pelander).
+@item Startup message is now read from file.
+@item New way of choosing frontends: instead of trying to find available C/C++ system libraries each frontend is checked with ldd for missing libraries (suggested by Tero Pelander).
+@end itemize
+
 @subsection 0.2 @minus{}@minus{}> 0.2.1
 
 @strong{FLTK}
