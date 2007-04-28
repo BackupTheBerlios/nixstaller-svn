@@ -319,7 +319,7 @@ const char *CMain::GetSumListFile(const char *progname)
 void CMain::InitLua()
 {
     // Register some globals for lua
-    m_LuaVM.RegisterString("0.2.1", "version");
+    m_LuaVM.RegisterString("0.2.2", "version");
     
     m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
     m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
