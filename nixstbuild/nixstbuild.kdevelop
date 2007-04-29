@@ -36,8 +36,8 @@
       <version>4</version>
       <includestyle>4</includestyle>
       <designerintegration>ExternalDesigner</designerintegration>
-      <qmake>/usr/bin/qmake-qt4</qmake>
-      <designer>/usr/bin/designer-qt4</designer>
+      <qmake>/opt/qt/bin/qmake</qmake>
+      <designer>/opt/qt/bin/designer</designer>
       <root>/usr/lib/qt4</root>
       <designerpluginpaths/>
     </qt>

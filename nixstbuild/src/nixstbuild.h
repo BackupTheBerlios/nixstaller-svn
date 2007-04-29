@@ -42,6 +42,7 @@ class QGridLayout;
 class QPushButton;
 class Ui_TextEditW;
 
+class BThread;
 
 class nixstbuild:public QMainWindow
 {
@@ -82,6 +83,8 @@ private slots:
     void rt_iconfigh();
     void rt_idirselectorh();
     void rt_iinputh();
+    void cv_appendline(QString line);
+    void cv_close();
 
 private:
     void createActions();
@@ -100,6 +103,9 @@ private:
 
     QTextEdit *textEdit;
     QString curFile;
+
+    BThread *bthread;
+    QTextEdit *consoleView;
 
     QMenu *fileMenu;
     QMenu *editMenu;

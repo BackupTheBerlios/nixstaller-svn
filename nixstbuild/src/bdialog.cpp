@@ -18,40 +18,49 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _LUAHL_H
-#define _LUAHL_H
+#include <string>
 
-#include <QSyntaxHighlighter>
+using namespace std;
 
-#include <QHash>
-#include <QTextCharFormat>
+#include <stdio.h>
 
-class QTextDocument;
+#include <QtGui>
 
-class LuaHighlighter: public QSyntaxHighlighter
+#include <QDialog>
+#include <QTextEdit>
+#include <QMessageBox>
+
+#include <QThread>
+
+#include "bdialog.h"
+
+void BThread::run()
 {
-    Q_OBJECT
-public:
-    LuaHighlighter(QTextDocument *parent = 0);
+    QSettings settings("INightmare", "Nixstbuild");
+    char line[132];
 
-protected:
-    void highlightBlock(const QString &text);
+    string cmd = "cd " + QFileInfo(settings.value("geninstall").toString()).absolutePath().toStdString() + " && ";
+    cmd += settings.value("geninstall").toString().toStdString() + " " + settings.value("dir").toString().toStdString();
 
-private:
-    struct HighlightingRule
+    pipe = popen(cmd.c_str(), "r");
+    //pipe = popen("ls -al", "r");
+
+    while (fgets(line, sizeof(line), pipe))
     {
-        QRegExp pattern;
-        QTextCharFormat format;
-    };
-    QVector<HighlightingRule> highlightingRules;
+        emit lineReceived(line);
+    }
 
-    QRegExp commentStartExpression;
-    QRegExp commentEndExpression;
+    pclose(pipe);
+}
 
-    QTextCharFormat keywordFormat;
-    QTextCharFormat singleLineCommentFormat;
-    QTextCharFormat multiLineCommentFormat;
-    QTextCharFormat quotationFormat;
-};
+BDialog::BDialog(QWidget *parent): QWidget(parent)
+{
+    view = new QTextEdit(this);
+    view->setReadOnly(true);
+}
 
-#endif
+void BDialog::append(QString text)
+{
+    view->append(text);
+}
+

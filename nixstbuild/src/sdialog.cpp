@@ -36,7 +36,7 @@
 
 NBSettingsDialog::NBSettingsDialog(QWidget *parent): QDialog(parent)
 {
-    QSettings settings("INightmare", "Nixstbuilder");
+    QSettings settings("INightmare", "Nixstbuild");
     setModal(true);
     QVBoxLayout *vbox = new QVBoxLayout(this);
 
@@ -78,7 +78,7 @@ void NBSettingsDialog::showOpen()
 
 void NBSettingsDialog::sOK()
 {
-    QSettings settings("INightmare", "Nixstbuilder");
+    QSettings settings("INightmare", "Nixstbuild");
     settings.setValue("geninstall", genPath->displayText());
     accept();
 }

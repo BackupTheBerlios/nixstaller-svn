@@ -23,6 +23,7 @@
 using namespace std;
 
 #include <QtGui>
+#include "bdialog.h"
 #include "nixstbuild.h"
 #include "ui_textfedit.h"
 #include "luahl.h"
@@ -89,6 +90,7 @@ nixstbuild::nixstbuild()
     createStatusBar();
 
     readSettings();
+
 }
 
 void nixstbuild::initMainControls()
@@ -135,22 +137,27 @@ void nixstbuild::newFile()
 
 bool nixstbuild::save()
 {
-    QSettings settings("INightmare", "Nixstbuilder");
+    QSettings settings("INightmare", "Nixstbuild");
     if ((!settings.contains("geninstall")) || (settings.value("geninstall")=="") || (!QFileInfo(settings.value("geninstall").toString()).exists()))
     {
         QMessageBox::warning(this, "Nixstbuild", "Please specify location for genisntall.sh");
         return false;
     }
 
-    string cmd = "cd " + QFileInfo(settings.value("geninstall").toString()).absolutePath().toStdString() + " && ";
-    cmd += settings.value("geninstall").toString().toStdString() + " " + qd->absolutePath().toStdString();
-    QTextEdit *consoleWin= new QTextEdit(0);
+    settings.setValue("dir", qd->absolutePath());
 
-    FILE *console = popen(cmd.c_str(), "r");
+    consoleView = new QTextEdit();
+    consoleView->setReadOnly(true);
+    consoleView->setGeometry((QApplication::desktop() ->screenGeometry().width()-720)/2, (QApplication::desktop() ->screenGeometry().height()-540)/2,720, 540);
 
-    pclose(console);
+    bthread = new BThread();
 
-    QMessageBox::information(this, "Nixstbuild", "Finished building package");
+    connect(bthread, SIGNAL(lineReceived(QString)), this, SLOT(cv_appendline(QString)), Qt::DirectConnection);
+    connect(bthread, SIGNAL(finished()), this, SLOT(cv_close()));
+
+    consoleView->show();
+    bthread->start();
+
     return true;
 }
 
@@ -595,6 +602,17 @@ void nixstbuild::rt_iradioh()
     QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itra).topRight()), template_tooltips[4]);
 }
 
+void nixstbuild::cv_appendline(QString line)
+{
+    consoleView->insertPlainText(line);
+}
+
+void nixstbuild::cv_close()
+{
+    QMessageBox::information(consoleView, "Nixstbuild", "Finished building installer package.");
+    delete consoleView;
+}
+
 void nixstbuild::openIntroPic()
 {
     QString file = QFileDialog::getOpenFileName(0, tr("Select an intro pic"));
@@ -604,7 +622,7 @@ void nixstbuild::openIntroPic()
 
 void nixstbuild::readSettings()
 {
-    QSettings settings("INightmare", "Nixstbuilder");
+    QSettings settings("INightmare", "Nixstbuild");
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
     resize(size);
@@ -613,7 +631,7 @@ void nixstbuild::readSettings()
 
 void nixstbuild::writeSettings()
 {
-    QSettings settings("INightmare", "Nixstbuilder");
+    QSettings settings("INightmare", "Nixstbuild");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 }

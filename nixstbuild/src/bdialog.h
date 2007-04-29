@@ -18,40 +18,40 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef _LUAHL_H
-#define _LUAHL_H
+#ifndef _NDIALOG_H
+#define _NDIALOG_H
 
-#include <QSyntaxHighlighter>
+#include <QObject>
+#include <QDialog>
+#include <QThread>
 
-#include <QHash>
-#include <QTextCharFormat>
+class QTextEdit;
+class QDialog;
+class QThread;
 
-class QTextDocument;
-
-class LuaHighlighter: public QSyntaxHighlighter
+class BDialog: public QWidget
 {
     Q_OBJECT
 public:
-    LuaHighlighter(QTextDocument *parent = 0);
+    BDialog(QWidget *parent);
 
-protected:
-    void highlightBlock(const QString &text);
+    void append(QString text);
 
 private:
-    struct HighlightingRule
-    {
-        QRegExp pattern;
-        QTextCharFormat format;
-    };
-    QVector<HighlightingRule> highlightingRules;
+    QTextEdit *view;
+};
 
-    QRegExp commentStartExpression;
-    QRegExp commentEndExpression;
+class BThread: public QThread
+{
+    Q_OBJECT
+public:
+    void run();
 
-    QTextCharFormat keywordFormat;
-    QTextCharFormat singleLineCommentFormat;
-    QTextCharFormat multiLineCommentFormat;
-    QTextCharFormat quotationFormat;
+signals:
+    void lineReceived(QString line);
+
+private:
+    FILE *pipe;
 };
 
 #endif
