@@ -31,6 +31,7 @@ using namespace std;
 #include <QDir>
 #include <QDialog>
 #include <QToolTip>
+#include <QProcess>
 #include <QDirModel>
 #include <QTextEdit>
 #include <QListView>
@@ -150,13 +151,18 @@ bool nixstbuild::save()
     consoleView->setReadOnly(true);
     consoleView->setGeometry((QApplication::desktop() ->screenGeometry().width()-720)/2, (QApplication::desktop() ->screenGeometry().height()-540)/2,720, 540);
 
-    bthread = new BThread();
+    genproc = new QProcess();
+    genproc->setWorkingDirectory(QFileInfo(settings.value("geninstall").toString()).absolutePath());
+    genproc->setProcessChannelMode(QProcess::MergedChannels);
 
-    connect(bthread, SIGNAL(lineReceived(QString)), this, SLOT(cv_appendline(QString)), Qt::DirectConnection);
-    connect(bthread, SIGNAL(finished()), this, SLOT(cv_close()));
+    QString cmd = settings.value("geninstall").toString() + " " + settings.value("dir").toString();
+
+    connect(genproc, SIGNAL(readyRead()), this, SLOT(cv_read()));
+    connect(genproc, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(cv_finished(int, QProcess::ExitStatus)));
 
     consoleView->show();
-    bthread->start();
+    genproc->start(cmd, QIODevice::ReadOnly | QIODevice::Unbuffered);
+    genproc->waitForStarted();
 
     return true;
 }
@@ -607,9 +613,21 @@ void nixstbuild::cv_appendline(QString line)
     consoleView->insertPlainText(line);
 }
 
+void nixstbuild::cv_read()
+{
+    consoleView->insertPlainText(genproc->readAllStandardOutput());
+}
+
 void nixstbuild::cv_close()
 {
     QMessageBox::information(consoleView, "Nixstbuild", "Finished building installer package.");
+    delete consoleView;
+}
+
+void nixstbuild::cv_finished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    QMessageBox::information(consoleView, "Nixstbuild", "Finished building installer package.");
+    delete genproc;
     delete consoleView;
 }
 

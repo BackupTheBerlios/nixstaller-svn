@@ -25,10 +25,13 @@
 #include <QMainWindow>
 #include <QCloseEvent>
 
+#include <QProcess>
+
+class QDir;
 class QAction;
 class QMenu;
 class QTextEdit;
-class QDir;
+class QProcess;
 class QDirModel;
 class QTreeView;
 class QListView;
@@ -84,7 +87,9 @@ private slots:
     void rt_idirselectorh();
     void rt_iinputh();
     void cv_appendline(QString line);
+    void cv_read();
     void cv_close();
+    void cv_finished(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
     void createActions();
@@ -106,6 +111,7 @@ private:
 
     BThread *bthread;
     QTextEdit *consoleView;
+    QProcess *genproc;
 
     QMenu *fileMenu;
     QMenu *editMenu;
