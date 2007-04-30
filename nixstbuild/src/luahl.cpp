@@ -32,6 +32,7 @@ LuaHighlighter::LuaHighlighter(QTextDocument *parent): QSyntaxHighlighter(parent
 
     quotationFormat.setForeground(Qt::red);
     rule.pattern = QRegExp("\".*\"");
+    rule.pattern.setMinimal(true);
     rule.format = quotationFormat;
     highlightingRules.append(rule);
 
@@ -46,10 +47,12 @@ LuaHighlighter::LuaHighlighter(QTextDocument *parent): QSyntaxHighlighter(parent
     }
 
     rule.pattern = QRegExp("--[^\n]*");
+    rule.pattern.setMinimal(true);
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
     commentStartExpression = QRegExp("--\\[");
+    commentEndExpression.setMinimal(true);
     commentEndExpression = QRegExp("\\]--");
 }
 
@@ -85,4 +88,5 @@ void LuaHighlighter::highlightBlock(const QString &text)
         startIndex = text.indexOf(commentStartExpression,
                                                 startIndex + commentLength);
     }
+
 }

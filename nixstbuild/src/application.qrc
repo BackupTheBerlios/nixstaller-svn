@@ -1,13 +1,19 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file>editcopy.xpm</file>
-    <file>editcut.xpm</file>
-    <file>filenew.xpm</file>
-    <file>fileopen.xpm</file>
-    <file>editpaste.xpm</file>
-    <file>filesave.xpm</file>
-    <file>rup.png</file>
-    <file>rdown.png</file>
     <file>xdel.png</file>
+    <file>script.png</file>
+    <file>folder_blue_open.png</file>
+    <file>tux_config.png</file>
+    <file>gear.png</file>
+    <file>folder_tar.png</file>
+    <file>folder_blue.png</file>
+    <file>cr32-mime-source.png</file>
+    <file>cr32-action-filenew.png</file>
+    <file>cr32-action-filesave.png</file>
+    <file>cr32-mime-image.png</file>
+    <file>cr32-action-down.png</file>
+    <file>cr32-action-up.png</file>
+    <file>cr32-action-add.png</file>
+    <file>cr32-action-remove.png</file>
 </qresource>
 </RCC>

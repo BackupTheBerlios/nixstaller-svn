@@ -118,8 +118,8 @@ void NBRunGen::setupInit()
     QHBoxLayout *listlay = new QHBoxLayout(restframe);
 
     QVBoxLayout *btn_lay = new QVBoxLayout;
-    QPushButton *bup = new QPushButton(QIcon(":/rup.png"), "");
-    QPushButton *bdown = new QPushButton(QIcon(":/rdown.png"), "");
+    QPushButton *bup = new QPushButton(QIcon(":/cr32-action-up.png"), "");
+    QPushButton *bdown = new QPushButton(QIcon(":/cr32-action-down.png"), "");
 
     screenlist = new QTreeWidget;
     screenlist->addTopLevelItem(newItem(screenlist, "WelcomeScreen"));
@@ -132,8 +132,8 @@ void NBRunGen::setupInit()
     headers << "Screens" << "Screen text";
     screenlist->setHeaderLabels(headers);
 
-    QPushButton *badd = new QPushButton("Add");
-    QPushButton *bremove = new QPushButton("Remove");
+    QPushButton *badd = new QPushButton(QIcon(":/cr32-action-add.png"), "Add");
+    QPushButton *bremove = new QPushButton(QIcon(":/cr32-action-remove.png"), "Remove");
     QHBoxLayout *barlay = new QHBoxLayout;
     barlay->addWidget(badd); barlay->addWidget(bremove);
 
@@ -214,7 +214,7 @@ void NBRunGen::sOK()
             }
         }
         gscript += "\n";
-        gscript += "\tScreenList = { ";
+        gscript += "\tinstall.screenlist = { ";
 
         for (int i = 0; i < screenlist->topLevelItemCount()-1; i++)
         {

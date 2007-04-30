@@ -186,17 +186,18 @@ void nixstbuild::documentWasModified()
 
 void nixstbuild::createActions()
 {
-    newAct = new QAction(QIcon(":/filenew.xpm"), tr("&New"), this);
+    newAct = new QAction(QIcon(":/cr32-action-filenew.png"), tr("&New"), this);
     newAct->setShortcut(tr("Ctrl+N"));
     newAct->setStatusTip(tr("Create a new project"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
-    saveAct = new QAction(QIcon(":/filesave.xpm"), tr("&Save"), this);
+    saveAct = new QAction(QIcon(":/folder_tar.png"), tr("&Build"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     saveAct->setStatusTip(tr("Build installer package"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-    settingsAct = new QAction(tr("&Settings"), this);
+    settingsAct = new QAction(QIcon(":/gear.png"), tr("&Settings"), this);
+    settingsAct->setShortcut(tr("Alt+S"));
     settingsAct->setStatusTip(tr("Setup various program options"));
     connect(settingsAct, SIGNAL(triggered()), this, SLOT(settingsDialog()));
 
@@ -273,7 +274,7 @@ void nixstbuild::addFileTab()
 
     ft_layout = new QGridLayout(ft_parent);
 
-    tabs->addTab(ft_parent, tr("Files"));
+    tabs->addTab(ft_parent, QIcon(":/folder_blue_open.png"), tr("Files"));
 
     ft_arch = new QComboBox(ft_parent);
     ft_arch->insertItem(0, "all");
@@ -295,8 +296,8 @@ void nixstbuild::addFileTab()
     ft_layout->setColumnStretch(1, 24);
     ft_layout->setAlignment(Qt::AlignTop);
 
-    ft_addfile = new QPushButton(tr("Add file"));
-    ft_adddir = new QPushButton(tr("Add directory"));
+    ft_addfile = new QPushButton(QIcon(":/cr32-mime-source.png"), tr("Add file"));
+    ft_adddir = new QPushButton(QIcon(":/folder_blue.png"), tr("Add directory"));
 
     QHBoxLayout *hboxl = new QHBoxLayout;
 
@@ -317,17 +318,17 @@ void nixstbuild::addTextTabs()
     teu_license = new Ui_TextEditW();
     teu_license->setupUi(te_license);
     connect(teu_license->saveButton, SIGNAL(clicked()), this, SLOT(saveLicense()));
-    tabs->addTab(te_license, "License");
+    tabs->addTab(te_license, QIcon(":/script.png"), "License");
 
     teu_welcome = new Ui_TextEditW();
     teu_welcome->setupUi(te_welcome);
     connect(teu_welcome->saveButton, SIGNAL(clicked()), this, SLOT(saveWelcome()));
-    tabs->addTab(te_welcome, "Welcome");
+    tabs->addTab(te_welcome, QIcon(":/script.png"), "Welcome");
 
     teu_finish = new Ui_TextEditW();
     teu_finish->setupUi(te_finish);
     connect(teu_finish->saveButton, SIGNAL(clicked()), this, SLOT(saveFinish()));
-    tabs->addTab(te_finish, "Finish"); 
+    tabs->addTab(te_finish, QIcon(":/script.png"), "Finish"); 
 }
 
 void nixstbuild::addConfigTab()
@@ -335,7 +336,7 @@ void nixstbuild::addConfigTab()
     ct_widget = new QWidget;
 
     QGridLayout *ct_layout = new QGridLayout(ct_widget);
-    QPushButton *ct_save = new QPushButton(QIcon(":/filesave.xpm"), "Save", ct_widget);
+    QPushButton *ct_save = new QPushButton(QIcon(":/cr32-action-filesave.png"), "Save", ct_widget);
     connect(ct_save, SIGNAL(clicked()), this, SLOT(saveConfig()));
     ct_layout->addWidget(ct_save, 0, 0);
     ct_layout->addWidget(new QLabel("Application name:"), 1, 0);
@@ -364,7 +365,7 @@ void nixstbuild::addConfigTab()
     QHBoxLayout *ct_hlayout2 = new QHBoxLayout;
     ct_layout->addWidget(new QLabel("Intro picture:"), 5, 0);
     ct_img = new QLineEdit;
-    QPushButton *ct_oip = new QPushButton(QIcon(":/fileopen.xpm"), "", 0);
+    QPushButton *ct_oip = new QPushButton(QIcon(":/cr32-mime-image.png"), "", 0);
     connect(ct_oip, SIGNAL(clicked()), this, SLOT(openIntroPic()));
     ct_hlayout2->addWidget(ct_img);
     ct_hlayout2->addWidget(ct_oip);
@@ -372,7 +373,7 @@ void nixstbuild::addConfigTab()
 
     ct_layout->setAlignment(Qt::AlignTop);
 
-    tabs->addTab(ct_widget, "Config");
+    tabs->addTab(ct_widget, QIcon(":/tux_config.png"), "Config");
 }
 
 void nixstbuild::addRunTab()
@@ -381,7 +382,7 @@ void nixstbuild::addRunTab()
 
     QVBoxLayout *rt_mainlayout = new QVBoxLayout(rt_widget);
     QHBoxLayout *rt_btns = new QHBoxLayout;
-    QPushButton *rt_save = new QPushButton(QIcon(":/filesave.xpm"), "Save");
+    QPushButton *rt_save = new QPushButton(QIcon(":/cr32-action-filesave.png"), "Save");
     connect(rt_save, SIGNAL(clicked()), this, SLOT(saveRun()));
 
     QPushButton *rt_generate = new QPushButton("Generate Script");
@@ -401,7 +402,7 @@ void nixstbuild::addRunTab()
     rt_mainlayout->addLayout(rt_btns);
     rt_mainlayout->addWidget(rt_textedit);
 
-    tabs->addTab(rt_widget, "Run");
+    tabs->addTab(rt_widget, QIcon(":/gear.png"), "Run");
 }
 
 void nixstbuild::fvCustomContext(const QPoint &pos)
@@ -626,9 +627,15 @@ void nixstbuild::cv_close()
 
 void nixstbuild::cv_finished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    QMessageBox::information(consoleView, "Nixstbuild", "Finished building installer package.");
+    if (exitCode==1)
+    {
+        QMessageBox::warning(consoleView, "Nixstbuild", "There was an error while building a package.");
+    } else {
+        QMessageBox::information(consoleView, "Nixstbuild", "Finished building installer package.");
+    }
     delete genproc;
     delete consoleView;
+
 }
 
 void nixstbuild::openIntroPic()

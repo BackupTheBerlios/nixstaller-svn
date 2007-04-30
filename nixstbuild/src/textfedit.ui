@@ -51,7 +51,7 @@ p, li { white-space: pre-wrap; }
         <string>Save</string>
        </property>
        <property name="icon" >
-        <iconset resource="application.qrc" >:/filesave.xpm</iconset>
+        <iconset resource="application.qrc" >:/cr32-action-filesave.png</iconset>
        </property>
       </widget>
      </item>
