@@ -109,8 +109,6 @@ void CInstaller::Init(int argc, char **argv)
         m_ScreenList.push_back(lang);
     }
     
-    UpdateLanguage();
-
     unsigned count = m_LuaVM.OpenArray("screenlist", "install");
     
     if (!count)
@@ -223,6 +221,8 @@ void CInstaller::Init(int argc, char **argv)
     
     m_pWizard->end();
     
+    UpdateLanguage();
+
     for (std::list<CBaseScreen *>::iterator it=m_ScreenList.begin(); it!=m_ScreenList.end(); it++)
     {
         if ((*it)->CanActivate())
@@ -1108,10 +1108,24 @@ Fl_Group *CWelcomeScreen::Create(void)
     return m_pGroup;
 }
 
-void CWelcomeScreen::UpdateLang()
+void CWelcomeScreen::Activate()
 {
-    m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangWelcomeFName()) ||
-                  !m_pBuffer->loadfile(m_pOwner->GetWelcomeFName()));
+    m_pBuffer->loadfile(m_szFileName.c_str());
+}
+
+bool CWelcomeScreen::CanActivate()
+{
+    if (m_szFileName.empty()) // Function might be called more than once
+    {
+        if (FileExists(m_pOwner->GetLangWelcomeFName()))
+            m_szFileName = m_pOwner->GetLangWelcomeFName();
+        else if (FileExists(m_pOwner->GetWelcomeFName()))
+            m_szFileName = m_pOwner->GetWelcomeFName();
+        
+        m_pBuffer->loadfile(m_szFileName.c_str());
+    }
+    
+    return !m_szFileName.empty();
 }
 
 // -------------------------------------
@@ -1141,9 +1155,6 @@ Fl_Group *CLicenseScreen::Create(void)
 
 void CLicenseScreen::UpdateLang()
 {
-    m_bHasText = (!m_pBuffer->loadfile(m_pOwner->GetLangLicenseFName()) ||
-            !m_pBuffer->loadfile(m_pOwner->GetLicenseFName()));
-    
     m_pCheckButton->label(GetTranslation("I agree to this license agreement"));
 }
 
@@ -1151,6 +1162,22 @@ void CLicenseScreen::Activate()
 {
     if (!m_pCheckButton->value())
         m_pOwner->m_pNextButton->deactivate();
+    m_pBuffer->loadfile(m_szFileName.c_str());
+}
+
+bool CLicenseScreen::CanActivate()
+{
+    if (m_szFileName.empty()) // Function might be called more than once
+    {
+        if (FileExists(m_pOwner->GetLangLicenseFName()))
+            m_szFileName = m_pOwner->GetLangLicenseFName();
+        else if (FileExists(m_pOwner->GetLicenseFName()))
+            m_szFileName = m_pOwner->GetLicenseFName();
+        
+        m_pBuffer->loadfile(m_szFileName.c_str());
+    }
+    
+    return !m_szFileName.empty();
 }
 
 // -------------------------------------

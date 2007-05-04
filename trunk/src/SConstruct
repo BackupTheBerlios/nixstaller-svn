@@ -49,6 +49,7 @@ distfiles_user = [
 'src/fltk/installer.cpp',
 'src/include/',
 'src/internal/about',
+'src/internal/start',
 'src/internal/geninstall.lua',
 'src/internal/intro.txt',
 'src/internal/startupinstaller.sh',
@@ -260,7 +261,7 @@ env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['main/', 'libsu/', 'libmd5/', inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
 # Current version
-curnixstversion = '0.2'
+curnixstversion = '0.2.2'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
     print 'Stripping all binaries in the bin/%s directory...' % cur_os

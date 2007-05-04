@@ -390,14 +390,14 @@ class CWelcomeScreen: public CBaseScreen
     Fl_Box *m_pImageBox;
     Fl_Text_Display *m_pDisplay;
     Fl_Text_Buffer *m_pBuffer;
-    bool m_bHasText;
+    std::string m_szFileName;
     
 public:
-    CWelcomeScreen(CInstaller *owner) : CBaseScreen(owner), m_bHasText(false) { };
+    CWelcomeScreen(CInstaller *owner) : CBaseScreen(owner) { };
     
     virtual Fl_Group *Create(void);
-    virtual void UpdateLang(void);
-    virtual bool CanActivate(void) { return m_bHasText; };
+    virtual void Activate(void);
+    virtual bool CanActivate(void);
 };
 
 class CLicenseScreen: public CBaseScreen
@@ -405,15 +405,15 @@ class CLicenseScreen: public CBaseScreen
     Fl_Text_Display *m_pDisplay;
     Fl_Check_Button *m_pCheckButton;
     Fl_Text_Buffer *m_pBuffer;
-    bool m_bHasText;
+    std::string m_szFileName;
     
 public:
-    CLicenseScreen(CInstaller *owner) : CBaseScreen(owner), m_bHasText(false) { };
+    CLicenseScreen(CInstaller *owner) : CBaseScreen(owner) { };
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual bool Prev(void) { m_pOwner->m_pNextButton->activate(); return true; };
-    virtual bool CanActivate(void) { return m_bHasText; }
+    virtual bool CanActivate(void);
     virtual void Activate(void);
     
     void LicenseCheck(bool on) { (on)?m_pOwner->m_pNextButton->activate():m_pOwner->m_pNextButton->deactivate(); };

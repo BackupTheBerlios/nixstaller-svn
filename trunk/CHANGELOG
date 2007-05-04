@@ -2,6 +2,24 @@
 - Added missing ncurses buttonbar entries.
 
 
+0.2.1 --> 0.2.2
+- Fixed: startupinstaller.sh would not sort files (reported by Tero Pelander).
+- Fixed: geninstall.sh didn't check given commandline arguments anymore.
+- Fixed: Missing quotes in startupinstaller.sh (reported by Tero Pelander).
+- Startup message is now read from file.
+- New way of choosing frontends: instead of trying to find available C/C++ system libraries each frontend is checked with ldd for missing libraries (suggested by Tero Pelander).
+
+0.2 --> 0.2.1
+
+FLTK:
+- Fixed: Welcome and License screen would not show up if only one language was available.
+
+OVERALL:
+- Fixed: Tried to default to english incase only one language was available even if this wasn't English.
+- Fixed: Startup script wouldn't detect libstdc++ on Gentoo (reported by Edward Rudd)
+- Startup script now defaults to Linux incase no frontends are found for the current OS and defaults to x86 incase no frontends are found for the current CPU arch.
+
+
 0.1.1 --> 0.2
 
 FLTK:
@@ -30,6 +48,7 @@ OVERALL:
 - Moved many duplicate frontend code to a single library
 - Removed NetBSD 1.6.2 support
 - Removed norwegian translations (outdated)
+
 
 0.1 --> 0.1.1
 - Fixed: Ncurses frontend crashes if only 1 language is available. 

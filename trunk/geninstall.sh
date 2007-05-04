@@ -24,6 +24,19 @@ haslibs()
     return 1
 }
 
+if [ -z ${1} ]; then
+    echo "Usage: $0 <config dir> [ <installer name> ]"
+    echo
+    echo " <config dir>: The directory which holds the install config files"
+    echo " <installer name>: The file name of the created installer. Default: setup.sh"
+    exit 1
+fi
+
+if [ ! -d ${1} ]; then
+    echo "No such directory: ${1}"
+    exit 1
+fi
+
 for LC in `ls -d bin/${CURRENT_OS}/${CURRENT_ARCH}/libc* 2>/dev/null | sort -nr`
 do
     for LCPP in `ls -d ${LC}/'libstdc++'* 2>/dev/null | sort -nr`

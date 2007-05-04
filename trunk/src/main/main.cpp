@@ -35,11 +35,8 @@ int main(int argc, char **argv)
 {
     setlocale(LC_ALL, "");
 
-    printf("Nixstaller version 0.2, Copyright (C) 2007 of Rick Helmus\n"
-           "Nixstaller comes with ABSOLUTELY NO WARRANTY.\n"
-           "Nixstaller is free software, and you are welcome to redistribute it\n"
-           "under certain conditions; see the about section for details.\n");
-    
+    PrintIntro();
+
     bool runscript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
     int ret = EXIT_FAILURE;
     
@@ -120,9 +117,11 @@ void CMain::Init(int argc, char **argv)
         m_Languages.push_back(s);
     }
     
-    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang", "cfg") ||
-        (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end()))
-        m_szCurLang = "english"; // Default to english if wrong or unknown language is specified
+    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang", "cfg"))
+        m_szCurLang = "english";
+    
+    if (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end())
+        m_szCurLang = m_Languages.front();
     
     debugline("defaultlang: %s\n", m_szCurLang.c_str());
     ReadLang();
@@ -320,7 +319,7 @@ const char *CMain::GetSumListFile(const char *progname)
 void CMain::InitLua()
 {
     // Register some globals for lua
-    m_LuaVM.RegisterString("0.2", "version");
+    m_LuaVM.RegisterString("0.2.2", "version");
     
     m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
     m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");

@@ -29,6 +29,15 @@
 
 extern std::map<std::string, char *> Translations;
 
+void PrintIntro()
+{
+    std::ifstream file("start");
+    char c;
+    
+    while (file && file.get(c))
+        printf("%c", c);
+}
+
 char *CreateText(const char *s, ...)
 {
     char *txt;

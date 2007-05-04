@@ -15,7 +15,7 @@
 @end macro
 
 @titlepage
-@title Nixstaller 0.2 Manual
+@title Nixstaller 0.2.2 Manual
 @author Rick Helmus
 @end titlepage
 
@@ -88,6 +88,31 @@ Most screens are optional and can be shown in any particalur order.
 
 
 @section Changelog
+@subsection 0.2.1 @minus{}@minus{}> 0.2.2
+
+@itemize @bullet
+@item Fixed: startupinstaller.sh would not sort files (reported by Tero Pelander).
+@item Fixed: geninstall.sh didn't check given commandline arguments anymore.
+@item Fixed: Missing quotes in startupinstaller.sh (reported by Tero Pelander).
+@item Startup message is now read from file.
+@item New way of choosing frontends: instead of trying to find available C/C++ system libraries each frontend is checked with ldd for missing libraries (suggested by Tero Pelander).
+@end itemize
+
+@subsection 0.2 @minus{}@minus{}> 0.2.1
+
+@strong{FLTK}
+@itemize @bullet
+@item Fixed: Welcome and License screen would not show up if only one language was available.
+@end itemize
+
+@strong{OVERALL}
+@itemize @bullet
+@item Fixed: Tried to default to english incase only one language was available even if this wasn't English.
+@item Fixed: Startup script wouldn't detect libstdc++ on Gentoo (reported by Edward Rudd).
+@item Startup script now defaults to Linux incase no frontends are found for the current OS and defaults to x86 incase no frontends are found for the current CPU arch.
+@end itemize
+
+
 @subsection 0.1.1 @minus{}@minus{}> 0.2
 
 @strong{FLTK}
@@ -2642,7 +2667,7 @@ end}
 The last few functions are not in any package but are global functions.
 
 @defvr Variable version
-This variable contains a string used to identify the current Nixstaller version. The current value is "0.2".
+This variable contains a string used to identify the current Nixstaller version. The current value is "0.2.2".
 @end defvr
 
 @luafunc assert (f[, ...[, m="Assert failed!"]])

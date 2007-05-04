@@ -4,9 +4,11 @@
   <title>About Nixstaller</title>
 </head>
 
-Nixstaller is an Open Source project with the goal to create user friendly and flexible installers that work on various UNIX like systems.
+Nixstaller is an Open Source project with the goal to create user friendly and flexible installers that work on various UNIX like systems.<br>
 <br>
+
 <h3>Main Features</h3>
+<br>
 <ul>
    <li> Support for many common UNIX like systems (see table below) </li>
    <li> Can be fully translated (English and Dutch translations are already provided) </li>
@@ -16,7 +18,10 @@ Nixstaller is an Open Source project with the goal to create user friendly and f
    <li> Very few dependencies: the end user and install creator only needs one of the supported systems. For compilation <A href="http://www.scons.org">SCons</A> (and python) are also required. </li>
 </ul>
 
+<br>
 <h3>Supported systems</h3>
+<br>
+
 <table border="1" summary="Supported systems">
   <tbody>
     <tr>
@@ -60,7 +65,9 @@ Nixstaller is an Open Source project with the goal to create user friendly and f
 <br>
 Please contact me if you want to help me with porting to another architecture/OS.<br>
 
+<br>
 <h3>Installation Screens</h3>
+<br>
 Each installer has a set of installation screens. There are various types:
 <ul>
     <li> A screen where the user can select a language. </li>
@@ -71,12 +78,15 @@ Each installer has a set of installation screens. There are various types:
     <li> A screen which can show text after the installation. </li>
     <li> Custom made screens which can be made via Lua scripting (see below). </li>
 </ul>
-All the screens are optional and the order when to display them is also configurable.
+All the screens are optional and the order when to display them is also configurable.<br>
 
+<br>
 <h3>Configuration</h3>
+<br>
 Nixstaller uses the <a href="http://www.lua.org">Lua</a> scripting language.
 
-<p>
+<br>
+
 Firstly lua is used to configure some settings, such as
 <ul>
    <li> Which translations should be included. </li>
@@ -85,7 +95,8 @@ Firstly lua is used to configure some settings, such as
    <li> When and which installation screens should be displayed. </li>
  </ul>
 
-<p>
+<br>
+
 Besides configuration Lua is also used to program the installer. Some examples for this are:
 <ul>
    <li> Create new installation screens </li>
@@ -94,7 +105,9 @@ Besides configuration Lua is also used to program the installer. Some examples f
    <li> Execute various shell commands (ie to compile). </li>
  </ul>
 
+<br>
 <h3>How it works</h3>
+<br>
 Briefly said Nixstaller works like this:
 <ul>
    <li> A project directory is made which contain several configuration files and the files that should be installed. </li>
