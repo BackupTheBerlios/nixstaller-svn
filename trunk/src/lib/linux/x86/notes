@@ -27,6 +27,6 @@ GCC (libstdc++, libutil)
 version: 3.3.1 / 3.4.6(for libstdc++.so.6 bins)
 
 LUA:
-version 5.1.1
+version 5.1.2
 make command: make posix
 notes: src/Makefile was edited to use g++ instead of gcc (enables C++ exception support, important) and to use the -Os CFLAG.
