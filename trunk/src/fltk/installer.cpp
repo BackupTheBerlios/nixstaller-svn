@@ -54,19 +54,19 @@ int TitleHeight(int w, const char *desc)
 void CInstaller::InitLua()
 {
     m_LuaVM.InitClass("welcomescreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(m_pWelcomeScreen, "welcomescreen", "WelcomeScreen");
+    m_LuaVM.RegisterUData<CBaseScreen>(m_pWelcomeScreen, "welcomescreen", "WelcomeScreen");
     
     m_LuaVM.InitClass("licensescreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(m_pLicenseScreen, "licensescreen", "LicenseScreen");
+    m_LuaVM.RegisterUData<CBaseScreen>(m_pLicenseScreen, "licensescreen", "LicenseScreen");
 
     m_LuaVM.InitClass("selectdirscreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(m_pSelectDirScreen, "selectdirscreen", "SelectDirScreen");
+    m_LuaVM.RegisterUData<CBaseScreen>(m_pSelectDirScreen, "selectdirscreen", "SelectDirScreen");
 
     m_LuaVM.InitClass("installscreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(m_pInstallScreen, "installscreen", "InstallScreen");
+    m_LuaVM.RegisterUData<CBaseScreen>(m_pInstallScreen, "installscreen", "InstallScreen");
     
     m_LuaVM.InitClass("finishscreen");
-    m_LuaVM.RegisterUData<CBaseScreen *>(m_pFinishScreen, "finishscreen", "FinishScreen");
+    m_LuaVM.RegisterUData<CBaseScreen>(m_pFinishScreen, "finishscreen", "FinishScreen");
     
     CBaseInstall::InitLua();
 }
@@ -151,12 +151,12 @@ void CInstaller::Init(int argc, char **argv)
         {
             CBaseScreen *screen = NULL;
             CBaseCFGScreen *cfgscreen = NULL;
-            if (m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "welcomescreen") ||
-                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "licensescreen") ||
-                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "selectdirscreen") ||
-                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "installscreen") ||
-                m_LuaVM.GetArrayClass<CBaseScreen *>(u, &screen, "finishscreen") ||
-                m_LuaVM.GetArrayClass<CBaseCFGScreen *>(u, &cfgscreen, "cfgscreen"))
+            if (m_LuaVM.GetArrayClass<CBaseScreen>(u, screen, "welcomescreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen>(u, screen, "licensescreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen>(u, screen, "selectdirscreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen>(u, screen, "installscreen") ||
+                m_LuaVM.GetArrayClass<CBaseScreen>(u, screen, "finishscreen") ||
+                m_LuaVM.GetArrayClass<CBaseCFGScreen>(u, cfgscreen, "cfgscreen"))
             {
                 if (screen)
                 {

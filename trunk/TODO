@@ -14,7 +14,7 @@ OVERALL
 - Modify Makeself?
 - x64 bins?
 - Check assert's: Shouldn't have function calls as arguments
-
+- Update Lua library for FBSD, NBSD, OBSD, SunOS
 
 TRANSLATIONS
 - Toggle (buttonbar)

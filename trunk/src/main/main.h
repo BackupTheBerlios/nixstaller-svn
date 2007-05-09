@@ -21,10 +21,6 @@
 #define MAIN_H
 
 #include "libsu.h"
-// #include "lua.hpp"
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
         
 #include <assert.h>
 #include <syslog.h>
@@ -68,130 +64,8 @@ void ReportError(const char *msg);
 extern "C" int vasprintf (char **result, const char *format, va_list args);
 #endif
 
-class CLuaVM
-{
-    lua_State *m_pLuaState;
-    int m_iPushedArgs;
-
-    void StackDump(const char *msg);
-    void GetGlobal(const char *var, const char *tab);
-    static int DoFunctionCall(lua_State *L);
-    
-public:
-    CLuaVM(void) : m_pLuaState(NULL), m_iPushedArgs(0) { };
-    ~CLuaVM(void) { if (m_pLuaState) lua_close(m_pLuaState); };
-
-    void Init(void);
-    void LoadFile(const char *name);
-    
-    void RegisterFunction(lua_CFunction f, const char *name, const char *tab=NULL, void *data=NULL);
-    void RegisterNumber(lua_Number n, const char *name, const char *tab=NULL);
-    void RegisterString(const char *s, const char *name, const char *tab=NULL);
-    template <typename C> void RegisterUData(C val, const char *type, const char *name, const char *tab=NULL)
-    {
-        if (!tab)
-        {
-            CreateClass<C>(val, type);
-            lua_setglobal(m_pLuaState, name);
-        }
-        else
-        {
-            lua_getglobal(m_pLuaState, tab);
-        
-            if (lua_isnil(m_pLuaState, -1))
-            {
-                lua_pop(m_pLuaState, 1);
-                lua_newtable(m_pLuaState);
-            }
-        
-            CreateClass<C>(val, type);
-            lua_setfield(m_pLuaState, -2, name);
-        
-            lua_setglobal(m_pLuaState, tab);
-        }
-    }
-    
-    bool InitCall(const char *func, const char *tab=NULL);
-    void PushArg(lua_Number n);
-    void PushArg(const char *s);
-    void DoCall(void);
-    
-    bool GetNumVar(lua_Number *out, const char *var, const char *tab=NULL);
-    bool GetNumVar(lua_Integer *out, const char *var, const char *tab=NULL);
-    bool GetStrVar(std::string *out, const char *var, const char *tab=NULL);
-    const char *GetStrVar(const char *var, const char *tab=NULL);
-    
-    unsigned OpenArray(const char *var, const char *tab=NULL);
-    bool GetArrayNum(unsigned &index, lua_Number *out);
-    bool GetArrayNum(unsigned &index, lua_Integer *out);
-    bool GetArrayStr(unsigned &index, std::string *out);
-    bool GetArrayStr(unsigned &index, char *out);
-    template <typename C> bool GetArrayClass(unsigned &index, C *out, const char *type)
-    {
-        lua_rawgeti(m_pLuaState, -1, index);
-
-        C val = ToClass<C>(type, -1);
-        lua_pop(m_pLuaState, 1);
-    
-        if (val)
-        {
-            *out = val;
-            return true;
-        }
-        
-        return false;
-    }
-    void CloseArray(void);
-    
-    void InitClass(const char *name, lua_CFunction gc=NULL, void *gcdata=NULL);
-    template <typename C> void CreateClass(C val, const char *type)
-    {
-        C *ud = (C *)lua_newuserdata(m_pLuaState, sizeof(C));
-        *ud = val;
-    
-        luaL_getmetatable(m_pLuaState, type);
-        lua_setmetatable(m_pLuaState, -2);
-    }
-    void RegisterClassFunc(const char *type, lua_CFunction f, const char *name, void *data=NULL);
-    template <typename C> C CheckClass(const char *type, int index)
-    {
-        luaL_checktype(m_pLuaState, index, LUA_TUSERDATA);
-        C *val = (C *)luaL_checkudata(m_pLuaState, index, type);
-        if (!val)
-            luaL_typerror(m_pLuaState, index, type);
-        else if (!(*val))
-            luaL_error(m_pLuaState, "Got a NULL value for class %s", type);
-    
-        return *val;
-    }
-    template <typename C> C ToClass(const char *type, int index)
-    {
-        C *val = (C *)lua_touserdata(m_pLuaState, index), *ret = NULL;
-        if (val)
-        {
-            if (lua_getmetatable(m_pLuaState, index))
-            {
-                lua_getfield(m_pLuaState, LUA_REGISTRYINDEX, type);
-                if (lua_rawequal(m_pLuaState, -1, -2))
-                    ret = val;
-                lua_pop(m_pLuaState, 1);
-            }
-            lua_pop(m_pLuaState, 1);
-        }
-        return (ret) ? *ret : NULL;
-    }
-            
-    void SetArrayStr(const char *s, const char *var, int index, const char *tab=NULL);
-
-    void *GetClosure(void);
-    bool GetArgNum(lua_Number *out);
-    bool GetArgNum(lua_Integer *out);
-    bool GetArgStr(std::string *out);
-    bool GetArgStr(char *out);
-    
-    void LuaError(const char *msg, ...);
-};
-
+#include "lua.h"
+                 
 class CMain;
 
 #ifdef WITH_APPMANAGER
@@ -329,7 +203,7 @@ public:
 #include "utils.h"
 #include "install.h"
 
-#define RELEASE /* Enable on a release build */
+// #define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };

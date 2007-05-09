@@ -109,6 +109,24 @@ int CLuaVM::DoFunctionCall(lua_State *L)
     return 0; // Never reached
 }
 
+void CLuaVM::GetClassMT(const char *type)
+{
+    bool init = (luaL_newmetatable(m_pLuaState, type) != 0);
+
+    int mt = lua_gettop(m_pLuaState);
+
+    if (init)
+    {
+        lua_pushstring(m_pLuaState, "__index");
+        lua_pushvalue(m_pLuaState, mt);
+        lua_settable(m_pLuaState, mt); // __index = metatable
+        
+        lua_pushstring(m_pLuaState, "__metatable");
+        lua_pushvalue(m_pLuaState, mt);
+        lua_settable(m_pLuaState, mt); // hide metatable
+    }
+}
+
 void CLuaVM::Init()
 {
     // Initialize lua
@@ -400,7 +418,7 @@ void *CLuaVM::GetClosure()
 }
 
 void CLuaVM::InitClass(const char *name, lua_CFunction gc, void *gcdata)
-{
+{return;
     luaL_newmetatable(m_pLuaState, name);
     
     lua_pushstring(m_pLuaState, "__index");
@@ -431,7 +449,8 @@ void CLuaVM::InitClass(const char *name, lua_CFunction gc, void *gcdata)
 
 void CLuaVM::RegisterClassFunc(const char *type, lua_CFunction f, const char *name, void *data)
 {
-    luaL_getmetatable(m_pLuaState, type);
+    GetClassMT(type);
+    int mt = lua_gettop(m_pLuaState);
     
     lua_pushstring(m_pLuaState, name);
     
@@ -439,15 +458,8 @@ void CLuaVM::RegisterClassFunc(const char *type, lua_CFunction f, const char *na
     lua_pushcfunction(m_pLuaState, f);
     lua_pushcclosure(m_pLuaState, DoFunctionCall, 2);
     
-/*    if (data)
-    {
-        lua_pushlightuserdata(m_pLuaState, data);
-        lua_pushcclosure(m_pLuaState, f, 1);
-    }
-    else
-        lua_pushcfunction(m_pLuaState, f);*/
-    
-    lua_settable(m_pLuaState, -3);
+    lua_settable(m_pLuaState, mt);
+    lua_pop(m_pLuaState, mt);
 }
 
 void CLuaVM::SetArrayStr(const char *s, const char *var, int index, const char *tab)

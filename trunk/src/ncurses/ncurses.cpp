@@ -33,6 +33,34 @@
 #include "tui/dialog.h"
 #include "tui/radiobutton.h"
 
+#ifndef RELEASE
+void debugline(const char *t, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, t);
+    vasprintf(&txt, t, v);
+    va_end(v);
+    
+    /*bool plain = isendwin();
+    if (!plain)
+    endwin(); // Disable ncurses mode
+    
+    printf("DEBUG: %s", txt);
+    FILE *f=fopen("log.txt", "a"); if (f) { fprintf(f, txt);fclose(f); }
+    fflush(stdout);
+    
+    if (!plain)
+    refresh(); // Reenable ncurses mode*/
+    
+    static FILE *f=fopen("log.txt", "w");
+    if (f) { fprintf(f, txt); fflush(f); }
+    
+    free(txt);
+}
+#endif
+
 void ReportError(const char *msg)
 {
     // UNDONE

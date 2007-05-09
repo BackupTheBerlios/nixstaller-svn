@@ -24,6 +24,22 @@ namespace {
 CGTKBase *pInterface = NULL;
 };
 
+#ifndef RELEASE
+void debugline(const char *t, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, t);
+    vasprintf(&txt, t, v);
+    va_end(v);
+    
+    printf("DEBUG: %s", txt);
+    
+    free(txt);
+}
+#endif
+
 void StartFrontend(int argc, char **argv)
 {
     gtk_init(&argc, &argv);
