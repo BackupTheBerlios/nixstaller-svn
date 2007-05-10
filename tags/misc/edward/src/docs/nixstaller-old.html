@@ -1,0 +1,1104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+  <title>Nixstaller 0.1 documentation</title>
+</head>
+
+<h1><strong>Nixstaller documentation</strong></h1>
+<hr>
+
+<br><br>
+
+<p> <h2>Table of contents</h2>
+ <ul>
+   <li> <A href="#intro" name="toc-intro">Introduction</A>
+   <ul>
+      <li> <A href="#features">Features</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#inst" name="toc-inst">Installation</A> </li>
+   <li> <A href="#qstart" name="toc-qstart">Quick start</A> </li>
+   <li> <A href="#basics" name="toc-first">Basics</A>
+   <ul>
+      <li> <A href="#installpack">Installation package</A> </li>
+      <li> <A href="#frontends">Frontends</A> </li>
+      <li> <A href="#config-file">Config file</A> </li>
+      <li> <A href="#lang-files">Language files</A> </li>
+      <li> <A href="#wlf-msg">Welcome message, License agreement and the 'finish message'</A> </li>
+      <li> <A href="#installation">The installation</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#config" name="toc-config">Configuration files</A>
+   <ul>
+      <li> <A href="#cfg-gen">General section</A> </li>
+      <li> <A href="#cfg-cmdentries">Command entries</A> </li>
+      <li> <A href="#cfg-paramentries">Parameter entries</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#create" name="toc-create">Creating an install package</A>
+   <ul>
+      <li> <A href="#dir-layout">Directory layout</A> </li>
+      <li> <A href="#creating-inst">Creating the installer</A> </li>
+      <li> <A href="#inst-examples">Examples</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#tutorial" name="toc-tutorial">Tutorials</A>
+   <ul>
+      <li> <A href="#simple-tut">Simple tutorial</A> </li>
+      <li> <A href="#adv-tut">Advanced tutorial</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#compile" name="toc-compile">Compiling nixstaller</A>
+   <ul>
+      <li> <A href="#libs">Libraries</A> </li>
+      <li> <A href="#scons">SCons</A> </li>
+      <li> <A href="#compiling">Compiling</A> </li>
+   </ul>
+   </li>
+   <li> <A href="#licensecred" name="toc-licensecred">Credits and license</A>
+   <ul>
+      <li> <A href="#credits">Credits</A> </li>
+      <li> <A href="#license">License</A> </li>
+   </ul>
+   <li> <A href="#feedback" name="toc-feedback">Feedback, Questions, Suggestions etc.</A>
+   </li>
+ </ul>
+
+<br>
+
+<p> <h2><A href="#toc-intro" name="intro">Introduction</A></h2>
+This document describes how to use nixstaller to create installers for UNIX like systems. <br>
+If you can't wait you can read the <A href="#qstart">Quick start section</A>. <br>
+<br>
+<h3><A name="features">Features</A></h3>
+Here is a list with the main features. Read further for more info to see what they do and how to use them.<br>
+
+<ul>
+   <li>2 different frontends used for the installer: <A href="http://www.fltk.org">FLTK</A> and <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> using <A href="http://invisible-island.net/cdk/">CDK</A> </li>
+   <li>Support for the following OSes: Linux, FreeBSD and NetBSD.</li>
+   <li>An installer itself has the following features:
+   <ul>
+      <li>Can be translated(no UTF yet). Dutch, Norwegian and English translations are supplied by default</li>
+      <li>Screen where the user can choose the language</li>
+      <li>Optional intro screen with customizable image and text</li>
+      <li>Optional screen where a user has to accept a license agreement</li>
+      <li>Optional screen where the user has to select a destination directory</li>
+      <li>Optional screen where the user can set parameters used by installation commands</li>
+      <li>Installation progress screen</li>
+      <li>Optional screen which appears when the installation is done</li>
+   </ul>
+   </li>
+   <li>Commands which can be executed after file extraction. The parameters used by these commands can be customized by the end user during installation.</li>
+   <li>Files that come with the installer can be either extracted to a temporary directory, a given directory or a directory specified by the user.</li>
+   <li>Installation files can be compressed with either gzip or bzip2</li>
+   <li>Frontends are almost completely statically linked. This way the end user doesn't have to worry about missing dependencies for the installer itself.</li>
+ </ul>
+
+<p> <h2><A href="#toc-inst" name="inst">Installation</A></h2>
+Installation of Nixstaller if very easy: just extract the files to a directory and you're done.<br>
+All the work is done inside the directory where you extracted nixstaller to.<br>
+<br>
+
+<p> <h2><A href="#toc-qstart" name="qstart">Quick start</A></h2>
+If you're in a hurry or want a quick reference:<br>
+
+<ul>
+   <li> Extract Nixstaller archive to a directory </li>
+   <li> Open terminal and cd to this directory </li>
+   <li> cp -R example/simple/ release/ </li>
+   <li> Edit release/install.cfg </li>
+   <li> Put some files in release/files_all/ </li>
+   <li> ./geninstall.sh release/ </li>
+   <li> ./setup.sh </li>
+ </ul>
+<br>
+Also read the <A href="#tutorial">tutorials</A><br>
+<br>
+
+<p> <h2><A href="#toc-first" name="basics">Basics</A></h2>
+In this section the main things will be explained so you can get an idea how to use nixstaller and what it can do.<br>
+
+<p> <h3><A name="installpack">Installation package</A></h3>
+The goal of nixstaller is to create an installation package. This package contains the following things:<br>
+<ul>
+   <li>One or more frontends for the installer.</li>
+   <li>A config file which tells what the installer should do.</li>
+   <li>Language files for translations.</li>
+   <li>Some (optional) text files containing the welcome message, the license agreement and a message after the installation is finished.</li>
+   <li>An archive containing the actual files that the installer should use for installation(IE. your program and its required files).</li>
+   <li>Optional: an archive containing OS specific files that should be used for installation.</li>
+   <li>A few required libs which couldn't be linked statically.</li>
+ </ul>
+<br>
+From these files will be a self extracting archive made(with the help of <A href="http://www.megastep.org/makeself/">makeself</A>). <br>
+The creation of a package is discussed in section <A href="#create">Creating an install package</A>.
+
+<p> <h3><A name="frontends">Frontends</A></h3>
+Currently there are 2 frontends used for the installer.<br>
+The first is using <A href="http://www.fltk.org">FLTK</A>:<br><br>
+<IMG src="fltk.png" alt="FLTK frontend" border="0">
+<br><br>
+and the second uses <A href="http://www.gnu.org/software/ncurses/ncurses.html">ncurses</A> with <A href="http://invisible-island.net/cdk/">CDK</A>:<br><br>
+<IMG src="ncurs.png" alt="ncurses frontend" border="0">
+<br><br>
+If the the installer starts it will check if the user is running X. If it is so it will launch the FLTK frontend, otherwise the ncurses frontend will be launched.<br>
+You can specify manually which frontends will be included in the installer package.
+
+<p> <h3><A name="config-file">Config file</A></h3>
+To configure the installer you need to make/edit a simple config file. There are several examples in the example/ directory.<br>
+Please read the <A href="#config">Configuration files section</A> to know what to put in that file.
+
+<p> <h3><A name="lang-files">Language files</A></h3>
+In order to translate the text used by the installer you must use a translation file. This file is simply called 'strings' and will contain all (English) strings used by the installer with the translation beneath it. Any line that starts with a '#' will be ignored.<br>
+Currently there are already 3 translations: Dutch, Norwegian and English. You can find these in the lang/ directory. You can 'translate' the English 'strings' file in order to modify texts used by the installer.<br>
+
+<br>
+Here is a example taken from the file 'lang/dutch/strings': <br>
+
+<br>
+<samp>License agreement <br>
+Licentie overeenkomst <br></samp>
+<br>
+
+"Licentie overeenkomst" is dutch for "License agreement". It's very important that the English text(the first line) is exactly the same as used by the installer.<br>
+If you read further in this file you will see the following sentence:<br>
+
+<br>
+<samp>Installation of %s complete!<br>
+Installatie van %s gereed!<br></samp>
+<br>
+
+Notice the '%s'? The '%s' will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name.<br>
+<br>
+<strong>IMPORTANT:</strong> Currently there is no UTF support yet. This means that you can't use any 'special' characters yet.<br>
+<br>
+
+<strong>Multiline translations</strong><br>
+Some translations need more than one line. If this is the case the text should be put between 2 square brackets.<br>
+For example:
+
+<pre><samp>[
+Directory does not exist
+Do you want to create it?
+]
+[
+Directory bestaat niet
+Wilt u het aanmaken?
+]
+</samp></pre>
+If you want to put a ']' in the translation itself you should put a backslash before it: \].<br>
+<br>
+
+<strong>Other things that can be translated</strong><br>
+There are other things to be translated as well:
+<ul>
+   <li> The welcome message </li>
+   <li> The license agreement </li>
+   <li> The 'finish message' </li>
+   <li> Descriptions for command entries and parameter entries </li>
+ </ul>
+ <br>
+The following sections will explain what they are and how to translate those.<br>
+
+<p> <h3><A name="wlf-msg">Welcome message, license agreement and the 'finish message'</A></h3>
+<strong>Welcome message</strong><br>
+The welcome message is what will be displayed right after the user selected a language.<br>
+<br>
+
+<strong>License agreement</strong><br>
+The user can agree to a license agreement after the welcome message.<br>
+<br>
+
+<strong>'Finish message'</strong><br>
+This is the message that will be displayed after the installation has (successfully) ended.<br>
+<br>
+
+All these items are stored in plain text files.<br>
+The filenames for the welcome message, license agreement and finish message are respectively: 'welcome', 'license' and 'finish'.<br>
+You can have for each of file a translation, to see where to put the translated and untranslated versions check the <A href="#create">Creating an install package section</A>.
+
+<p> <h3><A name="installation">The installation</A></h3>
+<strong>Destination directory</strong><br>
+There are 3 ways where the files can are extracted to:
+<ol>
+   <li>Specified: During installation the user can say where they want to have their files (default)</li>
+   <li>Temporary: This is especially useful for files which have to be compiled. The files will be extracted to a temporary directory and after that some install commands(see below) are called(such as './configure &amp;&amp; make &amp;&amp; make install) to prepare the package further for installation. After the installation is finished the files will be removed.</li>
+   <li>A given directory. The files will always be extracted to this directory.</li>
+</ol>
+<br>
+
+<strong>Install commands</strong><br>
+After all the files are extracted some (optional) shell commands can be called in this directory. A good example for this is to compile a package.<br>
+<br><em>Root access</em> <br>
+Some commands(IE 'make install') may require root privileges. There are 2 ways to specify this:<br>
+<ol>
+   <li>Always: This command requires it, no matter what.</li>
+   <li>Dependent: It depends on something else. Currently this can only be a directory specified by a parameter for this or another command. A good example to use this is 'make install' which depends on the --prefix parameter for configure. If the prefix points to a directory where the user doesn't have write access, 'make install' will need root access.</li>
+</ol>
+<br>
+If a command requests root access a dialog will pop up asking the user to give the root password. The command will then be executed with 'su'.<br>
+<br>
+<em>Parameters</em><br>
+Some commands (IE 'configure') may need commandline parameters(such as --prefix). Parameters such as the '--prefix' one can be configured (IE --prefix=/usr/local). If you specify these parameters in the <A href="#config-file">config file</A> the user can do so during installation. A screen will pop up before the installation begins where the user can configure each parameter specified in the config file.<br>
+Currently there are 4 ways to configure a parameter:
+<ol>
+   <li>One that can be simply enabled or disabled (if disabled the parameter won't be used when executing the install command).</li>
+   <li>String: The user can simply specify a text.</li>
+   <li>Choice list: A menu will pop up where the user can specify a value.</li>
+   <li>Directory: The user can specify a directory.</li>
+</ol>
+Here is an example: Lets say the command is './configure' and you have set '--prefix=' as a configurable parameter with as type 'directory'. Now right before the installation begins the user changes the directory for the prefix to '/usr'. the configure command will now look like this:<br>
+<br>
+<samp>./configure --prefix=/usr</samp><br>
+<br>
+
+You can set a default for each parameter, so that the user doesn't have to bother with everything.<br>
+<br>
+For each parameter you can also give a (short) description. If you add this description to one or more
+<A href="#lang-files">language files</A> it will be translated when it's shown.<br>
+<br>
+More info at the <A href="#config">config section</A>.
+
+<p> <h2><A href="#toc-config" name="config">Configuration files</A></h2>
+The config file is used to specify what the installer should do and how the package must be created.<br>
+Config files can be very simple and small for simple installations.<br>
+Any line starting with a '#' will be ignored.<br>
+<br>
+<p> <h3><A name="cfg-gen">General section</A></h3>
+In this section you can put the general options for the installer. For installers without any install commands this is the only section used in the configuration file.<br>
+<br>
+
+<strong>appname</strong><br>
+Sets the name of the package that is going to be installed.<br>
+<br>
+<samp>Usage: appname nameofapphere</samp><br>
+<br>
+<samp>Example: appname test</samp><br>
+<br>
+<br>
+
+<strong>archtype</strong><br>
+Sets which archive type to use for packing the package that is going to be installed.<br>
+Use gzip for fast compression/decompression and bzip2 for strong compression.<br>
+<br>
+<samp>Usage: archtype gzip|bzip2</samp><br>
+<br>
+<samp>Example: archtype bzip2</samp><br>
+<br>
+<samp>Default: gzip</samp><br>
+<br>
+<br>
+
+<strong>installdir</strong><br>
+Sets where the install package files should be extracted too (see <A href="#installation">The installation</A> ).<br>
+<br>
+<samp>Usage: installdir select|temp|default dirnamehere</samp><br>
+select: Let the user specify the install directory.<br>
+temp: Extract files to a temporary directory.<br>
+default: Extract the files specified by 'dirnamehere'.<br>
+<br>
+<samp>Example: installdir default /usr/local</samp><br>
+<br>
+<samp>Default: select</samp><br>
+<br>
+<samp>Note: The user should have read/search permissions to the installation directory.</samp><br>
+<br>
+<br>
+
+<strong>languages</strong><br>
+Specifies a list of used languages.<br>
+<br>
+<samp>Usage: languages lang1 lang2 lang3 ...</samp><br>
+<br>
+<samp>Example: languages english dutch</samp><br>
+<br>
+<samp>Default: english</samp><br>
+<br>
+<br>
+
+<strong>intropic</strong><br>
+Specifies a picture which should be displayed at the welcome screen.<br>
+Valid types are: jpg, png, gif and bmp.<br>
+<br>
+<samp>Usage: intropic picnamehere</samp><br>
+<br>
+<samp>Example: intropic intro.jpg</samp><br>
+<br>
+<br>
+
+<strong>frontends</strong><br>
+Specifies which frontends should be bundled with the install package. The name of the frontends must be a whitespace separated list. Valid choices: ncurses and fltk <br>
+<br>
+<samp>Usage: frontends front1 front2 ...</samp><br>
+<br>
+<samp>Example: frontends fltk</samp><br>
+<br>
+<samp>Default: ncurses fltk</samp><br>
+<br>
+<br>
+
+<strong>targetos</strong><br>
+Specifies which frontends for which Operating Systems should be included in the installer package. Each OS name should be the lowercased out from the 'uname' command(IE linux or netbsd). You can specify multiple OSes by separating them with a whitespace.<br>
+<br>
+<samp>Usage: targetos OS1 OS2 OS3 ...</samp><br>
+<br>
+<samp>Example: targetos linux</samp><br>
+<br>
+<samp>Default: freebsd linux netbsd</samp><br>
+<br>
+<samp>Note: By default there are only frontends for FreeBSD, NetBSD and Linux. See the <A href="#compile">compile section</A> if you want to support other OSes.</samp><br>
+<br>
+<br>
+
+<strong>targetarch</strong><br>
+Specifies which frontends for which CPU architectures should be included in the installer package. The CPU arch. name is either <samp>x86</samp> for Intel compatible systems or the output from <samp>uname -m</samp>. You can specify multiple architectures by separating them with a whitespace.<br>
+<br>
+<samp>Usage: targetarch arch1 arch2 arch3 ...</samp><br>
+<br>
+<samp>Example: targetarch x86</samp><br>
+<br>
+<samp>Default: x86</samp><br>
+<br>
+<samp>Note: Currently only x86 is supported. See the <A href="#compile">compile section</A> if you want to support other architectures.</samp><br>
+<br>
+<br>
+
+<strong>commandentry</strong><br>
+Start point of a <A href="#cfg-cmdentries">command entry</A>.<br>
+<br>
+<samp>Usage:<br>
+commandentry<br>
+[<br>
+...<br>
+options for a commandentry here<br>
+...<br>
+]<br></samp><br>
+<br>
+
+<p> <h3><A name="cfg-cmdentries">Command entries</A></h3>
+A command entry is a part where info can be specified for a single install command. A command entry starts with simply 'commandentry' and a left square bracket('[') beneath it. The command entry ends with a right square bracket(']'). All the configuration options for a command entry should be between the 2 square brackets.<br>
+<br>
+
+Here is a small example how a command entry may look like:<br>
+
+<pre><samp>commandentry
+[
+   description Compiling test
+   command make
+]
+<br></samp></pre>
+<br>
+A command entry has the following configure options: <br>
+<br>
+
+<strong>command</strong><br>
+This specifies the actual command. It will be directly passed to sh.<br>
+You can have multiple lines with commands, this way simple shell scripts can be made. To do so simply but the commands between square brackets.<br>
+<br>
+<samp>Usage: command commandlinehere</samp><br>
+<br>
+<samp>Example 1: command ./configure</samp><br>
+<pre><samp>Example 2:
+command [
+cp lib/mylib.so.1 /usr/local/lib
+cp bin/mybin /usr/local/bin
+echo Installation complete!
+]</samp></pre>
+<samp>Note: When you want to use right square brackets(']') when you use multiline-commands you have to put a backslash in front of it: '\]'. </samp><br>
+<br>
+<br>
+
+<strong>description</strong><br>
+Here you can specify a simple description of what this command does. You can put any translations of it in the
+<A href="#lang-files">language files</A><br>
+<br>
+<samp>Usage: description descriptionhere</samp><br>
+<br>
+<samp>Example: description Configuring test for your system</samp><br>
+<br>
+<br>
+
+<strong>needroot</strong><br>
+Specifies if or when this command needs to be executed as the root user.<br>
+<br>
+<samp>Usage: needroot true|false|dependson varname</samp><br>
+true: command always needs to be executed as root user.<br>
+false: command never needs to be executed as root user.<br>
+dependson: it depends on the directory that is selected for the parameter with the variable name(see the
+<A href="#installation">the installation section</A>) 'varname'.<br>
+<br>
+<samp>Example: needroot true</samp><br>
+<br>
+<samp>Default: false</samp><br>
+<br>
+<br>
+
+<strong>exitonfailure</strong> <br>
+If enabled, the installation will abort if the command fails to execute.<br>
+<br>
+<samp>Usage: exitonfailure true|false</samp><br>
+<br>
+<samp>Example: exitonfailure true</samp><br>
+<br>
+<samp>Default: true</samp><br>
+<br>
+<br>
+
+<strong>path</strong><br>
+Sets the $PATH environment variable for this command.<br>
+<br>
+<samp>Usage: path dir1:dir2:dir3:...</samp><br>
+<br>
+<samp>Example: path /usr/bin:/bin</samp><br>
+<br>
+<samp>Default: /bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:.</samp><br>
+<br>
+<br>
+
+<strong>addparam</strong><br>
+Start point of a <A href="#cfg-paramentries">parameter entry</A>.<br>
+<br>
+<samp>Usage:<br>
+addparam<br>
+[<br>
+...<br>
+options for a parameter entry here<br>
+...<br>
+]<br></samp><br>
+<br>
+
+<p> <h3><A name="cfg-paramentries">Parameter entries</A></h3>
+A parameter entry is a part where info can be specified for a single parameter for the current install command. A parameter entry starts with 'addparam' and a left square bracket('[') beneath it. The parameter entry ends with a right square bracket(']'). All the configuration options for a parameter entry should be between the 2 square brackets.<br>
+Parameter entries can only be defined inside a <A href="#cfg-cmdentries">command entry</A><br>
+<br>
+
+Here is a small example how a parameter entry may look like:<br>
+
+<pre><samp>addparam
+[
+   name Enable Debug
+   description Enable debugging code and symbols
+   parameter --enable-debug
+   defaultval false
+   type bool
+]
+<br></samp></pre>
+<br>
+A parameter entry has the following configure options: <br>
+<br>
+
+<strong>name</strong><br>
+Specifies a name for this parameter. This name is used for the installer itself(not for the actual command).<br>
+<br>
+<samp>Usage: name namehere</samp><br>
+<br>
+<samp>Example: name prefix</samp><br>
+<br>
+<br>
+
+<strong>parameter</strong><br>
+The parameter's name. This is used when executing the install command. You should place '%s' where the value for this parameter should be put.<br>
+<br>
+<samp>Usage: parameter paramnamehere</samp><br>
+<br>
+<samp>Example: parameter --prefix=%s</samp><br>
+If the prefix is set to '/usr/local' then the parameter will look like this when its used: '--prefix=/usr/local'<br>
+<br>
+<br>
+
+<strong>description</strong><br>
+You can specify a description for this parameter here. You can also add a translation to a
+<A href="#lang-files">language file</A>.<br>
+If the description contains more than one line of text you should put it between 2 square brackets.<br>
+<br>
+<samp>description descriptionoftheparamhere</samp><br>
+<br>
+<samp>Example 1: description This will set the installation prefix for package test.</samp><br>
+<pre><samp>Example 2:
+description [
+If you enable this option component X will be installed.
+Component is required for feature Y.
+]</samp></pre>
+<samp>Note: If you want to put a ']' in a multiline-description field you need to put a backslash in front of it('\]').</samp><br>
+<br>
+<br>
+
+<strong>type</strong><br>
+Specifies how this parameter can be changed.<br>
+<br>
+<samp>Usage: type string|dir|list|bool</samp><br>
+string: the user can specify a line of text to define a value for this parameter.<br>
+dir: the user can select a directory to define a value for this parameter.<br>
+list: the user can choose from a list of choices. The choices are defined by the 'addchoice' option (see below).<br>
+bool: the user can specify if this parameter is used at all.<br>
+<br>
+<samp>Example: type list</samp><br>
+<br>
+<samp>Default: bool</samp><br>
+<br>
+<br>
+
+<strong>defaultval</strong><br>
+Specifies the default value used for this parameter.<br>
+<br>
+<samp>Usage: defaultval defaultvaluehere</samp><br>
+<br>
+<samp>Example: defaultval Yellow</samp><br>
+<br>
+<samp>Notes: If this parameter is a bool, valid values are: true or false. If this parameter is a list the value must be one of the entries in that list.</samp><br>
+<br>
+<br>
+
+<strong>varname</strong><br>
+Gives this parameter a variable name. You should use this if a command which may need root access depends on the value of this parameter. See <A href="#installation">the installation</A> and the 'needroot' option in the
+<A href="#cfg-cmdentries">command entry section</A> for more info.<br>
+<br>
+<samp>Usage: varname somenamehere</samp><br>
+<br>
+
+<pre>
+<samp>
+Example:
+...
+commandentry
+[
+   command ./configure
+   ...
+   addparam
+   [
+      name Install prefix
+      ...
+      varname prefix
+   ]
+]
+
+commandentry
+[
+   command make install
+   needroot dependson prefix
+]
+</samp></pre><br>
+<br>
+
+<strong>addchoice</strong><br>
+You can use this if the parameter uses 'list' to define a value.<br>
+<br>
+<samp>Usage: addchoice choicenamehere</samp><br>
+<br>
+<samp>Example: addchoice Yellow</samp><br>
+<br>
+<br>
+
+
+<p> <h2><A href="#toc-create" name="create">Creating an install package</A></h2>
+In the previous sections is explained what the basics are, which config options there are etc. In this section will be explained how to apply those.<br>
+All the files which tell what the installer should do and how to package must be created go in a single directory. After this directory contains everything necessarily you can run a script with this directory as first argument to create the installer. <br>
+<br>
+<p> <h3><A name="dir-layout">Directory layout</A></h3>
+Here is a table for how the directory layout should look like:<br>
+<br>
+<table border="1">
+  <caption>Directory layout</caption>
+  <tbody>
+    <tr>
+      <th>File/directory</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td>install.cfg</td>
+      <td>The main configuration file.</td>
+    </tr>
+    <tr>
+      <td>welcome</td>
+      <td>A plain text file containing the welcome message.</td>
+    </tr>
+    <tr>
+      <td>license</td>
+      <td>A plain text file containing a license agreement.</td>
+    </tr>
+    <tr>
+      <td>finish</td>
+      <td>A plain text file containing text which will be displayed when the installation is finished.</td>
+    </tr>
+    <tr>
+      <td>intro picture</td>
+      <td>An image which will be displayed at the welcome screen. The name of the file has to be specified in the config file.</td>
+    </tr>
+    <tr>
+      <td>lang/</td>
+      <td>Directory containing subdirectories with translated files in them</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/</td>
+      <td>Directory containing translated files for [langname]. Replace [langname] with the lowercased name of the language(IE 'dutch').</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/welcome</td>
+      <td>Translated version for the welcome message.</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/license</td>
+      <td>Translated version for the license agreement.</td>
+    </tr>
+    <tr>
+      <td>lang/[langname]/finish</td>
+      <td>Translated version for the finish message.</td>
+    </tr>
+    <tr>
+      <td>files_all/</td>
+      <td>Directory containing all the files that must be installed. These are used for every operating system/architecture.</td>
+    </tr>
+    <tr>
+      <td>files_all_[archname]/</td>
+      <td>Directory containing files which are only meant for the CPU architecture [archname] on any operating system. [archname] should be replaced by a valid CPU architecture name: x86 for Intel compatible and the output from 'uname -m' for any other.</td>
+    </tr>
+    <tr>
+      <td>files_[osname]_all/</td>
+      <td>Directory containing files which are only meant for the operating system specified by [osname] on CPU architecture [arch]. [osname] should be replaced by a valid operating system. A valid osname is the output in lowercase from the shell command 'uname'. Some examples are: linux, netbsd, freebsd.</td>
+    </tr>
+    <tr>
+      <td>files_[osname]_[archname]/</td>
+      <td>Directory containing files which are only meant for the operating system specified by [osname]. [osname] should be replaced by a valid operating system(see above). [archname] should be replaced by a valid CPU architecture name(also see above).</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+
+The config file ('install.cfg') should always be present. The rest of the directories/files are optional.<br>
+
+<br>
+<strong>Example</strong><br>
+<ul>
+   <li> release/ (toplevel directory)
+   <ul>
+      <li> install.cfg </li>
+      <li> welcome </li>
+      <li> lang/
+      <ul>
+         <li> dutch/
+         <ul>
+            <li> strings </li>
+            <li> welcome </li>
+         </ul>
+         </li>
+      </ul>
+      </li>
+      <li> files_all/
+      <ul>
+         <li> config1.cfg </li>
+         <li> readme.txt </li>
+         <li> notes.txt </li>
+      </ul>
+      </li>
+      <li> files_linux/
+      <ul>
+         <li> someexe.bin </li>
+      </ul>
+      </li>
+      <li> files_freebsd/
+      <ul>
+         <li> someexe.bin </li>
+      </ul>
+      </li>
+   </ul>
+   </li>
+ </ul>
+<br>
+<br>
+    You can find other, 'real' examples in the example/ directory.
+   <br>
+<br>
+
+<p> <h3><A name="creating-inst">Creating the installer</A></h3>
+OK now you know how to make a directory layout we can start with the actual creation of the installer.<br>
+<br>
+In the main directory of the nixstaller package there is a script called 'geninstall.sh'. If you invoke this script it will copy all the files that need to be in the installer package(translations, frontends, the files that needs to be installed) to a temporary directory.<br>
+After that it will call makeself to finish the job and you should have an installer.<br>
+The script must be run from the main nixstaller directory. It has 2 arguments: the first argument should be the directory that you created in the above section and with the second argument you can specify the name for the installer(default is setup.sh). The first argument is required, the second optional.<br>
+<br>
+
+<samp>Example: ./geninstall.sh release/</samp><br>
+<br>
+
+This will create an installer from the release/ directory. The installer will be simply called setup.sh (you can rename it afterwards).<br>
+To test the installer simply run <samp>./setup.sh</samp> and see if it works.<br>
+<br>
+
+<p> <h3><A name="inst-examples">Examples</A></h3>
+For some examples go to the <A href="#tutorial">tutorial section</A> or see the 'example/' directory.<br>
+In the example/ directory you can find some examples of full directory layouts. You can call 'geninstall.sh' on these directories to make an installer of it.<br>
+<br>
+
+<p> <h2><A href="#toc-tutorial" name="tutorial">Tutorials</A></h2>
+In this section there are 2 tutorials: the first one is about making a simple installer which will only extract some files, the second is about creating a more advanced installer which will be able to compile a package.<br>
+
+<p> <h3><A name="simple-tut">Simple tutorial</A></h3>
+After you followed this tutorial you should have created a simple installer for package 'foo'. This installer will do the following:<br>
+<ul>
+   <li> Let the user select a language (Dutch or English) </li>
+   <li> Show the user a short welcome text </li>
+   <li> Let the user select a directory </li>
+   <li> Install(extract) package foo to that directory </li>
+ </ul>
+<br>
+
+First we need to make a directory for the 'geninstall.sh' script
+(see the <A href="#creating-inst">creating the installer section</A>). We will simply call this 'release/'<br>
+After the directory is created you should create the main config file 'install.cfg' in there. Simply open a text editor and put this in the file:<br>
+<pre><samp>
+appname foo
+archtype gzip
+installdir select
+languages english dutch
+</samp></pre>
+<br>
+For more info what everything does here, check the <A href="#config">config section</A>.<br>
+<br>
+
+Now create another text file called 'welcome' with your favorite editor and put this also in the 'release/' directory.<br>
+You can put the following text in this file:<br>
+<pre><samp>
+Thanks for downloading foo. This installer will guide you through the installation.
+If foo did anything useful I would put some short explanation here...but foo doesn't do anything.
+</samp></pre>
+<br>
+
+We can now put some translations for our installer. We want the user to select from both english and dutch. Since both of these languages are already translated, you can simply copy the 'lang/' from the main nixstaller directory to the 'release/' directory.<br>
+The English 'translation' is only required in case you want to change some texts that are used by nixstaller. In this example we won't, so you can safely omit the 'lang/english/' directory.<br>
+Incase you want to have a translated welcome message too, simply copy the 'welcome' file to 'lang/dutch/' and translate it from there.<br>
+
+OK, now we should create a subdirectory called 'files_all' in the 'release/' directory and copy all the files from package foo.<br>
+Assuming that package foo has one file named README and another called foo.bin, the directory structure should now look this:<br>
+<ul>
+   <li> release/
+   <ul>
+      <li> install.cfg </li>
+      <li> welcome </li>
+      <li> lang/
+      <ul>
+         <li> dutch
+         <ul>
+            <li> strings </li>
+            <li> welcome </li>
+         </ul>
+         </li>
+      </ul>
+      </li>
+      <li> files_all/
+      <ul>
+         <li> README </li>
+         <li> foo.bin </li>
+      </ul>
+      </li>
+   </ul>
+   </li>
+ </ul>
+<br>
+
+Now from the main nixstaller directory execute <samp>./geninstall.sh release/</samp> (assuming the release/ directory is in the main nixstaller directory) and your installer is ready to use.<br>
+<br>
+
+<p> <h3><A name="adv-tut">Advanced tutorial</A></h3>
+This tutorial is more advanced. This time we want an installer for package 'bar'. Bar should be compiled on the users machine before it can be used. 'bar' is one of these typical './configure &amp;&amp; make &amp;&amp; make install' packages.<br>
+<br>
+Here is a summary for what the installer for bar should do:<br>
+<ul>
+   <li> Let the user select a language (dutch or english) </li>
+   <li> Show the user a short welcome text </li>
+   <li> Let the user accept a license agreement </li>
+   <li> Let the user configure some parameters used by './configure' </li>
+   <li> Extract package 'bar' to a temporary directory, from there it should compile it and run 'make install' for further installation. </li>
+ </ul>
+<br>
+
+The 'welcome' file can be the same as used by the <A href="#simple-tut">previous tutorial</A>. The license agreement may look like this:<br>
+<pre>
+<samp>
+'bar' comes with no WARRENTY. Therefore you can't sue me if your machine explodes because of it.
+</samp>
+</pre>
+Lets create the install.cfg file:<br>
+<pre><samp>
+appname bar
+archtype gzip
+installdir temp
+languages english dutch
+
+commandentry
+[
+   command ./configure
+   description Configuring bar for your system
+   
+   addparam
+   [
+      name Install prefix
+      parameter --prefix=%s
+      description Specifies the directory which shall be used to install bar too.
+      type dir
+      defaultval /usr/local
+      varname instprefix
+   ]
+]
+
+commandentry
+[
+   command make
+   description Compiling bar
+]
+
+commandentry
+[
+   command make install
+   description Installing files
+   needroot dependson instprefix
+]
+</samp></pre>
+<br>
+This file may look more complicated for you than the previous one. Just study it for a bit and look at the
+<A href="#config">config section</A> for more info.<br>
+<br>
+
+Now lets make a directory layout like the <A href="#simple-tut">previous tutorial</A>. 'bar' has the following files: 'README', 'configure' and 'bar.cpp'.<br>
+The directory layout will look like this:<br>
+<ul>
+   <li> release/
+   <ul>
+      <li> install.cfg </li>
+      <li> welcome </li>
+      <li> license </li>
+      <li> lang/
+      <ul>
+         <li> dutch
+         <ul>
+            <li> strings </li>
+            <li> welcome </li>
+         </ul>
+         </li>
+      </ul>
+      </li>
+      <li> files_all/
+      <ul>
+         <li> README </li>
+         <li> configure </li>
+         <li> bar.cpp </li>
+      </ul>
+      </li>
+   </ul>
+   </li>
+ </ul>
+<br>
+
+We're almost done. Since we want to translate the descriptions used for compiling we need to add some lines to the 'lang/dutch/strings' file.<br>
+Open the file in an editor and add the following lines at the end of the file:<br>
+<pre>
+<samp>
+Configuring bar for your system
+bar wordt voor uw systeem ingesteld
+
+Specifies the directory which shall be used to install bar too.
+Geeft de directory aan waar bar naar zal worden geïnstalleerd.
+
+Compiling bar
+bar wordt gecompileerd
+
+Installing files
+Bestanden worden geïnstalleerd
+</samp>
+</pre>
+<br>
+Now dutch people are happy with your installer too ;)<br>
+<br>
+Simply call <samp>./geninstall.sh release/</samp> from the main nixstaller directory and your installer should be ready.<br>
+<br>
+
+<p> <h2><A href="#toc-compile" name="compile">Compiling nixstaller</A></h2>
+Normally all required libraries and frontends are already compiled for Linux, FreeBSD and NetBSD.<br>
+If, for example, you want to compile for another platform or made some modifications to the source code you should read this section to know how to compile nixstaller.<br>
+<br>
+
+<p> <h3><A name="libs">Libraries</A></h3>
+Although external libraries are nice for things such as not reinventing the wheel, they can cause several troubles as well.<br>
+This section tells how to handle the required libraries for Nixstaller.<br>
+<br>
+
+<strong>Required libraries</strong><br>
+Nixstaller uses the following libraries:<br>
+<br>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Library name</th>
+      <th>Where to get it</th>
+      <th>Used for</th>
+      <th>Linked dynamic or static</th>
+    </tr>
+    <tr>
+      <td>zlib(libz)</td>
+      <td><A href="http://www.zlib.net/">http://www.zlib.net/</A></td>
+      <td>FLTK frontend, required by libpng</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>libmain</td>
+      <td>Part of nixstaller</td>
+      <td>Core</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>libsu</td>
+      <td>Part of nixstaller</td>
+      <td>Core</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>CDK(libcdk)</td>
+      <td><A href="http://invisible-island.net/cdk/">http://invisible-island.net/cdk/</A></td>
+      <td>ncurses frontend</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>ncurses(libncurses)</td>
+      <td><A href="http://www.gnu.org/software/ncurses/ncurses.html">http://www.gnu.org/software/ncurses/ncurses.html</A></td>
+      <td>ncurses frontend</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>FLTK(libfltk, libfltk_images)</td>
+      <td><A href="http://www.fltk.org">http://www.fltk.org</A></td>
+      <td>FLTK frontend</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>png(libpng)</td>
+      <td><A href="http://www.libpng.org/pub/png/libpng.html">http://www.libpng.org/pub/png/libpng.html</A></td>
+      <td>FLTK frontend</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>jpeg(libjpeg)</td>
+      <td><A href="http://www.ijg.org/">http://www.ijg.org/</A></td>
+      <td>FLTK frontend</td>
+      <td>Static</td>
+    </tr>
+    <tr>
+      <td>X11(libX11, libXext)</td>
+      <td>You can get them from your local X.org/XFree distribution</td>
+      <td>FLTK frontend</td>
+      <td>Dynamic</td>
+    </tr>
+    <tr>
+      <td>libm, libc, libstdc++, libutil</td>
+      <td>Comes with GCC. The build script will automatically search and copy them.</td>
+      <td>Core</td>
+      <td>libm and libc dynamic, libstdc++ and libutil static</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+You can find some notes about what was done to compile some libraries on different platforms in every subdirectory from the 'lib/' directory.<br>
+<br>
+
+<strong>Optimized libraries</strong><br>
+Never use libraries which are optimized for a specific platform(IE compiled with -march=athlon-xp). This may be the case with for example a library compiled by a source based Linux distro. Gentoo for example lets you specify certain optimizations, however people with another CPU cannot use this code. If you're not sure if they are arch specific you can better compile the libraries by your own.<br>
+<br>
+
+<strong>Shared libraries</strong><br>
+Nixstaller tries to compile as many libraries as possible static. This will mean that the user won't have to care about them and the binary has a much higher chance to run on older/newer systems. However some libraries can't be linked statically or their major version number isn't changed too often.<br>
+The C library, or libc, can't be linked statically since it needs runtime support. This can give problems for older/newer systems than what is used for the compilation of Nixstaller. A good example is FreeBSD, which seems to bump the major version of libc every major release(IE FreeBSD 5.X has libc.so.5, FreeBSD 6.X has libc.so.6). This way a binary linked on FreeBSD 6.X won't run on FreeBSD 5.X because it doesn't has libc.so.6.<br>
+To solve this problem your installer can have binaries for each major libc version. Just compile the frontends on a system which uses the specific libc version and move the binaries from the 'bin/[osname]/[arch]/' directory to 'bin/[osname]/[arch]/libcX/' where the X should be replaced with the major version number of the libc major version.<br>
+When the user runs the installer, the start up script will try to use the right binaries automatically.<br>
+<br>
+
+<strong>Library placement</strong><br>
+The libs provided by gcc will be handled automatically. The (other) static libs need to be put in the directory 'lib/[osname]/[archname]' - where [osname] is the output from 'uname' in lowercase and [archname] x86 for Intel compatible machines and the output from 'uname -m' for any other architecture. An example directory would be <samp>lib/netbsd/x86/</samp>.<br>
+
+The X.org/XFree libraries are expected to be in '/usr/X11R6/lib'. If SCons can't find them you should specify the directory when you execute scons, like this:<br>
+<samp>scons xlibsdir=/path/to/xlibraries</samp><br>
+<br>
+
+<strong>Header files</strong><br>
+You should put all the header files from the libs in the 'include/' directory. To know which headers you need you can take a look at which headers the 'include/' directory already has.<br>
+If the headers differs from platform to platform or you are unsure if they do, you should put them in 'include/[osname]/' instead(where osname is the lowercased output from uname). If the headers also differ from architecture to architecture, put them under include/[osname]/[arch]/([arch]=x86 for Intel compatible and output from 'uname -m' for any other). Again just take a look how the directory looks like by default.<br>
+Note that you won't need to copy any X libraries. If they aren't in '/usr/X11R6/include' and scons can't find them specify the location on the command line like this:<br>
+<samp>scons xincdir=/path/to/xincludes</samp><br>
+<br>
+
+<p> <h3><A name="scons">SCons</A></h3>
+Nixstaller uses SCons as build system(instead of autoconf and GNU make for example). You can get SCons
+<A href="http://www.scons.org/">here</A>.<br>
+SCons is <A href="http://www.python.org/">python</A> based, so make sure you got that too. Also at the time of writing you need the latest SCons, which is "0.96.91".<br>
+<br>
+
+<p> <h3><A name="compiling">Compiling</A></h3>
+If you got SCons installed simply type <samp>scons</samp> in the main nixstaller directory to build and configure everything.<br>
+To clean all the compiler output files simply type <samp>scons -c</samp>.<br>
+The binaries will be automatically put in the bin/[osname]/[arch]/ directory(where [osname] is the lowercased output from 'uname', [arch] is x86 for Intel compatible or output from 'uname -m' for any other).<br>
+After you compiled the binaries it's recommended to strip all symbols from them to make them smaller. Simple type <samp>scons stripbins</samp> and every binary in the bin/ directory will be stripped.<br>
+<br>
+If you want to create an dist-archive you can type <samp>scons tardist</samp>. If you want to add more files you should add them in the SConstruct file.<br>
+<samp>scons setupdist</samp> will create an installer of all the dist files.<br>
+<br>
+
+<p> <h2><A href="#toc-licensecred" name="licensecred">Credits and license</A></h2>
+
+<p> <h3><A name="credits">Credits</A></h3>
+<strong>kdesu:</strong> is heavily used for libsu. <A href="http://www.kde.org">kde project</A>.<br>
+<strong>Makeself:</strong> is used to create a self extracting archive.
+<A href="http://www.megastep.org/makeself/">makeself page</A><br>
+<strong>BerliOS:</strong> Site hosting, SVN access etc. <A href="http://www.berlios.de/">berlios page</A><br>
+<strong>KDevelop:</strong> Nice IDE which I mainly use for creating nixstaller.
+<A href="http://www.kdevelop.org/">kdevelop page</A><br>
+<strong>Quanta+:</strong> Nice HTML editor which I used to create this manual.
+<A href="http://quanta.kdewebdev.org/">quanta page</A><br>
+<strong>InternetNightmare:</strong> Feedback, suggestions.<br>
+<br>
+
+<p> <h3><A name="license">License</A></h3>
+Nixstaller is released under the GPlv2 license with an exception for CDK:<br>
+<pre>
+<em>
+    Copyright (C) 2006 by Rick Helmus (rhelmus_AT_gmail.com)
+
+    Nixstaller is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Nixstaller is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Nixstaller; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+    Linking cdk statically or dynamically with other modules is making a combined work based on cdk. Thus, the terms and
+    conditions of the GNU General Public License cover the whole combination.
+
+    In addition, as a special exception, the copyright holders of cdk give you permission to combine cdk program with free
+    software programs or libraries that are released under the GNU LGPL and with code included in the standard release of
+    DEF under the XYZ license (or modified versions of such code, with unchanged license). You may copy and distribute
+    such a system following the terms of the GNU GPL for cdk and the licenses of the other code concerned, provided that
+    you include the source code of that other code when and as the GNU GPL requires distribution of source code.
+
+    Note that people who make modified versions of cdk are not obligated to grant this special exception for their modified
+    versions; it is their choice whether to do so. The GNU General Public License gives permission to release a modified
+    version without this exception; this exception also makes it possible to release a modified version which carries forward
+    this exception.
+</em>
+</pre>
+<br>
+
+<p> <h2><A href="#toc-feedback" name="feedback">Feedback, Questions, Suggestions etc.</A></h2>
+If you got any suggestions, questions and such you can reach me through the following ways:<br>
+<ul>
+   <li> Send a email to rhelmus_AT_gmail.com</li>
+   <li> Use the <A href="http://nixstaller.berlios.de/forum/index.php">online forums</A> </li>
+   <li> Instant Message: rick_helmus8_AT_hotmail.com(MSN), 224332897(ICQ) or rickakame(AIM) </li>
+ </ul>
+
+</html>

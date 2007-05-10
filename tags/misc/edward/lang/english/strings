@@ -1,0 +1,338 @@
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+Next
+Next
+
+Back
+Back
+
+OK
+OK
+
+Cancel
+Cancel
+
+Yes
+Yes
+
+No
+No
+
+Finish
+Finish
+
+Select directory
+Select directory
+
+Browse
+Browse
+
+Open directory
+Open directory
+
+Choose another directory
+Choose another directory
+
+Continue as root
+Continue as root
+
+Close
+Close
+
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+[
+Install commands are still running
+If you abort now this may lead to a broken installation
+Are you sure?
+]
+[
+Install commands are still running
+If you abort now this may lead to a broken installation
+Are you sure?
+]
+
+[
+This will abort the installation
+Are you sure?
+]
+[
+This will abort the installation
+Are you sure?
+]
+
+[
+Root access is required to continue
+Abort installation?
+]
+[
+Root access is required to continue
+Abort installation?
+]
+
+[
+Incorrect password given for root user
+Please retype
+]
+[
+Incorrect password given for root user
+Please retype
+]
+
+# %s is replaced by appname
+Installation of %s complete!
+Installation of %s complete!
+
+[
+You don't have read permissions for this directory
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+[
+You don't have read permissions for this directory
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the root password for this later.
+]
+
+[
+This installation requires root(administrator) privileges in order to continue
+Please enter the password of the root user
+]
+[
+This installation requires root(administrator) privileges in order to continue
+Please enter the password of the root user
+]
+
+# %s is replaced by directory name
+Directory %s does not exist, do you want to create it?
+Directory %s does not exist, do you want to create it?
+
+# %s is replaced by appname
+[
+This will install %s
+Continue?
+]
+[
+This will install %s
+Continue?
+]
+
+
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+# %s is replaced by parameter name from configmenu
+Please choose a new value for %s
+Please choose a new value for %s
+
+# %s is replaced by parameter name from configmenu
+Please select a directory for %s
+Please select a directory for %s
+
+# %s is replaced by parameter name from configmenu
+Please enter a new value for %s
+Please enter a new value for %s
+
+Please select a language
+Please select a language
+
+Welcome
+Welcome
+
+Do you accept and understand the terms of the license agreement?
+Do you accept and understand the terms of the license agreement?
+
+License agreement
+License agreement
+
+Select destination directory
+Select destination directory
+
+Please read the following text
+Please read the following text
+
+Warning
+Warning
+
+Enter name of new directory
+Enter name of new directory
+
+About
+About
+
+Select a directory
+Select a directory
+
+Password dialog
+Password dialog
+
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Progress
+Progress
+
+Language
+Language
+
+I agree to this license agreement
+I agree to this license agreement
+
+Status
+Status
+
+Extracting files
+Extracting files
+
+Enable
+Enable
+
+Disable
+Disable
+
+
+#-----------------------------------------------
+# Error messages
+#-----------------------------------------------
+
+Could not create directory
+Could not create directory
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Could not open directory %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Could not read directory %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Could not read current directory: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Lua error detected: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Could not execute command: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Could not create directory: %s
+
+[
+Could not use su to gain root access
+Make sure you can use su(adding the current user to the wheel group may help)
+]
+[
+Could not use su to gain root access
+Make sure you can use su(adding the current user to the wheel group may help)
+]
+
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Add to Favorites
+
+All Files (*)
+All Files (*)
+
+Custom Filter
+Custom Filter
+
+Favorites
+Favorites
+
+Filename:
+Filename:
+
+File Systems
+File Systems
+
+Manage Favorites
+Manage Favorites
+
+Show:
+Show:
+
+Create new directory
+Create new directory
+
+
+#-----------------------------------------------
+# Button bar from ncurses frontend
+#-----------------------------------------------
+
+Next field
+Next field
+
+TAB
+TAB
+
+Exit
+Exit
+
+ESC
+ESC
+
+F2
+F2
+
+F3
+F3
+
+Done
+Done
+
+ENTER
+ENTER
+
+Scroll
+Scroll
+
+ARROWS
+ARROWS
+
+Activate button
+Activate button
+
+
+#-----------------------------------------------
+# Put your own translations here
+#-----------------------------------------------
