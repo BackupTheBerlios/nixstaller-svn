@@ -116,6 +116,9 @@ public:
     void PushArg(const char *s);
     void DoCall(void);
     
+    enum ECallRet { CALLRET_NONE, CALLRET_INTEGER, CALLRET_BOOLEAN, CALLRET_STRING};
+    void DoCall(ECallRet rettype, void *ret);
+    
     bool GetNumVar(lua_Number *out, const char *var, const char *tab=NULL);
     bool GetNumVar(lua_Integer *out, const char *var, const char *tab=NULL);
     bool GetStrVar(std::string *out, const char *var, const char *tab=NULL);
@@ -265,6 +268,8 @@ public:
     
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void) { ReadLang(); };
+    
+    void DoCall(const char *func, const char *tab, CLuaVM::ECallRet rettype, void *ret);
     
     // Functions for lua binding
     static int LuaInitDirIter(lua_State *L);

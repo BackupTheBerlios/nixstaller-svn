@@ -202,6 +202,8 @@ public:
 
 class CBaseCFGScreen
 {
+    std::string m_szFinishHook;
+    
 public:
     virtual ~CBaseCFGScreen(void) { };
     
@@ -217,4 +219,7 @@ public:
     static int LuaAddRadioButton(lua_State *L);
     static int LuaAddDirSelector(lua_State *L);
     static int LuaAddCFGMenu(lua_State *L);
+    static int LuaSetFinishHook(lua_State *L);
+    
+    const std::string &GetFinishHook() { return m_szFinishHook; };
 };

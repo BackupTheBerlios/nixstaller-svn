@@ -127,6 +127,12 @@ void CMain::Init(int argc, char **argv)
     ReadLang();
 }
 
+void CMain::DoCall(const char *func, const char *tab, CLuaVM::ECallRet rettype, void *ret) {
+    if (m_LuaVM.InitCall(func, tab)) {
+        m_LuaVM.DoCall(rettype,ret);
+    }
+}
+        
 void CMain::SetUpSU(const char *msg)
 {
     m_SUHandler.SetUser("root");

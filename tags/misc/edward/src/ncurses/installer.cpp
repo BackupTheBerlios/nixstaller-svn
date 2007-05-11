@@ -79,6 +79,10 @@ void CInstaller::Next()
     if ((*m_CurrentScreenIt != m_InstallScreens.back()) && (!(*m_CurrentScreenIt)->Next()))
         return;
     
+    // Run Finish Hook on Config screen
+    if (!(*m_CurrentScreenIt)->Finish())
+        return;
+    
     std::list<CBaseScreen *>::iterator it = m_CurrentScreenIt;
     
     bool NeedRefresh = false;
@@ -1167,6 +1171,17 @@ void CCFGScreen::UpdateLanguage()
     for (n=0; n<size; n++)
         m_LuaWidgets[n]->UpdateLanguage();
     SetInfo(GetTranslation(m_szTitle.c_str()));
+}
+
+bool CCFGScreen::Finish()
+{
+    if (GetFinishHook().length() > 0) {
+        bool ret = false;
+        m_pInstaller->DoCall(GetFinishHook().c_str(),NULL,CLuaVM::CALLRET_BOOLEAN,(void *)&ret);
+        return ret;
+    } else {
+        return true;
+    }
 }
 
 CBaseLuaInputField *CCFGScreen::CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type)

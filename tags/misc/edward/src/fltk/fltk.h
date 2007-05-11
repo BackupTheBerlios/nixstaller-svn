@@ -366,6 +366,8 @@ public:
     virtual bool Next(void) { return true; };
     virtual void Activate(void) { };
     virtual bool CanActivate(void) { return true; };
+    virtual bool Finish(void) { return true; };
+    
 };
 
 class CLangScreen: public CBaseScreen
@@ -495,6 +497,7 @@ public:
     virtual Fl_Group *Create(void);
     virtual void UpdateLang(void);
     virtual void Activate(void);
+    virtual bool Finish();
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val, int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);

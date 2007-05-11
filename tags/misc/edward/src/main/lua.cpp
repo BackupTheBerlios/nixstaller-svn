@@ -259,6 +259,39 @@ void CLuaVM::DoCall(void)
     m_iPushedArgs = 0;
 }
 
+void CLuaVM::DoCall(ECallRet rettype, void *ret)
+{
+    if (lua_pcall(m_pLuaState, m_iPushedArgs, 1, 0) != 0)
+    {
+        const char *errmsg = lua_tostring(m_pLuaState, -1);
+        if (!errmsg)
+            errmsg = "Unknown error!";
+        else if (!strcmp(errmsg, "CExUser"))
+            throw Exceptions::CExUser();
+
+        throw Exceptions::CExLua(CreateText("Error running function: %s", errmsg));
+    }
+    // Fetch return value
+    switch (rettype) {
+        case CALLRET_BOOLEAN:
+            if (lua_isboolean(m_pLuaState,-1))
+                *(bool*)ret = lua_toboolean(m_pLuaState,-1);
+            break;
+        case CALLRET_INTEGER:
+            if (lua_isnumber(m_pLuaState,-1))
+                *(int*)ret = lua_tointeger(m_pLuaState,-1);
+           break;
+        case CALLRET_STRING:
+            if (lua_isstring(m_pLuaState,-1))
+                *(const char**)ret = lua_tostring(m_pLuaState,-1);
+            break;
+        case CALLRET_NONE:
+            break;
+    }
+    lua_pop(m_pLuaState,1); 
+    m_iPushedArgs = 0;
+}
+
 bool CLuaVM::GetNumVar(lua_Number *out, const char *var, const char *tab)
 {
     GetGlobal(var, tab);

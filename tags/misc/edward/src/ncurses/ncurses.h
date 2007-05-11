@@ -278,6 +278,7 @@ public:
     virtual void Activate(void);
     virtual bool CanActivate(void) { return true; };
     virtual void UpdateLanguage(void) { };
+    virtual bool Finish(void) { return true; };
 };
 
 class CLangScreen: public CBaseScreen
@@ -425,7 +426,8 @@ public:
     
     virtual void Activate(void);
     virtual void UpdateLanguage(void);
-    
+    virtual bool Finish(void);
+
     // Incase this is a linked screen from a spreaded screen these values will be used to display current and max spreaded screen
     void SetCounter(int n, int max) { m_iLinkedScrNr = n; m_iLinkedScrMax = max; };
 };

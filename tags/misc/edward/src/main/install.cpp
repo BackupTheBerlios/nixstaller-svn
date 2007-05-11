@@ -367,6 +367,7 @@ void CBaseInstall::InitLua()
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddRadioButton, "addradiobutton", this);
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddDirSelector, "adddirselector", this);
     m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaAddCFGMenu, "addcfgmenu", this);
+    m_LuaVM.RegisterClassFunc("cfgscreen", CBaseCFGScreen::LuaSetFinishHook, "setfinishhook", this);
     
     m_LuaVM.InitClass("inputfield");
     m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "get", this);
@@ -449,6 +450,16 @@ void CBaseInstall::InitLua()
 #endif
 }
 
+int CBaseCFGScreen::LuaSetFinishHook(lua_State *L)
+{
+    CBaseInstall *pInstaller = (CBaseInstall *)lua_touserdata(L, lua_upvalueindex(1));
+    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClass<CBaseCFGScreen *>("cfgscreen", 1);
+    const char *desc = luaL_checkstring(L, 2);
+    
+    screen->m_szFinishHook.assign(desc);
+    return 1;
+}
+    
 bool CBaseInstall::VerifyDestDir(void)
 {
     const char *dir = GetDestDir();
