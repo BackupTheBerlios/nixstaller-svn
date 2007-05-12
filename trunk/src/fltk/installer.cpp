@@ -53,7 +53,7 @@ int TitleHeight(int w, const char *desc)
 
 void CInstaller::InitLua()
 {
-    m_LuaVM.InitClass("welcomescreen");
+/* UNDONE    m_LuaVM.InitClass("welcomescreen");
     m_LuaVM.RegisterUData<CBaseScreen>(m_pWelcomeScreen, "welcomescreen", "WelcomeScreen");
     
     m_LuaVM.InitClass("licensescreen");
@@ -66,7 +66,7 @@ void CInstaller::InitLua()
     m_LuaVM.RegisterUData<CBaseScreen>(m_pInstallScreen, "installscreen", "InstallScreen");
     
     m_LuaVM.InitClass("finishscreen");
-    m_LuaVM.RegisterUData<CBaseScreen>(m_pFinishScreen, "finishscreen", "FinishScreen");
+    m_LuaVM.RegisterUData<CBaseScreen>(m_pFinishScreen, "finishscreen", "FinishScreen");*/
     
     CBaseInstall::InitLua();
 }

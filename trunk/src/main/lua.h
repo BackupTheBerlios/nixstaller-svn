@@ -124,7 +124,7 @@ public:
     }
     void CloseArray(void);
 
-    void InitClass(const char *name, lua_CFunction gc=NULL, void *gcdata=NULL);
+    void SetClassGC(const char *name, lua_CFunction gc, void *gcdata=NULL);
     template <typename C> void CreateClass(C *prvdata, const char *type)
     {
         lua_newtable(m_pLuaState);
@@ -185,7 +185,6 @@ public:
     
     void SetArrayStr(const char *s, const char *var, int index, const char *tab=NULL);
 
-    void *GetClosure(void);
     bool GetArgNum(lua_Number *out);
     bool GetArgNum(lua_Integer *out);
     bool GetArgStr(std::string *out);

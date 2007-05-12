@@ -103,7 +103,7 @@ public:
     
     // Functions for lua binding
     static int LuaGetTempDir(lua_State *L);
-    static int LuaNewCFGScreen(lua_State *L);
+    static int LuaNewScreen(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);
     static int LuaExecuteCMDAsRoot(lua_State *L);
@@ -218,3 +218,6 @@ public:
     static int LuaAddDirSelector(lua_State *L);
     static int LuaAddCFGMenu(lua_State *L);
 };
+
+inline CBaseInstall *GetFromClosure(lua_State *L)
+{ return reinterpret_cast<CBaseInstall *>(lua_touserdata(L, lua_upvalueindex(1))); }

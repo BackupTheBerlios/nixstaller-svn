@@ -27,7 +27,7 @@ static const luaL_Reg libtable[] = {
     { LUA_OSLIBNAME, luaopen_os },
     { LUA_STRLIBNAME, luaopen_string },
     { LUA_MATHLIBNAME, luaopen_math },
- // { LUA_LOADLIBNAME, luaopen_package }, // Perhaps later
+    { LUA_LOADLIBNAME, luaopen_package },
 //   { LUA_DBLIBNAME, luaopen_debug }, // No debug
     { NULL, NULL }
 };
@@ -261,9 +261,9 @@ void CLuaVM::PushArg(const char *s)
     m_iPushedArgs++;
 }
 
-void CLuaVM::DoCall(void)
+void CLuaVM::DoCall()
 {
-    if (lua_pcall(m_pLuaState, m_iPushedArgs, 0, 0) != 0)
+    if (lua_pcall(m_pLuaState, m_iPushedArgs, LUA_MULTRET, 0) != 0)
     {
         const char *errmsg = lua_tostring(m_pLuaState, -1);
         if (!errmsg)
@@ -412,38 +412,21 @@ void CLuaVM::CloseArray()
         lua_pop(m_pLuaState, 1);
 }
 
-void *CLuaVM::GetClosure()
+void CLuaVM::SetClassGC(const char *name, lua_CFunction gc, void *gcdata)
 {
-    return lua_touserdata(m_pLuaState, lua_upvalueindex(1));
-}
-
-void CLuaVM::InitClass(const char *name, lua_CFunction gc, void *gcdata)
-{return;
-    luaL_newmetatable(m_pLuaState, name);
+    GetClassMT(name);
     
-    lua_pushstring(m_pLuaState, "__index");
-    lua_pushvalue(m_pLuaState, -2);
-    lua_settable(m_pLuaState, -3); // __index = metatable
+    lua_pushstring(m_pLuaState, "__gc");
     
-    lua_pushstring(m_pLuaState, "__metatable");
-    lua_pushvalue(m_pLuaState, -2);
-    lua_settable(m_pLuaState, -3); // hide metatable
-    
-    if (gc)
+    if (gcdata)
     {
-        lua_pushstring(m_pLuaState, "__gc");
-        
-        if (gcdata)
-        {
-            lua_pushlightuserdata(m_pLuaState, gcdata);
-            lua_pushcclosure(m_pLuaState, gc, 1);
-        }
-        else
-            lua_pushcfunction(m_pLuaState, gc);
-        
-        lua_settable(m_pLuaState, -3);
+        lua_pushlightuserdata(m_pLuaState, gcdata);
+        lua_pushcclosure(m_pLuaState, gc, 1);
     }
+    else
+        lua_pushcfunction(m_pLuaState, gc);
     
+    lua_settable(m_pLuaState, -3);
     lua_pop(m_pLuaState, 1);
 }
 

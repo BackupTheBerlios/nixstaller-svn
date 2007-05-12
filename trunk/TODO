@@ -28,6 +28,7 @@ MAIN
 - Move cfg screen array handling to libmain
 - Make m_bInstalling private
 - Make CMain::UpdateLanguage public?
+- Let Lua dir iter use class code?
 
 
 LIBSU
