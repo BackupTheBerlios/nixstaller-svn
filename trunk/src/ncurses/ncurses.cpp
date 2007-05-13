@@ -18,7 +18,6 @@
 */
 
 #include "ncurses.h"
-#include "main.h"
 #include "installer.h"
 #include "tui/tui.h"
 #include "tui/widget.h"

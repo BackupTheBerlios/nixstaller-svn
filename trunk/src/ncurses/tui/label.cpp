@@ -17,7 +17,6 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main.h"
 #include "tui.h"
 #include "label.h"
 

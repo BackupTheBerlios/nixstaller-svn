@@ -20,7 +20,7 @@
 #ifndef TEXTBASE
 #define TEXTBASE
 
-#include "main.h"
+#include "../../main/main.h"
 #include "widget.h"
 
 namespace NNCurses {

@@ -20,7 +20,7 @@
 #ifndef INPUTFIELD
 #define INPUTFIELD
 
-#include "main.h"
+#include "../../main/main.h"
 #include "widget.h"
 
 namespace NNCurses {

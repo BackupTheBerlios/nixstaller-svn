@@ -20,7 +20,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "libsu.h"
+#include "../libsu/libsu.h"
         
 #include <assert.h>
 #include <syslog.h>

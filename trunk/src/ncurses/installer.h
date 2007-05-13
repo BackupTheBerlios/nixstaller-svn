@@ -21,7 +21,6 @@
 #define INSTALLER
 
 #include <vector>
-#include "main.h"
 #include "ncurses.h"
 
 namespace NNCurses {

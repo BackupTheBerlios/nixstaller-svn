@@ -20,8 +20,8 @@
 #ifndef FR_NCURSES_H
 #define FR_NCURSES_H
 
+#include "../main/main.h"
 #include "tui/tui.h"
-#include "main.h"
 #include "tui/window.h"
 
 namespace NNCurses { class CDialog; }

@@ -15,7 +15,10 @@ OVERALL
 - x64 bins?
 - Check assert's: Shouldn't have function calls as arguments
 - Update Lua library for FBSD, NBSD, OBSD, SunOS
+- Recursive directory creation in VerifyDestDir (patch from Edward), also check root creation
+- Lua Panic function
 
+        
 TRANSLATIONS
 - Toggle (buttonbar)
 - Navigate (buttonbar)
@@ -29,6 +32,7 @@ MAIN
 - Make m_bInstalling private
 - Make CMain::UpdateLanguage public?
 - Let Lua dir iter use class code?
+- Check class metatable (readable/writeable from scripts?)
 
 
 LIBSU

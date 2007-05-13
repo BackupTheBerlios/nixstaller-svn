@@ -17,29 +17,34 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef RADIOBUTTON
-#define RADIOBUTTON
+#ifndef LUA_FUNC_H
+#define LUA_FUNC_H
 
-#include "../../main/main.h"
-#include "basechoice.h"
+#include "lua.h"
 
-namespace NNCurses {
+namespace NLua {
 
-class CRadioButton: public CBaseChoice
+class CLuaFunc
 {
-    TSTLVecSize m_ActiveEntry;
-    
-protected:
-    virtual std::string CoreGetText(const SEntry &entry);
-    virtual void CoreSelect(SEntry &entry);
-    virtual void CoreGetButtonDescs(TButtonDescList &list);
+    bool m_bOK;
+    int m_iPushedArgs, m_iPoppedArgs;
     
 public:
-    CRadioButton(void) : m_ActiveEntry(0) { }
-    std::string GetSelection(void) { return GetChoiceList().at(m_ActiveEntry).name; }
+    CLuaFunc(const char *func, const char *tab=NULL);
+    CLuaFunc(const char *func, const char *type, void *prvdata);
+    ~CLuaFunc(void);
+
+    CLuaFunc &operator <<(const std::string &arg);
+    CLuaFunc &operator <<(int arg);
+    CLuaFunc &operator >>(std::string &out);
+    CLuaFunc &operator >>(int &out);
+    int operator ()(void);
+    operator void*(void) { static int dummy; return (m_bOK) ? &dummy : 0; }
 };
 
-}
+void RegisterFunction(lua_CFunction f, const char *name, const char *tab, void *data=NULL);
+void RegisterClassFunction(lua_CFunction f, const char *name, const char *type, void *data=NULL);
 
+}
 
 #endif

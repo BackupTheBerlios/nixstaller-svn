@@ -27,6 +27,9 @@
 #include <errno.h>
 
 #include "main.h"
+#include "lua/lua.h"
+#include "lua/luafunc.h"
+#include "lua/luatable.h"
 
 // -------------------------------------
 // Base Installer Class
@@ -397,6 +400,26 @@ void CBaseInstall::InitLua()
     
     m_LuaVM.LoadFile("config/config.lua");
     m_LuaVM.LoadFile("install.lua");
+    
+    NLua::LoadFile("test.lua");
+    
+    NLua::CLuaTable tab("tab");
+    
+    if (tab)
+    {
+        tab[1] << "First index";
+        tab[2] << 2;
+        tab["a"] << "String Index";
+        
+        NLua::CLuaFunc("test")();
+        
+        std::string out;
+        int nrout;
+        
+        tab[1] >> out;
+        tab["hello"] >> nrout;
+        debugline("TAB from C++:\n[1] = %s\n[\"hello\"] = %d\n", out.c_str(), nrout);
+    }
     
 /*    if (FileExists("config/run.lua"))
     {
