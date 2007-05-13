@@ -29,8 +29,12 @@ function GenerateDefaultScreens()
 end
 
 function LoadConfig()
-    dofile("config/run.lua")
-    Init()
+    local file = "config/run.lua"
+    
+    if (os.fileexists(file)) then
+        dofile("config/run.lua")
+        Init()
+    end
 end
 
 GenerateDefaultScreens()

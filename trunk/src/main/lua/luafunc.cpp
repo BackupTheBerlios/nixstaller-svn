@@ -106,8 +106,15 @@ void CLuaFunc::PopRet()
     m_iReturnedArgs--;
 }
 
+void CLuaFunc::CheckSelf()
+{
+    if (!m_bOK)
+        throw Exceptions::CExLua("Tried to use invalid LuaFunc");
+}
+
 CLuaFunc &CLuaFunc::operator <<(const std::string &arg)
 {
+    CheckSelf();
     lua_pushstring(LuaState, arg.c_str());
     m_iPushedArgs++;
     return *this;
@@ -115,13 +122,23 @@ CLuaFunc &CLuaFunc::operator <<(const std::string &arg)
 
 CLuaFunc &CLuaFunc::operator <<(int arg)
 {
+    CheckSelf();
     lua_pushinteger(LuaState, arg);
+    m_iPushedArgs++;
+    return *this;
+}
+
+CLuaFunc &CLuaFunc::operator <<(bool arg)
+{
+    CheckSelf();
+    lua_pushboolean(LuaState, arg);
     m_iPushedArgs++;
     return *this;
 }
 
 CLuaFunc &CLuaFunc::operator >>(std::string &out)
 {
+    CheckSelf();
     out = luaL_checkstring(LuaState, m_iRetStartIndex);
     PopRet();
     return *this;
@@ -129,17 +146,28 @@ CLuaFunc &CLuaFunc::operator >>(std::string &out)
 
 CLuaFunc &CLuaFunc::operator >>(int &out)
 {
+    CheckSelf();
     out = luaL_checkint(LuaState, m_iRetStartIndex);
     PopRet();
     return *this;
 }
 
-int CLuaFunc::operator ()()
+CLuaFunc &CLuaFunc::operator >>(bool &out)
 {
+    CheckSelf();
+    luaL_checktype(LuaState, m_iRetStartIndex, LUA_TBOOLEAN);
+    out = lua_toboolean(LuaState, m_iRetStartIndex);
+    PopRet();
+    return *this;
+}
+
+int CLuaFunc::operator ()(int ret)
+{
+    CheckSelf();
     lua_pushvalue(LuaState, m_iFuncIndex);
     int oldtop = lua_gettop(LuaState);
     
-    if (lua_pcall(LuaState, m_iPushedArgs, LUA_MULTRET, 0) != 0)
+    if (lua_pcall(LuaState, m_iPushedArgs, ret, 0) != 0)
     {
         const char *errmsg = lua_tostring(LuaState, -1);
         if (!errmsg)

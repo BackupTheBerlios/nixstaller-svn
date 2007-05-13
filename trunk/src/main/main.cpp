@@ -28,6 +28,8 @@
 
 #include "main.h"
 #include "lua/lua.h"
+#include "lua/luafunc.h"
+#include "lua/luatable.h"
 
 std::list<char *> StringList;
 std::map<std::string, char *> Translations;
@@ -111,8 +113,6 @@ void CMain::Init(int argc, char **argv)
 
     m_szOwnDir = GetCWD();
     
-    // Initialize lua
-    m_LuaVM.Init();
     InitLua();
     
     if (m_Languages.empty())
@@ -122,7 +122,7 @@ void CMain::Init(int argc, char **argv)
         m_Languages.push_back(s);
     }
     
-    if (!m_LuaVM.GetStrVar(&m_szCurLang, "defaultlang", "cfg"))
+    if (!NLua::LuaGet(m_szCurLang, "defaultlang", "cfg"))
         m_szCurLang = "english";
     
     if (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end())
@@ -324,44 +324,54 @@ const char *CMain::GetSumListFile(const char *progname)
 void CMain::InitLua()
 {
     // Register some globals for lua
-    m_LuaVM.RegisterString("0.2.2", "version");
+    NLua::LuaSet("0.2.2", "version");
     
-    m_LuaVM.RegisterString(m_szOS.c_str(), "osname", "os");
-    m_LuaVM.RegisterString(m_szCPUArch.c_str(), "arch", "os");
-    m_LuaVM.RegisterString(m_szOwnDir.c_str(), "curdir");
+    NLua::LuaSet(m_szOS, "osname", "os");
+    NLua::LuaSet(m_szCPUArch, "arch", "os");
+    NLua::LuaSet(m_szOwnDir, "curdir");
     
-    m_LuaVM.RegisterFunction(LuaInitDirIter, "dir", "io");
+    NLua::RegisterFunction(LuaInitDirIter, "dir", "io");
     
-    m_LuaVM.RegisterFunction(LuaFileExists, "fileexists", "os");
-    m_LuaVM.RegisterFunction(LuaReadPerm, "readperm", "os");
-    m_LuaVM.RegisterFunction(LuaWritePerm, "writeperm", "os");
-    m_LuaVM.RegisterFunction(LuaIsDir, "isdir", "os");
-    m_LuaVM.RegisterFunction(LuaMKDir, "mkdir", "os");
-    m_LuaVM.RegisterFunction(LuaMKDirRec, "mkdirrec", "os");
-    m_LuaVM.RegisterFunction(LuaCPFile, "copy", "os");
-    m_LuaVM.RegisterFunction(LuaCHMod, "chmod", "os");
-    m_LuaVM.RegisterFunction(LuaGetCWD, "getcwd", "os");
-    m_LuaVM.RegisterFunction(LuaCHDir, "chdir", "os");
-    m_LuaVM.RegisterFunction(LuaGetFileSize, "filesize", "os");
-    m_LuaVM.RegisterFunction(LuaLog, "log", "os", this);
-    m_LuaVM.RegisterFunction(LuaSetEnv, "setenv", "os", this);
+    NLua::RegisterFunction(LuaFileExists, "fileexists", "os");
+    NLua::RegisterFunction(LuaReadPerm, "readperm", "os");
+    NLua::RegisterFunction(LuaWritePerm, "writeperm", "os");
+    NLua::RegisterFunction(LuaIsDir, "isdir", "os");
+    NLua::RegisterFunction(LuaMKDir, "mkdir", "os");
+    NLua::RegisterFunction(LuaMKDirRec, "mkdirrec", "os");
+    NLua::RegisterFunction(LuaCPFile, "copy", "os");
+    NLua::RegisterFunction(LuaCHMod, "chmod", "os");
+    NLua::RegisterFunction(LuaGetCWD, "getcwd", "os");
+    NLua::RegisterFunction(LuaCHDir, "chdir", "os");
+    NLua::RegisterFunction(LuaGetFileSize, "filesize", "os");
+    NLua::RegisterFunction(LuaLog, "log", "os", this);
+    NLua::RegisterFunction(LuaSetEnv, "setenv", "os", this);
     
-    m_LuaVM.RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
-    m_LuaVM.RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
-    m_LuaVM.RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
-    m_LuaVM.RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
+    NLua::RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
+    NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
+    NLua::RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
+    NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     
-    m_LuaVM.RegisterFunction(LuaExit, "exit"); // Override
+    NLua::RegisterFunction(LuaExit, "exit"); // Override
     
     // Set some default values for config variabeles
-    m_LuaVM.SetArrayStr("english", "languages", 1, "cfg");
-    m_LuaVM.SetArrayStr("dutch", "languages", 2, "cfg");
-    m_LuaVM.SetArrayStr(m_szOS.c_str(), "targetos", 1, "cfg");
-    m_LuaVM.SetArrayStr(m_szCPUArch.c_str(), "targetarch", 1, "cfg");
-    m_LuaVM.SetArrayStr("fltk", "frontends", 1, "cfg");
-    m_LuaVM.SetArrayStr("ncurses", "frontends", 2, "cfg");
-    m_LuaVM.RegisterString("lzma", "archivetype", "cfg");
-    m_LuaVM.RegisterString("english", "defaultlang", "cfg");
+    NLua::CLuaTable tab("languages", "cfg");
+    tab[1] << "english";
+    tab[2] << "dutch";
+    
+    tab.Open("targetos", "cfg");
+    tab[1] << m_szOS;
+    
+    tab.Open("targetarch", "cfg");
+    tab[1] << m_szCPUArch;
+    
+    tab.Open("frontends", "cfg");
+    tab[1] << "fltk";
+    tab[2] << "ncurses";
+    
+    tab.Close();
+    
+    NLua::LuaSet("lzma", "archivetype", "cfg");
+    NLua::LuaSet("english", "defaultlang", "cfg");
 }
 
 // Directory iter functions. Based on examples from "Programming in lua"
@@ -836,9 +846,9 @@ int CMain::LuaExit(lua_State *L)
 
 void CLuaRunner::CreateInstall(int argc, char **argv)
 {
-    m_LuaVM.RegisterString(argv[3], "confdir");
-    m_LuaVM.RegisterString(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
-    m_LuaVM.LoadFile(argv[2]);
+    NLua::LuaSet(argv[3], "confdir");
+    NLua::LuaSet(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
+    NLua::LoadFile(argv[2]);
 }
 
 

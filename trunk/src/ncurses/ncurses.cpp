@@ -19,6 +19,8 @@
 
 #include "ncurses.h"
 #include "installer.h"
+#include "main/lua/lua.h"
+#include "main/lua/luafunc.h"
 #include "tui/tui.h"
 #include "tui/widget.h"
 #include "tui/window.h"
@@ -204,7 +206,7 @@ void CNCursBase::WarnBox(const char *str, ...)
 void CNCursBase::InitLua()
 {
     // Overide print function
-    m_LuaVM.RegisterFunction(LuaLog, "print", NULL, this);
+    NLua::RegisterFunction(LuaLog, "print", NULL, this);
     CMain::InitLua();
 }
 

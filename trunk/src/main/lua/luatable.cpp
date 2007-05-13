@@ -29,6 +29,41 @@ namespace NLua {
 
 CLuaTable::CLuaTable(const char *var, const char *tab) : m_bOK(true), m_bClosed(false), m_iTabIndex(-1)
 {
+    Open(var, tab);
+}
+
+CLuaTable::CLuaTable(const char *var, const char *type, void *prvdata) : m_bOK(true), m_bClosed(false),
+                                                                                       m_iTabIndex(-1)
+{
+    Open(var, type, prvdata);
+}
+
+void CLuaTable::GetTable(const std::string &tab, int index)
+{
+    lua_getfield(LuaState, index, tab.c_str());
+    
+    if (lua_isnil(LuaState, -1))
+    {
+        lua_pop(LuaState, 1);
+        
+        lua_newtable(LuaState);
+        lua_pushvalue(LuaState, -1);
+        lua_setglobal(LuaState, tab.c_str());
+    }
+}
+
+void CLuaTable::CheckSelf()
+{
+    if (!m_bOK)
+        throw Exceptions::CExLua("Tried to use invalid or closed table");
+}
+
+void CLuaTable::Open(const char *var, const char *tab)
+{
+    Close();
+    m_bOK = true;
+    m_bClosed = false;
+    
     if (tab)
     {
         GetTable(tab, LUA_GLOBALSINDEX);
@@ -41,9 +76,12 @@ CLuaTable::CLuaTable(const char *var, const char *tab) : m_bOK(true), m_bClosed(
     m_iTabIndex = lua_gettop(LuaState);
 }
 
-CLuaTable::CLuaTable(const char *var, const char *type, void *prvdata) : m_bOK(true), m_bClosed(false),
-                                                                                       m_iTabIndex(-1)
+void CLuaTable::Open(const char *var, const char *type, void *prvdata)
 {
+    Close();
+    m_bOK = true;
+    m_bClosed = false;
+
     PushClass(type, prvdata);
     int tab = lua_gettop(LuaState);
     
@@ -66,26 +104,6 @@ CLuaTable::CLuaTable(const char *var, const char *type, void *prvdata) : m_bOK(t
     }
     
     lua_remove(LuaState, tab);
-}
-
-void CLuaTable::GetTable(const std::string &tab, int index)
-{
-    lua_getfield(LuaState, index, tab.c_str());
-    
-    if (lua_isnil(LuaState, -1))
-    {
-        lua_pop(LuaState, 1);
-        
-        lua_newtable(LuaState);
-        lua_pushvalue(LuaState, -1);
-        lua_setglobal(LuaState, tab.c_str());
-    }
-}
-
-void CLuaTable::CheckSelf()
-{
-    if (!m_bOK)
-        throw Exceptions::CExLua("Tried to use invalid or closed table");
 }
 
 void CLuaTable::Close()

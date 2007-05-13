@@ -105,7 +105,6 @@ public:
 class CMain
 {
 protected:
-    CLuaVM m_LuaVM;
     const std::string m_szRegVer;
     std::string m_szOS, m_szCPUArch, m_szOwnDir;
     char *m_szAppConfDir;

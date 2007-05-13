@@ -31,6 +31,7 @@ class CLuaFunc
     int m_iFuncIndex, m_iRetStartIndex;
     
     void PopRet(void);
+    void CheckSelf(void);
     
 public:
     CLuaFunc(const char *func, const char *tab=NULL);
@@ -39,13 +40,15 @@ public:
 
     CLuaFunc &operator <<(const std::string &arg);
     CLuaFunc &operator <<(int arg);
+    CLuaFunc &operator <<(bool arg);
     CLuaFunc &operator >>(std::string &out);
     CLuaFunc &operator >>(int &out);
-    int operator ()(void);
+    CLuaFunc &operator >>(bool &arg);
+    int operator ()(int ret=LUA_MULTRET);
     operator void*(void) { static int dummy; return (m_bOK) ? &dummy : 0; }
 };
 
-void RegisterFunction(lua_CFunction f, const char *name, const char *tab, void *data=NULL);
+void RegisterFunction(lua_CFunction f, const char *name, const char *tab=NULL, void *data=NULL);
 void RegisterClassFunction(lua_CFunction f, const char *name, const char *type, void *data=NULL);
 
 }

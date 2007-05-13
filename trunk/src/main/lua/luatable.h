@@ -59,7 +59,10 @@ public:
     CLuaTable(const char *var, const char *type, void *prvdata);
     ~CLuaTable(void) { assert(m_bClosed); }
     
+    void Open(const char *var, const char *tab=NULL);
+    void Open(const char *var, const char *type, void *prvdata);
     void Close(void);
+    int Size(void) const { return luaL_getn(LuaState, m_iTabIndex); }
     
     CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabIndex); }
     CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabIndex); }

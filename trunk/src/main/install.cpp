@@ -28,6 +28,7 @@
 
 #include "main.h"
 #include "lua/lua.h"
+#include "lua/luaclass.h"
 #include "lua/luafunc.h"
 #include "lua/luatable.h"
 
@@ -42,10 +43,10 @@ void CBaseInstall::Init(int argc, char **argv)
     CMain::Init(argc, argv); // Init main, will also read config files
     
     // Obtain install variabeles from lua
-    m_LuaVM.GetStrVar(&m_InstallInfo.program_name, "appname", "cfg");
-    m_LuaVM.GetStrVar(&m_InstallInfo.intropicname, "intropic", "cfg");
+    NLua::LuaGet(m_InstallInfo.program_name, "appname", "cfg");
+    NLua::LuaGet(m_InstallInfo.intropicname, "intropic", "cfg");
     
-    m_LuaVM.GetStrVar(&m_InstallInfo.archive_type, "archivetype", "cfg");
+    NLua::LuaGet(m_InstallInfo.archive_type, "archivetype", "cfg");
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") &&
         (m_InstallInfo.archive_type != "lzma"))
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
@@ -239,7 +240,7 @@ void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const ch
 void CBaseInstall::VerifyIfInstalling()
 {
     if (!m_bInstalling)
-        m_LuaVM.LuaError("Error: function called when install is not in progress\n");
+        luaL_error(NLua::LuaState, "Error: function called when install is not in progress\n");
 }
 
 void CBaseInstall::UpdateStatusText(const char *msg)
@@ -274,12 +275,12 @@ void CBaseInstall::Install(void)
     InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
                 m_szCPUArch.c_str()));
 
-    const char *destdir = GetDestDir();
+    std::string destdir = GetDestDir();
     if (FileExists(destdir))
     {
         if (!ReadAccess(destdir))
         {
-            throw Exceptions::CExReadExtrDir(destdir);
+            throw Exceptions::CExReadExtrDir(destdir.c_str());
 /*            // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
             ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
                                         "However you don't have read permissions to this directory\n"
@@ -296,8 +297,10 @@ void CBaseInstall::Install(void)
     
     m_SUHandler.SetThinkFunc(SUThinkFunc, this);
 
-    if (m_LuaVM.InitCall("Install"))
-        m_LuaVM.DoCall();
+    NLua::CLuaFunc func("Install");
+    
+    if (func)
+        func(0);
     else
         ExtractFiles(); // Default behaviour
     
@@ -360,67 +363,64 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
     SetProgress(SafeConvert<int>(m_fExtrPercent/(float)m_sInstallSteps));
 }
 
+void CBaseInstall::SetDestDir(const char *dir)
+{
+    NLua::LuaSet(dir, "destdir", "install");
+}
+
+std::string CBaseInstall::GetDestDir(void)
+{
+    std::string ret;
+    NLua::LuaGet(ret, "destdir", "install");
+    return ret;
+}
+
 void CBaseInstall::InitLua()
 {
     CMain::InitLua();
     
-    m_LuaVM.RegisterClassFunc("screen", CBaseCFGScreen::LuaAddInput, "addinput", this);
-    m_LuaVM.RegisterClassFunc("screen", CBaseCFGScreen::LuaAddCheckbox, "addcheckbox", this);
-    m_LuaVM.RegisterClassFunc("screen", CBaseCFGScreen::LuaAddRadioButton, "addradiobutton", this);
-    m_LuaVM.RegisterClassFunc("screen", CBaseCFGScreen::LuaAddDirSelector, "adddirselector", this);
-    m_LuaVM.RegisterClassFunc("screen", CBaseCFGScreen::LuaAddCFGMenu, "addcfgmenu", this);
+    NLua::RegisterClassFunction(CBaseCFGScreen::LuaAddInput, "addinput", "screen",  this);
+    NLua::RegisterClassFunction(CBaseCFGScreen::LuaAddCheckbox, "addcheckbox", "screen", this);
+    NLua::RegisterClassFunction(CBaseCFGScreen::LuaAddRadioButton, "addradiobutton", "screen", this);
+    NLua::RegisterClassFunction(CBaseCFGScreen::LuaAddDirSelector, "adddirselector", "screen", this);
+    NLua::RegisterClassFunction(CBaseCFGScreen::LuaAddCFGMenu, "addcfgmenu", "screen", this);
     
-    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaGet, "get", this);
-    m_LuaVM.RegisterClassFunc("inputfield", CBaseLuaInputField::LuaSetSpace, "setspacing", this);
+    NLua::RegisterClassFunction(CBaseLuaInputField::LuaGet, "get", "inputfield", this);
+    NLua::RegisterClassFunction(CBaseLuaInputField::LuaSetSpace, "setspacing", "inputfield", this);
     
-    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaGet, "get", this);
-    m_LuaVM.RegisterClassFunc("checkbox", CBaseLuaCheckbox::LuaSet, "set", this);
+    NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaGet, "get", "checkbox", this);
+    NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaSet, "set", "checkbox", this);
     
-    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaGet, "get", this);
-    m_LuaVM.RegisterClassFunc("radiobutton", CBaseLuaRadioButton::LuaSet, "set", this);
+    NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaGet, "get", "radiobutton", this);
+    NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaSet, "set", "radiobutton", this);
 
-    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaGet, "get", this);
-    m_LuaVM.RegisterClassFunc("dirselector", CBaseLuaDirSelector::LuaSet, "set", this);
+    NLua::RegisterClassFunction(CBaseLuaDirSelector::LuaGet, "get", "dirselector", this);
+    NLua::RegisterClassFunction(CBaseLuaDirSelector::LuaSet, "set", "dirselector", this);
 
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaGet, "get", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddDir, "adddir", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddString, "addstring", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddList, "addlist", this);
-    m_LuaVM.RegisterClassFunc("configmenu", CBaseLuaCFGMenu::LuaAddBool, "addbool", this);
+    NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaGet, "get", "configmenu", this);
+    NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddDir, "adddir", "configmenu", this);
+    NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddString, "addstring", "configmenu", this);
+    NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddList, "addlist", "configmenu", this);
+    NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddBool, "addbool", "configmenu", this);
 
-    m_LuaVM.RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
-    m_LuaVM.RegisterFunction(LuaNewScreen, "newscreen", "install", this);
-    m_LuaVM.RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
-    m_LuaVM.RegisterFunction(LuaExecuteCMD, "execute", "install", this);
-    m_LuaVM.RegisterFunction(LuaExecuteCMDAsRoot, "executeasroot", "install", this);
-    m_LuaVM.RegisterFunction(LuaAskRootPW, "askrootpw", "install", this);
-    m_LuaVM.RegisterFunction(LuaSetStatusMSG, "setstatus", "install", this);
-    m_LuaVM.RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
-    m_LuaVM.RegisterFunction(LuaPrintInstOutput, "print", "install", this);
+    NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
+    NLua::RegisterFunction(LuaNewScreen, "newscreen", "install", this);
+    NLua::RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
+    NLua::RegisterFunction(LuaExecuteCMD, "execute", "install", this);
+    NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executeasroot", "install", this);
+    NLua::RegisterFunction(LuaAskRootPW, "askrootpw", "install", this);
+    NLua::RegisterFunction(LuaSetStatusMSG, "setstatus", "install", this);
+    NLua::RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
+    NLua::RegisterFunction(LuaPrintInstOutput, "print", "install", this);
     
-    m_LuaVM.LoadFile("config/config.lua");
-    m_LuaVM.LoadFile("install.lua");
+    const char *env = getenv("HOME");
+    if (env)
+        SetDestDir(env);
+    else
+        SetDestDir("/");
     
-    NLua::LoadFile("test.lua");
-    
-    NLua::CLuaTable tab("tab");
-    if (tab)
-    {
-        tab[1] << "First index";
-        tab[2] << 2;
-        tab["a"] << "String Index";
-        
-        NLua::CLuaFunc("test")();
-        
-        std::string out;
-        int nrout;
-        
-        tab[1] >> out;
-        tab["hello"] >> nrout;
-        debugline("TAB from C++:\n[1] = %s\n[\"hello\"] = %d\n", out.c_str(), nrout);
-    }
-    
-    tab.Close();
+    NLua::LoadFile("config/config.lua");
+    NLua::LoadFile("install.lua");
     
 /*    if (FileExists("config/run.lua"))
     {
@@ -429,38 +429,26 @@ void CBaseInstall::InitLua()
             m_LuaVM.DoCall();
     }*/
     
-    if (!GetDestDir())
+    NLua::CLuaTable table("languages", "cfg");
+    
+    if (table)
     {
-        const char *env = getenv("HOME");
-        if (env)
-            SetDestDir(env);
-        else
-            SetDestDir("/");
-    }
-
-    unsigned count = m_LuaVM.OpenArray("languages", "cfg");
-    if (count)
-    {
+        int size = table.Size();
         std::string lang;
-        for (unsigned u=1; u<=count; u++)
+        for (int i=1; i<=size; i++)
         {
-            if (m_LuaVM.GetArrayStr(u, &lang))
-                m_Languages.push_back(lang);
-            else
-            {
-                m_LuaVM.CloseArray();
-                throw Exceptions::CExLua("Non string found in cfg.languages variabele");
-            }
+            table[i] >> lang;
+            m_Languages.push_back(lang);
         }
-        
-        m_LuaVM.CloseArray();
     }
+    
+    table.Close();
 
 #ifndef RELEASE
     debugline("appname: %s\n", m_InstallInfo.program_name.c_str());
     debugline("version: %s\n", m_InstallInfo.version.c_str());
     debugline("archtype: %s\n", m_InstallInfo.archive_type.c_str());
-    debugline("installdir: %s\n", GetDestDir());
+    debugline("installdir: %s\n", GetDestDir().c_str());
     debugline("languages: ");
     for (std::vector<std::string>::iterator it=m_Languages.begin(); it!=m_Languages.end(); it++)
         debugline("%s ", it->c_str());
@@ -470,7 +458,7 @@ void CBaseInstall::InitLua()
 
 bool CBaseInstall::VerifyDestDir(void)
 {
-    const char *dir = GetDestDir();
+    std::string dir = GetDestDir();
     
     if (FileExists(dir))
     {
@@ -492,7 +480,7 @@ bool CBaseInstall::VerifyDestDir(void)
     else
     {
         // Create directory?
-        if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir)))
+        if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir.c_str())))
         {
             try
             {
@@ -501,7 +489,7 @@ bool CBaseInstall::VerifyDestDir(void)
             }
             catch(Exceptions::CExMKDir &e)
             {
-                WarnBox("%s\n%s\n%s", GetTranslation("Could not create directory"), dir, e.what());
+                WarnBox("%s\n%s\n%s", GetTranslation("Could not create directory"), dir.c_str(), e.what());
             }
         }
         return false;
@@ -621,7 +609,7 @@ int CBaseInstall::LuaNewScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
     const char *name = luaL_optstring(L, 1, "");
-    pInstaller->m_LuaVM.CreateClass<CBaseCFGScreen>(pInstaller->CreateCFGScreen(GetTranslation(name)), "screen");
+    NLua::CreateClass(pInstaller->CreateCFGScreen(GetTranslation(name)), "screen");
     return 1;
 }
 
@@ -713,8 +701,7 @@ int CBaseInstall::LuaPrintInstOutput(lua_State *L)
 
 int CBaseCFGScreen::LuaAddInput(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClassData<CBaseCFGScreen>("screen", 1);
+    CBaseCFGScreen *screen = NLua::CheckClassData<CBaseCFGScreen>("screen", 1);
     const char *label = luaL_optstring(L, 2, "");
     const char *desc = luaL_optstring(L, 3, "");
     int maxc = luaL_optint(L, 4, 1024);
@@ -724,15 +711,15 @@ int CBaseCFGScreen::LuaAddInput(lua_State *L)
     if (strcmp(type, "string") && strcmp(type, "number") && strcmp(type, "float"))
         type = "string";
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaInputField>(screen->CreateInputField(GetTranslation(label), GetTranslation(desc), val, maxc, type), "inputfield");
+    NLua::CreateClass(screen->CreateInputField(GetTranslation(label), GetTranslation(desc), val, maxc, type),
+                      "inputfield");
     
     return 1;
 }
 
 int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClassData<CBaseCFGScreen>("screen", 1);
+    CBaseCFGScreen *screen = NLua::CheckClassData<CBaseCFGScreen>("screen", 1);
     const char *desc = luaL_checkstring(L, 2);
     
     luaL_checktype(L, 3, LUA_TTABLE);
@@ -747,15 +734,14 @@ int CBaseCFGScreen::LuaAddCheckbox(lua_State *L)
         lua_pop(L, 1);
     }
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaCheckbox>(screen->CreateCheckbox(GetTranslation(desc), l), "checkbox");
+    NLua::CreateClass(screen->CreateCheckbox(GetTranslation(desc), l), "checkbox");
     
     return 1;
 }
 
 int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClassData<CBaseCFGScreen>("screen", 1);
+    CBaseCFGScreen *screen = NLua::CheckClassData<CBaseCFGScreen>("screen", 1);
     const char *desc = luaL_checkstring(L, 2);
     
     luaL_checktype(L, 3, LUA_TTABLE);
@@ -771,30 +757,28 @@ int CBaseCFGScreen::LuaAddRadioButton(lua_State *L)
         lua_pop(L, 1);
     }
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaRadioButton>(screen->CreateRadioButton(GetTranslation(desc), l), "radiobutton");
+    NLua::CreateClass(screen->CreateRadioButton(GetTranslation(desc), l), "radiobutton");
 
     return 1;
 }
 
 int CBaseCFGScreen::LuaAddDirSelector(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClassData<CBaseCFGScreen>("screen", 1);
+    CBaseCFGScreen *screen = NLua::CheckClassData<CBaseCFGScreen>("screen", 1);
     const char *desc = luaL_optstring(L, 2, "");
     const char *val = luaL_optstring(L, 3, getenv("HOME"));
 
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaDirSelector>(screen->CreateDirSelector(GetTranslation(desc), val), "dirselector");
+    NLua::CreateClass(screen->CreateDirSelector(GetTranslation(desc), val), "dirselector");
     
     return 1;
 }
 
 int CBaseCFGScreen::LuaAddCFGMenu(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseCFGScreen *screen = pInstaller->m_LuaVM.CheckClassData<CBaseCFGScreen>("screen", 1);
+    CBaseCFGScreen *screen = NLua::CheckClassData<CBaseCFGScreen>("screen", 1);
     const char *desc = luaL_optstring(L, 2, "");
     
-    pInstaller->m_LuaVM.CreateClass<CBaseLuaCFGMenu>(screen->CreateCFGMenu(GetTranslation(desc)), "configmenu");
+    NLua::CreateClass(screen->CreateCFGMenu(GetTranslation(desc)), "configmenu");
     
     return 1;
 }
@@ -813,8 +797,7 @@ CBaseLuaInputField::CBaseLuaInputField(const char *t)
 
 int CBaseLuaInputField::LuaGet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaInputField *field = pInstaller->m_LuaVM.CheckClassData<CBaseLuaInputField>("inputfield", 1);
+    CBaseLuaInputField *field = NLua::CheckClassData<CBaseLuaInputField>("inputfield", 1);
     
     if (field->GetType() == "string")
         lua_pushstring(L, field->GetValue());
@@ -828,8 +811,7 @@ int CBaseLuaInputField::LuaGet(lua_State *L)
 
 int CBaseLuaInputField::LuaSetSpace(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaInputField *field = pInstaller->m_LuaVM.CheckClassData<CBaseLuaInputField>("inputfield", 1);
+    CBaseLuaInputField *field = NLua::CheckClassData<CBaseLuaInputField>("inputfield", 1);
     int percent = luaL_checkint(L, 2);
     
     if ((percent < 1) || (percent > 100))
@@ -845,8 +827,7 @@ int CBaseLuaInputField::LuaSetSpace(lua_State *L)
 
 int CBaseLuaCheckbox::LuaGet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaCheckbox *box = pInstaller->m_LuaVM.CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
+    CBaseLuaCheckbox *box = NLua::CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
     
     if (lua_isstring(L, 2))
     {
@@ -863,8 +844,7 @@ int CBaseLuaCheckbox::LuaGet(lua_State *L)
 
 int CBaseLuaCheckbox::LuaSet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaCheckbox *box = pInstaller->m_LuaVM.CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
+    CBaseLuaCheckbox *box = NLua::CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
     int args = lua_gettop(L);
     
     luaL_checktype(L, args, LUA_TBOOLEAN);
@@ -885,16 +865,14 @@ int CBaseLuaCheckbox::LuaSet(lua_State *L)
 
 int CBaseLuaRadioButton::LuaGet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaRadioButton *box = pInstaller->m_LuaVM.CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
+    CBaseLuaRadioButton *box = NLua::CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
     lua_pushstring(L, box->EnabledButton());
     return 1;
 }
 
 int CBaseLuaRadioButton::LuaSet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaRadioButton *box = pInstaller->m_LuaVM.CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
+    CBaseLuaRadioButton *box = NLua::CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
     int n = luaL_checkint(L, 2);
     box->Enable(n);
     return 0;
@@ -906,16 +884,14 @@ int CBaseLuaRadioButton::LuaSet(lua_State *L)
 
 int CBaseLuaDirSelector::LuaGet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaDirSelector *sel = pInstaller->m_LuaVM.CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
+    CBaseLuaDirSelector *sel = NLua::CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
     lua_pushstring(L, sel->GetDir());
     return 1;
 }
 
 int CBaseLuaDirSelector::LuaSet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaDirSelector *sel = pInstaller->m_LuaVM.CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
+    CBaseLuaDirSelector *sel = NLua::CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
     const char *dir = luaL_checkstring(L, 2);
     sel->SetDir(dir);
     return 0;
@@ -976,8 +952,7 @@ void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val
 
 int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     const char *val = luaL_optstring(L, 4, getenv("HOME"));
@@ -989,8 +964,7 @@ int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaAddString(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     const char *val = lua_tostring(L, 4);
@@ -1002,8 +976,7 @@ int CBaseLuaCFGMenu::LuaAddString(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     
@@ -1031,8 +1004,7 @@ int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     bool val = (lua_isboolean(L, 4)) ? lua_toboolean(L, 4) : false;
@@ -1048,8 +1020,7 @@ int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaGet(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseLuaCFGMenu *menu = pInstaller->m_LuaVM.CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     
     if (menu->m_Variabeles[var])

@@ -109,6 +109,7 @@ void CInstaller::Init(int argc, char **argv)
         m_ScreenList.push_back(lang);
     }
     
+#ifdef REMOVE_WHEN_NEW_LUA_CODE_IS_DONE
     unsigned count = m_LuaVM.OpenArray("screenlist", "install");
     
     if (!count)
@@ -218,7 +219,7 @@ void CInstaller::Init(int argc, char **argv)
         }
         m_LuaVM.CloseArray();
     }
-    
+#endif
     m_pWizard->end();
     
     UpdateLanguage();
@@ -1189,7 +1190,7 @@ void CSelectDirScreen::CreateDirSelector()
     if (m_pDirChooser)
         delete m_pDirChooser;
     
-    m_pDirChooser = new Fl_File_Chooser(m_pOwner->GetDestDir(), "*",
+    m_pDirChooser = new Fl_File_Chooser(m_pOwner->GetDestDir().c_str(), "*",
                                         (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
                                         GetTranslation("Select destination directory"));
     m_pDirChooser->preview(false);
@@ -1206,7 +1207,7 @@ Fl_Group *CSelectDirScreen::Create()
     int x = CenterX2(300+20+160, "", "", false, false);
     int y = CenterY(35);
     m_pSelDirInput = new Fl_File_Input(x, y, 300, 35);
-    m_pSelDirInput->value(m_pOwner->GetDestDir());
+    m_pSelDirInput->value(m_pOwner->GetDestDir().c_str());
     
     x += 300 + 20;
     y = CenterY(25);
