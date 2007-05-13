@@ -404,7 +404,6 @@ void CBaseInstall::InitLua()
     NLua::LoadFile("test.lua");
     
     NLua::CLuaTable tab("tab");
-    
     if (tab)
     {
         tab[1] << "First index";
@@ -420,6 +419,8 @@ void CBaseInstall::InitLua()
         tab["hello"] >> nrout;
         debugline("TAB from C++:\n[1] = %s\n[\"hello\"] = %d\n", out.c_str(), nrout);
     }
+    
+    tab.Close();
     
 /*    if (FileExists("config/run.lua"))
     {

@@ -38,6 +38,8 @@ public:
     operator lua_State*(void) { return m_pLuaState; }
 };
 
+void StackDump(const char *msg);
+
 void GetGlobal(const char *var, const char *tab);
 void LoadFile(const char *name);
 

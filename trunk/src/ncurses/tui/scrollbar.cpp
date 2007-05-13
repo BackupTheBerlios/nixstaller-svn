@@ -18,7 +18,7 @@
 */
 
 #include <math.h>
-#include "../../main/main.h"
+#include "main/main.h"
 #include "tui.h"
 #include "group.h"
 #include "scrollbar.h"

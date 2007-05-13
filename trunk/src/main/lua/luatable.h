@@ -20,16 +20,18 @@
 #ifndef LUA_TABLE_H
 #define LUA_TABLE_H
 
+#include <assert.h>
 #include "lua.h"
 
 namespace NLua {
 
 class CLuaTable
 {
-    bool m_bOK;
+    bool m_bOK, m_bClosed;
     int m_iTabIndex;
     
     void GetTable(const std::string &tab, int index);
+    void CheckSelf(void);
     
 public:
     class CReturn
@@ -53,11 +55,14 @@ public:
         void operator >>(int &val);
     };
     
-    CLuaTable(const std::string &var, const std::string &tab="");
-    CLuaTable(const std::string &var, const std::string &type, void *prvdata);
+    CLuaTable(const char *var, const char *tab=NULL);
+    CLuaTable(const char *var, const char *type, void *prvdata);
+    ~CLuaTable(void) { assert(m_bClosed); }
     
-    CReturn operator [](const std::string &index) { return CReturn(index, m_iTabIndex); }
-    CReturn operator [](int index) { return CReturn(index, m_iTabIndex); }
+    void Close(void);
+    
+    CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabIndex); }
+    CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabIndex); }
     operator void*(void) { static int ret; return (m_bOK) ? &ret : 0; }
 };
 

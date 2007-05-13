@@ -27,6 +27,7 @@
 #include <libgen.h>
 
 #include "main.h"
+#include "lua/lua.h"
 
 std::list<char *> StringList;
 std::map<std::string, char *> Translations;
@@ -67,6 +68,10 @@ int main(int argc, char **argv)
     
     if (!runscript)
         StopFrontend();
+    
+#ifndef RELEASE
+    NLua::StackDump("Clean stack?\n");
+#endif
     
     FreeStrings();
     return ret;

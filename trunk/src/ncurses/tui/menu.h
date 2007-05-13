@@ -21,7 +21,7 @@
 #define MENUWINDOW
 
 #include <string>
-#include "../../main/main.h"
+#include "main/main.h"
 #include "basescroll.h"
 
 namespace NNCurses {

@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/main.h"
 #include "luatable.h"
 #include "luaclass.h"
 
@@ -26,9 +27,9 @@ namespace NLua {
 // Lua Table Wrapper Class
 // -------------------------------------
 
-CLuaTable::CLuaTable(const std::string &var, const std::string &tab) : m_bOK(true)
+CLuaTable::CLuaTable(const char *var, const char *tab) : m_bOK(true), m_bClosed(false), m_iTabIndex(-1)
 {
-    if (!tab.empty())
+    if (tab)
     {
         GetTable(tab, LUA_GLOBALSINDEX);
         GetTable(var, lua_gettop(LuaState));
@@ -40,7 +41,8 @@ CLuaTable::CLuaTable(const std::string &var, const std::string &tab) : m_bOK(tru
     m_iTabIndex = lua_gettop(LuaState);
 }
 
-CLuaTable::CLuaTable(const std::string &var, const std::string &type, void *prvdata) : m_bOK(true)
+CLuaTable::CLuaTable(const char *var, const char *type, void *prvdata) : m_bOK(true), m_bClosed(false),
+                                                                                       m_iTabIndex(-1)
 {
     PushClass(type, prvdata);
     int tab = lua_gettop(LuaState);
@@ -49,16 +51,17 @@ CLuaTable::CLuaTable(const std::string &var, const std::string &type, void *prvd
         m_bOK = false;
     else
     {
-        lua_getfield(LuaState, tab, var.c_str());
+        lua_getfield(LuaState, tab, var);
         
         if (lua_isnil(LuaState, -1))
         {
             lua_pop(LuaState, 1);
             
             lua_newtable(LuaState);
+            m_iTabIndex = lua_gettop(LuaState);
             
             lua_pushvalue(LuaState, -1);
-            lua_setfield(LuaState, tab, var.c_str());
+            lua_setfield(LuaState, tab, var);
         }
     }
     
@@ -77,6 +80,21 @@ void CLuaTable::GetTable(const std::string &tab, int index)
         lua_pushvalue(LuaState, -1);
         lua_setglobal(LuaState, tab.c_str());
     }
+}
+
+void CLuaTable::CheckSelf()
+{
+    if (!m_bOK)
+        throw Exceptions::CExLua("Tried to use invalid or closed table");
+}
+
+void CLuaTable::Close()
+{
+    if (m_iTabIndex != -1)
+        lua_remove(LuaState, m_iTabIndex);
+    
+    m_bClosed = true;
+    m_bOK = false;
 }
 
 // -------------------------------------

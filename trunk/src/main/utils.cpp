@@ -24,7 +24,7 @@
 #include <assert.h>
 #include <errno.h>
         
-#include "../libmd5/md5.h"
+#include "libmd5/md5.h"
 #include "main.h"
 
 extern std::map<std::string, char *> Translations;

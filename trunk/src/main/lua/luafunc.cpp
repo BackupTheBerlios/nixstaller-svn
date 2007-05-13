@@ -17,7 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "../../main/main.h"
+#include "main/main.h"
 #include "luafunc.h"
 #include "luaclass.h"
 
@@ -55,7 +55,8 @@ namespace NLua {
 // Lua Function Wrapper Class
 // -------------------------------------
 
-CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iPushedArgs(0), m_iPoppedArgs(0)
+CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iPushedArgs(0), m_iReturnedArgs(0),
+                                                        m_iRetStartIndex(0)
 {
     GetGlobal(func, tab);
     if (lua_isnil(LuaState, -1))
@@ -63,9 +64,12 @@ CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iPushedAr
         lua_pop(LuaState, 1);
         m_bOK = false;
     }
+    else
+        m_iFuncIndex = lua_gettop(LuaState);
 }
 
-CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(true), m_iPushedArgs(0), m_iPoppedArgs(0)
+CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(true), m_iPushedArgs(0),
+                                                                        m_iReturnedArgs(0), m_iRetStartIndex(0)
 {
     PushClass(type, prvdata);
 
@@ -80,6 +84,8 @@ CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(tr
         lua_pop(LuaState, 1);
         m_bOK = false;
     }
+    else
+        m_iFuncIndex = lua_gettop(LuaState);
 }
 
 CLuaFunc::~CLuaFunc()
@@ -87,8 +93,17 @@ CLuaFunc::~CLuaFunc()
     if (m_iPushedArgs)
         lua_pop(LuaState, m_iPushedArgs);
     
-    if (m_iPoppedArgs)
-        lua_pop(LuaState, m_iPoppedArgs);
+    while (m_iReturnedArgs)
+        PopRet();
+    
+    lua_remove(LuaState, m_iFuncIndex);
+}
+
+void CLuaFunc::PopRet()
+{
+    assert(m_iReturnedArgs > 0);
+    lua_remove(LuaState, m_iRetStartIndex);
+    m_iReturnedArgs--;
 }
 
 CLuaFunc &CLuaFunc::operator <<(const std::string &arg)
@@ -107,21 +122,23 @@ CLuaFunc &CLuaFunc::operator <<(int arg)
 
 CLuaFunc &CLuaFunc::operator >>(std::string &out)
 {
-    m_iPoppedArgs++;
-    out = luaL_checkstring(LuaState, m_iPoppedArgs);
+    out = luaL_checkstring(LuaState, m_iRetStartIndex);
+    PopRet();
     return *this;
 }
 
 CLuaFunc &CLuaFunc::operator >>(int &out)
 {
-    m_iPoppedArgs++;
-    out = luaL_checkint(LuaState, m_iPoppedArgs);
+    out = luaL_checkint(LuaState, m_iRetStartIndex);
+    PopRet();
     return *this;
 }
 
 int CLuaFunc::operator ()()
 {
+    lua_pushvalue(LuaState, m_iFuncIndex);
     int oldtop = lua_gettop(LuaState);
+    
     if (lua_pcall(LuaState, m_iPushedArgs, LUA_MULTRET, 0) != 0)
     {
         const char *errmsg = lua_tostring(LuaState, -1);
@@ -134,11 +151,12 @@ int CLuaFunc::operator ()()
     }
     
     // Number of results
-    int ret = lua_gettop(LuaState) - (oldtop - (m_iPushedArgs + 1));
+    m_iReturnedArgs = lua_gettop(LuaState) - (oldtop - (m_iPushedArgs + 1));
+    m_iRetStartIndex = lua_gettop(LuaState) - m_iReturnedArgs;
     
-    m_iPushedArgs = m_iPoppedArgs = 0;
+    m_iPushedArgs = 0;
     
-    return ret;
+    return m_iReturnedArgs;
 }
 
 

@@ -258,7 +258,7 @@ libc_ver = ''
 libstdcpp_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=[inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
+env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
 # Current version
 curnixstversion = '0.2.2'

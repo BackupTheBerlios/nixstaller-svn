@@ -20,7 +20,7 @@
 #ifndef RADIOBUTTON
 #define RADIOBUTTON
 
-#include "../../main/main.h"
+#include "main/main.h"
 #include "basechoice.h"
 
 namespace NNCurses {

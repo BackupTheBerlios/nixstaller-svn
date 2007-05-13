@@ -22,7 +22,7 @@
 
 #include <sys/wait.h>
 
-#include "../main/main.h"
+#include "main/main.h"
 
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>

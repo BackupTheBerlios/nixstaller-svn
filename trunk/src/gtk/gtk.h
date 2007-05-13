@@ -20,8 +20,8 @@
 #ifndef FR_GTK_H
 #define FR_GTK_H
 
-#include "../main/main.h"
-#include "gtk/gtk.h"
+#include "main/main.h"
+#include "include/gtk/gtk/gtk.h"
 
 class CGTKBase: virtual public CMain
 {

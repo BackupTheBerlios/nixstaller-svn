@@ -19,7 +19,7 @@
 
 #include "lua.h"
 #include "luaclass.h"
-#include "../main.h"
+#include "main/main.h"
 
 namespace {
 
@@ -116,16 +116,16 @@ CLuaStateKeeper::CLuaStateKeeper()
     // Initialize lua
     m_pLuaState = lua_open();
     
-    if (!LuaState)
+    if (!m_pLuaState)
         throw Exceptions::CExLua("Could not open lua VM");
         
     const luaL_Reg *lib = libtable;
     for (; lib->func; lib++)
     {
-        lua_pushcfunction(LuaState, lib->func);
-        lua_pushstring(LuaState, lib->name);
-        lua_call(LuaState, 1, 0);
-        lua_settop(LuaState, 0);  // Clear stack
+        lua_pushcfunction(m_pLuaState, lib->func);
+        lua_pushstring(m_pLuaState, lib->name);
+        lua_call(m_pLuaState, 1, 0);
+        lua_settop(m_pLuaState, 0);  // Clear stack
     }
 }
 
@@ -133,6 +133,39 @@ CLuaStateKeeper::CLuaStateKeeper()
 // -------------------------------------
 // Utilities
 // -------------------------------------
+
+#ifndef RELEASE
+// Based from a example in the book "Programming in Lua"
+void StackDump(const char *msg)
+{
+    if (msg)
+        debugline(msg);
+    
+    int i;
+    int top = lua_gettop(LuaState);
+    for (i = 1; i <= top; i++)
+    {
+        /* repeat for each level */
+        int t = lua_type(LuaState, i);
+        switch (t)
+        {
+            case LUA_TSTRING:  /* strings */
+                debugline("`%s'\n", lua_tostring(LuaState, i));
+                break;
+            case LUA_TBOOLEAN:  /* booleans */
+                debugline("%s\n", lua_toboolean(LuaState, i) ? "true" : "false");
+                break;
+            case LUA_TNUMBER:  /* numbers */
+                debugline("%g\n", lua_tonumber(LuaState, i));
+                break;
+            default:  /* other values */
+                debugline("%s\n", lua_typename(LuaState, t));
+                break;
+        }
+    }
+    debugline("---------------\n");  /* end the listing */
+}
+#endif
 
 void GetGlobal(const char *var, const char *tab)
 {

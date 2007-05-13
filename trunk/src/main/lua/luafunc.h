@@ -27,7 +27,10 @@ namespace NLua {
 class CLuaFunc
 {
     bool m_bOK;
-    int m_iPushedArgs, m_iPoppedArgs;
+    int m_iPushedArgs, m_iReturnedArgs;
+    int m_iFuncIndex, m_iRetStartIndex;
+    
+    void PopRet(void);
     
 public:
     CLuaFunc(const char *func, const char *tab=NULL);

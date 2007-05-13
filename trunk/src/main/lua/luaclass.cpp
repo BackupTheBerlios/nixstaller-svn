@@ -25,10 +25,10 @@ void GetClassMT(const std::string &type)
 {
     bool init = (luaL_newmetatable(LuaState, type.c_str()) != 0);
 
-    int mt = lua_gettop(LuaState);
-
     if (init)
     {
+        int mt = lua_gettop(LuaState);
+
         lua_pushstring(LuaState, "__index");
         lua_pushvalue(LuaState, mt);
         lua_settable(LuaState, mt); // __index = metatable
