@@ -35,8 +35,8 @@ LZMA_FILES = [
 ]
 
 LZMAC_FILES = [
-'7zip/Compress/LZMA_C/LzmaDecode.c',
-'7zip/Compress/LZMA_C/LzmaTest.c'
+'7zip/Compress/LZMA_C/LzmaStateDecode.c',
+'7zip/Compress/LZMA_C/LzmaStateTest.c'
 ]
 
 LZMAC_OBJ=env.Object(LZMAC_FILES)
