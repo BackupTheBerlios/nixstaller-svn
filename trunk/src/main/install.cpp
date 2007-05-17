@@ -403,8 +403,9 @@ void CBaseInstall::InitLua()
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddList, "addlist", "configmenu", this);
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddBool, "addbool", "configmenu", this);
 
-    NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
     NLua::RegisterFunction(LuaNewScreen, "newscreen", "install", this);
+    NLua::RegisterFunction(LuaAddScreen, "addscreen", "install", this);
+    NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
     NLua::RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
     NLua::RegisterFunction(LuaExecuteCMD, "execute", "install", this);
     NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executeasroot", "install", this);
@@ -593,6 +594,22 @@ void CBaseInstall::RegisterInstall(void)
 }
 #endif
 
+int CBaseInstall::LuaNewScreen(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    const char *name = luaL_optstring(L, 1, "");
+    NLua::CreateClass(pInstaller->CreateScreen(GetTranslation(name)), "screen");
+    return 1;
+}
+
+int CBaseInstall::LuaAddScreen(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    pInstaller->AddScreen(1);
+    lua_pop(NLua::LuaState, 1);
+    return 0;
+}
+
 int CBaseInstall::LuaGetTempDir(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
@@ -602,14 +619,6 @@ int CBaseInstall::LuaGetTempDir(lua_State *L)
         MKDir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
     
     lua_pushstring(L, ret);
-    return 1;
-}
-
-int CBaseInstall::LuaNewScreen(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    const char *name = luaL_optstring(L, 1, "");
-    NLua::CreateClass(pInstaller->CreateCFGScreen(GetTranslation(name)), "screen");
     return 1;
 }
 

@@ -78,7 +78,7 @@ void StartFrontend(int argc, char **argv)
     interface->SetFColors(COLOR_GREEN, COLOR_BLUE);
     interface->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     interface->SetMinWidth(60);
-    interface->SetMinHeight(10);
+    interface->SetMinHeight(15);
     
     interface->Init(argc, argv);
     
@@ -210,7 +210,7 @@ void CNCursBase::InitLua()
     CMain::InitLua();
 }
 
-bool CNCursBase::CoreHandleKey(NNCurses::chtype key)
+bool CNCursBase::CoreHandleKey(chtype key)
 {
     if (NNCurses::CWindow::CoreHandleKey(key))
         return true;

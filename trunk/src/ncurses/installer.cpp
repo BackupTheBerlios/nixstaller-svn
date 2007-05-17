@@ -18,9 +18,12 @@
 */
 
 #include "installer.h"
-#include "tui/dialog.h"
+#include "installscreen.h"
+#include "main/lua/luaclass.h"
 #include "tui/button.h"
 #include "tui/box.h"
+#include "tui/dialog.h"
+#include "tui/separator.h"
 
 // -------------------------------------
 // Main installer screen
@@ -31,12 +34,106 @@ CInstaller::CInstaller() : m_CurrentScreen(0)
     AddWidget(m_pScreenBox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false, 1));
     
     NNCurses::CBox *buttonbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false);
-    
     buttonbox->StartPack(m_pCancelButton = new NNCurses::CButton("Cancel"), false, false, 0, 1);
     buttonbox->EndPack(m_pNextButton = new NNCurses::CButton("Next"), false, false, 0, 1);
     buttonbox->EndPack(m_pPrevButton = new NNCurses::CButton("Back"), false, false, 0, 1);
-    
     EndPack(buttonbox, false, false, 0, 0);
+    
+    EndPack(new NNCurses::CSeparator(ACS_HLINE), false, false, 0, 0);
+}
+
+void CInstaller::PrevScreen()
+{
+    if (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.front())
+        return;
+    
+    if (!m_InstallScreens[m_CurrentScreen]->Back())
+        return;
+    
+    TScreenList::iterator it = m_InstallScreens.begin() + m_CurrentScreen;
+    
+    while (it != m_InstallScreens.begin())
+    {
+        it--;
+        
+        if ((*it)->CanActivate())
+        {
+            if (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.back())
+                m_pNextButton->SetText(GetTranslation("Next")); // Change from "Finish"
+
+            m_InstallScreens[m_CurrentScreen]->Enable(false);
+            ActivateScreen(*it);
+            
+            bool first = (it == m_InstallScreens.begin());
+            if (!first)
+            {
+                first = true;
+                do
+                {
+                    it--;
+                    if ((*it)->CanActivate())
+                    {
+                        first = false;
+                        break;
+                    }
+                }
+                while (it != m_InstallScreens.begin());
+            }
+            
+            if (first)
+                m_pPrevButton->Enable(false);
+            
+            break;
+        }
+    }
+}
+
+void CInstaller::NextScreen()
+{
+    if ((m_InstallScreens[m_CurrentScreen] != m_InstallScreens.back()) &&
+        (!m_InstallScreens[m_CurrentScreen]->Next()))
+        return;
+    
+    TScreenList::iterator it = m_InstallScreens.begin() + m_CurrentScreen;
+    
+    while (*it != m_InstallScreens.back())
+    {
+        it++;
+
+        if ((*it)->CanActivate())
+        {
+            m_InstallScreens[m_CurrentScreen]->Enable(false);
+            ActivateScreen(*it);
+            
+            if (!m_pPrevButton->Enabled())
+                m_pPrevButton->Enable(true);
+            
+            // Check if this is the last screen
+            bool last = (*it == m_InstallScreens.back());
+            if (!last)
+            {
+                last = true;
+                it++;
+                while (it != m_InstallScreens.end())
+                {
+                    if ((*it)->CanActivate())
+                    {
+                        last = false;
+                        break;
+                    }
+                    it++;
+                }
+            }
+            
+            if (last)
+                m_pNextButton->SetText(GetTranslation("Finish"));
+            
+            return;
+        }
+    }
+    
+    // No screens left
+    NNCurses::TUI.Quit();
 }
 
 void CInstaller::AskQuit()
@@ -51,6 +148,15 @@ void CInstaller::AskQuit()
     
     if (NNCurses::YesNoBox(msg))
         throw Exceptions::CExUser();
+}
+
+void CInstaller::ActivateScreen(CInstallScreen *screen)
+{
+    screen->Enable(true);
+    screen->Activate();
+//     m_pScreenBox->FocusWidget(screen);
+    m_CurrentScreen = std::distance(m_InstallScreens.begin(),
+                                    std::find(m_InstallScreens.begin(), m_InstallScreens.end(), screen));
 }
 
 void CInstaller::InstallThink()
@@ -92,18 +198,15 @@ bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
     return false;
 }
 
-bool CInstaller::CoreHandleKey(NNCurses::chtype key)
+bool CInstaller::CoreHandleKey(chtype key)
 {
-    if (CNCursBase::CoreHandleKey(key))
-        return true;
-    
     if (NNCurses::IsEscape(key))
     {
         AskQuit();
         return true;
     }
-    
-    return false;
+
+    return CNCursBase::CoreHandleKey(key);
 }
 
 void CInstaller::InitLua()
@@ -115,6 +218,17 @@ void CInstaller::InitLua()
 void CInstaller::Init(int argc, char **argv)
 {
     CBaseInstall::Init(argc, argv);
+    
+    UpdateLanguage();
+
+    for (TScreenList::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
+    {
+        if ((*it)->CanActivate())
+        {
+            ActivateScreen(*it);
+            break;
+        }
+    }
 }
 
 void CInstaller::UpdateLanguage()
@@ -122,4 +236,18 @@ void CInstaller::UpdateLanguage()
     m_pCancelButton->SetText(GetTranslation("Cancel"));
     m_pPrevButton->SetText(GetTranslation("Back"));
     m_pNextButton->SetText(GetTranslation("Next"));
+}
+
+CBaseScreen *CInstaller::CreateScreen(const std::string &title)
+{
+    CInstallScreen *ret = new CInstallScreen(title);
+    ret->Enable(false);
+    m_pScreenBox->AddWidget(ret);
+    return ret;
+}
+
+void CInstaller::AddScreen(int luaindex)
+{
+    CInstallScreen *screen = NLua::CheckClassData<CInstallScreen>("screen", luaindex);
+    m_InstallScreens.push_back(screen);
 }

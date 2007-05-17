@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "assert.h"
 #include "tui.h"
 #include "widget.h"
 #include "group.h"
@@ -85,6 +86,9 @@ void CTUI::StopNCurses()
 
 bool CTUI::Run(int delay)
 {
+    if (m_bQuit)
+        return false;
+    
     timeout(delay);
     
     // Handle keys
@@ -92,9 +96,7 @@ bool CTUI::Run(int delay)
     
     if (key != static_cast<chtype>(ERR)) // Input available?
     {
-        m_pWinManager->HandleKey(key);
-        
-        if (IsEscape(key))
+        if (!m_pWinManager->HandleKey(key) && IsEscape(key))
             return false;
     }
     
@@ -103,7 +105,9 @@ bool CTUI::Run(int delay)
     while (!m_QueuedDrawWidgets.empty())
     {
         CWidget *w = m_QueuedDrawWidgets.front();
+        
         m_QueuedDrawWidgets.pop_front();
+        
         // Draw after widget has been removed from queue, this way the widget or childs from the
         // widget can queue themselves.
         w->Draw();
@@ -158,6 +162,9 @@ int CTUI::GetColorPair(int fg, int bg)
 
 void CTUI::QueueDraw(CWidget *w)
 {
+    if (!w->Enabled())
+        return;
+    
     bool done = false;
     while (!done)
     {

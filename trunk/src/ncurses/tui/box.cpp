@@ -37,7 +37,12 @@ int CBox::GetWidgetW(CWidget *w)
         TChildList childs = GetChildList();
         
         for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+        {
+            if (!IsValidWidget(*it))
+                continue;
+            
             ret = std::max(ret, (*it)->RequestWidth());
+        }
     }
     else
         ret = w->RequestWidth();
@@ -55,7 +60,12 @@ int CBox::GetWidgetH(CWidget *w)
         TChildList childs = GetChildList();
         
         for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+        {
+            if (!IsValidWidget(*it))
+                continue;
+            
             ret = std::max(ret, (*it)->RequestHeight());
+        }
     }
     else
         ret = w->RequestHeight();
@@ -143,7 +153,7 @@ void CBox::CoreDrawLayout()
     if (Empty())
         return;
 
-    TChildList childs = GetChildList();
+    const TChildList &childs = GetChildList();
     const TChildList::size_type size = ExpandedWidgets();
     const int diffw = FieldWidth() - RequestedWidgetsW();
     const int diffh = FieldHeight() - RequestedWidgetsH();
@@ -154,7 +164,7 @@ void CBox::CoreDrawLayout()
     int begx = FieldX(), begy = FieldY(); // Coords for widgets that were packed at start
     int endx = (FieldX()+FieldWidth())-1, endy = (FieldY()+FieldHeight())-1; // Coords for widgets that were packed at end
 
-    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
         if (!IsValidWidget(*it))
             continue;
@@ -261,12 +271,11 @@ int CBox::CoreRequestHeight()
 
 bool CBox::CoreHandleEvent(CWidget *emitter, int event)
 {
-    if (IsDirectChild(emitter, this))
+    if (IsChild(emitter, this))
     {
         if (event == EVENT_REQUPDATE)
         {
             UpdateLayout();
-            
             PushEvent(event);
             
             if (!GetParentWidget())

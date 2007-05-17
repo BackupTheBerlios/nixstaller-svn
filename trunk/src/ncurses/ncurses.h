@@ -38,7 +38,7 @@ protected:
     virtual void WarnBox(const char *str, ...);
     virtual void InitLua(void);
 
-    virtual bool CoreHandleKey(NNCurses::chtype key);
+    virtual bool CoreHandleKey(chtype key);
     
 public:
     void Run(void);

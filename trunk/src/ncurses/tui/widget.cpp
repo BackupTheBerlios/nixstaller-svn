@@ -186,6 +186,9 @@ void CWidget::Enable(bool e)
     {
         m_bEnabled = e;
         PushEvent(EVENT_REQUPDATE);
+        
+        if (!m_bEnabled && m_pParent)
+            m_pParent->DisableWidget(this);
     }
 }
 

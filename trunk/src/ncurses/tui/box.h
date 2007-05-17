@@ -53,6 +53,7 @@ private:
     bool IsValidWidget(CWidget *w);
     
 protected:
+    virtual void UpdateSize(void) { UpdateLayout(); CGroup::UpdateSize(); }
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);

@@ -41,7 +41,7 @@ void CGroup::CoreDraw(void)
         DrawLayout();
         m_bUpdateLayout = false;
     }
-    
+
     DrawWidget();
     DrawChilds();
 }
@@ -53,7 +53,10 @@ void CGroup::UpdateSize()
         if (!(*it)->GetWin()) // Widget isn't created yet (size will be set when widget is created)
             continue;
         
-        MoveWin(*it, X()+(*it)->X(), Y()+(*it)->Y());
+        (*it)->MoveWindow(0, 0);
+        WindowResize(*it, (*it)->Width(), (*it)->Height());
+        (*it)->MoveWindow((*it)->X(), (*it)->Y());
+        (*it)->UpdateSize();
     }
 }
 
@@ -124,6 +127,12 @@ void CGroup::RemoveWidget(CWidget *w)
     m_GroupMap[w] = NULL; // Is NULL already if w isn't a group
 }
 
+void CGroup::DisableWidget(CWidget *w)
+{
+    if (m_pFocusedWidget == w)
+        SetValidWidget(w);
+}
+
 void CGroup::Clear()
 {
     while (!m_Childs.empty())
@@ -172,6 +181,9 @@ bool CGroup::SetNextFocWidget(bool cont)
     
     for (; it!=m_Childs.end(); it++)
     {
+        if (!(*it)->Enabled())
+            continue;
+        
         if (!(*it)->CanFocus())
         {
             if (CanFocusChilds(*it))
@@ -210,6 +222,9 @@ bool CGroup::SetPrevFocWidget(bool cont)
     
     for (; it!=m_Childs.rend(); it++)
     {
+        if (!(*it)->Enabled())
+            continue;
+
         if (!(*it)->CanFocus())
         {
             if (CanFocusChilds(*it))
@@ -240,7 +255,7 @@ void CGroup::SetValidWidget(CWidget *ignore)
         {
             itprev--;
             
-            if ((*itprev)->CanFocus() || CanFocusChilds(*itprev))
+            if ((*itprev)->Enabled() && ((*itprev)->CanFocus() || CanFocusChilds(*itprev)))
             {
                 FocusWidget(*itprev);
                 return;
@@ -253,7 +268,7 @@ void CGroup::SetValidWidget(CWidget *ignore)
             
             if (itnext != m_Childs.end())
             {
-                if ((*itnext)->CanFocus() || CanFocusChilds(*itnext))
+                if ((*itnext)->Enabled() && ((*itnext)->CanFocus() || CanFocusChilds(*itnext)))
                 {
                     FocusWidget(*itnext);
                     return;

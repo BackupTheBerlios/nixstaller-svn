@@ -59,6 +59,9 @@ bool CWindowManager::CoreHandleKey(chtype key)
 
 bool CWindowManager::CoreHandleEvent(CWidget *emitter, int event)
 {
+    if (CGroup::CoreHandleEvent(emitter, event))
+        return true;
+    
     if (event == EVENT_REQQUEUEDDRAW)
     {
         CWidget *focwidget = GetFocusedWidget();

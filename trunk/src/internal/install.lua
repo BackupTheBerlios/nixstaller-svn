@@ -25,7 +25,7 @@ function GenerateDefaultScreens()
     package.path = "?.lua"
     package.cpath = ""
     
-    WelcomeScreen = require "welcome"
+    OLDG.WelcomeScreen = require "welcome"
 end
 
 function LoadConfig()
@@ -37,6 +37,18 @@ function LoadConfig()
     end
 end
 
+function AddScreens()
+    if (install.screenlist ~= nil and #install.screenlist > 0) then
+        for _, s in pairs(install.screenlist) do
+            install.addscreen(s)
+        end
+    else
+        install.addscreen(WelcomeScreen)
+        -- UNDONE
+    end
+end
+
 GenerateDefaultScreens()
 LoadConfig()
+AddScreens()
 

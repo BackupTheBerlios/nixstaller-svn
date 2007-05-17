@@ -33,6 +33,7 @@ MAIN
 - Make CMain::UpdateLanguage public?
 - Let Lua dir iter use class code?
 - Check class metatable (readable/writeable from scripts?)
+- Lighten template functions?
 
 
 LIBSU

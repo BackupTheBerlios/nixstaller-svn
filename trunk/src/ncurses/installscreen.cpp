@@ -17,39 +17,21 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main.h"
-#include "basescreen.h"
-#include "lua/lua.h"
-#include "lua/luaclass.h"
-#include "lua/luafunc.h"
-
+#include "main/main.h"
+#include "installscreen.h"
+#include "tui/label.h"
 
 // -------------------------------------
-// Base Install Class
+// NCurses Install Screen Class
 // -------------------------------------
 
-bool CBaseScreen::CallLuaBoolFunc(const char *func, bool def)
+CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
 {
-    NLua::CLuaFunc luafunc("func", "screen", this);
-    bool ret = def;
-    
-    if (luafunc)
-    {
-        if (luafunc(1) > 0)
-            luafunc >> ret;
-    }
-        
-    return ret;
+    m_pTitle = new NNCurses::CLabel(title);
+    StartPack(m_pTitle, false, false, 0, 0);
 }
 
-void CBaseScreen::Activate()
+void CInstallScreen::CoreUpdateLanguage(void)
 {
-    NLua::CLuaFunc func("activate", "screen", this);
-    
-    if (func)
-        func(0);
-}
-
-int CBaseScreen::LuaAddWidget(lua_State *L)
-{
+    m_pTitle->SetText(GetTranslation(GetTitle()));
 }

@@ -56,7 +56,7 @@ namespace NLua {
 // -------------------------------------
 
 CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iPushedArgs(0), m_iReturnedArgs(0),
-                                                        m_iRetStartIndex(0)
+                                                        m_iFuncIndex(-1), m_iRetStartIndex(0)
 {
     GetGlobal(func, tab);
     if (lua_isnil(LuaState, -1))
@@ -69,7 +69,8 @@ CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iPushedAr
 }
 
 CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(true), m_iPushedArgs(0),
-                                                                        m_iReturnedArgs(0), m_iRetStartIndex(0)
+                                                                        m_iReturnedArgs(0), m_iFuncIndex(-1),
+                                                                        m_iRetStartIndex(0)
 {
     PushClass(type, prvdata);
 
@@ -96,7 +97,8 @@ CLuaFunc::~CLuaFunc()
     while (m_iReturnedArgs)
         PopRet();
     
-    lua_remove(LuaState, m_iFuncIndex);
+    if (m_iFuncIndex != -1)
+        lua_remove(LuaState, m_iFuncIndex);
 }
 
 void CLuaFunc::PopRet()

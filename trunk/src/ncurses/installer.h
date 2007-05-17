@@ -17,8 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef INSTALLER
-#define INSTALLER
+#ifndef INSTALLER_H
+#define INSTALLER_H
 
 #include <vector>
 #include "ncurses.h"
@@ -30,16 +30,20 @@ class CWidget;
 
 }
 
+class CInstallScreen;
+
 class CInstaller: public CNCursBase, public CBaseInstall
 {
+    typedef std::vector<CInstallScreen *> TScreenList;
     NNCurses::CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
     NNCurses::CBox *m_pScreenBox;
-//     std::vector<CBaseScreen *> m_InstallScreens;
+    TScreenList m_InstallScreens;
     TSTLVecSize m_CurrentScreen;
     
-    void PrevScreen(void){}
-    void NextScreen(void){}
+    void PrevScreen(void);
+    void NextScreen(void);
     void AskQuit(void);
+    void ActivateScreen(CInstallScreen *screen);
     
 protected:
     virtual void ChangeStatusText(const char *str) { }
@@ -48,7 +52,7 @@ protected:
     virtual void InstallThink(void);
 
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
-    virtual bool CoreHandleKey(NNCurses::chtype key);
+    virtual bool CoreHandleKey(chtype key);
 
     virtual void InitLua(void);
 
@@ -58,7 +62,10 @@ public:
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void);
     virtual void Install(void) {}
-    virtual CBaseCFGScreen *CreateCFGScreen(const char *title) {}
+    virtual CBaseScreen *CreateScreen(const std::string &title);
+    virtual void AddScreen(int luaindex);
 };
+
+
 
 #endif

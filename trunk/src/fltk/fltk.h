@@ -141,7 +141,7 @@ public:
     virtual void Init(int argc, char **argv);
     virtual void Install(void);
     virtual void UpdateLanguage(void);
-    virtual CBaseCFGScreen *CreateCFGScreen(const char *title);
+    virtual CBaseScreen *CreateScreen(const std::string &title);
     
     void Prev(void);
     void Next(void);

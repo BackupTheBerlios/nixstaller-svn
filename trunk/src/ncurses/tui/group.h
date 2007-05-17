@@ -40,7 +40,7 @@ private:
     bool IsGroupWidget(CWidget *w) { return (m_GroupMap[w] != NULL); }
     bool CanFocusChilds(CWidget *w);
     void DrawLayout(void) { CoreDrawLayout(); }
-    
+
 protected:
     virtual void CoreDraw(void);
     virtual void UpdateSize(void);
@@ -69,6 +69,7 @@ public:
     void AddWidget(CGroup *g);
     void AddWidget(CWidget *w) { CoreAddWidget(w); };
     void RemoveWidget(CWidget *w);
+    void DisableWidget(CWidget *w);
     void Clear(void);
     TChildList &GetChildList(void) { return m_Childs; }
     bool Empty(void) { return m_Childs.empty(); }

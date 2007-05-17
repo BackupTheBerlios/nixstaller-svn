@@ -115,7 +115,7 @@ void MoveWin(CWidget *widget, int x, int y)
 
 void MoveDerWin(CWidget *widget, int x, int y)
 {
-    Check(mvderwin(widget->GetWin(), y, x), "mvwin");
+    Check(mvderwin(widget->GetWin(), y, x), "mvderwin");
 }
 
 void Border(CWidget *widget)

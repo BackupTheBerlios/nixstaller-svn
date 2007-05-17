@@ -301,9 +301,10 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
         throw Exceptions::CExUser();
 }
 
-CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
+CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
-    CCFGScreen *scr = new CCFGScreen(this, title);
+    return NULL; // UNDONE
+/*    CCFGScreen *scr = new CCFGScreen(this, title);
     Fl_Group *group = scr->Create();
     
     if (!group)
@@ -311,7 +312,7 @@ CBaseCFGScreen *CInstaller::CreateCFGScreen(const char *title)
     
     group->hide();
     
-    return scr;
+    return scr;*/
 }
 
 void CInstaller::Prev()

@@ -88,6 +88,7 @@ protected:
     void Init(void);
     
     void SetSize(int x, int y, int w, int h);
+    void TouchSize(void) { m_bSizeChanged = true; }
 
     void SetParent(CGroup *g) { m_pParent = g; m_pParentWin = NULL; }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }

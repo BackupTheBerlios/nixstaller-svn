@@ -59,7 +59,7 @@ protected:
 
 public:
     void AddText(std::string t);
-    void SetText(const std::string &t) { m_Lines.clear(); AddText(t); }
+    void SetText(const std::string &t) { Clear(); AddText(t); }
     void Clear(void);
     void SetMaxReqWidth(int w) { m_iMaxReqWidth = w; }
     void SetMaxReqHeight(int h) { m_iMaxReqHeight = h; }

@@ -17,7 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-class CBaseCFGScreen;
+class CBaseScreen;
 
 class CBaseInstall: virtual public CMain
 {
@@ -95,15 +95,17 @@ public:
     std::string GetDestDir(void);
     bool VerifyDestDir();
 
-    virtual CBaseCFGScreen *CreateCFGScreen(const char *title) = 0;
+    virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
+    virtual void AddScreen(int luaindex) = 0;
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
     static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddInstOutput(std::string(s)); };
     static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->InstallThink(); };
     
     // Functions for lua binding
-    static int LuaGetTempDir(lua_State *L);
     static int LuaNewScreen(lua_State *L);
+    static int LuaAddScreen(lua_State *L);
+    static int LuaGetTempDir(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);
     static int LuaExecuteCMDAsRoot(lua_State *L);

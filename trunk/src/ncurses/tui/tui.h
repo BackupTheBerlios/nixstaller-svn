@@ -22,10 +22,9 @@
 
 #include <deque>
 #include <map>
+#include "ncurses.h"
 
 namespace NNCurses {
-
-#include "ncurses.h"
 
 class CWidget;
 class CGroup;
@@ -37,6 +36,7 @@ class CTUI
 {
     typedef std::map<int, std::map<int, int> > TColorMap;
     
+    bool m_bQuit;
     TColorMap m_ColorPairs;
     int m_iCurColorPair;
     std::deque<CWidget *> m_QueuedDrawWidgets;
@@ -51,11 +51,12 @@ class CTUI
     friend class CWindowManager;
     
 public:
-    CTUI(void) : m_iCurColorPair(0), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
+    CTUI(void) : m_bQuit(false), m_iCurColorPair(0), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
     
     void InitNCurses(void);
     void StopNCurses(void);
     bool Run(int delay=5);
+    void Quit(void) { m_bQuit = true; }
     void AddGroup(CGroup *g, bool activate);
     void ActivateGroup(CGroup *g);
     
