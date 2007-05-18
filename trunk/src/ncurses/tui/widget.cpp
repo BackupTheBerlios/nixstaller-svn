@@ -86,6 +86,11 @@ void CWidget::InitDraw()
         Border(this);
 }
 
+void CWidget::RefreshWidget(void)
+{
+    Refresh(this);
+}
+
 void CWidget::DrawWidget()
 {
     InitDraw();

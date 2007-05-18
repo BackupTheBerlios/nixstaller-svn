@@ -17,29 +17,30 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
-#include "tui/label.h"
+#ifndef NCURSES_LUAINPUT_H
+#define NCURSES_LUAINPUT_H
 
-// -------------------------------------
-// NCurses Install Screen Class
-// -------------------------------------
+#include "main/install/luainput.h"
+#include "luawidget.h"
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
-{
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
+namespace NNCurses {
+class CLabel;
+class CInputField;
 }
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
-{
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
-}
 
-void CInstallScreen::CoreUpdateLanguage(void)
+class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
 {
-    m_pTitle->SetText(GetTranslation(GetTitle()));
-}
+    std::string m_Label;
+    NNCurses::CLabel *m_pLabel;
+    NNCurses::CInputField *m_pInputField;
+    
+    virtual const char *CoreGetValue(void){}
+    virtual void CoreSetSpacing(int percent){}
+    virtual void CoreUpdateLanguage(void);
+    
+public:
+    CLuaInputField(const char *label, const char *desc, const char *val, int max, const char *type);
+};
+
+#endif

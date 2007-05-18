@@ -18,28 +18,31 @@
 */
 
 #include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
-#include "tui/label.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
+#include "luaradiobutton.h"
 
 // -------------------------------------
-// NCurses Install Screen Class
+// Base Lua Radio Button Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+void CBaseLuaRadioButton::LuaRegister()
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
+    NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaGet, "get", "radiobutton");
+    NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaSet, "set", "radiobutton");
 }
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
+int CBaseLuaRadioButton::LuaGet(lua_State *L)
 {
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
+    CBaseLuaRadioButton *box = NLua::CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
+    lua_pushstring(L, box->EnabledButton());
+    return 1;
 }
 
-void CInstallScreen::CoreUpdateLanguage(void)
+int CBaseLuaRadioButton::LuaSet(lua_State *L)
 {
-    m_pTitle->SetText(GetTranslation(GetTitle()));
+    CBaseLuaRadioButton *box = NLua::CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
+    int n = luaL_checkint(L, 2);
+    box->Enable(n);
+    return 0;
 }

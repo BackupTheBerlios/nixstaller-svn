@@ -28,18 +28,13 @@ namespace NNCurses {
 class CLabel;
 }
 
+class CBaseLuaGroup;
 
 class CInstallScreen: public CBaseScreen, public NNCurses::CBox
 {
     NNCurses::CLabel *m_pTitle;
     
-    // UNDONE
-    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
-            int max, const char *type) {}
-    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) {}
-    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) {}
-    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) {}
-    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) {}
+    virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
     
 public:

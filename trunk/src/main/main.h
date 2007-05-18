@@ -207,7 +207,6 @@ public:
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };
 #else
-//#define debugline printf
 void debugline(const char *t, ...); // Defined in frontend code
 #endif
 

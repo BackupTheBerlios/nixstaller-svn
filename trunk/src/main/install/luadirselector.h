@@ -17,29 +17,23 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
-#include "tui/label.h"
+#ifndef LUADIRSELECTOR_H
+#define LUADIRSELECTOR_H
 
-// -------------------------------------
-// NCurses Install Screen Class
-// -------------------------------------
+struct lua_State;
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+class CBaseLuaDirSelector
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
-}
+public:
+    virtual ~CBaseLuaDirSelector(void) { };
+    virtual const char *GetDir(void) = 0;
+    virtual void SetDir(const char *dir) = 0;
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
-{
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
-}
+    static void LuaRegister(void);
+    
+    static int LuaGet(lua_State *L);
+    static int LuaSet(lua_State *L);
+};
 
-void CInstallScreen::CoreUpdateLanguage(void)
-{
-    m_pTitle->SetText(GetTranslation(GetTitle()));
-}
+
+#endif

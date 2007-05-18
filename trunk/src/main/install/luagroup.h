@@ -17,38 +17,39 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef BASE_SCREEN_H
-#define BASE_SCREEN_H
+#ifndef LUAGROUP_H
+#define LUAGROUP_H
 
-class CBaseLuaGroup;
+#include <vector>
 
-class CBaseScreen
+class CBaseLuaInputField;
+class CBaseLuaCheckbox;
+class CBaseLuaRadioButton;
+class CBaseLuaDirSelector;
+class CBaseLuaCFGMenu;
+
+class CBaseLuaGroup
 {
-    std::string m_szTitle;
-    CBaseInstall *m_pInstaller;
-    
-    bool CallLuaBoolFunc(const char *func, bool def);
-    
-    virtual CBaseLuaGroup *CreateGroup(void) = 0;
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
+            int max, const char *type) = 0;
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) = 0;
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) = 0;
+    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) = 0;
+    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) = 0;
     virtual void CoreUpdateLanguage(void) = 0;
     
-protected:
-    const std::string &GetTitle(void) { return m_szTitle; }
-    CBaseInstall *GetInstall(void) { return m_pInstaller; }
-
 public:
-    CBaseScreen(const std::string &title) : m_szTitle(title) { }
-    virtual ~CBaseScreen(void) { }
+    virtual ~CBaseLuaGroup(void) {}
     
     void UpdateLanguage(void) { CoreUpdateLanguage(); }
-    bool CanActivate(void) { return CallLuaBoolFunc("canactivate", true); }
-    void Activate(void);
-    bool Back(void) { return CallLuaBoolFunc("back", true); }
-    bool Next(void) { return CallLuaBoolFunc("next", true); }
     
     static void LuaRegister(void);
     
-    static int LuaAddGroup(lua_State *L);
+    static int LuaAddInput(lua_State *L);
+    static int LuaAddCheckbox(lua_State *L);
+    static int LuaAddRadioButton(lua_State *L);
+    static int LuaAddDirSelector(lua_State *L);
+    static int LuaAddCFGMenu(lua_State *L);
 };
 
 #endif

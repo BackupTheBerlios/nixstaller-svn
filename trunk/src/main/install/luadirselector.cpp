@@ -18,28 +18,31 @@
 */
 
 #include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
-#include "tui/label.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
+#include "luadirselector.h"
 
 // -------------------------------------
-// NCurses Install Screen Class
+// Base Lua Directory Selector Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+void CBaseLuaDirSelector::LuaRegister()
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
+    NLua::RegisterClassFunction(CBaseLuaDirSelector::LuaGet, "get", "dirselector");
+    NLua::RegisterClassFunction(CBaseLuaDirSelector::LuaSet, "set", "dirselector");
 }
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
+int CBaseLuaDirSelector::LuaGet(lua_State *L)
 {
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
+    CBaseLuaDirSelector *sel = NLua::CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
+    lua_pushstring(L, sel->GetDir());
+    return 1;
 }
 
-void CInstallScreen::CoreUpdateLanguage(void)
+int CBaseLuaDirSelector::LuaSet(lua_State *L)
 {
-    m_pTitle->SetText(GetTranslation(GetTitle()));
+    CBaseLuaDirSelector *sel = NLua::CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
+    const char *dir = luaL_checkstring(L, 2);
+    sel->SetDir(dir);
+    return 0;
 }

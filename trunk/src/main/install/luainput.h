@@ -17,29 +17,36 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
-#include "tui/label.h"
+#ifndef LUAINPUT_H
+#define LUAINPUT_H
 
-// -------------------------------------
-// NCurses Install Screen Class
-// -------------------------------------
+#include <string>
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+struct lua_State;
+
+class CBaseLuaInputField
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
-}
+    std::string m_szType;
+    
+    virtual const char *CoreGetValue(void) = 0;
+    virtual void CoreSetSpacing(int percent) = 0;
+    
+protected:
+    const std::string &GetType(void) { return m_szType; };
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
-{
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
-}
+public:
+    CBaseLuaInputField(const char *t);
+    virtual ~CBaseLuaInputField(void) { };
+    
+    const char *GetValue(void) { return CoreGetValue(); }
+    void SetSpacing(int percent) { CoreSetSpacing(percent); }
 
-void CInstallScreen::CoreUpdateLanguage(void)
-{
-    m_pTitle->SetText(GetTranslation(GetTitle()));
-}
+    int GetDefaultSpacing(void) const { return 25; };
+
+    static void LuaRegister(void);
+    
+    static int LuaGet(lua_State *L);
+    static int LuaSetSpace(lua_State *L);
+};
+
+#endif

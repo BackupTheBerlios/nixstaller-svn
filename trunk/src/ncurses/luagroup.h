@@ -17,29 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
-#include "tui/label.h"
+#ifndef NCURSES_LUAGROUP_H
+#define NCURSES_LUAGROUP_H
 
-// -------------------------------------
-// NCurses Install Screen Class
-// -------------------------------------
+#include "tui/box.h"
+#include "main/install/luagroup.h"
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
-}
+    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
+            int max, const char *type);
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l){}
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l){}
+    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val){}
+    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc){}
+    virtual void CoreUpdateLanguage(void);
+    
+public:
+    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false) {}
+};
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
-{
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
-}
-
-void CInstallScreen::CoreUpdateLanguage(void)
-{
-    m_pTitle->SetText(GetTranslation(GetTitle()));
-}
+#endif

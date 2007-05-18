@@ -50,6 +50,14 @@ void CBaseScreen::Activate()
         func(0);
 }
 
-int CBaseScreen::LuaAddWidget(lua_State *L)
+void CBaseScreen::LuaRegister()
 {
+    NLua::RegisterClassFunction(CBaseScreen::LuaAddGroup, "addgroup", "screen");
+}
+
+int CBaseScreen::LuaAddGroup(lua_State *L)
+{
+    CBaseScreen *screen = NLua::CheckClassData<CBaseScreen>("screen", 1);
+    NLua::CreateClass(screen->CreateGroup(), "group");
+    return 1;
 }

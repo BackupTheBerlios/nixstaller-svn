@@ -81,7 +81,7 @@ protected:
     
     // Interface to be used by friends and derived classes
     void InitDraw(void);
-    void RefreshWidget(void) { Refresh(this); }
+    void RefreshWidget(void);
     void DrawWidget(void);
     void Draw(void);
 

@@ -17,29 +17,25 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
+#include "luawidget.h"
 #include "tui/label.h"
 
 // -------------------------------------
-// NCurses Install Screen Class
+// Base Lua NCurses Widget Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+CLuaWidget::CLuaWidget(const char *title) : NNCurses::CBox(NNCurses::CBox::VERTICAL, false), m_pTitle(NULL)
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
+    if (title && *title)
+    {
+        m_Title = title;
+        StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(m_Title)), false, false, 0, 0);
+    }
 }
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
+void CLuaWidget::UpdateLanguage()
 {
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
-}
-
-void CInstallScreen::CoreUpdateLanguage(void)
-{
-    m_pTitle->SetText(GetTranslation(GetTitle()));
+    if (m_pTitle)
+        m_pTitle->SetText(GetTranslation(m_Title));
+    CoreUpdateLanguage();
 }

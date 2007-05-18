@@ -17,29 +17,23 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
-#include "installscreen.h"
-#include "luagroup.h"
-#include "tui/label.h"
+#ifndef LUACHECKBOX_H
+#define LUACHECKBOX_H
 
-// -------------------------------------
-// NCurses Install Screen Class
-// -------------------------------------
+struct lua_State;
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+class CBaseLuaCheckbox
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
-}
+public:
+    virtual ~CBaseLuaCheckbox(void) { };
+    virtual bool Enabled(int n) = 0;
+    virtual bool Enabled(const char *s) = 0;
+    virtual void Enable(int n, bool b) = 0;
 
-CBaseLuaGroup *CInstallScreen::CreateGroup()
-{
-    CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
-    return ret;
-}
+    static void LuaRegister(void);
+    
+    static int LuaGet(lua_State *L);
+    static int LuaSet(lua_State *L);
+};
 
-void CInstallScreen::CoreUpdateLanguage(void)
-{
-    m_pTitle->SetText(GetTranslation(GetTitle()));
-}
+#endif

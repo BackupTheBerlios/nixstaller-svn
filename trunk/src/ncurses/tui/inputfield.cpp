@@ -36,6 +36,12 @@ CInputField::CInputField(const std::string &t, EInputType e, int max,
     SetMinHeight(1);
 }
 
+CInputField::~CInputField(void)
+{
+    if (Focused())
+        TUI.UnLockCursor();
+}
+
 void CInputField::Move(int n, bool relative)
 {
     TSTLStrSize len = m_Text.length();

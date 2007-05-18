@@ -17,8 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef INPUTFIELD
-#define INPUTFIELD
+#ifndef INPUTFIELD_H
+#define INPUTFIELD_H
 
 #include "main/main.h"
 #include "widget.h"
@@ -50,7 +50,7 @@ protected:
     
 public:
     CInputField(const std::string &t, EInputType e, int max=0, char out=0);
-    virtual ~CInputField(void) { if (Focused()) TUI.UnLockCursor(); }
+    virtual ~CInputField(void);
     
     void SetText(const std::string &t);
     std::string Value(void) const { return m_Text; }

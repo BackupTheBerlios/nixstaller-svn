@@ -18,28 +18,21 @@
 */
 
 #include "main/main.h"
-#include "installscreen.h"
 #include "luagroup.h"
-#include "tui/label.h"
+#include "luainput.h"
 
 // -------------------------------------
-// NCurses Install Screen Class
+// Lua Widget Group Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false)
+CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *desc, const char *val,
+                                                int max, const char *type)
 {
-    m_pTitle = new NNCurses::CLabel(title);
-    StartPack(m_pTitle, false, false, 0, 0);
-}
-
-CBaseLuaGroup *CInstallScreen::CreateGroup()
-{
-    CLuaGroup *ret = new CLuaGroup();
+    CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
     AddWidget(ret);
     return ret;
 }
 
-void CInstallScreen::CoreUpdateLanguage(void)
+void CLuaGroup::CoreUpdateLanguage()
 {
-    m_pTitle->SetText(GetTranslation(GetTitle()));
 }
