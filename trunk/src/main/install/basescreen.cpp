@@ -17,11 +17,11 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main.h"
+#include "main/main.h"
 #include "basescreen.h"
-#include "lua/lua.h"
-#include "lua/luaclass.h"
-#include "lua/luafunc.h"
+#include "main/lua/lua.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
 
 
 // -------------------------------------

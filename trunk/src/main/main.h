@@ -200,7 +200,7 @@ public:
 #endif
 
 #include "utils.h"
-#include "install.h"
+#include "main/install/install.h"
 
 // #define RELEASE /* Enable on a release build */
 

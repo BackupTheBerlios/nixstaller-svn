@@ -26,11 +26,11 @@
 #include <poll.h>
 #include <errno.h>
 
-#include "main.h"
-#include "lua/lua.h"
-#include "lua/luaclass.h"
-#include "lua/luafunc.h"
-#include "lua/luatable.h"
+#include "main/main.h"
+#include "main/lua/lua.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
+#include "main/lua/luatable.h"
 
 // -------------------------------------
 // Base Installer Class

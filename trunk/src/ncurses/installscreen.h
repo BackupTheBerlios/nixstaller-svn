@@ -20,7 +20,7 @@
 #ifndef INSTALL_SCREEN_H
 #define INSTALL_SCREEN_H
 
-#include "main/basescreen.h"
+#include "main/install/basescreen.h"
 #include "tui/tui.h"
 #include "tui/box.h"
 
