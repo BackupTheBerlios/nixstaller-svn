@@ -38,6 +38,7 @@ private:
     TSTLStrSize m_LongestLine;
     int m_iCurWidth;
     
+    TSTLStrSize GetNextLine(const std::string &text, TSTLStrSize start, int width);
     void UpdateText(int width);
     
 protected:

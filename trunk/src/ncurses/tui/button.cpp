@@ -85,8 +85,7 @@ void CButton::SetText(const std::string &title)
     
     SetMinWidth(SafeConvert<int>(title.length()) + m_iExtraWidth);
 //     RequestQueuedDraw();
-    UpdateLayout();
-    PushEvent(EVENT_REQUPDATE);
+    RequestUpdate();
 }
 
 

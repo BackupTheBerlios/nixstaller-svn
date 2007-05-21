@@ -26,7 +26,7 @@
 // Base Lua Inputfield Class
 // -------------------------------------
 
-CBaseLuaInputField::CBaseLuaInputField(const char *t)
+CBaseLuaInputField::CBaseLuaInputField(const char *t) : m_iSpacing(25)
 {
     if (!t || !t[0] || (strcmp(t, "number") && strcmp(t, "float") && strcmp(t, "string")))
         m_szType = "string";

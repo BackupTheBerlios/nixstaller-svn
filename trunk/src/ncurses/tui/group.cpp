@@ -161,6 +161,12 @@ void CGroup::CoreFocusWidget(CWidget *w)
     }
 }
 
+void CGroup::RequestUpdate()
+{
+    UpdateLayout();
+    PushEvent(EVENT_REQUPDATE);
+}
+
 bool CGroup::SetNextFocWidget(bool cont)
 {
     if (m_Childs.empty())

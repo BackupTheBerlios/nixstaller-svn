@@ -290,8 +290,7 @@ bool CBox::CoreHandleEvent(CWidget *emitter, int event)
 
 void CBox::CoreRemoveWidget(CWidget *w)
 {
-    UpdateLayout();
-    PushEvent(EVENT_REQUPDATE);
+    RequestUpdate();
 }
 
 void CBox::StartPack(CGroup *g, bool e, bool f, int vp, int hp)

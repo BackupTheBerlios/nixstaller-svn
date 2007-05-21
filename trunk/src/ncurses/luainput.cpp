@@ -27,14 +27,16 @@
 // -------------------------------------
 
 CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *val, int max,
-                               const char *type) : CBaseLuaInputField(type), CLuaWidget(desc), m_pLabel(NULL)
+                               const char *type) : CBaseLuaInputField(type), CLuaWidget(desc), m_pLabel(NULL),
+                                                   m_bUpdateLabelWidth(true)
 {
     NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1);
     
     if (label && *label)
     {
         m_Label = label;
-        box->AddWidget(m_pLabel = new NNCurses::CLabel(GetTranslation(m_Label)));
+        m_pLabel = new NNCurses::CLabel(GetTranslation(m_Label), false);
+        box->StartPack(m_pLabel, false, false, 0, 0);
     }
     
     NNCurses::CInputField::EInputType t;
@@ -55,4 +57,20 @@ void CLuaInputField::CoreUpdateLanguage()
 {
     if (m_pLabel)
         m_pLabel->SetText(GetTranslation(m_Label));
+}
+
+void CLuaInputField::CoreDrawLayout()
+{
+//     UNDONE
+//     if (m_bUpdateLabelWidth)
+//     {
+//         if (m_pLabel)
+//         {
+//             int w = (Width() * GetSpacing()) / 100;
+//             m_pLabel->SetMinWidth(w);
+//         }
+//         m_bUpdateLabelWidth = false;
+//     }
+    
+    CLuaWidget::CoreDrawLayout();
 }

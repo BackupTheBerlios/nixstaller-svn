@@ -35,7 +35,7 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), C
 CBaseLuaGroup *CInstallScreen::CreateGroup()
 {
     CLuaGroup *ret = new CLuaGroup();
-    AddWidget(ret);
+    StartPack(ret, true, true, 1, 1);
     return ret;
 }
 

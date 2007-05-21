@@ -22,7 +22,7 @@
 
 #include <deque>
 #include <map>
-#include "ncurses.h"
+#include "include/ncurses/ncurses.h"
 
 namespace NNCurses {
 
@@ -77,6 +77,8 @@ int GetWX(WINDOW *w);
 int GetWY(WINDOW *w);
 int GetWWidth(WINDOW *w);
 int GetWHeight(WINDOW *w);
+inline int GetMaxWidth(void) { return GetWWidth(stdscr); }
+inline int GetMaxHeight(void) { return GetWHeight(stdscr); }
 inline bool IsEnter(chtype ch) { return ((ch==KEY_ENTER) || (ch=='\n') || (ch=='\r')); }
 inline chtype CTRL(chtype ch) { return ((ch) & 0x1f); }
 inline bool IsEscape(chtype ch) { return ch == CTRL('['); }

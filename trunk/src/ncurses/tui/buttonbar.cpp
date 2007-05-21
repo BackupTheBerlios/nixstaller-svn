@@ -68,8 +68,7 @@ void CButtonBar::AddButton(std::string n, std::string d)
     assert(m_iMaxWidth >= tlength);
     
     PushLabel(n, d);
-    UpdateLayout();
-    PushEvent(EVENT_REQUPDATE);
+    RequestUpdate();
 }
 
 void CButtonBar::ClearButtons()

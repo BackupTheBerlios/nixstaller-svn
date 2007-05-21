@@ -130,8 +130,7 @@ void CWindowManager::CoreAddWidget(CWidget *w)
 {
     m_WidgetQueue.push_back(w);
     InitChild(w);
-    UpdateLayout();
-    PushEvent(EVENT_REQUPDATE);
+    RequestUpdate();
 }
 
 void CWindowManager::CoreRemoveWidget(CWidget *w)
@@ -141,9 +140,8 @@ void CWindowManager::CoreRemoveWidget(CWidget *w)
     if (it != m_ActiveWidgets.end())
         m_ActiveWidgets.erase(it);
     
-    UpdateLayout();
+    RequestUpdate();
     TUI.UpdateButtonBar();
-    PushEvent(EVENT_REQUPDATE);
 }
 
 void CWindowManager::CoreFocusWidget(CWidget *w)

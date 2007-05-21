@@ -18,6 +18,7 @@
 */
 
 #include "luawidget.h"
+#include "tui/tui.h"
 #include "tui/label.h"
 
 // -------------------------------------
@@ -29,8 +30,14 @@ CLuaWidget::CLuaWidget(const char *title) : NNCurses::CBox(NNCurses::CBox::VERTI
     if (title && *title)
     {
         m_Title = title;
-        StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(m_Title)), false, false, 0, 0);
+        StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(m_Title), false), false, false, 0, 0);
+        m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
     }
+}
+
+int CLuaWidget::MaxWidgetReqW(void) const
+{
+    return NNCurses::GetMaxWidth()-4;
 }
 
 void CLuaWidget::UpdateLanguage()

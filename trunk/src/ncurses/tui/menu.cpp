@@ -165,9 +165,6 @@ int CMenu::CoreRequestWidth()
     if (m_iMaxWidth)
         return m_iMaxWidth;
 
-    if (m_LongestLine)
-        return SafeConvert<int>(m_LongestLine);
-    
     return 3;
 }
 

@@ -73,6 +73,7 @@ public:
     void Clear(void);
     TChildList &GetChildList(void) { return m_Childs; }
     bool Empty(void) { return m_Childs.empty(); }
+    void RequestUpdate(void);
     
     void FocusWidget(CWidget *w) { CoreFocusWidget(w); }
     bool SetNextFocWidget(bool cont); // cont : Checks widget after current focused widget

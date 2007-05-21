@@ -27,9 +27,10 @@ struct lua_State;
 class CBaseLuaInputField
 {
     std::string m_szType;
+    int m_iSpacing;
     
     virtual const char *CoreGetValue(void) = 0;
-    virtual void CoreSetSpacing(int percent) = 0;
+    virtual void CoreUpdateSpacing(void) = 0;
     
 protected:
     const std::string &GetType(void) { return m_szType; };
@@ -39,9 +40,9 @@ public:
     virtual ~CBaseLuaInputField(void) { };
     
     const char *GetValue(void) { return CoreGetValue(); }
-    void SetSpacing(int percent) { CoreSetSpacing(percent); }
+    void SetSpacing(int percent) { m_iSpacing = percent; CoreUpdateSpacing(); }
 
-    int GetDefaultSpacing(void) const { return 25; };
+    int GetSpacing(void) const { return m_iSpacing; };
 
     static void LuaRegister(void);
     

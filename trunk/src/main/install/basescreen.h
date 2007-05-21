@@ -24,7 +24,7 @@ class CBaseLuaGroup;
 
 class CBaseScreen
 {
-    std::string m_szTitle;
+    std::string m_Title;
     CBaseInstall *m_pInstaller;
     
     bool CallLuaBoolFunc(const char *func, bool def);
@@ -33,11 +33,11 @@ class CBaseScreen
     virtual void CoreUpdateLanguage(void) = 0;
     
 protected:
-    const std::string &GetTitle(void) { return m_szTitle; }
+    const std::string &GetTitle(void) { return m_Title; }
     CBaseInstall *GetInstall(void) { return m_pInstaller; }
 
 public:
-    CBaseScreen(const std::string &title) : m_szTitle(title) { }
+    CBaseScreen(const std::string &title) : m_Title(title) { }
     virtual ~CBaseScreen(void) { }
     
     void UpdateLanguage(void) { CoreUpdateLanguage(); }
