@@ -194,6 +194,7 @@ void CWidget::Enable(bool e)
         
         if (!m_bEnabled && m_pParent)
             m_pParent->DisableWidget(this);
+        UpdateEnabled();
     }
 }
 

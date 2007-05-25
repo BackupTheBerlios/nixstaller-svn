@@ -225,6 +225,8 @@ void CBox::CoreDrawLayout()
             }
         }
     
+        assert(begx >= FieldX());
+        assert(begx >= FieldY());
         assert(widgetw>0 && widgeth>0);
         assert(widgetw>=(*it)->RequestWidth() && widgeth>=(*it)->RequestHeight());
         

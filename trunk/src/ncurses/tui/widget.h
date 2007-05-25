@@ -65,11 +65,15 @@ protected:
     virtual void DoDraw(void) { }
     virtual void CoreInit(void) { }
     
+    virtual void CoreTouchSize(void) { }
     virtual void UpdateSize(void) { }
+    
     virtual void UpdateColors(void) { }
     
     virtual void UpdateFocus(void) { }
     virtual bool CoreCanFocus(void) { return false; }
+    
+    virtual void UpdateEnabled(void) { }
     
     virtual bool CoreHandleKey(chtype key) { return false; }
     virtual bool CoreHandleEvent(CWidget *emitter, int event) { return false; }
@@ -88,7 +92,7 @@ protected:
     void Init(void);
     
     void SetSize(int x, int y, int w, int h);
-    void TouchSize(void) { m_bSizeChanged = true; }
+    void TouchSize(void) { m_bSizeChanged = true; CoreTouchSize(); }
 
     void SetParent(CGroup *g) { m_pParent = g; m_pParentWin = NULL; }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }

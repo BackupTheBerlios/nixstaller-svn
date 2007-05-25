@@ -100,7 +100,7 @@ void CTextBase::UpdateText(int width)
 void CTextBase::CoreDraw()
 {
     if (!m_QueuedText.empty())
-        UpdateText(Width());
+        UpdateText(RequestWidth());
     
     DrawWidget();
 }

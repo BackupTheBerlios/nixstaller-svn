@@ -37,7 +37,7 @@ CLuaWidget::CLuaWidget(const char *title) : NNCurses::CBox(NNCurses::CBox::VERTI
 
 int CLuaWidget::MaxWidgetReqW(void) const
 {
-    return NNCurses::GetMaxWidth()-4;
+    return NNCurses::GetMaxWidth()-6;
 }
 
 void CLuaWidget::UpdateLanguage()

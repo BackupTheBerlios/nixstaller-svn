@@ -43,6 +43,7 @@ private:
 
 protected:
     virtual void CoreDraw(void);
+    virtual void CoreTouchSize(void);
     virtual void UpdateSize(void);
     virtual void UpdateFocus(void);
     virtual bool CoreHandleKey(chtype key);

@@ -36,6 +36,7 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     {
         m_Label = label;
         m_pLabel = new NNCurses::CLabel(GetTranslation(m_Label), false);
+        m_pLabel->SetMaxReqHeight(1);
         box->StartPack(m_pLabel, false, false, 0, 0);
     }
     
@@ -62,15 +63,16 @@ void CLuaInputField::CoreUpdateLanguage()
 void CLuaInputField::CoreDrawLayout()
 {
 //     UNDONE
-//     if (m_bUpdateLabelWidth)
-//     {
-//         if (m_pLabel)
-//         {
-//             int w = (Width() * GetSpacing()) / 100;
-//             m_pLabel->SetMinWidth(w);
-//         }
-//         m_bUpdateLabelWidth = false;
-//     }
+    if (m_bUpdateLabelWidth)
+    {
+        if (m_pLabel)
+        {
+            int w = (Width() * GetSpacing()) / 100;
+            m_pLabel->SetMinWidth(w);
+            m_pLabel->SetMaxReqWidth(w);
+        }
+        m_bUpdateLabelWidth = false;
+    }
     
     CLuaWidget::CoreDrawLayout();
 }

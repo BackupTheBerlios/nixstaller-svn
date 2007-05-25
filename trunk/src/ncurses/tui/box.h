@@ -54,6 +54,7 @@ private:
     
 protected:
     virtual void UpdateSize(void) { UpdateLayout(); CGroup::UpdateSize(); }
+    virtual void UpdateEnabled(void) { if (Enabled()) UpdateLayout(); }
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);

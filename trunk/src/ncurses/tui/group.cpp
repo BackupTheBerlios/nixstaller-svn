@@ -36,23 +36,50 @@ bool CGroup::CanFocusChilds(CWidget *w)
 
 void CGroup::CoreDraw(void)
 {
+    InitDraw();
+    
     if (m_bUpdateLayout)
     {
         DrawLayout();
         m_bUpdateLayout = false;
     }
 
+/*    InitDraw();*/
+    DoDraw();
+    RefreshWidget();
+
     DrawWidget();
     DrawChilds();
 }
 
-void CGroup::UpdateSize()
+void CGroup::CoreTouchSize()
 {
     for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
     {
         if (!(*it)->GetWin()) // Widget isn't created yet (size will be set when widget is created)
             continue;
         
+        if (!(*it)->Enabled())
+            continue;
+        
+        (*it)->TouchSize();
+    }
+}
+
+void CGroup::UpdateSize()
+{
+    RequestQueuedDraw();
+    for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
+    {
+        if (!(*it)->GetWin()) // Widget isn't created yet (size will be set when widget is created)
+            continue;
+        
+        if (!(*it)->Enabled())
+            continue;
+        
+        (*it)->TouchSize();
+//         (*it)->RequestQueuedDraw();
+        continue;
         (*it)->MoveWindow(0, 0);
         WindowResize(*it, (*it)->Width(), (*it)->Height());
         (*it)->MoveWindow((*it)->X(), (*it)->Y());
@@ -67,7 +94,7 @@ void CGroup::UpdateFocus()
     
     for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
     {
-        if (*it == m_pFocusedWidget)
+        if (*it == m_pFocusedWidget || !(*it)->Enabled())
             continue;
         
         // Let all other widgets update their colors. The group has changed it's color which may affect any childs
