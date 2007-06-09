@@ -36,8 +36,8 @@ class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
     NNCurses::CInputField *m_pInputField;
     bool m_bUpdateLabelWidth;
     
-    virtual const char *CoreGetValue(void){}
-    virtual void CoreUpdateSpacing(void) { m_bUpdateLabelWidth = true; /*RequestUpdate();*/ }
+    virtual const char *CoreGetValue(void);
+    virtual void CoreUpdateSpacing(void) { m_bUpdateLabelWidth = true; }
     virtual void CoreUpdateLanguage(void);
     
 protected:

@@ -54,6 +54,11 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     StartPack(box, false, false, 0, 0);
 }
 
+const char *CLuaInputField::CoreGetValue(void)
+{
+    return m_pInputField->Value().c_str();
+}
+
 void CLuaInputField::CoreUpdateLanguage()
 {
     if (m_pLabel)
@@ -62,7 +67,6 @@ void CLuaInputField::CoreUpdateLanguage()
 
 void CLuaInputField::CoreDrawLayout()
 {
-//     UNDONE
     if (m_bUpdateLabelWidth)
     {
         if (m_pLabel)

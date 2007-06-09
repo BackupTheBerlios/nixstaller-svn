@@ -59,6 +59,16 @@ void CWidget::MoveWindow(int x, int y)
 
 void CWidget::InitDraw()
 {
+    if (m_bSizeChanged)
+    {
+        m_bSizeChanged = false;
+        MoveWindow(0, 0); // Move to a safe position first
+        WindowResize(this, Width(), Height());
+        MoveWindow(X(), Y());
+        UpdateSize();
+        TUI.QueueRefresh();
+    }
+    
     if (m_bColorsChanged)
     {
         if (m_bFocused)
@@ -71,15 +81,6 @@ void CWidget::InitDraw()
         UpdateColors();
     }
     
-    if (m_bSizeChanged)
-    {
-        MoveWindow(0, 0); // Move to a safe position first
-        WindowResize(this, Width(), Height());
-        MoveWindow(X(), Y());
-        UpdateSize();
-        m_bSizeChanged = false;
-    }
-
     WindowErase(this);
 
     if (HasBox())
@@ -88,7 +89,7 @@ void CWidget::InitDraw()
 
 void CWidget::RefreshWidget(void)
 {
-    Refresh(this);
+    WNOUTRefresh(m_pNCursWin);
 }
 
 void CWidget::DrawWidget()
@@ -113,6 +114,8 @@ void CWidget::SetColorAttr(TColorPair colors, bool e)
 
 void CWidget::Draw()
 {
+    assert(Enabled());
+    
     if (!m_bInitialized)
     {
         Init();

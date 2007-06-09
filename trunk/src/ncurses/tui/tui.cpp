@@ -109,8 +109,11 @@ bool CTUI::Run(int delay)
         m_QueuedDrawWidgets.pop_front();
         
         // Draw after widget has been removed from queue, this way the widget or childs from the
-        // widget can queue themselves.
+        // widget can queue themselves while being drawn.
         w->Draw();
+        
+        if (m_QueuedDrawWidgets.empty())
+            DoUpdate(); // Commit real drawing after last widget
     }
     
     return true;
@@ -200,5 +203,9 @@ void CTUI::RemoveFromQueue(CWidget *w)
         m_QueuedDrawWidgets.erase(it);
 }
 
+void CTUI::QueueRefresh()
+{
+    WNOUTRefresh(GetRootWin());
+}
 
 }

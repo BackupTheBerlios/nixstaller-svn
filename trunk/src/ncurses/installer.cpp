@@ -155,8 +155,9 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
     screen->Enable(true);
     screen->Activate();
 //     m_pScreenBox->FocusWidget(screen);
-    m_CurrentScreen = std::distance(m_InstallScreens.begin(),
-                                    std::find(m_InstallScreens.begin(), m_InstallScreens.end(), screen));
+    m_CurrentScreen = 0;
+    while (m_InstallScreens.at(m_CurrentScreen) != screen)
+        m_CurrentScreen++;
 }
 
 void CInstaller::InstallThink()
@@ -205,7 +206,7 @@ bool CInstaller::CoreHandleKey(chtype key)
         AskQuit();
         return true;
     }
-
+    
     return CNCursBase::CoreHandleKey(key);
 }
 

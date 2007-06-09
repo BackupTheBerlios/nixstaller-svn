@@ -183,6 +183,16 @@ void Refresh(CWidget *widget)
     Check(wrefresh(widget->GetWin()), "wrefresh");
 }
 
+void WNOUTRefresh(WINDOW *win)
+{
+    Check(wnoutrefresh(win), "wnoutrefresh");
+}
+
+void DoUpdate()
+{
+    Check(doupdate(), "doupdate");
+}
+
 void HLine(CWidget *widget, int x, int y, chtype ch, int count)
 {
     Check(mvwhline(widget->GetWin(), y, x, ch, count), "mvwhline");

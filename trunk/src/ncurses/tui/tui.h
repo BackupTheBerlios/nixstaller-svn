@@ -51,7 +51,8 @@ class CTUI
     friend class CWindowManager;
     
 public:
-    CTUI(void) : m_bQuit(false), m_iCurColorPair(0), m_pMainBox(NULL), m_pButtonBar(NULL), m_pWinManager(NULL) { };
+    CTUI(void) : m_bQuit(false), m_iCurColorPair(0), m_pMainBox(NULL), m_pButtonBar(NULL),
+                 m_pWinManager(NULL) { };
     
     void InitNCurses(void);
     void StopNCurses(void);
@@ -65,6 +66,8 @@ public:
     int GetColorPair(int fg, int bg);
     void QueueDraw(CWidget *w);
     void RemoveFromQueue(CWidget *w);
+    
+    void QueueRefresh(void);
     
     void LockCursor(int x, int y) { m_CursorPos.first = x; m_CursorPos.second = y; }
     void UnLockCursor(void) { m_CursorPos.first = m_CursorPos.second = 0; }
@@ -105,6 +108,8 @@ void DelWin(WINDOW *win);
 void WindowResize(CWidget *widget, int w, int h);
 void WindowErase(CWidget *widget);
 void Refresh(CWidget *widget);
+void WNOUTRefresh(WINDOW *win);
+void DoUpdate(void);
 void HLine(CWidget *widget, int x, int y, chtype ch, int count);
 
 }

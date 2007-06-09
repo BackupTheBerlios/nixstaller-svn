@@ -75,10 +75,13 @@ bool CWindowManager::CoreHandleEvent(CWidget *emitter, int event)
     }
     else if (event == EVENT_REQUPDATE)
     {
-        m_WidgetQueue.push_back(emitter);
-        UpdateLayout();
-        PushEvent(EVENT_REQUPDATE);
-        return true;
+        if (IsDirectChild(emitter, this))
+        {
+            m_WidgetQueue.push_back(emitter);
+            UpdateLayout();
+            PushEvent(EVENT_REQUPDATE);
+            return true;
+        }
     }
     
     return false;
@@ -124,13 +127,21 @@ void CWindowManager::CoreDrawChilds()
     
     for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
+        if (!(*it)->Enabled())
+            continue;
+        
         if (std::find(m_ActiveWidgets.begin(), m_ActiveWidgets.end(), *it) != m_ActiveWidgets.end())
             continue; // We draw these as last, so it looks like they are on top
         DrawChild(*it);
     }
     
     for (TChildList::const_iterator it=m_ActiveWidgets.begin(); it!=m_ActiveWidgets.end(); it++)
+    {
+        if (!(*it)->Enabled())
+            continue;
+
         DrawChild(*it);
+    }
 }
 
 void CWindowManager::CoreAddWidget(CWidget *w)
