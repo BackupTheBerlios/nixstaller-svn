@@ -92,7 +92,7 @@ void CMenu::DoDraw()
         int len = SafeConvert<int>(it->name.length());
         if (len >= m_iXOffset)
         {
-            int end = std::min(Width(), len-m_iXOffset);
+            int end = std::min(ScrollFieldWidth(), len-m_iXOffset);
             AddStr(this, 1, y, it->name.substr(m_iXOffset, end).c_str());
         }
         
@@ -198,6 +198,7 @@ CMenu::TScrollRange CMenu::CoreGetScrollRegion()
 void CMenu::AddEntry(const std::string &id, const std::string &name)
 {
     m_MenuList.insert(std::lower_bound(m_MenuList.begin(), m_MenuList.end(), name), SEntry(id, name));
+    m_LongestLine = std::max(m_LongestLine, name.length());
     RequestQueuedDraw();
 }
 

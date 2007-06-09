@@ -924,9 +924,8 @@ void CLuaCFGMenu::UpdateLanguage()
         m_pMenu->text(n, GetTranslation((const char *)m_pMenu->data(n))); // User data contains the real name
 }
 
-void CLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l)
+void CLuaCFGMenu::CoreAddVar(const char *name)
 {
-    CBaseLuaCFGMenu::AddVar(name, desc, val, type, l);
     m_pMenu->add(GetTranslation(name), (void *)name);
     
     if (m_pMenu->size() == 1) // Init menu: highlight first item

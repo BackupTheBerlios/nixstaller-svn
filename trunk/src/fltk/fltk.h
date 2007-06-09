@@ -271,6 +271,8 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CBaseLuaWidget
     
     static int m_iMenuHeight, m_iMenuWidth, m_iDescHeight, m_iButtonWidth, m_iButtonHeight;
     
+    virtual void CoreAddVar(const char *name);
+
     const char *GetCurItem(void);
     void CreateDirSelector(void);
     void SetInfo(void);
@@ -284,7 +286,6 @@ public:
     
     virtual Fl_Group *Create(void);
     virtual void UpdateLanguage(void);
-    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);
     
     static int CalcHeight(int w, const char *desc);
     static void MenuCB(Fl_Widget *w, void *p) { ((CLuaCFGMenu *)p)->SetInfo(); ((CLuaCFGMenu *)p)->SetInputMethod(); };

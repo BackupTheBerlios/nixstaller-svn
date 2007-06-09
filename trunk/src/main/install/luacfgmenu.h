@@ -20,13 +20,16 @@
 #ifndef LUACFGMENU_H
 #define LUACFGMENU_H
 
+#include <vector>
+#include <string>
+#include <map>
+
 struct lua_State;
 
 class CBaseLuaCFGMenu
 {
 protected:
     enum EVarType { TYPE_DIR, TYPE_STRING, TYPE_LIST, TYPE_BOOL };
-
     typedef std::vector<std::string> TOptionsType;
 
     struct entry_s
@@ -39,13 +42,18 @@ protected:
     
     typedef std::map<std::string, entry_s *> TVarType;
 
-    TVarType m_Variabeles;
-    
+    TVarType &GetVariables(void) { return m_Variables; }
+
+private:
+    TVarType m_Variables;
+
+    virtual void CoreAddVar(const char *name) = 0;
+
+    void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);
     const char *BoolToStr(bool b) { return (b) ? "Enable" : "Disable"; }
 
 public:
     virtual ~CBaseLuaCFGMenu(void);
-    virtual void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);
     
     static void LuaRegister(void);
     

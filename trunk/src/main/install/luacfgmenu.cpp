@@ -28,16 +28,16 @@
 
 CBaseLuaCFGMenu::~CBaseLuaCFGMenu()
 {
-    for (std::map<std::string, entry_s *>::iterator it=m_Variabeles.begin(); it!=m_Variabeles.end(); it++)
+    for (TVarType::iterator it=m_Variables.begin(); it!=m_Variables.end(); it++)
         delete it->second;
 }
 
 void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l)
 {
-    if (m_Variabeles[name])
+    if (m_Variables[name])
     {
-        delete m_Variabeles[name];
-        m_Variabeles[name] = NULL;
+        delete m_Variables[name];
+        m_Variables[name] = NULL;
     }
     
     const char *value = val;
@@ -67,12 +67,14 @@ void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val
         }
     }
     
-    m_Variabeles[name] = new entry_s(value, desc, type);
+    m_Variables[name] = new entry_s(value, desc, type);
     
     if (l)
     {
-        m_Variabeles[name]->options = *l;
+        m_Variables[name]->options = *l;
     }
+    
+    CoreAddVar(name);
 }
 
 void CBaseLuaCFGMenu::LuaRegister()
@@ -157,12 +159,12 @@ int CBaseLuaCFGMenu::LuaGet(lua_State *L)
     CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     
-    if (menu->m_Variabeles[var])
+    if (menu->m_Variables[var])
     {
-        if (menu->m_Variabeles[var]->type == TYPE_BOOL)
-            lua_pushboolean(L, (menu->m_Variabeles[var]->val == "Enable") ? true : false);
+        if (menu->m_Variables[var]->type == TYPE_BOOL)
+            lua_pushboolean(L, (menu->m_Variables[var]->val == "Enable") ? true : false);
         else
-            lua_pushstring(L, menu->m_Variabeles[var]->val.c_str());
+            lua_pushstring(L, menu->m_Variables[var]->val.c_str());
     }
     else
         luaL_error(L, "No variabele %s found in menu\n", var);

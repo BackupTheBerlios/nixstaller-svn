@@ -48,8 +48,8 @@ void CBaseScroll::SyncBars()
     TScrollRange range = CoreGetRange();
     TScrollRange region = CoreGetScrollRegion();
     
-    m_pVScrollbar->Enable((range.first-1) > region.first);
-    m_pHScrollbar->Enable((range.second-1) > region.second);
+    m_pVScrollbar->Enable(range.first > region.first);
+    m_pHScrollbar->Enable(range.second > region.second);
 
     range.first -= region.first;
     range.second -= region.second;
@@ -62,8 +62,8 @@ void CBaseScroll::SyncBars()
     
     if (range != m_CurRange)
     {
-        m_pVScrollbar->SetRange(0, range.first-1);
-        m_pHScrollbar->SetRange(0, range.second-1);
+        m_pVScrollbar->SetRange(0, range.first);
+        m_pHScrollbar->SetRange(0, range.second);
         m_CurRange = range;
     }
 }

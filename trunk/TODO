@@ -34,6 +34,7 @@ MAIN
 - Let Lua dir iter use class code?
 - Check class metatable (readable/writeable from scripts?)
 - Lighten template functions?
+- Make function wrapper for m_Variables in CBaseLuaCFGMenu
 
 
 LIBSU

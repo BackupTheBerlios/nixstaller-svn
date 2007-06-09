@@ -106,11 +106,13 @@ void CNCursBase::ShowAbout()
     NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
     NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 25, 0);
     
-    NNCurses::CTextField *text = new NNCurses::CTextField(20, 8, false);
+    NNCurses::CTextField *text = new NNCurses::CTextField(30, 12, false);
     text->LoadFile("about");
     dialog->AddWidget(text);
     
     dialog->AddButton(new NNCurses::CButton(GetTranslation("OK")));
+    
+    NNCurses::TUI.AddGroup(dialog, true);
     
     while (dialog->Run())
         ;

@@ -39,6 +39,7 @@ private:
     void SyncBars(void);
     
 protected:
+    virtual void UpdateSize(void) { UpdateLayout(); CGroup::UpdateSize(); }
     virtual void CoreDraw(void) { SyncBars(); CGroup::CoreDraw(); }
     virtual void CoreDrawLayout(void);
     virtual void CoreScroll(int vscroll, int hscroll) {  }
@@ -52,8 +53,6 @@ protected:
 
     CBaseScroll(void);
 };
-
-
 
 
 }
