@@ -67,7 +67,7 @@ void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val
         }
     }
     
-    m_Variables[name] = new entry_s(value, desc, type);
+    m_Variables[name] = new SEntry(value, desc, type);
     
     if (l)
     {

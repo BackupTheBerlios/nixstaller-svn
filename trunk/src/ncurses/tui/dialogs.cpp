@@ -24,6 +24,15 @@
 #include "inputfield.h"
 #include "filedialog.h"
 
+namespace {
+
+int MaxW(void)
+{
+    return NNCurses::GetMaxWidth() - 6;
+}
+
+}
+
 namespace NNCurses {
 
 // -------------------------------------
@@ -43,8 +52,12 @@ CDialog *CreateBaseDialog(TColorPair fc, TColorPair dfc, int minw, int minh, con
         dialog->SetMinHeight(minh);
 
     if (!text.empty())
-        dialog->StartPack(new CLabel(text), true, true, 1, 1);
-
+    {
+        CLabel *label = new CLabel(text);
+        label->SetMaxReqWidth(MaxW());
+        dialog->StartPack(label, true, true, 1, 1);
+    }
+    
     return dialog;
 }
 
@@ -104,7 +117,9 @@ std::string InputBox(const std::string &msg, const std::string &init, int max, c
     CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_GREEN, COLOR_BLUE),
                                        TColorPair(COLOR_WHITE, COLOR_BLUE), 50);
     
-    dialog->AddWidget(new CLabel(msg, false));
+    CLabel *label = new CLabel(msg, false);
+    label->SetMaxReqWidth(MaxW());
+    dialog->AddWidget(label);
     
     CInputField *input = new CInputField(init, CInputField::STRING, max, out);
     dialog->StartPack(input, true, true, 1, 0);
@@ -113,7 +128,6 @@ std::string InputBox(const std::string &msg, const std::string &init, int max, c
     dialog->AddButton(okbutton, false, false);
     dialog->AddButton(cancelbutton, false, false);
 
-    
     TUI.AddGroup(dialog, true);
     
     while (dialog->Run())

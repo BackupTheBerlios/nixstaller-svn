@@ -45,6 +45,7 @@ class CMenu: public CBaseScroll
     TSTLStrSize m_LongestLine;
     int m_iXOffset, m_iYOffset;
     int m_iCursorLine;
+    std::string m_QueuedSelection;
 
     int ScrollFieldWidth(void) const { return Width()-2; }
     int ScrollFieldHeight(void) const { return Height()-2; }
@@ -58,6 +59,7 @@ protected:
     virtual bool CoreHandleKey(chtype key);
     virtual bool CoreCanFocus(void) { return true; }
     virtual void CoreGetButtonDescs(TButtonDescList &list);
+    virtual void CoreDrawLayout(void);
     virtual void CoreScroll(int vscroll, int hscroll);
     virtual TScrollRange CoreGetRange(void);
     virtual TScrollRange CoreGetScrollRegion(void);

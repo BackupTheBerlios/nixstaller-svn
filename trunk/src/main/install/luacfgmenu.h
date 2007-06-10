@@ -32,15 +32,15 @@ protected:
     enum EVarType { TYPE_DIR, TYPE_STRING, TYPE_LIST, TYPE_BOOL };
     typedef std::vector<std::string> TOptionsType;
 
-    struct entry_s
+    struct SEntry
     {
         std::string val, def, desc;
         TOptionsType options;
         EVarType type;
-        entry_s(const char *v, const char *d, EVarType t) : val(v), def(v), desc(d), type(t) { };
+        SEntry(const char *v, const char *d, EVarType t) : val(v), def(v), desc(d), type(t) { };
     };
     
-    typedef std::map<std::string, entry_s *> TVarType;
+    typedef std::map<std::string, SEntry *> TVarType;
 
     TVarType &GetVariables(void) { return m_Variables; }
 

@@ -160,6 +160,17 @@ void CMenu::CoreGetButtonDescs(TButtonDescList &list)
     list.push_back(TButtonDescPair("Character", "Move to"));
 }
 
+void CMenu::CoreDrawLayout()
+{
+    if (!m_QueuedSelection.empty())
+    {
+        Select(m_QueuedSelection);
+        m_QueuedSelection.clear();
+    }
+    
+    CBaseScroll::CoreDrawLayout();
+}
+
 int CMenu::CoreRequestWidth()
 {
     if (m_iMaxWidth)
@@ -204,11 +215,19 @@ void CMenu::AddEntry(const std::string &id, const std::string &name)
 
 void CMenu::Select(const std::string &id)
 {
+    if (!GetWin())
+    {
+        // Can't move cursor before being initialized
+        m_QueuedSelection = id;
+        return;
+    }
+    
     TMenuList::iterator line = std::lower_bound(m_MenuList.begin(), m_MenuList.end(), id);
 
     if ((line != m_MenuList.end()) && (line->id == id))
     {
-        VScroll(SafeConvert<int>(std::distance(m_MenuList.begin(), line)), false);
+        TMenuList::iterator cur = m_MenuList.begin() + GetCurrent();
+        Move(SafeConvert<int>(std::distance(cur, line)));
         PushEvent(EVENT_DATACHANGED);
     }
 }

@@ -34,10 +34,16 @@ CTextField::CTextField(int maxw, int maxh, bool w)
     m_pTextWidget = new CTextWidget(w);
     
     if (maxw)
+    {
+        m_pTextWidget->SetMinWidth(maxw);
         m_pTextWidget->SetMaxReqWidth(maxw);
+    }
     
     if (maxh)
+    {
+        m_pTextWidget->SetMinHeight(maxh);
         m_pTextWidget->SetMaxReqHeight(maxh);
+    }
     
     AddWidget(m_pTextWidget);
 }

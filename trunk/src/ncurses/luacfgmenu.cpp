@@ -18,7 +18,11 @@
 */
 
 #include "luacfgmenu.h"
+#include "tui/button.h"
+#include "tui/dialog.h"
 #include "tui/menu.h"
+#include "tui/textfield.h"
+#include "tui/tui.h"
 
 // -------------------------------------
 // Lua Config Menu Class
@@ -26,7 +30,13 @@
 
 CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CLuaWidget(desc)
 {
-    AddWidget(m_pMenu = new NNCurses::CMenu(25, 10));
+    NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1);
+    
+    box->AddWidget(m_pMenu = new NNCurses::CMenu(20, 7));
+    box->AddWidget(m_pDescWin = new NNCurses::CTextField(25, 7, true));
+    m_pDescWin->SetMinWidth(15);
+    
+    AddWidget(box);
 }
 
 void CLuaCFGMenu::CoreAddVar(const char *name)
@@ -38,4 +48,107 @@ void CLuaCFGMenu::CoreUpdateLanguage()
 {
     for (TVarType::iterator it=GetVariables().begin(); it!=GetVariables().end(); it++)
         m_pMenu->SetName(it->first, GetTranslation(it->first));
+    UpdateDesc();
 }
+
+CLuaCFGMenu::SEntry *CLuaCFGMenu::GetCurEntry()
+{
+    return GetVariables()[m_pMenu->Value()];
+}
+
+void CLuaCFGMenu::UpdateDesc()
+{
+    if (m_pMenu->Empty())
+        return;
+    
+    SEntry *entry = GetCurEntry();
+    
+    if (entry)
+        m_pDescWin->SetText(GetTranslation(entry->desc));
+}
+
+void CLuaCFGMenu::ShowChoiceMenu()
+{
+    SEntry *entry = GetCurEntry();
+    std::string item = m_pMenu->Value();
+    NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
+    const char *msg = CreateText(GetTranslation("Please choose a new value for %s"), GetTranslation(item.c_str()));
+    NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 20, 0, msg);
+    
+    NNCurses::CMenu *menu = new NNCurses::CMenu(15, 8);
+    
+    for (TOptionsType::const_iterator it=entry->options.begin(); it!=entry->options.end(); it++)
+        menu->AddEntry(*it, GetTranslation(*it));
+    
+    if (!entry->val.empty())
+        menu->Select(entry->val);
+    
+    dialog->AddWidget(menu);
+    
+    dialog->AddButton(new NNCurses::CButton(GetTranslation("OK")), true, false);
+    
+    NNCurses::CButton *cancelbutton = new NNCurses::CButton(GetTranslation("Cancel"));
+    dialog->AddButton(cancelbutton, true, false);
+    
+    NNCurses::TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    if (dialog->ActivatedWidget() != cancelbutton)
+        entry->val = menu->Value();
+    
+    delete dialog;
+}
+
+bool CLuaCFGMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
+{
+    if (m_pMenu->Empty())
+        return false;
+
+    if (emitter == m_pMenu)
+    {
+        if (event == EVENT_DATACHANGED)
+        {
+            UpdateDesc();
+            return true;
+        }
+        else if (event == EVENT_CALLBACK)
+        {
+            SEntry *entry = GetCurEntry();
+            std::string item = m_pMenu->Value();
+    
+            if (entry)
+            {
+                switch (entry->type)
+                {
+                    case TYPE_STRING:
+                    {
+                        std::string ret = NNCurses::InputBox(CreateText(GetTranslation("Please enter a new value for %s"),
+                                                             GetTranslation(item.c_str())), entry->val);
+                        if (!ret.empty())
+                            entry->val = ret;
+                        break;
+                    }
+                    case TYPE_DIR:
+                    {
+                        std::string ret = NNCurses::DirectoryBox(CreateText(GetTranslation("Please enter a new value for %s"),
+                                                             GetTranslation(item.c_str())), entry->val);
+                        if (!ret.empty())
+                            entry->val = ret;
+                        break;
+                    }
+                    case TYPE_LIST:
+                    case TYPE_BOOL:
+                        ShowChoiceMenu();
+                        break;
+                }
+                
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+

@@ -25,15 +25,25 @@
 
 namespace NNCurses {
     class CMenu;
+    class CTextField;
 }
 
 
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
 {
     NNCurses::CMenu *m_pMenu;
+    NNCurses::CTextField *m_pDescWin;
     
     virtual void CoreAddVar(const char *name);
     virtual void CoreUpdateLanguage(void);
+    
+    SEntry *GetCurEntry(void);
+    void UpdateDesc(void);
+    void ShowChoiceMenu(void);
+    
+protected:
+    virtual void CoreInit(void) { UpdateDesc(); }
+    virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
     
 public:
     CLuaCFGMenu(const char *desc);

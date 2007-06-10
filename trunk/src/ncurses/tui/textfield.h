@@ -44,6 +44,7 @@ public:
     CTextField(int maxw, int maxh, bool w);
     
     void AddText(const std::string &t);
+    void SetText(const std::string &t) { ClearText(); AddText(t); }
     void ClearText(void);
     void LoadFile(const char *f);
 };
