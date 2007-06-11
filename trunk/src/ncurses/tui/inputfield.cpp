@@ -205,7 +205,8 @@ void CInputField::UpdateFocus()
 void CInputField::SetText(const std::string &t)
 {
     m_Text = t;
-    m_StartPos = m_CursorPos = 0;
+//     m_StartPos = m_CursorPos = 0;
+    Move(m_Text.length(), false);
     RequestQueuedDraw();
 }
 

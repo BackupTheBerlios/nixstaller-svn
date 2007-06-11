@@ -17,24 +17,32 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef NCURSES_LUAGROUP_H
-#define NCURSES_LUAGROUP_H
+#ifndef NCURSES_LUADIRSELECTOR_H
+#define NCURSES_LUADIRSELECTOR_H
 
-#include "tui/box.h"
-#include "main/install/luagroup.h"
+#include "main/install/luadirselector.h"
+#include "luawidget.h"
 
-class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
+namespace NNCurses {
+    class CButton;
+    class CInputField;
+}
+
+
+class CLuaDirSelector: public CBaseLuaDirSelector, public CLuaWidget
 {
-    virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
-            int max, const char *type);
-    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l){}
-    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l){}
-    virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
-    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
+    NNCurses::CInputField *m_pDirInput;
+    NNCurses::CButton *m_pBrowseButton;
+    
+    virtual const char *GetDir(void){}
+    virtual void SetDir(const char *dir){}
     virtual void CoreUpdateLanguage(void);
     
+protected:
+    virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
+    
 public:
-    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false) {}
+    CLuaDirSelector(const char *desc, const char *val);
 };
 
 #endif

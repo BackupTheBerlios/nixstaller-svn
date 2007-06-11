@@ -20,6 +20,7 @@
 #include "main/main.h"
 #include "luagroup.h"
 #include "luacfgmenu.h"
+#include "luadirselector.h"
 #include "luainput.h"
 
 // -------------------------------------
@@ -30,6 +31,13 @@ CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *d
                                                 int max, const char *type)
 {
     CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaDirSelector *CLuaGroup::CreateDirSelector(const char *desc, const char *val)
+{
+    CLuaDirSelector *ret = new CLuaDirSelector(desc, val);
     AddWidget(ret);
     return ret;
 }
