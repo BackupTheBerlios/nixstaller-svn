@@ -18,42 +18,31 @@
 */
 
 #include "main/main.h"
-#include "luaradiobutton.h"
-#include "tui/radiobutton.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
+#include "luamenu.h"
 
 // -------------------------------------
-// Lua Radio Button Class
+// Base Lua Radio Button Class
 // -------------------------------------
 
-CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CLuaWidget(desc), m_Options(l)
+void CBaseLuaMenu::LuaRegister()
 {
-    m_pRadioButton = new NNCurses::CRadioButton;
-    
-    for (TOptions::const_iterator it=l.begin(); it!=l.end(); it++)
-        m_pRadioButton->AddChoice(GetTranslation(*it));
-    
-    AddWidget(m_pRadioButton);
+    NLua::RegisterClassFunction(LuaGet, "get", "menu");
+    NLua::RegisterClassFunction(LuaSet, "set", "menu");
 }
 
-const char *CLuaRadioButton::EnabledButton()
+int CBaseLuaMenu::LuaGet(lua_State *L)
 {
-    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++)
-    {
-        if (m_pRadioButton->GetSelection() == GetTranslation(*it))
-            return it->c_str();
-    }
-    
-    return NULL;
+    CBaseLuaMenu *box = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
+    lua_pushstring(L, box->Selection());
+    return 1;
 }
 
-void CLuaRadioButton::Enable(int n)
+int CBaseLuaMenu::LuaSet(lua_State *L)
 {
-    m_pRadioButton->Select(n);
-}
-
-void CLuaRadioButton::CoreUpdateLanguage()
-{
-    int n = 1;
-    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
-        m_pRadioButton->SetName(n, GetTranslation(*it));
+    CBaseLuaMenu *box = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
+    int n = luaL_checkint(L, 2);
+    box->Select(n);
+    return 0;
 }

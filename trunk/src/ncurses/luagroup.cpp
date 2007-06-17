@@ -22,7 +22,9 @@
 #include "luacfgmenu.h"
 #include "luacheckbox.h"
 #include "luadirselector.h"
+#include "luaimage.h"
 #include "luainput.h"
+#include "luamenu.h"
 #include "luaradiobutton.h"
 
 // -------------------------------------
@@ -65,6 +67,30 @@ CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
     return ret;
 }
 
+CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaMenu *ret = new CLuaMenu(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
 void CLuaGroup::CoreUpdateLanguage()
 {
+}
+
+CBaseLuaImage *CLuaGroup::CreateImage(const char *desc, const char *file)
+{
+    // No widget addition: ncurses doesn't do gfx :)
+    return new CLuaImage;
+}
+
+void CLuaGroup::CoreAddWidget(NNCurses::CWidget *w)
+{
+    if (m_bInitEnable)
+    {
+        m_bInitEnable = false;
+        Enable(true);
+    }
+    
+    CBox::CoreAddWidget(w);
 }

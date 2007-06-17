@@ -25,16 +25,23 @@
 
 class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
 {
+    bool m_bInitEnable;
+    
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
+    virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l);
+    virtual CBaseLuaImage *CreateImage(const char *desc, const char *file);
     virtual void CoreUpdateLanguage(void);
     
+protected:
+    virtual void CoreAddWidget(NNCurses::CWidget *w);
+    
 public:
-    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1) {}
+    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1), m_bInitEnable(true) { Enable(false); }
 };
 
 #endif

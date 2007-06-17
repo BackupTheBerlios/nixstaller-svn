@@ -17,6 +17,7 @@ OVERALL
 - Update Lua library for FBSD, NBSD, OBSD, SunOS
 - Recursive directory creation in VerifyDestDir (patch from Edward), also check root creation
 - Lua Panic function
+- Check boundries etc. for lua widgets
 
         
 TRANSLATIONS
@@ -35,7 +36,7 @@ MAIN
 - Check class metatable (readable/writeable from scripts?)
 - Lighten template functions?
 - Make function wrapper for m_Variables in CBaseLuaCFGMenu
-
+- Remove GetTranslation function calls for lua widget descriptions?
 
 LIBSU
 - Clean up/redesign

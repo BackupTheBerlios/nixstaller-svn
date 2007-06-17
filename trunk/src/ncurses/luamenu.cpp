@@ -18,54 +18,45 @@
 */
 
 #include "main/main.h"
-#include "luacheckbox.h"
-#include "tui/checkbox.h"
+#include "luamenu.h"
+#include "tui/menu.h"
 
 // -------------------------------------
-// Lua Checkbox Class
+// Lua Menu Class
 // -------------------------------------
 
-CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CLuaWidget(desc), m_Options(l)
+CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CLuaWidget(desc), m_Options(l)
 {
-    m_pCheckbox = new NNCurses::CCheckbox;
+    m_pMenu = new NNCurses::CMenu(15, 7);
     
     for (TOptions::const_iterator it=l.begin(); it!=l.end(); it++)
-        m_pCheckbox->AddChoice(GetTranslation(*it));
+        m_pMenu->AddEntry(*it, GetTranslation(*it));
     
-    AddWidget(m_pCheckbox);
+    AddWidget(m_pMenu);
 }
 
-bool CLuaCheckbox::Enabled(int n)
+const char *CLuaMenu::Selection()
 {
-    NNCurses::CCheckbox::TRetType l;
-    m_pCheckbox->GetSelections(l);
+    if (m_pMenu->Empty())
+        return NULL;
     
-    if (std::find(l.begin(), l.end(), GetTranslation(m_Options.at(n))) != l.end())
-        return true;
+    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++)
+    {
+        if (GetTranslation(*it) == m_pMenu->Value())
+            return it->c_str();
+    }
     
-    return false;
+    return NULL;
 }
 
-bool CLuaCheckbox::Enabled(const char *s)
+void CLuaMenu::Select(int n)
 {
-    NNCurses::CCheckbox::TRetType l;
-    m_pCheckbox->GetSelections(l);
-    
-    if (std::find(l.begin(), l.end(), GetTranslation(s)) != l.end())
-        return true;
-    
-    return false;
+    m_pMenu->Select(m_Options.at(n));
 }
 
-void CLuaCheckbox::Enable(int n, bool b)
-{
-    if (Enabled(n) != b)
-        m_pCheckbox->Select(n);
-}
-
-void CLuaCheckbox::CoreUpdateLanguage()
+void CLuaMenu::CoreUpdateLanguage()
 {
     int n = 1;
     for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
-        m_pCheckbox->SetName(n, GetTranslation(*it));
+        m_pMenu->SetName(*it, GetTranslation(*it));
 }

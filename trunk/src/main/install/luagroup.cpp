@@ -29,11 +29,13 @@
 
 void CBaseLuaGroup::LuaRegister()
 {
-    NLua::RegisterClassFunction(CBaseLuaGroup::LuaAddInput, "addinput", "group");
-    NLua::RegisterClassFunction(CBaseLuaGroup::LuaAddCheckbox, "addcheckbox", "group");
-    NLua::RegisterClassFunction(CBaseLuaGroup::LuaAddRadioButton, "addradiobutton", "group");
-    NLua::RegisterClassFunction(CBaseLuaGroup::LuaAddDirSelector, "adddirselector", "group");
-    NLua::RegisterClassFunction(CBaseLuaGroup::LuaAddCFGMenu, "addcfgmenu", "group");
+    NLua::RegisterClassFunction(LuaAddInput, "addinput", "group");
+    NLua::RegisterClassFunction(LuaAddCheckbox, "addcheckbox", "group");
+    NLua::RegisterClassFunction(LuaAddRadioButton, "addradiobutton", "group");
+    NLua::RegisterClassFunction(LuaAddDirSelector, "adddirselector", "group");
+    NLua::RegisterClassFunction(LuaAddCFGMenu, "addcfgmenu", "group");
+    NLua::RegisterClassFunction(LuaAddMenu, "addmenu", "group");
+    NLua::RegisterClassFunction(LuaAddImage, "addimage", "group");
 }
 
 int CBaseLuaGroup::LuaAddInput(lua_State *L)
@@ -116,6 +118,39 @@ int CBaseLuaGroup::LuaAddCFGMenu(lua_State *L)
     const char *desc = luaL_optstring(L, 2, "");
     
     NLua::CreateClass(group->CreateCFGMenu(GetTranslation(desc)), "configmenu");
+    
+    return 1;
+}
+
+int CBaseLuaGroup::LuaAddMenu(lua_State *L)
+{
+    CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
+    const char *desc = luaL_checkstring(L, 2);
+    
+    luaL_checktype(L, 3, LUA_TTABLE);
+    int count = luaL_getn(L, 3);
+    std::vector<std::string> l(count);
+    
+    for (int i=1; i<=count; i++)
+    {
+        lua_rawgeti(L, 3, i);
+        const char *s = luaL_checkstring(L, -1);
+        l[i-1] = s;
+        lua_pop(L, 1);
+    }
+    
+    NLua::CreateClass(group->CreateMenu(GetTranslation(desc), l), "menu");
+    
+    return 1;
+}
+
+int CBaseLuaGroup::LuaAddImage(lua_State *L)
+{
+    CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
+    const char *desc = luaL_checkstring(L, 2);
+    const char *file = luaL_checkstring(L, 3);
+
+    NLua::CreateClass(group->CreateImage(GetTranslation(desc), file), "image");
     
     return 1;
 }
