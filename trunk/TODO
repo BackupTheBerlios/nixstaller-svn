@@ -48,6 +48,7 @@ REGISTER
 - Better error handling for register
 - Check path for rm
 - exceptions
+
         
 NCURSES
 - Check chtype
@@ -63,6 +64,10 @@ NCURSES
 
 GTK
 - Move main window away from base frontend class?
+
+FLTK
+- Update code to new lua design
+- Change Lua inputfield label width handling
 
 
 DESIGN

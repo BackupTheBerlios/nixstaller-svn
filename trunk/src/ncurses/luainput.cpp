@@ -27,8 +27,7 @@
 // -------------------------------------
 
 CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *val, int max,
-                               const char *type) : CBaseLuaInputField(type), CLuaWidget(desc), m_pLabel(NULL),
-                                                   m_bUpdateLabelWidth(true)
+                               const char *type) : CBaseLuaInputField(type), CLuaWidget(desc), m_pLabel(NULL)
 {
     NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1);
     
@@ -52,6 +51,18 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     box->AddWidget(m_pInputField = new NNCurses::CInputField((val) ? val : "", t, max));
     
     StartPack(box, false, false, 0, 0);
+    UpdateLabelWidth();
+}
+
+void CLuaInputField::UpdateLabelWidth()
+{
+    if (m_pLabel)
+    {
+        int w = GetLabelWidth();
+        m_pLabel->SetMinWidth(w);
+        m_pLabel->SetMaxReqWidth(w);
+        RequestUpdate();
+    }
 }
 
 const char *CLuaInputField::CoreGetValue(void)
@@ -63,20 +74,4 @@ void CLuaInputField::CoreUpdateLanguage()
 {
     if (m_pLabel)
         m_pLabel->SetText(GetTranslation(m_Label));
-}
-
-void CLuaInputField::CoreDrawLayout()
-{
-    if (m_bUpdateLabelWidth)
-    {
-        if (m_pLabel)
-        {
-            int w = (Width() * GetSpacing()) / 100;
-            m_pLabel->SetMinWidth(w);
-            m_pLabel->SetMaxReqWidth(w);
-        }
-        m_bUpdateLabelWidth = false;
-    }
-    
-    CLuaWidget::CoreDrawLayout();
 }

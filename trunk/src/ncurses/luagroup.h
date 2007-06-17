@@ -34,7 +34,7 @@ class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
     virtual void CoreUpdateLanguage(void);
     
 public:
-    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false) {}
+    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1) {}
 };
 
 #endif

@@ -26,7 +26,7 @@
 // Base Lua Inputfield Class
 // -------------------------------------
 
-CBaseLuaInputField::CBaseLuaInputField(const char *t) : m_iSpacing(25)
+CBaseLuaInputField::CBaseLuaInputField(const char *t) : m_iLabelWidth(10)
 {
     if (!t || !t[0] || (strcmp(t, "number") && strcmp(t, "float") && strcmp(t, "string")))
         m_szType = "string";
@@ -37,7 +37,7 @@ CBaseLuaInputField::CBaseLuaInputField(const char *t) : m_iSpacing(25)
 void CBaseLuaInputField::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaInputField::LuaGet, "get", "inputfield");
-    NLua::RegisterClassFunction(CBaseLuaInputField::LuaSetSpace, "setspacing", "inputfield");
+    NLua::RegisterClassFunction(CBaseLuaInputField::LuaSetLabelWidth, "setlabelwidth", "inputfield");
 }
 
 int CBaseLuaInputField::LuaGet(lua_State *L)
@@ -54,14 +54,11 @@ int CBaseLuaInputField::LuaGet(lua_State *L)
     return 1;
 }
 
-int CBaseLuaInputField::LuaSetSpace(lua_State *L)
+int CBaseLuaInputField::LuaSetLabelWidth(lua_State *L)
 {
     CBaseLuaInputField *field = NLua::CheckClassData<CBaseLuaInputField>("inputfield", 1);
-    int percent = luaL_checkint(L, 2);
+    int width = luaL_checkint(L, 2);
     
-    if ((percent < 1) || (percent > 100))
-        luaL_error(L, "Wrong value specified, should be between 1-100");
-    
-    field->SetSpacing(percent);
+    field->SetLabelWidth(width);
     return 0;
 }

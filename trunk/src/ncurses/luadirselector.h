@@ -34,8 +34,8 @@ class CLuaDirSelector: public CBaseLuaDirSelector, public CLuaWidget
     NNCurses::CInputField *m_pDirInput;
     NNCurses::CButton *m_pBrowseButton;
     
-    virtual const char *GetDir(void){}
-    virtual void SetDir(const char *dir){}
+    virtual const char *GetDir(void);
+    virtual void SetDir(const char *dir);
     virtual void CoreUpdateLanguage(void);
     
 protected:

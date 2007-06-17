@@ -36,6 +36,16 @@ CLuaDirSelector::CLuaDirSelector(const char *desc, const char *val) : CLuaWidget
     StartPack(box, false, false, 0, 0);
 }
 
+const char *CLuaDirSelector::GetDir(void)
+{
+    return m_pDirInput->Value().c_str();
+}
+
+void CLuaDirSelector::SetDir(const char *dir)
+{
+    m_pDirInput->SetText(dir);
+}
+
 bool CLuaDirSelector::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
 {
     if ((event == EVENT_CALLBACK) && (emitter == m_pBrowseButton))
