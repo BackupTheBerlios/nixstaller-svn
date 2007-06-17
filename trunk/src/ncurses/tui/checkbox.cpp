@@ -32,7 +32,7 @@ std::string CCheckbox::CoreGetText(const SEntry &entry)
     return base + entry.name;
 }
 
-void CCheckbox::GetSelections(std::vector<std::string> &out)
+void CCheckbox::GetSelections(TRetType &out)
 {
     const TChoiceList &list = GetChoiceList();
     

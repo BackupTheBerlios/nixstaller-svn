@@ -20,8 +20,10 @@
 #include "main/main.h"
 #include "luagroup.h"
 #include "luacfgmenu.h"
+#include "luacheckbox.h"
 #include "luadirselector.h"
 #include "luainput.h"
+#include "luaradiobutton.h"
 
 // -------------------------------------
 // Lua Widget Group Class
@@ -31,6 +33,20 @@ CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *d
                                                 int max, const char *type)
 {
     CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaCheckbox *ret = new CLuaCheckbox(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
     AddWidget(ret);
     return ret;
 }

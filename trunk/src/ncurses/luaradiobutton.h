@@ -17,31 +17,30 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef RADIOBUTTON
-#define RADIOBUTTON
+#ifndef NCURSES_LUARADIOBUTTON_H
+#define NCURSES_LUARADIOBUTTON_H
 
-#include "main/main.h"
-#include "basechoice.h"
+#include "main/install/luaradiobutton.h"
+#include "luawidget.h"
 
 namespace NNCurses {
-
-class CRadioButton: public CBaseChoice
-{
-    TSTLVecSize m_ActiveEntry;
-    bool m_bInitSelect;
-    
-protected:
-    virtual void CoreInit(void);
-    virtual std::string CoreGetText(const SEntry &entry);
-    virtual void CoreSelect(SEntry &entry);
-    virtual void CoreGetButtonDescs(TButtonDescList &list);
-    
-public:
-    CRadioButton(void) : m_ActiveEntry(0), m_bInitSelect(true) { }
-    std::string GetSelection(void) { return GetChoiceList().at(m_ActiveEntry).name; }
-};
-
+    class CRadioButton;
 }
 
+
+class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
+{
+    typedef std::vector<std::string> TOptions;
+    
+    NNCurses::CRadioButton *m_pRadioButton;
+    TOptions m_Options;
+    
+    virtual const char *EnabledButton(void);
+    virtual void Enable(int n);
+    virtual void CoreUpdateLanguage(void);
+    
+public:
+    CLuaRadioButton(const char *desc, const TOptions &l);
+};
 
 #endif

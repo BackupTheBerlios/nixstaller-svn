@@ -68,7 +68,7 @@ GTK
 FLTK
 - Update code to new lua design
 - Change Lua inputfield label width handling
-
+- Check lua widgets; move members to private, change virtual function names etc.
 
 DESIGN
 - Reorganize var and type names? (type prefixes etc)

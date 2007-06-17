@@ -26,6 +26,16 @@ namespace NNCurses {
 // Radio Button Class
 // -------------------------------------
 
+void CRadioButton::CoreInit()
+{
+    if (m_bInitSelect)
+    {
+        TChoiceList &list = GetChoiceList();
+        if (!list.empty())
+            Select(1); // CoreSelect (called by Select) sets m_bInitSelect to false
+    }
+}
+
 std::string CRadioButton::CoreGetText(const SEntry &entry)
 {
     const char *base = (entry.enabled) ? "(X) " : "( ) ";
@@ -39,6 +49,7 @@ void CRadioButton::CoreSelect(SEntry &entry)
     list.at(m_ActiveEntry).enabled = false;
     entry.enabled = true;
     m_ActiveEntry = std::distance(list.begin(), std::find(list.begin(), list.end(), entry));
+    m_bInitSelect = false;
 }
 
 void CRadioButton::CoreGetButtonDescs(TButtonDescList &list)

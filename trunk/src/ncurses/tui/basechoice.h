@@ -47,7 +47,6 @@ private:
     
 protected:
     virtual void DoDraw(void);
-    virtual void CoreInit(void) { Select(m_iSelection+1); }
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual bool CoreHandleKey(chtype key);
@@ -59,6 +58,7 @@ protected:
     CBaseChoice(void) : m_iSelection(0), m_iUsedWidth(0) { }
     
     TChoiceList &GetChoiceList(void) { return m_ChoiceList; }
+    int Selection(void) const { return m_iSelection; }
 
 public:
     void AddChoice(const std::string &c) { m_ChoiceList.push_back(SEntry(c, false)); }

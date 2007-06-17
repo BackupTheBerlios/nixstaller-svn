@@ -24,10 +24,11 @@ struct lua_State;
 
 class CBaseLuaRadioButton
 {
-public:
-    virtual ~CBaseLuaRadioButton(void) { };
     virtual const char *EnabledButton(void) = 0;
     virtual void Enable(int n) = 0;
+
+public:
+    virtual ~CBaseLuaRadioButton(void) { };
     
     static void LuaRegister(void);
     

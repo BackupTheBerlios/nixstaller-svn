@@ -24,11 +24,12 @@ struct lua_State;
 
 class CBaseLuaCheckbox
 {
-public:
-    virtual ~CBaseLuaCheckbox(void) { };
     virtual bool Enabled(int n) = 0;
     virtual bool Enabled(const char *s) = 0;
     virtual void Enable(int n, bool b) = 0;
+
+public:
+    virtual ~CBaseLuaCheckbox(void) { };
 
     static void LuaRegister(void);
     

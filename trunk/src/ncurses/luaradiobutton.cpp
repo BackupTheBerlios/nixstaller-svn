@@ -17,31 +17,37 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef RADIOBUTTON
-#define RADIOBUTTON
-
 #include "main/main.h"
-#include "basechoice.h"
+#include "luaradiobutton.h"
+#include "tui/radiobutton.h"
 
-namespace NNCurses {
+// -------------------------------------
+// Lua Radio Button Class
+// -------------------------------------
 
-class CRadioButton: public CBaseChoice
+CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CLuaWidget(desc), m_Options(l)
 {
-    TSTLVecSize m_ActiveEntry;
-    bool m_bInitSelect;
+    m_pRadioButton = new NNCurses::CRadioButton;
     
-protected:
-    virtual void CoreInit(void);
-    virtual std::string CoreGetText(const SEntry &entry);
-    virtual void CoreSelect(SEntry &entry);
-    virtual void CoreGetButtonDescs(TButtonDescList &list);
+    for (TOptions::const_iterator it=l.begin(); it!=l.end(); it++)
+        m_pRadioButton->AddChoice(GetTranslation(*it));
     
-public:
-    CRadioButton(void) : m_ActiveEntry(0), m_bInitSelect(true) { }
-    std::string GetSelection(void) { return GetChoiceList().at(m_ActiveEntry).name; }
-};
-
+    AddWidget(m_pRadioButton);
 }
 
+const char *CLuaRadioButton::EnabledButton()
+{
+    return m_pRadioButton->GetSelection().c_str();
+}
 
-#endif
+void CLuaRadioButton::Enable(int n)
+{
+    m_pRadioButton->Select(n);
+}
+
+void CLuaRadioButton::CoreUpdateLanguage()
+{
+    int n = 1;
+    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
+        m_pRadioButton->SetName(n, GetTranslation(*it));
+}

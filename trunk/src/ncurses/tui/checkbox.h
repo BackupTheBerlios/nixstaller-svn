@@ -32,7 +32,9 @@ protected:
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     
 public:
-    void GetSelections(std::vector<std::string> &out);
+    typedef std::vector<std::string> TRetType;
+    
+    void GetSelections(TRetType &out);
 };
 
 }
