@@ -29,6 +29,7 @@ class CBaseLuaDirSelector;
 class CBaseLuaCFGMenu;
 class CBaseLuaMenu;
 class CBaseLuaImage;
+class CBaseLuaProgressBar;
 
 class CBaseLuaGroup
 {
@@ -40,6 +41,7 @@ class CBaseLuaGroup
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) = 0;
     virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l) = 0;
     virtual CBaseLuaImage *CreateImage(const char *desc, const char *file) = 0;
+    virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) = 0;
     virtual void CoreUpdateLanguage(void) = 0;
     
 public:
@@ -56,6 +58,7 @@ public:
     static int LuaAddCFGMenu(lua_State *L);
     static int LuaAddMenu(lua_State *L);
     static int LuaAddImage(lua_State *L);
+    static int LuaAddProgressBar(lua_State *L);
 };
 
 #endif

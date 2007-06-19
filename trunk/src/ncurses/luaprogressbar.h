@@ -17,14 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#ifndef NCURSES_LUAPROGRESSBAR_H
+#define NCURSES_LUAPROGRESSBAR_H
 
-class CBaseLuaImage
+#include "main/install/luaprogressbar.h"
+#include "luawidget.h"
+
+namespace NNCurses {
+    class CProgressBar;
+}
+
+class CLuaProgressBar: public CBaseLuaProgressBar, public CLuaWidget
 {
+    NNCurses::CProgressBar *m_pProgressBar;
+    
+    virtual void SetProgress(int n);
+    
 public:
-    virtual ~CBaseLuaImage(void) { };
+    CLuaProgressBar(const char *desc);
 };
-
 
 #endif

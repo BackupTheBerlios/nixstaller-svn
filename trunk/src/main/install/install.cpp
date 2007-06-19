@@ -35,6 +35,7 @@
 #include "main/install/luaradiobutton.h"
 #include "main/install/luainput.h"
 #include "main/install/luamenu.h"
+#include "main/install/luaprogressbar.h"
 #include "main/lua/lua.h"
 #include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
@@ -395,6 +396,7 @@ void CBaseInstall::InitLua()
     CBaseLuaDirSelector::LuaRegister();
     CBaseLuaCFGMenu::LuaRegister();
     CBaseLuaMenu::LuaRegister();
+    CBaseLuaProgressBar::LuaRegister();
 
     NLua::RegisterFunction(LuaNewScreen, "newscreen", "install", this);
     NLua::RegisterFunction(LuaAddScreen, "addscreen", "install", this);

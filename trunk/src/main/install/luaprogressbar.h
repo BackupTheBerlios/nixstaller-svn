@@ -17,13 +17,20 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#ifndef LUAPROGRESSBAR_H
+#define LUAPROGRESSBAR_H
 
-class CBaseLuaImage
+struct lua_State;
+
+class CBaseLuaProgressBar
 {
+    virtual void SetProgress(int n) = 0;
+    
 public:
-    virtual ~CBaseLuaImage(void) { };
+    virtual ~CBaseLuaProgressBar(void) { };
+    
+    static void LuaRegister(void);
+    static int LuaSet(lua_State *L);
 };
 
 

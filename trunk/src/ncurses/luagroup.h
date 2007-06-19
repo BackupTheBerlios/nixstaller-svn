@@ -35,6 +35,7 @@ class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
     virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaImage *CreateImage(const char *desc, const char *file);
+    virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc);
     virtual void CoreUpdateLanguage(void);
     
 protected:

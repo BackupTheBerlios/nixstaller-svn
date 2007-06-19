@@ -17,14 +17,21 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#include "main/main.h"
+#include "luaprogressbar.h"
+#include "tui/progressbar.h"
 
-class CBaseLuaImage
+// -------------------------------------
+// Lua Progress Bar Class
+// -------------------------------------
+
+CLuaProgressBar::CLuaProgressBar(const char *desc) : CLuaWidget(desc)
 {
-public:
-    virtual ~CBaseLuaImage(void) { };
-};
+    StartPack(m_pProgressBar = new NNCurses::CProgressBar(0.0f, 100.0f), false, false, 0, 0);
+}
 
+void CLuaProgressBar::SetProgress(int n)
+{
+    m_pProgressBar->SetCurrent(static_cast<float>(n));
+}
 
-#endif

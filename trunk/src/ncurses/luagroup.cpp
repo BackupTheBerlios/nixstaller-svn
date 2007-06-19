@@ -25,6 +25,7 @@
 #include "luaimage.h"
 #include "luainput.h"
 #include "luamenu.h"
+#include "luaprogressbar.h"
 #include "luaradiobutton.h"
 
 // -------------------------------------
@@ -74,14 +75,21 @@ CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::str
     return ret;
 }
 
-void CLuaGroup::CoreUpdateLanguage()
-{
-}
-
 CBaseLuaImage *CLuaGroup::CreateImage(const char *desc, const char *file)
 {
     // No widget addition: ncurses doesn't do gfx :)
     return new CLuaImage;
+}
+
+CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
+{
+    CLuaProgressBar *ret = new CLuaProgressBar(desc);
+    AddWidget(ret);
+    return ret;
+}
+
+void CLuaGroup::CoreUpdateLanguage()
+{
 }
 
 void CLuaGroup::CoreAddWidget(NNCurses::CWidget *w)

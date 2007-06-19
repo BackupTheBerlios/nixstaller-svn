@@ -17,14 +17,28 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#include "main/main.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
+#include "luaprogressbar.h"
 
-class CBaseLuaImage
+// -------------------------------------
+// Base Lua Progress Bar Class
+// -------------------------------------
+
+void CBaseLuaProgressBar::LuaRegister()
 {
-public:
-    virtual ~CBaseLuaImage(void) { };
-};
+    NLua::RegisterClassFunction(CBaseLuaProgressBar::LuaSet, "set", "progressbar");
+}
 
-
-#endif
+int CBaseLuaProgressBar::LuaSet(lua_State *L)
+{
+    CBaseLuaProgressBar *box = NLua::CheckClassData<CBaseLuaProgressBar>("progressbar", 1);
+    int n = luaL_checkint(L, 2);
+    
+    if ((n < 0) || (n > 100))
+        luaL_error(L, "Wrong value specified, should be between 0-100");
+    
+    box->SetProgress(n);
+    return 0;
+}

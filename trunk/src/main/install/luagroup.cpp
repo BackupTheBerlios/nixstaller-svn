@@ -36,6 +36,7 @@ void CBaseLuaGroup::LuaRegister()
     NLua::RegisterClassFunction(LuaAddCFGMenu, "addcfgmenu", "group");
     NLua::RegisterClassFunction(LuaAddMenu, "addmenu", "group");
     NLua::RegisterClassFunction(LuaAddImage, "addimage", "group");
+    NLua::RegisterClassFunction(LuaAddProgressBar, "addprogressbar", "group");
 }
 
 int CBaseLuaGroup::LuaAddInput(lua_State *L)
@@ -151,6 +152,16 @@ int CBaseLuaGroup::LuaAddImage(lua_State *L)
     const char *file = luaL_checkstring(L, 3);
 
     NLua::CreateClass(group->CreateImage(GetTranslation(desc), file), "image");
+    
+    return 1;
+}
+
+int CBaseLuaGroup::LuaAddProgressBar(lua_State *L)
+{
+    CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
+    const char *desc = luaL_optstring(L, 2, "");
+
+    NLua::CreateClass(group->CreateProgressBar(GetTranslation(desc)), "progressbar");
     
     return 1;
 }
