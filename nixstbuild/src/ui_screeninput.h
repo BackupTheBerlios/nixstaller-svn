@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'screeninput.ui'
 **
-** Created: Sun Mar 25 20:21:35 2007
-**      by: Qt User Interface Compiler version 4.2.0
+** Created: Sun Jun 24 23:24:18 2007
+**      by: Qt User Interface Compiler version 4.3.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -43,7 +43,11 @@ public:
 
     void setupUi(QDialog *ScreenInputDialog)
     {
-    ScreenInputDialog->setObjectName(QString::fromUtf8("ScreenInputDialog"));
+    if (ScreenInputDialog->objectName().isEmpty())
+        ScreenInputDialog->setObjectName(QString::fromUtf8("ScreenInputDialog"));
+    QSize size(409, 210);
+    size = size.expandedTo(ScreenInputDialog->minimumSizeHint());
+    ScreenInputDialog->resize(size);
     QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(0), static_cast<QSizePolicy::Policy>(0));
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
@@ -62,9 +66,12 @@ public:
     layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
     layoutWidget->setGeometry(QRect(20, 20, 361, 146));
     gridLayout = new QGridLayout(layoutWidget);
+#ifndef Q_OS_MAC
     gridLayout->setSpacing(6);
+#endif
     gridLayout->setMargin(0);
     gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+    gridLayout->setContentsMargins(0, 0, 0, 0);
     cScreenBox = new QLineEdit(layoutWidget);
     cScreenBox->setObjectName(QString::fromUtf8("cScreenBox"));
     cScreenBox->setEnabled(false);
@@ -88,7 +95,9 @@ public:
     gridLayout->addWidget(rCustom, 2, 0, 1, 1);
 
     hboxLayout = new QHBoxLayout();
+#ifndef Q_OS_MAC
     hboxLayout->setSpacing(6);
+#endif
     hboxLayout->setMargin(0);
     hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
     label = new QLabel(layoutWidget);
@@ -107,11 +116,6 @@ public:
 
 
     retranslateUi(ScreenInputDialog);
-
-    QSize size(409, 210);
-    size = size.expandedTo(ScreenInputDialog->minimumSizeHint());
-    ScreenInputDialog->resize(size);
-
 
     QMetaObject::connectSlotsByName(ScreenInputDialog);
     } // setupUi

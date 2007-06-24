@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'sdialog.h'
 **
-** Created: Sun Mar 25 20:22:08 2007
-**      by: The Qt Meta Object Compiler version 59 (Qt 4.2.0)
+** Created: Sun Jun 24 23:25:18 2007
+**      by: The Qt Meta Object Compiler version 59 (Qt 4.3.0)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'sdialog.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 59
-#error "This file was generated using the moc from 4.2.0. It"
+#error "This file was generated using the moc from 4.3.0. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -35,7 +35,8 @@ static const uint qt_meta_data_NBSettingsDialog[] = {
 };
 
 static const char qt_meta_stringdata_NBSettingsDialog[] = {
-    "NBSettingsDialog\0\0showOpen()\0sOK()\0sCancel()\0"
+    "NBSettingsDialog\0\0showOpen()\0sOK()\0"
+    "sCancel()\0"
 };
 
 const QMetaObject NBSettingsDialog::staticMetaObject = {
@@ -52,7 +53,7 @@ void *NBSettingsDialog::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
     if (!strcmp(_clname, qt_meta_stringdata_NBSettingsDialog))
-	return static_cast<void*>(const_cast<NBSettingsDialog*>(this));
+	return static_cast<void*>(const_cast< NBSettingsDialog*>(this));
     return QDialog::qt_metacast(_clname);
 }
 

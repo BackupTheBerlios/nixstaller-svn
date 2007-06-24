@@ -102,7 +102,7 @@ void nixstbuild::initMainControls()
     qd->mkdir("./.nbtemp");
     qd->cd("./.nbtemp");
 
-    qd->mkdir("./lang");
+    //qd->mkdir("./lang");
 
     qdmodel = new QDirModel();
     folderview = new QTreeView();
@@ -131,7 +131,7 @@ void nixstbuild::newFile()
     qd->mkdir("./.nbtemp");
     qd->cd("./.nbtemp");
 
-    qd->mkdir("./lang");
+    //qd->mkdir("./lang");
 
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
@@ -141,7 +141,7 @@ bool nixstbuild::save()
     QSettings settings("INightmare", "Nixstbuild");
     if ((!settings.contains("geninstall")) || (settings.value("geninstall")=="") || (!QFileInfo(settings.value("geninstall").toString()).exists()))
     {
-        QMessageBox::warning(this, "Nixstbuild", "Please specify location for genisntall.sh");
+        QMessageBox::warning(this, "Nixstbuild", "Please specify location for geninstall.sh");
         return false;
     }
 
@@ -318,16 +318,19 @@ void nixstbuild::addTextTabs()
     teu_license = new Ui_TextEditW();
     teu_license->setupUi(te_license);
     connect(teu_license->saveButton, SIGNAL(clicked()), this, SLOT(saveLicense()));
+    connect(teu_license->openButton, SIGNAL(clicked()), this, SLOT(openLicense()));
     tabs->addTab(te_license, QIcon(":/script.png"), "License");
 
     teu_welcome = new Ui_TextEditW();
     teu_welcome->setupUi(te_welcome);
     connect(teu_welcome->saveButton, SIGNAL(clicked()), this, SLOT(saveWelcome()));
+    connect(teu_welcome->openButton, SIGNAL(clicked()), this, SLOT(openWelcome()));
     tabs->addTab(te_welcome, QIcon(":/script.png"), "Welcome");
 
     teu_finish = new Ui_TextEditW();
     teu_finish->setupUi(te_finish);
     connect(teu_finish->saveButton, SIGNAL(clicked()), this, SLOT(saveFinish()));
+    connect(teu_finish->openButton, SIGNAL(clicked()), this, SLOT(openFinish()));
     tabs->addTab(te_finish, QIcon(":/script.png"), "Finish"); 
 }
 
@@ -397,7 +400,7 @@ void nixstbuild::addRunTab()
     rt_btns->setAlignment(Qt::AlignLeft);
 
     rt_textedit = new QTextEdit;
-    LuaHighlighter *lh = new LuaHighlighter(rt_textedit->document());
+    new LuaHighlighter(rt_textedit->document());
 
     rt_mainlayout->addLayout(rt_btns);
     rt_mainlayout->addWidget(rt_textedit);
@@ -497,6 +500,33 @@ void nixstbuild::saveFinish()
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
 
+void nixstbuild::openLicense()
+{
+    QFile file(QFileDialog::getOpenFileName(0, tr("Open License file")));
+    file.open(QFile::ReadOnly | QFile::Text);
+
+    QTextStream content(&file);
+    teu_license->textEdit->setPlainText(content.readAll());
+}
+
+void nixstbuild::openWelcome()
+{
+    QFile file(QFileDialog::getOpenFileName(0, tr("Open Welcome file")));
+    file.open(QFile::ReadOnly | QFile::Text);
+
+    QTextStream content(&file);
+    teu_welcome->textEdit->setPlainText(content.readAll());
+}
+
+void nixstbuild::openFinish()
+{
+    QFile file(QFileDialog::getOpenFileName(0, tr("Open Finish file")));
+    file.open(QFile::ReadOnly | QFile::Text);
+
+    QTextStream content(&file);
+    teu_finish->textEdit->setPlainText(content.readAll());
+}
+
 void nixstbuild::saveConfig()
 {
     QFile cfile(qd->absolutePath()+"/config.lua");
@@ -530,6 +560,8 @@ void nixstbuild::saveConfig()
     {
         out << "cfg.intropic = \"" << ct_img->text() << "\"";
     }
+
+    out << "\nlanguages = {'english'}\n";
 
     statusBar()->showMessage("Config saved", 5000);
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));

@@ -68,6 +68,9 @@ private slots:
     void saveLicense();
     void saveWelcome();
     void saveFinish();
+    void openLicense();
+    void openWelcome();
+    void openFinish();
     void saveConfig();
     void saveRun();
     void generateRun();
