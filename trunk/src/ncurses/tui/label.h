@@ -29,6 +29,7 @@ namespace NNCurses {
 class CLabel: public CTextBase
 {
 protected:
+    virtual void CoreDraw(void);
     virtual void DoDraw(void);
         
 public:

@@ -39,10 +39,8 @@ private:
     int m_iCurWidth;
     
     TSTLStrSize GetNextLine(const std::string &text, TSTLStrSize start, int width);
-    void UpdateText(int width);
     
 protected:
-    virtual void CoreDraw(void);
     virtual void DoDraw(void) = 0;
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
@@ -50,7 +48,9 @@ protected:
     
     CTextBase(bool c, bool w);
     
+    void UpdateText(int width);
     TLinesList &GetLineList(void) { return m_Lines; }
+    std::string &GetQueuedText(void) { return m_QueuedText; }
     TSTLStrSize GetLongestLine(void) { return m_LongestLine; }
     TLinesList::size_type LineCount(void) { return m_Lines.size(); }
     bool Center(void) { return m_bCenter; }

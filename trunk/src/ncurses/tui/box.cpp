@@ -73,9 +73,44 @@ int CBox::GetWidgetH(CWidget *w)
     return ret;
 }
 
+int CBox::GetTotalWidgetW(CWidget *w)
+{
+    const SBoxEntry &entry = m_BoxEntries[w];
+    int ret = 0;
+
+    if (m_eDirection == HORIZONTAL)
+    {
+        ret += GetWidgetW(w) + (2 * entry.hpadding);
+        if (w != GetChildList().back())
+            ret += m_iSpacing;
+    }
+    else
+        ret = w->RequestWidth() + (2 * entry.hpadding);
+    
+    return ret;
+}
+
+int CBox::GetTotalWidgetH(CWidget *w)
+{
+    const SBoxEntry &entry = m_BoxEntries[w];
+    int ret = 0;
+
+    if (m_eDirection == VERTICAL)
+    {
+        ret = (GetWidgetH(w) + (2 * entry.vpadding));
+            
+        if (w != GetChildList().back())
+            ret += m_iSpacing;
+    }
+    else
+        ret = w->RequestHeight() + (2 * entry.vpadding);
+    
+    return ret;
+}
+
 int CBox::RequestedWidgetsW()
 {
-    TChildList childs = GetChildList();
+    TChildList &childs = GetChildList();
     int ret = 0;
     
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
@@ -83,16 +118,10 @@ int CBox::RequestedWidgetsW()
         if (!IsValidWidget(*it))
             continue;
         
-        const SBoxEntry &entry = m_BoxEntries[*it];
-
         if (m_eDirection == HORIZONTAL)
-        {
-            ret += GetWidgetW(*it) + (2 * entry.hpadding);
-            if (*it != childs.back())
-                ret += m_iSpacing;
-        }
+            ret += GetTotalWidgetW(*it);
         else
-            ret = std::max(ret, (*it)->RequestWidth() + (2 * entry.hpadding));
+            ret = std::max(ret, GetTotalWidgetW(*it));
     }
     
     return ret;
@@ -100,7 +129,7 @@ int CBox::RequestedWidgetsW()
 
 int CBox::RequestedWidgetsH()
 {
-    TChildList childs = GetChildList();
+    TChildList &childs = GetChildList();
     int ret = 0;
     
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
@@ -108,17 +137,10 @@ int CBox::RequestedWidgetsH()
         if (!IsValidWidget(*it))
             continue;
 
-        const SBoxEntry &entry = m_BoxEntries[*it];
-
         if (m_eDirection == VERTICAL)
-        {
-            ret += (GetWidgetH(*it) + (2 * entry.vpadding));
-            
-            if (*it != childs.back())
-                ret += m_iSpacing;
-        }
+            ret += GetTotalWidgetH(*it);
         else
-            ret = std::max(ret, (*it)->RequestHeight() + (2 * entry.vpadding));
+            ret = std::max(ret, GetTotalWidgetH(*it));
     }
     
     return ret;
@@ -126,7 +148,7 @@ int CBox::RequestedWidgetsH()
 
 CBox::TChildList::size_type CBox::ExpandedWidgets()
 {
-    TChildList childs = GetChildList();
+    TChildList &childs = GetChildList();
     TChildList::size_type ret = 0;
     
     for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)

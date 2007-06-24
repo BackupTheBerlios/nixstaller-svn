@@ -97,14 +97,6 @@ void CTextBase::UpdateText(int width)
     m_QueuedText.clear();
 }
 
-void CTextBase::CoreDraw()
-{
-    if (!m_QueuedText.empty())
-        UpdateText(RequestWidth());
-    
-    DrawWidget();
-}
-
 int CTextBase::CoreRequestWidth()
 {
     int min = std::max(1, GetMinWidth());

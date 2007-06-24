@@ -30,6 +30,7 @@ class CTextWidget: public CTextBase
     int m_iXOffset, m_iYOffset;
     
 protected:
+    virtual void CoreDraw(void);
     virtual void DoDraw(void);
     virtual bool CoreCanFocus(void) { return true; }
     

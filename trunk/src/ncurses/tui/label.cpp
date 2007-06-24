@@ -26,6 +26,14 @@ namespace NNCurses {
 // Label Widget Class
 // -------------------------------------
 
+void CLabel::CoreDraw()
+{
+    if (!GetQueuedText().empty())
+        UpdateText(RequestWidth());
+    
+    DrawWidget();
+}
+
 void CLabel::DoDraw()
 {
     const TLinesList &lines = GetLineList();

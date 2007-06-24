@@ -40,6 +40,9 @@ class CInstaller: public CNCursBase, public CBaseInstall
     TScreenList m_InstallScreens;
     TSTLVecSize m_CurrentScreen;
     
+    bool FirstValidScreen(NNCurses::CWidget *start);
+    bool LastValidScreen(NNCurses::CWidget *start);
+    void UpdateButtons(void);
     void PrevScreen(void);
     void NextScreen(void);
     void AskQuit(void);

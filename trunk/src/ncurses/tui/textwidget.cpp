@@ -26,6 +26,14 @@ namespace NNCurses {
 // Textwidget Class
 // -------------------------------------
 
+void CTextWidget::CoreDraw()
+{
+    if (!GetQueuedText().empty())
+        UpdateText(Width());
+    
+    DrawWidget();
+}
+
 void CTextWidget::DoDraw()
 {
     TLinesList &lines = GetLineList();

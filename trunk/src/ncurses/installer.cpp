@@ -42,13 +42,75 @@ CInstaller::CInstaller() : m_CurrentScreen(0)
     EndPack(new NNCurses::CSeparator(ACS_HLINE), false, false, 0, 0);
 }
 
+bool CInstaller::FirstValidScreen(NNCurses::CWidget *start)
+{
+    TScreenList::iterator it = std::find(m_InstallScreens.begin(), m_InstallScreens.end(), start);
+    bool ret = (start == m_InstallScreens.front());
+    
+    if (!ret)
+    {
+        ret = true;
+        do
+        {
+            it--;
+            if ((*it)->CanActivate())
+            {
+                ret = false;
+                break;
+            }
+        }
+        while (it != m_InstallScreens.begin());
+    }
+    
+    return ret;
+}
+
+bool CInstaller::LastValidScreen(NNCurses::CWidget *start)
+{
+    TScreenList::iterator it = std::find(m_InstallScreens.begin(), m_InstallScreens.end(), start);
+    bool ret = (start == m_InstallScreens.back());
+    
+    if (!ret)
+    {
+        ret = true;
+        it++;
+        while (it != m_InstallScreens.end())
+        {
+            if ((*it)->CanActivate())
+            {
+                ret = false;
+                break;
+            }
+            it++;
+        }
+    }
+    
+    return ret;
+}
+
+void CInstaller::UpdateButtons(void)
+{
+    if (FirstValidScreen(m_InstallScreens[m_CurrentScreen]) && !m_InstallScreens[m_CurrentScreen]->HasPrevWidgets())
+        m_pPrevButton->Enable(false);
+    else
+        m_pPrevButton->Enable(true);
+    
+    if (LastValidScreen(m_InstallScreens[m_CurrentScreen]) && !m_InstallScreens[m_CurrentScreen]->HasNextWidgets())
+        m_pNextButton->SetText(GetTranslation("Finish"));
+    else
+        m_pNextButton->SetText(GetTranslation("Next"));
+}
+
 void CInstaller::PrevScreen()
 {
-    if (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.front())
-        return;
+/*    if (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.front())
+        return; UNDONE */
     
     if (!m_InstallScreens[m_CurrentScreen]->Back())
+    {
+        UpdateButtons(); // Screen may have switched subscreens
         return;
+    }
     
     TScreenList::iterator it = m_InstallScreens.begin() + m_CurrentScreen;
     
@@ -63,26 +125,7 @@ void CInstaller::PrevScreen()
 
             m_InstallScreens[m_CurrentScreen]->Enable(false);
             ActivateScreen(*it);
-            
-            bool first = (it == m_InstallScreens.begin());
-            if (!first)
-            {
-                first = true;
-                do
-                {
-                    it--;
-                    if ((*it)->CanActivate())
-                    {
-                        first = false;
-                        break;
-                    }
-                }
-                while (it != m_InstallScreens.begin());
-            }
-            
-            if (first)
-                m_pPrevButton->Enable(false);
-            
+            UpdateButtons();
             break;
         }
     }
@@ -90,9 +133,12 @@ void CInstaller::PrevScreen()
 
 void CInstaller::NextScreen()
 {
-    if ((m_InstallScreens[m_CurrentScreen] != m_InstallScreens.back()) &&
+    if (/*(m_InstallScreens[m_CurrentScreen] != m_InstallScreens.back()) && UNDONE */
         (!m_InstallScreens[m_CurrentScreen]->Next()))
+    {
+        UpdateButtons(); // Screen may have switched subscreens
         return;
+    }
     
     TScreenList::iterator it = m_InstallScreens.begin() + m_CurrentScreen;
     
@@ -104,30 +150,7 @@ void CInstaller::NextScreen()
         {
             m_InstallScreens[m_CurrentScreen]->Enable(false);
             ActivateScreen(*it);
-            
-            if (!m_pPrevButton->Enabled())
-                m_pPrevButton->Enable(true);
-            
-            // Check if this is the last screen
-            bool last = (*it == m_InstallScreens.back());
-            if (!last)
-            {
-                last = true;
-                it++;
-                while (it != m_InstallScreens.end())
-                {
-                    if ((*it)->CanActivate())
-                    {
-                        last = false;
-                        break;
-                    }
-                    it++;
-                }
-            }
-            
-            if (last)
-                m_pNextButton->SetText(GetTranslation("Finish"));
-            
+            UpdateButtons();
             return;
         }
     }
@@ -154,7 +177,7 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
 {
     screen->Enable(true);
     screen->Activate();
-//     m_pScreenBox->FocusWidget(screen);
+//     m_pScreenBox->FocusWidget(screen); UNDONE
     m_CurrentScreen = 0;
     while (m_InstallScreens.at(m_CurrentScreen) != screen)
         m_CurrentScreen++;

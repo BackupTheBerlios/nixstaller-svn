@@ -32,13 +32,29 @@ class CBaseLuaGroup;
 
 class CInstallScreen: public CBaseScreen, public NNCurses::CBox
 {
-    NNCurses::CLabel *m_pTitle;
+    NNCurses::CLabel *m_pTitle, *m_pCounter;
+    std::pair<NNCurses::CWidget *, NNCurses::CWidget *> m_WidgetRange;
     
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
     
+    void ResetWidgetRange(void);
+    int MaxScreenHeight(void) const { return NNCurses::GetMaxHeight() - 6; }
+    int StartingHeight(void);
+    void UpdateCounter(void);
+    
+protected:
+    virtual bool CoreBack(void);
+    virtual bool CoreNext(void);
+    virtual void CoreActivate(void) { ResetWidgetRange(); CBaseScreen::CoreActivate(); }
+    virtual int CoreRequestHeight(void);
+    virtual void CoreInit(void) { ResetWidgetRange(); }
+    
 public:
     CInstallScreen(const std::string &title);
+    
+    bool HasPrevWidgets(void) const { return m_WidgetRange.first != NULL; }
+    bool HasNextWidgets(void) /*const*/ { return m_WidgetRange.second != GetChildList().back(); }
 };
 
 #endif

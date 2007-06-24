@@ -45,13 +45,6 @@ private:
     bool m_bEqual;
     int m_iSpacing;
     
-    int GetWidgetW(CWidget *w);
-    int GetWidgetH(CWidget *w);
-    int RequestedWidgetsW(void);
-    int RequestedWidgetsH(void);
-    TChildList::size_type ExpandedWidgets(void);
-    bool IsValidWidget(CWidget *w);
-    
 protected:
     virtual void UpdateSize(void) { UpdateLayout(); CGroup::UpdateSize(); }
     virtual void UpdateEnabled(void) { if (Enabled()) UpdateLayout(); }
@@ -67,6 +60,15 @@ protected:
     virtual int FieldHeight(void) const { return (HasBox()) ? Height()-2 : Height(); }
     virtual void CoreDrawLayout(void);
     
+    int GetWidgetW(CWidget *w);
+    int GetWidgetH(CWidget *w);
+    int GetTotalWidgetW(CWidget *w);
+    int GetTotalWidgetH(CWidget *w);
+    int RequestedWidgetsW(void);
+    int RequestedWidgetsH(void);
+    TChildList::size_type ExpandedWidgets(void);
+    bool IsValidWidget(CWidget *w);
+
 public:
     CBox(EDirection dir, bool equal, int s=0) : m_eDirection(dir), m_bEqual(equal), m_iSpacing(s) { }
     

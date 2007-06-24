@@ -33,12 +33,12 @@ void CBaseLuaProgressBar::LuaRegister()
 
 int CBaseLuaProgressBar::LuaSet(lua_State *L)
 {
-    CBaseLuaProgressBar *box = NLua::CheckClassData<CBaseLuaProgressBar>("progressbar", 1);
+    CBaseLuaProgressBar *bar = NLua::CheckClassData<CBaseLuaProgressBar>("progressbar", 1);
     int n = luaL_checkint(L, 2);
     
     if ((n < 0) || (n > 100))
         luaL_error(L, "Wrong value specified, should be between 0-100");
     
-    box->SetProgress(n);
+    bar->SetProgress(n);
     return 0;
 }

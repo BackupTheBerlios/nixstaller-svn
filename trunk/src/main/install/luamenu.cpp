@@ -34,15 +34,15 @@ void CBaseLuaMenu::LuaRegister()
 
 int CBaseLuaMenu::LuaGet(lua_State *L)
 {
-    CBaseLuaMenu *box = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
-    lua_pushstring(L, box->Selection());
+    CBaseLuaMenu *menu = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
+    lua_pushstring(L, menu->Selection());
     return 1;
 }
 
 int CBaseLuaMenu::LuaSet(lua_State *L)
 {
-    CBaseLuaMenu *box = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
+    CBaseLuaMenu *menu = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
     int n = luaL_checkint(L, 2);
-    box->Select(n);
+    menu->Select(n);
     return 0;
 }

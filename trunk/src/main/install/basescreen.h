@@ -31,8 +31,12 @@ class CBaseScreen
     
     virtual CBaseLuaGroup *CreateGroup(void) = 0;
     virtual void CoreUpdateLanguage(void) = 0;
-    
+
 protected:
+    virtual bool CoreBack(void) { return CallLuaBoolFunc("back", true); }
+    virtual bool CoreNext(void) { return CallLuaBoolFunc("next", true); }
+    virtual void CoreActivate(void);
+
     const std::string &GetTitle(void) { return m_Title; }
     CBaseInstall *GetInstall(void) { return m_pInstaller; }
 
@@ -42,9 +46,9 @@ public:
     
     void UpdateLanguage(void) { CoreUpdateLanguage(); }
     bool CanActivate(void) { return CallLuaBoolFunc("canactivate", true); }
-    void Activate(void);
-    bool Back(void) { return CallLuaBoolFunc("back", true); }
-    bool Next(void) { return CallLuaBoolFunc("next", true); }
+    void Activate(void) { CoreActivate(); }
+    bool Back(void) { return CoreBack(); }
+    bool Next(void) { return CoreNext(); }
     
     static void LuaRegister(void);
     

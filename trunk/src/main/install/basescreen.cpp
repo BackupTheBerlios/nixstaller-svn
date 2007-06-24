@@ -42,7 +42,7 @@ bool CBaseScreen::CallLuaBoolFunc(const char *func, bool def)
     return ret;
 }
 
-void CBaseScreen::Activate()
+void CBaseScreen::CoreActivate()
 {
     NLua::CLuaFunc func("activate", "screen", this);
     
