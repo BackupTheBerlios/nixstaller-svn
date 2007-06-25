@@ -26,12 +26,12 @@
 // NCurses Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false),
+CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false, 1),
                                                            m_WidgetRange(NULL, NULL)
 {
     NNCurses::CBox *box = new NNCurses::CBox(HORIZONTAL, false);
     box->AddWidget(m_pTitle = new NNCurses::CLabel(title));
-    box->EndPack(m_pCounter = new NNCurses::CLabel("dus"), false, false, 0, 0);
+    box->EndPack(m_pCounter = new NNCurses::CLabel(""), false, false, 0, 1);
     m_pCounter->SetDFColors(COLOR_RED, COLOR_BLUE);
     StartPack(box, false, false, 0, 0);
 }
@@ -39,7 +39,7 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), C
 CBaseLuaGroup *CInstallScreen::CreateGroup()
 {
     CLuaGroup *ret = new CLuaGroup();
-    StartPack(ret, true, true, 1, 1);
+    StartPack(ret, true, true, 0, 1);
     return ret;
 }
 
@@ -55,10 +55,10 @@ void CInstallScreen::ResetWidgetRange()
     if (!GetWin())
         return; // Not initialized yet
     
-    TChildList &childs = GetChildList();
+    const TChildList &childs = GetChildList();
     int h = StartingHeight();
     
-    for (TChildList::iterator it = childs.begin()+1; it!=childs.end(); it++)
+    for (TChildList::const_iterator it = childs.begin()+1; it!=childs.end(); it++)
     {
         if (h < MaxScreenHeight())
         {
@@ -86,9 +86,9 @@ int CInstallScreen::StartingHeight()
 void CInstallScreen::UpdateCounter()
 {
     int count = 1, current = 1, h = StartingHeight();
-    TChildList &childs = GetChildList();
+    const TChildList &childs = GetChildList();
     
-    for (TChildList::iterator it=childs.begin()+1; it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin()+1; it!=childs.end(); it++)
     {
         h += GetTotalWidgetH(*it);
         
@@ -112,8 +112,8 @@ bool CInstallScreen::CoreBack()
 {
     if (m_WidgetRange.first != NULL)
     {
-        TChildList &childs = GetChildList();
-        TChildList::reverse_iterator it = childs.rbegin();
+        const TChildList &childs = GetChildList();
+        TChildList::const_reverse_iterator it = childs.rbegin();
         
         for (; *it!=childs.front(); it++)
             (*it)->Enable(false);
@@ -153,11 +153,11 @@ bool CInstallScreen::CoreBack()
 
 bool CInstallScreen::CoreNext()
 {
-    TChildList &childs = GetChildList();
+    const TChildList &childs = GetChildList();
 
     if (m_WidgetRange.second != childs.back())
     {
-        TChildList::iterator it = childs.begin() + 1; // First is Label
+        TChildList::const_iterator it = childs.begin() + 1; // First is Label
         
         for (; it!=childs.end(); it++)
             (*it)->Enable(false);

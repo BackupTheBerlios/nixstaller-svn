@@ -34,9 +34,9 @@ int CBox::GetWidgetW(CWidget *w)
     if (m_bEqual)
     {
         // UNDONE: Cache?
-        TChildList childs = GetChildList();
+        const TChildList &childs = GetChildList();
         
-        for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+        for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
         {
             if (!IsValidWidget(*it))
                 continue;
@@ -57,9 +57,9 @@ int CBox::GetWidgetH(CWidget *w)
     if (m_bEqual)
     {
         // UNDONE: Cache?
-        TChildList childs = GetChildList();
+        const TChildList &childs = GetChildList();
         
-        for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+        for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
         {
             if (!IsValidWidget(*it))
                 continue;
@@ -110,10 +110,10 @@ int CBox::GetTotalWidgetH(CWidget *w)
 
 int CBox::RequestedWidgetsW()
 {
-    TChildList &childs = GetChildList();
+    const TChildList &childs = GetChildList();
     int ret = 0;
     
-    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
         if (!IsValidWidget(*it))
             continue;
@@ -129,10 +129,10 @@ int CBox::RequestedWidgetsW()
 
 int CBox::RequestedWidgetsH()
 {
-    TChildList &childs = GetChildList();
+    const TChildList &childs = GetChildList();
     int ret = 0;
     
-    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
         if (!IsValidWidget(*it))
             continue;
@@ -148,10 +148,10 @@ int CBox::RequestedWidgetsH()
 
 CBox::TChildList::size_type CBox::ExpandedWidgets()
 {
-    TChildList &childs = GetChildList();
+    const TChildList &childs = GetChildList();
     TChildList::size_type ret = 0;
     
-    for (TChildList::iterator it=childs.begin(); it!=childs.end(); it++)
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
     {
         if (!IsValidWidget(*it))
             continue;

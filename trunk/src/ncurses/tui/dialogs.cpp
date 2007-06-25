@@ -66,7 +66,7 @@ void MessageBox(const std::string &msg)
     CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_GREEN, COLOR_BLUE),
                                        TColorPair(COLOR_WHITE, COLOR_BLUE), 25, 0, msg);
     
-    dialog->AddButton(new CButton("OK"));
+    dialog->AddButton(new CButton(GetTranslation("OK")));
     
     TUI.AddGroup(dialog, true);
     
@@ -81,7 +81,7 @@ void WarningBox(const std::string &msg)
     CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_YELLOW, COLOR_RED),
                                        TColorPair(COLOR_WHITE, COLOR_RED), 30, 0, msg);
     
-    dialog->AddButton(new CButton("OK"));
+    dialog->AddButton(new CButton(GetTranslation("OK")));
     
     TUI.AddGroup(dialog, true);
     
@@ -96,7 +96,7 @@ bool YesNoBox(const std::string &msg)
     CDialog *dialog = CreateBaseDialog(TColorPair(COLOR_GREEN, COLOR_BLUE), TColorPair(COLOR_WHITE, COLOR_BLUE),
                                        30, 0, msg);
     
-    CButton *nobutton = new CButton("No"), *yesbutton = new CButton("Yes");
+    CButton *nobutton = new CButton(GetTranslation("No")), *yesbutton = new CButton(GetTranslation("Yes"));
     dialog->AddButton(yesbutton);
     dialog->AddButton(nobutton);
     
@@ -124,7 +124,7 @@ std::string InputBox(const std::string &msg, const std::string &init, int max, c
     CInputField *input = new CInputField(init, CInputField::STRING, max, out);
     dialog->StartPack(input, true, true, 1, 0);
     
-    CButton *okbutton = new CButton("OK"), *cancelbutton = new CButton("Cancel");
+    CButton *okbutton = new CButton(GetTranslation("OK")), *cancelbutton = new CButton(GetTranslation("Cancel"));
     dialog->AddButton(okbutton, false, false);
     dialog->AddButton(cancelbutton, false, false);
 

@@ -61,7 +61,8 @@ protected:
     void DrawChild(CWidget *w) { w->Draw(); }
     void UpdateLayout(void) { m_bUpdateLayout = true; }
     CGroup *GetGroupWidget(CWidget *w) { return m_GroupMap[w]; }
-    
+    void Clear(void);
+
     CGroup(void) : m_pFocusedWidget(NULL), m_bUpdateLayout(true) { }
 
 public:
@@ -71,7 +72,6 @@ public:
     void AddWidget(CWidget *w) { CoreAddWidget(w); };
     void RemoveWidget(CWidget *w);
     void DisableWidget(CWidget *w);
-    void Clear(void);
     TChildList &GetChildList(void) { return m_Childs; }
     bool Empty(void) { return m_Childs.empty(); }
     void RequestUpdate(void);

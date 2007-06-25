@@ -54,14 +54,9 @@ REGISTER
 NCURSES
 - Check chtype
 - Better monochrome support
-- Clear functions for choiceboxes?
-- Check Quit code
 - Exceptions
-- check usage of GetChildList and similar functions (a reference should be stored of the return type)
 - Translations and buttonbar descriptions
-- Make Clear() CGroup function protected?
-- Check RequestWidth/Height funcs from CMenu
-
+- Check focus ordering from dialogs, screens etc
 
 GTK
 - Move main window away from base frontend class?

@@ -173,21 +173,31 @@ void CMenu::CoreDrawLayout()
 
 int CMenu::CoreRequestWidth()
 {
-    if (m_iMaxWidth)
-        return m_iMaxWidth;
+    int ret = std::max(GetMinWidth(), 1);
+    
+    if (m_LongestLine)
+        ret = std::max(ret, SafeConvert<int>(m_LongestLine));
+    
+    ret += 2; // Surrounding box
+    
+    if (ret > m_iMaxWidth)
+        ret = m_iMaxWidth;
 
-    return 3;
+    return ret;
 }
 
 int CMenu::CoreRequestHeight()
 {
-    if (m_iMaxHeight)
-        return m_iMaxHeight;
+    int ret = std::max(GetMinHeight(), 1);
+    
+    ret = std::max(ret, SafeConvert<int>(m_MenuList.size()));
+    
+    ret += 2; // Surrounding box
+    
+    if (ret > m_iMaxHeight)
+        ret = m_iMaxHeight;
 
-    if (!m_MenuList.empty())
-        return SafeConvert<int>(m_MenuList.size());
-
-    return 3;
+    return ret;
 }
 
 void CMenu::CoreScroll(int vscroll, int hscroll)

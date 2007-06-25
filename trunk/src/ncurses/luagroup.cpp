@@ -92,7 +92,7 @@ CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
 CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
 {
     CLuaTextField *ret = new CLuaTextField(desc, wrap);
-    StartPack(ret, true, true, 0, 0);
+    AddWidget(ret);
     return ret;
 }
 
