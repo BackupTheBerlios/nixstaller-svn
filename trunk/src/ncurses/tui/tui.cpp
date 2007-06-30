@@ -142,12 +142,7 @@ void CTUI::ActivateGroup(CGroup *g)
 int CTUI::GetColorPair(int fg, int bg)
 {
     if (!has_colors())
-    {
-        // Non-monochrome color requested?
-        if (((fg != COLOR_BLACK) && (fg != COLOR_WHITE)) ||
-              ((bg != COLOR_BLACK) && (bg != COLOR_WHITE)))
-            return GetColorPair(COLOR_WHITE, COLOR_BLACK);
-    }
+        return COLOR_PAIR(0);
     
     TColorMap::iterator it = m_ColorPairs.find(fg);
     if (it != m_ColorPairs.end())
