@@ -40,6 +40,7 @@ CBaseLuaGroup *CInstallScreen::CreateGroup()
 {
     CLuaGroup *ret = new CLuaGroup();
     StartPack(ret, true, true, 0, 1);
+    m_LuaGroups.push_back(ret);
     return ret;
 }
 
@@ -52,13 +53,12 @@ void CInstallScreen::ResetWidgetRange()
 {
     m_WidgetRange.first = m_WidgetRange.second = NULL;
     
-    if (!GetWin())
-        return; // Not initialized yet
+/*    if (!GetWin())
+        return; // Not initialized yet*/
     
-    const TChildList &childs = GetChildList();
     int h = StartingHeight();
     
-    for (TChildList::const_iterator it = childs.begin()+1; it!=childs.end(); it++)
+    for (TChildList::const_iterator it=m_LuaGroups.begin(); it!=m_LuaGroups.end(); it++)
     {
         if (h < MaxScreenHeight())
         {
@@ -86,9 +86,8 @@ int CInstallScreen::StartingHeight()
 void CInstallScreen::UpdateCounter()
 {
     int count = 1, current = 1, h = StartingHeight();
-    const TChildList &childs = GetChildList();
     
-    for (TChildList::const_iterator it=childs.begin()+1; it!=childs.end(); it++)
+    for (TChildList::const_iterator it=m_LuaGroups.begin(); it!=m_LuaGroups.end(); it++)
     {
         h += GetTotalWidgetH(*it);
         
@@ -110,22 +109,20 @@ void CInstallScreen::UpdateCounter()
 
 bool CInstallScreen::CoreBack()
 {
-    if (m_WidgetRange.first != NULL)
+    if (HasPrevWidgets())
     {
-        const TChildList &childs = GetChildList();
-        TChildList::const_reverse_iterator it = childs.rbegin();
+        TChildList::const_reverse_iterator it = m_LuaGroups.rbegin();
         
-        for (; *it!=childs.front(); it++)
+        for (; it!=m_LuaGroups.rend(); it++)
             (*it)->Enable(false);
         
         int h = StartingHeight();
-        it = std::find(childs.rbegin(), childs.rend(), m_WidgetRange.first);
+        it = std::find(m_LuaGroups.rbegin(), m_LuaGroups.rend(), m_WidgetRange.first);
         m_WidgetRange.first = m_WidgetRange.second = NULL;
         
-        if (it != childs.rend())
+        if (it != m_LuaGroups.rend())
         {
-            // First widget is always the label, so stop before getting there
-            while ((*it != childs.front()) && (h < MaxScreenHeight()))
+            while ((*it != m_LuaGroups.front()) && (h < MaxScreenHeight()))
             {
                 it++;
                 h += GetTotalWidgetH(*it);
@@ -153,23 +150,20 @@ bool CInstallScreen::CoreBack()
 
 bool CInstallScreen::CoreNext()
 {
-    const TChildList &childs = GetChildList();
-
-    if (m_WidgetRange.second != childs.back())
+    if (HasNextWidgets())
     {
-        TChildList::const_iterator it = childs.begin() + 1; // First is Label
+        TChildList::const_iterator it = m_LuaGroups.begin();
         
-        for (; it!=childs.end(); it++)
+        for (; it!=m_LuaGroups.end(); it++)
             (*it)->Enable(false);
         
         int h = StartingHeight();
-        it = std::find(childs.begin(), childs.end(), m_WidgetRange.second);
+        it = std::find(m_LuaGroups.begin(), m_LuaGroups.end(), m_WidgetRange.second);
         m_WidgetRange.first = m_WidgetRange.second = NULL;
         
-        if (it != childs.end())
+        if (it != m_LuaGroups.end())
         {
-            // First widget is always the label, so stop before getting there
-            while ((*it != childs.back()) && (h < MaxScreenHeight()))
+            while ((*it != m_LuaGroups.back()) && (h < MaxScreenHeight()))
             {
                 it++;
                 h += GetTotalWidgetH(*it);

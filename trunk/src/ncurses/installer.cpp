@@ -103,9 +103,6 @@ void CInstaller::UpdateButtons(void)
 
 void CInstaller::PrevScreen()
 {
-/*    if (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.front())
-        return; UNDONE */
-    
     if (!m_InstallScreens[m_CurrentScreen]->Back())
     {
         UpdateButtons(); // Screen may have switched subscreens
@@ -133,8 +130,7 @@ void CInstaller::PrevScreen()
 
 void CInstaller::NextScreen()
 {
-    if (/*(m_InstallScreens[m_CurrentScreen] != m_InstallScreens.back()) && UNDONE */
-        (!m_InstallScreens[m_CurrentScreen]->Next()))
+    if (!m_InstallScreens[m_CurrentScreen]->Next())
     {
         UpdateButtons(); // Screen may have switched subscreens
         return;
@@ -257,9 +253,7 @@ void CInstaller::Init(int argc, char **argv)
 
 void CInstaller::UpdateLanguage()
 {
-    m_pCancelButton->SetText(GetTranslation("Cancel"));
-    m_pPrevButton->SetText(GetTranslation("Back"));
-    m_pNextButton->SetText(GetTranslation("Next"));
+    UpdateButtons();
 }
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)

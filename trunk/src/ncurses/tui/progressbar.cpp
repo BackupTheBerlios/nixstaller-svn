@@ -36,16 +36,10 @@ CProgressBar::CProgressBar(float min, float max) : m_fMin(min), m_fMax(max), m_f
 
 void CProgressBar::EnableColors(bool e)
 {
-    TColorPair colors;
-    
-    colors.first = COLOR_BLACK;
-    
     if (!has_colors())
-        colors.second = COLOR_WHITE;
+        SetAttr(this, A_REVERSE, e);
     else
-        colors.second = COLOR_GREEN;
-    
-    SetColorAttr(colors, e);
+        SetColorAttr(TColorPair(COLOR_BLACK, COLOR_GREEN), e);
 }
 
 void CProgressBar::DoDraw()
