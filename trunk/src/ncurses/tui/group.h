@@ -38,7 +38,6 @@ private:
     bool m_bUpdateLayout;
     
     bool IsGroupWidget(CWidget *w) { return (m_GroupMap[w] != NULL); }
-    bool CanFocusChilds(CWidget *w);
     void DrawLayout(void) { CoreDrawLayout(); }
 
 protected:
@@ -54,6 +53,7 @@ protected:
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual void CoreDrawLayout(void) { }
 
+    bool CanFocusChilds(CWidget *w);
     void InitChild(CWidget *w);
     void DrawChilds(void) { CoreDrawChilds(); }
     CWidget *GetFocusedWidget(void) { return m_pFocusedWidget; }

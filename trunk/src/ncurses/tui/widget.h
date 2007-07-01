@@ -97,8 +97,6 @@ protected:
     void SetParent(CGroup *g) { m_pParent = g; m_pParentWin = NULL; }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
 
-    bool CanFocus(void) { return CoreCanFocus(); }
-    
     bool HandleKey(chtype key) { return CoreHandleKey(key); }
     bool HandleEvent(CWidget *emitter, int event) { return CoreHandleEvent(emitter, event); }
     void PushEvent(int type);
@@ -139,6 +137,7 @@ public:
     void SetBox(bool b) { m_bBox = b; }
     
     bool Focused(void) { return m_bFocused; }
+    bool CanFocus(void) { return CoreCanFocus(); }
     void Focus(bool f) { m_bFocused = f; m_bColorsChanged = true; UpdateFocus(); }
     
     void Enable(bool e);

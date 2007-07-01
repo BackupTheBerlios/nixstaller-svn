@@ -103,9 +103,10 @@ void CInstaller::UpdateButtons(void)
 
 void CInstaller::PrevScreen()
 {
-    if (!m_InstallScreens[m_CurrentScreen]->Back())
+    if (m_InstallScreens[m_CurrentScreen]->SubBack())
     {
-        UpdateButtons(); // Screen may have switched subscreens
+        UpdateButtons();
+        FocusWidget(m_pScreenBox);
         return;
     }
     
@@ -130,9 +131,10 @@ void CInstaller::PrevScreen()
 
 void CInstaller::NextScreen()
 {
-    if (!m_InstallScreens[m_CurrentScreen]->Next())
+    if (m_InstallScreens[m_CurrentScreen]->SubNext())
     {
-        UpdateButtons(); // Screen may have switched subscreens
+        UpdateButtons();
+        FocusWidget(m_pScreenBox);
         return;
     }
     
@@ -173,10 +175,15 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
 {
     screen->Enable(true);
     screen->Activate();
-//     m_pScreenBox->FocusWidget(screen); UNDONE
+    
     m_CurrentScreen = 0;
     while (m_InstallScreens.at(m_CurrentScreen) != screen)
         m_CurrentScreen++;
+    
+    if (CanFocusChilds(m_pScreenBox))
+        FocusWidget(m_pScreenBox);
+    else
+        m_pNextButton->GetParentWidget()->FocusWidget(m_pNextButton);
 }
 
 void CInstaller::InstallThink()

@@ -45,8 +45,8 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     void UpdateCounter(void);
     
 protected:
-    virtual bool CoreBack(void);
-    virtual bool CoreNext(void);
+/*    virtual bool CoreBack(void);
+    virtual bool CoreNext(void);*/
     virtual void CoreActivate(void) { ResetWidgetRange(); CBaseScreen::CoreActivate(); }
     virtual int CoreRequestHeight(void);
     virtual void CoreInit(void) { ResetWidgetRange(); }
@@ -56,6 +56,8 @@ public:
     
     bool HasPrevWidgets(void) const { return (!m_LuaGroups.empty() && (m_WidgetRange.first != NULL)); }
     bool HasNextWidgets(void) /*const*/ { return (!m_LuaGroups.empty() && (m_WidgetRange.second != m_LuaGroups.back())); }
+    bool SubNext(void);
+    bool SubBack(void);
 };
 
 #endif

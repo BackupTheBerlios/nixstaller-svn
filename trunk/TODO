@@ -56,7 +56,6 @@ NCURSES
 - Better monochrome support
 - Exceptions
 - Translations and buttonbar descriptions
-- Check focus ordering from dialogs, screens etc
 
 GTK
 - Move main window away from base frontend class?

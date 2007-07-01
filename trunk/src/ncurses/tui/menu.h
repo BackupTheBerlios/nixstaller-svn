@@ -64,8 +64,6 @@ protected:
     virtual TScrollRange CoreGetRange(void);
     virtual TScrollRange CoreGetScrollRegion(void);
 
-    using CBaseScroll::Clear; // We don't want users to call this...
-    
 public:
     CMenu(int maxw, int maxh) : m_iMaxWidth(maxw), m_iMaxHeight(maxh), m_LongestLine(0),
                                 m_iXOffset(0), m_iYOffset(0), m_iCursorLine(0) { }

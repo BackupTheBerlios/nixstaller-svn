@@ -31,7 +31,19 @@ namespace NNCurses {
 
 bool CGroup::CanFocusChilds(CWidget *w)
 {
-    return (IsGroupWidget(w) && !w->CanFocus() && !GetGroupWidget(w)->Empty());
+    if (!IsGroupWidget(w))
+        return false;
+    
+    CGroup *group = GetGroupWidget(w);
+    const TChildList &childs = group->GetChildList();
+    
+    for (TChildList::const_iterator it=childs.begin(); it!=childs.end(); it++)
+    {
+        if ((*it)->Enabled() && ((*it)->CanFocus() || group->CanFocusChilds(*it)))
+            return true;
+    }
+    
+    return false;
 }
 
 void CGroup::CoreDraw(void)
@@ -77,10 +89,12 @@ void CGroup::UpdateFocus()
 {
     if (m_pFocusedWidget)
         m_pFocusedWidget->Focus(Focused());
+    else
+        SetNextFocWidget(false);
     
     for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
     {
-        if (*it == m_pFocusedWidget || !(*it)->Enabled())
+        if ((*it == m_pFocusedWidget) || !(*it)->Enabled())
             continue;
         
         // Let all other widgets update their colors. The group has changed it's color which may affect any childs
@@ -122,9 +136,6 @@ void CGroup::InitChild(CWidget *w)
 {
     m_Childs.push_back(w);
     w->SetParent(this);
-    
-    if (!m_pFocusedWidget && Focused() && (w->CanFocus() || CanFocusChilds(w)))
-        FocusWidget(w);
 }
 
 void CGroup::RemoveWidget(CWidget *w)
@@ -159,6 +170,9 @@ void CGroup::Clear()
 
 void CGroup::CoreFocusWidget(CWidget *w)
 {
+    if (w == m_pFocusedWidget)
+        return;
+    
     if (m_pFocusedWidget)
     {
         m_pFocusedWidget->Focus(false);

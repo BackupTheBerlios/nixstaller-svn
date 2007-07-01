@@ -80,10 +80,9 @@ void StartFrontend(int argc, char **argv)
     interface->SetMinWidth(60);
     interface->SetMinHeight(15);
     
-    interface->Init(argc, argv);
-    
     NNCurses::TUI.AddGroup(interface, true);
-    
+    interface->Init(argc, argv);
+
     interface->Run();
 }
 

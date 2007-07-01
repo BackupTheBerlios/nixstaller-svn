@@ -107,11 +107,11 @@ void CInstallScreen::UpdateCounter()
         m_pCounter->SetText(CreateText("%d/%d", current, count));
 }
 
-bool CInstallScreen::CoreBack()
+bool CInstallScreen::SubBack()
 {
     if (HasPrevWidgets())
     {
-        TChildList::const_reverse_iterator it = m_LuaGroups.rbegin();
+        TChildList::reverse_iterator it = m_LuaGroups.rbegin();
         
         for (; it!=m_LuaGroups.rend(); it++)
             (*it)->Enable(false);
@@ -141,14 +141,14 @@ bool CInstallScreen::CoreBack()
         if (h != StartingHeight())
         {
             UpdateCounter();
-            return false;
+            return true;
         }
     }
-
-    return CBaseScreen::CoreBack();
+    
+    return false;
 }
 
-bool CInstallScreen::CoreNext()
+bool CInstallScreen::SubNext()
 {
     if (HasNextWidgets())
     {
@@ -182,11 +182,12 @@ bool CInstallScreen::CoreNext()
         if (h != StartingHeight())
         {
             UpdateCounter();
-            return false;
+            SetNextFocWidget(false); // Focus first widget
+            return true;
         }
     }
     
-    return CBaseScreen::CoreNext();
+    return false;
 }
 
 int CInstallScreen::CoreRequestHeight()
