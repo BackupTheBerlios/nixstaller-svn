@@ -52,10 +52,10 @@ REGISTER
 
         
 NCURSES
-- Check chtype
-- Better monochrome support
-- Exceptions
-- Translations and buttonbar descriptions
+- Check chtype?
+- Better monochrome support?
+- Exceptions?
+- Translations and buttonbar descriptions?
 
 GTK
 - Move main window away from base frontend class?

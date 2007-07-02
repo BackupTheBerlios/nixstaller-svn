@@ -70,7 +70,7 @@ bool CButton::CoreHandleKey(chtype key)
 
 void CButton::CoreGetButtonDescs(TButtonDescList &list)
 {
-    list.push_back(TButtonDescPair("ENTER", "Activate"));
+    list.push_back(TButtonDescPair("ENTER", "Activate button"));
 }
 
 void CButton::SetText(const std::string &title)

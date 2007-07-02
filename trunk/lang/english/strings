@@ -323,16 +323,31 @@ Done
 ENTER
 ENTER
 
-Scroll
-Scroll
-
 ARROWS
 ARROWS
 
+ARROWS/PGUP/PGDOWN
+ARROWS/PGUP/PGDOWN
+
 Activate button
 Activate button
+
+Move to
+Move to
+
+Navigate
+Navigate
+
+Character
+Character
+
+ARROWS/PGUP/PGDOWN/HOME/END
+ARROWS/PGUP/PGDOWN/HOME/END
+
+SPACE
+SPACE
 
 
 #-----------------------------------------------
-# Put your own translations here
+# Put your own translations below
 #-----------------------------------------------

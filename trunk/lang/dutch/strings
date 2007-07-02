@@ -323,8 +323,8 @@ Klaar
 ENTER
 ENTER
 
-Scroll
-Beweeg
+ARROWS/PGUP/PGDOWN
+ARROWS/PGUP/PGDOWN
 
 ARROWS
 PIJLEN
@@ -332,7 +332,22 @@ PIJLEN
 Activate button
 Activeer knop
 
+Move to
+Ga naar
+
+Navigate
+Navigeer
+
+Character
+Letter
+
+ARROWS/PGUP/PGDOWN/HOME/END
+PIJLEN/PGUP/PGDOWN/HOME/END
+
+SPACE
+SPATIE
+
 
 #-----------------------------------------------
-# Put your own translations here
+# Put your own translations below
 #-----------------------------------------------

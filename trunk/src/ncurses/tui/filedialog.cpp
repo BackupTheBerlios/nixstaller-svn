@@ -40,7 +40,7 @@ CFileDialog::CFileDialog(const std::string &msg, const std::string &start) : m_b
     StartPack((m_pLabel = new CLabel(msg)), true, true, 1, 1);
     StartPack(m_pFileMenu = new CMenu(25, 8), true, true, 0, 0);
     StartPack((m_pInputField = new CInputField(m_Directory, CInputField::STRING, 1024)), true, true, 1, 0);
-    AddButton(m_pOKButton = new CButton(GetTranslation("Open Directory")), true, false);
+    AddButton(m_pOKButton = new CButton(GetTranslation("Open directory")), true, false);
     AddButton(m_pCancelButton = new CButton(GetTranslation("Cancel")), true, false);
     
     OpenDir(m_Directory);
