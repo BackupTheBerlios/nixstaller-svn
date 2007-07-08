@@ -27,15 +27,19 @@ namespace NLua {
 // Lua Table Wrapper Class
 // -------------------------------------
 
-CLuaTable::CLuaTable(const char *var, const char *tab) : m_bOK(true), m_bClosed(false), m_iTabIndex(-1)
+CLuaTable::CLuaTable(const char *var, const char *tab) : m_bOK(true), m_iTabRef(LUA_NOREF)
 {
     Open(var, tab);
 }
 
-CLuaTable::CLuaTable(const char *var, const char *type, void *prvdata) : m_bOK(true), m_bClosed(false),
-                                                                                       m_iTabIndex(-1)
+CLuaTable::CLuaTable(const char *var, const char *type, void *prvdata) : m_bOK(true), m_iTabRef(LUA_NOREF)
 {
     Open(var, type, prvdata);
+}
+
+CLuaTable::CLuaTable(int tab) : m_bOK(true), m_iTabRef(LUA_NOREF)
+{
+    New(tab);
 }
 
 void CLuaTable::GetTable(const std::string &tab, int index)
@@ -48,7 +52,21 @@ void CLuaTable::GetTable(const std::string &tab, int index)
         
         lua_newtable(LuaState);
         lua_pushvalue(LuaState, -1);
-        lua_setglobal(LuaState, tab.c_str());
+        lua_setfield(LuaState, index, tab.c_str());
+    }
+}
+
+void CLuaTable::GetTable(int ref, int index)
+{
+    lua_rawgeti(LuaState, index, ref);
+    
+    if (lua_isnil(LuaState, -1))
+    {
+        lua_pop(LuaState, 1);
+        
+        lua_newtable(LuaState);
+        lua_pushvalue(LuaState, -1);
+        lua_rawseti(LuaState, index, ref);
     }
 }
 
@@ -58,11 +76,18 @@ void CLuaTable::CheckSelf()
         throw Exceptions::CExLua("Tried to use invalid or closed table");
 }
 
+void CLuaTable::New(int tab)
+{
+    Close();
+    m_bOK = true;
+    lua_newtable(LuaState);
+    m_iTabRef = luaL_ref(LuaState, tab);
+}
+
 void CLuaTable::Open(const char *var, const char *tab)
 {
     Close();
     m_bOK = true;
-    m_bClosed = false;
     
     if (tab)
     {
@@ -73,14 +98,12 @@ void CLuaTable::Open(const char *var, const char *tab)
     else
         GetTable(var, LUA_GLOBALSINDEX);
     
-    m_iTabIndex = lua_gettop(LuaState);
+    m_iTabRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
 }
 
 void CLuaTable::Open(const char *var, const char *type, void *prvdata)
 {
     Close();
-    m_bOK = true;
-    m_bClosed = false;
 
     PushClass(type, prvdata);
     int tab = lua_gettop(LuaState);
@@ -89,6 +112,8 @@ void CLuaTable::Open(const char *var, const char *type, void *prvdata)
         m_bOK = false;
     else
     {
+        m_bOK = true;
+
         lua_getfield(LuaState, tab, var);
         
         if (lua_isnil(LuaState, -1))
@@ -96,11 +121,12 @@ void CLuaTable::Open(const char *var, const char *type, void *prvdata)
             lua_pop(LuaState, 1);
             
             lua_newtable(LuaState);
-            m_iTabIndex = lua_gettop(LuaState);
             
             lua_pushvalue(LuaState, -1);
             lua_setfield(LuaState, tab, var);
         }
+        
+        m_iTabRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
     }
     
     lua_remove(LuaState, tab);
@@ -108,56 +134,116 @@ void CLuaTable::Open(const char *var, const char *type, void *prvdata)
 
 void CLuaTable::Close()
 {
-    if (m_iTabIndex != -1)
-        lua_remove(LuaState, m_iTabIndex);
-    
-    m_bClosed = true;
+    luaL_unref(LuaState, LUA_REGISTRYINDEX, m_iTabRef);
+    m_iTabRef = LUA_NOREF;
     m_bOK = false;
+}
+
+int CLuaTable::Size()
+{
+    if (!m_bOK)
+        return 0;
+    
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iTabRef);
+    int ret = lua_objlen(LuaState, -1);
+    lua_pop(LuaState, 1);
+    return ret;
 }
 
 // -------------------------------------
 // Lua Table Return Wrapper Class
 // -------------------------------------
 
-void CLuaTable::CReturn::PushIndex()
+CLuaTable::CReturn::CReturn(const std::string &index, int tab) : m_iTabRef(tab)
 {
-    if (m_iIndexType == LUA_TSTRING)
-        lua_pushstring(LuaState, m_Index.c_str());
-    else
-        lua_pushinteger(LuaState, m_iIndex);
+    lua_pushstring(LuaState, index.c_str());
+    m_iIndexRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
+}
+
+CLuaTable::CReturn::CReturn(int index, int tab) : m_iTabRef(tab)
+{
+    lua_pushinteger(LuaState, index);
+    m_iIndexRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
+}
+
+CLuaTable::CReturn::~CReturn()
+{
+    luaL_unref(LuaState, LUA_REGISTRYINDEX, m_iIndexRef);
+}
+
+void CLuaTable::CReturn::SetTable()
+{
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iIndexRef);
+    lua_insert(LuaState, -2); // swap value <--> key
+    
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iTabRef);
+    lua_insert(LuaState, -3); // Move it before key and value
+
+    lua_settable(LuaState, -3);
+    lua_pop(LuaState, 1); // Remove table
+}
+
+void CLuaTable::CReturn::GetTable()
+{
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iTabRef);
+    int tab = lua_gettop(LuaState);
+    
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iIndexRef);
+    
+    lua_gettable(LuaState, tab);
+    lua_remove(LuaState, tab);
 }
 
 void CLuaTable::CReturn::operator <<(const std::string &val)
 {
-    PushIndex();
     lua_pushstring(LuaState, val.c_str());
-    lua_settable(LuaState, m_iTabIndex);
+    SetTable();
+}
+
+void CLuaTable::CReturn::operator <<(const char *val)
+{
+    lua_pushstring(LuaState, val);
+    SetTable();
 }
 
 void CLuaTable::CReturn::operator <<(int val)
 {
-    PushIndex();
     lua_pushinteger(LuaState, val);
-    lua_settable(LuaState, m_iTabIndex);
+    SetTable();
+}
+
+void CLuaTable::CReturn::operator <<(bool val)
+{
+    lua_pushboolean(LuaState, val);
+    SetTable();
 }
 
 void CLuaTable::CReturn::operator >>(std::string &val)
 {
-    PushIndex();
-    lua_gettable(LuaState, m_iTabIndex);
-    
+    GetTable();
     val = luaL_checkstring(LuaState, -1);
-    
+    lua_pop(LuaState, 1);
+}
+
+void CLuaTable::CReturn::operator >>(const char *&val)
+{
+    GetTable();
+    val = luaL_checkstring(LuaState, -1);
     lua_pop(LuaState, 1);
 }
 
 void CLuaTable::CReturn::operator >>(int &val)
 {
-    PushIndex();
-    lua_gettable(LuaState, m_iTabIndex);
-    
+    GetTable();
     val = luaL_checkint(LuaState, -1);
-    
+    lua_pop(LuaState, 1);
+}
+
+void CLuaTable::CReturn::operator >>(bool &val)
+{
+    GetTable();
+    luaL_checktype(LuaState, -1, LUA_TBOOLEAN);
+    val = lua_toboolean(LuaState, -1);
     lua_pop(LuaState, 1);
 }
 

@@ -33,10 +33,12 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     
     if (label && *label)
     {
+        NNCurses::CBox *labelbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
         m_Label = label;
         m_pLabel = new NNCurses::CLabel(GetTranslation(m_Label), false);
         m_pLabel->SetMaxReqHeight(1);
-        box->StartPack(m_pLabel, false, false, 0, 0);
+        labelbox->StartPack(m_pLabel, true, false, 0, 0);
+        box->AddWidget(labelbox);
     }
     
     NNCurses::CInputField::EInputType t;
@@ -49,8 +51,9 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
         t = NNCurses::CInputField::FLOAT;
     
     box->AddWidget(m_pInputField = new NNCurses::CInputField((val) ? val : "", t, max));
+    m_pInputField->SetMinWidth(15);
     
-    StartPack(box, false, false, 0, 0);
+    StartPack(box, true, false, 0, 0);
     UpdateLabelWidth();
 }
 

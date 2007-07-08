@@ -19,6 +19,7 @@
 
 #include "main/main.h"
 #include "basescreen.h"
+#include "luagroup.h"
 #include "main/lua/lua.h"
 #include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
@@ -50,6 +51,14 @@ void CBaseScreen::CoreActivate()
         func(0);
 }
 
+void CBaseScreen::UpdateLanguage()
+{
+    CoreUpdateLanguage();
+    
+    for (TLuaGroupList::iterator it=m_LuaGroupList.begin(); it!=m_LuaGroupList.end(); it++)
+        (*it)->UpdateLanguage();
+}
+
 void CBaseScreen::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseScreen::LuaAddGroup, "addgroup", "screen");
@@ -58,6 +67,8 @@ void CBaseScreen::LuaRegister()
 int CBaseScreen::LuaAddGroup(lua_State *L)
 {
     CBaseScreen *screen = NLua::CheckClassData<CBaseScreen>("screen", 1);
-    NLua::CreateClass(screen->CreateGroup(), "group");
+    CBaseLuaGroup *group = screen->CreateGroup();
+    screen->m_LuaGroupList.push_back(group);
+    NLua::CreateClass(group, "group");
     return 1;
 }

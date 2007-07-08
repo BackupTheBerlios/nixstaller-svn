@@ -31,7 +31,9 @@ class CBaseInstall: virtual public CMain
     short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
     short m_sCurrentStep;
     float m_fInstallProgress;
+    int m_iUpdateStatLuaFunc, m_iUpdateProgLuaFunc, m_iUpdateOutputLuaFunc;
      
+    void Install(int statluafunc, int progluafunc, int outluafunc);
     void InitArchive(char *archname);
     void ExtractFiles(void);
     void ExecuteCommand(const char *cmd, bool required, const char *path);
@@ -39,6 +41,8 @@ class CBaseInstall: virtual public CMain
     const char *GetDefaultPath(void) const { return "/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
     void VerifyIfInstalling(void);
     void UpdateStatusText(const char *str);
+    void AddOutput(const std::string &str);
+    void SetProgress(int percent);
     
     // App register stuff
     void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
@@ -47,19 +51,9 @@ class CBaseInstall: virtual public CMain
     void RegisterInstall(void);
     bool IsInstalled(bool checkver);
     
-    friend class CBaseCFGScreen;
-    friend class CBaseLuaInputField;
-    friend class CBaseLuaCheckbox;
-    friend class CBaseLuaRadioButton;
-    friend class CBaseLuaDirSelector;
-    friend class CBaseLuaCFGMenu;
-    
 protected:
     bool m_bInstalling;
 
-    virtual void ChangeStatusText(const char *str) = 0;
-    virtual void AddInstOutput(const std::string &str) = 0;
-    virtual void SetProgress(int percent) = 0;
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
     virtual void InitLua(void);
     
@@ -67,14 +61,10 @@ public:
     install_info_s m_InstallInfo;
     std::string m_szBinDir;
 
-
-    CBaseInstall(void) : m_ulTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
-                         m_bAlwaysRoot(false), m_sInstallSteps(1), m_sCurrentStep(0),
-                         m_fInstallProgress(0.0f), m_bInstalling(false) { };
+    CBaseInstall(void);
     virtual ~CBaseInstall(void) { };
 
     virtual void Init(int argc, char **argv);
-    virtual void Install(void);
 
     const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_szOwnDir.c_str()); };
     const char *GetLangWelcomeFName(void)
@@ -99,7 +89,7 @@ public:
     virtual void AddScreen(int luaindex) = 0;
     
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
-    static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddInstOutput(std::string(s)); };
+    static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddOutput(std::string(s)); };
     static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->InstallThink(); };
     
     // Functions for lua binding
@@ -113,6 +103,7 @@ public:
     static int LuaSetStatusMSG(lua_State *L);
     static int LuaSetStepCount(lua_State *L);
     static int LuaPrintInstOutput(lua_State *L);
+    static int LuaStartInstall(lua_State *L);
 };
 
 inline CBaseInstall *GetFromClosure(lua_State *L)

@@ -27,10 +27,11 @@ namespace NLua {
 
 class CLuaTable
 {
-    bool m_bOK, m_bClosed;
-    int m_iTabIndex;
+    bool m_bOK;
+    int m_iTabRef;
     
     void GetTable(const std::string &tab, int index);
+    void GetTable(int ref, int index);
     void CheckSelf(void);
     
 public:
@@ -38,34 +39,41 @@ public:
     {
         friend class CLuaTable;
         
-        int m_iIndexType;
-        std::string m_Index;
-        int m_iIndex;
-        int m_iTabIndex;
+        int m_iIndexRef;
+        int m_iTabRef;
         
-        CReturn(const std::string &index, int tabind) : m_iIndexType(LUA_TSTRING), m_Index(index), m_iTabIndex(tabind) { }
-        CReturn(int index, int tabind) : m_iIndexType(LUA_TNUMBER), m_iIndex(index), m_iTabIndex(tabind) { }
-        
-        void PushIndex(void);
+        CReturn(const std::string &index, int tab);
+        CReturn(int index, int tab);
         
     public:
+        ~CReturn(void);
+        
+        void GetTable(void);
+        void SetTable(void);
+
         void operator <<(const std::string &val);
+        void operator <<(const char *val);
         void operator <<(int val);
+        void operator <<(bool val);
         void operator >>(std::string &val);
+        void operator >>(const char *&val);
         void operator >>(int &val);
+        void operator >>(bool &val);
     };
     
     CLuaTable(const char *var, const char *tab=NULL);
     CLuaTable(const char *var, const char *type, void *prvdata);
-    ~CLuaTable(void) { assert(m_bClosed); }
+    CLuaTable(int tab=LUA_GLOBALSINDEX); // Creates new table in the table from index 'tab'
+    ~CLuaTable(void) { Close(); }
     
+    void New(int tab=LUA_GLOBALSINDEX);
     void Open(const char *var, const char *tab=NULL);
     void Open(const char *var, const char *type, void *prvdata);
     void Close(void);
-    int Size(void) const { return luaL_getn(LuaState, m_iTabIndex); }
+    int Size(void);
     
-    CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabIndex); }
-    CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabIndex); }
+    CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabRef); }
+    CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     operator void*(void) { static int ret; return (m_bOK) ? &ret : 0; }
 };
 

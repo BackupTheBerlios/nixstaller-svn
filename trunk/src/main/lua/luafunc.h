@@ -21,29 +21,38 @@
 #define LUA_FUNC_H
 
 #include "lua.h"
+#include "luatable.h"
 
 namespace NLua {
 
 class CLuaFunc
 {
     bool m_bOK;
-    int m_iPushedArgs, m_iReturnedArgs;
-    int m_iFuncIndex, m_iRetStartIndex;
+    int m_iFuncRef, m_iRetStartIndex;
+    CLuaTable m_ArgLuaTable;
     
-    void PopRet(void);
     void CheckSelf(void);
+    void AddArg(void);
     
 public:
     CLuaFunc(const char *func, const char *tab=NULL);
     CLuaFunc(const char *func, const char *type, void *prvdata);
+    CLuaFunc(int ref, int tab);
     ~CLuaFunc(void);
 
-    CLuaFunc &operator <<(const std::string &arg);
-    CLuaFunc &operator <<(int arg);
-    CLuaFunc &operator <<(bool arg);
-    CLuaFunc &operator >>(std::string &out);
-    CLuaFunc &operator >>(int &out);
-    CLuaFunc &operator >>(bool &arg);
+    template <typename C> CLuaFunc &operator <<(const C &arg)
+    {
+        CheckSelf();
+        m_ArgLuaTable[m_ArgLuaTable.Size()+1] << arg;
+        return *this;
+    }
+    template <typename C> CLuaFunc &operator >>(C &out)
+    {
+        CheckSelf();
+        m_ArgLuaTable[m_ArgLuaTable.Size()+1] >> out;
+        m_iRetStartIndex++;
+        return *this;
+    }
     int operator ()(int ret=LUA_MULTRET);
     operator void*(void) { static int dummy; return (m_bOK) ? &dummy : 0; }
 };

@@ -29,7 +29,6 @@ TRANSLATIONS
 
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
-- Move cfg screen array handling to libmain
 - Make m_bInstalling private
 - Make CMain::UpdateLanguage public?
 - Let Lua dir iter use class code?
@@ -37,6 +36,7 @@ MAIN
 - Lighten template functions?
 - Make function wrapper for m_Variables in CBaseLuaCFGMenu
 - Remove GetTranslation function calls for lua widget descriptions?
+- Remove CoreBack/Next functions
 
 LIBSU
 - Clean up/redesign
@@ -56,6 +56,9 @@ NCURSES
 - Better monochrome support?
 - Exceptions?
 - Translations and buttonbar descriptions?
+- Check if UpdateTranslation functions are called - needs testing
+- Check widget ordering for screens
+- Add callback events to lua widgets or hook enter key in installscreen for next button focusing
 
 GTK
 - Move main window away from base frontend class?

@@ -33,8 +33,8 @@ class CBaseLuaGroup;
 class CInstallScreen: public CBaseScreen, public NNCurses::CBox
 {
     NNCurses::CLabel *m_pTitle, *m_pCounter;
+    NNCurses::CBox *m_pTopBox, *m_pGroupBox;
     std::pair<NNCurses::CWidget *, NNCurses::CWidget *> m_WidgetRange;
-    TChildList m_LuaGroups;
     
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
@@ -54,8 +54,8 @@ protected:
 public:
     CInstallScreen(const std::string &title);
     
-    bool HasPrevWidgets(void) const { return (!m_LuaGroups.empty() && (m_WidgetRange.first != NULL)); }
-    bool HasNextWidgets(void) /*const*/ { return (!m_LuaGroups.empty() && (m_WidgetRange.second != m_LuaGroups.back())); }
+    bool HasPrevWidgets(void) const { return (m_pGroupBox && (m_WidgetRange.first != NULL)); }
+    bool HasNextWidgets(void) { return (m_pGroupBox && (m_WidgetRange.second != m_pGroupBox->GetChildList().back())); }
     bool SubNext(void);
     bool SubBack(void);
 };

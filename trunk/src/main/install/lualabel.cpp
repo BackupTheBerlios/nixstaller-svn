@@ -17,43 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "luawidget.h"
-#include "tui/tui.h"
-#include "tui/label.h"
+#include "main/main.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
+#include "lualabel.h"
 
 // -------------------------------------
-// Base Lua NCurses Widget Class
+// Base Lua Label Class
 // -------------------------------------
 
-CLuaWidget::CLuaWidget(const char *title) : NNCurses::CBox(NNCurses::CBox::VERTICAL, false), m_pTitle(NULL)
+void CBaseLuaLabel::LuaRegister()
 {
-    SetTitle(title);
+    NLua::RegisterClassFunction(CBaseLuaLabel::LuaSet, "set", "label");
 }
 
-int CLuaWidget::MaxWidgetReqW(void) const
+int CBaseLuaLabel::LuaSet(lua_State *L)
 {
-    return NNCurses::GetMaxWidth()-6;
-}
-
-void CLuaWidget::SetTitle(const char *title)
-{
-    if (title && *title)
-    {
-        m_Title = title;
-        
-        if (!m_pTitle)
-        {
-            StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(m_Title), false), false, false, 0, 0);
-            m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
-        }
-        else
-            m_pTitle->SetText(GetTranslation(title));
-    }
-}
-
-void CLuaWidget::UpdateLanguage()
-{
-    if (m_pTitle)
-        m_pTitle->SetText(GetTranslation(m_Title));
-    CoreUpdateLanguage();
+    CBaseLuaLabel *sel = NLua::CheckClassData<CBaseLuaLabel>("label", 1);
+    const char *text = luaL_checkstring(L, 2);
+    sel->SetLabel(text);
+    return 0;
 }

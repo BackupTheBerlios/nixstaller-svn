@@ -31,6 +31,7 @@ class CBaseLuaMenu;
 class CBaseLuaImage;
 class CBaseLuaProgressBar;
 class CBaseLuaTextField;
+class CBaseLuaLabel;
 
 class CBaseLuaGroup
 {
@@ -44,6 +45,7 @@ class CBaseLuaGroup
     virtual CBaseLuaImage *CreateImage(const char *desc, const char *file) = 0;
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) = 0;
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) = 0;
+    virtual CBaseLuaLabel *CreateLabel(const char *title) = 0;
     virtual void CoreUpdateLanguage(void) = 0;
     
 public:
@@ -62,6 +64,7 @@ public:
     static int LuaAddImage(lua_State *L);
     static int LuaAddProgressBar(lua_State *L);
     static int LuaAddTextField(lua_State *L);
+    static int LuaAddLabel(lua_State *L);
 };
 
 #endif

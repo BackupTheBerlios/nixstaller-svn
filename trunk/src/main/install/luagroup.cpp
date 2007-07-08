@@ -38,6 +38,7 @@ void CBaseLuaGroup::LuaRegister()
     NLua::RegisterClassFunction(LuaAddImage, "addimage", "group");
     NLua::RegisterClassFunction(LuaAddProgressBar, "addprogressbar", "group");
     NLua::RegisterClassFunction(LuaAddTextField, "addtextfield", "group");
+    NLua::RegisterClassFunction(LuaAddLabel, "addlabel", "group");
 }
 
 int CBaseLuaGroup::LuaAddInput(lua_State *L)
@@ -177,6 +178,16 @@ int CBaseLuaGroup::LuaAddTextField(lua_State *L)
         wrap = lua_toboolean(L, 3);
 
     NLua::CreateClass(group->CreateTextField(GetTranslation(desc), wrap), "textfield");
+    
+    return 1;
+}
+
+int CBaseLuaGroup::LuaAddLabel(lua_State *L)
+{
+    CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
+    const char *desc = luaL_checkstring(L, 2);
+
+    NLua::CreateClass(group->CreateLabel(GetTranslation(desc)), "label");
     
     return 1;
 }

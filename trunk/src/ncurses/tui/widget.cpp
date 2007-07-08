@@ -29,7 +29,7 @@ namespace NNCurses {
 // -------------------------------------
 
 CWidget::CWidget(void) : m_pParent(NULL), m_pParentWin(NULL), m_pNCursWin(NULL), m_iX(0), m_iY(0), m_iWidth(0),
-                         m_iHeight(0), m_iMinWidth(0), m_iMinHeight(0), m_bInitialized(false), m_bBox(false),
+                         m_iHeight(0), m_iMinWidth(1), m_iMinHeight(1), m_bInitialized(false), m_bBox(false),
                          m_bFocused(false), m_bEnabled(true), m_bSizeChanged(false), m_bColorsChanged(false),
                          m_bSetFColors(false), m_bSetDFColors(false)
 {

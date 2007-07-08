@@ -37,7 +37,7 @@ TSTLStrSize CTextBase::GetNextLine(const std::string &text, TSTLStrSize start, i
     
     if (m_bWrap)
     {
-        end = start + width;
+        end = start + width-1;
         
         if (end < start) // Overflow
             end = length - 1;
@@ -48,8 +48,8 @@ TSTLStrSize CTextBase::GetNextLine(const std::string &text, TSTLStrSize start, i
         TSTLStrSize newline = text.find("\n", start);
         if (newline < end)
             end = newline;
-    
-        if ((((end-start)+1) > SafeConvert<TSTLStrSize>(width)) && !isspace(m_QueuedText[end]))
+        
+        if (((end-start) > SafeConvert<TSTLStrSize>(width)) && !isspace(m_QueuedText[end]))
         {
             std::string sub = m_QueuedText.substr(start, (end-start)+1);
             TSTLStrSize pos = sub.find_last_of(" \t\n");
@@ -64,7 +64,7 @@ TSTLStrSize CTextBase::GetNextLine(const std::string &text, TSTLStrSize start, i
         end = m_QueuedText.find("\n", start);
             
         if (end == std::string::npos)
-            end = length;
+            end = length-1;
     }
     
     return end;

@@ -32,10 +32,11 @@
 #include "main/install/luacheckbox.h"
 #include "main/install/luadirselector.h"
 #include "main/install/luagroup.h"
-#include "main/install/luaradiobutton.h"
 #include "main/install/luainput.h"
+#include "main/install/lualabel.h"
 #include "main/install/luamenu.h"
 #include "main/install/luaprogressbar.h"
+#include "main/install/luaradiobutton.h"
 #include "main/install/luatextfield.h"
 #include "main/lua/lua.h"
 #include "main/lua/luaclass.h"
@@ -45,6 +46,14 @@
 // -------------------------------------
 // Base Installer Class
 // -------------------------------------
+
+CBaseInstall::CBaseInstall(void) : m_ulTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
+                                   m_bAlwaysRoot(false), m_sInstallSteps(1), m_sCurrentStep(0),
+                                   m_fInstallProgress(0.0f), m_iUpdateStatLuaFunc(LUA_NOREF),
+                                   m_iUpdateProgLuaFunc(LUA_NOREF), m_iUpdateOutputLuaFunc(LUA_NOREF),
+                                   m_bInstalling(false)
+{
+}
 
 void CBaseInstall::Init(int argc, char **argv)
 {   
@@ -60,6 +69,71 @@ void CBaseInstall::Init(int argc, char **argv)
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") &&
         (m_InstallInfo.archive_type != "lzma"))
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
+}
+
+void CBaseInstall::Install(int statluafunc, int progluafunc, int outluafunc)
+{
+    if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), m_InstallInfo.program_name.c_str()),
+         GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
+        throw Exceptions::CExUser();
+    
+    m_bInstalling = true;
+    m_iUpdateStatLuaFunc = statluafunc;
+    m_iUpdateProgLuaFunc = progluafunc;
+    m_iUpdateOutputLuaFunc = outluafunc;
+    
+    UpdateStatusText("Installing files");
+    AddOutput("Some extracted files");
+    SetProgress(25);
+    return; // UNDONE
+    
+    // Init all archives (if file doesn't exist nothing will be done)
+    InitArchive(CreateText("%s/instarchive_all", m_szOwnDir.c_str()));
+    InitArchive(CreateText("%s/instarchive_all_%s", m_szOwnDir.c_str(), m_szCPUArch.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s_all", m_szOwnDir.c_str(), m_szOS.c_str()));
+    InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
+                m_szCPUArch.c_str()));
+
+    std::string destdir = GetDestDir();
+    if (FileExists(destdir))
+    {
+        if (!ReadAccess(destdir))
+        {
+            throw Exceptions::CExReadExtrDir(destdir.c_str());
+/*            // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
+            ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
+            "However you don't have read permissions to this directory\n"
+            "Please restart the installer as a user who does or as the root user", destdir));*/
+        }
+        else if (!WriteAccess(destdir))
+        {
+            SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
+                    "Please enter the password of the root user");
+        }
+    }
+    
+    CHDir(destdir);
+    
+    m_SUHandler.SetThinkFunc(SUThinkFunc, this);
+
+    NLua::CLuaFunc func("Install");
+    
+    if (func)
+        func(0);
+    else
+        ExtractFiles(); // Default behaviour
+    
+//     AddOutput("Registering installation...");
+//     RegisterInstall();
+//     CalcSums();
+//     //Register.CheckSums(m_InstallInfo.program_name.c_str());
+//     AddOutput("done\n");
+
+    SetProgress(100);
+    MsgBox(GetTranslation("Installation of %s complete!"), m_InstallInfo.program_name.c_str());
+    CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
+    m_bInstalling = false;
 }
 
 void CBaseInstall::InitArchive(char *archname)
@@ -186,7 +260,7 @@ void CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pa
     else
         setenv("PATH", GetDefaultPath(), 1);
     
-    AddInstOutput(CreateText("\nExecute: %s\n\n", cmd));
+    AddOutput(CreateText("\nExecute: %s\n\n", cmd));
     
     CPipedCMD pipe(command);
     std::string line;
@@ -204,7 +278,7 @@ void CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pa
                 line += (char)ch;
                 if ((char)ch == '\n')
                 {
-                    AddInstOutput(line.c_str());
+                    AddOutput(line.c_str());
                     line.clear();
                 }
             }
@@ -212,7 +286,7 @@ void CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pa
     }
             
     if (!line.empty())
-        AddInstOutput(line.c_str());
+        AddOutput(line.c_str());
             
     if (required)
         pipe.Close(); // By calling Close() explicity its able to throw exceptions
@@ -234,7 +308,7 @@ void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const ch
     m_SUHandler.SetPath(path);
     m_SUHandler.SetCommand(cmd);
     
-    AddInstOutput(CreateText("\nExecute: %s\n\n", cmd));
+    AddOutput(CreateText("\nExecute: %s\n\n", cmd));
     
     if (!m_SUHandler.ExecuteCommand(m_szPassword))
     {
@@ -263,68 +337,49 @@ void CBaseInstall::UpdateStatusText(const char *msg)
     
     m_sCurrentStep++;
     
-    if (m_sInstallSteps > 1)
-        ChangeStatusText(CreateText("%s: %s (%d/%d)", GetTranslation("Status"),
-                         GetTranslation(msg), m_sCurrentStep, m_sInstallSteps));
-    else
-        ChangeStatusText(CreateText("%s: %s", GetTranslation("Status"), GetTranslation(msg)));
-}
-
-void CBaseInstall::Install(void)
-{
-    if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), m_InstallInfo.program_name.c_str()),
-         GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
-        throw Exceptions::CExUser();
-    
-    m_bInstalling = true;
-    
-    // Init all archives (if file doesn't exist nothing will be done)
-    InitArchive(CreateText("%s/instarchive_all", m_szOwnDir.c_str()));
-    InitArchive(CreateText("%s/instarchive_all_%s", m_szOwnDir.c_str(), m_szCPUArch.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s_all", m_szOwnDir.c_str(), m_szOS.c_str()));
-    InitArchive(CreateText("%s/instarchive_%s_%s", m_szOwnDir.c_str(), m_szOS.c_str(),
-                m_szCPUArch.c_str()));
-
-    std::string destdir = GetDestDir();
-    if (FileExists(destdir))
+    if (m_iUpdateStatLuaFunc != LUA_NOREF)
     {
-        if (!ReadAccess(destdir))
+        NLua::CLuaFunc func(m_iUpdateStatLuaFunc, LUA_REGISTRYINDEX);
+        
+        if (func)
         {
-            throw Exceptions::CExReadExtrDir(destdir.c_str());
-/*            // Dirselector screens should also check for RO dirs, so this basicly only happens when the installer defaults to a single dir
-            ThrowError(true, CreateText("This installer will install files to the following directory:\n%s\n"
-                                        "However you don't have read permissions to this directory\n"
-                                        "Please restart the installer as a user who does or as the root user", destdir));*/
-        }
-        else if (!WriteAccess(destdir))
-        {
-            SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
-                    "Please enter the password of the root user");
+            if (m_sInstallSteps > 1)
+                func << CreateText("%s: %s (%d/%d)", GetTranslation("Status"),
+                                   GetTranslation(msg), m_sCurrentStep, m_sInstallSteps);
+            else
+                func << CreateText("%s: %s", GetTranslation("Status"), GetTranslation(msg));
+            
+            func(0);
         }
     }
-    
-    CHDir(destdir);
-    
-    m_SUHandler.SetThinkFunc(SUThinkFunc, this);
+}
 
-    NLua::CLuaFunc func("Install");
-    
-    if (func)
-        func(0);
-    else
-        ExtractFiles(); // Default behaviour
-    
-//     AddInstOutput("Registering installation...");
-//     RegisterInstall();
-//     CalcSums();
-//     //Register.CheckSums(m_InstallInfo.program_name.c_str());
-//     AddInstOutput("done\n");
+void CBaseInstall::AddOutput(const std::string &str)
+{
+    if (m_iUpdateOutputLuaFunc != LUA_NOREF)
+    {
+        NLua::CLuaFunc func(m_iUpdateOutputLuaFunc, LUA_REGISTRYINDEX);
+        
+        if (func)
+        {
+            func << str;
+            func(0);
+        }
+    }
+}
 
-    SetProgress(100);
-    MsgBox(GetTranslation("Installation of %s complete!"), m_InstallInfo.program_name.c_str());
-    CleanPasswdString(m_szPassword);
-    m_szPassword = NULL;
-    m_bInstalling = false;
+void CBaseInstall::SetProgress(int percent)
+{
+    if (m_iUpdateProgLuaFunc != LUA_NOREF)
+    {
+        NLua::CLuaFunc func(m_iUpdateProgLuaFunc, LUA_REGISTRYINDEX);
+        
+        if (func)
+        {
+            func << percent;
+            func(0);
+        }
+    }
 }
 
 void CBaseInstall::UpdateExtrStatus(const char *s)
@@ -369,7 +424,7 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
     
     m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_ulTotalArchSize)*100.0f;
 
-    AddInstOutput("Extracting file: " + stat + '\n');
+    AddOutput("Extracting file: " + stat + '\n');
     SetProgress(SafeConvert<int>(m_fExtrPercent/(float)m_sInstallSteps));
 }
 
@@ -399,6 +454,7 @@ void CBaseInstall::InitLua()
     CBaseLuaMenu::LuaRegister();
     CBaseLuaProgressBar::LuaRegister();
     CBaseLuaTextField::LuaRegister();
+    CBaseLuaLabel::LuaRegister();
 
     NLua::RegisterFunction(LuaNewScreen, "newscreen", "install", this);
     NLua::RegisterFunction(LuaAddScreen, "addscreen", "install", this);
@@ -410,6 +466,7 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaSetStatusMSG, "setstatus", "install", this);
     NLua::RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
     NLua::RegisterFunction(LuaPrintInstOutput, "print", "install", this);
+    NLua::RegisterFunction(LuaStartInstall, "startinstall", "install", this);
     
     const char *env = getenv("HOME");
     if (env)
@@ -697,9 +754,35 @@ int CBaseInstall::LuaPrintInstOutput(lua_State *L)
     pInstaller->VerifyIfInstalling();
 
     const char *msg = luaL_checkstring(L, 1);
-    pInstaller->AddInstOutput(msg);
+    pInstaller->AddOutput(msg);
     return 0;
 }
 
+int CBaseInstall::LuaStartInstall(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    
+    if (pInstaller->m_bInstalling)
+        return 0;
+    
+    int stat = LUA_NOREF, prog = LUA_NOREF, out = LUA_NOREF;
+    
+    if (lua_isfunction(NLua::LuaState, 1))
+        stat = NLua::MakeReference(1);
+    
+    if (lua_isfunction(NLua::LuaState, 2))
+        prog = NLua::MakeReference(2);
+
+    if (lua_isfunction(NLua::LuaState, 3))
+        out = NLua::MakeReference(3);
+
+    pInstaller->Install(stat, prog, out);
+    
+    NLua::Unreference(stat);
+    NLua::Unreference(prog);
+    NLua::Unreference(out);
+    
+    return 0;
+}
 
 

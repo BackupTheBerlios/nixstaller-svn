@@ -55,8 +55,8 @@ namespace NLua {
 // Lua Function Wrapper Class
 // -------------------------------------
 
-CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iPushedArgs(0), m_iReturnedArgs(0),
-                                                        m_iFuncIndex(-1), m_iRetStartIndex(0)
+CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iFuncRef(LUA_NOREF), m_iRetStartIndex(1),
+                                                        m_ArgLuaTable(LUA_REGISTRYINDEX)
 {
     GetGlobal(func, tab);
     if (lua_isnil(LuaState, -1))
@@ -65,12 +65,12 @@ CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iPushedAr
         m_bOK = false;
     }
     else
-        m_iFuncIndex = lua_gettop(LuaState);
+        m_iFuncRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
 }
 
-CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(true), m_iPushedArgs(0),
-                                                                        m_iReturnedArgs(0), m_iFuncIndex(-1),
-                                                                        m_iRetStartIndex(0)
+CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(true), m_iFuncRef(LUA_NOREF),
+                                                                        m_iRetStartIndex(1),
+                                                                        m_ArgLuaTable(LUA_REGISTRYINDEX)
 {
     PushClass(type, prvdata);
 
@@ -86,26 +86,26 @@ CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(tr
         m_bOK = false;
     }
     else
-        m_iFuncIndex = lua_gettop(LuaState);
+        m_iFuncRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
+}
+
+CLuaFunc::CLuaFunc(int ref, int tab) : m_bOK(true), m_iFuncRef(LUA_NOREF), m_iRetStartIndex(1),
+                                       m_ArgLuaTable(LUA_REGISTRYINDEX)
+{
+    lua_rawgeti(LuaState, tab, ref);
+    
+    if (!lua_isfunction(LuaState, -1))
+    {
+        lua_pop(LuaState, 1);
+        m_bOK = false;
+    }
+    else
+        m_iFuncRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
 }
 
 CLuaFunc::~CLuaFunc()
 {
-    if (m_iPushedArgs)
-        lua_pop(LuaState, m_iPushedArgs);
-    
-    while (m_iReturnedArgs)
-        PopRet();
-    
-    if (m_iFuncIndex != -1)
-        lua_remove(LuaState, m_iFuncIndex);
-}
-
-void CLuaFunc::PopRet()
-{
-    assert(m_iReturnedArgs > 0);
-    lua_remove(LuaState, m_iRetStartIndex);
-    m_iReturnedArgs--;
+    luaL_unref(LuaState, LUA_REGISTRYINDEX, m_iFuncRef);
 }
 
 void CLuaFunc::CheckSelf()
@@ -114,62 +114,19 @@ void CLuaFunc::CheckSelf()
         throw Exceptions::CExLua("Tried to use invalid LuaFunc");
 }
 
-CLuaFunc &CLuaFunc::operator <<(const std::string &arg)
-{
-    CheckSelf();
-    lua_pushstring(LuaState, arg.c_str());
-    m_iPushedArgs++;
-    return *this;
-}
-
-CLuaFunc &CLuaFunc::operator <<(int arg)
-{
-    CheckSelf();
-    lua_pushinteger(LuaState, arg);
-    m_iPushedArgs++;
-    return *this;
-}
-
-CLuaFunc &CLuaFunc::operator <<(bool arg)
-{
-    CheckSelf();
-    lua_pushboolean(LuaState, arg);
-    m_iPushedArgs++;
-    return *this;
-}
-
-CLuaFunc &CLuaFunc::operator >>(std::string &out)
-{
-    CheckSelf();
-    out = luaL_checkstring(LuaState, m_iRetStartIndex);
-    PopRet();
-    return *this;
-}
-
-CLuaFunc &CLuaFunc::operator >>(int &out)
-{
-    CheckSelf();
-    out = luaL_checkint(LuaState, m_iRetStartIndex);
-    PopRet();
-    return *this;
-}
-
-CLuaFunc &CLuaFunc::operator >>(bool &out)
-{
-    CheckSelf();
-    luaL_checktype(LuaState, m_iRetStartIndex, LUA_TBOOLEAN);
-    out = lua_toboolean(LuaState, m_iRetStartIndex);
-    PopRet();
-    return *this;
-}
-
 int CLuaFunc::operator ()(int ret)
 {
     CheckSelf();
-    lua_pushvalue(LuaState, m_iFuncIndex);
+    
     int oldtop = lua_gettop(LuaState);
     
-    if (lua_pcall(LuaState, m_iPushedArgs, ret, 0) != 0)
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iFuncRef);
+    
+    int size = m_ArgLuaTable.Size();
+    for (int i=1; i<=size; i++)
+        m_ArgLuaTable[i].GetTable();
+    
+    if (lua_pcall(LuaState, size, ret, 0) != 0)
     {
         const char *errmsg = lua_tostring(LuaState, -1);
         if (!errmsg)
@@ -180,13 +137,23 @@ int CLuaFunc::operator ()(int ret)
         throw Exceptions::CExLua(CreateText("Error running function: %s", errmsg));
     }
     
-    // Number of results
-    m_iReturnedArgs = lua_gettop(LuaState) - (oldtop - (m_iPushedArgs + 1));
-    m_iRetStartIndex = lua_gettop(LuaState) - m_iReturnedArgs;
+    const int top = lua_gettop(LuaState);
+//     const int count = top - (oldtop - (m_ArgLuaTable.Size() + 1));
+    const int count = top - oldtop;
+    int retstart = top - count;
+
+    m_iRetStartIndex = 1;
+    m_ArgLuaTable.New(LUA_REGISTRYINDEX);
     
-    m_iPushedArgs = 0;
+    while (retstart < top)
+    {
+        lua_pushvalue(LuaState, retstart);
+        m_ArgLuaTable[retstart-count].SetTable();
+        retstart++;
+    }
     
-    return m_iReturnedArgs;
+    lua_pop(LuaState, count);
+    return count;
 }
 
 

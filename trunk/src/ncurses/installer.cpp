@@ -33,11 +33,11 @@ CInstaller::CInstaller() : m_CurrentScreen(0)
 {
     AddWidget(m_pScreenBox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false, 1));
     
-    NNCurses::CBox *buttonbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false);
-    buttonbox->StartPack(m_pCancelButton = new NNCurses::CButton("Cancel"), false, false, 0, 1);
-    buttonbox->EndPack(m_pNextButton = new NNCurses::CButton("Next"), false, false, 0, 1);
-    buttonbox->EndPack(m_pPrevButton = new NNCurses::CButton("Back"), false, false, 0, 1);
-    EndPack(buttonbox, false, false, 0, 0);
+    m_pButtonBox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false);
+    m_pButtonBox->StartPack(m_pCancelButton = new NNCurses::CButton("Cancel"), false, false, 0, 1);
+    m_pButtonBox->EndPack(m_pNextButton = new NNCurses::CButton("Next"), false, false, 0, 1);
+    m_pButtonBox->EndPack(m_pPrevButton = new NNCurses::CButton("Back"), false, false, 0, 1);
+    EndPack(m_pButtonBox, false, false, 0, 0);
     
     EndPack(new NNCurses::CSeparator(ACS_HLINE), false, false, 0, 0);
 }
@@ -106,7 +106,10 @@ void CInstaller::PrevScreen()
     if (m_InstallScreens[m_CurrentScreen]->SubBack())
     {
         UpdateButtons();
-        FocusWidget(m_pScreenBox);
+        
+        if (CanFocusChilds(m_pScreenBox))
+            FocusWidget(m_pScreenBox);
+        
         return;
     }
     
@@ -118,9 +121,6 @@ void CInstaller::PrevScreen()
         
         if ((*it)->CanActivate())
         {
-            if (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.back())
-                m_pNextButton->SetText(GetTranslation("Next")); // Change from "Finish"
-
             m_InstallScreens[m_CurrentScreen]->Enable(false);
             ActivateScreen(*it);
             UpdateButtons();
@@ -134,7 +134,10 @@ void CInstaller::NextScreen()
     if (m_InstallScreens[m_CurrentScreen]->SubNext())
     {
         UpdateButtons();
-        FocusWidget(m_pScreenBox);
+        
+        if (CanFocusChilds(m_pScreenBox))
+            FocusWidget(m_pScreenBox);
+
         return;
     }
     
@@ -183,7 +186,10 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
     if (CanFocusChilds(m_pScreenBox))
         FocusWidget(m_pScreenBox);
     else
-        m_pNextButton->GetParentWidget()->FocusWidget(m_pNextButton);
+    {
+        m_pButtonBox->FocusWidget(m_pNextButton);
+        FocusWidget(m_pButtonBox);
+    }
 }
 
 void CInstaller::InstallThink()
@@ -217,7 +223,8 @@ bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
         {
             // All unhandled callback events will focus next button.
             // This is usefull when user presses enter key in menus and such
-            FocusWidget(m_pNextButton);
+            FocusWidget(m_pButtonBox);
+            m_pButtonBox->FocusWidget(m_pNextButton);
             return true;
         }
     }

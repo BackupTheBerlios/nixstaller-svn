@@ -276,5 +276,16 @@ void LuaSet(int val, const char *var, const char *type, void *prvdata)
     SetClassVar(var, type, prvdata);
 }
 
+int MakeReference(int index, int tab)
+{
+    lua_pushvalue(LuaState, index);
+    return luaL_ref(LuaState, tab);
+}
+
+void Unreference(int ref, int tab)
+{
+    luaL_unref(LuaState, tab, ref);
+}
+
 
 }

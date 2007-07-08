@@ -30,10 +30,10 @@ CInputField::CInputField(const std::string &t, EInputType e, int max,
                          char out) : m_Text(t), m_iMaxChars(max), m_cOut(out), m_eInputType(e),
                                      m_StartPos(0), m_CursorPos(0)
 {
-    SetFColors(COLOR_YELLOW, COLOR_RED);
-    SetDFColors(COLOR_WHITE, COLOR_RED);
-    SetMinWidth(1);
-    SetMinHeight(1);
+//     SetFColors(COLOR_YELLOW, COLOR_RED);
+//     SetDFColors(COLOR_WHITE, COLOR_RED);
+    SetMinHeight(3);
+    SetBox(true);
 }
 
 CInputField::~CInputField(void)
@@ -161,12 +161,12 @@ void CInputField::DoDraw()
         end = length;
     
     if (m_cOut)
-        AddStr(this, 0, 0, std::string(end-m_StartPos, m_cOut).c_str());
+        AddStr(this, 1, 1, std::string(end-m_StartPos, m_cOut).c_str());
     else
-        AddStr(this, 0, 0, m_Text.substr(m_StartPos, end).c_str());
+        AddStr(this, 1, 1, m_Text.substr(m_StartPos, end).c_str());
     
     if (Focused())
-        TUI.LockCursor(GetWX(GetWin()) + SafeConvert<int>(m_CursorPos), GetWY(GetWin()));
+        TUI.LockCursor(GetWX(GetWin()) + SafeConvert<int>(m_CursorPos)+1, GetWY(GetWin())+1);
 }
 
 bool CInputField::CoreHandleKey(chtype key)

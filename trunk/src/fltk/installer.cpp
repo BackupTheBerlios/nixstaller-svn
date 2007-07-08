@@ -260,13 +260,11 @@ void CInstaller::SetProgress(int percent)
     
 void CInstaller::Install()
 {
-    m_bInstallFiles = true;
     m_pPrevButton->deactivate();
     m_pNextButton->deactivate();
     
     CBaseInstall::Install();
     
-    m_bInstallFiles = false;
     m_pCancelButton->deactivate();
     m_pNextButton->activate();
 }
@@ -290,7 +288,7 @@ void CInstaller::WizCancelCB(Fl_Widget *, void *p)
     CInstaller *pInst = (CInstaller *)p;
     
     char *msg;
-    if (pInst->m_bInstallFiles)
+    if (pInst->m_bInstalling)
         msg = GetTranslation("Install commands are still running\n"
                 "If you abort now this may lead to a broken installation\n"
                 "Are you sure?");

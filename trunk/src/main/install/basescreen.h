@@ -25,7 +25,9 @@ class CBaseLuaGroup;
 class CBaseScreen
 {
     std::string m_Title;
-    CBaseInstall *m_pInstaller;
+    
+    typedef std::vector<CBaseLuaGroup *> TLuaGroupList;
+    TLuaGroupList m_LuaGroupList;
     
     bool CallLuaBoolFunc(const char *func, bool def);
     
@@ -38,20 +40,18 @@ protected:
     virtual void CoreActivate(void);
 
     const std::string &GetTitle(void) { return m_Title; }
-    CBaseInstall *GetInstall(void) { return m_pInstaller; }
 
 public:
     CBaseScreen(const std::string &title) : m_Title(title) { }
     virtual ~CBaseScreen(void) { }
     
-    void UpdateLanguage(void) { CoreUpdateLanguage(); }
+    void UpdateLanguage(void);
     bool CanActivate(void) { return CallLuaBoolFunc("canactivate", true); }
     void Activate(void) { CoreActivate(); }
     bool Back(void) { return CoreBack(); }
     bool Next(void) { return CoreNext(); }
     
     static void LuaRegister(void);
-    
     static int LuaAddGroup(lua_State *L);
 };
 

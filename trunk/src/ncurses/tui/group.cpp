@@ -89,7 +89,7 @@ void CGroup::UpdateFocus()
 {
     if (m_pFocusedWidget)
         m_pFocusedWidget->Focus(Focused());
-    else
+    else if (Focused())
         SetNextFocWidget(false);
     
     for (TChildList::iterator it=m_Childs.begin(); it!=m_Childs.end(); it++)
@@ -181,7 +181,7 @@ void CGroup::CoreFocusWidget(CWidget *w)
     
     m_pFocusedWidget = w;
     
-    if (w) // If w == NULL the current focused widget is reset
+    if (w && Focused()) // If w == NULL the current focused widget is reset
     {
         w->Focus(true);
         w->RequestQueuedDraw();

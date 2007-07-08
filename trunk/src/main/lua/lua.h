@@ -53,6 +53,9 @@ void LuaSet(const std::string &val, const char *var, const char *type, void *prv
 void LuaSet(int val, const char *var, const char *tab=NULL);
 void LuaSet(int val, const char *var, const char *type, void *prvdata);
 
+int MakeReference(int index, int tab=LUA_REGISTRYINDEX);
+void Unreference(int ref, int tab=LUA_REGISTRYINDEX);
+
 extern CLuaStateKeeper LuaState;
 
 }

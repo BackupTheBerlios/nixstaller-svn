@@ -129,12 +129,11 @@ protected:
     virtual void InstallThink(void) { Fl::wait(0.0f); };
     
 public:
-    bool m_bInstallFiles;
     Fl_Button *m_pCancelButton;
     Fl_Button *m_pPrevButton;
     Fl_Button *m_pNextButton;
 
-    CInstaller(void) : m_bInstallFiles(false) { };
+    CInstaller(void) { };
     virtual ~CInstaller(void);
 
     virtual void InitLua(void);

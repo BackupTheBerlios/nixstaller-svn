@@ -17,29 +17,18 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef BASELUAWIDGET_H
-#define BASELUAWIDGET_H
+#ifndef NCURSES_LUALABEL_H
+#define NCURSES_LUALABEL_H
 
-#include "tui/box.h"
+#include "main/install/lualabel.h"
+#include "luawidget.h"
 
-namespace NNCurses {
-class CLabel;
-}
-
-class CLuaWidget: public NNCurses::CBox
+class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
 {
-    std::string m_Title;
-    NNCurses::CLabel *m_pTitle;
+    virtual void SetLabel(const char *text) { SetTitle(text); }
     
-    virtual void CoreUpdateLanguage(void) {}
-    
-protected:
-    int MaxWidgetReqW(void) const;
-    void SetTitle(const char *title);
-
 public:
-    CLuaWidget(const char *title);
-    void UpdateLanguage(void);
+    CLuaLabel(const char *title) : CLuaWidget(title) { }
 };
 
 #endif

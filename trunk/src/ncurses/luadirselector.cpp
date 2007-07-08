@@ -28,9 +28,10 @@
 
 CLuaDirSelector::CLuaDirSelector(const char *desc, const char *val) : CLuaWidget(desc)
 {
-    NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 3);
+    NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1);
     
     box->AddWidget(m_pDirInput = new NNCurses::CInputField(val, NNCurses::CInputField::STRING));
+    m_pDirInput->SetMinWidth(15);
     box->StartPack(m_pBrowseButton = new NNCurses::CButton(GetTranslation("Browse")), false, false, 0, 0);
     
     StartPack(box, false, false, 0, 0);

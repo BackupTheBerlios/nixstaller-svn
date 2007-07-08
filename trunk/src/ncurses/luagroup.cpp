@@ -24,6 +24,7 @@
 #include "luadirselector.h"
 #include "luaimage.h"
 #include "luainput.h"
+#include "lualabel.h"
 #include "luamenu.h"
 #include "luaprogressbar.h"
 #include "luaradiobutton.h"
@@ -33,46 +34,52 @@
 // Lua Widget Group Class
 // -------------------------------------
 
+void CLuaGroup::AddLuaWidget(CLuaWidget *w)
+{
+    AddWidget(w);
+    m_LuaWidgetList.push_back(w);
+}
+
 CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *desc, const char *val,
                                                 int max, const char *type)
 {
     CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
-    AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
 {
     CLuaCheckbox *ret = new CLuaCheckbox(desc, l);
-    AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
 {
     CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
-    AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaDirSelector *CLuaGroup::CreateDirSelector(const char *desc, const char *val)
 {
     CLuaDirSelector *ret = new CLuaDirSelector(desc, val);
-    AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
 {
     CLuaCFGMenu *ret = new CLuaCFGMenu(desc);
-    AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
 {
     CLuaMenu *ret = new CLuaMenu(desc, l);
-    AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
@@ -85,19 +92,28 @@ CBaseLuaImage *CLuaGroup::CreateImage(const char *desc, const char *file)
 CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
 {
     CLuaProgressBar *ret = new CLuaProgressBar(desc);
-    AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
 {
     CLuaTextField *ret = new CLuaTextField(desc, wrap);
-    AddWidget(ret);
+    AddLuaWidget(ret);
+    return ret;
+}
+
+CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
+{
+    CLuaLabel *ret = new CLuaLabel(title);
+    AddLuaWidget(ret);
     return ret;
 }
 
 void CLuaGroup::CoreUpdateLanguage()
 {
+    for (TLuaWidgetList::iterator it=m_LuaWidgetList.begin(); it!=m_LuaWidgetList.end(); it++)
+        (*it)->UpdateLanguage();
 }
 
 void CLuaGroup::CoreAddWidget(NNCurses::CWidget *w)

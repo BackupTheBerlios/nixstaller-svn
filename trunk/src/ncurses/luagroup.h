@@ -23,9 +23,14 @@
 #include "tui/box.h"
 #include "main/install/luagroup.h"
 
+class CLuaWidget;
+
 class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
 {
     bool m_bInitEnable;
+    
+    typedef std::vector<CLuaWidget *> TLuaWidgetList;
+    TLuaWidgetList m_LuaWidgetList;
     
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type);
@@ -37,13 +42,16 @@ class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
     virtual CBaseLuaImage *CreateImage(const char *desc, const char *file);
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc);
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap);
+    virtual CBaseLuaLabel *CreateLabel(const char *title);
     virtual void CoreUpdateLanguage(void);
+    
+    void AddLuaWidget(CLuaWidget *w);
     
 protected:
     virtual void CoreAddWidget(NNCurses::CWidget *w);
     
 public:
-    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1), m_bInitEnable(true) { Enable(false); }
+    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 4), m_bInitEnable(true) { Enable(false); }
 };
 
 #endif

@@ -29,7 +29,6 @@ namespace NNCurses {
 
 CProgressBar::CProgressBar(float min, float max) : m_fMin(min), m_fMax(max), m_fCurrent(min)
 {
-    SetMinWidth(1);
     SetMinHeight(3);
     SetBox(true);
 }

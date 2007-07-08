@@ -50,7 +50,7 @@ void CLabel::DoDraw()
 
         if (Center())
             x = ((Width() - it->length()) / 2);
-        
+
         AddStr(this, x, y, it->c_str());
     }
 }

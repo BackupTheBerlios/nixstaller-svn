@@ -33,8 +33,9 @@ void CButton::DoDraw()
 {
     if (Focused() || has_colors())
     {
-        AddCh(this, 0, 0, '<');
-        AddCh(this, Width()-1, 0, '>');
+        int y = (Height()-1)/2; // Center
+        AddCh(this, 0, y, '<');
+        AddCh(this, Width()-1, y, '>');
     }
 }
 

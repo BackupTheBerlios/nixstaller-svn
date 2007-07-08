@@ -32,7 +32,7 @@ protected:
     virtual void DoDraw(void) { HLine(this, 0, 0, m_Fill, Width()); }
     
 public:
-    CSeparator(chtype fill) : m_Fill(fill) { SetMinWidth(1); SetMinHeight(1); }
+    CSeparator(chtype fill) : m_Fill(fill) { }
 };
 
 }

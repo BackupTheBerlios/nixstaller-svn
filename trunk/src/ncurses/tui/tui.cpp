@@ -63,6 +63,7 @@ void CTUI::InitNCurses()
     m_pMainBox->SetParent(GetRootWin());
     m_pMainBox->Init();
     m_pMainBox->SetSize(0, 0, GetWWidth(GetRootWin()), GetWHeight(GetRootWin()));
+    m_pMainBox->Focus(true);
     
     m_pButtonBar = new CButtonBar(GetWWidth(GetRootWin()));
     
@@ -74,6 +75,7 @@ void CTUI::InitNCurses()
     
     m_pWinManager = new CWindowManager;
     m_pMainBox->AddWidget(m_pWinManager);
+    m_pMainBox->FocusWidget(m_pWinManager);
     
     m_pMainBox->RequestQueuedDraw();
 }

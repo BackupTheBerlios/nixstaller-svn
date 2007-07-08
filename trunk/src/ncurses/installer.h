@@ -36,7 +36,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
 {
     typedef std::vector<CInstallScreen *> TScreenList;
     NNCurses::CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
-    NNCurses::CBox *m_pScreenBox;
+    NNCurses::CBox *m_pScreenBox, *m_pButtonBox;
     TScreenList m_InstallScreens;
     TSTLVecSize m_CurrentScreen;
     

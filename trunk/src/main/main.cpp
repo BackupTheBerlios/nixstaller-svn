@@ -323,6 +323,8 @@ const char *CMain::GetSumListFile(const char *progname)
 
 void CMain::InitLua()
 {
+    lua_atpanic(NLua::LuaState, LuaPanic);
+    
     // Register some globals for lua
     NLua::LuaSet("0.2.2", "version");
     
@@ -838,6 +840,12 @@ int CMain::LuaExit(lua_State *L)
 {
     throw Exceptions::CExUser();
     return 0; // Not reached
+}
+
+int CMain::LuaPanic(lua_State *L)
+{
+    assert(false);
+    return 0;
 }
 
 // -------------------------------------
