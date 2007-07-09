@@ -88,14 +88,16 @@ void CScrollbar::SetRange(int min, int max)
         m_fCurrent = m_fMax;
 }
 
-void CScrollbar::Scroll(int n)
+void CScrollbar::SetCurrent(int n)
 {
-    m_fCurrent += static_cast<float>(n);
+    m_fCurrent = static_cast<float>(n);
     
     if (m_fCurrent < m_fMin)
         m_fCurrent = m_fMin;
     else if (m_fCurrent > m_fMax)
         m_fCurrent = m_fMax;
+    
+    RequestQueuedDraw();
 }
 
 }

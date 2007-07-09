@@ -77,7 +77,7 @@ CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
     m_pAboutWindow->begin();
 
     Fl_Text_Buffer *pBuffer = new Fl_Text_Buffer;
-    pBuffer->loadfile("about");
+    pBuffer->loadfile(GetAboutFName());
     
     m_pAboutDisp = new Fl_Text_Display(20, 20, 360, 150, GetTranslation("About"));
     m_pAboutDisp->buffer(pBuffer);

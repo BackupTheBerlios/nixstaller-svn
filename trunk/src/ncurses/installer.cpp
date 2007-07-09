@@ -163,7 +163,7 @@ void CInstaller::NextScreen()
 void CInstaller::AskQuit()
 {
     char *msg;
-    if (m_bInstalling)
+    if (Installing())
         msg = GetTranslation("Install commands are still running\n"
                 "If you abort now this may lead to a broken installation\n"
                 "Are you sure?");

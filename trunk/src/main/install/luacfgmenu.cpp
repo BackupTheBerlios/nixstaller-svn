@@ -93,7 +93,7 @@ int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
     const char *desc = luaL_checkstring(L, 3);
     const char *val = luaL_optstring(L, 4, getenv("HOME"));
 
-    menu->AddVar(var, GetTranslation(desc), val, TYPE_DIR);
+    menu->AddVar(var, desc, val, TYPE_DIR);
     
     return 0;
 }
@@ -105,7 +105,7 @@ int CBaseLuaCFGMenu::LuaAddString(lua_State *L)
     const char *desc = luaL_checkstring(L, 3);
     const char *val = lua_tostring(L, 4);
 
-    menu->AddVar(var, GetTranslation(desc), val, TYPE_STRING);
+    menu->AddVar(var, desc, val, TYPE_STRING);
     
     return 0;
 }
@@ -133,7 +133,7 @@ int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
 
     const char *val = lua_tostring(L, 5);
     
-    menu->AddVar(var, GetTranslation(desc), val, TYPE_LIST, &l);
+    menu->AddVar(var, desc, val, TYPE_LIST, &l);
     
     return 0;
 }
@@ -149,7 +149,7 @@ int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
     l.push_back("Disable");
     l.push_back("Enable");
     
-    menu->AddVar(var, GetTranslation(desc), menu->BoolToStr(val), TYPE_BOOL, &l);
+    menu->AddVar(var, desc, menu->BoolToStr(val), TYPE_BOOL, &l);
     
     return 0;
 }

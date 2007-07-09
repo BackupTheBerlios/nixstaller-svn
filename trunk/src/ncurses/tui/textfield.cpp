@@ -29,7 +29,7 @@ namespace NNCurses {
 // Text Field Class
 // -------------------------------------
 
-CTextField::CTextField(int maxw, int maxh, bool w)
+CTextField::CTextField(int maxw, int maxh, bool w) : m_bFollow(false), m_bScrollToBottom(false)
 {
     m_pTextWidget = new CTextWidget(w);
     
@@ -46,6 +46,18 @@ CTextField::CTextField(int maxw, int maxh, bool w)
     }
     
     AddWidget(m_pTextWidget);
+}
+
+void CTextField::CoreDraw()
+{
+    CBaseScroll::CoreDraw();
+    
+    if (m_bScrollToBottom)
+    {
+        VScroll(m_pTextWidget->GetHRange()-m_pTextWidget->Height(), false);
+        HScroll(m_pTextWidget->GetWRange()-m_pTextWidget->Width(), false);
+        m_bScrollToBottom = false;
+    }
 }
 
 bool CTextField::CoreHandleKey(chtype key)
@@ -79,6 +91,13 @@ bool CTextField::CoreHandleKey(chtype key)
         case KEY_END:
             HScroll(m_pTextWidget->GetWRange()-m_pTextWidget->Width(), false);
             return true;
+        default:
+            if (IsEnter(key))
+            {
+                PushEvent(EVENT_CALLBACK);
+                return true;
+            }
+            break;
     }
     
     return false;
@@ -122,7 +141,13 @@ CTextField::TScrollRange CTextField::CoreGetScrollRegion()
 
 void CTextField::AddText(const std::string &t)
 {
+    // This will trigger the following in order:
+    // 1) Text will be queued
+    // 2) After a redraw the text will be added
+    // 3) if m_bFollow is true the textwidget will be scrolled down
     m_pTextWidget->AddText(t);
+    m_bScrollToBottom = m_bFollow;
+    RequestQueuedDraw();
 }
 
 void CTextField::ClearText()

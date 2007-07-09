@@ -84,7 +84,7 @@ void CGTKBase::CreateAbout()
     GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
     GtkTextIter iter;
     char chbuf[1024];
-    FILE *aboutfile = fopen("about", "r");
+    FILE *aboutfile = fopen(GetAboutFName(), "r");
     
     gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
     

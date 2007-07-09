@@ -44,9 +44,9 @@ public:
     CScrollbar(EType t) : m_eType(t), m_fMin(0.0f), m_fMax(0.0f), m_fCurrent(0.0f) { }
     
     void SetRange(int min, int max);
-    void SetCurrent(int val) { m_fCurrent = static_cast<float>(val); RequestQueuedDraw(); }
-    void Scroll(int n);
-    int Value(void) { return static_cast<int>(m_fCurrent); }
+    void SetCurrent(int val);
+    void Scroll(int n) { SetCurrent(m_fCurrent + static_cast<float>(n)); }
+    int Value(void) const { return static_cast<int>(m_fCurrent); }
 };
 
 

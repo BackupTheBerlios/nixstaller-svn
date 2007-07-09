@@ -29,8 +29,10 @@ class CTextWidget;
 class CTextField: public CBaseScroll
 {
     CTextWidget *m_pTextWidget;
-    
+    bool m_bFollow, m_bScrollToBottom;
+
 protected:
+    virtual void CoreDraw(void);
     virtual bool CoreHandleKey(chtype key);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
@@ -47,6 +49,7 @@ public:
     void SetText(const std::string &t) { ClearText(); AddText(t); }
     void ClearText(void);
     void LoadFile(const char *f);
+    void SetFollow(bool f) { m_bFollow = f; }
 };
 
 }

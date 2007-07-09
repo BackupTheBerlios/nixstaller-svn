@@ -32,6 +32,7 @@ class CBaseInstall: virtual public CMain
     short m_sCurrentStep;
     float m_fInstallProgress;
     int m_iUpdateStatLuaFunc, m_iUpdateProgLuaFunc, m_iUpdateOutputLuaFunc;
+    bool m_bInstalling;
      
     void Install(int statluafunc, int progluafunc, int outluafunc);
     void InitArchive(char *archname);
@@ -52,10 +53,10 @@ class CBaseInstall: virtual public CMain
     bool IsInstalled(bool checkver);
     
 protected:
-    bool m_bInstalling;
-
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
     virtual void InitLua(void);
+    
+    bool Installing(void) const { return m_bInstalling; }
     
 public:
     install_info_s m_InstallInfo;

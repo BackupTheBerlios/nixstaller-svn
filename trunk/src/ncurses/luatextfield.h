@@ -34,6 +34,7 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     
     virtual void Load(const char *file);
     virtual void AddText(const char *text);
+    virtual void UpdateFollow(void);
     
 public:
     CLuaTextField(const char *desc, bool wrap);

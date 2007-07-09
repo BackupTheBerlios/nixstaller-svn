@@ -2,20 +2,22 @@ module (..., package.seeall)
 
 screen = install.newscreen("Heh")
 
-progressbar = screen:addgroup():addprogressbar("Progress")
-statlabel = screen:addgroup():addlabel("")
-output = screen:addgroup():addtextfield()
-
-function wrapper(class, func)
-    local c = class
-    local f = func
-    return function (...)
-        f(c, ...)
-    end
-end
+-- progressbar = screen:addgroup():addprogressbar("Progress")
+progressbar = screen:addprogressbar("Progress")
+statlabel = screen:addlabel("")
+output = screen:addtextfield()
+output:follow(true)
 
 function screen:activate()
-    install.startinstall(wrapper(statlabel, statlabel.set), wrapper(progressbar, progressbar.set), wrapper(output, output.add))
+    install.startinstall(function (s)
+                            statlabel:set(s)
+                         end,
+                         function (s)
+                            progressbar:set(s)
+                         end,
+                         function (s)
+                            output:add(s)
+                         end)
 end
 
 return screen

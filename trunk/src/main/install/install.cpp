@@ -82,11 +82,6 @@ void CBaseInstall::Install(int statluafunc, int progluafunc, int outluafunc)
     m_iUpdateProgLuaFunc = progluafunc;
     m_iUpdateOutputLuaFunc = outluafunc;
     
-    UpdateStatusText("Installing files");
-    AddOutput("Some extracted files");
-    SetProgress(25);
-    return; // UNDONE
-    
     // Init all archives (if file doesn't exist nothing will be done)
     InitArchive(CreateText("%s/instarchive_all", m_szOwnDir.c_str()));
     InitArchive(CreateText("%s/instarchive_all_%s", m_szOwnDir.c_str(), m_szCPUArch.c_str()));
@@ -652,7 +647,7 @@ int CBaseInstall::LuaNewScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
     const char *name = luaL_optstring(L, 1, "");
-    NLua::CreateClass(pInstaller->CreateScreen(GetTranslation(name)), "screen");
+    NLua::CreateClass(pInstaller->CreateScreen(name), "screen");
     return 1;
 }
 
@@ -732,7 +727,7 @@ int CBaseInstall::LuaSetStatusMSG(lua_State *L)
     pInstaller->VerifyIfInstalling();
     
     const char *msg = luaL_checkstring(L, 1);
-    pInstaller->UpdateStatusText(GetTranslation(msg));
+    pInstaller->UpdateStatusText(msg);
     return 0;
 }
 
@@ -743,7 +738,7 @@ int CBaseInstall::LuaSetStepCount(lua_State *L)
     pInstaller->VerifyIfInstalling();
     
     int n = luaL_checkint(L, 1);
-    pInstaller->m_sInstallSteps = n /*+ !pInstaller->m_ArchList.empty()*/;
+    pInstaller->m_sInstallSteps = n;
     return 0;
 }
 

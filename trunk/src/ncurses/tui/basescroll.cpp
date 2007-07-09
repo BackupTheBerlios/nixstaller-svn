@@ -43,6 +43,14 @@ void CBaseScroll::DoScroll()
     RequestQueuedDraw();
 }
 
+void CBaseScroll::CoreDraw()
+{
+    CGroup::CoreDraw();
+    // Do this after childs have been drawn: scrollbars may be dependent
+    // on child widgets, which can change after a redraw
+    SyncBars();
+}
+
 void CBaseScroll::SyncBars()
 {
     TScrollRange range = CoreGetRange();

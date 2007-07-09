@@ -111,6 +111,7 @@ protected:
     LIBSU::CLibSU m_SUHandler;
     char *m_szPassword;
 
+    const char *GetAboutFName(void);
     void SetUpSU(const char *msg);
     bool ReadLang();
     

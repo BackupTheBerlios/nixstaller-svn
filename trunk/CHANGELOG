@@ -1,5 +1,6 @@
-0.2 -->
+0.2.2 -->
 - Added missing ncurses buttonbar entries.
+- Fixed about not loading in file installation screen
 
 
 0.2.1 --> 0.2.2

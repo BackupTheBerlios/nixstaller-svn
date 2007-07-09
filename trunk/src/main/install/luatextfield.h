@@ -24,15 +24,23 @@ struct lua_State;
 
 class CBaseLuaTextField
 {
+    bool m_bFollow;
+    
     virtual void Load(const char *file) = 0;
     virtual void AddText(const char *text) = 0;
+    virtual void UpdateFollow(void) {}
+    
+protected:
+    bool Follow(void) const { return m_bFollow; }
     
 public:
+    CBaseLuaTextField(void) : m_bFollow(false) { }
     virtual ~CBaseLuaTextField(void) { };
     
     static void LuaRegister(void);
     static int LuaLoad(lua_State *L);
     static int LuaAddText(lua_State *L);
+    static int LuaSetFollow(lua_State *L);
 };
 
 

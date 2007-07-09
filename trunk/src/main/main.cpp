@@ -132,6 +132,11 @@ void CMain::Init(int argc, char **argv)
     ReadLang();
 }
 
+const char *CMain::GetAboutFName(void)
+{
+    return CreateText("%s/about", m_szOwnDir.c_str());
+}
+
 void CMain::SetUpSU(const char *msg)
 {
     m_SUHandler.SetUser("root");

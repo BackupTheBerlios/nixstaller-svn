@@ -53,7 +53,7 @@ int CBaseLuaGroup::LuaAddInput(lua_State *L)
     if (strcmp(type, "string") && strcmp(type, "number") && strcmp(type, "float"))
         type = "string";
     
-    NLua::CreateClass(group->CreateInputField(GetTranslation(label), GetTranslation(desc), val, maxc, type),
+    NLua::CreateClass(group->CreateInputField(label, desc, val, maxc, type),
                       "inputfield");
     
     return 1;
@@ -76,7 +76,7 @@ int CBaseLuaGroup::LuaAddCheckbox(lua_State *L)
         lua_pop(L, 1);
     }
     
-    NLua::CreateClass(group->CreateCheckbox(GetTranslation(desc), l), "checkbox");
+    NLua::CreateClass(group->CreateCheckbox(desc, l), "checkbox");
     
     return 1;
 }
@@ -99,7 +99,7 @@ int CBaseLuaGroup::LuaAddRadioButton(lua_State *L)
         lua_pop(L, 1);
     }
     
-    NLua::CreateClass(group->CreateRadioButton(GetTranslation(desc), l), "radiobutton");
+    NLua::CreateClass(group->CreateRadioButton(desc, l), "radiobutton");
 
     return 1;
 }
@@ -110,7 +110,7 @@ int CBaseLuaGroup::LuaAddDirSelector(lua_State *L)
     const char *desc = luaL_optstring(L, 2, "");
     const char *val = luaL_optstring(L, 3, getenv("HOME"));
 
-    NLua::CreateClass(group->CreateDirSelector(GetTranslation(desc), val), "dirselector");
+    NLua::CreateClass(group->CreateDirSelector(desc, val), "dirselector");
     
     return 1;
 }
@@ -120,7 +120,7 @@ int CBaseLuaGroup::LuaAddCFGMenu(lua_State *L)
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_optstring(L, 2, "");
     
-    NLua::CreateClass(group->CreateCFGMenu(GetTranslation(desc)), "configmenu");
+    NLua::CreateClass(group->CreateCFGMenu(desc), "configmenu");
     
     return 1;
 }
@@ -142,7 +142,7 @@ int CBaseLuaGroup::LuaAddMenu(lua_State *L)
         lua_pop(L, 1);
     }
     
-    NLua::CreateClass(group->CreateMenu(GetTranslation(desc), l), "menu");
+    NLua::CreateClass(group->CreateMenu(desc, l), "menu");
     
     return 1;
 }
@@ -153,7 +153,7 @@ int CBaseLuaGroup::LuaAddImage(lua_State *L)
     const char *desc = luaL_checkstring(L, 2);
     const char *file = luaL_checkstring(L, 3);
 
-    NLua::CreateClass(group->CreateImage(GetTranslation(desc), file), "image");
+    NLua::CreateClass(group->CreateImage(desc, file), "image");
     
     return 1;
 }
@@ -163,7 +163,7 @@ int CBaseLuaGroup::LuaAddProgressBar(lua_State *L)
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_optstring(L, 2, "");
 
-    NLua::CreateClass(group->CreateProgressBar(GetTranslation(desc)), "progressbar");
+    NLua::CreateClass(group->CreateProgressBar(desc), "progressbar");
     
     return 1;
 }
@@ -177,7 +177,7 @@ int CBaseLuaGroup::LuaAddTextField(lua_State *L)
     if (lua_isboolean(L, 3))
         wrap = lua_toboolean(L, 3);
 
-    NLua::CreateClass(group->CreateTextField(GetTranslation(desc), wrap), "textfield");
+    NLua::CreateClass(group->CreateTextField(desc, wrap), "textfield");
     
     return 1;
 }
@@ -187,7 +187,7 @@ int CBaseLuaGroup::LuaAddLabel(lua_State *L)
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_checkstring(L, 2);
 
-    NLua::CreateClass(group->CreateLabel(GetTranslation(desc)), "label");
+    NLua::CreateClass(group->CreateLabel(desc), "label");
     
     return 1;
 }

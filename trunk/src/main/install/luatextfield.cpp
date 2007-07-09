@@ -30,6 +30,7 @@ void CBaseLuaTextField::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaTextField::LuaLoad, "load", "textfield");
     NLua::RegisterClassFunction(CBaseLuaTextField::LuaAddText, "add", "textfield");
+    NLua::RegisterClassFunction(CBaseLuaTextField::LuaSetFollow, "follow", "textfield");
 }
 
 int CBaseLuaTextField::LuaLoad(lua_State *L)
@@ -43,5 +44,14 @@ int CBaseLuaTextField::LuaAddText(lua_State *L)
 {
     CBaseLuaTextField *field = NLua::CheckClassData<CBaseLuaTextField>("textfield", 1);
     field->AddText(luaL_checkstring(L, 2));
+    return 0;
+}
+
+int CBaseLuaTextField::LuaSetFollow(lua_State *L)
+{
+    CBaseLuaTextField *field = NLua::CheckClassData<CBaseLuaTextField>("textfield", 1);
+    luaL_checktype(L, 2, LUA_TBOOLEAN);
+    field->m_bFollow = lua_toboolean(L, 2);
+    field->UpdateFollow();
     return 0;
 }

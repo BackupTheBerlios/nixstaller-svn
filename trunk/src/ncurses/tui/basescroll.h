@@ -40,7 +40,7 @@ private:
     
 protected:
     virtual void UpdateSize(void) { UpdateLayout(); CGroup::UpdateSize(); }
-    virtual void CoreDraw(void) { SyncBars(); CGroup::CoreDraw(); }
+    virtual void CoreDraw(void);
     virtual void CoreDrawLayout(void);
     virtual void CoreScroll(int vscroll, int hscroll) {  }
     virtual TScrollRange CoreGetRange(void) = 0;
