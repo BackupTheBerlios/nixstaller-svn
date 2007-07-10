@@ -29,6 +29,7 @@
 
 void CBaseLuaGroup::LuaRegister()
 {
+    // Keep these in sync with install.lua!
     NLua::RegisterClassFunction(LuaAddInput, "addinput", "group");
     NLua::RegisterClassFunction(LuaAddCheckbox, "addcheckbox", "group");
     NLua::RegisterClassFunction(LuaAddRadioButton, "addradiobutton", "group");

@@ -18,6 +18,7 @@ OVERALL
 - Recursive directory creation in VerifyDestDir (patch from Edward), also check root creation
 - Lua Panic function
 - Check boundries etc. for lua widgets
+- Remove deprecated virtual functions from CBaseInstall derived classes
 
         
 TRANSLATIONS
@@ -36,7 +37,6 @@ MAIN
 - Make function wrapper for m_Variables in CBaseLuaCFGMenu
 - Test new function/table lua code
 - Finish StartInstall lua code
-- Lock screen lua function
 
 LIBSU
 - Clean up/redesign
@@ -57,6 +57,7 @@ NCURSES
 - Exceptions?
 - Translations and buttonbar descriptions?
 - Check if UpdateTranslation functions are called - needs testing
+- Check for 'dynamic' CanFocus for CTextField?
 
 
 GTK

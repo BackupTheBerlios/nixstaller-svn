@@ -462,6 +462,7 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
     NLua::RegisterFunction(LuaPrintInstOutput, "print", "install", this);
     NLua::RegisterFunction(LuaStartInstall, "startinstall", "install", this);
+    NLua::RegisterFunction(LuaLockScreen, "lockscreen", "install", this);
     
     const char *env = getenv("HOME");
     if (env)
@@ -780,4 +781,9 @@ int CBaseInstall::LuaStartInstall(lua_State *L)
     return 0;
 }
 
-
+int CBaseInstall::LuaLockScreen(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    pInstaller->LockScreen(NLua::LuaToBool(1), NLua::LuaToBool(2));
+    return 0;
+}

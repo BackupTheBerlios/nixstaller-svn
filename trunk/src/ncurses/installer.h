@@ -49,15 +49,12 @@ class CInstaller: public CNCursBase, public CBaseInstall
     void ActivateScreen(CInstallScreen *screen);
     
 protected:
-    virtual void ChangeStatusText(const char *str) { }
-    virtual void AddInstOutput(const std::string &str) { }
-    virtual void SetProgress(int percent) { }
     virtual void InstallThink(void);
+    virtual void LockScreen(bool prev, bool next);
+    virtual void InitLua(void);
 
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
     virtual bool CoreHandleKey(chtype key);
-
-    virtual void InitLua(void);
 
 public:
     CInstaller(void);

@@ -287,5 +287,10 @@ void Unreference(int ref, int tab)
     luaL_unref(LuaState, tab, ref);
 }
 
+bool LuaToBool(int index)
+{
+    luaL_checktype(LuaState, index, LUA_TBOOLEAN);
+    return lua_toboolean(LuaState, index);
+}
 
 }

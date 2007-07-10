@@ -56,6 +56,8 @@ void LuaSet(int val, const char *var, const char *type, void *prvdata);
 int MakeReference(int index, int tab=LUA_REGISTRYINDEX);
 void Unreference(int ref, int tab=LUA_REGISTRYINDEX);
 
+bool LuaToBool(int index);
+
 extern CLuaStateKeeper LuaState;
 
 }

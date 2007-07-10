@@ -18,31 +18,21 @@
 do
     local oldf = install.newscreen
     
-    -- This function takes a string argument specifying a function name. It will return a function that creates a new group and
-    -- call the specified function from that group.
-    local function wrapper(f)
-        return function (self, ...)
-            local group = self:addgroup()
-            return group[f](group, ...)
-        end
-    end
-
     function install.newscreen(t) -- Overide function
         local ret = oldf(t)
+        local wrapfuncs = { "addinput", "addcheckbox", "addradiobutton", "adddirselector", "addcfgmenu", "addmenu", "addimage",
+                            "addprogressbar", "addtextfield", "addlabel" }
         
-        -- Wrap some functions: this will make widget adding possible directly from calling a function from the installscreen and
-        -- without manually creating a group. This is handy because in many cases groups only contain one widget.
-        ret.addinput = wrapper("addinput")
-        ret.addprogressbar = wrapper("addprogressbar")
-        ret.addcheckbox = wrapper("addcheckbox")
-        ret.addradiobutton = wrapper("addradiobutton")
-        ret.adddirselector = wrapper("adddirselector")
-        ret.addcfgmenu = wrapper("addcfgmenu")
-        ret.addmenu = wrapper("addmenu")
-        ret.addimage = wrapper("addimage")
-        ret.addtextfield = wrapper("addtextfield")
-        ret.addlabel = wrapper("addlabel")
-        
+        -- Create wrappers for widget creation functions from luagroups: the functions given in 'wrapfuncs'
+        -- will be added to the installscreen. These will create a new luagroup and call the function
+        -- with the same name from that group.
+        for i,v in pairs(wrapfuncs) do
+            ret[v] = function(self, ...)
+                        local group = self:addgroup()
+                        return group[v](group, ...)
+                     end
+        end
+
         return ret
     end
 end

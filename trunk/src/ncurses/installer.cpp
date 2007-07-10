@@ -197,6 +197,12 @@ void CInstaller::InstallThink()
     NNCurses::TUI.Run(0);
 }
 
+void CInstaller::LockScreen(bool prev, bool next)
+{
+    m_pPrevButton->Enable(!prev);
+    m_pNextButton->Enable(!next);
+}
+
 bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
 {
     if (CNCursBase::CoreHandleEvent(emitter, type))

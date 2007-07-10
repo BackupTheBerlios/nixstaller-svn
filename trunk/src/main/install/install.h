@@ -55,6 +55,7 @@ class CBaseInstall: virtual public CMain
 protected:
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
     virtual void InitLua(void);
+    virtual void LockScreen(bool prev, bool next) = 0;
     
     bool Installing(void) const { return m_bInstalling; }
     
@@ -105,6 +106,7 @@ public:
     static int LuaSetStepCount(lua_State *L);
     static int LuaPrintInstOutput(lua_State *L);
     static int LuaStartInstall(lua_State *L);
+    static int LuaLockScreen(lua_State *L);
 };
 
 inline CBaseInstall *GetFromClosure(lua_State *L)
