@@ -20,7 +20,6 @@
 #ifndef LUA_TABLE_H
 #define LUA_TABLE_H
 
-#include <assert.h>
 #include "lua.h"
 
 namespace NLua {

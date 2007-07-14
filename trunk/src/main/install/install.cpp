@@ -787,3 +787,12 @@ int CBaseInstall::LuaLockScreen(lua_State *L)
     pInstaller->LockScreen(NLua::LuaToBool(1), NLua::LuaToBool(2));
     return 0;
 }
+
+// -------------------------------------
+// Util functions
+// -------------------------------------
+
+CBaseInstall *GetFromClosure(lua_State *L)
+{
+    return reinterpret_cast<CBaseInstall *>(lua_touserdata(L, lua_upvalueindex(1)));
+}

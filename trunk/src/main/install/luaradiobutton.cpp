@@ -30,6 +30,7 @@ void CBaseLuaRadioButton::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaGet, "get", "radiobutton");
     NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaSet, "set", "radiobutton");
+    LuaRegisterCheck("radiobutton");
 }
 
 int CBaseLuaRadioButton::LuaGet(lua_State *L)

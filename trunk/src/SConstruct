@@ -445,7 +445,7 @@ edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS
 libsu = env.SConscript('libsu/SConstruct')
 
 # Builds main lib
-main = env.Library("main/main", Split('main/install/basescreen.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/main.cpp main/utils.cpp main/appmanager.cpp main/install/install.cpp main/vasprintf.c libmd5/md5.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
+main = env.Library("main/main", Split('main/install/basescreen.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/main.cpp main/utils.cpp main/appmanager.cpp main/install/install.cpp main/vasprintf.c libmd5/md5.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
 
 env.Prepend(LIBS = Split('main su lua'))
 

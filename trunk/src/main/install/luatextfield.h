@@ -20,9 +20,11 @@
 #ifndef LUATEXTFIELD_H
 #define LUATEXTFIELD_H
 
+#include "luawidget.h"
+
 struct lua_State;
 
-class CBaseLuaTextField
+class CBaseLuaTextField: public CBaseLuaWidget
 {
     bool m_bFollow;
     
@@ -35,7 +37,6 @@ protected:
     
 public:
     CBaseLuaTextField(void) : m_bFollow(false) { }
-    virtual ~CBaseLuaTextField(void) { };
     
     static void LuaRegister(void);
     static int LuaLoad(lua_State *L);

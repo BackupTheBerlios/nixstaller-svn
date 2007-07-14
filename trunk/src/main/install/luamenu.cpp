@@ -30,6 +30,7 @@ void CBaseLuaMenu::LuaRegister()
 {
     NLua::RegisterClassFunction(LuaGet, "get", "menu");
     NLua::RegisterClassFunction(LuaSet, "set", "menu");
+    LuaRegisterCheck("menu");
 }
 
 int CBaseLuaMenu::LuaGet(lua_State *L)

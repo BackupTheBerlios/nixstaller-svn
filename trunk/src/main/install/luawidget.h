@@ -17,22 +17,23 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAMENU_H
-#define LUAMENU_H
+#ifndef LUAWIDGET_H
+#define LUAWIDGET_H
 
-#include "luawidget.h"
+struct lua_State;
 
-struct LuaState;
-
-class CBaseLuaMenu: public CBaseLuaWidget
+class CBaseLuaWidget
 {
-    virtual const char *Selection(void) = 0;
-    virtual void Select(int n) = 0;
+    int m_iCheckRef;
     
 public:
-    static void LuaRegister(void);
-    static int LuaGet(lua_State *L);
-    static int LuaSet(lua_State *L);
+    CBaseLuaWidget(void);
+    virtual ~CBaseLuaWidget(void) { };
+    
+    bool Check(void);
+
+    static void LuaRegisterCheck(const char *type);
+    static int LuaSetCheck(lua_State *L);
 };
 
 #endif

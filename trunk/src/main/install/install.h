@@ -109,5 +109,5 @@ public:
     static int LuaLockScreen(lua_State *L);
 };
 
-inline CBaseInstall *GetFromClosure(lua_State *L)
-{ return reinterpret_cast<CBaseInstall *>(lua_touserdata(L, lua_upvalueindex(1))); }
+// Utils
+CBaseInstall *GetFromClosure(lua_State *L);

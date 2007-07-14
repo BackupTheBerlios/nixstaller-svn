@@ -56,7 +56,7 @@ class CWidget
     void MoveWindow(int x, int y);
 
 protected:
-    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQUPDATE, EVENT_REQQUEUEDDRAW };
+    enum { EVENT_CALLBACK, EVENT_DATACHANGED, EVENT_REQUPDATE, EVENT_REQQUEUEDDRAW, EVENT_REQFOCUS };
     
     CWidget(void);
     

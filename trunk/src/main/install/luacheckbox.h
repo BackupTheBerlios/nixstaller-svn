@@ -20,19 +20,18 @@
 #ifndef LUACHECKBOX_H
 #define LUACHECKBOX_H
 
+#include "luawidget.h"
+
 struct lua_State;
 
-class CBaseLuaCheckbox
+class CBaseLuaCheckbox: public CBaseLuaWidget
 {
     virtual bool Enabled(int n) = 0;
     virtual bool Enabled(const char *s) = 0;
     virtual void Enable(int n, bool b) = 0;
 
 public:
-    virtual ~CBaseLuaCheckbox(void) { };
-
     static void LuaRegister(void);
-    
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);
 };

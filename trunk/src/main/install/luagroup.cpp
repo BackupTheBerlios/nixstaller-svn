@@ -22,10 +22,41 @@
 #include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
 #include "luagroup.h"
+#include "luacheckbox.h"
+#include "luacfgmenu.h"
+#include "luadirselector.h"
+#include "luaimage.h"
+#include "luainput.h"
+#include "lualabel.h"
+#include "luamenu.h"
+#include "luaprogressbar.h"
+#include "luaradiobutton.h"
+#include "luatextfield.h"
+#include "luawidget.h"
 
 // -------------------------------------
 // Base Lua Group Class
 // -------------------------------------
+
+void CBaseLuaGroup::AddWidget(CBaseLuaWidget *w, const char *type)
+{
+    NLua::CreateClass(w, type);
+    m_WidgetList.push_back(w);
+}
+
+bool CBaseLuaGroup::CheckWidgets()
+{
+    for (TWidgetList::iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)
+    {
+        if (!(*it)->Check())
+        {
+            ActivateWidget(*it);
+            return false;
+        }
+    }
+    
+    return true;
+}
 
 void CBaseLuaGroup::LuaRegister()
 {
@@ -54,8 +85,7 @@ int CBaseLuaGroup::LuaAddInput(lua_State *L)
     if (strcmp(type, "string") && strcmp(type, "number") && strcmp(type, "float"))
         type = "string";
     
-    NLua::CreateClass(group->CreateInputField(label, desc, val, maxc, type),
-                      "inputfield");
+    group->AddWidget(group->CreateInputField(label, desc, val, maxc, type), "inputfield");
     
     return 1;
 }
@@ -77,7 +107,7 @@ int CBaseLuaGroup::LuaAddCheckbox(lua_State *L)
         lua_pop(L, 1);
     }
     
-    NLua::CreateClass(group->CreateCheckbox(desc, l), "checkbox");
+    group->AddWidget(group->CreateCheckbox(desc, l), "checkbox");
     
     return 1;
 }
@@ -100,7 +130,7 @@ int CBaseLuaGroup::LuaAddRadioButton(lua_State *L)
         lua_pop(L, 1);
     }
     
-    NLua::CreateClass(group->CreateRadioButton(desc, l), "radiobutton");
+    group->AddWidget(group->CreateRadioButton(desc, l), "radiobutton");
 
     return 1;
 }
@@ -111,7 +141,7 @@ int CBaseLuaGroup::LuaAddDirSelector(lua_State *L)
     const char *desc = luaL_optstring(L, 2, "");
     const char *val = luaL_optstring(L, 3, getenv("HOME"));
 
-    NLua::CreateClass(group->CreateDirSelector(desc, val), "dirselector");
+    group->AddWidget(group->CreateDirSelector(desc, val), "dirselector");
     
     return 1;
 }
@@ -121,7 +151,7 @@ int CBaseLuaGroup::LuaAddCFGMenu(lua_State *L)
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_optstring(L, 2, "");
     
-    NLua::CreateClass(group->CreateCFGMenu(desc), "configmenu");
+    group->AddWidget(group->CreateCFGMenu(desc), "configmenu");
     
     return 1;
 }
@@ -143,7 +173,7 @@ int CBaseLuaGroup::LuaAddMenu(lua_State *L)
         lua_pop(L, 1);
     }
     
-    NLua::CreateClass(group->CreateMenu(desc, l), "menu");
+    group->AddWidget(group->CreateMenu(desc, l), "menu");
     
     return 1;
 }
@@ -154,7 +184,7 @@ int CBaseLuaGroup::LuaAddImage(lua_State *L)
     const char *desc = luaL_checkstring(L, 2);
     const char *file = luaL_checkstring(L, 3);
 
-    NLua::CreateClass(group->CreateImage(desc, file), "image");
+    group->AddWidget(group->CreateImage(desc, file), "image");
     
     return 1;
 }
@@ -164,7 +194,7 @@ int CBaseLuaGroup::LuaAddProgressBar(lua_State *L)
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_optstring(L, 2, "");
 
-    NLua::CreateClass(group->CreateProgressBar(desc), "progressbar");
+    group->AddWidget(group->CreateProgressBar(desc), "progressbar");
     
     return 1;
 }
@@ -178,7 +208,7 @@ int CBaseLuaGroup::LuaAddTextField(lua_State *L)
     if (lua_isboolean(L, 3))
         wrap = lua_toboolean(L, 3);
 
-    NLua::CreateClass(group->CreateTextField(desc, wrap), "textfield");
+    group->AddWidget(group->CreateTextField(desc, wrap), "textfield");
     
     return 1;
 }
@@ -188,7 +218,7 @@ int CBaseLuaGroup::LuaAddLabel(lua_State *L)
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_checkstring(L, 2);
 
-    NLua::CreateClass(group->CreateLabel(desc), "label");
+    group->AddWidget(group->CreateLabel(desc), "label");
     
     return 1;
 }

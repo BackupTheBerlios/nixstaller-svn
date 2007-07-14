@@ -20,49 +20,44 @@
 #include "main/main.h"
 #include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
-#include "luacheckbox.h"
+#include "luawidget.h"
 
 // -------------------------------------
-// Base Lua Checkbox Class
+// Base Lua Widget Class
 // -------------------------------------
 
-void CBaseLuaCheckbox::LuaRegister()
+CBaseLuaWidget::CBaseLuaWidget() : m_iCheckRef(LUA_NOREF)
 {
-    NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaGet, "get", "checkbox");
-    NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaSet, "set", "checkbox");
-    LuaRegisterCheck("checkbox");
 }
 
-int CBaseLuaCheckbox::LuaGet(lua_State *L)
+bool CBaseLuaWidget::Check()
 {
-    CBaseLuaCheckbox *box = NLua::CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
+    bool ret = true;
     
-    if (lua_isstring(L, 2))
+    if (m_iCheckRef != LUA_NOREF)
     {
-        if (lua_isnumber(L, 2))
-            lua_pushboolean(L, box->Enabled(lua_tointeger(L, 2)));
-        else
-            lua_pushboolean(L, box->Enabled(lua_tostring(L, 2)));
+        NLua::CLuaFunc func(m_iCheckRef, LUA_REGISTRYINDEX);
+        if (func)
+        {
+            if (func(1) > 0)
+                func >> ret;
+        }
     }
-    else
-        luaL_typerror(L, 2, "Number or String");
     
-    return 1;
+    return ret;
 }
 
-int CBaseLuaCheckbox::LuaSet(lua_State *L)
+void CBaseLuaWidget::LuaRegisterCheck(const char *type)
 {
-    CBaseLuaCheckbox *box = NLua::CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
-    int args = lua_gettop(L);
-    
-    luaL_checktype(L, args, LUA_TBOOLEAN);
-    bool e = lua_toboolean(L, args);
+    NLua::RegisterClassFunction(LuaSetCheck, "setcheck", type, const_cast<char *>(type));
+}
 
-    for (int i=2; i<args; i++)
-    {
-        int n = luaL_checkint(L, i);
-        box->Enable(n, e);
-    }
-    
+int CBaseLuaWidget::LuaSetCheck(lua_State *L)
+{
+    const char *type = reinterpret_cast<const char *>(lua_touserdata(L, lua_upvalueindex(1)));
+    CBaseLuaWidget *widget = NLua::CheckClassData<CBaseLuaWidget>(type, 1);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+    lua_pushvalue(L, 2);
+    widget->m_iCheckRef = luaL_ref(L, LUA_REGISTRYINDEX);
     return 0;
 }

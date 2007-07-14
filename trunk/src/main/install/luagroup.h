@@ -22,6 +22,7 @@
 
 #include <vector>
 
+class CBaseLuaWidget;
 class CBaseLuaInputField;
 class CBaseLuaCheckbox;
 class CBaseLuaRadioButton;
@@ -47,11 +48,18 @@ class CBaseLuaGroup
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) = 0;
     virtual CBaseLuaLabel *CreateLabel(const char *title) = 0;
     virtual void CoreUpdateLanguage(void) = 0;
+    virtual void ActivateWidget(CBaseLuaWidget *w) = 0;
+    
+    void AddWidget(CBaseLuaWidget *w, const char *type);
+    
+    typedef std::vector<CBaseLuaWidget *> TWidgetList;
+    TWidgetList m_WidgetList;
     
 public:
     virtual ~CBaseLuaGroup(void) {}
     
     void UpdateLanguage(void) { CoreUpdateLanguage(); }
+    bool CheckWidgets(void);
     
     static void LuaRegister(void);
     

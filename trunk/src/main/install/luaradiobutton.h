@@ -20,18 +20,17 @@
 #ifndef LUARADIOBUTTON_H
 #define LUARADIOBUTTON_H
 
+#include "luawidget.h"
+
 struct lua_State;
 
-class CBaseLuaRadioButton
+class CBaseLuaRadioButton: public CBaseLuaWidget
 {
     virtual const char *EnabledButton(void) = 0;
     virtual void Enable(int n) = 0;
 
 public:
-    virtual ~CBaseLuaRadioButton(void) { };
-    
     static void LuaRegister(void);
-    
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);
 };

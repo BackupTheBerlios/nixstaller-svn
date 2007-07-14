@@ -30,6 +30,7 @@ void CBaseLuaDirSelector::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaDirSelector::LuaGet, "get", "dirselector");
     NLua::RegisterClassFunction(CBaseLuaDirSelector::LuaSet, "set", "dirselector");
+    LuaRegisterCheck("dirselector");
 }
 
 int CBaseLuaDirSelector::LuaGet(lua_State *L)

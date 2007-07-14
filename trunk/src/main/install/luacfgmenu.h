@@ -23,10 +23,11 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "luawidget.h"
 
 struct lua_State;
 
-class CBaseLuaCFGMenu
+class CBaseLuaCFGMenu: public CBaseLuaWidget
 {
 protected:
     enum EVarType { TYPE_DIR, TYPE_STRING, TYPE_LIST, TYPE_BOOL };

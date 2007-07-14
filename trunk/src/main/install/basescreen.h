@@ -47,7 +47,7 @@ public:
     bool CanActivate(void) { return CallLuaBoolFunc("canactivate", true); }
     void Activate(void) { CoreActivate(); }
     bool Back(void) { return CallLuaBoolFunc("back", true); }
-    bool Next(void) { return CallLuaBoolFunc("next", true); }
+    bool Next(void);
     
     static void LuaRegister(void);
     static int LuaAddGroup(lua_State *L);

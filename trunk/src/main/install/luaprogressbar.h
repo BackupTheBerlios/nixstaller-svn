@@ -20,15 +20,15 @@
 #ifndef LUAPROGRESSBAR_H
 #define LUAPROGRESSBAR_H
 
+#include "luawidget.h"
+
 struct lua_State;
 
-class CBaseLuaProgressBar
+class CBaseLuaProgressBar: public CBaseLuaWidget
 {
     virtual void SetProgress(int n) = 0;
     
 public:
-    virtual ~CBaseLuaProgressBar(void) { };
-    
     static void LuaRegister(void);
     static int LuaSet(lua_State *L);
 };

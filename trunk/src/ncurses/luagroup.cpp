@@ -36,7 +36,7 @@
 
 void CLuaGroup::AddLuaWidget(CLuaWidget *w)
 {
-    AddWidget(w);
+    CGroup::AddWidget(w);
     m_LuaWidgetList.push_back(w);
 }
 
@@ -114,6 +114,14 @@ void CLuaGroup::CoreUpdateLanguage()
 {
     for (TLuaWidgetList::iterator it=m_LuaWidgetList.begin(); it!=m_LuaWidgetList.end(); it++)
         (*it)->UpdateLanguage();
+}
+
+void CLuaGroup::ActivateWidget(CBaseLuaWidget *w)
+{
+    FocusWidget(dynamic_cast<CGroup *>(w)); // HACK (UNDONE?)
+    
+    if (!Focused())
+        PushEvent(EVENT_REQFOCUS);
 }
 
 void CLuaGroup::CoreAddWidget(NNCurses::CWidget *w)

@@ -20,17 +20,17 @@
 #ifndef LUADIRSELECTOR_H
 #define LUADIRSELECTOR_H
 
+#include "luawidget.h"
+
 struct lua_State;
 
-class CBaseLuaDirSelector
+class CBaseLuaDirSelector: public CBaseLuaWidget
 {
-public:
-    virtual ~CBaseLuaDirSelector(void) { };
     virtual const char *GetDir(void) = 0;
     virtual void SetDir(const char *dir) = 0;
 
+public:
     static void LuaRegister(void);
-    
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);
 };

@@ -113,6 +113,9 @@ void CInstaller::PrevScreen()
         return;
     }
     
+    if (!m_InstallScreens[m_CurrentScreen]->Back())
+        return;
+    
     TScreenList::iterator it = m_InstallScreens.begin() + m_CurrentScreen;
     
     while (it != m_InstallScreens.begin())
@@ -141,6 +144,9 @@ void CInstaller::NextScreen()
         return;
     }
     
+    if (!m_InstallScreens[m_CurrentScreen]->Next())
+        return;
+
     TScreenList::iterator it = m_InstallScreens.begin() + m_CurrentScreen;
     
     while (*it != m_InstallScreens.back())

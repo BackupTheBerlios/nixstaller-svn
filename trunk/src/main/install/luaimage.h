@@ -20,10 +20,10 @@
 #ifndef LUAIMAGE_H
 #define LUAIMAGE_H
 
-class CBaseLuaImage
+#include "luawidget.h"
+
+class CBaseLuaImage: public CBaseLuaWidget
 {
-public:
-    virtual ~CBaseLuaImage(void) { };
 };
 
 

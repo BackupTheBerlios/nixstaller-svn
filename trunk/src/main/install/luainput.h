@@ -21,10 +21,11 @@
 #define LUAINPUT_H
 
 #include <string>
+#include "luawidget.h"
 
 struct lua_State;
 
-class CBaseLuaInputField
+class CBaseLuaInputField: public CBaseLuaWidget
 {
     std::string m_szType;
     int m_iLabelWidth;
@@ -37,7 +38,6 @@ protected:
 
 public:
     CBaseLuaInputField(const char *t);
-    virtual ~CBaseLuaInputField(void) { };
     
     const char *GetValue(void) { return CoreGetValue(); }
     void SetLabelWidth(int w) { m_iLabelWidth = w; CoreUpdateLabelWidth(); }

@@ -84,6 +84,7 @@ void CBaseLuaCFGMenu::LuaRegister()
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddString, "addstring", "configmenu");
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddList, "addlist", "configmenu");
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddBool, "addbool", "configmenu");
+    LuaRegisterCheck("configmenu");
 }
 
 int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)

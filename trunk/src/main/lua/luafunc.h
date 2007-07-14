@@ -49,7 +49,7 @@ public:
     template <typename C> CLuaFunc &operator >>(C &out)
     {
         CheckSelf();
-        m_ArgLuaTable[m_ArgLuaTable.Size()+1] >> out;
+        m_ArgLuaTable[m_iRetStartIndex] >> out;
         m_iRetStartIndex++;
         return *this;
     }

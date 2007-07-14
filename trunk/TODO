@@ -58,7 +58,7 @@ NCURSES
 - Translations and buttonbar descriptions?
 - Check if UpdateTranslation functions are called - needs testing
 - Check for 'dynamic' CanFocus for CTextField?
-
+- Move translation handling from CLuaWidget to CBaseLuaWidget?
 
 GTK
 - Move main window away from base frontend class?

@@ -118,7 +118,7 @@ int CLuaFunc::operator ()(int ret)
 {
     CheckSelf();
     
-    int oldtop = lua_gettop(LuaState);
+    const int oldtop = lua_gettop(LuaState);
     
     lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iFuncRef);
     
@@ -138,21 +138,31 @@ int CLuaFunc::operator ()(int ret)
     }
     
     const int top = lua_gettop(LuaState);
-//     const int count = top - (oldtop - (m_ArgLuaTable.Size() + 1));
-    const int count = top - oldtop;
-    int retstart = top - count;
+    int count = top - oldtop;
+    int retstart = top - (count-1);
 
     m_iRetStartIndex = 1;
     m_ArgLuaTable.New(LUA_REGISTRYINDEX);
     
-    while (retstart < top)
+    if (count)
     {
-        lua_pushvalue(LuaState, retstart);
-        m_ArgLuaTable[retstart-count].SetTable();
-        retstart++;
+        int nilcount = 0;
+        while (retstart <= top)
+        {
+            if (lua_isnil(LuaState, retstart))
+                nilcount++; // Skip nil variables
+            else
+            {
+                lua_pushvalue(LuaState, retstart);
+                m_ArgLuaTable[m_ArgLuaTable.Size()+1].SetTable();
+            }
+            retstart++;
+        }
+        
+        lua_pop(LuaState, count);
+        count -= nilcount;
     }
     
-    lua_pop(LuaState, count);
     return count;
 }
 
@@ -203,7 +213,7 @@ void RegisterClassFunction(lua_CFunction f, const char *name, const char *type, 
     lua_pushcclosure(LuaState, DoFunctionCall, 2);
     
     lua_settable(LuaState, mt);
-    lua_pop(LuaState, mt);
+    lua_remove(LuaState, mt);
 }
 
 
