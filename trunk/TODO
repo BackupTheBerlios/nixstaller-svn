@@ -37,6 +37,10 @@ MAIN
 - Make function wrapper for m_Variables in CBaseLuaCFGMenu
 - Test new function/table lua code
 - Finish StartInstall lua code
+- Check get and set method parameters for consequent types
+- Improve/check lua error messages
+- Make private table for internal funcs/vars?
+
 
 LIBSU
 - Clean up/redesign

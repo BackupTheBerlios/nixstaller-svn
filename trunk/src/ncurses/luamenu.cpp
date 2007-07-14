@@ -51,7 +51,7 @@ const char *CLuaMenu::Selection()
 
 void CLuaMenu::Select(int n)
 {
-    m_pMenu->Select(m_Options.at(n));
+    m_pMenu->Select(m_Options.at(n-1));
 }
 
 void CLuaMenu::CoreUpdateLanguage()

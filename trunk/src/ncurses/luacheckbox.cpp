@@ -40,7 +40,7 @@ bool CLuaCheckbox::Enabled(int n)
     NNCurses::CCheckbox::TRetType l;
     m_pCheckbox->GetSelections(l);
     
-    if (std::find(l.begin(), l.end(), GetTranslation(m_Options.at(n))) != l.end())
+    if (std::find(l.begin(), l.end(), GetTranslation(m_Options.at(n-1))) != l.end())
         return true;
     
     return false;

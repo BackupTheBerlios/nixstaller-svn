@@ -359,6 +359,8 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     
     NLua::RegisterFunction(LuaExit, "exit"); // Override
+    NLua::RegisterFunction(LuaGetLang, "getlang", NULL, this);
+    NLua::RegisterFunction(LuaSetLang, "setlang", NULL, this);
     
     // Set some default values for config variabeles
     NLua::CLuaTable tab("languages", "cfg");
@@ -850,6 +852,21 @@ int CMain::LuaExit(lua_State *L)
 int CMain::LuaPanic(lua_State *L)
 {
     assert(false);
+    return 0;
+}
+
+int CMain::LuaGetLang(lua_State *L)
+{
+    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
+    lua_pushstring(L, pMain->m_szCurLang.c_str());
+    return 1;
+}
+
+int CMain::LuaSetLang(lua_State *L)
+{
+    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
+    pMain->m_szCurLang = luaL_checkstring(L, 1);
+    pMain->UpdateLanguage();
     return 0;
 }
 

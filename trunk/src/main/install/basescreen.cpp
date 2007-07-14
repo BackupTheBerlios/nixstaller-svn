@@ -31,7 +31,7 @@
 
 bool CBaseScreen::CallLuaBoolFunc(const char *func, bool def)
 {
-    NLua::CLuaFunc luafunc("func", "screen", this);
+    NLua::CLuaFunc luafunc(func, "screen", this);
     bool ret = def;
     
     if (luafunc)
