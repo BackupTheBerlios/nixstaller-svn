@@ -45,7 +45,7 @@ CInputField::~CInputField(void)
 void CInputField::Move(int n, bool relative)
 {
     TSTLStrSize len = m_Text.length();
-    int w = Width()-1; // -1, because we want to scroll before char is at last available position
+    int w = Width()-3; // -3, because we want to scroll before char is at last available position and we have a frame
     
     if (relative)
     {
@@ -155,7 +155,7 @@ void CInputField::Delch(TSTLStrSize pos)
 
 void CInputField::DoDraw()
 {
-    TSTLStrSize end = m_StartPos + Width(), length = m_Text.length();
+    TSTLStrSize end = m_StartPos + Width()-2, length = m_Text.length();
     
     if (end > length)
         end = length;

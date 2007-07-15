@@ -144,6 +144,7 @@ bool CLuaCFGMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
                         break;
                 }
                 
+                LuaDataChanged();
                 return true;
             }
         }

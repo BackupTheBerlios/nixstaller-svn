@@ -3,10 +3,11 @@ module (..., package.seeall)
 screen = install.newscreen("Please select a language")
 
 menu = screen:addmenu("", cfg.languages or {})
-menu:setcheck(function ()
-                 setlang(menu:get())
-                 return true
-              end)
+
+function menu:datachanged()
+    setlang(menu:get())
+    return true
+end
 
 function screen:canactivate()
     return #cfg.languages > 1

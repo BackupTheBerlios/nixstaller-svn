@@ -38,6 +38,9 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
     virtual void Select(int n);
     virtual void CoreUpdateLanguage(void);
     
+protected:
+    virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
+    
 public:
     CLuaMenu(const char *desc, const TOptions &l);
 };

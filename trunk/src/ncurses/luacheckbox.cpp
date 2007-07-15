@@ -69,3 +69,14 @@ void CLuaCheckbox::CoreUpdateLanguage()
     for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
         m_pCheckbox->SetName(n, GetTranslation(*it));
 }
+
+bool CLuaCheckbox::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
+{
+    if ((emitter == m_pCheckbox) && (event == EVENT_DATACHANGED))
+    {
+        LuaDataChanged();
+        return true;
+    }
+    
+    return false;
+}

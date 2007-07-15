@@ -16,13 +16,10 @@ end
 screen = install.newscreen("License agreement")
 text = screen:addtextfield()
 check = screen:addcheckbox("", { "I agree to this license agreement" } )
-check:setcheck(function ()
-                   if not check:get(1) then
-                       gui.msgbox("Before you can continue, you have to agree to the license agreement")
-                       return false
-                   end
-                   return true
-               end)
+
+function check:datachanged()
+    install.lockscreen(false, not check:get(1)) -- Unlock next button incase box is checked
+end
 
 function screen:canactivate()
     checkfile()
@@ -32,6 +29,7 @@ end
 function screen:activate()
     if filename ~= nil then -- checkfile() has been called by canactivate
         text:load(filename)
+        install.lockscreen(false, true)
     end
 end
 

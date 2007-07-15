@@ -26,38 +26,23 @@
 // Base Lua Widget Class
 // -------------------------------------
 
-CBaseLuaWidget::CBaseLuaWidget() : m_iCheckRef(LUA_NOREF)
+void CBaseLuaWidget::LuaDataChanged()
 {
+    NLua::CLuaFunc func("datachanged", LuaType(), this);
+    if (func)
+        func(0);
 }
 
 bool CBaseLuaWidget::Check()
 {
     bool ret = true;
     
-    if (m_iCheckRef != LUA_NOREF)
+    NLua::CLuaFunc func("verify", LuaType(), this);
+    if (func)
     {
-        NLua::CLuaFunc func(m_iCheckRef, LUA_REGISTRYINDEX);
-        if (func)
-        {
-            if (func(1) > 0)
-                func >> ret;
-        }
+        if (func(1) > 0)
+            func >> ret;
     }
     
     return ret;
-}
-
-void CBaseLuaWidget::LuaRegisterCheck(const char *type)
-{
-    NLua::RegisterClassFunction(LuaSetCheck, "setcheck", type, const_cast<char *>(type));
-}
-
-int CBaseLuaWidget::LuaSetCheck(lua_State *L)
-{
-    const char *type = reinterpret_cast<const char *>(lua_touserdata(L, lua_upvalueindex(1)));
-    CBaseLuaWidget *widget = NLua::CheckClassData<CBaseLuaWidget>(type, 1);
-    luaL_checktype(L, 2, LUA_TFUNCTION);
-    lua_pushvalue(L, 2);
-    widget->m_iCheckRef = luaL_ref(L, LUA_REGISTRYINDEX);
-    return 0;
 }

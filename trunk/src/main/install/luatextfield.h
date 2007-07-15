@@ -28,6 +28,7 @@ class CBaseLuaTextField: public CBaseLuaWidget
 {
     bool m_bFollow;
     
+    virtual const char *LuaType(void) const { return "textfield"; }
     virtual void Load(const char *file) = 0;
     virtual void AddText(const char *text) = 0;
     virtual void UpdateFollow(void) {}

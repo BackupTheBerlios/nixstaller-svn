@@ -24,6 +24,7 @@
 
 class CBaseLuaImage: public CBaseLuaWidget
 {
+    virtual const char *LuaType(void) const { return "image"; }
 };
 
 

@@ -26,6 +26,7 @@ struct lua_State;
 
 class CBaseLuaRadioButton: public CBaseLuaWidget
 {
+    virtual const char *LuaType(void) const { return "radiobutton"; }
     virtual const char *EnabledButton(void) = 0;
     virtual void Enable(int n) = 0;
 

@@ -26,6 +26,7 @@ struct lua_State;
 
 class CBaseLuaDirSelector: public CBaseLuaWidget
 {
+    virtual const char *LuaType(void) const { return "dirselector"; }
     virtual const char *GetDir(void) = 0;
     virtual void SetDir(const char *dir) = 0;
 

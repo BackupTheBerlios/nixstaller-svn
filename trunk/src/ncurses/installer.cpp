@@ -231,7 +231,7 @@ bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
             AskQuit();
             return true;
         }
-        else
+        else if (m_pNextButton->Enabled())
         {
             // All unhandled callback events will focus next button.
             // This is usefull when user presses enter key in menus and such

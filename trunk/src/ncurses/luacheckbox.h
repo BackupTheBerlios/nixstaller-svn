@@ -40,6 +40,9 @@ class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
     virtual void Enable(int n, bool b);
     virtual void CoreUpdateLanguage(void);
     
+protected:
+    virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
+    
 public:
     CLuaCheckbox(const char *desc, const TOptions &l);
 };

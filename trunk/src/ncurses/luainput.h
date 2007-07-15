@@ -41,6 +41,9 @@ class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
     virtual void CoreUpdateLabelWidth(void) { UpdateLabelWidth(); }
     virtual void CoreUpdateLanguage(void);
     
+protected:
+    virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
+    
 public:
     CLuaInputField(const char *label, const char *desc, const char *val, int max, const char *type);
 };

@@ -38,7 +38,6 @@ void CBaseLuaInputField::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaInputField::LuaGet, "get", "inputfield");
     NLua::RegisterClassFunction(CBaseLuaInputField::LuaSetLabelWidth, "setlabelwidth", "inputfield");
-    LuaRegisterCheck("inputfield");
 }
 
 int CBaseLuaInputField::LuaGet(lua_State *L)

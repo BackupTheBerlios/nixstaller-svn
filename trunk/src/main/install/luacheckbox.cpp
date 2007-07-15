@@ -30,7 +30,6 @@ void CBaseLuaCheckbox::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaGet, "get", "checkbox");
     NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaSet, "set", "checkbox");
-    LuaRegisterCheck("checkbox");
 }
 
 int CBaseLuaCheckbox::LuaGet(lua_State *L)

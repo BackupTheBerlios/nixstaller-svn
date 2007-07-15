@@ -40,6 +40,7 @@ MAIN
 - Check get and set method parameters for consequent types
 - Improve/check lua error messages
 - Make private table for internal funcs/vars?
+- Check if all functions called from C++ code have self parameter included
 
 
 LIBSU

@@ -54,6 +54,12 @@ bool CLuaDirSelector::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
         std::string ret = NNCurses::DirectoryBox(GetTranslation("Select directory"), m_pDirInput->Value());
         if (!ret.empty())
             m_pDirInput->SetText(ret);
+        LuaDataChanged();
+        return true;
+    }
+    else if ((event == EVENT_DATACHANGED) && (emitter == m_pDirInput))
+    {
+        LuaDataChanged();
         return true;
     }
     

@@ -26,6 +26,7 @@ struct lua_State;
 
 class CBaseLuaCheckbox: public CBaseLuaWidget
 {
+    virtual const char *LuaType(void) const { return "checkbox"; }
     virtual bool Enabled(int n) = 0;
     virtual bool Enabled(const char *s) = 0;
     virtual void Enable(int n, bool b) = 0;

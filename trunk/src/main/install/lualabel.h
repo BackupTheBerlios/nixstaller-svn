@@ -26,6 +26,7 @@ struct lua_State;
 
 class CBaseLuaLabel: public CBaseLuaWidget
 {
+    virtual const char *LuaType(void) const { return "label"; }
     virtual void SetLabel(const char *text) = 0;
 
 public:

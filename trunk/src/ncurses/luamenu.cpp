@@ -60,3 +60,14 @@ void CLuaMenu::CoreUpdateLanguage()
     for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
         m_pMenu->SetName(*it, GetTranslation(*it));
 }
+
+bool CLuaMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
+{
+    if ((emitter == m_pMenu) && (event == EVENT_DATACHANGED))
+    {
+        LuaDataChanged();
+        return true;
+    }
+    
+    return false;
+}

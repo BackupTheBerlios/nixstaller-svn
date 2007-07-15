@@ -26,6 +26,7 @@ struct LuaState;
 
 class CBaseLuaMenu: public CBaseLuaWidget
 {
+    virtual const char *LuaType(void) const { return "menu"; }
     virtual const char *Selection(void) = 0;
     virtual void Select(int n) = 0;
     

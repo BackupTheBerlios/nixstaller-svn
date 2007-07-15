@@ -78,3 +78,14 @@ void CLuaInputField::CoreUpdateLanguage()
     if (m_pLabel)
         m_pLabel->SetText(GetTranslation(m_Label));
 }
+
+bool CLuaInputField::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
+{
+    if ((emitter == m_pInputField) && (event == EVENT_DATACHANGED))
+    {
+        LuaDataChanged();
+        return true;
+    }
+    
+    return false;
+}

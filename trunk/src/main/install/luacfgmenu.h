@@ -48,6 +48,7 @@ protected:
 private:
     TVarType m_Variables;
 
+    virtual const char *LuaType(void) const { return "configmenu"; }
     virtual void CoreAddVar(const char *name) = 0;
 
     void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);

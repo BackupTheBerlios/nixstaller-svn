@@ -24,16 +24,15 @@ struct lua_State;
 
 class CBaseLuaWidget
 {
-    int m_iCheckRef;
+    virtual const char *LuaType(void) const = 0;
     
+protected:
+    void LuaDataChanged(void);
+
 public:
-    CBaseLuaWidget(void);
     virtual ~CBaseLuaWidget(void) { };
     
     bool Check(void);
-
-    static void LuaRegisterCheck(const char *type);
-    static int LuaSetCheck(lua_State *L);
 };
 
 #endif

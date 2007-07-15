@@ -57,3 +57,14 @@ void CLuaRadioButton::CoreUpdateLanguage()
     for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
         m_pRadioButton->SetName(n, GetTranslation(*it));
 }
+
+bool CLuaRadioButton::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
+{
+    if ((emitter == m_pRadioButton) && (event == EVENT_DATACHANGED))
+    {
+        LuaDataChanged();
+        return true;
+    }
+    
+    return false;
+}
