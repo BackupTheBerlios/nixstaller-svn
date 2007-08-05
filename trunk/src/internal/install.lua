@@ -51,6 +51,7 @@ function GenerateDefaultScreens()
     LangScreen = require "langscreen"
     OLDG.WelcomeScreen = require "welcomescreen"
     OLDG.LicenseScreen = require "licensescreen"
+    OLDG.SelectDirScreen = require "selectdirscreen"
     OLDG.InstallScreen = require "installscreen"
 end
 
