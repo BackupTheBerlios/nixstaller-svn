@@ -53,6 +53,7 @@ function GenerateDefaultScreens()
     OLDG.LicenseScreen = require "licensescreen"
     OLDG.SelectDirScreen = require "selectdirscreen"
     OLDG.InstallScreen = require "installscreen"
+    OLDG.FinishScreen = require "finishscreen"
 end
 
 function LoadConfig()
@@ -73,7 +74,10 @@ function AddScreens()
         end
     else
         install.addscreen(WelcomeScreen)
-        -- UNDONE
+        install.addscreen(LicenseScreen)
+        install.addscreen(SelectDirScreen)
+        install.addscreen(InstallScreen)
+        install.addscreen(FinishScreen)
     end
 end
 

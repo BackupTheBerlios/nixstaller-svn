@@ -530,3 +530,97 @@ void CPipedCMD::Abort(bool canthrow)
     }
 }
 
+// -------------------------------------
+// Directory Creator Functor Class
+// -------------------------------------
+
+bool CUserMKDir::operator ()(std::string dir)
+{
+    if (dir.empty())
+        return false;
+    
+    if (dir[0] != '/')
+        dir = GetCWD() + "/" + dir; // Make absolute
+    
+    TSTLStrSize start = 1; // Skip first root path
+    TSTLStrSize end = 0;
+    bool useroot = false;
+    LIBSU::CLibSU suhandler;
+    
+    try
+    {
+        do
+        {
+            end = dir.find("/", start);
+            std::string subdir = dir.substr(0, end);
+            
+            if (FileExists(subdir))
+            {
+                if (!useroot && !WriteAccess(subdir))
+                {
+                    if (!m_szPassword || !m_szPassword[0])
+                    {
+                        while (true)
+                        {
+                            CleanPasswdString(m_szPassword);
+                            m_szPassword = GetPassword(GetTranslation("Your account doesn't have permissions to"
+                                    "create the directory. To create it with the root "
+                                    "(administrator) account, please enter it's password below."));
+                            
+                            suhandler.SetUser("root");
+                            suhandler.SetTerminalOutput(false);
+                            
+                            if (!m_szPassword || !m_szPassword[0])
+                                return false;
+                            
+                            if (!suhandler.TestSU(m_szPassword))
+                            {
+                                if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                                    WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                                else
+                                {
+                                    WarnBox(GetTranslation("Could not use su to gain root access"
+                                            "Make sure you can use su (adding the current user to the wheel group may help)"));
+                                    CleanPasswdString(m_szPassword);
+                                    m_szPassword = NULL;
+                                    return false;
+                                }
+                            }
+                            else
+                                break;
+                        }
+                    }
+                    
+                    useroot = true;
+                }
+            }
+            else
+            {
+                if (useroot)
+                {
+                    suhandler.SetCommand("mkdir " + subdir);
+                    if (!suhandler.ExecuteCommand(m_szPassword))
+                    {
+                        WarnBox(GetTranslation("Could not create directory"));
+                        CleanPasswdString(m_szPassword);
+                        m_szPassword = NULL;
+                        return false;
+                    }
+                }
+                else
+                    MKDir(subdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
+            }
+            
+            start = end + 1;
+        }
+        while (end != std::string::npos);
+    }
+    catch(Exceptions::CExMKDir &e)
+    {
+        WarnBox(CreateText("%s\n%s\n%s", GetTranslation("Could not create directory"), dir.c_str(), e.what()));
+        // Exception won't be thrown by su, so no need to clean passwd
+        return false;
+    }
+    
+    return true;
+}

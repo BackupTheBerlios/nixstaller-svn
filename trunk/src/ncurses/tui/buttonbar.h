@@ -29,12 +29,13 @@ class CButtonBar: public CBox
 {
     CBox *m_pCurBox;
     int m_iMaxWidth;
+    const int m_iBoxSpacing;
 
     void PushBox(void);
     void PushLabel(const std::string &n, const std::string &d);
     
 public:
-    CButtonBar(int maxw) : CBox(VERTICAL, false), m_pCurBox(NULL), m_iMaxWidth(maxw) { }
+    CButtonBar(int maxw) : CBox(VERTICAL, false), m_pCurBox(NULL), m_iMaxWidth(maxw), m_iBoxSpacing(1) { }
     
     void AddButton(std::string n, std::string d);
     void ClearButtons(void);

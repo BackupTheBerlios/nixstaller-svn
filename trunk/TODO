@@ -1,5 +1,4 @@
 OVERALL
-- Use ldd to detect right frontend in startinstaller.sh?
 - Make shared 'library' for scripts
 - Detect ssh'd terminals with X tunnel
 - Qt/KDE and GTK2 frontends
@@ -13,12 +12,12 @@ OVERALL
 - Build script that compiles all Nixstaller dependencies?
 - Modify Makeself?
 - x64 bins?
-- Check assert's: Shouldn't have function calls as arguments
 - Update Lua library for FBSD, NBSD, OBSD, SunOS
 - Recursive directory creation in VerifyDestDir (patch from Edward), also check root creation
 - Lua Panic function
 - Check boundries etc. for lua widgets
 - Remove deprecated virtual functions from CBaseInstall derived classes
+- Add license headers to new files
 
         
 TRANSLATIONS
@@ -67,11 +66,15 @@ NCURSES
 
 GTK
 - Move main window away from base frontend class?
+- Check dirselectors for adding dirs as root
+
 
 FLTK
 - Update code to new lua design
 - Change Lua inputfield label width handling
 - Check lua widgets; move members to private, change virtual function names etc.
+- Check dirselectors for adding dirs as root
+
 
 DESIGN
 - Reorganize var and type names? (type prefixes etc)

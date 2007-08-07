@@ -220,7 +220,7 @@ void CMenu::AddEntry(const std::string &id, const std::string &name)
 {
     m_MenuList.insert(std::lower_bound(m_MenuList.begin(), m_MenuList.end(), name), SEntry(id, name));
     m_LongestLine = std::max(m_LongestLine, name.length());
-    RequestQueuedDraw();
+    RequestUpdate();
 }
 
 void CMenu::Select(const std::string &id)
@@ -246,7 +246,7 @@ void CMenu::ClearEntries()
 {
     m_MenuList.clear();
     m_iXOffset = m_iYOffset = m_iCursorLine = 0;
-    RequestQueuedDraw();
+    RequestUpdate();
     PushEvent(EVENT_DATACHANGED);
 }
 

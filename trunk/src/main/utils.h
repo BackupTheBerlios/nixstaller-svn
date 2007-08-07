@@ -128,4 +128,20 @@ public:
     operator bool(void) { return !EndOfFile(); };
 };
 
+class CUserMKDir
+{
+    virtual void WarnBox(const char *msg) = 0;
+    virtual char *GetPassword(const char *msg) = 0;
+    
+    char *m_szPassword;
+    
+protected:
+    CUserMKDir(void) : m_szPassword(NULL) {}
+
+public:
+    virtual ~CUserMKDir(void) { CleanPasswdString(m_szPassword); }
+    
+    bool operator ()(std::string dir);
+};
+
 #endif

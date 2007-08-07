@@ -1,6 +1,7 @@
 0.2.2 -->
 - Added missing ncurses buttonbar entries.
-- Fixed about not loading in file installation screen
+- Fixed about not loading in file installation screen.
+- Users can now create directories as root from directory selectors
 
 
 0.2.1 --> 0.2.2

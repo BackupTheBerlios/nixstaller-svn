@@ -27,6 +27,19 @@
 #include "inputfield.h"
 #include "button.h"
 
+namespace {
+
+
+class CNCursUserMKDir: public CUserMKDir
+{
+    virtual void WarnBox(const char *msg) { NNCurses::WarningBox(msg); }
+    virtual char *GetPassword(const char *msg) { return StrDup(NNCurses::InputBox(msg, "", 0, '*').c_str()); }
+};
+
+
+}
+
+
 namespace NNCurses {
 
 // -------------------------------------
@@ -39,7 +52,7 @@ CFileDialog::CFileDialog(const std::string &msg, const std::string &start) : m_b
     
     StartPack((m_pLabel = new CLabel(msg)), true, true, 1, 1);
     StartPack(m_pFileMenu = new CMenu(25, 8), true, true, 0, 0);
-    StartPack((m_pInputField = new CInputField(m_Directory, CInputField::STRING, 1024)), true, true, 1, 0);
+    StartPack((m_pInputField = new CInputField(m_Directory, CInputField::STRING, 1024)), false, false, 1, 0);
     AddButton(m_pOKButton = new CButton(GetTranslation("Open directory")), true, false);
     AddButton(m_pCancelButton = new CButton(GetTranslation("Cancel")), true, false);
     
@@ -105,15 +118,9 @@ bool CFileDialog::CoreHandleKey(chtype key)
         if (newdir.empty())
             return true;
         
-        try
-        {
-            MKDir(newdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
+        CNCursUserMKDir dirmaker;
+        if (dirmaker(newdir))
             OpenDir(newdir);
-        }
-        catch(Exceptions::CExMKDir &e)
-        {
-            WarningBox(CreateText("%s\n%s\n%s", GetTranslation("Could not create directory"), newdir.c_str(), e.what()));
-        }
             
         return true;
     }
@@ -143,6 +150,12 @@ bool CFileDialog::CoreHandleEvent(CWidget *emitter, int type)
     }
     
     return CDialog::CoreHandleEvent(emitter, type);
+}
+
+void CFileDialog::CoreGetButtonDescs(TButtonDescList &list)
+{
+    list.push_back(TButtonDescPair("F2", "Create new directory"));
+    CDialog::CoreGetButtonDescs(list);
 }
 
 std::string CFileDialog::Value() const

@@ -46,13 +46,14 @@ protected:
     
         va_start(v, str);
         vsnprintf(m_szBuffer, sizeof(m_szBuffer), str, v);
+        m_szBuffer[511] = 0;
         va_end(v);
         
         return m_szBuffer;
     }
     
 public:
-    CException(void) { assert(false); };
+    CException(void) { /*assert(false);*/ };
     virtual const char *what(void) throw() = 0;
 };
 

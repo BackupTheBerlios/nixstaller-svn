@@ -47,13 +47,13 @@ class CFileDialog: public CDialog
 protected:
     virtual bool CoreHandleKey(chtype key);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
+    virtual void CoreGetButtonDescs(TButtonDescList &list);
     
 public:
     CFileDialog(const std::string &msg, const std::string &start);
     
     std::string Value(void) const;
 };
-
 
 }
 

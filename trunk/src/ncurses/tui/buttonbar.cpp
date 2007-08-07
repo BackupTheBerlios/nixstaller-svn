@@ -30,7 +30,7 @@ namespace NNCurses {
 
 void CButtonBar::PushBox(void)
 {
-    m_pCurBox = new CBox(HORIZONTAL, false, 1);
+    m_pCurBox = new CBox(HORIZONTAL, false, m_iBoxSpacing);
     AddWidget(m_pCurBox);
 }
 
@@ -62,7 +62,7 @@ void CButtonBar::AddButton(std::string n, std::string d)
 
     if (m_iMaxWidth < tlength)
         ; // UNDONE: Exception
-    else if ((m_pCurBox->RequestWidth() + tlength) > m_iMaxWidth)
+    else if ((m_pCurBox->RequestWidth() + tlength + m_iBoxSpacing) > m_iMaxWidth)
         PushBox();
     
     assert(m_iMaxWidth >= tlength);
