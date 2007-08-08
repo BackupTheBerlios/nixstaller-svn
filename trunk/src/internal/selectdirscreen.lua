@@ -9,4 +9,8 @@ function dir:datachanged()
     return true
 end
 
+function dir:verify()
+    return install.verifydestdir()
+end
+
 return screen

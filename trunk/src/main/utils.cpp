@@ -534,7 +534,14 @@ void CPipedCMD::Abort(bool canthrow)
 // Directory Creator Functor Class
 // -------------------------------------
 
-bool CUserMKDir::operator ()(std::string dir)
+void CMKDirHelper::CleanPasswd()
+{
+    if (m_bCleanPasswd)
+        CleanPasswdString(m_szPassword);
+    m_szPassword = NULL;
+}
+
+bool CMKDirHelper::operator ()(std::string dir)
 {
     if (dir.empty())
         return false;
@@ -560,35 +567,12 @@ bool CUserMKDir::operator ()(std::string dir)
                 {
                     if (!m_szPassword || !m_szPassword[0])
                     {
-                        while (true)
-                        {
-                            CleanPasswdString(m_szPassword);
-                            m_szPassword = GetPassword(GetTranslation("Your account doesn't have permissions to"
-                                    "create the directory. To create it with the root "
-                                    "(administrator) account, please enter it's password below."));
-                            
-                            suhandler.SetUser("root");
-                            suhandler.SetTerminalOutput(false);
-                            
-                            if (!m_szPassword || !m_szPassword[0])
-                                return false;
-                            
-                            if (!suhandler.TestSU(m_szPassword))
-                            {
-                                if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                                    WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
-                                else
-                                {
-                                    WarnBox(GetTranslation("Could not use su to gain root access"
-                                            "Make sure you can use su (adding the current user to the wheel group may help)"));
-                                    CleanPasswdString(m_szPassword);
-                                    m_szPassword = NULL;
-                                    return false;
-                                }
-                            }
-                            else
-                                break;
-                        }
+                        suhandler.SetUser("root");
+                        suhandler.SetTerminalOutput(false);
+                        m_szPassword = GetPassword(suhandler);
+                        
+                        if (!m_szPassword || !m_szPassword[0])
+                            return false;
                     }
                     
                     useroot = true;
@@ -602,8 +586,7 @@ bool CUserMKDir::operator ()(std::string dir)
                     if (!suhandler.ExecuteCommand(m_szPassword))
                     {
                         WarnBox(GetTranslation("Could not create directory"));
-                        CleanPasswdString(m_szPassword);
-                        m_szPassword = NULL;
+                        CleanPasswd();
                         return false;
                     }
                 }
@@ -623,4 +606,41 @@ bool CUserMKDir::operator ()(std::string dir)
     }
     
     return true;
+}
+
+// -------------------------------------
+// Frontend Directory Creator Helper Class
+// -------------------------------------
+
+char *CFrontendMKDirHelper::GetPassword(LIBSU::CLibSU &suhandler)
+{
+    char *ret = NULL;
+    
+    while (true)
+    {
+        CleanPasswdString(ret);
+        ret = AskPassword("Your account doesn't have permissions to "
+                "create the directory. To create it with the root "
+                "(administrator) account, please enter it's password below.");
+
+        if (!ret || !ret[0])
+            return NULL;
+
+        if (!suhandler.TestSU(ret))
+        {
+            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
+            else
+            {
+                WarnBox(GetTranslation("Could not use su to gain root access"
+                        "Make sure you can use su (adding the current user to the wheel group may help)"));
+                CleanPasswdString(ret);
+                return NULL;
+            }
+        }
+        else
+            break;
+    }
+    
+    return ret;
 }

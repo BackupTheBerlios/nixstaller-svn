@@ -49,7 +49,7 @@ TSTLStrSize CTextBase::GetNextLine(const std::string &text, TSTLStrSize start, i
         if (newline < end)
             end = newline;
         
-        if (((end-start) > SafeConvert<TSTLStrSize>(width)) && !isspace(m_QueuedText[end]))
+        if (((end+1) != length) && !isspace(m_QueuedText[end]))
         {
             std::string sub = m_QueuedText.substr(start, (end-start)+1);
             TSTLStrSize pos = sub.find_last_of(" \t\n");
@@ -57,7 +57,6 @@ TSTLStrSize CTextBase::GetNextLine(const std::string &text, TSTLStrSize start, i
             if (pos != std::string::npos)
                 end = start + pos;
         }
-    
     }
     else
     {

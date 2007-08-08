@@ -142,7 +142,7 @@ void CMain::SetUpSU(const char *msg)
     m_SUHandler.SetUser("root");
     m_SUHandler.SetTerminalOutput(false);
 
-    if (m_SUHandler.NeedPassword())
+    if ((!m_szPassword || !m_szPassword[0]) && m_SUHandler.NeedPassword())
     {
         while(true)
         {

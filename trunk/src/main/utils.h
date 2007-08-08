@@ -128,20 +128,34 @@ public:
     operator bool(void) { return !EndOfFile(); };
 };
 
-class CUserMKDir
+class CMKDirHelper
 {
-    virtual void WarnBox(const char *msg) = 0;
-    virtual char *GetPassword(const char *msg) = 0;
-    
     char *m_szPassword;
+    bool m_bCleanPasswd;
+
+    virtual char *GetPassword(LIBSU::CLibSU &suhandler) = 0;
+    
+    void CleanPasswd(void);
     
 protected:
-    CUserMKDir(void) : m_szPassword(NULL) {}
+    virtual void WarnBox(const char *msg) = 0;
+
+    CMKDirHelper(bool c) : m_szPassword(NULL), m_bCleanPasswd(c) {}
 
 public:
-    virtual ~CUserMKDir(void) { CleanPasswdString(m_szPassword); }
+    virtual ~CMKDirHelper(void) { CleanPasswd(); }
     
     bool operator ()(std::string dir);
+};
+
+// Used by directory dialogs
+class CFrontendMKDirHelper: public CMKDirHelper
+{
+    virtual char *AskPassword(const char *msg) = 0;
+    virtual char *GetPassword(LIBSU::CLibSU &suhandler);
+    
+public:
+    CFrontendMKDirHelper(void) : CMKDirHelper(true) { }
 };
 
 #endif

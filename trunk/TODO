@@ -18,6 +18,8 @@ OVERALL
 - Check boundries etc. for lua widgets
 - Remove deprecated virtual functions from CBaseInstall derived classes
 - Add license headers to new files
+- Mention that lua commands are executed incase m_bAlwaysRoot is set to true
+- Check/test/finish MKDir helper classes
 
         
 TRANSLATIONS
@@ -25,6 +27,7 @@ TRANSLATIONS
 - Navigate (buttonbar)
 - ARROWS/PGUP/PGDOWN (buttonbar)
 - Character (buttonbar)
+- Messages from MKDir helper classes
 
 
 MAIN

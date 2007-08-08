@@ -29,13 +29,16 @@
 
 namespace {
 
-
-class CNCursUserMKDir: public CUserMKDir
+class CNCursUserMKDir: public CFrontendMKDirHelper
 {
     virtual void WarnBox(const char *msg) { NNCurses::WarningBox(msg); }
-    virtual char *GetPassword(const char *msg) { return StrDup(NNCurses::InputBox(msg, "", 0, '*').c_str()); }
+    virtual char *AskPassword(const char *msg)
+    {
+        return StrDup(NNCurses::InputBox(GetTranslation("Your account doesn't have permissions to "
+                "create the directory. To create it with the root (administrator) account, please"
+                "enter it's password below."), "", 0, '*').c_str());
+    }
 };
-
 
 }
 
