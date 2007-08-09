@@ -26,10 +26,21 @@ struct lua_State;
 
 class CBaseLuaCheckbox: public CBaseLuaWidget
 {
+protected:
+    typedef std::vector<std::string> TOptions;
+
+private:
+    TOptions m_Options;
+    
     virtual const char *LuaType(void) const { return "checkbox"; }
-    virtual bool Enabled(int n) = 0;
+    virtual bool Enabled(TSTLVecSize n) = 0;
     virtual bool Enabled(const char *s) = 0;
-    virtual void Enable(int n, bool b) = 0;
+    virtual void Enable(TSTLVecSize n, bool b) = 0;
+    
+protected:
+    CBaseLuaCheckbox(const TOptions &opts) : m_Options(opts) {}
+    
+    TOptions &GetOptions(void) { return m_Options; }
 
 public:
     static void LuaRegister(void);

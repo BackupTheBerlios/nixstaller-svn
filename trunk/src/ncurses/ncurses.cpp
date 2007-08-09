@@ -34,6 +34,11 @@
 #include "tui/dialog.h"
 #include "tui/radiobutton.h"
 
+namespace {
+bool g_bGotGUI = false;
+}
+
+
 #ifndef RELEASE
 void debugline(const char *t, ...)
 {
@@ -44,17 +49,6 @@ void debugline(const char *t, ...)
     vasprintf(&txt, t, v);
     va_end(v);
     
-    /*bool plain = isendwin();
-    if (!plain)
-    endwin(); // Disable ncurses mode
-    
-    printf("DEBUG: %s", txt);
-    FILE *f=fopen("log.txt", "a"); if (f) { fprintf(f, txt);fclose(f); }
-    fflush(stdout);
-    
-    if (!plain)
-    refresh(); // Reenable ncurses mode*/
-    
     static FILE *f=fopen("log.txt", "w");
     if (f) { fprintf(f, txt); fflush(f); }
     
@@ -64,15 +58,26 @@ void debugline(const char *t, ...)
 
 void ReportError(const char *msg)
 {
-    // UNDONE
-    FILE *f=fopen("log.txt", "w");
-    fprintf(f, msg);
-    fclose(f);
+    if (g_bGotGUI)
+    {
+        try
+        {
+            NNCurses::MessageBox(msg);
+        }
+        catch(Exceptions::CExFrontend &)
+        {
+            fprintf(stderr, msg);
+        }
+    }
+    else
+        fprintf(stderr, msg);
 }
 
 void StartFrontend(int argc, char **argv)
 {
     NNCurses::TUI.InitNCurses();
+    
+    g_bGotGUI = true;
     
     CInstaller *interface = new CInstaller;
     interface->SetFColors(COLOR_GREEN, COLOR_BLUE);
@@ -89,6 +94,7 @@ void StartFrontend(int argc, char **argv)
 void StopFrontend()
 {
     NNCurses::TUI.StopNCurses();
+    g_bGotGUI = false;
 }
 
 // -------------------------------------

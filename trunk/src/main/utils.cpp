@@ -554,53 +554,57 @@ bool CMKDirHelper::operator ()(std::string dir)
     bool useroot = false;
     LIBSU::CLibSU suhandler;
     
+    // Get first directory to create
+    do
+    {
+        end = dir.find("/", start);
+        std::string subdir = dir.substr(0, end);
+            
+        if (FileExists(subdir))
+            useroot = !WriteAccess(subdir);
+        else
+            break;
+        
+        start = end + 1;
+    }
+    while (end != std::string::npos);
+    
+    if (useroot)
+    {
+        suhandler.SetUser("root");
+        suhandler.SetTerminalOutput(false);
+        m_szPassword = GetPassword(suhandler);
+                        
+        if (!m_szPassword || !m_szPassword[0])
+            return false;
+        
+        suhandler.SetCommand("mkdir -p " + dir);
+        if (!suhandler.ExecuteCommand(m_szPassword))
+        {
+            WarnBox(GetTranslation("Could not create directory"));
+            CleanPasswd();
+            return false;
+        }
+        
+        return true;
+    }
+    
     try
     {
         do
         {
-            end = dir.find("/", start);
             std::string subdir = dir.substr(0, end);
+            debugline("subdir: %s\n", subdir.c_str());
+            MKDir(subdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
             
-            if (FileExists(subdir))
-            {
-                if (!useroot && !WriteAccess(subdir))
-                {
-                    if (!m_szPassword || !m_szPassword[0])
-                    {
-                        suhandler.SetUser("root");
-                        suhandler.SetTerminalOutput(false);
-                        m_szPassword = GetPassword(suhandler);
-                        
-                        if (!m_szPassword || !m_szPassword[0])
-                            return false;
-                    }
-                    
-                    useroot = true;
-                }
-            }
-            else
-            {
-                if (useroot)
-                {
-                    suhandler.SetCommand("mkdir " + subdir);
-                    if (!suhandler.ExecuteCommand(m_szPassword))
-                    {
-                        WarnBox(GetTranslation("Could not create directory"));
-                        CleanPasswd();
-                        return false;
-                    }
-                }
-                else
-                    MKDir(subdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
-            }
-            
-            start = end + 1;
+            if (end != std::string::npos)
+                end = dir.find("/", end+1);
         }
         while (end != std::string::npos);
     }
     catch(Exceptions::CExMKDir &e)
     {
-        WarnBox(CreateText("%s\n%s\n%s", GetTranslation("Could not create directory"), dir.c_str(), e.what()));
+        WarnBox(e.what());
         // Exception won't be thrown by su, so no need to clean passwd
         return false;
     }

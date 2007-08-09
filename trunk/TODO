@@ -13,13 +13,8 @@ OVERALL
 - Modify Makeself?
 - x64 bins?
 - Update Lua library for FBSD, NBSD, OBSD, SunOS
-- Recursive directory creation in VerifyDestDir (patch from Edward), also check root creation
-- Lua Panic function
-- Check boundries etc. for lua widgets
 - Remove deprecated virtual functions from CBaseInstall derived classes
-- Add license headers to new files
 - Mention that lua commands are executed incase m_bAlwaysRoot is set to true
-- Check/test/finish MKDir helper classes
 
         
 TRANSLATIONS
@@ -28,6 +23,9 @@ TRANSLATIONS
 - ARROWS/PGUP/PGDOWN (buttonbar)
 - Character (buttonbar)
 - Messages from MKDir helper classes
+- Check all sentences for punctation
+- "Not enough space for buttonbar entry" - ncurses bbar
+- New Error messages used by exceptions and luaL_argcheck
 
 
 MAIN
@@ -86,7 +84,6 @@ that will be called instead of virtual function, this function should call the v
 - Split code in more files (SConstruct aswell?)
 - Use C++ style casts(static_cast)
 - More usage of const?
-- Move m_Options from lua checkbox/radiobutton to base class
 - Move global static ints for widget spacing etc to static functions
 
         

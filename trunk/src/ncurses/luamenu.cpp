@@ -25,7 +25,7 @@
 // Lua Menu Class
 // -------------------------------------
 
-CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CLuaWidget(desc), m_Options(l)
+CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaMenu(l), CLuaWidget(desc)
 {
     m_pMenu = new NNCurses::CMenu(15, 7);
     
@@ -40,7 +40,9 @@ const char *CLuaMenu::Selection()
     if (m_pMenu->Empty())
         return NULL;
     
-    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++)
+    TOptions &opts = GetOptions();
+    
+    for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++)
     {
         if (GetTranslation(*it) == m_pMenu->Value())
             return it->c_str();
@@ -49,15 +51,16 @@ const char *CLuaMenu::Selection()
     return NULL;
 }
 
-void CLuaMenu::Select(int n)
+void CLuaMenu::Select(TSTLVecSize n)
 {
-    m_pMenu->Select(m_Options.at(n-1));
+    m_pMenu->Select(GetOptions().at(n));
 }
 
 void CLuaMenu::CoreUpdateLanguage()
 {
+    TOptions &opts = GetOptions();
     int n = 1;
-    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
+    for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++, n++)
         m_pMenu->SetName(*it, GetTranslation(*it));
 }
 

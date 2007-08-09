@@ -30,13 +30,10 @@ namespace NNCurses {
 
 class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
 {
-    typedef std::vector<std::string> TOptions;
-    
     NNCurses::CRadioButton *m_pRadioButton;
-    TOptions m_Options;
     
     virtual const char *EnabledButton(void);
-    virtual void Enable(int n);
+    virtual void Enable(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     
 protected:

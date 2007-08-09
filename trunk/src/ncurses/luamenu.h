@@ -29,13 +29,10 @@ namespace NNCurses {
 
 class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
 {
-    typedef std::vector<std::string> TOptions;
-    
     NNCurses::CMenu *m_pMenu;
-    TOptions m_Options;
     
     virtual const char *Selection(void);
-    virtual void Select(int n);
+    virtual void Select(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     
 protected:

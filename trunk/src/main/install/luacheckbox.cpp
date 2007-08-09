@@ -39,9 +39,19 @@ int CBaseLuaCheckbox::LuaGet(lua_State *L)
     if (lua_isstring(L, 2))
     {
         if (lua_isnumber(L, 2))
-            lua_pushboolean(L, box->Enabled(lua_tointeger(L, 2)));
+        {
+            TSTLVecSize n = SafeConvert<TSTLVecSize>(lua_tointeger(L, 2)) - 1; // Convert to 0-size range
+            luaL_argcheck(L, ((n >= 0) && (n < box->m_Options.size())), 2,
+                          "Tried to access non existing checkbutton entry");
+            lua_pushboolean(L, box->Enabled(n));
+        }
         else
-            lua_pushboolean(L, box->Enabled(lua_tostring(L, 2)));
+        {
+            const char *arg = lua_tostring(L, 2);
+            luaL_argcheck(L, std::find(box->m_Options.begin(), box->m_Options.end(), arg) != box->m_Options.end(),
+                          2, "Tried to access non existing checkbutton entry");
+            lua_pushboolean(L, box->Enabled(arg));
+        }
     }
     else
         luaL_typerror(L, 2, "Number or String");
@@ -57,9 +67,12 @@ int CBaseLuaCheckbox::LuaSet(lua_State *L)
     luaL_checktype(L, args, LUA_TBOOLEAN);
     bool e = lua_toboolean(L, args);
 
+    TSTLVecSize size = box->m_Options.size();
+    
     for (int i=2; i<args; i++)
     {
-        int n = luaL_checkint(L, i);
+        TSTLVecSize n = SafeConvert<TSTLVecSize>(luaL_checkint(L, i)) - 1; // Convert to 0-size range
+        luaL_argcheck(L, ((n >= 0) && (n < size)), i, "Tried to set non existing checkbutton entry");
         box->Enable(n, e);
     }
     

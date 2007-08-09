@@ -112,7 +112,7 @@ protected:
     char *m_szPassword;
 
     const char *GetAboutFName(void);
-    void SetUpSU(const char *msg);
+    bool GetSUPasswd(const char *msg, bool mandatory);
     bool ReadLang();
     
     virtual char *GetPassword(const char *title) = 0;

@@ -130,6 +130,9 @@ void CMain::Init(int argc, char **argv)
     
     debugline("defaultlang: %s\n", m_szCurLang.c_str());
     ReadLang();
+    
+    m_SUHandler.SetUser("root");
+    m_SUHandler.SetTerminalOutput(false);
 }
 
 const char *CMain::GetAboutFName(void)
@@ -137,11 +140,8 @@ const char *CMain::GetAboutFName(void)
     return CreateText("%s/about", m_szOwnDir.c_str());
 }
 
-void CMain::SetUpSU(const char *msg)
+bool CMain::GetSUPasswd(const char *msg, bool mandatory)
 {
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetTerminalOutput(false);
-
     if ((!m_szPassword || !m_szPassword[0]) && m_SUHandler.NeedPassword())
     {
         while(true)
@@ -153,6 +153,9 @@ void CMain::SetUpSU(const char *msg)
             // Check if password is invalid
             if (!m_szPassword || !m_szPassword[0])
             {
+                if (!mandatory)
+                    return false;
+                
                 if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
                     GetTranslation("No"), GetTranslation("Yes"), NULL))
                     throw Exceptions::CExUser();
@@ -167,12 +170,22 @@ void CMain::SetUpSU(const char *msg)
                     WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
-                    throw Exceptions::CExSU("Could not use su to gain root access"
-                                            "Make sure you can use su (adding the current user to the wheel group may help)");
+                    const char *msg = "Could not use su to gain root access Make sure you can use "
+                            "su (adding the current user to the wheel group may help)";
+                    
+                    if (mandatory)
+                        throw Exceptions::CExSU(msg);
+                    else
+                    {
+                        WarnBox(GetTranslation(msg));
+                        return false;
+                    }
                 }
             }
         }
     }
+    
+    return true;
 }
 
 bool CMain::ReadLang()
@@ -851,7 +864,7 @@ int CMain::LuaExit(lua_State *L)
 
 int CMain::LuaPanic(lua_State *L)
 {
-    assert(false);
+    throw Exceptions::CExLua(lua_tostring(L, 1));
     return 0;
 }
 

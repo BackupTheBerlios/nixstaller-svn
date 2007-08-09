@@ -32,7 +32,7 @@ void CRadioButton::CoreInit()
     {
         TChoiceList &list = GetChoiceList();
         if (!list.empty())
-            Select(1); // CoreSelect (called by Select) sets m_bInitSelect to false
+            Select(0); // CoreSelect (called by Select) sets m_bInitSelect to false
     }
 }
 

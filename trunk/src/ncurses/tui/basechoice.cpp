@@ -119,7 +119,7 @@ bool CBaseChoice::CoreHandleKey(chtype key)
         PushEvent(EVENT_CALLBACK);
     else if (key == ' ')
     {
-        Select(m_iSelection+1);
+        Select(m_iSelection);
         PushEvent(EVENT_DATACHANGED);
         RequestQueuedDraw();
     }

@@ -25,7 +25,7 @@
 // Lua Radio Button Class
 // -------------------------------------
 
-CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CLuaWidget(desc), m_Options(l)
+CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLuaRadioButton(l), CLuaWidget(desc)
 {
     m_pRadioButton = new NNCurses::CRadioButton;
     
@@ -37,7 +37,8 @@ CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CLuaWidg
 
 const char *CLuaRadioButton::EnabledButton()
 {
-    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++)
+    TOptions &opts = GetOptions();
+    for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++)
     {
         if (m_pRadioButton->GetSelection() == GetTranslation(*it))
             return it->c_str();
@@ -46,15 +47,16 @@ const char *CLuaRadioButton::EnabledButton()
     return NULL;
 }
 
-void CLuaRadioButton::Enable(int n)
+void CLuaRadioButton::Enable(TSTLVecSize n)
 {
     m_pRadioButton->Select(n);
 }
 
 void CLuaRadioButton::CoreUpdateLanguage()
 {
+    TOptions &opts = GetOptions();
     int n = 1;
-    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
+    for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++, n++)
         m_pRadioButton->SetName(n, GetTranslation(*it));
 }
 

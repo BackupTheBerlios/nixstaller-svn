@@ -2594,7 +2594,7 @@ This function can be used to set the distance from the windows left border to th
 @endluafunc
 
 @anchor{cfgscreen:addradiobutton}
-@luafunc cfgscreen:addradiobutton (t[, o])
+@luafunc cfgscreen:addradiobutton (t, o)
 This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
 @luafunc radio:get ()
 Returns the name of the option that is enabled.

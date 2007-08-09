@@ -42,7 +42,8 @@ int CBaseLuaRadioButton::LuaGet(lua_State *L)
 int CBaseLuaRadioButton::LuaSet(lua_State *L)
 {
     CBaseLuaRadioButton *box = NLua::CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
-    int n = luaL_checkint(L, 2);
+    TSTLVecSize n = SafeConvert<TSTLVecSize>(luaL_checkint(L, 2)) - 1;
+    luaL_argcheck(L, ((n >= 0) && (n < box->m_Options.size())), 2, "Tried to set non existing radiobutton entry");
     box->Enable(n);
     return 0;
 }

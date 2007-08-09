@@ -80,8 +80,8 @@ void CBaseInstall::Install(int statluafunc, int progluafunc, int outluafunc)
         virtual void WarnBox(const char *msg) { m_pOwner->WarnBox(msg); }
         virtual char *GetPassword(LIBSU::CLibSU &suhandler)
         {
-            m_pOwner->SetUpSU("This installation requires root(administrator) privileges in"
-                    "order to continue\nPlease enter the password of the root user");
+            m_pOwner->GetSUPasswd("This installation requires root(administrator) privileges in"
+                    "order to continue\nPlease enter the password of the root user", true);
             return m_pOwner->m_szPassword;
         }
         
@@ -118,8 +118,8 @@ void CBaseInstall::Install(int statluafunc, int progluafunc, int outluafunc)
         }
         else if (!WriteAccess(destdir))
         {
-            SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
-                    "Please enter the password of the root user");
+            GetSUPasswd("This installation requires root(administrator) privileges in order to continue\n"
+                    "Please enter the password of the root user", true);
         }
     }
     else
@@ -313,8 +313,8 @@ void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const ch
 {
     VerifyIfInstalling();
     
-    SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
-            "Please enter the password of the root user");
+    GetSUPasswd("This installation requires root(administrator) privileges in order to continue\n"
+            "Please enter the password of the root user", true);
     
     m_SUHandler.SetOutputFunc(CMDSUOutFunc, this);
 
@@ -562,9 +562,9 @@ bool CBaseInstall::VerifyDestDir(void)
                 virtual void WarnBox(const char *msg) { m_pOwner->WarnBox(msg); }
                 virtual char *GetPassword(LIBSU::CLibSU &suhandler)
                 {
-                    m_pOwner->SetUpSU("Your account doesn't have permissions to "
-                            "create the directory. To create it with the root (administrator) account, please"
-                            "enter it's password below.");
+                    m_pOwner->GetSUPasswd("Your account doesn't have permissions to "
+                            "create the directory. To create the directory and proceed the installation with the "
+                            "root (administrator) account, please enter it's password below.", false);
                     return m_pOwner->m_szPassword;
                 }
         
@@ -747,8 +747,8 @@ int CBaseInstall::LuaAskRootPW(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
     pInstaller->VerifyIfInstalling();
-    pInstaller->SetUpSU("This installation requires root(administrator) privileges in order to continue\n"
-                        "Please enter the password of the root user");
+    pInstaller->GetSUPasswd("This installation requires root(administrator) privileges in order to continue\n"
+                        "Please enter the password of the root user", true);
     return 0;
 }
 

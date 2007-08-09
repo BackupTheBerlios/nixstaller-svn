@@ -25,7 +25,7 @@
 // Lua Checkbox Class
 // -------------------------------------
 
-CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CLuaWidget(desc), m_Options(l)
+CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaCheckbox(l), CLuaWidget(desc)
 {
     m_pCheckbox = new NNCurses::CCheckbox;
     
@@ -35,12 +35,12 @@ CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CLuaWidget(des
     AddWidget(m_pCheckbox);
 }
 
-bool CLuaCheckbox::Enabled(int n)
+bool CLuaCheckbox::Enabled(TSTLVecSize n)
 {
     NNCurses::CCheckbox::TRetType l;
     m_pCheckbox->GetSelections(l);
     
-    if (std::find(l.begin(), l.end(), GetTranslation(m_Options.at(n-1))) != l.end())
+    if (std::find(l.begin(), l.end(), GetTranslation(GetOptions().at(n))) != l.end())
         return true;
     
     return false;
@@ -57,7 +57,7 @@ bool CLuaCheckbox::Enabled(const char *s)
     return false;
 }
 
-void CLuaCheckbox::Enable(int n, bool b)
+void CLuaCheckbox::Enable(TSTLVecSize n, bool b)
 {
     if (Enabled(n) != b)
         m_pCheckbox->Select(n);
@@ -65,8 +65,10 @@ void CLuaCheckbox::Enable(int n, bool b)
 
 void CLuaCheckbox::CoreUpdateLanguage()
 {
-    int n = 1;
-    for (TOptions::iterator it=m_Options.begin(); it!=m_Options.end(); it++, n++)
+    TOptions &opts = GetOptions();
+    int n = 0;
+    
+    for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++, n++)
         m_pCheckbox->SetName(n, GetTranslation(*it));
 }
 

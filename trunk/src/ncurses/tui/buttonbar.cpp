@@ -61,7 +61,7 @@ void CButtonBar::AddButton(std::string n, std::string d)
     int tlength = SafeConvert<int>(text.length());
 
     if (m_iMaxWidth < tlength)
-        ; // UNDONE: Exception
+        throw Exceptions::CExFrontend("Not enough space for buttonbar entry");
     else if ((m_pCurBox->RequestWidth() + tlength + m_iBoxSpacing) > m_iMaxWidth)
         PushBox();
     

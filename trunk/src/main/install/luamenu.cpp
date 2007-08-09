@@ -42,7 +42,8 @@ int CBaseLuaMenu::LuaGet(lua_State *L)
 int CBaseLuaMenu::LuaSet(lua_State *L)
 {
     CBaseLuaMenu *menu = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
-    int n = luaL_checkint(L, 2);
+    TSTLVecSize n = SafeConvert<TSTLVecSize>(luaL_checkint(L, 2)) - 1; // Covert to 0-size range
+    luaL_argcheck(L, ((n >= 0) && (n < menu->m_Options.size())), 2, "Tried to select non existing menu entry");
     menu->Select(n);
     return 0;
 }

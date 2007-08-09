@@ -30,14 +30,11 @@ namespace NNCurses {
 
 class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
 {
-    typedef std::vector<std::string> TOptions;
-    
     NNCurses::CCheckbox *m_pCheckbox;
-    TOptions m_Options;
     
-    virtual bool Enabled(int n);
+    virtual bool Enabled(TSTLVecSize n);
     virtual bool Enabled(const char *s);
-    virtual void Enable(int n, bool b);
+    virtual void Enable(TSTLVecSize n, bool b);
     virtual void CoreUpdateLanguage(void);
     
 protected:

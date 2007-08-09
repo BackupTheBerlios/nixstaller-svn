@@ -26,9 +26,20 @@ struct LuaState;
 
 class CBaseLuaMenu: public CBaseLuaWidget
 {
+protected:
+    typedef std::vector<std::string> TOptions;
+    
+private:
+    TOptions m_Options;
+    
     virtual const char *LuaType(void) const { return "menu"; }
     virtual const char *Selection(void) = 0;
-    virtual void Select(int n) = 0;
+    virtual void Select(TSTLVecSize n) = 0;
+    
+protected:
+    CBaseLuaMenu(const TOptions &opts) : m_Options(opts) {}
+    
+    TOptions &GetOptions(void) { return m_Options; }
     
 public:
     static void LuaRegister(void);

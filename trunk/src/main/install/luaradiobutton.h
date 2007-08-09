@@ -26,10 +26,21 @@ struct lua_State;
 
 class CBaseLuaRadioButton: public CBaseLuaWidget
 {
+protected:
+    typedef std::vector<std::string> TOptions;
+
+private:
+    TOptions m_Options;
+    
     virtual const char *LuaType(void) const { return "radiobutton"; }
     virtual const char *EnabledButton(void) = 0;
-    virtual void Enable(int n) = 0;
+    virtual void Enable(TSTLVecSize n) = 0;
 
+protected:
+    CBaseLuaRadioButton(const TOptions &opts) : m_Options(opts) {}
+    
+    TOptions &GetOptions(void) { return m_Options; }
+    
 public:
     static void LuaRegister(void);
     static int LuaGet(lua_State *L);
