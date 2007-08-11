@@ -2549,8 +2549,8 @@ Creates a new @samp{config menu}. The string parameter @code{t} sets a title. Th
 @anchor{cfgscreen:addcheckbox}
 @luafunc cfgscreen:addcheckbox (t, o)
 Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
-@luafunc chkbox:get (s)
-Returns @code{true} if the option @code{s} is enabled or @code{false} when disabled.
+@luafunc chkbox:get (o)
+Returns @code{true} if the option @code{o} is enabled or @code{false} when disabled. @code{o} can be a string containing the option name or can be an option number.
 @endluafunc
 @luafunc chkbox:set (n, ..., e)
 This variadic function enables or disables one or more options. The first argument, @code{n}, and the rest before argument @code{e} are the option numbers to enable or disable. If @code{e} is @code{true} the option(s) number(s) are enabled, if @code{false} they will be disabled.@*

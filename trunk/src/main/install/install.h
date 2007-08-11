@@ -52,11 +52,14 @@ class CBaseInstall: virtual public CMain
     void RegisterInstall(void);
     bool IsInstalled(bool checkver);
     
-protected:
+    virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
+    virtual void AddScreen(int luaindex) = 0;
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
-    virtual void InitLua(void);
     virtual void LockScreen(bool prev, bool next) = 0;
     
+protected:
+    virtual void InitLua(void);
+
     bool Installing(void) const { return m_bInstalling; }
     
 public:
@@ -68,18 +71,6 @@ public:
 
     virtual void Init(int argc, char **argv);
 
-    const char *GetWelcomeFName(void) { return CreateText("%s/config/welcome", m_szOwnDir.c_str()); };
-    const char *GetLangWelcomeFName(void)
-    { return CreateText("%s/config/lang/%s/welcome", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
-    const char *GetLicenseFName(void) { return CreateText("%s/config/license", m_szOwnDir.c_str()); };
-    const char *GetLangLicenseFName(void)
-    { return CreateText("%s/config/lang/%s/license", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
-    const char *GetFinishFName(void) { return CreateText("%s/config/finish", m_szOwnDir.c_str()); };
-    const char *GetLangFinishFName(void)
-    { return CreateText("%s/config/lang/%s/finish", m_szOwnDir.c_str(), m_szCurLang.c_str()); };
-    const char *GetIntroPicFName(void)
-    { return CreateText("%s/%s", m_szOwnDir.c_str(), m_InstallInfo.intropicname.c_str()); };
-
     void UpdateExtrStatus(const char *s);
     
     void SetDestDir(const std::string &dir) { SetDestDir(dir.c_str()); }
@@ -87,9 +78,6 @@ public:
     std::string GetDestDir(void);
     bool VerifyDestDir();
 
-    virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
-    virtual void AddScreen(int luaindex) = 0;
-    
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
     static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddOutput(std::string(s)); };
     static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->InstallThink(); };

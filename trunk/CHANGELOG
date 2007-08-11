@@ -2,6 +2,10 @@
 - Added missing ncurses buttonbar entries.
 - Fixed about not loading in file installation screen.
 - Users can now create directories as root from directory selectors
+- SelectDirScreen can now create directories with root access
+- input:setspacing has changed to input:setlabelwidth
+- checkbox:get and checkbox:set now accept strings besides numbers as arguments.
+- radiobutton:set now accepts strings as arguments aswell
 
 
 0.2.1 --> 0.2.2

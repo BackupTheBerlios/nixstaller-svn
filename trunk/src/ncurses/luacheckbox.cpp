@@ -46,17 +46,6 @@ bool CLuaCheckbox::Enabled(TSTLVecSize n)
     return false;
 }
 
-bool CLuaCheckbox::Enabled(const char *s)
-{
-    NNCurses::CCheckbox::TRetType l;
-    m_pCheckbox->GetSelections(l);
-    
-    if (std::find(l.begin(), l.end(), GetTranslation(s)) != l.end())
-        return true;
-    
-    return false;
-}
-
 void CLuaCheckbox::Enable(TSTLVecSize n, bool b)
 {
     if (Enabled(n) != b)

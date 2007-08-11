@@ -134,7 +134,8 @@ public:
     std::string m_szCurLang;
     std::vector<std::string> m_Languages;
     
-    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL) { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
+    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL)
+    { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
     virtual ~CMain(void);
     
     virtual void Init(int argc, char **argv);
@@ -174,8 +175,6 @@ class CLuaRunner: public CMain
     virtual bool YesNoBox(const char *str, ...) { return false; };
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) { return 0; };
     virtual void WarnBox(const char *str, ...) { };
-    
-    void CreateInstall(int argc, char **argv);
 
 public:
     virtual void Init(int argc, char **argv);

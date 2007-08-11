@@ -42,7 +42,17 @@ int CBaseLuaMenu::LuaGet(lua_State *L)
 int CBaseLuaMenu::LuaSet(lua_State *L)
 {
     CBaseLuaMenu *menu = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
-    TSTLVecSize n = SafeConvert<TSTLVecSize>(luaL_checkint(L, 2)) - 1; // Covert to 0-size range
+    int vartype = lua_type(L, 2);
+    TSTLVecSize n = 0;
+    
+    if (vartype == LUA_TNUMBER)
+        n = SafeConvert<TSTLVecSize>(lua_tointeger(L, 2)) - 1;
+    else if (vartype == LUA_TSTRING)
+        n = std::distance(menu->m_Options.begin(),
+                          std::find(menu->m_Options.begin(), menu->m_Options.end(), lua_tostring(L, 2)));
+    else
+        luaL_typerror(L, 2, "Number or String");
+
     luaL_argcheck(L, ((n >= 0) && (n < menu->m_Options.size())), 2, "Tried to select non existing menu entry");
     menu->Select(n);
     return 0;

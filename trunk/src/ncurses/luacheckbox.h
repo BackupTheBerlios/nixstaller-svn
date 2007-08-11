@@ -33,7 +33,6 @@ class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
     NNCurses::CCheckbox *m_pCheckbox;
     
     virtual bool Enabled(TSTLVecSize n);
-    virtual bool Enabled(const char *s);
     virtual void Enable(TSTLVecSize n, bool b);
     virtual void CoreUpdateLanguage(void);
     

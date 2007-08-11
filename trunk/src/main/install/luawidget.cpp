@@ -17,7 +17,6 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
 #include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
 #include "luawidget.h"
@@ -30,7 +29,11 @@ void CBaseLuaWidget::LuaDataChanged()
 {
     NLua::CLuaFunc func("datachanged", LuaType(), this);
     if (func)
+    {
+        NLua::PushClass(LuaType(), this);
+        func.PushData();
         func(0);
+    }
 }
 
 bool CBaseLuaWidget::Check()
@@ -40,6 +43,9 @@ bool CBaseLuaWidget::Check()
     NLua::CLuaFunc func("verify", LuaType(), this);
     if (func)
     {
+        NLua::PushClass(LuaType(), this);
+        func.PushData();
+
         if (func(1) > 0)
             func >> ret;
     }

@@ -32,7 +32,6 @@ class CLuaFunc
     CLuaTable m_ArgLuaTable;
     
     void CheckSelf(void);
-    void AddArg(void);
     
 public:
     CLuaFunc(const char *func, const char *tab=NULL);
@@ -40,6 +39,7 @@ public:
     CLuaFunc(int ref, int tab);
     ~CLuaFunc(void);
 
+    void PushData(void);
     template <typename C> CLuaFunc &operator <<(const C &arg)
     {
         CheckSelf();

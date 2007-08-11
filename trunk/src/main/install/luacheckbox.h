@@ -34,7 +34,6 @@ private:
     
     virtual const char *LuaType(void) const { return "checkbox"; }
     virtual bool Enabled(TSTLVecSize n) = 0;
-    virtual bool Enabled(const char *s) = 0;
     virtual void Enable(TSTLVecSize n, bool b) = 0;
     
 protected:

@@ -164,8 +164,8 @@ void CMenu::CoreDrawLayout()
 {
     if (!m_QueuedSelection.empty())
     {
-        Select(m_QueuedSelection);
         m_QueuedSelection.clear();
+        Select(m_QueuedSelection);
     }
     
     CBaseScroll::CoreDrawLayout();

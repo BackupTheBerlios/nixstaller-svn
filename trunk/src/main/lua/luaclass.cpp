@@ -51,6 +51,30 @@ void PushClass(const std::string &type, void *prvdata)
     lua_remove(LuaState, -2); // Remove metatable
 }
 
+void PushClassData(const char *type, int index)
+{
+    index = AbsoluteIndex(index);
+    
+    bool hastab = lua_getmetatable(LuaState, index) != 0;
+    int mt = lua_gettop(LuaState);
+
+    if (hastab)
+    {
+        lua_getfield(LuaState, LUA_REGISTRYINDEX, type);
+        int field = lua_gettop(LuaState);
+        
+        if (lua_rawequal(LuaState, -1, -2))
+        {
+            // get mt[table]
+            lua_pushvalue(LuaState, index);
+            lua_gettable(LuaState, mt);
+        }
+        lua_remove(LuaState, field);
+    }
+    
+    lua_remove(LuaState, mt);
+}
+
 void CreateClass(void *prvdata, const char *type)
 {
     lua_newtable(LuaState);
@@ -75,6 +99,7 @@ void CreateClass(void *prvdata, const char *type)
 void SetClassGC(const char *name, lua_CFunction gc, void *gcdata)
 {
     GetClassMT(name);
+    int mt = lua_gettop(LuaState);
     
     lua_pushstring(LuaState, "__gc");
     
@@ -86,7 +111,7 @@ void SetClassGC(const char *name, lua_CFunction gc, void *gcdata)
     else
         lua_pushcfunction(LuaState, gc);
     
-    lua_settable(LuaState, -3);
+    lua_settable(LuaState, mt);
     lua_pop(LuaState, 1);
 }
 

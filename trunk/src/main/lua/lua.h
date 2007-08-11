@@ -38,7 +38,11 @@ public:
     operator lua_State*(void) { return m_pLuaState; }
 };
 
+extern CLuaStateKeeper LuaState;
+
 void StackDump(const char *msg);
+
+inline int AbsoluteIndex(int i) { return ((i < 0) && (i > LUA_REGISTRYINDEX)) ? (lua_gettop(LuaState)+1)+i : i; }
 
 void GetGlobal(const char *var, const char *tab);
 void LoadFile(const char *name);
@@ -57,8 +61,6 @@ int MakeReference(int index, int tab=LUA_REGISTRYINDEX);
 void Unreference(int ref, int tab=LUA_REGISTRYINDEX);
 
 bool LuaToBool(int index);
-
-extern CLuaStateKeeper LuaState;
 
 }
 

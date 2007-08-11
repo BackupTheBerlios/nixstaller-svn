@@ -14,7 +14,16 @@ OVERALL
 - x64 bins?
 - Update Lua library for FBSD, NBSD, OBSD, SunOS
 - Remove deprecated virtual functions from CBaseInstall derived classes
+- Update changelog (new lua widgets)
+- Make disable cancel button lua function
+- Check if lua execution can be time sliced
+
+
+DOCS
 - Mention that lua commands are executed incase m_bAlwaysRoot is set to true
+- Mention that lua menus may be sorted
+- Update input:setspacing --> input:setlabelwidth
+- Update radiobutton and checkbox function arguments
 
         
 TRANSLATIONS
@@ -31,16 +40,11 @@ TRANSLATIONS
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Make CMain::UpdateLanguage public?
-- Let Lua dir iter use class code?
 - Check class metatable (readable/writeable from scripts?)
 - Lighten template functions?
 - Make function wrapper for m_Variables in CBaseLuaCFGMenu
-- Test new function/table lua code
-- Finish StartInstall lua code
-- Check get and set method parameters for consequent types
-- Improve/check lua error messages
+- Improve/check lua error messages?
 - Make private table for internal funcs/vars?
-- Check if all functions called from C++ code have self parameter included
 
 
 LIBSU

@@ -408,10 +408,8 @@ int CMain::LuaInitDirIter(lua_State *L)
     }
     catch (Exceptions::CExOpenDir &e)
     {
-//         lua_pushnil(L);
-//         lua_pushstring(L, e.what());
-//         return 2;
-        // Don't do anything here, closure function will fail
+        it = NULL;
+        // Don't do anything here, closure function will return nil
     }
     
     CDirIter **d = (CDirIter **)lua_newuserdata(L, sizeof(CDirIter *));
@@ -887,16 +885,11 @@ int CMain::LuaSetLang(lua_State *L)
 // Lua Runner Class
 // -------------------------------------
 
-void CLuaRunner::CreateInstall(int argc, char **argv)
-{
-    NLua::LuaSet(argv[3], "confdir");
-    NLua::LuaSet(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
-    NLua::LoadFile(argv[2]);
-}
-
-
 void CLuaRunner::Init(int argc, char **argv)
 {
     CMain::Init(argc, argv);
-    CreateInstall(argc, argv);
+    
+    NLua::LuaSet(argv[3], "confdir");
+    NLua::LuaSet(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
+    NLua::LoadFile(argv[2]);
 }

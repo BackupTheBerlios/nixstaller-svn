@@ -17,7 +17,6 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/main.h"
 #include "luatextfield.h"
 #include "tui/textfield.h"
 

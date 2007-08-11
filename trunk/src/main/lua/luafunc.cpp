@@ -34,14 +34,14 @@ int DoFunctionCall(lua_State *L)
     }
     catch(Exceptions::CExUser &e)
     {
-        // HACK: LoadFile/DoCall uses this to identify user exception.
+        // HACK: LoadFile/LuaFunc() uses this to identify user exception.
         lua_pushstring(L, "CExUser");
         lua_error(L);
     }
     catch(Exceptions::CException &e)
     {
         // Lua doesn't handle exceptions in a nice way (catches all), so convert to lua error
-        luaL_error(L, "Cought exception in lua function: %s", e.what());
+        luaL_error(L, e.what());
     }
 
     return 0; // Never reached
@@ -114,6 +114,12 @@ void CLuaFunc::CheckSelf()
         throw Exceptions::CExLua("Tried to use invalid LuaFunc");
 }
 
+void CLuaFunc::PushData()
+{
+    CheckSelf();
+    m_ArgLuaTable[m_ArgLuaTable.Size()+1].SetTable();
+}
+
 int CLuaFunc::operator ()(int ret)
 {
     CheckSelf();
@@ -134,7 +140,7 @@ int CLuaFunc::operator ()(int ret)
         else if (!strcmp(errmsg, "CExUser"))
             throw Exceptions::CExUser();
             
-        throw Exceptions::CExLua(CreateText("Error running function: %s", errmsg));
+        throw Exceptions::CExLua(errmsg);
     }
     
     const int top = lua_gettop(LuaState);

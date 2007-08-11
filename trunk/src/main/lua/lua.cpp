@@ -134,10 +134,11 @@ CLuaStateKeeper::CLuaStateKeeper()
 // Utilities
 // -------------------------------------
 
-#ifndef RELEASE
 // Based from a example in the book "Programming in Lua"
 void StackDump(const char *msg)
 {
+#ifndef RELEASE
+
     if (msg)
         debugline(msg);
     
@@ -164,8 +165,8 @@ void StackDump(const char *msg)
         }
     }
     debugline("---------------\n");  /* end the listing */
-}
 #endif
+}
 
 void GetGlobal(const char *var, const char *tab)
 {

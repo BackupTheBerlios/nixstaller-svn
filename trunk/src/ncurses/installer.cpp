@@ -209,6 +209,12 @@ void CInstaller::LockScreen(bool prev, bool next)
     m_pNextButton->Enable(!next);
 }
 
+void CInstaller::InitLua()
+{
+    CNCursBase::InitLua();
+    CBaseInstall::InitLua();
+}
+
 bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
 {
     if (CNCursBase::CoreHandleEvent(emitter, type))
@@ -253,12 +259,6 @@ bool CInstaller::CoreHandleKey(chtype key)
     }
     
     return CNCursBase::CoreHandleKey(key);
-}
-
-void CInstaller::InitLua()
-{
-    CNCursBase::InitLua();
-    CBaseInstall::InitLua();
 }
 
 void CInstaller::Init(int argc, char **argv)

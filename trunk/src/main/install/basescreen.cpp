@@ -36,6 +36,9 @@ bool CBaseScreen::CallLuaBoolFunc(const char *func, bool def)
     
     if (luafunc)
     {
+        NLua::PushClass("screen", this);
+        luafunc.PushData(); // Add 'self' to function argument list
+        
         if (luafunc(1) > 0)
             luafunc >> ret;
     }
@@ -48,7 +51,11 @@ void CBaseScreen::CoreActivate()
     NLua::CLuaFunc func("activate", "screen", this);
     
     if (func)
+    {
+        NLua::PushClass("screen", this);
+        func.PushData(); // Add 'self' to function argument list
         func(0);
+    }
 }
 
 void CBaseScreen::UpdateLanguage()

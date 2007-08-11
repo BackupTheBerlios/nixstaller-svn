@@ -48,11 +48,13 @@ class CInstaller: public CNCursBase, public CBaseInstall
     void AskQuit(void);
     void ActivateScreen(CInstallScreen *screen);
     
-protected:
+    virtual CBaseScreen *CreateScreen(const std::string &title);
+    virtual void AddScreen(int luaindex);
     virtual void InstallThink(void);
     virtual void LockScreen(bool prev, bool next);
-    virtual void InitLua(void);
 
+protected:
+    virtual void InitLua(void);
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
     virtual bool CoreHandleKey(chtype key);
 
@@ -61,9 +63,6 @@ public:
     
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void);
-    virtual void Install(void) {}
-    virtual CBaseScreen *CreateScreen(const std::string &title);
-    virtual void AddScreen(int luaindex);
 };
 
 
