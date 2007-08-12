@@ -24,10 +24,8 @@
 #include "luawidget.h"
 
 // This is just a dummy class, as ncurses can't draw images
-class CLuaImage: public CBaseLuaImage, CLuaWidget
+class CLuaImage: public CBaseLuaImage, public CLuaWidget
 {
-    virtual void CoreUpdateLanguage(void) {}
-    
 public:
     CLuaImage(void) : CLuaWidget("") { }
 };

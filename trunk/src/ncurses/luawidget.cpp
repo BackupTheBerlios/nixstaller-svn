@@ -25,35 +25,27 @@
 // Base Lua NCurses Widget Class
 // -------------------------------------
 
-CLuaWidget::CLuaWidget(const char *title) : NNCurses::CBox(NNCurses::CBox::VERTICAL, false), m_pTitle(NULL)
+void CLuaWidget::CoreSetTitle()
 {
-    SetTitle(title);
+    if (!GetTitle().empty())
+    {
+        if (!m_pTitle)
+        {
+            StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(GetTitle()), false), false, false, 0, 0);
+            m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
+        }
+        else
+            m_pTitle->SetText(GetTranslation(GetTitle()));
+    }
+}
+
+void CLuaWidget::CoreUpdateLanguage()
+{
+    if (m_pTitle)
+        m_pTitle->SetText(GetTranslation(GetTitle()));
 }
 
 int CLuaWidget::MaxWidgetReqW(void) const
 {
     return NNCurses::GetMaxWidth()-6;
-}
-
-void CLuaWidget::SetTitle(const char *title)
-{
-    if (title && *title)
-    {
-        m_Title = title;
-        
-        if (!m_pTitle)
-        {
-            StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(m_Title), false), false, false, 0, 0);
-            m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
-        }
-        else
-            m_pTitle->SetText(GetTranslation(title));
-    }
-}
-
-void CLuaWidget::UpdateLanguage()
-{
-    if (m_pTitle)
-        m_pTitle->SetText(GetTranslation(m_Title));
-    CoreUpdateLanguage();
 }

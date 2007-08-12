@@ -19,43 +19,38 @@
 
 #include "gtk.h"
 #include "installer.h"
-#include "baseinstscreen.h"
+#include "installscreen.h"
 
 // -------------------------------------
-// Base Install Screen Class
+// GTK Install Screen Class
 // -------------------------------------
 
-void CBaseScreen::SetLabel(const gchar *text)
+CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title),
+                               m_pTitle(NULL), m_pGroupBox(NULL), m_pNextSubScreen(NULL)
 {
-    m_szOrigLabel = text;
+    m_pMainBox = gtk_vbox_new(FALSE, 0);
     
-    if (!m_pLabel)
-    {
-        m_pLabel = gtk_label_new(text);
-        gtk_widget_show(m_pLabel);
-        gtk_container_add(GTK_CONTAINER(m_pOwnerBox), m_pLabel);
-    }
-    else
-        gtk_label_set(GTK_LABEL(m_pLabel), text);
-}
-
-void CBaseScreen::AddWidgets(const std::vector<GtkWidget *> &l)
-{
-    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    m_pTopBox = gtk_hbox_new(FALSE, 0);
     
-    for (std::vector<GtkWidget *>::const_iterator it=l.begin(); it!=l.end(); it++)
+    if (!title.empty())
     {
-        gtk_widget_show(*it);
-        gtk_container_add(GTK_CONTAINER(hbox), *it);
+        m_pTitle = gtk_label_new(title.c_str());
+        gtk_widget_show(m_pTitle);
+        gtk_container_add(GTK_CONTAINER(m_pTopBox), m_pTitle);
     }
     
-    gtk_container_add(GTK_CONTAINER(m_pOwnerBox), hbox);
+    m_pCounter = gtk_label_new("");
+    gtk_box_pack_end(GTK_BOX(m_pTopBox), m_pCounter, FALSE, FALSE, 10);
+    
+    if (m_pTitle)
+        gtk_widget_show(m_pTopBox);
+    
+    gtk_container_add(GTK_CONTAINER(m_pMainBox), m_pTopBox);
 }
 
-void CBaseScreen::UpdateTranslations()
+void CInstallScreen::CoreUpdateLanguage(void)
 {
-    if (m_pLabel)
-        gtk_label_set(GTK_LABEL(m_pLabel), GetTranslation(m_szOrigLabel));
-    
-    UpdateTr();
+    if (m_pTitle)
+        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
 }
+

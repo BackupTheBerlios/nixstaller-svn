@@ -25,12 +25,11 @@
 
 struct lua_State;
 
-class CBaseLuaInputField: public CBaseLuaWidget
+class CBaseLuaInputField: virtual public CBaseLuaWidget
 {
     std::string m_szType;
     int m_iLabelWidth;
     
-    virtual const char *LuaType(void) const { return "inputfield"; }
     virtual const char *CoreGetValue(void) = 0;
     virtual void CoreUpdateLabelWidth(void) = 0;
     
@@ -39,6 +38,7 @@ protected:
 
 public:
     CBaseLuaInputField(const char *t);
+    virtual ~CBaseLuaInputField(void) {}
     
     const char *GetValue(void) { return CoreGetValue(); }
     void SetLabelWidth(int w) { m_iLabelWidth = w; CoreUpdateLabelWidth(); }

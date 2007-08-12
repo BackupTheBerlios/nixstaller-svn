@@ -34,52 +34,46 @@
 // Lua Widget Group Class
 // -------------------------------------
 
-void CLuaGroup::AddLuaWidget(CLuaWidget *w)
-{
-    CGroup::AddWidget(w);
-    m_LuaWidgetList.push_back(w);
-}
-
 CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *desc, const char *val,
                                                 int max, const char *type)
 {
     CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
 CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
 {
     CLuaCheckbox *ret = new CLuaCheckbox(desc, l);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
 CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
 {
     CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
 CBaseLuaDirSelector *CLuaGroup::CreateDirSelector(const char *desc, const char *val)
 {
     CLuaDirSelector *ret = new CLuaDirSelector(desc, val);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
 CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
 {
     CLuaCFGMenu *ret = new CLuaCFGMenu(desc);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
 CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
 {
     CLuaMenu *ret = new CLuaMenu(desc, l);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
@@ -92,28 +86,22 @@ CBaseLuaImage *CLuaGroup::CreateImage(const char *desc, const char *file)
 CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
 {
     CLuaProgressBar *ret = new CLuaProgressBar(desc);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
 CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
 {
     CLuaTextField *ret = new CLuaTextField(desc, wrap);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
 }
 
 CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 {
     CLuaLabel *ret = new CLuaLabel(title);
-    AddLuaWidget(ret);
+    CBox::AddWidget(ret);
     return ret;
-}
-
-void CLuaGroup::CoreUpdateLanguage()
-{
-    for (TLuaWidgetList::iterator it=m_LuaWidgetList.begin(); it!=m_LuaWidgetList.end(); it++)
-        (*it)->UpdateLanguage();
 }
 
 void CLuaGroup::ActivateWidget(CBaseLuaWidget *w)

@@ -24,13 +24,14 @@
 
 struct lua_State;
 
-class CBaseLuaDirSelector: public CBaseLuaWidget
+class CBaseLuaDirSelector: virtual public CBaseLuaWidget
 {
-    virtual const char *LuaType(void) const { return "dirselector"; }
     virtual const char *GetDir(void) = 0;
     virtual void SetDir(const char *dir) = 0;
 
 public:
+    virtual ~CBaseLuaDirSelector(void) {}
+
     static void LuaRegister(void);
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);

@@ -20,18 +20,31 @@
 #ifndef LUAWIDGET_H
 #define LUAWIDGET_H
 
+#include <string>
+
 struct lua_State;
 
 class CBaseLuaWidget
 {
-    virtual const char *LuaType(void) const = 0;
+    std::string m_Title;
+    const char *m_szLuaType;
+    
+    virtual void CoreUpdateLanguage(void) {}
+    virtual void CoreSetTitle(void) = 0;
     
 protected:
+    CBaseLuaWidget(const char *title) { if (title && *title) m_Title = title; }
+    
     void LuaDataChanged(void);
+    std::string &GetTitle(void) { return m_Title; }
 
 public:
+    CBaseLuaWidget(void) : m_szLuaType(0) {}
     virtual ~CBaseLuaWidget(void) { };
     
+    void UpdateLanguage(void) { CoreUpdateLanguage(); }
+    void SetTitle(const std::string &title) { m_Title = title; CoreSetTitle(); }
+    void Init(const char *type) { m_szLuaType = type; }
     bool Check(void);
 };
 

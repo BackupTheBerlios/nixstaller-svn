@@ -17,9 +17,10 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/lua/luaclass.h"
 #include "gtk.h"
 #include "installer.h"
-#include "baseinstscreen.h"
+#include "installscreen.h"
 
 // -------------------------------------
 // Install Frontend Class
@@ -95,7 +96,6 @@ void CInstaller::InitButtonSection(GtkWidget *parentbox)
 void CInstaller::Init(int argc, char **argv)
 {
     const int windoww = 600, windowh = 400;
-    CBaseInstall::Init(argc, argv);
     
     GtkWidget *mainwin = GetMainWin();
     g_signal_connect(G_OBJECT(mainwin), "delete_event", G_CALLBACK(DeleteCB), this);
@@ -109,19 +109,38 @@ void CInstaller::Init(int argc, char **argv)
 
     gtk_widget_show_all(vbox);
     gtk_container_add(GTK_CONTAINER(mainwin), vbox);
+
+    CBaseInstall::Init(argc, argv);
 }
 
 bool CInstaller::AskQuit()
 {
     char *msg;
-/*    if (parent->m_bInstallFiles)
-    msg = GetTranslation("Install commands are still running\n"
-    "If you abort now this may lead to a broken installation\n"
-    "Are you sure?");
-    else*/
-    msg = GetTranslation("This will abort the installation\nAre you sure?");
+    if (Installing())
+        msg = GetTranslation("Install commands are still running\n"
+        "If you abort now this may lead to a broken installation\n"
+        "Are you sure?");
+    else
+        msg = GetTranslation("This will abort the installation\nAre you sure?");
     
     return YesNoBox(msg);
+}
+
+CBaseScreen *CInstaller::CreateScreen(const std::string &title)
+{
+    return new CInstallScreen(title);
+}
+
+void CInstaller::AddScreen(int luaindex)
+{
+    CInstallScreen *screen = NLua::CheckClassData<CInstallScreen>("screen", luaindex);
+    
+    while (screen)
+    {
+        gtk_widget_show(screen->GetBox());
+        gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), screen->GetBox(), NULL);
+        screen = screen->GetNextSubScreen();
+    }
 }
 
 void CInstaller::CancelCB(GtkWidget *widget, gpointer data)

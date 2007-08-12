@@ -55,7 +55,7 @@ class CBaseInstall: virtual public CMain
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
     virtual void AddScreen(int luaindex) = 0;
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
-    virtual void LockScreen(bool prev, bool next) = 0;
+    virtual void LockScreen(bool cancel, bool prev, bool next) = 0;
     
 protected:
     virtual void InitLua(void);

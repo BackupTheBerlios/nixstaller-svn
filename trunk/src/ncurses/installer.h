@@ -39,6 +39,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     NNCurses::CBox *m_pScreenBox, *m_pButtonBox;
     TScreenList m_InstallScreens;
     TSTLVecSize m_CurrentScreen;
+    bool m_bPrevButtonLocked;
     
     bool FirstValidScreen(NNCurses::CWidget *start);
     bool LastValidScreen(NNCurses::CWidget *start);
@@ -51,7 +52,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void AddScreen(int luaindex);
     virtual void InstallThink(void);
-    virtual void LockScreen(bool prev, bool next);
+    virtual void LockScreen(bool cancel, bool prev, bool next);
 
 protected:
     virtual void InitLua(void);

@@ -36,7 +36,7 @@ template <typename C> C *ToClassData(const char *type, int index)
     C *ret = NULL;
     
     if (!lua_isnil(LuaState, -1))
-        ret = reinterpret_cast<C *>(lua_touserdata(LuaState, -1));
+        ret = static_cast<C *>(lua_touserdata(LuaState, -1));
     
     lua_pop(LuaState, 1);
     

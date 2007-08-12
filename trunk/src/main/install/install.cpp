@@ -815,7 +815,7 @@ int CBaseInstall::LuaStartInstall(lua_State *L)
 int CBaseInstall::LuaLockScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
-    pInstaller->LockScreen(NLua::LuaToBool(1), NLua::LuaToBool(2));
+    pInstaller->LockScreen(NLua::LuaToBool(1), NLua::LuaToBool(2), NLua::LuaToBool(3));
     return 0;
 }
 

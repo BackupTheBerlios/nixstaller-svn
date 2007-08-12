@@ -20,26 +20,26 @@
 #ifndef BASELUAWIDGET_H
 #define BASELUAWIDGET_H
 
+#include "main/install/luawidget.h"
 #include "tui/box.h"
 
 namespace NNCurses {
 class CLabel;
 }
 
-class CLuaWidget: public NNCurses::CBox
+class CLuaWidget: virtual public CBaseLuaWidget, public NNCurses::CBox
 {
     std::string m_Title;
     NNCurses::CLabel *m_pTitle;
     
-    virtual void CoreUpdateLanguage(void) {}
+    virtual void CoreUpdateLanguage(void);
+    virtual void CoreSetTitle(void);
     
 protected:
     int MaxWidgetReqW(void) const;
-    void SetTitle(const char *title);
 
 public:
-    CLuaWidget(const char *title);
-    void UpdateLanguage(void);
+    CLuaWidget(const char *title) : CBaseLuaWidget(title), NNCurses::CBox(NNCurses::CBox::VERTICAL, false), m_pTitle(NULL) {}
 };
 
 #endif

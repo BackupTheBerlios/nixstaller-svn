@@ -24,12 +24,13 @@
 
 struct lua_State;
 
-class CBaseLuaProgressBar: public CBaseLuaWidget
+class CBaseLuaProgressBar: virtual public CBaseLuaWidget
 {
-    virtual const char *LuaType(void) const { return "progressbar"; }
     virtual void SetProgress(int n) = 0;
     
 public:
+    virtual ~CBaseLuaProgressBar(void) {}
+
     static void LuaRegister(void);
     static int LuaSet(lua_State *L);
 };

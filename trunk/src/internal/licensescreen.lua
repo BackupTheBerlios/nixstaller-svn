@@ -35,7 +35,7 @@ text = screen:addtextfield()
 check = screen:addcheckbox("", { "I agree to this license agreement" } )
 
 function check:datachanged()
-    install.lockscreen(false, not check:get(1)) -- Unlock next button incase box is checked
+    install.lockscreen(false, false, not check:get(1)) -- Unlock next button incase box is checked
 end
 
 function screen:canactivate()
@@ -46,7 +46,7 @@ end
 function screen:activate()
     if filename ~= nil then -- checkfile() has been called by canactivate
         text:load(filename)
-        install.lockscreen(false, true)
+        install.lockscreen(false, false, true)
     end
 end
 

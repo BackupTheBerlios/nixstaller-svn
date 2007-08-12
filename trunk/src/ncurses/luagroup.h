@@ -28,9 +28,6 @@ class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
 {
     bool m_bInitEnable;
     
-    typedef std::vector<CLuaWidget *> TLuaWidgetList;
-    TLuaWidgetList m_LuaWidgetList;
-    
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
@@ -42,10 +39,7 @@ class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc);
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap);
     virtual CBaseLuaLabel *CreateLabel(const char *title);
-    virtual void CoreUpdateLanguage(void);
     virtual void ActivateWidget(CBaseLuaWidget *w);
-    
-    void AddLuaWidget(CLuaWidget *w);
     
 protected:
     virtual void CoreAddWidget(NNCurses::CWidget *w);

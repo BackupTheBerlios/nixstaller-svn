@@ -25,7 +25,7 @@ output = screen:addtextfield()
 output:follow(true)
 
 function screen:activate()
-    install.lockscreen(true, true) -- Disable Back and Next buttons
+    install.lockscreen(false, true, true) -- Disable Back and Next buttons
     install.startinstall(function (s)
                             statlabel:set(s)
                          end,
@@ -35,7 +35,7 @@ function screen:activate()
                          function (s)
                             output:add(s)
                          end)
-    install.lockscreen(true, false) -- Re-enable Next button, keep Back button locked
+    install.lockscreen(true, true, false) -- Re-enable Next button, lock Back and Cancel buttons
 end
 
 return screen

@@ -44,7 +44,7 @@ const char *CLuaMenu::Selection()
     
     for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++)
     {
-        if (GetTranslation(*it) == m_pMenu->Value())
+        if (*it == m_pMenu->Value())
             return it->c_str();
     }
     
@@ -59,8 +59,7 @@ void CLuaMenu::Select(TSTLVecSize n)
 void CLuaMenu::CoreUpdateLanguage()
 {
     TOptions &opts = GetOptions();
-    int n = 1;
-    for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++, n++)
+    for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++)
         m_pMenu->SetName(*it, GetTranslation(*it));
 }
 

@@ -22,7 +22,6 @@
 
 class CInstaller: public CGTKBase, public CBaseInstall
 {
-    bool m_bInstallFiles;
     GtkWidget *m_pCancelLabel, *m_pBackLabel, *m_pNextLabel;
     GtkWidget *m_pWizard;
     
@@ -35,22 +34,14 @@ class CInstaller: public CGTKBase, public CBaseInstall
 
     bool AskQuit(void);
     
-protected:
-    virtual void ChangeStatusText(const char *str) {};
-    virtual void AddInstOutput(const std::string &str) {};
-    virtual void SetProgress(int percent) {};
-    virtual void InstallThink(void) { };
+    virtual CBaseScreen *CreateScreen(const std::string &title);
+    virtual void AddScreen(int luaindex);
+    virtual void InstallThink(void) {}
+    virtual void LockScreen(bool cancel, bool prev, bool next) {}
 
 public:
-
-    CInstaller(void) : m_bInstallFiles(false) { };
-    virtual ~CInstaller(void) {};
-
-//     virtual void InitLua(void) {};
     virtual void Init(int argc, char **argv);
-    virtual void Install(void) {};
     virtual void UpdateLanguage(void) {};
-    virtual CBaseCFGScreen *CreateCFGScreen(const char *title){};
     
     static void AboutCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->ShowAbout(); }
     static void CancelCB(GtkWidget *widget, gpointer data);

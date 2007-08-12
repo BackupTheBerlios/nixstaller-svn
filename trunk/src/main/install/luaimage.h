@@ -22,9 +22,11 @@
 
 #include "luawidget.h"
 
-class CBaseLuaImage: public CBaseLuaWidget
+class CBaseLuaImage: virtual public CBaseLuaWidget
 {
-    virtual const char *LuaType(void) const { return "image"; }
+public:
+    virtual ~CBaseLuaImage(void) {}
+
 };
 
 

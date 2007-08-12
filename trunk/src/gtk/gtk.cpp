@@ -94,7 +94,8 @@ void CGTKBase::CreateAbout()
         gtk_text_buffer_insert(buffer, &iter, "\n", 1);
     }
     
-    fclose(aboutfile);
+    if (aboutfile)
+        fclose(aboutfile);
     
     GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -213,6 +214,7 @@ void CGTKBase::WarnBox(const char *str, ...)
 
 void CGTKBase::Run()
 {
+    CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
     gtk_widget_show(m_pMainWindow);
     gtk_main();
 }

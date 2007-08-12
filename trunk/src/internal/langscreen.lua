@@ -21,7 +21,7 @@ screen = install.newscreen("Please select a language")
 
 menu = screen:addmenu("", cfg.languages or {})
 
-function menu:datachanged()
+function menu:verify()
     setlang(menu:get())
     return true
 end

@@ -42,9 +42,6 @@ protected:
     
 public:
     CGTKBase(void);
-    virtual ~CGTKBase(void) {};
-
-//     virtual void UpdateLanguage(void);
 
     void Run(void);
     

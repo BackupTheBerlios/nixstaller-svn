@@ -24,8 +24,6 @@
 #include "tui/tui.h"
 #include "tui/window.h"
 
-namespace NNCurses { class CDialog; }
-
 class CNCursBase: virtual public CMain, public NNCurses::CWindow
 {
     void ShowAbout(void);

@@ -21,6 +21,7 @@
 #define LUAGROUP_H
 
 #include <vector>
+#include "main/lua/luaclass.h"
 
 class CBaseLuaWidget;
 class CBaseLuaInputField;
@@ -36,6 +37,9 @@ class CBaseLuaLabel;
 
 class CBaseLuaGroup
 {
+    typedef std::vector<CBaseLuaWidget *> TWidgetList;
+    TWidgetList m_WidgetList;
+
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type) = 0;
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) = 0;
@@ -47,18 +51,19 @@ class CBaseLuaGroup
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) = 0;
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) = 0;
     virtual CBaseLuaLabel *CreateLabel(const char *title) = 0;
-    virtual void CoreUpdateLanguage(void) = 0;
     virtual void ActivateWidget(CBaseLuaWidget *w) = 0;
     
-    void AddWidget(CBaseLuaWidget *w, const char *type);
-    
-    typedef std::vector<CBaseLuaWidget *> TWidgetList;
-    TWidgetList m_WidgetList;
+    template <typename C> void AddWidget(C *w, const char *type)
+    {
+        w->Init(type);
+        NLua::CreateClass(w, type);
+        m_WidgetList.push_back(w);
+    }
     
 public:
     virtual ~CBaseLuaGroup(void) {}
     
-    void UpdateLanguage(void) { CoreUpdateLanguage(); }
+    void UpdateLanguage(void);
     bool CheckWidgets(void);
     
     static void LuaRegister(void);

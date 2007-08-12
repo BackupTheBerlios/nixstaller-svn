@@ -47,7 +47,8 @@ setfenv(1, P)
 function GenerateDefaultScreens()
     package.path = "?.lua"
     package.cpath = ""
-    
+--     LangScreen = install.newscreen("Test")
+--     install.screenlist = { install.newscreen("Test 2") }
     LangScreen = require "langscreen"
     OLDG.WelcomeScreen = require "welcomescreen"
     OLDG.LicenseScreen = require "licensescreen"
@@ -61,7 +62,10 @@ function LoadConfig()
     
     if (os.fileexists(file)) then
         dofile("config/run.lua")
-        Init()
+        
+        if (Init) then
+            Init()
+        end
     end
 end
 

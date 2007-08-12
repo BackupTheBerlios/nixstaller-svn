@@ -92,7 +92,7 @@ void CInstaller::UpdateButtons(void)
 {
     if (FirstValidScreen(m_InstallScreens[m_CurrentScreen]) && !m_InstallScreens[m_CurrentScreen]->HasPrevWidgets())
         m_pPrevButton->Enable(false);
-    else
+    else if (!m_bPrevButtonLocked)
         m_pPrevButton->Enable(true);
     
     if (LastValidScreen(m_InstallScreens[m_CurrentScreen]) && !m_InstallScreens[m_CurrentScreen]->HasNextWidgets())
@@ -203,10 +203,12 @@ void CInstaller::InstallThink()
     NNCurses::TUI.Run(0);
 }
 
-void CInstaller::LockScreen(bool prev, bool next)
+void CInstaller::LockScreen(bool cancel, bool prev, bool next)
 {
+    m_pCancelButton->Enable(!cancel);
     m_pPrevButton->Enable(!prev);
     m_pNextButton->Enable(!next);
+    m_bPrevButtonLocked = prev;
 }
 
 void CInstaller::InitLua()

@@ -1,6 +1,5 @@
 OVERALL
 - Make shared 'library' for scripts
-- Detect ssh'd terminals with X tunnel
 - Qt/KDE and GTK2 frontends
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
@@ -15,7 +14,6 @@ OVERALL
 - Update Lua library for FBSD, NBSD, OBSD, SunOS
 - Remove deprecated virtual functions from CBaseInstall derived classes
 - Update changelog (new lua widgets)
-- Make disable cancel button lua function
 - Check if lua execution can be time sliced
 
 
@@ -41,8 +39,6 @@ MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Make CMain::UpdateLanguage public?
 - Check class metatable (readable/writeable from scripts?)
-- Lighten template functions?
-- Make function wrapper for m_Variables in CBaseLuaCFGMenu
 - Improve/check lua error messages?
 - Make private table for internal funcs/vars?
 
@@ -72,6 +68,7 @@ NCURSES
 GTK
 - Move main window away from base frontend class?
 - Check dirselectors for adding dirs as root
+- Check if empty groups are shown
 
 
 FLTK

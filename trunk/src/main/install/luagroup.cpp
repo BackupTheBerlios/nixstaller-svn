@@ -19,7 +19,6 @@
 
 #include "main/main.h"
 #include "main/lua/lua.h"
-#include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
 #include "luagroup.h"
 #include "luacheckbox.h"
@@ -38,10 +37,10 @@
 // Base Lua Group Class
 // -------------------------------------
 
-void CBaseLuaGroup::AddWidget(CBaseLuaWidget *w, const char *type)
+void CBaseLuaGroup::UpdateLanguage()
 {
-    NLua::CreateClass(w, type);
-    m_WidgetList.push_back(w);
+    for (TWidgetList::iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)
+        (*it)->UpdateLanguage();
 }
 
 bool CBaseLuaGroup::CheckWidgets()
