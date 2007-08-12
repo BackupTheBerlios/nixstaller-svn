@@ -38,7 +38,6 @@ TRANSLATIONS
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Make CMain::UpdateLanguage public?
-- Check class metatable (readable/writeable from scripts?)
 - Improve/check lua error messages?
 - Make private table for internal funcs/vars?
 
@@ -63,7 +62,6 @@ NCURSES
 - Translations and buttonbar descriptions?
 - Check if UpdateTranslation functions are called - needs testing
 - Check for 'dynamic' CanFocus for CTextField?
-- Move translation handling from CLuaWidget to CBaseLuaWidget?
 
 GTK
 - Move main window away from base frontend class?

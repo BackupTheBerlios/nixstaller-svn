@@ -21,6 +21,7 @@
 #define LUAWIDGET_H
 
 #include <string>
+#include "main/lua/luaclass.h"
 
 struct lua_State;
 
@@ -33,7 +34,7 @@ class CBaseLuaWidget
     virtual void CoreSetTitle(void) = 0;
     
 protected:
-    CBaseLuaWidget(const char *title) { if (title && *title) m_Title = title; }
+    CBaseLuaWidget(const char *title) : m_szLuaType(0) { if (title && *title) m_Title = title; }
     
     void LuaDataChanged(void);
     std::string &GetTitle(void) { return m_Title; }
@@ -47,5 +48,10 @@ public:
     void Init(const char *type) { m_szLuaType = type; }
     bool Check(void);
 };
+
+template <typename C> C *CheckLuaWidgetClass(const char *type, int index)
+{
+    return dynamic_cast<C*>(NLua::CheckClassData<CBaseLuaWidget>(type, index));
+}
 
 #endif

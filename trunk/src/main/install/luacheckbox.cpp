@@ -34,7 +34,7 @@ void CBaseLuaCheckbox::LuaRegister()
 
 int CBaseLuaCheckbox::LuaGet(lua_State *L)
 {
-    CBaseLuaCheckbox *box = NLua::CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
+    CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
     
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;
@@ -54,7 +54,7 @@ int CBaseLuaCheckbox::LuaGet(lua_State *L)
 
 int CBaseLuaCheckbox::LuaSet(lua_State *L)
 {
-    CBaseLuaCheckbox *box = NLua::CheckClassData<CBaseLuaCheckbox>("checkbox", 1);
+    CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
     int args = lua_gettop(L);
     
     luaL_checktype(L, args, LUA_TBOOLEAN);

@@ -41,7 +41,7 @@ void CBaseLuaInputField::LuaRegister()
 
 int CBaseLuaInputField::LuaGet(lua_State *L)
 {
-    CBaseLuaInputField *field = NLua::CheckClassData<CBaseLuaInputField>("inputfield", 1);
+    CBaseLuaInputField *field = CheckLuaWidgetClass<CBaseLuaInputField>("inputfield", 1);
     
     if (field->GetType() == "string")
         lua_pushstring(L, field->GetValue());
@@ -55,7 +55,7 @@ int CBaseLuaInputField::LuaGet(lua_State *L)
 
 int CBaseLuaInputField::LuaSetLabelWidth(lua_State *L)
 {
-    CBaseLuaInputField *field = NLua::CheckClassData<CBaseLuaInputField>("inputfield", 1);
+    CBaseLuaInputField *field = CheckLuaWidgetClass<CBaseLuaInputField>("inputfield", 1);
     int width = luaL_checkint(L, 2);
     
     field->SetLabelWidth(width);

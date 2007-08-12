@@ -37,6 +37,13 @@
 // Base Lua Group Class
 // -------------------------------------
 
+void CBaseLuaGroup::AddWidget(CBaseLuaWidget *w, const char *type)
+{
+    w->Init(type);
+    NLua::CreateClass(w, type);
+    m_WidgetList.push_back(w);
+}
+
 void CBaseLuaGroup::UpdateLanguage()
 {
     for (TWidgetList::iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)

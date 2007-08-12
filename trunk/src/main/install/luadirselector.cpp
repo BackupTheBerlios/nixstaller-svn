@@ -33,14 +33,14 @@ void CBaseLuaDirSelector::LuaRegister()
 
 int CBaseLuaDirSelector::LuaGet(lua_State *L)
 {
-    CBaseLuaDirSelector *sel = NLua::CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
+    CBaseLuaDirSelector *sel = CheckLuaWidgetClass<CBaseLuaDirSelector>("dirselector", 1);
     lua_pushstring(L, sel->GetDir());
     return 1;
 }
 
 int CBaseLuaDirSelector::LuaSet(lua_State *L)
 {
-    CBaseLuaDirSelector *sel = NLua::CheckClassData<CBaseLuaDirSelector>("dirselector", 1);
+    CBaseLuaDirSelector *sel = CheckLuaWidgetClass<CBaseLuaDirSelector>("dirselector", 1);
     const char *dir = luaL_checkstring(L, 2);
     sel->SetDir(dir);
     return 0;

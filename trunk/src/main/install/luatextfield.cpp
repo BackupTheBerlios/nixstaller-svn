@@ -34,21 +34,21 @@ void CBaseLuaTextField::LuaRegister()
 
 int CBaseLuaTextField::LuaLoad(lua_State *L)
 {
-    CBaseLuaTextField *field = NLua::CheckClassData<CBaseLuaTextField>("textfield", 1);
+    CBaseLuaTextField *field = CheckLuaWidgetClass<CBaseLuaTextField>("textfield", 1);
     field->Load(luaL_checkstring(L, 2));
     return 0;
 }
 
 int CBaseLuaTextField::LuaAddText(lua_State *L)
 {
-    CBaseLuaTextField *field = NLua::CheckClassData<CBaseLuaTextField>("textfield", 1);
+    CBaseLuaTextField *field = CheckLuaWidgetClass<CBaseLuaTextField>("textfield", 1);
     field->AddText(luaL_checkstring(L, 2));
     return 0;
 }
 
 int CBaseLuaTextField::LuaSetFollow(lua_State *L)
 {
-    CBaseLuaTextField *field = NLua::CheckClassData<CBaseLuaTextField>("textfield", 1);
+    CBaseLuaTextField *field = CheckLuaWidgetClass<CBaseLuaTextField>("textfield", 1);
     luaL_checktype(L, 2, LUA_TBOOLEAN);
     field->m_bFollow = lua_toboolean(L, 2);
     field->UpdateFollow();

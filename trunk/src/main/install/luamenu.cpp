@@ -34,14 +34,14 @@ void CBaseLuaMenu::LuaRegister()
 
 int CBaseLuaMenu::LuaGet(lua_State *L)
 {
-    CBaseLuaMenu *menu = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
+    CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
     lua_pushstring(L, menu->Selection());
     return 1;
 }
 
 int CBaseLuaMenu::LuaSet(lua_State *L)
 {
-    CBaseLuaMenu *menu = NLua::CheckClassData<CBaseLuaMenu>("menu", 1);
+    CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;
     

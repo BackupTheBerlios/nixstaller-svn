@@ -32,10 +32,11 @@ class CLuaWidget: virtual public CBaseLuaWidget, public NNCurses::CBox
     std::string m_Title;
     NNCurses::CLabel *m_pTitle;
     
-    virtual void CoreUpdateLanguage(void);
     virtual void CoreSetTitle(void);
     
 protected:
+    virtual void CoreUpdateLanguage(void);
+
     int MaxWidgetReqW(void) const;
 
 public:

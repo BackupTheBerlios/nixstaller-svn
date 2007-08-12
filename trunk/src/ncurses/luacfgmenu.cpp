@@ -46,6 +46,8 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
 
 void CLuaCFGMenu::CoreUpdateLanguage()
 {
+    CLuaWidget::CoreUpdateLanguage();
+
     for (TVarType::iterator it=GetVariables().begin(); it!=GetVariables().end(); it++)
         m_pMenu->SetName(it->first, GetTranslation(it->first));
     UpdateDesc();

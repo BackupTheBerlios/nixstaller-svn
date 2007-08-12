@@ -32,7 +32,7 @@ void CBaseLuaProgressBar::LuaRegister()
 
 int CBaseLuaProgressBar::LuaSet(lua_State *L)
 {
-    CBaseLuaProgressBar *bar = NLua::CheckClassData<CBaseLuaProgressBar>("progressbar", 1);
+    CBaseLuaProgressBar *bar = CheckLuaWidgetClass<CBaseLuaProgressBar>("progressbar", 1);
     int n = luaL_checkint(L, 2);
     
     if ((n < 0) || (n > 100))

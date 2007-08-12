@@ -53,12 +53,7 @@ class CBaseLuaGroup
     virtual CBaseLuaLabel *CreateLabel(const char *title) = 0;
     virtual void ActivateWidget(CBaseLuaWidget *w) = 0;
     
-    template <typename C> void AddWidget(C *w, const char *type)
-    {
-        w->Init(type);
-        NLua::CreateClass(w, type);
-        m_WidgetList.push_back(w);
-    }
+    void AddWidget(CBaseLuaWidget *w, const char *type);
     
 public:
     virtual ~CBaseLuaGroup(void) {}

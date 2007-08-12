@@ -34,14 +34,14 @@ void CBaseLuaRadioButton::LuaRegister()
 
 int CBaseLuaRadioButton::LuaGet(lua_State *L)
 {
-    CBaseLuaRadioButton *box = NLua::CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
+    CBaseLuaRadioButton *box = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
     lua_pushstring(L, box->EnabledButton());
     return 1;
 }
 
 int CBaseLuaRadioButton::LuaSet(lua_State *L)
 {
-    CBaseLuaRadioButton *box = NLua::CheckClassData<CBaseLuaRadioButton>("radiobutton", 1);
+    CBaseLuaRadioButton *box = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;
     

@@ -84,13 +84,13 @@ void CreateClass(void *prvdata, const char *type)
     int mt = lua_gettop(LuaState);
 
     // mt[prvdata] = table
-    lua_pushlightuserdata(LuaState, reinterpret_cast<void *>(prvdata));
+    lua_pushlightuserdata(LuaState, static_cast<void *>(prvdata));
     lua_pushvalue(LuaState, table);
     lua_settable(LuaState, mt);
 
     // mt[table] = prvdata
     lua_pushvalue(LuaState, table);
-    lua_pushlightuserdata(LuaState, reinterpret_cast<void *>(prvdata));
+    lua_pushlightuserdata(LuaState, static_cast<void *>(prvdata));
     lua_settable(LuaState, mt);
 
     lua_setmetatable(LuaState, table);

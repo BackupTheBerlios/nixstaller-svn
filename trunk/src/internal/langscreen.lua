@@ -15,6 +15,9 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
+-- UNDONE: Currently the back button is disabled, because there is no way yet to enable the
+-- next button when the user hits the back button.
+
 module (..., package.seeall)
 
 screen = install.newscreen("Please select a language")

@@ -68,5 +68,6 @@ bool CLuaDirSelector::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
 
 void CLuaDirSelector::CoreUpdateLanguage()
 {
+    CLuaWidget::CoreUpdateLanguage();
     m_pBrowseButton->SetText(GetTranslation("Browse"));
 }

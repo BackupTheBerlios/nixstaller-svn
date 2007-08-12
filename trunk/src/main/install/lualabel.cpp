@@ -32,7 +32,7 @@ void CBaseLuaLabel::LuaRegister()
 
 int CBaseLuaLabel::LuaSet(lua_State *L)
 {
-    CBaseLuaLabel *sel = NLua::CheckClassData<CBaseLuaLabel>("label", 1);
+    CBaseLuaLabel *sel = CheckLuaWidgetClass<CBaseLuaLabel>("label", 1);
     const char *text = luaL_checkstring(L, 2);
     sel->SetLabel(text);
     return 0;

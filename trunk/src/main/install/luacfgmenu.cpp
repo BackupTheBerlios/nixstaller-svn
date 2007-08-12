@@ -87,7 +87,7 @@ void CBaseLuaCFGMenu::LuaRegister()
 
 int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
 {
-    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     const char *val = luaL_optstring(L, 4, getenv("HOME"));
@@ -99,7 +99,7 @@ int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaAddString(lua_State *L)
 {
-    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     const char *val = lua_tostring(L, 4);
@@ -111,7 +111,7 @@ int CBaseLuaCFGMenu::LuaAddString(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
 {
-    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     
@@ -139,7 +139,7 @@ int CBaseLuaCFGMenu::LuaAddList(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
 {
-    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     const char *desc = luaL_checkstring(L, 3);
     bool val = (lua_isboolean(L, 4)) ? lua_toboolean(L, 4) : false;
@@ -155,7 +155,7 @@ int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
 
 int CBaseLuaCFGMenu::LuaGet(lua_State *L)
 {
-    CBaseLuaCFGMenu *menu = NLua::CheckClassData<CBaseLuaCFGMenu>("configmenu", 1);
+    CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
     const char *var = luaL_checkstring(L, 2);
     
     if (menu->m_Variables[var])

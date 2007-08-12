@@ -281,7 +281,13 @@ void CInstaller::Init(int argc, char **argv)
 
 void CInstaller::UpdateLanguage()
 {
-    UpdateButtons();
+    CBaseInstall::UpdateLanguage();
+    m_pCancelButton->SetText(GetTranslation("Cancel"));
+    m_pPrevButton->SetText(GetTranslation("Back"));
+    m_pNextButton->SetText(GetTranslation("Next"));
+    
+    for (TScreenList::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
+        (*it)->UpdateLanguage();
 }
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
@@ -294,6 +300,6 @@ CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 
 void CInstaller::AddScreen(int luaindex)
 {
-    CInstallScreen *screen = NLua::CheckClassData<CInstallScreen>("screen", luaindex);
+    CInstallScreen *screen = dynamic_cast<CInstallScreen *>(NLua::CheckClassData<CBaseScreen>("screen", luaindex));
     m_InstallScreens.push_back(screen);
 }
