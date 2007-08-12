@@ -29,7 +29,7 @@ class CInstallScreen: public CBaseScreen
     GtkWidget *m_pTitle, *m_pCounter, *m_pMainBox, *m_pTopBox, *m_pGroupBox;
     CInstallScreen *m_pNextSubScreen;
 
-    virtual CBaseLuaGroup *CreateGroup(void) {}
+    virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
     
 public:

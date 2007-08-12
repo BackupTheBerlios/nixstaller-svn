@@ -58,8 +58,6 @@ void CLuaMenu::Select(TSTLVecSize n)
 
 void CLuaMenu::CoreUpdateLanguage()
 {
-    CLuaWidget::CoreUpdateLanguage();
-
     TOptions &opts = GetOptions();
     for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++)
         m_pMenu->SetName(*it, GetTranslation(*it));

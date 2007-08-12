@@ -17,8 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef BASELUAWIDGET_H
-#define BASELUAWIDGET_H
+#ifndef NCURSES_LUAWIDGET_H
+#define NCURSES_LUAWIDGET_H
 
 #include "main/install/luawidget.h"
 #include "tui/box.h"
@@ -29,14 +29,11 @@ class CLabel;
 
 class CLuaWidget: virtual public CBaseLuaWidget, public NNCurses::CBox
 {
-    std::string m_Title;
     NNCurses::CLabel *m_pTitle;
     
     virtual void CoreSetTitle(void);
     
 protected:
-    virtual void CoreUpdateLanguage(void);
-
     int MaxWidgetReqW(void) const;
 
 public:

@@ -17,29 +17,47 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "luawidget.h"
-#include "tui/tui.h"
-#include "tui/label.h"
+#include "main/main.h"
+#include "gtk.h"
+#include "luagroup.h"
+// #include "luacfgmenu.h"
+// #include "luacheckbox.h"
+// #include "luadirselector.h"
+// #include "luaimage.h"
+// #include "luainput.h"
+#include "lualabel.h"
+// #include "luamenu.h"
+// #include "luaprogressbar.h"
+// #include "luaradiobutton.h"
+// #include "luatextfield.h"
 
 // -------------------------------------
-// Base NCurses Lua Widget Class
+// Lua Widget Group Class
 // -------------------------------------
 
-void CLuaWidget::CoreSetTitle()
+CLuaGroup::CLuaGroup()
 {
-    if (!GetTitle().empty())
-    {
-        if (!m_pTitle)
-        {
-            StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(GetTitle()), false), false, false, 0, 0);
-            m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
-        }
-        else
-            m_pTitle->SetText(GetTranslation(GetTitle()));
-    }
+    m_pBox = gtk_hbox_new(FALSE, 10);
+    gtk_widget_show(m_pBox);
 }
 
-int CLuaWidget::MaxWidgetReqW(void) const
+CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 {
-    return NNCurses::GetMaxWidth()-6;
+    CLuaLabel *ret = new CLuaLabel(title);
+    AddWidget(ret);
+    return ret;
+}
+
+void CLuaGroup::AddWidget(CLuaWidget *w)
+{
+    gtk_widget_show(w->GetBox());
+    gtk_box_pack_start(GTK_BOX(m_pBox), w->GetBox(), FALSE, FALSE, 0);
+}
+
+void CLuaGroup::ActivateWidget(CBaseLuaWidget *w)
+{
+/*    FocusWidget(dynamic_cast<CGroup *>(w)); // HACK (UNDONE?)
+    
+    if (!Focused())
+        PushEvent(EVENT_REQFOCUS);*/
 }

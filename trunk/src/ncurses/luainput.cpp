@@ -75,8 +75,6 @@ const char *CLuaInputField::CoreGetValue(void)
 
 void CLuaInputField::CoreUpdateLanguage()
 {
-    CLuaWidget::CoreUpdateLanguage();
-
     if (m_pLabel)
         m_pLabel->SetText(GetTranslation(m_Label));
 }

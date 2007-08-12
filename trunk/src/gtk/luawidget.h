@@ -17,29 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "luawidget.h"
-#include "tui/tui.h"
-#include "tui/label.h"
+#ifndef GTK_LUAWIDGET_H
+#define GTK_LUAWIDGET_H
 
-// -------------------------------------
-// Base NCurses Lua Widget Class
-// -------------------------------------
+#include "main/install/luawidget.h"
 
-void CLuaWidget::CoreSetTitle()
+class CLuaWidget: virtual public CBaseLuaWidget
 {
-    if (!GetTitle().empty())
-    {
-        if (!m_pTitle)
-        {
-            StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(GetTitle()), false), false, false, 0, 0);
-            m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
-        }
-        else
-            m_pTitle->SetText(GetTranslation(GetTitle()));
-    }
-}
+    GtkWidget *m_pBox, *m_pTitle;
+    
+    virtual void CoreSetTitle(void);
+    
+protected:
+    int MaxWidgetReqW(void) const { return 600; }
 
-int CLuaWidget::MaxWidgetReqW(void) const
-{
-    return NNCurses::GetMaxWidth()-6;
-}
+public:
+    CLuaWidget(const char *title);
+    
+    GtkWidget *GetBox(void) { return m_pBox; }
+};
+
+#endif

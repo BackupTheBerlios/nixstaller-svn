@@ -54,8 +54,6 @@ void CLuaCheckbox::Enable(TSTLVecSize n, bool b)
 
 void CLuaCheckbox::CoreUpdateLanguage()
 {
-    CLuaWidget::CoreUpdateLanguage();
-
     TOptions &opts = GetOptions();
     int n = 0;
     

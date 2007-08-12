@@ -24,7 +24,7 @@
 #include "main/lua/luaclass.h"
 
 struct lua_State;
-
+#include "main/main.h"
 class CBaseLuaWidget
 {
     std::string m_Title;
@@ -34,18 +34,18 @@ class CBaseLuaWidget
     virtual void CoreSetTitle(void) = 0;
     
 protected:
-    CBaseLuaWidget(const char *title) : m_szLuaType(0) { if (title && *title) m_Title = title; }
+    CBaseLuaWidget(const char *title) : m_szLuaType(0) { if (title && *title) m_Title = title; debugline("t: %s\n", title); }
+    CBaseLuaWidget(void) : m_szLuaType(0) {}
     
     void LuaDataChanged(void);
     std::string &GetTitle(void) { return m_Title; }
 
 public:
-    CBaseLuaWidget(void) : m_szLuaType(0) {}
     virtual ~CBaseLuaWidget(void) { };
     
-    void UpdateLanguage(void) { CoreUpdateLanguage(); }
+    void UpdateLanguage(void) { CoreSetTitle(); CoreUpdateLanguage(); }
     void SetTitle(const std::string &title) { m_Title = title; CoreSetTitle(); }
-    void Init(const char *type) { m_szLuaType = type; }
+    void Init(const char *type) { m_szLuaType = type; CoreSetTitle(); }
     bool Check(void);
 };
 

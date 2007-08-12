@@ -54,8 +54,6 @@ void CLuaRadioButton::Enable(TSTLVecSize n)
 
 void CLuaRadioButton::CoreUpdateLanguage()
 {
-    CLuaWidget::CoreUpdateLanguage();
-    
     TOptions &opts = GetOptions();
     int n = 1;
     for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++, n++)

@@ -20,6 +20,7 @@
 #include "gtk.h"
 #include "installer.h"
 #include "installscreen.h"
+#include "luagroup.h"
 
 // -------------------------------------
 // GTK Install Screen Class
@@ -45,7 +46,22 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title),
     if (m_pTitle)
         gtk_widget_show(m_pTopBox);
     
-    gtk_container_add(GTK_CONTAINER(m_pMainBox), m_pTopBox);
+    gtk_box_pack_start(GTK_BOX(m_pMainBox), m_pTopBox, FALSE, FALSE, 0);
+}
+
+CBaseLuaGroup *CInstallScreen::CreateGroup()
+{
+    if (!m_pGroupBox)
+    {
+        m_pGroupBox = gtk_vbox_new(FALSE, 0);
+        gtk_widget_show(m_pGroupBox);
+        gtk_container_add(GTK_CONTAINER(m_pMainBox), m_pGroupBox);
+    }
+    
+    CLuaGroup *ret = new CLuaGroup();
+    gtk_widget_show(ret->GetBox());
+    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), TRUE, TRUE, 10);
+    return ret;
 }
 
 void CInstallScreen::CoreUpdateLanguage(void)
