@@ -25,13 +25,21 @@
 // Base NCurses Lua Widget Class
 // -------------------------------------
 
+CLuaWidget::CLuaWidget() : NNCurses::CBox(NNCurses::CBox::VERTICAL, false), m_pTitle(NULL)
+{
+    AddWidget(m_pTitleBox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false));
+    m_pTitleBox->Enable(false);
+}
+
 void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
     {
         if (!m_pTitle)
         {
-            StartPack(m_pTitle = new NNCurses::CLabel(GetTranslation(GetTitle()), false), false, false, 0, 0);
+            m_pTitleBox->Enable(true);
+
+            m_pTitleBox->AddWidget(m_pTitle = new NNCurses::CLabel(GetTranslation(GetTitle()), false));
             m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
         }
         else

@@ -25,7 +25,7 @@
 // Lua Checkbox Class
 // -------------------------------------
 
-CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaCheckbox(l), CLuaWidget(desc)
+CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l)
 {
     m_pCheckbox = new NNCurses::CCheckbox;
     

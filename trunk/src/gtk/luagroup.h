@@ -32,7 +32,7 @@ class CLuaGroup: public CBaseLuaGroup
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) {}
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) {}
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) {}
-    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) {}
+    virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
     virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l) {}
     virtual CBaseLuaImage *CreateImage(const char *desc, const char *file) {}
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) {}

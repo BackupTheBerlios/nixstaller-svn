@@ -17,29 +17,18 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "luatextfield.h"
-#include "tui/textfield.h"
+#ifndef GTK_LUALABEL_H
+#define GTK_LUALABEL_H
 
-// -------------------------------------
-// Lua Text Field Class
-// -------------------------------------
+#include "main/install/lualabel.h"
+#include "luawidget.h"
 
-CLuaTextField::CLuaTextField(const char *desc, bool wrap) : CBaseLuaWidget(desc), m_iDefWidth(15), m_iDefHeight(5)
+class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
 {
-    AddWidget(m_pTextField = new NNCurses::CTextField(m_iDefWidth, m_iDefHeight, wrap));
-}
+    virtual void SetLabel(const char *text) { SetTitle(text); }
+    
+public:
+    CLuaLabel(const char *title) : CBaseLuaWidget(title) { }
+};
 
-void CLuaTextField::Load(const char *file)
-{
-    m_pTextField->LoadFile(file);
-}
-
-void CLuaTextField::AddText(const char *text)
-{
-    m_pTextField->AddText(text);
-}
-
-void CLuaTextField::UpdateFollow()
-{
-    m_pTextField->SetFollow(Follow());
-}
+#endif

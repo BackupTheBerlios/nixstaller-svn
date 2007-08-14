@@ -26,7 +26,7 @@
 // Lua Config Menu Class
 // -------------------------------------
 
-CLuaDirSelector::CLuaDirSelector(const char *desc, const char *val) : CLuaWidget(desc)
+CLuaDirSelector::CLuaDirSelector(const char *desc, const char *val) : CBaseLuaWidget(desc)
 {
     NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1);
     
@@ -51,7 +51,7 @@ bool CLuaDirSelector::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
 {
     if ((event == EVENT_CALLBACK) && (emitter == m_pBrowseButton))
     {
-        std::string ret = NNCurses::DirectoryBox(GetTranslation("Select directory"), m_pDirInput->Value());
+        std::string ret = NNCurses::DirectoryBox(GetTranslation("Select a directory"), m_pDirInput->Value());
         if (!ret.empty())
             m_pDirInput->SetText(ret);
         LuaDataChanged();

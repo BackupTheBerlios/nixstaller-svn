@@ -34,7 +34,7 @@ GtkWidget *CreateButton(GtkWidget *label, const gchar *image, bool fromstock)
     {
         GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 0, 0);
         
-        GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+        GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
         
         GtkWidget *img = (fromstock) ? gtk_image_new_from_stock(image, GTK_ICON_SIZE_BUTTON) : gtk_image_new_from_file(image);
         gtk_box_pack_start(GTK_BOX(hbox), img, FALSE, FALSE, 0);
@@ -59,3 +59,4 @@ GtkWidget *CreateButton(GtkWidget *label, const gchar *image, bool fromstock)
     
     return button;
 }
+

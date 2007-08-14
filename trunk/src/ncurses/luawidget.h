@@ -29,6 +29,7 @@ class CLabel;
 
 class CLuaWidget: virtual public CBaseLuaWidget, public NNCurses::CBox
 {
+    NNCurses::CBox *m_pTitleBox;
     NNCurses::CLabel *m_pTitle;
     
     virtual void CoreSetTitle(void);
@@ -37,7 +38,7 @@ protected:
     int MaxWidgetReqW(void) const;
 
 public:
-    CLuaWidget(const char *title) : CBaseLuaWidget(title), NNCurses::CBox(NNCurses::CBox::VERTICAL, false), m_pTitle(NULL) {}
+    CLuaWidget(void);
 };
 
 #endif

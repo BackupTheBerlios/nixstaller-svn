@@ -28,7 +28,7 @@
 // Lua Config Menu Class
 // -------------------------------------
 
-CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CLuaWidget(desc)
+CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc)
 {
     NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1);
     

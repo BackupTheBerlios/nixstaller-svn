@@ -20,7 +20,7 @@
 #include "main/main.h"
 #include "gtk.h"
 #include "luagroup.h"
-// #include "luacfgmenu.h"
+#include "luacfgmenu.h"
 // #include "luacheckbox.h"
 // #include "luadirselector.h"
 // #include "luaimage.h"
@@ -41,6 +41,13 @@ CLuaGroup::CLuaGroup()
     gtk_widget_show(m_pBox);
 }
 
+CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
+{
+    CLuaCFGMenu *ret = new CLuaCFGMenu(desc);
+    AddWidget(ret);
+    return ret;
+}
+
 CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 {
     CLuaLabel *ret = new CLuaLabel(title);
@@ -51,7 +58,7 @@ CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 void CLuaGroup::AddWidget(CLuaWidget *w)
 {
     gtk_widget_show(w->GetBox());
-    gtk_box_pack_start(GTK_BOX(m_pBox), w->GetBox(), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(m_pBox), w->GetBox(), TRUE, TRUE, 0);
 }
 
 void CLuaGroup::ActivateWidget(CBaseLuaWidget *w)

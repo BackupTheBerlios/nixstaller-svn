@@ -70,6 +70,7 @@ GTK
 - Check dirselectors for adding dirs as root
 - Check if empty groups are shown
 - Place about button lower
+- Use gtk_init_check
 
 
 FLTK

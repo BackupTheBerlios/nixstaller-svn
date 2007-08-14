@@ -27,7 +27,7 @@
 // -------------------------------------
 
 CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *val, int max,
-                               const char *type) : CBaseLuaInputField(type), CLuaWidget(desc), m_pLabel(NULL)
+                               const char *type) : CBaseLuaWidget(desc), CBaseLuaInputField(type), m_pLabel(NULL)
 {
     NNCurses::CBox *box = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 1);
     

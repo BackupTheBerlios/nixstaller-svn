@@ -25,7 +25,7 @@
 // Lua Menu Class
 // -------------------------------------
 
-CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaMenu(l), CLuaWidget(desc)
+CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaMenu(l)
 {
     m_pMenu = new NNCurses::CMenu(15, 7);
     

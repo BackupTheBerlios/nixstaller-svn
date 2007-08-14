@@ -27,7 +27,6 @@
 class CLuaImage: public CBaseLuaImage, public CLuaWidget
 {
 public:
-    CLuaImage(void) : CLuaWidget("") { }
 };
 
 #endif

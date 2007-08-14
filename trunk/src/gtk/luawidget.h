@@ -24,7 +24,7 @@
 
 class CLuaWidget: virtual public CBaseLuaWidget
 {
-    GtkWidget *m_pBox, *m_pTitle;
+    GtkWidget *m_pBox, *m_pTitleBox, *m_pTitle;
     
     virtual void CoreSetTitle(void);
     
@@ -32,7 +32,7 @@ protected:
     int MaxWidgetReqW(void) const { return 600; }
 
 public:
-    CLuaWidget(const char *title);
+    CLuaWidget(void);
     
     GtkWidget *GetBox(void) { return m_pBox; }
 };

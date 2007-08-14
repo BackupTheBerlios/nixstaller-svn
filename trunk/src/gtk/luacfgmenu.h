@@ -17,29 +17,32 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "luatextfield.h"
-#include "tui/textfield.h"
+#ifndef GTK_LUACFGMENU_H
+#define GTK_LUACFGMENU_H
 
-// -------------------------------------
-// Lua Text Field Class
-// -------------------------------------
+#include "main/install/luacfgmenu.h"
+#include "luawidget.h"
 
-CLuaTextField::CLuaTextField(const char *desc, bool wrap) : CBaseLuaWidget(desc), m_iDefWidth(15), m_iDefHeight(5)
+class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
 {
-    AddWidget(m_pTextField = new NNCurses::CTextField(m_iDefWidth, m_iDefHeight, wrap));
-}
+    GtkWidget *m_pVarListView, *m_pInputField, *m_pComboBox, *m_pDirInput, *m_pDirButtonLabel, *m_pDirInputBox;
+    
+    enum { COLUMN_VAR, COLUMN_DESC, COLUMN_N };
+    
+    virtual void CoreAddVar(const char *name);
+    virtual void CoreUpdateLanguage(void);
+    
+    GtkWidget *CreateVarListBox(void);
+    GtkWidget *CreateInputField(void);
+    GtkWidget *CreateComboBox(void);
+    GtkWidget *CreateDirSelector(void);
+    
+    void UpdateSelection(gchar *var);
+    
+public:
+    CLuaCFGMenu(const char *desc);
+    
+    static void SelectionCB(GtkTreeSelection *selection, gpointer data);
+};
 
-void CLuaTextField::Load(const char *file)
-{
-    m_pTextField->LoadFile(file);
-}
-
-void CLuaTextField::AddText(const char *text)
-{
-    m_pTextField->AddText(text);
-}
-
-void CLuaTextField::UpdateFollow()
-{
-    m_pTextField->SetFollow(Follow());
-}
+#endif

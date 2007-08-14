@@ -60,7 +60,7 @@ CBaseLuaGroup *CInstallScreen::CreateGroup()
     
     CLuaGroup *ret = new CLuaGroup();
     gtk_widget_show(ret->GetBox());
-    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), TRUE, TRUE, 10);
+    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), FALSE, FALSE, 10);
     return ret;
 }
 

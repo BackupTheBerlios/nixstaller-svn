@@ -24,7 +24,7 @@
 // Lua Progress Bar Class
 // -------------------------------------
 
-CLuaProgressBar::CLuaProgressBar(const char *desc) : CLuaWidget(desc)
+CLuaProgressBar::CLuaProgressBar(const char *desc) : CBaseLuaWidget(desc)
 {
     StartPack(m_pProgressBar = new NNCurses::CProgressBar(0.0f, 100.0f), false, false, 0, 0);
 }
