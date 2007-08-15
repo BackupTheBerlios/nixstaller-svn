@@ -22,6 +22,7 @@
 
 class CInstaller: public CGTKBase, public CBaseInstall
 {
+    GtkWidget *m_pTitle;
     GtkWidget *m_pCancelLabel, *m_pBackLabel, *m_pNextLabel;
     GtkWidget *m_pWizard;
     
@@ -29,10 +30,12 @@ class CInstaller: public CGTKBase, public CBaseInstall
     void InitScreenSection(GtkWidget *parentbox);
     void InitButtonSection(GtkWidget *parentbox);
     
-    void Back(void) { gtk_notebook_prev_page(GTK_NOTEBOOK(m_pWizard)); };
-    void Next(void) { gtk_notebook_next_page(GTK_NOTEBOOK(m_pWizard)); };
+    void Back(void);
+    void Next(void);
 
     bool AskQuit(void);
+    
+    int GetMainSpacing(void) const { return 10; }
     
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void AddScreen(int luaindex);
@@ -43,7 +46,12 @@ public:
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void) {};
     
-    static void AboutCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->ShowAbout(); }
+    void SetTitle(const std::string &t);
+    
+    static gboolean AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);
+    static gboolean AboutLeaveCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);
+    static gboolean AboutCB(GtkWidget *widget, GdkEvent *event, gpointer data)
+    { ((CInstaller *)data)->ShowAbout(); return TRUE; }
     static void CancelCB(GtkWidget *widget, gpointer data);
     static void BackCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->Back(); }
     static void NextCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->Next(); }

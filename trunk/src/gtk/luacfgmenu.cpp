@@ -24,30 +24,25 @@
 // Lua Config Menu Class
 // -------------------------------------
 
-CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc)
+CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc), m_bInitSelection(true)
 {
     gtk_box_set_spacing(GTK_BOX(GetBox()), 15);
     
     GtkWidget *varbox = CreateVarListBox();
     gtk_container_add(GTK_CONTAINER(GetBox()), varbox);
     
-    GtkWidget *valbox = gtk_hbox_new(FALSE, 15);
-    
-    GtkWidget *label = gtk_label_new("Value:");
-    gtk_widget_show(label);
-    gtk_box_pack_start(GTK_BOX(valbox), label, FALSE, FALSE, 5);
-    
-    m_pInputField = CreateInputField();
-    gtk_box_pack_start(GTK_BOX(valbox), m_pInputField, TRUE, TRUE, 15);
-    
-    m_pComboBox = CreateComboBox();
-    gtk_box_pack_start(GTK_BOX(valbox), m_pComboBox, TRUE, TRUE, 15);
-    
-    m_pDirInputBox = CreateDirSelector();
-    gtk_box_pack_start(GTK_BOX(valbox), m_pDirInputBox, TRUE, TRUE, 15);
-    
+    GtkWidget *valbox = gtk_hbox_new(FALSE, 10);
     gtk_widget_show(valbox);
     gtk_container_add(GTK_CONTAINER(GetBox()), valbox);
+
+    m_pInputField = CreateInputField();
+    gtk_box_pack_start(GTK_BOX(valbox), m_pInputField, TRUE, TRUE, 10);
+    
+    m_pComboBox = CreateComboBox();
+    gtk_box_pack_start(GTK_BOX(valbox), m_pComboBox, TRUE, TRUE, 10);
+    
+    m_pDirInputBox = CreateDirSelector();
+    gtk_box_pack_start(GTK_BOX(valbox), m_pDirInputBox, TRUE, TRUE, 10);
 }
 
 GtkWidget *CLuaCFGMenu::CreateVarListBox()
@@ -61,7 +56,7 @@ GtkWidget *CLuaCFGMenu::CreateVarListBox()
     gtk_widget_set_size_request(sw, -1, 175);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_ETCHED_IN);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_box_pack_start(GTK_BOX(swbox), sw, TRUE, TRUE, 15);
+    gtk_box_pack_start(GTK_BOX(swbox), sw, TRUE, TRUE, 10);
     
     GtkListStore *store = gtk_list_store_new(COLUMN_N, G_TYPE_STRING, G_TYPE_STRING);
     
@@ -90,12 +85,24 @@ GtkWidget *CLuaCFGMenu::CreateVarListBox()
 
 GtkWidget *CLuaCFGMenu::CreateInputField()
 {
-    return gtk_entry_new();
+    GtkWidget *ret = gtk_entry_new();
+    g_signal_connect(G_OBJECT(ret), "changed", G_CALLBACK(InputChangedCB), this);
+    return ret;
 }
 
 GtkWidget *CLuaCFGMenu::CreateComboBox()
 {
-    GtkWidget *combo = gtk_combo_box_new_text();
+    GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+    
+    GtkWidget *combo = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(ComboBoxChangedCB), this);
+    
+    g_object_unref (store);
+
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo), renderer, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo), renderer, "text", 0, NULL);
+
     return combo;
 }
 
@@ -105,6 +112,7 @@ GtkWidget *CLuaCFGMenu::CreateDirSelector()
     
     m_pDirInput = gtk_entry_new();
     gtk_widget_show(m_pDirInput);
+    g_signal_connect(G_OBJECT(m_pDirInput), "changed", G_CALLBACK(InputChangedCB), this);
     gtk_container_add(GTK_CONTAINER(box), m_pDirInput);
     
     GtkWidget *button = CreateButton(m_pDirButtonLabel = gtk_label_new(GetTranslation("Browse")), GTK_STOCK_OPEN);
@@ -114,7 +122,7 @@ GtkWidget *CLuaCFGMenu::CreateDirSelector()
     return box;
 }
 
-void CLuaCFGMenu::UpdateSelection(gchar *var)
+void CLuaCFGMenu::UpdateSelection(const gchar *var)
 {
     gtk_widget_hide(m_pInputField);
     gtk_widget_hide(m_pComboBox);
@@ -134,9 +142,27 @@ void CLuaCFGMenu::UpdateSelection(gchar *var)
             break;
         case TYPE_BOOL:
         case TYPE_LIST:
-            gtk_combo_box_append_text(GTK_COMBO_BOX(m_pComboBox), "Test 1");
+            SetComboBox(var);
             gtk_widget_show(m_pComboBox);
             break;
+    }
+}
+
+void CLuaCFGMenu::SetComboBox(const std::string &var)
+{
+    GtkListStore *store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(m_pComboBox)));
+    
+    gtk_list_store_clear(store);
+    
+    SEntry *entry = GetVariables()[var];
+    GtkTreeIter iter;
+    for (TOptionsType::iterator it=entry->options.begin(); it!=entry->options.end(); it++)
+    {
+        gtk_list_store_append(store, &iter);
+        gtk_list_store_set(store, &iter, 0, it->c_str(), -1);
+        
+        if (*it == entry->val)
+            gtk_combo_box_set_active_iter(GTK_COMBO_BOX(m_pComboBox), &iter);
     }
 }
 
@@ -146,6 +172,13 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pVarListView)));
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, name, 1, GetVariables()[name]->desc.c_str(), -1);
+    
+    if (m_bInitSelection)
+    {
+        m_bInitSelection = false;
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pVarListView));
+        gtk_tree_selection_select_iter(selection, &iter);
+    }
 }
 
 void CLuaCFGMenu::CoreUpdateLanguage()
@@ -153,20 +186,60 @@ void CLuaCFGMenu::CoreUpdateLanguage()
     // UNDONE
 }
 
-void CLuaCFGMenu::SelectionCB(GtkTreeSelection *selection, gpointer data)
+std::string CLuaCFGMenu::CurSelection()
 {
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pVarListView));
     GtkTreeIter iter;
     GtkTreeModel *model;
-    gchar *var;
+    std::string ret;
 
     if (gtk_tree_selection_get_selected(selection, &model, &iter))
     {
-        gtk_tree_model_get (model, &iter, COLUMN_VAR, &var, -1);
-        
-        CLuaCFGMenu *menu = static_cast<CLuaCFGMenu *>(data);
-        menu->UpdateSelection(var);
-
+        gchar *var;
+        gtk_tree_model_get(model, &iter, COLUMN_VAR, &var, -1);
+        ret = var;
         g_free(var);
     }
+    
+    return ret;
 }
 
+void CLuaCFGMenu::SelectionCB(GtkTreeSelection *selection, gpointer data)
+{
+    CLuaCFGMenu *menu = static_cast<CLuaCFGMenu *>(data);
+    std::string var = menu->CurSelection();
+
+    if (!var.empty())
+        menu->UpdateSelection(var.c_str());
+}
+
+void CLuaCFGMenu::InputChangedCB(GtkEditable *widget, gpointer data)
+{
+    CLuaCFGMenu *menu = static_cast<CLuaCFGMenu *>(data);
+    std::string selection = menu->CurSelection();
+
+    if (!selection.empty())
+        menu->GetVariables()[selection]->val = gtk_entry_get_text(GTK_ENTRY(widget));
+}
+
+void CLuaCFGMenu::ComboBoxChangedCB(GtkComboBox *widget, gpointer data)
+{
+    CLuaCFGMenu *menu = static_cast<CLuaCFGMenu *>(data);
+    std::string selection = menu->CurSelection();
+
+    if (!selection.empty())
+    {
+        GtkTreeIter iter;
+        if (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(menu->m_pComboBox), &iter))
+        {
+            gchar *text;
+            gtk_tree_model_get(gtk_combo_box_get_model(GTK_COMBO_BOX(menu->m_pComboBox)), &iter,
+                               0, &text, -1);
+            if (text)
+            {
+                menu->GetVariables()[selection]->val = text;
+                g_free(text);
+            }
+        }
+    }
+}

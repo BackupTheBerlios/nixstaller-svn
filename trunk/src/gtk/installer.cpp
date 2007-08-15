@@ -22,44 +22,79 @@
 #include "installer.h"
 #include "installscreen.h"
 
+namespace {
+
+
+void SetHandCursor(GtkWidget *widget, bool on)
+{
+    GdkDisplay *display = gtk_widget_get_display(widget);
+
+    GdkCursor *cursor = NULL;
+    if (on)
+        cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
+
+    gdk_window_set_cursor(widget->window, cursor);
+    gdk_display_flush(display);
+
+    if (cursor)
+        gdk_cursor_unref(cursor);
+}
+
+
+}
+
 // -------------------------------------
 // Install Frontend Class
 // -------------------------------------
 
 void CInstaller::InitAboutSection(GtkWidget *parentbox)
 {
+    GdkColor colors;
+    colors.red = colors.blue = colors.green = 65535;
+    
+    GtkWidget *eb = gtk_event_box_new();
+    gtk_widget_modify_bg(eb, GTK_STATE_NORMAL, &colors);
+    gtk_box_pack_start(GTK_BOX(parentbox), eb, FALSE, FALSE, 0);
+
     GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(eb), hbox);
+
+    GtkWidget *image = gtk_image_new_from_file("/home/rick/out_of_the_box_nicu_bucu_01.png");
+    gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 5);
+
+    GtkWidget *titlebox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), titlebox, TRUE, TRUE, 0);
     
-    GtkWidget *button = gtk_button_new();
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(AboutCB), this);
-    gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 5);
+    m_pTitle = gtk_label_new(NULL);
+    gtk_widget_set_size_request(m_pTitle, 500, -1);
+    gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
+    gtk_label_set_justify(GTK_LABEL(m_pTitle), GTK_JUSTIFY_CENTER);
+    gtk_box_pack_start(GTK_BOX(titlebox), m_pTitle, TRUE, TRUE, 15);
     
-    GtkWidget *butlabel = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(butlabel), CreateText("<span size=\"x-small\">%s</span>", GetTranslation("About")));
-    gtk_container_add(GTK_CONTAINER(button), butlabel);
+    GtkWidget *aboutbox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(hbox), aboutbox, FALSE, FALSE, 5);
     
-    gtk_box_pack_start(GTK_BOX(parentbox), hbox, FALSE, FALSE, 0);
+    GtkWidget *abouteb = gtk_event_box_new();
+    g_signal_connect(G_OBJECT(abouteb), "button-press-event", G_CALLBACK(AboutCB), this);
+    g_signal_connect(G_OBJECT(abouteb), "enter_notify_event", G_CALLBACK(AboutEnterCB), NULL);
+    g_signal_connect(G_OBJECT(abouteb), "leave_notify_event", G_CALLBACK(AboutLeaveCB), NULL);
+    gtk_widget_modify_bg(abouteb, GTK_STATE_NORMAL, &colors);
+    gtk_box_pack_start(GTK_BOX(aboutbox), abouteb, FALSE, FALSE, 5);
+    
+    GtkWidget *label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label),
+                         CreateText("<span size=\"small\" color=\"blue\"><u>%s</u></span>", GetTranslation("About")));
+    gtk_container_add(GTK_CONTAINER(abouteb), label);
 }
 
 void CInstaller::InitScreenSection(GtkWidget *parentbox)
 {
     GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-    
-    GtkWidget *frame = gtk_frame_new(NULL);
-    gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 10);
+    gtk_box_pack_start(GTK_BOX(parentbox), hbox, TRUE, TRUE, 0);
     
     m_pWizard = gtk_notebook_new();
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(m_pWizard), FALSE);
-    gtk_notebook_set_show_border(GTK_NOTEBOOK(m_pWizard), FALSE);
-    
-//     CBaseScreen *p = new CBaseScreen(this);
-//     GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
-//     p->CreateScreen(vbox);
-//     gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), vbox, NULL);
-    
-    gtk_container_add(GTK_CONTAINER(frame), m_pWizard);
-    
-    gtk_box_pack_start(GTK_BOX(parentbox), hbox, TRUE, TRUE, 10);
+    gtk_box_pack_start(GTK_BOX(hbox), m_pWizard, TRUE, TRUE, 0);
 }
 
 void CInstaller::InitButtonSection(GtkWidget *parentbox)
@@ -90,7 +125,25 @@ void CInstaller::InitButtonSection(GtkWidget *parentbox)
 
     gtk_box_pack_end(GTK_BOX(hbox), buttonbox, FALSE, FALSE, 5);
     
-    gtk_box_pack_start(GTK_BOX(parentbox), hbox, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(parentbox), hbox, FALSE, FALSE, GetMainSpacing());
+}
+
+void CInstaller::Back(void)
+{
+    gtk_notebook_prev_page(GTK_NOTEBOOK(m_pWizard));
+    
+    GtkWidget *widgetscreen = gtk_notebook_get_nth_page(GTK_NOTEBOOK(m_pWizard),
+                                                        gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard)));
+    
+    assert(widgetscreen); // UNDONE?
+    
+    CInstallScreen *screen = static_cast<CInstallScreen *>(gtk_object_get_user_data(GTK_OBJECT(widgetscreen)));
+    screen->Activate();
+}
+
+void CInstaller::Next(void)
+{
+    gtk_notebook_next_page(GTK_NOTEBOOK(m_pWizard));
 }
 
 void CInstaller::Init(int argc, char **argv)
@@ -113,6 +166,11 @@ void CInstaller::Init(int argc, char **argv)
     CBaseInstall::Init(argc, argv);
 }
 
+void CInstaller::SetTitle(const std::string &t)
+{
+    gtk_label_set_markup(GTK_LABEL(m_pTitle), CreateText("<span size=\"x-large\">%s</span>", t.c_str()));
+}
+
 bool CInstaller::AskQuit()
 {
     char *msg;
@@ -128,7 +186,7 @@ bool CInstaller::AskQuit()
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
-    return new CInstallScreen(title);
+    return new CInstallScreen(title, this);
 }
 
 void CInstaller::AddScreen(int luaindex)
@@ -137,10 +195,23 @@ void CInstaller::AddScreen(int luaindex)
     
     while (screen)
     {
+        gtk_object_set_user_data(GTK_OBJECT(screen->GetBox()), screen);
         gtk_widget_show(screen->GetBox());
         gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), screen->GetBox(), NULL);
         screen = screen->GetNextSubScreen();
     }
+}
+
+gboolean CInstaller::AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data)
+{
+    SetHandCursor(widget, true);
+    return FALSE;
+}
+
+gboolean CInstaller::AboutLeaveCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data)
+{
+    SetHandCursor(widget, false);
+    return FALSE;
 }
 
 void CInstaller::CancelCB(GtkWidget *widget, gpointer data)

@@ -26,47 +26,29 @@
 // GTK Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title),
-                               m_pTitle(NULL), m_pGroupBox(NULL), m_pNextSubScreen(NULL)
+CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner) : CBaseScreen(title), m_pOwner(owner),
+                               m_pNextSubScreen(NULL)
 {
     m_pMainBox = gtk_vbox_new(FALSE, 0);
-    
-    m_pTopBox = gtk_hbox_new(FALSE, 0);
-    
-    if (!title.empty())
-    {
-        m_pTitle = gtk_label_new(title.c_str());
-        gtk_widget_show(m_pTitle);
-        gtk_container_add(GTK_CONTAINER(m_pTopBox), m_pTitle);
-    }
-    
-    m_pCounter = gtk_label_new("");
-    gtk_box_pack_end(GTK_BOX(m_pTopBox), m_pCounter, FALSE, FALSE, 10);
-    
-    if (m_pTitle)
-        gtk_widget_show(m_pTopBox);
-    
-    gtk_box_pack_start(GTK_BOX(m_pMainBox), m_pTopBox, FALSE, FALSE, 0);
 }
 
 CBaseLuaGroup *CInstallScreen::CreateGroup()
 {
-    if (!m_pGroupBox)
-    {
-        m_pGroupBox = gtk_vbox_new(FALSE, 0);
-        gtk_widget_show(m_pGroupBox);
-        gtk_container_add(GTK_CONTAINER(m_pMainBox), m_pGroupBox);
-    }
-    
     CLuaGroup *ret = new CLuaGroup();
     gtk_widget_show(ret->GetBox());
-    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), FALSE, FALSE, 10);
+    gtk_box_pack_start(GTK_BOX(m_pMainBox), ret->GetBox(), FALSE, FALSE, 10);
     return ret;
 }
 
 void CInstallScreen::CoreUpdateLanguage(void)
 {
-    if (m_pTitle)
-        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
+    if (!GetTitle().empty())
+        m_pOwner->SetTitle(GetTranslation(GetTitle()));
 }
 
+void CInstallScreen::CoreActivate(void)
+{
+    if (!GetTitle().empty())
+        m_pOwner->SetTitle(GetTranslation(GetTitle()));
+    CBaseScreen::CoreActivate();
+}

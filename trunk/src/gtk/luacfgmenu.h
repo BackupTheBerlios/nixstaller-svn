@@ -26,6 +26,7 @@
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
 {
     GtkWidget *m_pVarListView, *m_pInputField, *m_pComboBox, *m_pDirInput, *m_pDirButtonLabel, *m_pDirInputBox;
+    bool m_bInitSelection;
     
     enum { COLUMN_VAR, COLUMN_DESC, COLUMN_N };
     
@@ -37,12 +38,17 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     GtkWidget *CreateComboBox(void);
     GtkWidget *CreateDirSelector(void);
     
-    void UpdateSelection(gchar *var);
+    std::string CurSelection(void);
+    
+    void UpdateSelection(const gchar *var);
+    void SetComboBox(const std::string &var);
     
 public:
     CLuaCFGMenu(const char *desc);
     
     static void SelectionCB(GtkTreeSelection *selection, gpointer data);
+    static void InputChangedCB(GtkEditable *widget, gpointer data);
+    static void ComboBoxChangedCB(GtkComboBox *widget, gpointer data);
 };
 
 #endif

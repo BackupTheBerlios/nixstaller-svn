@@ -22,18 +22,23 @@
 
 #include "main/install/basescreen.h"
 
+class CInstaller;
 class CBaseLuaGroup;
 
 class CInstallScreen: public CBaseScreen
 {
-    GtkWidget *m_pTitle, *m_pCounter, *m_pMainBox, *m_pTopBox, *m_pGroupBox;
+    CInstaller *m_pOwner;
+    GtkWidget *m_pMainBox;
     CInstallScreen *m_pNextSubScreen;
 
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
     
+protected:
+    virtual void CoreActivate(void);
+    
 public:
-    CInstallScreen(const std::string &title);
+    CInstallScreen(const std::string &title, CInstaller *owner);
     
     GtkWidget *GetBox(void) { return m_pMainBox; }
     CInstallScreen *GetNextSubScreen(void) { return m_pNextSubScreen; }

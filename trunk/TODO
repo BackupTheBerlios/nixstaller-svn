@@ -17,6 +17,7 @@ OVERALL
 - Check if lua execution can be time sliced
 - Remove exceptions.odt?
 - Check virtual base constructor title thing from lua widgets
+- cfgmenu:addlist - take initial value as argument
 
 
 DOCS
@@ -78,6 +79,7 @@ FLTK
 - Change Lua inputfield label width handling
 - Check lua widgets; move members to private, change virtual function names etc.
 - Check dirselectors for adding dirs as root
+- Make header?
 
 
 DESIGN

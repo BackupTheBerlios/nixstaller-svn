@@ -34,7 +34,7 @@ class CBaseLuaWidget
     virtual void CoreSetTitle(void) = 0;
     
 protected:
-    CBaseLuaWidget(const char *title) : m_szLuaType(0) { if (title && *title) m_Title = title; debugline("t: %s\n", title); }
+    CBaseLuaWidget(const char *title) : m_szLuaType(0) { if (title && *title) m_Title = title; }
     CBaseLuaWidget(void) : m_szLuaType(0) {}
     
     void LuaDataChanged(void);
