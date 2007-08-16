@@ -28,7 +28,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     GtkWidget *m_pVarListView, *m_pInputField, *m_pComboBox, *m_pDirInput, *m_pDirButtonLabel, *m_pDirInputBox;
     bool m_bInitSelection;
     
-    enum { COLUMN_VAR, COLUMN_DESC, COLUMN_N };
+    enum { COLUMN_TITLE, COLUMN_DESC, COLUMN_VAR, COLUMN_N };
     
     virtual void CoreAddVar(const char *name);
     virtual void CoreUpdateLanguage(void);

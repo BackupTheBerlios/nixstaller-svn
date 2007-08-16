@@ -40,20 +40,20 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     virtual void CoreUpdateLanguage(void);
     
     void ResetWidgetRange(void);
-    int MaxScreenHeight(void) const { return NNCurses::GetMaxHeight() - 7; }
-    int StartingHeight(void);
+    int MaxScreenHeight(void) const;
     void UpdateCounter(void);
     
 protected:
     virtual void CoreActivate(void) { ResetWidgetRange(); CBaseScreen::CoreActivate(); }
-    virtual int CoreRequestHeight(void);
     virtual void CoreInit(void) { ResetWidgetRange(); }
     
 public:
     CInstallScreen(const std::string &title);
     
-    bool HasPrevWidgets(void) const { return (m_pGroupBox && (m_WidgetRange.first != NULL)); }
-    bool HasNextWidgets(void) { return (m_pGroupBox && (m_WidgetRange.second != m_pGroupBox->GetChildList().back())); }
+    bool HasPrevWidgets(void) const
+    { return (m_pGroupBox && m_WidgetRange.first && (m_WidgetRange.first != m_pGroupBox->GetChildList().front())); }
+    bool HasNextWidgets(void)
+    { return (m_pGroupBox && m_WidgetRange.second && (m_WidgetRange.second != m_pGroupBox->GetChildList().back())); }
     bool SubNext(void);
     bool SubBack(void);
 };

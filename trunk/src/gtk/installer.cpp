@@ -128,22 +128,68 @@ void CInstaller::InitButtonSection(GtkWidget *parentbox)
     gtk_box_pack_start(GTK_BOX(parentbox), hbox, FALSE, FALSE, GetMainSpacing());
 }
 
+CInstallScreen *CInstaller::GetScreen(gint index)
+{
+    GtkWidget *widgetscreen = gtk_notebook_get_nth_page(GTK_NOTEBOOK(m_pWizard), index);
+    
+    if (!widgetscreen)
+        return NULL;
+    
+    return static_cast<CInstallScreen *>(gtk_object_get_user_data(GTK_OBJECT(widgetscreen)));
+}
+
 void CInstaller::Back(void)
 {
-    gtk_notebook_prev_page(GTK_NOTEBOOK(m_pWizard));
+    gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard));
+    CInstallScreen *screen = GetScreen(page);
     
-    GtkWidget *widgetscreen = gtk_notebook_get_nth_page(GTK_NOTEBOOK(m_pWizard),
-                                                        gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard)));
+    if (screen->SubBack())
+    {
+        return;
+    }
     
-    assert(widgetscreen); // UNDONE?
+    if (!screen->Back())
+        return;
     
-    CInstallScreen *screen = static_cast<CInstallScreen *>(gtk_object_get_user_data(GTK_OBJECT(widgetscreen)));
-    screen->Activate();
+    while (page && screen)
+    {
+        page--;
+        screen = GetScreen(page);
+        
+        if (screen && screen->CanActivate())
+        {
+            gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
+            screen->Activate();
+            return;
+        }
+    }
 }
 
 void CInstaller::Next(void)
 {
-    gtk_notebook_next_page(GTK_NOTEBOOK(m_pWizard));
+    gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard));
+    CInstallScreen *screen = GetScreen(page);
+    
+    if (screen->SubNext())
+    {
+        return;
+    }
+    
+    if (!screen->Next())
+        return;
+    
+    while (screen)
+    {
+        page++;
+        screen = GetScreen(page);
+        
+        if (screen && screen->CanActivate())
+        {
+            gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
+            screen->Activate();
+            return;
+        }
+    }
 }
 
 void CInstaller::Init(int argc, char **argv)
@@ -164,6 +210,20 @@ void CInstaller::Init(int argc, char **argv)
     gtk_container_add(GTK_CONTAINER(mainwin), vbox);
 
     CBaseInstall::Init(argc, argv);
+    
+    // Activate first screen
+    gint page = 0;
+    CInstallScreen *screen;
+    while ((screen = GetScreen(page)))
+    {
+        if (screen->CanActivate())
+        {
+            gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
+            screen->Activate();
+            return;
+        }
+        page++;
+    }
 }
 
 void CInstaller::SetTitle(const std::string &t)
@@ -193,13 +253,9 @@ void CInstaller::AddScreen(int luaindex)
 {
     CInstallScreen *screen = dynamic_cast<CInstallScreen *>(NLua::CheckClassData<CBaseScreen>("screen", luaindex));
     
-    while (screen)
-    {
-        gtk_object_set_user_data(GTK_OBJECT(screen->GetBox()), screen);
-        gtk_widget_show(screen->GetBox());
-        gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), screen->GetBox(), NULL);
-        screen = screen->GetNextSubScreen();
-    }
+    gtk_object_set_user_data(GTK_OBJECT(screen->GetBox()), screen);
+    gtk_widget_show(screen->GetBox());
+    gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), screen->GetBox(), NULL);
 }
 
 gboolean CInstaller::AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data)

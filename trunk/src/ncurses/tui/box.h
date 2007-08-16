@@ -62,8 +62,6 @@ protected:
     
     int GetWidgetW(CWidget *w);
     int GetWidgetH(CWidget *w);
-    int GetTotalWidgetW(CWidget *w);
-    int GetTotalWidgetH(CWidget *w);
     int RequestedWidgetsW(void);
     int RequestedWidgetsH(void);
     TChildList::size_type ExpandedWidgets(void);
@@ -77,6 +75,9 @@ public:
     void StartPack(CWidget *g, bool e, bool f, int vp, int hp);
     void EndPack(CGroup *g, bool e, bool f, int vp, int hp);
     void EndPack(CWidget *g, bool e, bool f, int vp, int hp);
+    
+    int GetTotalWidgetW(CWidget *w);
+    int GetTotalWidgetH(CWidget *w);
 };
 
 

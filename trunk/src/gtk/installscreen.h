@@ -28,11 +28,17 @@ class CBaseLuaGroup;
 class CInstallScreen: public CBaseScreen
 {
     CInstaller *m_pOwner;
-    GtkWidget *m_pMainBox;
-    CInstallScreen *m_pNextSubScreen;
+    GtkWidget *m_pMainBox, *m_pCounter, *m_pGroupBox;
+    std::pair<GtkWidget *, GtkWidget *> m_WidgetRange;
 
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
+    
+    int MaxScreenHeight(void) const { return 300; }
+    int GroupSpacing(void) const { return 10; }
+    int GetTotalWidgetH(GtkWidget *w);
+    void ResetWidgetRange(void);
+    void UpdateCounter(void);
     
 protected:
     virtual void CoreActivate(void);
@@ -41,7 +47,11 @@ public:
     CInstallScreen(const std::string &title, CInstaller *owner);
     
     GtkWidget *GetBox(void) { return m_pMainBox; }
-    CInstallScreen *GetNextSubScreen(void) { return m_pNextSubScreen; }
+    
+    bool HasPrevWidgets(void) const;
+    bool HasNextWidgets(void) const;
+    bool SubBack(void);
+    bool SubNext(void);
 };
 
 #endif

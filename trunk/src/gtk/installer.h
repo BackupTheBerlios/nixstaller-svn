@@ -20,6 +20,8 @@
 #ifndef INSTALLER_H
 #define INSTALLER_H
 
+class CInstallScreen;
+
 class CInstaller: public CGTKBase, public CBaseInstall
 {
     GtkWidget *m_pTitle;
@@ -29,6 +31,8 @@ class CInstaller: public CGTKBase, public CBaseInstall
     void InitAboutSection(GtkWidget *parentbox);
     void InitScreenSection(GtkWidget *parentbox);
     void InitButtonSection(GtkWidget *parentbox);
+    
+    CInstallScreen *GetScreen(gint index);
     
     void Back(void);
     void Next(void);

@@ -24,7 +24,7 @@
 #include "main/lua/luaclass.h"
 
 struct lua_State;
-#include "main/main.h"
+
 class CBaseLuaWidget
 {
     std::string m_Title;

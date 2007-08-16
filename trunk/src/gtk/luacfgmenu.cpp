@@ -58,7 +58,7 @@ GtkWidget *CLuaCFGMenu::CreateVarListBox()
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_box_pack_start(GTK_BOX(swbox), sw, TRUE, TRUE, 10);
     
-    GtkListStore *store = gtk_list_store_new(COLUMN_N, G_TYPE_STRING, G_TYPE_STRING);
+    GtkListStore *store = gtk_list_store_new(COLUMN_N, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
     
     m_pVarListView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
     
@@ -69,7 +69,7 @@ GtkWidget *CLuaCFGMenu::CreateVarListBox()
     g_signal_connect(G_OBJECT(select), "changed", G_CALLBACK(SelectionCB), this);
     
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("Variable", renderer, "text", COLUMN_VAR, NULL);
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("Variable", renderer, "text", COLUMN_TITLE, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(m_pVarListView), column);
 
     renderer = gtk_cell_renderer_text_new();
@@ -171,7 +171,9 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     GtkTreeIter iter;
     GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pVarListView)));
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, name, 1, GetVariables()[name]->desc.c_str(), -1);
+    gtk_list_store_set(store, &iter, COLUMN_TITLE, GetTranslation(name),
+                       COLUMN_DESC, GetTranslation(GetVariables()[name]->desc.c_str()),
+                       COLUMN_VAR, name, -1);
     
     if (m_bInitSelection)
     {
@@ -184,6 +186,21 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
 void CLuaCFGMenu::CoreUpdateLanguage()
 {
     // UNDONE
+    
+    GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pVarListView)));
+    GtkTreeIter it;
+    
+    if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &it))
+    {
+        do
+        {
+            gchar *var;
+            gtk_tree_model_get(GTK_TREE_MODEL(store), &it, COLUMN_VAR, &var, -1);
+            gtk_list_store_set(store, &it, COLUMN_TITLE, GetTranslation(var));
+            g_free(var);
+        }
+        while(gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &it));
+    }
 }
 
 std::string CLuaCFGMenu::CurSelection()
