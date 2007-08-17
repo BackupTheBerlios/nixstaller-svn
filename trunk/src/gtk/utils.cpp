@@ -60,3 +60,13 @@ GtkWidget *CreateButton(GtkWidget *label, const gchar *image, bool fromstock)
     return button;
 }
 
+// Works only for buttons created with CreateButton()
+void SetButtonStock(GtkWidget *button, const gchar *image)
+{
+    GtkWidget *alignment = gtk_bin_get_child(GTK_BIN(button));
+    GtkWidget *hbox = gtk_bin_get_child(GTK_BIN(alignment));
+    GList *list = gtk_container_get_children(GTK_CONTAINER(hbox));
+    GtkWidget *img = GTK_WIDGET(list->data);
+    g_list_free(list);
+    gtk_image_set_from_stock(GTK_IMAGE(img), image, GTK_ICON_SIZE_BUTTON);
+}

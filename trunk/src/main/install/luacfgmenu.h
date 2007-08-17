@@ -35,10 +35,10 @@ protected:
 
     struct SEntry
     {
-        std::string val, def, desc;
+        std::string val, desc;
         TOptionsType options;
         EVarType type;
-        SEntry(const char *v, const char *d, EVarType t) : val(v), def(v), desc(d), type(t) { };
+        SEntry(const char *v, const char *d, EVarType t) : val(v), desc(d), type(t) { };
     };
     
     typedef std::map<std::string, SEntry *> TVarType;

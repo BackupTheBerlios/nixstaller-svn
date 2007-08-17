@@ -26,7 +26,7 @@
 // #include "luaimage.h"
 // #include "luainput.h"
 #include "lualabel.h"
-// #include "luamenu.h"
+#include "luamenu.h"
 // #include "luaprogressbar.h"
 // #include "luaradiobutton.h"
 // #include "luatextfield.h"
@@ -44,6 +44,13 @@ CLuaGroup::CLuaGroup()
 CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
 {
     CLuaCFGMenu *ret = new CLuaCFGMenu(desc);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaMenu *ret = new CLuaMenu(desc, l);
     AddWidget(ret);
     return ret;
 }

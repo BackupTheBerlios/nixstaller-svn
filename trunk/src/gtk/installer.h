@@ -26,7 +26,9 @@ class CInstaller: public CGTKBase, public CBaseInstall
 {
     GtkWidget *m_pTitle;
     GtkWidget *m_pCancelLabel, *m_pBackLabel, *m_pNextLabel;
+    GtkWidget *m_pCancelButton, *m_pBackButton, *m_pNextButton;
     GtkWidget *m_pWizard;
+    bool m_bPrevButtonLocked;
     
     void InitAboutSection(GtkWidget *parentbox);
     void InitScreenSection(GtkWidget *parentbox);
@@ -34,6 +36,9 @@ class CInstaller: public CGTKBase, public CBaseInstall
     
     CInstallScreen *GetScreen(gint index);
     
+    bool FirstValidScreen(void);
+    bool LastValidScreen(void);
+    void UpdateButtons(void);
     void Back(void);
     void Next(void);
 
@@ -47,6 +52,8 @@ class CInstaller: public CGTKBase, public CBaseInstall
     virtual void LockScreen(bool cancel, bool prev, bool next) {}
 
 public:
+    CInstaller(void) : m_bPrevButtonLocked(false) {}
+    
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void) {};
     

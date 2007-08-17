@@ -70,7 +70,6 @@ GTK
 - Move main window away from base frontend class?
 - Check dirselectors for adding dirs as root
 - Check if empty groups are shown
-- Use gtk_init_check
 - Finish LuaCFGMenu
 
 

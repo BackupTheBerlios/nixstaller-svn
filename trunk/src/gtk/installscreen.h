@@ -46,6 +46,7 @@ protected:
 public:
     CInstallScreen(const std::string &title, CInstaller *owner);
     
+    void Init(void) { ResetWidgetRange(); }
     GtkWidget *GetBox(void) { return m_pMainBox; }
     
     bool HasPrevWidgets(void) const;

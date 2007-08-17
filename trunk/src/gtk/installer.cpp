@@ -104,9 +104,9 @@ void CInstaller::InitButtonSection(GtkWidget *parentbox)
     GtkWidget *buttonbox = gtk_hbutton_box_new();
     
     m_pCancelLabel = gtk_label_new(GetTranslation("Cancel"));
-    GtkWidget *button = CreateButton(m_pCancelLabel, GTK_STOCK_CANCEL);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(CancelCB), this);
-    gtk_box_pack_start(GTK_BOX(buttonbox), button, FALSE, FALSE, 5);
+    m_pCancelButton = CreateButton(m_pCancelLabel, GTK_STOCK_CANCEL);
+    g_signal_connect(G_OBJECT(m_pCancelButton), "clicked", G_CALLBACK(CancelCB), this);
+    gtk_box_pack_start(GTK_BOX(buttonbox), m_pCancelButton, FALSE, FALSE, 5);
     
     gtk_box_pack_start(GTK_BOX(hbox), buttonbox, FALSE, FALSE, 5);
     
@@ -114,14 +114,14 @@ void CInstaller::InitButtonSection(GtkWidget *parentbox)
     gtk_box_set_spacing(GTK_BOX(buttonbox), 15);
     
     m_pBackLabel = gtk_label_new(GetTranslation("Back"));
-    button = CreateButton(m_pBackLabel, GTK_STOCK_GO_BACK);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(BackCB), this);
-    gtk_box_pack_end(GTK_BOX(buttonbox), button, FALSE, FALSE, 5);
+    m_pBackButton = CreateButton(m_pBackLabel, GTK_STOCK_GO_BACK);
+    g_signal_connect(G_OBJECT(m_pBackButton), "clicked", G_CALLBACK(BackCB), this);
+    gtk_box_pack_end(GTK_BOX(buttonbox), m_pBackButton, FALSE, FALSE, 5);
 
     m_pNextLabel = gtk_label_new(GetTranslation("Next"));
-    button = CreateButton(m_pNextLabel, GTK_STOCK_GO_FORWARD);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(NextCB), this);
-    gtk_box_pack_end(GTK_BOX(buttonbox), button, FALSE, FALSE, 5);
+    m_pNextButton = CreateButton(m_pNextLabel, GTK_STOCK_GO_FORWARD);
+    g_signal_connect(G_OBJECT(m_pNextButton), "clicked", G_CALLBACK(NextCB), this);
+    gtk_box_pack_end(GTK_BOX(buttonbox), m_pNextButton, FALSE, FALSE, 5);
 
     gtk_box_pack_end(GTK_BOX(hbox), buttonbox, FALSE, FALSE, 5);
     
@@ -138,6 +138,66 @@ CInstallScreen *CInstaller::GetScreen(gint index)
     return static_cast<CInstallScreen *>(gtk_object_get_user_data(GTK_OBJECT(widgetscreen)));
 }
 
+bool CInstaller::FirstValidScreen()
+{
+    gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard));
+    
+    if (page < 1)
+        return true;
+    
+    CInstallScreen *screen;
+    page--;
+    while((page >= 0) && (screen = GetScreen(page)))
+    {
+        if (screen->CanActivate())
+            return false;
+        page--;
+    }
+    
+    return true;
+}
+
+bool CInstaller::LastValidScreen()
+{
+    gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard));
+    const gint size = gtk_notebook_get_n_pages(GTK_NOTEBOOK(m_pWizard));
+    
+    if ((page+1) == size)
+        return true;
+    
+    CInstallScreen *screen;
+    page++;
+    while((page<size) && (screen = GetScreen(page)))
+    {
+        if (screen->CanActivate())
+            return false;
+        page++;
+    }
+    
+    return true;
+}
+
+void CInstaller::UpdateButtons(void)
+{
+    CInstallScreen *curscreen = GetScreen(gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard)));
+    
+    if (FirstValidScreen() && !curscreen->HasPrevWidgets())
+        gtk_widget_hide(m_pBackButton);
+    else if (!m_bPrevButtonLocked)
+        gtk_widget_show(m_pBackButton);
+    
+    if (LastValidScreen() && !curscreen->HasNextWidgets())
+    {
+        gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Finish"));
+        SetButtonStock(m_pNextButton, GTK_STOCK_QUIT);
+    }
+    else
+    {
+        gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Next"));
+        SetButtonStock(m_pNextButton, GTK_STOCK_GO_FORWARD);
+    }
+}
+
 void CInstaller::Back(void)
 {
     gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard));
@@ -145,6 +205,7 @@ void CInstaller::Back(void)
     
     if (screen->SubBack())
     {
+        UpdateButtons();
         return;
     }
     
@@ -160,6 +221,7 @@ void CInstaller::Back(void)
         {
             gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
             screen->Activate();
+            UpdateButtons();
             return;
         }
     }
@@ -172,6 +234,7 @@ void CInstaller::Next(void)
     
     if (screen->SubNext())
     {
+        UpdateButtons();
         return;
     }
     
@@ -187,9 +250,13 @@ void CInstaller::Next(void)
         {
             gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
             screen->Activate();
+            UpdateButtons();
             return;
         }
     }
+    
+    // No screens left
+    gtk_main_quit();
 }
 
 void CInstaller::Init(int argc, char **argv)
@@ -220,6 +287,7 @@ void CInstaller::Init(int argc, char **argv)
         {
             gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
             screen->Activate();
+            UpdateButtons();
             return;
         }
         page++;
@@ -253,6 +321,8 @@ void CInstaller::AddScreen(int luaindex)
 {
     CInstallScreen *screen = dynamic_cast<CInstallScreen *>(NLua::CheckClassData<CBaseScreen>("screen", luaindex));
     
+    screen->Init();
+
     gtk_object_set_user_data(GTK_OBJECT(screen->GetBox()), screen);
     gtk_widget_show(screen->GetBox());
     gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), screen->GetBox(), NULL);

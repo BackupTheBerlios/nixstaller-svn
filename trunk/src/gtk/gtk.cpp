@@ -42,7 +42,8 @@ void debugline(const char *t, ...)
 
 void StartFrontend(int argc, char **argv)
 {
-    gtk_init(&argc, &argv);
+    if (gtk_init_check(&argc, &argv) == FALSE)
+        throw Exceptions::CExFrontend("Failed to initialize GTK");
     
     pInterface = new CInstaller();
     pInterface->Init(argc, argv);

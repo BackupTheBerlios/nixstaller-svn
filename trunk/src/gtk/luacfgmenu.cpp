@@ -236,7 +236,10 @@ void CLuaCFGMenu::InputChangedCB(GtkEditable *widget, gpointer data)
     std::string selection = menu->CurSelection();
 
     if (!selection.empty())
+    {
         menu->GetVariables()[selection]->val = gtk_entry_get_text(GTK_ENTRY(widget));
+        menu->LuaDataChanged();
+    }
 }
 
 void CLuaCFGMenu::ComboBoxChangedCB(GtkComboBox *widget, gpointer data)
@@ -255,6 +258,7 @@ void CLuaCFGMenu::ComboBoxChangedCB(GtkComboBox *widget, gpointer data)
             if (text)
             {
                 menu->GetVariables()[selection]->val = text;
+                menu->LuaDataChanged();
                 g_free(text);
             }
         }

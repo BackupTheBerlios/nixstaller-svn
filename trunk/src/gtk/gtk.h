@@ -51,5 +51,6 @@ public:
 // Utils
 void MessageBox(GtkMessageType type, const char *msg);
 GtkWidget *CreateButton(GtkWidget *label, const gchar *image=NULL, bool fromstock = true);
+void SetButtonStock(GtkWidget *button, const gchar *image);
 
 #endif
