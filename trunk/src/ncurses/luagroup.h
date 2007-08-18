@@ -39,7 +39,6 @@ class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc);
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap);
     virtual CBaseLuaLabel *CreateLabel(const char *title);
-    virtual void ActivateWidget(CBaseLuaWidget *w);
     
 protected:
     virtual void CoreAddWidget(NNCurses::CWidget *w);

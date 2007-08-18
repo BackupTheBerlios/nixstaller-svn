@@ -29,6 +29,7 @@ class CInstaller: public CGTKBase, public CBaseInstall
     GtkWidget *m_pCancelButton, *m_pBackButton, *m_pNextButton;
     GtkWidget *m_pWizard;
     bool m_bPrevButtonLocked;
+    std::string m_CurTitle;
     
     void InitAboutSection(GtkWidget *parentbox);
     void InitScreenSection(GtkWidget *parentbox);
@@ -48,14 +49,14 @@ class CInstaller: public CGTKBase, public CBaseInstall
     
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void AddScreen(int luaindex);
-    virtual void InstallThink(void) {}
-    virtual void LockScreen(bool cancel, bool prev, bool next) {}
+    virtual void InstallThink(void);
+    virtual void LockScreen(bool cancel, bool prev, bool next);
 
 public:
     CInstaller(void) : m_bPrevButtonLocked(false) {}
     
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void) {};
+    virtual void UpdateLanguage(void);
     
     void SetTitle(const std::string &t);
     

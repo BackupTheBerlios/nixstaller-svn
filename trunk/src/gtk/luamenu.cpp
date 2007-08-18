@@ -25,11 +25,10 @@
 // Lua Menu Class
 // -------------------------------------
 
-CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaMenu(l)
+CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaMenu(l), m_bInitSel(true)
 {
     gtk_container_add(GTK_CONTAINER(GetBox()), CreateMenu());
     
-    bool init = true;
     for (TOptions::const_iterator it=l.begin(); it!=l.end(); it++)
     {
         GtkTreeIter iter;
@@ -38,11 +37,11 @@ CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), 
         gtk_list_store_set(store, &iter, COLUMN_TITLE, GetTranslation(it->c_str()), COLUMN_VAR,
                            it->c_str(), -1);
     
-        if (init)
+        if (m_bInitSel)
         {
-            init = false;
             GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pMenu));
             gtk_tree_selection_select_iter(selection, &iter);
+            m_bInitSel = false;
         }
     }
 }
@@ -91,20 +90,34 @@ void CLuaMenu::Select(TSTLVecSize n)
 
 void CLuaMenu::CoreUpdateLanguage()
 {
+    GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pMenu)));
+    GtkTreeIter it;
+
+    if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &it))
+    {
+        do
+        {
+            gchar *var;
+            gtk_tree_model_get(GTK_TREE_MODEL(store), &it, COLUMN_VAR, &var, -1);
+            gtk_list_store_set(store, &it, COLUMN_TITLE, GetTranslation(var), -1);
+            g_free(var);
+        }
+        while(gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &it));
+    }
+}
+
+void CLuaMenu::CoreActivateWidget()
+{
+    gtk_widget_grab_focus(m_pMenu);
 }
 
 GtkWidget *CLuaMenu::CreateMenu()
 {
-    // Add horiz box for scroll window, so it can have horizontal spacing
-    GtkWidget *swbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_show(swbox);
-    
     // Scrolling window for treeview
     GtkWidget *sw = gtk_scrolled_window_new(0, 0);
     gtk_widget_set_size_request(sw, -1, 150);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_ETCHED_IN);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_box_pack_start(GTK_BOX(swbox), sw, TRUE, TRUE, 10);
     
     GtkListStore *store = gtk_list_store_new(COLUMN_N, G_TYPE_STRING, G_TYPE_STRING);
     
@@ -125,11 +138,12 @@ GtkWidget *CLuaMenu::CreateMenu()
     gtk_container_add(GTK_CONTAINER(sw), m_pMenu);
     gtk_widget_show_all(sw);
     
-    return swbox;
+    return sw;
 }
 
 void CLuaMenu::SelectionCB(GtkTreeSelection *selection, gpointer data)
 {
     CLuaMenu *menu = static_cast<CLuaMenu *>(data);
-    menu->LuaDataChanged();
+    if (!menu->m_bInitSel)
+        menu->LuaDataChanged();
 }

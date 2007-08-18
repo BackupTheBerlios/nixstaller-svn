@@ -42,6 +42,7 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     void ResetWidgetRange(void);
     int MaxScreenHeight(void) const;
     void UpdateCounter(void);
+    bool CheckWidgets(void);
     
 protected:
     virtual void CoreActivate(void) { ResetWidgetRange(); CBaseScreen::CoreActivate(); }

@@ -137,6 +137,20 @@ void CInstallScreen::UpdateCounter()
     m_pTopBox->Enable((count > 1) || m_pTitle);
 }
 
+bool CInstallScreen::CheckWidgets()
+{
+    const TChildList &list = m_pGroupBox->GetChildList();
+    
+    for (TChildList::const_iterator it=list.begin(); it!=list.end(); it++)
+    {
+        CLuaGroup *w = dynamic_cast<CLuaGroup *>(*it);
+        if (w && !w->CheckWidgets())
+            return false;
+    }
+    
+    return true;
+}
+
 bool CInstallScreen::SubBack()
 {
     if (HasPrevWidgets())
@@ -181,6 +195,9 @@ bool CInstallScreen::SubBack()
 
 bool CInstallScreen::SubNext()
 {
+    if (!CheckWidgets())
+        return true; // Return true so the current install screen doesn't change
+    
     if (HasNextWidgets())
     {
         const TChildList &list = m_pGroupBox->GetChildList();

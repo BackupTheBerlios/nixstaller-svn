@@ -56,7 +56,7 @@ bool CBaseLuaGroup::CheckWidgets()
     {
         if (!(*it)->Check())
         {
-            ActivateWidget(*it);
+            (*it)->ActivateWidget();
             return false;
         }
     }

@@ -27,7 +27,7 @@
 
 CLuaWidget::CLuaWidget() : NNCurses::CBox(NNCurses::CBox::VERTICAL, false), m_pTitle(NULL)
 {
-    AddWidget(m_pTitleBox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false));
+    StartPack(m_pTitleBox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false), false, false, 0, 0);
     m_pTitleBox->Enable(false);
 }
 
@@ -45,6 +45,12 @@ void CLuaWidget::CoreSetTitle()
         else
             m_pTitle->SetText(GetTranslation(GetTitle()));
     }
+}
+
+void CLuaWidget::CoreActivateWidget()
+{
+    if (!Focused())
+        SetNextFocWidget(false); // Set first valid widget
 }
 
 int CLuaWidget::MaxWidgetReqW(void) const

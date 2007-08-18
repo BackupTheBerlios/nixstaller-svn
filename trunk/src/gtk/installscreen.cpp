@@ -33,7 +33,7 @@ CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner) : CB
     
     GtkWidget *box = gtk_hbox_new(FALSE, 0);
     gtk_widget_show(box);
-    gtk_box_pack_start(GTK_BOX(m_pMainBox), box, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(m_pMainBox), box, FALSE, FALSE, 0);
     
     m_pCounter = gtk_label_new(NULL);
     gtk_box_pack_end(GTK_BOX(box), m_pCounter, FALSE, FALSE, 10);
@@ -46,14 +46,9 @@ CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner) : CB
 CBaseLuaGroup *CInstallScreen::CreateGroup()
 {
     CLuaGroup *ret = new CLuaGroup();
-    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), FALSE, FALSE, GroupSpacing());
+    gtk_object_set_user_data(GTK_OBJECT(ret->GetBox()), ret);
+    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), TRUE, FALSE, GroupSpacing());
     return ret;
-}
-
-void CInstallScreen::CoreUpdateLanguage(void)
-{
-    if (!GetTitle().empty())
-        m_pOwner->SetTitle(GetTranslation(GetTitle()));
 }
 
 int CInstallScreen::GetTotalWidgetH(GtkWidget *w)
@@ -133,8 +128,38 @@ void CInstallScreen::CoreActivate(void)
 {
     ResetWidgetRange();
     if (!GetTitle().empty())
-        m_pOwner->SetTitle(GetTranslation(GetTitle()));
+        m_pOwner->SetTitle(GetTitle());
     CBaseScreen::CoreActivate();
+}
+
+bool CInstallScreen::CheckWidgets()
+{
+    GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));
+    
+    if (!list)
+        return true;
+    
+    GList *start = (m_WidgetRange.first) ? g_list_find(list, m_WidgetRange.first) : list;
+    GList *end = (m_WidgetRange.second) ? g_list_find(list, m_WidgetRange.second) : g_list_last(list);
+    bool ret = true;
+    
+    while (true)
+    {
+        CLuaGroup *group = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(start->data)));
+        if (!group->CheckWidgets())
+        {
+            ret = false;
+            break;
+        }
+        
+        if (start == end)
+            break;
+        
+        start = g_list_next(start);
+    }
+
+    g_list_free(list);
+    return ret;
 }
 
 bool CInstallScreen::HasPrevWidgets() const
@@ -217,6 +242,9 @@ bool CInstallScreen::SubBack()
 
 bool CInstallScreen::SubNext()
 {
+    if (!CheckWidgets())
+        return true; // Widget check failed, so return true in order to stay at this screen
+    
     if (HasNextWidgets())
     {
         GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));

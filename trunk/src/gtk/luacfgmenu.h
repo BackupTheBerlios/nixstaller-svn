@@ -32,6 +32,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     
     virtual void CoreAddVar(const char *name);
     virtual void CoreUpdateLanguage(void);
+    virtual void CoreActivateWidget(void);
     
     GtkWidget *CreateVarListBox(void);
     GtkWidget *CreateInputField(void);

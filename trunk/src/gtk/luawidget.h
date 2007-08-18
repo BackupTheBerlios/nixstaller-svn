@@ -24,7 +24,7 @@
 
 class CLuaWidget: virtual public CBaseLuaWidget
 {
-    GtkWidget *m_pBox, *m_pTitleBox, *m_pTitle;
+    GtkWidget *m_pBox, *m_pTitle;
     
     virtual void CoreSetTitle(void);
     

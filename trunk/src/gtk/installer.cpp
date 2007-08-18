@@ -188,6 +188,7 @@ void CInstaller::UpdateButtons(void)
     
     if (LastValidScreen() && !curscreen->HasNextWidgets())
     {
+//         gtk_label_set(GTK_LABEL(m_pNextLabel), g_locale_to_utf8(GetTranslation("Finish"), -1, 0, 0, 0));
         gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Finish"));
         SetButtonStock(m_pNextButton, GTK_STOCK_QUIT);
     }
@@ -288,15 +289,38 @@ void CInstaller::Init(int argc, char **argv)
             gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
             screen->Activate();
             UpdateButtons();
-            return;
+            break;
         }
+        page++;
+    }
+}
+
+void CInstaller::UpdateLanguage()
+{
+    CBaseInstall::UpdateLanguage();
+    
+    gtk_label_set(GTK_LABEL(m_pCancelLabel), GetTranslation("Cancel"));
+    gtk_label_set(GTK_LABEL(m_pBackLabel), GetTranslation("Back"));
+    gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Next"));
+
+    if (!m_CurTitle.empty())
+        SetTitle(m_CurTitle);
+    
+    gint page = 0;
+    CInstallScreen *screen;
+    while ((screen = GetScreen(page)))
+    {
+        screen->UpdateLanguage();
         page++;
     }
 }
 
 void CInstaller::SetTitle(const std::string &t)
 {
-    gtk_label_set_markup(GTK_LABEL(m_pTitle), CreateText("<span size=\"x-large\">%s</span>", t.c_str()));
+    m_CurTitle = t;
+    gchar *markup = g_markup_printf_escaped("<span size=\"x-large\">%s</span>", GetTranslation(t.c_str()));
+    gtk_label_set_markup(GTK_LABEL(m_pTitle), markup);
+    g_free(markup);
 }
 
 bool CInstaller::AskQuit()
@@ -326,6 +350,19 @@ void CInstaller::AddScreen(int luaindex)
     gtk_object_set_user_data(GTK_OBJECT(screen->GetBox()), screen);
     gtk_widget_show(screen->GetBox());
     gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), screen->GetBox(), NULL);
+}
+
+void CInstaller::InstallThink()
+{
+    gtk_main_iteration_do(FALSE);
+}
+
+void CInstaller::LockScreen(bool cancel, bool prev, bool next)
+{
+    SetWidgetVisible(m_pCancelButton, !cancel);
+    SetWidgetVisible(m_pBackButton, !prev);
+    SetWidgetVisible(m_pNextButton, !next);
+    m_bPrevButtonLocked = prev;
 }
 
 gboolean CInstaller::AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data)

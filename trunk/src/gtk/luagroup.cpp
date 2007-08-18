@@ -65,13 +65,5 @@ CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 void CLuaGroup::AddWidget(CLuaWidget *w)
 {
     gtk_widget_show(w->GetBox());
-    gtk_box_pack_start(GTK_BOX(m_pBox), w->GetBox(), TRUE, TRUE, 0);
-}
-
-void CLuaGroup::ActivateWidget(CBaseLuaWidget *w)
-{
-/*    FocusWidget(dynamic_cast<CGroup *>(w)); // HACK (UNDONE?)
-    
-    if (!Focused())
-        PushEvent(EVENT_REQFOCUS);*/
+    gtk_box_pack_start(GTK_BOX(m_pBox), w->GetBox(), TRUE, TRUE, 10);
 }

@@ -51,7 +51,6 @@ class CBaseLuaGroup
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) = 0;
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) = 0;
     virtual CBaseLuaLabel *CreateLabel(const char *title) = 0;
-    virtual void ActivateWidget(CBaseLuaWidget *w) = 0;
     
     void AddWidget(CBaseLuaWidget *w, const char *type);
     

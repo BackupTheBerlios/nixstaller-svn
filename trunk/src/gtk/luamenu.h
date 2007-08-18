@@ -28,10 +28,12 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
     enum { COLUMN_TITLE, COLUMN_VAR, COLUMN_N };
     
     GtkWidget *m_pMenu;
+    bool m_bInitSel;
     
     virtual const char *Selection(void);
     virtual void Select(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
+    virtual void CoreActivateWidget(void);
     
     GtkWidget *CreateMenu(void);
     

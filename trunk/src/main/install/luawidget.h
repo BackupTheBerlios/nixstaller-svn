@@ -32,7 +32,8 @@ class CBaseLuaWidget
     
     virtual void CoreUpdateLanguage(void) {}
     virtual void CoreSetTitle(void) = 0;
-    
+    virtual void CoreActivateWidget(void) = 0;
+
 protected:
     CBaseLuaWidget(const char *title) : m_szLuaType(0) { if (title && *title) m_Title = title; }
     CBaseLuaWidget(void) : m_szLuaType(0) {}
@@ -47,6 +48,7 @@ public:
     void SetTitle(const std::string &title) { m_Title = title; CoreSetTitle(); }
     void Init(const char *type) { m_szLuaType = type; CoreSetTitle(); }
     bool Check(void);
+    void ActivateWidget(void) { CoreActivateWidget(); }
 };
 
 template <typename C> C *CheckLuaWidgetClass(const char *type, int index)

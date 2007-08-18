@@ -104,14 +104,6 @@ CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
     return ret;
 }
 
-void CLuaGroup::ActivateWidget(CBaseLuaWidget *w)
-{
-    FocusWidget(dynamic_cast<CGroup *>(w)); // HACK (UNDONE?)
-    
-    if (!Focused())
-        PushEvent(EVENT_REQFOCUS);
-}
-
 void CLuaGroup::CoreAddWidget(NNCurses::CWidget *w)
 {
     if (m_bInitEnable)

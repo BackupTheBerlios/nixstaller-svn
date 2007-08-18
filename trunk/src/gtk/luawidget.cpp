@@ -26,26 +26,19 @@
 
 CLuaWidget::CLuaWidget(void) : m_pTitle(NULL)
 {
-    m_pTitleBox = gtk_vbox_new(FALSE, 0);
-    
     m_pBox = gtk_vbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(m_pBox), m_pTitleBox);
+    
+    m_pTitle = gtk_label_new(NULL);
+    gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
+    gtk_widget_set_size_request(m_pTitle, MaxWidgetReqW(), -1);
+    gtk_box_pack_start(GTK_BOX(m_pBox), m_pTitle, TRUE, TRUE, 4);
 }
 
 void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
     {
-        if (!m_pTitle)
-        {
-            m_pTitle = gtk_label_new(GetTranslation(GetTitle().c_str()));
-            gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
-            gtk_widget_set_size_request(m_pTitle, MaxWidgetReqW(), -1);
-            gtk_container_add(GTK_CONTAINER(m_pTitleBox), m_pTitle);
-            
-            gtk_widget_show_all(m_pTitleBox);
-        }
-        else
-            gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
+        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
+        gtk_widget_show(m_pTitle);
     }
 }

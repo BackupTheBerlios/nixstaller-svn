@@ -38,7 +38,6 @@ class CLuaGroup: public CBaseLuaGroup
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) {}
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) {}
     virtual CBaseLuaLabel *CreateLabel(const char *title);
-    virtual void ActivateWidget(CBaseLuaWidget *w);
     
     void AddWidget(CLuaWidget *w);
     

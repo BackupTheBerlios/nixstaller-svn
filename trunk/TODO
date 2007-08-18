@@ -66,11 +66,11 @@ NCURSES
 - Check if UpdateTranslation functions are called - needs testing
 - Check for 'dynamic' CanFocus for CTextField?
 
+
 GTK
 - Move main window away from base frontend class?
 - Check dirselectors for adding dirs as root
 - Check if empty groups are shown
-- Finish LuaCFGMenu
 
 
 FLTK
@@ -78,7 +78,7 @@ FLTK
 - Change Lua inputfield label width handling
 - Check lua widgets; move members to private, change virtual function names etc.
 - Check dirselectors for adding dirs as root
-- Make header?
+- Make screen header?
 
 
 DESIGN

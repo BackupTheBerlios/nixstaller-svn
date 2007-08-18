@@ -66,17 +66,6 @@ void CBaseScreen::UpdateLanguage()
         (*it)->UpdateLanguage();
 }
 
-bool CBaseScreen::Next()
-{
-    for (TLuaGroupList::iterator it=m_LuaGroupList.begin(); it!=m_LuaGroupList.end(); it++)
-    {
-        if (!(*it)->CheckWidgets())
-            return false;
-    }
-    
-    return CallLuaBoolFunc("next", true);
-}
-
 void CBaseScreen::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseScreen::LuaAddGroup, "addgroup", "screen");

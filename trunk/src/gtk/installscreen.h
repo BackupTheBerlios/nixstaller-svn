@@ -32,14 +32,15 @@ class CInstallScreen: public CBaseScreen
     std::pair<GtkWidget *, GtkWidget *> m_WidgetRange;
 
     virtual CBaseLuaGroup *CreateGroup(void);
-    virtual void CoreUpdateLanguage(void);
+    virtual void CoreUpdateLanguage(void) {}
     
     int MaxScreenHeight(void) const { return 300; }
     int GroupSpacing(void) const { return 10; }
     int GetTotalWidgetH(GtkWidget *w);
     void ResetWidgetRange(void);
     void UpdateCounter(void);
-    
+    bool CheckWidgets(void);
+
 protected:
     virtual void CoreActivate(void);
     

@@ -70,3 +70,11 @@ void SetButtonStock(GtkWidget *button, const gchar *image)
     g_list_free(list);
     gtk_image_set_from_stock(GTK_IMAGE(img), image, GTK_ICON_SIZE_BUTTON);
 }
+
+void SetWidgetVisible(GtkWidget *w, bool v)
+{
+    if (v)
+        gtk_widget_show(w);
+    else
+        gtk_widget_hide(w);
+}

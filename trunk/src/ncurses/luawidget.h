@@ -33,6 +33,7 @@ class CLuaWidget: virtual public CBaseLuaWidget, public NNCurses::CBox
     NNCurses::CLabel *m_pTitle;
     
     virtual void CoreSetTitle(void);
+    virtual void CoreActivateWidget(void);
     
 protected:
     int MaxWidgetReqW(void) const;
