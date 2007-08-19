@@ -21,14 +21,14 @@
 #include "gtk.h"
 #include "luagroup.h"
 #include "luacfgmenu.h"
-// #include "luacheckbox.h"
+#include "luacheckbox.h"
 // #include "luadirselector.h"
-// #include "luaimage.h"
-// #include "luainput.h"
+#include "luaimage.h"
+#include "luainput.h"
 #include "lualabel.h"
 #include "luamenu.h"
-// #include "luaprogressbar.h"
-// #include "luaradiobutton.h"
+#include "luaprogressbar.h"
+#include "luaradiobutton.h"
 // #include "luatextfield.h"
 
 // -------------------------------------
@@ -41,6 +41,28 @@ CLuaGroup::CLuaGroup()
     gtk_widget_show(m_pBox);
 }
 
+CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *desc, const char *val,
+                                                int max, const char *type)
+{
+    CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaCheckbox *ret = new CLuaCheckbox(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
 CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
 {
     CLuaCFGMenu *ret = new CLuaCFGMenu(desc);
@@ -51,6 +73,22 @@ CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
 CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
 {
     CLuaMenu *ret = new CLuaMenu(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaImage *CLuaGroup::CreateImage(const char *file)
+{
+    CLuaImage *ret = new CLuaImage(file);
+    gtk_widget_show(ret->GetBox());
+    gtk_box_pack_start(GTK_BOX(m_pBox), ret->GetBox(), FALSE, FALSE, 10);
+//     AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
+{
+    CLuaProgressBar *ret = new CLuaProgressBar(desc);
     AddWidget(ret);
     return ret;
 }

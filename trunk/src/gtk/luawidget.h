@@ -28,9 +28,6 @@ class CLuaWidget: virtual public CBaseLuaWidget
     
     virtual void CoreSetTitle(void);
     
-protected:
-    int MaxWidgetReqW(void) const { return 600; }
-
 public:
     CLuaWidget(void);
     

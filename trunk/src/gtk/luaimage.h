@@ -17,16 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#ifndef GTK_LUAIMAGE_H
+#define GTK_LUAIMAGE_H
 
+#include "main/install/luaimage.h"
 #include "luawidget.h"
 
-class CBaseLuaImage: virtual public CBaseLuaWidget
+class CLuaImage: public CBaseLuaImage, public CLuaWidget
 {
+    GdkPixbuf *m_pPixBuf;
+    int m_iImageW, m_iImageH;
+    
+    virtual void CoreActivateWidget(void) {}
+    
+    int MaxImageW(void) const { return MaxWidgetWidth(); }
+    int MaxImageH(void) const { return MaxWidgetHeight(); }
+    
 public:
-    virtual ~CBaseLuaImage(void) {}
+    CLuaImage(const char *file);
 };
-
 
 #endif

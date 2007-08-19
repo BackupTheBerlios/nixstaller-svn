@@ -17,16 +17,27 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#ifndef GTK_LUACHECKBOX_H
+#define GTK_LUACHECKBOX_H
 
+#include <vector>
+#include "main/install/luacheckbox.h"
 #include "luawidget.h"
 
-class CBaseLuaImage: virtual public CBaseLuaWidget
-{
-public:
-    virtual ~CBaseLuaImage(void) {}
-};
 
+class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
+{
+    std::vector<GtkWidget *> m_Checkboxes;
+    
+    virtual bool Enabled(TSTLVecSize n);
+    virtual void Enable(TSTLVecSize n, bool b);
+    virtual void CoreUpdateLanguage(void);
+    virtual void CoreActivateWidget(void);
+    
+public:
+    CLuaCheckbox(const char *desc, const TOptions &l);
+    
+    static void ToggleCB(GtkToggleButton *togglebutton, gpointer data);
+};
 
 #endif

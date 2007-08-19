@@ -47,7 +47,7 @@ class CBaseLuaGroup
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) = 0;
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) = 0;
     virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l) = 0;
-    virtual CBaseLuaImage *CreateImage(const char *desc, const char *file) = 0;
+    virtual CBaseLuaImage *CreateImage(const char *file) = 0;
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) = 0;
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) = 0;
     virtual CBaseLuaLabel *CreateLabel(const char *title) = 0;

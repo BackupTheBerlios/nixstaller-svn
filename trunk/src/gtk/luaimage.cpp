@@ -17,28 +17,38 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/main.h"
 #include "gtk.h"
-#include "luawidget.h"
+#include "luaimage.h"
 
 // -------------------------------------
-// Base GTK Lua Widget Class
+// Lua Image Class
 // -------------------------------------
 
-CLuaWidget::CLuaWidget(void) : m_pTitle(NULL)
+CLuaImage::CLuaImage(const char *file) : CBaseLuaWidget("")
 {
-    m_pBox = gtk_vbox_new(FALSE, 0);
+    m_pPixBuf = gdk_pixbuf_new_from_file(file, NULL);
     
-    m_pTitle = gtk_label_new(NULL);
-    gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
-    gtk_widget_set_size_request(m_pTitle, MaxWidgetWidth(), -1);
-    gtk_box_pack_start(GTK_BOX(m_pBox), m_pTitle, TRUE, TRUE, 4);
-}
-
-void CLuaWidget::CoreSetTitle()
-{
-    if (!GetTitle().empty())
+    if (m_pPixBuf)
     {
-        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
-        gtk_widget_show(m_pTitle);
+        int w = gdk_pixbuf_get_width(m_pPixBuf);
+        int h = gdk_pixbuf_get_height(m_pPixBuf);
+        int neww, newh;
+        
+        if ((w > MaxImageW()) || (h > MaxImageH()))
+        {
+            GetScaledImageSize(w, h, MaxImageW(), MaxImageH(), neww, newh);
+            GdkPixbuf *tmp = gdk_pixbuf_scale_simple(m_pPixBuf, neww, newh, GDK_INTERP_BILINEAR);
+            g_object_unref(m_pPixBuf);
+            m_pPixBuf = tmp;
+        }
+        
+        if (m_pPixBuf)
+        {
+            GtkWidget *img = gtk_image_new_from_pixbuf(m_pPixBuf);
+            g_object_unref(m_pPixBuf);
+            gtk_widget_show(img);
+            gtk_container_add(GTK_CONTAINER(GetBox()), img);
+        }
     }
 }

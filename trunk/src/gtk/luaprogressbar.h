@@ -17,16 +17,21 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#ifndef GTK_LUAPROGRESSBAR_H
+#define GTK_LUAPROGRESSBAR_H
 
+#include "main/install/luaprogressbar.h"
 #include "luawidget.h"
 
-class CBaseLuaImage: virtual public CBaseLuaWidget
+class CLuaProgressBar: public CBaseLuaProgressBar, public CLuaWidget
 {
+    GtkWidget *m_pProgressBar;
+    
+    virtual void SetProgress(int n);
+    virtual void CoreActivateWidget(void) {}
+    
 public:
-    virtual ~CBaseLuaImage(void) {}
+    CLuaProgressBar(const char *desc);
 };
-
 
 #endif

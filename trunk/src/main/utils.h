@@ -58,6 +58,8 @@ inline void CHDir(const std::string &dir) { CHDir(dir.c_str()); };
 void MKDir(const char *dir, int mode);
 inline void MKDir(const std::string &dir, int mode) { MKDir(dir.c_str(), mode); };
 void UName(struct utsname &u);
+void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &outh);
+std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos);
 
 template <typename To, typename From> To SafeConvert(From from)
 {

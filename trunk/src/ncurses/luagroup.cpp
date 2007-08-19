@@ -77,7 +77,7 @@ CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::str
     return ret;
 }
 
-CBaseLuaImage *CLuaGroup::CreateImage(const char *desc, const char *file)
+CBaseLuaImage *CLuaGroup::CreateImage(const char *file)
 {
     // No widget addition: ncurses doesn't do gfx :)
     return new CLuaImage;

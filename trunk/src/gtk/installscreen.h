@@ -34,8 +34,6 @@ class CInstallScreen: public CBaseScreen
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void) {}
     
-    int MaxScreenHeight(void) const { return 300; }
-    int GroupSpacing(void) const { return 10; }
     int GetTotalWidgetH(GtkWidget *w);
     void ResetWidgetRange(void);
     void UpdateCounter(void);

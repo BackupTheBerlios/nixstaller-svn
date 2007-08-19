@@ -97,28 +97,23 @@ void CInputField::Move(int n, bool relative)
     RequestQueuedDraw();
 }
 
-bool CInputField::ValidChar(chtype ch)
+bool CInputField::ValidChar(chtype *ch)
 {
-    if (IsTAB(ch) || !isprint(ch))
+    if (IsTAB(*ch) || !isprint(*ch))
         return false;
     
     if ((m_eInputType == INT) || (m_eInputType == FLOAT))
     {
-        std::string legal = "1234567890";
-
         lconv *lc = localeconv();
-        assert(lc != NULL);
-                    
-        std::string decpoint = std::string(lc->decimal_point) + std::string(lc->mon_decimal_point) + std::string(".");
-        std::string plusminsign = std::string(lc->positive_sign) + std::string(lc->negative_sign) + std::string("-+");
-                    
-        if ((m_eInputType == FLOAT) && (m_Text.find_first_of(decpoint) == std::string::npos))
-            legal += decpoint;
-                    
-        if ((GetPosition() == 0) && (m_Text.find_first_of(plusminsign) == std::string::npos))
-            legal += plusminsign;
-                    
-        if (legal.find(ch) == std::string::npos)
+        if (strchr(lc->decimal_point, ','))
+        {
+            if (*ch == '.')
+                *ch = ',';
+        }
+        
+        std::string legal = LegalNrTokens((m_eInputType == FLOAT), m_Text, GetPosition());
+
+        if (legal.find(*ch) == std::string::npos)
             return false; // Illegal char
     }
     
@@ -188,7 +183,7 @@ bool CInputField::CoreHandleKey(chtype key)
         Delch(GetPosition()-1);
         Move(-1, true);
     }
-    else if (ValidChar(key))
+    else if (ValidChar(&key))
         Addch(key);
     else
         return false;

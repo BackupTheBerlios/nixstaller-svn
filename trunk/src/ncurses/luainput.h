@@ -31,14 +31,13 @@ class CInputField;
 
 class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
 {
-    std::string m_Label;
     NNCurses::CLabel *m_pLabel;
     NNCurses::CInputField *m_pInputField;
     
     void UpdateLabelWidth(void);
     
     virtual const char *CoreGetValue(void);
-    virtual void CoreUpdateLabelWidth(void) { UpdateLabelWidth(); }
+    virtual void CoreUpdateLabelWidth(void) { UpdateLabelWidth(); RequestUpdate(); }
     virtual void CoreUpdateLanguage(void);
     
 protected:

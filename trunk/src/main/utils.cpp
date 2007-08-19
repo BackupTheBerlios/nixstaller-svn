@@ -392,6 +392,46 @@ pid_t WaitPID(pid_t pid, int *status, int options)
     return ret;
 }
 
+void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &outh)
+{
+    float wfact, hfact;
+
+    // Check which scale factor is the biggest and use that one. This makes sure that the image will fit.
+    wfact = (static_cast<float>(curw) / static_cast<float>(maxw));
+    hfact = (static_cast<float>(curh) / static_cast<float>(maxh));
+
+    if (wfact >= hfact)
+    {
+        outw = maxw;
+        outh = static_cast<int>(static_cast<float>(curh) / wfact);
+    }
+    else
+    {
+        outw = static_cast<int>(static_cast<float>(curw) / hfact);
+        outh = maxh;
+    }
+}
+
+// Returns a string that contains valid characters for a 'numeric' string. Used for user input.
+std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos)
+{
+    lconv *lc = localeconv();
+    std::string legal = "1234567890";
+    
+    assert(lc != NULL);
+                    
+    std::string decpoint = std::string(lc->decimal_point);
+    std::string plusminsign = std::string(lc->positive_sign) + std::string(lc->negative_sign);
+                    
+    if (real && (curstr.find_first_of(decpoint) == std::string::npos))
+        legal += decpoint;
+                    
+    if ((pos == 0) && (curstr.find_first_of(plusminsign) == std::string::npos))
+        legal += plusminsign;
+    
+    return legal;
+}
+
 // -------------------------------------
 // Directory iterator
 // -------------------------------------

@@ -187,10 +187,9 @@ int CBaseLuaGroup::LuaAddMenu(lua_State *L)
 int CBaseLuaGroup::LuaAddImage(lua_State *L)
 {
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
-    const char *desc = luaL_checkstring(L, 2);
-    const char *file = luaL_checkstring(L, 3);
+    const char *file = luaL_checkstring(L, 2);
 
-    group->AddWidget(group->CreateImage(desc, file), "image");
+    group->AddWidget(group->CreateImage(file), "image");
     
     return 1;
 }

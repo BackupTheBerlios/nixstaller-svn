@@ -17,16 +17,22 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#include "gtk.h"
+#include "luaprogressbar.h"
 
-#include "luawidget.h"
+// -------------------------------------
+// Lua Progress Bar Class
+// -------------------------------------
 
-class CBaseLuaImage: virtual public CBaseLuaWidget
+CLuaProgressBar::CLuaProgressBar(const char *desc) : CBaseLuaWidget(desc)
 {
-public:
-    virtual ~CBaseLuaImage(void) {}
-};
+    m_pProgressBar = gtk_progress_bar_new();
+    gtk_widget_show(m_pProgressBar);
+    gtk_container_add(GTK_CONTAINER(GetBox()), m_pProgressBar);
+}
 
+void CLuaProgressBar::SetProgress(int n)
+{
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pProgressBar), static_cast<double>(n) / 100.0);
+}
 
-#endif

@@ -17,16 +17,26 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#ifndef GTK_LUARADIOBUTTON_H
+#define GTK_LUARADIOBUTTON_H
 
+#include "main/install/luaradiobutton.h"
 #include "luawidget.h"
 
-class CBaseLuaImage: virtual public CBaseLuaWidget
+class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
 {
-public:
-    virtual ~CBaseLuaImage(void) {}
-};
+    typedef std::vector<GtkWidget *> TRadioList;
+    TRadioList m_RadioButtons;
+    
+    virtual const char *EnabledButton(void);
+    virtual void Enable(TSTLVecSize n);
+    virtual void CoreUpdateLanguage(void);
+    virtual void CoreActivateWidget(void);
 
+public:
+    CLuaRadioButton(const char *desc, const TOptions &l);
+    
+    static void ToggleCB(GtkToggleButton *togglebutton, gpointer data);
+};
 
 #endif

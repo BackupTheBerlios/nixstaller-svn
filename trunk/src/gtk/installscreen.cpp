@@ -47,7 +47,7 @@ CBaseLuaGroup *CInstallScreen::CreateGroup()
 {
     CLuaGroup *ret = new CLuaGroup();
     gtk_object_set_user_data(GTK_OBJECT(ret->GetBox()), ret);
-    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), TRUE, FALSE, GroupSpacing());
+    gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), TRUE, FALSE, WidgetGroupSpacing());
     return ret;
 }
 
@@ -55,7 +55,7 @@ int CInstallScreen::GetTotalWidgetH(GtkWidget *w)
 {
     GtkRequisition req;
     gtk_widget_size_request(w, &req);
-    return (req.height + (GroupSpacing()*2));
+    return (req.height + (WidgetGroupSpacing()*2));
 }
 
 void CInstallScreen::ResetWidgetRange()
@@ -73,7 +73,7 @@ void CInstallScreen::ResetWidgetRange()
     {
         h += GetTotalWidgetH(GTK_WIDGET(entry->data));
 
-        if (h < MaxScreenHeight())
+        if (h <= MaxScreenHeight())
         {
             gtk_widget_show(GTK_WIDGET(entry->data));
             m_WidgetRange.second = GTK_WIDGET(entry->data);
@@ -101,7 +101,7 @@ void CInstallScreen::UpdateCounter()
     {
         const int wh = GetTotalWidgetH(GTK_WIDGET(entry->data));
         
-        if ((h + wh) >= MaxScreenHeight())
+        if ((h + wh) > MaxScreenHeight())
         {
             h = 0;
             count++;
@@ -213,11 +213,11 @@ bool CInstallScreen::SubBack()
         
         if (entry)
         {
-            while ((entry = g_list_previous(entry)) && (h < MaxScreenHeight()))
+            while ((entry = g_list_previous(entry)) && (h <= MaxScreenHeight()))
             {
                 h += GetTotalWidgetH(GTK_WIDGET(entry->data));
                 
-                if (h < MaxScreenHeight())
+                if (h <= MaxScreenHeight())
                 {
                     gtk_widget_show(GTK_WIDGET(entry->data));
                     m_WidgetRange.first = GTK_WIDGET(entry->data);
@@ -262,11 +262,11 @@ bool CInstallScreen::SubNext()
         
         if (entry)
         {
-            while ((entry = g_list_next(entry)) && (h < MaxScreenHeight()))
+            while ((entry = g_list_next(entry)) && (h <= MaxScreenHeight()))
             {
                 h += GetTotalWidgetH(GTK_WIDGET(entry->data));
                 
-                if (h < MaxScreenHeight())
+                if (h <= MaxScreenHeight())
                 {
                     gtk_widget_show(GTK_WIDGET(entry->data));
                     m_WidgetRange.second = GTK_WIDGET(entry->data);

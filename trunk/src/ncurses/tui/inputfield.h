@@ -38,7 +38,7 @@ public:
     
     TSTLStrSize GetPosition(void) { return m_StartPos + m_CursorPos; }
     void Move(int n, bool relative);
-    bool ValidChar(chtype ch);
+    bool ValidChar(chtype *ch);
     void Addch(chtype ch);
     void Delch(TSTLStrSize pos);
     

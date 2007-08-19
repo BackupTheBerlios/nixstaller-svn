@@ -66,7 +66,7 @@ GtkWidget *CLuaCFGMenu::CreateVarListBox()
     gtk_tree_view_append_column(GTK_TREE_VIEW(m_pVarListView), column);
 
     renderer = gtk_cell_renderer_text_new();
-    g_object_set(GTK_OBJECT(renderer), "wrap-width", MaxWidgetReqW()-100);
+    g_object_set(GTK_OBJECT(renderer), "wrap-width", MaxWidgetWidth()-100);
     column = gtk_tree_view_column_new_with_attributes("Description", renderer, "text", COLUMN_DESC, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(m_pVarListView), column);
 

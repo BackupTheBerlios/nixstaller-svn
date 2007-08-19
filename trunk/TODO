@@ -18,12 +18,15 @@ OVERALL
 - Remove exceptions.odt?
 - Check virtual base constructor title thing from lua widgets
 - cfgmenu:addlist - take initial value as argument
+- Check if exceptions are thrown incase widget is too big
+- Search for nice default logo
+- Way to specify extra (image) files
 
 
 DOCS
 - Mention that lua commands are executed incase m_bAlwaysRoot is set to true
 - Mention that lua menus may be sorted
-- Update input:setspacing --> input:setlabelwidth
+- Update input:setspacing --> input:setlabelwidth (and other defaults)
 - Update radiobutton and checkbox function arguments
 
         
@@ -79,6 +82,8 @@ FLTK
 - Check lua widgets; move members to private, change virtual function names etc.
 - Check dirselectors for adding dirs as root
 - Make screen header?
+- Check locales and numeric lua widget input
+- Use new image scaling function from utils.cpp
 
 
 DESIGN

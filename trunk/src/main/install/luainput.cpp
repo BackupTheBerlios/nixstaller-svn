@@ -25,8 +25,11 @@
 // Base Lua Inputfield Class
 // -------------------------------------
 
-CBaseLuaInputField::CBaseLuaInputField(const char *t) : m_iLabelWidth(10)
+CBaseLuaInputField::CBaseLuaInputField(const char *l, const char *t) : m_iLabelWidth(15)
 {
+    if (l && *l)
+        m_Label = l;
+    
     if (!t || !t[0] || (strcmp(t, "number") && strcmp(t, "float") && strcmp(t, "string")))
         m_szType = "string";
     else

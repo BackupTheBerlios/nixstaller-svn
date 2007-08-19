@@ -17,16 +17,28 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef LUAIMAGE_H
-#define LUAIMAGE_H
+#ifndef GTK_LUAINPUT_H
+#define GTK_LUAINPUT_H
 
+#include "main/install/luainput.h"
 #include "luawidget.h"
 
-class CBaseLuaImage: virtual public CBaseLuaWidget
+class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
 {
-public:
-    virtual ~CBaseLuaImage(void) {}
-};
+    GtkWidget *m_pLabel, *m_pEntry;
+    
+    virtual const char *CoreGetValue(void);
+    virtual void CoreUpdateLabelWidth(void);
+    virtual void CoreUpdateLanguage(void);
+    virtual void CoreActivateWidget(void);
+    
+    void SetLabel(void);
 
+public:
+    CLuaInputField(const char *label, const char *desc, const char *val, int max, const char *type);
+    
+    static void InsertCB(GtkEditable *editable, gchar *nt, gint new_text_length, gint *position,
+                         gpointer data);
+};
 
 #endif
