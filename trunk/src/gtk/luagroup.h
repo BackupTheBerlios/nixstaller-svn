@@ -36,7 +36,7 @@ class CLuaGroup: public CBaseLuaGroup
     virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaImage *CreateImage(const char *file);
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc);
-    virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) {}
+    virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap);
     virtual CBaseLuaLabel *CreateLabel(const char *title);
     
     void AddWidget(CLuaWidget *w);

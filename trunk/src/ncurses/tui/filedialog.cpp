@@ -27,22 +27,6 @@
 #include "inputfield.h"
 #include "button.h"
 
-namespace {
-
-class CNCursUserMKDir: public CFrontendMKDirHelper
-{
-    virtual void WarnBox(const char *msg) { NNCurses::WarningBox(msg); }
-    virtual char *AskPassword(const char *msg)
-    {
-        return StrDup(NNCurses::InputBox(GetTranslation("Your account doesn't have permissions to "
-                "create the directory. To create it with the root (administrator) account, please"
-                "enter it's password below."), "", 0, '*').c_str());
-    }
-};
-
-}
-
-
 namespace NNCurses {
 
 // -------------------------------------
@@ -109,6 +93,37 @@ void CFileDialog::OpenDir(const std::string &newdir)
     }
 }
 
+std::string CFileDialog::AskPassword(LIBSU::CLibSU &suhandler)
+{
+    std::string ret;
+    
+    while (true)
+    {
+        ret = InputBox(GetTranslation("Your account doesn't have permissions to "
+                "create the directory. To create it with the root "
+                "(administrator) account, please enter it's password below."), "", 0, '*');
+
+        if (ret.empty())
+            break;
+
+        if (!suhandler.TestSU(ret.c_str()))
+        {
+            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+                WarningBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
+            else
+            {
+                WarningBox(GetTranslation("Could not use su to gain root access. "
+                                          "Make sure you can use su (adding the current user to the wheel group may help)"));
+                break;
+            }
+        }
+        else
+            break;
+    }
+    
+    return ret;
+}
+
 bool CFileDialog::CoreHandleKey(chtype key)
 {
     if (CDialog::CoreHandleKey(key))
@@ -121,9 +136,24 @@ bool CFileDialog::CoreHandleKey(chtype key)
         if (newdir.empty())
             return true;
         
-        CNCursUserMKDir dirmaker;
-        if (dirmaker(newdir))
+        try
+        {
+            if (MKDirNeedsRoot(newdir))
+            {
+                LIBSU::CLibSU suhandler;
+                std::string passwd = AskPassword(suhandler);
+                MKDirRecRoot(newdir, suhandler, passwd.c_str());
+                passwd.assign(passwd.length(), 0);
+            }
+            else
+                MKDirRec(newdir);
+            
             OpenDir(newdir);
+        }
+        catch(Exceptions::CExIO &e)
+        {
+            WarningBox(e.what());
+        }
             
         return true;
     }

@@ -23,6 +23,10 @@
 #include <string>
 #include "dialog.h"
 
+namespace LIBSU {
+class CLibSU;
+}
+
 class CDirIter;
 
 namespace NNCurses {
@@ -43,6 +47,7 @@ class CFileDialog: public CDialog
     
     bool ValidDir(CDirIter &dir);
     void OpenDir(const std::string &newdir);
+    std::string AskPassword(LIBSU::CLibSU &suhandler);
     
 protected:
     virtual bool CoreHandleKey(chtype key);

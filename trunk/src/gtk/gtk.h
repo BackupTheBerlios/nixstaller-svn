@@ -53,6 +53,7 @@ void MessageBox(GtkMessageType type, const char *msg);
 GtkWidget *CreateButton(GtkWidget *label, const gchar *image=NULL, bool fromstock = true);
 void SetButtonStock(GtkWidget *button, const gchar *image);
 void SetWidgetVisible(GtkWidget *w, bool v);
+GtkWidget *CreateDirChooser(const char *title);
 inline int MaxScreenHeight(void) { return 300; }
 inline int WidgetGroupSpacing(void) { return 10; }
 inline int MaxWidgetWidth(void) { return 600; }

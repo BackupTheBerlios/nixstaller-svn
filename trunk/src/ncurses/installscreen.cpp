@@ -139,6 +139,9 @@ void CInstallScreen::UpdateCounter()
 
 bool CInstallScreen::CheckWidgets()
 {
+    if (!m_pGroupBox)
+        return true;
+    
     const TChildList &list = m_pGroupBox->GetChildList();
     
     for (TChildList::const_iterator it=list.begin(); it!=list.end(); it++)

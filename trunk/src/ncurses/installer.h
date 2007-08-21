@@ -50,7 +50,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     void ActivateScreen(CInstallScreen *screen);
     
     virtual CBaseScreen *CreateScreen(const std::string &title);
-    virtual void AddScreen(int luaindex);
+    virtual void AddScreen(CBaseScreen *screen);
     virtual void InstallThink(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
 

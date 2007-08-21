@@ -30,7 +30,8 @@ void CTextWidget::CoreDraw()
 {
     if (!GetQueuedText().empty())
         UpdateText(Width());
-    
+    m_LineCount = LineCount();
+
     DrawWidget();
 }
 

@@ -48,7 +48,7 @@ class CInstaller: public CGTKBase, public CBaseInstall
     int GetMainSpacing(void) const { return 10; }
     
     virtual CBaseScreen *CreateScreen(const std::string &title);
-    virtual void AddScreen(int luaindex);
+    virtual void AddScreen(CBaseScreen *screen);
     virtual void InstallThink(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
 

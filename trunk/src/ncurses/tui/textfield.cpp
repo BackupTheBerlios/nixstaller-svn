@@ -54,9 +54,9 @@ void CTextField::CoreDraw()
     
     if (m_bScrollToBottom)
     {
+        m_bScrollToBottom = false;
         VScroll(m_pTextWidget->GetHRange()-m_pTextWidget->Height(), false);
         HScroll(m_pTextWidget->GetWRange()-m_pTextWidget->Width(), false);
-        m_bScrollToBottom = false;
     }
 }
 

@@ -51,7 +51,7 @@ function GenerateDefaultScreens()
 --     OLDG.WelcomeScreen = require "welcomescreen"
 --     OLDG.LicenseScreen = require "licensescreen"
 --     OLDG.SelectDirScreen = require "selectdirscreen"
---     OLDG.InstallScreen = require "installscreen"
+    OLDG.InstallScreen = require "installscreen"
 --     OLDG.FinishScreen = require "finishscreen"
 end
 

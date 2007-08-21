@@ -50,6 +50,7 @@ public:
     static void SelectionCB(GtkTreeSelection *selection, gpointer data);
     static void InputChangedCB(GtkEditable *widget, gpointer data);
     static void ComboBoxChangedCB(GtkComboBox *widget, gpointer data);
+    static void BrowseCB(GtkWidget *widget, gpointer data);
 };
 
 #endif

@@ -96,6 +96,12 @@ void CTextBase::UpdateText(int width)
     m_QueuedText.clear();
 }
 
+TSTLStrSize CTextBase::LineCount()
+{
+    assert(m_QueuedText.empty()); // UNDONE: Can't use this function while widget needs updating
+    return m_Lines.size();
+}
+
 int CTextBase::CoreRequestWidth()
 {
     int min = std::max(1, GetMinWidth());
@@ -117,7 +123,7 @@ int CTextBase::CoreRequestWidth()
             longest = std::max(longest, (end - start)+1);
             start = end + 1;
         }
-        while ((start < length) && (start <= end));
+        while ((start < length) && (start < end));
         
         min = std::max(min, SafeConvert<int>(longest));
     }
@@ -144,7 +150,6 @@ int CTextBase::CoreRequestHeight()
         while (start < length)
         {
             end = GetNextLine(m_QueuedText, start, width);
-        
             lines++;
             start = end + 1;
         }

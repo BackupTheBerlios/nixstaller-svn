@@ -38,7 +38,6 @@ void CLuaWidget::CoreSetTitle()
         if (!m_pTitle)
         {
             m_pTitleBox->Enable(true);
-
             m_pTitleBox->AddWidget(m_pTitle = new NNCurses::CLabel(GetTranslation(GetTitle()), false));
             m_pTitle->SetMaxReqWidth(MaxWidgetReqW());
         }

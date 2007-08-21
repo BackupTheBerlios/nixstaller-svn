@@ -71,5 +71,5 @@ bool CLuaMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
         return true;
     }
     
-    return false;
+    return CLuaWidget::CoreHandleEvent(emitter, event);
 }

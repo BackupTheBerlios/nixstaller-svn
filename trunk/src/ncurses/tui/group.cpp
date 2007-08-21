@@ -151,9 +151,12 @@ void CGroup::RemoveWidget(CWidget *w)
     m_GroupMap[w] = NULL; // Is NULL already if w isn't a group
 }
 
-void CGroup::DisableWidget(CWidget *w)
+void CGroup::EnableWidget(CWidget *w, bool e)
 {
-    if (m_pFocusedWidget == w)
+    // Widget not initialized yet? (ignore if the group isn't initialized, since it will initialize the widget later)
+    if (e && GetWin() && !w->GetWin())
+        RequestUpdate();
+    else if (!e && (m_pFocusedWidget == w))
         SetValidWidget(w);
 }
 

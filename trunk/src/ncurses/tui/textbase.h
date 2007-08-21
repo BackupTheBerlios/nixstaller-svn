@@ -52,7 +52,7 @@ protected:
     TLinesList &GetLineList(void) { return m_Lines; }
     std::string &GetQueuedText(void) { return m_QueuedText; }
     TSTLStrSize GetLongestLine(void) { return m_LongestLine; }
-    TLinesList::size_type LineCount(void) { return m_Lines.size(); }
+    TLinesList::size_type LineCount(void);
     bool Center(void) { return m_bCenter; }
     bool Wrap(void) { return m_bWrap; }
     int MaxWidth(void) { return m_iMaxReqWidth; }

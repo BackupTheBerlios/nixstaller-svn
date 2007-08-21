@@ -126,11 +126,7 @@ std::string GetFirstValidDir(const std::string &dir)
 
     std::string subdir = dir;
     
-    if (dir[0] != '/') // No absolute path given
-    {
-        std::string curdir = GetCWD();
-        subdir.insert(0, curdir + std::string("/"));
-    }
+    MakeAbsolute(subdir);
     
     if (ReadAccess(subdir))
         return subdir;
@@ -332,6 +328,12 @@ char *StrDup(const char *str)
     return ret;
 }
 
+void MakeAbsolute(std::string &dir)
+{
+    if (dir[0] != '/')
+        dir = GetCWD() + "/" + dir; // Make absolute
+}
+
 std::string GetCWD()
 {
     static char buffer[1024];
@@ -352,6 +354,66 @@ void MKDir(const char *dir, int mode)
 {
     if (mkdir(dir, mode) < 0)
         throw Exceptions::CExMKDir(errno);
+}
+
+bool MKDirNeedsRoot(std::string dir)
+{
+    MakeAbsolute(dir);
+    
+    TSTLStrSize start = 1; // Skip first root path
+    TSTLStrSize end = 0;
+    bool needroot = false;
+    
+    // Get first directory to create
+    do
+    {
+        end = dir.find("/", start);
+        std::string subdir = dir.substr(0, end);
+            
+        if (FileExists(subdir))
+            needroot = !WriteAccess(subdir);
+        else
+            break;
+        
+        start = end + 1;
+    }
+    while (end != std::string::npos);
+    
+    return needroot;
+}
+
+void MKDirRec(std::string dir)
+{
+    MakeAbsolute(dir);
+
+    TSTLStrSize start = 1; // Skip first root path
+    TSTLStrSize end = 0;
+    bool create = false; // Start creating directories?
+    
+    do
+    {
+        end = dir.find("/", start);
+        std::string subdir = dir.substr(0, end);
+            
+        if (!create)
+            create = !FileExists(subdir);
+        
+        if (create)
+            MKDir(subdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
+        
+        start = end + 1;
+    }
+    while (end != std::string::npos);
+}
+
+void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd)
+{
+    MakeAbsolute(dir);
+    
+    suhandler.SetCommand("mkdir -p " + dir);
+    
+    if (!suhandler.ExecuteCommand(passwd))
+        throw Exceptions::CExRootMKDir(dir.c_str());
 }
 
 void UName(struct utsname &u)
@@ -568,123 +630,4 @@ void CPipedCMD::Abort(bool canthrow)
         kill(-m_ChildPID, SIGTERM);
         Close(canthrow);
     }
-}
-
-// -------------------------------------
-// Directory Creator Functor Class
-// -------------------------------------
-
-void CMKDirHelper::CleanPasswd()
-{
-    if (m_bCleanPasswd)
-        CleanPasswdString(m_szPassword);
-    m_szPassword = NULL;
-}
-
-bool CMKDirHelper::operator ()(std::string dir)
-{
-    if (dir.empty())
-        return false;
-    
-    if (dir[0] != '/')
-        dir = GetCWD() + "/" + dir; // Make absolute
-    
-    TSTLStrSize start = 1; // Skip first root path
-    TSTLStrSize end = 0;
-    bool useroot = false;
-    LIBSU::CLibSU suhandler;
-    
-    // Get first directory to create
-    do
-    {
-        end = dir.find("/", start);
-        std::string subdir = dir.substr(0, end);
-            
-        if (FileExists(subdir))
-            useroot = !WriteAccess(subdir);
-        else
-            break;
-        
-        start = end + 1;
-    }
-    while (end != std::string::npos);
-    
-    if (useroot)
-    {
-        suhandler.SetUser("root");
-        suhandler.SetTerminalOutput(false);
-        m_szPassword = GetPassword(suhandler);
-                        
-        if (!m_szPassword || !m_szPassword[0])
-            return false;
-        
-        suhandler.SetCommand("mkdir -p " + dir);
-        if (!suhandler.ExecuteCommand(m_szPassword))
-        {
-            WarnBox(GetTranslation("Could not create directory"));
-            CleanPasswd();
-            return false;
-        }
-        
-        return true;
-    }
-    
-    try
-    {
-        do
-        {
-            std::string subdir = dir.substr(0, end);
-            debugline("subdir: %s\n", subdir.c_str());
-            MKDir(subdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
-            
-            if (end != std::string::npos)
-                end = dir.find("/", end+1);
-        }
-        while (end != std::string::npos);
-    }
-    catch(Exceptions::CExMKDir &e)
-    {
-        WarnBox(e.what());
-        // Exception won't be thrown by su, so no need to clean passwd
-        return false;
-    }
-    
-    return true;
-}
-
-// -------------------------------------
-// Frontend Directory Creator Helper Class
-// -------------------------------------
-
-char *CFrontendMKDirHelper::GetPassword(LIBSU::CLibSU &suhandler)
-{
-    char *ret = NULL;
-    
-    while (true)
-    {
-        CleanPasswdString(ret);
-        ret = AskPassword("Your account doesn't have permissions to "
-                "create the directory. To create it with the root "
-                "(administrator) account, please enter it's password below.");
-
-        if (!ret || !ret[0])
-            return NULL;
-
-        if (!suhandler.TestSU(ret))
-        {
-            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
-            else
-            {
-                WarnBox(GetTranslation("Could not use su to gain root access"
-                        "Make sure you can use su (adding the current user to the wheel group may help)"));
-                CleanPasswdString(ret);
-                return NULL;
-            }
-        }
-        else
-            break;
-    }
-    
-    return ret;
 }

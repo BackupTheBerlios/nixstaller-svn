@@ -28,7 +28,8 @@ namespace NNCurses {
 class CTextWidget: public CTextBase
 {
     int m_iXOffset, m_iYOffset;
-    
+    TSTLStrSize m_LineCount; // Cache this, because we can't use LineCount() if it's updating (HACK)
+
 protected:
     virtual void CoreDraw(void);
     virtual void DoDraw(void);
@@ -38,7 +39,7 @@ public:
     CTextWidget(bool w) : CTextBase(false, w), m_iXOffset(0), m_iYOffset(0) { }
     void SetOffset(int x, int y) { m_iXOffset = x; m_iYOffset = y; }
     TSTLStrSize GetWRange(void) { return GetLongestLine(); }
-    TSTLVecSize GetHRange(void) { return LineCount(); }
+    TSTLVecSize GetHRange(void) { return m_LineCount; }
 };
 
 

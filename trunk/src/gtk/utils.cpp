@@ -19,6 +19,114 @@
 
 #include "gtk.h"
 
+namespace {
+
+// -------------------------------------
+// Callbacks for CreateDirChooser()
+// -------------------------------------
+
+void UpdateDirSelCB(GtkFileChooser *widget, gpointer data)
+{
+    gtk_file_chooser_set_filename(widget, static_cast<char *>(data));
+    // Only do it once
+    g_signal_handlers_disconnect_by_func(G_OBJECT(widget),
+                                         reinterpret_cast<gpointer>(UpdateDirSelCB), data);
+}
+
+void CreateRootDirCB(GtkWidget *widget, gpointer data)
+{
+    GtkWidget *filedialog = static_cast<GtkWidget *>(data);
+    char *curdir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filedialog));
+    GtkWidget *dialog = gtk_dialog_new_with_buttons(GetTranslation("Create new directory"), NULL,
+            GtkDialogFlags(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+    
+    gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog)->vbox), 10);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 120);
+    
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 10);
+    gtk_widget_show(hbox);
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), hbox);
+    
+    GtkWidget *label = gtk_label_new(GetTranslation("Directory name"));
+    gtk_widget_show(label);
+    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+    
+    GtkWidget *direntry = gtk_entry_new();
+    gtk_entry_set_text(GTK_ENTRY(direntry), (curdir) ? curdir : "/");
+    gtk_widget_show(direntry);
+    gtk_container_add(GTK_CONTAINER(hbox), direntry);
+    
+    hbox = gtk_hbox_new(FALSE, 10);
+    gtk_widget_show(hbox);
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), hbox);
+
+    label = gtk_label_new(GetTranslation("Root password"));
+    gtk_widget_show(label);
+    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+    
+    GtkWidget *passentry = gtk_entry_new();
+    gtk_entry_set_visibility(GTK_ENTRY(passentry), FALSE);
+    gtk_widget_show(passentry);
+    gtk_container_add(GTK_CONTAINER(hbox), passentry);
+
+    LIBSU::CLibSU suhandler;
+    bool cancelled = true;
+    while (true)
+    {
+        if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK)
+            break;
+        
+        if (!suhandler.TestSU(gtk_entry_get_text(GTK_ENTRY(passentry))))
+        {
+            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+            {
+                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Incorrect password given for root user\nPlease retype"));
+                continue;
+            }
+            else
+            {
+                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Could not use su to gain root access. "
+                        "Make sure you can use su (adding the current user to the wheel group may help)"));
+                break;
+            }
+        }
+        
+        cancelled = false;
+        break;
+    }
+    
+    if (!cancelled)
+    {
+        const char *newdir = gtk_entry_get_text(GTK_ENTRY(direntry));
+        
+        try
+        {
+            MKDirRecRoot(newdir, suhandler, gtk_entry_get_text(GTK_ENTRY(passentry)));
+            
+            // This is rather hacky... First the current viewing directory is changed to the new directory,
+            // this will trigger an internal update and emits a signal. After the this signal is launched the
+            // current selected directory is changed to the new directory. We have to force an update, because
+            // otherwise the new directory cannot be selected.
+            g_signal_connect_after(G_OBJECT(filedialog), "current-folder-changed", G_CALLBACK(UpdateDirSelCB),
+                                   CreateText(newdir));
+            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filedialog), newdir);
+        }
+        catch(Exceptions::CExIO &e)
+        {
+            MessageBox(GTK_MESSAGE_WARNING, e.what());
+        }
+    }
+    
+    gtk_widget_destroy(dialog);
+    
+    if (curdir)
+        g_free(curdir);
+}
+
+
+}
+
 void MessageBox(GtkMessageType type, const char *msg)
 {
     GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, type, GTK_BUTTONS_OK, msg);
@@ -77,4 +185,23 @@ void SetWidgetVisible(GtkWidget *w, bool v)
         gtk_widget_show(w);
     else
         gtk_widget_hide(w);
+}
+
+GtkWidget *CreateDirChooser(const char *title)
+{
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(title, NULL, GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER,
+                                                    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+                                                    GTK_RESPONSE_ACCEPT, NULL);
+    
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    gtk_widget_show(hbox);
+    
+    GtkWidget *rootbutton = CreateButton(gtk_label_new(GetTranslation("Create directory as root")));
+    g_signal_connect(G_OBJECT(rootbutton), "clicked", G_CALLBACK(CreateRootDirCB), dialog);
+    gtk_widget_show(rootbutton);
+    gtk_box_pack_end(GTK_BOX(hbox), rootbutton, FALSE, FALSE, 0);
+    
+    gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(dialog), hbox);
+    
+    return dialog;
 }

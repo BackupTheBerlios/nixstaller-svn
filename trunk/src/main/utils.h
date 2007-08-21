@@ -52,11 +52,15 @@ inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<ch
 inline char *MakeTranslation(const std::string &s) { return GetTranslation(MakeCString(s)); }
 void ConvertTabs(std::string &text);
 char *StrDup(const char *str);
+void MakeAbsolute(std::string &dir);
 std::string GetCWD(void);
 void CHDir(const char *dir);
 inline void CHDir(const std::string &dir) { CHDir(dir.c_str()); };
 void MKDir(const char *dir, int mode);
 inline void MKDir(const std::string &dir, int mode) { MKDir(dir.c_str(), mode); };
+bool MKDirNeedsRoot(std::string dir);
+void MKDirRec(std::string dir);
+void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd);
 void UName(struct utsname &u);
 void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &outh);
 std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos);
@@ -128,36 +132,6 @@ public:
     void Abort(bool canthrow=true);
     
     operator bool(void) { return !EndOfFile(); };
-};
-
-class CMKDirHelper
-{
-    char *m_szPassword;
-    bool m_bCleanPasswd;
-
-    virtual char *GetPassword(LIBSU::CLibSU &suhandler) = 0;
-    
-    void CleanPasswd(void);
-    
-protected:
-    virtual void WarnBox(const char *msg) = 0;
-
-    CMKDirHelper(bool c) : m_szPassword(NULL), m_bCleanPasswd(c) {}
-
-public:
-    virtual ~CMKDirHelper(void) { CleanPasswd(); }
-    
-    bool operator ()(std::string dir);
-};
-
-// Used by directory dialogs
-class CFrontendMKDirHelper: public CMKDirHelper
-{
-    virtual char *AskPassword(const char *msg) = 0;
-    virtual char *GetPassword(LIBSU::CLibSU &suhandler);
-    
-public:
-    CFrontendMKDirHelper(void) : CMKDirHelper(true) { }
 };
 
 #endif

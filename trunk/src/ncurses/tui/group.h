@@ -71,7 +71,7 @@ public:
     void AddWidget(CGroup *g);
     void AddWidget(CWidget *w) { CoreAddWidget(w); };
     void RemoveWidget(CWidget *w);
-    void DisableWidget(CWidget *w);
+    void EnableWidget(CWidget *w, bool e);
     TChildList &GetChildList(void) { return m_Childs; }
     bool Empty(void) { return m_Childs.empty(); }
     void RequestUpdate(void);

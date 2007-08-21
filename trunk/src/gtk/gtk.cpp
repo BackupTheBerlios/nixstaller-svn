@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <fstream>
 #include "gtk.h"
 #include "installer.h"
 
@@ -84,19 +85,16 @@ void CGTKBase::CreateAbout()
     
     GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
     GtkTextIter iter;
-    char chbuf[1024];
-    FILE *aboutfile = fopen(GetAboutFName(), "r");
+    std::string buf;
+    std::ifstream aboutfile(GetAboutFName());
+    char c;
     
     gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
     
-    while (aboutfile && fgets(chbuf, sizeof(chbuf), aboutfile))
-    {
-        gtk_text_buffer_insert(buffer, &iter, chbuf, -1);
-        gtk_text_buffer_insert(buffer, &iter, "\n", 1);
-    }
+    while (aboutfile.get(c))
+        buf += c;
     
-    if (aboutfile)
-        fclose(aboutfile);
+    gtk_text_buffer_insert(buffer, &iter, buf.c_str(), -1);
     
     GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

@@ -29,7 +29,7 @@
 #include "luamenu.h"
 #include "luaprogressbar.h"
 #include "luaradiobutton.h"
-// #include "luatextfield.h"
+#include "luatextfield.h"
 
 // -------------------------------------
 // Lua Widget Group Class
@@ -89,6 +89,13 @@ CBaseLuaImage *CLuaGroup::CreateImage(const char *file)
 CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
 {
     CLuaProgressBar *ret = new CLuaProgressBar(desc);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
+{
+    CLuaTextField *ret = new CLuaTextField(desc, wrap);
     AddWidget(ret);
     return ret;
 }

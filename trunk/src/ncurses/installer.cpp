@@ -298,8 +298,7 @@ CBaseScreen *CInstaller::CreateScreen(const std::string &title)
     return ret;
 }
 
-void CInstaller::AddScreen(int luaindex)
+void CInstaller::AddScreen(CBaseScreen *screen)
 {
-    CInstallScreen *screen = dynamic_cast<CInstallScreen *>(NLua::CheckClassData<CBaseScreen>("screen", luaindex));
-    m_InstallScreens.push_back(screen);
+    m_InstallScreens.push_back(dynamic_cast<CInstallScreen *>(screen));
 }

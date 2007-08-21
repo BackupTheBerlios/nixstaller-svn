@@ -150,6 +150,6 @@ bool CLuaCFGMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
         }
     }
     
-    return false;
+    return CLuaWidget::CoreHandleEvent(emitter, event);
 }
 

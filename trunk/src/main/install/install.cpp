@@ -73,22 +73,6 @@ void CBaseInstall::Init(int argc, char **argv)
 
 void CBaseInstall::Install(int statluafunc, int progluafunc, int outluafunc)
 {
-    class CInstMKDirHelper: public CMKDirHelper
-    {
-        CBaseInstall *m_pOwner;
-        
-        virtual void WarnBox(const char *msg) { m_pOwner->WarnBox(msg); }
-        virtual char *GetPassword(LIBSU::CLibSU &suhandler)
-        {
-            m_pOwner->GetSUPasswd("This installation requires root(administrator) privileges in"
-                    "order to continue\nPlease enter the password of the root user", true);
-            return m_pOwner->m_szPassword;
-        }
-        
-    public:
-        CInstMKDirHelper(CBaseInstall *owner) : CMKDirHelper(false), m_pOwner(owner) {}
-    };
-    
     if (!ChoiceBox(CreateText(GetTranslation("This will install %s\nContinue?"), m_InstallInfo.program_name.c_str()),
          GetTranslation("Exit program"), GetTranslation("Continue"), NULL))
         throw Exceptions::CExUser();
@@ -118,15 +102,25 @@ void CBaseInstall::Install(int statluafunc, int progluafunc, int outluafunc)
         }
         else if (!WriteAccess(destdir))
         {
+            m_bAlwaysRoot = true;
             GetSUPasswd("This installation requires root(administrator) privileges in order to continue\n"
-                    "Please enter the password of the root user", true);
+                        "Please enter the password of the root user", true);
         }
     }
     else
     {
         AddOutput("Creating destination directory...");
-        CInstMKDirHelper dirmaker(this);
-        dirmaker(destdir);
+        
+        if (MKDirNeedsRoot(destdir))
+        {
+            m_bAlwaysRoot = true;
+            GetSUPasswd("This installation requires root(administrator) privileges in order to continue\n"
+                        "Please enter the password of the root user", true);
+
+            MKDirRecRoot(destdir, m_SUHandler, m_szPassword);
+        }
+        else
+            MKDirRec(destdir);
     }
     
     CHDir(destdir);
@@ -187,8 +181,6 @@ void CBaseInstall::ExtractFiles()
     
     UpdateStatusText("Extracting files");
     
-    m_bAlwaysRoot = !WriteAccess(GetDestDir());
-    
     if (m_bAlwaysRoot)
         m_SUHandler.SetOutputFunc(ExtrSUOutFunc, this);
 
@@ -216,6 +208,7 @@ void CBaseInstall::ExtractFiles()
             m_SUHandler.SetCommand(command);
             if (!m_SUHandler.ExecuteCommand(m_szPassword))
             {
+                debugline("Error extracting files\n");
                 CleanPasswdString(m_szPassword);
                 m_szPassword = NULL;
                 throw Exceptions::CExCommand(command.c_str());
@@ -555,25 +548,25 @@ bool CBaseInstall::VerifyDestDir(void)
         // Create directory?
         if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir.c_str())))
         {
-            class CInstMKDirHelper: public CMKDirHelper
+            try
             {
-                CBaseInstall *m_pOwner;
-        
-                virtual void WarnBox(const char *msg) { m_pOwner->WarnBox(msg); }
-                virtual char *GetPassword(LIBSU::CLibSU &suhandler)
+                if (MKDirNeedsRoot(dir))
                 {
-                    m_pOwner->GetSUPasswd("Your account doesn't have permissions to "
-                            "create the directory. To create the directory and proceed the installation with the "
-                            "root (administrator) account, please enter it's password below.", false);
-                    return m_pOwner->m_szPassword;
+                    GetSUPasswd("Your account doesn't have permissions to "
+                                "create the directory. To create the directory and proceed the installation with the "
+                                "root (administrator) account, please enter it's password below.", false);
+                    MKDirRecRoot(dir, m_SUHandler, m_szPassword);
                 }
-        
-                public:
-                    CInstMKDirHelper(CBaseInstall *owner) : CMKDirHelper(false), m_pOwner(owner) {}
-            };
+                else
+                    MKDirRec(dir);
+            }
+            catch(Exceptions::CExIO &e)
+            {
+                WarnBox(e.what());
+                return false;
+            }
             
-            CInstMKDirHelper dirmaker(this);
-            return dirmaker(dir);
+            return true;
         }
         return false;
     }
@@ -687,7 +680,8 @@ int CBaseInstall::LuaNewScreen(lua_State *L)
 int CBaseInstall::LuaAddScreen(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
-    pInstaller->AddScreen(1);
+    CBaseScreen *screen = NLua::CheckClassData<CBaseScreen>("screen", 1);
+    pInstaller->AddScreen(screen);
     lua_pop(NLua::LuaState, 1);
     return 0;
 }

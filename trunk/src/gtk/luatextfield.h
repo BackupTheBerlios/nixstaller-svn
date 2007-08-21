@@ -17,43 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef BASESCROLL
-#define BASESCROLL
+#ifndef GTK_LUATEXTFIELD_H
+#define GTK_LUATEXTFIELD_H
 
-#include "group.h"
+#include "main/install/luatextfield.h"
+#include "luawidget.h"
 
-namespace NNCurses {
-
-class CScrollbar;
-
-class CBaseScroll: public CGroup
+class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
 {
-protected:
-    typedef std::pair<int, int> TScrollRange;
+    GtkWidget *m_pTextField;
+    GtkTextMark *m_pBottomMark;
     
-private:
-    CScrollbar *m_pVScrollbar, *m_pHScrollbar;
-    TScrollRange m_CurRange;
+    virtual void Load(const char *file);
+    virtual void AddText(const char *text);
+    virtual void UpdateFollow(void);
+    virtual void CoreActivateWidget(void);
     
-    void DoScroll(void);
-    void SyncBars(void);
-    
-protected:
-    virtual void UpdateSize(void) { UpdateLayout(); CGroup::UpdateSize(); }
-    virtual void CoreDraw(void);
-    virtual void CoreDrawLayout(void);
-    virtual void CoreScroll(int vscroll, int hscroll) {  }
-    virtual TScrollRange CoreGetRange(void) = 0;
-    virtual TScrollRange CoreGetScrollRegion(void) = 0;
-
-    void VScroll(int n, bool relative);
-    void HScroll(int n, bool relative);
-
-    CBaseScroll(void);
+public:
+    CLuaTextField(const char *desc, bool wrap);
 };
-
-
-}
-
 
 #endif

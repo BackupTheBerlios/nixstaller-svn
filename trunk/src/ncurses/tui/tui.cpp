@@ -165,6 +165,11 @@ void CTUI::QueueDraw(CWidget *w)
     if (!w->Enabled())
         return;
     
+    // Uninitialized widgets aren't allowed, because we want to know any parenting and they _should_ be
+    // refreshed by their parent anyway
+    if (!w->GetWin())
+        return;
+    
     bool done = false;
     while (!done)
     {
@@ -176,6 +181,7 @@ void CTUI::QueueDraw(CWidget *w)
             {
                 // Move to end of queue
                 m_QueuedDrawWidgets.erase(it);
+                done = false;
                 break;
             }
             else if (IsParent(*it, w))

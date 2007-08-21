@@ -31,7 +31,7 @@ using namespace LIBSU;
 
 static const char *TermStr = "I'm Done Now :)\n"; // Lets just hope another program doesn't output this ;)
 
-CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szUser("root"), m_szPath("/bin:/usr/bin"),
+CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), m_szUser("root"), m_szPath("/bin:/usr/bin"),
                                     m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
                                     m_pCustomOutputData(NULL)
 {

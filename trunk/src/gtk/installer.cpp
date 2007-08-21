@@ -341,15 +341,14 @@ CBaseScreen *CInstaller::CreateScreen(const std::string &title)
     return new CInstallScreen(title, this);
 }
 
-void CInstaller::AddScreen(int luaindex)
+void CInstaller::AddScreen(CBaseScreen *screen)
 {
-    CInstallScreen *screen = dynamic_cast<CInstallScreen *>(NLua::CheckClassData<CBaseScreen>("screen", luaindex));
+    CInstallScreen *gtkscreen = dynamic_cast<CInstallScreen *>(screen);
     
-    screen->Init();
-
-    gtk_object_set_user_data(GTK_OBJECT(screen->GetBox()), screen);
-    gtk_widget_show(screen->GetBox());
-    gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), screen->GetBox(), NULL);
+    gtkscreen->Init();
+    gtk_object_set_user_data(GTK_OBJECT(gtkscreen->GetBox()), gtkscreen);
+    gtk_widget_show(gtkscreen->GetBox());
+    gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), gtkscreen->GetBox(), NULL);
 }
 
 void CInstaller::InstallThink()

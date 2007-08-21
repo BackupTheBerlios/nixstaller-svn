@@ -37,7 +37,7 @@ namespace Exceptions {
 
 class CException: public std::exception
 {
-    char m_szBuffer[512];
+    char m_szBuffer[1024];
     
 protected:
     const char *FormatText(const char *str, ...)
@@ -45,8 +45,8 @@ protected:
         va_list v;
     
         va_start(v, str);
-        vsnprintf(m_szBuffer, sizeof(m_szBuffer), str, v);
-        m_szBuffer[511] = 0;
+        vsnprintf(m_szBuffer, sizeof(m_szBuffer)-1, str, v);
+        m_szBuffer[sizeof(m_szBuffer)-1] = 0;
         va_end(v);
         
         return m_szBuffer;
@@ -220,6 +220,15 @@ class CExMKDir: public CExErrno, public CExIO
 public:
     CExMKDir(int err) : CExErrno(err) { };
     virtual const char *what(void) throw() { return FormatText("Could not create directory: %s", Error()); };
+};
+
+class CExRootMKDir: public CExIO
+{
+    const char *m_szDir;
+    
+public:
+    CExRootMKDir(const char *dir) : m_szDir(dir) { };
+    virtual const char *what(void) throw() { return FormatText("Could not create directory \'%s\'", m_szDir); };
 };
 
 class CExFrontend: public CExMessage

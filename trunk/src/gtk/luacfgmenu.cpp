@@ -47,7 +47,7 @@ GtkWidget *CLuaCFGMenu::CreateVarListBox()
 {
     // Scrolling window for treeview
     GtkWidget *sw = gtk_scrolled_window_new(0, 0);
-    gtk_widget_set_size_request(sw, -1, 175);
+    gtk_widget_set_size_request(sw, -1, 150);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_ETCHED_IN);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     
@@ -109,6 +109,7 @@ GtkWidget *CLuaCFGMenu::CreateDirSelector()
     gtk_container_add(GTK_CONTAINER(box), m_pDirInput);
     
     GtkWidget *button = CreateButton(m_pDirButtonLabel = gtk_label_new(GetTranslation("Browse")), GTK_STOCK_OPEN);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(BrowseCB), this);
     gtk_widget_show(button);
     gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
     
@@ -267,3 +268,22 @@ void CLuaCFGMenu::ComboBoxChangedCB(GtkComboBox *widget, gpointer data)
         }
     }
 }
+
+void CLuaCFGMenu::BrowseCB(GtkWidget *widget, gpointer data)
+{
+    CLuaCFGMenu *menu = static_cast<CLuaCFGMenu *>(data);
+    std::string selection = menu->CurSelection();
+    GtkWidget *dialog = CreateDirChooser(CreateText(GetTranslation("Please enter a new value for %s"),
+                                                                   GetTranslation(selection.c_str())));
+    
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        menu->GetVariables()[selection]->val = filename;
+        gtk_entry_set_text(GTK_ENTRY(menu->m_pDirInput), filename);
+        g_free(filename);
+    }
+    
+    gtk_widget_destroy(dialog);
+}
+
