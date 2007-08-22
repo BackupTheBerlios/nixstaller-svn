@@ -122,6 +122,7 @@ void CTextField::CoreDrawLayout()
 void CTextField::CoreGetButtonDescs(TButtonDescList &list)
 {
     list.push_back(TButtonDescPair("ARROWS/PGUP/PGDOWN/HOME/END", "Navigate"));
+    CBaseScroll::CoreGetButtonDescs(list);
 }
 
 void CTextField::CoreScroll(int vscroll, int hscroll)

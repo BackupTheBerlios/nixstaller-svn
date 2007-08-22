@@ -108,7 +108,7 @@ void CInstaller::PrevScreen()
         UpdateButtons();
         
         if (CanFocusChilds(m_pScreenBox))
-            FocusWidget(m_pScreenBox);
+            m_pScreenBox->ReqFocus();
         
         return;
     }
@@ -139,7 +139,7 @@ void CInstaller::NextScreen()
         UpdateButtons();
         
         if (CanFocusChilds(m_pScreenBox))
-            FocusWidget(m_pScreenBox);
+            m_pScreenBox->ReqFocus();
 
         return;
     }
@@ -190,12 +190,9 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
         m_CurrentScreen++;
     
     if (CanFocusChilds(m_pScreenBox))
-        FocusWidget(m_pScreenBox);
+        m_pScreenBox->ReqFocus();
     else
-    {
-        m_pButtonBox->FocusWidget(m_pNextButton);
-        FocusWidget(m_pButtonBox);
-    }
+        m_pNextButton->ReqFocus();
 }
 
 void CInstaller::InstallThink()
@@ -243,8 +240,7 @@ bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
         {
             // All unhandled callback events will focus next button.
             // This is usefull when user presses enter key in menus and such
-            FocusWidget(m_pButtonBox);
-            m_pButtonBox->FocusWidget(m_pNextButton);
+            m_pNextButton->ReqFocus();
             return true;
         }
     }

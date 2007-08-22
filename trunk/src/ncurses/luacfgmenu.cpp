@@ -153,3 +153,8 @@ bool CLuaCFGMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
     return CLuaWidget::CoreHandleEvent(emitter, event);
 }
 
+void CLuaCFGMenu::CoreGetButtonDescs(NNCurses::TButtonDescList &list)
+{
+    list.push_back(NNCurses::TButtonDescPair("ENTER", "Change"));
+    CLuaWidget::CoreGetButtonDescs(list);
+}

@@ -138,7 +138,8 @@ public:
     
     bool Focused(void) { return m_bFocused; }
     bool CanFocus(void) { return CoreCanFocus(); }
-    void Focus(bool f) { m_bFocused = f; m_bColorsChanged = true; UpdateFocus(); }
+    void SetFocus(bool f); // This function applies the focus, and must only be used internally or when disabling focus
+    void ReqFocus(void) { PushEvent(EVENT_REQFOCUS); } // This function asks for focus, and should be used by the user
     
     void Enable(bool e);
     bool Enabled(void) { return m_bEnabled; }

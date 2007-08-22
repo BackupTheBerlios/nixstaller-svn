@@ -28,7 +28,6 @@ namespace NNCurses {
     class CTextField;
 }
 
-
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
 {
     NNCurses::CMenu *m_pMenu;
@@ -44,6 +43,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
 protected:
     virtual void CoreInit(void) { UpdateDesc(); }
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
+    virtual void CoreGetButtonDescs(NNCurses::TButtonDescList &list);
     
 public:
     CLuaCFGMenu(const char *desc);

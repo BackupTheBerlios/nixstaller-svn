@@ -46,6 +46,7 @@ protected:
     virtual void UpdateSize(void);
     virtual void UpdateFocus(void);
     virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
     virtual void CoreRemoveWidget(CWidget *w) { }
     virtual void CoreFocusWidget(CWidget *w);
@@ -54,6 +55,7 @@ protected:
     virtual void CoreDrawLayout(void) { }
 
     bool CanFocusChilds(CWidget *w);
+    void FocusWidget(CWidget *w) { CoreFocusWidget(w); }
     void InitChild(CWidget *w);
     void DrawChilds(void) { CoreDrawChilds(); }
     CWidget *GetFocusedWidget(void) { return m_pFocusedWidget; }
@@ -76,7 +78,6 @@ public:
     bool Empty(void) { return m_Childs.empty(); }
     void RequestUpdate(void);
     
-    void FocusWidget(CWidget *w) { CoreFocusWidget(w); }
     bool SetNextFocWidget(bool cont); // cont : Checks widget after current focused widget
     bool SetPrevFocWidget(bool cont);
     void SetValidWidget(CWidget *ignore);

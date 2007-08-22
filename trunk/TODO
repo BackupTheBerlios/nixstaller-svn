@@ -21,6 +21,7 @@ OVERALL
 - Check if exceptions are thrown incase widget is too big
 - Search for nice default logo
 - Way to specify extra (image) files
+- Check if all lua screens, groups, widgets are destroyed
 
 
 DOCS
@@ -39,6 +40,7 @@ TRANSLATIONS
 - Check all sentences for punctation
 - "Not enough space for buttonbar entry" - ncurses bbar
 - New Error messages used by exceptions and luaL_argcheck
+- Change (ncurses bbar)
 
 
 MAIN

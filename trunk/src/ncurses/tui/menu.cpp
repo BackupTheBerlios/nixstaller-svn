@@ -158,6 +158,7 @@ void CMenu::CoreGetButtonDescs(TButtonDescList &list)
 {
     list.push_back(TButtonDescPair("ARROWS/PGUP/PGDOWN", "Navigate"));
     list.push_back(TButtonDescPair("Character", "Move to"));
+    CBaseScroll::CoreGetButtonDescs(list);
 }
 
 void CMenu::CoreDrawLayout()

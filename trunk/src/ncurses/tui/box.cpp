@@ -307,15 +307,9 @@ bool CBox::CoreHandleEvent(CWidget *emitter, int event)
             
             return true;
         }
-        else if (event == EVENT_REQFOCUS)
-        {
-            FocusWidget(emitter);
-            PushEvent(EVENT_REQFOCUS);
-            return true;
-        }
     }
     
-    return false;
+    return CGroup::CoreHandleEvent(emitter, event);
 }
 
 void CBox::CoreRemoveWidget(CWidget *w)

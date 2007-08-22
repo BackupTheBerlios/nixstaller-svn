@@ -88,7 +88,7 @@ void CGroup::UpdateSize()
 void CGroup::UpdateFocus()
 {
     if (m_pFocusedWidget)
-        m_pFocusedWidget->Focus(Focused());
+        m_pFocusedWidget->SetFocus(Focused());
     else if (Focused())
         SetNextFocWidget(false);
     
@@ -109,6 +109,18 @@ bool CGroup::CoreHandleKey(chtype key)
         return m_pFocusedWidget->HandleKey(key);
 
     return false;
+}
+
+bool CGroup::CoreHandleEvent(CWidget *emitter, int event)
+{
+    if (event == EVENT_REQFOCUS)
+    {
+        FocusWidget(emitter);
+        PushEvent(EVENT_REQFOCUS);
+        return true;
+    }
+
+    return CWidget::CoreHandleEvent(emitter, event);
 }
 
 void CGroup::CoreDrawChilds(void)
@@ -178,7 +190,7 @@ void CGroup::CoreFocusWidget(CWidget *w)
     
     if (m_pFocusedWidget)
     {
-        m_pFocusedWidget->Focus(false);
+        m_pFocusedWidget->SetFocus(false);
         m_pFocusedWidget->RequestQueuedDraw();
     }
     
@@ -186,7 +198,7 @@ void CGroup::CoreFocusWidget(CWidget *w)
     
     if (w && Focused()) // If w == NULL the current focused widget is reset
     {
-        w->Focus(true);
+        w->SetFocus(true);
         w->RequestQueuedDraw();
     }
 }

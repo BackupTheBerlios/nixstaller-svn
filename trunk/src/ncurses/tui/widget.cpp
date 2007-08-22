@@ -188,6 +188,18 @@ WINDOW *CWidget::GetParentWin()
     return (m_pParent) ? m_pParent->GetWin() : m_pParentWin;
 }
 
+void CWidget::SetFocus(bool f)
+{
+    bool changed = f != m_bFocused;
+    
+    if (changed)
+    {
+        m_bFocused = f;
+        m_bColorsChanged = true;
+        UpdateFocus();
+    }
+}
+
 void CWidget::Enable(bool e)
 {
     if (e != m_bEnabled)
