@@ -41,6 +41,7 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     
     m_pEntry = gtk_entry_new();
     g_signal_connect(G_OBJECT(m_pEntry), "insert_text", G_CALLBACK(InsertCB), const_cast<char *>(type));
+    g_signal_connect(G_OBJECT(m_pEntry), "changed", G_CALLBACK(InputChangedCB), this);
     
     if (val && *val)
         gtk_entry_set_text(GTK_ENTRY(m_pEntry), val);
@@ -109,4 +110,10 @@ void CLuaInputField::InsertCB(GtkEditable *editable, gchar *nt, gint new_text_le
         if (strpbrk(nt, legal.c_str()) == NULL)
             g_signal_stop_emission(editable, g_signal_lookup("insert_text", g_type_from_name("GtkEditable")), 0);
     }
+}
+
+void CLuaInputField::InputChangedCB(GtkEditable *widget, gpointer data)
+{
+    CLuaInputField *input = static_cast<CLuaInputField *>(data);
+    input->LuaDataChanged();
 }

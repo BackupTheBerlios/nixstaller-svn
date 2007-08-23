@@ -64,11 +64,7 @@ void CLuaTextField::Load(const char *file)
     gtk_text_buffer_insert(textbuffer, &iter, buf.c_str(), -1);
     
     if (Follow())
-    {
-        GtkTextMark *mark = gtk_text_buffer_get_mark(textbuffer, "scroll");
-        gtk_text_buffer_move_mark(textbuffer, mark, &iter);
-        gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(m_pTextField), mark);
-    }
+        DoFollow(textbuffer, &iter);
 }
 
 void CLuaTextField::AddText(const char *text)
@@ -77,6 +73,9 @@ void CLuaTextField::AddText(const char *text)
     GtkTextIter iter;
     gtk_text_buffer_get_end_iter(textbuffer, &iter);
     gtk_text_buffer_insert(textbuffer, &iter, text, -1);
+    
+    if (Follow())
+        DoFollow(textbuffer, &iter);
 }
 
 void CLuaTextField::UpdateFollow()
@@ -86,4 +85,11 @@ void CLuaTextField::UpdateFollow()
 void CLuaTextField::CoreActivateWidget()
 {
     gtk_widget_grab_focus(m_pTextField);
+}
+
+void CLuaTextField::DoFollow(GtkTextBuffer *textbuffer, GtkTextIter *iter)
+{
+    GtkTextMark *mark = gtk_text_buffer_get_mark(textbuffer, "scroll");
+    gtk_text_buffer_move_mark(textbuffer, mark, iter);
+    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(m_pTextField), mark);
 }

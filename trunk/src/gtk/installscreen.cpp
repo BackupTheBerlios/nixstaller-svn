@@ -48,6 +48,7 @@ CBaseLuaGroup *CInstallScreen::CreateGroup()
     CLuaGroup *ret = new CLuaGroup();
     gtk_object_set_user_data(GTK_OBJECT(ret->GetBox()), ret);
     gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), TRUE, FALSE, WidgetGroupSpacing());
+    gtk_widget_hide(ret->GetBox());
     return ret;
 }
 
@@ -71,6 +72,9 @@ void CInstallScreen::ResetWidgetRange()
     int h = 0;
     for (; entry; entry=g_list_next(entry))
     {
+        if (ContainerEmpty(GTK_CONTAINER(GTK_WIDGET(entry->data))))
+            continue;
+        
         h += GetTotalWidgetH(GTK_WIDGET(entry->data));
 
         if (h <= MaxScreenHeight())
@@ -99,6 +103,9 @@ void CInstallScreen::UpdateCounter()
     
     for (; entry; entry=g_list_next(entry))
     {
+        if (ContainerEmpty(GTK_CONTAINER(entry->data)))
+            continue;
+
         const int wh = GetTotalWidgetH(GTK_WIDGET(entry->data));
         
         if ((h + wh) > MaxScreenHeight())
@@ -215,6 +222,9 @@ bool CInstallScreen::SubBack()
         {
             while ((entry = g_list_previous(entry)) && (h <= MaxScreenHeight()))
             {
+                if (ContainerEmpty(GTK_CONTAINER(entry->data)))
+                    continue;
+
                 h += GetTotalWidgetH(GTK_WIDGET(entry->data));
                 
                 if (h <= MaxScreenHeight())
@@ -264,6 +274,9 @@ bool CInstallScreen::SubNext()
         {
             while ((entry = g_list_next(entry)) && (h <= MaxScreenHeight()))
             {
+                if (ContainerEmpty(GTK_CONTAINER(entry->data)))
+                    continue;
+
                 h += GetTotalWidgetH(GTK_WIDGET(entry->data));
                 
                 if (h <= MaxScreenHeight())

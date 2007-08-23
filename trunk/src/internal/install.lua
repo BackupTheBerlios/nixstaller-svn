@@ -48,11 +48,11 @@ function GenerateDefaultScreens()
     package.path = "?.lua"
     package.cpath = ""
     LangScreen = require "langscreen"
---     OLDG.WelcomeScreen = require "welcomescreen"
---     OLDG.LicenseScreen = require "licensescreen"
---     OLDG.SelectDirScreen = require "selectdirscreen"
+    OLDG.WelcomeScreen = require "welcomescreen"
+    OLDG.LicenseScreen = require "licensescreen"
+    OLDG.SelectDirScreen = require "selectdirscreen"
     OLDG.InstallScreen = require "installscreen"
---     OLDG.FinishScreen = require "finishscreen"
+    OLDG.FinishScreen = require "finishscreen"
 end
 
 function LoadConfig()

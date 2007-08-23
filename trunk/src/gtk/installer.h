@@ -24,12 +24,14 @@ class CInstallScreen;
 
 class CInstaller: public CGTKBase, public CBaseInstall
 {
-    GtkWidget *m_pTitle;
+    GtkWidget *m_pTitle, *m_pAboutLabel;
     GtkWidget *m_pCancelLabel, *m_pBackLabel, *m_pNextLabel;
     GtkWidget *m_pCancelButton, *m_pBackButton, *m_pNextButton;
     GtkWidget *m_pWizard;
     bool m_bPrevButtonLocked;
     std::string m_CurTitle;
+    
+    void SetAboutLabel(void);
     
     void InitAboutSection(GtkWidget *parentbox);
     void InitScreenSection(GtkWidget *parentbox);

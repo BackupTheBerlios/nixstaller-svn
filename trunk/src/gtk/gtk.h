@@ -58,6 +58,6 @@ inline int MaxScreenHeight(void) { return 300; }
 inline int WidgetGroupSpacing(void) { return 10; }
 inline int MaxWidgetWidth(void) { return 600; }
 inline int MaxWidgetHeight(void) { return MaxScreenHeight() - (2*WidgetGroupSpacing()); }
-
+bool ContainerEmpty(GtkContainer *c);
 
 #endif

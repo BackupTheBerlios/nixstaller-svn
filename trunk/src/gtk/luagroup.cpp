@@ -22,7 +22,7 @@
 #include "luagroup.h"
 #include "luacfgmenu.h"
 #include "luacheckbox.h"
-// #include "luadirselector.h"
+#include "luadirselector.h"
 #include "luaimage.h"
 #include "luainput.h"
 #include "lualabel.h"
@@ -59,6 +59,13 @@ CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<
 CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
 {
     CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaDirSelector *CLuaGroup::CreateDirSelector(const char *desc, const char *val)
+{
+    CLuaDirSelector *ret = new CLuaDirSelector(desc, val);
     AddWidget(ret);
     return ret;
 }

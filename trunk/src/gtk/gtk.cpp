@@ -110,6 +110,7 @@ void CGTKBase::CreateAbout()
 
 void CGTKBase::ShowAbout()
 {
+    gtk_window_set_title(GTK_WINDOW(m_pAboutDialog), GetTranslation("About"));
     gtk_dialog_run(GTK_DIALOG(m_pAboutDialog));
     gtk_widget_hide(m_pAboutDialog);
 }

@@ -23,7 +23,7 @@
 #include "tui/inputfield.h"
 
 // -------------------------------------
-// Lua Config Menu Class
+// Lua directory selector Class
 // -------------------------------------
 
 CLuaDirSelector::CLuaDirSelector(const char *desc, const char *val) : CBaseLuaWidget(desc)

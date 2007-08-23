@@ -17,25 +17,26 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef GTK_LUATEXTFIELD_H
-#define GTK_LUATEXTFIELD_H
+#ifndef GTK_LUADIRSELECTOR_H
+#define GTK_LUADIRSELECTOR_H
 
-#include "main/install/luatextfield.h"
+#include "main/install/luadirselector.h"
 #include "luawidget.h"
 
-class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
+class CLuaDirSelector: public CBaseLuaDirSelector, public CLuaWidget
 {
-    GtkWidget *m_pTextField;
+    GtkWidget *m_pDirInput, *m_pDirButtonLabel;
     
-    virtual void Load(const char *file);
-    virtual void AddText(const char *text);
-    virtual void UpdateFollow(void);
+    virtual const char *GetDir(void);
+    virtual void SetDir(const char *dir);
+    virtual void CoreUpdateLanguage(void);
     virtual void CoreActivateWidget(void);
     
-    void DoFollow(GtkTextBuffer *textbuffer, GtkTextIter *iter);
-    
 public:
-    CLuaTextField(const char *desc, bool wrap);
+    CLuaDirSelector(const char *desc, const char *val);
+    
+    static void InputChangedCB(GtkEditable *widget, gpointer data);
+    static void BrowseCB(GtkWidget *widget, gpointer data);
 };
 
 #endif

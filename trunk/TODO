@@ -41,6 +41,7 @@ TRANSLATIONS
 - "Not enough space for buttonbar entry" - ncurses bbar
 - New Error messages used by exceptions and luaL_argcheck
 - Change (ncurses bbar)
+- %s is now being installed - InstallScreen title
 
 
 MAIN
@@ -74,8 +75,6 @@ NCURSES
 
 GTK
 - Move main window away from base frontend class?
-- Check dirselectors for adding dirs as root
-- Check if empty groups are shown
 
 
 FLTK

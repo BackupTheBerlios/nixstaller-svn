@@ -39,6 +39,7 @@ public:
     
     static void InsertCB(GtkEditable *editable, gchar *nt, gint new_text_length, gint *position,
                          gpointer data);
+    static void InputChangedCB(GtkEditable *widget, gpointer data);
 };
 
 #endif

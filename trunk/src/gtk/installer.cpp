@@ -47,33 +47,43 @@ void SetHandCursor(GtkWidget *widget, bool on)
 // Install Frontend Class
 // -------------------------------------
 
+void CInstaller::SetAboutLabel()
+{
+    gtk_label_set_markup(GTK_LABEL(m_pAboutLabel),
+                         CreateText("<span size=\"small\" color=\"blue\"><u>%s</u></span>", GetTranslation("About")));
+}
+
 void CInstaller::InitAboutSection(GtkWidget *parentbox)
 {
+    // Event box for setting background header
     GdkColor colors;
-    colors.red = colors.blue = colors.green = 65535;
-    
+    gdk_color_parse("white", &colors);
     GtkWidget *eb = gtk_event_box_new();
     gtk_widget_modify_bg(eb, GTK_STATE_NORMAL, &colors);
-    gtk_box_pack_start(GTK_BOX(parentbox), eb, FALSE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(parentbox), eb);
+
+    // VBox so that header can have extra spacing
+    GtkWidget *topbox = gtk_vbox_new(FALSE, 0);
+    gtk_widget_show(topbox);
+    gtk_container_add(GTK_CONTAINER(eb), topbox);
 
     GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(eb), hbox);
+    gtk_box_pack_start(GTK_BOX(topbox), hbox, TRUE, TRUE, 5);
 
-    GtkWidget *image = gtk_image_new_from_file("/home/rick/out_of_the_box_nicu_bucu_01.png");
+    GtkWidget *image = gtk_image_new_from_file("installer.png");
     gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 5);
 
-    GtkWidget *titlebox = gtk_vbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), titlebox, TRUE, TRUE, 0);
-    
     m_pTitle = gtk_label_new(NULL);
     gtk_widget_set_size_request(m_pTitle, 500, -1);
     gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
     gtk_label_set_justify(GTK_LABEL(m_pTitle), GTK_JUSTIFY_CENTER);
-    gtk_box_pack_start(GTK_BOX(titlebox), m_pTitle, TRUE, TRUE, 15);
+    gtk_container_add(GTK_CONTAINER(hbox), m_pTitle);
     
+    // Box for getting About link on top
     GtkWidget *aboutbox = gtk_vbox_new(FALSE, 0);
     gtk_box_pack_end(GTK_BOX(hbox), aboutbox, FALSE, FALSE, 5);
     
+    // Event box so about link can recieve button clicks
     GtkWidget *abouteb = gtk_event_box_new();
     g_signal_connect(G_OBJECT(abouteb), "button-press-event", G_CALLBACK(AboutCB), this);
     g_signal_connect(G_OBJECT(abouteb), "enter_notify_event", G_CALLBACK(AboutEnterCB), NULL);
@@ -81,10 +91,9 @@ void CInstaller::InitAboutSection(GtkWidget *parentbox)
     gtk_widget_modify_bg(abouteb, GTK_STATE_NORMAL, &colors);
     gtk_box_pack_start(GTK_BOX(aboutbox), abouteb, FALSE, FALSE, 5);
     
-    GtkWidget *label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(label),
-                         CreateText("<span size=\"small\" color=\"blue\"><u>%s</u></span>", GetTranslation("About")));
-    gtk_container_add(GTK_CONTAINER(abouteb), label);
+    m_pAboutLabel = gtk_label_new(NULL);
+    SetAboutLabel();
+    gtk_container_add(GTK_CONTAINER(abouteb), m_pAboutLabel);
 }
 
 void CInstaller::InitScreenSection(GtkWidget *parentbox)
@@ -182,13 +191,12 @@ void CInstaller::UpdateButtons(void)
     CInstallScreen *curscreen = GetScreen(gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard)));
     
     if (FirstValidScreen() && !curscreen->HasPrevWidgets())
-        gtk_widget_hide(m_pBackButton);
+        gtk_widget_set_sensitive(m_pBackButton, FALSE);
     else if (!m_bPrevButtonLocked)
-        gtk_widget_show(m_pBackButton);
+        gtk_widget_set_sensitive(m_pBackButton, TRUE);
     
     if (LastValidScreen() && !curscreen->HasNextWidgets())
     {
-//         gtk_label_set(GTK_LABEL(m_pNextLabel), g_locale_to_utf8(GetTranslation("Finish"), -1, 0, 0, 0));
         gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Finish"));
         SetButtonStock(m_pNextButton, GTK_STOCK_QUIT);
     }
@@ -299,6 +307,8 @@ void CInstaller::UpdateLanguage()
 {
     CBaseInstall::UpdateLanguage();
     
+    SetAboutLabel();
+    
     gtk_label_set(GTK_LABEL(m_pCancelLabel), GetTranslation("Cancel"));
     gtk_label_set(GTK_LABEL(m_pBackLabel), GetTranslation("Back"));
     gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Next"));
@@ -358,9 +368,9 @@ void CInstaller::InstallThink()
 
 void CInstaller::LockScreen(bool cancel, bool prev, bool next)
 {
-    SetWidgetVisible(m_pCancelButton, !cancel);
-    SetWidgetVisible(m_pBackButton, !prev);
-    SetWidgetVisible(m_pNextButton, !next);
+    gtk_widget_set_sensitive(m_pCancelButton, !cancel);
+    gtk_widget_set_sensitive(m_pBackButton, !prev);
+    gtk_widget_set_sensitive(m_pNextButton, !next);
     m_bPrevButtonLocked = prev;
 }
 

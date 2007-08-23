@@ -205,3 +205,13 @@ GtkWidget *CreateDirChooser(const char *title)
     
     return dialog;
 }
+
+bool ContainerEmpty(GtkContainer *c)
+{
+    GList *list = gtk_container_get_children(c);
+    if (!list)
+        return true;
+    
+    g_list_free(list);
+    return false;
+}

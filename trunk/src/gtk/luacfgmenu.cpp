@@ -275,6 +275,7 @@ void CLuaCFGMenu::BrowseCB(GtkWidget *widget, gpointer data)
     std::string selection = menu->CurSelection();
     GtkWidget *dialog = CreateDirChooser(CreateText(GetTranslation("Please enter a new value for %s"),
                                                                    GetTranslation(selection.c_str())));
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), gtk_entry_get_text(GTK_ENTRY(menu->m_pDirInput)));
     
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
     {
