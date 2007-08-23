@@ -19,7 +19,6 @@ OVERALL
 - Check virtual base constructor title thing from lua widgets
 - cfgmenu:addlist - take initial value as argument
 - Check if exceptions are thrown incase widget is too big
-- Search for nice default logo
 - Way to specify extra (image) files
 - Check if all lua screens, groups, widgets are destroyed
 
