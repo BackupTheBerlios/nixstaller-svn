@@ -44,6 +44,17 @@ void CBaseLuaGroup::AddWidget(CBaseLuaWidget *w, const char *type)
     m_WidgetList.push_back(w);
 }
 
+void CBaseLuaGroup::DeleteWidgets()
+{
+    debugline("Deleting %u widgets...\n", m_WidgetList.size());
+    
+    while (!m_WidgetList.empty())
+    {
+        delete m_WidgetList.back();
+        m_WidgetList.pop_back();
+    }
+}
+
 void CBaseLuaGroup::UpdateLanguage()
 {
     for (TWidgetList::iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)

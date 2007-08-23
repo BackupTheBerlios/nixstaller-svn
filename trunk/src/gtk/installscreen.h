@@ -34,7 +34,7 @@ class CInstallScreen: public CBaseScreen
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void) {}
     
-    int GetTotalWidgetH(GtkWidget *w);
+    int CheckTotalWidgetH(GtkWidget *w);
     void ResetWidgetRange(void);
     void UpdateCounter(void);
     bool CheckWidgets(void);
@@ -44,6 +44,7 @@ protected:
     
 public:
     CInstallScreen(const std::string &title, CInstaller *owner);
+    virtual ~CInstallScreen(void) { DeleteGroups(); }
     
     void Init(void) { ResetWidgetRange(); }
     GtkWidget *GetBox(void) { return m_pMainBox; }

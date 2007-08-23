@@ -54,6 +54,11 @@ class CBaseLuaGroup
     
     void AddWidget(CBaseLuaWidget *w, const char *type);
     
+protected:
+    // This function is not called by the destructor, because in some frontends a lua widget is part of the gui and will
+    // be automaticly deleted
+    void DeleteWidgets(void);
+    
 public:
     virtual ~CBaseLuaGroup(void) {}
     

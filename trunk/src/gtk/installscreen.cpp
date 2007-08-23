@@ -52,11 +52,17 @@ CBaseLuaGroup *CInstallScreen::CreateGroup()
     return ret;
 }
 
-int CInstallScreen::GetTotalWidgetH(GtkWidget *w)
+int CInstallScreen::CheckTotalWidgetH(GtkWidget *w)
 {
     GtkRequisition req;
     gtk_widget_size_request(w, &req);
-    return (req.height + (WidgetGroupSpacing()*2));
+    
+    int ret = (req.height + (WidgetGroupSpacing()*2));
+    
+    if (ret > MaxScreenHeight())
+        throw Exceptions::CExOverflow("Not enough space for widget.");
+    
+    return ret;
 }
 
 void CInstallScreen::ResetWidgetRange()
@@ -75,7 +81,7 @@ void CInstallScreen::ResetWidgetRange()
         if (ContainerEmpty(GTK_CONTAINER(GTK_WIDGET(entry->data))))
             continue;
         
-        h += GetTotalWidgetH(GTK_WIDGET(entry->data));
+        h += CheckTotalWidgetH(GTK_WIDGET(entry->data));
 
         if (h <= MaxScreenHeight())
         {
@@ -106,7 +112,7 @@ void CInstallScreen::UpdateCounter()
         if (ContainerEmpty(GTK_CONTAINER(entry->data)))
             continue;
 
-        const int wh = GetTotalWidgetH(GTK_WIDGET(entry->data));
+        const int wh = CheckTotalWidgetH(GTK_WIDGET(entry->data));
         
         if ((h + wh) > MaxScreenHeight())
         {
@@ -225,7 +231,7 @@ bool CInstallScreen::SubBack()
                 if (ContainerEmpty(GTK_CONTAINER(entry->data)))
                     continue;
 
-                h += GetTotalWidgetH(GTK_WIDGET(entry->data));
+                h += CheckTotalWidgetH(GTK_WIDGET(entry->data));
                 
                 if (h <= MaxScreenHeight())
                 {
@@ -277,7 +283,7 @@ bool CInstallScreen::SubNext()
                 if (ContainerEmpty(GTK_CONTAINER(entry->data)))
                     continue;
 
-                h += GetTotalWidgetH(GTK_WIDGET(entry->data));
+                h += CheckTotalWidgetH(GTK_WIDGET(entry->data));
                 
                 if (h <= MaxScreenHeight())
                 {
@@ -301,4 +307,3 @@ bool CInstallScreen::SubNext()
     
     return false;
 }
-

@@ -63,6 +63,16 @@ void CInstallScreen::CoreUpdateLanguage(void)
         m_pTitle->SetText(GetTranslation(GetTitle()));
 }
 
+int CInstallScreen::CheckWidgetHeight(NNCurses::CWidget *w)
+{
+    int ret = m_pGroupBox->GetTotalWidgetH(w);
+    
+    if (ret > MaxScreenHeight())
+        throw Exceptions::CExOverflow("Not enough space for widget.");
+    
+    return ret;
+}
+
 void CInstallScreen::ResetWidgetRange()
 {
     m_WidgetRange.first = m_WidgetRange.second = NULL;
@@ -77,10 +87,14 @@ void CInstallScreen::ResetWidgetRange()
         
         for (TChildList::const_iterator it=list.begin(); it!=list.end(); it++)
         {
-            if (h < MaxScreenHeight())
+            CGroup *g = m_pGroupBox->GetGroupWidget(*it);
+            if (g && g->Empty())
+                continue;
+            
+            if (h <= MaxScreenHeight())
             {
-                h += m_pGroupBox->GetTotalWidgetH(*it);
-                if (h < MaxScreenHeight())
+                h += CheckWidgetHeight(*it);
+                if (h <= MaxScreenHeight())
                 {
                     (*it)->Enable(true);
                     m_WidgetRange.second = *it;
@@ -97,10 +111,9 @@ void CInstallScreen::ResetWidgetRange()
 
 int CInstallScreen::MaxScreenHeight() const
 {
-    // 5: Additional height needed by window frames and such (hacky)
+    // 7: Additional height needed by window frames and such (hacky)
     // +1: Spacing from title label
-    int ret = NNCurses::GetMaxHeight() - (6 + std::max(1, m_pTopBox->Height()) + 1);
-    return ret;
+    return NNCurses::GetMaxHeight() - (7 + std::max(1, m_pTopBox->RequestHeight()) + 1);
 }
 
 void CInstallScreen::UpdateCounter()
@@ -116,9 +129,13 @@ void CInstallScreen::UpdateCounter()
     
     for (TChildList::const_iterator it=list.begin(); it!=list.end(); it++)
     {
-        const int wh = m_pGroupBox->GetTotalWidgetH(*it);
+        CGroup *g = m_pGroupBox->GetGroupWidget(*it);
+        if (g && g->Empty())
+            continue;
+
+        const int wh = CheckWidgetHeight(*it);
         
-        if ((h + wh) >= MaxScreenHeight())
+        if ((h + wh) > MaxScreenHeight())
         {
             count++;
             h = 0;
@@ -143,12 +160,28 @@ bool CInstallScreen::CheckWidgets()
         return true;
     
     const TChildList &list = m_pGroupBox->GetChildList();
+    TChildList::const_iterator start, end;
     
-    for (TChildList::const_iterator it=list.begin(); it!=list.end(); it++)
+    if (m_WidgetRange.first)
+        start = std::find(list.begin(), list.end(), m_WidgetRange.first);
+    else
+        start = list.begin();
+    
+    if (m_WidgetRange.second)
+        end = std::find(list.begin(), list.end(), m_WidgetRange.second);
+    else
+        end = list.end()-1;
+
+    while (true)
     {
-        CLuaGroup *w = dynamic_cast<CLuaGroup *>(*it);
+        CLuaGroup *w = dynamic_cast<CLuaGroup *>(*start);
         if (w && !w->CheckWidgets())
             return false;
+        
+        if (start == end)
+            break;
+        
+        start++;
     }
     
     return true;
@@ -170,12 +203,17 @@ bool CInstallScreen::SubBack()
         
         if (it != list.rend())
         {
-            while ((*it != list.front()) && (h < MaxScreenHeight()))
+            while ((*it != list.front()) && (h <= MaxScreenHeight()))
             {
                 it++;
-                h += m_pGroupBox->GetTotalWidgetH(*it);
                 
-                if (h < MaxScreenHeight())
+                CGroup *g = m_pGroupBox->GetGroupWidget(*it);
+                if (g && g->Empty())
+                    continue;
+
+                h += CheckWidgetHeight(*it);
+                
+                if (h <= MaxScreenHeight())
                 {
                     (*it)->Enable(true);
                     m_WidgetRange.first = *it;
@@ -215,12 +253,17 @@ bool CInstallScreen::SubNext()
         
         if (it != list.end())
         {
-            while ((*it != list.back()) && (h < MaxScreenHeight()))
+            while ((*it != list.back()) && (h <= MaxScreenHeight()))
             {
                 it++;
-                h += m_pGroupBox->GetTotalWidgetH(*it);
                 
-                if (h < MaxScreenHeight())
+                CGroup *g = m_pGroupBox->GetGroupWidget(*it);
+                if (g && g->Empty())
+                    continue;
+
+                h += CheckWidgetHeight(*it);
+                
+                if (h <= MaxScreenHeight())
                 {
                     (*it)->Enable(true);
                     m_WidgetRange.second = *it;

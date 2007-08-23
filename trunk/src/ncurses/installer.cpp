@@ -281,9 +281,6 @@ void CInstaller::UpdateLanguage()
     m_pCancelButton->SetText(GetTranslation("Cancel"));
     m_pPrevButton->SetText(GetTranslation("Back"));
     m_pNextButton->SetText(GetTranslation("Next"));
-    
-    for (TScreenList::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
-        (*it)->UpdateLanguage();
 }
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
@@ -294,7 +291,7 @@ CBaseScreen *CInstaller::CreateScreen(const std::string &title)
     return ret;
 }
 
-void CInstaller::AddScreen(CBaseScreen *screen)
+void CInstaller::CoreAddScreen(CBaseScreen *screen)
 {
     m_InstallScreens.push_back(dynamic_cast<CInstallScreen *>(screen));
 }

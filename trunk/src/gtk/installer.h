@@ -50,12 +50,13 @@ class CInstaller: public CGTKBase, public CBaseInstall
     int GetMainSpacing(void) const { return 10; }
     
     virtual CBaseScreen *CreateScreen(const std::string &title);
-    virtual void AddScreen(CBaseScreen *screen);
+    virtual void CoreAddScreen(CBaseScreen *screen);
     virtual void InstallThink(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
 
 public:
     CInstaller(void) : m_bPrevButtonLocked(false) {}
+    virtual ~CInstaller(void) { DeleteScreens(); }
     
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void);

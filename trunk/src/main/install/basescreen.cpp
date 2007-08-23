@@ -58,6 +58,17 @@ void CBaseScreen::CoreActivate()
     }
 }
 
+void CBaseScreen::DeleteGroups()
+{
+    debugline("Deleting %u groups...\n", m_LuaGroupList.size());
+    
+    while (!m_LuaGroupList.empty())
+    {
+        delete m_LuaGroupList.back();
+        m_LuaGroupList.pop_back();
+    }
+}
+
 void CBaseScreen::UpdateLanguage()
 {
     CoreUpdateLanguage();

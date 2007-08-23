@@ -21,8 +21,13 @@ class CBaseScreen;
 
 class CBaseInstall: virtual public CMain
 {
+protected:
+    typedef std::vector<CBaseScreen *> TScreenList;
+    
+private:
     typedef std::map<char *, arch_size_entry_s> TArchType;
     
+    TScreenList m_ScreenList;
     unsigned long m_ulTotalArchSize;
     float m_fExtrPercent;
     TArchType m_ArchList;
@@ -34,6 +39,7 @@ class CBaseInstall: virtual public CMain
     int m_iUpdateStatLuaFunc, m_iUpdateProgLuaFunc, m_iUpdateOutputLuaFunc;
     bool m_bInstalling;
      
+    void AddScreen(CBaseScreen *screen);
     void Install(int statluafunc, int progluafunc, int outluafunc);
     void InitArchive(char *archname);
     void ExtractFiles(void);
@@ -53,7 +59,7 @@ class CBaseInstall: virtual public CMain
     bool IsInstalled(bool checkver);
     
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
-    virtual void AddScreen(CBaseScreen *screen) = 0;
+    virtual void CoreAddScreen(CBaseScreen *screen) = 0;
     virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
     virtual void LockScreen(bool cancel, bool prev, bool next) = 0;
     
@@ -61,6 +67,9 @@ protected:
     virtual void InitLua(void);
 
     bool Installing(void) const { return m_bInstalling; }
+    // This function is not called by the destructor, because in some frontends a lua screen is part of the gui and will
+    // be automaticly deleted
+    void DeleteScreens(void);
     
 public:
     install_info_s m_InstallInfo;
@@ -70,6 +79,7 @@ public:
     virtual ~CBaseInstall(void) { };
 
     virtual void Init(int argc, char **argv);
+    virtual void UpdateLanguage(void);
 
     void UpdateExtrStatus(const char *s);
     

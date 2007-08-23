@@ -43,6 +43,7 @@ class CLuaGroup: public CBaseLuaGroup
     
 public:
     CLuaGroup(void);
+    virtual ~CLuaGroup(void) { DeleteWidgets(); }
     
     GtkWidget *GetBox(void) { return m_pBox; }
 };

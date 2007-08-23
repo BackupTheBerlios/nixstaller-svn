@@ -1,6 +1,6 @@
 OVERALL
 - Make shared 'library' for scripts
-- Qt/KDE and GTK2 frontends
+- Qt/KDE frontend
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
 - Dep handling?
@@ -13,19 +13,16 @@ OVERALL
 - x64 bins?
 - Update Lua library for FBSD, NBSD, OBSD, SunOS
 - Remove deprecated virtual functions from CBaseInstall derived classes
-- Update changelog (new lua widgets)
+- Update changelog (new lua widgets, gtk frontend)
 - Check if lua execution can be time sliced
 - Remove exceptions.odt?
-- Check virtual base constructor title thing from lua widgets
-- cfgmenu:addlist - take initial value as argument
-- Check if exceptions are thrown incase widget is too big
 - Way to specify extra (image) files
-- Check if all lua screens, groups, widgets are destroyed
 
 
 DOCS
 - Mention that lua commands are executed incase m_bAlwaysRoot is set to true
 - Mention that lua menus may be sorted
+- Mention that a widget can be too big
 - Update input:setspacing --> input:setlabelwidth (and other defaults)
 - Update radiobutton and checkbox function arguments
 
@@ -66,7 +63,6 @@ REGISTER
 NCURSES
 - Check chtype?
 - Better monochrome support?
-- Exceptions?
 - Translations and buttonbar descriptions?
 - Check if UpdateTranslation functions are called - needs testing
 - Check for 'dynamic' CanFocus for CTextField?
@@ -84,6 +80,7 @@ FLTK
 - Make screen header?
 - Check locales and numeric lua widget input
 - Use new image scaling function from utils.cpp
+- Check if all lua screens, groups, widgets are destroyed
 
 
 DESIGN

@@ -315,14 +315,6 @@ void CInstaller::UpdateLanguage()
 
     if (!m_CurTitle.empty())
         SetTitle(m_CurTitle);
-    
-    gint page = 0;
-    CInstallScreen *screen;
-    while ((screen = GetScreen(page)))
-    {
-        screen->UpdateLanguage();
-        page++;
-    }
 }
 
 void CInstaller::SetTitle(const std::string &t)
@@ -351,7 +343,7 @@ CBaseScreen *CInstaller::CreateScreen(const std::string &title)
     return new CInstallScreen(title, this);
 }
 
-void CInstaller::AddScreen(CBaseScreen *screen)
+void CInstaller::CoreAddScreen(CBaseScreen *screen)
 {
     CInstallScreen *gtkscreen = dynamic_cast<CInstallScreen *>(screen);
     

@@ -55,6 +55,12 @@ CBaseInstall::CBaseInstall(void) : m_ulTotalArchSize(1), m_fExtrPercent(0.0f), m
 {
 }
 
+void CBaseInstall::AddScreen(CBaseScreen *screen)
+{
+    m_ScreenList.push_back(screen);
+    CoreAddScreen(screen);
+}
+
 void CBaseInstall::Init(int argc, char **argv)
 {   
     m_szBinDir = dirname(argv[0]);
@@ -69,6 +75,14 @@ void CBaseInstall::Init(int argc, char **argv)
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") &&
         (m_InstallInfo.archive_type != "lzma"))
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
+}
+
+void CBaseInstall::UpdateLanguage()
+{
+    CMain::UpdateLanguage();
+    
+    for (TScreenList::iterator it=m_ScreenList.begin(); it!=m_ScreenList.end(); it++)
+        (*it)->UpdateLanguage();
 }
 
 void CBaseInstall::Install(int statluafunc, int progluafunc, int outluafunc)
@@ -520,6 +534,16 @@ void CBaseInstall::InitLua()
         debugline("%s ", it->c_str());
     debugline("\n");
 #endif
+}
+
+void CBaseInstall::DeleteScreens()
+{
+    debugline("Deleting %u screens...\n", m_ScreenList.size());
+    while (!m_ScreenList.empty())
+    {
+        delete m_ScreenList.back();
+        m_ScreenList.pop_back();
+    }
 }
 
 bool CBaseInstall::VerifyDestDir(void)

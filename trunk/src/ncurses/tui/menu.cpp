@@ -165,8 +165,8 @@ void CMenu::CoreDrawLayout()
 {
     if (!m_QueuedSelection.empty())
     {
-        m_QueuedSelection.clear();
         Select(m_QueuedSelection);
+        m_QueuedSelection.clear();
     }
     
     CBaseScroll::CoreDrawLayout();
@@ -232,7 +232,7 @@ void CMenu::Select(const std::string &id)
         m_QueuedSelection = id;
         return;
     }
-    
+
     TMenuList::iterator line = std::lower_bound(m_MenuList.begin(), m_MenuList.end(), id);
 
     if ((line != m_MenuList.end()) && (line->id == id))
@@ -241,6 +241,8 @@ void CMenu::Select(const std::string &id)
         Move(SafeConvert<int>(std::distance(cur, line)));
         PushEvent(EVENT_DATACHANGED);
     }
+    else
+        assert(false);
 }
 
 void CMenu::ClearEntries()
