@@ -11,7 +11,7 @@ OVERALL
 - Build script that compiles all Nixstaller dependencies?
 - Modify Makeself?
 - x64 bins?
-- Update Lua library for FBSD, NBSD, OBSD, SunOS
+- Update Lua library for NBSD, OBSD, SunOS
 - Remove deprecated virtual functions from CBaseInstall derived classes
 - Update changelog (new lua widgets, gtk frontend)
 - Check if lua execution can be time sliced

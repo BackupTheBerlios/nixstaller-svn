@@ -18,12 +18,8 @@
 */
 
 #include "fltk.h"
+#include <FL/Fl_Button.H>
 #include <FL/fl_draw.H>
-
-int TextWidth(const char *t)
-{
-    return fl_width(t) + 10; // HACK: FLTK's text width function doesn't return full width, so we add a little extra
-}
 
 int TitleHeight(int w, const char *desc)
 {
@@ -53,3 +49,11 @@ int TitleHeight(int w, const char *desc)
     return 0;
 }
 
+void SetButtonWidth(Fl_Button *button, const char *text)
+{
+    const int spacing = 50;
+    int w = 0, h = 0;
+    fl_font(button->labelfont(), button->labelsize());
+    fl_measure(text, w, h);
+    button->size(w+spacing, button->h());
+}

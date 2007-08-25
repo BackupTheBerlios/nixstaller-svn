@@ -20,7 +20,7 @@
 #include "fltk.h"
 #include "installer.h"
 #include <FL/Fl.H>
-#include <FL/fl_ask.h>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Group.H>

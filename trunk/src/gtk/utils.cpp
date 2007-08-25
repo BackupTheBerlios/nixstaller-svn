@@ -30,7 +30,7 @@ void UpdateDirSelCB(GtkFileChooser *widget, gpointer data)
     gtk_file_chooser_set_filename(widget, static_cast<char *>(data));
     // Only do it once
     g_signal_handlers_disconnect_by_func(G_OBJECT(widget),
-                                         reinterpret_cast<gpointer>(UpdateDirSelCB), data);
+                                         (gpointer)(UpdateDirSelCB), data);
 }
 
 void CreateRootDirCB(GtkWidget *widget, gpointer data)

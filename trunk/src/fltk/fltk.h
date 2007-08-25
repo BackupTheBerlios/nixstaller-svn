@@ -22,6 +22,7 @@
 
 #include "main/main.h"
 
+class Fl_Button;
 class Fl_Return_Button;
 class Fl_Text_Display;
 class Fl_Widget;
@@ -57,7 +58,7 @@ public:
 };
 
 // Utils
-int TextWidth(const char *t);
 int TitleHeight(int w, const char *desc);
+void SetButtonWidth(Fl_Button *button, const char *text);
 
 #endif

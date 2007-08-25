@@ -29,8 +29,8 @@
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Wizard.H>
-#include <FL/fl_ask.h>
-#include <FL/fl_draw.h>
+#include <FL/fl_ask.H>
+#include <FL/fl_draw.H>
 
 // -------------------------------------
 // Main installer screen
@@ -46,8 +46,8 @@ void CInstaller::CreateHeader()
     Fl_Shared_Image *img = Fl_Shared_Image::get("installer.png");
     if (img)
     {
-        const int hspacing = 5;
-        Fl_Box *imgbox = new Fl_Box(0, hspacing, img->w(), img->h()+hspacing);
+        const int spacing = 5;
+        Fl_Box *imgbox = new Fl_Box(spacing, spacing, img->w()+spacing, img->h()+spacing);
         imgbox->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
         imgbox->image(img);
         headerh = std::max(headerh, imgbox->y() + imgbox->h());
@@ -126,19 +126,15 @@ void CInstaller::Init(int argc, char **argv)
     
     CreateHeader();
     
-    m_pWizard = new Fl_Wizard(0, m_pHeaderGroup->h(), WindowW(), (buttonsy-m_pHeaderGroup->h()-wizardbuttonspacing));
+    m_pWizard = new Fl_Wizard(0, m_pHeaderGroup->h(), WindowW(),
+                              (buttonsy-m_pHeaderGroup->h()-wizardbuttonspacing));
     m_pWizard->box(FL_ENGRAVED_BOX);
     m_pWizard->end();
 
     mainpack->end();
 
-    //     m_pAboutButton = new Fl_Button((WindowW()-80), 5, 60, 12, "About");
-//     m_pAboutButton->labelsize(10);
-//     m_pAboutButton->callback(ShowAboutCB, this);
-
-//     m_pWizard = new Fl_Wizard(20, 20, (WindowW()-40), (WindowH()-60), NULL);
-
-    m_pCancelButton = new Fl_Button(20, buttonsy, 120, 25, "Cancel");
+    m_pCancelButton = new Fl_Button(20, buttonsy, 120, 25, GetTranslation("Cancel"));
+    SetButtonWidth(m_pCancelButton, GetTranslation("Cancel"));
     m_pCancelButton->callback(CancelCB, this);
     
     m_pBackButton = new Fl_Button(WindowW()-280, buttonsy, 120, 25, "@<-    Back");
