@@ -47,12 +47,12 @@ setfenv(1, P)
 function GenerateDefaultScreens()
     package.path = "?.lua"
     package.cpath = ""
-    LangScreen = require "langscreen"
-    OLDG.WelcomeScreen = require "welcomescreen"
-    OLDG.LicenseScreen = require "licensescreen"
-    OLDG.SelectDirScreen = require "selectdirscreen"
-    OLDG.InstallScreen = require "installscreen"
-    OLDG.FinishScreen = require "finishscreen"
+--     LangScreen = require "langscreen"
+--     OLDG.WelcomeScreen = require "welcomescreen"
+--     OLDG.LicenseScreen = require "licensescreen"
+--     OLDG.SelectDirScreen = require "selectdirscreen"
+--     OLDG.InstallScreen = require "installscreen"
+--     OLDG.FinishScreen = require "finishscreen"
 end
 
 function LoadConfig()
@@ -68,18 +68,18 @@ function LoadConfig()
 end
 
 function AddScreens()
-    install.addscreen(LangScreen)
+--     install.addscreen(LangScreen)
     
     if (install.screenlist ~= nil and #install.screenlist > 0) then
         for _, s in pairs(install.screenlist) do
             install.addscreen(s)
         end
     else
-        install.addscreen(WelcomeScreen)
-        install.addscreen(LicenseScreen)
-        install.addscreen(SelectDirScreen)
-        install.addscreen(InstallScreen)
-        install.addscreen(FinishScreen)
+--         install.addscreen(WelcomeScreen)
+--         install.addscreen(LicenseScreen)
+--         install.addscreen(SelectDirScreen)
+--         install.addscreen(InstallScreen)
+--         install.addscreen(FinishScreen)
     end
 end
 

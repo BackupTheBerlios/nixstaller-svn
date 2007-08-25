@@ -18,9 +18,22 @@
 */
 
 #include "fltk.h"
+#include "installer.h"
+#include <FL/Fl.H>
+#include <FL/fl_ask.h>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Shared_Image.H>
+#include <FL/Fl_Text_Buffer.H>
+#include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Window.H>
 #include <FL/x.H>
 
+namespace {
 CFLTKBase *pInterface = NULL;
+}
 
 void StartFrontend(int argc, char **argv)
 {
@@ -31,7 +44,7 @@ void StartFrontend(int argc, char **argv)
     
     // Init
     pInterface->Init(argc, argv);
-    pInterface->Run(argv);
+    pInterface->Run();
 }
 
 void StopFrontend()
@@ -65,12 +78,30 @@ void debugline(const char *t, ...)
 // FLTK Base screen class
 // -------------------------------------
 
-CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
+CFLTKBase::CFLTKBase(void) : m_pAboutDisp(NULL), m_pAboutOKButton(NULL), m_pAboutWindow(NULL)
 {
     fl_register_images();
+    Fl::visual(FL_RGB);
     Fl::scheme("plastic");
+    Fl::background(230, 230, 230);
     
-    // Create about dialog
+    // HACK: Switch that annoying bell off!
+    // UNDONE: Doesn't work on NetBSD yet :(
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = 0;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+}
+
+CFLTKBase::~CFLTKBase()
+{
+    // HACK: Restore bell volume
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = -1;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+}
+
+void CFLTKBase::CreateAbout()
+{
     m_pAboutWindow = new Fl_Window(400, 200, GetTranslation("About"));
     m_pAboutWindow->set_modal();
     m_pAboutWindow->hide();
@@ -86,22 +117,16 @@ CFLTKBase::CFLTKBase(void) : m_pAskPassWindow(new CAskPassWindow)
     m_pAboutOKButton->callback(AboutOKCB, this);
     
     m_pAboutWindow->end();
-
-    // HACK: Switch that annoying bell off!
-    // UNDONE: Doesn't work on NetBSD yet :(
-    XKeyboardControl XKBControl;
-    XKBControl.bell_duration = 0;
-    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
 }
 
-CFLTKBase::~CFLTKBase()
+char *CFLTKBase::GetPassword(const char *str)
 {
-    delete m_pAskPassWindow;
+    const char *passwd = fl_password(str);
     
-    // HACK: Restore bell volume
-    XKeyboardControl XKBControl;
-    XKBControl.bell_duration = -1;
-    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+    if (!passwd)
+        return NULL;
+    
+    return StrDup(passwd);
 }
 
 void CFLTKBase::MsgBox(const char *str, ...)
@@ -162,6 +187,18 @@ void CFLTKBase::WarnBox(const char *str, ...)
     free(text);
 }
 
+void CFLTKBase::ShowAbout(bool show)
+{
+    if (show)
+    {
+        m_pAboutWindow->hotspot(m_pAboutOKButton);
+        m_pAboutWindow->take_focus();
+        m_pAboutWindow->show();
+    }
+    else
+        m_pAboutWindow->hide();
+}
+
 void CFLTKBase::UpdateLanguage()
 {
     CMain::UpdateLanguage();
@@ -185,98 +222,14 @@ void CFLTKBase::UpdateLanguage()
     Fl_File_Chooser::new_directory_tooltip = GetTranslation("Create new directory");
     Fl_File_Chooser::show_label = GetTranslation("Show:");
     
-    // Update main buttons
-    m_pAboutButton->label(GetTranslation("About"));
-    
     // About window
     m_pAboutWindow->label(GetTranslation("About"));
     m_pAboutDisp->label(GetTranslation("About"));
     m_pAboutOKButton->label(GetTranslation("OK"));
 }
 
-void CFLTKBase::ShowAbout(bool show)
+void CFLTKBase::Run()
 {
-    if (show)
-    {
-        m_pAboutWindow->hotspot(m_pAboutOKButton);
-        m_pAboutWindow->take_focus();
-        m_pAboutWindow->show();
-    }
-    else
-        m_pAboutWindow->hide();
-}
-
-// -------------------------------------
-// Password window class
-// -------------------------------------
-
-CAskPassWindow::CAskPassWindow(const char *msg) : m_szPassword(NULL)
-{
-    m_pAskPassWindow = new Fl_Window(400, 190, GetTranslation("Password dialog"));
-    m_pAskPassWindow->set_modal();
-    m_pAskPassWindow->begin();
-    
-    m_pAskPassBox = new Fl_Box(10, 20, 370, 40, msg);
-    m_pAskPassBox->align(FL_ALIGN_WRAP);
-    
-    m_pAskPassInput = new Fl_Secret_Input(100, 90, 250, 25);
-    m_pAskPassInput->take_focus();
-    
-    m_pAskPassOKButton = new Fl_Return_Button(60, 150, 100, 25, GetTranslation("OK"));
-    m_pAskPassOKButton->callback(AskPassOKButtonCB, this);
-    
-    m_pAskPassCancelButton = new Fl_Button(240, 150, 100, 25, GetTranslation("Cancel"));
-    m_pAskPassCancelButton->callback(AskPassCancelButtonCB, this);
-    
-    m_pAskPassWindow->end();
-}
-
-char *CAskPassWindow::Activate()
-{
-    CleanPasswdString(m_szPassword);
-    m_szPassword = NULL;
-
-    m_pAskPassWindow->hotspot(m_pAskPassOKButton);
-    m_pAskPassWindow->take_focus();
-    m_pAskPassWindow->show();
-
-    while(m_pAskPassWindow->visible()) Fl::wait();
-
-    return m_szPassword;
-}
-
-void CAskPassWindow::SetPassword(bool unset)
-{
-    CleanPasswdString(m_szPassword);
-    m_szPassword = NULL;
-    
-    if (!unset)
-    {
-        const char *passwd = m_pAskPassInput->value();
-    
-        if (passwd && passwd[0])
-        {
-            m_szPassword = StrDup(passwd);
-
-            // Can't use FLTK's replace() to delete input field text, since it stores undo info
-            int length = strlen(passwd);
-            
-            char str0[length];
-            for (int i=0;i<length;i++) str0[i] = 0;
-            m_pAskPassInput->value(str0);
-            
-            // Force clean temp inputfield string
-            char *str = const_cast<char *>(passwd);
-            guaranteed_memset(str, 0, strlen(str));
-        }
-    }
-    m_pAskPassWindow->hide();
-    m_pAskPassInput->value(NULL);
-}
-
-void CAskPassWindow::UpdateLanguage()
-{
-    m_pAskPassWindow->label(GetTranslation("Password dialog"));
-    m_pAskPassOKButton->label(GetTranslation("OK"));
-    m_pAskPassCancelButton->label(GetTranslation("Cancel"));
+    CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
+    Fl::run();
 }

@@ -71,7 +71,6 @@ CGTKBase::CGTKBase()
     g_set_application_name("Nixstaller");
     m_pMainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(G_OBJECT(m_pMainWindow), "destroy", G_CALLBACK(DestroyCB), NULL);
-    CreateAbout();
 }
 
 void CGTKBase::CreateAbout()
