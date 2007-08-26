@@ -12,6 +12,7 @@ OVERALL
 - Modify Makeself?
 - x64 bins?
 - Update Lua library for NBSD, OBSD, SunOS
+- Recompile fltk with Xft support for FBSD, NBSD, OBSD and SunOS (and update the notes files)
 - Remove deprecated virtual functions from CBaseInstall derived classes
 - Update changelog (new lua widgets, gtk frontend)
 - Check if lua execution can be time sliced

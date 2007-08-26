@@ -26,6 +26,7 @@ class CInstallScreen;
 class Fl_Box;
 class Fl_Button;
 class Fl_Group;
+class Fl_Pack;
 class Fl_Widget;
 class Fl_Window;
 class Fl_Wizard;
@@ -34,29 +35,36 @@ class CInstaller: public CFLTKBase, public CBaseInstall
 {
     Fl_Window *m_pMainWindow;
     Fl_Group *m_pHeaderGroup;
-    Fl_Box *m_pTitle, *m_pAboutBox;
+    Fl_Box *m_pTitle, *m_pLogoBox, *m_pAboutBox;
     Fl_Button *m_pCancelButton, *m_pBackButton, *m_pNextButton;
+    Fl_Pack *m_pButtonPack; // pack for back and next buttons
     Fl_Wizard *m_pWizard;
     bool m_bPrevButtonLocked;
     std::string m_CurTitle;
     
     int WindowW(void) const { return 600; }
     int WindowH(void) const { return 400; }
+    int HeaderSpacing(void) { return 5; }
+    int ButtonWOffset(void) const { return 10; }
+    int ButtonWSpacing(void) const { return 10; }
+    int ButtonHSpacing(void) const { return 10; }
+    
     void CreateHeader(void);
     CInstallScreen *GetScreen(Fl_Widget *w);
     bool FirstValidScreen(void);
     bool LastValidScreen(void);
+    void UpdateButtonPack(void);
     void UpdateButtons(void);
     void Back(void);
     void Next(void);
 
-    virtual CBaseScreen *CreateScreen(const std::string &title){}
-    virtual void CoreAddScreen(CBaseScreen *screen){}
+    virtual CBaseScreen *CreateScreen(const std::string &title);
+    virtual void CoreAddScreen(CBaseScreen *screen);
     virtual void InstallThink(void);
     virtual void LockScreen(bool cancel, bool prev, bool next){}
 
 public:
-    CInstaller(void) : m_bPrevButtonLocked(false) {}
+    CInstaller(void) : m_pLogoBox(NULL), m_bPrevButtonLocked(false) {}
     virtual ~CInstaller(void) { DeleteScreens(); }
     
     virtual void Init(int argc, char **argv);

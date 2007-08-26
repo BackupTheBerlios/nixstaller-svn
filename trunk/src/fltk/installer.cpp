@@ -20,6 +20,7 @@
 #include "fltk.h"
 #include "hyperlink.h"
 #include "installer.h"
+#include "installscreen.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
@@ -38,38 +39,40 @@
 
 void CInstaller::CreateHeader()
 {
-    int headerh = 50;
-    m_pHeaderGroup = new Fl_Group(0, 0, WindowW(), headerh);
+    m_pHeaderGroup = new Fl_Group(0, 0, WindowW(), 50); // Dummy height, real height is set at the end
     m_pHeaderGroup->color(FL_WHITE);
     m_pHeaderGroup->box(FL_FLAT_BOX);
+    m_pHeaderGroup->resizable(0);
     
     Fl_Shared_Image *img = Fl_Shared_Image::get("installer.png");
     if (img)
     {
-        const int spacing = 5;
-        Fl_Box *imgbox = new Fl_Box(spacing, spacing, img->w()+spacing, img->h()+spacing);
-        imgbox->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
-        imgbox->image(img);
-        headerh = std::max(headerh, imgbox->y() + imgbox->h());
+        m_pLogoBox = new Fl_Box(HeaderSpacing(), HeaderSpacing(), img->w()+HeaderSpacing(), img->h());
+        m_pLogoBox->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
+        m_pLogoBox->image(img);
     }
     
-    int w = 0, h = 0, spacing = 3;
+    int w = 0, h = 0;
     const char *text = GetTranslation("About");
     m_pAboutBox = new CFLTKHyperLink(0, 0, 0, 0, text);
-    
+    m_pAboutBox->labelsize(10);
     m_pAboutBox->callback(ShowAboutCB, this);
-    m_pAboutBox->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
-    fl_font(m_pAboutBox->labelfont(), m_pHeaderGroup->labelsize());
+    m_pAboutBox->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+    fl_font(m_pAboutBox->labelfont(), m_pAboutBox->labelsize());
     fl_measure(text, w, h);
-    m_pAboutBox->resize(WindowW() - w - spacing, spacing, w, spacing + h);
-    m_pHeaderGroup->end();
-    headerh = std::max(headerh, m_pAboutBox->y() + m_pAboutBox->h());
+    m_pAboutBox->resize(WindowW() - w - HeaderSpacing(), 0, w, h);
     
-    if (m_pHeaderGroup->h() != headerh)
-    {
-        m_pHeaderGroup->size(m_pHeaderGroup->w(), headerh);
-        m_pHeaderGroup->redraw();
-    }
+    int x = (m_pLogoBox) ? m_pLogoBox->x() + m_pLogoBox->w() : 0;
+    x += HeaderSpacing();
+    w = m_pAboutBox->x() - x - HeaderSpacing();
+    m_pTitle = new Fl_Box(x, 0, w, 0); // Height is set when title is set
+    m_pTitle->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+    m_pTitle->labelsize(18);
+
+    m_pHeaderGroup->end();
+
+    h = (m_pLogoBox) ? (m_pLogoBox->y() + m_pLogoBox->h() + HeaderSpacing()) : 50;
+    m_pHeaderGroup->size(m_pHeaderGroup->w(), h);
 }
 
 CInstallScreen *CInstaller::GetScreen(Fl_Widget *w)
@@ -77,21 +80,31 @@ CInstallScreen *CInstaller::GetScreen(Fl_Widget *w)
     return static_cast<CInstallScreen *>(w->user_data());
 }
 
+void CInstaller::UpdateButtonPack()
+{
+    const int w = m_pBackButton->w() + m_pNextButton->w() + PackSpacing(m_pButtonPack);
+    const int x = WindowW() - w - ButtonWOffset();
+    m_pButtonPack->resize(x, m_pButtonPack->y(), w, m_pButtonPack->h());
+}
+
 void CInstaller::Back()
 {
-    
 }
 
 void CInstaller::Next()
 {
-    int hh = m_pHeaderGroup->h();
-    int newh = hh + 2;
-    
-    m_pHeaderGroup->size(m_pHeaderGroup->w(), newh);
-    m_pWizard->size(m_pWizard->w(), m_pWizard->h()-2);
-    
-    m_pHeaderGroup->redraw();
-    m_pWizard->redraw();
+}
+
+CBaseScreen *CInstaller::CreateScreen(const std::string &title)
+{
+    return new CInstallScreen(title, this);
+}
+
+void CInstaller::CoreAddScreen(CBaseScreen *screen)
+{
+    CInstallScreen *fltkscreen = dynamic_cast<CInstallScreen *>(screen);
+    m_pWizard->add(fltkscreen->GetGroup());
+    fltkscreen->GetGroup()->user_data(fltkscreen);
 }
 
 void CInstaller::InstallThink(void)
@@ -112,7 +125,7 @@ void CInstaller::UpdateLanguage(void)
 
 void CInstaller::Init(int argc, char **argv)
 {
-    const int buttonsy = WindowH()-30, wizardbuttonspacing = 10;
+    const int buttonsy = WindowH()-ButtonHeight()-ButtonHSpacing();
     
     m_pMainWindow = new Fl_Window(WindowW(), WindowH(), "Nixstaller");
     m_pMainWindow->callback(CancelCB, this);
@@ -127,40 +140,78 @@ void CInstaller::Init(int argc, char **argv)
     CreateHeader();
     
     m_pWizard = new Fl_Wizard(0, m_pHeaderGroup->h(), WindowW(),
-                              (buttonsy-m_pHeaderGroup->h()-wizardbuttonspacing));
+                              (buttonsy-m_pHeaderGroup->h()-ButtonHSpacing()));
     m_pWizard->box(FL_ENGRAVED_BOX);
     m_pWizard->end();
 
     mainpack->end();
 
-    m_pCancelButton = new Fl_Button(20, buttonsy, 120, 25, GetTranslation("Cancel"));
-    SetButtonWidth(m_pCancelButton, GetTranslation("Cancel"));
+    m_pCancelButton = new Fl_Button(ButtonWOffset(), buttonsy, 0, ButtonHeight(), GetTranslation("Cancel"));
+    SetButtonWidth(m_pCancelButton);
     m_pCancelButton->callback(CancelCB, this);
     
-    m_pBackButton = new Fl_Button(WindowW()-280, buttonsy, 120, 25, "@<-    Back");
+    m_pButtonPack = new Fl_Pack(0, buttonsy, 0, ButtonHeight());
+    m_pButtonPack->type(Fl_Pack::HORIZONTAL);
+    m_pButtonPack->spacing(ButtonWSpacing());
+    
+    m_pBackButton = new Fl_Button(0, buttonsy, 0, ButtonHeight(),
+                                  CreateText("@<-    %s", GetTranslation("Back")));
+    SetButtonWidth(m_pBackButton);
     m_pBackButton->callback(BackCB, this);
     
-    m_pNextButton = new Fl_Button(WindowW()-140, buttonsy, 120, 25, "Next    @->");
+    m_pNextButton = new Fl_Button(0, buttonsy, 0, ButtonHeight(),
+                                  CreateText("%s    @->", GetTranslation("Next")));
+    SetButtonWidth(m_pNextButton);
     m_pNextButton->callback(NextCB, this);
+    
+    m_pButtonPack->end();
+    UpdateButtonPack();
     
     maingroup->end();
     
     CBaseInstall::Init(argc, argv);
 
-//     int size = m_pWizard->children();
-//     for (int i=0; i<size; i++)
-//     {
-//         CInstallScreen *screen = GetScreen(m_pWizard->child(i));
-//         if (screen->CanActivate())
-//         {
-//             screen->Activate();
-//             m_pWizard->value(m_pWizard->child(i));
-//             break;
-//         }
-//     }
+    int size = m_pWizard->children();
+    for (int i=0; i<size; i++)
+    {
+        CInstallScreen *screen = GetScreen(m_pWizard->child(i));
+        if (screen->CanActivate())
+        {
+            screen->Activate();
+            m_pWizard->value(m_pWizard->child(i));
+            break;
+        }
+    }
     
     m_pMainWindow->end();
     m_pMainWindow->show(argc, argv);
+}
+
+void CInstaller::SetTitle(const std::string &t)
+{
+    int w = m_pTitle->w(), h = 0;
+    int minheaderh = (m_pLogoBox) ? (m_pLogoBox->y() + m_pLogoBox->h() + HeaderSpacing()) : 50;
+    fl_font(m_pTitle->labelfont(), m_pTitle->labelsize());
+    fl_measure(t.c_str(), w, h);
+    minheaderh = std::max(minheaderh, h);
+
+    m_pTitle->size(m_pTitle->w(), minheaderh);
+    m_pTitle->label(t.c_str());
+
+    if (m_pHeaderGroup->h() != minheaderh)
+    {
+        // Center logo (if any)
+        if (m_pLogoBox)
+        {
+            const int y = ((minheaderh - m_pLogoBox->h()) / 2);
+            m_pLogoBox->position(m_pLogoBox->x(), y);
+        }
+
+        m_pHeaderGroup->init_sizes(); // Otherwise parent will resize child widgets
+        m_pHeaderGroup->size(m_pHeaderGroup->w(), minheaderh);
+        
+        m_pWizard->size(m_pWizard->w(), m_pCancelButton->y()-minheaderh-ButtonHSpacing());
+    }
 }
 
 void CInstaller::CancelCB(Fl_Widget *w, void *p)

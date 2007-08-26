@@ -19,6 +19,7 @@
 
 #include "fltk.h"
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Pack.H>
 #include <FL/fl_draw.H>
 
 int TitleHeight(int w, const char *desc)
@@ -49,11 +50,17 @@ int TitleHeight(int w, const char *desc)
     return 0;
 }
 
-void SetButtonWidth(Fl_Button *button, const char *text)
+void SetButtonWidth(Fl_Button *button)
 {
     const int spacing = 50;
     int w = 0, h = 0;
     fl_font(button->labelfont(), button->labelsize());
-    fl_measure(text, w, h);
+    fl_measure(button->label(), w, h);
     button->size(w+spacing, button->h());
+}
+
+int PackSpacing(Fl_Pack *pack)
+{
+    // HACK: FLTK seems to add half of the spacing at the beginning, so compensate here
+    return pack->spacing()*1.5;
 }
