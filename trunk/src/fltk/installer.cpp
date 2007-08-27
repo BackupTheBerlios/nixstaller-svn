@@ -42,7 +42,7 @@ void CInstaller::CreateHeader()
     m_pHeaderGroup = new Fl_Group(0, 0, WindowW(), 50); // Dummy height, real height is set at the end
     m_pHeaderGroup->color(FL_WHITE);
     m_pHeaderGroup->box(FL_FLAT_BOX);
-    m_pHeaderGroup->resizable(0);
+    m_pHeaderGroup->resizable(NULL);
     
     Fl_Shared_Image *img = Fl_Shared_Image::get("installer.png");
     if (img)
@@ -75,9 +75,45 @@ void CInstaller::CreateHeader()
     m_pHeaderGroup->size(m_pHeaderGroup->w(), h);
 }
 
+void CInstaller::SetTitle(const std::string &t)
+{
+    int w = m_pTitle->w(), h = 0;
+    int minheaderh = (m_pLogoBox) ? (m_pLogoBox->y() + m_pLogoBox->h() + HeaderSpacing()) : 50;
+    fl_font(m_pTitle->labelfont(), m_pTitle->labelsize());
+    fl_measure(t.c_str(), w, h);
+    minheaderh = std::max(minheaderh, h);
+
+    m_pTitle->size(m_pTitle->w(), minheaderh);
+    m_pTitle->label(t.c_str());
+
+    if (m_pHeaderGroup->h() != minheaderh)
+    {
+        // Center logo (if any)
+        if (m_pLogoBox)
+        {
+            const int y = ((minheaderh - m_pLogoBox->h()) / 2);
+            m_pLogoBox->position(m_pLogoBox->x(), y);
+        }
+
+        m_pHeaderGroup->size(m_pHeaderGroup->w(), minheaderh);
+        
+        m_pWizard->size(m_pWizard->w(), m_pCancelButton->y()-minheaderh-ButtonHSpacing());
+    }
+}
+
 CInstallScreen *CInstaller::GetScreen(Fl_Widget *w)
 {
     return static_cast<CInstallScreen *>(w->user_data());
+}
+
+void CInstaller::ActivateScreen(CInstallScreen *screen)
+{
+    SetTitle(screen->GetTitle());
+    // SetTitle() may have changed wizard's size or the screen may not have it's size initialized, so do this here
+    screen->SetSize(m_pWizard->x()+ScreenSpacing(), m_pWizard->y()+ScreenSpacing(),
+                    m_pWizard->w()-(2*ScreenSpacing()), m_pWizard->h()-(2*ScreenSpacing()));
+    screen->Activate();
+    m_pWizard->value(screen->GetGroup());
 }
 
 void CInstaller::UpdateButtonPack()
@@ -97,7 +133,7 @@ void CInstaller::Next()
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
-    return new CInstallScreen(title, this);
+    return new CInstallScreen(title);
 }
 
 void CInstaller::CoreAddScreen(CBaseScreen *screen)
@@ -177,41 +213,13 @@ void CInstaller::Init(int argc, char **argv)
         CInstallScreen *screen = GetScreen(m_pWizard->child(i));
         if (screen->CanActivate())
         {
-            screen->Activate();
-            m_pWizard->value(m_pWizard->child(i));
+            ActivateScreen(screen);
             break;
         }
     }
     
     m_pMainWindow->end();
     m_pMainWindow->show(argc, argv);
-}
-
-void CInstaller::SetTitle(const std::string &t)
-{
-    int w = m_pTitle->w(), h = 0;
-    int minheaderh = (m_pLogoBox) ? (m_pLogoBox->y() + m_pLogoBox->h() + HeaderSpacing()) : 50;
-    fl_font(m_pTitle->labelfont(), m_pTitle->labelsize());
-    fl_measure(t.c_str(), w, h);
-    minheaderh = std::max(minheaderh, h);
-
-    m_pTitle->size(m_pTitle->w(), minheaderh);
-    m_pTitle->label(t.c_str());
-
-    if (m_pHeaderGroup->h() != minheaderh)
-    {
-        // Center logo (if any)
-        if (m_pLogoBox)
-        {
-            const int y = ((minheaderh - m_pLogoBox->h()) / 2);
-            m_pLogoBox->position(m_pLogoBox->x(), y);
-        }
-
-        m_pHeaderGroup->init_sizes(); // Otherwise parent will resize child widgets
-        m_pHeaderGroup->size(m_pHeaderGroup->w(), minheaderh);
-        
-        m_pWizard->size(m_pWizard->w(), m_pCancelButton->y()-minheaderh-ButtonHSpacing());
-    }
 }
 
 void CInstaller::CancelCB(Fl_Widget *w, void *p)

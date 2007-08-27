@@ -17,28 +17,28 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "gtk.h"
-#include "luawidget.h"
+#ifndef FLTK_LUAWIDGET_H
+#define FLTK_LUAWIDGET_H
 
-// -------------------------------------
-// Base GTK Lua Widget Class
-// -------------------------------------
+#include "main/install/luawidget.h"
 
-CLuaWidget::CLuaWidget(void)
+class Fl_Box;
+class Fl_Group;
+
+class CLuaWidget: virtual public CBaseLuaWidget
 {
-    m_pBox = gtk_vbox_new(FALSE, 0);
+    Fl_Group *m_pMainGroup;
     
-    m_pTitle = gtk_label_new(NULL);
-    gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
-    gtk_widget_set_size_request(m_pTitle, MaxWidgetWidth(), -1);
-    gtk_box_pack_start(GTK_BOX(m_pBox), m_pTitle, TRUE, TRUE, 4);
-}
+    virtual void CoreSetTitle(void);
+    virtual void CoreActivateWidget(void){}
+    
+protected:
+    void LabelSize(int &w, int &h) const;
+    
+public:
+    CLuaWidget(void);
+    
+    Fl_Group *GetGroup(void) { return m_pMainGroup; }
+};
 
-void CLuaWidget::CoreSetTitle()
-{
-    if (!GetTitle().empty())
-    {
-        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
-        gtk_widget_show(m_pTitle);
-    }
-}
+#endif

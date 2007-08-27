@@ -39,7 +39,7 @@ protected:
     CBaseLuaWidget(void) : m_szLuaType(0) {}
     
     void LuaDataChanged(void);
-    std::string &GetTitle(void) { return m_Title; }
+    const std::string &GetTitle(void) const { return m_Title; }
 
 public:
     virtual ~CBaseLuaWidget(void) { };

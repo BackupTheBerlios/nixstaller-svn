@@ -17,28 +17,34 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "gtk.h"
+#include "main/main.h"
 #include "luawidget.h"
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Group.H>
+#include <FL/fl_draw.H>
 
 // -------------------------------------
-// Base GTK Lua Widget Class
+// Base FLTK Lua Widget Class
 // -------------------------------------
 
 CLuaWidget::CLuaWidget(void)
 {
-    m_pBox = gtk_vbox_new(FALSE, 0);
-    
-    m_pTitle = gtk_label_new(NULL);
-    gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
-    gtk_widget_set_size_request(m_pTitle, MaxWidgetWidth(), -1);
-    gtk_box_pack_start(GTK_BOX(m_pBox), m_pTitle, TRUE, TRUE, 4);
+    m_pMainGroup = new Fl_Group(0, 0, 0, 0); // Widgets need to set this
+    m_pMainGroup->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_WRAP);
+    m_pMainGroup->end();
 }
 
 void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
-    {
-        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
-        gtk_widget_show(m_pTitle);
-    }
+        m_pMainGroup->label(GetTranslation(GetTitle().c_str()));
+}
+
+void CLuaWidget::LabelSize(int &w, int &h) const
+{
+    assert(m_pMainGroup->parent());
+    w = m_pMainGroup->parent()->w();
+    h = 0;
+    fl_font(m_pMainGroup->labelfont(), m_pMainGroup->labelsize());
+    fl_measure(GetTitle().c_str(), w, h);
 }

@@ -24,18 +24,24 @@
 
 class CInstaller;
 class CBaseLuaGroup;
+class CLuaGroup;
 class Fl_Group;
+class Fl_Pack;
 class Fl_Widget;
 
 class CInstallScreen: public CBaseScreen
 {
-    CInstaller *m_pOwner;
-    Fl_Group *m_pMainGroup;
+    Fl_Pack *m_pMainPack;
+    Fl_Group *m_pWidgetGroup;
+    Fl_Box *m_pCounter;
     std::pair<Fl_Widget *, Fl_Widget *> m_WidgetRange;
 
-    virtual CBaseLuaGroup *CreateGroup(void){}
+    virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void) {}
     
+    int WidgetHSpacing(void) const { return 10; }
+
+    CLuaGroup *GetGroup(Fl_Widget *w);
     int CheckTotalWidgetH(Fl_Widget *w);
     void ResetWidgetRange(void);
     void UpdateCounter(void);
@@ -45,10 +51,13 @@ protected:
     virtual void CoreActivate(void);
     
 public:
-    CInstallScreen(const std::string &title, CInstaller *owner);
+    CInstallScreen(const std::string &title);
     virtual ~CInstallScreen(void) { DeleteGroups(); }
     
-    Fl_Group *GetGroup(void) { return m_pMainGroup; }
+    using CBaseScreen::GetTitle; // So CInstallScreen can use it
+    Fl_Group *GetGroup(void);
+    
+    void SetSize(int x, int y, int w, int h);
     
     bool HasPrevWidgets(void) const;
     bool HasNextWidgets(void) const;

@@ -82,6 +82,7 @@ FLTK
 - Check locales and numeric lua widget input
 - Use new image scaling function from utils.cpp
 - Check if all lua screens, groups, widgets are destroyed
+- ActivateWidget function(s?)
 
 
 DESIGN

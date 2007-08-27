@@ -44,13 +44,17 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     
     int WindowW(void) const { return 600; }
     int WindowH(void) const { return 400; }
-    int HeaderSpacing(void) { return 5; }
+    int HeaderSpacing(void) const { return 5; }
+    int ScreenSpacing(void) const { return 5; }
     int ButtonWOffset(void) const { return 10; }
     int ButtonWSpacing(void) const { return 10; }
     int ButtonHSpacing(void) const { return 10; }
     
     void CreateHeader(void);
+    void SetTitle(const std::string &t);
+    
     CInstallScreen *GetScreen(Fl_Widget *w);
+    void ActivateScreen(CInstallScreen *screen);
     bool FirstValidScreen(void);
     bool LastValidScreen(void);
     void UpdateButtonPack(void);
@@ -69,8 +73,6 @@ public:
     
     virtual void Init(int argc, char **argv);
     virtual void UpdateLanguage(void);
-    
-    void SetTitle(const std::string &t);
     
     static void CancelCB(Fl_Widget *w, void *p);
     static void BackCB(Fl_Widget *w, void *p) { ((CInstaller *)p)->Back(); };

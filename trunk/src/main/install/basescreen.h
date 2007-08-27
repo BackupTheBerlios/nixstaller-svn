@@ -37,7 +37,7 @@ class CBaseScreen
 protected:
     virtual void CoreActivate(void);
 
-    const std::string &GetTitle(void) { return m_Title; }
+    const std::string &GetTitle(void) const { return m_Title; }
     // This function is not called by the destructor, because in some frontends a lua group is part of the gui and will
     // be automaticly deleted
     void DeleteGroups(void);

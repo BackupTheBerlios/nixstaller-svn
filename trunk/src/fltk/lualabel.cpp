@@ -17,28 +17,16 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "gtk.h"
-#include "luawidget.h"
+#include "lualabel.h"
+#include <FL/Fl_Group.H>
 
 // -------------------------------------
-// Base GTK Lua Widget Class
+// FLTK Lua Label Class
 // -------------------------------------
 
-CLuaWidget::CLuaWidget(void)
+CLuaLabel::CLuaLabel(const char *title) : CBaseLuaWidget(title)
 {
-    m_pBox = gtk_vbox_new(FALSE, 0);
-    
-    m_pTitle = gtk_label_new(NULL);
-    gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
-    gtk_widget_set_size_request(m_pTitle, MaxWidgetWidth(), -1);
-    gtk_box_pack_start(GTK_BOX(m_pBox), m_pTitle, TRUE, TRUE, 4);
-}
-
-void CLuaWidget::CoreSetTitle()
-{
-    if (!GetTitle().empty())
-    {
-        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
-        gtk_widget_show(m_pTitle);
-    }
+    int w, h;
+    LabelSize(w, h);
+    GetGroup()->size(w, h);
 }
