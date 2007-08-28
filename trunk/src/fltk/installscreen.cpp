@@ -148,6 +148,35 @@ void CInstallScreen::UpdateCounter()
         m_pCounter->hide();
 }
 
+bool CInstallScreen::CheckWidgets()
+{
+    const int size = m_pWidgetPack->children();
+    
+    if (!size)
+        return true;
+    
+    int start = (m_WidgetRange.first) ? m_pWidgetPack->find(m_WidgetRange.first) : 0;
+    const int end = (m_WidgetRange.second) ? m_pWidgetPack->find(m_WidgetRange.second) : size-1;
+    bool ret = true;
+    
+    for (; start<=end; start++)
+    {
+        CLuaGroup *group = GetGroup(m_pWidgetPack->child(start));
+        if (!group->CheckWidgets())
+        {
+            ret = false;
+            break;
+        }
+        
+        if (start == end)
+            break;
+        
+        start++;
+    }
+
+    return ret;
+}
+
 void CInstallScreen::CoreActivate(void)
 {
     ResetWidgetRange();
@@ -164,4 +193,119 @@ void CInstallScreen::SetSize(int x, int y, int w, int h)
     m_pMainPack->resize(x, y, w, h);
     m_pWidgetPack->size(w, h-m_pCounter->h());
     UpdateCounter(); // This needs to be done after resizing the widget group
+}
+
+bool CInstallScreen::HasPrevWidgets() const
+{
+    if (!m_WidgetRange.first || !m_pWidgetPack->children())
+        return false;
+    
+    return (m_pWidgetPack->child(0) != m_WidgetRange.first);
+}
+
+bool CInstallScreen::HasNextWidgets() const
+{
+    if (!m_WidgetRange.first || !m_pWidgetPack->children())
+        return false;
+    
+    return (m_pWidgetPack->child(m_pWidgetPack->children()-1) != m_WidgetRange.second);
+}
+
+bool CInstallScreen::SubBack()
+{
+    if (HasPrevWidgets())
+    {
+        const int size = m_pWidgetPack->children();
+        
+        if (!size)
+            return false;
+        
+        for (int i=0; i<size; i++)
+            m_pWidgetPack->child(i)->hide();
+        
+        int h = 0;
+        int start = m_pWidgetPack->find(m_WidgetRange.first);
+        m_WidgetRange.first = m_WidgetRange.second = NULL;
+        
+        if (start != size)
+        {
+            start--;
+            for (; ((start>=0) && (h <= MaxScreenHeight())); start--)
+            {
+                Fl_Group *group = GetGroup(m_pWidgetPack->child(start))->GetGroup();
+                if (!group->children())
+                    continue;
+
+                h += CheckTotalWidgetH(group);
+                
+                if (h <= MaxScreenHeight())
+                {
+                    group->show();
+                    m_WidgetRange.first = group;
+                }
+                
+                if (!m_WidgetRange.second)
+                    m_WidgetRange.second = group;
+            }
+        }
+        
+        if (h)
+        {
+            UpdateCounter();
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool CInstallScreen::SubNext()
+{
+    if (!CheckWidgets())
+        return true; // Widget check failed, so return true in order to stay at this screen
+    
+    if (HasNextWidgets())
+    {
+        const int size = m_pWidgetPack->children();
+        
+        if (!size)
+            return false;
+        
+        for (int i=0; i<size; i++)
+            m_pWidgetPack->child(i)->hide();
+        
+        int h = 0;
+        int start = m_pWidgetPack->find(m_WidgetRange.second);
+        m_WidgetRange.first = m_WidgetRange.second = NULL;
+        
+        if (start != size)
+        {
+            start++;
+            for (; ((start < size) && (h <= MaxScreenHeight())); start++)
+            {
+                Fl_Group *group = GetGroup(m_pWidgetPack->child(start))->GetGroup();
+                if (!group->children())
+                    continue;
+
+                h += CheckTotalWidgetH(group);
+                
+                if (h <= MaxScreenHeight())
+                {
+                    group->show();
+                    m_WidgetRange.second = group;
+                }
+                
+                if (!m_WidgetRange.first)
+                    m_WidgetRange.first = group;
+            }
+        }
+        
+        if (h)
+        {
+            UpdateCounter();
+            return true;
+        }
+    }
+    
+    return false;
 }
