@@ -31,14 +31,14 @@
 // FLTK Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), m_WidgetRange(NULL, NULL)
+CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), m_WidgetRange(NULL, NULL),
+                                                           m_iMaxHeight(0)
 {
     // Size and positions are set by CInstaller when screen is activated
     m_pMainPack = new Fl_Pack(0, 0, 0, 0);
     m_pMainPack->type(Fl_Pack::VERTICAL);
     
-    // We let the counter have a static height, since this makes resizing for the widget pack easier 
-    // (as otherwise the size would depend on each other)
+    // We let the counter have a static height, since this makes resizing for the widget pack easier
     m_pCounter = new Fl_Box(0, 0, 0, 0);
     fl_font(m_pCounter->labelfont(), m_pCounter->labelsize());
     m_pCounter->size(0, fl_height());
@@ -63,11 +63,6 @@ CBaseLuaGroup *CInstallScreen::CreateGroup(void)
     return ret;
 }
 
-int CInstallScreen::MaxScreenHeight(void)
-{
-    return m_pWidgetPack->h();
-}
-
 CLuaGroup *CInstallScreen::GetGroup(Fl_Widget *w)
 {
     return static_cast<CLuaGroup *>(w->user_data());
@@ -77,7 +72,7 @@ int CInstallScreen::CheckTotalWidgetH(Fl_Widget *w)
 {
     int ret = w->h() + WidgetHSpacing();
     
-    if (ret > m_pWidgetPack->h())
+    if (ret > MaxScreenHeight())
         throw Exceptions::CExOverflow("Not enough space for widget.");
     
     return ret;
@@ -191,8 +186,10 @@ Fl_Group *CInstallScreen::GetGroup()
 void CInstallScreen::SetSize(int x, int y, int w, int h)
 {
     m_pMainPack->resize(x, y, w, h);
-    m_pWidgetPack->size(w, h-m_pCounter->h());
-    UpdateCounter(); // This needs to be done after resizing the widget group
+    // We cannot use the height from a pack (m_pMainPack or m_pWidgetPack), because vertical packs will
+    // auto adjust their height
+    m_iMaxHeight = h - m_pCounter->h();
+    UpdateCounter();
 }
 
 bool CInstallScreen::HasPrevWidgets() const
@@ -205,7 +202,7 @@ bool CInstallScreen::HasPrevWidgets() const
 
 bool CInstallScreen::HasNextWidgets() const
 {
-    if (!m_WidgetRange.first || !m_pWidgetPack->children())
+    if (!m_WidgetRange.second || !m_pWidgetPack->children())
         return false;
     
     return (m_pWidgetPack->child(m_pWidgetPack->children()-1) != m_WidgetRange.second);
@@ -259,9 +256,9 @@ bool CInstallScreen::SubBack()
     return false;
 }
 
-bool CInstallScreen::SubNext()
+bool CInstallScreen::SubNext(bool check)
 {
-    if (!CheckWidgets())
+    if (check && !CheckWidgets())
         return true; // Widget check failed, so return true in order to stay at this screen
     
     if (HasNextWidgets())
@@ -308,4 +305,10 @@ bool CInstallScreen::SubNext()
     }
     
     return false;
+}
+
+void CInstallScreen::SubLast()
+{
+    while (SubNext(false))
+        ;
 }

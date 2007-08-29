@@ -103,17 +103,59 @@ void CInstaller::SetTitle(const std::string &t)
 
 CInstallScreen *CInstaller::GetScreen(Fl_Widget *w)
 {
+    if (!w)
+        return NULL;
+    
     return static_cast<CInstallScreen *>(w->user_data());
 }
 
 void CInstaller::ActivateScreen(CInstallScreen *screen)
 {
-    SetTitle(screen->GetTitle());
+    SetTitle(GetTranslation(screen->GetTitle()));
     // SetTitle() may have changed wizard's size or the screen may not have it's size initialized, so do this here
     screen->SetSize(m_pWizard->x()+ScreenSpacing(), m_pWizard->y()+ScreenSpacing(),
                     m_pWizard->w()-(2*ScreenSpacing()), m_pWizard->h()-(2*ScreenSpacing()));
     screen->Activate();
     m_pWizard->value(screen->GetGroup());
+}
+
+bool CInstaller::FirstValidScreen()
+{
+    int start = m_pWizard->find(m_pWizard->value());
+    
+    if (!start || (start == m_pWizard->children()))
+        return true;
+    
+    CInstallScreen *screen;
+    start--;
+    while((start >= 0) && (screen = GetScreen(m_pWizard->child(start))))
+    {
+        if (screen->CanActivate())
+            return false;
+        start--;
+    }
+    
+    return true;
+}
+
+bool CInstaller::LastValidScreen()
+{
+    const int size = m_pWizard->children();
+    int start = m_pWizard->find(m_pWizard->value());
+    
+    if ((start >= (size-1)))
+        return true;
+    
+    CInstallScreen *screen;
+    start++;
+    while((start<size) && (screen = GetScreen(m_pWizard->child(start))))
+    {
+        if (screen->CanActivate())
+            return false;
+        start++;
+    }
+    
+    return true;
 }
 
 void CInstaller::UpdateButtonPack()
@@ -123,12 +165,94 @@ void CInstaller::UpdateButtonPack()
     m_pButtonPack->resize(x, m_pButtonPack->y(), w, m_pButtonPack->h());
 }
 
+void CInstaller::UpdateButtons(void)
+{
+    CInstallScreen *curscreen = GetScreen(m_pWizard->value());
+    
+    if (FirstValidScreen() && !curscreen->HasPrevWidgets())
+        m_pBackButton->deactivate();
+    else if (!m_bPrevButtonLocked)
+        m_pBackButton->activate();
+    
+    if (LastValidScreen() && !curscreen->HasNextWidgets())
+        m_pNextButton->label(CreateText("%s    @->|", GetTranslation("Finish")));
+    else
+        m_pNextButton->label(CreateText("%s    @->", GetTranslation("Next")));
+}
+
 void CInstaller::Back()
 {
+    CInstallScreen *screen = GetScreen(m_pWizard->value());
+    
+    if (!screen)
+        return;
+    
+    if (screen->SubBack())
+    {
+        UpdateButtons();
+        return;
+    }
+    
+    if (!screen->Back())
+        return;
+    
+    for (int start = m_pWizard->find(m_pWizard->value())-1; (start>=0); start--)
+    {
+        screen = GetScreen(m_pWizard->child(start));
+        
+        if (screen)
+        {
+            if (screen->CanActivate())
+            {
+                m_pWizard->value(m_pWizard->child(start));
+                ActivateScreen(screen);
+                screen->SubLast();
+                UpdateButtons();
+                return;
+            }
+        }
+        else
+            return;
+    }
 }
 
 void CInstaller::Next()
 {
+    CInstallScreen *screen = GetScreen(m_pWizard->value());
+    
+    if (!screen)
+        return;
+    
+    if (screen->SubNext())
+    {
+        UpdateButtons();
+        return;
+    }
+    
+    if (!screen->Next())
+        return;
+    
+    const int size = m_pWizard->children();
+    for (int start = m_pWizard->find(m_pWizard->value())+1; (start<size); start++)
+    {
+        screen = GetScreen(m_pWizard->child(start));
+        
+        if (screen)
+        {
+            if (screen->CanActivate())
+            {
+                m_pWizard->value(m_pWizard->child(start));
+                ActivateScreen(screen);
+                UpdateButtons();
+                return;
+            }
+        }
+        else
+            break;
+    }
+    
+    // No screens left
+    m_pMainWindow->hide(); // Close main window, will shutdown the rest
 }
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
@@ -148,12 +272,24 @@ void CInstaller::InstallThink(void)
     Fl::wait(0.0f);
 }
 
+void CInstaller::LockScreen(bool cancel, bool prev, bool next)
+{
+    (cancel) ? m_pCancelButton->deactivate() : m_pCancelButton->activate();
+    (prev) ? m_pBackButton->deactivate() : m_pBackButton->activate();
+    (next) ? m_pNextButton->deactivate() : m_pNextButton->activate();
+    m_bPrevButtonLocked = prev;
+}
+
 void CInstaller::UpdateLanguage(void)
 {
     CFLTKBase::UpdateLanguage();
     CBaseInstall::UpdateLanguage();
     
-    // Update main buttons
+    CInstallScreen *screen = GetScreen(m_pWizard->value());
+    if (screen)
+        SetTitle(GetTranslation(screen->GetTitle()));
+    
+    m_pAboutBox->label(GetTranslation("About"));
     m_pCancelButton->label(GetTranslation("Cancel"));
     m_pBackButton->label(CreateText("@<-    %s", GetTranslation("Back")));
     m_pNextButton->label(CreateText("%s    @->", GetTranslation("Next")));

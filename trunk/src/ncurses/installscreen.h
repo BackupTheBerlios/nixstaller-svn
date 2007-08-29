@@ -56,8 +56,9 @@ public:
     { return (m_pGroupBox && m_WidgetRange.first && (m_WidgetRange.first != m_pGroupBox->GetChildList().front())); }
     bool HasNextWidgets(void)
     { return (m_pGroupBox && m_WidgetRange.second && (m_WidgetRange.second != m_pGroupBox->GetChildList().back())); }
-    bool SubNext(void);
+    bool SubNext(bool check=true);
     bool SubBack(void);
+    void SubLast(void);
 };
 
 #endif

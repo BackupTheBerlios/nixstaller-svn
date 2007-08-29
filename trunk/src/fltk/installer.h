@@ -65,7 +65,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual void InstallThink(void);
-    virtual void LockScreen(bool cancel, bool prev, bool next){}
+    virtual void LockScreen(bool cancel, bool prev, bool next);
 
 public:
     CInstaller(void) : m_pLogoBox(NULL), m_bPrevButtonLocked(false) {}

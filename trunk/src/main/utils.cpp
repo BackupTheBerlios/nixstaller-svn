@@ -331,7 +331,7 @@ char *StrDup(const char *str)
 void MakeAbsolute(std::string &dir)
 {
     if (dir[0] != '/')
-        dir = GetCWD() + "/" + dir; // Make absolute
+        dir = GetCWD() + "/" + dir;
 }
 
 std::string GetCWD()

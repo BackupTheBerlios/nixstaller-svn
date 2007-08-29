@@ -234,9 +234,9 @@ bool CInstallScreen::SubBack()
     return false;
 }
 
-bool CInstallScreen::SubNext()
+bool CInstallScreen::SubNext(bool check)
 {
-    if (!CheckWidgets())
+    if (check && !CheckWidgets())
         return true; // Return true so the current install screen doesn't change
     
     if (HasNextWidgets())
@@ -283,4 +283,10 @@ bool CInstallScreen::SubNext()
     }
     
     return false;
+}
+
+void CInstallScreen::SubLast()
+{
+    while (SubNext(false))
+        ;
 }

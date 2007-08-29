@@ -60,7 +60,7 @@ void CInstaller::InitAboutSection(GtkWidget *parentbox)
     gdk_color_parse("white", &colors);
     GtkWidget *eb = gtk_event_box_new();
     gtk_widget_modify_bg(eb, GTK_STATE_NORMAL, &colors);
-    gtk_container_add(GTK_CONTAINER(parentbox), eb);
+    gtk_box_pack_start(GTK_BOX(parentbox), eb, FALSE, FALSE, 0);
 
     // VBox so that header can have extra spacing
     GtkWidget *topbox = gtk_vbox_new(FALSE, 0);
@@ -230,6 +230,7 @@ void CInstaller::Back(void)
         {
             gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
             screen->Activate();
+            screen->SubLast();
             UpdateButtons();
             return;
         }

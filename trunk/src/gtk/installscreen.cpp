@@ -69,7 +69,7 @@ void CInstallScreen::ResetWidgetRange()
 {
     m_WidgetRange.first = m_WidgetRange.second = NULL;
     
-    GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
     GList *entry = list;
         
     if (!list)
@@ -93,14 +93,13 @@ void CInstallScreen::ResetWidgetRange()
         gtk_widget_hide(GTK_WIDGET(entry->data));
     }
     
-    g_list_free(list);
-
     UpdateCounter();
 }
 
 void CInstallScreen::UpdateCounter()
 {
-    GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), *entry = list;
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
+    GList *entry = list;
     
     if (!list)
         return;
@@ -133,8 +132,6 @@ void CInstallScreen::UpdateCounter()
     }
     else
         gtk_widget_hide(m_pCounter);
-    
-    g_list_free(list);
 }
 
 void CInstallScreen::CoreActivate(void)
@@ -147,12 +144,12 @@ void CInstallScreen::CoreActivate(void)
 
 bool CInstallScreen::CheckWidgets()
 {
-    GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
     
     if (!list)
         return true;
     
-    GList *start = (m_WidgetRange.first) ? g_list_find(list, m_WidgetRange.first) : list;
+    GList *start = (m_WidgetRange.first) ? g_list_find(list, m_WidgetRange.first) : &(*list);
     GList *end = (m_WidgetRange.second) ? g_list_find(list, m_WidgetRange.second) : g_list_last(list);
     bool ret = true;
     
@@ -171,7 +168,6 @@ bool CInstallScreen::CheckWidgets()
         start = g_list_next(start);
     }
 
-    g_list_free(list);
     return ret;
 }
 
@@ -180,13 +176,12 @@ bool CInstallScreen::HasPrevWidgets() const
     if (!m_WidgetRange.first)
         return false;
     
-    GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
     
     if (!list)
         return false;
     
     bool ret = (GTK_WIDGET(list->data) != m_WidgetRange.first);
-    g_list_free(list);
     
     return ret;
 }
@@ -196,13 +191,12 @@ bool CInstallScreen::HasNextWidgets() const
     if (!m_WidgetRange.second)
         return false;
 
-    GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
     
     if (!list)
         return false;
     
     bool ret = (GTK_WIDGET(g_list_last(list)->data) != m_WidgetRange.second);
-    g_list_free(list);
     
     return ret;
 }
@@ -211,7 +205,7 @@ bool CInstallScreen::SubBack()
 {
     if (HasPrevWidgets())
     {
-        GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));
+        CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
         GList *entry = list;
         
         if (!list)
@@ -244,8 +238,6 @@ bool CInstallScreen::SubBack()
             }
         }
         
-        g_list_free(list);
-
         if (h)
         {
             UpdateCounter();
@@ -256,14 +248,14 @@ bool CInstallScreen::SubBack()
     return false;
 }
 
-bool CInstallScreen::SubNext()
+bool CInstallScreen::SubNext(bool check)
 {
-    if (!CheckWidgets())
+    if (check && !CheckWidgets())
         return true; // Widget check failed, so return true in order to stay at this screen
     
     if (HasNextWidgets())
     {
-        GList *list = gtk_container_get_children(GTK_CONTAINER(m_pGroupBox));
+        CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
         GList *entry = list;
         
         if (!list)
@@ -296,8 +288,6 @@ bool CInstallScreen::SubNext()
             }
         }
         
-        g_list_free(list);
-
         if (h)
         {
             UpdateCounter();
@@ -306,4 +296,10 @@ bool CInstallScreen::SubNext()
     }
     
     return false;
+}
+
+void CInstallScreen::SubLast()
+{
+    while (SubNext(false))
+        ;
 }

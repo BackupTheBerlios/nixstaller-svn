@@ -52,7 +52,8 @@ public:
     bool HasPrevWidgets(void) const;
     bool HasNextWidgets(void) const;
     bool SubBack(void);
-    bool SubNext(void);
+    bool SubNext(bool check=true);
+    void SubLast(void);
 };
 
 #endif

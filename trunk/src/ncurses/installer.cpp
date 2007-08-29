@@ -126,6 +126,7 @@ void CInstaller::PrevScreen()
         {
             m_InstallScreens[m_CurrentScreen]->Enable(false);
             ActivateScreen(*it);
+            (*it)->SubLast();
             UpdateButtons();
             break;
         }

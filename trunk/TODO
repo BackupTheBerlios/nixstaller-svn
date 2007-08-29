@@ -18,6 +18,7 @@ OVERALL
 - Check if lua execution can be time sliced
 - Remove exceptions.odt?
 - Way to specify extra (image) files
+- Check if initial language is fully loaded/used
 
 
 DOCS

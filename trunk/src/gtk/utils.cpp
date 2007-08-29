@@ -173,9 +173,8 @@ void SetButtonStock(GtkWidget *button, const gchar *image)
 {
     GtkWidget *alignment = gtk_bin_get_child(GTK_BIN(button));
     GtkWidget *hbox = gtk_bin_get_child(GTK_BIN(alignment));
-    GList *list = gtk_container_get_children(GTK_CONTAINER(hbox));
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(hbox)), g_list_free);
     GtkWidget *img = GTK_WIDGET(list->data);
-    g_list_free(list);
     gtk_image_set_from_stock(GTK_IMAGE(img), image, GTK_ICON_SIZE_BUTTON);
 }
 
@@ -208,10 +207,9 @@ GtkWidget *CreateDirChooser(const char *title)
 
 bool ContainerEmpty(GtkContainer *c)
 {
-    GList *list = gtk_container_get_children(c);
+    CPointerWrapper<GList> list(gtk_container_get_children(c), g_list_free);
     if (!list)
         return true;
     
-    g_list_free(list);
     return false;
 }

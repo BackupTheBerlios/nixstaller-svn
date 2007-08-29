@@ -134,4 +134,30 @@ public:
     operator bool(void) { return !EndOfFile(); };
 };
 
+template <typename C> class CPointerWrapper
+{
+    C *m_pData;
+
+    typedef void (*delfunc)(C *);
+    delfunc m_DelFunc;
+    
+    CPointerWrapper(const CPointerWrapper &) {}
+    
+public:
+    CPointerWrapper(C *d, delfunc f=NULL) : m_pData(d), m_DelFunc(f) { }
+    ~CPointerWrapper(void)
+    {
+        if (m_pData)
+        {
+            if (m_DelFunc)
+                m_DelFunc(m_pData);
+            else
+                delete m_pData;
+        }
+    }
+    
+    C* operator ->(void) { return m_pData; }
+    operator C*(void) { return m_pData; }
+};
+
 #endif
