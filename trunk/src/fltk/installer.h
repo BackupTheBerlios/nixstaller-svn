@@ -45,7 +45,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     int WindowW(void) const { return 600; }
     int WindowH(void) const { return 400; }
     int HeaderSpacing(void) const { return 5; }
-    int ScreenSpacing(void) const { return 5; }
+    int ScreenSpacing(void) const { return 10; }
     int ButtonWOffset(void) const { return 10; }
     int ButtonWSpacing(void) const { return 10; }
     int ButtonHSpacing(void) const { return 10; }

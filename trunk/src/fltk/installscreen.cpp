@@ -37,6 +37,7 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), m
     // Size and positions are set by CInstaller when screen is activated
     m_pMainPack = new Fl_Pack(0, 0, 0, 0);
     m_pMainPack->type(Fl_Pack::VERTICAL);
+    m_pMainPack->resizable(NULL);
     
     // We let the counter have a static height, since this makes resizing for the widget pack easier
     m_pCounter = new Fl_Box(0, 0, 0, 0);
@@ -56,7 +57,7 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), m
 
 CBaseLuaGroup *CInstallScreen::CreateGroup(void)
 {
-    CLuaGroup *ret = new CLuaGroup(m_pWidgetPack->w());
+    CLuaGroup *ret = new CLuaGroup;
     ret->GetGroup()->user_data(ret);
     ret->GetGroup()->hide();
     m_pWidgetPack->add(ret->GetGroup());
@@ -190,6 +191,13 @@ void CInstallScreen::SetSize(int x, int y, int w, int h)
     // auto adjust their height
     m_iMaxHeight = h - m_pCounter->h();
     UpdateCounter();
+    
+    const int size = m_pWidgetPack->children();
+    for (int i=0; i<size; i++)
+    {
+        CLuaGroup *g = GetGroup(m_pWidgetPack->child(i));
+        g->SetSize(w, MaxScreenHeight());
+    }
 }
 
 bool CInstallScreen::HasPrevWidgets() const

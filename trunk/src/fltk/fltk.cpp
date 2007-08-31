@@ -81,7 +81,7 @@ void debugline(const char *t, ...)
 CFLTKBase::CFLTKBase(void) : m_pAboutDisp(NULL), m_pAboutOKButton(NULL), m_pAboutWindow(NULL)
 {
     fl_register_images();
-    Fl::visual(FL_RGB);
+    Fl::visual(FL_RGB | FL_DOUBLE | FL_INDEX);
     Fl::scheme("plastic");
     Fl::background(230, 230, 230);
     

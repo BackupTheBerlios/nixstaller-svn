@@ -24,9 +24,4 @@
 // FLTK Lua Label Class
 // -------------------------------------
 
-CLuaLabel::CLuaLabel(const char *title) : CBaseLuaWidget(title)
-{
-    int w, h;
-    LabelSize(w, h);
-    GetGroup()->size(w, h);
-}
+

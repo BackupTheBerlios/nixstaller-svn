@@ -24,6 +24,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Shared_Image.H>
@@ -299,7 +300,7 @@ void CInstaller::Init(int argc, char **argv)
 {
     const int buttonsy = WindowH()-ButtonHeight()-ButtonHSpacing();
     
-    m_pMainWindow = new Fl_Window(WindowW(), WindowH(), "Nixstaller");
+    m_pMainWindow = new Fl_Double_Window(WindowW(), WindowH(), "Nixstaller");
     m_pMainWindow->callback(CancelCB, this);
 
     Fl_Group *maingroup = new Fl_Group(0, 0, WindowW(), WindowH());

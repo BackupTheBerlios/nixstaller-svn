@@ -20,7 +20,7 @@
 #include "main/main.h"
 #include "fltk.h"
 #include "luagroup.h"
-// #include "luacfgmenu.h"
+#include "luacfgmenu.h"
 // #include "luacheckbox.h"
 // #include "luadirselector.h"
 // #include "luaimage.h"
@@ -37,11 +37,20 @@
 // Lua Widget Group Class
 // -------------------------------------
 
-CLuaGroup::CLuaGroup(int w)
+CLuaGroup::CLuaGroup()
 {
-    m_pMainPack = new Fl_Pack(0, 0, w, 0);
+    m_pMainPack = new Fl_Pack(0, 0, 0, 0);
+    m_pMainPack->resizable(NULL);
     m_pMainPack->type(Fl_Pack::HORIZONTAL);
+    m_pMainPack->spacing(WidgetSpacing());
     m_pMainPack->end();
+}
+
+CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
+{
+    CLuaCFGMenu *ret = new CLuaCFGMenu(desc);
+    AddWidget(ret);
+    return ret;
 }
 
 CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
@@ -53,13 +62,26 @@ CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 
 void CLuaGroup::AddWidget(CLuaWidget *w)
 {
-    if (w->GetGroup()->h() > m_pMainPack->h())
-        m_pMainPack->size(m_pMainPack->w(), w->GetGroup()->h());
-
+    w->GetGroup()->user_data(w);
     m_pMainPack->add(w->GetGroup());
 }
 
 Fl_Group *CLuaGroup::GetGroup()
 {
     return m_pMainPack;
+}
+
+void CLuaGroup::SetSize(int maxw, int maxh)
+{
+    maxw -= WidgetSpacing(); // HACK: FLTK adds spacing at the beginning (bug)
+    const int size = m_pMainPack->children();
+    const int maxwidth = (maxw / size) - (WidgetSpacing() * (size-1));
+    for (int i=0; i<size; i++)
+    {
+        CLuaWidget *widget = static_cast<CLuaWidget *>(m_pMainPack->child(i)->user_data());
+        widget->SetSize(maxwidth, maxh);
+        
+        if (widget->GetGroup()->h() > m_pMainPack->h())
+            m_pMainPack->size(m_pMainPack->w(), widget->GetGroup()->h());
+    }
 }

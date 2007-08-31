@@ -79,11 +79,11 @@ FLTK
 - Change Lua inputfield label width handling
 - Check lua widgets; move members to private, change virtual function names etc.
 - Check dirselectors for adding dirs as root
-- Make screen header?
 - Check locales and numeric lua widget input
 - Use new image scaling function from utils.cpp
 - Check if all lua screens, groups, widgets are destroyed
 - ActivateWidget function(s?)
+- Recompile FLTK with Xdbe support and using customly compiled deps
 
 
 DESIGN

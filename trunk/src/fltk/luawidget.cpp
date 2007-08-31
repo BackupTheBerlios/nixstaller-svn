@@ -20,7 +20,7 @@
 #include "main/main.h"
 #include "luawidget.h"
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Group.H>
+#include <FL/Fl_Pack.H>
 #include <FL/fl_draw.H>
 
 // -------------------------------------
@@ -29,22 +29,38 @@
 
 CLuaWidget::CLuaWidget(void)
 {
-    m_pMainGroup = new Fl_Group(0, 0, 0, 0); // Widgets need to set this
-    m_pMainGroup->align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_WRAP);
-    m_pMainGroup->end();
+    m_pMainPack = new Fl_Pack(0, 0, 0, 0); // Widgets need to set this
+    m_pMainPack->type(Fl_Pack::VERTICAL);
+    m_pMainPack->resizable(NULL);
+    
+    m_pTitle = new Fl_Box(0, 0, 0, 0);
+    m_pTitle->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_WRAP);
+    
+    m_pMainPack->end();
 }
 
 void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
-        m_pMainGroup->label(GetTranslation(GetTitle().c_str()));
+        m_pTitle->label(GetTranslation(GetTitle().c_str()));
 }
 
-void CLuaWidget::LabelSize(int &w, int &h) const
+Fl_Group *CLuaWidget::GetGroup()
 {
-    assert(m_pMainGroup->parent());
-    w = m_pMainGroup->parent()->w();
-    h = 0;
-    fl_font(m_pMainGroup->labelfont(), m_pMainGroup->labelsize());
-    fl_measure(GetTitle().c_str(), w, h);
+    return m_pMainPack;
+}
+
+void CLuaWidget::SetSize(int maxw, int maxh)
+{
+    if (!GetTitle().empty())
+    {
+        int w = maxw, h = 0;
+        fl_font(m_pMainPack->labelfont(), m_pMainPack->labelsize());
+        fl_measure(GetTitle().c_str(), w, h);
+        
+        if ((w > m_pTitle->w()) || (h > m_pTitle->h()))
+            m_pTitle->size(w, h);
+    }
+    
+    CoreSetSize(maxw, maxh);
 }

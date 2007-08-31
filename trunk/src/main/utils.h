@@ -140,9 +140,9 @@ template <typename C> class CPointerWrapper
 
     typedef void (*delfunc)(C *);
     delfunc m_DelFunc;
-    
+
     CPointerWrapper(const CPointerWrapper &) {}
-    
+
 public:
     CPointerWrapper(C *d, delfunc f=NULL) : m_pData(d), m_DelFunc(f) { }
     ~CPointerWrapper(void)

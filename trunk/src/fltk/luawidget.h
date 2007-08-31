@@ -24,21 +24,22 @@
 
 class Fl_Box;
 class Fl_Group;
+class Fl_Pack;
 
 class CLuaWidget: virtual public CBaseLuaWidget
 {
-    Fl_Group *m_pMainGroup;
+    Fl_Pack *m_pMainPack;
+    Fl_Box *m_pTitle;
     
     virtual void CoreSetTitle(void);
     virtual void CoreActivateWidget(void){}
-    
-protected:
-    void LabelSize(int &w, int &h) const;
+    virtual void CoreSetSize(int maxw, int maxh) = 0;
     
 public:
     CLuaWidget(void);
     
-    Fl_Group *GetGroup(void) { return m_pMainGroup; }
+    Fl_Group *GetGroup(void);
+    void SetSize(int maxw, int maxh);
 };
 
 #endif
