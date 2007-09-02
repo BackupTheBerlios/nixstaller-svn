@@ -31,15 +31,15 @@ class CLuaWidget: virtual public CBaseLuaWidget, public NNCurses::CBox
 {
     NNCurses::CBox *m_pTitleBox;
     NNCurses::CLabel *m_pTitle;
+    int m_iMaxWidth;
     
     virtual void CoreSetTitle(void);
     virtual void CoreActivateWidget(void);
     
-protected:
-    int MaxWidgetReqW(void) const;
-
 public:
     CLuaWidget(void);
+    
+    void SetMaxWidth(int maxw);
 };
 
 #endif

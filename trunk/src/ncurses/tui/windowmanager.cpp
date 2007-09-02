@@ -158,6 +158,11 @@ void CWindowManager::CoreRemoveWidget(CWidget *w)
     if (it != m_ActiveWidgets.end())
         m_ActiveWidgets.erase(it);
     
+    std::deque<CWidget *>::iterator qit = std::find(m_WidgetQueue.begin(), m_WidgetQueue.end(), w);
+    
+    if (qit != m_WidgetQueue.end())
+        m_WidgetQueue.erase(qit);
+
     RequestUpdate();
     TUI.UpdateButtonBar();
 }
@@ -185,6 +190,7 @@ void CWindowManager::CoreDrawLayout()
     while (!m_WidgetQueue.empty())
     {
         CWidget *w = m_WidgetQueue.front();
+        m_WidgetQueue.pop_front();
         
         if (w->Enabled())
         {
@@ -194,8 +200,6 @@ void CWindowManager::CoreDrawLayout()
         
             SetChildSize(w, x, y, width, height);
         }
-        
-        m_WidgetQueue.pop_front();
     }
 }
 

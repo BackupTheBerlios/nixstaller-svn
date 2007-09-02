@@ -34,7 +34,7 @@ CDialog::CDialog() : m_pButtonBox(NULL), m_pActivatedWidget(NULL)
 
 bool CDialog::CoreHandleEvent(CWidget *emitter, int event)
 {
-    if (CBox::CoreHandleEvent(emitter, event))
+    if (CWindow::CoreHandleEvent(emitter, event))
         return true;
     
     if (event == EVENT_CALLBACK)

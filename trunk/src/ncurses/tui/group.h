@@ -41,6 +41,8 @@ private:
     void DrawLayout(void) { CoreDrawLayout(); }
 
 protected:
+    CGroup(void) : m_pFocusedWidget(NULL), m_bUpdateLayout(true) { }
+
     virtual void CoreDraw(void);
     virtual void CoreTouchSize(void);
     virtual void UpdateSize(void);
@@ -63,8 +65,6 @@ protected:
     void DrawChild(CWidget *w) { w->Draw(); }
     void UpdateLayout(void) { m_bUpdateLayout = true; }
     void Clear(void);
-
-    CGroup(void) : m_pFocusedWidget(NULL), m_bUpdateLayout(true) { }
 
 public:
     virtual ~CGroup(void) { Clear(); };

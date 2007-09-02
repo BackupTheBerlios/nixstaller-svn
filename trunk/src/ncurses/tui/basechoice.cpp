@@ -43,7 +43,7 @@ void CBaseChoice::Move(int n)
 
 void CBaseChoice::DoDraw()
 {
-    int x = 0, y = 0, cur = 0;
+    int x = 0, y = (Height() / SafeConvert<int>(m_ChoiceList.size())) / 2, cur = 0;
     for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++, cur++)
     {
         std::string text = CoreGetText(*it);

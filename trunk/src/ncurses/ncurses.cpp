@@ -66,11 +66,14 @@ void ReportError(const char *msg)
         }
         catch(Exceptions::CExFrontend &)
         {
-            fprintf(stderr, msg);
+        }
+        catch(Exceptions::CExOverflow &)
+        {
         }
     }
-    else
-        fprintf(stderr, msg);
+    
+    StopFrontend();
+    fprintf(stderr, msg);
 }
 
 void StartFrontend(int argc, char **argv)

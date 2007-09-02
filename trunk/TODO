@@ -19,6 +19,7 @@ OVERALL
 - Remove exceptions.odt?
 - Way to specify extra (image) files
 - Check if initial language is fully loaded/used
+- Check labelspacing with empty label (GTK: Check for labelwidth func)
 
 
 DOCS
@@ -27,6 +28,7 @@ DOCS
 - Mention that a widget can be too big
 - Update input:setspacing --> input:setlabelwidth (and other defaults)
 - Update radiobutton and checkbox function arguments
+- Check lua widget defaults
 
         
 TRANSLATIONS

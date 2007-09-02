@@ -39,14 +39,14 @@ CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc), m_pDirChooser
 {
     m_ColumnWidths[0] = m_ColumnWidths[1] = 0;
     
-    const int grouph = 175, inputh = 25, inputspacing = 10;
+    const int grouph = 175, inputh = 25, dirinputh = 35, inputspacing = 10;
     GetGroup()->size(GetGroup()->w(), grouph);
     GetGroup()->begin();
     
-    m_pVarListView = new Fl_Hold_Browser(0, 0, 0, grouph - (inputspacing+inputh));
+    m_pVarListView = new Fl_Hold_Browser(0, 0, 0, grouph - (inputspacing+dirinputh));
     m_pVarListView->callback(SelectionCB, this);
     
-    const int y = grouph - inputh;
+    int y = grouph - inputh;
     m_pInputField = new Fl_Input(0, y, 0, inputh);
     m_pInputField->callback(InputChangedCB, this);
     m_pInputField->hide();
@@ -55,20 +55,21 @@ CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc), m_pDirChooser
     m_pChoiceMenu->callback(ChoiceChangedCB, this);
     m_pChoiceMenu->hide();
     
-    Fl_Pack *dirpack = new Fl_Pack(0, y, 0, inputh);
-    dirpack->type(Fl_Pack::HORIZONTAL);
-    dirpack->spacing(DirChooserSpacing());
+    // Group for placing widgets next to eachother
+    Fl_Group *dirgroup = new Fl_Group(0, y, 0, dirinputh);
+    dirgroup->resizable(NULL);
     
-    m_pDirInput = new Fl_File_Input(0, y, 0, inputh);
+    m_pDirInput = new Fl_File_Input(0, y, 0, dirinputh);
     m_pDirInput->callback(InputChangedCB, this);
     m_pDirInput->hide();
     
+    y += ((dirinputh-inputh)/2); // Center
     m_pBrowseButton = new Fl_Button(0, y, 0, inputh, GetTranslation("Browse"));
     SetButtonWidth(m_pBrowseButton);
     m_pBrowseButton->callback(BrowseCB, this);
     m_pBrowseButton->hide();
     
-    dirpack->end();
+    dirgroup->end();
     
     GetGroup()->end();
     
@@ -161,7 +162,10 @@ void CLuaCFGMenu::UpdateDirChooser()
 {
     m_pBrowseButton->label(GetTranslation("Browse"));
     SetButtonWidth(m_pBrowseButton);
-    m_pDirInput->size(GetGroup()->w() - DirChooserSpacing() - m_pBrowseButton->w(), m_pDirInput->h());
+    
+    int inputw = GetGroup()->w() - DirChooserSpacing() - m_pBrowseButton->w();
+    m_pDirInput->size(inputw, m_pDirInput->h());
+    m_pBrowseButton->position(m_pDirInput->x() + inputw + DirChooserSpacing(), m_pBrowseButton->y());
 }
 
 void CLuaCFGMenu::UpdateSelection()

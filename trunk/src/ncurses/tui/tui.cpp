@@ -82,8 +82,12 @@ void CTUI::InitNCurses()
 
 void CTUI::StopNCurses()
 {
-    delete m_pMainBox;
-    EndWin();
+    if (m_pMainBox)
+    {
+        delete m_pMainBox;
+        m_pMainBox = NULL;
+        EndWin();
+    }
 }
 
 bool CTUI::Run(int delay)

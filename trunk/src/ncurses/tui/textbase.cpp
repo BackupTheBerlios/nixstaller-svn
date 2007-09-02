@@ -112,18 +112,13 @@ int CTextBase::CoreRequestWidth()
     if (!m_QueuedText.empty())
     {
         TSTLStrSize longest = 0, start = 0, end, length = m_QueuedText.length();
-        
-        do
+        const int width = (m_bWrap && (m_iMaxReqWidth > 0)) ? m_iMaxReqWidth : SafeConvert<int>(length);
+        while (start < length)
         {
-            end = m_QueuedText.find("\n", start);
-            
-            if (end == std::string::npos)
-                end = length-1;
-            
+            end = GetNextLine(m_QueuedText, start, width);
             longest = std::max(longest, (end - start)+1);
             start = end + 1;
         }
-        while ((start < length) && (start < end));
         
         min = std::max(min, SafeConvert<int>(longest));
     }

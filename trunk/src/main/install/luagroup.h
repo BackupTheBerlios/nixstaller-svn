@@ -37,7 +37,10 @@ class CBaseLuaLabel;
 
 class CBaseLuaGroup
 {
+protected:
     typedef std::vector<CBaseLuaWidget *> TWidgetList;
+    
+private:
     TWidgetList m_WidgetList;
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
@@ -58,6 +61,8 @@ protected:
     // This function is not called by the destructor, because in some frontends a lua widget is part of the gui and will
     // be automaticly deleted
     void DeleteWidgets(void);
+    
+    const TWidgetList &GetWidgetList(void) { return m_WidgetList; }
     
 public:
     virtual ~CBaseLuaGroup(void) {}

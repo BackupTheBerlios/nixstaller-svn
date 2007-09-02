@@ -22,7 +22,8 @@
 
 #include "tui/box.h"
 #include "main/install/luagroup.h"
-#include "luawidget.h"
+
+class CLuaWidget;
 
 class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
 {
@@ -40,11 +41,12 @@ class CLuaGroup: public CBaseLuaGroup, public NNCurses::CBox
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap);
     virtual CBaseLuaLabel *CreateLabel(const char *title);
     
-protected:
-    virtual void CoreAddWidget(NNCurses::CWidget *w);
+    int LuaWidgetSpacing(void) { return 4; }
+    void AddLuaWidget(CLuaWidget *w);
     
 public:
-    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, 4), m_bInitEnable(true) { Enable(false); }
+    CLuaGroup(void) : NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false, LuaWidgetSpacing()),
+                      m_bInitEnable(true) { Enable(false); }
 };
 
 #endif

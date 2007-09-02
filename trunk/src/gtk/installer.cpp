@@ -311,8 +311,7 @@ void CInstaller::UpdateLanguage()
     SetAboutLabel();
     
     gtk_label_set(GTK_LABEL(m_pCancelLabel), GetTranslation("Cancel"));
-    gtk_label_set(GTK_LABEL(m_pBackLabel), GetTranslation("Back"));
-    gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Next"));
+    UpdateButtons();
 
     if (!m_CurTitle.empty())
         SetTitle(m_CurTitle);

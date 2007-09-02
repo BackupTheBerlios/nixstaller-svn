@@ -29,6 +29,8 @@
 #include "luaprogressbar.h"
 #include "luaradiobutton.h"
 #include "luatextfield.h"
+#include "luawidget.h"
+#include "tui/tui.h"
 
 // -------------------------------------
 // Lua Widget Group Class
@@ -38,42 +40,42 @@ CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *d
                                                 int max, const char *type)
 {
     CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
 {
     CLuaCheckbox *ret = new CLuaCheckbox(desc, l);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
 {
     CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaDirSelector *CLuaGroup::CreateDirSelector(const char *desc, const char *val)
 {
     CLuaDirSelector *ret = new CLuaDirSelector(desc, val);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
 {
     CLuaCFGMenu *ret = new CLuaCFGMenu(desc);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
 {
     CLuaMenu *ret = new CLuaMenu(desc, l);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
@@ -86,25 +88,25 @@ CBaseLuaImage *CLuaGroup::CreateImage(const char *file)
 CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
 {
     CLuaProgressBar *ret = new CLuaProgressBar(desc);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
 {
     CLuaTextField *ret = new CLuaTextField(desc, wrap);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
 CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 {
     CLuaLabel *ret = new CLuaLabel(title);
-    CBox::AddWidget(ret);
+    AddLuaWidget(ret);
     return ret;
 }
 
-void CLuaGroup::CoreAddWidget(NNCurses::CWidget *w)
+void CLuaGroup::AddLuaWidget(CLuaWidget *w)
 {
     if (m_bInitEnable)
     {
@@ -112,5 +114,22 @@ void CLuaGroup::CoreAddWidget(NNCurses::CWidget *w)
         Enable(true);
     }
     
-    CBox::CoreAddWidget(w);
+    // Update each widget's max size, this is necessary before adding new widget because they
+    // may request too much width
+    const TWidgetList &list = GetWidgetList();
+    const int size = SafeConvert<int>(list.size()) + 1; // +1 because new widget is not added yet
+    const int maxwidgetsw = NNCurses::GetMaxWidth() - 6;
+    const int maxwidth = (maxwidgetsw / size) - (LuaWidgetSpacing() * (size-1));
+    for (TWidgetList::const_iterator it=list.begin(); it!=list.end(); it++)
+    {
+        CLuaWidget *luaw = dynamic_cast<CLuaWidget *>(*it);
+        if (luaw)
+            luaw->SetMaxWidth(maxwidth);
+    }
+
+    CBox *box = new CBox(VERTICAL, false);
+    box->StartPack(w, true, false, 0, 0);
+    w->SetMaxWidth(maxwidth);
+
+    StartPack(box, true, true, 0, 0);
 }

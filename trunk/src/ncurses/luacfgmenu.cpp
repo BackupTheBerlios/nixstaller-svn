@@ -103,6 +103,9 @@ void CLuaCFGMenu::ShowChoiceMenu()
 
 bool CLuaCFGMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
 {
+    if (CLuaWidget::CoreHandleEvent(emitter, event))
+        return true;
+    
     if (m_pMenu->Empty())
         return false;
 
@@ -150,7 +153,7 @@ bool CLuaCFGMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
         }
     }
     
-    return CLuaWidget::CoreHandleEvent(emitter, event);
+    return false;
 }
 
 void CLuaCFGMenu::CoreGetButtonDescs(NNCurses::TButtonDescList &list)

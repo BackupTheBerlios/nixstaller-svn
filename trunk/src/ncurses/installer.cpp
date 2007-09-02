@@ -42,10 +42,11 @@ CInstaller::CInstaller() : m_CurrentScreen(0)
     EndPack(new NNCurses::CSeparator(ACS_HLINE), false, false, 0, 0);
 }
 
-bool CInstaller::FirstValidScreen(NNCurses::CWidget *start)
+bool CInstaller::FirstValidScreen()
 {
-    TScreenList::iterator it = std::find(m_InstallScreens.begin(), m_InstallScreens.end(), start);
-    bool ret = (start == m_InstallScreens.front());
+    TScreenList::iterator it = std::find(m_InstallScreens.begin(), m_InstallScreens.end(),
+                                         m_InstallScreens[m_CurrentScreen]);
+    bool ret = (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.front());
     
     if (!ret)
     {
@@ -65,10 +66,11 @@ bool CInstaller::FirstValidScreen(NNCurses::CWidget *start)
     return ret;
 }
 
-bool CInstaller::LastValidScreen(NNCurses::CWidget *start)
+bool CInstaller::LastValidScreen()
 {
-    TScreenList::iterator it = std::find(m_InstallScreens.begin(), m_InstallScreens.end(), start);
-    bool ret = (start == m_InstallScreens.back());
+    TScreenList::iterator it = std::find(m_InstallScreens.begin(), m_InstallScreens.end(),
+                                         m_InstallScreens[m_CurrentScreen]);
+    bool ret = (m_InstallScreens[m_CurrentScreen] == m_InstallScreens.back());
     
     if (!ret)
     {
@@ -90,12 +92,14 @@ bool CInstaller::LastValidScreen(NNCurses::CWidget *start)
 
 void CInstaller::UpdateButtons(void)
 {
-    if (FirstValidScreen(m_InstallScreens[m_CurrentScreen]) && !m_InstallScreens[m_CurrentScreen]->HasPrevWidgets())
+    if (m_InstallScreens.empty() || (FirstValidScreen() &&
+         !m_InstallScreens[m_CurrentScreen]->HasPrevWidgets()))
         m_pPrevButton->Enable(false);
     else if (!m_bPrevButtonLocked)
         m_pPrevButton->Enable(true);
     
-    if (LastValidScreen(m_InstallScreens[m_CurrentScreen]) && !m_InstallScreens[m_CurrentScreen]->HasNextWidgets())
+    if (m_InstallScreens.empty() || (LastValidScreen() &&
+         !m_InstallScreens[m_CurrentScreen]->HasNextWidgets()))
         m_pNextButton->SetText(GetTranslation("Finish"));
     else
         m_pNextButton->SetText(GetTranslation("Next"));
@@ -264,7 +268,7 @@ void CInstaller::Init(int argc, char **argv)
 {
     CBaseInstall::Init(argc, argv);
     
-    UpdateLanguage();
+    UpdateButtons();
 
     for (TScreenList::iterator it=m_InstallScreens.begin(); it!=m_InstallScreens.end(); it++)
     {
@@ -280,8 +284,7 @@ void CInstaller::UpdateLanguage()
 {
     CBaseInstall::UpdateLanguage();
     m_pCancelButton->SetText(GetTranslation("Cancel"));
-    m_pPrevButton->SetText(GetTranslation("Back"));
-    m_pNextButton->SetText(GetTranslation("Next"));
+    UpdateButtons();
 }
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)

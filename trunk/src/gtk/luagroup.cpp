@@ -117,5 +117,10 @@ CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 void CLuaGroup::AddWidget(CLuaWidget *w)
 {
     gtk_widget_show(w->GetBox());
-    gtk_box_pack_start(GTK_BOX(m_pBox), w->GetBox(), TRUE, TRUE, 10);
+    
+    GtkWidget *box = gtk_vbox_new(FALSE, 0);
+    gtk_widget_show(box);
+    gtk_box_pack_start(GTK_BOX(box), w->GetBox(), TRUE, FALSE, 0);
+    
+    gtk_box_pack_start(GTK_BOX(m_pBox), box, TRUE, TRUE, 10);
 }

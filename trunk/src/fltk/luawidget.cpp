@@ -57,9 +57,18 @@ void CLuaWidget::SetSize(int maxw, int maxh)
         int w = maxw, h = 0;
         fl_font(m_pMainPack->labelfont(), m_pMainPack->labelsize());
         fl_measure(GetTitle().c_str(), w, h);
+        w = maxw;
         
         if ((w > m_pTitle->w()) || (h > m_pTitle->h()))
+        {
+            int mainw = std::max(w, m_pMainPack->w());
+            int mainh = std::max(h, m_pMainPack->h());
+            
+            if ((mainw != m_pMainPack->w()) || (mainh != m_pMainPack->h()))
+                m_pMainPack->size(mainw, mainh);
+            
             m_pTitle->size(w, h);
+        }
     }
     
     CoreSetSize(maxw, maxh);

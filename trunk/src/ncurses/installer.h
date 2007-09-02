@@ -41,8 +41,8 @@ class CInstaller: public CNCursBase, public CBaseInstall
     TSTLVecSize m_CurrentScreen;
     bool m_bPrevButtonLocked;
     
-    bool FirstValidScreen(NNCurses::CWidget *start);
-    bool LastValidScreen(NNCurses::CWidget *start);
+    bool FirstValidScreen(void);
+    bool LastValidScreen(void);
     void UpdateButtons(void);
     void PrevScreen(void);
     void NextScreen(void);

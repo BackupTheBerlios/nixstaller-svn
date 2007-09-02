@@ -76,10 +76,19 @@ void CLuaInputField::CoreActivateWidget()
 
 void CLuaInputField::SetLabel()
 {
+    if (GetLabel().empty())
+        return;
+    
     TSTLStrSize max = SafeConvert<TSTLStrSize>(GetLabelWidth());
     if (GetLabel().length() > max)
     {
         std::string label = GetTranslation(GetLabel()).substr(0, max);
+        gtk_label_set(GTK_LABEL(m_pLabel), label.c_str());
+    }
+    else
+    {
+        std::string label = GetTranslation(GetLabel());
+        label.append(max - GetLabel().length(), ' ');
         gtk_label_set(GTK_LABEL(m_pLabel), label.c_str());
     }
 }
