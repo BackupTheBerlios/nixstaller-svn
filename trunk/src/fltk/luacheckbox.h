@@ -17,19 +17,33 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUALABEL_H
-#define FLTK_LUALABEL_H
+#ifndef GTK_LUACHECKBOX_H
+#define GTK_LUACHECKBOX_H
 
-#include "main/install/lualabel.h"
+#include <vector>
+#include "main/install/luacheckbox.h"
 #include "luawidget.h"
 
-class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
+class Fl_Check_Button;
+class Fl_Widget;
+
+class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
-    virtual void CoreGetHeight(int maxw, int maxh, int &outh) {}
+    std::vector<Fl_Check_Button *> m_Checkboxes;
+    
+    virtual bool Enabled(TSTLVecSize n);
+    virtual void Enable(TSTLVecSize n, bool b);
+    virtual void CoreUpdateLanguage(void);
+    virtual void CoreGetHeight(int maxw, int maxh, int &outh);
+    
+    int BoxWidth(void) const { return 40; }
+    int ButtonHeight(void) const { return 15; }
+    int ButtonSpacing(void) const { return 2; }
     
 public:
-    CLuaLabel(const char *title) : CBaseLuaWidget(title) {}
+    CLuaCheckbox(const char *desc, const TOptions &l);
+    
+    static void ToggleCB(Fl_Widget *w, void *p);
 };
 
 #endif

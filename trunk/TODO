@@ -20,6 +20,7 @@ OVERALL
 - Way to specify extra (image) files
 - Check if initial language is fully loaded/used
 - Check labelspacing with empty label (GTK: Check for labelwidth func)
+- Check if all LuaDataChanged functions are called after widgets are changed
 
 
 DOCS

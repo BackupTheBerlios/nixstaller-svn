@@ -59,7 +59,6 @@ public:
 };
 
 // Utils
-int TitleHeight(int w, const char *desc);
 void SetButtonWidth(Fl_Button *button);
 inline int ButtonHeight(void) { return 25; }
 int PackSpacing(Fl_Pack *pack);

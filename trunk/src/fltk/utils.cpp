@@ -22,34 +22,6 @@
 #include <FL/Fl_Pack.H>
 #include <FL/fl_draw.H>
 
-int TitleHeight(int w, const char *desc)
-{
-    int lines = 1;
-    
-    w -= 10; // HACK: FLTK seems to offset a little more
-    
-    const int defheight = fl_height();
-
-    if (desc && *desc)
-    {
-        const size_t length = strlen(desc);
-        double widthfromline = 0.0;
-        for (size_t chars=0; chars<length; chars++)
-        {
-            if ((desc[chars] == '\n') || (widthfromline >= static_cast<double>(w)))
-            {
-                lines++;
-                widthfromline = 0.0;
-            }
-            else
-                widthfromline += fl_width(desc[chars]);
-        }
-        return lines * defheight;
-    }
-    
-    return 0;
-}
-
 void SetButtonWidth(Fl_Button *button)
 {
     const int spacing = 50;

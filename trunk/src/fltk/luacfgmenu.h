@@ -25,7 +25,6 @@
 
 class Fl_Button;
 class Fl_Choice;
-class Fl_File_Chooser;
 class Fl_File_Input;
 class Fl_Hold_Browser;
 class Fl_Input;
@@ -37,20 +36,19 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     Fl_Choice *m_pChoiceMenu;
     Fl_File_Input *m_pDirInput;
     Fl_Button *m_pBrowseButton;
-    Fl_File_Chooser *m_pDirChooser;
     int m_ColumnWidths[2];
     
     virtual void CoreAddVar(const char *name);
     virtual void CoreUpdateLanguage(void);
-    virtual void CoreSetSize(int maxw, int maxh);
+    virtual void CoreGetHeight(int maxw, int maxh, int &outh);
     
+    int GroupHeight(void) const { return 175; }
     int DirChooserSpacing(void) const { return 10; }
     
     void SetVarColumnW(const char *var);
     const char *ColumnText(const char *var);
     const char *CurSelection(void);
-    void CreateDirSelector(void);
-    void UpdateDirChooser(void);
+    void UpdateDirChooser(int w);
     void UpdateSelection(void);
     const char *AskPassword(LIBSU::CLibSU &suhandler);
     
@@ -61,7 +59,6 @@ public:
     static void InputChangedCB(Fl_Widget *w, void *p);
     static void ChoiceChangedCB(Fl_Widget *w, void *p);
     static void BrowseCB(Fl_Widget *w, void *p);
-    static void MKDirCB(Fl_Widget *w, void *p);
 };
 
 #endif

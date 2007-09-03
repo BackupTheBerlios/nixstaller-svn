@@ -17,19 +17,32 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUALABEL_H
-#define FLTK_LUALABEL_H
+#ifndef DIRDIALOG
+#define DIRDIALOG
 
-#include "main/install/lualabel.h"
-#include "luawidget.h"
+namespace LIBSU {
+class CLibSU;
+}
 
-class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
+class Fl_File_Chooser;
+class Fl_Widget;
+
+class CFLTKDirDialog
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
-    virtual void CoreGetHeight(int maxw, int maxh, int &outh) {}
+    Fl_File_Chooser *m_pDirChooser;
+    
+    const char *AskPassword(LIBSU::CLibSU &suhandler);
     
 public:
-    CLuaLabel(const char *title) : CBaseLuaWidget(title) {}
+    CFLTKDirDialog(const char *d, const char *p, int t, const char *title);
+    ~CFLTKDirDialog(void);
+    
+    void Run(void);
+    const char *Value(void);
+    void Value(const char *d);
+    
+    static void MKDirCB(Fl_Widget *w, void *p);
 };
+
 
 #endif

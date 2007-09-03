@@ -17,19 +17,34 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUALABEL_H
-#define FLTK_LUALABEL_H
+#ifndef FLTK_LUADIRSELECTOR_H
+#define FLTK_LUADIRSELECTOR_H
 
-#include "main/install/lualabel.h"
+#include "main/install/luadirselector.h"
 #include "luawidget.h"
 
-class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
+class Fl_Button;
+class Fl_File_Input;
+class Fl_Widget;
+
+class CLuaDirSelector: public CBaseLuaDirSelector, public CLuaWidget
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
-    virtual void CoreGetHeight(int maxw, int maxh, int &outh) {}
+    Fl_File_Input *m_pDirInput;
+    Fl_Button *m_pBrowseButton;
+    
+    virtual const char *GetDir(void);
+    virtual void SetDir(const char *dir);
+    virtual void CoreUpdateLanguage(void);
+    virtual void CoreGetHeight(int maxw, int maxh, int &outh);
+    
+    int Spacing(void) const { return 10; }
+    void UpdateLayout(int w);
     
 public:
-    CLuaLabel(const char *title) : CBaseLuaWidget(title) {}
+    CLuaDirSelector(const char *desc, const char *val);
+    
+    static void InputChangedCB(Fl_Widget *w, void *p);
+    static void BrowseCB(Fl_Widget *w, void *p);
 };
 
 #endif

@@ -21,8 +21,8 @@
 #include "fltk.h"
 #include "luagroup.h"
 #include "luacfgmenu.h"
-// #include "luacheckbox.h"
-// #include "luadirselector.h"
+#include "luacheckbox.h"
+#include "luadirselector.h"
 // #include "luaimage.h"
 // #include "luainput.h"
 #include "lualabel.h"
@@ -53,6 +53,20 @@ CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
     return ret;
 }
 
+CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaCheckbox *ret = new CLuaCheckbox(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaDirSelector *CLuaGroup::CreateDirSelector(const char *desc, const char *val)
+{
+    CLuaDirSelector *ret = new CLuaDirSelector(desc, val);
+    AddWidget(ret);
+    return ret;
+}
+
 CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 {
     CLuaLabel *ret = new CLuaLabel(title);
@@ -75,7 +89,7 @@ void CLuaGroup::SetSize(int maxw, int maxh)
 {
     maxw -= WidgetSpacing(); // HACK: FLTK adds spacing at the beginning (bug)
     const int size = m_pMainPack->children();
-    const int maxwidth = (maxw / size) - (WidgetSpacing() * (size-1));
+    const int maxwidth = (maxw - (WidgetSpacing() * (size-1))) / size;
     for (int i=0; i<size; i++)
     {
         CLuaWidget *widget = static_cast<CLuaWidget *>(m_pMainPack->child(i)->user_data());

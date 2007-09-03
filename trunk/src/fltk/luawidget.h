@@ -33,7 +33,7 @@ class CLuaWidget: virtual public CBaseLuaWidget
     
     virtual void CoreSetTitle(void);
     virtual void CoreActivateWidget(void){}
-    virtual void CoreSetSize(int maxw, int maxh) = 0;
+    virtual void CoreGetHeight(int maxw, int maxh, int &outh) = 0;
     
 public:
     CLuaWidget(void);

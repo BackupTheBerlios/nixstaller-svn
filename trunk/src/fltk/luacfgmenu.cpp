@@ -18,6 +18,7 @@
 */
 
 #include "fltk.h"
+#include "dirdialog.h"
 #include "luacfgmenu.h"
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Choice.H>
@@ -35,36 +36,33 @@
 // Lua Config Menu Class
 // -------------------------------------
 
-CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc), m_pDirChooser(NULL)
+CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc)
 {
     m_ColumnWidths[0] = m_ColumnWidths[1] = 0;
     
-    const int grouph = 175, inputh = 25, dirinputh = 35, inputspacing = 10;
-    GetGroup()->size(GetGroup()->w(), grouph);
+    const int inputh = 25, dirinputh = 35, inputspacing = 10;
     GetGroup()->begin();
     
-    m_pVarListView = new Fl_Hold_Browser(0, 0, 0, grouph - (inputspacing+dirinputh));
+    m_pVarListView = new Fl_Hold_Browser(0, 0, 0, GroupHeight() - (inputspacing+dirinputh));
     m_pVarListView->callback(SelectionCB, this);
     
-    int y = grouph - inputh;
-    m_pInputField = new Fl_Input(0, y, 0, inputh);
+    m_pInputField = new Fl_Input(0, 0, 0, inputh);
     m_pInputField->callback(InputChangedCB, this);
     m_pInputField->hide();
     
-    m_pChoiceMenu = new Fl_Choice(0, y, 0, inputh);
+    m_pChoiceMenu = new Fl_Choice(0, 0, 0, inputh);
     m_pChoiceMenu->callback(ChoiceChangedCB, this);
     m_pChoiceMenu->hide();
     
     // Group for placing widgets next to eachother
-    Fl_Group *dirgroup = new Fl_Group(0, y, 0, dirinputh);
+    Fl_Group *dirgroup = new Fl_Group(0, 0, 0, dirinputh);
     dirgroup->resizable(NULL);
     
-    m_pDirInput = new Fl_File_Input(0, y, 0, dirinputh);
+    m_pDirInput = new Fl_File_Input(0, 0, 0, dirinputh);
     m_pDirInput->callback(InputChangedCB, this);
     m_pDirInput->hide();
     
-    y += ((dirinputh-inputh)/2); // Center
-    m_pBrowseButton = new Fl_Button(0, y, 0, inputh, GetTranslation("Browse"));
+    m_pBrowseButton = new Fl_Button(0, (dirinputh-inputh) / 2, 0, inputh, GetTranslation("Browse"));
     SetButtonWidth(m_pBrowseButton);
     m_pBrowseButton->callback(BrowseCB, this);
     m_pBrowseButton->hide();
@@ -72,10 +70,6 @@ CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc), m_pDirChooser
     dirgroup->end();
     
     GetGroup()->end();
-    
-    CreateDirSelector();
-    UpdateDirChooser();
-
 }
 
 void CLuaCFGMenu::CoreAddVar(const char *name)
@@ -92,8 +86,8 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
 
 void CLuaCFGMenu::CoreUpdateLanguage()
 {
-    UpdateDirChooser();
-    CreateDirSelector(); // Recreate, so that it will use the new translations
+    m_pBrowseButton->label(GetTranslation("Browse"));
+    UpdateDirChooser(GetGroup()->w());
     
     // Update var menu
     const int size = m_pVarListView->size();
@@ -105,13 +99,13 @@ void CLuaCFGMenu::CoreUpdateLanguage()
     }
 }
 
-void CLuaCFGMenu::CoreSetSize(int maxw, int maxh)
+void CLuaCFGMenu::CoreGetHeight(int maxw, int maxh, int &outh)
 {
-    GetGroup()->size(maxw, GetGroup()->h());
     m_pVarListView->size(maxw, m_pVarListView->h());
     m_pInputField->size(maxw, m_pInputField->h());
     m_pChoiceMenu->size(maxw, m_pChoiceMenu->h());
-    UpdateDirChooser();
+    UpdateDirChooser(maxw);
+    outh = GroupHeight();
 }
 
 void CLuaCFGMenu::SetVarColumnW(const char *var)
@@ -144,26 +138,11 @@ const char *CLuaCFGMenu::CurSelection()
     return item;
 }
 
-void CLuaCFGMenu::CreateDirSelector()
+void CLuaCFGMenu::UpdateDirChooser(int w)
 {
-    if (m_pDirChooser)
-        delete m_pDirChooser;
-    
-    m_pDirChooser = new Fl_File_Chooser("~", "*",
-                                        (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                                         GetTranslation("Select a directory"));
-    m_pDirChooser->preview(false);
-    m_pDirChooser->previewButton->hide();
-    m_pDirChooser->newButton->tooltip(Fl_File_Chooser::new_directory_tooltip);
-    m_pDirChooser->newButton->callback(MKDirCB, this); // Hook in our own nice directory creation function :)
-}
-
-void CLuaCFGMenu::UpdateDirChooser()
-{
-    m_pBrowseButton->label(GetTranslation("Browse"));
     SetButtonWidth(m_pBrowseButton);
     
-    int inputw = GetGroup()->w() - DirChooserSpacing() - m_pBrowseButton->w();
+    int inputw = w - DirChooserSpacing() - m_pBrowseButton->w();
     m_pDirInput->size(inputw, m_pDirInput->h());
     m_pBrowseButton->position(m_pDirInput->x() + inputw + DirChooserSpacing(), m_pBrowseButton->y());
 }
@@ -277,46 +256,19 @@ void CLuaCFGMenu::BrowseCB(Fl_Widget *w, void *p)
     CLuaCFGMenu *menu = static_cast<CLuaCFGMenu *>(p);
     const char *selection = menu->CurSelection();
     SEntry *entry = menu->GetVariables()[selection];
+    CFLTKDirDialog dialog("~", "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
+                          CreateText(GetTranslation("Please enter a new value for %s"),
+                                     GetTranslation(selection)));
     
-    menu->m_pDirChooser->directory(GetFirstValidDir(entry->val).c_str());
-    menu->m_pDirChooser->show();
-    while(menu->m_pDirChooser->visible())
-        Fl::wait();
+    dialog.Value(menu->m_pDirInput->value());
+    dialog.Run();
     
-    const char *newdir = menu->m_pDirChooser->value();
-    if (newdir && *newdir)
+    const char *dir = dialog.Value();
+    if (dir && *dir)
     {
-        entry->val = newdir;
+        entry->val = dir;
+        menu->m_pDirInput->value(dir);
         menu->LuaDataChanged();
-        menu->m_pDirInput->value(newdir);
     }
 }
 
-void CLuaCFGMenu::MKDirCB(Fl_Widget *w, void *p)
-{
-    CLuaCFGMenu *menu = static_cast<CLuaCFGMenu *>(p);
-    const char *newdir = fl_input(GetTranslation("Enter name of new directory"));
-        
-    if (!newdir || !newdir[0])
-        return;
-        
-    newdir = CreateText("%s/%s", menu->m_pDirChooser->directory(), newdir);
-    
-    try
-    {
-        if (MKDirNeedsRoot(newdir))
-        {
-            LIBSU::CLibSU suhandler;
-            const char *passwd = menu->AskPassword(suhandler);
-            MKDirRecRoot(newdir, suhandler, passwd);
-        }
-        else
-            MKDirRec(newdir);
-            
-        menu->m_pDirChooser->directory(newdir);
-    }
-    catch(Exceptions::CExIO &e)
-    {
-        fl_alert(e.what());
-    }
-}

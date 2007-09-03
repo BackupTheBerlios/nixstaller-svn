@@ -113,7 +113,7 @@ void CInstallScreen::ResetWidgetRange()
 void CInstallScreen::UpdateCounter()
 {
     const int size = m_pWidgetPack->children();
-    int count = 1, current = 1, h = m_pCounter->h();
+    int count = 1, current = 1, h = 0;
     
     for (int i=0; i<size; i++)
     {
