@@ -25,26 +25,31 @@
 class CLuaWidget;
 class Fl_Group;
 class Fl_Pack;
+class Fl_Widget;
 
 class CLuaGroup: public CBaseLuaGroup
 {
     Fl_Pack *m_pMainPack;
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
-            int max, const char *type){}
+            int max, const char *type);
     virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l);
     virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l){}
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val);
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc);
-    virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l){}
-    virtual CBaseLuaImage *CreateImage(const char *file){}
+    virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l);
+    virtual CBaseLuaImage *CreateImage(const char *file);
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc){}
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap){}
     virtual CBaseLuaLabel *CreateLabel(const char *title);
     
     int WidgetSpacing(void) const { return 10; }
    
+    CLuaWidget *GetWidget(Fl_Widget *w);
     void AddWidget(CLuaWidget *w);
+    int ExpandedWidgets(void);
+    int RequestedWidgetsW(void);
+    int TotalWidgetHeight(int maxw);
     
 public:
     CLuaGroup(void);

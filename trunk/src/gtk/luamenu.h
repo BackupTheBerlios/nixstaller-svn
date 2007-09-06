@@ -30,7 +30,7 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
     GtkWidget *m_pMenu;
     bool m_bInitSel;
     
-    virtual const char *Selection(void);
+    virtual std::string Selection(void);
     virtual void Select(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     virtual void CoreActivateWidget(void);

@@ -17,20 +17,33 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUALABEL_H
-#define FLTK_LUALABEL_H
+#ifndef NCURSES_LUAMENU_H
+#define NCURSES_LUAMENU_H
 
-#include "main/install/lualabel.h"
+#include "main/install/luamenu.h"
 #include "luawidget.h"
 
-class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
+class Fl_Hold_Browser;
+class Fl_Widget;
+
+class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
-    virtual int CoreRequestWidth(void) { return 0; }
-    virtual int CoreRequestHeight(int maxw) { return 0; }
+    Fl_Hold_Browser *m_pMenu;
+    int m_iCurValue;
+    
+    virtual std::string Selection(void);
+    virtual void Select(TSTLVecSize n);
+    virtual void CoreUpdateLanguage(void);
+    virtual int CoreRequestWidth(void) { return 200; }
+    virtual int CoreRequestHeight(int maxw) { return GroupHeight(); }
+    virtual void UpdateSize(void);
+    
+    int GroupHeight(void) const { return 125; }
     
 public:
-    CLuaLabel(const char *title) : CBaseLuaWidget(title) {}
+    CLuaMenu(const char *desc, const TOptions &l);
+    
+    static void SelectionCB(Fl_Widget *w, void *p);
 };
 
 #endif

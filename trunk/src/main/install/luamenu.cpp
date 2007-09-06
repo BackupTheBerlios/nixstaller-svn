@@ -35,7 +35,7 @@ void CBaseLuaMenu::LuaRegister()
 int CBaseLuaMenu::LuaGet(lua_State *L)
 {
     CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
-    lua_pushstring(L, menu->Selection());
+    lua_pushstring(L, menu->Selection().c_str());
     return 1;
 }
 

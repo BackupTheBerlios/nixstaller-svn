@@ -32,7 +32,7 @@ protected:
 private:
     TOptions m_Options;
     
-    virtual const char *Selection(void) = 0;
+    virtual std::string Selection(void) = 0;
     virtual void Select(TSTLVecSize n) = 0;
     
 protected:

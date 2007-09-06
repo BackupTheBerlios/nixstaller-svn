@@ -31,7 +31,7 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
 {
     NNCurses::CMenu *m_pMenu;
     
-    virtual const char *Selection(void);
+    virtual std::string Selection(void);
     virtual void Select(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     

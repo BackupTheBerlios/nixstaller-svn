@@ -17,20 +17,25 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUALABEL_H
-#define FLTK_LUALABEL_H
+#ifndef FLTK_LUAIMAGE_H
+#define FLTK_LUAIMAGE_H
 
-#include "main/install/lualabel.h"
+#include "main/install/luaimage.h"
 #include "luawidget.h"
 
-class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
+class CLuaImage: public CBaseLuaImage, public CLuaWidget
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
-    virtual int CoreRequestWidth(void) { return 0; }
-    virtual int CoreRequestHeight(int maxw) { return 0; }
+    int m_iImageW, m_iImageH;
+    
+    virtual bool CoreExpand(void) { return false; }
+    virtual int CoreRequestWidth(void) { return m_iImageW; }
+    virtual int CoreRequestHeight(int maxw) { return m_iImageH; }
+    
+    int MaxImageW(void) const { return 300; }
+    int MaxImageH(void) const { return 200; }
     
 public:
-    CLuaLabel(const char *title) : CBaseLuaWidget(title) {}
+    CLuaImage(const char *file);
 };
 
 #endif

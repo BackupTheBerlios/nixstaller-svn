@@ -17,20 +17,36 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUALABEL_H
-#define FLTK_LUALABEL_H
+#ifndef FLTK_LUAINPUT_H
+#define FLTK_LUAINPUT_H
 
-#include "main/install/lualabel.h"
+#include "main/install/luainput.h"
 #include "luawidget.h"
 
-class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
+class Fl_Box;
+class Fl_Input;
+class Fl_Pack;
+class Fl_Widget;
+
+class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
-    virtual int CoreRequestWidth(void) { return 0; }
-    virtual int CoreRequestHeight(int maxw) { return 0; }
+    Fl_Pack *m_pPack;
+    Fl_Box *m_pLabel;
+    Fl_Input *m_pInputField;
     
+    virtual const char *CoreGetValue(void);
+    virtual void CoreUpdateLabelWidth(void) { UpdateSize(); }
+    virtual void CoreUpdateLanguage(void);
+    virtual int CoreRequestWidth(void);
+    virtual int CoreRequestHeight(int maxw);
+    virtual void UpdateSize(void);
+    
+    int PackSpacing(void) const { return 5; }
+
 public:
-    CLuaLabel(const char *title) : CBaseLuaWidget(title) {}
+    CLuaInputField(const char *label, const char *desc, const char *val, int max, const char *type);
+    
+    static void InputChangedCB(Fl_Widget *w, void *p);
 };
 
 #endif

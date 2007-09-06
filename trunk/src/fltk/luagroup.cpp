@@ -23,10 +23,10 @@
 #include "luacfgmenu.h"
 #include "luacheckbox.h"
 #include "luadirselector.h"
-// #include "luaimage.h"
-// #include "luainput.h"
+#include "luaimage.h"
+#include "luainput.h"
 #include "lualabel.h"
-// #include "luamenu.h"
+#include "luamenu.h"
 // #include "luaprogressbar.h"
 // #include "luaradiobutton.h"
 // #include "luatextfield.h"
@@ -67,9 +67,31 @@ CBaseLuaDirSelector *CLuaGroup::CreateDirSelector(const char *desc, const char *
     return ret;
 }
 
+CBaseLuaImage *CLuaGroup::CreateImage(const char *file)
+{
+    CLuaImage *ret = new CLuaImage(file);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *desc, const char *val,
+                                                int max, const char *type)
+{
+    CLuaInputField *ret = new CLuaInputField(label, desc, val, max, type);
+    AddWidget(ret);
+    return ret;
+}
+
 CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 {
     CLuaLabel *ret = new CLuaLabel(title);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaMenu *ret = new CLuaMenu(desc, l);
     AddWidget(ret);
     return ret;
 }
@@ -80,6 +102,51 @@ void CLuaGroup::AddWidget(CLuaWidget *w)
     m_pMainPack->add(w->GetGroup());
 }
 
+CLuaWidget *CLuaGroup::GetWidget(Fl_Widget *w)
+{
+    return static_cast<CLuaWidget *>(w->user_data());
+}
+
+int CLuaGroup::ExpandedWidgets()
+{
+    const int size = m_pMainPack->children();
+    int ret = 0;
+    for (int i=0; i<size; i++)
+    {
+        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
+        if (w->Expand())
+            ret++;
+    }
+    
+    return ret;
+}
+
+int CLuaGroup::RequestedWidgetsW()
+{
+    const int size = m_pMainPack->children();
+    int ret = 0;
+    for (int i=0; i<size; i++)
+    {
+        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
+        ret += w->RequestWidth();
+    }
+    
+    return ret;
+}
+
+int CLuaGroup::TotalWidgetHeight(int maxw)
+{
+    const int size = m_pMainPack->children();
+    int ret = 0;
+    for (int i=0; i<size; i++)
+    {
+        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
+        ret = std::max(ret, w->RequestHeight(maxw));
+    }
+    
+    return ret;
+}
+
 Fl_Group *CLuaGroup::GetGroup()
 {
     return m_pMainPack;
@@ -88,14 +155,24 @@ Fl_Group *CLuaGroup::GetGroup()
 void CLuaGroup::SetSize(int maxw, int maxh)
 {
     maxw -= WidgetSpacing(); // HACK: FLTK adds spacing at the beginning (bug)
+    
+    const int expsize = ExpandedWidgets();
+    const int diffw = maxw - RequestedWidgetsW();
+    const int totalwidgeth = TotalWidgetHeight(maxw);
+    const int extraw = (expsize) ? diffw / expsize : 0;
     const int size = m_pMainPack->children();
-    const int maxwidth = (maxw - (WidgetSpacing() * (size-1))) / size;
+    
+    if (totalwidgeth > m_pMainPack->h())
+        m_pMainPack->size(m_pMainPack->w(), totalwidgeth);
+
     for (int i=0; i<size; i++)
     {
-        CLuaWidget *widget = static_cast<CLuaWidget *>(m_pMainPack->child(i)->user_data());
-        widget->SetSize(maxwidth, maxh);
+        CLuaWidget *widget = GetWidget(m_pMainPack->child(i));
+        int w = widget->RequestWidth();
         
-        if (widget->GetGroup()->h() > m_pMainPack->h())
-            m_pMainPack->size(m_pMainPack->w(), widget->GetGroup()->h());
+        if (widget->Expand())
+            w += extraw;
+        
+        widget->SetSize(w, totalwidgeth);
     }
 }

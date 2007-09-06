@@ -46,7 +46,7 @@ CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), 
     }
 }
 
-const char *CLuaMenu::Selection()
+std::string CLuaMenu::Selection()
 {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pMenu));
     GtkTreeIter iter;
@@ -61,7 +61,7 @@ const char *CLuaMenu::Selection()
         g_free(var);
     }
     
-    return ret.c_str(); // We want to return a temporary string, because caller won't free it
+    return ret;
 }
 
 void CLuaMenu::Select(TSTLVecSize n)

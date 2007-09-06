@@ -34,11 +34,12 @@ class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
     virtual bool Enabled(TSTLVecSize n);
     virtual void Enable(TSTLVecSize n, bool b);
     virtual void CoreUpdateLanguage(void);
-    virtual void CoreGetHeight(int maxw, int maxh, int &outh);
+    virtual int CoreRequestWidth(void);
+    virtual int CoreRequestHeight(int maxw);
+    virtual void UpdateSize(void);
     
     int BoxWidth(void) const { return 40; }
     int ButtonHeight(void) const { return 15; }
-    int ButtonSpacing(void) const { return 2; }
     
 public:
     CLuaCheckbox(const char *desc, const TOptions &l);

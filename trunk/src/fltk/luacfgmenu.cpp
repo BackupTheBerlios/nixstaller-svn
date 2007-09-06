@@ -99,13 +99,13 @@ void CLuaCFGMenu::CoreUpdateLanguage()
     }
 }
 
-void CLuaCFGMenu::CoreGetHeight(int maxw, int maxh, int &outh)
+void CLuaCFGMenu::UpdateSize()
 {
-    m_pVarListView->size(maxw, m_pVarListView->h());
-    m_pInputField->size(maxw, m_pInputField->h());
-    m_pChoiceMenu->size(maxw, m_pChoiceMenu->h());
-    UpdateDirChooser(maxw);
-    outh = GroupHeight();
+    int w = GetGroup()->w();
+    m_pVarListView->size(w, m_pVarListView->h());
+    m_pInputField->size(w, m_pInputField->h());
+    m_pChoiceMenu->size(w, m_pChoiceMenu->h());
+    UpdateDirChooser(w);
 }
 
 void CLuaCFGMenu::SetVarColumnW(const char *var)
@@ -192,37 +192,6 @@ void CLuaCFGMenu::UpdateSelection()
             break;
         }
     }
-}
-
-const char *CLuaCFGMenu::AskPassword(LIBSU::CLibSU &suhandler)
-{
-    const char *ret = NULL;
-    
-    while (true)
-    {
-        ret = fl_password(GetTranslation("Your account doesn't have permissions to "
-                "create the directory. To create it with the root "
-                "(administrator) account, please enter it's password below."));
-
-        if (!ret || !ret[0])
-            break;
-
-        if (!suhandler.TestSU(ret))
-        {
-            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                fl_alert(GetTranslation("Incorrect password given for root user\nPlease retype"));
-            else
-            {
-                fl_alert(GetTranslation("Could not use su to gain root access. "
-                        "Make sure you can use su (adding the current user to the wheel group may help)"));
-                break;
-            }
-        }
-        else
-            break;
-    }
-    
-    return ret;
 }
 
 void CLuaCFGMenu::InputChangedCB(Fl_Widget *w, void *p)

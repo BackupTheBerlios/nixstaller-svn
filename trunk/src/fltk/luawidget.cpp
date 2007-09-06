@@ -50,22 +50,42 @@ Fl_Group *CLuaWidget::GetGroup()
     return m_pMainPack;
 }
 
-void CLuaWidget::SetSize(int maxw, int maxh)
+int CLuaWidget::RequestWidth()
+{
+    const int minw = (!GetTitle().empty()) ? 150 : 0;
+    return std::max(minw, CoreRequestWidth());
+}
+
+int CLuaWidget::RequestHeight(int maxw)
+{
+    int ret = 0;
+    
+    if (!GetTitle().empty())
+    {
+        int w = RequestWidth(), h = 0;
+        fl_font(m_pMainPack->labelfont(), m_pMainPack->labelsize());
+        fl_measure(GetTitle().c_str(), w, h);
+        ret = h;
+    }
+    
+    ret += CoreRequestHeight(maxw);
+    
+    return ret;
+}
+
+void CLuaWidget::SetSize(int w, int h)
 {
     if (!GetTitle().empty())
     {
-        int w = maxw, h = 0;
+        int tw = w, h = 0;
         fl_font(m_pMainPack->labelfont(), m_pMainPack->labelsize());
-        fl_measure(GetTitle().c_str(), w, h);
+        fl_measure(GetTitle().c_str(), tw, h);
         
-        if ((w != m_pTitle->w()) || (h != m_pTitle->h()))
-            m_pTitle->size(w, h);
+        if ((tw != m_pTitle->w()) || (h != m_pTitle->h()))
+            m_pTitle->size(tw, h);
     }
     
-    int h = 0;
-    CoreGetHeight(maxw, maxh, h);
+    m_pMainPack->size(w, h);
     
-    h += m_pTitle->h();
-    
-    m_pMainPack->size(maxw, h);
+    UpdateSize();
 }

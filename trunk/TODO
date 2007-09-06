@@ -21,6 +21,8 @@ OVERALL
 - Check if initial language is fully loaded/used
 - Check labelspacing with empty label (GTK: Check for labelwidth func)
 - Check if all LuaDataChanged functions are called after widgets are changed
+- Check for virtual lua widget functions returning temp C strings
+- set function for lua inputfield (Changelog!)
 
 
 DOCS
@@ -80,13 +82,11 @@ GTK
 FLTK
 - Update code to new lua design
 - Change Lua inputfield label width handling
-- Check lua widgets; move members to private, change virtual function names etc.
-- Check dirselectors for adding dirs as root
 - Check locales and numeric lua widget input
-- Use new image scaling function from utils.cpp
 - Check if all lua screens, groups, widgets are destroyed
 - ActivateWidget function(s?)
 - Recompile FLTK with Xdbe support and using customly compiled deps
+- Check if all C strings passed to FLTK function are not temporary (they're not copied)
 
 
 DESIGN

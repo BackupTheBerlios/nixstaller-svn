@@ -35,7 +35,7 @@ CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), 
     AddWidget(m_pMenu);
 }
 
-const char *CLuaMenu::Selection()
+std::string CLuaMenu::Selection()
 {
     if (m_pMenu->Empty())
         return NULL;
@@ -45,10 +45,10 @@ const char *CLuaMenu::Selection()
     for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++)
     {
         if (*it == m_pMenu->Value())
-            return it->c_str();
+            return *it;
     }
     
-    return NULL;
+    return "";
 }
 
 void CLuaMenu::Select(TSTLVecSize n)

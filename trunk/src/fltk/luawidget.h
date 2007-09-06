@@ -33,13 +33,19 @@ class CLuaWidget: virtual public CBaseLuaWidget
     
     virtual void CoreSetTitle(void);
     virtual void CoreActivateWidget(void){}
-    virtual void CoreGetHeight(int maxw, int maxh, int &outh) = 0;
+    virtual bool CoreExpand(void) { return true; }
+    virtual int CoreRequestWidth(void) = 0;
+    virtual int CoreRequestHeight(int maxw) = 0;
+    virtual void UpdateSize(void) {}
     
 public:
     CLuaWidget(void);
     
     Fl_Group *GetGroup(void);
-    void SetSize(int maxw, int maxh);
+    bool Expand(void) { return CoreExpand(); }
+    int RequestWidth(void);
+    int RequestHeight(int maxw);
+    void SetSize(int w, int h);
 };
 
 #endif

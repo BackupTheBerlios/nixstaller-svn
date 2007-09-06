@@ -35,10 +35,12 @@ class CLuaDirSelector: public CBaseLuaDirSelector, public CLuaWidget
     virtual const char *GetDir(void);
     virtual void SetDir(const char *dir);
     virtual void CoreUpdateLanguage(void);
-    virtual void CoreGetHeight(int maxw, int maxh, int &outh);
+    virtual int CoreRequestWidth(void) { return 150; }
+    virtual int CoreRequestHeight(int maxw);
+    virtual void UpdateSize(void) { UpdateLayout(); }
     
     int Spacing(void) const { return 10; }
-    void UpdateLayout(int w);
+    void UpdateLayout(void);
     
 public:
     CLuaDirSelector(const char *desc, const char *val);

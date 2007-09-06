@@ -30,16 +30,14 @@
 CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l)
 {
     TSTLVecSize size = l.size(), n;
-    int y = 0;
     
     for (n=0; n<size; n++)
     {
-        Fl_Check_Button *button = new Fl_Check_Button(0, y, 0, ButtonHeight(), MakeTranslation(l[n]));
+        Fl_Check_Button *button = new Fl_Check_Button(0, 0, 0, ButtonHeight(), MakeTranslation(l[n]));
         button->type(FL_TOGGLE_BUTTON);
         button->callback(ToggleCB, this);
         m_Checkboxes.push_back(button);
         GetGroup()->add(button);
-        y += (ButtonHeight() + ButtonSpacing());
     }
 }
 
@@ -62,14 +60,38 @@ void CLuaCheckbox::CoreUpdateLanguage()
         m_Checkboxes[n]->label(MakeTranslation(opts[n]));
 }
 
-void CLuaCheckbox::CoreGetHeight(int maxw, int maxh, int &outh)
+int CLuaCheckbox::CoreRequestWidth()
+{
+    TSTLVecSize size = m_Checkboxes.size();
+    int ret = 0;
+    
+    if (!size)
+        return 0;
+    
+    fl_font(m_Checkboxes[0]->labelfont(), m_Checkboxes[0]->labelsize());
+    
+    for (TSTLVecSize n=0; n<size; n++)
+    {
+        ret = std::max(ret, static_cast<int>(fl_width(m_Checkboxes[n]->label())));
+    }
+    
+    return ret;
+}
+
+int CLuaCheckbox::CoreRequestHeight(int maxw)
 {
     const int size = SafeConvert<int>(m_Checkboxes.size());
     if (size)
-        outh = (size*ButtonHeight()) + ((size-1) * ButtonSpacing());
+        return (size*ButtonHeight());
     
-    for (int n=0; n<size; n++)
-        m_Checkboxes[n]->size(maxw, m_Checkboxes[n]->h());
+    return 0;
+}
+
+void CLuaCheckbox::UpdateSize()
+{
+    TSTLVecSize size = m_Checkboxes.size();
+    for (TSTLVecSize n=0; n<size; n++)
+        m_Checkboxes[n]->size(GetGroup()->w(), m_Checkboxes[n]->h());
 }
 
 void CLuaCheckbox::ToggleCB(Fl_Widget *w, void *p)

@@ -40,7 +40,9 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     
     virtual void CoreAddVar(const char *name);
     virtual void CoreUpdateLanguage(void);
-    virtual void CoreGetHeight(int maxw, int maxh, int &outh);
+    virtual int CoreRequestWidth(void) { return 200; }
+    virtual int CoreRequestHeight(int maxw) { return GroupHeight(); }
+    virtual void UpdateSize(void);
     
     int GroupHeight(void) const { return 175; }
     int DirChooserSpacing(void) const { return 10; }
@@ -50,7 +52,6 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     const char *CurSelection(void);
     void UpdateDirChooser(int w);
     void UpdateSelection(void);
-    const char *AskPassword(LIBSU::CLibSU &suhandler);
     
 public:
     CLuaCFGMenu(const char *desc);

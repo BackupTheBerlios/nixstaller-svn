@@ -64,20 +64,19 @@ void CLuaDirSelector::SetDir(const char *dir)
 void CLuaDirSelector::CoreUpdateLanguage()
 {
     m_pBrowseButton->label(GetTranslation("Browse"));
-    UpdateLayout(GetGroup()->w());
+    UpdateLayout();
 }
 
-void CLuaDirSelector::CoreGetHeight(int maxw, int maxh, int &outh)
+int CLuaDirSelector::CoreRequestHeight(int maxw)
 {
-    UpdateLayout(maxw);
-    outh = m_pDirInput->h();
+    return m_pDirInput->h();
 }
 
-void CLuaDirSelector::UpdateLayout(int w)
+void CLuaDirSelector::UpdateLayout()
 {
     SetButtonWidth(m_pBrowseButton);
     
-    int inputw = w - Spacing() - m_pBrowseButton->w();
+    int inputw = GetGroup()->w() - Spacing() - m_pBrowseButton->w();
     m_pDirInput->size(inputw, m_pDirInput->h());
     m_pBrowseButton->position(m_pDirInput->x() + inputw + Spacing(), m_pBrowseButton->y());
 }
