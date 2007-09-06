@@ -166,8 +166,6 @@ bool CInstallScreen::CheckWidgets()
         
         if (start == end)
             break;
-        
-        start++;
     }
 
     return ret;

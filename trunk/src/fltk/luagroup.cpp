@@ -27,9 +27,9 @@
 #include "luainput.h"
 #include "lualabel.h"
 #include "luamenu.h"
-// #include "luaprogressbar.h"
-// #include "luaradiobutton.h"
-// #include "luatextfield.h"
+#include "luaprogressbar.h"
+#include "luaradiobutton.h"
+#include "luatextfield.h"
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Pack.H>
 
@@ -92,6 +92,27 @@ CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
 {
     CLuaMenu *ret = new CLuaMenu(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaProgressBar *CLuaGroup::CreateProgressBar(const char *desc)
+{
+    CLuaProgressBar *ret = new CLuaProgressBar(desc);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
+{
+    CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
+    AddWidget(ret);
+    return ret;
+}
+
+CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
+{
+    CLuaTextField *ret = new CLuaTextField(desc, wrap);
     AddWidget(ret);
     return ret;
 }

@@ -17,35 +17,28 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUAWIDGET_H
-#define FLTK_LUAWIDGET_H
+#include "luaprogressbar.h"
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Progress.H>
 
-#include "main/install/luawidget.h"
+// -------------------------------------
+// Lua Progress Bar Class
+// -------------------------------------
 
-class Fl_Box;
-class Fl_Group;
-class Fl_Pack;
-
-class CLuaWidget: virtual public CBaseLuaWidget
+CLuaProgressBar::CLuaProgressBar(const char *desc) : CBaseLuaWidget(desc)
 {
-    Fl_Pack *m_pMainPack;
-    Fl_Box *m_pTitle;
-    
-    virtual void CoreSetTitle(void);
-    virtual void CoreActivateWidget(void);
-    virtual bool CoreExpand(void) { return true; }
-    virtual int CoreRequestWidth(void) = 0;
-    virtual int CoreRequestHeight(int maxw) = 0;
-    virtual void UpdateSize(void) {}
-    
-public:
-    CLuaWidget(void);
-    
-    Fl_Group *GetGroup(void);
-    bool Expand(void) { return CoreExpand(); }
-    int RequestWidth(void);
-    int RequestHeight(int maxw);
-    void SetSize(int w, int h);
-};
+    m_pProgressBar = new Fl_Progress(0, 0, 0, BarHeight());
+    m_pProgressBar->minimum(0.0f);
+    m_pProgressBar->maximum(100.0f);
+    GetGroup()->add(m_pProgressBar);
+}
 
-#endif
+void CLuaProgressBar::SetProgress(int n)
+{
+    m_pProgressBar->value(static_cast<float>(n));
+}
+
+void CLuaProgressBar::UpdateSize()
+{
+    m_pProgressBar->size(GetGroup()->w(), m_pProgressBar->h());
+}

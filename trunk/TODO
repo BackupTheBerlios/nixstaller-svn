@@ -12,8 +12,7 @@ OVERALL
 - Modify Makeself?
 - x64 bins?
 - Update Lua library for NBSD, OBSD, SunOS
-- Recompile fltk with Xft support for FBSD, NBSD, OBSD and SunOS (and update the notes files)
-- Remove deprecated virtual functions from CBaseInstall derived classes
+- Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
 - Update changelog (new lua widgets, gtk frontend)
 - Check if lua execution can be time sliced
 - Remove exceptions.odt?
@@ -32,6 +31,7 @@ DOCS
 - Update input:setspacing --> input:setlabelwidth (and other defaults)
 - Update radiobutton and checkbox function arguments
 - Check lua widget defaults
+- Find new lua widget functions
 
         
 TRANSLATIONS
@@ -81,11 +81,8 @@ GTK
 
 FLTK
 - Update code to new lua design
-- Change Lua inputfield label width handling
 - Check locales and numeric lua widget input
 - Check if all lua screens, groups, widgets are destroyed
-- ActivateWidget function(s?)
-- Recompile FLTK with Xdbe support and using customly compiled deps
 - Check if all C strings passed to FLTK function are not temporary (they're not copied)
 
 
@@ -94,8 +91,6 @@ DESIGN
 - Virtual functions that need to call parent function --> make additional function in base class
 that will be called instead of virtual function, this function should call the virtual instead.
 - Split code in more files (SConstruct aswell?)
-- Use C++ style casts(static_cast)
 - More usage of const?
-- Move global static ints for widget spacing etc to static functions
 
         

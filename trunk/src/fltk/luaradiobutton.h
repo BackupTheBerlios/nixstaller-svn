@@ -17,35 +17,35 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUAWIDGET_H
-#define FLTK_LUAWIDGET_H
+#ifndef FLTK_LUARADIOBUTTON_H
+#define FLTK_LUARADIOBUTTON_H
 
-#include "main/install/luawidget.h"
+#include <vector>
+#include "main/install/luaradiobutton.h"
+#include "luawidget.h"
 
-class Fl_Box;
-class Fl_Group;
-class Fl_Pack;
+class Fl_Round_Button;
+class Fl_Widget;
 
-class CLuaWidget: virtual public CBaseLuaWidget
+class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
 {
-    Fl_Pack *m_pMainPack;
-    Fl_Box *m_pTitle;
+    typedef std::vector<Fl_Round_Button *> TRadioList;
+    TRadioList m_RadioButtons;
     
-    virtual void CoreSetTitle(void);
-    virtual void CoreActivateWidget(void);
-    virtual bool CoreExpand(void) { return true; }
-    virtual int CoreRequestWidth(void) = 0;
-    virtual int CoreRequestHeight(int maxw) = 0;
-    virtual void UpdateSize(void) {}
+    virtual const char *EnabledButton(void);
+    virtual void Enable(TSTLVecSize n);
+    virtual void CoreUpdateLanguage(void);
+    virtual int CoreRequestWidth(void);
+    virtual int CoreRequestHeight(int maxw);
+    virtual void UpdateSize(void);
     
+    int BoxWidth(void) const { return 40; }
+    int ButtonHeight(void) const { return 15; }
+
 public:
-    CLuaWidget(void);
+    CLuaRadioButton(const char *desc, const TOptions &l);
     
-    Fl_Group *GetGroup(void);
-    bool Expand(void) { return CoreExpand(); }
-    int RequestWidth(void);
-    int RequestHeight(int maxw);
-    void SetSize(int w, int h);
+    static void ToggleCB(Fl_Widget *w, void *p);
 };
 
 #endif

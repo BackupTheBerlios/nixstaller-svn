@@ -19,6 +19,7 @@
 
 #include "main/main.h"
 #include "luawidget.h"
+#include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Pack.H>
 #include <FL/fl_draw.H>
@@ -43,6 +44,11 @@ void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
         m_pTitle->label(GetTranslation(GetTitle().c_str()));
+}
+
+void CLuaWidget::CoreActivateWidget()
+{
+    Fl::focus(m_pMainPack);
 }
 
 Fl_Group *CLuaWidget::GetGroup()

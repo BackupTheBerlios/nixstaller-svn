@@ -17,35 +17,34 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUAWIDGET_H
-#define FLTK_LUAWIDGET_H
+#ifndef FLTK_LUATEXTFIELD_H
+#define FLTK_LUATEXTFIELD_H
 
-#include "main/install/luawidget.h"
+#include "main/install/luatextfield.h"
+#include "luawidget.h"
 
-class Fl_Box;
-class Fl_Group;
-class Fl_Pack;
+class Fl_Text_Buffer;
+class Fl_Text_Display;
 
-class CLuaWidget: virtual public CBaseLuaWidget
+class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
 {
-    Fl_Pack *m_pMainPack;
-    Fl_Box *m_pTitle;
+    Fl_Text_Buffer *m_pBuffer;
+    Fl_Text_Display *m_pDisplay;
+    bool m_bWrap;
     
-    virtual void CoreSetTitle(void);
-    virtual void CoreActivateWidget(void);
-    virtual bool CoreExpand(void) { return true; }
-    virtual int CoreRequestWidth(void) = 0;
-    virtual int CoreRequestHeight(int maxw) = 0;
-    virtual void UpdateSize(void) {}
+    virtual void Load(const char *file);
+    virtual void AddText(const char *text);
+    virtual void UpdateFollow(void);
+    virtual int CoreRequestWidth(void) { return 150; }
+    virtual int CoreRequestHeight(int maxw) { return FieldHeight(); }
+    virtual void UpdateSize(void);
+    
+    int FieldHeight(void) const { return 125; }
+    
+    void DoFollow(void);
     
 public:
-    CLuaWidget(void);
-    
-    Fl_Group *GetGroup(void);
-    bool Expand(void) { return CoreExpand(); }
-    int RequestWidth(void);
-    int RequestHeight(int maxw);
-    void SetSize(int w, int h);
+    CLuaTextField(const char *desc, bool wrap);
 };
 
 #endif

@@ -17,35 +17,27 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef FLTK_LUAWIDGET_H
-#define FLTK_LUAWIDGET_H
+#ifndef FLTK_LUAPROGRESSBAR_H
+#define FLTK_LUAPROGRESSBAR_H
 
-#include "main/install/luawidget.h"
+#include "main/install/luaprogressbar.h"
+#include "luawidget.h"
 
-class Fl_Box;
-class Fl_Group;
-class Fl_Pack;
+class Fl_Progress;
 
-class CLuaWidget: virtual public CBaseLuaWidget
+class CLuaProgressBar: public CBaseLuaProgressBar, public CLuaWidget
 {
-    Fl_Pack *m_pMainPack;
-    Fl_Box *m_pTitle;
+    Fl_Progress *m_pProgressBar;
     
-    virtual void CoreSetTitle(void);
-    virtual void CoreActivateWidget(void);
-    virtual bool CoreExpand(void) { return true; }
-    virtual int CoreRequestWidth(void) = 0;
-    virtual int CoreRequestHeight(int maxw) = 0;
-    virtual void UpdateSize(void) {}
+    virtual void SetProgress(int n);
+    virtual int CoreRequestWidth(void) { return 150; }
+    virtual int CoreRequestHeight(int maxw) { return BarHeight(); }
+    virtual void UpdateSize(void);
+    
+    int BarHeight(void) const { return 25; }
     
 public:
-    CLuaWidget(void);
-    
-    Fl_Group *GetGroup(void);
-    bool Expand(void) { return CoreExpand(); }
-    int RequestWidth(void);
-    int RequestHeight(int maxw);
-    void SetSize(int w, int h);
+    CLuaProgressBar(const char *desc);
 };
 
 #endif
