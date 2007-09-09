@@ -81,10 +81,7 @@ GTK
 
 
 FLTK
-- Update code to new lua design
-- Check locales and numeric lua widget input
 - Check if all lua screens, groups, widgets are destroyed
-- Check if all C strings passed to FLTK function are not temporary (they're not copied)
 - Create a pack widget that works?
 
 

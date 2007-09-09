@@ -119,8 +119,13 @@ CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
 
 void CLuaGroup::AddWidget(CLuaWidget *w)
 {
-    w->GetGroup()->user_data(w);
-    m_pMainPack->add(w->GetGroup());
+    // The widget is put in another group, so that it can center vertically
+    Fl_Group *group = new Fl_Group(0, 0, 0, 0);
+    group->end();
+    group->add(w->GetGroup());
+    group->user_data(w);
+    
+    m_pMainPack->add(group);
 }
 
 CLuaWidget *CLuaGroup::GetWidget(Fl_Widget *w)
@@ -134,10 +139,11 @@ int CLuaGroup::ExpandedWidgets()
     int ret = 0;
     for (int i=0; i<size; i++)
     {
-        if (!m_pMainPack->child(i)->visible())
+        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
+        
+        if (!w->GetGroup()->visible())
             continue;
         
-        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
         if (w->Expand())
             ret++;
     }
@@ -151,10 +157,11 @@ int CLuaGroup::RequestedWidgetsW()
     int ret = 0;
     for (int i=0; i<size; i++)
     {
-        if (!m_pMainPack->child(i)->visible())
+        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
+        
+        if (!w->GetGroup()->visible())
             continue;
 
-        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
         ret += w->RequestWidth();
         
         if (i != (size-1))
@@ -170,10 +177,11 @@ int CLuaGroup::TotalWidgetHeight(int maxw)
     int ret = 0;
     for (int i=0; i<size; i++)
     {
-        if (!m_pMainPack->child(i)->visible())
+        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
+        
+        if (!w->GetGroup()->visible())
             continue;
 
-        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
         ret = std::max(ret, w->RequestHeight(maxw));
     }
     
@@ -200,10 +208,11 @@ void CLuaGroup::SetSize(int maxw, int maxh)
 
     for (int i=0; i<size; i++)
     {
-        if (!m_pMainPack->child(i)->visible())
+        CLuaWidget *widget = GetWidget(m_pMainPack->child(i));
+        
+        if (!widget->GetGroup()->visible())
             continue;
 
-        CLuaWidget *widget = GetWidget(m_pMainPack->child(i));
         int w = widget->RequestWidth();
         
         if (widget->Expand())
@@ -211,8 +220,10 @@ void CLuaGroup::SetSize(int maxw, int maxh)
         
         assert(w <= maxw);
         
-        widget->SetSize(w, totalwidgeth);
-//         widget->GetGroup()->position(widget->GetGroup()->x(),
-//                                      widget->GetGroup()->y() + ((totalwidgeth - widget->GetGroup()->h()) / 2));
+        Fl_Widget *wgroup = m_pMainPack->child(i);
+        wgroup->size(w, totalwidgeth);
+
+        widget->SetSize(w, widget->RequestHeight(w));
+        widget->GetGroup()->position(wgroup->x(), wgroup->y() + ((totalwidgeth - widget->GetGroup()->h()) / 2));
     }
 }

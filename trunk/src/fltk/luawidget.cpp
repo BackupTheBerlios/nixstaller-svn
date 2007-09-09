@@ -43,7 +43,7 @@ CLuaWidget::CLuaWidget(void)
 void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
-        m_pTitle->label(GetTranslation(GetTitle().c_str()));
+        m_pTitle->label(MakeTranslation(GetTitle()));
 }
 
 void CLuaWidget::CoreActivateWidget()

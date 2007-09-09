@@ -19,6 +19,7 @@
 
 #include "main/main.h"
 #include "luainput.h"
+#include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Input.H>
@@ -126,12 +127,79 @@ void CLuaInputField::UpdateSize()
     m_pLabel->size(w, m_pLabel->h());
     
     m_pInputField->size(GetGroup()->w() - PackSpacing() - w, m_pInputField->h());
-    
-    debugline("label w: %d - y: %d with '%s'\n", m_pLabel->w(), m_pLabel->h(), m_pLabel->label());
 }
 
 void CLuaInputField::InputChangedCB(Fl_Widget *w, void *p)
 {
     CLuaInputField *input = static_cast<CLuaInputField *>(p);
+    
+    if ((input->GetType() == "number") || (input->GetType() == "float"))
+    {
+        // This code prevents multiple decimal points and plus/min signs, which the FLTK code unfortunaly doesn't
+        std::string newtext = input->m_pInputField->value(), &oldtext = input->m_Text;
+        
+        TSTLStrSize size = newtext.length(), oldsize = oldtext.size();
+        
+        if (!size || (size < oldsize))
+            input->m_Text = newtext;
+        else
+        {
+            bool valid = true, updateddec = false;
+
+            if (input->m_Text.empty())
+                newtext = newtext;
+            else
+            {
+                lconv *lc = localeconv();
+        
+                if (strchr(lc->decimal_point, ','))
+                {
+                    TSTLStrSize pos = newtext.find('.');
+                    if (pos != std::string::npos)
+                    {
+                        newtext[pos] = ',';
+                        updateddec = true;
+                    }
+                }
+        
+                TSTLStrSize start = newtext.find_first_of(lc->decimal_point);
+                if ((start != std::string::npos) && (newtext.find_last_of(lc->decimal_point) != start))
+                    valid = false;
+                else
+                {
+                    const std::string plusmin = std::string(lc->positive_sign) +
+                                                std::string(lc->negative_sign) + '+' + '-';
+                    start = newtext.find_first_of(plusmin);
+                    if ((start != std::string::npos) && (newtext.find_last_of(plusmin) != start))
+                        valid = false;
+                }
+            }
+            
+            int cursorpos = input->m_pInputField->position();
+            int oldcursorpos = cursorpos - SafeConvert<int>(size - oldsize);
+
+            if (oldcursorpos < 0)
+                oldcursorpos = 0;
+            
+            int newcursorpos;
+            
+            if (!valid)
+            {
+                input->m_pInputField->value(oldtext.c_str());
+                newcursorpos = oldcursorpos;
+            }
+            else
+            {
+                input->m_Text = newtext;
+                if (updateddec)
+                    input->m_pInputField->value(newtext.c_str());
+                newcursorpos = cursorpos;
+            }
+            
+            // value() will reset the cursor position
+            input->m_pInputField->position(newcursorpos);
+        }
+    }
+    
     input->LuaDataChanged();
 }
