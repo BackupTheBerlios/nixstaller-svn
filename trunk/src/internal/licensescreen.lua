@@ -46,7 +46,9 @@ end
 function screen:activate()
     if filename ~= nil then -- checkfile() has been called by canactivate
         text:load(filename)
-        install.lockscreen(false, true, true)
+        if not check:get(1) then
+            install.lockscreen(false, true, true)
+        end
     end
 end
 

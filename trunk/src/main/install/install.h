@@ -65,6 +65,7 @@ private:
     
 protected:
     virtual void InitLua(void);
+    virtual void CoreUpdateLanguage(void);
 
     bool Installing(void) const { return m_bInstalling; }
     // This function is not called by the destructor, because in some frontends a lua screen is part of the gui and will
@@ -80,7 +81,6 @@ public:
     virtual ~CBaseInstall(void) { };
 
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void);
 
     void UpdateExtrStatus(const char *s);
     

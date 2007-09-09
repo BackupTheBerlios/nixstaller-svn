@@ -49,7 +49,7 @@ public:
     void SetText(const std::string &t) { ClearText(); AddText(t); }
     void ClearText(void);
     void LoadFile(const char *f);
-    void SetFollow(bool f) { m_bFollow = f; }
+    void SetFollow(bool f);
 };
 
 }

@@ -26,7 +26,7 @@
 class CLuaImage: public CBaseLuaImage, public CLuaWidget
 {
     GdkPixbuf *m_pPixBuf;
-    int m_iImageW, m_iImageH;
+    bool m_bHasImage;
     
     virtual void CoreActivateWidget(void) {}
     
@@ -35,6 +35,8 @@ class CLuaImage: public CBaseLuaImage, public CLuaWidget
     
 public:
     CLuaImage(const char *file);
+    
+    bool HasValidImage(void) const { return m_bHasImage; }
 };
 
 #endif

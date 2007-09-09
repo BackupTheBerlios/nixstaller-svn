@@ -56,6 +56,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
 
 protected:
     virtual void InitLua(void);
+    virtual void CoreUpdateLanguage(void);
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
     virtual bool CoreHandleKey(chtype key);
 
@@ -63,7 +64,6 @@ public:
     CInstaller(void);
     
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void);
 };
 
 

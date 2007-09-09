@@ -30,9 +30,3 @@ void SetButtonWidth(Fl_Button *button)
     fl_measure(button->label(), w, h);
     button->size(w+spacing, button->h());
 }
-
-int PackSpacing(Fl_Pack *pack)
-{
-    // HACK: FLTK seems to add half of the spacing at the beginning, so compensate here
-    return pack->spacing()*1.5;
-}

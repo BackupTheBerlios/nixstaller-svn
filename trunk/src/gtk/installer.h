@@ -53,13 +53,13 @@ class CInstaller: public CGTKBase, public CBaseInstall
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual void InstallThink(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
+    virtual void CoreUpdateLanguage(void);
 
 public:
     CInstaller(void) : m_bPrevButtonLocked(false) {}
     virtual ~CInstaller(void) { DeleteScreens(); }
     
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void);
     
     void SetTitle(const std::string &t);
     

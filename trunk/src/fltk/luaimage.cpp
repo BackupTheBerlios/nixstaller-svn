@@ -50,4 +50,6 @@ CLuaImage::CLuaImage(const char *file) : CBaseLuaWidget(""), m_iImageW(0), m_iIm
         m_iImageW = img->w();
         m_iImageH = img->h();
     }
+    else
+        GetGroup()->hide();
 }

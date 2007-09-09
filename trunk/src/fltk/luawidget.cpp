@@ -81,6 +81,8 @@ int CLuaWidget::RequestHeight(int maxw)
 
 void CLuaWidget::SetSize(int w, int h)
 {
+    m_pMainPack->size(w, h);
+
     if (!GetTitle().empty())
     {
         int tw = w, h = 0;
@@ -90,8 +92,6 @@ void CLuaWidget::SetSize(int w, int h)
         if ((tw != m_pTitle->w()) || (h != m_pTitle->h()))
             m_pTitle->size(tw, h);
     }
-    
-    m_pMainPack->size(w, h);
     
     UpdateSize();
 }

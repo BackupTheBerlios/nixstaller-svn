@@ -45,6 +45,7 @@ TRANSLATIONS
 - New Error messages used by exceptions and luaL_argcheck
 - Change (ncurses bbar)
 - %s is now being installed - InstallScreen title
+- Shorter name for "Bestandsnaam" for FLTK's file chooser
 
 
 MAIN
@@ -84,6 +85,7 @@ FLTK
 - Check locales and numeric lua widget input
 - Check if all lua screens, groups, widgets are destroyed
 - Check if all C strings passed to FLTK function are not temporary (they're not copied)
+- Create a pack widget that works?
 
 
 DESIGN

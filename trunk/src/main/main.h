@@ -120,15 +120,15 @@ protected:
     virtual bool YesNoBox(const char *str, ...) = 0;
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) = 0;
     virtual void WarnBox(const char *str, ...) = 0;
-    
+    virtual void InitLua(void);
+    virtual void CoreUpdateLanguage(void) = 0;
+
     // App register stuff
     std::string ReadRegField(std::ifstream &file);
     app_entry_s *GetAppRegEntry(const char *progname);
     const char *GetAppRegDir(void);
     const char *GetRegConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
-    
-    virtual void InitLua(void);
     
 public:
     std::string m_szCurLang;
@@ -139,7 +139,7 @@ public:
     virtual ~CMain(void);
     
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void) { ReadLang(); };
+    virtual void UpdateLanguage(void) { ReadLang(); CoreUpdateLanguage(); };
     
     // Functions for lua binding
     static int LuaInitDirIter(lua_State *L);
@@ -175,6 +175,7 @@ class CLuaRunner: public CMain
     virtual bool YesNoBox(const char *str, ...) { return false; };
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) { return 0; };
     virtual void WarnBox(const char *str, ...) { };
+    virtual void CoreUpdateLanguage(void) {}
 
 public:
     virtual void Init(int argc, char **argv);

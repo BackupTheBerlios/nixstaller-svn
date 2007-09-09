@@ -25,7 +25,7 @@
 // Lua Image Class
 // -------------------------------------
 
-CLuaImage::CLuaImage(const char *file) : CBaseLuaWidget("")
+CLuaImage::CLuaImage(const char *file) : CBaseLuaWidget(""), m_bHasImage(false)
 {
     m_pPixBuf = gdk_pixbuf_new_from_file(file, NULL);
     
@@ -49,6 +49,7 @@ CLuaImage::CLuaImage(const char *file) : CBaseLuaWidget("")
             g_object_unref(m_pPixBuf);
             gtk_widget_show(img);
             gtk_container_add(GTK_CONTAINER(GetBox()), img);
+            m_bHasImage = true;
         }
     }
 }

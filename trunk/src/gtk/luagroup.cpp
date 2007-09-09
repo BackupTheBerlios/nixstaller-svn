@@ -87,9 +87,11 @@ CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::str
 CBaseLuaImage *CLuaGroup::CreateImage(const char *file)
 {
     CLuaImage *ret = new CLuaImage(file);
-    gtk_widget_show(ret->GetBox());
-    gtk_box_pack_start(GTK_BOX(m_pBox), ret->GetBox(), FALSE, FALSE, 10);
-//     AddWidget(ret);
+    if (ret->HasValidImage())
+    {
+        gtk_widget_show(ret->GetBox());
+        gtk_box_pack_start(GTK_BOX(m_pBox), ret->GetBox(), FALSE, FALSE, 10);
+    }
     return ret;
 }
 

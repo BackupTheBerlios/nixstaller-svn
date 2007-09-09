@@ -199,10 +199,8 @@ void CFLTKBase::ShowAbout(bool show)
         m_pAboutWindow->hide();
 }
 
-void CFLTKBase::UpdateLanguage()
+void CFLTKBase::CoreUpdateLanguage()
 {
-    CMain::UpdateLanguage();
-    
     // Translations for FL ASK dialogs
     fl_yes = GetTranslation("Yes");
     fl_no = GetTranslation("No");

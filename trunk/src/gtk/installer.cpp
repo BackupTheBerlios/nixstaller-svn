@@ -304,9 +304,9 @@ void CInstaller::Init(int argc, char **argv)
     }
 }
 
-void CInstaller::UpdateLanguage()
+void CInstaller::CoreUpdateLanguage()
 {
-    CBaseInstall::UpdateLanguage();
+    CBaseInstall::CoreUpdateLanguage();
     
     SetAboutLabel();
     

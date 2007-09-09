@@ -66,13 +66,13 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual void InstallThink(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
+    virtual void CoreUpdateLanguage(void);
 
 public:
     CInstaller(void) : m_pLogoBox(NULL), m_bPrevButtonLocked(false) {}
     virtual ~CInstaller(void) { DeleteScreens(); }
     
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void);
     
     static void CancelCB(Fl_Widget *w, void *p);
     static void BackCB(Fl_Widget *w, void *p) { ((CInstaller *)p)->Back(); };

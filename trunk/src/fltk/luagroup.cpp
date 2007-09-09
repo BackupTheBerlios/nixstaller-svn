@@ -134,6 +134,9 @@ int CLuaGroup::ExpandedWidgets()
     int ret = 0;
     for (int i=0; i<size; i++)
     {
+        if (!m_pMainPack->child(i)->visible())
+            continue;
+        
         CLuaWidget *w = GetWidget(m_pMainPack->child(i));
         if (w->Expand())
             ret++;
@@ -148,8 +151,14 @@ int CLuaGroup::RequestedWidgetsW()
     int ret = 0;
     for (int i=0; i<size; i++)
     {
+        if (!m_pMainPack->child(i)->visible())
+            continue;
+
         CLuaWidget *w = GetWidget(m_pMainPack->child(i));
         ret += w->RequestWidth();
+        
+        if (i != (size-1))
+            ret += WidgetSpacing();
     }
     
     return ret;
@@ -161,6 +170,9 @@ int CLuaGroup::TotalWidgetHeight(int maxw)
     int ret = 0;
     for (int i=0; i<size; i++)
     {
+        if (!m_pMainPack->child(i)->visible())
+            continue;
+
         CLuaWidget *w = GetWidget(m_pMainPack->child(i));
         ret = std::max(ret, w->RequestHeight(maxw));
     }
@@ -188,12 +200,19 @@ void CLuaGroup::SetSize(int maxw, int maxh)
 
     for (int i=0; i<size; i++)
     {
+        if (!m_pMainPack->child(i)->visible())
+            continue;
+
         CLuaWidget *widget = GetWidget(m_pMainPack->child(i));
         int w = widget->RequestWidth();
         
         if (widget->Expand())
             w += extraw;
         
+        assert(w <= maxw);
+        
         widget->SetSize(w, totalwidgeth);
+//         widget->GetGroup()->position(widget->GetGroup()->x(),
+//                                      widget->GetGroup()->y() + ((totalwidgeth - widget->GetGroup()->h()) / 2));
     }
 }

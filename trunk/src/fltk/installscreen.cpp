@@ -39,18 +39,21 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), m
     m_pMainPack->type(Fl_Pack::VERTICAL);
     m_pMainPack->resizable(NULL);
     
-    // We let the counter have a static height, since this makes resizing for the widget pack easier
     m_pCounter = new Fl_Box(0, 0, 0, 0);
     fl_font(m_pCounter->labelfont(), m_pCounter->labelsize());
     m_pCounter->size(0, fl_height());
     m_pCounter->align(FL_ALIGN_INSIDE | FL_ALIGN_RIGHT);
-    m_pCounter->hide();
+    
+    m_pWidgetGroup = new Fl_Group(0, 0, 0, 0);
+    m_pWidgetGroup->resizable(NULL);
     
     m_pWidgetPack = new Fl_Pack(0, 0, 1, 0); // HACK: Dummy width, otherwise widgets won't shown up :)
     m_pWidgetPack->type(Fl_Pack::VERTICAL);
     m_pWidgetPack->spacing(WidgetHSpacing());
     m_pWidgetPack->resizable(NULL);
     m_pWidgetPack->end();
+
+    m_pWidgetGroup->end();
     
     m_pMainPack->end();
 }
@@ -71,9 +74,9 @@ CLuaGroup *CInstallScreen::GetGroup(Fl_Widget *w)
 
 int CInstallScreen::CheckTotalWidgetH(Fl_Widget *w)
 {
-    int ret = w->h() + WidgetHSpacing();
+    int ret = w->h();
     
-    if (ret > MaxScreenHeight())
+    if (ret > m_iMaxHeight)
         throw Exceptions::CExOverflow("Not enough space for widget.");
     
     return ret;
@@ -89,23 +92,34 @@ void CInstallScreen::ResetWidgetRange()
         return;
     
     int h = 0;
+    bool check = true;
+    
     for (int i=0; i<size; i++)
     {
         Fl_Group *group = GetGroup(m_pWidgetPack->child(i))->GetGroup();
         if (!group->children())
             continue;
         
-        h += CheckTotalWidgetH(group);
-
-        if (h <= MaxScreenHeight())
+        if (check)
         {
-            group->show();
-            m_WidgetRange.second = group;
-            continue;
+            const int newh = CheckTotalWidgetH(group);
+
+            if ((h + newh) <= m_iMaxHeight)
+            {
+                h += newh + WidgetHSpacing();
+                group->show();
+                m_WidgetRange.second = group;
+                continue;
+            }
+            
+            check = false;
         }
         
         group->hide();
     }
+    
+    int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
+    m_pWidgetPack->resize(0, y, m_pWidgetPack->w(), h);
     
     UpdateCounter();
 }
@@ -123,25 +137,20 @@ void CInstallScreen::UpdateCounter()
 
         const int wh = CheckTotalWidgetH(group);
         
-        if ((h + wh) > MaxScreenHeight())
+        if ((h + wh) > m_iMaxHeight)
         {
             h = 0;
             count++;
         }
         
-        h += wh;
+        h += wh + WidgetHSpacing();
 
         if (group == m_WidgetRange.first)
             current = count;
     }
     
     if (count > 1)
-    {
         m_pCounter->label(CreateText("%d/%d", current, count));
-        m_pCounter->show();
-    }
-    else
-        m_pCounter->hide();
 }
 
 bool CInstallScreen::CheckWidgets()
@@ -187,15 +196,19 @@ void CInstallScreen::SetSize(int x, int y, int w, int h)
     m_pMainPack->resize(x, y, w, h);
     // We cannot use the height from a pack (m_pMainPack or m_pWidgetPack), because vertical packs will
     // auto adjust their height
-    m_iMaxHeight = h - m_pCounter->h();
+    m_iMaxHeight = h - (m_pCounter->h() * 2);
     UpdateCounter();
     
+    m_pWidgetGroup->resize(0, 0, w, m_iMaxHeight);
+
     const int size = m_pWidgetPack->children();
     for (int i=0; i<size; i++)
     {
         CLuaGroup *g = GetGroup(m_pWidgetPack->child(i));
-        g->SetSize(w, MaxScreenHeight());
+        g->SetSize(w, m_iMaxHeight);
     }
+    
+    m_pWidgetPack->size(w, 0);
 }
 
 bool CInstallScreen::HasPrevWidgets() const
@@ -228,23 +241,30 @@ bool CInstallScreen::SubBack()
         
         int h = 0;
         int start = m_pWidgetPack->find(m_WidgetRange.first);
+        bool checkwidgets = true;
         m_WidgetRange.first = m_WidgetRange.second = NULL;
         
         if (start != size)
         {
             start--;
-            for (; ((start>=0) && (h <= MaxScreenHeight())); start--)
+            for (; ((start>=0) && (h <= m_iMaxHeight)); start--)
             {
                 Fl_Group *group = GetGroup(m_pWidgetPack->child(start))->GetGroup();
                 if (!group->children())
                     continue;
 
-                h += CheckTotalWidgetH(group);
-                
-                if (h <= MaxScreenHeight())
+                if (checkwidgets)
                 {
-                    group->show();
-                    m_WidgetRange.first = group;
+                    int newh = CheckTotalWidgetH(group);
+                    
+                    if ((h + newh) <= m_iMaxHeight)
+                    {
+                        h += newh + WidgetHSpacing();
+                        group->show();
+                        m_WidgetRange.first = group;
+                    }
+                    else
+                        checkwidgets = false;
                 }
                 
                 if (!m_WidgetRange.second)
@@ -254,6 +274,8 @@ bool CInstallScreen::SubBack()
         
         if (h)
         {
+            int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
+            m_pWidgetPack->resize(0, y, m_pWidgetPack->w(), h);
             UpdateCounter();
             return true;
         }
@@ -279,23 +301,31 @@ bool CInstallScreen::SubNext(bool check)
         
         int h = 0;
         int start = m_pWidgetPack->find(m_WidgetRange.second);
+        bool checkwidgets = true;
+        
         m_WidgetRange.first = m_WidgetRange.second = NULL;
         
         if (start != size)
         {
             start++;
-            for (; ((start < size) && (h <= MaxScreenHeight())); start++)
+            for (; ((start < size) && (h <= m_iMaxHeight)); start++)
             {
                 Fl_Group *group = GetGroup(m_pWidgetPack->child(start))->GetGroup();
                 if (!group->children())
                     continue;
 
-                h += CheckTotalWidgetH(group);
-                
-                if (h <= MaxScreenHeight())
+                if (checkwidgets)
                 {
-                    group->show();
-                    m_WidgetRange.second = group;
+                    const int newh = CheckTotalWidgetH(group);
+                
+                    if ((h + newh) <= m_iMaxHeight)
+                    {
+                        h += newh + WidgetHSpacing();
+                        group->show();
+                        m_WidgetRange.second = group;
+                    }
+                    else
+                        checkwidgets = false;
                 }
                 
                 if (!m_WidgetRange.first)
@@ -306,6 +336,8 @@ bool CInstallScreen::SubNext(bool check)
         if (h)
         {
             UpdateCounter();
+            int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
+            m_pWidgetPack->resize(0, y, m_pWidgetPack->w(), h);
             return true;
         }
     }

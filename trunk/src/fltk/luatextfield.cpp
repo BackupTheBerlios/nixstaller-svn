@@ -54,6 +54,7 @@ void CLuaTextField::AddText(const char *text)
 
 void CLuaTextField::UpdateFollow()
 {
+    DoFollow();
 }
 
 void CLuaTextField::UpdateSize()
@@ -62,7 +63,6 @@ void CLuaTextField::UpdateSize()
     
     if (m_bWrap)
     {
-        fl_font(m_pDisplay->textfont(), m_pDisplay->textsize());
         // Undocumented in FLTK: passing 0 will automaticly take the width margin for wrapping
         m_pDisplay->wrap_mode(true, 0);
     }

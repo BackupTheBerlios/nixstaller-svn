@@ -85,7 +85,7 @@ void CInstaller::SetTitle(const std::string &t)
     minheaderh = std::max(minheaderh, h);
 
     m_pTitle->size(m_pTitle->w(), minheaderh);
-    m_pTitle->label(t.c_str());
+    m_pTitle->label(MakeCString(t));
 
     if (m_pHeaderGroup->h() != minheaderh)
     {
@@ -114,8 +114,9 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
 {
     SetTitle(GetTranslation(screen->GetTitle()));
     // SetTitle() may have changed wizard's size or the screen may not have it's size initialized, so do this here
-    screen->SetSize(m_pWizard->x()+ScreenSpacing(), m_pWizard->y()+ScreenSpacing(),
-                    m_pWizard->w()-(2*ScreenSpacing()), m_pWizard->h()-(2*ScreenSpacing()));
+    const int x = m_pWizard->x()+ScreenSpacing(), y = m_pWizard->y()+ScreenSpacing();
+    const int w = m_pWizard->w()-(2*ScreenSpacing()), h = m_pWizard->h()-(2*ScreenSpacing());
+    screen->SetSize(x, y, w, h);
     screen->Activate();
     m_pWizard->value(screen->GetGroup());
 }
@@ -161,7 +162,9 @@ bool CInstaller::LastValidScreen()
 
 void CInstaller::UpdateButtonPack()
 {
-    const int w = m_pBackButton->w() + m_pNextButton->w() + PackSpacing(m_pButtonPack);
+    // HACK: FLTK seems to add half of the spacing at the beginning, so compensate here
+    const int spacing = m_pButtonPack->spacing() * 1.5;
+    const int w = m_pBackButton->w() + m_pNextButton->w() + spacing;
     const int x = WindowW() - w - ButtonWOffset();
     m_pButtonPack->resize(x, m_pButtonPack->y(), w, m_pButtonPack->h());
 }
@@ -281,11 +284,11 @@ void CInstaller::LockScreen(bool cancel, bool prev, bool next)
     m_bPrevButtonLocked = prev;
 }
 
-void CInstaller::UpdateLanguage(void)
+void CInstaller::CoreUpdateLanguage(void)
 {
-    CFLTKBase::UpdateLanguage();
-    CBaseInstall::UpdateLanguage();
-    
+    CBaseInstall::CoreUpdateLanguage();
+    CFLTKBase::CoreUpdateLanguage();
+
     CInstallScreen *screen = GetScreen(m_pWizard->value());
     if (screen)
         SetTitle(GetTranslation(screen->GetTitle()));
@@ -304,10 +307,12 @@ void CInstaller::Init(int argc, char **argv)
     m_pMainWindow->callback(CancelCB, this);
 
     Fl_Group *maingroup = new Fl_Group(0, 0, WindowW(), WindowH());
+    maingroup->resizable(NULL);
     maingroup->box(FL_FLAT_BOX);
     maingroup->color(fl_lighter(FL_BACKGROUND_COLOR));
 
     Fl_Pack *mainpack = new Fl_Pack(0, 0, WindowW(), WindowH()-90);
+    mainpack->resizable(NULL);
     mainpack->type(Fl_Pack::VERTICAL);
     
     CreateHeader();

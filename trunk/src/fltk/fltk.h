@@ -43,6 +43,7 @@ protected:
     virtual bool YesNoBox(const char *str, ...);
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
     virtual void WarnBox(const char *str, ...);
+    virtual void CoreUpdateLanguage(void);
 
     void ShowAbout(bool show);
     
@@ -50,8 +51,6 @@ public:
     CFLTKBase(void);
     virtual ~CFLTKBase(void);
 
-    virtual void UpdateLanguage(void);
-    
     void Run(void);
     
     static void AboutOKCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(false); };
@@ -61,6 +60,5 @@ public:
 // Utils
 void SetButtonWidth(Fl_Button *button);
 inline int ButtonHeight(void) { return 25; }
-int PackSpacing(Fl_Pack *pack);
 
 #endif

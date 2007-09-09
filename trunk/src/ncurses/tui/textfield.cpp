@@ -169,4 +169,14 @@ void CTextField::LoadFile(const char *f)
     AddText(buf);
 }
 
+void CTextField::SetFollow(bool f)
+{
+    m_bFollow = f;
+    if (f)
+    {
+        m_bScrollToBottom = true;
+        RequestQueuedDraw();
+    }
+}
+
 }

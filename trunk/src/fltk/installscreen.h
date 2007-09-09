@@ -32,6 +32,7 @@ class Fl_Widget;
 class CInstallScreen: public CBaseScreen
 {
     Fl_Pack *m_pMainPack, *m_pWidgetPack;
+    Fl_Group *m_pWidgetGroup;
     Fl_Box *m_pCounter;
     std::pair<Fl_Widget *, Fl_Widget *> m_WidgetRange;
     int m_iMaxHeight;
@@ -40,7 +41,6 @@ class CInstallScreen: public CBaseScreen
     virtual void CoreUpdateLanguage(void) {}
     
     int WidgetHSpacing(void) const { return 10; }
-    int MaxScreenHeight(void) { return m_iMaxHeight; }
 
     CLuaGroup *GetGroup(Fl_Widget *w);
     int CheckTotalWidgetH(Fl_Widget *w);

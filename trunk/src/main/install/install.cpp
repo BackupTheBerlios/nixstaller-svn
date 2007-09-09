@@ -77,10 +77,8 @@ void CBaseInstall::Init(int argc, char **argv)
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
 }
 
-void CBaseInstall::UpdateLanguage()
+void CBaseInstall::CoreUpdateLanguage()
 {
-    CMain::UpdateLanguage();
-    
     for (TScreenList::iterator it=m_ScreenList.begin(); it!=m_ScreenList.end(); it++)
         (*it)->UpdateLanguage();
 }

@@ -280,9 +280,9 @@ void CInstaller::Init(int argc, char **argv)
     }
 }
 
-void CInstaller::UpdateLanguage()
+void CInstaller::CoreUpdateLanguage()
 {
-    CBaseInstall::UpdateLanguage();
+    CBaseInstall::CoreUpdateLanguage();
     m_pCancelButton->SetText(GetTranslation("Cancel"));
     UpdateButtons();
 }
