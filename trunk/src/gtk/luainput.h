@@ -27,6 +27,7 @@ class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
 {
     GtkWidget *m_pLabel, *m_pEntry;
     
+    virtual void CoreSetValue(const char *v);
     virtual const char *CoreGetValue(void);
     virtual void CoreUpdateLabelWidth(void);
     virtual void CoreUpdateLanguage(void);

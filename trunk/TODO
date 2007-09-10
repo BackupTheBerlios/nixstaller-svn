@@ -1,27 +1,20 @@
 OVERALL
-- Make shared 'library' for scripts
-- Qt/KDE frontend
-- Fix installation if destdir has no read access?
-- Use locale fix from latest kdesu?
-- Dep handling?
-- Use deltas <--> patches for different frontends?
 - Remove double GetTranslation calls
 - Better util.a configure testing?
-- Replace vec [] access with at() ?
 - Build script that compiles all Nixstaller dependencies?
-- Modify Makeself?
-- x64 bins?
 - Update Lua library for NBSD, OBSD, SunOS
 - Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
 - Update changelog (new lua widgets, gtk frontend)
 - Check if lua execution can be time sliced
 - Remove exceptions.odt?
 - Way to specify extra (image) files
+- genprojdir.sh
+
+
+TEST
 - Check if initial language is fully loaded/used
-- Check labelspacing with empty label (GTK: Check for labelwidth func)
 - Check if all LuaDataChanged functions are called after widgets are changed
-- Check for virtual lua widget functions returning temp C strings
-- set function for lua inputfield (Changelog!)
+- Make test lua file(s) that test anything
 
 
 DOCS
@@ -49,8 +42,6 @@ TRANSLATIONS
 
 
 MAIN
-- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
-- Make CMain::UpdateLanguage public?
 - Improve/check lua error messages?
 - Make private table for internal funcs/vars?
 
@@ -60,20 +51,9 @@ LIBSU
 - sudo support
 
 
-REGISTER
-- Check if version is specified in config file?
-- Language updates: FLTK AppManager
-- Better error handling for register
-- Check path for rm
-- exceptions
-
-        
 NCURSES
-- Check chtype?
-- Better monochrome support?
 - Translations and buttonbar descriptions?
 - Check if UpdateTranslation functions are called - needs testing
-- Check for 'dynamic' CanFocus for CTextField?
 
 
 GTK
@@ -82,14 +62,49 @@ GTK
 
 FLTK
 - Check if all lua screens, groups, widgets are destroyed
+
+
+DESIGN
+- Split code in more files (SConstruct aswell?)
+
+
+-- LATER --
+
+OVERALL
+- Make shared 'library' for scripts
+- Qt/KDE frontend
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Dep handling?
+- Use deltas <--> patches for different frontends?
+- x64 bins?
+- Modify Makeself?
+
+
+MAIN
+- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+
+
+NCURSES
+- Check chtype?
+- Better monochrome support?
+- Check for 'dynamic' CanFocus for CTextField?
+
+
+FLTK
 - Create a pack widget that works?
+
+
+REGISTER
+- Check if version is specified in config file?
+- Language updates: FLTK AppManager
+- Better error handling for register
+- Check path for rm
+- exceptions
 
 
 DESIGN
 - Reorganize var and type names? (type prefixes etc)
 - Virtual functions that need to call parent function --> make additional function in base class
 that will be called instead of virtual function, this function should call the virtual instead.
-- Split code in more files (SConstruct aswell?)
 - More usage of const?
-
-        

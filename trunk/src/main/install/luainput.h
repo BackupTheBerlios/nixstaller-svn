@@ -30,6 +30,7 @@ class CBaseLuaInputField: virtual public CBaseLuaWidget
     std::string m_Label, m_szType;
     int m_iLabelWidth;
     
+    virtual void CoreSetValue(const char *v) = 0;
     virtual const char *CoreGetValue(void) = 0;
     virtual void CoreUpdateLabelWidth(void) = 0;
     
@@ -40,6 +41,7 @@ public:
     CBaseLuaInputField(const char *l, const char *t);
     virtual ~CBaseLuaInputField(void) {}
     
+    void SetValue(const char *v) { CoreSetValue(v); }
     const char *GetValue(void) { return CoreGetValue(); }
     void SetLabelWidth(int w) { m_iLabelWidth = w; CoreUpdateLabelWidth(); }
 
@@ -48,6 +50,7 @@ public:
 
     static void LuaRegister(void);
     
+    static int LuaSet(lua_State *L);
     static int LuaGet(lua_State *L);
     static int LuaSetLabelWidth(lua_State *L);
 };

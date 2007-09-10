@@ -36,6 +36,7 @@ class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
     
     void UpdateLabelWidth(void);
     
+    virtual void CoreSetValue(const char *v);
     virtual const char *CoreGetValue(void);
     virtual void CoreUpdateLabelWidth(void) { UpdateLabelWidth(); RequestUpdate(); }
     virtual void CoreUpdateLanguage(void);

@@ -45,6 +45,7 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     {
         m_pLabel = new Fl_Box(0, 0, 0, inputh, GetTranslation(label));
         m_pLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        m_pLabel->labelfont(FL_COURIER); // Use a fixed font, so we can easily calc the width from GetLabelWidth()
     }
     
     if (GetType() == "number")
@@ -63,6 +64,12 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     
     m_pPack->end();
     GetGroup()->add(m_pPack);
+}
+
+void CLuaInputField::CoreSetValue(const char *v)
+{
+    m_Text = v;
+    m_pInputField->value(v);
 }
 
 const char *CLuaInputField::CoreGetValue()
@@ -107,23 +114,14 @@ void CLuaInputField::UpdateSize()
         return;
     }
     
-    TSTLStrSize max = SafeConvert<TSTLStrSize>(GetLabelWidth()), length = GetLabel().length();
+    std::string label = GetTranslation(GetLabel());
+    TSTLStrSize max = SafeConvert<TSTLStrSize>(GetLabelWidth()), length = label.length();
     
     if (length > max)
-    {
-        std::string label = GetTranslation(GetLabel()).substr(0, max);
-        m_pLabel->label(MakeCString(label));
-    }
-    else if (length < max)
-    {
-        std::string label = GetTranslation(GetLabel());
-        label.append(max - length, ' ');
-        m_pLabel->label(MakeCString(label));
-    }
+        m_pLabel->label(MakeCString(label.substr(0, max)));
     
     fl_font(m_pLabel->labelfont(), m_pLabel->labelsize());
-    int w = GetGroup()->w(), h = 0;
-    fl_measure(m_pLabel->label(), w, h);
+    int w = static_cast<int>(fl_width(' ')) * GetLabelWidth();
     m_pLabel->size(w, m_pLabel->h());
     
     m_pInputField->size(GetGroup()->w() - PackSpacing() - w, m_pInputField->h());

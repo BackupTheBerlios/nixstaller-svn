@@ -35,6 +35,7 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
         GtkWidget *labelbox = gtk_vbox_new(FALSE, 0);
         m_pLabel = gtk_label_new(NULL); // Text will be set in SetLabel()
         SetLabel();
+        gtk_misc_set_alignment(GTK_MISC(m_pLabel), 0.0f, 0.0f);
         gtk_box_pack_start(GTK_BOX(labelbox), m_pLabel, TRUE, FALSE, 0);
         gtk_box_pack_start(GTK_BOX(hbox), labelbox, FALSE, FALSE, 0);
     }
@@ -50,6 +51,11 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     gtk_container_add(GTK_CONTAINER(hbox), m_pEntry);
     
     gtk_widget_show_all(hbox);
+}
+
+void CLuaInputField::CoreSetValue(const char *v)
+{
+    gtk_entry_set_text(GTK_ENTRY(m_pEntry), v);
 }
 
 const char *CLuaInputField::CoreGetValue(void)
@@ -79,18 +85,23 @@ void CLuaInputField::SetLabel()
     if (GetLabel().empty())
         return;
     
+    std::string label = GetTranslation(GetLabel());
     TSTLStrSize max = SafeConvert<TSTLStrSize>(GetLabelWidth());
     if (GetLabel().length() > max)
-    {
-        std::string label = GetTranslation(GetLabel()).substr(0, max);
-        gtk_label_set(GTK_LABEL(m_pLabel), label.c_str());
-    }
+        gtk_label_set(GTK_LABEL(m_pLabel), label.substr(0, max).c_str());
     else
-    {
-        std::string label = GetTranslation(GetLabel());
-        label.append(max - GetLabel().length(), ' ');
         gtk_label_set(GTK_LABEL(m_pLabel), label.c_str());
-    }
+    
+    PangoContext *context = pango_layout_get_context(gtk_label_get_layout(GTK_LABEL(m_pLabel)));
+    PangoFontMetrics *metrics = pango_context_get_metrics(context, m_pLabel->style->font_desc,
+                                                          pango_context_get_language(context));
+
+    gint char_width = pango_font_metrics_get_approximate_char_width(metrics);
+    gint digit_width = pango_font_metrics_get_approximate_digit_width(metrics);
+    gint w = PANGO_PIXELS(std::max(char_width, digit_width));
+    pango_font_metrics_unref(metrics);
+    
+    gtk_widget_set_size_request(m_pLabel, w * GetLabelWidth(), -1);
 }
 
 void CLuaInputField::InsertCB(GtkEditable *editable, gchar *nt, gint new_text_length, gint *position,

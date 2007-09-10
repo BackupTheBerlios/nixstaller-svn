@@ -33,7 +33,7 @@ end
 screen = install.newscreen("Welcome")
 group = screen:addgroup()
 
-if os.fileexists(cfg.intropic) then
+if cfg.intropic and os.fileexists(cfg.intropic) then
     group:addimage(cfg.intropic)
 end
 

@@ -342,20 +342,6 @@ cfg.targetos = { "linux", "netbsd", "freebsd", "openbsd", "sunos" }
 if not env.GetOption('clean'):
     conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv, 'CheckLinkedLibVersion' : CheckLinkedLibVersion})
 
-#    if not conf.checklibexist('libstdc++.a'):
-#       print 'Searching for libstdc++.a'
-#       lname = commands.getoutput('gcc -print-file-name=libstdc++.a')
-#       if lname:
-#           try:
-#               shutil.copy(lname, lib_dir)
-#               print "Copied %s to %s" % (lname, lib_dir)
-#           except (IOError, os.error), why:
-#               print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
-#               Exit(1)
-        #else:
-            #print 'Error: Could not find any libstdc++.a! Please copy it manually to ', lib_dir
-            #Exit(1)
-
     if not conf.checklibexist('libutil.a'):
         print 'Searching for libutil.a'
         lname = commands.getoutput(env['CC']+' -print-file-name=libutil.a')

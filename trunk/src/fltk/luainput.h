@@ -35,6 +35,7 @@ class CLuaInputField: public CBaseLuaInputField, public CLuaWidget
     Fl_Input *m_pInputField;
     std::string m_Text;
     
+    virtual void CoreSetValue(const char *v);
     virtual const char *CoreGetValue(void);
     virtual void CoreUpdateLabelWidth(void) { UpdateSize(); }
     virtual void CoreUpdateLanguage(void);

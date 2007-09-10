@@ -66,6 +66,11 @@ void CLuaInputField::UpdateLabelWidth()
     }
 }
 
+void CLuaInputField::CoreSetValue(const char *v)
+{
+    m_pInputField->SetText(v);
+}
+
 const char *CLuaInputField::CoreGetValue(void)
 {
     return m_pInputField->Value().c_str();

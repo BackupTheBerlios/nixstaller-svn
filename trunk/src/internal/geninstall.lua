@@ -260,7 +260,13 @@ function PrepareArchive()
     -- Some internal stuff
     RequiredCopy(curdir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/internal/start", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/finishscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/install.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/installscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/langscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/licensescreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/selectdirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/welcomescreen.lua", confdir .. "/tmp")
     
     -- Language files
     for _, f in pairs(cfg.languages) do

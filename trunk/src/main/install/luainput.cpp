@@ -38,8 +38,16 @@ CBaseLuaInputField::CBaseLuaInputField(const char *l, const char *t) : m_iLabelW
 
 void CBaseLuaInputField::LuaRegister()
 {
+    NLua::RegisterClassFunction(CBaseLuaInputField::LuaSet, "set", "inputfield");
     NLua::RegisterClassFunction(CBaseLuaInputField::LuaGet, "get", "inputfield");
     NLua::RegisterClassFunction(CBaseLuaInputField::LuaSetLabelWidth, "setlabelwidth", "inputfield");
+}
+
+int CBaseLuaInputField::LuaSet(lua_State *L)
+{
+    CBaseLuaInputField *field = CheckLuaWidgetClass<CBaseLuaInputField>("inputfield", 1);
+    field->SetValue(luaL_checkstring(L, 2));
+    return 0;
 }
 
 int CBaseLuaInputField::LuaGet(lua_State *L)
