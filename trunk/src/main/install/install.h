@@ -60,7 +60,6 @@ private:
     
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
     virtual void CoreAddScreen(CBaseScreen *screen) = 0;
-    virtual void InstallThink(void) { }; // Called during installation, so that frontends don't have to block for example
     virtual void LockScreen(bool cancel, bool prev, bool next) = 0;
     
 protected:
@@ -91,7 +90,9 @@ public:
 
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
     static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddOutput(std::string(s)); };
-    static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->InstallThink(); };
+    static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->UpdateUI(); };
+    
+    static void LuaHook(lua_State *L, lua_Debug *ar);
     
     // Functions for lua binding
     static int LuaNewScreen(lua_State *L);

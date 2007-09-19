@@ -34,18 +34,59 @@
 std::list<char *> StringList;
 std::map<std::string, char *> Translations;
 
+namespace {
+bool g_RunScript;
+}
+
+// Besides main(), other functions may wat to call this incase it wants to stop an exception flow (ie GTK frontend)
+void Quit(int ret)
+{
+    if (!g_RunScript)
+        StopFrontend();
+    
+#ifndef RELEASE
+    NLua::StackDump("Clean stack?\n");
+#endif
+    
+    FreeStrings();
+    exit(ret);
+}
+
+// Besides main(), other functions may wat to call this incase it wants to stop an exception flow (ie GTK frontend)
+void HandleError(void)
+{
+    try
+    {
+        throw;
+    }
+    catch(Exceptions::CExUser &e)
+    {
+        debugline("User cancel\n");
+    }
+    catch(Exceptions::CException &e)
+    {
+        if (g_RunScript)
+            fprintf(stderr, GetTranslation(e.what())); // No specific way to complain, just use stderr
+        else
+            ReportError(GetTranslation(e.what()));
+    }
+    
+    Quit(EXIT_FAILURE);
+}
+
 int main(int argc, char **argv)
 {
+    unlink("frontendstarted");
+    
     setlocale(LC_ALL, "");
 
     PrintIntro();
 
-    bool runscript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
-    int ret = EXIT_FAILURE;
+    g_RunScript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
     
     try
     {
-        if (runscript)
+        if (g_RunScript)
         {
             CLuaRunner lr;
             lr.Init(argc, argv);
@@ -54,29 +95,15 @@ int main(int argc, char **argv)
         {
             StartFrontend(argc, argv);
         }
-        ret = EXIT_SUCCESS;
-    }
-    catch(Exceptions::CExUser &e)
-    {
-        debugline("User cancel\n");
     }
     catch(Exceptions::CException &e)
     {
-        if (runscript)
-            fprintf(stderr, GetTranslation(e.what())); // No specific way to complain, just use stderr
-        else
-            ReportError(GetTranslation(e.what()));
+        HandleError();
+        // Handle error calls exit()
     }
     
-    if (!runscript)
-        StopFrontend();
-    
-#ifndef RELEASE
-    NLua::StackDump("Clean stack?\n");
-#endif
-    
-    FreeStrings();
-    return ret;
+    Quit(EXIT_SUCCESS);
+    return 0; // Never reached
 }
 
 // -------------------------------------
@@ -230,6 +257,18 @@ bool CMain::ReadLang()
     }
 
     return true;
+}
+
+void CMain::UpdateUI()
+{
+    long curtime = GetTime();
+    
+    if (m_lUITimer <= curtime)
+    {
+        debugline("Updating UI\n");
+        m_lUITimer = curtime + 10;
+        CoreUpdateUI();
+    }
 }
 
 #ifdef WITH_APPMANAGER
@@ -387,8 +426,9 @@ void CMain::InitLua()
     tab[1] << m_szCPUArch;
     
     tab.Open("frontends", "cfg");
-    tab[1] << "fltk";
-    tab[2] << "ncurses";
+    tab[1] << "gtk";
+    tab[2] << "fltk";
+    tab[3] << "ncurses";
     
     tab.Close();
     

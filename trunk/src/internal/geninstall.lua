@@ -257,6 +257,9 @@ function PrepareArchive()
     os.copy(confdir .. "/license", destdir)
     os.copy(confdir .. "/finish", destdir)
 
+    -- Default logo
+    RequiredCopy(curdir .. "/src/img/installer.png", confdir .. "/tmp")
+    
     -- Some internal stuff
     RequiredCopy(curdir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
@@ -281,6 +284,8 @@ function PrepareArchive()
         os.copy(langsrc .. "/finish", langdest)
     end
     
+    print("Preparing/copying frontend binaries")
+    
     -- Copy all specified frontends for every given OS/ARCH and every availiable libc/libstdc++ version
     for _, OS in pairs(cfg.targetos) do
         for _, ARCH in pairs(cfg.targetarch) do
@@ -304,6 +309,8 @@ function PrepareArchive()
                                         binname = "fltk"
                                     elseif (FR == "ncurses") then
                                         binname = "ncurs"
+                                    elseif (FR == "gtk") then
+                                        binname = "gtk"
                                     else
                                         ThrowError("Unknown frontend: %s", FR)
                                     end

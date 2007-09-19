@@ -8,6 +8,11 @@
 - checkbox:get and checkbox:set now accept strings besides numbers as arguments.
 - radiobutton:set now accepts strings as arguments aswell
 - SConstruct now works with latest SCons (0.97)
+- Preparing/copying frontend binaries message in geninstall.lua
+- --h/-h option in geninstall.sh
+- Fixed: Lua execution would stop UI updates
+- startupinstaller.sh now checks if a frontend is really launched
+
 
 
 0.2.1 --> 0.2.2

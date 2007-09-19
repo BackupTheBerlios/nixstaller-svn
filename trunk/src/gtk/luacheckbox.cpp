@@ -68,5 +68,5 @@ void CLuaCheckbox::CoreActivateWidget()
 void CLuaCheckbox::ToggleCB(GtkToggleButton *togglebutton, gpointer data)
 {
     CLuaCheckbox *box = static_cast<CLuaCheckbox *>(data);
-    box->LuaDataChanged();
+    box->SafeLuaDataChanged();
 }

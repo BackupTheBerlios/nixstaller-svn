@@ -101,8 +101,11 @@ configure
 # Get source frontend to use for edelta
 NCURS_SRC=`awk '$1=="ncurs"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
 FLTK_SRC=`awk '$1=="fltk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
+GTK_SRC=`awk '$1=="gtk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
 
-FRONTENDS="fltk ncurs"
+FRONTENDS="gtk fltk ncurs"
+
+touch frontendstarted # Frontend removes this file if it's started
 
 for LC in `createliblist bin/$CURRENT_OS/$CURRENT_ARCH libc.so.`
 do
@@ -127,6 +130,7 @@ do
             fi
         
             case $FR in
+                "gtk") ED_SRC=$GTK_SRC ;;
                 "fltk") ED_SRC=$FLTK_SRC ;;
                 "ncurs") ED_SRC=$NCURS_SRC ;;
             esac
@@ -151,7 +155,11 @@ do
                 
                 # Run it
                 `pwd`/$FRBIN
-                exit $?
+                
+                RET=$?
+                if [ ! -e frontendstarted ]; then
+                    exit $RET
+                fi
             fi
         done
     done

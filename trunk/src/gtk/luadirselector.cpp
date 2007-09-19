@@ -65,7 +65,7 @@ void CLuaDirSelector::CoreActivateWidget()
 void CLuaDirSelector::InputChangedCB(GtkEditable *widget, gpointer data)
 {
     CLuaDirSelector *dirselector = static_cast<CLuaDirSelector *>(data);
-    dirselector->LuaDataChanged();
+    dirselector->SafeLuaDataChanged();
 }
 
 void CLuaDirSelector::BrowseCB(GtkWidget *widget, gpointer data)

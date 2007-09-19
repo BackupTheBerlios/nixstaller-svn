@@ -64,7 +64,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
 
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
-    virtual void InstallThink(void);
+    virtual void CoreUpdateUI(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
 

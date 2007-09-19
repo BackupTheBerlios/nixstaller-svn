@@ -81,5 +81,5 @@ void CLuaRadioButton::CoreActivateWidget()
 void CLuaRadioButton::ToggleCB(GtkToggleButton *togglebutton, gpointer data)
 {
     CLuaRadioButton *radio = static_cast<CLuaRadioButton *>(data);
-    radio->LuaDataChanged();
+    radio->SafeLuaDataChanged();
 }

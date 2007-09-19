@@ -271,7 +271,7 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
     fltkscreen->GetGroup()->user_data(fltkscreen);
 }
 
-void CInstaller::InstallThink(void)
+void CInstaller::CoreUpdateUI(void)
 {
     Fl::wait(0.0f);
 }

@@ -266,7 +266,7 @@ void CInstaller::Next(void)
     }
     
     // No screens left
-    gtk_main_quit();
+    gtk_widget_destroy(GetMainWin());
 }
 
 void CInstaller::Init(int argc, char **argv)
@@ -338,6 +338,11 @@ bool CInstaller::AskQuit()
     return YesNoBox(msg);
 }
 
+void CInstaller::CoreUpdateUI()
+{
+    gtk_main_iteration_do(FALSE);
+}
+
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
     return new CInstallScreen(title, this);
@@ -351,11 +356,6 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
     gtk_object_set_user_data(GTK_OBJECT(gtkscreen->GetBox()), gtkscreen);
     gtk_widget_show(gtkscreen->GetBox());
     gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), gtkscreen->GetBox(), NULL);
-}
-
-void CInstaller::InstallThink()
-{
-    gtk_main_iteration_do(FALSE);
 }
 
 void CInstaller::LockScreen(bool cancel, bool prev, bool next)
@@ -383,7 +383,39 @@ void CInstaller::CancelCB(GtkWidget *widget, gpointer data)
     CInstaller *parent = (CInstaller *)data;
     
     if (parent->AskQuit())
+    {
         gtk_widget_destroy(parent->GetMainWin());
+        // Call this here, because this function may be called during Lua execution
+        Quit(EXIT_FAILURE);
+    }
+}
+
+void CInstaller::BackCB(GtkWidget *widget, gpointer data)
+{
+    CInstaller *installer = static_cast<CInstaller *>(data);
+    
+    try
+    {
+        installer->Back();
+    }
+    catch(Exceptions::CException &)
+    {
+        HandleError();
+    }
+}
+
+void CInstaller::NextCB(GtkWidget *widget, gpointer data)
+{
+    CInstaller *installer = static_cast<CInstaller *>(data);
+    
+    try
+    {
+        installer->Next();
+    }
+    catch(Exceptions::CException &)
+    {
+        HandleError();
+    }
 }
 
 gboolean CInstaller::DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data)

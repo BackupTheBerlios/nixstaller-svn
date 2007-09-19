@@ -2,7 +2,7 @@
 
 # Use some SH first to bootstrap...
 
-FRONTENDS="fltk ncurs"
+FRONTENDS="gtk fltk ncurs"
 CURDIR=`pwd`
 
 OS=`uname`
@@ -24,7 +24,7 @@ haslibs()
     return 1
 }
 
-if [ -z ${1} ]; then
+if [ -z ${1} -o ${1} = "--help" -o ${1} = "-h" ]; then
     echo "Usage: $0 <config dir> [ <installer name> ]"
     echo
     echo " <config dir>: The directory which holds the install config files"

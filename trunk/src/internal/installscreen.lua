@@ -21,7 +21,7 @@ screen = install.newscreen(string.format("%s is now being installed", cfg.appnam
 
 progressbar = screen:addprogressbar("Progress")
 statlabel = screen:addlabel("")
-output = screen:addtextfield()
+output = screen:addtextfield("", true)
 output:follow(true)
 
 function screen:activate()

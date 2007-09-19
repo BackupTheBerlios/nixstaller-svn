@@ -145,5 +145,5 @@ void CLuaMenu::SelectionCB(GtkTreeSelection *selection, gpointer data)
 {
     CLuaMenu *menu = static_cast<CLuaMenu *>(data);
     if (!menu->m_bInitSel)
-        menu->LuaDataChanged();
+        menu->SafeLuaDataChanged();
 }

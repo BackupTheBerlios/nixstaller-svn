@@ -200,7 +200,7 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
         m_pNextButton->ReqFocus();
 }
 
-void CInstaller::InstallThink()
+void CInstaller::CoreUpdateUI()
 {
     NNCurses::TUI.Run(0);
 }

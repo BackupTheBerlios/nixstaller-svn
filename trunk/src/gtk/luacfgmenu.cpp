@@ -242,7 +242,7 @@ void CLuaCFGMenu::InputChangedCB(GtkEditable *widget, gpointer data)
     if (!selection.empty())
     {
         menu->GetVariables()[selection]->val = gtk_entry_get_text(GTK_ENTRY(widget));
-        menu->LuaDataChanged();
+        menu->SafeLuaDataChanged();
     }
 }
 
@@ -262,7 +262,7 @@ void CLuaCFGMenu::ComboBoxChangedCB(GtkComboBox *widget, gpointer data)
             if (text)
             {
                 menu->GetVariables()[selection]->val = text;
-                menu->LuaDataChanged();
+                menu->SafeLuaDataChanged();
                 g_free(text);
             }
         }

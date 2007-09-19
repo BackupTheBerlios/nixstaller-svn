@@ -26,6 +26,7 @@
         
 #include "libmd5/md5.h"
 #include "main.h"
+#include "lua/lua.h"
 
 extern std::map<std::string, char *> Translations;
 
@@ -492,6 +493,39 @@ std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos)
         legal += plusminsign;
     
     return legal;
+}
+
+long GetTime(void)
+{
+    static timeval start, current;
+    static bool started = false;
+    
+    if (!started)
+    {
+        gettimeofday(&start, NULL);
+        started = true;
+    }
+        
+    gettimeofday(&current, NULL);
+    return ((current.tv_sec-start.tv_sec) * 1000 ) + ((current.tv_usec-start.tv_usec) / 1000);
+}
+
+void ConvertExToLuaError()
+{
+    try
+    {
+        throw;
+    }
+    catch(Exceptions::CExUser &e)
+    {
+        // HACK: NLua::LoadFile/LuaFunc() uses this to identify user exception.
+        lua_pushstring(NLua::LuaState, "CExUser");
+        lua_error(NLua::LuaState);
+    }
+    catch(Exceptions::CException &e)
+    {
+        luaL_error(NLua::LuaState, e.what());
+    }
 }
 
 // -------------------------------------

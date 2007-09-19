@@ -75,6 +75,10 @@ void CBaseInstall::Init(int argc, char **argv)
     if ((m_InstallInfo.archive_type != "gzip") && (m_InstallInfo.archive_type != "bzip2") &&
         (m_InstallInfo.archive_type != "lzma"))
         throw Exceptions::CExLua("Wrong archivetype specified! Should be gzip, bzip2 or lzma.");
+    
+    lua_pushlightuserdata(NLua::LuaState, this);
+    lua_setfield(NLua::LuaState, LUA_REGISTRYINDEX, "installer");
+    NLua::LuaSetHook(LuaHook);
 }
 
 void CBaseInstall::CoreUpdateLanguage()
@@ -235,7 +239,7 @@ void CBaseInstall::ExtractFiles()
             
             while (pipe)
             {
-                InstallThink();
+                UpdateUI();
                 
                 if (pipe.HasData())
                 {
@@ -289,7 +293,7 @@ void CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pa
             
     while (pipe)
     {
-        InstallThink();
+        UpdateUI();
                 
         if (pipe.HasData())
         {
@@ -690,6 +694,22 @@ void CBaseInstall::RegisterInstall(void)
     WriteRegEntry("description", m_InstallInfo.description, file);
 }
 #endif
+
+void CBaseInstall::LuaHook(lua_State *L, lua_Debug *ar)
+{
+    lua_getfield(L, LUA_REGISTRYINDEX, "installer");
+    CBaseInstall *pInstaller = static_cast<CBaseInstall *>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+        
+    try
+    {
+        pInstaller->UpdateUI();
+    }
+    catch(Exceptions::CException &e)
+    {
+        ConvertExToLuaError();
+    }
+}
 
 int CBaseInstall::LuaNewScreen(lua_State *L)
 {

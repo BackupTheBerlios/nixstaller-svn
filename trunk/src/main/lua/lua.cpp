@@ -32,7 +32,7 @@ const luaL_Reg libtable[] = {
     { LUA_STRLIBNAME, luaopen_string },
     { LUA_MATHLIBNAME, luaopen_math },
     { LUA_LOADLIBNAME, luaopen_package },
-//   { LUA_DBLIBNAME, luaopen_debug }, // No debug
+    { LUA_DBLIBNAME, luaopen_debug }, // No debug
     { NULL, NULL }
 };
 
@@ -129,7 +129,6 @@ CLuaStateKeeper::CLuaStateKeeper()
     }
 }
 
-
 // -------------------------------------
 // Utilities
 // -------------------------------------
@@ -166,6 +165,16 @@ void StackDump(const char *msg)
     }
     debugline("---------------\n");  /* end the listing */
 #endif
+}
+
+void LuaSetHook(lua_Hook h)
+{
+    lua_sethook(LuaState, h, LUA_HOOKLINE, 0);
+}
+
+void LuaUnSetHook(lua_Hook h)
+{
+    lua_sethook(LuaState, h, 0, 0);
 }
 
 void GetGlobal(const char *var, const char *tab)

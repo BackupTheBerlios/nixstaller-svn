@@ -32,16 +32,9 @@ int DoFunctionCall(lua_State *L)
         int ret = f(L);
         return ret;
     }
-    catch(Exceptions::CExUser &e)
-    {
-        // HACK: LoadFile/LuaFunc() uses this to identify user exception.
-        lua_pushstring(L, "CExUser");
-        lua_error(L);
-    }
     catch(Exceptions::CException &e)
     {
-        // Lua doesn't handle exceptions in a nice way (catches all), so convert to lua error
-        luaL_error(L, e.what());
+        ConvertExToLuaError();
     }
 
     return 0; // Never reached

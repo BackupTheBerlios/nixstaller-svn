@@ -44,6 +44,9 @@ void StackDump(const char *msg);
 
 inline int AbsoluteIndex(int i) { return ((i < 0) && (i > LUA_REGISTRYINDEX)) ? (lua_gettop(LuaState)+1)+i : i; }
 
+void LuaSetHook(lua_Hook h);
+void LuaUnSetHook(lua_Hook h);
+
 void GetGlobal(const char *var, const char *tab);
 void LoadFile(const char *name);
 

@@ -64,6 +64,8 @@ void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd)
 void UName(struct utsname &u);
 void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &outh);
 std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos);
+long GetTime(void);
+void ConvertExToLuaError(void);
 
 template <typename To, typename From> To SafeConvert(From from)
 {

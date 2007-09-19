@@ -28,6 +28,9 @@ class CLuaWidget: virtual public CBaseLuaWidget
     
     virtual void CoreSetTitle(void);
     
+protected:
+    void SafeLuaDataChanged(void);
+    
 public:
     CLuaWidget(void);
     

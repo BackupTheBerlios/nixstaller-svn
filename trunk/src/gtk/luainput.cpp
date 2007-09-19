@@ -135,5 +135,5 @@ void CLuaInputField::InsertCB(GtkEditable *editable, gchar *nt, gint new_text_le
 void CLuaInputField::InputChangedCB(GtkEditable *widget, gpointer data)
 {
     CLuaInputField *input = static_cast<CLuaInputField *>(data);
-    input->LuaDataChanged();
+    input->SafeLuaDataChanged();
 }

@@ -49,3 +49,15 @@ void CLuaWidget::CoreSetTitle()
         gtk_widget_show(m_pTitle);
     }
 }
+
+void CLuaWidget::SafeLuaDataChanged()
+{
+    try
+    {
+        LuaDataChanged();
+    }
+    catch(Exceptions::CException &)
+    {
+        HandleError();
+    }
+}

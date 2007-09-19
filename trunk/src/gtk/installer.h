@@ -49,9 +49,9 @@ class CInstaller: public CGTKBase, public CBaseInstall
     
     int GetMainSpacing(void) const { return 10; }
     
+    virtual void CoreUpdateUI(void);
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
-    virtual void InstallThink(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
 
@@ -68,8 +68,8 @@ public:
     static gboolean AboutCB(GtkWidget *widget, GdkEvent *event, gpointer data)
     { ((CInstaller *)data)->ShowAbout(); return TRUE; }
     static void CancelCB(GtkWidget *widget, gpointer data);
-    static void BackCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->Back(); }
-    static void NextCB(GtkWidget *widget, gpointer data) { ((CInstaller *)data)->Next(); }
+    static void BackCB(GtkWidget *widget, gpointer data);
+    static void NextCB(GtkWidget *widget, gpointer data);
     static gboolean DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data);
 };
 
