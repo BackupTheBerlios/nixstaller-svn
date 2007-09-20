@@ -436,13 +436,13 @@ if not env.GetOption('clean'):
             Exit(1)
             
     env = conf.Finish()
-#elif env.GetOption('clean'):
-## Make sure that scons properly cleans everything
-#Execute(Delete('main/.sconsign'))
-#Execute(Delete('ncurses/.sconsign'))
-#Execute(Delete('fltk/.sconsign'))
-#Execute(Delete('.sconf_temp'))
-#Execute(Delete('.sconsign.dblite'))
+elif env.GetOption('clean'):
+    # Make sure that scons properly cleans everything
+    Execute(Delete('main/.sconsign'))
+    Execute(Delete('ncurses/.sconsign'))
+    Execute(Delete('fltk/.sconsign'))
+    Execute(Delete('.sconf_temp'))
+    Execute(Delete('.sconsign.dblite'))
 
 
 # Builds LZMA encode/decode programs
