@@ -39,13 +39,7 @@ void CLuaWidget::CoreSetTitle()
     if (!GetTitle().empty())
     {
         gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
-        
-        // HACK: Enable wrapping when exceeding max widget width
-        GtkRequisition req;
-        gtk_widget_size_request(m_pTitle, &req);
-        if (req.width > MaxWidgetWidth())
-            gtk_widget_set_size_request(m_pTitle, MaxWidgetWidth(), -1);
-        
+        SetMaxWidth(m_iMaxWidth); // Need to update this with new text
         gtk_widget_show(m_pTitle);
     }
 }
@@ -60,4 +54,16 @@ void CLuaWidget::SafeLuaDataChanged()
     {
         HandleError();
     }
+}
+
+void CLuaWidget::SetMaxWidth(int w)
+{
+    m_iMaxWidth = w;
+    
+    GtkRequisition req;
+    gtk_widget_size_request(m_pTitle, &req);
+    if (req.width > w)
+        gtk_widget_set_size_request(m_pTitle, w, -1);
+    
+    CoreUpdateMaxWidth(w);
 }

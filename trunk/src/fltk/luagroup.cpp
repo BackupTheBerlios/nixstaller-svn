@@ -121,6 +121,7 @@ void CLuaGroup::AddWidget(CLuaWidget *w)
 {
     // The widget is put in another group, so that it can center vertically
     Fl_Group *group = new Fl_Group(0, 0, 0, 0);
+    group->resizable(NULL);
     group->end();
     group->add(w->GetGroup());
     group->user_data(w);
@@ -171,23 +172,6 @@ int CLuaGroup::RequestedWidgetsW()
     return ret;
 }
 
-int CLuaGroup::TotalWidgetHeight(int maxw)
-{
-    const int size = m_pMainPack->children();
-    int ret = 0;
-    for (int i=0; i<size; i++)
-    {
-        CLuaWidget *w = GetWidget(m_pMainPack->child(i));
-        
-        if (!w->GetGroup()->visible())
-            continue;
-
-        ret = std::max(ret, w->RequestHeight(maxw));
-    }
-    
-    return ret;
-}
-
 Fl_Group *CLuaGroup::GetGroup()
 {
     return m_pMainPack;
@@ -199,13 +183,11 @@ void CLuaGroup::SetSize(int maxw, int maxh)
     
     const int expsize = ExpandedWidgets();
     const int diffw = maxw - RequestedWidgetsW();
-    const int totalwidgeth = TotalWidgetHeight(maxw);
     const int extraw = (expsize) ? diffw / expsize : 0;
     const int size = m_pMainPack->children();
+    int totalwidgeth = 0;
     
-    if (totalwidgeth > m_pMainPack->h())
-        m_pMainPack->size(m_pMainPack->w(), totalwidgeth);
-
+    // First give each widget a size...
     for (int i=0; i<size; i++)
     {
         CLuaWidget *widget = GetWidget(m_pMainPack->child(i));
@@ -220,10 +202,25 @@ void CLuaGroup::SetSize(int maxw, int maxh)
         
         assert(w <= maxw);
         
-        Fl_Widget *wgroup = m_pMainPack->child(i);
-        wgroup->size(w, totalwidgeth);
+        int h = widget->RequestHeight(w);
+        totalwidgeth = std::max(totalwidgeth, h);
+        widget->SetSize(w, h);
+    }
+    
+    // Now position every widget
+    for (int i=0; i<size; i++)
+    {
+        CLuaWidget *widget = GetWidget(m_pMainPack->child(i));
+        
+        if (!widget->GetGroup()->visible())
+            continue;
 
-        widget->SetSize(w, widget->RequestHeight(w));
+        Fl_Widget *wgroup = m_pMainPack->child(i);
+        wgroup->size(widget->GetGroup()->w(), totalwidgeth);
+        
         widget->GetGroup()->position(wgroup->x(), wgroup->y() + ((totalwidgeth - widget->GetGroup()->h()) / 2));
     }
+
+    if (totalwidgeth > m_pMainPack->h())
+        m_pMainPack->size(m_pMainPack->w(), totalwidgeth);
 }

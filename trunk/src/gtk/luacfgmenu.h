@@ -26,6 +26,8 @@
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
 {
     GtkWidget *m_pVarListView, *m_pInputField, *m_pComboBox, *m_pDirInput, *m_pDirButtonLabel, *m_pDirInputBox;
+    GtkCellRenderer *m_pVarCellRenderer, *m_pDescCellRenderer;
+    
     bool m_bInitSelection;
     
     enum { COLUMN_TITLE, COLUMN_DESC, COLUMN_VAR, COLUMN_N };
@@ -33,6 +35,10 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     virtual void CoreAddVar(const char *name);
     virtual void CoreUpdateLanguage(void);
     virtual void CoreActivateWidget(void);
+    virtual void CoreUpdateMaxWidth(int w);
+    
+    int MaxTitleItemWidth(void) const { return 100; }
+    int MinHeight(void) const { return 150; }
     
     GtkWidget *CreateVarListBox(void);
     GtkWidget *CreateInputField(void);

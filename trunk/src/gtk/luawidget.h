@@ -25,16 +25,20 @@
 class CLuaWidget: virtual public CBaseLuaWidget
 {
     GtkWidget *m_pBox, *m_pTitle;
+    int m_iMaxWidth;
     
     virtual void CoreSetTitle(void);
+    virtual void CoreUpdateMaxWidth(int w) {}
     
 protected:
     void SafeLuaDataChanged(void);
+    int MaxWidgetWidth(void) const { return m_iMaxWidth; }
     
 public:
     CLuaWidget(void);
     
     GtkWidget *GetBox(void) { return m_pBox; }
+    void SetMaxWidth(int w);
 };
 
 #endif

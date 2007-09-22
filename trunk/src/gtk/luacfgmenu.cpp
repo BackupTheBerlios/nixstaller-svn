@@ -47,27 +47,30 @@ GtkWidget *CLuaCFGMenu::CreateVarListBox()
 {
     // Scrolling window for treeview
     GtkWidget *sw = gtk_scrolled_window_new(0, 0);
-    gtk_widget_set_size_request(sw, -1, 150);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw), GTK_SHADOW_ETCHED_IN);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     
     GtkListStore *store = gtk_list_store_new(COLUMN_N, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
     
     m_pVarListView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
-    
+    gtk_widget_set_size_request(m_pVarListView, -1, MinHeight());
+
     g_object_unref(store);
     
     GtkTreeSelection *select = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pVarListView));
     gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
     g_signal_connect(G_OBJECT(select), "changed", G_CALLBACK(SelectionCB), this);
     
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("Variable", renderer, "text", COLUMN_TITLE, NULL);
+    m_pVarCellRenderer = gtk_cell_renderer_text_new();
+    g_object_set(GTK_OBJECT(m_pVarCellRenderer), "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+    g_object_set(GTK_OBJECT(m_pVarCellRenderer), "wrap-width", MaxTitleItemWidth(), NULL);
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("Variable", m_pVarCellRenderer,
+                                                                         "text", COLUMN_TITLE, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(m_pVarListView), column);
 
-    renderer = gtk_cell_renderer_text_new();
-    g_object_set(GTK_OBJECT(renderer), "wrap-width", MaxWidgetWidth()-100);
-    column = gtk_tree_view_column_new_with_attributes("Description", renderer, "text", COLUMN_DESC, NULL);
+    m_pDescCellRenderer = gtk_cell_renderer_text_new();
+    g_object_set(GTK_OBJECT(m_pDescCellRenderer), "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+    column = gtk_tree_view_column_new_with_attributes("Description", m_pDescCellRenderer, "text", COLUMN_DESC, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(m_pVarListView), column);
 
     gtk_container_add(GTK_CONTAINER(sw), m_pVarListView);
@@ -205,6 +208,13 @@ void CLuaCFGMenu::CoreUpdateLanguage()
 void CLuaCFGMenu::CoreActivateWidget()
 {
     gtk_widget_grab_focus(m_pVarListView);
+}
+
+void CLuaCFGMenu::CoreUpdateMaxWidth(int w)
+{
+    gtk_widget_set_size_request(m_pVarListView, w, MinHeight());
+    w -= (MaxTitleItemWidth() + 20); // 20: Offset for compisating width of scrollbar, borders etc
+    g_object_set(GTK_OBJECT(m_pDescCellRenderer), "wrap-width", w, NULL);
 }
 
 std::string CLuaCFGMenu::CurSelection()

@@ -39,6 +39,7 @@ class CLuaGroup: public CBaseLuaGroup
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap);
     virtual CBaseLuaLabel *CreateLabel(const char *title);
     
+    int MaxWidgetWidth(void) const { return 600; }
     void AddWidget(CLuaWidget *w);
     
 public:

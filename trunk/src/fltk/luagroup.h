@@ -49,7 +49,6 @@ class CLuaGroup: public CBaseLuaGroup
     void AddWidget(CLuaWidget *w);
     int ExpandedWidgets(void);
     int RequestedWidgetsW(void);
-    int TotalWidgetHeight(int maxw);
     
 public:
     CLuaGroup(void);

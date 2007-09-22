@@ -68,7 +68,7 @@ int CLuaWidget::RequestHeight(int maxw)
     
     if (!GetTitle().empty())
     {
-        int w = RequestWidth(), h = 0;
+        int w = maxw, h = 0;
         fl_font(m_pMainPack->labelfont(), m_pMainPack->labelsize());
         fl_measure(GetTitle().c_str(), w, h);
         ret = h;
@@ -85,12 +85,12 @@ void CLuaWidget::SetSize(int w, int h)
 
     if (!GetTitle().empty())
     {
-        int tw = w, h = 0;
+        int tw = w, th = 0;
         fl_font(m_pMainPack->labelfont(), m_pMainPack->labelsize());
-        fl_measure(GetTitle().c_str(), tw, h);
+        fl_measure(GetTitle().c_str(), tw, th);
         
-        if ((tw != m_pTitle->w()) || (h != m_pTitle->h()))
-            m_pTitle->size(tw, h);
+        if ((tw != m_pTitle->w()) || (th != m_pTitle->h()))
+            m_pTitle->size(tw, th);
     }
     
     UpdateSize();

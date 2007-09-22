@@ -119,7 +119,7 @@ void CLuaGroup::AddLuaWidget(CLuaWidget *w)
     const TWidgetList &list = GetWidgetList();
     const int size = SafeConvert<int>(list.size()) + 1; // +1 because new widget is not added yet
     const int maxwidgetsw = NNCurses::GetMaxWidth() - 6;
-    const int maxwidth = (maxwidgetsw - (LuaWidgetSpacing() * (size-1)) ) / size;
+    const int maxwidth = (maxwidgetsw - (LuaWidgetSpacing() * (size-1))) / size;
     for (TWidgetList::const_iterator it=list.begin(); it!=list.end(); it++)
     {
         CLuaWidget *luaw = dynamic_cast<CLuaWidget *>(*it);

@@ -119,7 +119,7 @@ void CInstallScreen::ResetWidgetRange()
     }
     
     int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
-    m_pWidgetPack->resize(0, y, m_pWidgetPack->w(), h);
+    m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), h);
     
     UpdateCounter();
 }
@@ -275,7 +275,7 @@ bool CInstallScreen::SubBack()
         if (h)
         {
             int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
-            m_pWidgetPack->resize(0, y, m_pWidgetPack->w(), h);
+            m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), h);
             UpdateCounter();
             return true;
         }
@@ -337,7 +337,7 @@ bool CInstallScreen::SubNext(bool check)
         {
             UpdateCounter();
             int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
-            m_pWidgetPack->resize(0, y, m_pWidgetPack->w(), h);
+            m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), h);
             return true;
         }
     }

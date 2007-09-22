@@ -121,8 +121,27 @@ void CLuaGroup::AddWidget(CLuaWidget *w)
     gtk_widget_show(w->GetBox());
     
     GtkWidget *box = gtk_vbox_new(FALSE, 0);
+    gtk_object_set_user_data(GTK_OBJECT(box), w);
     gtk_widget_show(box);
     gtk_box_pack_start(GTK_BOX(box), w->GetBox(), TRUE, FALSE, 0);
     
     gtk_box_pack_start(GTK_BOX(m_pBox), box, TRUE, TRUE, 10);
+    
+    const int size = ContainerSize(GTK_CONTAINER(m_pBox));
+    const int maxw = (MaxWidgetWidth() - ((size-1) * gtk_box_get_spacing(GTK_BOX(m_pBox)))) / size;
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pBox)), g_list_free);
+    GList *entry = list;
+    
+    if (list)
+    {
+        for (; entry; entry=g_list_next(entry))
+        {
+            void *udata = gtk_object_get_user_data(GTK_OBJECT(entry->data));
+            if (udata) // LuaImage doesn't set this
+            {
+                CLuaWidget *lw = static_cast<CLuaWidget *>(udata);
+                lw->SetMaxWidth(maxw);
+            }
+        }
+    }
 }

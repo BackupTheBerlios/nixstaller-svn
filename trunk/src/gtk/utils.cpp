@@ -213,3 +213,15 @@ bool ContainerEmpty(GtkContainer *c)
     
     return false;
 }
+
+int ContainerSize(GtkContainer *c)
+{
+    int ret = 0;
+    
+    CPointerWrapper<GList> list(gtk_container_get_children(c), g_list_free);
+    GList *entry = list;
+    for (; entry; entry=g_list_next(entry), ret++)
+        ;
+    
+    return ret;;
+}
