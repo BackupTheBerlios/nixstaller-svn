@@ -23,6 +23,7 @@ DOCS
 - Update radiobutton and checkbox function arguments
 - Check lua widget defaults
 - Find new lua widget functions
+- cfg.defaultlang: Default "english" or first valid lang
 
         
 TRANSLATIONS

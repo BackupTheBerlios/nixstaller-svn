@@ -12,6 +12,8 @@
 - --h/-h option in geninstall.sh
 - Fixed: Lua execution would stop UI updates
 - startupinstaller.sh now checks if a frontend is really launched
+- genprojdir.sh
+- startupinstaller.sh doesn't check for lzma binaries anymore when archivetype is not "lzma"
 
 
 

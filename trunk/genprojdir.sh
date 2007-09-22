@@ -23,6 +23,9 @@ CURRENTOS=`uname`
 CURRENTOS=`echo "$CURRENTOS" | tr [:upper:] [:lower:]` # Convert to lowercase
 
 # Default settings
+DEF_APPNAME="My App"
+DEF_ARCHIVETYPE="lzma"
+DEF_DEFAULTLANG="english"
 DEF_TARGETOS="$CURRENTOS"
 DEF_TARGETARCH="x86"
 DEF_FRONTENDS="gtk fltk ncurses"
@@ -30,10 +33,14 @@ DEF_LANGUAGES="english dutch"
 DEF_INTROPIC="nil"
 
 # Valid settings
+VAL_ARCHIVETYPES="lzma gzip bzip2"
 VAL_TARGETOS="freebsd linux netbsd openbsd sunos"
 VAL_TARGETARCH="x86"
 VAL_FRONTENDS="gtk fltk ncurses"
 
+APPNAME=
+ARCHIVETYPE=
+DEFAULTLANG=
 TARGETOS=
 TARGETARCH=
 FRONTENDS=
@@ -46,6 +53,7 @@ NEWLANGUAGES=
 
 usage()
 {
+    # UNDONE
     echo "Usage: $0 [options] <target dir>"
     echo
     echo "options can be one of the following things (all optional):"
@@ -106,6 +114,25 @@ parseargs()
             --help | -h)
                 usage
                 ;;
+            --appname | -n)
+                shift
+                [ -z $1 ] && usage
+                APPNAME=$1
+                shift
+                ;;
+            --archtype | -a)
+                shift
+                [ -z $1 ] && usage
+                verifyentry $1 $VAL_ARCHIVETYPES || error "Wrong archive type specified, valid values are: $VAL_ARCHIVETYPES"
+                ARCHIVETYPE=$1
+                shift
+                ;;
+            --deflang | -d)
+                shift
+                [ -z $1 ] && usage
+                DEFAULTLANG=$1
+                shift
+                ;;
             --os | -o)
                 shift
                 [ -z $1 ] && usage
@@ -116,7 +143,7 @@ parseargs()
                     shift
                 done
                 ;;
-            --arch | -a)
+            --arch)
                 shift
                 [ -z $1 ] && usage
                 while [ $# -gt 1 ] && checkargentry $1
@@ -149,8 +176,11 @@ parseargs()
                 shift
                 [ -z $1 ] && usage
                 # UNDONE
+                shift
                 ;;
-
+            -*)
+                usage
+                ;;
             *)
                 break
                 ;;
@@ -171,6 +201,9 @@ parseargs()
     fi
     
     # Set defaults where necessary
+    APPNAME=${APPNAME:=$DEF_APPNAME}
+    ARCHIVETYPE=${ARCHIVETYPE:=$DEF_ARCHIVETYPE}
+    DEFAULTLANG=${DEFAULTLANG:=$DEF_DEFAULTLANG}
     TARGETOS=${TARGETOS:=$DEF_TARGETOS}
     TARGETARCH=${TARGETARCH:=$DEF_TARGETARCH}
     FRONTENDS=${FRONTENDS:=$DEF_FRONTENDS}
@@ -204,9 +237,9 @@ toluatable()
     for v in $*
     do
         if [ $v = $1 ]; then
-            RET="$RET $v" # Skip comma on first arg
+            RET="$RET \"$v\"" # Skip comma on first arg
         else
-            RET="$RET, $v"
+            RET="$RET, \"$v\""
         fi
     done
     RET="$RET }"
@@ -217,24 +250,72 @@ toluatable()
 genconfig()
 {
     cat > ${TARGETDIR}/config.lua  << EOF
--- Automaticly generated on `date`
-config.targetos = `toluatable $TARGETOS`
-config.targetarch = `toluatable $TARGETARCH`
-config.frontends = `toluatable $FRONTENDS`
-config.languages = `toluatable $LANGUAGES`
-config.intropic = $INTROPIC
-EOF
+-- Automaticly generated on `date`.
+-- Global configuration file, used for generating and running installers.
 
+-- The application name
+cfg.appname = "$APPNAME"
+
+-- Archiving type used to pack the installer
+cfg.archivetype = "$ARCHIVETYPE"
+
+-- Default language (you can use this to change the language of the language
+-- selection screen)
+cfg.defaultlang = "$DEFAULTLANG"
+
+-- Target Operating Systems
+cfg.targetos = `toluatable $TARGETOS`
+
+-- Target CPU Architectures
+cfg.targetarch = `toluatable $TARGETARCH`
+
+-- Frontends to include
+cfg.frontends = `toluatable $FRONTENDS`
+
+-- Translations to include
+cfg.languages = `toluatable $LANGUAGES`
+
+-- Picture used for the 'WelcomeScreen'
+cfg.intropic = ${INTROPIC:=nil}
+EOF
+}
+
+genrun()
+{
+    cat > ${TARGETDIR}/run.lua  << EOF
+-- Automaticly generated on `date`.
+-- This file is (only) called when the installer is run.
+-- Don't place any (initialization) code outside the Init() or Install() functions.
+
+function Init()
+    -- This function is called as soon as the user launches the installer.
+    
+    -- The destination directory for the installation files. The 'SelectDirScreen' lets the user
+    -- change this variable.
+    install.destdir = os.getenv("$HOME")
+    
+    -- Installation screens to show (in given order). Custom screens should be added here.
+    install.screens = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
+end
+
+function Install()
+    -- This function is called as soon as the 'InstallScreen' is shown.
+    
+    -- This function extracts the files to 'install.destdir'.
+    install.extractfiles()
+end
+EOF
 }
 
 createprojdir()
 {
-    mkdir -p $TARGETDIR || error "Failed to create target directory"
+    mkdir -p "${TARGETDIR}" || error "Failed to create target directory"
+    mkdir "${TARGETDIR}/files_all"
     
     copylanguages
     genconfig
+    genrun
     
-    # Generate install.lua
     # Copy intropic
 }
 

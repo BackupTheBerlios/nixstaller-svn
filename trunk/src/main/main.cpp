@@ -415,6 +415,8 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaSetLang, "setlang", NULL, this);
     
     // Set some default values for config variabeles
+    NLua::LuaSet("", "appname", "cfg");
+    
     NLua::CLuaTable tab("languages", "cfg");
     tab[1] << "english";
     tab[2] << "dutch";
