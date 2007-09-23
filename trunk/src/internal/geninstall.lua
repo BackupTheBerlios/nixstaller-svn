@@ -73,6 +73,32 @@ function RequiredCopy(src, dest)
     end
 end
 
+function RecursiveCopy(src, dest)
+    local dirlist = { "." }
+    local ret, msg
+    
+    while (#dirlist > 0) do
+        local subdir = table.remove(dirlist) -- pop
+        local srcpath = string.format("%s/%s/", src, subdir)
+        local destpath = string.format("%s/%s/", dest, subdir)
+        
+        for f in io.dir(srcpath) do
+            local fsrc = srcpath .. f
+            local fdest = destpath .. f
+            if (os.isdir(fsrc)) then
+                table.insert(dirlist, subdir .. "/" .. f)
+                ret, msg = os.mkdir(fdest)
+                if ret == nil then
+                    ThrowError("Warning could not create subdirectory file: %s", msg)
+                end
+            else
+                print(string.format("Copying file: %s --> %s", fsrc, fdest))
+                RequiredCopy(fsrc, fdest)
+            end
+        end
+    end
+end
+
 function PackDirectory(dir, file)
     local olddir = os.getcwd()
     local dirlist = { "." } -- Directories to process
@@ -284,6 +310,10 @@ function PrepareArchive()
         os.copy(langsrc .. "/finish", langdest)
     end
     
+    -- 'Extra' files
+    os.mkdir(confdir .. "/tmp/files_extra")
+    RecursiveCopy(confdir .. "/files_extra/", confdir .. "/tmp/files_extra/")
+    
     print("Preparing/copying frontend binaries")
     
     -- Copy all specified frontends for every given OS/ARCH and every availiable libc/libstdc++ version
@@ -369,11 +399,13 @@ function PrepareArchive()
         end
     end
     
-    -- Intro picture
+    -- Intro picture; for backward compatibility we also check the main project dir
     if cfg.intropic ~= nil then
-        ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.intropic), string.format("%s/tmp/", confdir))
-        if ret == nil then
-            print(string.format("Warning could not copy intro picture: %s", msg))
+        if not os.fileexists(string.format("%s/files_extra/%s" , confdir, cfg.intropic)) then
+            ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.intropic), string.format("%s/tmp/", confdir))
+            if ret == nil then
+                print(string.format("Warning could not copy intro picture: %s", msg))
+            end
         end
     end
                     

@@ -14,7 +14,8 @@
 - startupinstaller.sh now checks if a frontend is really launched
 - genprojdir.sh
 - startupinstaller.sh doesn't check for lzma binaries anymore when archivetype is not "lzma"
-
+- Fixed max intropicsize
+- files_extra/ support
 
 
 0.2.1 --> 0.2.2

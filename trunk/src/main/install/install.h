@@ -108,6 +108,7 @@ public:
     static int LuaStartInstall(lua_State *L);
     static int LuaLockScreen(lua_State *L);
     static int LuaVerifyDestDir(lua_State *L);
+    static int LuaExtraFilesPath(lua_State *L);
 };
 
 // Utils

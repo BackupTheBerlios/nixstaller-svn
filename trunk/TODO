@@ -5,14 +5,16 @@ OVERALL
 - Update Lua library for NBSD, OBSD, SunOS
 - Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
 - Update changelog (new lua widgets, gtk frontend)
-- Way to specify extra (image) files
-- genprojdir.sh (add nice comments to lua generated files)
+- Way to specify logo
+- genprojdir.sh
 
 
 TEST
 - Check if initial language is fully loaded/used
 - Check if all LuaDataChanged functions are called after widgets are changed
 - Make test lua file(s) that test anything
+- files_extra/ : Weird filenames, in general
+- intropic loading from both root and files_extra dirs.
 
 
 DOCS
@@ -24,6 +26,9 @@ DOCS
 - Check lua widget defaults
 - Find new lua widget functions
 - cfg.defaultlang: Default "english" or first valid lang
+- files_extra directory
+- intropic can be in both root project dir and in files_extra dir.
+- Mention max intropic size is 300x200
 
         
 TRANSLATIONS

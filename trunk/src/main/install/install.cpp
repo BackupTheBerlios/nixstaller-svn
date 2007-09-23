@@ -494,6 +494,7 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaStartInstall, "startinstall", "install", this);
     NLua::RegisterFunction(LuaLockScreen, "lockscreen", "install", this);
     NLua::RegisterFunction(LuaVerifyDestDir, "verifydestdir", "install", this);
+    NLua::RegisterFunction(LuaExtraFilesPath, "extrafilespath", "install", this);
     
     const char *env = getenv("HOME");
     if (env)
@@ -858,6 +859,14 @@ int CBaseInstall::LuaLockScreen(lua_State *L)
 int CBaseInstall::LuaVerifyDestDir(lua_State *L)
 {
     lua_pushboolean(L, GetFromClosure(L)->VerifyDestDir());
+    return 1;
+}
+
+int CBaseInstall::LuaExtraFilesPath(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    const char *file = luaL_optstring(L, 1, "");
+    lua_pushfstring(L, "%s/files_extra/%s", pInstaller->m_szOwnDir.c_str(), file);
     return 1;
 }
 

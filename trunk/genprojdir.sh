@@ -30,7 +30,7 @@ DEF_TARGETOS="$CURRENTOS"
 DEF_TARGETARCH="x86"
 DEF_FRONTENDS="gtk fltk ncurses"
 DEF_LANGUAGES="english dutch"
-DEF_INTROPIC="nil"
+DEF_INTROPIC=
 
 # Valid settings
 VAL_ARCHIVETYPES="lzma gzip bzip2"
@@ -56,10 +56,16 @@ usage()
     # UNDONE
     echo "Usage: $0 [options] <target dir>"
     echo
-    echo "options can be one of the following things (all optional):"
+    echo "[options] can be one of the following things (all are optional):"
     echo
-    echo " --os, -o os1[, os2, ...]: Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
-    echo " --arch arch1[, arch2, ...]: CPU architectures the installer should support. Valid value: x86. Default: x86"
+    echo " --appname, -n name               The application name. Default: My App"
+    echo " --arch arch1[, arch2, ...]       CPU architectures the installer should support. Valid value: x86. Default: x86"
+    echo " --archtype, -a lzma/gzip/bzip2   The archive type used for packing the installation files. Default: lzma"
+    echo " --deflang, -d lang               The default language."
+    echo " --frontends, -f fr1[, fr2, ...]  Frontends to include. Valid values: gtk, fltk, ncurses. Default: gtk fltk ncurses."
+    echo " --intropic, -i picture           Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp."
+    echo " --languages, -l l1[, l2, ...]    Languages to include (copied from main lang/ directory). Default: english dutch"
+    echo " --os, -o os1[, os2, ...]         Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
     exit 1
 }
 
@@ -116,26 +122,26 @@ parseargs()
                 ;;
             --appname | -n)
                 shift
-                [ -z $1 ] && usage
+                [ -z "${1}" ] && usage
                 APPNAME=$1
                 shift
                 ;;
             --archtype | -a)
                 shift
-                [ -z $1 ] && usage
+                [ -z "${1}" ] && usage
                 verifyentry $1 $VAL_ARCHIVETYPES || error "Wrong archive type specified, valid values are: $VAL_ARCHIVETYPES"
                 ARCHIVETYPE=$1
                 shift
                 ;;
             --deflang | -d)
                 shift
-                [ -z $1 ] && usage
+                [ -z "${1}" ] && usage
                 DEFAULTLANG=$1
                 shift
                 ;;
             --os | -o)
                 shift
-                [ -z $1 ] && usage
+                [ -z "${1}" ] && usage
                 while [ $# -gt 1 ] && checkargentry $1
                 do
                     verifyentry $1 $VAL_TARGETOS || error "Wrong os value specified, valid values are: $VAL_TARGETOS"
@@ -145,7 +151,7 @@ parseargs()
                 ;;
             --arch)
                 shift
-                [ -z $1 ] && usage
+                [ -z "${1}" ] && usage
                 while [ $# -gt 1 ] && checkargentry $1
                 do
                     verifyentry $1 $VAL_TARGETARCH || error "Wrong os value specified, valid values are: $VAL_TARGETARCH"
@@ -155,7 +161,7 @@ parseargs()
                 ;;
             --frontends | -f)
                 shift
-                [ -z $1 ] && usage
+                [ -z "${1}" ] && usage
                 while [ $# -gt 1 ] && checkargentry $1
                 do
                     verifyentry $1 $VAL_FRONTENDS || error "Wrong os value specified, valid values are: $VAL_FRONTENDS"
@@ -165,7 +171,7 @@ parseargs()
                 ;;
             --languages | -l)
                 shift
-                [ -z $1 ] && usage
+                [ -z "${1}" ] && usage
                 while [ $# -gt 1 ] && checkargentry $1
                 do
                     LANGUAGES="$LANGUAGES $1"
@@ -174,8 +180,9 @@ parseargs()
                 ;;
             --intropic | -i)
                 shift
-                [ -z $1 ] && usage
-                # UNDONE
+                [ -z "${1}" ] && usage
+                [ ! -e "${1}" ] && error "Couldn't find intro picture ($1)"
+                INTROPIC=$1
                 shift
                 ;;
             -*)
@@ -211,6 +218,13 @@ parseargs()
     INTROPIC=${INTROPIC:=$DEF_INTROPIC}
 }
 
+createlayout()
+{
+    mkdir -p "${TARGETDIR}" || error "Failed to create target directory"
+    mkdir "${TARGETDIR}/files_all" || error "Failed to create files_all directory"
+    mkdir "${TARGETDIR}/files_extra" || error "Failed to create files_extra directory"
+}
+
 copylanguages()
 {
     for L in $LANGUAGES
@@ -227,6 +241,13 @@ copylanguages()
         mkdir -p ${DEST}
         requiredcp ${SRC} ${DEST}
     done
+}
+
+copyintropic()
+{
+    if [ ! -z $INTROPIC ]; then
+        requiredcp "${INTROPIC}" "${TARGETDIR}/files_extra"
+    fi
 }
 
 # Converts 'sh lists' to lua tables
@@ -249,6 +270,11 @@ toluatable()
 
 genconfig()
 {
+    IP=
+    if [ ! -z $INTROPIC ]; then
+        IP=\"`basename $INTROPIC`\"
+    fi
+    
     cat > ${TARGETDIR}/config.lua  << EOF
 -- Automaticly generated on `date`.
 -- Global configuration file, used for generating and running installers.
@@ -276,7 +302,7 @@ cfg.frontends = `toluatable $FRONTENDS`
 cfg.languages = `toluatable $LANGUAGES`
 
 -- Picture used for the 'WelcomeScreen'
-cfg.intropic = ${INTROPIC:=nil}
+cfg.intropic = ${IP:=nil}
 EOF
 }
 
@@ -284,7 +310,7 @@ genrun()
 {
     cat > ${TARGETDIR}/run.lua  << EOF
 -- Automaticly generated on `date`.
--- This file is (only) called when the installer is run.
+-- This file is called when the installer is run.
 -- Don't place any (initialization) code outside the Init() or Install() functions.
 
 function Init()
@@ -295,7 +321,7 @@ function Init()
     install.destdir = os.getenv("$HOME")
     
     -- Installation screens to show (in given order). Custom screens should be added here.
-    install.screens = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
+    install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
 end
 
 function Install()
@@ -309,16 +335,31 @@ EOF
 
 createprojdir()
 {
-    mkdir -p "${TARGETDIR}" || error "Failed to create target directory"
-    mkdir "${TARGETDIR}/files_all"
-    
+    createlayout
     copylanguages
+    copyintropic
     genconfig
     genrun
+}
+
+hints()
+{
+    echo "Base project directory layout created in ${TARGETDIR}."
+    echo
+    echo "In this directory you can..."
+    echo "* Edit config.lua for general configuration options. (file has comments)"
+    echo "* Edit run.lua for scripting the installation process. (file has comments)"
+    echo "* Place the installation files in the files_all/ directory. (for platform specific files see the manual)"
+    echo "* Put any files needed in runtime by the installer in the files_extra/ directory."
+    echo "* Create 'welcome', 'license' or 'finish' text files for setting the text used by their respective screens."
+    echo "* Create new translations in the lang/ directory."
     
-    # Copy intropic
+    if [ ! -z "$NEWLANGUAGES" ]; then
+        echo "NOTE: The following specified languages aren't yet translated: $NEWLANGUAGES."
+    fi
 }
 
 parseargs $*
 createprojdir
-# Print hints
+hints
+

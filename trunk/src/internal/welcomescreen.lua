@@ -33,8 +33,9 @@ end
 screen = install.newscreen("Welcome")
 group = screen:addgroup()
 
-if cfg.intropic and os.fileexists(cfg.intropic) then
-    group:addimage(cfg.intropic)
+intropicpath = "files_extra/" .. cfg.intropic
+if cfg.intropic and os.fileexists(intropicpath) then
+    group:addimage(intropicpath)
 end
 
 text = group:addtextfield()

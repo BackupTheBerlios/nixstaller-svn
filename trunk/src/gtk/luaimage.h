@@ -30,8 +30,8 @@ class CLuaImage: public CBaseLuaImage, public CLuaWidget
     
     virtual void CoreActivateWidget(void) {}
     
-    int MaxImageW(void) const { return MaxWidgetWidth(); }
-    int MaxImageH(void) const { return MaxWidgetHeight(); }
+    int MaxImageW(void) const { return 300; }
+    int MaxImageH(void) const { return 200; }
     
 public:
     CLuaImage(const char *file);
