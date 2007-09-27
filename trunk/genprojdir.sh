@@ -181,7 +181,7 @@ parseargs()
             --intropic | -i)
                 shift
                 [ -z "${1}" ] && usage
-                [ ! -e "${1}" ] && error "Couldn't find intro picture ($1)"
+                [ ! -f "${1}" ] && error "Couldn't find intro picture ($1)"
                 INTROPIC=$1
                 shift
                 ;;
@@ -198,7 +198,7 @@ parseargs()
     
     if [ -z "${TARGETDIR}" ]; then
         usage
-    elif [ -e "${TARGETDIR}" ]; then
+    elif [ -d "${TARGETDIR}" ]; then
         printf "Warning: target directory already exists. Delete it? (y/N) "
         read yn
         if [ "$yn" = "y" -o "$yn" = "Y" ]; then
@@ -230,7 +230,7 @@ copylanguages()
     for L in $LANGUAGES
     do
         SRC=
-        if [ ! -e ${CURDIR}/lang/${L} ]; then
+        if [ ! -d ${CURDIR}/lang/${L} ]; then
             NEWLANGUAGES="$NEWLANGUAGES $L"
             SRC=${CURDIR}/lang/english/strings
         else
@@ -245,7 +245,7 @@ copylanguages()
 
 copyintropic()
 {
-    if [ ! -z $INTROPIC ]; then
+    if [ ! -z "${INTROPIC}" ]; then
         requiredcp "${INTROPIC}" "${TARGETDIR}/files_extra"
     fi
 }
@@ -271,7 +271,7 @@ toluatable()
 genconfig()
 {
     IP=
-    if [ ! -z $INTROPIC ]; then
+    if [ ! -z "${INTROPIC}" ]; then
         IP=\"`basename $INTROPIC`\"
     fi
     

@@ -7,6 +7,7 @@ OVERALL
 - Update changelog (new lua widgets, gtk frontend)
 - Way to specify logo
 - genprojdir.sh
+- Fix title not switching if there isn't a title on new screen (just GTK?)
 
 
 TEST
@@ -29,6 +30,7 @@ DOCS
 - files_extra directory
 - intropic can be in both root project dir and in files_extra dir.
 - Mention max intropic size is 300x200
+- install.newscreen changed name (also changelog!)
 
         
 TRANSLATIONS

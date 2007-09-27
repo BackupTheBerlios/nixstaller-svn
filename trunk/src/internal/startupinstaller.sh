@@ -157,7 +157,7 @@ do
                 `pwd`/$FRBIN
                 
                 RET=$?
-                if [ ! -e frontendstarted ]; then
+                if [ ! -f frontendstarted ]; then
                     exit $RET
                 fi
             fi

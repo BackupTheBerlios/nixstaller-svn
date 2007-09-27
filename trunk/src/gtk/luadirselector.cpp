@@ -35,7 +35,7 @@ CLuaDirSelector::CLuaDirSelector(const char *desc, const char *val) : CBaseLuaWi
     g_signal_connect(G_OBJECT(m_pDirInput), "changed", G_CALLBACK(InputChangedCB), this);
     gtk_widget_show(m_pDirInput);
     gtk_container_add(GTK_CONTAINER(hbox), m_pDirInput);
-    
+
     GtkWidget *button = CreateButton(m_pDirButtonLabel = gtk_label_new(GetTranslation("Browse")), GTK_STOCK_OPEN);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(BrowseCB), m_pDirInput);
     gtk_widget_show(button);

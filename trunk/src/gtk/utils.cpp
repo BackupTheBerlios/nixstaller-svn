@@ -21,16 +21,22 @@
 
 namespace {
 
+bool g_bUpdateFileName = false;
+
 // -------------------------------------
 // Callbacks for CreateDirChooser()
 // -------------------------------------
 
 void UpdateDirSelCB(GtkFileChooser *widget, gpointer data)
 {
-    gtk_file_chooser_set_filename(widget, static_cast<char *>(data));
-    // Only do it once
-    g_signal_handlers_disconnect_by_func(G_OBJECT(widget),
-                                         (gpointer)(UpdateDirSelCB), data);
+    if (g_bUpdateFileName)
+    {
+        g_bUpdateFileName = false;
+        gtk_file_chooser_set_filename(widget, static_cast<char *>(data));
+    }
+    // Only do it once (DISABLED for now, as this crashes on older GTK versions)
+//    g_signal_handlers_disconnect_by_func(G_OBJECT(widget),
+//                                         (gpointer)(UpdateDirSelCB), data);
 }
 
 void CreateRootDirCB(GtkWidget *widget, gpointer data)
@@ -108,8 +114,9 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
             // this will trigger an internal update and emits a signal. After the this signal is launched the
             // current selected directory is changed to the new directory. We have to force an update, because
             // otherwise the new directory cannot be selected.
-            g_signal_connect_after(G_OBJECT(filedialog), "current-folder-changed", G_CALLBACK(UpdateDirSelCB),
-                                   CreateText(newdir));
+            g_bUpdateFileName = true;
+            g_signal_connect_after(G_OBJECT(filedialog), "current-folder-changed",
+                                   G_CALLBACK(UpdateDirSelCB), CreateText(newdir));
             gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filedialog), newdir);
         }
         catch(Exceptions::CExIO &e)
@@ -188,7 +195,7 @@ void SetWidgetVisible(GtkWidget *w, bool v)
 
 GtkWidget *CreateDirChooser(const char *title)
 {
-    GtkWidget *dialog = gtk_file_chooser_dialog_new(title, NULL, GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER,
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(title, NULL, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                                                     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
                                                     GTK_RESPONSE_ACCEPT, NULL);
     
