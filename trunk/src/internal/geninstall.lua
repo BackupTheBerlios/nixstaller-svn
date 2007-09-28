@@ -267,8 +267,9 @@ Installer name: %s
     Config dir: %s
      Frontends: %s
      Intro pic: %s
+          Logo: %s
 ---------------------------------
-]], outname, StrPack(cfg.targetos), StrPack(cfg.targetarch), cfg.archivetype, StrPack(cfg.languages), confdir, StrPack(cfg.frontends), cfg.intropic or "None"))
+]], outname, StrPack(cfg.targetos), StrPack(cfg.targetarch), cfg.archivetype, StrPack(cfg.languages), confdir, StrPack(cfg.frontends), cfg.intropic or "None", cfg.logo or "Default"))
 end
 
 -- Creates directory layout for installer archive
@@ -283,9 +284,6 @@ function PrepareArchive()
     os.copy(confdir .. "/license", destdir)
     os.copy(confdir .. "/finish", destdir)
 
-    -- Default logo
-    RequiredCopy(curdir .. "/src/img/installer.png", confdir .. "/tmp")
-    
     -- Some internal stuff
     RequiredCopy(curdir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
@@ -408,7 +406,17 @@ function PrepareArchive()
             end
         end
     end
-                    
+
+    if cfg.logo ~= nil then
+        ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.logo), string.format("%s/tmp/", confdir))
+        if ret == nil then
+            print(string.format("Warning could not copy logo: %s", msg))
+        end
+    else
+        -- Default logo
+        RequiredCopy(curdir .. "/src/img/installer.png", confdir .. "/tmp")
+    end
+    
     -- Internal config file(only stores archive type for now)
     local inffile, msg = io.open(string.format("%s/tmp/info", confdir), "w")
 

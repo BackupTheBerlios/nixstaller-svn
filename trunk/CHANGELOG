@@ -16,6 +16,8 @@
 - startupinstaller.sh doesn't check for lzma binaries anymore when archivetype is not "lzma"
 - Fixed max intropicsize
 - files_extra/ support
+- Lua widget groups
+- FLTK layout: Logo support, screen header, white backgrounds, Xft font rendering
 
 
 0.2.1 --> 0.2.2

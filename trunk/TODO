@@ -5,9 +5,7 @@ OVERALL
 - Update Lua library for NBSD, OBSD, SunOS
 - Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
 - Update changelog (new lua widgets, gtk frontend)
-- Way to specify logo
-- genprojdir.sh
-- Fix title not switching if there isn't a title on new screen (just GTK?)
+- remove libncurses++ from svn
 
 
 TEST
@@ -49,7 +47,6 @@ TRANSLATIONS
 
 MAIN
 - Improve/check lua error messages?
-- Make private table for internal funcs/vars?
 
 
 LIBSU

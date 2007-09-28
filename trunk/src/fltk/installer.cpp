@@ -45,13 +45,13 @@ void CInstaller::CreateHeader()
     m_pHeaderGroup->box(FL_FLAT_BOX);
     m_pHeaderGroup->resizable(NULL);
     
-    Fl_Shared_Image *img = Fl_Shared_Image::get("installer.png");
+/*    Fl_Shared_Image *img = Fl_Shared_Image::get(GetLogoFName());
     if (img)
     {
         m_pLogoBox = new Fl_Box(HeaderSpacing(), HeaderSpacing(), img->w()+HeaderSpacing(), img->h());
         m_pLogoBox->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
         m_pLogoBox->image(img);
-    }
+    }*/
     
     int w = 0, h = 0;
     const char *text = GetTranslation("About");
@@ -348,6 +348,15 @@ void CInstaller::Init(int argc, char **argv)
     maingroup->end();
     
     CBaseInstall::Init(argc, argv);
+    
+    Fl_Shared_Image *img = Fl_Shared_Image::get(GetLogoFName());
+    if (img)
+    {
+        m_pLogoBox = new Fl_Box(HeaderSpacing(), HeaderSpacing(), img->w()+HeaderSpacing(), img->h());
+        m_pLogoBox->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
+        m_pLogoBox->image(img);
+        m_pHeaderGroup->add(m_pLogoBox);
+    }
 
     int size = m_pWizard->children();
     for (int i=0; i<size; i++)

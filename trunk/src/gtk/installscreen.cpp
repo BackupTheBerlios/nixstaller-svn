@@ -137,8 +137,7 @@ void CInstallScreen::UpdateCounter()
 void CInstallScreen::CoreActivate(void)
 {
     ResetWidgetRange();
-    if (!GetTitle().empty())
-        m_pOwner->SetTitle(GetTitle());
+    m_pOwner->SetTitle(GetTitle());
     CBaseScreen::CoreActivate();
 }
 

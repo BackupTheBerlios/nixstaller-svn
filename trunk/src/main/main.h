@@ -117,6 +117,7 @@ protected:
     char *m_szPassword;
     long m_lUITimer;
 
+    const char *GetLogoFName(void);
     const char *GetAboutFName(void);
     bool GetSUPasswd(const char *msg, bool mandatory);
     bool ReadLang();

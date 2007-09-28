@@ -70,8 +70,8 @@ void CInstaller::InitAboutSection(GtkWidget *parentbox)
     GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(topbox), hbox, TRUE, TRUE, 5);
 
-    GtkWidget *image = gtk_image_new_from_file("installer.png");
-    gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 5);
+    m_pLogo = gtk_image_new();
+    gtk_box_pack_start(GTK_BOX(hbox), m_pLogo, FALSE, FALSE, 5);
 
     m_pTitle = gtk_label_new(NULL);
     gtk_widget_set_size_request(m_pTitle, 500, -1);
@@ -287,6 +287,9 @@ void CInstaller::Init(int argc, char **argv)
     gtk_container_add(GTK_CONTAINER(mainwin), vbox);
 
     CBaseInstall::Init(argc, argv);
+    
+    // Logo might be set in lua config, so load it after init
+    gtk_image_set_from_file(GTK_IMAGE(m_pLogo), GetLogoFName());
     
     // Activate first screen
     gint page = 0;

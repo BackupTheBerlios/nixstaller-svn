@@ -162,7 +162,14 @@ void CMain::Init(int argc, char **argv)
     m_SUHandler.SetTerminalOutput(false);
 }
 
-const char *CMain::GetAboutFName(void)
+const char *CMain::GetLogoFName()
+{
+    std::string ret = "installer.png"; // Default
+    NLua::LuaGet(ret, "logo", "cfg");
+    return CreateText("%s/%s", m_szOwnDir.c_str(), ret.c_str());
+}
+
+const char *CMain::GetAboutFName()
 {
     return CreateText("%s/about", m_szOwnDir.c_str());
 }

@@ -24,7 +24,7 @@ class CInstallScreen;
 
 class CInstaller: public CGTKBase, public CBaseInstall
 {
-    GtkWidget *m_pTitle, *m_pAboutLabel;
+    GtkWidget *m_pTitle, *m_pLogo, *m_pAboutLabel;
     GtkWidget *m_pCancelLabel, *m_pBackLabel, *m_pNextLabel;
     GtkWidget *m_pCancelButton, *m_pBackButton, *m_pNextButton;
     GtkWidget *m_pWizard;

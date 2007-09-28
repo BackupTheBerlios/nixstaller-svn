@@ -31,6 +31,7 @@ DEF_TARGETARCH="x86"
 DEF_FRONTENDS="gtk fltk ncurses"
 DEF_LANGUAGES="english dutch"
 DEF_INTROPIC=
+DEF_LOGO=
 
 # Valid settings
 VAL_ARCHIVETYPES="lzma gzip bzip2"
@@ -46,6 +47,7 @@ TARGETARCH=
 FRONTENDS=
 LANGUAGES=
 INTROPIC=
+LOGO=
 TARGETDIR=
 
 # List containing languages that couldn't be found in main lang/ directory
@@ -65,6 +67,7 @@ usage()
     echo " --frontends, -f fr1[, fr2, ...]  Frontends to include. Valid values: gtk, fltk, ncurses. Default: gtk fltk ncurses."
     echo " --intropic, -i picture           Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp."
     echo " --languages, -l l1[, l2, ...]    Languages to include (copied from main lang/ directory). Default: english dutch"
+    echo " --logo                           Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
     echo " --os, -o os1[, os2, ...]         Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
     exit 1
 }
@@ -185,6 +188,13 @@ parseargs()
                 INTROPIC=$1
                 shift
                 ;;
+            --logo)
+                shift
+                [ -z "${1}" ] && usage
+                [ ! -f "${1}" ] && error "Couldn't find logo file ($1)"
+                LOGO=$1
+                shift
+                ;;
             -*)
                 usage
                 ;;
@@ -216,6 +226,7 @@ parseargs()
     FRONTENDS=${FRONTENDS:=$DEF_FRONTENDS}
     LANGUAGES=${LANGUAGES:=$DEF_LANGUAGES}
     INTROPIC=${INTROPIC:=$DEF_INTROPIC}
+    LOGO=${LOGO:=$DEF_LOGO}
 }
 
 createlayout()
@@ -250,6 +261,13 @@ copyintropic()
     fi
 }
 
+copylogo()
+{
+    if [ ! -z "${LOGO}" ]; then
+        requiredcp "${LOGO}" "${TARGETDIR}"
+    fi
+}
+
 # Converts 'sh lists' to lua tables
 toluatable()
 {
@@ -272,9 +290,14 @@ genconfig()
 {
     IP=
     if [ ! -z "${INTROPIC}" ]; then
-        IP=\"`basename $INTROPIC`\"
+        IP=\"`basename "${INTROPIC}"`\"
     fi
     
+    IL=
+    if [ ! -z "${LOGO}" ]; then
+        IL=\"`basename "${LOGO}"`\"
+    fi
+
     cat > ${TARGETDIR}/config.lua  << EOF
 -- Automaticly generated on `date`.
 -- Global configuration file, used for generating and running installers.
@@ -303,6 +326,9 @@ cfg.languages = `toluatable $LANGUAGES`
 
 -- Picture used for the 'WelcomeScreen'
 cfg.intropic = ${IP:=nil}
+
+-- Logo image file
+cfg.logo = ${IL:=nil}
 EOF
 }
 
@@ -338,6 +364,7 @@ createprojdir()
     createlayout
     copylanguages
     copyintropic
+    copylogo
     genconfig
     genrun
 }
