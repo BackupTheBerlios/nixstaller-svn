@@ -226,7 +226,7 @@ void CLuaCFGMenu::BrowseCB(Fl_Widget *w, void *p)
     const char *selection = menu->CurSelection();
     SEntry *entry = menu->GetVariables()[selection];
     CFLTKDirDialog dialog("~", "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
-                          CreateText(GetTranslation("Please enter a new value for %s"),
+                          CreateText(GetTranslation("Please choose a new value for %s"),
                                      GetTranslation(selection)));
     
     dialog.Value(menu->m_pDirInput->value());

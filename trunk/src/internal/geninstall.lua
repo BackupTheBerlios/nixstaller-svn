@@ -92,7 +92,6 @@ function RecursiveCopy(src, dest)
                     ThrowError("Warning could not create subdirectory file: %s", msg)
                 end
             else
-                print(string.format("Copying file: %s --> %s", fsrc, fdest))
                 RequiredCopy(fsrc, fdest)
             end
         end
@@ -120,6 +119,7 @@ function PackDirectory(dir, file)
 
     while (#dirlist > 0) do
         local subdir = table.remove(dirlist) -- pop
+            
         for f in io.dir(subdir) do
             local dpath
              
@@ -130,15 +130,22 @@ function PackDirectory(dir, file)
                 dpath = f
             end
             
-            
+            local continue = true
             if (os.isdir(dpath)) then
                 table.insert(dirlist, dpath)
-            else
+                continue = (io.dir(dpath)() == nil) -- Only continue adding empty directories
+            end
+            
+            if continue then
                 local fsize, msg = os.filesize(dpath)
                 if fsize == nil then
                     ThrowError("Could not get file size: %s", msg)
                 end
                 
+                if os.isdir(dpath) then
+                    dpath = dpath .. "/" -- Write tailing slash: most tar's will output it like this while extracting
+                end
+    
                 local ret, msg = sizesfile:write(fsize, " ", dpath, "\n")
                 if ret == nil then
                     ThrowError("Could not write to size file for archive %s: %s", file, msg)

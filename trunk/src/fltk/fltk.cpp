@@ -221,9 +221,12 @@ void CFLTKBase::CoreUpdateLanguage()
     Fl_File_Chooser::show_label = GetTranslation("Show:");
     
     // About window
-    m_pAboutWindow->label(GetTranslation("About"));
-    m_pAboutDisp->label(GetTranslation("About"));
-    m_pAboutOKButton->label(GetTranslation("OK"));
+    if (m_pAboutWindow) // May be called before CreateAbout()
+    {
+        m_pAboutWindow->label(GetTranslation("About"));
+        m_pAboutDisp->label(GetTranslation("About"));
+        m_pAboutOKButton->label(GetTranslation("OK"));
+    }
 }
 
 void CFLTKBase::Run()

@@ -47,9 +47,8 @@ std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
 mode_t StrToMode(const char *str);
 std::string GetTranslation(const std::string &s);
-char *GetTranslation(char *s);
-inline char *GetTranslation(const char *s) { return GetTranslation(const_cast<char *>(s)); };
-inline char *MakeTranslation(const std::string &s) { return GetTranslation(MakeCString(s)); }
+const char *GetTranslation(const char *s);
+inline char *MakeTranslation(const std::string &s) { return MakeCString(GetTranslation(s)); }
 void ConvertTabs(std::string &text);
 char *StrDup(const char *str);
 void MakeAbsolute(std::string &dir);

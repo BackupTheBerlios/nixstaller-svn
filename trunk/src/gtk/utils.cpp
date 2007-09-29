@@ -92,8 +92,8 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
             }
             else
             {
-                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Could not use su to gain root access. "
-                        "Make sure you can use su (adding the current user to the wheel group may help)"));
+                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Could not use su to gain root access.\n"
+                        "Make sure you can use su (adding the current user to the wheel group may help)."));
                 break;
             }
         }

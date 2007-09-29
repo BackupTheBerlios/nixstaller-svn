@@ -129,8 +129,7 @@ void CInstaller::PrevScreen()
         if ((*it)->CanActivate())
         {
             m_InstallScreens[m_CurrentScreen]->Enable(false);
-            ActivateScreen(*it);
-            (*it)->SubLast();
+            ActivateScreen(*it, true);
             UpdateButtons();
             break;
         }
@@ -173,7 +172,7 @@ void CInstaller::NextScreen()
 
 void CInstaller::AskQuit()
 {
-    char *msg;
+    const char *msg;
     if (Installing())
         msg = GetTranslation("Install commands are still running\n"
                 "If you abort now this may lead to a broken installation\n"
@@ -185,10 +184,12 @@ void CInstaller::AskQuit()
         throw Exceptions::CExUser();
 }
 
-void CInstaller::ActivateScreen(CInstallScreen *screen)
+void CInstaller::ActivateScreen(CInstallScreen *screen, bool sublast)
 {
     screen->Enable(true);
     screen->Activate();
+    if (sublast)
+        screen->SubLast();
     
     m_CurrentScreen = 0;
     while (m_InstallScreens.at(m_CurrentScreen) != screen)

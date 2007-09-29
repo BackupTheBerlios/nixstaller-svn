@@ -285,7 +285,7 @@ std::string GetTranslation(const std::string &s)
     return s;
 }
 
-char *GetTranslation(char *s)
+const char *GetTranslation(const char *s)
 {
     std::map<std::string, char *>::iterator p = Translations.find(s);
     if (p != Translations.end())

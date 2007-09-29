@@ -83,7 +83,7 @@ int CLuaCheckbox::CoreRequestHeight(int maxw)
     const int size = SafeConvert<int>(m_Checkboxes.size());
     if (size)
         return (size*ButtonHeight());
-    
+
     return 0;
 }
 

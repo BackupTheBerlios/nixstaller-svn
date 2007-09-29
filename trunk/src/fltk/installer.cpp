@@ -377,7 +377,7 @@ void CInstaller::CancelCB(Fl_Widget *w, void *p)
 {
     CInstaller *installer = static_cast<CInstaller *>(p);
     
-    char *msg;
+    const char *msg;
     if (installer->Installing())
         msg = GetTranslation("Install commands are still running\n"
                 "If you abort now this may lead to a broken installation\n"

@@ -34,7 +34,8 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
 {
     NNCurses::CLabel *m_pTitle, *m_pCounter;
     NNCurses::CBox *m_pTopBox, *m_pGroupBox;
-    std::pair<NNCurses::CWidget *, NNCurses::CWidget *> m_WidgetRange;
+    TSTLVecSize m_CurSubScreen;
+    std::vector<NNCurses::CWidget *> m_WidgetRanges;
     
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
@@ -44,6 +45,7 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     int MaxScreenHeight(void) const;
     void UpdateCounter(void);
     bool CheckWidgets(void);
+    void ActivateSubScreen(TSTLVecSize screen);
     
 protected:
     virtual void CoreActivate(void) { ResetWidgetRange(); CBaseScreen::CoreActivate(); }
@@ -52,10 +54,8 @@ protected:
 public:
     CInstallScreen(const std::string &title);
     
-    bool HasPrevWidgets(void) const
-    { return (m_pGroupBox && m_WidgetRange.first && (m_WidgetRange.first != m_pGroupBox->GetChildList().front())); }
-    bool HasNextWidgets(void)
-    { return (m_pGroupBox && m_WidgetRange.second && (m_WidgetRange.second != m_pGroupBox->GetChildList().back())); }
+    bool HasPrevWidgets(void) const;
+    bool HasNextWidgets(void) const;
     bool SubNext(bool check=true);
     bool SubBack(void);
     void SubLast(void);

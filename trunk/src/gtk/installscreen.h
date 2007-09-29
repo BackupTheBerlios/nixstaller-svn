@@ -29,7 +29,8 @@ class CInstallScreen: public CBaseScreen
 {
     CInstaller *m_pOwner;
     GtkWidget *m_pMainBox, *m_pCounter, *m_pGroupBox;
-    std::pair<GtkWidget *, GtkWidget *> m_WidgetRange;
+    TSTLVecSize m_CurSubScreen;
+    std::vector<GtkWidget *> m_WidgetRanges;
 
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void) {}
@@ -38,6 +39,7 @@ class CInstallScreen: public CBaseScreen
     void ResetWidgetRange(void);
     void UpdateCounter(void);
     bool CheckWidgets(void);
+    void ActivateSubScreen(TSTLVecSize screen);
 
 protected:
     virtual void CoreActivate(void);

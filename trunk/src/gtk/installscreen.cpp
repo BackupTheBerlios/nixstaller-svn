@@ -26,8 +26,9 @@
 // GTK Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner) : CBaseScreen(title), m_pOwner(owner),
-                                                                              m_WidgetRange(NULL, NULL)
+CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner) : CBaseScreen(title),
+                                                                              m_pOwner(owner),
+                                                                              m_CurSubScreen(0)
 {
     m_pMainBox = gtk_vbox_new(FALSE, 0);
     
@@ -67,7 +68,8 @@ int CInstallScreen::CheckTotalWidgetH(GtkWidget *w)
 
 void CInstallScreen::ResetWidgetRange()
 {
-    m_WidgetRange.first = m_WidgetRange.second = NULL;
+    m_WidgetRanges.clear();
+    m_CurSubScreen = 0;
     
     CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
     GList *entry = list;
@@ -75,22 +77,35 @@ void CInstallScreen::ResetWidgetRange()
     if (!list)
         return;
         
+    m_WidgetRanges.push_back(GTK_WIDGET(entry->data));
+    
+    bool enablewidgets = true;
     int h = 0;
     for (; entry; entry=g_list_next(entry))
     {
-        if (ContainerEmpty(GTK_CONTAINER(GTK_WIDGET(entry->data))))
+        GtkWidget *w = GTK_WIDGET(entry->data);
+        if (ContainerEmpty(GTK_CONTAINER(w)))
             continue;
         
-        h += CheckTotalWidgetH(GTK_WIDGET(entry->data));
+        const int newh = CheckTotalWidgetH(w);
 
-        if (h <= MaxScreenHeight())
+        if ((newh + h) <= MaxScreenHeight())
         {
-            gtk_widget_show(GTK_WIDGET(entry->data));
-            m_WidgetRange.second = GTK_WIDGET(entry->data);
-            continue;
+            h += newh;
+            if (enablewidgets)
+            {
+                gtk_widget_show(w);
+                continue;
+            }
+        }
+        else
+        {
+            m_WidgetRanges.push_back(w);
+            h = newh;
+            enablewidgets = false;
         }
         
-        gtk_widget_hide(GTK_WIDGET(entry->data));
+        gtk_widget_hide(w);
     }
     
     UpdateCounter();
@@ -98,36 +113,10 @@ void CInstallScreen::ResetWidgetRange()
 
 void CInstallScreen::UpdateCounter()
 {
-    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
-    GList *entry = list;
-    
-    if (!list)
-        return;
-    
-    int count = 1, current = 1, h = 0;
-    
-    for (; entry; entry=g_list_next(entry))
+    TSTLVecSize size = m_WidgetRanges.size();
+    if (size > 1)
     {
-        if (ContainerEmpty(GTK_CONTAINER(entry->data)))
-            continue;
-
-        const int wh = CheckTotalWidgetH(GTK_WIDGET(entry->data));
-        
-        if ((h + wh) > MaxScreenHeight())
-        {
-            h = 0;
-            count++;
-        }
-        
-        h += wh;
-
-        if (GTK_WIDGET(entry->data) == m_WidgetRange.first)
-            current = count;
-    }
-    
-    if (count > 1)
-    {
-        gtk_label_set(GTK_LABEL(m_pCounter), CreateText("%d/%d", current, count));
+        gtk_label_set(GTK_LABEL(m_pCounter), CreateText("%d/%d", m_CurSubScreen+1, SafeConvert<int>(size)));
         gtk_widget_show(m_pCounter);
     }
     else
@@ -148,11 +137,21 @@ bool CInstallScreen::CheckWidgets()
     if (!list)
         return true;
     
-    GList *start = (m_WidgetRange.first) ? g_list_find(list, m_WidgetRange.first) : &(*list);
-    GList *end = (m_WidgetRange.second) ? g_list_find(list, m_WidgetRange.second) : g_list_last(list);
+    GList *start, *end;
+
+    if (HasPrevWidgets())
+        start = g_list_find(list, m_WidgetRanges[m_CurSubScreen]);
+    else
+        start = &(*list);
+    
+    if (HasNextWidgets())
+        end = g_list_find(list, m_WidgetRanges[m_CurSubScreen+1]);
+    else
+        end = NULL;
+    
     bool ret = true;
     
-    while (true)
+    while (start && (start != end))
     {
         CLuaGroup *group = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(start->data)));
         if (!group->CheckWidgets())
@@ -161,90 +160,55 @@ bool CInstallScreen::CheckWidgets()
             break;
         }
         
-        if (start == end)
-            break;
-        
         start = g_list_next(start);
     }
 
     return ret;
 }
 
+void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
+{
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
+    GList *entry = list;
+    
+    for (; entry; entry=g_list_next(entry))
+        gtk_widget_hide(GTK_WIDGET(entry->data));
+    
+    entry = g_list_find(list, m_WidgetRanges[screen]);
+    
+    GList *end;
+    if ((m_WidgetRanges.size()-1) > screen)
+        end = g_list_find(list, m_WidgetRanges[screen+1]);
+    else
+        end = NULL;
+    
+    while (entry && (entry != end))
+    {
+        gtk_widget_show(GTK_WIDGET(entry->data));
+        entry = g_list_next(entry);
+    }
+    
+    m_CurSubScreen = screen;
+    UpdateCounter();
+}
+
 bool CInstallScreen::HasPrevWidgets() const
 {
-    if (!m_WidgetRange.first)
-        return false;
-    
-    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
-    
-    if (!list)
-        return false;
-    
-    bool ret = (GTK_WIDGET(list->data) != m_WidgetRange.first);
-    
-    return ret;
+    return (!m_WidgetRanges.empty() && m_CurSubScreen);
 }
 
 bool CInstallScreen::HasNextWidgets() const
 {
-    if (!m_WidgetRange.second)
-        return false;
-
-    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
-    
-    if (!list)
-        return false;
-    
-    bool ret = (GTK_WIDGET(g_list_last(list)->data) != m_WidgetRange.second);
-    
-    return ret;
+    return (!m_WidgetRanges.empty() && (m_CurSubScreen < (m_WidgetRanges.size()-1)));
 }
 
 bool CInstallScreen::SubBack()
 {
-    if (HasPrevWidgets())
-    {
-        CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
-        GList *entry = list;
-        
-        if (!list)
-            return false;
-        
-        for (; entry; entry=g_list_next(entry))
-            gtk_widget_hide(GTK_WIDGET(entry->data));
-        
-        int h = 0;
-        entry = g_list_find(list, m_WidgetRange.first);
-        m_WidgetRange.first = m_WidgetRange.second = NULL;
-        
-        if (entry)
-        {
-            while ((entry = g_list_previous(entry)) && (h <= MaxScreenHeight()))
-            {
-                if (ContainerEmpty(GTK_CONTAINER(entry->data)))
-                    continue;
-
-                h += CheckTotalWidgetH(GTK_WIDGET(entry->data));
-                
-                if (h <= MaxScreenHeight())
-                {
-                    gtk_widget_show(GTK_WIDGET(entry->data));
-                    m_WidgetRange.first = GTK_WIDGET(entry->data);
-                }
-                
-                if (!m_WidgetRange.second)
-                    m_WidgetRange.second = GTK_WIDGET(entry->data);
-            }
-        }
-        
-        if (h)
-        {
-            UpdateCounter();
-            return true;
-        }
-    }
+    if (!HasPrevWidgets())
+        return false;
     
-    return false;
+    ActivateSubScreen(m_CurSubScreen - 1);
+    return true;
 }
 
 bool CInstallScreen::SubNext(bool check)
@@ -252,53 +216,15 @@ bool CInstallScreen::SubNext(bool check)
     if (check && !CheckWidgets())
         return true; // Widget check failed, so return true in order to stay at this screen
     
-    if (HasNextWidgets())
-    {
-        CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
-        GList *entry = list;
-        
-        if (!list)
-            return false;
-        
-        for (; entry; entry=g_list_next(entry))
-            gtk_widget_hide(GTK_WIDGET(entry->data));
-        
-        int h = 0;
-        entry = g_list_find(list, m_WidgetRange.second);
-        m_WidgetRange.first = m_WidgetRange.second = NULL;
-        
-        if (entry)
-        {
-            while ((entry = g_list_next(entry)) && (h <= MaxScreenHeight()))
-            {
-                if (ContainerEmpty(GTK_CONTAINER(entry->data)))
-                    continue;
-
-                h += CheckTotalWidgetH(GTK_WIDGET(entry->data));
-                
-                if (h <= MaxScreenHeight())
-                {
-                    gtk_widget_show(GTK_WIDGET(entry->data));
-                    m_WidgetRange.second = GTK_WIDGET(entry->data);
-                }
-                
-                if (!m_WidgetRange.first)
-                    m_WidgetRange.first = GTK_WIDGET(entry->data);
-            }
-        }
-        
-        if (h)
-        {
-            UpdateCounter();
-            return true;
-        }
-    }
+    if (!HasNextWidgets())
+        return false;
     
-    return false;
+    ActivateSubScreen(m_CurSubScreen + 1);
+    return true;
 }
 
 void CInstallScreen::SubLast()
 {
-    while (SubNext(false))
-        ;
+    if (!m_WidgetRanges.empty())
+        ActivateSubScreen(m_WidgetRanges.size()-1);
 }

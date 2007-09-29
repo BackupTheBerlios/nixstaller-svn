@@ -34,6 +34,7 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     
     virtual void Load(const char *file);
     virtual void AddText(const char *text);
+    virtual void ClearText(void);
     virtual void UpdateFollow(void);
     virtual int CoreRequestWidth(void) { return 150; }
     virtual int CoreRequestHeight(int maxw) { return FieldHeight(); }

@@ -17,7 +17,7 @@
 
 module (..., package.seeall)
 
-screen = install.newscreen(string.format("%s is now being installed", cfg.appname))
+screen = install.newscreen("Files are being installed")
 
 progressbar = screen:addprogressbar("Progress")
 statlabel = screen:addlabel("")

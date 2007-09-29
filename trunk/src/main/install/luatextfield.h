@@ -30,6 +30,7 @@ class CBaseLuaTextField: virtual public CBaseLuaWidget
     
     virtual void Load(const char *file) = 0;
     virtual void AddText(const char *text) = 0;
+    virtual void ClearText(void) = 0;
     virtual void UpdateFollow(void) {}
     
 protected:
@@ -42,6 +43,7 @@ public:
     static void LuaRegister(void);
     static int LuaLoad(lua_State *L);
     static int LuaAddText(lua_State *L);
+    static int LuaClearText(lua_State *L);
     static int LuaSetFollow(lua_State *L);
 };
 

@@ -19,10 +19,10 @@ module (..., package.seeall)
 
 -- Check which file to use
 function checkfile()
-    filename = string.format("config/lang/%s/license", getlang())
+    filename = string.format("%s/config/lang/%s/license", curdir, getlang())
     
     if not os.fileexists(filename) then
-        filename = string.format("config/license")
+        filename = string.format("%s/config/license", curdir)
     end
     
     if not os.fileexists(filename) then
@@ -44,11 +44,10 @@ function screen:canactivate()
 end
 
 function screen:activate()
-    if filename ~= nil then -- checkfile() has been called by canactivate
-        text:load(filename)
-        if not check:get(1) then
-            install.lockscreen(false, true, true)
-        end
+    text:clear()
+    text:load(filename)
+    if not check:get(1) then
+        install.lockscreen(false, true, true)
     end
 end
 

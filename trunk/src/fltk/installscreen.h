@@ -34,7 +34,8 @@ class CInstallScreen: public CBaseScreen
     Fl_Pack *m_pMainPack, *m_pWidgetPack;
     Fl_Group *m_pWidgetGroup;
     Fl_Box *m_pCounter;
-    std::pair<Fl_Widget *, Fl_Widget *> m_WidgetRange;
+    TSTLVecSize m_CurSubScreen;
+    std::vector<int> m_WidgetRanges;
     int m_iMaxHeight;
 
     virtual CBaseLuaGroup *CreateGroup(void);
@@ -47,6 +48,7 @@ class CInstallScreen: public CBaseScreen
     void ResetWidgetRange(void);
     void UpdateCounter(void);
     bool CheckWidgets(void);
+    void ActivateSubScreen(TSTLVecSize screen);
 
 protected:
     virtual void CoreActivate(void);

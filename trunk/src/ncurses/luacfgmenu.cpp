@@ -135,7 +135,7 @@ bool CLuaCFGMenu::CoreHandleEvent(NNCurses::CWidget *emitter, int event)
                     }
                     case TYPE_DIR:
                     {
-                        std::string ret = NNCurses::DirectoryBox(CreateText(GetTranslation("Please enter a new value for %s"),
+                        std::string ret = NNCurses::DirectoryBox(CreateText(GetTranslation("Please choose a new value for %s"),
                                                              GetTranslation(item.c_str())), entry->val);
                         if (!ret.empty())
                             entry->val = ret;

@@ -78,6 +78,16 @@ void CLuaTextField::AddText(const char *text)
         DoFollow(textbuffer, &iter);
 }
 
+void CLuaTextField::ClearText()
+{
+    GtkTextBuffer *textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(m_pTextField));
+    GtkTextIter start, end;
+    gtk_text_buffer_get_start_iter(textbuffer, &start);
+    gtk_text_buffer_get_end_iter(textbuffer, &end);
+    gtk_text_buffer_delete(textbuffer, &start, &end);
+    UpdateFollow();
+}
+
 void CLuaTextField::UpdateFollow()
 {
     if (Follow())

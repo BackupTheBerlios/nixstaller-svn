@@ -22,6 +22,8 @@
         
 #include <exception>
 
+const char *GetTranslation(const char *s);
+
 /* NOTES
     * CException is used for the base class of every exception
     * Base classes from CException should use virtual inheritance(According to boost catch()
@@ -90,7 +92,8 @@ class CExOpenDir: public CExErrno, public CExIO
     
 public:
     CExOpenDir(int err, const char *dir) : CExErrno(err), m_szDir(dir) { };
-    virtual const char *what(void) throw() { return FormatText("Could not open directory %s: %s", m_szDir, Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not open directory %s: %s"), m_szDir, Error()); };
 };
 
 class CExReadDir: public CExIO, public CExErrno
@@ -99,7 +102,8 @@ class CExReadDir: public CExIO, public CExErrno
     
 public:
     CExReadDir(int err, const char *dir) : CExErrno(err), m_szDir(dir) { };
-    virtual const char *what(void) throw() { return FormatText("Could not read directory %s: %s", m_szDir, Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not read directory %s: %s"), m_szDir, Error()); };
 };
 
 // Thrown when target extraction dir could not be read and cannot be selected by user.
@@ -110,16 +114,17 @@ class CExReadExtrDir: public CExIO
 public:
     CExReadExtrDir(const char *dir) : m_szDir(dir) { };
     virtual const char *what(void) throw()
-    { return FormatText("This installer will install files to the following directory:\n%s\n"
+    { return FormatText(GetTranslation("This installer will install files to the following directory:\n%s\n"
                         "However you don't have read permissions to this directory\n"
-                        "Please restart the installer as a user who does or as the root user", m_szDir); };
+                        "Please restart the installer as a user who does or as the root user"), m_szDir); };
 };
 
 class CExCurDir: public CExErrno, public CExIO
 {
 public:
     CExCurDir(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not read current directory: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not read current directory: %s"), Error()); };
 };
 
 
@@ -127,14 +132,15 @@ class CExOverflow: public CExMessage
 {
 public:
     CExOverflow(const char *msg) : CExMessage(msg) { };
-    virtual const char *what(void) throw() { return FormatText("Overflow detected: %s", Message()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Overflow detected: %s"), Message()); };
 };
 
 class CExLua: public CExMessage
 {
 public:
     CExLua(const char *msg) : CExMessage(msg) { };
-    virtual const char *what(void) throw() { return FormatText("Lua error detected: %s", Message()); };
+    virtual const char *what(void) throw() { return FormatText(GetTranslation("Lua error detected: %s"), Message()); };
 };
 
 class CExSU: public CExMessage
@@ -149,7 +155,8 @@ class CExCommand: public CException
     
 public:
     CExCommand(const char *cmd) : m_szCommand(cmd) { };
-    virtual const char *what(void) throw() { return FormatText("Could not execute command: %s", m_szCommand); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not execute command: %s"), m_szCommand); };
 };
 
 class CExNullEntry: public CExMessage
@@ -162,42 +169,48 @@ class CExOpenPipe: public CExErrno, public CExIO
 {
 public:
     CExOpenPipe(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not open pipe: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not open pipe: %s"), Error()); };
 };
 
 class CExReadPipe: public CExErrno
 {
 public:
     CExReadPipe(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not read pipe: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not read pipe: %s"), Error()); };
 };
 
 class CExClosePipe: public CExErrno, public CExIO
 {
 public:
     CExClosePipe(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not close pipe: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not close pipe: %s"), Error()); };
 };
 
 class CExFork: public CExErrno
 {
 public:
     CExFork(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not fork child: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not fork child: %s"), Error()); };
 };
 
 class CExCloseFD: public CExErrno
 {
 public:
     CExCloseFD(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not close file descriptor: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not close file descriptor: %s"), Error()); };
 };
 
 class CExPoll: public CExErrno
 {
 public:
     CExPoll(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Poll returned an error: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Poll returned an error: %s"), Error()); };
 };
 
 class CExWaitPID: public CExErrno
@@ -205,21 +218,23 @@ class CExWaitPID: public CExErrno
 public:
     CExWaitPID(int err) : CExErrno(err) { };
     virtual const char *what(void) throw()
-    { return FormatText("Encountered an error while waiting on child process: %s", Error()); };
+    { return FormatText(GetTranslation("Encountered an error while waiting on child process: %s"), Error()); };
 };
 
 class CExUName: public CExErrno
 {
 public:
     CExUName(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("uname returned an error: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("uname returned an error: %s"), Error()); };
 };
 
 class CExMKDir: public CExErrno, public CExIO
 {
 public:
     CExMKDir(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw() { return FormatText("Could not create directory: %s", Error()); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not create directory: %s"), Error()); };
 };
 
 class CExRootMKDir: public CExIO
@@ -228,7 +243,8 @@ class CExRootMKDir: public CExIO
     
 public:
     CExRootMKDir(const char *dir) : m_szDir(dir) { };
-    virtual const char *what(void) throw() { return FormatText("Could not create directory \'%s\'", m_szDir); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not create directory \'%s\'"), m_szDir); };
 };
 
 class CExFrontend: public CExMessage

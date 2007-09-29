@@ -41,6 +41,15 @@ Continue as root
 Close
 Close
 
+Continue
+Continue
+
+Exit program
+Exit program
+
+Create directory as root
+Create directory as root
+
 
 #-----------------------------------------------
 # Messages
@@ -131,6 +140,15 @@ This will install %s
 Continue?
 ]
 
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter it's password below.
+]
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter it's password below.
+]
+
 
 #-----------------------------------------------
 # Window titles
@@ -154,9 +172,6 @@ Please select a language
 Welcome
 Welcome
 
-Do you accept and understand the terms of the license agreement?
-Do you accept and understand the terms of the license agreement?
-
 License agreement
 License agreement
 
@@ -180,6 +195,9 @@ Select a directory
 
 Password dialog
 Password dialog
+
+Files are being installed
+Files are being installed
 
 
 #-----------------------------------------------
@@ -206,6 +224,12 @@ Enable
 
 Disable
 Disable
+
+Directory name
+Directory name
+
+Root password
+Root password
 
 
 #-----------------------------------------------
@@ -254,13 +278,56 @@ Could not create directory: %s
 Could not create directory: %s
 
 [
-Could not use su to gain root access
-Make sure you can use su(adding the current user to the wheel group may help)
+Could not use su to gain root access.
+Make sure you can use su (adding the current user to the wheel group may help).
 ]
 [
-Could not use su to gain root access
-Make sure you can use su(adding the current user to the wheel group may help)
+Could not use su to gain root access.
+Make sure you can use su (adding the current user to the wheel group may help).
 ]
+
+Not enough space for buttonbar entry
+Not enough space for buttonbar entry
+
+# %s is replaced by error message
+Overflow detected: %s
+Overflow detected: %s
+
+# %s is replaced by error message
+Could not open pipe: %s
+Could not open pipe: %s
+
+# %s is replaced by error message
+Could not read pipe: %s
+Could not read pipe: %s
+
+# %s is replaced by error message
+Could not close pipe: %s
+Could not close pipe: %s
+
+# %s is replaced by error message
+Could not fork child: %s
+Could not fork child: %s
+
+# %s is replaced by error message
+Could not close file descriptor: %s
+Could not close file descriptor: %s
+
+# %s is replaced by error message
+Poll returned an error: %s
+Poll returned an error: %s
+
+# %s is replaced by error message
+Encountered an error while waiting on child process: %s
+Encountered an error while waiting on child process: %s
+
+# %s is replaced by error message
+uname returned an error: %s
+uname returned an error: %s
+
+# %s is replaced by directory name
+Could not create directory '%s'
+Could not create directory '%s'
 
 
 #-----------------------------------------------
@@ -340,6 +407,12 @@ Navigate
 
 Character
 Character
+
+Toggle
+Toggle
+
+Change
+Change
 
 ARROWS/PGUP/PGDOWN/HOME/END
 ARROWS/PGUP/PGDOWN/HOME/END

@@ -39,6 +39,11 @@ void CLuaTextField::AddText(const char *text)
     m_pTextField->AddText(text);
 }
 
+void CLuaTextField::ClearText()
+{
+    m_pTextField->ClearText();
+}
+
 void CLuaTextField::UpdateFollow()
 {
     m_pTextField->SetFollow(Follow());

@@ -19,10 +19,10 @@ module (..., package.seeall)
 
 -- Check which file to use
 function checkfile()
-    filename = string.format("config/lang/%s/finish", getlang())
+    filename = string.format("%s/config/lang/%s/finish", curdir, getlang())
     
     if not os.fileexists(filename) then
-        filename = string.format("config/finish")
+        filename = string.format("%s/config/finish", curdir)
     end
     
     if not os.fileexists(filename) then
@@ -41,9 +41,8 @@ function screen:canactivate()
 end
 
 function screen:activate()
-    if filename ~= nil then -- checkfile() has been called by canactivate
-        text:load(filename)
-    end
+    text:clear()
+    text:load(filename)
 end
 
 return screen

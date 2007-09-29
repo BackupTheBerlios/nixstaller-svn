@@ -29,6 +29,7 @@ void CBaseLuaTextField::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaTextField::LuaLoad, "load", "textfield");
     NLua::RegisterClassFunction(CBaseLuaTextField::LuaAddText, "add", "textfield");
+    NLua::RegisterClassFunction(CBaseLuaTextField::LuaClearText, "clear", "textfield");
     NLua::RegisterClassFunction(CBaseLuaTextField::LuaSetFollow, "follow", "textfield");
 }
 
@@ -43,6 +44,13 @@ int CBaseLuaTextField::LuaAddText(lua_State *L)
 {
     CBaseLuaTextField *field = CheckLuaWidgetClass<CBaseLuaTextField>("textfield", 1);
     field->AddText(luaL_checkstring(L, 2));
+    return 0;
+}
+
+int CBaseLuaTextField::LuaClearText(lua_State *L)
+{
+    CBaseLuaTextField *field = CheckLuaWidgetClass<CBaseLuaTextField>("textfield", 1);
+    field->ClearText();
     return 0;
 }
 

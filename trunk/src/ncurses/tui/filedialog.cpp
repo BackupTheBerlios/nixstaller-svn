@@ -100,7 +100,7 @@ std::string CFileDialog::AskPassword(LIBSU::CLibSU &suhandler)
     while (true)
     {
         ret = InputBox(GetTranslation("Your account doesn't have permissions to "
-                "create the directory. To create it with the root "
+                "create the directory.\nTo create it with the root "
                 "(administrator) account, please enter it's password below."), "", 0, '*');
 
         if (ret.empty())
@@ -112,8 +112,8 @@ std::string CFileDialog::AskPassword(LIBSU::CLibSU &suhandler)
                 WarningBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
             else
             {
-                WarningBox(GetTranslation("Could not use su to gain root access. "
-                                          "Make sure you can use su (adding the current user to the wheel group may help)"));
+                WarningBox(GetTranslation("Could not use su to gain root access.\n"
+                                          "Make sure you can use su (adding the current user to the wheel group may help)."));
                 break;
             }
         }

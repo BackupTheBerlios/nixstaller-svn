@@ -19,10 +19,10 @@ module (..., package.seeall)
 
 -- Check which file to use
 function checkfile()
-    filename = string.format("config/lang/%s/welcome", getlang())
+    filename = string.format("%s/config/lang/%s/welcome", curdir, getlang())
     
     if not os.fileexists(filename) then
-        filename = string.format("config/welcome")
+        filename = string.format("%s/config/welcome", curdir)
     end
     
     if not os.fileexists(filename) then
@@ -34,7 +34,7 @@ screen = install.newscreen("Welcome")
 group = screen:addgroup()
 
 if cfg.intropic then
-    intropicpath = "files_extra/" .. cfg.intropic
+    intropicpath = install.extrafilespath(cfg.intropic)
     if os.fileexists(intropicpath) then
         group:addimage(intropicpath)
     end
@@ -48,9 +48,8 @@ function screen:canactivate()
 end
 
 function screen:activate()
-    if filename ~= nil then -- checkfile() has been called by canactivate
-        text:load(filename)
-    end
+    text:clear()
+    text:load(filename)
 end
 
 return screen

@@ -31,8 +31,8 @@
 // FLTK Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), m_WidgetRange(NULL, NULL),
-                                                           m_iMaxHeight(0)
+CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title),
+                                                           m_CurSubScreen(0), m_iMaxHeight(0)
 {
     // Size and positions are set by CInstaller when screen is activated
     m_pMainPack = new Fl_Pack(0, 0, 0, 0);
@@ -84,15 +84,18 @@ int CInstallScreen::CheckTotalWidgetH(Fl_Widget *w)
 
 void CInstallScreen::ResetWidgetRange()
 {
-    m_WidgetRange.first = m_WidgetRange.second = NULL;
+    m_WidgetRanges.clear();
+    m_CurSubScreen = 0;
     
     const int size = m_pWidgetPack->children();
     
     if (!size)
         return;
     
-    int h = 0;
-    bool check = true;
+    m_WidgetRanges.push_back(0);
+    
+    int h = 0, starth = 0;
+    bool enablewidgets = true;
     
     for (int i=0; i<size; i++)
     {
@@ -100,57 +103,41 @@ void CInstallScreen::ResetWidgetRange()
         if (!group->children())
             continue;
         
-        if (check)
-        {
-            const int newh = CheckTotalWidgetH(group);
+        const int newh = CheckTotalWidgetH(group);
 
-            if ((h + newh) <= m_iMaxHeight)
+        if ((newh + h) <= m_iMaxHeight)
+        {
+            h += newh + WidgetHSpacing();
+            if (enablewidgets)
             {
-                h += newh + WidgetHSpacing();
+                starth = h;
                 group->show();
-                m_WidgetRange.second = group;
                 continue;
             }
-            
-            check = false;
+        }
+        else
+        {
+            enablewidgets = false;
+            m_WidgetRanges.push_back(i);
+            h = newh;
         }
         
         group->hide();
     }
     
-    int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
-    m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), h);
+    int y = m_pWidgetGroup->y() + ((m_iMaxHeight - starth) / 2); // Center
+    m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), starth);
     
     UpdateCounter();
 }
 
 void CInstallScreen::UpdateCounter()
 {
-    const int size = m_pWidgetPack->children();
-    int count = 1, current = 1, h = 0;
-    
-    for (int i=0; i<size; i++)
-    {
-        Fl_Group *group = GetGroup(m_pWidgetPack->child(i))->GetGroup();
-        if (!group->children())
-            continue;
-
-        const int wh = CheckTotalWidgetH(group);
-        
-        if ((h + wh) > m_iMaxHeight)
-        {
-            h = 0;
-            count++;
-        }
-        
-        h += wh + WidgetHSpacing();
-
-        if (group == m_WidgetRange.first)
-            current = count;
-    }
-    
-    if (count > 1)
-        m_pCounter->label(CreateText("%d/%d", current, count));
+    TSTLVecSize size = m_WidgetRanges.size();
+    if (size > 1)
+        m_pCounter->label(CreateText("%d/%d", m_CurSubScreen+1, SafeConvert<int>(size)));
+    else
+        m_pCounter->label(NULL);
 }
 
 bool CInstallScreen::CheckWidgets()
@@ -160,11 +147,20 @@ bool CInstallScreen::CheckWidgets()
     if (!size)
         return true;
     
-    int start = (m_WidgetRange.first) ? m_pWidgetPack->find(m_WidgetRange.first) : 0;
-    const int end = (m_WidgetRange.second) ? m_pWidgetPack->find(m_WidgetRange.second) : size-1;
+    int start, end;
+    if (HasPrevWidgets())
+        start = m_WidgetRanges[m_CurSubScreen];
+    else
+        start = 0;
+    
+    if (HasNextWidgets())
+        end = m_WidgetRanges[m_CurSubScreen+1];
+    else
+        end = size;
+    
     bool ret = true;
     
-    for (; start<=end; start++)
+    for (; start<end; start++)
     {
         CLuaGroup *group = GetGroup(m_pWidgetPack->child(start));
         if (!group->CheckWidgets())
@@ -172,9 +168,6 @@ bool CInstallScreen::CheckWidgets()
             ret = false;
             break;
         }
-        
-        if (start == end)
-            break;
     }
 
     return ret;
@@ -211,22 +204,77 @@ void CInstallScreen::SetSize(int x, int y, int w, int h)
     m_pWidgetPack->size(w, 0);
 }
 
+void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
+{
+    const int size = m_pWidgetPack->children();
+    
+    for (int i=0; i<size; i++)
+        m_pWidgetPack->child(i)->hide();
+    
+    int start = m_WidgetRanges[screen], end;
+    
+    if ((m_WidgetRanges.size()-1) > screen)
+        end = m_WidgetRanges[screen+1];
+    else
+        end = size;
+    
+    int h = 0;
+    while (start != end)
+    {
+        h += CheckTotalWidgetH(m_pWidgetPack->child(start)) + WidgetHSpacing();
+        m_pWidgetPack->child(start)->show();
+        start++;
+    }
+    
+    if (h)
+    {
+        UpdateCounter();
+        int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
+        m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), h);
+    }
+    
+    m_CurSubScreen = screen;
+    UpdateCounter();
+}
+
 bool CInstallScreen::HasPrevWidgets() const
 {
-    if (!m_WidgetRange.first || !m_pWidgetPack->children())
-        return false;
-    
-    return (m_pWidgetPack->child(0) != m_WidgetRange.first);
+    return (!m_WidgetRanges.empty() && m_CurSubScreen);
 }
 
 bool CInstallScreen::HasNextWidgets() const
 {
-    if (!m_WidgetRange.second || !m_pWidgetPack->children())
-        return false;
-    
-    return (m_pWidgetPack->child(m_pWidgetPack->children()-1) != m_WidgetRange.second);
+    return (!m_WidgetRanges.empty() && (m_CurSubScreen < (m_WidgetRanges.size()-1)));
 }
 
+bool CInstallScreen::SubBack()
+{
+    if (!HasPrevWidgets())
+        return false;
+    
+    ActivateSubScreen(m_CurSubScreen - 1);
+    return true;
+}
+
+bool CInstallScreen::SubNext(bool check)
+{
+    if (check && !CheckWidgets())
+        return true; // Widget check failed, so return true in order to stay at this screen
+    
+    if (!HasNextWidgets())
+        return false;
+    
+    ActivateSubScreen(m_CurSubScreen + 1);
+    return true;
+}
+
+void CInstallScreen::SubLast()
+{
+    if (!m_WidgetRanges.empty())
+        ActivateSubScreen(m_WidgetRanges.size()-1);
+}
+
+#if 0
 bool CInstallScreen::SubBack()
 {
     if (HasPrevWidgets())
@@ -350,3 +398,4 @@ void CInstallScreen::SubLast()
     while (SubNext(false))
         ;
 }
+#endif

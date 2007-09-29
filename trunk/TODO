@@ -10,8 +10,10 @@ TEST
 - Check if initial language is fully loaded/used
 - Check if all LuaDataChanged functions are called after widgets are changed
 - Make test lua file(s) that test anything
-- files_extra/ : Weird filenames, in general
+- files_extra/ / genprojdir.sh : Weird filenames, in general
 - intropic loading from both root and files_extra dirs.
+- root usage from dirselectors
+- new subscreen code
 
 
 DOCS
@@ -30,17 +32,6 @@ DOCS
 
         
 TRANSLATIONS
-- Toggle (buttonbar)
-- Navigate (buttonbar)
-- ARROWS/PGUP/PGDOWN (buttonbar)
-- Character (buttonbar)
-- Messages from MKDir helper classes
-- Check all sentences for punctation
-- "Not enough space for buttonbar entry" - ncurses bbar
-- New Error messages used by exceptions and luaL_argcheck
-- Change (ncurses bbar)
-- %s is now being installed - InstallScreen title
-- Shorter name for "Bestandsnaam" for FLTK's file chooser
 
 
 MAIN
@@ -63,6 +54,7 @@ GTK
 
 FLTK
 - Check if all lua screens, groups, widgets are destroyed
+- Init radiobuttons
 
 
 DESIGN
@@ -83,6 +75,10 @@ OVERALL
 - x64 bins?
 - Modify Makeself?
 - Better util.a configure testing?
+
+
+TRANSLATIONS
+- Check all sentences for punctation
 
 
 MAIN

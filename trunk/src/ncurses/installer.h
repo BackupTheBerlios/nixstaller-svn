@@ -47,7 +47,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     void PrevScreen(void);
     void NextScreen(void);
     void AskQuit(void);
-    void ActivateScreen(CInstallScreen *screen);
+    void ActivateScreen(CInstallScreen *screen, bool sublast=false);
     
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);

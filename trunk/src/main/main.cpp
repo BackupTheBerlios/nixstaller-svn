@@ -156,7 +156,7 @@ void CMain::Init(int argc, char **argv)
         m_szCurLang = m_Languages.front();
     
     debugline("defaultlang: %s\n", m_szCurLang.c_str());
-    ReadLang();
+    UpdateLanguage();
     
     m_SUHandler.SetUser("root");
     m_SUHandler.SetTerminalOutput(false);
@@ -204,8 +204,8 @@ bool CMain::GetSUPasswd(const char *msg, bool mandatory)
                     WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
                 else
                 {
-                    const char *msg = "Could not use su to gain root access Make sure you can use "
-                            "su (adding the current user to the wheel group may help)";
+                    const char *msg = "Could not use su to gain root access.\n"
+                            "Make sure you can use su (adding the current user to the wheel group may help).";
                     
                     if (mandatory)
                         throw Exceptions::CExSU(msg);

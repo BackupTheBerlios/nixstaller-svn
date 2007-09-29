@@ -439,13 +439,25 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
     
     EatWhite(stat);
 
+#ifndef RELEASE
     if (m_ArchList[m_szCurArchFName].filesizes.find(stat) == m_ArchList[m_szCurArchFName].filesizes.end())
     {
         debugline("Couldn't find %s\n", stat.c_str());
         return;
     }
+#endif
     
-    m_fExtrPercent += ((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_ulTotalArchSize)*100.0f;
+    m_fExtrPercent += (((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_ulTotalArchSize)*100.0f);
+    if (m_fExtrPercent < 0.0f)
+    {
+        m_fExtrPercent = 0.0f;
+        debugline("m_fExtrPercent below 0!\n");
+    }
+    else if (m_fExtrPercent > 100.0f)
+    {
+        debugline("m_fExtrPercent above max: %f!\n", m_fExtrPercent);
+        m_fExtrPercent = 100.0f;
+    }
 
     AddOutput("Extracting file: " + stat + '\n');
     SetProgress(SafeConvert<int>(m_fExtrPercent/(float)m_sInstallSteps));
@@ -578,8 +590,8 @@ bool CBaseInstall::VerifyDestDir(void)
                 if (MKDirNeedsRoot(dir))
                 {
                     GetSUPasswd("Your account doesn't have permissions to "
-                                "create the directory. To create the directory and proceed the installation with the "
-                                "root (administrator) account, please enter it's password below.", false);
+                            "create the directory.\nTo create it with the root "
+                            "(administrator) account, please enter it's password below.", false);
                     MKDirRecRoot(dir, m_SUHandler, m_szPassword);
                 }
                 else

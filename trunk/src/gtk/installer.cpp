@@ -314,7 +314,8 @@ void CInstaller::CoreUpdateLanguage()
     SetAboutLabel();
     
     gtk_label_set(GTK_LABEL(m_pCancelLabel), GetTranslation("Cancel"));
-    UpdateButtons();
+    gtk_label_set(GTK_LABEL(m_pBackLabel), GetTranslation("Back"));
+    UpdateButtons(); // Sets Next label
 
     if (!m_CurTitle.empty())
         SetTitle(m_CurTitle);
@@ -330,7 +331,7 @@ void CInstaller::SetTitle(const std::string &t)
 
 bool CInstaller::AskQuit()
 {
-    char *msg;
+    const char *msg;
     if (Installing())
         msg = GetTranslation("Install commands are still running\n"
         "If you abort now this may lead to a broken installation\n"
