@@ -30,6 +30,7 @@ class Fl_Widget;
 class CLuaGroup: public CBaseLuaGroup
 {
     Fl_Pack *m_pMainPack;
+    int m_iMaxWidth;
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type);
@@ -55,6 +56,7 @@ public:
     virtual ~CLuaGroup(void) { DeleteWidgets(); }
     
     Fl_Group *GetGroup(void);
+    void UpdateLayout(void);
     void SetSize(int maxw, int maxh);
 };
 

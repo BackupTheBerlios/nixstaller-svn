@@ -57,6 +57,8 @@ bool CFileDialog::ValidDir(CDirIter &dir)
 
 void CFileDialog::OpenDir(const std::string &newdir)
 {
+    std::string curdir = GetCWD();
+    
     try
     {
         CHDir(newdir);
@@ -91,6 +93,8 @@ void CFileDialog::OpenDir(const std::string &newdir)
             OpenDir("/");
         }
     }
+    
+    CHDir(curdir);
 }
 
 std::string CFileDialog::AskPassword(LIBSU::CLibSU &suhandler)
@@ -135,6 +139,9 @@ bool CFileDialog::CoreHandleKey(chtype key)
         
         if (newdir.empty())
             return true;
+        
+        if (newdir[0] != '/')
+            newdir = m_Directory + '/' + newdir;
         
         try
         {

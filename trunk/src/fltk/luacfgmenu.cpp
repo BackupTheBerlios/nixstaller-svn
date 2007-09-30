@@ -48,6 +48,7 @@ CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc)
     
     m_pInputField = new Fl_Input(0, 0, 0, inputh);
     m_pInputField->callback(InputChangedCB, this);
+    m_pInputField->when(FL_WHEN_CHANGED);
     m_pInputField->hide();
     
     m_pChoiceMenu = new Fl_Choice(0, 0, 0, inputh);
@@ -60,6 +61,7 @@ CLuaCFGMenu::CLuaCFGMenu(const char *desc) : CBaseLuaWidget(desc)
     
     m_pDirInput = new Fl_File_Input(0, 0, 0, dirinputh);
     m_pDirInput->callback(InputChangedCB, this);
+    m_pDirInput->when(FL_WHEN_CHANGED);
     m_pDirInput->hide();
     
     m_pBrowseButton = new Fl_Button(0, (dirinputh-inputh) / 2, 0, inputh, GetTranslation("Browse"));

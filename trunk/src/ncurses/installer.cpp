@@ -285,6 +285,7 @@ void CInstaller::CoreUpdateLanguage()
 {
     CBaseInstall::CoreUpdateLanguage();
     m_pCancelButton->SetText(GetTranslation("Cancel"));
+    m_pPrevButton->SetText(GetTranslation("Back"));
     UpdateButtons();
 }
 

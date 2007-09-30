@@ -37,7 +37,7 @@
 // Lua Widget Group Class
 // -------------------------------------
 
-CLuaGroup::CLuaGroup()
+CLuaGroup::CLuaGroup() : m_iMaxWidth(0)
 {
     m_pMainPack = new Fl_Pack(0, 0, 0, 0);
     m_pMainPack->resizable(NULL);
@@ -119,6 +119,8 @@ CBaseLuaTextField *CLuaGroup::CreateTextField(const char *desc, bool wrap)
 
 void CLuaGroup::AddWidget(CLuaWidget *w)
 {
+    w->SetParent(this);
+    
     // The widget is put in another group, so that it can center vertically
     Fl_Group *group = new Fl_Group(0, 0, 0, 0);
     group->resizable(NULL);
@@ -177,12 +179,10 @@ Fl_Group *CLuaGroup::GetGroup()
     return m_pMainPack;
 }
 
-void CLuaGroup::SetSize(int maxw, int maxh)
+void CLuaGroup::UpdateLayout()
 {
-    maxw -= WidgetSpacing(); // HACK: FLTK adds spacing at the beginning (bug)
-    
     const int expsize = ExpandedWidgets();
-    const int diffw = maxw - RequestedWidgetsW();
+    const int diffw = m_iMaxWidth - RequestedWidgetsW();
     const int extraw = (expsize) ? diffw / expsize : 0;
     const int size = m_pMainPack->children();
     int totalwidgeth = 0;
@@ -200,7 +200,7 @@ void CLuaGroup::SetSize(int maxw, int maxh)
         if (widget->Expand())
             w += extraw;
         
-        assert(w <= maxw);
+        assert(w <= m_iMaxWidth);
         
         int h = widget->RequestHeight(w);
         totalwidgeth = std::max(totalwidgeth, h);
@@ -219,8 +219,20 @@ void CLuaGroup::SetSize(int maxw, int maxh)
         wgroup->size(widget->GetGroup()->w(), totalwidgeth);
         
         widget->GetGroup()->position(wgroup->x(), wgroup->y() + ((totalwidgeth - widget->GetGroup()->h()) / 2));
+        
+        widget->GetGroup()->redraw();
     }
 
     if (totalwidgeth > m_pMainPack->h())
         m_pMainPack->size(m_pMainPack->w(), totalwidgeth);
+    
+    m_pMainPack->parent()->redraw(); // Important
 }
+
+void CLuaGroup::SetSize(int maxw, int maxh)
+{
+    maxw -= WidgetSpacing(); // HACK: FLTK adds spacing at the beginning (bug)
+    m_iMaxWidth = maxw;
+    UpdateLayout();
+}
+

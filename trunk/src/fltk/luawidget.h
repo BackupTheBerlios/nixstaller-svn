@@ -25,9 +25,11 @@
 class Fl_Box;
 class Fl_Group;
 class Fl_Pack;
+class CLuaGroup;
 
 class CLuaWidget: virtual public CBaseLuaWidget
 {
+    CLuaGroup *m_pParent;
     Fl_Pack *m_pMainPack;
     Fl_Box *m_pTitle;
     
@@ -38,9 +40,13 @@ class CLuaWidget: virtual public CBaseLuaWidget
     virtual int CoreRequestHeight(int maxw) = 0;
     virtual void UpdateSize(void) {}
     
+protected:
+    CLuaGroup *GetParent(void) { return m_pParent; }
+    
 public:
     CLuaWidget(void);
     
+    void SetParent(CLuaGroup *p) { m_pParent = p; }
     Fl_Group *GetGroup(void);
     bool Expand(void) { return CoreExpand(); }
     int RequestWidth(void);

@@ -233,10 +233,13 @@ bool CMain::ReadLang()
         Translations.clear();
     }
     
-    std::ifstream file(CreateText("config/lang/%s/strings", m_szCurLang.c_str()));
+    std::ifstream file(CreateText("%s/config/lang/%s/strings", m_szOwnDir.c_str(), m_szCurLang.c_str()));
 
     if (!file)
+    {
+        debugline("WARNING: Failed to load language file for %s\n", m_szCurLang.c_str());
         return false;
+    }
     
     std::string text, srcmsg;
     bool atsrc = true;

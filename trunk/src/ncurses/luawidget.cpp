@@ -49,7 +49,7 @@ void CLuaWidget::CoreSetTitle()
 void CLuaWidget::CoreActivateWidget()
 {
     if (!Focused())
-        SetNextFocWidget(false); // Set first valid widget
+        ReqFocus();
 }
 
 void CLuaWidget::SetMaxWidth(int maxw)

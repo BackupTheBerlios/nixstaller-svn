@@ -37,6 +37,7 @@ protected:
     virtual void InitLua(void);
 
     virtual bool CoreHandleKey(chtype key);
+    virtual void CoreGetButtonDescs(NNCurses::TButtonDescList &list);
     
 public:
     void Run(void);

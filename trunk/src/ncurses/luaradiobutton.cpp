@@ -55,7 +55,7 @@ void CLuaRadioButton::Enable(TSTLVecSize n)
 void CLuaRadioButton::CoreUpdateLanguage()
 {
     TOptions &opts = GetOptions();
-    int n = 1;
+    int n = 0;
     for (TOptions::iterator it=opts.begin(); it!=opts.end(); it++, n++)
         m_pRadioButton->SetName(n, GetTranslation(*it));
 }

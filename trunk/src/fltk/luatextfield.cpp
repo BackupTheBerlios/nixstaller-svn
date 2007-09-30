@@ -47,7 +47,7 @@ void CLuaTextField::Load(const char *file)
 
 void CLuaTextField::AddText(const char *text)
 {
-    m_pDisplay->insert(text);
+    m_pBuffer->append(text);
     if (Follow())
         DoFollow();
 }

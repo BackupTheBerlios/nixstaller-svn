@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "luagroup.h"
 #include "lualabel.h"
 #include <FL/Fl_Group.H>
 
@@ -24,4 +25,8 @@
 // FLTK Lua Label Class
 // -------------------------------------
 
-
+void CLuaLabel::SetLabel(const char *text)
+{
+    SetTitle(text);
+    GetParent()->UpdateLayout();
+}

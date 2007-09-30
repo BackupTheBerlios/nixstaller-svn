@@ -234,6 +234,12 @@ bool CNCursBase::CoreHandleKey(chtype key)
     return false;
 }
 
+void CNCursBase::CoreGetButtonDescs(NNCurses::TButtonDescList &list)
+{
+    list.push_back(NNCurses::TButtonDescPair("F2", "About"));
+    CWindow::CoreGetButtonDescs(list);
+}
+
 void CNCursBase::Run()
 {
     while (NNCurses::TUI.Run())

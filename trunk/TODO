@@ -54,7 +54,6 @@ GTK
 
 FLTK
 - Check if all lua screens, groups, widgets are destroyed
-- Init radiobuttons
 
 
 DESIGN

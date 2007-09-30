@@ -36,6 +36,10 @@ CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLua
         Fl_Round_Button *button = new Fl_Round_Button(0, 0, 0, ButtonHeight(), MakeTranslation(l[n]));
         button->type(FL_RADIO_BUTTON);
         button->callback(ToggleCB, this);
+        
+        if (m_RadioButtons.empty())
+            button->setonly();
+        
         m_RadioButtons.push_back(button);
         GetGroup()->add(button);
     }
