@@ -15,7 +15,7 @@
 @end macro
 
 @titlepage
-@title Nixstaller 0.2.2 Manual
+@title Nixstaller 0.3 Manual
 @author Rick Helmus
 @end titlepage
 
@@ -63,7 +63,7 @@ Here is a short description for what you can find in this document:
 Here is a list with the main features. Read further for more info to see what they do and how to use them.
 
 @itemize @bullet
-@item 2 different frontends used for the installer: @uref{http://www.fltk.org,FLTK} and @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}.
+@item 3 different frontends used for the installer: @uref{http://www.fltk.org,FLTK}, @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses} and @uref{http://www.gtk.org,GTK2}.
 @item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris Express/Nexenta (all x86).
 @item An installer itself has the following features:
 @itemize @bullet
@@ -78,12 +78,12 @@ Here is a list with the main features. Read further for more info to see what th
 @item A screen which can show text after the installation.
 @item A generic screen which can be made with a script.
 @end itemize
-Most screens are optional and can be shown in any particalur order.
+Most screens are optional and can be shown in any particalur order. New type of installation screens can be created manually.
 @end itemize
 @item Frontends are build in a way that they can be used on many different systems by linking less common libraries staticly.
 @item The files can be packed with gzip-, bzip2 and lzma compression.
 @item Installation files can be extracted to various directories; a temporary directory (useful for @samp{./configure && make && make install} like installers), a directory which can be selected by the user and a default directory.
-@item @uref{http://www.lua.org,Lua} support is provided to configure the installer and to program the installation procedure. This allows very flexible configurations.
+@item @uref{http://www.lua.org,Lua} support is provided to configure the installer, create installation screens and program the installation procedure. This allows very flexible configurations.
 @end itemize
 
 
@@ -169,7 +169,7 @@ Installing Nixstaller is easy: just extract the files to a directory and your do
 @itemize @bullet
 @item @ref{Installing, Install} Nixstaller.
 @item Go to a terminal and @command{cd} to the directory where you extracted Nixstaller.
-@item @command{cp -R example/simple/ release/}
+@item @command{./genprojdir.sh release/}
 @item Edit @file{release/config.lua} and optionally @file{release/run.lua}
 @item Put some files in @file{release/files_all/} and perhaps in @file{release/files_linux_all}, @file{release/files_freebsd_x86} etc.
 @item @command{./geninstall.sh release/}
@@ -185,8 +185,8 @@ Also read the @ref{Tutorials, tutorials}.
 
 
 @section Installation package
-The final product of Nixstaller is a @emph{install package}. The package itself is simply a self-extracting archive in the form of a shell script. When the package(the shell script) is executed it will extract a few files to a temporary directory and will call another script. This second script will detect a usable frontend and will call it.
-A install package itself contains the following files:
+The final product of Nixstaller is an @emph{install package}. The package itself is simply a self-extracting archive in the form of a shell script. When the package (the shell script) is executed it will extract a few files to a temporary directory and will call another script. This second script will detect a usable frontend and calls it.
+An install package itself contains the following files:
 @itemize @bullet
 @item One or more frontends. Depending on the configuration there can be multiple frontends for different systems.
 @item One or two lua scripts which tell what the installer should do.
@@ -194,33 +194,40 @@ A install package itself contains the following files:
 @item Some text files used for displaying a introduction text, license info and/or a finish message. (optional)
 @item An archive file containing the files to be used for the installation.
 @item A script that is called when the package is extracted.
+@item Other files needed runtime, such as images, logos and any other files specified by the install creator. (optional)
 @end itemize
 
-In the following sections these items will be further explained.
+The items important for the install creator are highlighted in the following sections or in the next chapter.
 
 
 @section Frontends
 The @emph{frontend} is a program from which the user can interact. When the install package is executed by the user a suitable frontend will be launched. This is determined by if X is running and which frontends are included in the package for the user's system.
 
-Currently there are 2 frontends for Nixstaller.
+Currently there are 3 frontends for Nixstaller.
 @ifhtml
-One is powered by @uref{http://www.fltk.org,FLTK}:
+The first is powered by @uref{http://www.fltk.org,FLTK}:
 
 @c @image{fltk,,,,png}
 @html
 <img src="fltk.png" alt="FLTK frontend picture">
 @end html
 
-and the other by @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}:
+The second by @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses}:
 
 @c @image{ncurs,,,,png}
 @html
 <img src="ncurs.png" alt="ncurses frontend picture">
 @end html
 
+and the third by @uref{http://www.gtk.org/,GTK2}:
+
+@html
+<img src="gtk.png" alt="gtk frontend picture">
+@end html
+
 @end ifhtml
 @ifnothtml
-The first is powered by FLTK and the second is powered by ncurses.
+The first is powered by FLTK, the second is powered by ncursesand the third by GTK2.
 @end ifnothtml
 You can select which frontend(s) you want to include.
 
@@ -229,8 +236,9 @@ You can select which frontend(s) you want to include.
 The installation is controlled by one or two lua scripts. These are explained in the @ref{Creating Installers} chapter.
 
 
+@anchor{Translations}
 @section Translations
-The text used by the frontends can be translated via @emph{translation files}. This file is simply called @file{strings} and will contain all (English) strings used by the installer with the translation beneath them. Any line that starts with a @samp{#} will be ignored.
+The text used by the frontends can be translated via @emph{translation files}. Each file is simply called @file{strings} and will contain all (English) strings used by the installer with the translation beneath them. Any line that starts with a @samp{#} will be ignored.
 
 Currently there are already 2 translations: Dutch and English. You can find these in the @file{lang/} directory. You can 'translate' the English @file{'strings'} file in order to modify the English texts used by the installer.
 
@@ -287,6 +295,9 @@ This is the message that is displayed after the installation has (succesfully) f
 
 Each of these items are stored in plain text files. The @emph{welcome message} is in the file @file{welcome}, the @emph{license agreement} is in a file called @file{license} and the @emph{finish message} is in the file @file{finish}. For translations of any of these texts there should be a copy of the file put in a seperate directory. Chapter @ref{Creating Installers} describes the file layout and mentions where to put all the files.
 
+@section Other files
+Other files include files needed during runtime (ie when the installer is started, but not installing yet) and the files to be used during installation. Examples of runtime files are graphics such as a logo or text files that need to be displayed. The next chapter will cover how to specify these files.
+
 
 
 @node Creating Installers
@@ -316,11 +327,11 @@ A project for an installer is nothing more than a directory with a certain file 
         @item @file{files_<os>_all/}
         @item @file{files_all_<arch>/}
         @item @file{files_<os>_<arch>/}
+        @item @file{files_extra/}
 
         @item @file{welcome}
         @item @file{license}
         @item @file{finish}
-        @item @file{<intro picture>}
         
         @item @file{config.lua}
         @item @file{run.lua}
@@ -342,20 +353,18 @@ As mentioned in the file structure above, there are 4 "@file{files_}" directory 
 In this directory you should put all the files to be installed. These will be extracted for any OS and CPU architecture.
 @item @file{files_<os>_all/}
 In this directory you can put files that will only be extracted if the user's system equals to @samp{<os>}. The @samp{<os>} part should be replaced by a lowercased version from the output of @command{uname} shell command. Some examples: @file{files_linux_all/}, @file{files_sunos_all/}.
-@item @file{files_all_<arch>}
+@item @file{files_all_<arch>/}
 Similar to the previous item, @file{files_<os>_all/}, this directory should contain all the files that need to be installed for a CPU architecture specified by @samp{<arch>}. The @code{<arch>} part should be replaced by either @samp{x86} for Intel 32 bit compatible systems or replaced by the output from the shell command @command{uname -m}. Note that currently there are only @samp{x86} frontend binaries available.
-@item @file{files_<os>_<arch>}
+@item @file{files_<os>_<arch>/}
 A combination of the previous two. Examples: @file{files_linux_x86/}, @file{files_freebsd_x86/}.
+@item @file{files_extra/}
+@c UNDONE
+This directory contains any files needed at runtime. Examples are graphics or text files to show. The files can be accessed with the install.extrafilespath() lua function (see further).
 @end table
 
 
 @section The @file{welcome}, @file{license} and @file{finish} Files
 These files were already discussed in the previous chapter. Simply put them in the root of your project directory.
-
-
-@section Intro Picture
-You can add an image to the Intro Screen. You have to specify the file name in the @file{config.lua} file. Valid formats are: png, jpeg, bmp and gif.
-
 
 @section Lua Scripts
 The creation and behaviour of the installer is controlled by 2 Lua scripts: @file{config.lua} and @file{run.lua}. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or atleast keep it close.@*
@@ -383,16 +392,19 @@ LZMA compresses the best of all three. Compression is fairly slow, but decompres
 If this variable is not specified it will default to "lzma". If you're testing your installer it might be a good idea to use "gzip" and switch to "lzma" when the installer is done. That way you have fast compression while testing and good compression for the user.
 @vindex cfg.defaultlang
 @item cfg.defaultlang
-This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english".
+This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english" or the first valid language if English is not available.
 @vindex cfg.frontends
 @item cfg.frontends
-This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Currently only these are valid: "ncurses" and "fltk". The default is @code{@{ "fltk", "ncurses" @}}.
+This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Valid values are: "gtk", "fltk", "ncurses". The default is @code{@{ "gtk", "fltk", "ncurses" @}}.
 @vindex cfg.intropic
 @item cfg.intropic
-An optional variable containing a @ref{Strings,,string} with the path to a Intro Picture.
+An optional variable containing a @ref{Strings,,string} with the filename of a picture to use in the welcomescreen. Valid file formats are png, jpeg, bmp and gif. If the size is more than 300x200 px the image will be resized to fit. The file should be placed in the @file{files_extra/} directory.
 @vindex cfg.languages
 @item cfg.languages
 An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of the languages to include for translations. The language names should be the same as the name of the subdirectories in the @file{lang/} directory from your project directory. The default is @code{@{ "english", "dutch" @}}.
+@vindex cfg.logo
+@item cfg.logo
+An optional variable containing a @ref{Strings,,string} with the filename of a picture to use as a logo. Valid file formats are png, jpeg, bmp and gif. The file should be placed in the @file{files_extra/} directory. If unspecified a default logo is used.
 @vindex cfg.targetarch
 @item cfg.targetarch
 A variable that should contain an array (@pxref{Tables}) of @ref{Strings,,strings} for the CPU architectures this installer should support. Nixstaller currently only supports @samp{x86} and this variable will default to this if not specified.
@@ -407,6 +419,7 @@ cfg.archivetype = "gzip"
 cfg.defaultlang = "english"
 cfg.frontends = @{ "fltk" @}
 cfg.intropic = "intro.png"
+cfg.logo = "mylogo.png"
 cfg.languages = @{ "english" @}
 cfg.targetarch = @{ "x86" @}
 cfg.targetos = @{ "sunos", "netbsd", "linux" @}}
@@ -419,14 +432,29 @@ The second Lua script is used to control the installer. This file is unlike the 
 @item Controlling the installation process.
 @end itemize
 
-There are 2 (optional) functions that are called automaticly and should be used to configure the installation process.
+There are 2 (optional) functions that are called automaticly. The first is called @code{Init()} which is called just after the installer launches and is used for initialization. In this function you can set the destination path for the installation files and configure or create new installation screens. The second function is called @code{Install()} and is called as soon as the installation begins. This function controles the installation process.
 
-@subsubsection First function: @code{Init()}
-This function is, as the name suggests, used for initialization.@*
+The file layout generally looks like this:
+@codeblock{function Init()
+    @minus{}@minus{} Set the install destination path
+    @minus{}@minus{} Create new installation screens
+    @minus{}@minus{} Set which screens to use
+end
 @*
-The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it (see below) or point it to a temporary directory. The latter is accompished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).@*
+function Install()
+    @minus{}@minus{} Do pre-install things (ie asking the root password)
+    @minus{}@minus{} Extract the installation files
+    @minus{}@minus{} Do post-install things (ie compile the extracted files)
+end}
 
-There are a few (predefined) installation screens. To select which you want you should put some variables in the @code{install.screenlist} table. These are the variable names of each screen:
+The above items are discussed below.
+
+@subsubsection Setting the install destination path
+The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it through the @code{SelectDirScreen} (see below) or point it to a temporary directory. The latter is accompished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).
+
+
+@subsubsection Installation screens
+As discussed before, installation screens are meant to let the user interact with the installer. You can use @emph{predefined} screens or create new screens. The following predefined screens exist:
 @anchor{instscreens}
 @table @code
 @vindex WelcomeScreen
@@ -434,7 +462,7 @@ There are a few (predefined) installation screens. To select which you want you 
 The screen that is usually shown at first. This screen can be used to display a graphic image (defined via @code{intropic}, see @ref{config.lua}) and display an introduction message (via the @file{welcome} file, see @ref{welcome license finish, this section}). If this file doesn't exist the screen won't be displayed.
 @vindex LicenseScreen
 @item LicenseScreen
-Is used to display a license agreement specified through the @file{license} file (see @ref{welcome license finish, this section})). If this file doesn't exist the screen won't be displayed.
+Is used to display a license agreement specified through the @file{license} file (see @ref{welcome license finish, this section}). If this file doesn't exist the screen won't be displayed.
 @vindex SelectDirScreen
 @item SelectDirScreen
 This screen lets the user select a directory that will be stored in the @code{install.destdir} variable.
@@ -446,9 +474,11 @@ When this screen is shown the installation begins and displays the current statu
 Displays the message defined through the @file{finish} file (see @ref{welcome license finish, this section})). If this file doesn't exist the screen won't be displayed.
 @end table
 
-By default @code{install.screenlist} contains all these screens.@*
+To tell which installation screens you want to use and in what order you should put them in the @code{install.screenlist} @ref{Tables,, table}. The screen at the first table entry is shown first, then the second entry is shown etc. By default @code{install.screenlist} contains all the predefined screens.@*
 @*
-You can create new installation screens so that the user can configure variables which can affect the installation. To create a new screen we call the @ref{install.newcfgscreen} function. This function returns a variable pointing to a @ref{Classes,,class} that we can use to modify this screen. The screen can contain several @emph{widgets}. Here is a table showing them:
+
+@subsubsection Creation of new installation screens
+Besides using the predefined screens, new screens can be created aswell. The primary reason for creating new screens is to let the user be able to configure certain settings which affect the installation process. To create a new screen we call the @ref{install.newcfgscreen} function. This function returns a variable pointing to a @ref{Classes,,class} that we can use to modify this screen. The screen can contain several @emph{widgets}. Here is a table showing them:
 @*
 @starttable{.33,.33,.33}
 @addtableheaderrow{Widget}
@@ -456,14 +486,14 @@ You can create new installation screens so that the user can configure variables
     @addtableheadercol{Function}
 @endtablerow
 
-@addtablerow{Config menu}
-    @addtablecol{A menu that will let the user configure certain parameters in a logic way.}
-    @addtablecol{@ref{cfgscreen:addcfgmenu}}
-@endtablerow
-
 @addtablerow{Check box}
     @addtablecol{One or more options that the user can enable.}
     @addtablecol{@ref{cfgscreen:addcheckbox}}
+@endtablerow
+
+@addtablerow{Config menu}
+    @addtablecol{A menu that will let the user configure certain parameters in a logic way.}
+    @addtablecol{@ref{cfgscreen:addcfgmenu}}
 @endtablerow
 
 @addtablerow{Directory Selector}
@@ -471,9 +501,29 @@ You can create new installation screens so that the user can configure variables
     @addtablecol{@ref{cfgscreen:adddirselector}}
 @endtablerow
 
+@addtablerow{Image}
+    @addtablecol{Shows an image file. The image is scaled if it's size is over 300x200 px. Valid file formats are: png, jpeg, gif and bmp.}
+    @addtablecol{@ref{cfgscreen:addimage}}
+@endtablerow
+
 @addtablerow{Input Field}
     @addtablecol{A single line inputfield where the user can specify text.}
     @addtablecol{@ref{cfgscreen:addinput}}
+@endtablerow
+
+@addtablerow{Label}
+    @addtablecol{Shows one or more lines of text.}
+    @addtablecol{@ref{cfgscreen:addlabel}}
+@endtablerow
+
+@addtablerow{Menu}
+    @addtablecol{A menu (or listbox) widget that lets the user select an item from a list.}
+    @addtablecol{@ref{cfgscreen:addmenu}}
+@endtablerow
+
+@addtablerow{Progressbar}
+    @addtablecol{Bar showing the progress of a certain process.}
+    @addtablecol{@ref{cfgscreen:addprogressbar}}
 @endtablerow
 
 @addtablerow{Radiobutton}
@@ -481,9 +531,21 @@ You can create new installation screens so that the user can configure variables
     @addtablecol{@ref{cfgscreen:addradiobutton}}
 @endtablerow
 
+@addtablerow{Textfield}
+    @addtablecol{Widget that is used to show multiple lines of text. Lets the user scroll it when necessary.}
+    @addtablecol{@ref{cfgscreen:addtextfield}}
+@endtablerow
+
 @endtable
 For a detailed explanation of a widget see the links shown in the @samp{Function} column.@*
 @*
+
+The widgets are placed vertically in order. When there is no room for a widget the screen is split into one or more @emph{subscreens}. Each subscreen has the same title as the original screen and has a @emph{counter} that shows current subscreen in the form X/Y where X is the current screen and Y the total number of subscreens. When the widget does not fit into a new subscreen or does not fit horizontally an error will be thrown. If a widget fits or not depends on each frontend and how the widget is configured. For this reason always verify the installer for each frontend!
+
+Widgets can be horizontally grouped aswell. To do this a special @emph{group widget} needs to be created which will hold one or more widgets. The @ref{cfgscreen:addgroup} function creates a new group widget and returns a variable pointing to the group's @ref{Classes,,class}. The same functions for install screens are used to add widgets to a group widget. However these functions are called via the group's own class, @emph{ie} @code{group:addinput} (where @code{group} is a group widget variable).@*
+@*
+
+@c UNDONE
 Now lets finish this section with an example showing all the given information in action:
 @codeblock{@minus{}@minus{} Example run.lua file
 function Init()
@@ -491,6 +553,11 @@ function Init()
 @*
     myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")
     namefield = myscreen:addinput("Your name")
+@*
+    @minus{}@minus{} Group 2 widgets next to eachother
+    group = myscreen:addgroup()
+    check1 = group:addlabel("Left label.")
+    check2 = group:addlabel("Right label.")
 @*
     install.screenlist = @{ WelcomeScreen, myscreen, InstallScreen @}
 done}
@@ -500,12 +567,14 @@ Firstly @code{install.destdir} is set so that files are extracted to a temporary
 Hello!@*
 You can use this screen to configure some settings.
 @end quotation
-After that an inputfield widget is created on our new screen labeled with "Your name". The last line defines which screens should be shown and in which order. In our case first the welcome screen will be displayed, following by our custom screen and ending with the installation screen.
+After that an inputfield widget is created on our new screen labeled with "Your name". Then 2 labels are created and grouped next to eachother. The last line defines which screens should be shown and in which order. In our case first the welcome screen will be displayed, following by our custom screen and ending with the installation screen.
 
-@subsubsection Second function: @code{Install()}
-This function is automaticly executed when the installation begins. Main purposes are to extract the installation files and execute installation commands.@*
-@*
-Extraction of the installation files is accompished via the @ref{install.extractfiles} function. When this function is called the files are extracted to the directory specified by the @code{install.destdir} variable (see previous section). If the @code{Install()} function is not defined one will be created automaticly which will only call @ref{install.extractfiles}.@*
+@subsubsection The installation process
+By defining a @code{Install()} function we can control the installation proces. If this function is not defined a default is generated and looks like this:
+@codeblock{function Install()
+    install.extractfiles()
+end}
+The @ref{install.extractfiles} function is used to extract the installation files to the path defined by @code{install.destdir}.@*
 @*
 There are various Lua functions that can be used for installation. Files can be read or created with the @ref{io, io package}, there are functions that work with the OS (Operating System) of the user in the @ref{os, os package}.@*
 @*
@@ -529,6 +598,7 @@ Can be used to set a short status message on the top of the install screen.
 Sets how many @emph{steps} the installation has. Follow the link for more information.
 @end table
 
+@c UNDONE
 To finish this section here is an example of an @code{Install()} function.
 @codeblock{@minus{}@minus{} Example Install() function
 function Install()
@@ -542,6 +612,14 @@ function Install()
 end}
 
 We start with defining the number of installation steps (2). Then the installation files are extracted to the directory that is defined by the @code{install.destdir} variable (see previous section). Then the status message is changed and a random shell command is executed. The last line shows how to retrieve a value with the @ref{input:get, get method function} from the inputfield class.
+
+@subsubsection Using @samp{runtime files}
+Any files that were put in the @file{extra_files/} directory can be accessed during or before the installation through the @ref{install.extrafilespath} function. This function returns a path to where you can find these files. The function accepts one optional argument containing a @ref{Strings, string} describing a filename. This filename is purely for convience and is simply appended to the returned value. Example: assuming we put a file called @file{readme.txt} in the @file{extra_files/} directory, we can access it as follows:
+@codeblock{readmefilepath = install.extrafilespath("readme.txt")}
+
+@subsubsection Translations
+@emph{Any text} that is used by installation screens, widgets or functions indirectly using these (such as @ref{install.setstatus}) can be translated. This also includes option names from widgets such as radiobuttons or menus. Generally speaking: any text that is displayed, besides installation output, can be translated. As discussed before (@pxref{Translations}) the @file{strings} file is used to translate various strings. To translate text used from the @file{run.lua} file, simply add any strings to the @file{strings} file from the desired language in your project directory.
+
 
 @anchor{Creating the Installer}
 @section Creating the Installer

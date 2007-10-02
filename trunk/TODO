@@ -4,6 +4,7 @@ OVERALL
 - Update Lua library for NBSD, OBSD, SunOS
 - Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
 - Update changelog (new lua widgets, gtk frontend)
+- Make getlang 'public?' (affects docs/changelog and needs some checking)
 
 
 TEST
@@ -17,18 +18,21 @@ TEST
 
 
 DOCS
-- Mention that lua commands are executed incase m_bAlwaysRoot is set to true
-- Mention that lua menus may be sorted
-- Mention that a widget can be too big
-- Update input:setspacing --> input:setlabelwidth (and other defaults)
-- Update radiobutton and checkbox function arguments
-- Check lua widget defaults
-- Find new lua widget functions
-- cfg.defaultlang: Default "english" or first valid lang
-- files_extra directory
-- intropic can be in both root project dir and in files_extra dir.
-- Mention max intropic size is 300x200
-- install.newscreen changed name (also changelog!)
+- Mention that lua commands are executed incase m_bAlwaysRoot is set to true (reference)
+- Mention that lua menus may be sorted (reference)
+- Update input:setspacing --> input:setlabelwidth (and other defaults) (reference)
+- Update radiobutton and checkbox function arguments (reference)
+- Check lua widget defaults (reference)
+- Find new lua widget functions (reference)
+- cfg.defaultlang: Default "english" or first valid lang (reference)
+- extrafilespath (reference)
+- intropic can be in both root project dir and in files_extra dir. (reference)
+- Mention max intropic size is 300x200 (reference)
+- install.newscreen changed name (also changelog!), also change cfgscreen to screen (reference/building)
+- Changelog
+- Update screenies
+- Resolve UNDONE's
+
 
         
 TRANSLATIONS
