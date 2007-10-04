@@ -414,13 +414,13 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaGetFileSize, "filesize", "os");
     NLua::RegisterFunction(LuaLog, "log", "os", this);
     NLua::RegisterFunction(LuaSetEnv, "setenv", "os", this);
-    
+    NLua::RegisterFunction(LuaExit, "exit", "os"); // Override
+
     NLua::RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
     NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
     NLua::RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
     NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     
-    NLua::RegisterFunction(LuaExit, "exit"); // Override
     NLua::RegisterFunction(LuaGetLang, "getlang", NULL, this);
     NLua::RegisterFunction(LuaSetLang, "setlang", NULL, this);
     

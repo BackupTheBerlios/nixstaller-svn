@@ -198,7 +198,7 @@ An install package itself contains the following files:
 @item Other files needed runtime, such as images, logos and any other files specified by the install creator. (optional)
 @end itemize
 
-The items important for the install creator are highlighted in the following sections or in the next chapter.
+The items important for the install creator are discussed in this and following chapters.
 
 
 @section Frontends
@@ -234,7 +234,7 @@ You can select which frontend(s) you want to include.
 
 
 @section Lua scripts
-The installation is controlled by one or two lua scripts. These are explained in the @ref{Creating Installers} chapter.
+The installation is controlled by one or two lua scripts. These are explained in the @ref{Lua Scripts} chapter.
 
 
 @anchor{Translations}
@@ -280,7 +280,7 @@ There are other things to be translated as well:
 @item Text used by Lua scripts
 @end itemize
 
-The first 3 items will be explained in the next section. Lua scripts will be handled in the chapter @ref{Creating Installers}.
+The first 3 items will be explained in the next section. Lua scripts will be handled in the chapter @ref{Lua Scripts}.
 
 
 @anchor{welcome license finish}
@@ -591,7 +591,7 @@ Any files that were put in the @file{extra_files/} directory can be accessed dur
 @chapter Creating Installers
 
 @section Introduction
-In this chapter the creation of an installer is discussed. In the previous chapter some basic terms were discussed. In this chapter we will use these in practise.
+In this chapter the creation of an installer is discussed. The previous chapters discussed Nixstaller and Lua basics. In this chapter we will use these in practise.
 
 
 @section Projects
@@ -651,7 +651,10 @@ This directory contains any files needed at runtime. Examples are graphics or te
 
 
 @section The @file{welcome}, @file{license} and @file{finish} Files
-These files were already discussed in the previous chapter. Simply put them in the root of your project directory.
+These files were already discussed in the @ref{Basics,,basics chapter}. Simply put them in the root of your project directory.
+
+@section The @file{config.lua} and @file{run.lua} Files
+Lua scripting files were discussed in the @ref{Lua Scripts,,previous chapter}. Simply put the files in the root of the project directory.
 
 
 @anchor{Creating the Installer}
@@ -2506,7 +2509,7 @@ f, msg = io.fopen("test.txt", "r")    @minus{}@minus{} f will contain the file h
 @minus{}@minus{} File could not be opened? (ie doesn't exists)
 if (not f) then
     print("Could not open file: " .. msg)
-    exit(1)    @minus{}@minus{} @xref{os.exit}
+    os.exit()    @minus{}@minus{} @xref{os.exit}
 end
 @*
 print(f:read("*a"))

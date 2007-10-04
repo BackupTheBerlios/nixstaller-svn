@@ -32,8 +32,8 @@ DOCS
 - Changelog
 - Update screenies
 - Resolve UNDONE's
-- Lua section in building
-- Fix 'next chapter' references in Basics
+- genprojdir
+- Compiling: GTK
 
 
         
