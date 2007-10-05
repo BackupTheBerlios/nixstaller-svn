@@ -63,11 +63,11 @@ usage()
     echo " --appname, -n name               The application name. Default: My App"
     echo " --arch arch1[, arch2, ...]       CPU architectures the installer should support. Valid value: x86. Default: x86"
     echo " --archtype, -a lzma/gzip/bzip2   The archive type used for packing the installation files. Default: lzma"
-    echo " --deflang, -d lang               The default language."
+    echo " --deflang, -d lang               The default language. Default: english"
     echo " --frontends, -f fr1[, fr2, ...]  Frontends to include. Valid values: gtk, fltk, ncurses. Default: gtk fltk ncurses."
-    echo " --intropic, -i picture           Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp."
+    echo " --intropic, -i picture           Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
     echo " --languages, -l l1[, l2, ...]    Languages to include (copied from main lang/ directory). Default: english dutch"
-    echo " --logo                           Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
+    echo " --logo file                      Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
     echo " --os, -o os1[, os2, ...]         Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
     exit 1
 }

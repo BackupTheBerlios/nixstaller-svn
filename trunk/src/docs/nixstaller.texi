@@ -653,8 +653,69 @@ This directory contains any files needed at runtime. Examples are graphics or te
 @section The @file{welcome}, @file{license} and @file{finish} Files
 These files were already discussed in the @ref{Basics,,basics chapter}. Simply put them in the root of your project directory.
 
+
 @section The @file{config.lua} and @file{run.lua} Files
 Lua scripting files were discussed in the @ref{Lua Scripts,,previous chapter}. Simply put the files in the root of the project directory.
+
+@section Automaticly Generating Project Directories
+As of version 0.3, nixstaller ships a script called @file{genprojdir.sh}. This script is able to save you lot of copying by generating a project directory automaticly. The script handles the following things:
+@itemize @bullet
+@item Creation of a basic directory layout.
+@item Language copying.
+@item Copy graphics used by the @code{cfg.intropic} and @code{cfg.logo} lua variables to the project directory.
+@item Generating a @file{config.lua} file based on defaults and/or commandline parameters.
+@item Generate a @file{install.lua} based on defaults.
+@end itemize
+
+The script accepts the following commandline parameters:
+
+@starttable{.5,.5}
+@addtableheaderrowsize{Parameter, 300}
+    @addtableheadercol{Description}
+@endtablerow
+
+@addtablerow{--help, -h}
+    @addtablecol{Displays usage}
+@endtablerow
+
+@addtablerow{--appname, -n <name>}
+    @addtablecol{Sets @code{cfg.appname}. Default: MyApp}
+@endtablerow
+
+@addtablerow{--arch <arch1>[, <arch2>, ...]}
+    @addtablecol{Sets @code{cfg.targetarch} to one or more following arguments (<arch1>, <arch2> etc). Default: x86}
+@endtablerow
+
+@addtablerow{--archtype, -a <type>}
+    @addtablecol{Sets @code{cfg.archivetype} to <type>. Default: lzma.}
+@endtablerow
+
+@addtablerow{--deflang, -d <lang>}
+    @addtablecol{Sets @code{cfg.defaultlang} to <lang>. Default: english}
+@endtablerow
+
+@addtablerow{--frontends, -f <fr1>[, <fr2>, ...]}
+    @addtablecol{Sets @code{cfg.frontends} to one or more following arguments (<fr1>, <fr2> etc). Default: gtk fltk ncurses.}
+@endtablerow
+
+@addtablerow{--intropic, -i <picture>}
+    @addtablecol{Copies the file <picture> to the @file{extra_files/} directory and sets @code{cfg.intropic} accordingly. Default: none.}
+@endtablerow
+
+@addtablerow{--languages, -l <l1>[, <l2>, ...]}
+    @addtablecol{Sets @code{cfg.languages} to one or more following arguments (<l1>, <l2> etc). Default: english dutch.}
+@endtablerow
+
+@addtablerow{--logo <file>}
+    @addtablecol{Copies the file <logo> to the @file{extra_files/} directory and sets @code{cfg.logo} accordingly. Default: a default logo (shipped with Nixstaller).}
+@endtablerow
+
+@addtablerow{--os, -o <os1>[, <os2>, ...]}
+    @addtablecol{Sets @code{cfg.targetos} to one or more following arguments (<os1>, <os2> etc). Default: current OS.}
+@endtablerow
+
+@endtable
+
 
 
 @anchor{Creating the Installer}

@@ -35,6 +35,11 @@
 @htmltext{</th>}
 @end macro
 
+@macro addtableheaderrowsize{col, size}
+@htmltext{<tr><th style="width: \size\px;">}
+\col\
+@htmltext{</th>}
+@end macro
 
 @macro addtablerow{col}
 @htmltext{<tr><td>}
