@@ -230,7 +230,15 @@ and the third by @uref{http://www.gtk.org/,GTK2}:
 @ifnothtml
 The first is powered by FLTK, the second is powered by ncursesand the third by GTK2.
 @end ifnothtml
-You can select which frontend(s) you want to include.
+You can select which frontend(s) you want to include.@*
+@*
+The ncurses frontend is text based and should run on nearly all systems. It doesn't require X and has the least dependencies.@*
+@*
+The FLTK frontend is a graphical frontend. Some commonly available X11 libraries are required to run. Like the ncurses frontend, the FLTK frontend has also very few dependencies and runs on many systems. @*
+@*
+The GTK2 frontend depends on GTK+ 2.4 or later. For this reason it may not run on every system. However, because it's dynamicly linked, it's also the smallest frontend.@*
+@*
+The selection of a frontend may depend on the package requirements: Is your software text based? The ncurses might be enough. If your software however requires GTK2 it makes sence to only include this frontend. If size isn't a big issue you may aswell just include all the frontends and therefore increase the chance that the a suitable frontend can be found on various systems.
 
 
 @section Lua scripts
@@ -479,6 +487,12 @@ Besides using the predefined screens, new screens can be created aswell. The pri
 For a detailed explanation of a widget see the links shown in the @samp{Function} column.@*
 @*
 
+@subsubsection Controlling and Tracking Screen Activation
+By defining a @code{canactivate} function inside the screen's class we can tell if this screen is able to activate or not. When the function returns @code{false} this screen is skipped and a next screen will be checked. If the function returns @code{true} the screen will be activated, this is default behaviour.@*
+@*
+When an @code{activate} function is defined inside the screen's class it will be called when the screen is actually activated. Note that @code{canactivate} may be called multiple times, for this reason put any code that is required when the screen is activated in the @code{activate} function and not in the @code{canactivate} function.
+
+
 @subsubsection Widget Placement
 The widgets are placed vertically in order. When there is no room for a widget the screen is split into one or more @emph{subscreens}. Each subscreen has the same title as the original screen and has a @emph{counter} that shows current subscreen in the form X/Y where X is the current screen and Y the total number of subscreens. When the widget does not fit into a new subscreen or does not fit horizontally an error will be thrown. If a widget fits or not depends on each frontend and how the widget is configured. For this reason always verify the installer for each frontend!
 
@@ -494,6 +508,16 @@ function Init()
     install.destdir = install.gettempdir()
 @*
     myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")
+@*
+    function myscreen:canactivate()
+        return true @minus{}@minus{} This is the default behaviour
+    end
+@*
+    function myscreen:activate()
+        @minus{}@minus{} Show messagebox when screen is activated
+        gui.msgbox("Hello")
+    end
+@*
     namefield = myscreen:addinput("Your name")
 @*
     function namefield:datachanged()
@@ -527,6 +551,8 @@ A new screen is created, with the following title
 Hello!@*
 You can use this screen to configure some settings.
 @end quotation
+@item
+A @code{canactivate} and an @code{activate} function is defined for the screen. The first function tells that the screen may be displayed (this is the default and is only shown here for example usage). The second function will show a messagebox as soon as the screen is activated.
 @item
 An inputfield widget is created on our new screen labeled with "Your name". We define 2 functions to keep track of any datachanges and to verify if the user typed anything.
 @item
@@ -657,12 +683,13 @@ These files were already discussed in the @ref{Basics,,basics chapter}. Simply p
 @section The @file{config.lua} and @file{run.lua} Files
 Lua scripting files were discussed in the @ref{Lua Scripts,,previous chapter}. Simply put the files in the root of the project directory.
 
+@anchor{genprojdir.sh}
 @section Automaticly Generating Project Directories
 As of version 0.3, nixstaller ships a script called @file{genprojdir.sh}. This script is able to save you lot of copying by generating a project directory automaticly. The script handles the following things:
 @itemize @bullet
 @item Creation of a basic directory layout.
 @item Language copying.
-@item Copy graphics used by the @code{cfg.intropic} and @code{cfg.logo} lua variables to the project directory.
+@item Copy graphics used by the @code{cfg.intropic} and @code{cfg.logo} lua variables to the right place in the project directory.
 @item Generating a @file{config.lua} file based on defaults and/or commandline parameters.
 @item Generate a @file{install.lua} based on defaults.
 @end itemize
@@ -670,51 +697,53 @@ As of version 0.3, nixstaller ships a script called @file{genprojdir.sh}. This s
 The script accepts the following commandline parameters:
 
 @starttable{.5,.5}
-@addtableheaderrowsize{Parameter, 300}
+@addtableheaderrow{Parameter}
     @addtableheadercol{Description}
 @endtablerow
 
-@addtablerow{--help, -h}
+@addtablerownowrap{--help, -h}
     @addtablecol{Displays usage}
 @endtablerow
 
-@addtablerow{--appname, -n <name>}
+@addtablerownowrap{--appname, -n <name>}
     @addtablecol{Sets @code{cfg.appname}. Default: MyApp}
 @endtablerow
 
-@addtablerow{--arch <arch1>[, <arch2>, ...]}
+@addtablerownowrap{--arch <arch1>[, <arch2>, ...]}
     @addtablecol{Sets @code{cfg.targetarch} to one or more following arguments (<arch1>, <arch2> etc). Default: x86}
 @endtablerow
 
-@addtablerow{--archtype, -a <type>}
+@addtablerownowrap{--archtype, -a <type>}
     @addtablecol{Sets @code{cfg.archivetype} to <type>. Default: lzma.}
 @endtablerow
 
-@addtablerow{--deflang, -d <lang>}
+@addtablerownowrap{--deflang, -d <lang>}
     @addtablecol{Sets @code{cfg.defaultlang} to <lang>. Default: english}
 @endtablerow
 
-@addtablerow{--frontends, -f <fr1>[, <fr2>, ...]}
+@addtablerownowrap{--frontends, -f <fr1>[, <fr2>, ...]}
     @addtablecol{Sets @code{cfg.frontends} to one or more following arguments (<fr1>, <fr2> etc). Default: gtk fltk ncurses.}
 @endtablerow
 
-@addtablerow{--intropic, -i <picture>}
+@addtablerownowrap{--intropic, -i <picture>}
     @addtablecol{Copies the file <picture> to the @file{extra_files/} directory and sets @code{cfg.intropic} accordingly. Default: none.}
 @endtablerow
 
-@addtablerow{--languages, -l <l1>[, <l2>, ...]}
+@addtablerownowrap{--languages, -l <l1>[, <l2>, ...]}
     @addtablecol{Sets @code{cfg.languages} to one or more following arguments (<l1>, <l2> etc). Default: english dutch.}
 @endtablerow
 
-@addtablerow{--logo <file>}
+@addtablerownowrap{--logo <file>}
     @addtablecol{Copies the file <logo> to the @file{extra_files/} directory and sets @code{cfg.logo} accordingly. Default: a default logo (shipped with Nixstaller).}
 @endtablerow
 
-@addtablerow{--os, -o <os1>[, <os2>, ...]}
+@addtablerownowrap{--os, -o <os1>[, <os2>, ...]}
     @addtablecol{Sets @code{cfg.targetos} to one or more following arguments (<os1>, <os2> etc). Default: current OS.}
 @endtablerow
 
 @endtable
+
+Note that this script should be called within the main Nixstaller directory.
 
 
 
@@ -739,7 +768,7 @@ For examples of project directory layouts see the @samp{example/} directory in t
 
 @anchor{first tutorial}
 @section First Tutorial: A Simple Installer
-This first tutorial describes the steps that need to be made to create a simple example installer.@*
+This first tutorial describes the steps that need to be done to create a simple installer.@*
 @*
 We want to let the installer be able to do the following things:
 @itemize @bullet
@@ -750,31 +779,19 @@ We want to let the installer be able to do the following things:
 @end itemize
 
 @subsection Project Directory
-First we need to create a new directory that is used to store all the files that are necessary to build the installer. In this tutorial we call this directory @file{setup/}.
-
-@subsection Language Selection
-To include language support for dutch (english is always available) simply copy the @file{lang/dutch} directory to a  subdirectory in the @file{setup/} directory which is also called @file{lang/}.
+To set up a project directory we use @ref{genprojdir.sh}. This script will create the directory layout for us. Assuming our project directory is called @file{setup/}, call the script like this (@emph{from the main Nixstaller directory}):
+@codeblock{./genprojdir.sh -n "My Software 1.0" setup/}
+This creates the project directory, including dutch translations (default) and basic Lua script files. The generated Lua scripts already tell by default that the @code{SelectDirScreen} (@pxref{instscreens, this}) should be used and that the installation files need to be extracted to the destination directory. The only thing we have to do is create an introduction message and copy the files that should be installed.
 
 @subsection Introduction Message
 Create a text file called @file{welcome} and put a text of choice in it, for example:
 @quotation
 This will install random software, press next to continue.
 @end quotation
-
-@subsection Selectable Destination Directory
-For this the SelectDirScreen is used (@pxref{instscreens, here}). Fortunaly this screen is shown by default so we don't need to do anything.
-
-@subsection Extract the installation files
-This is done by default if no @code{Install()} function is defined, so we don't have to worry about this one either.
-
-@subsection @file{config.lua}
-To configure our installer create a new text file called @samp{config.lua}. After that you can paste this text in to it:
-@codeblock{@minus{}@minus{} Example config.lua from first tutorial
-cfg.appname = "My Software 1.0"}
-That wasn't much text right? For this tutorial it's enough, however there are some more things that can be configured. This is explained @ref{config.lua, here}.
+The file is placed in the @file{setup/} directory.
 
 @subsection Installation Files
-For this installer we simply provide one text file called @file{README}. Create a new subdirectory in the project directory and call it @file{files_all/}. Then create the @file{README} file (put some random text in it if you want) and save it to the @file{files_all/} directory.
+For this installer we simply provide one text file called @file{README}. Create the @file{README} file (put some random text in it if you want) and save it to the @file{setup/files_all/} directory.
 
 @subsection Creating the installer
 If all went fine the directory structure should look like this:
@@ -787,6 +804,10 @@ If all went fine the directory structure should look like this:
             @itemize @bullet
                 @item @file{strings}
             @end itemize
+            @item @file{english/}
+            @itemize @bullet
+                @item @file{strings}
+            @end itemize
         @end itemize
         @itemize @bullet
             @item @file{files_all/}
@@ -794,8 +815,10 @@ If all went fine the directory structure should look like this:
                 @item @file{README}
             @end itemize
         @end itemize
+        @item @file{files_extra/}
         @item @file{welcome}
         @item @file{config.lua}
+        @item @file{run.lua}
     @end itemize
 @end itemize
 
@@ -813,20 +836,17 @@ In this tutorial we'll be making a slightly more advanced installer for the game
 @end itemize
 
 @subsection Project Directory
-As described in the @ref{first tutorial} first create a project directory and copy the language files to it. Then create the @file{welcome} file with the following contents:
+Again we use @file{genprojdir.sh} to create an initial project directory. This time we will call it @samp{cube}. Here is the command: (again, call this from the main Nixstaller directory)
+@codeblock{./genprojdir.sh -o freebsd linux -n Cube cube/}
+We've limited the supporting operating systems to Linux and FreeBSD, simply because there are only Cube binaries for these 2 systems.@*
+@*
+Next create the @file{welcome} file with the following contents:
 @codeblock{This installer will install Cube to your computer.
 Cube is an open source FPS (First Person Shooter) which supports both single play and networked games.
 Another main feature is the easy ingame map editing (online too!).}
 
-@subsection @file{config.lua}
-This file will be slightly more complex than that from the first tutorial:
-@codeblock{@minus{}@minus{} Example config.lua file from second tutorial
-cfg.appname = "Cube"
-cfg.targetos = @{ "linux", "freebsd" @}}
-We've limited the supporting operating systems to Linux and FreeBSD, simply because there are only Cube binaries for these 2 systems.
-
 @subsection @file{run.lua}
-Absent in the previous tutorial, we create another Lua script file called @file{run.lua}. Here is how it should look like:
+This time we want to edit the @file{run.lua} file. A generated version was already created. Modifying this file to our needs, it will look like this:
 @codeblock{function Init()
     screen = install.newcfgscreen("Installation options")
     scriptbox = screen:addradiobutton("Install launcher script to your home directory that launches Cube?",
@@ -858,12 +878,14 @@ cd %s/cube/
     end
 end}
 
-First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newcfgscreen}. Then a radiobutton widget is added to this screen through the @ref{cfgscreen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{install.screenlist} variable.@*
+The default comments in the file are omitted, you may keep them if you want. The generated version also sets the @code{install.destdir} variable. As this is set to a default value, we don't really need it and is therefore kept out. @*
 @*
-The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{install.destdir} variable. After that we check what the user choose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assing it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automaticly included to this string (@pxref{Strings}). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
+First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newcfgscreen}. Then a radiobutton widget is added to this screen through the @ref{cfgscreen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{install.screenlist} variable. Since we don't want a license or finish message shown we left these screens out.@*
+@*
+The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{install.destdir} variable. After that we check what the user chose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assigning it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automaticly included to this string (@pxref{Strings}). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
 
 @subsection Creating the Installer
-Assuming that the project directory is called @file{Cube/} the layout of this directory should look like this:
+Assuming that the project directory is called @file{cube/} the layout of this directory should look like this:
 
 @itemize @bullet
     @item @file{cube/}
@@ -874,16 +896,19 @@ Assuming that the project directory is called @file{Cube/} the layout of this di
             @itemize @bullet
                 @item @file{strings}
             @end itemize
-        @end itemize
-        @itemize @bullet
-            @item @file{files_all/}
+            @item @file{english/}
             @itemize @bullet
-                @item @file{cube/}
-                @itemize @bullet
-                    @item @emph{Cube files}
-                @end itemize
+                @item @file{strings}
             @end itemize
         @end itemize
+        @item @file{files_all/}
+        @itemize @bullet
+            @item @file{cube/}
+            @itemize @bullet
+                @item @emph{Cube files}
+            @end itemize
+        @end itemize
+        @item @file{files_extra/}
         @item @file{welcome}
         @item @file{config.lua}
         @item @file{run.lua}
@@ -913,7 +938,11 @@ In the last tutorial we make a fairly advanced installer for the advanced text e
 @end itemize
 
 @subsection Project Directory
-As usual start with creating a project directory (ie @file{vim/}), copy language files to it and copy this text to the @file{welcome} file:
+Again we start with creating the project directory:
+@codeblock{./genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -a "VIM 7.0" vim/}
+The @samp{<pathtovimlogo>} part should be replaced to the path were the vim logo is located. The file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.@*
+@*
+Next copy this text to the @file{welcome} file:
 @codeblock{This installer will guide you through the installation of Vim.
 After you have read the following text press the Next button to start the installation.
 @*
@@ -926,16 +955,9 @@ it an entire IDE. It's not just for programmers, though. Vim is perfect for all 
 from composing email to editing configuration files.
 @*
 (From www.vim.org)}
-Because we want a logo we copy the file @file{vim48x48.png} to the project directory. This file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.@*
 @*
 To show the README after installation we include the @samp{FinishScreen}. This screen will display the contents of a file called @file{finish} which should be placed in the project directory. Just copy the @file{README} file from the vim package to the project directory and rename it to @samp{finish}.
 
-@subsection @file{config.lua}
-For our installer the @file{config.lua} file should look like this:
-@codeblock{cfg.appname = "VIM 7.0"
-cfg.intropic = "vim48x48.png"
-cfg.targetos = @{ "linux", "freebsd", "netbsd", "openbsd", "sunos" @}}
-The @code{intropic} variable is used to specify the file name of the logo. Note that this logo should @emph{always} be in your project directory.
 
 @subsection @file{run.lua}
 Now we start with the advanced things. The file will be quite big compared to the previous tutorials. The biggest part comes from parsing the configuration options and translating them to install commands. The file will contain several functions, these are discussed one at a time.
@@ -975,18 +997,18 @@ The file starts with;
 end}
 Thats already some text to read :-) We start with setting the @code{install.destdir} variable to a temporary directory.@*
 @*
-After that a new configuration screen is created and assigned to the @code{cfgscreen} variable. Then the widgets are created through the @ref{cfgscreen:addcheckbox} and @ref{cfgscreen:addcfgmenu} functions. Note that the descriptions are splitted with the @code{..} operator. This operator concats 2 strings and we use it purely here to make the code lines shorter. The last widget acts like a configuration menu. In this menu the user can select several parameters and edit them.@*
+After that a new configuration screen is created and assigned to the @code{cfgscreen} variable. Then the widgets are created through the @ref{cfgscreen:addcheckbox} and @ref{cfgscreen:addcfgmenu} functions. Note that the descriptions are splitted with the @code{..} operator. This operator concatenates 2 strings and we use it purely here to make the code lines shorter. The last widget acts like a configuration menu. In this menu the user can select several parameters and edit them.@*
 @*
 The last line defines the install screens we want to show.
 
 @subsubsection Function @code{getprefixconf()}
-We create a new function that will return a string that is used as an argument to the @code{configure} command which is used in the @code{Install()} function. The argument is used to set the prefix directory. Here is the function:
+We create a new function that will return a string that is used as an argument to the @code{configure} command, which is used in the @code{Install()} function. The argument is used to set the prefix directory. Here is the function:
 @codeblock{function getprefixconf()
     return string.format("@minus{}@minus{}prefix=%s", prefixfield:get())
 end}
 
 @subsubsection Function @code{getscriptconf()}
-As the previous function returns a string that is used by the @code{configure} command. This function will return the arguments related to the configuration of embedded scripting languages:
+As the previous function; returns a string that is used by the @code{configure} command. This function will return the arguments related to the configuration of embedded scripting languages:
 @codeblock{function getscriptconf()
     local ret = "" @minus{}@minus{} Need to initialize variable as a string, otherwise concatting it won't work
 @*
@@ -1008,9 +1030,9 @@ As the previous function returns a string that is used by the @code{configure} c
 @*
     return ret
 end}
-The first line is important: Lua needs to know that a variable is used as a string, otherwise the concat operator(@code{..}) won't work. Simply assigning an empty string will do the job.@*
+The first line is important: Lua needs to know that a variable is used as a string, otherwise the concat operator(@code{..}) won't work. Simply assigning an empty string will do the job. Another important thing to notice is the trailing space from the concatenated strings: this makes it easier to construct one string from various function calls (which is done later).@*
 @*
-As an example if the user enabled @samp{perl} and @samp{ruby} then this function would return this string: "@minus{}@minus{}enable-perl @minus{}@minus{}enable ruby ".
+As an example, if the user enabled @samp{perl} and @samp{ruby} then the function would return this string: "@minus{}@minus{}enable-perl @minus{}@minus{}enable ruby ".
 
 @subsubsection Function @code{getguiconf()}
 This function is very similar to the previous function, but returns a string to be used for toolkit configuration that is used for @samp{gvim} (graphical vim). Here is the code:
@@ -1122,7 +1144,7 @@ Then we check if we got write access to the prefix directory. If not we need roo
 @*
 After the files are extracted through the @ref{install.extractfiles} function we change directory to the @file{vim70/} directory. The status message is changed so that the user knows whats going on and the @code{configure} command is executed with the right arguments.@*
 @*
-After configuration @code{make} is called to start the compilation and the status message is changed again.@*
+After configuration, @code{make} is called to start the compilation and the status message is changed again.@*
 @*
 After @code{make} is done the install process is started. If the prefix directory is write protected for the current user we call @code{make install} as root, otherwise it's executed as the current user.
 
@@ -1286,15 +1308,21 @@ The project directory should have the following structure:
             @itemize @bullet
                 @item @file{strings}
             @end itemize
-        @end itemize
-        @itemize @bullet
-            @item @file{files_all/}
+            @item @file{english/}
             @itemize @bullet
-                @item @file{vim70/}
-                @itemize @bullet
-                    @item @emph{Vim files}
-                @end itemize
+                @item @file{strings}
             @end itemize
+        @end itemize
+        @item @file{files_all/}
+        @itemize @bullet
+            @item @file{vim70/}
+            @itemize @bullet
+                @item @emph{Vim files}
+            @end itemize
+        @end itemize
+        @item @file{files_extra/}
+        @itemize @bullet
+            @item @file{vim48x48.png}
         @end itemize
         @item @file{welcome}
         @item @file{finish}

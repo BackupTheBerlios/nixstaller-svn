@@ -119,35 +119,35 @@ parseargs()
 {
     while true
     do
-        case $1 in
+        case "${1}" in
             --help | -h)
                 usage
                 ;;
             --appname | -n)
                 shift
                 [ -z "${1}" ] && usage
-                APPNAME=$1
+                APPNAME="${1}"
                 shift
                 ;;
             --archtype | -a)
                 shift
                 [ -z "${1}" ] && usage
-                verifyentry $1 $VAL_ARCHIVETYPES || error "Wrong archive type specified, valid values are: $VAL_ARCHIVETYPES"
-                ARCHIVETYPE=$1
+                verifyentry "${1}" $VAL_ARCHIVETYPES || error "Wrong archive type specified, valid values are: $VAL_ARCHIVETYPES"
+                ARCHIVETYPE="${1}"
                 shift
                 ;;
             --deflang | -d)
                 shift
                 [ -z "${1}" ] && usage
-                DEFAULTLANG=$1
+                DEFAULTLANG="${1}"
                 shift
                 ;;
             --os | -o)
                 shift
                 [ -z "${1}" ] && usage
-                while [ $# -gt 1 ] && checkargentry $1
+                while [ $# -gt 1 ] && checkargentry "${1}"
                 do
-                    verifyentry $1 $VAL_TARGETOS || error "Wrong os value specified, valid values are: $VAL_TARGETOS"
+                    verifyentry "${1}" $VAL_TARGETOS || error "Wrong os value specified, valid values are: $VAL_TARGETOS"
                     TARGETOS="$TARGETOS $1"
                     shift
                 done
@@ -155,9 +155,9 @@ parseargs()
             --arch)
                 shift
                 [ -z "${1}" ] && usage
-                while [ $# -gt 1 ] && checkargentry $1
+                while [ $# -gt 1 ] && checkargentry "${1}"
                 do
-                    verifyentry $1 $VAL_TARGETARCH || error "Wrong os value specified, valid values are: $VAL_TARGETARCH"
+                    verifyentry "${1}" $VAL_TARGETARCH || error "Wrong os value specified, valid values are: $VAL_TARGETARCH"
                     TARGETARCH="$TARGETARCH $1"
                     shift
                 done
@@ -165,9 +165,9 @@ parseargs()
             --frontends | -f)
                 shift
                 [ -z "${1}" ] && usage
-                while [ $# -gt 1 ] && checkargentry $1
+                while [ $# -gt 1 ] && checkargentry "${1}"
                 do
-                    verifyentry $1 $VAL_FRONTENDS || error "Wrong os value specified, valid values are: $VAL_FRONTENDS"
+                    verifyentry "${1}" $VAL_FRONTENDS || error "Wrong os value specified, valid values are: $VAL_FRONTENDS"
                     FRONTENDS="$FRONTENDS $1"
                     shift
                 done
@@ -175,7 +175,7 @@ parseargs()
             --languages | -l)
                 shift
                 [ -z "${1}" ] && usage
-                while [ $# -gt 1 ] && checkargentry $1
+                while [ $# -gt 1 ] && checkargentry "${1}"
                 do
                     LANGUAGES="$LANGUAGES $1"
                     shift
@@ -192,7 +192,7 @@ parseargs()
                 shift
                 [ -z "${1}" ] && usage
                 [ ! -f "${1}" ] && error "Couldn't find logo file ($1)"
-                LOGO=$1
+                LOGO="${1}"
                 shift
                 ;;
             -*)
@@ -204,7 +204,7 @@ parseargs()
         esac
     done
     
-    TARGETDIR="$1"
+    TARGETDIR="${1}"
     
     if [ -z "${TARGETDIR}" ]; then
         usage
@@ -346,7 +346,7 @@ function Init()
     -- change this variable.
     install.destdir = os.getenv("$HOME")
     
-    -- Installation screens to show (in given order). Custom screens should be added here.
+    -- Installation screens to show (in given order). Custom screens should be placed here.
     install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
 end
 
@@ -386,7 +386,7 @@ hints()
     fi
 }
 
-parseargs $*
+parseargs "$@"
 createprojdir
 hints
 

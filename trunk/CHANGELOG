@@ -21,6 +21,8 @@
 - Fixed: Empty folders weren't included in installation files package
 - Fixed: Manual example code was using exit() instead of os.exit()
 - Fixed: Overide os.exit() instead of exit()
+- Track widget behaviour with customly defined widget:datachanged() and widget:verify() lua functions.
+- Control screen activation with customly defined screen:canactivate() and screen:activate() lua functions.
 
 
 0.2.1 --> 0.2.2
