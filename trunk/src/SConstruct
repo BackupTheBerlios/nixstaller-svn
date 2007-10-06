@@ -159,8 +159,10 @@ def checklibexist(context, fname):
 def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "main();", autoload = 1):
     context.env.Append(LIBPATH = libdir, CPPPATH = incdir)
     ret = context.sconf.CheckLibWithHeader(library, header, language, call, autoload)
-    context.env['LIBPATH'].remove(libdir)
-    context.env['CPPPATH'].remove(incdir)
+    if libdir:
+        context.env['LIBPATH'].remove(libdir)
+    if incdir:
+        context.env['CPPPATH'].remove(incdir)
     context.did_show_result = 1 # Hack, says "Error: No result" otherwise
     return ret
 
@@ -223,7 +225,7 @@ EnsureSConsVersion(0,96,91)
 opts = Options()
 opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
 opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
-opts.Add('LIBPATH', 'The path used to search for libraries', '')
+opts.Add('gtklibsdir', 'Specifies where the library files for GTK are', '/usr/lib')
 opts.Add('CC', 'The C compiler', 'gcc')
 opts.Add('CXX', 'The C++ compiler', 'g++')
 opts.Add('LCVER', 'Manually overide used libc version', '')
@@ -416,22 +418,22 @@ if not env.GetOption('clean'):
             Exit(1)
             
     if not BUILD_TARGETS or 'gtk' in map(str, BUILD_TARGETS):
-        if not conf.CheckLibWithHeader('gobject-2.0', 'include/gtk/gtk/gtk.h', 'C', ';', 0):
+        if not conf.CheckLibWithEnv('gobject-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
             print "Couldn't find libgobjects-2.0 !"
             Exit(1)
-        if not conf.CheckLibWithHeader('glib-2.0', 'include/gtk/gtk/gtk.h', 'C', ';', 0):
+        if not conf.CheckLibWithEnv('glib-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
             print "Couldn't find libglib-2.0 !"
             Exit(1)
-        if not conf.CheckLibWithHeader('pango-1.0', 'include/gtk/gtk/gtk.h', 'C', ';', 0):
+        if not conf.CheckLibWithEnv('pango-1.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
             print "Couldn't find libpango-1.0 !"
             Exit(1)
-        if not conf.CheckLibWithHeader('gdk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ';', 0):
+        if not conf.CheckLibWithEnv('gdk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
             print "Couldn't find libgdk-x11-2.0 !"
             Exit(1)
-        if not conf.CheckLibWithHeader('gdk_pixbuf-2.0', 'include/gtk/gtk/gtk.h', 'C', ';', 0):
+        if not conf.CheckLibWithEnv('gdk_pixbuf-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
             print "Couldn't find libgdk_pixbuf-2.0 !"
             Exit(1)
-        if not conf.CheckLibWithHeader('gtk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ';', 0):
+        if not conf.CheckLibWithEnv('gtk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
             print "Couldn't find libgtk-x11-2.0 !"
             Exit(1)
             
@@ -461,9 +463,9 @@ env.Prepend(LIBS = Split('main su lua'))
 
 # UNDONE?
 if cur_os == 'netbsd':
-    env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib'))
+    env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib -Wl,--rpath -Wl,$gtklibsdir'))
 
-gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscreen.cpp gtk/luacheckbox.cpp gtk/luacfgmenu.cpp gtk/luadirselector.cpp gtk/luagroup.cpp gtk/luaimage.cpp gtk/luainput.cpp gtk/luamenu.cpp gtk/luaprogressbar.cpp gtk/luaradiobutton.cpp gtk/luatextfield.cpp gtk/luawidget.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gobject-2.0 glib-2.0 pango-1.0 gdk-x11-2.0 gdk_pixbuf-2.0 gtk-x11-2.0'))
+gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscreen.cpp gtk/luacheckbox.cpp gtk/luacfgmenu.cpp gtk/luadirselector.cpp gtk/luagroup.cpp gtk/luaimage.cpp gtk/luainput.cpp gtk/luamenu.cpp gtk/luaprogressbar.cpp gtk/luaradiobutton.cpp gtk/luatextfield.cpp gtk/luawidget.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gobject-2.0 glib-2.0 pango-1.0 gdk-x11-2.0 gdk_pixbuf-2.0 gtk-x11-2.0'), LIBPATH=Split("$LIBPATH $gtklibsdir"))
 
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncurses'))
 
