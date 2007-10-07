@@ -1,11 +1,9 @@
 OVERALL
-- Remove double GetTranslation calls
-- Build script that compiles all Nixstaller dependencies?
 - Update Lua library for NBSD, OBSD, SunOS
 - Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
-- Update changelog (new lua widgets, gtk frontend)
-- Make getlang 'public?' (affects docs/changelog and needs some checking)
+- Update changelog?
 - Update examples
+- lib notes file: GTK libs
 
 
 TEST
@@ -20,33 +18,10 @@ TEST
 
 
 DOCS
-- Mention that lua commands are executed incase m_bAlwaysRoot is set to true (reference)
-- Mention that lua menus may be sorted (reference)
-- Update input:setspacing --> input:setlabelwidth (and other defaults) (reference)
-- Update radiobutton and checkbox function arguments (reference, tutorials?, examples?)
-- Check lua widget defaults (reference, tutorials?, examples?)
-- Find new lua widget functions (reference, tutorials?, examples?)
-- cfg.defaultlang: Default "english" or first valid lang (reference)
-- extrafilespath (reference)
-- intropic can be in both root project dir and in files_extra dir. (reference)
-- Mention max intropic size is 300x200 (reference)
-- install.newscreen changed name (also changelog!), also change cfgscreen to screen (reference/building)
 - Changelog
-- Update screenies
-- Resolve UNDONE's
-- Compiling: GTK
-
-        
-TRANSLATIONS
-
 
 MAIN
 - Improve/check lua error messages?
-
-
-LIBSU
-- Clean up/redesign
-- sudo support
 
 
 NCURSES
@@ -54,16 +29,8 @@ NCURSES
 - Check if UpdateTranslation functions are called - needs testing
 
 
-GTK
-- Move main window away from base frontend class?
-
-
 FLTK
 - Check if all lua screens, groups, widgets are destroyed
-
-
-DESIGN
-- Split code in more files (SConstruct aswell?)
 
 
 
@@ -80,6 +47,10 @@ OVERALL
 - x64 bins?
 - Modify Makeself?
 - Better util.a configure testing?
+- cfgmenu:set() function
+- Initial value from constrcutor for radiobutton, menu etc?
+- Build script that compiles all Nixstaller dependencies?
+
 
 
 TRANSLATIONS
@@ -90,10 +61,19 @@ MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 
 
+LIBSU
+- Clean up/redesign
+- sudo support
+
+
 NCURSES
 - Check chtype?
 - Better monochrome support?
 - Check for 'dynamic' CanFocus for CTextField?
+
+
+GTK
+- Move main window away from base frontend class?
 
 
 FLTK
@@ -113,3 +93,5 @@ DESIGN
 - Virtual functions that need to call parent function --> make additional function in base class
 that will be called instead of virtual function, this function should call the virtual instead.
 - More usage of const?
+- Reorganize SConstruct
+

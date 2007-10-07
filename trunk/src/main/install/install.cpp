@@ -505,6 +505,8 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaLockScreen, "lockscreen", "install", this);
     NLua::RegisterFunction(LuaVerifyDestDir, "verifydestdir", "install", this);
     NLua::RegisterFunction(LuaExtraFilesPath, "extrafilespath", "install", this);
+    NLua::RegisterFunction(LuaGetLang, "getlang", "install", this);
+    NLua::RegisterFunction(LuaSetLang, "setlang", "install", this);
     
     const char *env = getenv("HOME");
     if (env)
@@ -514,13 +516,6 @@ void CBaseInstall::InitLua()
     
     NLua::LoadFile("config/config.lua");
     NLua::LoadFile("install.lua");
-    
-/*    if (FileExists("config/run.lua"))
-    {
-        m_LuaVM.LoadFile("config/run.lua");
-        if (m_LuaVM.InitCall("Init"))
-            m_LuaVM.DoCall();
-    }*/
     
     NLua::CLuaTable table("languages", "cfg");
     
@@ -878,6 +873,21 @@ int CBaseInstall::LuaExtraFilesPath(lua_State *L)
     const char *file = luaL_optstring(L, 1, "");
     lua_pushfstring(L, "%s/files_extra/%s", pInstaller->m_szOwnDir.c_str(), file);
     return 1;
+}
+
+int CBaseInstall::LuaGetLang(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    lua_pushstring(L, pInstaller->m_szCurLang.c_str());
+    return 1;
+}
+
+int CBaseInstall::LuaSetLang(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    pInstaller->m_szCurLang = luaL_checkstring(L, 1);
+    pInstaller->UpdateLanguage();
+    return 0;
 }
 
 // -------------------------------------

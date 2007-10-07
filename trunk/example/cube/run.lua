@@ -1,5 +1,5 @@
 function Init()
-    screen = install.newcfgscreen("Installation options")
+    screen = install.newscreen("Installation options")
     scriptbox = screen:addradiobutton("Install launcher script to your home directory that launches Cube?",
                                       { "Yes", "No" })
     

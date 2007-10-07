@@ -23,6 +23,16 @@
 - Fixed: Overide os.exit() instead of exit()
 - Track widget behaviour with customly defined widget:datachanged() and widget:verify() lua functions.
 - Control screen activation with customly defined screen:canactivate() and screen:activate() lua functions.
+- Updated to Lua 5.1.2
+- Compiled FLTK with Xdbe and Xft support
+- install.newcfgscreen() changed to install.newscreen(). Docs now mentions 'screen class' instead of 'cfgscreen class'.
+- checkbox:get() and checkbox:set() now support both string and array number as argument
+- radiobutton:set() now accepts both a string and array number as argument
+- cfgmenu:addlist() now accepts argument with initial value
+- Widgets now check arguments on bounds
+- New lua widgets: menu, image, label, progressbar and textfield
+- GTK2 frontend
+- install.getlang() function
 
 
 0.2.1 --> 0.2.2

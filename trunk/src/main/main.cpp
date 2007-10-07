@@ -393,7 +393,7 @@ void CMain::InitLua()
     lua_atpanic(NLua::LuaState, LuaPanic);
     
     // Register some globals for lua
-    NLua::LuaSet("0.2.2", "version");
+    NLua::LuaSet("0.3", "version");
     
     NLua::LuaSet(m_szOS, "osname", "os");
     NLua::LuaSet(m_szCPUArch, "arch", "os");
@@ -420,9 +420,6 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
     NLua::RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
     NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
-    
-    NLua::RegisterFunction(LuaGetLang, "getlang", NULL, this);
-    NLua::RegisterFunction(LuaSetLang, "setlang", NULL, this);
     
     // Set some default values for config variabeles
     NLua::LuaSet("", "appname", "cfg");
@@ -915,21 +912,6 @@ int CMain::LuaExit(lua_State *L)
 int CMain::LuaPanic(lua_State *L)
 {
     throw Exceptions::CExLua(lua_tostring(L, 1));
-    return 0;
-}
-
-int CMain::LuaGetLang(lua_State *L)
-{
-    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    lua_pushstring(L, pMain->m_szCurLang.c_str());
-    return 1;
-}
-
-int CMain::LuaSetLang(lua_State *L)
-{
-    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    pMain->m_szCurLang = luaL_checkstring(L, 1);
-    pMain->UpdateLanguage();
     return 0;
 }
 

@@ -345,7 +345,7 @@ This variable should contain a @ref{Strings,,string} defining the default langua
 This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Valid values are: "gtk", "fltk", "ncurses". The default is @code{@{ "gtk", "fltk", "ncurses" @}}.
 @vindex cfg.intropic
 @item cfg.intropic
-An optional variable containing a @ref{Strings,,string} with the filename of a picture to use in the welcomescreen. Valid file formats are png, jpeg, bmp and gif. If the size is more than 300x200 px the image will be resized to fit. The file should be placed in the @file{files_extra/} directory.
+An optional variable containing a @ref{Strings,,string} with the filename of a picture to use in the welcomescreen. Valid file formats are png, jpeg, bmp and gif. If the size is more than 300x200 px the image will be resized to fit. The file should be placed in the @file{files_extra/} directory or, for backward compatibility, in the main project directory.
 @vindex cfg.languages
 @item cfg.languages
 An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of the languages to include for translations. The language names should be the same as the name of the subdirectories in the @file{lang/} directory from your project directory. The default is @code{@{ "english", "dutch" @}}.
@@ -425,7 +425,7 @@ To tell which installation screens you want to use and in what order you should 
 @*
 
 @subsection Creation of new installation screens
-Besides using the predefined screens, new screens can be created aswell. The primary reason for creating new screens is to let the user be able to configure certain settings which affect the installation process. To create a new screen we call the @ref{install.newcfgscreen} function. This function accepts one optional @ref{Strings,,string} which is used to give this screen a title. The function returns a variable pointing to a @ref{Classes,,class} which we can use to modify the screen. The screen can contain several @emph{widgets}. Here is a table showing them:
+Besides using the predefined screens, new screens can be created aswell. The primary reason for creating new screens is to let the user be able to configure certain settings which affect the installation process. To create a new screen we call the @ref{install.newscreen} function. This function accepts one optional @ref{Strings,,string} which is used to give this screen a title. The function returns a variable pointing to a @ref{Classes,,class} which we can use to modify the screen. The screen can contain several @emph{widgets}. Here is a table showing them:
 @*
 @starttable{.33,.33,.33}
 @addtableheaderrow{Widget}
@@ -435,52 +435,52 @@ Besides using the predefined screens, new screens can be created aswell. The pri
 
 @addtablerow{Check box}
     @addtablecol{One or more options that the user can enable.}
-    @addtablecol{@ref{cfgscreen:addcheckbox}}
+    @addtablecol{@ref{screen:addcheckbox}}
 @endtablerow
 
 @addtablerow{Config menu}
     @addtablecol{A menu that will let the user configure certain parameters in a logic way.}
-    @addtablecol{@ref{cfgscreen:addcfgmenu}}
+    @addtablecol{@ref{screen:addcfgmenu}}
 @endtablerow
 
 @addtablerow{Directory Selector}
     @addtablecol{Adds an inputfield to specify a directory path and a button next to it to open a directory browser.}
-    @addtablecol{@ref{cfgscreen:adddirselector}}
+    @addtablecol{@ref{screen:adddirselector}}
 @endtablerow
 
 @addtablerow{Image}
     @addtablecol{Shows an image file. The image is scaled if it's size is over 300x200 px. Valid file formats are: png, jpeg, gif and bmp.}
-    @addtablecol{@ref{cfgscreen:addimage}}
+    @addtablecol{@ref{screen:addimage}}
 @endtablerow
 
 @addtablerow{Input Field}
     @addtablecol{A single line inputfield where the user can specify text.}
-    @addtablecol{@ref{cfgscreen:addinput}}
+    @addtablecol{@ref{screen:addinput}}
 @endtablerow
 
 @addtablerow{Label}
     @addtablecol{Shows one or more lines of text.}
-    @addtablecol{@ref{cfgscreen:addlabel}}
+    @addtablecol{@ref{screen:addlabel}}
 @endtablerow
 
 @addtablerow{Menu}
     @addtablecol{A menu (or listbox) widget that lets the user select an item from a list.}
-    @addtablecol{@ref{cfgscreen:addmenu}}
+    @addtablecol{@ref{screen:addmenu}}
 @endtablerow
 
 @addtablerow{Progressbar}
     @addtablecol{Bar showing the progress of a certain process.}
-    @addtablecol{@ref{cfgscreen:addprogressbar}}
+    @addtablecol{@ref{screen:addprogressbar}}
 @endtablerow
 
 @addtablerow{Radiobutton}
     @addtablecol{A list of options from which the user can enable one.}
-    @addtablecol{@ref{cfgscreen:addradiobutton}}
+    @addtablecol{@ref{screen:addradiobutton}}
 @endtablerow
 
 @addtablerow{Textfield}
     @addtablecol{Widget that is used to show multiple lines of text. Lets the user scroll it when necessary.}
-    @addtablecol{@ref{cfgscreen:addtextfield}}
+    @addtablecol{@ref{screen:addtextfield}}
 @endtablerow
 
 @endtable
@@ -496,7 +496,7 @@ When an @code{activate} function is defined inside the screen's class it will be
 @subsubsection Widget Placement
 The widgets are placed vertically in order. When there is no room for a widget the screen is split into one or more @emph{subscreens}. Each subscreen has the same title as the original screen and has a @emph{counter} that shows current subscreen in the form X/Y where X is the current screen and Y the total number of subscreens. When the widget does not fit into a new subscreen or does not fit horizontally an error will be thrown. If a widget fits or not depends on each frontend and how the widget is configured. For this reason always verify the installer for each frontend!
 
-Widgets can be horizontally grouped aswell. To do this a special @emph{group widget} needs to be created which will hold one or more widgets. The @ref{cfgscreen:addgroup} function creates a new group widget and returns a variable pointing to the group's @ref{Classes,,class}. The same functions for install screens are used to add widgets to a group widget. However these functions are called via the group's own class, @emph{ie} @code{group:addinput} (where @code{group} is a group widget variable).
+Widgets can be horizontally grouped aswell. To do this a special @emph{group widget} needs to be created which will hold one or more widgets. The @ref{screen:addgroup} function creates a new group widget and returns a variable pointing to the group's @ref{Classes,,class}. The same functions for install screens are used to add widgets to a group widget. However these functions are called via the group's own class, @emph{ie} @code{group:addinput} (where @code{group} is a group widget variable).
 
 @subsubsection Tracking Widget Behaviour
 Commonly you may want to keep track of your widgets, for example to handle datachanges or verify user input. For this 2 functions can be defined @emph{in the widget class}. The first function, called @code{datachanged}, is called by the widget as soon as the user changes any data from the widget (@emph{ie} when the user selects a menu option). The second function, called @code{verify}, is called when the user presses the @samp{Next} button. When this function returns @code{false} the corresponding widget will get focus and the current installation screen remains active.
@@ -507,7 +507,7 @@ An example @code{Init} function is shown below, which covers anything we just di
 function Init()
     install.destdir = install.gettempdir()
 @*
-    myscreen = install.newcfgscreen("Hello!\\nYou can use this screen to configure some settings.")
+    myscreen = install.newscreen("Hello!\\nYou can use this screen to configure some settings.")
 @*
     function myscreen:canactivate()
         return true @minus{}@minus{} This is the default behaviour
@@ -671,8 +671,7 @@ Similar to the previous item, @file{files_<os>_all/}, this directory should cont
 @item @file{files_<os>_<arch>/}
 A combination of the previous two. Examples: @file{files_linux_x86/}, @file{files_freebsd_x86/}.
 @item @file{files_extra/}
-@c UNDONE
-This directory contains any files needed at runtime. Examples are graphics or text files to show. The files can be accessed with the install.extrafilespath() lua function (see further).
+This directory contains any files needed at runtime. Examples are graphics or text files to show. The files can be accessed with the @ref{install.extrafilespath} lua function.
 @end table
 
 
@@ -848,7 +847,7 @@ Another main feature is the easy ingame map editing (online too!).}
 @subsection @file{run.lua}
 This time we want to edit the @file{run.lua} file. A generated version was already created. Modifying this file to our needs, it will look like this:
 @codeblock{function Init()
-    screen = install.newcfgscreen("Installation options")
+    screen = install.newscreen("Installation options")
     scriptbox = screen:addradiobutton("Install launcher script to your home directory that launches Cube?",
                                       @{ "Yes", "No" @})
 @*
@@ -880,7 +879,7 @@ end}
 
 The default comments in the file are omitted, you may keep them if you want. The generated version also sets the @code{install.destdir} variable. As this is set to a default value, we don't really need it and is therefore kept out. @*
 @*
-First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newcfgscreen}. Then a radiobutton widget is added to this screen through the @ref{cfgscreen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{install.screenlist} variable. Since we don't want a license or finish message shown we left these screens out.@*
+First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newscreen}. Then a radiobutton widget is added to this screen through the @ref{screen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{install.screenlist} variable. Since we don't want a license or finish message shown we left these screens out.@*
 @*
 The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{install.destdir} variable. After that we check what the user chose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assigning it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automaticly included to this string (@pxref{Strings}). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
 
@@ -967,37 +966,37 @@ The file starts with;
 @codeblock{function Init()
     install.destdir = install.gettempdir()
 @*
-    cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
+    screen = install.newscreen("Configuration options for Vim installation")
 @*
-    prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
+    prefixfield = screen:adddirselector("Base destination directory for Vim. This directory will be " ..
                                            "used to populate subdirectories such as bin/ to store executables " ..
                                            "and etc/ for configuration files.", "/usr")
 @*
-    scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
+    scriptbox = screen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
                                       "Please note that the selected languages need to be installed in " ..
                                       "order to work.", @{ "MzScheme", "perl", "python", "ruby", "tcl" @})
 @*
-    guibox = cfgscreen:addcheckbox("Vim can use several different GUI frontends. You can specify here which " ..
+    guibox = screen:addcheckbox("Vim can use several different GUI frontends. You can specify here which " ..
                                    "toolkits can be used to find a suitable GUI. If the toolkit cannot be used " ..
                                    "it will be skipped and the next is checked.", @{ "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" @})
     guibox:set(1, 2, 3, 4, 5, 6, true)
 @*
-    idebox = cfgscreen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). " ..
+    idebox = screen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). " ..
                                    "Here you can select for which you want to include support.",
                                    @{ "Sun Visual Workshop", "NetBeans", "Sniff Interface" @})
     idebox:set(2, true)
 @*
-    advmenu = cfgscreen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
+    advmenu = screen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
     advmenu:addstring("CC", "Used C compiler")
     advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
     advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
     advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
 @*
-    install.screenlist = @{ WelcomeScreen, cfgscreen, InstallScreen, FinishScreen @}
+    install.screenlist = @{ WelcomeScreen, screen, InstallScreen, FinishScreen @}
 end}
 Thats already some text to read :-) We start with setting the @code{install.destdir} variable to a temporary directory.@*
 @*
-After that a new configuration screen is created and assigned to the @code{cfgscreen} variable. Then the widgets are created through the @ref{cfgscreen:addcheckbox} and @ref{cfgscreen:addcfgmenu} functions. Note that the descriptions are splitted with the @code{..} operator. This operator concatenates 2 strings and we use it purely here to make the code lines shorter. The last widget acts like a configuration menu. In this menu the user can select several parameters and edit them.@*
+After that a new installation screen is created and assigned to the @code{screen} variable. Then the widgets are created through the @ref{screen:addcheckbox} and @ref{screen:addcfgmenu} functions. Note that the descriptions are splitted with the @code{..} operator. This operator concatenates 2 strings and we use it purely here to make the code lines shorter. The last widget acts like a configuration menu. In this menu the user can select several parameters and edit them.@*
 @*
 The last line defines the install screens we want to show.
 
@@ -1153,33 +1152,33 @@ The @file{run.lua} file is now completely discussed and should look like this:
 @codeblock{function Init()
     install.destdir = install.gettempdir()
 @*
-    cfgscreen = install.newcfgscreen("Configuration options for Vim installation")
+    screen = install.newscreen("Configuration options for Vim installation")
 @*
-    prefixfield = cfgscreen:adddirselector("Base destination directory for Vim. This directory will be " ..
+    prefixfield = screen:adddirselector("Base destination directory for Vim. This directory will be " ..
                                            "used to populate subdirectories such as bin/ to store executables " ..
                                            "and etc/ for configuration files.", "/usr")
 @*
-    scriptbox = cfgscreen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
+    scriptbox = screen:addcheckbox("Vim can use several scripting languages for command interpreting. "..
                                       "Please note that the selected languages need to be installed in " ..
                                       "order to work.", @{ "MzScheme", "perl", "python", "ruby", "tcl" @})
 @*
-    guibox = cfgscreen:addcheckbox("Vim can use several different GUI frontends. You can specify here which " ..
+    guibox = screen:addcheckbox("Vim can use several different GUI frontends. You can specify here which " ..
                                    "toolkits can be used to find a suitable GUI. If the toolkit cannot be used " ..
                                    "it will be skipped and the next is checked.", @{ "GTK", "GTK2", "Gnome", "Motif", "Athena (XAW)", "nexTaw" @})
     guibox:set(1, 2, 3, 4, 5, 6, true)
 @*
-    idebox = cfgscreen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). " ..
+    idebox = screen:addcheckbox("Vim can be integrated in several Integrated Development Environments (IDEs). " ..
                                    "Here you can select for which you want to include support.",
                                    @{ "Sun Visual Workshop", "NetBeans", "Sniff Interface" @})
     idebox:set(2, true)
 @*
-    advmenu = cfgscreen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
+    advmenu = screen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
     advmenu:addstring("CC", "Used C compiler")
     advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
     advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
     advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
 @*
-    install.screenlist = @{ WelcomeScreen, cfgscreen, InstallScreen, FinishScreen @}
+    install.screenlist = @{ WelcomeScreen, screen, InstallScreen, FinishScreen @}
 end
 @*
 function getprefixconf()
@@ -1356,6 +1355,12 @@ For this reason most libraries are linked staticly. This will add size to the re
     @addtableheadercol{Dynamic or Static}
 @endtablerow
 
+@addtablerow{GTK2 (libgobject-2.0 libglib-2.0 libpango-1.0 libgdk-x11-2.0 libgdk_pixbuf-2.0 libgtk-x11-2.0)}
+    @addtablecol{@uref{http://www.gtk.org/}}
+    @addtablecol{GTK2 frontend}
+    @addtablecol{Dynamic}
+@endtablerow
+
 @addtablerow{zlib (libz)}
     @addtablecol{@uref{http://www.zlib.net/}}
     @addtablecol{FLTK frontend}
@@ -1380,7 +1385,7 @@ For this reason most libraries are linked staticly. This will add size to the re
     @addtablecol{Static}
 @endtablerow
 
-@addtablerow{X11 (libX11, libXext)}
+@addtablerow{X11 (libX11, libXext, libXft)}
     @addtablecol{Locally or @uref{http://www.x.org/}}
     @addtablecol{FLTK frontend}
     @addtablecol{Dynamic}
@@ -1408,10 +1413,12 @@ For this reason most libraries are linked staticly. This will add size to the re
 
 All the static libraries with the exception from @file{libutil.a} needs to be copied to the @file{src/lib/[osname]/[archname]} directory. The @samp{[osname]} refers to the lowercased output from the command @command{uname}. @samp{archname} refers to either @samp{x86} or the output from @command{uname -m}. The main reason for putting the static libraries in a seperate directory is that 'clean' versions can be compiled and used. 'clean' in the way that the libraries have no CPU specific optimizations.@*
 @*
-The search path to X11 libraries defaults to @file{/usr/X11R6/lib}. This can be changed by the @samp{xlibsdir} parameter passed to SCons, which is discussed later.
+The search path to X11 libraries defaults to @file{/usr/X11R6/lib}. This can be changed by the @samp{xlibsdir} parameter passed to SCons, which is discussed later.@*
+@*
+The search path to GTK2 libraries defaults to @file{/usr/lib}. This can be changed by the @samp{gtklibsdir} parameter passed to SCons, which is also discussed later.@*
 
 @subsection Headers
-All the header files from the static libraries can be found in the @file{src/include/} directory. You normally don't have to bother with these. The path to the X11 headers can be specified with the @samp{xincdir} parameter passed to SCons (discussed later).
+All the header files from the static libraries can be found in the @file{src/include/} directory. You normally don't have to bother with these. The path to the X11 headers can be specified with the @samp{xincdir} parameter passed to SCons (discussed later). The included GTK2 headers are from the older 2.4 version. This ensures that the frontend runs on systems with GTK+ 2.4 or later.
 
 @subsection Notes
 In the @file{src/libs/[osname]/[archname]/} directories you can find a @file{notes} file that contain several notes about which library versions are used and how they were compiled. It's recommended that the same library versions are used incase you want to compile your own.
@@ -1445,6 +1452,7 @@ After compilation is done the binaries will be put in the @file{bin/} directory.
                 @itemize @bullet
                     @item @file{lzma}
                     @item @file{fltk}
+                    @item @file{gtk}
                     @item @file{ncurs}
                 @end itemize
                 @item @file{edelta}
@@ -1457,11 +1465,13 @@ After compilation is done the binaries will be put in the @file{bin/} directory.
 The binaries are each put on seperate @samp{libc} and, incase of C++ binaries, in seperate @samp{libstdc++} directories aswell. The reason for this is that they are linked dynamicly. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} and @file{libstdc++.so.4} while FreeBSD 6.X is using @file{libc.so.6} and @file{libstdc++.so.5}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started (and obviously created when the binaries were in place) it will then choose the right binaries for the users system.@*
 @*
 Besides the frontends there are some other binaries. Here is an explanation for each of them:
-@table @strong
+@table @file
 @item lzma
 Binary used to @emph{encode} the install files using the lzma algorithm. This file is not included in the installer.
 @item fltk
 The FLTK frontend.
+@item gtk
+The GTK frontend.
 @item ncurs
 The ncurses frontend.
 @item edelta
@@ -1497,8 +1507,8 @@ For suggestions, questions, bugs etc you can reach me through the following ways
 @itemize @bullet
 @item E-Mail: rhelmus_AT_gmail.com
 @item Use the @uref{http://nixstaller.berlios.de/forum/index.php, online forums}
-@item Instant Message: rick_helmus8_AT_hotmail.com (MSN), 224332897(ICQ) or rhelmus_AT_gmail.com (Google Talk).
-@item For bugs: the @uref{https://developer.berlios.de/projects/nixstaller/, BerliOS project page}.
+@item Instant Message: rick_helmus8_AT_hotmail.com (MSN), 224332897 (ICQ) or rhelmus_AT_gmail.com (Google Talk).
+@item For bugs: the @uref{http://developer.berlios.de/projects/nixstaller/, BerliOS project page}.
 @end itemize
 
 
@@ -2325,7 +2335,7 @@ table.sort(fruits, comp)    @minus{}@minus{} fruits = @{ "Orange", "Lemon", "App
 
 
 @section Math Functions
-Lua supports many different math related functions through the @code{math} module. Since not many of these functions are important for Nixstaller only a few will be discussed.
+Lua supports many different math related functions through the @code{math} module. Since not many of these functions are important for Nixstaller only a few are discussed.
 
 @luafunc math.abs (n)
 Returns the absolute value of @code{n}
@@ -2656,9 +2666,7 @@ end}
 
 
 @section Install Package
-This section describes all the install related functions and variables. They are obviously Lua extensions so you won't find them in any other Lua manual. @strong{All} these functions and variables should only be used from the @code{Install()} function. It's better to use this section as a reference after you've read @ref{Creating Installers}.@*
-@*
-First all the functions and variables from the @code{install} package are described. After that the @samp{config screen class} (used to create new installer screens) and the @samp{config menu class} (a menu class to be used in a custom install screen) are discussed. For examples of these packages you should read the @ref{Tutorials, tutorials}.
+This section describes all the install related functions and variables. They are obviously Lua extensions so you won't find them in any other Lua manual. It's recommended that you read @ref{Creating Installers} first.
 
 @subsection The @code{install} Module
 
@@ -2667,7 +2675,7 @@ Variable that is used to set the destination directory for the @ref{install.extr
 @end defvr
 
 @defvr Variable install.screenlist
-Variable that should be used to specify the installation screens to be used. Can contain classes created by the @ref{install.newcfgscreen} function and one of these predefined variables:
+Variable that should be used to specify the installation screens to be used. Can contain classes created by the @ref{install.newscreen} function and one of these predefined variables:
 @itemize @bullet
 @item WelcomeScreen
 @item LicenseScreen
@@ -2678,6 +2686,33 @@ Variable that should be used to specify the installation screens to be used. Can
 By default @code{install.screenlist} is set like this:
 @codeblock{install.screenlist = @{ WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen @}}
 @end defvr
+
+@anchor{install.extrafilespath}
+@luafunc install.extrafilespath ([f])
+This function returns a path to where the files are located which were placed in the @file{extra_files/} directory from the project directory. The optional string argument @code{f} is used for convience and is simply appended to the returned path.@*
+For example, if a file called @file{README} was placed in the @file{extra_files/} directory before the installer was created, we can access it as follows:
+@codeblock{readmefile = install.extrafilespath("README")}
+@endluafunc
+
+@luafunc install.getlang ()
+The function returns a string with the currently loaded language.
+@endluafunc
+
+@anchor{install.gettempdir}
+@luafunc install.gettempdir ()
+This function is used to assign a temporary directory the the @code{install.destdir} variable. Setting @code{install.destdir} to a temporary directory is useful for installers that need to do additional tasks with the installation files such as compilation.
+@endluafunc
+
+@subsubsection Functions used in the @code{Init} function
+Following functions should only be used within the @code{Init} function.
+
+@anchor{install.newscreen}
+@luafunc install.newscreen ([t])
+This function will return a class for a new @emph{installation screen}. The members of this class are described @ref{screen,,here}. The optional argument, @code{t}, specifies a (short) title for this screen.
+@endluafunc
+
+@subsubsection Functions used in the @code{Install} function
+Following functions should only be used within the @code{Install} function.
 
 @anchor{install.askrootpw}
 @luafunc install.askrootpw ()
@@ -2695,7 +2730,9 @@ When this function is called more than once it won't do anything (the password i
 @luafunc install.execute (c[, r=true[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
 This function will execute the shell command defined by string @code{s}. The optional argument, @code{r}, tells that the installation should be aborted when the command failes to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (@pxref{Strings}).@*
 @*
-This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.
+This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.@*
+@*
+Note that when @code{install.destdir} is unwritable for the current user and the user agreed to continue as root, @code{install.execute} will run the shell command as root.
 @endluafunc
 
 @anchor{install.executeasroot}
@@ -2706,16 +2743,6 @@ This function does essentially the same as @code{install.execute}, but using the
 @anchor{install.extractfiles}
 @luafunc install.extractfiles ()
 This function will extract all installation files to the directory that was specified by the global variable @code{install.destdir}. This function will automaticly call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
-@endluafunc
-
-@anchor{install.gettempdir}
-@luafunc install.gettempdir ()
-This function is used to assign a temporary directory the the @code{install.destdir} variable. Setting @code{install.destdir} to a temporary directory is useful for installers that need to do additional tasks with the installation files such as compilation.
-@endluafunc
-
-@anchor{install.newcfgscreen}
-@luafunc install.newcfgscreen ([t])
-This function will return a class for a new @emph{configuration screen}. The members of this class are described @anchor{cfgscreen, here}. The optional argument, @code{t}, specifies a (short) title for this screen.
 @endluafunc
 
 @anchor{install.print}
@@ -2740,32 +2767,34 @@ This function is used to specify how many @emph{steps} the installation has, spe
 Note that @code{install.extractfiles} will call this function aswell, so you most lickely want to increment @code{n} by one.
 @endluafunc
 
-@anchor{cfgscreen}
-@subsection The @code{config screen} class
-The class described here is returned after a call to @code{install.newcfgscreen}. The function definitions below use @samp{cfgscreen} as classname, though you should replace that name with the name of the variable that contains the class.
+@anchor{screen}
+@subsection The @code{screen} class
+The class described here is returned after a call to @code{install.newscreen}. The function definitions below use @samp{screen} as classname, though you should replace that name with the name of the variable that contains the class.
 
-@anchor{cfgscreen:addcfgmenu}
-@luafunc cfgscreen:addcfgmenu ([t])
+@anchor{screen:addcfgmenu}
+@luafunc screen:addcfgmenu ([t])
 Creates a new @samp{config menu}. The string parameter @code{t} sets a title. The menu is used to let the user configure certain parameters. These parameters can be paths (configured through a file manager), strings, boolean flags (can be enabled or disabled) or a list with options. The function will return a class containing function methods to add parameters. These are described @ref{cfgmenu, here}.
 @endluafunc
 
-@anchor{cfgscreen:addcheckbox}
-@luafunc cfgscreen:addcheckbox (t, o)
+@anchor{screen:addcheckbox}
+@luafunc screen:addcheckbox (t, o)
 Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
 @luafunc chkbox:get (o)
 Returns @code{true} if the option @code{o} is enabled or @code{false} when disabled. @code{o} can be a string containing the option name or can be an option number.
 @endluafunc
-@luafunc chkbox:set (n, ..., e)
-This variadic function enables or disables one or more options. The first argument, @code{n}, and the rest before argument @code{e} are the option numbers to enable or disable. If @code{e} is @code{true} the option(s) number(s) are enabled, if @code{false} they will be disabled.@*
+@luafunc chkbox:set (o, ..., e)
+This variadic function enables or disables one or more options. The first argument, @code{o}, and the rest before argument @code{e} are the option numbers or strings containing the option names to enable or disable. If @code{e} is @code{true} the option(s) are enabled, if @code{false} they will be disabled.@*
 @*
 Example:
 @codeblock{@minus{}@minus{} This will enable the first and third option:
-mybox:set(1, 3, true)}
-@endluafunc
+mybox:set(1, 3, true) @minus{}@minus{} Enable first and third option
+mybox:set("Option", false) @minus{}@minus{} Disables the option @emph{Option}}
 @endluafunc
 
-@anchor{cfgscreen:adddirselector}
-@luafunc cfgscreen:adddirselector ([t[, d=os.getenv("HOME")]])
+@endluafunc
+
+@anchor{screen:adddirselector}
+@luafunc screen:adddirselector ([t[, d=os.getenv("HOME")]])
 This function will add an inputfield which holds the current selected directory name and a button next to it which will launch a file dialog. This way the user can either select a directory by typing it or by browsing. Argument @code{t} sets an optional title and argument @code{d} sets an initial directory, defaulting to the user's home directory. The function will return a class with the following methods (where dirsel should be replaced by the actual variable name):
 @luafunc dirsel:get ()
 Returns a string containing the current selected directory.
@@ -2775,9 +2804,23 @@ Sets the directory to string @code{d}.
 @endluafunc
 @endluafunc
 
-@anchor{cfgscreen:addinput}
-@luafunc cfgscreen:addinput ([l[, t[, m=1024[, v[, tp="string"]]]])
-This will add an input field to the config screen. The parameter @code{l} is used to specify a label (text which is put in front of the input field). The parameter @code{t} specifies a title (set to "" for none). @code{m} specifies the max character count that can be typed. @code{v} specifies an initial value. The last parameter, @code{tp}, specifies the type of the inputfield and can be one of these:
+@anchor{screen:addgroup}
+@luafunc screen:addgroup ()
+Creates a new @samp{group widget}. This widget is used to position widgets horizontally next to eachother. To add a widget to the group you simple have to create a widget via the group's member functions. These member functions are equal to the widget creation functions from the @code{screen} class itself.@*
+Example:
+@codeblock{group = myscreen:addgroup()
+img = group:addimage("graphics.jpeg")
+text = group:addlabel("Thanks for downloading my software!")}
+@endluafunc
+
+@anchor{screen:addimage}
+@luafunc screen:addimage (f)
+This widget displays an image loaded from file @code{f}. The image is scaled down incase it's larger than 300x200 px. Valid formats are: png, jpeg, gif and bmp.
+@endluafunc
+
+@anchor{screen:addinput}
+@luafunc screen:addinput ([l[, t[, m=1024[, v[, tp="string"]]]])
+This will add an input field to the install screen. The parameter @code{l} is used to specify a label (text which is put in front of the input field). The parameter @code{t} specifies a title (set to "" for none). @code{m} specifies the max character count that can be typed. @code{v} specifies an initial value. The last parameter, @code{tp}, specifies the type of the inputfield and can be one of these:
 @table @strong
 @item "string"
 The user can type any (alphanumeric) character as input.
@@ -2791,25 +2834,73 @@ The function will return a class with the following method functions (input shou
 @luafunc input:get ()
 Returns the current value hold by the input field.
 @endluafunc
-@luafunc input:setspacing (n)
-This function can be used to set the distance from the windows left border to the start position of the input field. The parameter @code{n} specifies the distance, with a range from 1-100. This function is used to make sure that each input field can start from a fixed position. So to make sure that each input field will start at the same position on the install screen, you should call this function for every input field with the same value. The default value is @samp{25}.
+@luafunc input:set (s)
+Sets the current value to the string @code{s}.
+@endluafunc
+@luafunc input:setlabelwidth (n)
+This function sets a fixed labelwidth to @code{n} characters. This function is typically used to let multiple inputfields start at the same horizontal position, by setting their labelwidth to the same value. The default value is @samp{15}.
 @endluafunc
 @endluafunc
 
-@anchor{cfgscreen:addradiobutton}
-@luafunc cfgscreen:addradiobutton (t, o)
+@anchor{screen:addlabel}
+@luafunc screen:addlabel (l)
+This widget displays a simple text label with the text specified by argument @code{l}. The function returns a class with the following method (replace label with the actual variable name):
+@luafunc label:set (l)
+Sets the label text to string @code{l}.
+@endluafunc
+@endluafunc
+
+@anchor{screen:addmenu}
+@luafunc screen:addmenu (t, o)
+This function will add a menu (or listbox) widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. Note that depending on the frontend the given options may be sorted when presented to the user. The function returns a class with the following methods (menu should be replaced by the variable that is pointing to the class):
+@luafunc menu:get ()
+Returns the name of the option that is enabled.
+@endluafunc
+@luafunc menu:set (o)
+Selects the option @code{o}, which can be an array index or string with the option name.
+@endluafunc
+@endluafunc
+
+@anchor{screen:addprogressbar}
+@luafunc screen:addprogressbar ([t])
+This function adds a progressbar to the install screen. The optional string argument @code{t} is used for a title. The function returns a class with the following method (replace progbar with the actual variable name):
+@luafunc progbar:set (v)
+The argument @code{v} should be a number between 0 and 100. This number tells how many percent of the bar should be filled (0: empty, 100: full).
+@endluafunc
+@endluafunc
+
+@anchor{screen:addradiobutton}
+@luafunc screen:addradiobutton (t, o)
 This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
 @luafunc radio:get ()
 Returns the name of the option that is enabled.
 @endluafunc
-@luafunc radio:set (n)
-Enables the option at array index @code{n}.
+@luafunc radio:set (o)
+Enables the option @code{o}, which can be an array index or string with the option name.
 @endluafunc
 @endluafunc
 
+@anchor{screen:addtextfield}
+@luafunc screen:addtextfield ([t="", [w=false])
+This widget is used to display multiple lines of text. When necessary, the user can scroll through the text lines. The optional argument @code{t} sets a title. Optional argument @code{w} enables or disables word wrapping. The function returns a class with the following methods (replace textfield with the actual variable name):
+@luafunc textfield:add (s)
+Adds the text from the string argument @code{s}.
+@endluafunc
+@luafunc textfield:load (f)
+Loads a file and appends its content. The filename is specified by string argument @code{f}.
+@endluafunc
+@luafunc textfield:clear ()
+Clears all the text.
+@endluafunc
+@luafunc textfield:follow (f)
+If argument @code{f} is @code{true} @samp{follow mode} is enabled, when @code{f} is @code{false} it's disabled. When follow mode is enabled, the widget will always display the last text lines. 
+@endluafunc
+@endluafunc
+
+
 @anchor{cfgmenu}
 @subsection The @code{config menu} Class
-This (sub)section describes the @code{config menu} class, which is created by @ref{cfgscreen:addcfgmenu}. This menu is used to let the user configure various parameters through a menu. A type for these parameters is specified so that the user can change them in a logic way; file paths with a file manager, parameters with predefined options through a listbox etc.
+This (sub)section describes the @code{config menu} class, which is created by @ref{screen:addcfgmenu}. This menu is used to let the user configure various parameters through a menu. A type for these parameters is specified so that the user can change them in a logic way; file paths with a file manager, parameters with predefined options through a listbox etc.
 The class contains the following methods (replace cfgmenu with the variable name pointing to the class):
 
 @luafunc cfgmenu:addbool (p, d[, v=false])
@@ -2820,8 +2911,8 @@ This function will add a parameter that can be enabled or disabled by the user. 
 This function adds a parameter that will contain a @code{string} that holds a directory path. The user can modify this through a file browser. Argument @code{p} should be a string containing the parameter name, @code{d} a string with a description and @code{v} a string with an initial path.
 @endluafunc
 
-@luafunc cfgmenu:addlist (p, d, l)
-This function adds a parameter which the user can edit with a predefined list of options. @code{p} specifies the variable name, @code{d} a description and @code{l} should be an array with strings for each option name.
+@luafunc cfgmenu:addlist (p, d, l[, v])
+This function adds a parameter which the user can edit with a predefined list of options. @code{p} specifies the variable name, @code{d} a description and @code{l} should be an array with strings for each option name. The optional variable @code{v} is a string with the initial value.
 @endluafunc
 
 @luafunc cfgmenu:addstring (p, d[, v])

@@ -25,7 +25,7 @@ screen = install.newscreen("Please select a language")
 menu = screen:addmenu("", cfg.languages or {})
 
 function menu:verify()
-    setlang(menu:get())
+    install.setlang(menu:get())
     return true
 end
 
@@ -35,7 +35,7 @@ end
 
 function screen:activate()
     for i, v in ipairs(cfg.languages) do
-        if v == getlang() then
+        if v == install.getlang() then
             menu:set(i)
             break
         end

@@ -172,8 +172,6 @@ public:
     static int LuaWarnBox(lua_State *L);
     static int LuaExit(lua_State *L);
     static int LuaPanic(lua_State *L);
-    static int LuaGetLang(lua_State *L);
-    static int LuaSetLang(lua_State *L);
 };
 
 class CLuaRunner: public CMain
