@@ -43,6 +43,7 @@ OVERALL
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
 - Dep handling?
+- Create system native package (via lua configuration system: classes that provide the functionality of creating/checking/installing packages, function that let the creator create and install the package)
 - Use deltas <--> patches for different frontends?
 - x64 bins?
 - Modify Makeself?
@@ -50,7 +51,7 @@ OVERALL
 - cfgmenu:set() function
 - Initial value from constrcutor for radiobutton, menu etc?
 - Build script that compiles all Nixstaller dependencies?
-
+- Root usage: change to use privileged user? (default root)
 
 
 TRANSLATIONS
