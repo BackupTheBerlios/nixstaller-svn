@@ -33,6 +33,7 @@
 - New lua widgets: menu, image, label, progressbar and textfield
 - GTK2 frontend
 - install.getlang() function
+- Temporary lzma archives are now unpacked to tmp directory instead of destdir.
 
 
 0.2.1 --> 0.2.2
