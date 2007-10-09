@@ -1,12 +1,15 @@
 #!/bin/sh
 
+SRCDIR=$PWD
 DESTFILES=$PWD/deps/files
 DESTPREFIX=$PWD/deps/usr
 mkdir -p "$DESTFILES"
 mkdir -p "$DESTPREFIX"
 
-export LDFLAGS="-L $DESTPREFIX/lib"
-export CPPFLAGS="-I $DESTPREFIX/include"
+LDFLAGS="-L $DESTPREFIX/lib"
+CPPFLAGS="-I $DESTPREFIX/include"
+export LDFLAGS
+export CPPFLAGS
 
 get()
 {
@@ -29,13 +32,18 @@ dodir()
     cd "$DESTFILES/$1"
 }
 
-buildgzip()
+restoredir()
 {
-    get "ftp://ftp.nluug.nl/pub/gnu/gzip/gzip-1.2.4.tar.gz" "$DESTFILES"
-    untar "gzip-1.2.4.tar.gz"
-    dodir "gzip-1.2.4/"
+    cd $SRCDIR
+}
+
+buildzlib()
+{
+    get "http://freshmeat.net/redir/zlib/12352/url_tgz/zlib-1.2.3.tar.gz" "$DESTFILES"
+    untar "zlib-1.2.3.tar.gz"
+    dodir "zlib-1.2.3/"
     ./configure --prefix=$DESTPREFIX && make && make install && make clean
-    cd -
+    restoredir
 }
 
 buildpng()
@@ -44,7 +52,7 @@ buildpng()
     untar "libpng-1.2.21.tar.gz"
     dodir "libpng-1.2.21/"
     ./configure --prefix="$DESTPREFIX" && make && make install && make clean
-    cd -
+    restoredir
 }
 
 buildjpeg()
@@ -52,20 +60,43 @@ buildjpeg()
     get "http://freshmeat.net/redir/libjpeg/5665/url_tgz/jpegsrc.v6b.tar.gz"
     untar "jpegsrc.v6b.tar.gz"
     dodir "jpeg-6b"
-    ./configure --prefix=$DESTPREFIX && make && make install && make clean
-    cd -
+    ./configure --prefix=$DESTPREFIX && make && make install-lib && make clean
+    restoredir
 }
 
-buidfltk()
+buildfltk()
 {
     get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.7/fltk-1.1.7-source.tar.gz"
     untar "fltk-1.1.7-source.tar.gz"
     dodir "fltk-1.1.7"
     CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xft --enable-xdbe && make && make install && make clean
-    cd -
+    restoredir
 }
 
-buildgzip
-buildpng
-buildjpeg
-buidfltk
+buildlua()
+{
+    get "http://www.lua.org/ftp/lua-5.1.2.tar.gz"
+    untar "lua-5.1.2.tar.gz"
+    dodir "lua-5.1.2"
+    nano -w src/Makefile
+    make posix && make install INSTALL_TOP=$DESTPREFIX
+    restoredir
+}
+
+BUILD=$1
+
+if [ -z $BUILD ]; then
+    BUILD="zlib png jpeg fltk lua"
+fi
+
+for B in $BUILD
+do
+    case $B in
+        zlib ) buildzlib ;;
+        png ) buildpng ;;
+        jpeg ) buildjpeg ;;
+        fltk ) buidfltk ;;
+        lua ) buildlua ;;
+    esac
+done
+
