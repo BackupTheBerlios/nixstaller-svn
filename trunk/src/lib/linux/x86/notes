@@ -11,7 +11,7 @@ notes: LDFLAGS and CPPFLAGS were changed to point to prefix directory where cust
 
 FLTK:
 version: 1.1.7
-notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support. --enable-xft flag given for ./configure
+notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support. --enable-xft and --enable-xdbe flags given for ./configure
 
 ZLIB:
 version: 1.2.3
