@@ -80,7 +80,7 @@ error()
 
 requiredcp()
 {
-    cp $* || error "Failed to copy file(s)"
+    cp "$@" || error "Failed to copy file(s)"
 }
 
 checkargentry()
@@ -213,7 +213,7 @@ parseargs()
         read yn
         if [ "$yn" = "y" -o "$yn" = "Y" ]; then
             echo "Removing $TARGETDIR ..."
-            rm -rf ${TARGETDIR}
+            rm -rf "${TARGETDIR}"
         fi
     fi
     
@@ -241,16 +241,16 @@ copylanguages()
     for L in $LANGUAGES
     do
         SRC=
-        if [ ! -d ${CURDIR}/lang/${L} ]; then
+        if [ ! -d "${CURDIR}/lang/${L}" ]; then
             NEWLANGUAGES="$NEWLANGUAGES $L"
-            SRC=${CURDIR}/lang/english/strings
+            SRC="${CURDIR}/lang/english/strings"
         else
-            SRC=${CURDIR}/lang/${L}/strings
+            SRC="${CURDIR}/lang/${L}/strings"
         fi
         
-        DEST=${TARGETDIR}/lang/${L}
-        mkdir -p ${DEST}
-        requiredcp ${SRC} ${DEST}
+        DEST="${TARGETDIR}"/lang/"${L}"
+        mkdir -p "${DEST}"
+        requiredcp "${SRC}" "${DEST}"
     done
 }
 
@@ -344,7 +344,7 @@ function Init()
     
     -- The destination directory for the installation files. The 'SelectDirScreen' lets the user
     -- change this variable.
-    install.destdir = os.getenv("$HOME")
+    install.destdir = os.getenv("HOME")
     
     -- Installation screens to show (in given order). Custom screens should be placed here.
     install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }

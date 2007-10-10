@@ -2,7 +2,7 @@ OVERALL
 - Update Lua library for NBSD, OBSD, SunOS
 - Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
 - Update changelog?
-- Update examples
+- Update examples?
 - lib notes file: GTK libs
 
 

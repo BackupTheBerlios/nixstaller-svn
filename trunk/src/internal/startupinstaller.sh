@@ -25,8 +25,8 @@
 # $2: libc directory to be used for lzma
 unlzma()
 {
-    if [ $ARCH_TYPE = "lzma" -a ! -z "$1" -a -f $1.lzma ]; then
-        "${2}/lzma-decode" "${1}.lzma" $1 2>&1 >/dev/null && rm "${1}.lzma"
+    if [ $ARCH_TYPE = "lzma" -a ! -z "$1" -a -f "$1".lzma ]; then
+        "${2}/lzma-decode" "${1}.lzma" "$1" 2>&1 >/dev/null && rm "${1}.lzma"
     fi
 }
 

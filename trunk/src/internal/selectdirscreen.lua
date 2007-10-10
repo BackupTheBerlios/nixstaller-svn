@@ -19,11 +19,10 @@ module (..., package.seeall)
 
 screen = install.newscreen("Select destination directory")
 
-dir = screen:adddirselector("", install.destdir or os.getenv("HOME"))
+dir = screen:adddirselector("", install.destdir)
 
 function dir:datachanged()
     install.destdir = dir:get()
-    return true
 end
 
 function dir:verify()

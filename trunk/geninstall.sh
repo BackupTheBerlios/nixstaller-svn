@@ -24,7 +24,7 @@ haslibs()
     return 1
 }
 
-if [ -z ${1} -o ${1} = "--help" -o ${1} = "-h" ]; then
+if [ -z "${1}" -o "${1}" = "--help" -o "${1}" = "-h" ]; then
     echo "Usage: $0 <config dir> [ <installer name> ]"
     echo
     echo " <config dir>: The directory which holds the install config files"
@@ -32,7 +32,7 @@ if [ -z ${1} -o ${1} = "--help" -o ${1} = "-h" ]; then
     exit 1
 fi
 
-if [ ! -d ${1} ]; then
+if [ ! -d "${1}" ]; then
     echo "No such directory: ${1}"
     exit 1
 fi
@@ -46,7 +46,7 @@ do
             BIN=${LCPP}/$F
             if [ -f $BIN ]; then
                 haslibs $BIN || continue
-                $BIN -c "$CURDIR/src/internal/geninstall.lua" $* || exit 1
+                $BIN -c "$CURDIR/src/internal/geninstall.lua" "$@" || exit 1
                 exit 0
             fi
         done
