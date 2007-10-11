@@ -440,13 +440,11 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
     
     EatWhite(stat);
 
-#ifndef RELEASE
     if (m_ArchList[m_szCurArchFName].filesizes.find(stat) == m_ArchList[m_szCurArchFName].filesizes.end())
     {
         debugline("Couldn't find %s\n", stat.c_str());
         return;
     }
-#endif
     
     m_fExtrPercent += (((float)m_ArchList[m_szCurArchFName].filesizes[stat]/(float)m_ulTotalArchSize)*100.0f);
     if (m_fExtrPercent < 0.0f)

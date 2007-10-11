@@ -10,7 +10,7 @@ version: 1.2.21
 notes: LDFLAGS and CPPFLAGS were changed to point to prefix directory where custom zlib was installed.
 
 FLTK:
-notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support. configure options: --enable-xft and --enable-xdbe
+notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support. configure options: --enable-xdbe (--enable-xft seems to cause crashes on solaris)
 version: 1.1.7
 
 ZLIB:
