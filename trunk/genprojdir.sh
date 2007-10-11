@@ -305,7 +305,7 @@ genconfig()
 -- The application name
 cfg.appname = "$APPNAME"
 
--- Archiving type used to pack the installer
+-- Archive type used to pack the installer
 cfg.archivetype = "$ARCHIVETYPE"
 
 -- Default language (you can use this to change the language of the language

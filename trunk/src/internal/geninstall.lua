@@ -409,7 +409,7 @@ function PrepareArchive()
     -- Intro picture; for backward compatibility we also check the main project dir
     if cfg.intropic ~= nil then
         if not os.fileexists(string.format("%s/files_extra/%s" , confdir, cfg.intropic)) then
-            ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.intropic), string.format("%s/tmp/", confdir))
+            ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.intropic), string.format("%s/tmp/files_extra/", confdir))
             if ret == nil then
                 print(string.format("Warning could not copy intro picture: %s", msg))
             end

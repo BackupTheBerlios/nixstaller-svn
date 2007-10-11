@@ -7,30 +7,14 @@ OVERALL
 
 
 TEST
-- Check if initial language is fully loaded/used
-- Check if all LuaDataChanged functions are called after widgets are changed
-- Make test lua file(s) that test anything
-- files_extra/ / genprojdir.sh : Weird filenames, in general
-- intropic loading from both root and files_extra dirs.
 - root usage from dirselectors
-- new subscreen code
 - Examples
 
 
 DOCS
 - Changelog
 
-MAIN
-- Improve/check lua error messages?
 
-
-NCURSES
-- Translations and buttonbar descriptions?
-- Check if UpdateTranslation functions are called - needs testing
-
-
-FLTK
-- Check if all lua screens, groups, widgets are destroyed
 
 
 
@@ -52,6 +36,7 @@ OVERALL
 - Initial value from constrcutor for radiobutton, menu etc?
 - Build script that compiles all Nixstaller dependencies?
 - Root usage: change to use privileged user? (default root)
+- Make test lua file(s) that test anything?
 
 
 TRANSLATIONS
@@ -60,6 +45,7 @@ TRANSLATIONS
 
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+- Improve/check lua error messages?
 
 
 LIBSU
