@@ -1,0 +1,37 @@
+Notes for netbsd libs:
+
+Host system: x86 NetBSD 3.1
+
+JPEG:
+version: 6b
+notes: compiled from pkgsrc
+
+PNG:
+version: 1.2.12
+notes: compiled from pkgsrc
+
+FLTK:
+notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of png and jpeg. CXXFLAGS set to -fexceptions for exception support.
+version: 1.1.7
+other: Failed at building examples.
+
+ZLIB:
+notes: used from basesystem
+
+NCURSES:
+configure options: --enable-termcap
+version: 5.6
+other: had to enable termcap fallback, since no terminfo exists by default
+
+Xfree (libX11, libXext)
+version: 4.4.0
+notes: used from basesystem
+
+GCC (libstdc++, libutil)
+version: 3.3.3
+notes: used from basesystem
+
+LUA:
+version 5.1.1
+make command: make posix
+notes: src/Makefile was edited to use g++ instead of gcc (enables C++ exception support, important) and to use the -Os CFLAG.

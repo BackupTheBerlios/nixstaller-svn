@@ -1,0 +1,84 @@
+OVERALL
+- Update Lua library for NBSD, OBSD, SunOS
+- Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
+- Update changelog?
+- Update examples?
+- lib notes file: GTK libs
+
+
+TEST
+- root usage from dirselectors
+- Examples
+
+
+DOCS
+- Changelog
+
+
+
+
+
+--------------- LATER ---------------
+
+
+OVERALL
+- Make shared 'library' for scripts
+- Qt/KDE frontend
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Dep handling?
+- Create system native package (via lua configuration system: classes that provide the functionality of creating/checking/installing packages, function that let the creator create and install the package)
+- Use deltas <--> patches for different frontends?
+- x64 bins?
+- Modify Makeself?
+- Better util.a configure testing?
+- cfgmenu:set() function
+- Initial value from constrcutor for radiobutton, menu etc?
+- Build script that compiles all Nixstaller dependencies?
+- Root usage: change to use privileged user? (default root)
+- Make test lua file(s) that test anything?
+
+
+TRANSLATIONS
+- Check all sentences for punctation
+
+
+MAIN
+- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+- Improve/check lua error messages?
+
+
+LIBSU
+- Clean up/redesign
+- sudo support
+
+
+NCURSES
+- Check chtype?
+- Better monochrome support?
+- Check for 'dynamic' CanFocus for CTextField?
+
+
+GTK
+- Move main window away from base frontend class?
+
+
+FLTK
+- Create a pack widget that works?
+
+
+REGISTER
+- Check if version is specified in config file?
+- Language updates: FLTK AppManager
+- Better error handling for register
+- Check path for rm
+- exceptions
+
+
+DESIGN
+- Reorganize var and type names? (type prefixes etc)
+- Virtual functions that need to call parent function --> make additional function in base class
+that will be called instead of virtual function, this function should call the virtual instead.
+- More usage of const?
+- Reorganize SConstruct
+
