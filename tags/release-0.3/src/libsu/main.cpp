@@ -29,7 +29,7 @@
 
 using namespace LIBSU;
 
-static const char *TermStr = "I'm Done Now :)\n"; // Lets just hope another program doesn't output this ;)
+static const char *TermStr = "I'm Done Now :)"; // Lets just hope another program doesn't output this ;)
 
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), m_szUser("root"), m_szPath("/bin:/usr/bin"),
                                     m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
@@ -410,7 +410,7 @@ int CLibSU::TalkWithSU(const char *password)
                 }
                 
                 // In case no password is needed.
-                if (line == TermStr)
+                if (!line.compare(0, strlen(TermStr), TermStr))
                 {
                     //UnReadLine(line);
                     return SUCOM_OK;
@@ -497,7 +497,7 @@ int CLibSU::TalkWithSU(const char *password)
                 }
 
                 // Read till we get our personal terminate string...
-                if (line == TermStr)
+                if (!line.compare(0, strlen(TermStr), TermStr))
                 {
                     //UnReadLine(line);
                     return SUCOM_OK;
@@ -606,13 +606,13 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     // On the foreground read is called, as soon as read ends it will kill anything in the process group.
     // The read call stops on input or EOF. In this case we are interested in EOF; as soon the main program exits,
     // stdin is closed and therefore read exits aswell. This is merely a trap for unexpected ending of the program.
-    char *cmdfmt = FormatText("printf \"%s\"; sh -c \'"
-            "EXITFILE=`mktemp tmp.XXXXXX`\n"
-            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET\" USR1\n"
-            "trap \"rm $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS\n"
-            "(%s ; echo $? > $EXITFILE ; kill -USR1 $$ ; sleep 1) &\n"
-            "read dummy\n"
-            "kill -TERM 0\n"
+    char *cmdfmt = FormatText("printf \"%s\"\n; sh -c \'"
+            "EXITFILE=`mktemp tmp.XXXXXX` ; "
+            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET\" USR1 ; "
+            "trap \"rm $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "
+            "(%s ; echo $? > $EXITFILE ; kill -USR1 $$ ; sleep 1) & "
+            "read dummy ; "
+            "kill -TERM 0 ; "
             "\'",
         TermStr, m_szCommand.c_str());
 

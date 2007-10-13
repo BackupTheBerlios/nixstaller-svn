@@ -1,4 +1,4 @@
-0.2.2 -->
+0.2.2 --> 0.3
 - Added missing ncurses buttonbar entries.
 - Fixed about not loading in file installation screen.
 - Users can now create directories as root from directory selectors
@@ -34,6 +34,7 @@
 - GTK2 frontend
 - install.getlang() function
 - Temporary lzma archives are now unpacked to tmp directory instead of destdir.
+- Fixed: libsu not working on FreeBSD
 
 
 0.2.1 --> 0.2.2
