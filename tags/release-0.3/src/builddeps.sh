@@ -95,7 +95,7 @@ do
         zlib ) buildzlib ;;
         png ) buildpng ;;
         jpeg ) buildjpeg ;;
-        fltk ) buidfltk ;;
+        fltk ) buildfltk ;;
         lua ) buildlua ;;
     esac
 done

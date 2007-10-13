@@ -21,7 +21,7 @@ No
 Nee
 
 Finish
-Beïndigen
+Beeindigen
 
 Select directory
 Selecteer directory
@@ -40,6 +40,15 @@ Hervat als root
 
 Close
 Sluit
+
+Continue
+Ga verder
+
+Exit program
+Beindig programma
+
+Create directory as root
+Maak directory als root
 
 
 #-----------------------------------------------
@@ -127,8 +136,17 @@ This will install %s
 Continue?
 ]
 [
-%s zal nu worden geïnstalleerd
+%s zal nu worden geinstalleerd
 Doorgaan?
+]
+
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter it's password below.
+]
+[
+U heeft geen permissie om de directory te maken.
+Om deze met de root (beheerder) gebruiker te maken, kunt u het wachtwoord hier onder geven.
 ]
 
 
@@ -154,9 +172,6 @@ Kies een taal
 Welcome
 Welkom
 
-Do you accept and understand the terms of the license agreement?
-Accepteert en begrijpt u de licentie overeenkomst? 
-
 License agreement
 Licentie overeenkomst
 
@@ -180,6 +195,9 @@ Selecteer een directory
 
 Password dialog
 Wachtwoord venster
+
+Files are being installed
+Bestanden worden geinstalleerd
 
 
 #-----------------------------------------------
@@ -206,6 +224,12 @@ Inschakelen
 
 Disable
 Uitschakelen
+
+Directory name
+Directory naam
+
+Root password
+Root wachtwoord
 
 
 #-----------------------------------------------
@@ -254,13 +278,56 @@ Could not create directory: %s
 Kon directory niet maken: %s
 
 [
-Could not use su to gain root access
-Make sure you can use su(adding the current user to the wheel group may help)
+Could not use su to gain root access.
+Make sure you can use su (adding the current user to the wheel group may help).
 ]
 [
-Kon su niet gebruiken om root rechten te krijgen
-Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen)
+Kon su niet gebruiken om root rechten te krijgen.
+Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen).
 ]
+
+Not enough space for buttonbar entry
+Niet genoeg plaats voor knoppenbalk item
+
+# %s is replaced by error message
+Overflow detected: %s
+Overschreiding gevonden: %s
+
+# %s is replaced by error message
+Could not open pipe: %s
+Kon pipe niet openen: %s
+
+# %s is replaced by error message
+Could not read pipe: %s
+Kon pipe niet lezen: %s
+
+# %s is replaced by error message
+Could not close pipe: %s
+Kon pipe niet sluiten: %s
+
+# %s is replaced by error message
+Could not fork child: %s
+fork gaf een fout: %s
+
+# %s is replaced by error message
+Could not close file descriptor: %s
+Kon bestands verwijzing niet sluiten: %s
+
+# %s is replaced by error message
+Poll returned an error: %s
+Poll gaf een fout: %s
+
+# %s is replaced by error message
+Encountered an error while waiting on child process: %s
+Ontdekte een fout terwijl er werd gewacht op een kind proces: %s
+
+# %s is replaced by error message
+uname returned an error: %s
+uname gaf een fout: %s
+
+# %s is replaced by directory name
+Could not create directory '%s'
+Kon directory '%s' niet maken
 
 
 #-----------------------------------------------
@@ -280,10 +347,10 @@ Favorites
 Favorieten
 
 Filename:
-Bestandsnaam:
+Bestand:
 
 File Systems
-Bestands Systemen
+Bestandssystemen
 
 Manage Favorites
 Beheer Favorieten
@@ -323,16 +390,37 @@ Klaar
 ENTER
 ENTER
 
-Scroll
-Beweeg
-
 ARROWS
 PIJLEN
+
+ARROWS/PGUP/PGDOWN
+ARROWS/PGUP/PGDOWN
 
 Activate button
 Activeer knop
 
+Move to
+Ga naar
+
+Navigate
+Navigeer
+
+Character
+Letter
+
+Toggle
+Schakel in/uit
+
+Change
+Verander
+
+ARROWS/PGUP/PGDOWN/HOME/END
+PIJLEN/PGUP/PGDOWN/HOME/END
+
+SPACE
+SPATIE
+
 
 #-----------------------------------------------
-# Put your own translations here
+# Put your own translations below
 #-----------------------------------------------
