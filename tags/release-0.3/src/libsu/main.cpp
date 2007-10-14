@@ -606,7 +606,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     // On the foreground read is called, as soon as read ends it will kill anything in the process group.
     // The read call stops on input or EOF. In this case we are interested in EOF; as soon the main program exits,
     // stdin is closed and therefore read exits aswell. This is merely a trap for unexpected ending of the program.
-    char *cmdfmt = FormatText("printf \"%s\"\n; sh -c \'"
+    char *cmdfmt = FormatText("printf \"%s\"\n sh -c \'"
             "EXITFILE=`mktemp tmp.XXXXXX` ; "
             "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET\" USR1 ; "
             "trap \"rm $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "

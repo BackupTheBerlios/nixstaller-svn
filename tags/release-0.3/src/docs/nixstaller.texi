@@ -2745,6 +2745,11 @@ This function does essentially the same as @code{install.execute}, but using the
 This function will extract all installation files to the directory that was specified by the global variable @code{install.destdir}. This function will automaticly call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
 @endluafunc
 
+@anchor{install.lockscreen}
+@luafunc install.lockscreen (c, b, n)
+This function will lock or unlock the Cancel, Back and Next button. If @code{c} is @code{true} the Cancel button is locked, when @code{b} is @code{true} the Back button is locked and when @code{n} is @code{true} the Next button is locked. When @code{false} is given a button is unlocked.
+@endluafunc
+
 @anchor{install.print}
 @luafunc install.print (s)
 Prints the message specified by argument @code{s} on the status window from the install screen.
