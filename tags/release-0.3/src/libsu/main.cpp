@@ -29,7 +29,7 @@
 
 using namespace LIBSU;
 
-static const char *TermStr = "I'm Done Now :)"; // Lets just hope another program doesn't output this ;)
+static const char *TermStr = "Im Done Now :)"; // Lets just hope another program doesn't output this ;)
 
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), m_szUser("root"), m_szPath("/bin:/usr/bin"),
                                     m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
@@ -608,9 +608,9 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     // stdin is closed and therefore read exits aswell. This is merely a trap for unexpected ending of the program.
     char *cmdfmt = FormatText("printf \"%s\"\n sh -c \'"
             "EXITFILE=`mktemp tmp.XXXXXX` ; "
-            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET\" USR1 ; "
             "trap \"rm $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "
-            "(%s ; echo $? > $EXITFILE ; kill -USR1 $$ ; sleep 1) & "
+            "(%s ; echo $? > $EXITFILE ; kill -QUIT $$ ; sleep 1) & "
+            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET \" QUIT ; "
             "read dummy ; "
             "kill -TERM 0 ; "
             "\'",
