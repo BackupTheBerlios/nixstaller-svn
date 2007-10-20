@@ -89,6 +89,50 @@ Most screens are optional and can be shown in any particalur order. New type of 
 
 
 @section Changelog
+@subsection 0.2.2 @minus{}@minus{}> 0.3
+@itemize @bullet
+@item Added missing ncurses buttonbar entries.
+@item Fixed about not loading in file installation screen.
+@item Users can now create directories as root from directory selectors
+@item SelectDirScreen can now create directories with root access
+@item input:setspacing is changed to input:setlabelwidth
+@item input:set function
+@item checkbox:get and checkbox:set now accept strings besides numbers as arguments.
+@item radiobutton:set now accepts strings as arguments aswell
+@item SConstruct now works with latest SCons (0.97)
+@item Preparing/copying frontend binaries message in geninstall.lua
+@item --h/-h option in geninstall.sh
+@item Fixed: Lua execution would stop UI updates
+@item startupinstaller.sh now checks if a frontend is really launched
+@item genprojdir.sh
+@item startupinstaller.sh doesn't check for lzma binaries anymore when archivetype is not "lzma"
+@item Fixed max intropicsize
+@item files_extra/ support
+@item Lua widget groups
+@item FLTK layout: Logo support, screen header, white backgrounds, Xft font rendering
+@item Fixed: Empty folders weren't included in installation files package
+@item Fixed: Manual example code was using exit() instead of os.exit()
+@item Fixed: Overide os.exit() instead of exit()
+@item Track widget behaviour with customly defined widget:datachanged() and widget:verify() lua functions.
+@item Control screen activation with customly defined screen:canactivate() and screen:activate() lua functions.
+@item Updated to Lua 5.1.2
+@item Compiled FLTK with Xdbe and Xft support
+@item install.newcfgscreen() changed to install.newscreen(). Docs now mentions 'screen class' instead of 'cfgscreen class'.
+@item checkbox:get() and checkbox:set() now support both string and array number as argument
+@item radiobutton:set() now accepts both a string and array number as argument
+@item cfgmenu:addlist() now accepts argument with initial value
+@item Widgets now check arguments on bounds
+@item New lua widgets: menu, image, label, progressbar and textfield
+@item GTK2 frontend
+@item install.getlang() function
+@item Temporary lzma archives are now unpacked to temporary directory instead of destdir.
+@item install.lockscreen function
+@item Fixed: Several su (used for root access) bugs on OpenBSD and FreeBSD.
+@item OpenBSD 4.1 support
+@item NetBSD 4.X support
+@item Updated vim example for vim 7.1.
+@end itemize
+
 @subsection 0.2.1 @minus{}@minus{}> 0.2.2
 
 @itemize @bullet
@@ -938,7 +982,7 @@ In the last tutorial we make a fairly advanced installer for the advanced text e
 
 @subsection Project Directory
 Again we start with creating the project directory:
-@codeblock{./genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -a "VIM 7.0" vim/}
+@codeblock{./genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -a "VIM 7.1" vim/}
 The @samp{<pathtovimlogo>} part should be replaced to the path were the vim logo is located. The file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.@*
 @*
 Next copy this text to the @file{welcome} file:

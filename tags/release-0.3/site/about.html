@@ -10,6 +10,7 @@ Nixstaller is an Open Source project with the goal to create user friendly and f
 <h3>Main Features</h3>
 <br>
 <ul>
+   <li> Three different installer frontends, powered by GTK+2, FLTK and ncurses.</li>
    <li> Support for many common UNIX like systems (see table below) </li>
    <li> Can be fully translated (English and Dutch translations are already provided) </li>
    <li> The installation files can be compressed with lzma, gzip and bzip2. </li>
@@ -33,32 +34,32 @@ Nixstaller is an Open Source project with the goal to create user friendly and f
     <tr>
       <td>NetBSD</td>
       <td>x86</td>
-      <td>2.1, 3.1</td>
+      <td>2.1, 3.1, 4.0RC2</td>
       <td>Anything before 2.X</td>
     </tr>
     <tr>
       <td>FreeBSD</td>
       <td>x86</td>
-      <td>5.5, 6.2</td>
+      <td>5.5, 6.2, PCBSD 1.3</td>
       <td>Anything before 5.X</td>
     </tr>
     <tr>
       <td>Linux</td>
       <td>x86</td>
-      <td>PCLinuxOS 0.93, OpenSUSE 10.2, Arch 0.8, Kubuntu Edgy, Knoppix 3.3-2003-11-19</td>
+      <td>PCLinuxOS 0.93 and 0.94, OpenSUSE 10.3, Arch "Don't Panic", Fedora Core 6,  Knoppix 3.3-2003-11-19</td>
       <td>Very old distributions (ie. systems using GCC 2.X)</td>
     </tr>
     <tr>
       <td>OpenBSD</td>
       <td>x86</td>
-      <td>3.9, 4.0</td>
+      <td>3.9, 4.0, 4.1</td>
       <td>Anything before 3.9</td>
     </tr>
         <tr>
     <td>Solaris</td>
       <td>x86</td>
-      <td>Express 12-06, Nexenta 0.6</td>
-      <td>Solaris 10, others untested</td>
+      <td>Express 12-06, Nexenta alpha 7, Solaris 10-4</td>
+      <td>others (including older Solaris 10 versions) untested</td>
     </tr>
   </tbody>
 </table>
@@ -110,7 +111,7 @@ Besides configuration Lua is also used to program the installer. Some examples f
 <br>
 Briefly said Nixstaller works like this:
 <ul>
-   <li> A project directory is made which contain several configuration files and the files that should be installed. </li>
+   <li> A script is called that creates a basic project directory. This directory contains several configuration files and the files that should be installed. </li>
    <li> A script is called that scans the project directory and creates the installer. The installer is a shell script with an embedded archive containing everything it needs. This script is made with <A href="http://www.megastep.org/makeself/">makeself</A>. </li>
    <li> When a user executes this script the embedded archive will be extracted to a temporary directory. </li>
    <li> Another script is then called which will launch the right frontend for the users system. This depends on various things such as the operating system and if a X server is running. </li>
@@ -118,6 +119,6 @@ Briefly said Nixstaller works like this:
    <li> After the installation is finished the temporary directory is removed. </li>
  </ul>
 
-This is all discussed in detail in the <A href="http://nixstaller.berlios.de/manual/0.2/nixstaller.html">user manual</A>.
+This is all discussed in detail in the <A href="http://nixstaller.berlios.de/manual/0.3/nixstaller.html">user manual</A>.
 
 </html>

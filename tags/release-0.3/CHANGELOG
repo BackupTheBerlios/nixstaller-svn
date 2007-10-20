@@ -37,6 +37,8 @@
 - install.lockscreen function
 - Fixed: Several su (used for root access) bugs on OpenBSD and FreeBSD.
 - OpenBSD 4.1 support
+- NetBSD 4.X support
+- Updated vim example for vim 7.1.
 
 
 0.2.1 --> 0.2.2
