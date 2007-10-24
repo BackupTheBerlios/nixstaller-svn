@@ -1,21 +1,3 @@
-OVERALL
-- Update Lua library for NBSD, OBSD, SunOS
-- Recompile fltk libraries with Xft and Xdbe support (and update the notes files)
-- Update changelog?
-- Update examples?
-- lib notes file: GTK libs
-
-
-TEST
-- root usage from dirselectors
-- Examples
-
-
-DOCS
-- Changelog
-
-
-
 
 
 --------------- LATER ---------------
@@ -37,6 +19,7 @@ OVERALL
 - Build script that compiles all Nixstaller dependencies?
 - Root usage: change to use privileged user? (default root)
 - Make test lua file(s) that test anything?
+- Way to specifiy frontend when installer is started
 
 
 TRANSLATIONS

@@ -18,7 +18,7 @@ get()
     fi
     
     wget -P "$DESTFILES" "$1" && return
-#    fetch $2 && return
+    cd "$DESTFILES" ; fetch "$1" ; cd - ; return
     echo "Download file manually"
 }
 
@@ -95,7 +95,7 @@ do
         zlib ) buildzlib ;;
         png ) buildpng ;;
         jpeg ) buildjpeg ;;
-        fltk ) buidfltk ;;
+        fltk ) buildfltk ;;
         lua ) buildlua ;;
     esac
 done

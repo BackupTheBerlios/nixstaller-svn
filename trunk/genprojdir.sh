@@ -232,8 +232,8 @@ parseargs()
 createlayout()
 {
     mkdir -p "${TARGETDIR}" || error "Failed to create target directory"
-    mkdir "${TARGETDIR}/files_all" || error "Failed to create files_all directory"
-    mkdir "${TARGETDIR}/files_extra" || error "Failed to create files_extra directory"
+    mkdir -p "${TARGETDIR}/files_all" || error "Failed to create files_all directory"
+    mkdir -p "${TARGETDIR}/files_extra" || error "Failed to create files_extra directory"
 }
 
 copylanguages()

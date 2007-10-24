@@ -99,6 +99,10 @@ function RecursiveCopy(src, dest)
 end
 
 function PackDirectory(dir, file)
+    if io.dir(dir)() == nil then -- Empty directory?
+        return
+    end
+    
     local olddir = os.getcwd()
     local dirlist = { "." } -- Directories to process
     
@@ -174,12 +178,12 @@ function PackDirectory(dir, file)
         listopt = "-I"
     end
         
-    os.execute(string.format('tar cf "%s.tmp" "%s" "%s"', file, listopt, tarlistfname))
+    os.execute(string.format('tar cf "%s.tmp" %s "%s"', file, listopt, tarlistfname))
     
     if cfg.archivetype == "gzip" then
         os.execute(string.format('gzip -c9 "%s.tmp" > "%s"', file, file))
     elseif cfg.archivetype == "bzip2" then
-        os.execute(string.format('cat "%s".tmp | bzip2 -9 > "%s"', file, file)) -- Use cat so that bzip won't append ".bz2" to filename
+        os.execute(string.format('cat "%s.tmp" | bzip2 -9 > "%s"', file, file)) -- Use cat so that bzip won't append ".bz2" to filename
     elseif cfg.archivetype == "lzma" then
         os.execute(string.format('"%s" e "%s.tmp" "%s" 2>/dev/null', LZMABin, file, file))
     end
@@ -235,8 +239,14 @@ function Init()
     local basebindir = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
-                        return (os.fileexists(bin) and
-                                (os.execute(string.format("ldd \"%s\" | grep \"not found\" >/dev/null", bin)) ~= 0))
+                        if os.fileexists(bin) then
+                            if os.osname == "openbsd" then
+                                return (os.execute(string.format("ldd \"%s\" >/dev/null 2>&1", bin)) == 0)
+                            else
+                                return (os.execute(string.format("ldd \"%s\" | grep \"not found\" >/dev/null", bin)) ~= 0)
+                            end
+                        end
+                        return false
                      end
     
     for lc in TraverseBinLibDir(basebindir, "^libc") do

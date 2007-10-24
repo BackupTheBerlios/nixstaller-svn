@@ -135,7 +135,7 @@ function Install()
     end
 
     install.extractfiles()
-    os.chdir("vim70/")
+    os.chdir("vim71/")
 
     install.setstatus("Configuring Vim for this system")
     install.execute(string.format("./configure %s", getconfigureopts()))

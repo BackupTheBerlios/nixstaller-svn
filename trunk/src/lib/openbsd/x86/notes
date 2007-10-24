@@ -6,14 +6,14 @@ JPEG:
 version: 6b
 
 PNG:
-version: 1.2.16
+version: 1.2.21
 
 FLTK:
-configure command: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support.
+notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support. --enable-xft and --enable-xdbe flags given for ./configure
 version: 1.1.7
 
 ZLIB:
-notes: used from basesystem
+notes: version: 1.2.3
 
 NCURSES:
 configure options: --enable-termcap
@@ -21,7 +21,7 @@ version: 5.6
 other: had to enable termcap fallback, since no terminfo exists by default
 
 LUA:
-version: 5.1
+version: 5.1.2
 notes: src/Makefile was edited to use g++ instead of gcc and to use -Os instead of -O2
 
 X.ORG (libX11, libXext)
