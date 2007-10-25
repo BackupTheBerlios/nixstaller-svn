@@ -234,6 +234,7 @@ function Init()
     end
     
     dofile(confdir .. "/config.lua")
+    dofile(confdir .. "/package.lua")
     
     -- Find a LZMA and edelta bin which we can use
     local basebindir = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
@@ -297,6 +298,7 @@ function PrepareArchive()
     
     -- Configuration files
     RequiredCopy(confdir .. "/config.lua", destdir)
+    os.copy(confdir .. "/package.lua", destdir)
     os.copy(confdir .. "/run.lua", destdir)
     os.copy(confdir .. "/welcome", destdir)
     os.copy(confdir .. "/license", destdir)
@@ -312,6 +314,9 @@ function PrepareArchive()
     RequiredCopy(curdir .. "/src/internal/licensescreen.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/selectdirscreen.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/welcomescreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/package.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/pkg/deb.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/pkg/generic.lua", confdir .. "/tmp")
     
     -- Language files
     for _, f in pairs(cfg.languages) do

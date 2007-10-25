@@ -607,12 +607,12 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     // The read call stops on input or EOF. In this case we are interested in EOF; as soon the main program exits,
     // stdin is closed and therefore read exits aswell. This is merely a trap for unexpected ending of the program.
     char *cmdfmt = FormatText("printf \"%s\"\n sh -c \'"
-            "EXITFILE=`mktemp tmp.XXXXXX` ; "
-            "trap \"rm $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "
-            "(%s ; echo $? > $EXITFILE ; kill -QUIT $$ ; sleep 1) & "
-            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm $EXITFILE ; exit $RET \" QUIT ; "
+            "EXITFILE=`mktemp /tmp/lsutmp.XXXXXX` ; "
+            "trap \"rm -f $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "
+            "(sh -c '\"'\"'%s'\"'\"' ; echo $? > $EXITFILE ; kill -QUIT $$ ; sleep 1) & "
+            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm -f $EXITFILE ; exit $RET \" QUIT ; "
             "read dummy ; "
-            "kill -TERM 0 ; "
+            "kill -TERM 0  "
             "\'",
         TermStr, m_szCommand.c_str());
 

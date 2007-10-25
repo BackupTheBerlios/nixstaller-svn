@@ -1,8 +1,3 @@
-
-
---------------- LATER ---------------
-
-
 OVERALL
 - Make shared 'library' for scripts
 - Qt/KDE frontend
@@ -20,6 +15,13 @@ OVERALL
 - Root usage: change to use privileged user? (default root)
 - Make test lua file(s) that test anything?
 - Way to specifiy frontend when installer is started
+- Check if ~ works (reported bug)
+
+
+PACKAGING
+- Defaults for install.pkg
+- XDG support
+- Error handling
 
 
 TRANSLATIONS
@@ -34,6 +36,7 @@ MAIN
 LIBSU
 - Clean up/redesign
 - sudo support
+- Check tmp files leaving around (caused by sh errors?)
 
 
 NCURSES

@@ -514,6 +514,7 @@ void CBaseInstall::InitLua()
         SetDestDir("/");
     
     NLua::LoadFile("config/config.lua");
+    NLua::LoadFile("config/package.lua");
     NLua::LoadFile("install.lua");
     
     NLua::CLuaTable table("languages", "cfg");

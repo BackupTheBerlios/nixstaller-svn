@@ -33,7 +33,7 @@
 
 namespace LIBSU
 {
- #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
+//  #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
 
 // UNDONE: Check what should be private/protected/public
 class CLibSU
