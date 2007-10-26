@@ -16,12 +16,14 @@ OVERALL
 - Make test lua file(s) that test anything?
 - Way to specifiy frontend when installer is started
 - Check if ~ works (reported bug)
+- Bug: geninstall.sh doesn't put output file in other dirs than current dir
+- Bug: install.execute crashes with wrong arguments
 
 
 PACKAGING
 - Defaults for install.pkg
 - XDG support
-- Error handling
+- Error handling (file generation, locks etc)
 
 
 TRANSLATIONS

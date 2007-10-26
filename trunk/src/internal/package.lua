@@ -9,21 +9,21 @@ setmetatable(P, {__index = _G})
 setfenv(1, P)
 
 
-function genscript(file)
+function genscript(file, dir)
     -- UNDONE: Check what other vars should be set (GTK, Qt, KDE etc)
 
     local fullpkgpath = string.format("%s/%s", packager.getpkgpath(), pkgprefix)
-    local filename = string.format("%s/%s", fullpkgpath, string.gsub(file, "/*.+/", "")) -- gsub: strip path
+    local filename = string.format("%s/%s", dir, string.gsub(file, "/*.+/", ""))
     
-    install.executeasroot(string.format([[
-cat > %s << EOF
+    script = io.open(filename, "w") or print("Failed to create", filename)
+    script:write(string.format([[
 #!/bin/sh
-LD_LIBRARY_PATH="%s/lib:$LD_LIBRARY_PATH"
+LD_LIBRARY_PATH="%s/files/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH
 exec %s/files/%s
-EOF
-]], filename, fullpkgpath, fullpkgpath, file))
-    install.executeasroot("chmod 0755 " .. filename)
+]], fullpkgpath, fullpkgpath, file))
+    script:close() -- Flush
+    os.chmod(filename, "0755")
 end
 
 
@@ -37,18 +37,19 @@ require "deb"
 packager = (deb.present() and deb) or generic
 
 -- Called from Install()
-function install.generatepkg() -- Assume fixed dir
-    local dir = install.gettempdir()
-    install.setstatus("Installing package")
-    install.print("Generating system native package")
-    packager.create(dir)
-    install.print("Installing system native package")
-    packager.install(dir)
+function install.generatepkg()
+    local dir = curdir .. "/pkg"
     
     if pkg.bins then
-        install.print("Generating executable scripts")
+        install.print("Generating executable scripts\n")
         for _, f in ipairs(pkg.bins) do
-            genscript(f)
+            genscript(f, dir)
         end
     end
+
+    install.setstatus("Installing package")
+    install.print("Generating system native package\n")
+    packager.create(dir)
+    install.print("Installing system native package\n")
+    packager.install(dir)
 end

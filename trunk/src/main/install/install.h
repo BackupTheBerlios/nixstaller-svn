@@ -98,6 +98,7 @@ public:
     static int LuaNewScreen(lua_State *L);
     static int LuaAddScreen(lua_State *L);
     static int LuaGetTempDir(lua_State *L);
+    static int LuaGetPkgDir(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);
     static int LuaExecuteCMDAsRoot(lua_State *L);

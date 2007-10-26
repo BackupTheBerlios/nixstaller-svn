@@ -493,6 +493,7 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaNewScreen, "newscreen", "install", this);
     NLua::RegisterFunction(LuaAddScreen, "addscreen", "install", this);
     NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
+    NLua::RegisterFunction(LuaGetPkgDir, "getpkgdir", "install", this);
     NLua::RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
     NLua::RegisterFunction(LuaExecuteCMD, "execute", "install", this);
     NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executeasroot", "install", this);
@@ -741,6 +742,18 @@ int CBaseInstall::LuaGetTempDir(lua_State *L)
     
     if (!FileExists(ret))
         MKDir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
+    
+    lua_pushstring(L, ret);
+    return 1;
+}
+
+int CBaseInstall::LuaGetPkgDir(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    const char *ret = CreateText("%s/pkg/files", pInstaller->m_szOwnDir.c_str());
+    
+    if (!FileExists(ret))
+        MKDirRec(ret);
     
     lua_pushstring(L, ret);
     return 1;

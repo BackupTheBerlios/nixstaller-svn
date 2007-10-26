@@ -10,5 +10,5 @@ end
 
 function install(src)
     dest = string.format("%s/%s/", getpkgpath(), pkgprefix)
-    OLDG.install.executeasroot(string.format("mkdir -p %s/files && cp -R %s/* %s/files/", dest, src, dest))
+    OLDG.install.executeasroot(string.format("mkdir -p %s/ && cp -R %s/* %s/", dest, src, dest))
 end
