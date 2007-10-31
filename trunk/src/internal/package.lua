@@ -15,12 +15,12 @@ function genscript(file, dir)
     local fullpkgpath = string.format("%s/%s", packager.getpkgpath(), pkgprefix)
     local filename = string.format("%s/%s", dir, string.gsub(file, "/*.+/", ""))
     
-    script = io.open(filename, "w") or print("Failed to create", filename)
+    script = io.open(filename, "w")
     script:write(string.format([[
 #!/bin/sh
 LD_LIBRARY_PATH="%s/files/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH
-exec %s/files/%s
+exec %s/%s
 ]], fullpkgpath, fullpkgpath, file))
     script:close() -- Flush
     os.chmod(filename, "0755")
@@ -31,19 +31,20 @@ package.path = "?.lua"
 package.cpath = ""
 require "generic"
 require "deb"
---require "rpm"
+require "rpm"
 
 -- Check which package system user has
-packager = (deb.present() and deb) or generic
+packager = (deb.present() and deb) or (rpm.present() and rpm) or generic
 
 -- Called from Install()
 function install.generatepkg()
     local dir = curdir .. "/pkg"
     
+    os.mkdirrec(dir .. "/bins")
     if pkg.bins then
         install.print("Generating executable scripts\n")
         for _, f in ipairs(pkg.bins) do
-            genscript(f, dir)
+            genscript(f, dir .. "/bins")
         end
     end
 

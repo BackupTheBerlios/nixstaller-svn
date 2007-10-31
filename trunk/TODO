@@ -21,7 +21,7 @@ OVERALL
 
 
 PACKAGING
-- Defaults for install.pkg
+- Defaults for package.pkg
 - XDG support
 - Error handling (file generation, locks etc)
 

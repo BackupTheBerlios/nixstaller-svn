@@ -9,6 +9,7 @@ function create(src)
 end
 
 function install(src)
+    -- UNDONE: Check for conflicting files/directories
     dest = string.format("%s/%s/", getpkgpath(), pkgprefix)
-    OLDG.install.executeasroot(string.format("mkdir -p %s/ && cp -R %s/* %s/", dest, src, dest))
+    OLDG.install.executeasroot(string.format("mkdir -p %s/ && cp -R %s/files/* %s/ && cp -R %s/bins/* %s/bin", dest, src, dest, src, getpkgpath()))
 end

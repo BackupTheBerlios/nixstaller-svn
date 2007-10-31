@@ -317,6 +317,7 @@ function PrepareArchive()
     RequiredCopy(curdir .. "/src/internal/package.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/pkg/deb.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/pkg/generic.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/pkg/rpm.lua", confdir .. "/tmp")
     
     -- Language files
     for _, f in pairs(cfg.languages) do

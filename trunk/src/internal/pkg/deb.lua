@@ -3,13 +3,12 @@ module (..., package.seeall)
 
 function moverec(dir, dest)
     for f in io.dir(dir) do
-        print(string.format("Moving file %s from %s to %s", f, dir, dest))
-        OLDG.install.execute(string.format("mv %s/%s %s/", dir, f, dest))
+        OLDG.install.execute(string.format("mv '%s/%s' '%s/'", dir, f, dest))
     end
 end
 
 function getpkgpath()
-    return "/usr" -- UNDONE?
+    return "/usr/local" -- UNDONE?
 end
 
 function present()
@@ -22,9 +21,12 @@ function create(src)
     os.mkdirrec(debdir .. "/DEBIAN")
 
     -- Create directory structure
-    fstruct = string.format("%s/%s/%s", debdir, getpkgpath(), pkgprefix)
-    os.mkdirrec(fstruct)
-    moverec(src, fstruct)
+    local fstruct = string.format("%s/%s", debdir, getpkgpath())
+    instfiles = string.format("%s/%s", fstruct, pkgprefix) -- Global var
+    os.mkdirrec(instfiles)
+    os.mkdirrec(fstruct .. "/bin")
+    moverec(src .. "/files", instfiles)
+    moverec(src .. "/bins", fstruct .. "/bin")
 
     -- Generate control file
     local control = io.open(debdir .. "/DEBIAN/control", "w")
@@ -43,5 +45,5 @@ end
 function install(src)
     OLDG.install.executeasroot(string.format("dpkg -i %s/pkg.deb", curdir))
     -- Move install files back
-    moverec(fstruct, src)
+    moverec(instfiles, src)
 end
