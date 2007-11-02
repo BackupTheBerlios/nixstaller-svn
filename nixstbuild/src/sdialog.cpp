@@ -49,7 +49,7 @@ NBSettingsDialog::NBSettingsDialog(QWidget *parent): QDialog(parent)
     genPath = new QLineEdit;
     genPath->setText(settings.value("geninstall").toString());
     olay->addWidget(genPath);
-    genPathOpen = new QPushButton(QIcon(":/fileopen.xpm"), "", this);
+    genPathOpen = new QPushButton(QIcon(":/folder_blue_open.png"), "", this);
     olay->addWidget(genPathOpen);
     connect(genPathOpen, SIGNAL(clicked()), this, SLOT(showOpen()));
 

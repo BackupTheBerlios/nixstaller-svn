@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include <string>
+#include <map>
+
 
 using namespace std;
 
@@ -50,13 +52,19 @@ using namespace std;
 #include "sdialog.h"
 #include "rungen.h"
 
+map<QString, int> iimap;
 
 const char *templates[] = {
     "cfgscreen:addcfgmenu(\"title\")",
     "cfgscreen:addcheckbox(\"title\", {\"name1\"})",
     "cfgscreen:adddirselector()",
     "cfgscreen:addinput(\"label\")",
-    "cfgscreen:addradiobutton(\"title\", {\"opt1\", \"opt2\"})"
+    "cfgscreen:addradiobutton(\"title\", {\"opt1\", \"opt2\"})",
+    "cfgscreen:addimage(\"\")",
+    "cfgscreen:addlabel(\"text\")",
+    "cfgscreen:addmenu(\"title\", {\"entry1\"})",
+    "cfgscreen:addprogressbar()",
+    "cfgscreen:addtextfield("", true)"
 };
 
 const char *template_tooltips[] = {
@@ -64,7 +72,12 @@ const char *template_tooltips[] = {
     "cfgscreen:addcheckbox( title, { checkbox1, checkbox2, ... } )",
     "cfgscreen:adddirselector( title, dir ) <br><i>dir</i> is optional, default value is users home directory.",
     "cfgscreen:addinput( label, maxchars, value, type ) <br>Types:<br> <i>\"string\"</i><br> <i>\"number\"</i><br> <i>\"float\"</i>",
-    "cfgscreen:addradiobutton(\"title\", {\"opt1\", \"opt2\"} )"
+    "cfgscreen:addradiobutton(\"title\", {\"opt1\", \"opt2\"} )",
+    "cfgscreen:addimage(filename)",
+    "cfgscreen:addlabel(\"caption\")",
+    "cfgscreen:addmenu(\"title\", {\"entry1\", ...})",
+    "cfgscreen:addprogressbar(title) <br><i>title</i> - optional",
+    "cfgscreen:addtextfield(\"\", w) <br> <i>w</i> - word wrapping enabled true/false<br>Both parameters optional"
 };
 
 nixstbuild::nixstbuild()
@@ -97,7 +110,7 @@ nixstbuild::nixstbuild()
 void nixstbuild::initMainControls()
 {
     qd = new QDir(getenv("HOME"));
-    string cmd = "rm -r " + qd->absolutePath().toStdString()+"/.nbtemp";
+    string cmd = "rm -rf " + qd->absolutePath().toStdString()+"/.nbtemp";
     system(cmd.c_str());
     qd->mkdir("./.nbtemp");
     qd->cd("./.nbtemp");
@@ -239,21 +252,28 @@ void nixstbuild::createMenus()
     connect(dela, SIGNAL(triggered()), this, SLOT(fvDeleteFile()));
 
     rt_insertmenu = new QMenu();
-    rt_itcma = rt_insertmenu->addAction("Config menu");
-    connect(rt_itcma, SIGNAL(triggered()), this, SLOT(rt_iconfig()));
-    connect(rt_itcma, SIGNAL(hovered()), this, SLOT(rt_iconfigh()));
-    rt_itca = rt_insertmenu->addAction("Checkbox");
-    connect(rt_itca, SIGNAL(triggered()), this, SLOT(rt_icheckbox()));
-    connect(rt_itca, SIGNAL(hovered()), this, SLOT(rt_icheckboxh()));
-    rt_itdsa = rt_insertmenu->addAction("Directory selector");
-    connect(rt_itdsa, SIGNAL(triggered()), this, SLOT(rt_idirselector()));
-    connect(rt_itdsa, SIGNAL(hovered()), this, SLOT(rt_idirselectorh()));
-    rt_itia = rt_insertmenu->addAction("Input Field");
-    connect(rt_itia, SIGNAL(triggered()), this, SLOT(rt_iinput()));
-    connect(rt_itia, SIGNAL(hovered()), this, SLOT(rt_iinputh()));
-    rt_itra = rt_insertmenu->addAction("Radiobutton");
-    connect(rt_itra, SIGNAL(triggered()), this, SLOT(rt_iradio()));
-    connect(rt_itra, SIGNAL(hovered()), this, SLOT(rt_iradioh()));
+    rt_item = rt_insertmenu->addAction("Config menu");
+    connect(rt_insertmenu, SIGNAL(triggered(QAction*)), this, SLOT(rt_clicked(QAction*)));
+    connect(rt_insertmenu, SIGNAL(hovered(QAction*)), this, SLOT(rt_hovered(QAction*)));
+    iimap["Config menu"] = 0;
+    rt_item = rt_insertmenu->addAction("Checkbox");
+    iimap["Checkbox"] = 1;
+    rt_item = rt_insertmenu->addAction("Directory selector");
+    iimap["Directory selector"] = 2;
+    rt_item = rt_insertmenu->addAction("Input Field");
+    iimap["Input Field"] = 3;
+    rt_item = rt_insertmenu->addAction("Radiobutton");
+    iimap["Radiobutton"] = 4;
+    rt_item = rt_insertmenu->addAction("Image");
+    iimap["Image"] = 5;
+    rt_item = rt_insertmenu->addAction("Label");
+    iimap["Label"] = 6;
+    rt_item = rt_insertmenu->addAction("Menu");
+    iimap["Menu"] = 7;
+    rt_item = rt_insertmenu->addAction("ProgressBar");
+    iimap["ProgressBar"] = 8;
+    rt_item = rt_insertmenu->addAction("Text Field");
+    iimap["Text Field"] = 9;
 }
 
 void nixstbuild::createToolBars()
@@ -360,8 +380,10 @@ void nixstbuild::addConfigTab()
     ct_feNcurses->setChecked(true);
     ct_feFltk = new QCheckBox("fltk");
     ct_feFltk->setChecked(true);
+    ct_feGtk = new QCheckBox("gtk+");
     ct_hlayout->addWidget(ct_feNcurses);
     ct_hlayout->addWidget(ct_feFltk);
+    ct_hlayout->addWidget(ct_feGtk);
     ct_layout->addWidget(new QLabel("Frontends:"), 4, 0);
     ct_layout->addLayout(ct_hlayout, 4, 1);
 
@@ -553,8 +575,15 @@ void nixstbuild::saveConfig()
     {
         if (ct_feNcurses->checkState()==Qt::Checked)
             out << ", ";
-        out << "\"fltk\" }\n";
-    } else out << " }\n";
+        out << "\"fltk\"";
+    } 
+    if (ct_feFltk->checkState()==Qt::Checked)
+    {
+        if ((ct_feNcurses->checkState()==Qt::Checked) | (ct_feFltk->checkState()==Qt::Checked))
+            out << ", ";
+        out << "\"gtk\"";
+    }
+    out << " }\n";
 
     if (ct_img->text()!="")
     {
@@ -591,54 +620,14 @@ void nixstbuild::insertTemplate()
     rt_insertmenu->popup(rt_insert->mapToGlobal(QPoint(0, 28)));
 }
 
-void nixstbuild::rt_iconfig()
+void nixstbuild::rt_clicked(QAction *action)
 {
-    rt_textedit->insertPlainText(templates[0]);
+    rt_textedit->insertPlainText(templates[iimap[action->text()]]);
 }
 
-void nixstbuild::rt_icheckbox()
+void nixstbuild::rt_hovered(QAction *action)
 {
-    rt_textedit->insertPlainText(templates[1]);
-}
-
-void nixstbuild::rt_idirselector()
-{
-    rt_textedit->insertPlainText(templates[2]);
-}
-
-void nixstbuild::rt_iinput()
-{
-    rt_textedit->insertPlainText(templates[3]);
-}
-
-void nixstbuild::rt_iradio()
-{
-    rt_textedit->insertPlainText(templates[4]);
-}
-
-void nixstbuild::rt_iconfigh()
-{
-    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itcma).topRight()), template_tooltips[0]);
-}
-
-void nixstbuild::rt_icheckboxh()
-{
-    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itca).topRight()), template_tooltips[1]);
-}
-
-void nixstbuild::rt_idirselectorh()
-{
-    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itdsa).topRight()), template_tooltips[2]);
-}
-
-void nixstbuild::rt_iinputh()
-{
-    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itia).topRight()), template_tooltips[3]);
-}
-
-void nixstbuild::rt_iradioh()
-{
-    QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_itra).topRight()), template_tooltips[4]);
+	QToolTip::showText(rt_insertmenu->mapToGlobal(rt_insertmenu->actionGeometry(rt_insertmenu->activeAction()).topRight()), template_tooltips[iimap[rt_insertmenu->activeAction()->text()]]);
 }
 
 void nixstbuild::cv_appendline(QString line)
