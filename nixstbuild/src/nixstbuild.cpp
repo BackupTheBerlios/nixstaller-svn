@@ -109,7 +109,7 @@ nixstbuild::nixstbuild()
 
 void nixstbuild::initMainControls()
 {
-    qd = new QDir(getenv("HOME"));
+    qd = new QDir("/tmp");
     string cmd = "rm -rf " + qd->absolutePath().toStdString()+"/.nbtemp";
     system(cmd.c_str());
     qd->mkdir("./.nbtemp");
@@ -611,8 +611,8 @@ void nixstbuild::saveRun()
 void nixstbuild::generateRun()
 {
     NBRunGen rg(this);
-    rg.exec();
-    rt_textedit->setText(rg.script().c_str());
+    if (rg.exec())
+        rt_textedit->setText(rg.script().c_str());
 }
 
 void nixstbuild::insertTemplate()
