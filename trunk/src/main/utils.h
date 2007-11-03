@@ -129,7 +129,7 @@ public:
     bool HasData(void);
     bool EndOfFile(void) { return ((m_ChildPID == 0) || m_bChEOF); };
     int GetCh(void);
-    void Close(bool canthrow=true); // As pclose: waits for child to exit
+    int Close(bool canthrow=true); // As pclose: waits for child to exit
     void Abort(bool canthrow=true);
     
     operator bool(void) { return !EndOfFile(); };

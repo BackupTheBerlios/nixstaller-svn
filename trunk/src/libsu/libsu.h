@@ -67,6 +67,7 @@ public:
     bool NeedPassword(void);
     bool TestSU(const char *password);
     bool ExecuteCommand(const char *password, bool removepass=false);
+    int Ret(void) const { return m_iLastRET; }
 
 private:
     enum EPidStatus { PID_ERROR=-1, PID_NOTEXITED=-2, PID_KILLED=-3 } ;
@@ -74,6 +75,7 @@ private:
 
     int m_iPTYFD, m_iPid;
     bool m_bTerminal;
+    int m_iLastRET;
     std::string m_szPTYName, m_szTTYName, m_szInBuf;
     std::string m_szCommand, m_szUser, m_szPath;
     std::string m_szExit;

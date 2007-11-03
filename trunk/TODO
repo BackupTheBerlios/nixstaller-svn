@@ -18,6 +18,9 @@ OVERALL
 - Check if ~ works (reported bug)
 - Bug: geninstall.sh doesn't put output file in other dirs than current dir
 - Bug: install.execute crashes with wrong arguments
+- Sentries for format strings coming from Lua and are parsed via va_string (ie msgbox)
+- Prefix directory structure
+- GTK BUG: Textfield is editable
 
 
 PACKAGING

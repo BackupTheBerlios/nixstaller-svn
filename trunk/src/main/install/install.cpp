@@ -213,7 +213,7 @@ void CBaseInstall::ExtractFiles()
         {
             std::string tarname = m_szOwnDir + "/arch.tar";
             command = "(" + m_szBinDir + "/../lzma-decode " + std::string(m_szCurArchFName) +
-                    " " + tarname + " 2>&1 >/dev/null && tar xvf " + tarname + ")";
+                    " " + tarname + " >/dev/null 2>&1 && tar xvf " + tarname + ")";
         }
         
         debugline("Extr cmd: %s", command.c_str());
@@ -264,15 +264,12 @@ void CBaseInstall::ExtractFiles()
     }
 }
 
-void CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path)
+int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path)
 {
     VerifyIfInstalling();
     
     if (m_bAlwaysRoot)
-    {
-        ExecuteCommandAsRoot(cmd, required, path);
-        return;
-    }
+        return ExecuteCommandAsRoot(cmd, required, path);
     
     // Redirect stderr to stdout, so that errors will be displayed too
     const char *append = " 2>&1";
@@ -313,11 +310,10 @@ void CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pa
     if (!line.empty())
         AddOutput(line.c_str());
             
-    if (required)
-        pipe.Close(); // By calling Close() explicity its able to throw exceptions
+    return pipe.Close(required); // By calling Close() explicity its able to throw exceptions
 }
 
-void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const char *path)
+int CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const char *path)
 {
     VerifyIfInstalling();
     
@@ -343,6 +339,7 @@ void CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const ch
             throw Exceptions::CExCommand(cmd);
         }
     }
+    return m_SUHandler.Ret();
 }
 
 void CBaseInstall::VerifyIfInstalling()
@@ -778,8 +775,8 @@ int CBaseInstall::LuaExecuteCMD(lua_State *L)
     
     const char *path = lua_tostring(L, 3);
     
-    pInstaller->ExecuteCommand(cmd, required, path);
-    return 0;
+    lua_pushinteger(L, pInstaller->ExecuteCommand(cmd, required, path));
+    return 1;
 }
 
 int CBaseInstall::LuaExecuteCMDAsRoot(lua_State *L)
@@ -794,8 +791,8 @@ int CBaseInstall::LuaExecuteCMDAsRoot(lua_State *L)
     
     const char *path = lua_tostring(L, 3);
     
-    pInstaller->ExecuteCommandAsRoot(cmd, required, path);
-    return 0;
+    lua_pushinteger(L, pInstaller->ExecuteCommandAsRoot(cmd, required, path));
+    return 1;
 }
 
 int CBaseInstall::LuaAskRootPW(lua_State *L)

@@ -632,10 +632,10 @@ bool CPipedCMD::HasData()
     return false;
 }
 
-void CPipedCMD::Close(bool canthrow)
+int CPipedCMD::Close(bool canthrow)
 {
     if (!m_ChildPID)
-        return;
+        return -1;
     
     if (canthrow) 
         ::Close(m_iPipeFD[0]);
@@ -657,6 +657,7 @@ void CPipedCMD::Close(bool canthrow)
         if (!WIFEXITED(stat) || (WEXITSTATUS(stat) == 127))
             throw Exceptions::CExCommand(MakeCString(m_szCommand));
     }
+    return WEXITSTATUS(stat);
 }
 
 void CPipedCMD::Abort(bool canthrow)

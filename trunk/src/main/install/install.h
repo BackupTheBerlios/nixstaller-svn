@@ -43,8 +43,8 @@ private:
     void Install(int statluafunc, int progluafunc, int outluafunc);
     void InitArchive(char *archname);
     void ExtractFiles(void);
-    void ExecuteCommand(const char *cmd, bool required, const char *path);
-    void ExecuteCommandAsRoot(const char *cmd, bool required, const char *path);
+    int ExecuteCommand(const char *cmd, bool required, const char *path);
+    int ExecuteCommandAsRoot(const char *cmd, bool required, const char *path);
     const char *GetDefaultPath(void) const { return "/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
     void VerifyIfInstalling(void);
     void UpdateStatusText(const char *str);

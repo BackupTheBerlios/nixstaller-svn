@@ -12,7 +12,7 @@ function getpkgpath()
 end
 
 function present()
-    return os.execute("dpkg --version 2>&1 >/dev/null") == 0
+    return os.execute("dpkg --version >/dev/null 2>&1") == 0
 end
 
 function create(src)
@@ -46,4 +46,11 @@ function install(src)
     OLDG.install.executeasroot(string.format("dpkg -i %s/pkg.deb", curdir))
     -- Move install files back
     moverec(instfiles, src)
+end
+
+function rollback(src)
+    if instfiles and os.fileexists(instfiles) then
+        -- Move install files back
+        moverec(instfiles, src)
+    end
 end

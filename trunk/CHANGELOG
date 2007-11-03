@@ -1,3 +1,7 @@
+0.3 -->
+- install.execute / install.executeasroot now return exit code from command
+
+
 0.2.2 --> 0.3
 - Added missing ncurses buttonbar entries.
 - Fixed about not loading in file installation screen.

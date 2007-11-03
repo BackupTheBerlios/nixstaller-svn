@@ -31,9 +31,9 @@ using namespace LIBSU;
 
 static const char *TermStr = "Im Done Now :)"; // Lets just hope another program doesn't output this ;)
 
-CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), m_szUser("root"), m_szPath("/bin:/usr/bin"),
-                                    m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
-                                    m_pCustomOutputData(NULL)
+CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), m_iLastRET(0), m_szUser("root"),
+                                    m_szPath("/bin:/usr/bin"), m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL),
+                                    m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
 {
     if (!Disable0Core)
     {
@@ -49,7 +49,7 @@ CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), 
 }
 
 CLibSU::CLibSU(const char *command, const char *user, const char *path,
-               bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_szCommand(command), m_szUser(user),
+               bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_iLastRET(0), m_szCommand(command), m_szUser(user),
                                     m_szPath(path), m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL),
                                     m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
 {
@@ -668,14 +668,14 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
         return false;
     }
 
-    int stat = WaitForChild();
-    if (stat == 127)
+    m_iLastRET = WaitForChild();
+    if (m_iLastRET == 127)
     {
         SetError(SU_ERROR_EXECUTE, "Couldn't execute \'%s\'", m_szCommand.c_str());
         return false;
     }
     else
-        log("Child exited with status %d\n", stat);
+        log("Child exited with status %d\n", m_iLastRET);
     
     return true;
 }
