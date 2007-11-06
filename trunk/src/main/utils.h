@@ -135,11 +135,11 @@ public:
     operator bool(void) { return !EndOfFile(); };
 };
 
-template <typename C> class CPointerWrapper
+template <typename C, typename D = C> class CPointerWrapper
 {
     C *m_pData;
 
-    typedef void (*delfunc)(C *);
+    typedef void (*delfunc)(D *);
     delfunc m_DelFunc;
 
     CPointerWrapper(const CPointerWrapper &) {}

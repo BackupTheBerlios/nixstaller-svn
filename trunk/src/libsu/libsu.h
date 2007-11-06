@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006 by Rick Helmus (rhelmus_AT_gmail.com)
+    Copyright (C) 2006, 2007 by Rick Helmus (rhelmus_AT_gmail.com)
 
     This file is part of libsu.
 
@@ -35,6 +35,10 @@ namespace LIBSU
 {
 //  #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
 
+extern std::string RunnerPath;
+inline void SetRunnerPath(const std::string &p) { RunnerPath = p; }
+inline std::string GetRunnerPath(void) { return RunnerPath; }
+
 // UNDONE: Check what should be private/protected/public
 class CLibSU
 {
@@ -46,7 +50,8 @@ public:
     typedef void (*TOutputFunc)(const char *s, void *p);
     
     CLibSU(bool Disable0Core=false);
-    CLibSU(const char *command, const char *user=NULL, const char *path="/bin:/usr/bin", bool Disable0Core=false);
+    CLibSU(const char *command, const char *user=NULL, const char *path="/bin:/usr/bin",
+           bool Disable0Core=false);
     ~CLibSU(void) { if (m_iPTYFD) close(m_iPTYFD); };
     
     void SetCommand(const std::string &command);

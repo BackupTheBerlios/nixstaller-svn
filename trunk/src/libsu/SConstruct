@@ -51,7 +51,12 @@ else:
     Execute(Delete('.sconsign.dblite'))
 
 # Builds the lib
-env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp vasprintf.c'))
+libsu = env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp vasprintf.c'))
+
+# Builds runner program
+surunner = env.Program("surunner", "runner.c")
 
 # Builds test program
 env.Program("libtest", 'libtest.cpp', LIBPATH=".", LIBS=Split('$LIBS su'))
+
+Return('libsu', 'surunner')

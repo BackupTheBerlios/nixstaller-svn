@@ -3,7 +3,7 @@ module (..., package.seeall)
 
 function moverec(dir, dest)
     for f in io.dir(dir) do
-        OLDG.install.execute(string.format("mv '%s/%s' '%s/'", dir, f, dest))
+        checkcmd(OLDG.install.execute, string.format("mv '%s/%s' '%s/'", dir, f, dest))
     end
 end
 
@@ -39,11 +39,11 @@ Description: %s
     control:close() -- important, otherwise data may still be buffered and not in the file
 
     -- Create the package
-    OLDG.install.executeasroot(string.format("dpkg -b %s/ %s/pkg.deb", debdir, curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("dpkg -b %s/ %s/pkg.deb", debdir, curdir))
 end
 
 function install(src)
-    OLDG.install.executeasroot(string.format("dpkg -i %s/pkg.deb", curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("dpkg -i %s/pkg.deb", curdir))
     -- Move install files back
     moverec(instfiles, src)
 end

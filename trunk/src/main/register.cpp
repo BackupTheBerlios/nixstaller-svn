@@ -211,7 +211,7 @@ CRegister::EUninstRet CRegister::Uninstall(app_entry_s *pApp, bool checksum, TUp
     for (it=pApp->FileSums.begin(); it!=pApp->FileSums.end(); it++)
     {
         char *fname = StrDup(it->first.c_str());
-        char *dname = dirname(fname);
+        char *dname = dirname(CreateText(fname));
         if (dname && dname[0] && (!WriteAccess(dname) || !ReadAccess(dname)))
         {
             needroot = true;

@@ -21,7 +21,7 @@
 #define MAIN_H
 
 #include "libsu/libsu.h"
-        
+
 #include <assert.h>
 #include <syslog.h>
 #include <stdarg.h>

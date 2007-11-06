@@ -338,7 +338,7 @@ function PrepareArchive()
     
     print("Preparing/copying frontend binaries")
     
-    -- Copy all specified frontends for every given OS/ARCH and every availiable libc/libstdc++ version
+    -- Copy all specified frontends for every given OS/ARCH and every available libc/libstdc++ version
     for _, OS in pairs(cfg.targetos) do
         for _, ARCH in pairs(cfg.targetarch) do
             local osdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
@@ -416,6 +416,7 @@ function PrepareArchive()
                             RequiredCopy(lcpath .. "/lzma-decode", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
                         end
                         RequiredCopy(lcpath .. "/edelta", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
+                        RequiredCopy(lcpath .. "/surunner", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
                     end
                 end
             end

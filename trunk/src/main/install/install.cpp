@@ -63,7 +63,7 @@ void CBaseInstall::AddScreen(CBaseScreen *screen)
 
 void CBaseInstall::Init(int argc, char **argv)
 {   
-    m_szBinDir = dirname(argv[0]);
+    m_szBinDir = dirname(CreateText(argv[0]));
     
     CMain::Init(argc, argv); // Init main, will also read config files
     

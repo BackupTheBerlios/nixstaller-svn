@@ -651,7 +651,7 @@ lzma, lzma_dec = env.SConscript('lzma/SConstruct', duplicate=0)
 edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
         
 # Builds libsu
-libsu = env.SConscript('libsu/SConstruct')
+libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
 # Builds main lib
 main = env.Library("main/main", Split('main/install/basescreen.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/main.cpp main/utils.cpp main/appmanager.cpp main/install/install.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
@@ -671,6 +671,6 @@ fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/di
 c_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 cpp_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
 
-Default(lzma, lzma_dec, edelta, ncurses, gtk, fltk, main)
-Default(env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, ncurses), env.Install(cpp_bin_dir, gtk), env.Install(cpp_bin_dir, fltk))
+Default(lzma, lzma_dec, edelta, surunner, ncurses, gtk, fltk, main)
+Default(env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(c_bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, ncurses), env.Install(cpp_bin_dir, gtk), env.Install(cpp_bin_dir, fltk))
 

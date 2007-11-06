@@ -10,8 +10,10 @@ function check(g, msg, ...)
     return g, msg, ...
 end
 
-function checkcmd(g)
-    if g ~= 0 then
+-- f is a function that should execute the command and excepts a second argument
+-- for not complaining when something went wrong
+function checkcmd(f, cmd)
+    if f(cmd, false) ~= 0 then
         error({"Failed to execute package shell command", "!check"})
     end
 end

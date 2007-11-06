@@ -1,5 +1,7 @@
 0.3 -->
 - install.execute / install.executeasroot now return exit code from command
+- Fixed: accessing freed memory in Lua copy file function
+- Fixed: libsu returning valid exit code
 
 
 0.2.2 --> 0.3

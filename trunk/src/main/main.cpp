@@ -52,7 +52,7 @@ void Quit(int ret)
     exit(ret);
 }
 
-// Besides main(), other functions may wat to call this incase it wants to stop an exception flow (ie GTK frontend)
+// Besides main(), other functions may want to call this incase they wants to stop an exception flow (ie GTK frontend)
 void HandleError(void)
 {
     try
@@ -82,6 +82,8 @@ int main(int argc, char **argv)
 
     PrintIntro();
 
+    LIBSU::SetRunnerPath(dirname(CreateText(argv[0])) + std::string("/../"));
+    
     g_RunScript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
     
     try
@@ -642,7 +644,7 @@ int CMain::LuaCPFile(lua_State *L)
             srcfiles.push_back(infile);
     }
     
-    char *dest = StrDup(luaL_checkstring(L, args));
+    CPointerWrapper<char, void> dest(StrDup(luaL_checkstring(L, args)), free);
     
     // Strip trailing /'s
     size_t len = strlen(dest);
@@ -658,7 +660,6 @@ int CMain::LuaCPFile(lua_State *L)
     bool isdir = IsDir(dest);
     if ((args >= 3) && !isdir)
     {
-        free(dest);
         if (!FileExists(dest))
             luaL_error(L, "Destination directory does not exist!");
         else
@@ -672,20 +673,19 @@ int CMain::LuaCPFile(lua_State *L)
         {
             lua_pushnil(L);
             lua_pushfstring(L, "Could not open source file %s: %s\n", *it, strerror(errno));
-            free(dest);
             return 2;
         }
        
-        char *destfile = (!isdir) ? dest : CreateTmpText("%s/%s", dest, basename(((char *)*it)));
+        CPointerWrapper<char, void> fname(StrDup(*it), free);
+        CPointerWrapper<char, void> destfile((!isdir) ? StrDup(dest) : CreateTmpText("%s/%s", (char *)dest, basename(fname)), free);
         mode_t flags = O_WRONLY | (FileExists(destfile) ? O_TRUNC : O_CREAT);
         out = open(destfile, flags);
 
         if (out < 0)
         {
             lua_pushnil(L);
-            lua_pushfstring(L, "Could not open destination file %s: %s\n", destfile, strerror(errno));
+            lua_pushfstring(L, "Could not open destination file %s: %s\n", (char *)destfile, strerror(errno));
             close(in);
-            free(destfile);
             return 2;
         }
         
@@ -705,7 +705,7 @@ int CMain::LuaCPFile(lua_State *L)
             if (write(out, buffer, size) < 0)
             {
                 lua_pushnil(L);
-                lua_pushfstring(L, "Error writing to file %s: %s", destfile, strerror(errno));
+                lua_pushfstring(L, "Error writing to file %s: %s", (char *)destfile, strerror(errno));
                 goterr = true;
                 break;
             }
@@ -728,7 +728,7 @@ int CMain::LuaCPFile(lua_State *L)
                 if (fchmod(out, st.st_mode) != 0)
                 {
                     lua_pushnil(L);
-                    lua_pushfstring(L, "Could not chmod destination file %s", destfile);
+                    lua_pushfstring(L, "Could not chmod destination file %s", (char *)destfile);
                     goterr = true;
                 }
                 umask(mask);
@@ -736,7 +736,6 @@ int CMain::LuaCPFile(lua_State *L)
         }
         close(in);
         close(out);
-        free(destfile);
 
         if (goterr)
             return 2;

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006 by Rick Helmus (rhelmus_AT_gmail.com)
+    Copyright (C) 2006, 2007 by Rick Helmus (rhelmus_AT_gmail.com)
 
     This file is part of libsu.
 
@@ -27,13 +27,18 @@
 #include <main.h>
 #include <sys/time.h>
 
-using namespace LIBSU;
-
 static const char *TermStr = "Im Done Now :)"; // Lets just hope another program doesn't output this ;)
 
-CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), m_iLastRET(0), m_szUser("root"),
-                                    m_szPath("/bin:/usr/bin"), m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL),
-                                    m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
+namespace LIBSU
+{
+
+std::string RunnerPath = "./";
+
+
+CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false),
+                                    m_iLastRET(0), m_szUser("root"), m_szPath("/bin:/usr/bin"),
+                                    m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL),
+                                    m_pOutputFunc(NULL), m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
 {
     if (!Disable0Core)
     {
@@ -49,8 +54,9 @@ CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false), 
 }
 
 CLibSU::CLibSU(const char *command, const char *user, const char *path,
-               bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_iLastRET(0), m_szCommand(command), m_szUser(user),
-                                    m_szPath(path), m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL),
+               bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(true), m_iLastRET(0),
+                                    m_szCommand(command), m_szUser(user), m_szPath(path),
+                                    m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL), m_pOutputFunc(NULL),
                                     m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
 {
     if (!user || !user[0]) m_szUser = "root";
@@ -321,6 +327,7 @@ int CLibSU::WaitForChild()
         }
 
         ret = CheckPidExited(m_iPid);
+        log("CheckPidExited: %d\n", ret);
         
         if (ret == PID_ERROR)
         {
@@ -606,16 +613,17 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     // On the foreground read is called, as soon as read ends it will kill anything in the process group.
     // The read call stops on input or EOF. In this case we are interested in EOF; as soon the main program exits,
     // stdin is closed and therefore read exits aswell. This is merely a trap for unexpected ending of the program.
-    char *cmdfmt = FormatText("printf \"%s\"\n sh -c \'"
-            "EXITFILE=`mktemp /tmp/lsutmp.XXXXXX` ; "
-            "trap \"rm -f $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "
-            "(sh -c '\"'\"'%s'\"'\"' ; echo $? > $EXITFILE ; kill -QUIT $$ ; sleep 1) & "
-            "trap \"RET=`cat $EXITFILE` || RET=0 ; rm -f $EXITFILE ; exit $RET \" QUIT ; "
-            "read dummy ; "
-            "kill -TERM 0  "
-            "\'",
-        TermStr, m_szCommand.c_str());
+//     char *cmdfmt = FormatText("printf \"%s\"\n sh -c \'"
+//             "EXITFILE=`mktemp /tmp/lsutmp.XXXXXX` ; "
+//             "trap \"rm -f $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "
+//             "(sh -c '\"'\"'%s'\"'\"' ; echo $? > $EXITFILE ; kill -QUIT $$ ; sleep 1) & "
+//             "trap \"exit `cat $EXITFILE` \" QUIT ; "
+//             "read dummy ; "
+//             "kill -TERM 0  "
+//             "\'",
+//         TermStr, m_szCommand.c_str());
 
+    char *cmdfmt = FormatText("printf \"%s\"\n %s/surunner \'%s\'", TermStr, GetRunnerPath().c_str(), m_szCommand.c_str());
     args.push_back(m_szUser);
     args.push_back("-c");
     args.push_back(cmdfmt);
@@ -678,4 +686,6 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
         log("Child exited with status %d\n", m_iLastRET);
     
     return true;
+}
+
 }
