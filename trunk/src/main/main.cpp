@@ -446,8 +446,10 @@ void CMain::InitLua()
     NLua::LuaSet("lzma", "archivetype", "cfg");
     NLua::LuaSet("english", "defaultlang", "cfg");
     
-    // Default pkg values (UNDONE)
-    NLua::LuaSet("", "name", "pkg");
+    // Default pkg values
+    NLua::LuaSet("1", "release", "pkg");
+    NLua::LuaSet("", "url", "pkg");
+    NLua::LuaSet("", "license", "pkg");
 }
 
 // Directory iter functions. Based on examples from "Programming in lua"

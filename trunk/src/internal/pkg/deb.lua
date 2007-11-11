@@ -26,6 +26,13 @@ local debdir = curdir .. "/deb"
 local debstructpath = string.format("%s/%s", debdir, getpkgpath())
 local instfiles = string.format("%s/%s", debstructpath, pkgprefix)
 
+function installedver()
+    local cmd = check(io.popen(string.format("dpkg-query -W -f '${VERSION}' %s", pkg.name)))
+    local ver = cmd:read("*a")
+    cmd:close()
+    return (ver ~= "" and ver) or nil
+end
+
 function moverec(dir, dest)
     for f in io.dir(dir) do
         checkcmd(OLDG.install.execute, string.format("mv '%s/%s' '%s/'", dir, f, dest))
@@ -47,31 +54,57 @@ function pkgdesc()
     return ret
 end
 
+function pkgsize(src)
+    local dirlist = { "." }
+    local ret = 0
+    while #dirlist > 0 do
+        local dir = table.remove(dirlist) -- Pop
+        local dirpath = string.format("%s/%s", src, dir)
+        for f in io.dir(dirpath) do
+            local path = string.format("%s/%s", dirpath, f)
+            
+            if os.isdir(path) then
+                table.insert(dirlist, path)
+            end
+            
+            local size = os.filesize(path)
+            if size ~= nil then
+                ret = ret + size
+            end
+        end
+    end
+    return ret
+end
+
 function present()
-    return os.execute("(dpkg --version && dpkg-deb --version) >/dev/null 2>&1") == 0
+    return os.execute("(dpkg --version && dpkg-deb --version && dpkg-query --version) >/dev/null 2>&1") == 0
 end
 
 function create(src)
     -- Set up deb work directory
-    os.mkdirrec(debdir .. "/DEBIAN")
+    check(os.mkdirrec(debdir .. "/DEBIAN"))
 
     -- Create directory structure
-    os.mkdirrec(instfiles)
-    os.mkdirrec(debstructpath .. "/bin")
+    check(os.mkdirrec(instfiles))
+    check(os.mkdirrec(debstructpath .. "/bin"))
     moverec(src .. "/files", instfiles)
     moverec(src .. "/bins", debstructpath .. "/bin")
 
+    local size = math.ceil((pkgsize(instfiles) + pkgsize(debstructpath .. "/bin")) / 1024)
+    
     -- Generate control file
-    local control = io.open(debdir .. "/DEBIAN/control", "w")
-    control:write(string.format([[
+    local control = check(io.open(debdir .. "/DEBIAN/control", "w"))
+    check(control:write(string.format([[
 Package: %s
-Version: %s
+Version: %s-%s
+Architecture: all
 Maintainer: %s
 Priority: optional
+Installed-Size: %d
 Section: %s
 Description: %s
 %s
-]], pkg.name, pkg.version, pkg.maintainer, pkg.grouplist[pkg.group]["deb"], pkg.summary, pkgdesc()))
+]], pkg.name, pkg.version, pkg.release, pkg.maintainer, size, pkg.grouplist[pkg.group]["deb"], pkg.summary, pkgdesc())))
     control:close() -- important, otherwise data may still be buffered and not in the file
 
     -- Fix permissions

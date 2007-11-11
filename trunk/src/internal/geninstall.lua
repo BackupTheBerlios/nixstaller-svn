@@ -63,7 +63,7 @@ end
 function ThrowError(msg, ...)
     print(debug.traceback())
     Clean()
-    error(string.format(msg .. "\n", ...))
+    error(string.format(msg .. "\n", ...), 0)
 end
 
 function RequiredCopy(src, dest)
@@ -221,6 +221,32 @@ function TraverseBinLibDir(bindir, lib)
     end
 end
 
+function VerifyPackage()
+    if not os.fileexists(confdir .. "/package.lua") then
+        return
+    end
+    
+    dofile(confdir .. "/package.lua")
+    
+    local function checkfield(s)
+        if not pkg[s] or #pkg[s] == 0 then
+            ThrowError("Package " .. s .. " not specified.")
+        end
+    end
+    
+    checkfield("name")
+    checkfield("version")
+    checkfield("maintainer")
+    checkfield("description")
+    checkfield("summary")
+    checkfield("group")
+    
+    dofile(curdir .. "/src/internal/pkg/groups.lua")
+    if not pkg.grouplist[pkg.group] then
+        ThrowError("Wrong package group specified.")
+    end
+end
+
 function Init()
     -- Strip all trailing /'s
     local _, i = string.find(string.reverse(confdir), "^/+")
@@ -234,7 +260,7 @@ function Init()
     end
     
     dofile(confdir .. "/config.lua")
-    dofile(confdir .. "/package.lua")
+    VerifyPackage()
     
     -- Find a LZMA and edelta bin which we can use
     local basebindir = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)

@@ -22,6 +22,13 @@ function getpkgpath()
     return "/usr/local" -- Seems like a good default prefix on many systems
 end
 
+function installedver()
+    if os.fileexists(getpkgpath() .. "/" .. pkgprefix) then
+        return "unknown" -- No way to get version (yet)
+    end
+    return nil
+end
+
 function create(src)
 end
 

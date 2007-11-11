@@ -4,36 +4,28 @@ OVERALL
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
 - Dep handling?
-- Create system native package (via lua configuration system: classes that provide the functionality of creating/checking/installing packages, function that let the creator create and install the package)
 - Use deltas <--> patches for different frontends?
-- x64 bins?
 - Modify Makeself?
 - Better util.a configure testing?
 - cfgmenu:set() function
 - Initial value from constrcutor for radiobutton, menu etc?
-- Build script that compiles all Nixstaller dependencies?
 - Root usage: change to use privileged user? (default root)
-- Make test lua file(s) that test anything?
 - Way to specifiy frontend when installer is started
 - Check if ~ works (reported bug)
 - Bug: geninstall.sh doesn't put output file in other dirs than current dir
 - Bug: install.execute crashes with wrong arguments
 - Sentries for format strings coming from Lua and are parsed via va_string (ie msgbox)
 - Prefix directory structure
-- GTK BUG: Textfield is editable
+- Check about screen size
 
 
 PACKAGING
-- Defaults for package.pkg
 - XDG support
 - More config options:
     * Package Changelog?
     * RPM: Vendor?, Icon?
-    * DEB: CPU Arch?
 - RPM: Description formatting?
 - Permissions of installed package
-- Load lua file from geninstall.sh (verifying settings)
-- Check if package is already installed
 - Handle missing rpmbuild (message?)
 
 
@@ -64,6 +56,7 @@ GTK
 
 FLTK
 - Create a pack widget that works?
+- Textfield: Bigger? Smaller fonts?
 
 
 REGISTER

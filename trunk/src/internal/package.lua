@@ -109,9 +109,29 @@ function install.generatepkg()
     
         install.setstatus("Installing package")
         
-        setpermissions(dir)
+        setpermissions(dir) -- UNDONE
+        
+        local version
         
         local f = function()
+            if not version then
+                version = packager.installedver()
+            
+                if version then
+                    local msg
+                    -- If type is string we don't know the version
+                    if type(version) == "string" or version == pkg.version then
+                        msg = "Package is already installed. Do you want to replace it?"
+                    else
+                        msg = string.format("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, pkg.version)
+                    end
+                    
+                    if msg and not gui.yesnobox(msg) then
+                        os.exit(1)
+                    end
+                end
+            end
+            
             packager.create(dir)
             packager.install(dir)
         end
