@@ -26,7 +26,15 @@ OVERALL
 PACKAGING
 - Defaults for package.pkg
 - XDG support
-- Error handling (file generation, locks etc)
+- More config options:
+    * Package Changelog?
+    * RPM: Vendor?, Icon?
+    * DEB: CPU Arch?
+- RPM: Description formatting?
+- Permissions of installed package
+- Load lua file from geninstall.sh (verifying settings)
+- Check if package is already installed
+- Handle missing rpmbuild (message?)
 
 
 TRANSLATIONS

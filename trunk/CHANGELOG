@@ -2,6 +2,7 @@
 - install.execute / install.executeasroot now return exit code from command
 - Fixed: accessing freed memory in Lua copy file function
 - Fixed: libsu returning valid exit code
+- Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
 
 
 0.2.2 --> 0.3

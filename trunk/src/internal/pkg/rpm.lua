@@ -1,3 +1,20 @@
+--     Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+-- 
+--     This file is part of Nixstaller.
+-- 
+--     This program is free software; you can redistribute it and/or modify it under
+--     the terms of the GNU General Public License as published by the Free Software
+--     Foundation; either version 2 of the License, or (at your option) any later
+--     version. 
+-- 
+--     This program is distributed in the hope that it will be useful, but WITHOUT ANY
+--     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+--     PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+-- 
+--     You should have received a copy of the GNU General Public License along with
+--     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+--     St, Fifth Floor, Boston, MA 02110-1301 USA
+
 local OLDG = _G
 module (..., package.seeall)
 
@@ -15,7 +32,6 @@ function create(src)
     check(os.mkdir(src .. "/RPMS"))
     
     spec = check(io.open(specdir .. "/pkg.spec", "w"))
-    -- UNDONE: Sepcifying Group?
     check(spec:write(string.format([[
 %%define _topdir %s
 %%define _tmppath %s/tmp
@@ -29,14 +45,16 @@ Packager: %s
 Summary: %s
 Group: %s
 License: %s
+URL: %s
 
 %%description
 %s
 
 %%files
-%s/files/*
-%s/bins/*
-]], src, src, src, src, pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.summary, "Development/Tools", pkg.license, pkg.description, src, src)))
+%%defattr(-,root,root,755)
+%s/files
+%s/bins
+]], src, src, src, src, pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.summary, pkg.grouplist[pkg.group]["rpm"], pkg.license, pkg.url, pkg.description, src, src)))
     spec:close()
     checkcmd(OLDG.install.execute, string.format("rpmbuild -bb %s/pkg.spec", specdir))
 end
@@ -45,8 +63,8 @@ function install(src)
     local locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")
     while locked == 0 do
         if gui.choicebox("Another program seems to be using the RPM database. \
-                          Please close all applications that may use the database (ie Smart or YaST) \
-                          and hit continue.", "Continue", "Abort") == 2 then
+Please close all applications that may use the database (ie Smart or YaST) \
+and hit continue.", "Continue", "Abort") == 2 then
             os.exit(1)
         end
         locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")

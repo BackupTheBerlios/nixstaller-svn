@@ -1,3 +1,20 @@
+--     Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+-- 
+--     This file is part of Nixstaller.
+-- 
+--     This program is free software; you can redistribute it and/or modify it under
+--     the terms of the GNU General Public License as published by the Free Software
+--     Foundation; either version 2 of the License, or (at your option) any later
+--     version. 
+-- 
+--     This program is distributed in the hope that it will be useful, but WITHOUT ANY
+--     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+--     PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+-- 
+--     You should have received a copy of the GNU General Public License along with
+--     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+--     St, Fifth Floor, Boston, MA 02110-1301 USA
+
 -- Prefix in <prefix> directory (ie in /usr/local)
 pkgprefix = string.format("share/%s", pkg.name)
 
@@ -42,6 +59,31 @@ exec %s/%s
     os.chmod(filename, "0755")
 end
 
+function setpermissions(src)
+    local dirlist = { "." }
+    while #dirlist > 0 do
+        local dir = table.remove(dirlist) -- Pop
+        local dirpath = string.format("%s/files/%s", src, dir)
+        for f in io.dir(dirpath) do
+            local path = string.format("%s/%s", dirpath, f)
+            if os.isdir(path) then
+                table.insert(dirlist, path)
+                os.chmod(path, "755")
+            else
+                os.chmod(path, "644")
+            end
+        end
+    end
+    
+    -- Binaries
+    if pkg.bins then
+        for _, b in ipairs(pkg.bins) do
+            os.chmod(b, "755")
+        end
+    end
+end
+
+dofile("groups.lua")
 
 package.path = "?.lua"
 package.cpath = ""
@@ -66,6 +108,8 @@ function install.generatepkg()
         end
     
         install.setstatus("Installing package")
+        
+        setpermissions(dir)
         
         local f = function()
             packager.create(dir)

@@ -45,7 +45,7 @@ private:
     void ExtractFiles(void);
     int ExecuteCommand(const char *cmd, bool required, const char *path);
     int ExecuteCommandAsRoot(const char *cmd, bool required, const char *path);
-    const char *GetDefaultPath(void) const { return "/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
+    const char *GetDefaultPath(void) const { return "/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
     void VerifyIfInstalling(void);
     void UpdateStatusText(const char *str);
     void AddOutput(const std::string &str);
