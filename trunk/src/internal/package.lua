@@ -30,9 +30,40 @@ end
 -- f is a function that should execute the command and excepts a second argument
 -- for not complaining when something went wrong
 function checkcmd(f, cmd)
+    print("Executing:", cmd)
     if f(cmd, false) ~= 0 then
         error({"Failed to execute package shell command", "!check"})
     end
+end
+
+local needsroot
+function needroot()
+    if needsroot == nil then -- Result will be cached
+        -- returns true if top most existing directory has write/read permissions for current user
+        local function checkdirs(dir)
+            local path = ""
+            local ret = false
+            for d in string.gmatch(dir, "/[^/]*") do
+                path = path .. d
+                if not os.fileexists(path) then
+                    break
+                end
+                ret = (os.writeperm(path) and os.readperm(path))
+            end
+            return ret
+        end
+        
+        needsroot = (install.createpkg or not checkdirs(pkg.destdir) or not checkdirs(pkg.bindir))
+    end
+    return needsroot
+end
+
+function instcmd()
+    return (needroot() and install.executeasroot) or install.execute
+end
+
+function getdestdir()
+    return pkg.destdir .. "/" .. pkg.name
 end
 
 -- 'secure' our environment by creating a new one. This is mainly for dofile not corrupting our own env.
@@ -94,8 +125,16 @@ require "rpm"
 -- Check which package system user has
 packager = (deb.present() and deb) or (rpm.present() and rpm) or generic
 
+OLDG.pkg.destdir = packager.getpkgpath() .. "/share"
+OLDG.pkg.bindir = packager.getpkgpath() .. "/bin"
+
+
 -- Called from Install()
 function install.generatepkg()
+    if not install.createpkg then
+        packager = generic
+    end
+
     local success, msg = pcall(function ()
         local dir = curdir .. "/pkg"
         

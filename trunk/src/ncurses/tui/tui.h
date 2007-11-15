@@ -22,7 +22,7 @@
 
 #include <deque>
 #include <map>
-#include "include/ncurses/ncurses.h"
+#include "include/ncurses/curses.h"
 
 namespace NNCurses {
 

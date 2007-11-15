@@ -46,6 +46,10 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
 
+function LuaInit()
+    OLDG.install.createpkg = true
+end
+
 function GenerateDefaultScreens()
     package.path = "?.lua"
     package.cpath = ""
@@ -53,15 +57,17 @@ function GenerateDefaultScreens()
     OLDG.WelcomeScreen = require "welcomescreen"
     OLDG.LicenseScreen = require "licensescreen"
     OLDG.SelectDirScreen = require "selectdirscreen"
+    OLDG.PackageScreen = require "packagescreen"
     OLDG.InstallScreen = require "installscreen"
     OLDG.FinishScreen = require "finishscreen"
+    OLDG.install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
 end
 
 function LoadConfig()
     local file = "config/run.lua"
     
     if (os.fileexists(file)) then
-        dofile("config/run.lua")
+        dofile(file)
         
         if (Init) then
             Init()
@@ -85,6 +91,7 @@ function AddScreens()
     end
 end
 
+LuaInit()
 GenerateDefaultScreens()
 LoadConfig()
 AddScreens()

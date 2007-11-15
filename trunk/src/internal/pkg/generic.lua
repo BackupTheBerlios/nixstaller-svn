@@ -23,7 +23,7 @@ function getpkgpath()
 end
 
 function installedver()
-    if os.fileexists(getpkgpath() .. "/" .. pkgprefix) then
+    if os.fileexists(getdestdir()) then
         return "unknown" -- No way to get version (yet)
     end
     return nil
@@ -34,6 +34,5 @@ end
 
 function install(src)
     -- UNDONE: Check for conflicting files/directories
-    dest = string.format("%s/%s/", getpkgpath(), pkgprefix)
-    checkcmd(OLDG.install.executeasroot, string.format("mkdir -p %s/ && cp -R %s/files/* %s/ && cp -R %s/bins/* %s/bin", dest, src, dest, src, getpkgpath()))
+    checkcmd(instcmd(), string.format("mkdir -p %s/ %s/ && cp -R %s/files/* %s/ && cp -R %s/bins/* %s", getdestdir(), pkg.bindir, src, getdestdir(), src, pkg.bindir))
 end

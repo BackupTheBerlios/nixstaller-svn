@@ -24,7 +24,7 @@
 #include <vector>
 #include <utility>
 
-#include "include/ncurses/ncurses.h"
+#include "include/ncurses/curses.h"
 
 namespace NNCurses {
 

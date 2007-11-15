@@ -88,7 +88,7 @@ buildncurses()
     get "ftp://invisible-island.net/ncurses/ncurses-5.6.tar.gz"
     untar "ncurses-5.6.tar.gz"
     dodir "ncurses-5.6"
-    ./configure --prefix="$DESTPREFIX" --without-gpm --without-dlsym && make && make install && make clean
+    ./configure --without-gpm --without-dlsym && make #&&  && make clean
     restoredir
 }
 

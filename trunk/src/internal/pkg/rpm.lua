@@ -80,7 +80,7 @@ and hit continue.", "Continue", "Abort") == 2 then
         locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")
     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s/%s --relocate %s/bins=%s/bin --replacepkgs -i %s/RPMS/%s/%s-%s-%s.%s.rpm", src, getpkgpath(), pkgprefix, src, getpkgpath(), src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
+    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --replacepkgs -i %s/RPMS/%s/%s-%s-%s.%s.rpm", src, getdestdir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
 end
 
 function rollback(src)

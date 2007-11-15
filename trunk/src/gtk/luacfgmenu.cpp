@@ -213,7 +213,7 @@ void CLuaCFGMenu::CoreActivateWidget()
 void CLuaCFGMenu::CoreUpdateMaxWidth(int w)
 {
     gtk_widget_set_size_request(m_pVarListView, w, MinHeight());
-    w -= (MaxTitleItemWidth() + 20); // 20: Offset for compisating width of scrollbar, borders etc
+    w -= (MaxTitleItemWidth() + 20); // 20: Offset for compensating width of scrollbar, borders etc
     g_object_set(GTK_OBJECT(m_pDescCellRenderer), "wrap-width", w, NULL);
 }
 

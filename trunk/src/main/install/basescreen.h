@@ -54,6 +54,7 @@ public:
     
     static void LuaRegister(void);
     static int LuaAddGroup(lua_State *L);
+    static int LuaAddScreenEnd(lua_State *L);
 };
 
 #endif

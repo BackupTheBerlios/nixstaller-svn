@@ -79,7 +79,7 @@ void CInstallScreen::ResetWidgetRange()
         
     m_WidgetRanges.push_back(GTK_WIDGET(entry->data));
     
-    bool enablewidgets = true;
+    bool enablewidgets = true, endedscreen = false;
     int h = 0;
     for (; entry; entry=g_list_next(entry))
     {
@@ -89,23 +89,24 @@ void CInstallScreen::ResetWidgetRange()
         
         const int newh = CheckTotalWidgetH(w);
 
-        if ((newh + h) <= MaxScreenHeight())
+        if (!endedscreen && ((newh + h) <= MaxScreenHeight()))
         {
             h += newh;
             if (enablewidgets)
-            {
                 gtk_widget_show(w);
-                continue;
-            }
+            else
+                gtk_widget_hide(w);
         }
         else
         {
             m_WidgetRanges.push_back(w);
             h = newh;
             enablewidgets = false;
+            endedscreen = false;
+            gtk_widget_hide(w);
         }
-        
-        gtk_widget_hide(w);
+        CLuaGroup *lg = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(w)));
+        endedscreen = lg->EndsScreen();
     }
     
     UpdateCounter();

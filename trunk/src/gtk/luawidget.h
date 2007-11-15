@@ -32,7 +32,6 @@ class CLuaWidget: virtual public CBaseLuaWidget
     
 protected:
     void SafeLuaDataChanged(void);
-    int MaxWidgetWidth(void) const { return m_iMaxWidth; }
     
 public:
     CLuaWidget(void);

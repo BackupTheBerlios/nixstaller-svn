@@ -80,6 +80,7 @@ void CBaseScreen::UpdateLanguage()
 void CBaseScreen::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseScreen::LuaAddGroup, "addgroup", "screen");
+    NLua::RegisterClassFunction(CBaseScreen::LuaAddScreenEnd, "addscreenend", "screen");
 }
 
 int CBaseScreen::LuaAddGroup(lua_State *L)
@@ -89,4 +90,12 @@ int CBaseScreen::LuaAddGroup(lua_State *L)
     screen->m_LuaGroupList.push_back(group);
     NLua::CreateClass(group, "group");
     return 1;
+}
+
+int CBaseScreen::LuaAddScreenEnd(lua_State *L)
+{
+    CBaseScreen *screen = NLua::CheckClassData<CBaseScreen>("screen", 1);
+    if (!screen->m_LuaGroupList.empty())
+        screen->m_LuaGroupList.back()->SetScreenEnds(true);
+    return 0;
 }

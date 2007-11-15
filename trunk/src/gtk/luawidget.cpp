@@ -59,11 +59,6 @@ void CLuaWidget::SafeLuaDataChanged()
 void CLuaWidget::SetMaxWidth(int w)
 {
     m_iMaxWidth = w;
-    
-    GtkRequisition req;
-    gtk_widget_size_request(m_pTitle, &req);
-    if (req.width > w)
-        gtk_widget_set_size_request(m_pTitle, w, -1);
-    
+    gtk_widget_set_size_request(m_pTitle, w, -1);
     CoreUpdateMaxWidth(w);
 }

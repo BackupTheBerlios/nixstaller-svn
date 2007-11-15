@@ -92,6 +92,7 @@ void CInstallScreen::ResetWidgetRange()
             return;
         
         m_WidgetRanges.push_back(list.front());
+        bool endedscreen = false;
         
         for (TChildList::const_iterator it=list.begin(); it!=list.end(); it++)
         {
@@ -100,22 +101,22 @@ void CInstallScreen::ResetWidgetRange()
                 continue;
             
             int newh = CheckWidgetHeight(*it);
-            if ((newh + h) <= MaxScreenHeight())
+            if (!endedscreen && ((newh + h) <= MaxScreenHeight()))
             {
                 h += newh;
-                if (enablewidgets)
-                {
-                    (*it)->Enable(true);
-                    continue;
-                }
+                (*it)->Enable(enablewidgets);
             }
             else
             {
                 m_WidgetRanges.push_back(*it);
                 h = newh;
                 enablewidgets = false;
+                endedscreen = false;
+                (*it)->Enable(false);
             }
-            (*it)->Enable(false);
+
+            CLuaGroup *lg = dynamic_cast<CLuaGroup *>(*it);
+            endedscreen = lg->EndsScreen();
         }
     }
 
@@ -240,108 +241,3 @@ void CInstallScreen::SubLast()
     if (m_WidgetRanges.size() > 1)
         ActivateSubScreen(m_WidgetRanges.size()-1);
 }
-#if 0
-bool CInstallScreen::SubBack()
-{
-    if (HasPrevWidgets())
-    {
-        const TChildList &list = m_pGroupBox->GetChildList();
-        TChildList::const_reverse_iterator it = list.rbegin();
-        
-        for (; it!=list.rend(); it++)
-            (*it)->Enable(false);
-        
-        int h = 0;
-        it = std::find(list.rbegin(), list.rend(), m_WidgetRange.first);
-        m_WidgetRange.first = m_WidgetRange.second = NULL;
-        
-        if (it != list.rend())
-        {
-            while ((*it != list.front()) && (h <= MaxScreenHeight()))
-            {
-                it++;
-                
-                CGroup *g = m_pGroupBox->GetGroupWidget(*it);
-                if (g && g->Empty())
-                    continue;
-
-                h += CheckWidgetHeight(*it);
-                
-                if (h <= MaxScreenHeight())
-                {
-                    (*it)->Enable(true);
-                    m_WidgetRange.first = *it;
-                }
-                
-                if (!m_WidgetRange.second)
-                    m_WidgetRange.second = *it;
-            }
-        }
-        
-        if (h)
-        {
-            UpdateCounter();
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-bool CInstallScreen::SubNext(bool check)
-{
-    if (check && !CheckWidgets())
-        return true; // Return true so the current install screen doesn't change
-    
-    if (HasNextWidgets())
-    {
-        const TChildList &list = m_pGroupBox->GetChildList();
-        TChildList::const_iterator it = list.begin();
-        
-        for (; it!=list.end(); it++)
-            (*it)->Enable(false);
-        
-        int h = 0;
-        it = std::find(list.begin(), list.end(), m_WidgetRange.second);
-        m_WidgetRange.first = m_WidgetRange.second = NULL;
-        
-        if (it != list.end())
-        {
-            while ((*it != list.back()) && (h <= MaxScreenHeight()))
-            {
-                it++;
-                
-                CGroup *g = m_pGroupBox->GetGroupWidget(*it);
-                if (g && g->Empty())
-                    continue;
-
-                h += CheckWidgetHeight(*it);
-                
-                if (h <= MaxScreenHeight())
-                {
-                    (*it)->Enable(true);
-                    m_WidgetRange.second = *it;
-                }
-                
-                if (!m_WidgetRange.first)
-                    m_WidgetRange.first = *it;
-            }
-        }
-        
-        if (h)
-        {
-            UpdateCounter();
-            SetNextFocWidget(false); // Focus first widget
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-void CInstallScreen::SubLast()
-{
-    while (SubNext(false))
-        ;
-}
-#endif

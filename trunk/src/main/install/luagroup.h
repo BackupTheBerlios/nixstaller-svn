@@ -42,6 +42,7 @@ protected:
     
 private:
     TWidgetList m_WidgetList;
+    bool m_bEndsScreen;
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type) = 0;
@@ -65,10 +66,13 @@ protected:
     const TWidgetList &GetWidgetList(void) { return m_WidgetList; }
     
 public:
+    CBaseLuaGroup(void) : m_bEndsScreen(false) {}
     virtual ~CBaseLuaGroup(void) {}
     
     void UpdateLanguage(void);
     bool CheckWidgets(void);
+    void SetScreenEnds(bool e) { m_bEndsScreen = e; }
+    bool EndsScreen(void) const { return m_bEndsScreen; }
     
     static void LuaRegister(void);
     
