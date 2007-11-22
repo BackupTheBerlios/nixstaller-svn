@@ -64,6 +64,7 @@ void CBaseInstall::AddScreen(CBaseScreen *screen)
 void CBaseInstall::Init(int argc, char **argv)
 {   
     m_szBinDir = dirname(CreateText(argv[0]));
+    NLua::LuaSet(m_szBinDir, "bindir");
     
     CMain::Init(argc, argv); // Init main, will also read config files
     
@@ -383,6 +384,7 @@ void CBaseInstall::AddOutput(const std::string &str)
         
         if (func)
         {
+            debugline("InstPrint: %s\n", str.c_str());
             func << str;
             func(0);
         }

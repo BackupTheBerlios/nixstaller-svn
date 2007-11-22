@@ -18,12 +18,22 @@
 local OLDG = _G
 module (..., package.seeall)
 
+local rpmbuild
+if os.execute("rpmbuild --version >/dev/null 2>&1") == 0 then
+    rpmbuild = "rpmbuild"
+else
+    rpmbuild = string.format("%s/../rpmbuild", bindir)
+    if os.execute(string.format("%s --version >/dev/null 2>&1", rpmbuild)) ~= 0 then
+        rpmbuild = nil
+    end
+end
+    
 function getpkgpath()
     return "/usr/local" -- UNDONE?
 end
 
 function present()
-    return os.execute("(rpm --version && rpmbuild --version) >/dev/null 2>&1") == 0
+    return (rpmbuild and os.execute("rpm --version >/dev/null 2>&1") == 0)
 end
 
 function installedver()
@@ -66,7 +76,7 @@ URL: %s
 %s/bins
 ]], src, src, src, src, pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.summary, pkg.grouplist[pkg.group]["rpm"], pkg.license, pkg.url, pkg.description, src, src)))
     spec:close()
-    checkcmd(OLDG.install.execute, string.format("rpmbuild -bb %s/pkg.spec", specdir))
+    checkcmd(OLDG.install.execute, string.format("%s -bb %s/pkg.spec", rpmbuild, specdir))
 end
 
 function install(src)

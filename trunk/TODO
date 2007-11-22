@@ -27,10 +27,15 @@ PACKAGING
 - RPM: Description formatting?
 - Permissions of installed package
 - Handle missing rpmbuild (message?)
+- Set right ENV in bin scripts, make KDE/Gnome etc optional?
 
 
 TRANSLATIONS
 - Check all sentences for punctation
+
+
+DOCS:
+- Fix genprojdir example (bug report)
 
 
 MAIN

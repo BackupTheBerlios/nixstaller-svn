@@ -6,8 +6,8 @@ DESTPREFIX=$PWD/deps/usr
 mkdir -p "$DESTFILES"
 mkdir -p "$DESTPREFIX"
 
-LDFLAGS="-L $DESTPREFIX/lib"
-CPPFLAGS="-I $DESTPREFIX/include"
+LDFLAGS="-L$DESTPREFIX/lib -L$DESTPREFIX/lib64"
+CPPFLAGS="-I$DESTPREFIX/include"
 export LDFLAGS
 export CPPFLAGS
 
@@ -39,7 +39,7 @@ restoredir()
 
 buildzlib()
 {
-    get "http://freshmeat.net/redir/zlib/12352/url_tgz/zlib-1.2.3.tar.gz" "$DESTFILES"
+    get "http://freshmeat.net/redir/zlib/12352/url_tgz/zlib-1.2.3.tar.gz"
     untar "zlib-1.2.3.tar.gz"
     dodir "zlib-1.2.3/"
     ./configure --prefix=$DESTPREFIX && make && make install && make clean
@@ -88,14 +88,41 @@ buildncurses()
     get "ftp://invisible-island.net/ncurses/ncurses-5.6.tar.gz"
     untar "ncurses-5.6.tar.gz"
     dodir "ncurses-5.6"
-    ./configure --without-gpm --without-dlsym && make #&&  && make clean
+    # Examples may fail to build, just make sure to always call make install (no &&).
+    ./configure --without-gpm --without-dlsym && make ; make install DESTDIR="$DESTPREFIX" && make clean
     restoredir
 }
 
-BUILD=$1
+buildbeecrypt()
+{
+    get "http://belnet.dl.sourceforge.net/sourceforge/beecrypt/beecrypt-4.1.2.tar.gz"
+    untar "beecrypt-4.1.2.tar.gz"
+    dodir "beecrypt-4.1.2"
+    CFLAGS="-fPIC" ./configure --prefix=$DESTPREFIX --without-python --disable-shared && make && make install && make clean
+    restoredir
+}
+
+buildrpm()
+{
+    get "http://www.rpm.org/releases/rpm-4.4.x/rpm-4.4.2.2.tar.gz"
+    untar "rpm-4.4.2.2.tar.gz"
+    dodir "rpm-4.4.2.2"
+    # Move libz.a temporary away (gives compile error when trying to link static version)
+    [ -f "$DESTPREFIX/lib/libz.a" ] && mv "$DESTPREFIX/lib/libz.a" "$DESTPREFIX/lib/libz.a-"
+    CPPFLAGS="$CPPFLAGS -I$DESTPREFIX/include/beecrypt" ./configure --without-selinux --without-python --disable-shared --prefix=$DESTPREFIX
+    echo '#define HAVE_BEECRYPT_API_H 1' >> config.h
+    make  && make install && make clean
+    [ -f "$DESTPREFIX/lib/libz.a-" ] && mv "$DESTPREFIX/lib/libz.a-" "$DESTPREFIX/lib/libz.a"
+    restoredir
+}
+
+BUILD="$*"
 
 if [ -z $BUILD ]; then
     BUILD="zlib png jpeg fltk lua ncurses"
+#     if [ `uname` = "Linux" ]; then
+#         BUILD="$BUILD beecrypt rpm"
+#     fi
 fi
 
 for B in $BUILD
@@ -107,6 +134,9 @@ do
         fltk ) buildfltk ;;
         lua ) buildlua ;;
         ncurses ) buildncurses ;;
+        beecrypt ) buildbeecrypt ;;
+        rpm ) buildrpm ;;
+        * ) echo "Wrong build option" ; exit 1 ;;
     esac
 done
 

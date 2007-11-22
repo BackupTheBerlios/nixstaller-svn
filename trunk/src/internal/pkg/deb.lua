@@ -22,10 +22,6 @@ function getpkgpath()
     return "/usr/local" -- UNDONE?
 end
 
-local debdir = curdir .. "/deb"
-local debstructpath = string.format("%s/%s", debdir, getpkgpath())
-local instfiles = string.format("%s/%s", debstructpath, pkgprefix)
-
 function installedver()
     local cmd = check(io.popen(string.format("dpkg-query -W -f '${VERSION}' %s", pkg.name)))
     local ver = cmd:read("*a")
@@ -81,16 +77,20 @@ function present()
 end
 
 function create(src)
+    local debdir = curdir .. "/deb"
+    debbin = string.format("%s/%s", debdir, pkg.bindir)
+    instfiles = string.format("%s/%s/%s", debdir, pkg.destdir, pkg.name)
+
     -- Set up deb work directory
     check(os.mkdirrec(debdir .. "/DEBIAN"))
 
     -- Create directory structure
     check(os.mkdirrec(instfiles))
-    check(os.mkdirrec(debstructpath .. "/bin"))
+    check(os.mkdirrec(debbin))
     moverec(src .. "/files", instfiles)
-    moverec(src .. "/bins", debstructpath .. "/bin")
+    moverec(src .. "/bins", debbin)
 
-    local size = math.ceil((pkgsize(instfiles) + pkgsize(debstructpath .. "/bin")) / 1024)
+    local size = math.ceil((pkgsize(instfiles) + pkgsize(debbin)) / 1024)
     
     -- Generate control file
     local control = check(io.open(debdir .. "/DEBIAN/control", "w"))
@@ -108,15 +108,15 @@ Description: %s
     control:close() -- important, otherwise data may still be buffered and not in the file
 
     -- Fix permissions
-    checkcmd(OLDG.install.executeasroot, string.format("chown -R root %s/bin %s", debstructpath, instfiles))
+    checkcmd(OLDG.install.executeasroot, string.format("chown -R root %s/ %s", debbin, instfiles))
 
     -- Create the package (use low compression level for extra speed)
     checkcmd(OLDG.install.execute, string.format("dpkg-deb -z1 -b %s/ %s/pkg.deb", debdir, curdir))
     
     -- Move install files back
-    checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/bin %s", os.getenv("USER"), debstructpath, instfiles))
+    checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
     moverec(instfiles, src .. "/files")
-    moverec(debstructpath .. "/bin", src .. "/bins")
+    moverec(debbin, src .. "/bins")
 end
 
 function install(src)
@@ -136,10 +136,10 @@ end
 function rollback(src)
     if instfiles and os.fileexists(instfiles) then
         if not os.writeperm(instfiles) then
-            checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/bin %s", os.getenv("USER"), debstructpath, instfiles))
+            checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
         end
         -- Move install files back
         moverec(instfiles, src .. "/files")
-        moverec(debstructpath .. "/bin", src .. "/bins")
+        moverec(debbin, src .. "/bins")
     end
 end

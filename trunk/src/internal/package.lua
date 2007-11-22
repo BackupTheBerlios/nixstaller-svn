@@ -15,9 +15,6 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
--- Prefix in <prefix> directory (ie in /usr/local)
-pkgprefix = string.format("share/%s", pkg.name)
-
 function check(g, msg, ...)
     if not g then
         -- Special string is used to identify errors thrown by this function.
@@ -30,7 +27,6 @@ end
 -- f is a function that should execute the command and excepts a second argument
 -- for not complaining when something went wrong
 function checkcmd(f, cmd)
-    print("Executing:", cmd)
     if f(cmd, false) ~= 0 then
         error({"Failed to execute package shell command", "!check"})
     end
@@ -76,16 +72,17 @@ setfenv(1, P)
 function genscript(file, dir)
     -- UNDONE: Check what other vars should be set (GTK, Qt, KDE etc)
 
-    local fullpkgpath = string.format("%s/%s", packager.getpkgpath(), pkgprefix)
     local filename = string.format("%s/%s", dir, string.gsub(file, "/*.+/", ""))
     
     script = check(io.open(filename, "w"))
     check(script:write(string.format([[
 #!/bin/sh
-LD_LIBRARY_PATH="%s/files/lib:$LD_LIBRARY_PATH"
+LD_LIBRARY_PATH="%s/%s/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH
-exec %s/%s
-]], fullpkgpath, fullpkgpath, file)))
+KDEDIRS=%s/%s
+export KDEDIRS
+exec %s/%s/%s
+]], pkg.destdir, pkg.name, pkg.destdir, pkg.name, pkg.destdir, pkg.name, file)))
     script:close() -- Flush
     os.chmod(filename, "0755")
 end
@@ -120,11 +117,13 @@ package.path = "?.lua"
 package.cpath = ""
 require "generic"
 require "deb"
+require "pacman"
 require "rpm"
 
 -- Check which package system user has
-packager = (deb.present() and deb) or (rpm.present() and rpm) or generic
+packager = (deb.present() and deb) or (pacman.present() and pacman) or (rpm.present() and rpm) or generic
 
+-- Defaults
 OLDG.pkg.destdir = packager.getpkgpath() .. "/share"
 OLDG.pkg.bindir = packager.getpkgpath() .. "/bin"
 

@@ -345,6 +345,7 @@ function PrepareArchive()
     RequiredCopy(curdir .. "/src/internal/pkg/deb.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/pkg/generic.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/pkg/groups.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/internal/pkg/pacman.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/pkg/rpm.lua", confdir .. "/tmp")
     
     -- Language files
