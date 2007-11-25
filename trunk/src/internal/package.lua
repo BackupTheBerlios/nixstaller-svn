@@ -115,23 +115,28 @@ dofile("groups.lua")
 
 package.path = "?.lua"
 package.cpath = ""
-require "generic"
-require "deb"
-require "pacman"
-require "rpm"
+
+packagers = { "deb", "pacman", "slack", "rpm", "generic" }
+
+for _, p in ipairs(packagers) do
+    require p
+    pkg.packager = pkg.packager or (p.present() and p)
+end
 
 -- Check which package system user has
-packager = (deb.present() and deb) or (pacman.present() and pacman) or (rpm.present() and rpm) or generic
+-- packager = (deb.present() and deb) or (pacman.present() and pacman) or (slack.present() and slack) or (rpm.present() and rpm) or generic
+pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
+-- pkg.missingtool = (pkg.canregister and ()) or nil
 
 -- Defaults
-OLDG.pkg.destdir = packager.getpkgpath() .. "/share"
-OLDG.pkg.bindir = packager.getpkgpath() .. "/bin"
+OLDG.pkg.destdir = pkg.packager.getpkgpath() .. "/share"
+OLDG.pkg.bindir = pkg.packager.getpkgpath() .. "/bin"
 
 
 -- Called from Install()
 function install.generatepkg()
     if not install.createpkg then
-        packager = generic
+        pkg.packager = generic
     end
 
     local success, msg = pcall(function ()
@@ -153,7 +158,7 @@ function install.generatepkg()
         
         local f = function()
             if not version then
-                version = packager.installedver()
+                version = pkg.packager.installedver()
             
                 if version then
                     local msg
@@ -170,18 +175,18 @@ function install.generatepkg()
                 end
             end
             
-            packager.create(dir)
-            packager.install(dir)
+            pkg.packager.create(dir)
+            pkg.packager.install(dir)
         end
 
-        if packager == generic then
+        if pkg.packager == generic then
             f()
         else
             local g, msg2 = pcall(f)
             if not g then
                 if type(msg2) == "table" and msg2[2] == "!check" then
-                    packager.rollback(dir)
-                    packager = generic
+                    pkg.packager.rollback(dir)
+                    pkg.packager = generic
                     install.print("WARNING: Failed to create system native package.\nReverting to generic package.")
                     f()
                 else

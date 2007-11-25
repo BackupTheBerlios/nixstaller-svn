@@ -19,44 +19,70 @@ local OLDG = _G
 module (..., package.seeall)
 
 function getpkgpath()
-    return "/usr" -- UNDONE?
+    return "/usr/local" -- UNDONE?
 end
 
 function installedver()
-    local cmd = check(io.popen(string.format("pacman -Qi %s | grep Version 2>/dev/null", pkg.name, pkg.name)))
-    local ver = cmd:read("*a")
-    cmd:close()
-    
-    if not ver or ver == "" then
-        return nil
-    end
-    
-    ver = string.gsub(ver, "Version.*: ", "")
-    
-    return (ver ~= "" and ver) or nil
+    return nil -- UNDONE
+end
+
+function present()
+    -- UNDONE: Works?
+    return true
+--     return os.execute("(instpkg --version) >/dev/null 2>&1") == 2
 end
 
 function missingtool()
 end
 
-function present()
-    -- UNDONE: Works?
-    return os.execute("(pacman --version) >/dev/null 2>&1") == 2
-end
+function makedesc(src)
+    check(os.mkdirrec(src .. "/inst-slack"))
+    local descfile = check(io.open(src .. "/inst-slack/desc", "w"))
+    
+    local desc, line = "", ""
+    local maxlen, lines = 30, 11
+    local n = 0
+    
+    -- Make sure that lines won't be longer than maxlen
+    -- UNDONE?
+    for char in string.gmatch(pkg.description, ".") do
+        if char == '\n' or n == maxlen then
+            desc = desc .. '\n' .. line
+            line = ""
+            n = 0
+        end
+        if char ~= '\n' then
+            line = line .. char
+        end
+        n = n + 1
+    end
 
-function genfilelist(src)
-    local flist = check(io.open(src .. "/.FILELIST", "w"))
-    recursivedir(src, function (_, d)
-                         if d == ".FILELIST" then
-                             return
-                         end
-                         check(flist:write(d .. "\n"))
-                      end)
-    flist:close()
+    -- Add empty lines when necessary
+    local nl = 0
+    for line in string.gmatch(desc, "([^\n]*)\n") do
+        nl = nl + 1
+    end
+    
+    if nl < 11 then
+        for n=1,lines - nl do
+            desc = desc .. "\n"
+        end
+    end
+
+    local l = 0
+    for line in string.gmatch(desc, "([^\n]*)\n") do
+        descfile:write(pkg.name .. ": " .. line .. "\n")
+        l = l + 1
+        if l >= lines then
+            break
+        end
+    end
+
+    descfile:close()
 end
 
 function create(src)
-    local pkgdir = curdir .. "/pac"
+    local pkgdir = curdir .. "/slack"
     pkgbindir = string.format("%s/%s", pkgdir, pkg.bindir)
     instfiles = string.format("%s/%s/%s", pkgdir, pkg.destdir, pkg.name)
 
@@ -68,22 +94,8 @@ function create(src)
     moverec(src .. "/files", instfiles)
     moverec(src .. "/bins", pkgbindir)
 
-    genfilelist(pkgdir)
-
-    local size = pkgsize(instfiles) + pkgsize(pkgbindir)
-    
-    -- Generate PKGINFO file
-    local pkginfo = check(io.open(pkgdir .. "/.PKGINFO", "w"))
-    check(pkginfo:write(string.format([[
-pkgname = %s
-pkgver = %s-%s
-packager = %s
-url = %s
-builddate = %s
-size = %d
-pkgdesc = %s
-]], pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.url, os.date(), size, pkg.summary)))
-    pkginfo:close() -- important, otherwise data may still be buffered and not in the file
+    -- Make description
+    makedesc(pkgdir)
     
     -- Create the package
     checkcmd(OLDG.install.execute, string.format("tar czf %s/pkg.tar.gz -C %s/ --owner=root --group=root .", curdir, pkgdir))
@@ -105,7 +117,7 @@ function install(src)
 --         locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
 --     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("pacman --upgrade %s/pkg.tar.gz", curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("instpkg %s/pkg.tar.gz", curdir))
 end
 
 function rollback(src)

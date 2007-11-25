@@ -36,6 +36,7 @@ TRANSLATIONS
 
 DOCS:
 - Fix genprojdir example (bug report)
+- Functions from util.lua?
 
 
 MAIN

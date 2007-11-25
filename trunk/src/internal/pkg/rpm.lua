@@ -17,23 +17,19 @@
 
 local OLDG = _G
 module (..., package.seeall)
-
-local rpmbuild
-if os.execute("rpmbuild --version >/dev/null 2>&1") == 0 then
-    rpmbuild = "rpmbuild"
-else
-    rpmbuild = string.format("%s/../rpmbuild", bindir)
-    if os.execute(string.format("%s --version >/dev/null 2>&1", rpmbuild)) ~= 0 then
-        rpmbuild = nil
-    end
-end
     
 function getpkgpath()
     return "/usr/local" -- UNDONE?
 end
 
 function present()
-    return (rpmbuild and os.execute("rpm --version >/dev/null 2>&1") == 0)
+    return (os.execute("(rpm --version && rpmbuild --version) >/dev/null 2>&1") == 0)
+end
+
+function missingtool()
+    if (os.execute("(rpmbuild --version) >/dev/null 2>&1") ~= 0) then
+        return "rpmbuild"
+    end
 end
 
 function installedver()

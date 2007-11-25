@@ -17,40 +17,30 @@
 
 module (..., package.seeall)
 
-screen = install.newscreen("Installation options") -- UNDONE? (title)
+screen = install.newscreen("Software registration") -- UNDONE? (title)
 
-pkgdest = screen:adddirselector("In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.\n\nNote: if you don't have write access to this directory you need to enter the root password later.\n\nIf unsure, just leave it as it is.", pkg.destdir)
-
-function pkgdest:verify()
-    if not pkgdest:get() then
-        gui.msgbox("Please enter a valid path.")
-        return false
-    end
-    pkg.destdir = pkgdest:get()
-    bindest:set(string.gsub(pkg.destdir, "/[%w]*$", "/bin"))
-    return true
+function screen:canactivate()
+    return pkg.canregister
 end
-
-screen:addscreenend()
-
-bindest = screen:adddirselector("In this field you can select the destination directory for the executables. The files are directly installed to this directory.\n\nNote: if you don't have write access to this directory you need to enter the root password later.\n\nWhen unsure, just leave it as it is.", pkg.bindir)
-
-function bindest:verify()
-    if not bindest:get() then
-        gui.msgbox("Please enter a valid path.")
-        return false
-    end
-    pkg.bindir = bindest:get()
-    return true
-end
-
-screen:addscreenend()
 
 genpkg = screen:addcheckbox("By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.\n\nNote: When enabled, you need to enter the root password later.\n\nWhen unsure, just leave it enabled.", {"Register software"})
 genpkg:set(1, install.createpkg)
 
 function genpkg:verify()
     install.createpkg = genpkg:get(1)
+    
+    if (install.createpkg) then
+        local mtool = pkg.packager.missingtool()
+        if mtool then
+            while gui.choicebox(string.format("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 0 do
+                mtool = pkg.packager.missingtool()
+                if not mtool then
+                    break
+                end
+            end
+        end
+        install.createpkg = not pkg.packager.missingtool()
+    end
 end
 
 return screen

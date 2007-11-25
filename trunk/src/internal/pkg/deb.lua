@@ -29,12 +29,6 @@ function installedver()
     return (ver ~= "" and ver) or nil
 end
 
-function moverec(dir, dest)
-    for f in io.dir(dir) do
-        checkcmd(OLDG.install.execute, string.format("mv '%s/%s' '%s/'", dir, f, dest))
-    end
-end
-
 function pkgdesc()
     -- Each line should start with a space. Empty lines need a single dot.
     -- No more than one empty line at the end is allowed (not checked atm, just filling in dots at the end seems to work)
@@ -50,30 +44,11 @@ function pkgdesc()
     return ret
 end
 
-function pkgsize(src)
-    local dirlist = { "." }
-    local ret = 0
-    while #dirlist > 0 do
-        local dir = table.remove(dirlist) -- Pop
-        local dirpath = string.format("%s/%s", src, dir)
-        for f in io.dir(dirpath) do
-            local path = string.format("%s/%s", dirpath, f)
-            
-            if os.isdir(path) then
-                table.insert(dirlist, path)
-            end
-            
-            local size = os.filesize(path)
-            if size ~= nil then
-                ret = ret + size
-            end
-        end
-    end
-    return ret
-end
-
 function present()
     return os.execute("(dpkg --version && dpkg-deb --version && dpkg-query --version) >/dev/null 2>&1") == 0
+end
+
+function missingtool()
 end
 
 function create(src)

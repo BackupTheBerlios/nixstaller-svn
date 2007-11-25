@@ -15,6 +15,7 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
+dofile("utils.lua")
 dofile("package.lua")
 
 do
@@ -57,7 +58,8 @@ function GenerateDefaultScreens()
     OLDG.WelcomeScreen = require "welcomescreen"
     OLDG.LicenseScreen = require "licensescreen"
     OLDG.SelectDirScreen = require "selectdirscreen"
-    OLDG.PackageScreen = require "packagescreen"
+    OLDG.PackageDirScreen = require "packagedirscreen"
+    OLDG.PackageToggleScreen = require "packagetogglescreen"
     OLDG.InstallScreen = require "installscreen"
     OLDG.FinishScreen = require "finishscreen"
     OLDG.install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
