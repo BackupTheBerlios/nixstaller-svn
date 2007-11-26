@@ -27,27 +27,29 @@ function installedver()
 end
 
 function present()
-    -- UNDONE: Works?
-    return false
---     return os.execute("(instpkg --version) >/dev/null 2>&1") == 0
+    return os.execute("(/sbin/installpkg) >/dev/null 2>&1") == 0
 end
 
 function missingtool()
 end
 
 function makedesc(src)
-    check(os.mkdirrec(src .. "/inst-slack"))
-    local descfile = check(io.open(src .. "/inst-slack/desc", "w"))
+    check(os.mkdirrec(src .. "/install"))
+    local descfile = check(io.open(src .. "/install/slack-desc", "w"))
     
     local desc, line = "", ""
-    local maxlen, lines = 30, 11
+    local maxlen, lines = 72, 11
     local n = 0
     
     -- Make sure that lines won't be longer than maxlen
     -- UNDONE?
-    for char in string.gmatch(pkg.description, ".") do
+    for char in string.gmatch(pkg.summary .. "\n\n" .. pkg.description, ".") do
         if char == '\n' or n == maxlen then
-            desc = desc .. '\n' .. line
+            if #desc > 0 then
+                desc = desc .. '\n' .. line
+            else
+                desc = line
+            end
             line = ""
             n = 0
         end
@@ -63,7 +65,7 @@ function makedesc(src)
         nl = nl + 1
     end
     
-    if nl < 11 then
+    if nl < lines then
         for n=1,lines - nl do
             desc = desc .. "\n"
         end
@@ -79,6 +81,10 @@ function makedesc(src)
     end
 
     descfile:close()
+end
+
+function pkgname()
+    return string.format("%s-%s-%s-%s.tgz", pkg.name, pkg.version, pkg.release, os.arch)
 end
 
 function create(src)
@@ -98,7 +104,7 @@ function create(src)
     makedesc(pkgdir)
     
     -- Create the package
-    checkcmd(OLDG.install.execute, string.format("tar czf %s/pkg.tar.gz -C %s/ --owner=root --group=root .", curdir, pkgdir))
+    checkcmd(OLDG.install.execute, string.format("cd %s && /sbin/makepkg -l y -c n %s/%s", pkgdir, curdir, pkgname()))
     
     -- Move install files back
     moverec(instfiles, src .. "/files")
@@ -117,7 +123,7 @@ function install(src)
 --         locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
 --     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("instpkg %s/pkg.tar.gz", curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("installpkg %s/%s", curdir, pkgname()))
 end
 
 function rollback(src)
