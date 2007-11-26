@@ -23,7 +23,7 @@ function getpkgpath()
 end
 
 function installedver()
-    local cmd = check(io.popen(string.format("pacman -Qi %s | grep Version 2>/dev/null", pkg.name, pkg.name)))
+    local cmd = check(io.popen(string.format("(pacman -Qi %s | grep Version) 2>/dev/null", pkg.name, pkg.name)))
     local ver = cmd:read("*a")
     cmd:close()
     
@@ -41,7 +41,7 @@ end
 
 function present()
     -- UNDONE: Works?
-    return os.execute("(pacman --version) >/dev/null 2>&1") == 2
+    return os.exitstatus(os.execute("(pacman --version) 2>&1 >/dev/null")) == 2
 end
 
 function genfilelist(src)
@@ -53,6 +53,10 @@ function genfilelist(src)
                          check(flist:write(d .. "\n"))
                       end)
     flist:close()
+end
+
+function pkgname()
+    return string.format("%s-%s-%s-%s.pkg.tar.gz", pkg.name, pkg.version, pkg.release, os.arch)
 end
 
 function create(src)
@@ -82,11 +86,12 @@ url = %s
 builddate = %s
 size = %d
 pkgdesc = %s
-]], pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.url, os.date(), size, pkg.summary)))
+arch = %s
+]], pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.url, os.date("%a %b %d %H:%M:%S %Y"), size, pkg.summary, os.arch)))
     pkginfo:close() -- important, otherwise data may still be buffered and not in the file
     
     -- Create the package
-    checkcmd(OLDG.install.execute, string.format("tar czf %s/pkg.tar.gz -C %s/ --owner=root --group=root .", curdir, pkgdir))
+    checkcmd(OLDG.install.execute, string.format("tar czf %s/%s -C %s/ --owner=root --group=root -T %s/.FILELIST .PKGINFO .FILELIST", curdir, pkgname(), pkgdir, pkgdir))
     
     -- Move install files back
     moverec(instfiles, src .. "/files")
@@ -105,7 +110,7 @@ function install(src)
 --         locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
 --     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("pacman --upgrade %s/pkg.tar.gz", curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("pacman --force --upgrade %s/%s", curdir, pkgname()))
 end
 
 function rollback(src)

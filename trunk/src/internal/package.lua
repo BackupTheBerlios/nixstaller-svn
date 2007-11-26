@@ -119,8 +119,8 @@ package.cpath = ""
 packagers = { "deb", "pacman", "slack", "rpm", "generic" }
 
 for _, p in ipairs(packagers) do
-    require p
-    pkg.packager = pkg.packager or (p.present() and p)
+    require(p)
+    pkg.packager = pkg.packager or (P[p].present() and P[p])
 end
 
 -- Check which package system user has
@@ -160,10 +160,14 @@ function install.generatepkg()
             if not version then
                 version = pkg.packager.installedver()
             
+                if not version and os.fileexists(getdestdir()) then
+                    version = "unknown"
+                end
+                
                 if version then
                     local msg
                     -- If type is string we don't know the version
-                    if type(version) == "string" or version == pkg.version then
+                    if version == "unknown" or version == pkg.version then
                         msg = "Package is already installed. Do you want to replace it?"
                     else
                         msg = string.format("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, pkg.version)

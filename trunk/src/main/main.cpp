@@ -417,6 +417,7 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaLog, "log", "os", this);
     NLua::RegisterFunction(LuaSetEnv, "setenv", "os", this);
     NLua::RegisterFunction(LuaExit, "exit", "os"); // Override
+    NLua::RegisterFunction(LuaExitStatus, "exitstatus", "os");
 
     NLua::RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
     NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
@@ -827,6 +828,7 @@ int CMain::LuaLog(lua_State *L)
         msg += luaL_checkstring(L, i);
     
     syslog(0, msg.c_str());
+    debugline("log: %s\n", msg.c_str());
     
     return 0;
 }
@@ -911,6 +913,13 @@ int CMain::LuaExit(lua_State *L)
 {
     throw Exceptions::CExUser();
     return 0; // Not reached
+}
+
+int CMain::LuaExitStatus(lua_State *L)
+{
+    int stat = luaL_checkint(L, 1);
+    lua_pushinteger(L, WEXITSTATUS(stat));
+    return 1;
 }
 
 int CMain::LuaPanic(lua_State *L)

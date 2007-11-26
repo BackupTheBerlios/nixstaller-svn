@@ -30,9 +30,9 @@ function missingtool()
 end
 
 function installedver()
-    if os.fileexists(getdestdir()) then
-        return "unknown" -- No way to get version (yet)
-    end
+--     if os.fileexists(getdestdir()) then
+--         return "unknown" -- No way to get version (yet)
+--     end
     return nil
 end
 

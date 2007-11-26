@@ -6,6 +6,7 @@
 - Fixed: GTK labels were using less width then possible
 - Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
 - screen:addscreenend() function
+- exitstatus() function
 
 
 0.2.2 --> 0.3

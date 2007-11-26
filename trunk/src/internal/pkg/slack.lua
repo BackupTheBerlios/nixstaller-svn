@@ -28,8 +28,8 @@ end
 
 function present()
     -- UNDONE: Works?
-    return true
---     return os.execute("(instpkg --version) >/dev/null 2>&1") == 2
+    return false
+--     return os.execute("(instpkg --version) >/dev/null 2>&1") == 0
 end
 
 function missingtool()
