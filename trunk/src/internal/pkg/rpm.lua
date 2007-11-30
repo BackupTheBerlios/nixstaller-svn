@@ -23,7 +23,7 @@ function getpkgpath()
 end
 
 function present()
-    return (os.execute("(rpm --version && rpmbuild --version) >/dev/null 2>&1") == 0)
+    return (os.execute("(rpm --version) >/dev/null 2>&1") == 0)
 end
 
 function missingtool()
@@ -72,7 +72,7 @@ URL: %s
 %s/bins
 ]], src, src, src, src, pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.summary, pkg.grouplist[pkg.group]["rpm"], pkg.license, pkg.url, pkg.description, src, src)))
     spec:close()
-    checkcmd(OLDG.install.execute, string.format("%s -bb %s/pkg.spec", rpmbuild, specdir))
+    checkcmd(OLDG.install.execute, string.format("rpmbuild -bb %s/pkg.spec", specdir))
 end
 
 function install(src)

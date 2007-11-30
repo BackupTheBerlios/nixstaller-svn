@@ -32,6 +32,7 @@ function installedver()
     end
     
     ver = string.gsub(ver, "Version.*: ", "")
+    ver = string.gsub(ver, "\n$", "")
     
     return (ver ~= "" and ver) or nil
 end
@@ -99,16 +100,13 @@ arch = %s
 end
 
 function install(src)
-    -- UNDONE
---     local locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
---     while locked == 0 do
---         if gui.choicebox("Another program seems to be using the DEB database. \
--- Please close all applications that may use the database (ie Synaptic) \
--- and hit continue.", "Continue", "Abort") == 2 then
---             os.exit(1)
---         end
---         locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
---     end
+    -- UNDONE: Pacman 3.1 seems to be able to place locks on other places?
+    while os.fileexists("/tmp/pacman.lck") do
+        if gui.choicebox("Another program seems to be using pacman. Please close this program and \
+hit continue.", "Continue", "Abort") == 2 then
+            os.exit(1)
+        end
+    end
     
     checkcmd(OLDG.install.executeasroot, string.format("pacman --force --upgrade %s/%s", curdir, pkgname()))
 end

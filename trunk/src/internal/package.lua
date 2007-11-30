@@ -87,6 +87,28 @@ exec %s/%s/%s
     os.chmod(filename, "0755")
 end
 
+function installxdgentries()
+    local function f(t, exec, cmd)
+        if not t then
+            return
+        end
+        
+        for n, e in pairs(t) do
+            local fname = string.format("%s/%s.desktop", curdir, n)
+            local f = check(io.open(fname, "w"))
+            check(f:write("[Desktop Entry]\n"))
+            for i, v in pairs(e) do
+                check(f:write(i .. "=" .. v .. "\n"))
+            end
+            f:close()
+            checkcmd(exec, string.format("%s/xdg-utils/%s install --novendor %s", curdir, cmd, fname))
+        end
+    end
+    
+    f(pkg.menuentries, instcmd(), "xdg-desktop-menu")
+    f(pkg.deskicons, install.execute, "xdg-desktop-icon")
+end
+
 function setpermissions(src)
     local dirlist = { "." }
     while #dirlist > 0 do
@@ -132,6 +154,41 @@ pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 OLDG.pkg.destdir = pkg.packager.getpkgpath() .. "/share"
 OLDG.pkg.bindir = pkg.packager.getpkgpath() .. "/bin"
 
+function pkg.gendesktopentry(b, i, c)
+    -- Defaults
+    t = {}
+    t.Name = cfg.appname
+    t.Type = "Application"
+    t.Encoding = "UTF-8"
+    t.Exec = pkg.bindir .. "/" .. string.gsub(b, "/*.+/", "")
+    t.Icon = i
+    t.Catagory = c
+    return t
+end
+
+function pkg.addmenuentry(n, t)
+    if not t.Exec then
+        error("Need to specify executable for desktopentry")
+--     elseif not t.Icon then
+--         error("Need to specify icon for desktopentry")
+    elseif not t.Catagory then
+        error("Need to specify catagory for desktopentry")
+    end
+    
+    pkg.menuentries = pkg.menuentries or {}
+    pkg.menuentries[n] = t
+end
+
+function pkg.adddesktopicon(n, t)
+    if not t.Exec then
+        error("Need to specify executable for desktopentry")
+--     elseif not t.Icon then
+--         error("Need to specify icon for desktopentry")
+    end
+    
+    pkg.deskicons = pkg.deskicons or {}
+    pkg.deskicons[n] = t
+end
 
 -- Called from Install()
 function install.generatepkg()
@@ -166,11 +223,12 @@ function install.generatepkg()
                 
                 if version then
                     local msg
+                    local myver = pkg.version .. "-" .. pkg.release
                     -- If type is string we don't know the version
-                    if version == "unknown" or version == pkg.version then
+                    if version == "unknown" or version == myver then
                         msg = "Package is already installed. Do you want to replace it?"
                     else
-                        msg = string.format("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, pkg.version)
+                        msg = string.format("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, myver)
                     end
                     
                     if msg and not gui.yesnobox(msg) then
@@ -181,6 +239,7 @@ function install.generatepkg()
             
             pkg.packager.create(dir)
             pkg.packager.install(dir)
+            installxdgentries()
         end
 
         if pkg.packager == generic then

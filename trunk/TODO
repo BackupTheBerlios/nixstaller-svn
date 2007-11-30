@@ -17,6 +17,7 @@ OVERALL
 - Sentries for format strings coming from Lua and are parsed via va_string (ie msgbox)
 - Prefix directory structure
 - Check about screen size
+- Check newlines from install.execute or textfields (atleast ncurses)
 
 
 PACKAGING
@@ -24,10 +25,11 @@ PACKAGING
 - More config options:
     * Package Changelog?
     * RPM: Vendor?, Icon?
-- RPM: Description formatting?
+- RPM: Description formatting? No autodeps
 - Permissions of installed package
-- Handle missing rpmbuild (message?)
 - Set right ENV in bin scripts, make KDE/Gnome etc optional?
+- pacman: Check for locks (done for this release?)
+- slackware: description works?
 
 
 TRANSLATIONS

@@ -351,6 +351,11 @@ function PrepareArchive()
     RequiredCopy(curdir .. "/src/internal/pkg/rpm.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/internal/pkg/slack.lua", confdir .. "/tmp")
     
+    -- XDG utils
+    os.mkdir(confdir .. "/tmp/xdg-utils")
+    RequiredCopy(curdir .. "/src/xdg-utils/xdg-desktop-icon", confdir .. "/tmp/xdg-utils")
+    RequiredCopy(curdir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
+    
     -- Language files
     for _, f in pairs(cfg.languages) do
         local langsrc = confdir .. "/lang/" .. f

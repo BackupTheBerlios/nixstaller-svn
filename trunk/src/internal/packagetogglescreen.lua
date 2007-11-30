@@ -32,7 +32,7 @@ function genpkg:verify()
     if (install.createpkg) then
         local mtool = pkg.packager.missingtool()
         if mtool then
-            while gui.choicebox(string.format("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 0 do
+            while gui.choicebox(string.format("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 1 do
                 mtool = pkg.packager.missingtool()
                 if not mtool then
                     break
