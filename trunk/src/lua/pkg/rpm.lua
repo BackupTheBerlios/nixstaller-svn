@@ -33,7 +33,7 @@ function missingtool()
 end
 
 function installedver()
-    if os.execute(string.format("rpm -q %s", pkg.name)) ~= 0 then
+    if os.execute(string.format("rpm -q %s >/dev/null 2>&1", pkg.name)) ~= 0 then
         return nil -- Not installed
     end
     local cmd = check(io.popen(string.format("rpm -q --queryformat '%%{VERSION}-%%{RELEASE}' %s", pkg.name)))
@@ -62,6 +62,7 @@ Summary: %s
 Group: %s
 License: %s
 URL: %s
+Autoreq: 0
 
 %%description
 %s
@@ -86,7 +87,7 @@ and hit continue.", "Continue", "Abort") == 2 then
         locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")
     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --replacepkgs -i %s/RPMS/%s/%s-%s-%s.%s.rpm", src, getdestdir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
+    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --replacepkgs -i %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
 end
 
 function rollback(src)

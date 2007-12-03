@@ -90,7 +90,7 @@ end
 function create(src)
     local pkgdir = curdir .. "/slack"
     pkgbindir = string.format("%s/%s", pkgdir, pkg.bindir)
-    instfiles = string.format("%s/%s/%s", pkgdir, pkg.destdir, pkg.name)
+    instfiles = string.format("%s/%s", pkgdir, pkg.getdatadir())
 
     check(os.mkdirrec(pkgdir))
 

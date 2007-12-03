@@ -46,7 +46,7 @@ do
             BIN=${LCPP}/$F
             if [ -f $BIN ]; then
                 haslibs $BIN || continue
-                $BIN -c "$CURDIR/src/internal/geninstall.lua" "$@" || exit 1
+                $BIN -c "$CURDIR/src/lua/geninstall.lua" "$@" || exit 1
                 exit 0
             fi
         done

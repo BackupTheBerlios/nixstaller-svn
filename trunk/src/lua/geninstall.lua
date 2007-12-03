@@ -241,7 +241,7 @@ function VerifyPackage()
     checkfield("summary")
     checkfield("group")
     
-    dofile(curdir .. "/src/internal/pkg/groups.lua")
+    dofile(curdir .. "/src/lua/pkg/groups.lua")
     if not pkg.grouplist[pkg.group] then
         ThrowError("Wrong package group specified.")
     end
@@ -335,16 +335,9 @@ function PrepareArchive()
     RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
     
     -- Lua scripts
-    RequiredCopy(curdir .. "/src/lua/finishscreen.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/lua/install.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/installscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/langscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/licensescreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/packagedirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/packagetogglescreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/selectdirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/welcomescreen.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/lua/package.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/package-public.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/lua/utils.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
@@ -352,7 +345,14 @@ function PrepareArchive()
     RequiredCopy(curdir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/lua/pkg/rpm.lua", confdir .. "/tmp")
     RequiredCopy(curdir .. "/src/lua/pkg/slack.lua", confdir .. "/tmp")
-    
+    RequiredCopy(curdir .. "/src/lua/screens/finishscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/screens/installscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/screens/langscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/screens/licensescreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/screens/packagedirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/screens/packagetogglescreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/screens/selectdirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(curdir .. "/src/lua/screens/welcomescreen.lua", confdir .. "/tmp")
     
     -- XDG utils
     os.mkdir(confdir .. "/tmp/xdg-utils")

@@ -25,7 +25,7 @@ PACKAGING
 - More config options:
     * Package Changelog?
     * RPM: Vendor?, Icon?
-- RPM: Description formatting? No autodeps
+- RPM: Description formatting?
 - Permissions of installed package
 - Set right ENV in bin scripts, make KDE/Gnome etc optional?
 - pacman: Check for locks (done for this release?)

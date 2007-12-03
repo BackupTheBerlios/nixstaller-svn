@@ -513,6 +513,10 @@ void CBaseInstall::InitLua()
     else
         SetDestDir("/");
     
+    // Initialize tables
+    NLua::CLuaTable("menuentries", "install").Close();
+    NLua::CLuaTable("deskicons", "install").Close();
+    
     NLua::LoadFile("config/config.lua");
     NLua::LoadFile("config/package.lua");
     NLua::LoadFile("install.lua");

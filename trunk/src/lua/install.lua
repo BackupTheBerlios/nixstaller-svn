@@ -40,6 +40,43 @@ do
     end
 end
 
+function install.newdesktopentry(b, i, c)
+    -- Defaults
+    t = {}
+    t.Name = cfg.appname
+    t.Type = "Application"
+    t.Encoding = "UTF-8"
+    t.Exec = b
+    t.Icon = i
+    t.Catagory = c
+    return t
+end
+
+function install.gendesktopentries(global)
+    local function f(t, exec, cmd)
+        if not t then
+            return
+        end
+        
+        for n, e in pairs(t) do
+            local fname = string.format("%s/%s.desktop", curdir, n)
+            local f = check(io.open(fname, "w"))
+            check(f:write("[Desktop Entry]\n"))
+            for i, v in pairs(e) do
+                check(f:write(i .. "=" .. v .. "\n"))
+            end
+            f:close()
+            checkcmd(exec, string.format("%s/xdg-utils/%s install --novendor %s", curdir, cmd, fname))
+        end
+    end
+    
+    f(install.menuentries, (global and install.executeasroot) or install.execute, "xdg-desktop-menu")
+    f(install.deskicons, install.execute, "xdg-desktop-icon")
+end
+
+
+-- Private functions
+-----------------------------
 
 -- 'secure' our environment by creating a new one. This is mainly for dofile not corrupting our own env.
 OLDG = getfenv(1)

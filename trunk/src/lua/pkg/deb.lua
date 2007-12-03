@@ -54,7 +54,7 @@ end
 function create(src)
     local debdir = curdir .. "/deb"
     debbin = string.format("%s/%s", debdir, pkg.bindir)
-    instfiles = string.format("%s/%s/%s", debdir, pkg.destdir, pkg.name)
+    instfiles = string.format("%s/%s", debdir, pkg.getdatadir())
 
     -- Set up deb work directory
     check(os.mkdirrec(debdir .. "/DEBIAN"))
