@@ -30,6 +30,7 @@ PACKAGING
 - Set right ENV in bin scripts, make KDE/Gnome etc optional?
 - pacman: Check for locks (done for this release?)
 - slackware: description works?
+- Check pkg.createpkg/install.createpkg (need a new bool?)
 
 
 TRANSLATIONS

@@ -33,6 +33,10 @@ function installedver()
     return nil
 end
 
+function canxdg()
+    return true
+end
+
 function create(src)
 end
 

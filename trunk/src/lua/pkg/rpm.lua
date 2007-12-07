@@ -42,6 +42,10 @@ function installedver()
     return ver
 end
 
+function canxdg()
+    return true
+end
+
 function create(src)
     local specdir = src .. "/SPECS"
     check(os.mkdir(specdir))

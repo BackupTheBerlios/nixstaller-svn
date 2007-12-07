@@ -356,7 +356,7 @@ function PrepareArchive()
     
     -- XDG utils
     os.mkdir(confdir .. "/tmp/xdg-utils")
-    RequiredCopy(curdir .. "/src/xdg-utils/xdg-desktop-icon", confdir .. "/tmp/xdg-utils")
+--     RequiredCopy(curdir .. "/src/xdg-utils/xdg-desktop-icon", confdir .. "/tmp/xdg-utils")
     RequiredCopy(curdir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
     
     -- Language files

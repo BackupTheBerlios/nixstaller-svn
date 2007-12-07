@@ -58,13 +58,6 @@ function instcmd()
     return (needroot() and install.executeasroot) or install.execute
 end
 
--- -- 'secure' our environment by creating a new one. This is mainly for dofile not corrupting our own env.
--- OLDG = getfenv(1)
--- local P = {}
--- setmetatable(P, {__index = _G})
--- setfenv(1, P)
-
-
 function genscript(file, dir)
     -- UNDONE: Check what other vars should be set (GTK, Qt, KDE etc)
 
@@ -85,10 +78,11 @@ end
 
 --  UNDONE
 function setpermissions(src)
+    local prefix = src .. "/files"
     local dirlist = { "." }
     while #dirlist > 0 do
         local dir = table.remove(dirlist) -- Pop
-        local dirpath = string.format("%s/files/%s", src, dir)
+        local dirpath = prefix .. "/dir"
         for f in io.dir(dirpath) do
             local path = string.format("%s/%s", dirpath, f)
             if os.isdir(path) then
@@ -103,8 +97,13 @@ function setpermissions(src)
     -- Binaries
     if pkg.bins then
         for _, b in ipairs(pkg.bins) do
-            os.chmod(b, "755")
+            os.chmod(prefix .. "/" .. b, "755")
         end
+    end
+    
+    -- XDG utilities
+    for f in io.dir(prefix .. "/xdg-utils") do
+        os.chmod(prefix .. "/xdg-utils/" .. f, "755")
     end
 end
 

@@ -51,6 +51,36 @@ end
 function missingtool()
 end
 
+function canxdg()
+    return true
+end
+
+function genxdgscript(dest)
+    if not OLDG.install.menuentries then
+        return
+    end
+    
+    local fname = string.format("%s/prerm", dest)
+    local f = check(io.open(fname, "w"))
+    
+    check(f:write(string.format([[
+#!/bin/sh
+EXEC=""
+(xdg-desktop-menu --version >/dev/null 2>&1) && EXEC="xdg-desktop-menu"
+[ -z $EXEC ] && ("%s/xdg-utils/xdg-desktop-menu" --version 2>&1 >/dev/null) && EXEC="%s/xdg-utils/xdg-desktop-menu"
+if [ -z "$EXEC" ]; then
+    exit 0
+fi
+]], pkg.getdatadir(), pkg.getdatadir(), pkg.getdatadir())))
+    
+    for n, _ in pairs(OLDG.install.menuentries) do
+        check(f:write(string.format("$EXEC uninstall --novendor %s.desktop\n", n)))
+    end
+    
+    f:close()
+    os.chmod(fname, "555")
+end
+
 function create(src)
     local debdir = curdir .. "/deb"
     debbin = string.format("%s/%s", debdir, pkg.bindir)
@@ -82,6 +112,8 @@ Description: %s
 ]], pkg.name, pkg.version, pkg.release, pkg.maintainer, size, pkg.grouplist[pkg.group]["deb"], pkg.summary, pkgdesc())))
     control:close() -- important, otherwise data may still be buffered and not in the file
 
+    genxdgscript(debdir .. "/DEBIAN")
+    
     -- Fix permissions
     checkcmd(OLDG.install.executeasroot, string.format("chown -R root %s/ %s", debbin, instfiles))
 

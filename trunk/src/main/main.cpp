@@ -757,7 +757,7 @@ int CMain::LuaCHMod(lua_State *L)
     if (chmod(file, fmode) != 0)
     {
         lua_pushnil(L);
-        lua_pushfstring(L, "Could not chmod file %s: %s\n", file);
+        lua_pushfstring(L, "Could not chmod file %s: %s\n", file, strerror(errno));
         return 2;
     }
     

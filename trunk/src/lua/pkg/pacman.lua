@@ -41,7 +41,6 @@ function missingtool()
 end
 
 function present()
-    -- UNDONE: Works?
     return os.exitstatus(os.execute("(pacman --version) 2>&1 >/dev/null")) == 2
 end
 
@@ -58,6 +57,10 @@ end
 
 function pkgname()
     return string.format("%s-%s-%s-%s.pkg.tar.gz", pkg.name, pkg.version, pkg.release, os.arch)
+end
+
+function canxdg()
+    return false
 end
 
 function create(src)

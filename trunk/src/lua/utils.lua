@@ -55,3 +55,40 @@ function pkgsize(src)
     end)
     return ret
 end
+
+function xdgmenudirs(global)
+    local path
+    
+    if global then
+        path = os.getenv("XDG_DATA_DIRS")
+        if not path or #path == 0 then
+            path = "/usr/local/share/:/usr/share/"
+        end
+    else
+        path = os.getenv("XDG_DATA_HOME")
+        if not path or #path == 0 then
+            path = os.getenv("HOME") .. "/.local/share"
+        end
+    end
+    
+    for d in string.gmatch(path, "[^:]+") do
+        if os.fileexists(d) then
+            return d
+        end
+    end
+end
+
+function xdgentryfname(f)
+    return string.format("%s/%s.desktop", curdir, f)
+end
+
+function copyxdgentries(prefix)
+    local dest = prefix .. "/xdg-utils"
+    os.mkdirrec(dest)
+    os.copy(curdir .. "/xdg-utils/xdg-desktop-menu", dest)
+end
+
+function instxdgentries(global, fname)
+    local cmd = (global and install.executeasroot) or install.execute
+    checkcmd(cmd, string.format("%s/xdg-utils/xdg-desktop-menu install --novendor %s", curdir, fname))
+end

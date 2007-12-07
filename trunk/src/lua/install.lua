@@ -48,30 +48,44 @@ function install.newdesktopentry(b, i, c)
     t.Encoding = "UTF-8"
     t.Exec = b
     t.Icon = i
-    t.Catagory = c
+    t.Categories = c
     return t
 end
 
 function install.gendesktopentries(global)
-    local function f(t, exec, cmd)
-        if not t then
-            return
-        end
-        
-        for n, e in pairs(t) do
-            local fname = string.format("%s/%s.desktop", curdir, n)
-            local f = check(io.open(fname, "w"))
-            check(f:write("[Desktop Entry]\n"))
-            for i, v in pairs(e) do
-                check(f:write(i .. "=" .. v .. "\n"))
-            end
-            f:close()
-            checkcmd(exec, string.format("%s/xdg-utils/%s install --novendor %s", curdir, cmd, fname))
-        end
+    if not install.menuentries then
+        return
     end
     
-    f(install.menuentries, (global and install.executeasroot) or install.execute, "xdg-desktop-menu")
-    f(install.deskicons, install.execute, "xdg-desktop-icon")
+    global = global or install.createpkg -- Always do global install incase package is created
+    local usexdg = not install.createpkg or pkg.packager.canxdg()
+    local xdgdir = xdgmenudirs(global)
+    
+    for n, e in pairs(install.menuentries) do
+        local fname = xdgentryfname(n)
+        local f = check(io.open(fname, "w"))
+        check(f:write("[Desktop Entry]\n"))
+        for i, v in pairs(e) do
+            check(f:write(i .. "=" .. v .. "\n"))
+        end
+        f:close()
+        
+        if usexdg then
+            if not install.createpkg then
+                -- When creating packages, xdg entries need to be installed after the package is installed.
+                -- This is because when a package is replaced it may cause uninstallation of the entries.
+                instxdgentries(global, fname)
+            end
+        else
+            if not install.createpkg and xdgdir then
+                if os.writeperm(d) then
+                    os.copy(fname, xdgdir)
+                else
+                    install.executeasroot(string.format("cp %s %s/", fname, xdgdir))
+                end
+            end
+        end
+    end
 end
 
 

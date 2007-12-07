@@ -7,6 +7,7 @@
 - Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
 - screen:addscreenend() function
 - exitstatus() function
+- Fixed: os.chmod crashes when file doesn't exist
 
 
 0.2.2 --> 0.3

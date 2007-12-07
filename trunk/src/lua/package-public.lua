@@ -40,6 +40,8 @@ function install.generatepkg()
             end
         end
     
+        copyxdgentries(dir .. "/files")
+
         install.setstatus("Installing package")
         
         setpermissions(dir) -- UNDONE
@@ -87,6 +89,14 @@ function install.generatepkg()
                 else
                     error((type(msg2) == "table" and msg2[1]) or msg2, 0) -- Rethrow
                 end
+            end
+        end
+        
+        if pkg.packager.canxdg() then
+            -- This should be done after the package is installed, because if a package is replaced
+            -- it may uninstall any entries.
+            for n, _ in pairs(install.menuentries) do
+                instxdgentries(true, xdgentryfname(n))
             end
         end
     end)

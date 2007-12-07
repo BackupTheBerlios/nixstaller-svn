@@ -87,6 +87,10 @@ function pkgname()
     return string.format("%s-%s-%s-%s.tgz", pkg.name, pkg.version, pkg.release, os.arch)
 end
 
+function canxdg()
+    return false
+end
+
 function create(src)
     local pkgdir = curdir .. "/slack"
     pkgbindir = string.format("%s/%s", pkgdir, pkg.bindir)
