@@ -60,22 +60,17 @@ function genxdgscript(dest)
         return
     end
     
+    local script = xdguninstscript()
+    
+    if not script then
+        return
+    end
+    
     local fname = string.format("%s/prerm", dest)
     local f = check(io.open(fname, "w"))
     
-    check(f:write(string.format([[
-#!/bin/sh
-EXEC=""
-(xdg-desktop-menu --version >/dev/null 2>&1) && EXEC="xdg-desktop-menu"
-[ -z $EXEC ] && ("%s/xdg-utils/xdg-desktop-menu" --version 2>&1 >/dev/null) && EXEC="%s/xdg-utils/xdg-desktop-menu"
-if [ -z "$EXEC" ]; then
-    exit 0
-fi
-]], pkg.getdatadir(), pkg.getdatadir(), pkg.getdatadir())))
-    
-    for n, _ in pairs(OLDG.install.menuentries) do
-        check(f:write(string.format("$EXEC uninstall --novendor %s.desktop\n", n)))
-    end
+    check(f:write("#!/bin/sh\n"))
+    check(f:write(script))
     
     f:close()
     os.chmod(fname, "555")

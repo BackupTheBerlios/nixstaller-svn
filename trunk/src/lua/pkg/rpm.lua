@@ -76,6 +76,13 @@ Autoreq: 0
 %s/files
 %s/bins
 ]], src, src, src, src, pkg.name, pkg.version, pkg.release, pkg.maintainer, pkg.summary, pkg.grouplist[pkg.group]["rpm"], pkg.license, pkg.url, pkg.description, src, src)))
+
+    local script = xdguninstscript()
+    if script then
+        check(spec:write("\n%preun\n"))
+        check(spec:write(script))
+    end
+    
     spec:close()
     checkcmd(OLDG.install.execute, string.format("rpmbuild -bb %s/pkg.spec", specdir))
 end
@@ -91,7 +98,7 @@ and hit continue.", "Continue", "Abort") == 2 then
         locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")
     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --replacepkgs -i %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
+    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --force -i %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
 end
 
 function rollback(src)

@@ -42,5 +42,5 @@ end
 
 function install(src)
     -- UNDONE: Check for conflicting files/directories
-    checkcmd(instcmd(), string.format("mkdir -p %s/ %s/ && cp -R %s/files/* %s/ && cp -R %s/bins/* %s", getdestdir(), pkg.bindir, src, getdestdir(), src, pkg.bindir))
+    checkcmd(instcmd(), string.format("mkdir -p %s/ %s/ && cp -R %s/files/* %s/ && cp -R %s/bins/* %s", pkg.getdatadir(), pkg.bindir, src, pkg.getdatadir(), src, pkg.bindir))
 end
