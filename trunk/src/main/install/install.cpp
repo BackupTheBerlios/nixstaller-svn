@@ -68,7 +68,7 @@ void CBaseInstall::Init(int argc, char **argv)
     
     CMain::Init(argc, argv); // Init main, will also read config files
     
-    // Obtain install variabeles from lua
+    // Obtain install variables from lua
     NLua::LuaGet(m_InstallInfo.program_name, "appname", "cfg");
     NLua::LuaGet(m_InstallInfo.intropicname, "intropic", "cfg");
     
@@ -283,7 +283,7 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
     else
         setenv("PATH", GetDefaultPath(), 1);
     
-    AddOutput(CreateText("\nExecute: %s\n\n", cmd));
+    AddOutput(CreateText("\n=============================\nExecute: %s\n\n", cmd));
     
     CPipedCMD pipe(command);
     std::string line;
@@ -311,6 +311,7 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
     if (!line.empty())
         AddOutput(line.c_str());
             
+    AddOutput("=============================\n");
     return pipe.Close(required); // By calling Close() explicity its able to throw exceptions
 }
 
@@ -329,7 +330,7 @@ int CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const cha
     m_SUHandler.SetPath(path);
     m_SUHandler.SetCommand(cmd);
     
-    AddOutput(CreateText("\nExecute: %s\n\n", cmd));
+    AddOutput(CreateText("\n=============================\nExecute: %s\n\n", cmd));
     
     if (!m_SUHandler.ExecuteCommand(m_szPassword))
     {
@@ -340,6 +341,9 @@ int CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const cha
             throw Exceptions::CExCommand(cmd);
         }
     }
+    
+    AddOutput("=============================\n");
+    
     return m_SUHandler.Ret();
 }
 
@@ -513,9 +517,9 @@ void CBaseInstall::InitLua()
     else
         SetDestDir("/");
     
-    // Initialize tables
+    // Initialize variables
     NLua::CLuaTable("menuentries", "install").Close();
-    NLua::CLuaTable("deskicons", "install").Close();
+    NLua::LuaSet(false, "createpkg", "install");
     
     NLua::LoadFile("config/config.lua");
     NLua::LoadFile("config/package.lua");

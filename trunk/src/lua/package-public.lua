@@ -26,6 +26,10 @@ end
 
 function install.generatepkg()
     if not install.createpkg then
+        error("Called generatepkg when install.createpkg is false.")
+    end
+    
+    if not pkg.register then
         pkg.packager = generic
     end
 

@@ -49,7 +49,7 @@ function needroot()
             return ret
         end
         
-        needsroot = (install.createpkg or not checkdirs(pkg.destdir) or not checkdirs(pkg.bindir))
+        needsroot = (pkg.register or not checkdirs(pkg.destdir) or not checkdirs(pkg.bindir))
     end
     return needsroot
 end

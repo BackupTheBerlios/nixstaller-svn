@@ -24,12 +24,12 @@ function screen:canactivate()
 end
 
 genpkg = screen:addcheckbox("By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.\n\nNote: When enabled, you need to enter the root password later.\n\nWhen unsure, just leave it enabled.", {"Register software"})
-genpkg:set(1, install.createpkg)
+genpkg:set(1, pkg.register)
 
 function genpkg:verify()
-    install.createpkg = genpkg:get(1)
+    pkg.register = genpkg:get(1)
     
-    if (install.createpkg) then
+    if (pkg.register) then
         local mtool = pkg.packager.missingtool()
         if mtool then
             while gui.choicebox(string.format("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 1 do
@@ -39,7 +39,7 @@ function genpkg:verify()
                 end
             end
         end
-        install.createpkg = not pkg.packager.missingtool()
+        pkg.register = not pkg.packager.missingtool()
     end
 end
 

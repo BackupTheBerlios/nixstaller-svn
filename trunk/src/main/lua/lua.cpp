@@ -274,6 +274,18 @@ void LuaSet(const std::string &val, const char *var, const char *type, void *prv
     SetClassVar(var, type, prvdata);
 }
 
+void LuaSet(const char *val, const char *var, const char *tab)
+{
+    lua_pushstring(LuaState, val);
+    SetGlobalVar(var, tab);
+}
+
+void LuaSet(const char *val, const char *var, const char *type, void *prvdata)
+{
+    lua_pushstring(LuaState, val);
+    SetClassVar(var, type, prvdata);
+}
+
 void LuaSet(int val, const char *var, const char *tab)
 {
     lua_pushinteger(LuaState, val);
@@ -283,6 +295,18 @@ void LuaSet(int val, const char *var, const char *tab)
 void LuaSet(int val, const char *var, const char *type, void *prvdata)
 {
     lua_pushinteger(LuaState, val);
+    SetClassVar(var, type, prvdata);
+}
+
+void LuaSet(bool val, const char *var, const char *tab)
+{
+    lua_pushboolean(LuaState, val);
+    SetGlobalVar(var, tab);
+}
+
+void LuaSet(bool val, const char *var, const char *type, void *prvdata)
+{
+    lua_pushboolean(LuaState, val);
     SetClassVar(var, type, prvdata);
 }
 

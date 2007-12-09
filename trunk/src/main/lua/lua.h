@@ -57,8 +57,12 @@ bool LuaGet(int &out, const char *var, const char *type, void *prvdata);
 
 void LuaSet(const std::string &val, const char *var, const char *tab=NULL);
 void LuaSet(const std::string &val, const char *var, const char *type, void *prvdata);
+void LuaSet(const char *val, const char *var, const char *tab=NULL);
+void LuaSet(const char *val, const char *var, const char *type, void *prvdata);
 void LuaSet(int val, const char *var, const char *tab=NULL);
 void LuaSet(int val, const char *var, const char *type, void *prvdata);
+void LuaSet(bool val, const char *var, const char *tab=NULL);
+void LuaSet(bool val, const char *var, const char *type, void *prvdata);
 
 int MakeReference(int index, int tab=LUA_REGISTRYINDEX);
 void Unreference(int ref, int tab=LUA_REGISTRYINDEX);

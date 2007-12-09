@@ -17,11 +17,9 @@ OVERALL
 - Sentries for format strings coming from Lua and are parsed via va_string (ie msgbox)
 - Prefix directory structure
 - Check about screen size
-- Check newlines from install.execute or textfields (atleast ncurses)
 
 
 PACKAGING
-- XDG support
 - More config options:
     * Package Changelog?
     * RPM: Vendor?, Icon?
@@ -30,7 +28,6 @@ PACKAGING
 - Set right ENV in bin scripts, make KDE/Gnome etc optional?
 - pacman: Check for locks (done for this release?)
 - slackware: description works?
-- Check pkg.createpkg/install.createpkg (need a new bool?)
 
 
 TRANSLATIONS

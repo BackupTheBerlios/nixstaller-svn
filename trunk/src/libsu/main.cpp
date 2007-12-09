@@ -314,7 +314,7 @@ int CLibSU::WaitForChild()
                 if (pos != std::string::npos)
                 {
                     if (m_pOutputFunc)
-                        (m_pOutputFunc)(line.substr(0, pos).c_str(), m_pCustomOutputData);
+                        (m_pOutputFunc)(line.substr(0, pos+1).c_str(), m_pCustomOutputData);
                     
                     line.erase(0, pos+1);
                 }

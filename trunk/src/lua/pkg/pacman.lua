@@ -76,6 +76,9 @@ function create(src)
     moverec(src .. "/files", instfiles)
     moverec(src .. "/bins", pkgbindir)
 
+    -- Copy XDG utilities and desktop files
+    copyxdgstuff(instfiles, pkgdir)
+
     genfilelist(pkgdir)
 
     local size = pkgsize(instfiles) + pkgsize(pkgbindir)
@@ -95,7 +98,7 @@ arch = %s
     pkginfo:close() -- important, otherwise data may still be buffered and not in the file
     
     -- Create the package
-    checkcmd(OLDG.install.execute, string.format("tar czf %s/%s -C %s/ --owner=root --group=root -T %s/.FILELIST .PKGINFO .FILELIST", curdir, pkgname(), pkgdir, pkgdir))
+    checkcmd(OLDG.install.execute, string.format("cd %s && tar czf %s/%s --owner=root --group=root * .FILELIST .PKGINFO", pkgdir, curdir, pkgname()))
     
     -- Move install files back
     moverec(instfiles, src .. "/files")

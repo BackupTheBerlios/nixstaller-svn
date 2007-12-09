@@ -57,10 +57,6 @@ function install.gendesktopentries(global)
         return
     end
     
-    global = global or install.createpkg -- Always do global install incase package is created
-    local usexdg = not install.createpkg or pkg.packager.canxdg()
-    local xdgdir = xdgmenudirs(global)
-    
     for n, e in pairs(install.menuentries) do
         local fname = xdgentryfname(n)
         local f = check(io.open(fname, "w"))
@@ -70,20 +66,8 @@ function install.gendesktopentries(global)
         end
         f:close()
         
-        if usexdg then
-            if not install.createpkg then
-                -- When creating packages, xdg entries need to be installed after the package is installed.
-                -- This is because when a package is replaced it may cause uninstallation of the entries.
-                instxdgentries(global, fname)
-            end
-        else
-            if not install.createpkg and xdgdir then
-                if os.writeperm(d) then
-                    os.copy(fname, xdgdir)
-                else
-                    install.executeasroot(string.format("cp %s %s/", fname, xdgdir))
-                end
-            end
+        if not install.createpkg then
+            instxdgentries(global, fname) -- Package installations do it in generatepkg()
         end
     end
 end
@@ -97,10 +81,6 @@ OLDG = getfenv(1)
 local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
-
-function LuaInit()
-    OLDG.install.createpkg = true
-end
 
 function GenerateDefaultScreens()
     package.path = "?.lua"
@@ -144,7 +124,6 @@ function AddScreens()
     end
 end
 
-LuaInit()
 GenerateDefaultScreens()
 LoadConfig()
 AddScreens()

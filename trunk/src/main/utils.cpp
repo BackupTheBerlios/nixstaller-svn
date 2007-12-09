@@ -657,6 +657,7 @@ int CPipedCMD::Close(bool canthrow)
         if (!WIFEXITED(stat) || (WEXITSTATUS(stat) == 127))
             throw Exceptions::CExCommand(MakeCString(m_szCommand));
     }
+    
     return WEXITSTATUS(stat);
 }
 

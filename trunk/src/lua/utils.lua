@@ -89,7 +89,7 @@ end
 
 function instxdgentries(global, fname)
     local cmd = (global and install.executeasroot) or install.execute
-    checkcmd(cmd, string.format("%s/xdg-utils/xdg-desktop-menu install --novendor %s", curdir, fname))
+    cmd(string.format("%s/xdg-utils/xdg-desktop-menu install --novendor %s", curdir, fname), false)
 end
 
 function xdguninstscript()
