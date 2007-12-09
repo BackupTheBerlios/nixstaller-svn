@@ -82,12 +82,6 @@ function xdgentryfname(f)
     return string.format("%s/%s.desktop", curdir, f)
 end
 
-function copyxdgentries(prefix)
-    local dest = prefix .. "/xdg-utils"
-    os.mkdirrec(dest)
-    os.copy(curdir .. "/xdg-utils/xdg-desktop-menu", dest)
-end
-
 function instxdgentries(global, fname)
     local cmd = (global and install.executeasroot) or install.execute
     checkcmd(cmd, string.format("%s/xdg-utils/xdg-desktop-menu install --novendor %s", curdir, fname))

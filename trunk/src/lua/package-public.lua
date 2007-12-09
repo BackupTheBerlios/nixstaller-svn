@@ -40,8 +40,6 @@ function install.generatepkg()
             end
         end
     
-        copyxdgentries(dir .. "/files") -- UNDONE?
-
         install.setstatus("Installing package")
         
         setpermissions(dir) -- UNDONE

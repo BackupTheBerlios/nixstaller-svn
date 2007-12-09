@@ -107,6 +107,9 @@ function create(src)
     -- Make description
     makedesc(pkgdir)
     
+    -- Copy XDG utilities and desktop files
+    copyxdgentries(instfiles, pkgdir)
+
     -- Create the package
     checkcmd(OLDG.install.execute, string.format("cd %s && /sbin/makepkg -l y -c n %s/%s", pkgdir, curdir, pkgname()))
     

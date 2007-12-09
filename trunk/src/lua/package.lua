@@ -107,6 +107,22 @@ function setpermissions(src)
     end
 end
 
+function copyxdgstuff(xdgdir, deskdir)
+    -- XDG utilities
+    os.mkdirrec(xdgdir)
+    os.copy(curdir .. "/xdg-utils/xdg-desktop-menu", xdgdir)
+    
+    -- Desktop entries
+    local dir = xdgmenudirs(true) -- Works only for global installations atm
+    if dir then
+        local dest = deskdir .. "/" .. dir
+        os.mkdirrec(deskdir)
+        for n in pairs(install.menuentries) do
+            os.copy(xdgentryfname(n), dest)
+        end
+    end
+end
+
 dofile("groups.lua")
 
 package.path = "?.lua"
