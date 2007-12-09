@@ -116,7 +116,7 @@ function copyxdgstuff(xdgdir, deskdir)
     local dir = xdgmenudirs(true) -- Works only for global installations atm
     if dir then
         local dest = deskdir .. "/" .. dir
-        os.mkdirrec(deskdir)
+        os.mkdirrec(dest)
         for n in pairs(install.menuentries) do
             os.copy(xdgentryfname(n), dest)
         end

@@ -71,9 +71,14 @@ function xdgmenudirs(global)
         end
     end
     
+    if path then
+        path = path .. "/applications"
+    end
+    
     for d in string.gmatch(path, "[^:]+") do
-        if os.fileexists(d) then
-            return d
+        local ret = d .. "/applications"
+        if os.fileexists(ret) then
+            return ret
         end
     end
 end
