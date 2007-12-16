@@ -41,7 +41,7 @@ function missingtool()
 end
 
 function present()
-    return os.exitstatus(os.execute("(pacman --version) 2>&1 >/dev/null")) == 2
+    return os.exitstatus(os.execute("(pacman --version) >/dev/null 2>&1")) == 2
 end
 
 function genfilelist(src)

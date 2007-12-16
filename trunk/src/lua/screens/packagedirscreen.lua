@@ -19,7 +19,7 @@ module (..., package.seeall)
 
 screen = install.newscreen("Software destination") -- UNDONE? (title)
 
-pkgdest = screen:adddirselector("In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.\n\nNote: if you don't have write access to this directory you need to enter the root password later.\n\nIf unsure, just leave it as it is.", pkg.destdir)
+pkgdest = screen:adddirselector("In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.\n\nNote: if you don't have write access to this directory you need to enter the root password later.\n\nIf unsure, just leave it as it is.")
 
 function pkgdest:verify()
     if not pkgdest:get() then
@@ -33,7 +33,7 @@ end
 
 screen:addscreenend()
 
-bindest = screen:adddirselector("In this field you can select the destination directory for the executables. The files are directly installed to this directory.\n\nNote: if you don't have write access to this directory you need to enter the root password later.\n\nWhen unsure, just leave it as it is.", pkg.bindir)
+bindest = screen:adddirselector("In this field you can select the destination directory for the executables. The files are directly installed to this directory.\n\nNote: if you don't have write access to this directory you need to enter the root password later.\n\nWhen unsure, just leave it as it is.")
 
 function bindest:verify()
     if not bindest:get() then
@@ -42,6 +42,11 @@ function bindest:verify()
     end
     pkg.bindir = bindest:get()
     return true
+end
+
+function screen:activate()
+    pkgdest:set(pkg.destdir)
+    bindest:set(pkg.bindir)
 end
 
 return screen

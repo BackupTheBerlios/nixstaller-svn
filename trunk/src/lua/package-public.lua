@@ -15,6 +15,13 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
+function pkg.addbinenv(var, val, bin)
+    bin = bin or "All"
+    pkg.binenv = pkg.binenv or {}
+    pkg.binenv[var] = pkg.binenv[var] or {}
+    pkg.binenv[var][bin] = val
+end
+    
 
 function pkg.getdatadir(f)
     return pkg.destdir .. "/" .. pkg.name .. ((f and ("/" .. f)) or "")
@@ -98,7 +105,7 @@ function install.generatepkg()
             -- This should be done after the package is installed, because if a package is replaced
             -- it may uninstall any entries.
             for n, _ in pairs(install.menuentries) do
-                instxdgentries(true, xdgentryfname(n))
+                instxdgentries(needroot(), xdgentryfname(n))
             end
         end
     end)

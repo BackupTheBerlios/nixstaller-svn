@@ -178,14 +178,21 @@ function PackDirectory(dir, file)
         listopt = "-I"
     end
         
-    os.execute(string.format('tar cf "%s.tmp" %s "%s"', file, listopt, tarlistfname))
+    if os.execute(string.format('tar cf "%s.tmp" %s "%s"', file, listopt, tarlistfname)) ~= 0 then
+        ThrowError("Failed to create tar archive")
+    end
     
+    local stat
     if cfg.archivetype == "gzip" then
-        os.execute(string.format('gzip -c9 "%s.tmp" > "%s"', file, file))
+        stat = os.execute(string.format('gzip -c9 "%s.tmp" > "%s"', file, file))
     elseif cfg.archivetype == "bzip2" then
-        os.execute(string.format('cat "%s.tmp" | bzip2 -9 > "%s"', file, file)) -- Use cat so that bzip won't append ".bz2" to filename
+        stat = os.execute(string.format('cat "%s.tmp" | bzip2 -9 > "%s"', file, file)) -- Use cat so that bzip won't append ".bz2" to filename
     elseif cfg.archivetype == "lzma" then
-        os.execute(string.format('"%s" e "%s.tmp" "%s" 2>/dev/null', LZMABin, file, file))
+        stat = os.execute(string.format('"%s" e "%s.tmp" "%s" 2>/dev/null', LZMABin, file, file))
+    end
+    
+    if stat ~= 0 then
+        ThrowError("Failed to compress tar archive.")
     end
     
     os.remove(tarlistfname)
@@ -226,6 +233,8 @@ function VerifyPackage()
         return
     end
     
+    function pkg.addbinenv() end
+    
     dofile(confdir .. "/package.lua")
     
     local function checkfield(s)
@@ -241,7 +250,7 @@ function VerifyPackage()
     checkfield("summary")
     checkfield("group")
     
-    dofile(curdir .. "/src/lua/pkg/groups.lua")
+    dofile(maindir .. "/src/lua/pkg/groups.lua")
     if not pkg.grouplist[pkg.group] then
         ThrowError("Wrong package group specified.")
     end
@@ -263,7 +272,7 @@ function Init()
     VerifyPackage()
     
     -- Find a LZMA and edelta bin which we can use
-    local basebindir = string.format("%s/bin/%s/%s", curdir, os.osname, os.arch)
+    local basebindir = string.format("%s/bin/%s/%s", maindir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
                         if os.fileexists(bin) then
@@ -331,33 +340,33 @@ function PrepareArchive()
     os.copy(confdir .. "/finish", destdir)
 
     -- Some internal stuff
-    RequiredCopy(curdir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/internal/about", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/internal/about", confdir .. "/tmp")
     
     -- Lua scripts
-    RequiredCopy(curdir .. "/src/lua/install.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/package.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/package-public.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/utils.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/pkg/groups.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/pkg/rpm.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/pkg/slack.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/finishscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/installscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/langscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/licensescreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/packagedirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/packagetogglescreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/selectdirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(curdir .. "/src/lua/screens/welcomescreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/install.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/package.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/package-public.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/utils.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/pkg/groups.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/pkg/rpm.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/pkg/slack.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/finishscreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/installscreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/langscreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/licensescreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/packagedirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/packagetogglescreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/selectdirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/welcomescreen.lua", confdir .. "/tmp")
     
     -- XDG utils
     os.mkdir(confdir .. "/tmp/xdg-utils")
---     RequiredCopy(curdir .. "/src/xdg-utils/xdg-desktop-icon", confdir .. "/tmp/xdg-utils")
-    RequiredCopy(curdir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
+--     RequiredCopy(maindir .. "/src/xdg-utils/xdg-desktop-icon", confdir .. "/tmp/xdg-utils")
+    RequiredCopy(maindir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
     
     -- Language files
     for _, f in pairs(cfg.languages) do
@@ -381,7 +390,7 @@ function PrepareArchive()
     -- Copy all specified frontends for every given OS/ARCH and every available libc/libstdc++ version
     for _, OS in pairs(cfg.targetos) do
         for _, ARCH in pairs(cfg.targetarch) do
-            local osdir = string.format("%s/bin/%s/%s", curdir, OS, ARCH)
+            local osdir = string.format("%s/bin/%s/%s", maindir, OS, ARCH)
             if (not os.fileexists(osdir)) then
                 print(string.format("Warning: No frontends for %s/%s", OS, ARCH))
             else
@@ -480,7 +489,7 @@ function PrepareArchive()
         end
     else
         -- Default logo
-        RequiredCopy(curdir .. "/src/img/installer.png", confdir .. "/tmp")
+        RequiredCopy(maindir .. "/src/img/installer.png", confdir .. "/tmp")
     end
     
     -- Internal config file(only stores archive type for now)
@@ -533,8 +542,11 @@ end
 
 function CreateInstaller()
     print("Generating installer...")
-    os.execute(string.format("\"%s/makeself.sh\" --gzip \"%s/tmp\" \"%s/%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1",
-                             curdir, confdir, curdir, outname))
+    if (not string.find(outname, "^/")) then
+        outname = curdir .. "/" .. outname
+    end
+    os.execute(string.format("\"%s/makeself.sh\" --gzip \"%s/tmp\" \"%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1",
+                             maindir, confdir, outname))
 end
 
 Clean()

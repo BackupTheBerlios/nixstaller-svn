@@ -522,8 +522,8 @@ void CBaseInstall::InitLua()
     NLua::LuaSet(false, "createpkg", "install");
     
     NLua::LoadFile("config/config.lua");
-    NLua::LoadFile("config/package.lua");
     NLua::LoadFile("install.lua");
+    NLua::LoadFile("config/package.lua");
     
     NLua::CLuaTable table("languages", "cfg");
     

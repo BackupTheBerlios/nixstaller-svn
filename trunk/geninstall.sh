@@ -2,6 +2,24 @@
 
 # Use some SH first to bootstrap...
 
+# Find main nixstaller directory
+if [ ! -z `dirname $0` ]; then
+    NDIR="`dirname $0`"
+    echo "$NDIR" | grep "^/" || NDIR="`pwd`/$NDIR"
+else
+    OLDIFS="$IFS"
+    
+    for F in $PATH
+    do
+        if [ -f "$F/$0" ]; then
+            NDIR="$F"
+            break
+        fi
+    done
+    
+    IFS="$OLDIFS"
+fi
+
 FRONTENDS="gtk fltk ncurs"
 CURDIR=`pwd`
 
@@ -15,7 +33,7 @@ echo $CURRENT_ARCH | grep "86pc" >/dev/null && CURRENT_ARCH="x86" # Convert 86pc
 haslibs()
 {
     if [ $CURRENT_OS = "openbsd" ]; then
-        (ldd $1 >/dev/null 2>&1) && return 0
+        (ldd "$1" >/dev/null 2>&1) && return 0
     else
         if [ -z "`ldd $1 | grep 'not found'`" ]; then
            return 0
@@ -37,16 +55,16 @@ if [ ! -d "${1}" ]; then
     exit 1
 fi
 
-for LC in `ls -d bin/${CURRENT_OS}/${CURRENT_ARCH}/libc* 2>/dev/null | sort -nr`
+for LC in `ls -d "$NDIR"/bin/${CURRENT_OS}/${CURRENT_ARCH}/libc* 2>/dev/null | sort -nr`
 do
-    for LCPP in `ls -d ${LC}/'libstdc++'* 2>/dev/null | sort -nr`
+    for LCPP in `ls -d "${LC}/"'libstdc++'* 2>/dev/null | sort -nr`
     do
         for F in $FRONTENDS
         do
-            BIN=${LCPP}/$F
-            if [ -f $BIN ]; then
-                haslibs $BIN || continue
-                $BIN -c "$CURDIR/src/lua/geninstall.lua" "$@" || exit 1
+            BIN="${LCPP}/$F"
+            if [ -f "$BIN" ]; then
+                haslibs "$BIN" || continue
+                "$BIN" -c "$NDIR/src/lua/geninstall.lua" "$NDIR" $@ || exit 1
                 exit 0
             fi
         done

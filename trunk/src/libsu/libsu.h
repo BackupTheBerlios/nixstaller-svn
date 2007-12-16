@@ -27,17 +27,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
-#include <list>
+#include <vector>
 #include <signal.h>
 #include <unistd.h>
 
 namespace LIBSU
 {
-//  #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
+ #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
+
+enum ESuType { TYPE_SU, TYPE_SUDO, TYPE_MAYBESU, TYPE_MAYBESUDO, TYPE_UNKNOWN };
 
 extern std::string RunnerPath;
+extern ESuType SuType;
+
 inline void SetRunnerPath(const std::string &p) { RunnerPath = p; }
 inline std::string GetRunnerPath(void) { return RunnerPath; }
+inline void SetSuType(ESuType t) { SuType = t; }
+inline ESuType GetSuType(void) { return SuType; }
+inline bool UsingSudo(void) { return ((GetSuType() == TYPE_SUDO) || (GetSuType() == TYPE_MAYBESUDO)); }
+void SetDefSuType(void);
 
 // UNDONE: Check what should be private/protected/public
 class CLibSU
@@ -96,7 +104,11 @@ private:
     int GrantPT(void);
     int UnlockPT(void);
     
-    int Exec(const std::string &command, const std::list<std::string> &args);
+    const char *GetSuBin(ESuType type) const;
+    void ConstructCommand(std::string &cmd, std::vector<std::string> &args, const std::string &runcmd,
+                          const std::vector<std::string> &runargs);
+    
+    int Exec(const std::string &command, const std::vector<std::string> &args);
     int SetupTTY(int fd);
     
     std::string ReadLine(bool block=true);
@@ -107,7 +119,7 @@ private:
     int WaitSlave(void);
     int WaitForChild(void);
     int CheckPidExited(pid_t pid);
-    bool CheckPid(pid_t pid) { return kill(pid,0) == 0; };
+    bool CheckPid(pid_t pid) { return (UsingSudo() || (kill(pid, 0) == 0)); };
     
     void SetError(ESuErrors errtype, const char *msg, ...);
     

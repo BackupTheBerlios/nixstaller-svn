@@ -223,7 +223,6 @@ void GetTextFromBlock(std::ifstream &file, std::string &text)
     }
 }
 
-#ifdef WITH_APPMANAGER
 std::string GetMD5(const std::string &file)
 {
     FILE *fp = fopen(file.c_str(), "rb");
@@ -255,7 +254,6 @@ std::string GetMD5(const std::string &file)
     fclose(fp);
     return hex_output;
 }
-#endif
                                            
 mode_t StrToMode(const char *str)
 {

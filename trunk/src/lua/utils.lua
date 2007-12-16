@@ -45,6 +45,10 @@ function recursivedir(src, func)
     end
 end
 
+function basename(p)
+    return string.gsub(p, "/*.+/", "")
+end
+
 function pkgsize(src)
     local ret = 0
     recursivedir(src, function (f)

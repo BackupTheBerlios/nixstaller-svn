@@ -12,10 +12,7 @@ OVERALL
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
 - Check if ~ works (reported bug)
-- Bug: geninstall.sh doesn't put output file in other dirs than current dir
-- Bug: install.execute crashes with wrong arguments
 - Sentries for format strings coming from Lua and are parsed via va_string (ie msgbox)
-- Prefix directory structure
 - Check about screen size
 
 
@@ -28,6 +25,11 @@ PACKAGING
 - Set right ENV in bin scripts, make KDE/Gnome etc optional?
 - pacman: Check for locks (done for this release?)
 - slackware: description works?
+
+
+TEST
+- Bug: install.execute crashes with wrong arguments (fixed?)
+- Calling nixstaller scripts outside main directory and via $PATH
 
 
 TRANSLATIONS
@@ -46,7 +48,7 @@ MAIN
 
 LIBSU
 - Clean up/redesign
-- sudo support
+- sudo support (changelog!)
 - Check tmp files leaving around (caused by sh errors?)
 
 

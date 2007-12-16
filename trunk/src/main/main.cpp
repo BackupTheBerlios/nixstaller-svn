@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
     LIBSU::SetRunnerPath(dirname(CreateText(argv[0])) + std::string("/../"));
     
-    g_RunScript = ((argc >= 4) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
+    g_RunScript = ((argc >= 5) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
     
     try
     {
@@ -402,6 +402,7 @@ void CMain::InitLua()
     NLua::LuaSet(m_szOwnDir, "curdir");
     
     NLua::RegisterFunction(LuaInitDirIter, "dir", "io");
+    NLua::RegisterFunction(LuaMD5, "md5", "io");
     
     NLua::RegisterFunction(LuaFileExists, "fileexists", "os");
     NLua::RegisterFunction(LuaReadPerm, "readperm", "os");
@@ -923,6 +924,18 @@ int CMain::LuaExitStatus(lua_State *L)
     return 1;
 }
 
+int CMain::LuaMD5(lua_State *L)
+{
+    std::string md5 = GetMD5(luaL_checkstring(L, 1));
+    
+    if (md5 != "0")
+        lua_pushstring(L, md5.c_str());
+    else
+        lua_pushnil(L);
+        
+    return 1;
+}
+
 int CMain::LuaPanic(lua_State *L)
 {
     throw Exceptions::CExLua(lua_tostring(L, 1));
@@ -937,7 +950,8 @@ void CLuaRunner::Init(int argc, char **argv)
 {
     CMain::Init(argc, argv);
     
-    NLua::LuaSet(argv[3], "confdir");
-    NLua::LuaSet(((argc >= 5) ? argv[4] : "setup.sh"), "outname");
-    NLua::LoadFile(argv[2]);
+    NLua::LuaSet(argv[3], "maindir"); // Main nixstaller directory
+    NLua::LuaSet(argv[4], "confdir"); // Project configuration directory
+    NLua::LuaSet(((argc >= 6) ? argv[5] : "setup.sh"), "outname"); // Installer name
+    NLua::LoadFile(argv[2]); // Script to execute
 }

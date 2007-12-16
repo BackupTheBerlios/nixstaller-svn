@@ -8,6 +8,11 @@
 - screen:addscreenend() function
 - exitstatus() function
 - Fixed: os.chmod crashes when file doesn't exist
+- Fixed: geninstall.sh couldn't place installer in an absolute path
+- x86_64 support.
+- genprojdir.sh now defaults to current arch.
+- geninstall.sh/genprojdir.sh can now be used from any directory.
+- io.md5 lua function
 
 
 0.2.2 --> 0.3

@@ -17,17 +17,36 @@
 #     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 #     St, Fifth Floor, Boston, MA 02110-1301 USA
 
-CURDIR=`pwd`
+# Find main nixstaller directory
+if [ ! -z `dirname $0` ]; then
+    NDIR="`dirname $0`"
+else
+    OLDIFS="$IFS"
+    
+    for F in $PATH
+    do
+        if [ -f "$F/$0" ]; then
+            NDIR="$F"
+            break
+        fi
+    done
+    
+    IFS="$OLDIFS"
+fi
 
 CURRENTOS=`uname`
 CURRENTOS=`echo "$CURRENTOS" | tr [:upper:] [:lower:]` # Convert to lowercase
+
+CURRENT_ARCH=`uname -m`
+echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86" # Convert iX86 --> x86
+echo $CURRENT_ARCH | grep "86pc" >/dev/null && CURRENT_ARCH="x86" # Convert 86pc --> x86
 
 # Default settings
 DEF_APPNAME="My App"
 DEF_ARCHIVETYPE="lzma"
 DEF_DEFAULTLANG="english"
 DEF_TARGETOS="$CURRENTOS"
-DEF_TARGETARCH="x86"
+DEF_TARGETARCH="$CURRENT_ARCH"
 DEF_FRONTENDS="gtk fltk ncurses"
 DEF_LANGUAGES="english dutch"
 DEF_INTROPIC=
@@ -36,7 +55,7 @@ DEF_LOGO=
 # Valid settings
 VAL_ARCHIVETYPES="lzma gzip bzip2"
 VAL_TARGETOS="freebsd linux netbsd openbsd sunos"
-VAL_TARGETARCH="x86"
+VAL_TARGETARCH="x86 x86_64"
 VAL_FRONTENDS="gtk fltk ncurses"
 
 APPNAME=
@@ -61,7 +80,7 @@ usage()
     echo "[options] can be one of the following things (all are optional):"
     echo
     echo " --appname, -n name               The application name. Default: My App"
-    echo " --arch arch1[, arch2, ...]       CPU architectures the installer should support. Valid value: x86. Default: x86"
+    echo " --arch arch1[, arch2, ...]       CPU architectures the installer should support. Valid values: x86, x86_64. Default: current arch."
     echo " --archtype, -a lzma/gzip/bzip2   The archive type used for packing the installation files. Default: lzma"
     echo " --deflang, -d lang               The default language. Default: english"
     echo " --frontends, -f fr1[, fr2, ...]  Frontends to include. Valid values: gtk, fltk, ncurses. Default: gtk fltk ncurses."
@@ -241,11 +260,11 @@ copylanguages()
     for L in $LANGUAGES
     do
         SRC=
-        if [ ! -d "${CURDIR}/lang/${L}" ]; then
+        if [ ! -d "${NDIR}/lang/${L}" ]; then
             NEWLANGUAGES="$NEWLANGUAGES $L"
-            SRC="${CURDIR}/lang/english/strings"
+            SRC="${NDIR}/lang/english/strings"
         else
-            SRC="${CURDIR}/lang/${L}/strings"
+            SRC="${NDIR}/lang/${L}/strings"
         fi
         
         DEST="${TARGETDIR}"/lang/"${L}"

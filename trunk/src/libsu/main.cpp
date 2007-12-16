@@ -33,7 +33,15 @@ namespace LIBSU
 {
 
 std::string RunnerPath = "./";
+ESuType SuType = TYPE_UNKNOWN;
 
+void SetDefSuType()
+{
+    if (GetSuType() == TYPE_MAYBESUDO)
+        SetSuType(TYPE_SUDO);
+    else if (GetSuType() == TYPE_MAYBESU)
+        SetSuType(TYPE_SU);
+}
 
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false),
                                     m_iLastRET(0), m_szUser("root"), m_szPath("/bin:/usr/bin"),
@@ -98,9 +106,76 @@ void CLibSU::SetCommand(const std::string &command)
     }
 }
 
-int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
+const char *CLibSU::GetSuBin(ESuType type) const
 {
-    log("Running '%s'\n", command.c_str());
+    if ((type == TYPE_MAYBESUDO) || (type == TYPE_SUDO))
+    {
+        if (FileExists("/usr/bin/sudo"))
+            return "/usr/bin/sudo";
+        else if (FileExists("/bin/sudo"))
+            return "/bin/sudo";
+    }
+    else if ((type == TYPE_MAYBESU) || (type == TYPE_SU))
+    {
+        if (FileExists("/usr/bin/su"))
+            return "/usr/bin/su";
+        else if (FileExists("/bin/su"))
+            return "/bin/su";
+    }
+    
+    return NULL;
+}
+
+void CLibSU::ConstructCommand(std::string &command, std::vector<std::string> &args, const std::string &runcmd,
+                              const std::vector<std::string> &runargs)
+{
+    if (GetSuType() == TYPE_UNKNOWN)
+    {
+        if (GetSuBin(TYPE_SUDO)) // Always try sudo first (when unconfigured it may work the pw of target user)
+            SetSuType(TYPE_MAYBESUDO);
+        else
+            SetSuType(TYPE_MAYBESU);
+        
+        command = GetSuBin(GetSuType());
+    }
+    
+    command = GetSuBin(GetSuType());
+    
+    if (UsingSudo())
+        args.push_back("-u");
+    
+    args.push_back(m_szUser);
+    
+    if (UsingSudo())
+    {
+        args.push_back("-s");
+        args.push_back("--");
+        args.push_back("-c");
+    }
+    else
+        args.push_back("-c");
+
+    args.push_back(std::string("printf \"") + TermStr + "\\n\" ;" + runcmd); // Insert our magic terminate indicator to command
+    
+    if (!UsingSudo())
+        args.push_back("-");
+    
+    args.insert(args.end(), runargs.begin(), runargs.end());
+}
+
+int CLibSU::Exec(const std::string &command, const std::vector<std::string> &args)
+{
+    std::string realcmd;
+    std::vector<std::string> realargs;
+    ConstructCommand(realcmd, realargs, command, args);
+    
+    if (realcmd.empty())
+    {
+        SetError(SU_ERROR_SUNOTFOUND, "Couldn't find suitable binary.");
+        return -1;
+    }
+
+    log("Running '%s'\n", realcmd.c_str());
 
     if (m_iPTYFD)
     {
@@ -151,14 +226,14 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
 
     // From now on, terminal output goes through the tty.
 
-    char **argp = (char **)malloc((args.size()+2)*sizeof(char *));
+    char **argp = (char **)malloc((realargs.size()+2)*sizeof(char *));
     int i = 0;
 
-    argp[i] = strdup(command.c_str());
+    argp[i] = strdup(realcmd.c_str());
     i++;
 
     log("args: ");
-    for (std::list<std::string>::const_iterator it=args.begin(); it!=args.end(); it++)
+    for (std::vector<std::string>::const_iterator it=realargs.begin(); it!=realargs.end(); it++)
     {
         argp[i] = strdup(it->c_str());
         log("%s ", argp[i]);
@@ -169,7 +244,7 @@ int CLibSU::Exec(const std::string &command, const std::list<std::string> &args)
     argp[i] = 0L;
     
     setenv("PATH", m_szPath.c_str(), 1);
-    execv(command.c_str(), (char * const *)argp);
+    execv(realcmd.c_str(), (char * const *)argp);
     SetError(SU_ERROR_EXECUTE, "execv(\"%s\"): %s", m_szPath.c_str(), strerror(errno));
     return -1;
 }
@@ -458,7 +533,7 @@ int CLibSU::TalkWithSU(const char *password)
                         SetError(SU_ERROR_INTERNAL, "su has exited while waiting for password");
                         return SUCOM_ERROR;
                     }
-                    if ((WaitSlave() == 0) && CheckPid(m_iPid))
+                    if (WaitSlave() == 0)
                     {
                         log("Writing passwd...\n");
                         write(m_iPTYFD, password, strlen(password));
@@ -509,6 +584,11 @@ int CLibSU::TalkWithSU(const char *password)
                     //UnReadLine(line);
                     return SUCOM_OK;
                 }
+                else if (UsingSudo())
+                {
+                    SetError(SU_ERROR_INCORRECTPASS, "Incorrect password");
+                    return SUCOM_NOTAUTHORIZED;
+                }
                 break;
         }
     }
@@ -517,23 +597,9 @@ int CLibSU::TalkWithSU(const char *password)
 
 bool CLibSU::NeedPassword()
 {
-    std::list<std::string> args;
-
-    args.push_back(m_szUser);
-    args.push_back("-c");
-    args.push_back(std::string("printf \"") + TermStr + "\""); // Insert our magic terminate indicator to command
-    args.push_back("-");
-
     std::string command;
-    if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
-    else if (FileExists("/bin/su")) command = "/bin/su";
+    std::vector<std::string> args;
 
-    if (command.empty())
-    {
-        SetError(SU_ERROR_SUNOTFOUND, "Could not find su");
-        return false;
-    }
-    
     if (Exec(command, args) < 0)
     {
         return false;
@@ -548,30 +614,33 @@ bool CLibSU::NeedPassword()
             WaitForChild();
         return true;
     }
+    else if (ret == SUCOM_NOTAUTHORIZED)
+    {
+        if (kill(-m_iPid, SIGKILL) >= 0)
+            WaitForChild();
 
+        if (GetSuType() == TYPE_MAYBESUDO)
+        {
+            SetSuType(TYPE_MAYBESU); // Try again with su
+            return NeedPassword();
+        }
+        else
+            SetSuType(TYPE_UNKNOWN);
+        
+        return false;
+    }
+
+    SetDefSuType();
+    
     WaitForChild();
     return false;
 }
 
 bool CLibSU::TestSU(const char *password)
 {
-    std::list<std::string> args;
-
-    args.push_back(m_szUser);
-    args.push_back("-c");
-    args.push_back(std::string("printf \"") + TermStr + "\""); // Insert our magic terminate indicator to command
-    args.push_back("-");
-
     std::string command;
-    if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
-    else if (FileExists("/bin/su")) command = "/bin/su";
+    std::vector<std::string> args;
 
-    if (command.empty())
-    {
-        SetError(SU_ERROR_SUNOTFOUND, "Couldn't find su");
-        return false;
-    }
-    
     if (Exec(command, args) < 0)
     {
         return false;
@@ -594,57 +663,45 @@ bool CLibSU::TestSU(const char *password)
 
     if (ret == SUCOM_NOTAUTHORIZED)
     {
-        kill(-m_iPid, SIGKILL);
-        WaitForChild();
+        if (kill(-m_iPid, SIGKILL) >= 0)
+            WaitForChild();
+        
+        if (GetSuType() == TYPE_MAYBESUDO)
+        {
+            SetSuType(TYPE_MAYBESU); // Try again with su
+            log("Trying su after sudo\n");
+            if (TestSU(password))
+            {
+                SetSuType(TYPE_SU);
+                return true;
+            }
+            else
+                SetSuType(TYPE_UNKNOWN);
+        }
+        
         return false;
     }
 
+    SetDefSuType();
+    
     WaitForChild();
     return true;
 }
 
 bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 {
-    std::list<std::string> args;
-    
-    // First a magic string is printed to indicate that su is ready to execute commands.
-    // Then the command is executed in the background, the exit status is stored to a temp file
-    // and finally a signal to the main script is send indicating that it's done.
-    // On the foreground read is called, as soon as read ends it will kill anything in the process group.
-    // The read call stops on input or EOF. In this case we are interested in EOF; as soon the main program exits,
-    // stdin is closed and therefore read exits aswell. This is merely a trap for unexpected ending of the program.
-//     char *cmdfmt = FormatText("printf \"%s\"\n sh -c \'"
-//             "EXITFILE=`mktemp /tmp/lsutmp.XXXXXX` ; "
-//             "trap \"rm -f $EXITFILE ; kill -KILL 0\" HUP INT QUIT ABRT ALRM TERM PIPE BUS ; "
-//             "(sh -c '\"'\"'%s'\"'\"' ; echo $? > $EXITFILE ; kill -QUIT $$ ; sleep 1) & "
-//             "trap \"exit `cat $EXITFILE` \" QUIT ; "
-//             "read dummy ; "
-//             "kill -TERM 0  "
-//             "\'",
-//         TermStr, m_szCommand.c_str());
-
-    char *cmdfmt = FormatText("printf \"%s\"\n %s/surunner \'%s\'", TermStr, GetRunnerPath().c_str(), m_szCommand.c_str());
-    args.push_back(m_szUser);
-    args.push_back("-c");
-    args.push_back(cmdfmt);
-    args.push_back("-");
-
-    free(cmdfmt);
-    
     std::string command;
-    if (FileExists("/usr/bin/su")) command = "/usr/bin/su";
-    else if (FileExists("/bin/su")) command = "/bin/su";
-
-    if (command.empty())
+    std::vector<std::string> args;
+    
+    char *cmdfmt = FormatText("%s/surunner \'%s\'", GetRunnerPath().c_str(), m_szCommand.c_str());
+    
+    if (Exec(cmdfmt, args) < 0)
     {
-        SetError(SU_ERROR_SUNOTFOUND, "Couldn't find su");
+        free(cmdfmt);
         return false;
     }
     
-    if (Exec(command, args) < 0)
-    {
-        return false;
-    }
+    free(cmdfmt);
     
     ESuComErrors ret = (ESuComErrors) TalkWithSU(password);
     log("SU COM: %d\n", ret);
@@ -657,7 +714,8 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     
     if (ret == SUCOM_NULLPASS)
     {
-        if (kill(-m_iPid, SIGKILL) >= 0) WaitForChild();
+        if (kill(-m_iPid, SIGKILL) >= 0)
+            WaitForChild();
         return false;
     }
 
@@ -671,11 +729,26 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
 
     if (ret == SUCOM_NOTAUTHORIZED)
     {
-        kill(-m_iPid, SIGKILL);
-        WaitForChild();
-        return false;
+        if (kill(-m_iPid, SIGKILL) >= 0)
+            WaitForChild();
+        
+        if (GetSuType() == TYPE_MAYBESUDO)
+        {
+            SetSuType(TYPE_MAYBESU); // Try again with su
+            if (ExecuteCommand(password, removepass))
+                SetSuType(TYPE_SU);
+            else
+            {
+                SetSuType(TYPE_UNKNOWN);
+                return false;
+            }
+        }
+        else
+            return false;
     }
 
+    SetDefSuType();
+    
     m_iLastRET = WaitForChild();
     if (m_iLastRET == 127)
     {

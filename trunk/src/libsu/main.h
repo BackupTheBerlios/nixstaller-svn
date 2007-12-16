@@ -74,7 +74,7 @@ extern "C" char *_getpty(int *, int, mode_t, int);
 extern "C" int vasprintf (char **result, const char *format, va_list args);
 #endif
 
-#ifdef HAVE__PTY_H
+#ifdef HAVE_PTY_H
     #include <pty.h>
 #endif
 

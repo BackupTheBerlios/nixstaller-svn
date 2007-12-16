@@ -24,7 +24,10 @@ function screen:canactivate()
 end
 
 genpkg = screen:addcheckbox("By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.\n\nNote: When enabled, you need to enter the root password later.\n\nWhen unsure, just leave it enabled.", {"Register software"})
-genpkg:set(1, pkg.register)
+
+function screen:activate()
+    genpkg:set(1, pkg.register)
+end
 
 function genpkg:verify()
     pkg.register = genpkg:get(1)

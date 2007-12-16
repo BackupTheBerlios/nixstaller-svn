@@ -68,11 +68,23 @@ function genscript(file, dir)
 #!/bin/sh
 LD_LIBRARY_PATH="%s/%s/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH
-KDEDIRS=%s/%s
-export KDEDIRS
-exec %s/%s/%s
-]], pkg.destdir, pkg.name, pkg.destdir, pkg.name, pkg.destdir, pkg.name, file)))
+]], pkg.destdir, pkg.name)))
+
+    if pkg.setkdeenv then
+        check(script:write(string.format("KDEDIRS=\"%s/%s:$KDEDIRS\"\nexport KDEDIRS\n", pkg.destdir, pkg.name)))
+    end
+    
+    for i,v in pairs(pkg.binenv) do
+        if v[file] or v["All"] then
+            local val = ((v[file] and v[file]) or "") .. ((v["All"] and v["All"]) or "")
+            check(script:write(string.format("%s=\"%s\"\nexport %s\n", i, val, i)))
+        end
+    end
+    
+    check(script:write(string.format("exec %s/%s/%s\n", pkg.destdir, pkg.name, file)))
+
     script:close() -- Flush
+    
     os.chmod(filename, "0755")
 end
 
@@ -138,7 +150,7 @@ end
 pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 
 -- Defaults
-pkg.destdir = pkg.packager.getpkgpath() .. "/share"
-pkg.bindir = pkg.packager.getpkgpath() .. "/bin"
+pkg.destdir = pkg.destdir or  pkg.packager.getpkgpath() .. "/share"
+pkg.bindir = pkg.bindir or pkg.packager.getpkgpath() .. "/bin"
 
 dofile("package-public.lua")
