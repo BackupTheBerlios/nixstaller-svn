@@ -203,11 +203,10 @@ bool CMain::GetSUPasswd(const char *msg, bool mandatory)
 
                 // Some error appeared
                 if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    WarnBox(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                    WarnBox(GetTranslation("Incorrect password given, please retype."));
                 else
                 {
-                    const char *msg = "Could not use su to gain root access.\n"
-                            "Make sure you can use su (adding the current user to the wheel group may help).";
+                    const char *msg = "Could not use su or sudo to gain root access.";
                     
                     if (mandatory)
                         throw Exceptions::CExSU(msg);

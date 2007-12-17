@@ -47,7 +47,7 @@ const char *CFLTKDirDialog::AskPassword(LIBSU::CLibSU &suhandler)
     {
         ret = fl_password(GetTranslation("Your account doesn't have permissions to "
                 "create the directory.\nTo create it with the root "
-                "(administrator) account, please enter it's password below."));
+                "(administrator) account, please enter the right password below."));
 
         if (!ret || !ret[0])
             break;
@@ -55,11 +55,10 @@ const char *CFLTKDirDialog::AskPassword(LIBSU::CLibSU &suhandler)
         if (!suhandler.TestSU(ret))
         {
             if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                fl_alert(GetTranslation("Incorrect password given for root user\nPlease retype"));
+                fl_alert(GetTranslation("Incorrect password given, please retype."));
             else
             {
-                fl_alert(GetTranslation("Could not use su to gain root access.\n"
-                        "Make sure you can use su (adding the current user to the wheel group may help)."));
+                fl_alert(GetTranslation("Could not use su or sudo to gain root access."));
                 break;
             }
         }

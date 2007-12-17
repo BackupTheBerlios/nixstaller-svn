@@ -135,8 +135,6 @@ void CLibSU::ConstructCommand(std::string &command, std::vector<std::string> &ar
             SetSuType(TYPE_MAYBESUDO);
         else
             SetSuType(TYPE_MAYBESU);
-        
-        command = GetSuBin(GetSuType());
     }
     
     command = GetSuBin(GetSuType());
@@ -223,6 +221,9 @@ int CLibSU::Exec(const std::string &command, const std::vector<std::string> &arg
         SetError(SU_ERROR_INTERNAL, "Couldn't set up TTY");
         return -1;
     }
+
+    if (UsingSudo())
+        system("sudo -k"); // Forget about any previous sessions (this is needed for TestSU() and NeedPassword())
 
     // From now on, terminal output goes through the tty.
 
@@ -651,7 +652,7 @@ bool CLibSU::TestSU(const char *password)
     
     if (ret == SUCOM_ERROR) 
     {
-        SetError(SU_ERROR_INTERNAL, "Conversation with su failed");
+        SetError(SU_ERROR_INTERNAL, "Conversation with su/sudo failed");
         return false;
     }
     
@@ -708,7 +709,7 @@ bool CLibSU::ExecuteCommand(const char *password, bool removepass)
     
     if (ret == SUCOM_ERROR) 
     {
-        SetError(SU_ERROR_INTERNAL, "Conversation with su failed");
+        SetError(SU_ERROR_INTERNAL, "Conversation with su/sudo failed");
         return false;
     }
     

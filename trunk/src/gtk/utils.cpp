@@ -87,13 +87,12 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
         {
             if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
             {
-                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Incorrect password given for root user\nPlease retype"));
+                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Incorrect password given, please retype."));
                 continue;
             }
             else
             {
-                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Could not use su to gain root access.\n"
-                        "Make sure you can use su (adding the current user to the wheel group may help)."));
+                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Could not use su or sudo to gain root access."));
                 break;
             }
         }
