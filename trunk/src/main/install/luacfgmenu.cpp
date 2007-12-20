@@ -71,14 +71,27 @@ void CBaseLuaCFGMenu::AddVar(const char *name, const char *desc, const char *val
     if (l)
     {
         m_Variables[name]->options = *l;
+        VerifyListOpt(m_Variables[name]);
     }
     
     CoreAddVar(name);
 }
 
+void CBaseLuaCFGMenu::VerifyListOpt(SEntry *entry)
+{
+    for (TOptionsType::iterator it=entry->options.begin(); it!=entry->options.end(); it++)
+    {
+        if (entry->val == *it)
+            return;
+    }
+    
+    luaL_error(NLua::LuaState, "Invalid specified value for configmenu list variable.");
+}
+
 void CBaseLuaCFGMenu::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaGet, "get", "configmenu");
+    NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaSet, "set", "configmenu");
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddDir, "adddir", "configmenu");
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddString, "addstring", "configmenu");
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddList, "addlist", "configmenu");
@@ -166,7 +179,29 @@ int CBaseLuaCFGMenu::LuaGet(lua_State *L)
             lua_pushstring(L, menu->m_Variables[var]->val.c_str());
     }
     else
-        luaL_error(L, "No variabele %s found in menu\n", var);
+        luaL_error(L, "No variable %s found in menu\n", var);
     
     return 1;
+}
+
+int CBaseLuaCFGMenu::LuaSet(lua_State *L)
+{
+    CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
+    const char *var = luaL_checkstring(L, 2);
+    
+    if (menu->m_Variables[var])
+    {
+        if (menu->m_Variables[var]->type == TYPE_BOOL)
+            menu->m_Variables[var]->val = menu->BoolToStr(NLua::LuaToBool(3));
+        else
+            menu->m_Variables[var]->val = luaL_checkstring(L, 3);
+        
+        if (menu->m_Variables[var]->type == TYPE_LIST)
+            menu->VerifyListOpt(menu->m_Variables[var]);
+    }
+    else
+        luaL_error(L, "No variable %s found in menu\n", var);
+    
+    menu->CoreUpdateVar(var);
+    return 0;
 }

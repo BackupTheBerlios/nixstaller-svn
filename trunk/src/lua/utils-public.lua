@@ -50,6 +50,13 @@ function utils.basename(p)
 end
 
 function utils.opendoc(f)
-    os.execute(string.format("%s/xdg-utils/xdg-open %s", curdir, f))
+    local bin
+    if os.execute("xdg-open --version >/dev/null 2>&1") == 0 then
+        bin = "xdg-open"
+    else
+        bin = string.format("%s/xdg-utils/xdg-open", curdir)
+    end
+    
+    os.execute(string.format("%s %s >/dev/null 2>&1", bin, f))
 end
 

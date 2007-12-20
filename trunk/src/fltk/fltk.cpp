@@ -102,7 +102,7 @@ CFLTKBase::~CFLTKBase()
 
 void CFLTKBase::CreateAbout()
 {
-    m_pAboutWindow = new Fl_Window(400, 200, GetTranslation("About"));
+    m_pAboutWindow = new Fl_Window(580, 400, GetTranslation("About"));
     m_pAboutWindow->set_modal();
     m_pAboutWindow->hide();
     m_pAboutWindow->begin();
@@ -110,10 +110,10 @@ void CFLTKBase::CreateAbout()
     Fl_Text_Buffer *pBuffer = new Fl_Text_Buffer;
     pBuffer->loadfile(GetAboutFName());
     
-    m_pAboutDisp = new Fl_Text_Display(20, 20, 360, 150, GetTranslation("About"));
+    m_pAboutDisp = new Fl_Text_Display(20, 20, 540, 350, GetTranslation("About"));
     m_pAboutDisp->buffer(pBuffer);
     
-    m_pAboutOKButton = new Fl_Return_Button((400-80)/2, 170, 80, 25, GetTranslation("OK"));
+    m_pAboutOKButton = new Fl_Return_Button((580-80)/2, 370, 80, 25, GetTranslation("OK"));
     m_pAboutOKButton->callback(AboutOKCB, this);
     
     m_pAboutWindow->end();

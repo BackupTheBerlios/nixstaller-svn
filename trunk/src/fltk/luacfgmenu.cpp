@@ -86,6 +86,11 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     }
 }
 
+void CLuaCFGMenu::CoreUpdateVar(const char *name)
+{
+    UpdateSelection();
+}
+
 void CLuaCFGMenu::CoreUpdateLanguage()
 {
     m_pBrowseButton->label(GetTranslation("Browse"));

@@ -46,7 +46,7 @@ class CFileDialog: public CDialog
     bool m_bCancelled;
     
     bool ValidDir(CDirIter &dir);
-    void OpenDir(const std::string &newdir);
+    void OpenDir(std::string newdir);
     std::string AskPassword(LIBSU::CLibSU &suhandler);
     
 protected:

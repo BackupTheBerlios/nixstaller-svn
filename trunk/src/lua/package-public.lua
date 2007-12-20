@@ -80,6 +80,8 @@ function install.generatepkg()
             end
         end
     
+        copyxdgutils(dir .. "/files")
+        
         install.setstatus("Installing package")
         
         local version

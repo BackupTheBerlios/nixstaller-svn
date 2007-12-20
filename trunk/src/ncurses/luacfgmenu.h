@@ -34,6 +34,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     NNCurses::CTextField *m_pDescWin;
     
     virtual void CoreAddVar(const char *name);
+    virtual void CoreUpdateVar(const char *name);
     virtual void CoreUpdateLanguage(void);
     
     SEntry *GetCurEntry(void);

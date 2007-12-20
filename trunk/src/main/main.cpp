@@ -859,6 +859,8 @@ int CMain::LuaYesNoBox(lua_State *L)
     for (int i=2; i<=args; i++)
         msg += luaL_checkstring(L, i);
     
+    EscapeControls(msg);
+    
     lua_pushboolean(L, pMain->YesNoBox(msg.c_str()));
     
     return 1;
@@ -867,12 +869,14 @@ int CMain::LuaYesNoBox(lua_State *L)
 int CMain::LuaChoiceBox(lua_State *L)
 {
     CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    const char *msg = luaL_checkstring(L, 1);
+    std::string msg = luaL_checkstring(L, 1);
     const char *but1 = luaL_checkstring(L, 2);
     const char *but2 = luaL_checkstring(L, 3);
     const char *but3 = lua_tostring(L, 4);
     
-    int ret = pMain->ChoiceBox(msg, but1, but2, but3) + 1; // +1: Convert 0-2 range to 1-3
+    EscapeControls(msg);
+    
+    int ret = pMain->ChoiceBox(msg.c_str(), but1, but2, but3) + 1; // +1: Convert 0-2 range to 1-3
     
     // UNDONE: FLTK doesn't return alternative number while ncurses returns -1.
     // For now we'll stick with the FLTK behaviour: return the last button.
@@ -893,6 +897,8 @@ int CMain::LuaWarnBox(lua_State *L)
     for (int i=2; i<=args; i++)
         msg += luaL_checkstring(L, i);
     
+    EscapeControls(msg);
+    
     pMain->WarnBox(msg.c_str());
     
     return 0;
@@ -906,6 +912,8 @@ int CMain::LuaMSGBox(lua_State *L)
     
     for (int i=2; i<=args; i++)
         msg += luaL_checkstring(L, i);
+    
+    EscapeControls(msg);
     
     pMain->MsgBox(msg.c_str());
     

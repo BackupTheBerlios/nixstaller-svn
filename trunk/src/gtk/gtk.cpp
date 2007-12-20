@@ -75,7 +75,7 @@ CGTKBase::CGTKBase()
 
 void CGTKBase::CreateAbout()
 {
-    const int windoww = 350, windowh = 350;
+    const int windoww = 580, windowh = 400;
     
     m_pAboutDialog = gtk_dialog_new_with_buttons(GetTranslation("About"), GTK_WINDOW(m_pMainWindow),
                                                  GtkDialogFlags(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),

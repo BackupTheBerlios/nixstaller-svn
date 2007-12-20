@@ -34,8 +34,24 @@ void CBaseLuaDirSelector::LuaRegister()
 int CBaseLuaDirSelector::LuaGet(lua_State *L)
 {
     CBaseLuaDirSelector *sel = CheckLuaWidgetClass<CBaseLuaDirSelector>("dirselector", 1);
-    lua_pushstring(L, sel->GetDir());
-    return 1;
+    const char *dir = sel->GetDir();
+    if (dir && dir[0])
+    {
+        if  (!strncmp(dir, "~/", 2))
+        {
+            const char *env = getenv("HOME");
+            if (env && env[0])
+                lua_pushfstring(L, "%s%s", env, &dir[1]); // Replace ~ with $HOME
+            else
+                lua_pushstring(L, dir);
+        }
+        else
+            lua_pushstring(L, dir);
+        
+        return 1;
+    }
+    
+    return 0;
 }
 
 int CBaseLuaDirSelector::LuaSet(lua_State *L)

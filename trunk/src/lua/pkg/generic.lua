@@ -60,8 +60,8 @@ if [ ! -w "$PROGDIR" -o ! -w "$BINDIR" ]; then
     exit 1
 fi
 
-MD5BIN=`which md5sum`
-[ -z "$MD5BIN" -a ! -z "`which md5`" ] && MD5BIN="`which md5` -q"
+MD5BIN=`which md5sum 2>/dev/null`
+[ -z "$MD5BIN" -a ! -z "`which md5 2>/dev/null`" ] && MD5BIN="`which md5` -q"
 
 if [ -z "$MD5BIN" ]; then
     echo "WARNING: Could not find a suitable binary ('md5' or 'md5sum') to calculate MD5 sums in PATH."

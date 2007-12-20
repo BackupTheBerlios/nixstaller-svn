@@ -127,6 +127,13 @@ std::string GetFirstValidDir(const std::string &dir)
 
     std::string subdir = dir;
     
+    if (!subdir.compare(0, 2, "~/"))
+    {
+        const char *env = getenv("HOME");
+        if (env)
+            subdir.replace(0, 1, env);
+    }
+    
     MakeAbsolute(subdir);
     
     if (ReadAccess(subdir))
@@ -193,6 +200,26 @@ std::string &EatWhite(std::string &str, bool skipnewlines)
         str.erase(pos+1);
     
     return str;
+}
+
+void EscapeControls(std::string &text)
+{
+    TSTLStrSize length = text.length(), start = 0;
+    while (start < length)
+    {
+        start = text.find_first_of("%", start);
+        
+        if (start != std::string::npos)
+        {
+            text.replace(start, 1, "%%");
+            start += 2;
+            continue;
+        }
+        else
+            break;
+
+        start++;
+    }
 }
 
 // Used by config file parsing, gets string between a text block

@@ -7,13 +7,9 @@ OVERALL
 - Use deltas <--> patches for different frontends?
 - Modify Makeself?
 - Better util.a configure testing?
-- cfgmenu:set() function
-- Initial value from constrcutor for radiobutton, menu etc?
+- Initial value from constructor for radiobutton, menu etc?
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
-- Check if ~ works (reported bug)
-- Sentries for format strings coming from Lua and are parsed via va_string (ie msgbox)
-- Check about screen size
 
 
 PACKAGING
@@ -23,7 +19,6 @@ PACKAGING
 - RPM: Description formatting?
 - Set right ENV in bin scripts, make KDE/Gnome etc optional?
 - pacman: Check for locks (done for this release?)
-- slackware: description works?
 
 
 TEST
@@ -31,6 +26,8 @@ TEST
 - Calling nixstaller scripts outside main directory and via $PATH
 - New su/sudo code
 - Uninstall script
+- slackware: description works?
+- Check if ~ works (reported bug)
 
 
 TRANSLATIONS

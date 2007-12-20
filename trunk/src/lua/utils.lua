@@ -60,8 +60,15 @@ function xdgentryfname(f)
 end
 
 function instxdgentries(global, fname)
+    local xdgbin
+    if os.execute("xdg-desktop-menu --version >/dev/null 2>&1") == 0 then
+        xdgbin = "xdg-desktop-menu"
+    else
+        xdgbin = string.format("%s/xdg-utils/xdg-desktop-menu", curdir)
+    end
+    
     local cmd = (global and install.executeasroot) or install.execute
-    cmd(string.format("%s/xdg-utils/xdg-desktop-menu install --novendor %s", curdir, fname), false)
+    cmd(string.format("%s install --novendor %s", xdgbin, fname), false)
 end
 
 function xdguninstscript()
@@ -73,14 +80,13 @@ function xdguninstscript()
 EXEC=""
 (xdg-desktop-menu --version >/dev/null 2>&1) && EXEC="xdg-desktop-menu"
 [ -z $EXEC ] && ("%s/xdg-utils/xdg-desktop-menu" --version 2>&1 >/dev/null) && EXEC="%s/xdg-utils/xdg-desktop-menu"
-if [ -z "$EXEC" ]; then
-    exit 0
-fi
+if [ ! -z "$EXEC" ]; then
 ]], pkg.getdatadir(), pkg.getdatadir())
     
     for n, _ in pairs(OLDG.install.menuentries) do
-        ret = ret .. string.format("$EXEC uninstall --novendor %s.desktop\n", n)
+        ret = ret .. string.format("    $EXEC uninstall --novendor %s.desktop\n", n)
     end
     
+    ret = ret .. "fi\n"
     return ret
 end

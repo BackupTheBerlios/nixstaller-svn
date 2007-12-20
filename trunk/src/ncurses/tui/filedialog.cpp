@@ -55,9 +55,16 @@ bool CFileDialog::ValidDir(CDirIter &dir)
             (!isrootdir || strcmp(dir->d_name, "..")));
 }
 
-void CFileDialog::OpenDir(const std::string &newdir)
+void CFileDialog::OpenDir(std::string newdir)
 {
     std::string curdir = GetCWD();
+    
+    if (!newdir.compare(0, 2, "~/"))
+    {
+        const char *env = getenv("HOME");
+        if (env)
+            newdir.replace(0, 1, env);
+    }
     
     try
     {

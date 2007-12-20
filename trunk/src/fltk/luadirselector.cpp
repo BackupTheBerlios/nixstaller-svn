@@ -93,7 +93,7 @@ void CLuaDirSelector::BrowseCB(Fl_Widget *w, void *p)
     CFLTKDirDialog dialog("~", "*", (Fl_File_Chooser::DIRECTORY | Fl_File_Chooser::CREATE),
              GetTranslation("Select a directory"));
     
-    dialog.Value(dirsel->m_pDirInput->value());
+    dialog.Value(MakeCString(GetFirstValidDir(dirsel->m_pDirInput->value())));
     dialog.Run();
     
     const char *dir = dialog.Value();

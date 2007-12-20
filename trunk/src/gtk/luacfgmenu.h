@@ -33,6 +33,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     enum { COLUMN_TITLE, COLUMN_DESC, COLUMN_VAR, COLUMN_N };
     
     virtual void CoreAddVar(const char *name);
+    virtual void CoreUpdateVar(const char *name);
     virtual void CoreUpdateLanguage(void);
     virtual void CoreActivateWidget(void);
     virtual void CoreUpdateMaxWidth(int w);

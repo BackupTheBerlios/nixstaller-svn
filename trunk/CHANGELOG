@@ -17,6 +17,10 @@
 - Install summary screen
 - xdg-open functionality through lua function
 - utils package
+- Fixed: Usage of '%' in messageboxes, yesnoboxes etc might crash.
+- Dirselectors now translate '~/' as $HOME/ (suggested by Tomasz Sałaciński)
+- Increased size of aboutdialogs (suggested by Tomasz Sałaciński)
+- cfgmenu:set() function
 
 
 0.2.2 --> 0.3

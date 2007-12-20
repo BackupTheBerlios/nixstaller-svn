@@ -76,8 +76,8 @@ function create(src)
     utils.moverec(src .. "/files", instfiles)
     utils.moverec(src .. "/bins", pkgbindir)
 
-    -- Copy XDG utilities and desktop files
-    copyxdgstuff(instfiles, pkgdir)
+    -- Copy XDG desktop files
+    copydeskfiles(pkgdir)
 
     genfilelist(pkgdir)
 

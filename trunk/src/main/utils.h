@@ -42,6 +42,7 @@ bool IsDir(const char *file);
 void *guaranteed_memset(void *v,int c,size_t n);
 void CleanPasswdString(char *str);
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
+void EscapeControls(std::string &text);
 void GetTextFromBlock(std::ifstream &file, std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);

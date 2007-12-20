@@ -44,6 +44,10 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     m_pMenu->AddEntry(name, GetTranslation(name));
 }
 
+void CLuaCFGMenu::CoreUpdateVar(const char *name)
+{
+}
+
 void CLuaCFGMenu::CoreUpdateLanguage()
 {
     for (TVarType::iterator it=GetVariables().begin(); it!=GetVariables().end(); it++)

@@ -180,6 +180,12 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     }
 }
 
+void CLuaCFGMenu::CoreUpdateVar(const char *name)
+{
+    if (name == CurSelection())
+        UpdateSelection(name);
+}
+
 void CLuaCFGMenu::CoreUpdateLanguage()
 {
     GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pVarListView)));

@@ -72,7 +72,7 @@ void CLuaDirSelector::BrowseCB(GtkWidget *widget, gpointer data)
 {
     GtkWidget *entry = static_cast<GtkWidget *>(data);
     GtkWidget *dialog = CreateDirChooser(CreateText(GetTranslation("Select a directory")));
-    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), gtk_entry_get_text(GTK_ENTRY(entry)));
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), GetFirstValidDir(gtk_entry_get_text(GTK_ENTRY(entry))).c_str());
     
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
     {

@@ -88,11 +88,12 @@ export LD_LIBRARY_PATH
     os.chmod(filename, "0755")
 end
 
-function copyxdgstuff(xdgdir, deskdir)
-    -- XDG utilities
-    os.mkdirrec(xdgdir)
-    os.copy(curdir .. "/xdg-utils/xdg-desktop-menu", xdgdir)
-    
+function copyxdgutils(dir)
+    os.mkdirrec(dir .. "/xdg-utils")
+    os.copy(curdir .. "/xdg-utils/xdg-desktop-menu", dir)
+end
+
+function copydeskfiles(deskdir)
     -- Desktop entries
     local dir = xdgmenudirs(true) -- Works only for global installations atm
     if dir then
