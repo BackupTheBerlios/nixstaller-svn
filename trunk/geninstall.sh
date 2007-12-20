@@ -29,6 +29,7 @@ CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]` # Convert to lowercase
 CURRENT_ARCH=`uname -m`
 echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86" # Convert iX86 --> x86
 echo $CURRENT_ARCH | grep "86pc" >/dev/null && CURRENT_ARCH="x86" # Convert 86pc --> x86
+echo $CURRENT_ARCH | grep "amd64" >/dev/null && CURRENT_ARCH="x86_64" # Convert amd64 --> x86_64
 
 haslibs()
 {

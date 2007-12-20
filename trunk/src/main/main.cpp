@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <dirent.h>
 #include <libgen.h>
 
@@ -134,11 +135,12 @@ void CMain::Init(int argc, char **argv)
     std::transform(m_szOS.begin(), m_szOS.end(), m_szOS.begin(), tolower);
 
     m_szCPUArch = inf.machine;
-    // Convert iX86 to x86
     if ((m_szCPUArch[0] == 'i') && (m_szCPUArch.compare(2, 2, "86") == 0))
         m_szCPUArch = "x86";
     else if (m_szCPUArch == "i86pc")
         m_szCPUArch = "x86";
+    else if (m_szCPUArch == "amd64")
+    	m_szCPUArch = "x86_64";
 
     m_szOwnDir = GetCWD();
     

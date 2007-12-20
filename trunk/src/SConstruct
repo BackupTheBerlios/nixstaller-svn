@@ -432,6 +432,9 @@ else:
     
 if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
     cur_arch = "x86"
+elif cur_arch == 'amd64':
+	cur_arch = "x86_64"
+	
     
 # OS/Arch specific dirs
 lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
@@ -608,7 +611,7 @@ if not env.GetOption('clean'):
             
     if not BUILD_TARGETS or 'gtk' in map(str, BUILD_TARGETS):
         if not conf.CheckLibWithEnv('gobject-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
-            print "Couldn't find libgobjects-2.0 !"
+            print "Couldn't find libgobject-2.0 !"
             Exit(1)
         if not conf.CheckLibWithEnv('glib-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
             print "Couldn't find libglib-2.0 !"

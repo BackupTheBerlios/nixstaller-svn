@@ -61,7 +61,7 @@ if [ ! -w "$PROGDIR" -o ! -w "$BINDIR" ]; then
 fi
 
 MD5BIN=`which md5sum`
-[ -z "$MD5BIN" ] && MD5BIN=`which md5`
+[ -z "$MD5BIN" -a ! -z "`which md5`" ] && MD5BIN="`which md5` -q"
 
 if [ -z "$MD5BIN" ]; then
     echo "WARNING: Could not find a suitable binary ('md5' or 'md5sum') to calculate MD5 sums in PATH."
@@ -124,6 +124,14 @@ fi
 
 ]]))
 
+    local xdgscript = xdguninstscript()
+    
+    if script then
+        script:write("\necho Uninstalling menu entries...\n")
+        check(script:write(xdgscript))
+        check(script:write("\n\n"))
+    end
+
     local dirs = {}
     local rmfile = function(path, prefix, file)
         local f = prefix .. "/" .. file
@@ -160,14 +168,7 @@ fi
     for _, d in ipairs(dirs) do
         check(script:write(string.format("echo REMOVE DIRECTORY: %s && rmdir \"%s\"\n", d, d)))
     end
-    
-    local xdgscript = xdguninstscript()
-    
-    if script then
-        script:write("\necho Uninstalling menu entries...\n")
-        check(script:write(xdgscript))
-    end
-    
+        
     check(script:write("echo Uninstallation of $PROGNAME done.\n"))
     
     script:close()

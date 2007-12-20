@@ -57,6 +57,9 @@ configure()
     # Solaris uses i86pc instead of x86 (or i*86), convert
     echo $CURRENT_ARCH | grep "i86pc" >/dev/null && CURRENT_ARCH="x86"   
 
+	# Some platforms use x86_64, some amd64...lets just stick to one :)
+	echo $CURRENT_ARCH | grep "amd64" >/dev/null && CURRENT_ARCH="x86_64" # Convert amd64 --> x86_64
+	
     echo "CPU Arch: $CURRENT_ARCH"
 
     if [ ! -d "./bin/$CURRENT_OS/$CURRENT_ARCH/" ]; then

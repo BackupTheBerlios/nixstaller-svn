@@ -1,5 +1,12 @@
 #!/bin/sh
 
+OS=`uname`
+CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
+CURRENT_ARCH=`uname -m`
+echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86"
+echo $CURRENT_ARCH | grep "i86pc" >/dev/null && CURRENT_ARCH="x86"   
+echo $CURRENT_ARCH | grep "amd64" >/dev/null && CURRENT_ARCH="x86_64"
+	
 SRCDIR=$PWD
 DESTFILES=$PWD/deps/files
 DESTPREFIX=$PWD/deps/usr
@@ -51,7 +58,7 @@ buildpng()
     get "http://belnet.dl.sourceforge.net/sourceforge/libpng/libpng-1.2.21.tar.gz"
     untar "libpng-1.2.21.tar.gz"
     dodir "libpng-1.2.21/"
-    ./configure --prefix="$DESTPREFIX" && make && make install && make clean
+    ./configure --prefix="$DESTPREFIX" --disable-shared && make && make install && make clean
     restoredir
 }
 
@@ -88,8 +95,18 @@ buildncurses()
     get "ftp://invisible-island.net/ncurses/ncurses-5.6.tar.gz"
     untar "ncurses-5.6.tar.gz"
     dodir "ncurses-5.6"
+    
+    case $CURRENT_OS in
+    	freebsd | netbsd | openbsd )
+    		COPTS="--enable-termcap"
+    		;;
+    	sunos )
+    		COPTS="--with-terminfo-dirs=/usr/share/lib/terminfo/"
+    		;;
+    esac
+		
     # Examples may fail to build, just make sure to always call make install (no &&).
-    ./configure --without-gpm --without-dlsym && make ; make install DESTDIR="$DESTPREFIX" && make clean
+    ./configure --without-gpm --without-dlsym $COPTS && make ; make install DESTDIR="$DESTPREFIX" && make clean
     restoredir
 }
 

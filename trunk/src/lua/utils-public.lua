@@ -15,9 +15,11 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
+utils = {}
+
 function utils.moverec(dir, dest)
     for f in io.dir(dir) do
-        checkcmd(OLDG.install.execute, string.format("mv '%s/%s' '%s/'", dir, f, dest))
+        checkcmd(install.execute, string.format("mv '%s/%s' '%s/'", dir, f, dest))
     end
 end
 
