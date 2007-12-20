@@ -101,8 +101,8 @@ function create(src)
     -- Create directory structure
     check(os.mkdirrec(instfiles))
     check(os.mkdirrec(pkgbindir))
-    moverec(src .. "/files", instfiles)
-    moverec(src .. "/bins", pkgbindir)
+    utils.moverec(src .. "/files", instfiles)
+    utils.moverec(src .. "/bins", pkgbindir)
 
     -- Make description
     makedesc(pkgdir)
@@ -114,8 +114,8 @@ function create(src)
     checkcmd(OLDG.install.execute, string.format("cd %s && /sbin/makepkg -l y -c n %s/%s", pkgdir, curdir, pkgname()))
     
     -- Move install files back
-    moverec(instfiles, src .. "/files")
-    moverec(pkgbindir, src .. "/bins")
+    utils.moverec(instfiles, src .. "/files")
+    utils.moverec(pkgbindir, src .. "/bins")
 end
 
 function install(src)
@@ -136,7 +136,7 @@ end
 function rollback(src)
     if instfiles and os.fileexists(instfiles) then
         -- Move install files back
-        moverec(instfiles, src .. "/files")
-        moverec(pkgbindir, src .. "/bins")
+        utils.moverec(instfiles, src .. "/files")
+        utils.moverec(pkgbindir, src .. "/bins")
     end
 end

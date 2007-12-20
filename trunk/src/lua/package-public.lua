@@ -21,7 +21,6 @@ function pkg.addbinenv(var, val, bin)
     pkg.binenv[var] = pkg.binenv[var] or {}
     pkg.binenv[var][bin] = val
 end
-    
 
 function pkg.getdatadir(f)
     return pkg.destdir .. "/" .. pkg.name .. ((f and ("/" .. f)) or "")
@@ -29,6 +28,36 @@ end
 
 function pkg.getbindir(f)
     return pkg.bindir .. ((f and ("/" .. string.gsub(f, "/*.+/", ""))) or "")
+end
+
+function pkg.setpermissions()
+    local prefix = curdir .. "/pkg/files"
+    local dirlist = { "." }
+    while #dirlist > 0 do
+        local dir = table.remove(dirlist) -- Pop
+        local dirpath = prefix .. "/dir"
+        for f in io.dir(dirpath) do
+            local path = string.format("%s/%s", dirpath, f)
+            if os.isdir(path) then
+                table.insert(dirlist, path)
+                os.chmod(path, "755")
+            else
+                os.chmod(path, "644")
+            end
+        end
+    end
+    
+    -- Binaries
+    if pkg.bins then
+        for _, b in ipairs(pkg.bins) do
+            os.chmod(prefix .. "/" .. b, "755")
+        end
+    end
+    
+    -- XDG utilities
+    for f in io.dir(prefix .. "/xdg-utils") do
+        os.chmod(prefix .. "/xdg-utils/" .. f, "755")
+    end
 end
 
 function install.generatepkg()
@@ -52,8 +81,6 @@ function install.generatepkg()
         end
     
         install.setstatus("Installing package")
-        
-        setpermissions(dir) -- UNDONE
         
         local version
         

@@ -38,7 +38,11 @@ void CTextWidget::CoreDraw()
 void CTextWidget::DoDraw()
 {
     TLinesList &lines = GetLineList();
+    const int size = SafeConvert<int>(lines.size());
     
+    if (m_iYOffset > size) // May happen when lines are deleted for example
+        m_iYOffset = size;
+        
     int y = 0;
     TLinesList::iterator it=lines.begin() + m_iYOffset;
     

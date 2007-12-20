@@ -17,6 +17,7 @@
 
 dofile("utils.lua")
 dofile("package.lua")
+dofile("utils-public.lua")
 
 do
     local oldf = install.newscreen
@@ -92,6 +93,7 @@ function GenerateDefaultScreens()
     OLDG.PackageDirScreen = require "packagedirscreen"
     OLDG.PackageToggleScreen = require "packagetogglescreen"
     OLDG.InstallScreen = require "installscreen"
+    OLDG.SummaryScreen = require "summaryscreen"
     OLDG.FinishScreen = require "finishscreen"
     OLDG.install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
 end

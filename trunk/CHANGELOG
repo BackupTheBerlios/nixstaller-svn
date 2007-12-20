@@ -13,6 +13,10 @@
 - genprojdir.sh now defaults to current arch.
 - geninstall.sh/genprojdir.sh can now be used from any directory.
 - io.md5 lua function
+- Fixed: Overflow crash with lua textfield
+- Install summary screen
+- xdg-open functionality through lua function
+- utils package
 
 
 0.2.2 --> 0.3

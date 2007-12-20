@@ -87,8 +87,8 @@ function create(src)
     -- Create directory structure
     check(os.mkdirrec(instfiles))
     check(os.mkdirrec(debbin))
-    moverec(src .. "/files", instfiles)
-    moverec(src .. "/bins", debbin)
+    utils.moverec(src .. "/files", instfiles)
+    utils.moverec(src .. "/bins", debbin)
 
     local size = math.ceil((pkgsize(instfiles) + pkgsize(debbin)) / 1024)
     
@@ -117,8 +117,8 @@ Description: %s
     
     -- Move install files back
     checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
-    moverec(instfiles, src .. "/files")
-    moverec(debbin, src .. "/bins")
+    utils.moverec(instfiles, src .. "/files")
+    utils.moverec(debbin, src .. "/bins")
 end
 
 function install(src)
@@ -141,7 +141,7 @@ function rollback(src)
             checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
         end
         -- Move install files back
-        moverec(instfiles, src .. "/files")
-        moverec(debbin, src .. "/bins")
+        utils.moverec(instfiles, src .. "/files")
+        utils.moverec(debbin, src .. "/bins")
     end
 end

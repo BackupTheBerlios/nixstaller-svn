@@ -95,13 +95,13 @@ echo "Verifying installed files..."
         end
     end
     
-    recursivedir(src .. "/files", function(path, relpath)
+    utils.recursivedir(src .. "/files", function(path, relpath)
         if not os.isdir(path) then
             addcheck(path, pkg.getdatadir(), relpath)
         end
     end)
     
-    recursivedir(src .. "/bins", function(path, relpath)
+    utils.recursivedir(src .. "/bins", function(path, relpath)
         if not os.isdir(path) and path ~= scriptname then
             addcheck(path, pkg.getbindir(), relpath)
         end
@@ -134,11 +134,11 @@ fi
         end
     end
     
-    recursivedir(src .. "/files", function(path, relpath)
+    utils.recursivedir(src .. "/files", function(path, relpath)
         rmfile(path, pkg.getdatadir(), relpath)
     end)
     
-    recursivedir(src .. "/bins", function(path, relpath)
+    utils.recursivedir(src .. "/bins", function(path, relpath)
         rmfile(path, pkg.getbindir(), relpath)
     end)
 

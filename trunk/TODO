@@ -14,7 +14,6 @@ OVERALL
 - Check if ~ works (reported bug)
 - Sentries for format strings coming from Lua and are parsed via va_string (ie msgbox)
 - Check about screen size
-- Public lua utility file (for setpermissions, recursivedir, basename etc)
 
 
 PACKAGING
@@ -22,7 +21,6 @@ PACKAGING
     * Package Changelog?
     * RPM: Vendor?, Icon?
 - RPM: Description formatting?
-- Permissions of installed package
 - Set right ENV in bin scripts, make KDE/Gnome etc optional?
 - pacman: Check for locks (done for this release?)
 - slackware: description works?

@@ -46,7 +46,7 @@ end
 
 function genfilelist(src)
     local flist = check(io.open(src .. "/.FILELIST", "w"))
-    recursivedir(src, function (_, d)
+    utils.recursivedir(src, function (_, d)
                          if d == ".FILELIST" then
                              return
                          end
@@ -73,8 +73,8 @@ function create(src)
     -- Create directory structure
     check(os.mkdirrec(instfiles))
     check(os.mkdirrec(pkgbindir))
-    moverec(src .. "/files", instfiles)
-    moverec(src .. "/bins", pkgbindir)
+    utils.moverec(src .. "/files", instfiles)
+    utils.moverec(src .. "/bins", pkgbindir)
 
     -- Copy XDG utilities and desktop files
     copyxdgstuff(instfiles, pkgdir)
@@ -101,8 +101,8 @@ arch = %s
     checkcmd(OLDG.install.execute, string.format("cd %s && tar czf %s/%s --owner=root --group=root * .FILELIST .PKGINFO", pkgdir, curdir, pkgname()))
     
     -- Move install files back
-    moverec(instfiles, src .. "/files")
-    moverec(pkgbindir, src .. "/bins")
+    utils.moverec(instfiles, src .. "/files")
+    utils.moverec(pkgbindir, src .. "/bins")
 end
 
 function install(src)
@@ -120,7 +120,7 @@ end
 function rollback(src)
     if instfiles and os.fileexists(instfiles) then
         -- Move install files back
-        moverec(instfiles, src .. "/files")
-        moverec(pkgbindir, src .. "/bins")
+        utils.moverec(instfiles, src .. "/files")
+        utils.moverec(pkgbindir, src .. "/bins")
     end
 end

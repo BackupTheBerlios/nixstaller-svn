@@ -361,12 +361,13 @@ function PrepareArchive()
     RequiredCopy(maindir .. "/src/lua/screens/packagedirscreen.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/screens/packagetogglescreen.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/screens/selectdirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/screens/summaryscreen.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/screens/welcomescreen.lua", confdir .. "/tmp")
     
     -- XDG utils
     os.mkdir(confdir .. "/tmp/xdg-utils")
---     RequiredCopy(maindir .. "/src/xdg-utils/xdg-desktop-icon", confdir .. "/tmp/xdg-utils")
     RequiredCopy(maindir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
+    RequiredCopy(maindir .. "/src/xdg-utils/xdg-open", confdir .. "/tmp/xdg-utils")
     
     -- Language files
     for _, f in pairs(cfg.languages) do
