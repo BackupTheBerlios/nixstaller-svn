@@ -451,6 +451,7 @@ void CMain::InitLua()
     
     // Default pkg values
     NLua::LuaSet(true, "register", "pkg");
+    NLua::LuaSet(false, "setkdeenv", "pkg");
     NLua::LuaSet("1", "release", "pkg");
     NLua::LuaSet("", "url", "pkg");
     NLua::LuaSet("", "license", "pkg");

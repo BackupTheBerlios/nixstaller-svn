@@ -282,11 +282,11 @@ The FLTK frontend is a graphical frontend. Some commonly available X11 libraries
 @*
 The GTK2 frontend depends on GTK+ 2.4 or later. For this reason it may not run on every system. However, because it's dynamicly linked, it's also the smallest frontend.@*
 @*
-The selection of a frontend may depend on the package requirements: Is your software text based? The ncurses might be enough. If your software however requires GTK2 it makes sence to only include this frontend. If size isn't a big issue you may aswell just include all the frontends and therefore increase the chance that the a suitable frontend can be found on various systems.
+The selection of a frontend may depend on the package requirements: Is your software text based? The ncurses frontend might be enough. If your software however requires GTK2 it makes sence to only include this frontend. If size isn't a big issue you may aswell just include all the frontends and therefore increase the chance that the a suitable frontend can be found on various systems.
 
 
 @section Lua scripts
-The installation is controlled by one or two lua scripts. These are explained in the @ref{Lua Scripts} chapter.
+The installation is controlled by one mandatory and two optional lua scripts. These are explained in the @ref{Lua Scripts} chapter.
 
 
 @anchor{Translations}
@@ -351,6 +351,38 @@ Each of these items are stored in plain text files. The @emph{welcome message} i
 @section Other files
 Other files include files needed during runtime (ie when the installer is started, but not installing yet) and the files to be used during installation. Examples of runtime files are graphics such as a logo or text files that need to be displayed. The next chapter will cover how to specify these files.
 
+@anchor{pkgmode}
+@section Package Mode
+Besides the @emph{regular} installation mode, Nixstaller supports an additional mode called @emph{Package Mode}.@*
+@*
+The main reason for using this mode is that it allows easier package managing of the software to be installed. This is accomplished by either registering the software on the users package manager system (ie. rpm) or by creating a script that is used to uninstall the software.@*
+@*
+Another reason is dependency handling. At this point it is very basic, but more features will be added to feature releases of Nixstaller.
+
+@subsection How it works
+The files that should be installed are placed in a special directory, the @emph{temporary package directory}. The installer will then either package these files and use the local package manager system to install them or copy them directly to their destination. Whether a package is registered or not depends on user configuration, installer configuration and if there is support for the user's package manager.@*
+@*
+The files are not directly placed in the destination directory, but instead are placed in a subdirectory inside the destination directory. This subdirectory is generally referred as the @emph{data directory}. Scripts will be installed to another directory, the @emph{binary directory}, that will launch an executable from the data directory. These scripts can set up an environment (usually by setting one or more shell variables) so that the executable is able run. Besides the @emph{binary scripts}, the binary directory is also used to store any uninstallation scripts. Usually the binary directory is defined within the user's @var{PATH} variable. @*
+@*
+The fact that seperate scripts are used to set up an environment is how the current dependency handling works. The shell variable @var{LD_LIBRARY_PATH} is used to let programs find dynamic libraries in non default directories. In these binary scripts @var{LD_LIBRARY_PATH} is set to include a subdirectory called @file{lib/} in the data directory. So to include any (dynamic library) dependencies you simply have to make sure they are placed within a subdirectory called @file{lib/} located inside the temporary package directory.@*
+@*
+For KDE programs the @var{KDEDIRS} shell variable can be set up to include the @emph{data directory} so that KDE programs are able to run.@*
+@*
+Besides @var{LD_LIBRARY_PATH} and @var{KDEDIRS} any other shell variables can be set, this is discussed in the next chapter.@*
+@*
+To summarize:
+@itemize @bullet
+@item Files to be installed are placed inside the @emph{temporary package directory}.
+@item Depending on configurations and the user's system the files are being registrated into the local package manager or simply copied.
+@item All the files are installed to the @emph{data directory}, which is a subdirectory inside the destination directory.
+@item The user should launch any executables via @emph{binary scripts}. These scripts will set up an environment and launch the actual executable.
+@item Using Package Mode the user can uninstall the software via his system's package manager or via a script (which is located inside the binary directory).
+@end itemize
+
+
+@section Desktop Menu Entries
+Nixstaller can easily create and install so called @emph{.desktop} files that are used for menu entries on various window managers and desktop environments. The files are created according to the freedesktop specifications, more info @uref{http://standards.freedesktop.org/menu-spec/latest/,here}. When Package Mode is enabled the menu entries will be removed as soon as the user uninstalls the package. The next chapter discusses how to generate .desktop files.
+
 
 @node Lua Scripts
 @chapter Lua Scripts
@@ -358,7 +390,7 @@ Other files include files needed during runtime (ie when the installer is starte
 @section Introduction
 This chapter discusses how to use Lua for scripting the installer.@*
 @*
-The creation and behaviour of the installer is controlled by 2 Lua scripts: @file{config.lua} and @file{run.lua}. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or atleast keep it close.@*
+The creation and behaviour of the installer is controlled by 3 Lua scripts: @file{config.lua}, @file{run.lua} and @file{pkg.lua}. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or atleast keep it close.@*
 @*
 The appendix @ref{Lua Library Reference} is a complete reference for all the Lua functionality (including extensions from Nixstaller). You will probably want to check this after you read this and the @ref{Tutorials,,tutorials chapter}.
 
@@ -416,7 +448,7 @@ cfg.targetarch = @{ "x86" @}
 cfg.targetos = @{ "sunos", "netbsd", "linux" @}}
 
 @section Second Lua Script: @file{run.lua}
-The second Lua script is used to control the installer. This file is unlike the @file{config.lua} optional, but it's pretty common to have one. Generally speaking, the following things can be accompished using this file:
+The second Lua script is used to control the installer. This file is unlike the @file{config.lua} optional, but it's pretty common to have one. Generally speaking, the following things can be accomplished using this file:
 @itemize @bullet
 @item Configuring installation screens.
 @item Creating new installation screens.
@@ -441,7 +473,7 @@ end}
 The above items are discussed below.
 
 @subsection Setting the install destination path
-The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it through the @code{SelectDirScreen} (see below) or point it to a temporary directory. The latter is accompished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).
+The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it through the @code{SelectDirScreen} (see below) or point it to a temporary directory. The latter is accomplished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).
 
 
 @subsection Installation screens
@@ -654,6 +686,147 @@ Any files that were put in the @file{extra_files/} directory can be accessed dur
 
 @subsection Translations
 @emph{Any text} that is used by installation screens, widgets or functions indirectly using these (such as @ref{install.setstatus}) can be translated. This also includes option names from widgets such as radiobuttons or menus. Generally speaking: any text that is displayed, besides installation output, can be translated. As discussed before (@pxref{Translations}) the @file{strings} file is used to translate various strings. To translate text used from the @file{run.lua} file, simply add any strings to the @file{strings} file from the desired language in your project directory.
+
+
+@section Third Lua Script: @file{package.lua}
+This file is only necessary when using @ref{pkgmode,,Package Mode}. Like @file{config.lua} this file is fairly simple and is only used for setting up Lua variables. All the variables are inside the @code{pkg} package. Descriptions of them are listed below.
+
+@table @code
+@item cfg.bindir
+This variable should contain a @ref{Strings,,string} describing the location of the binary directory. When unspecified, a reasonable default is choosen for the user's system (mostly @file{/usr/local/bin}).
+@item cfg.bins
+This variable holds an array (@pxref{Tables}) with @ref{Strings,, strings} pointing to any executables, relative to the @emph{data directory}. These are used for the generation of @emph{binary scripts}.@*
+Example:
+@codeblock{pkg.bins = @{ "bin/myapp" @}}
+@item cfg.description
+A description of the software to be installed. Usually not longer than a few sentences.
+@item pkg.destdir
+A @ref{Strings,,string} containing the destination directory for the data directory. When unspecified a reasonable default is choosen for the user's system (mostly @file{/usr/local/share}).
+@item pkg.group
+This variable should contain a @ref{Strings,,string} describing a valid @emph{package group}. Some package managers assign to each package a package group. Nixstaller has it's own range of package groups, these are translated to a similar group from the native package manager when the package is generated. Valid groups are listed in the table below.
+@starttable{.5, .5}
+@addtableheaderrow{Package Group}
+    @addtableheadercol{Description}
+@endtablerow
+
+@addtablerow{Archiving}
+    @addtablecol{Software used for archiving data.}
+@endtablerow
+
+@addtablerow{Communication}
+    @addtablecol{Software used for communication.}
+@endtablerow
+
+@addtablerow{Databases}
+    @addtablecol{Software related to databases.}
+@endtablerow
+
+@addtablerow{Development-languages}
+    @addtablecol{Software related to any programming language.}
+@endtablerow
+
+@addtablerow{Development-libraries}
+    @addtablecol{Libraries used for development.}
+@endtablerow
+
+@addtablerow{Development-tools}
+    @addtablecol{Tools that can aid in developing software.}
+@endtablerow
+
+@addtablerow{Documentation}
+    @addtablecol{Anything related to documentation.}
+@endtablerow
+
+@addtablerow{Editors}
+    @addtablecol{Software used for editing text.}
+@endtablerow
+
+@addtablerow{File}
+    @addtablecol{Software used for file managing.}
+@endtablerow
+
+@addtablerow{Games}
+    @addtablecol{Anything related to games.}
+@endtablerow
+
+@addtablerow{Graphics}
+    @addtablecol{Graphics software.}
+@endtablerow
+
+@addtablerow{Libraries}
+    @addtablecol{Libraries that can be used for other software.}
+@endtablerow
+
+@addtablerow{Multimedia}
+    @addtablecol{Anything related to multimedia applications.}
+@endtablerow
+
+@addtablerow{Network}
+    @addtablecol{Software used for networking.}
+@endtablerow
+
+@addtablerow{Perl}
+    @addtablecol{Perl related software.}
+@endtablerow
+
+@addtablerow{Shells}
+    @addtablecol{Commandline shells.}
+@endtablerow
+
+@addtablerow{Sound}
+    @addtablecol{Anything related to sound, such as mp3 players.}
+@endtablerow
+
+@addtablerow{System}
+    @addtablecol{System adminstration tools.}
+@endtablerow
+
+@addtablerow{Text}
+    @addtablecol{Tools related to text processing.}
+@endtablerow
+@endtable
+
+@item pkg.license
+This (optional) variable should contain a @ref{Strings,,string} describing the used software license.
+@item pkg.maintainer
+This variable should contain a @ref{Strings,,string} describing the author's of the installer, usually with an e-mail address after that.
+@item pkg.name
+This variable should contain a @ref{Strings,,string} describing the name of the package to be installed. Usually this is a simple, lowercased name without spaces.
+@item pkg.register
+A boolean variable which tells to enable or disable package registration. When unspecified it defaults to @code{true}.
+@item pkg.release
+This variable contains the release version. This can be seen as the version of the installer itself. In other words it's only bumped when the installer itself has changed, but the software it's going to install is not. When unspecified it defaults to @code{1}.
+@item pkg.setkdeenv
+If this boolean variable is set to @code{true}, the shell variable @var{KDEDIRS} is set up so that KDE programs can be executed normally. Usually you want to enable this for any KDE software. Default: @code{false}.
+@item pkg.summary
+A @ref{Strings,,string} variable containing a small (not more than one line) description of the software.
+@item pkg.version
+This variable should contain a @ref{Strings,,string} containing the version of the software to be installed.
+@item pkg.url
+This (optional) variable should contain a @ref{Strings,,string} describing an URL to the software's homepage.
+@end table
+
+To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise it will be set for every binary script.@*
+@*
+An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
+@codeblock{pkg.name = "test"
+pkg.version = "1.0a"
+pkg.release = "1"
+pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail.com>"
+pkg.url = "www.rick-soft.org"
+pkg.bins = @{ "bin/test" @}
+pkg.license = "GPLv2"
+pkg.description = [[
+This package is nothing more than a test package.
+The description field can contain multiple lines, as is shown here
+]]
+pkg.summary = "A test package"
+pkg.group = "File"
+pkg.destdir = "/usr/local/share"
+pkg.bindir = "/usr/local/bin"
+pkg.register = true
+pkg.setkdeenv = false
+pkg.setenv("TEST_VER", "1")}
 
 
 
@@ -2835,8 +3008,7 @@ Returns @code{true} if the option @code{o} is enabled or @code{false} when disab
 This variadic function enables or disables one or more options. The first argument, @code{o}, and the rest before argument @code{e} are the option numbers or strings containing the option names to enable or disable. If @code{e} is @code{true} the option(s) are enabled, if @code{false} they will be disabled.@*
 @*
 Example:
-@codeblock{@minus{}@minus{} This will enable the first and third option:
-mybox:set(1, 3, true) @minus{}@minus{} Enable first and third option
+@codeblock{mybox:set(1, 3, true) @minus{}@minus{} Enable first and third option
 mybox:set("Option", false) @minus{}@minus{} Disables the option @emph{Option}}
 @endluafunc
 

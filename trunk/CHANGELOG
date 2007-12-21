@@ -21,6 +21,8 @@
 - Dirselectors now translate '~/' as $HOME/ (suggested by Tomasz Sałaciński)
 - Increased size of aboutdialogs (suggested by Tomasz Sałaciński)
 - cfgmenu:set() function
+- Functionality to create xdg menu entries
+- sudo support
 
 
 0.2.2 --> 0.3

@@ -10,6 +10,7 @@ OVERALL
 - Initial value from constructor for radiobutton, menu etc?
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
+- cfg.createpkg
 
 
 PACKAGING
@@ -28,6 +29,7 @@ TEST
 - Uninstall script
 - slackware: description works?
 - Check if ~ works (reported bug)
+- Default (empty) pkg values (update docs if necessary)
 
 
 TRANSLATIONS
@@ -50,7 +52,27 @@ TRANSLATIONS
 
 DOCS:
 - Fix genprojdir example (bug report)
-- Functions from util.lua?
+- utils package
+- Changes:
+    - install.execute / install.executeasroot now return exit code from command
+    - Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
+    - screen:addscreenend() function
+    - exitstatus() function
+    - x86_64 support.
+    - genprojdir.sh now defaults to current arch.
+    - geninstall.sh/genprojdir.sh can now be used from any directory.
+    - io.md5 lua function
+    - Install summary screen
+    - xdg-open functionality through lua function
+    - cfgmenu:set() function
+- Package mode:
+    - Explenation
+    - Dep handling
+    - 'pkg' package reference
+- Generation of desktop entries
+    - Reference: install.menuentries, install.gendesktopentries()
+- Tutorials
+- Update index
 
 
 MAIN
