@@ -390,7 +390,7 @@ Nixstaller can easily create and install so called @emph{.desktop} files that ar
 @section Introduction
 This chapter discusses how to use Lua for scripting the installer.@*
 @*
-The creation and behaviour of the installer is controlled by 3 Lua scripts: @file{config.lua}, @file{run.lua} and @file{pkg.lua}. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or atleast keep it close.@*
+The creation and behaviour of the installer is controlled by 3 Lua scripts: @file{config.lua}, @file{run.lua} and @file{package.lua}. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or atleast keep it close.@*
 @*
 The appendix @ref{Lua Library Reference} is a complete reference for all the Lua functionality (including extensions from Nixstaller). You will probably want to check this after you read this and the @ref{Tutorials,,tutorials chapter}.
 
@@ -447,8 +447,147 @@ cfg.languages = @{ "english" @}
 cfg.targetarch = @{ "x86" @}
 cfg.targetos = @{ "sunos", "netbsd", "linux" @}}
 
-@section Second Lua Script: @file{run.lua}
-The second Lua script is used to control the installer. This file is unlike the @file{config.lua} optional, but it's pretty common to have one. Generally speaking, the following things can be accomplished using this file:
+@section Second Lua Script: @file{package.lua}
+This file is only necessary when using @ref{pkgmode,,Package Mode}. Like @file{config.lua} this file is fairly simple and is only used for setting up Lua variables. All the variables are inside the @code{pkg} package. Descriptions of them are listed below.
+
+@table @code
+@item pkg.bindir
+This variable should contain a @ref{Strings,,string} describing the location of the binary directory. When unspecified, a reasonable default is choosen for the user's system (mostly @file{/usr/local/bin}).
+@item pkg.bins
+This variable holds an array (@pxref{Tables}) with @ref{Strings,, strings} pointing to any executables, relative to the @emph{data directory}. These are used for the generation of @emph{binary scripts}.
+@item pkg.description
+A description of the software to be installed. Usually not longer than a few sentences.
+@item pkg.destdir
+A @ref{Strings,,string} containing the destination directory for the data directory. When unspecified a reasonable default is choosen for the user's system (mostly @file{/usr/local/share}).
+@item pkg.group
+This variable should contain a @ref{Strings,,string} describing a valid @emph{package group}. Some package managers assign to each package a package group. Nixstaller has it's own range of package groups, these are translated to a similar group from the native package manager when the package is generated. Valid groups are listed in the table below.
+@starttable{.5, .5}
+@addtableheaderrow{Package Group}
+    @addtableheadercol{Description}
+@endtablerow
+
+@addtablerow{Archiving}
+    @addtablecol{Software used for archiving data.}
+@endtablerow
+
+@addtablerow{Communication}
+    @addtablecol{Software used for communication.}
+@endtablerow
+
+@addtablerow{Databases}
+    @addtablecol{Software related to databases.}
+@endtablerow
+
+@addtablerow{Development-languages}
+    @addtablecol{Software related to any programming language.}
+@endtablerow
+
+@addtablerow{Development-libraries}
+    @addtablecol{Libraries used for development.}
+@endtablerow
+
+@addtablerow{Development-tools}
+    @addtablecol{Tools that can aid in developing software.}
+@endtablerow
+
+@addtablerow{Documentation}
+    @addtablecol{Anything related to documentation.}
+@endtablerow
+
+@addtablerow{Editors}
+    @addtablecol{Software used for editing text.}
+@endtablerow
+
+@addtablerow{File}
+    @addtablecol{Software used for file managing.}
+@endtablerow
+
+@addtablerow{Games}
+    @addtablecol{Anything related to games.}
+@endtablerow
+
+@addtablerow{Graphics}
+    @addtablecol{Graphics software.}
+@endtablerow
+
+@addtablerow{Libraries}
+    @addtablecol{Libraries that can be used for other software.}
+@endtablerow
+
+@addtablerow{Multimedia}
+    @addtablecol{Anything related to multimedia applications.}
+@endtablerow
+
+@addtablerow{Network}
+    @addtablecol{Software used for networking.}
+@endtablerow
+
+@addtablerow{Perl}
+    @addtablecol{Perl related software.}
+@endtablerow
+
+@addtablerow{Shells}
+    @addtablecol{Commandline shells.}
+@endtablerow
+
+@addtablerow{Sound}
+    @addtablecol{Anything related to sound, such as mp3 players.}
+@endtablerow
+
+@addtablerow{System}
+    @addtablecol{System adminstration tools.}
+@endtablerow
+
+@addtablerow{Text}
+    @addtablecol{Tools related to text processing.}
+@endtablerow
+@endtable
+
+@item pkg.license
+This (optional) variable should contain a @ref{Strings,,string} describing the used software license.
+@item pkg.maintainer
+This variable should contain a @ref{Strings,,string} describing the author's of the installer, usually with an e-mail address after that.
+@item pkg.name
+This variable should contain a @ref{Strings,,string} describing the name of the package to be installed. Usually this is a simple, lowercased name without spaces.
+@item pkg.register
+A boolean variable which tells to enable or disable package registration. When unspecified it defaults to @code{true}.
+@item pkg.release
+This variable contains the release version. This can be seen as the version of the installer itself. In other words it's only bumped when the installer itself has changed, but the software it's going to install is not. When unspecified it defaults to @code{1}.
+@item pkg.setkdeenv
+If this boolean variable is set to @code{true}, the shell variable @var{KDEDIRS} is set up so that KDE programs can be executed normally. Usually you want to enable this for any KDE software. Default: @code{false}.
+@item pkg.summary
+A @ref{Strings,,string} variable containing a small (not more than one line) description of the software.
+@item pkg.version
+This variable should contain a @ref{Strings,,string} containing the version of the software to be installed.
+@item pkg.url
+This (optional) variable should contain a @ref{Strings,,string} describing an URL to the software's homepage.
+@end table
+
+To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.@*
+@*
+An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
+@codeblock{pkg.name = "test"
+pkg.version = "1.0a"
+pkg.release = "1"
+pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail.com>"
+pkg.url = "www.rick-soft.org"
+pkg.bins = @{ "bin/test" @}
+pkg.license = "GPLv2"
+pkg.description = [[
+This package is nothing more than a test package.
+The description field can contain multiple lines, as is shown here
+]]
+pkg.summary = "A test package"
+pkg.group = "File"
+pkg.destdir = "/usr/local/share"
+pkg.bindir = "/usr/local/bin"
+pkg.register = true
+pkg.setkdeenv = false
+pkg.setenv("TEST_VER", "1")}
+
+
+@section Third Lua Script: @file{run.lua}
+The third Lua script is used to control the installer. Although this file is optional, it's pretty common to have one. Generally speaking, the following things can be accomplished using this file:
 @itemize @bullet
 @item Configuring installation screens.
 @item Creating new installation screens.
@@ -680,153 +819,61 @@ end}
 
 We start with defining the number of installation steps (2). Then the installation files are extracted to the directory that is defined by the @code{install.destdir} variable (see previous section). Then the status message is changed and a random shell command is executed. The last line shows how to retrieve a value with the @ref{input:get, get method function} from the inputfield class.
 
+
+@subsection Package Mode
+When using Package Mode, besides creating a @file{package.lua} file we have to set up a few things in @file{install.lua} aswell.
+
+@subsubsection Temporary Package Directory
+As described in the previous chapter (described @ref{pkgmode,,here}) the files to be installed need to be placed in the @emph{temporary package directory}. To retrieve the location of this directory the @code{install.getpkgdir} Lua function is used.@*
+@*
+For some installations it might be enough to set @code{install.destdir} to this location. The packaged files are extracted to the temporary package directory and are used directly for installation.@*
+@*
+@comment UNDONE
+For other installations, it might be necessary to first extract any files to a different place (setting @code{install.destdir} with @code{install.gettempdir()}) and place the files to be installed in the temporary package directory later. A good example is when software has to be compiled. An example of this case is shown in tutorial 4.
+
+@subsubsection Generating the package
+After @code{install.extractfiles} is called in the @code{Install()} function inside @file{install.lua}, @code{install.generatepkg()} should be called. This function will do the actual packaging and installing of the software.@*
+Note: This function should always be called @emph{after} @code{install.gendesktopentries()}.
+
+@subsubsection Specific Installation Screens
+A few predefined installation screens exist specificly for Package Mode. These are listed below.
+@table @code
+@item PackageToggleScreen
+Lets the user enable or disable package registration (setting @code{pkg.register}). This screen is not shown incase the installer is unable to register a package.
+@item PackageDirScreen
+This screen lets the user specify the locations for the data and binary directory (let the user set @code{pkg.destdir} and @code{pkg.bindir}).
+@item SummaryScreen
+This screen is usually put just after the @code{InstallScreen}. It will show the user some info about the installed software, which files are installed and how the software can be uninstalled.
+@end table
+Like any other installation screens, these screens should be placed inside the @code{install.screenlist} variable.
+
+@subsubsection Retrieving the Data and Binary directories
+In some cases during installation, you may need to retrieve the real paths to the data or binary directory. For this the functions @code{pkg.getdatadir()} and @code{pkg.bindir()} exists. Both functions accept one optional (string) argument. The @code{pkg.getdatadir} function will simply combine this argument with the path of the data directory. The @code{pkg.getbindir} function use it's argument to return the path to the binary script used for the given binary (relative to the data directory). If no argument is given to one of these functions, @code{pkg.getdatadir} simply returns the path to the data directory and @code{pkg.getbindir} returns the path the binary directory.@*
+@*
+A good example for using these functions is for the creation and installation of desktop menu entries. This is best illustrated in an example:
+@codeblock{function Init()
+    @minus{}@minus{} ...
+    install.menuentries["test"] = install.newdesktopentry(pkg.getbindir("bin/test"),
+                                                          pkg.getdatadir("logo.png"),
+                                                          "Utility")
+    @minus{}@minus{} ...
+end
+@*
+function Install()
+    @minus{}@minus{} ...
+    install.gendesktopentries(not os.writeperm(pkg.getdatadir()))
+    @minus{}@minus{} ...
+end}
+At first, in the @code{Init()} function, a new desktop menu entry is created. The @code{pkg.getbindir} function is used to retrieve the location of the binary script that is used to launch @file{bin/test} inside the data directory. The @code{pkg.getdatadir} is used to retrieve the location of a logo inside the data directory.@*
+After that @code{install.gendesktopentries} is called to install the desktop menu entry. To see if the entry needs to be installed globally, the write permissions of the data directory are checked. If the user cannot write to it, it is assumed the installation went with root access and therefore the package was not installed locally.
+
+
 @subsection Using @samp{runtime files}
 Any files that were put in the @file{extra_files/} directory can be accessed during or before the installation through the @ref{install.extrafilespath} function. This function returns a path to where you can find these files. The function accepts one optional argument containing a @ref{Strings, string} describing a filename. This filename is purely for convience and is simply appended to the returned value. Example: assuming we put a file called @file{readme.txt} in the @file{extra_files/} directory, we can access it as follows:
 @codeblock{readmefilepath = install.extrafilespath("readme.txt")}
 
 @subsection Translations
 @emph{Any text} that is used by installation screens, widgets or functions indirectly using these (such as @ref{install.setstatus}) can be translated. This also includes option names from widgets such as radiobuttons or menus. Generally speaking: any text that is displayed, besides installation output, can be translated. As discussed before (@pxref{Translations}) the @file{strings} file is used to translate various strings. To translate text used from the @file{run.lua} file, simply add any strings to the @file{strings} file from the desired language in your project directory.
-
-
-@section Third Lua Script: @file{package.lua}
-This file is only necessary when using @ref{pkgmode,,Package Mode}. Like @file{config.lua} this file is fairly simple and is only used for setting up Lua variables. All the variables are inside the @code{pkg} package. Descriptions of them are listed below.
-
-@table @code
-@item cfg.bindir
-This variable should contain a @ref{Strings,,string} describing the location of the binary directory. When unspecified, a reasonable default is choosen for the user's system (mostly @file{/usr/local/bin}).
-@item cfg.bins
-This variable holds an array (@pxref{Tables}) with @ref{Strings,, strings} pointing to any executables, relative to the @emph{data directory}. These are used for the generation of @emph{binary scripts}.@*
-Example:
-@codeblock{pkg.bins = @{ "bin/myapp" @}}
-@item cfg.description
-A description of the software to be installed. Usually not longer than a few sentences.
-@item pkg.destdir
-A @ref{Strings,,string} containing the destination directory for the data directory. When unspecified a reasonable default is choosen for the user's system (mostly @file{/usr/local/share}).
-@item pkg.group
-This variable should contain a @ref{Strings,,string} describing a valid @emph{package group}. Some package managers assign to each package a package group. Nixstaller has it's own range of package groups, these are translated to a similar group from the native package manager when the package is generated. Valid groups are listed in the table below.
-@starttable{.5, .5}
-@addtableheaderrow{Package Group}
-    @addtableheadercol{Description}
-@endtablerow
-
-@addtablerow{Archiving}
-    @addtablecol{Software used for archiving data.}
-@endtablerow
-
-@addtablerow{Communication}
-    @addtablecol{Software used for communication.}
-@endtablerow
-
-@addtablerow{Databases}
-    @addtablecol{Software related to databases.}
-@endtablerow
-
-@addtablerow{Development-languages}
-    @addtablecol{Software related to any programming language.}
-@endtablerow
-
-@addtablerow{Development-libraries}
-    @addtablecol{Libraries used for development.}
-@endtablerow
-
-@addtablerow{Development-tools}
-    @addtablecol{Tools that can aid in developing software.}
-@endtablerow
-
-@addtablerow{Documentation}
-    @addtablecol{Anything related to documentation.}
-@endtablerow
-
-@addtablerow{Editors}
-    @addtablecol{Software used for editing text.}
-@endtablerow
-
-@addtablerow{File}
-    @addtablecol{Software used for file managing.}
-@endtablerow
-
-@addtablerow{Games}
-    @addtablecol{Anything related to games.}
-@endtablerow
-
-@addtablerow{Graphics}
-    @addtablecol{Graphics software.}
-@endtablerow
-
-@addtablerow{Libraries}
-    @addtablecol{Libraries that can be used for other software.}
-@endtablerow
-
-@addtablerow{Multimedia}
-    @addtablecol{Anything related to multimedia applications.}
-@endtablerow
-
-@addtablerow{Network}
-    @addtablecol{Software used for networking.}
-@endtablerow
-
-@addtablerow{Perl}
-    @addtablecol{Perl related software.}
-@endtablerow
-
-@addtablerow{Shells}
-    @addtablecol{Commandline shells.}
-@endtablerow
-
-@addtablerow{Sound}
-    @addtablecol{Anything related to sound, such as mp3 players.}
-@endtablerow
-
-@addtablerow{System}
-    @addtablecol{System adminstration tools.}
-@endtablerow
-
-@addtablerow{Text}
-    @addtablecol{Tools related to text processing.}
-@endtablerow
-@endtable
-
-@item pkg.license
-This (optional) variable should contain a @ref{Strings,,string} describing the used software license.
-@item pkg.maintainer
-This variable should contain a @ref{Strings,,string} describing the author's of the installer, usually with an e-mail address after that.
-@item pkg.name
-This variable should contain a @ref{Strings,,string} describing the name of the package to be installed. Usually this is a simple, lowercased name without spaces.
-@item pkg.register
-A boolean variable which tells to enable or disable package registration. When unspecified it defaults to @code{true}.
-@item pkg.release
-This variable contains the release version. This can be seen as the version of the installer itself. In other words it's only bumped when the installer itself has changed, but the software it's going to install is not. When unspecified it defaults to @code{1}.
-@item pkg.setkdeenv
-If this boolean variable is set to @code{true}, the shell variable @var{KDEDIRS} is set up so that KDE programs can be executed normally. Usually you want to enable this for any KDE software. Default: @code{false}.
-@item pkg.summary
-A @ref{Strings,,string} variable containing a small (not more than one line) description of the software.
-@item pkg.version
-This variable should contain a @ref{Strings,,string} containing the version of the software to be installed.
-@item pkg.url
-This (optional) variable should contain a @ref{Strings,,string} describing an URL to the software's homepage.
-@end table
-
-To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise it will be set for every binary script.@*
-@*
-An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
-@codeblock{pkg.name = "test"
-pkg.version = "1.0a"
-pkg.release = "1"
-pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail.com>"
-pkg.url = "www.rick-soft.org"
-pkg.bins = @{ "bin/test" @}
-pkg.license = "GPLv2"
-pkg.description = [[
-This package is nothing more than a test package.
-The description field can contain multiple lines, as is shown here
-]]
-pkg.summary = "A test package"
-pkg.group = "File"
-pkg.destdir = "/usr/local/share"
-pkg.bindir = "/usr/local/bin"
-pkg.register = true
-pkg.setkdeenv = false
-pkg.setenv("TEST_VER", "1")}
 
 
 

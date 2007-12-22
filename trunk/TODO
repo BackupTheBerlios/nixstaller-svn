@@ -11,6 +11,7 @@ OVERALL
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
 - cfg.createpkg
+- Desktopentry naming?
 
 
 PACKAGING
@@ -73,6 +74,7 @@ DOCS:
     - Reference: install.menuentries, install.gendesktopentries()
 - Tutorials
 - Update index
+- UNDONE's
 
 
 MAIN
