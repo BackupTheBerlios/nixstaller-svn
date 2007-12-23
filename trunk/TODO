@@ -12,6 +12,7 @@ OVERALL
 - Way to specifiy frontend when installer is started
 - cfg.createpkg
 - Desktopentry naming?
+- Update genprojdir.sh for new pkg options
 
 
 PACKAGING
@@ -63,7 +64,6 @@ DOCS:
     - genprojdir.sh now defaults to current arch.
     - geninstall.sh/genprojdir.sh can now be used from any directory.
     - io.md5 lua function
-    - Install summary screen
     - xdg-open functionality through lua function
     - cfgmenu:set() function
 - Package mode:
