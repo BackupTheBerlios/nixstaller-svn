@@ -49,6 +49,10 @@ function utils.basename(p)
     return string.gsub(p, "/*.+/", "")
 end
 
+function utils.dirname(p)
+    return string.match(p, "/.*/")
+end
+
 function utils.opendoc(f)
     local bin
     if os.execute("xdg-open --version >/dev/null 2>&1") == 0 then

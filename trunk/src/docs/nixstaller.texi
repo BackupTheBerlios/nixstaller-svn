@@ -972,7 +972,7 @@ This directory contains any files needed at runtime. Examples are graphics or te
 These files were already discussed in the @ref{Basics,,basics chapter}. Simply put them in the root of your project directory.
 
 
-@section The @file{config.lua}, @files{package.lua} and @file{run.lua} Files
+@section The @file{config.lua}, @file{package.lua} and @file{run.lua} Files
 Lua scripting files were discussed in the @ref{Lua Scripts,,previous chapter}. Simply put the files in the root of the project directory.
 
 @anchor{genprojdir.sh}
@@ -1231,7 +1231,7 @@ In the last tutorial we make a fairly advanced installer for the advanced text e
 
 @subsection Project Directory
 Again we start with creating the project directory:
-@codeblock{./genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -a "VIM 7.1" vim/}
+@codeblock{./genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -n "VIM 7.1" vim/}
 The @samp{<pathtovimlogo>} part should be replaced to the path were the vim logo is located. The file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.@*
 @*
 Next copy this text to the @file{welcome} file:
@@ -3254,11 +3254,39 @@ end}
 @endluafunc
 
 
+@section Utilities
+Several utility functions exist in the @code{utils} package, these are described here.
+
+@luafunc utils.basename (p)
+This function will strip the directory part of a given path (string argument @code{p}) and returns the remaining filename.
+@endluafunc
+
+@luafunc utils.dirname (p)
+This function does the oppisite of @code{utils.basename}: it strips out the filename at the end of the given path @code{p} and returns the remaining directory part.
+@endluafunc
+
+@luafunc utils.moverec (s, d)
+@c UNDONE? (Exit status?)
+This function will move all the files from source directory @code{s} to the destination directory @code{d}.
+@endluafunc
+
+@luafunc utils.opendoc (f)
+This function can be used to open a document. Argument @code{f} should contain the filename. The function tries to find a suitable application and opens the given file with this application.
+@endluafunc
+
+@luafunc utils.recursivedir (p, f)
+This function will recursively traverse a directory, specified by the argument @code{p}, and call the given function @code{f} on every file inside this or any subdirectory. The given function @code{f} should accept two arguments: the first argument is used to pass the full path to the file, the second argument is used to pass the relative path seen from the starting directory to the file.@*
+Example:
+@codeblock{@minus{}@minus{} Prints every file, subdirectory and files in any subdirectories from @file{/usr/share} (similar to ls -R)
+utils.recursivedir("/usr/share", function (path, relpath) print(path .. "\n") end)}
+@endluafunc
+
+
 @section Other Functions
 The last few functions are not in any package but are global functions.
 
 @defvr Variable version
-This variable contains a string used to identify the current Nixstaller version. The current value is "0.2.2".
+This variable contains a string used to identify the current Nixstaller version. The current value is "0.4".
 @end defvr
 
 @luafunc assert (f[, ...[, m="Assert failed!"]])

@@ -396,7 +396,7 @@ void CMain::InitLua()
     lua_atpanic(NLua::LuaState, LuaPanic);
     
     // Register some globals for lua
-    NLua::LuaSet("0.3", "version");
+    NLua::LuaSet("0.4", "version");
     
     NLua::LuaSet(m_szOS, "osname", "os");
     NLua::LuaSet(m_szCPUArch, "arch", "os");
