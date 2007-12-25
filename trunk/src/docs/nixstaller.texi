@@ -65,7 +65,7 @@ Here is a list with the main features. Read further for more info to see what th
 
 @itemize @bullet
 @item 3 different frontends used for the installer: @uref{http://www.fltk.org,FLTK}, @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses} and @uref{http://www.gtk.org,GTK2}.
-@item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris Express/Nexenta (all x86).
+@item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris Express/Nexenta (all x86, some x86_64).
 @item An installer itself has the following features:
 @itemize @bullet
 @item Can be fully translated (no UTF yet). Translations for English and Dutch are supplied by default.
@@ -432,7 +432,7 @@ An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of th
 An optional variable containing a @ref{Strings,,string} with the filename of a picture to use as a logo. Valid file formats are png, jpeg, bmp and gif. The file should be placed in the @file{files_extra/} directory. If unspecified a default logo is used.
 @vindex cfg.targetarch
 @item cfg.targetarch
-A variable that should contain an array (@pxref{Tables}) of @ref{Strings,,strings} for the CPU architectures this installer should support. Nixstaller currently only supports @samp{x86} and this variable will default to this if not specified.
+A variable that should contain an array (@pxref{Tables}) of @ref{Strings,,strings} for the CPU architectures this installer should support. Nixstaller currently only supports @samp{x86} and @samp{x86_64}. This variable will default to the current CPU arch when not specified.
 @vindex cfg.targetos
 @item cfg.targetos
 An array (@pxref{Tables}) of @ref{Strings,,strings} holding the names of the OSs (Operating Systems) which the installer should support. The OS names should be the lowercased output from the shell command @command{uname}. If not specified the variable will default to the current OS.
@@ -453,14 +453,19 @@ cfg.targetos = @{ "sunos", "netbsd", "linux" @}}
 This file is only necessary when using @ref{pkgmode,,Package Mode}. Like @file{config.lua} this file is fairly simple and is only used for setting up Lua variables. All the variables are inside the @code{pkg} package. Descriptions of them are listed below.
 
 @table @code
+@vindex pkg.bindir
 @item pkg.bindir
 This variable should contain a @ref{Strings,,string} describing the location of the binary directory. When unspecified, a reasonable default is choosen for the user's system (mostly @file{/usr/local/bin}).
+@vindex pkg.bins
 @item pkg.bins
 This variable holds an array (@pxref{Tables}) with @ref{Strings,, strings} pointing to any executables, relative to the @emph{data directory}. These are used for the generation of @emph{binary scripts}.
+@vindex pkg.description
 @item pkg.description
 A description of the software to be installed. Usually not longer than a few sentences.
+@vindex pkg.destdir
 @item pkg.destdir
 A @ref{Strings,,string} containing the destination directory for the data directory. When unspecified a reasonable default is choosen for the user's system (mostly @file{/usr/local/share}).
+@vindex pkg.group
 @item pkg.group
 This variable should contain a @ref{Strings,,string} describing a valid @emph{package group}. Some package managers assign to each package a package group. Nixstaller has it's own range of package groups, these are translated to a similar group from the native package manager when the package is generated. Valid groups are listed in the table below.
 @starttable{.5, .5}
@@ -545,26 +550,36 @@ This variable should contain a @ref{Strings,,string} describing a valid @emph{pa
 @endtablerow
 @endtable
 
+@vindex pkg.license
 @item pkg.license
 This (optional) variable should contain a @ref{Strings,,string} describing the used software license.
+@vindex pkg.maintainer
 @item pkg.maintainer
 This variable should contain a @ref{Strings,,string} describing the author's of the installer, usually with an e-mail address after that.
+@vindex pkg.name
 @item pkg.name
 This variable should contain a @ref{Strings,,string} describing the name of the package to be installed. Usually this is a simple, lowercased name without spaces.
+@vindex pkg.register
 @item pkg.register
 A boolean variable which tells to enable or disable package registration. When unspecified it defaults to @code{true}.
+@vindex pkg.release
 @item pkg.release
 This variable contains the release version. This can be seen as the version of the installer itself. In other words it's only bumped when the installer itself has changed, but the software it's going to install is not. When unspecified it defaults to @code{1}.
+@vindex pkg.setkdeenv
 @item pkg.setkdeenv
 If this boolean variable is set to @code{true}, the shell variable @var{KDEDIRS} is set up so that KDE programs can be executed normally. Usually you want to enable this for any KDE software. Default: @code{false}.
+@vindex pkg.summary
 @item pkg.summary
 A @ref{Strings,,string} variable containing a small (not more than one line) description of the software.
+@vindex pkg.version
 @item pkg.version
 This variable should contain a @ref{Strings,,string} containing the version of the software to be installed.
+@vindex pkg.url
 @item pkg.url
 This (optional) variable should contain a @ref{Strings,,string} describing an URL to the software's homepage.
 @end table
 
+@findex pkg.addbinenv
 To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.@*
 @*
 An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
@@ -617,6 +632,7 @@ The above items are discussed below.
 The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it through the @code{SelectDirScreen} (see below) or point it to a temporary directory. The latter is accomplished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).
 
 
+@anchor{deskentrieslua}
 @subsection Creating Desktop Menu Entries
 Nixstaller is able to create desktop menu entries to let the user easily launch any installed executables (see also @ref{deskentries,,this}). To accomplish this we have to create a new @ref{Tables,,table} which contain fields that can be used for the creation of a @file{.desktop} file. Any field that is defined inside this table is directly used inside the @file{.desktop} file.@*
 For example:
@@ -867,16 +883,21 @@ Note: This function should always be called @emph{after} @code{install.gendeskto
 @subsubsection Specific Installation Screens
 A few predefined installation screens exist specificly for Package Mode. These are listed below.
 @table @code
+@vindex PackageToggleScreen
 @item PackageToggleScreen
 Lets the user enable or disable package registration (setting @code{pkg.register}). This screen is not shown incase the installer is unable to register a package.
+@vindex PackageDirScreen
 @item PackageDirScreen
 This screen lets the user specify the locations for the data and binary directory (let the user set @code{pkg.destdir} and @code{pkg.bindir}).
+@vindex SummaryScreen
 @item SummaryScreen
 This screen is usually put just after the @code{InstallScreen}. It will show the user some info about the installed software, which files are installed and how the software can be uninstalled.
 @end table
 Like any other installation screens, these screens should be placed inside the @code{install.screenlist} variable.
 
 @subsubsection Retrieving the Data and Binary directories
+@findex pkg.getdatadir
+@findex pkg.getbindir
 In some cases during installation, you may need to retrieve the real paths to the data or binary directory. For this the functions @code{pkg.getdatadir()} and @code{pkg.bindir()} exists. Both functions accept one optional (string) argument. The @code{pkg.getdatadir} function will simply combine this argument with the path of the data directory. The @code{pkg.getbindir} function use it's argument to return the path to the binary script used for the given binary (relative to the data directory). If no argument is given to one of these functions, @code{pkg.getdatadir} simply returns the path to the data directory and @code{pkg.getbindir} returns the path the binary directory.@*
 @*
 A good example for using these functions is for the creation and installation of desktop menu entries. This is best illustrated in an example:
@@ -960,7 +981,7 @@ In this directory you should put all the files to be installed. These will be ex
 @item @file{files_<os>_all/}
 In this directory you can put files that will only be extracted if the user's system equals to @samp{<os>}. The @samp{<os>} part should be replaced by a lowercased version from the output of @command{uname} shell command. Some examples: @file{files_linux_all/}, @file{files_sunos_all/}.
 @item @file{files_all_<arch>/}
-Similar to the previous item, @file{files_<os>_all/}, this directory should contain all the files that need to be installed for a CPU architecture specified by @samp{<arch>}. The @code{<arch>} part should be replaced by either @samp{x86} for Intel 32 bit compatible systems or replaced by the output from the shell command @command{uname -m}. Note that currently there are only @samp{x86} frontend binaries available.
+Similar to the previous item, @file{files_<os>_all/}, this directory should contain all the files that need to be installed for a CPU architecture specified by @samp{<arch>}. The @code{<arch>} part should be replaced by either @samp{x86} for Intel 32 bit compatible systems, @samp{x86_64} for AMD 64 bit x86 compatible systems or replaced by the output from the shell command @command{uname -m}. Note that currently there are only @samp{x86} and for some operating systems @samp{x86_64} frontend binaries available.
 @item @file{files_<os>_<arch>/}
 A combination of the previous two. Examples: @file{files_linux_x86/}, @file{files_freebsd_x86/}.
 @item @file{files_extra/}
@@ -1002,7 +1023,7 @@ The script accepts the following commandline parameters:
 @endtablerow
 
 @addtablerownowrap{--arch <arch1>[, <arch2>, ...]}
-    @addtablecol{Sets @code{cfg.targetarch} to one or more following arguments (<arch1>, <arch2> etc). Default: x86}
+    @addtablecol{Sets @code{cfg.targetarch} to one or more following arguments (<arch1>, <arch2> etc). Default: current CPU arch.}
 @endtablerow
 
 @addtablerownowrap{--archtype, -a <type>}
@@ -1704,7 +1725,7 @@ For this reason most libraries are linked staticly. This will add size to the re
 
 @endtable
 
-All the static libraries with the exception from @file{libutil.a} needs to be copied to the @file{src/lib/[osname]/[archname]} directory. The @samp{[osname]} refers to the lowercased output from the command @command{uname}. @samp{archname} refers to either @samp{x86} or the output from @command{uname -m}. The main reason for putting the static libraries in a seperate directory is that 'clean' versions can be compiled and used. 'clean' in the way that the libraries have no CPU specific optimizations.@*
+All the static libraries with the exception from @file{libutil.a} needs to be copied to the @file{src/lib/[osname]/[archname]} directory. The @samp{[osname]} refers to the lowercased output from the command @command{uname}. @samp{archname} refers to either @samp{x86}, @samp{x86_64} or the output from @command{uname -m}. The main reason for putting the static libraries in a seperate directory is that 'clean' versions can be compiled and used. 'clean' in the way that the libraries have no CPU specific optimizations.@*
 @*
 The search path to X11 libraries defaults to @file{/usr/X11R6/lib}. This can be changed by the @samp{xlibsdir} parameter passed to SCons, which is discussed later.@*
 @*
@@ -2706,13 +2727,19 @@ For (other) copy failures @code{nil} and the error message will be returned. On 
 Returns the difference in seconds from @code{t2} and @code{t1}. Mostly this is the same as @code{t2 - t1}.
 @endluafunc
 
+@anchor{os.execute}
 @luafunc os.execute (c)
-Executes the shell command @code{c}. This function returns the exit code from the executed command. It's recommended to use @ref{install.execute}.
+Executes the shell command @code{c}. This function returns the exit code from the executed command, though to be able use it you should use the @ref{os.exitstatus} function. In most cases it's recommended to use @ref{install.execute} instead of this function.
 @endluafunc
 
 @anchor{os.exit}
 @luafunc os.exit ()
 Terminates the program.
+@endluafunc
+
+@anchor{os.exitstatus}
+@luafunc os.exitstatus (s)
+This function is usually used in combination with @ref{os.execute}. The argument @code{s} should be the return value from the @code{os.execute} function. This function translates this value to the real exit status and returns it.
 @endluafunc
 
 @luafunc os.fileexists (f)
@@ -2793,6 +2820,10 @@ Example:
 for d in io.dir(".") do
     print(d)
 end}
+@endluafunc
+
+@luafunc io.md5 (f)
+This function calculates the MD5 sum for the given file @code{f}. MD5 sums are usually used to check for changed files. If the file could not be opened, @code{nil} is returned.
 @endluafunc
 
 @anchor{io.open}
@@ -2967,6 +2998,10 @@ This section describes all the install related functions and variables. They are
 Variable that is used to set the destination directory for the @ref{install.extractfiles} function.
 @end defvr
 
+@defvr Variable install.menuentries
+This variable is used to store all the desktop menu entry tables. The variable itself is a table which is indexed by the filename for the assigned desktop menu entry. More info on usage can be found @ref{deskentrieslua,,here}.
+@end defvr
+
 @defvr Variable install.screenlist
 Variable that should be used to specify the installation screens to be used. Can contain classes created by the @ref{install.newscreen} function and one of these predefined variables:
 @itemize @bullet
@@ -2975,6 +3010,9 @@ Variable that should be used to specify the installation screens to be used. Can
 @item SelectDirScreen
 @item InstallScreen
 @item FinishScreen
+@item PackageToggleScreen (Package Mode only)
+@item PackageDirScreen (Package Mode only)
+@item SummaryScreen (Package Mode only)
 @end itemize
 By default @code{install.screenlist} is set like this:
 @codeblock{install.screenlist = @{ WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen @}}
@@ -3020,22 +3058,29 @@ When this function is called more than once it won't do anything (the password i
 @endluafunc
 
 @anchor{install.execute}
-@luafunc install.execute (c[, r=true[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
-This function will execute the shell command defined by string @code{s}. The optional argument, @code{r}, tells that the installation should be aborted when the command failes to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (@pxref{Strings}).@*
+@luafunc install.execute (c[, r=true[, p="/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
+This function will execute the shell command defined by string @code{s}. The optional boolean argument, @code{r}, tells that the installation should be aborted when the command failes to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (@pxref{Strings}).@*
 @*
 This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.@*
 @*
-Note that when @code{install.destdir} is unwritable for the current user and the user agreed to continue as root, @code{install.execute} will run the shell command as root.
+Note that when @code{install.destdir} is unwritable for the current user and the user agreed to continue as root, @code{install.execute} will run the shell command as root.@*
+@*
+The function returns the exit status code from the command that was executed.
 @endluafunc
 
 @anchor{install.executeasroot}
-@luafunc install.executeasroot (c[, r=true[, p="/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
-This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so.
+@luafunc install.executeasroot (c[, r=true[, p="/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
+This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so. The function returns the exit status code from the command that was executed.
 @endluafunc
 
 @anchor{install.extractfiles}
 @luafunc install.extractfiles ()
 This function will extract all installation files to the directory that was specified by the global variable @code{install.destdir}. This function will automaticly call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
+@endluafunc
+
+@anchor{install.gendesktopentries}
+@luafunc install.gendesktopentries (g)
+This function will install any previously created desktop menu entries. The argument @code{g} is a @code{boolean} that is used to tell if the entries should be installed globally (@code{true}) or locally (@code{false}). When Package Mode is used, this function should always be called before @code{install.generatepkg}.
 @endluafunc
 
 @anchor{install.lockscreen}
@@ -3046,6 +3091,14 @@ This function will lock or unlock the Cancel, Back and Next button. If @code{c} 
 @anchor{install.print}
 @luafunc install.print (s)
 Prints the message specified by argument @code{s} on the status window from the install screen.
+@endluafunc
+
+@luafunc install.newdesktopentry (b, l, c)
+This function is used to create new desktop menu entry tables. The first argument, @code{b}, should be a full path to the executable. The second argument, @code{l}, should either be a path to an image that is used as icon for the entry or @code{nil} for none. The third argument, @code{c}, should be one or more valid catagories.@*
+@*
+This function automaticly sets the @code{Name} field to @code{cfg.appname}, the @code{Type} field to @code{"Application"} and the Encoding field to @code{"UTF-8"}.@*
+@*
+More info on usage can be found @ref{deskentrieslua,,here}.
 @endluafunc
 
 @anchor{install.setstatus}
@@ -3194,6 +3247,10 @@ If argument @code{f} is @code{true} @samp{follow mode} is enabled, when @code{f}
 @endluafunc
 @endluafunc
 
+@luafunc screen:addscreenend ()
+After this function is called any new widgets are created in a new subscreen (whether they would fit on the current subscreen or not).
+@endluafunc
+
 
 @anchor{cfgmenu}
 @subsection The @code{config menu} Class
@@ -3218,6 +3275,10 @@ This function adds a parameter that can the user can modify through an input fie
 
 @luafunc cfgmenu:get (p)
 Returns the value from parameter @code{p}. If the type of @code{p} is a boolean, @code{true} will be returned when the parameter is enabled and @code{false} if disabled. In all other cases a @code{string} will be returned.
+@endluafunc
+
+@luafunc cfgmenu:set (p, v)
+This function will set parameter @code{p} to value @code{v}.
 @endluafunc
 
 

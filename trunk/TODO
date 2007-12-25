@@ -55,26 +55,10 @@ TRANSLATIONS
 
 
 DOCS:
-- utils package
 - Changes:
-    - install.execute / install.executeasroot now return exit code from command
-    - Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
-    - screen:addscreenend() function
-    - exitstatus() function
-    - x86_64 support.
-    - genprojdir.sh now defaults to current arch.
     - geninstall.sh/genprojdir.sh can now be used from any directory.
-    - io.md5 lua function
-    - xdg-open functionality through lua function
-    - cfgmenu:set() function
-- Package mode:
-    - Explenation
-    - Dep handling
-    - 'pkg' package reference
-- Generation of desktop entries
-    - Reference: install.menuentries, install.gendesktopentries()
 - Tutorials
-- Update index
+- Update index?
 - UNDONE's
 
 
