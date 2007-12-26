@@ -31,7 +31,8 @@ get()
 
 untar()
 {
-    (cd "$DESTFILES/" && cat "$1" | gzip -cd | tar xvf -)
+    [ $2 = "bzip2" ] && UNCOMP=bzip2 || UNCOMP=gzip
+    (cd "$DESTFILES/" && cat "$1" | $UNCOMP -cd | tar xvf -)
 }
 
 dodir()
@@ -133,10 +134,25 @@ buildrpm()
     restoredir
 }
 
+buildlzma()
+{
+    get "http://heanet.dl.sourceforge.net/sourceforge/sevenzip/lzma457.tar.bz2"
+    untar "lzma457.tar.bz2" "bzip2"
+    dodir "CPP/7zip/Compress/LZMA_Alone"
+    make -f makefile.gcc
+    cp lzma "$DESTPREFIX/bin"
+    restoredir
+    dodir "C/Compress/Lzma"
+    gcc -Os LzmaStateDecode.c LzmaStateTest.c -o lzma-decode
+    cp lzma-decode "$DESTPREFIX/bin"
+    restoredir
+    strip -s "$DESTPREFIX/bin/lzma" "$DESTPREFIX/bin/lzma-decode"
+}
+
 BUILD="$*"
 
 if [ -z $BUILD ]; then
-    BUILD="zlib png jpeg fltk lua ncurses"
+    BUILD="zlib png jpeg fltk lua ncurses lzma"
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
 #     fi
@@ -153,6 +169,7 @@ do
         ncurses ) buildncurses ;;
         beecrypt ) buildbeecrypt ;;
         rpm ) buildrpm ;;
+        lzma ) buildlzma ;;
         * ) echo "Wrong build option" ; exit 1 ;;
     esac
 done
