@@ -15,13 +15,15 @@
 #endif
 
 #include "version.h"
+#include "edelta.h"
 
-#define EDELTA_PATCH_VERSION 1
+
+#define EDELTA_PATCH_VERSION 2
 
 /*
  The EDelta executable differ. 
 
- Copyright (C) 2003-2005 Jacob Gorm Hansen <jacob@melon.dk>.
+ Copyright (C) 2003-2006 Jacob Gorm Hansen <jacob@melon.dk>.
  Licensed under the GNU Public License.
 
  TODO:
@@ -31,10 +33,6 @@
 	- somehow guess endianess of file and use correct one
  */
 
-/* ANSI C does not like inline keyword, so we will leave this for the compiler
- * to decide */
-
-#define inline
 
 extern void sha1_digest(unsigned char*, unsigned char*, size_t);
 
@@ -42,45 +40,19 @@ int quiet=0;
 int little_endian=0;
 
 const int prefixlen = 32;
-const int B = 131;
+const int B = 11;
 const int tolerance = sizeof(int);
 
-typedef struct { 
-	unsigned char* string; 
-	unsigned int len; } buffer;
-
-typedef unsigned short run_counter;
-
-typedef struct { 
-	unsigned int hash;
-	int next_index;
-	buffer* file; 
-	unsigned int offset; 
-} hash_match ;
-
-typedef struct { 
-	run_counter run; 
-	int first_index;
-} hash_entry;
-
-typedef struct _delta_entry {
-	int delta;
-	int width;
-	int dead_end;
-	int num_elems;
-	int max_elems;
-	int bytes_saved;
-	struct _delta_entry* next; } delta_entry;
-
 delta_entry* deltas[0x10000];
-hash_entry hashes[0x4000];
+hash_entry hashes[0x10000];
 hash_match* matches;
 
 FILE *res;
 
+
 delta_entry* storedelta(int d, int width, int offset)
 {
-	const int min_elems = 16;
+	const int min_elems = 64;
 	unsigned short key;
 	delta_entry* e;
 	delta_entry** pe;
@@ -92,6 +64,9 @@ delta_entry* storedelta(int d, int width, int offset)
 	pe = &(deltas[key]);
 
 	while(e && (e->width!=width || e->delta != d)) pe=&(e->next), e=e->next;
+
+	/* TODO we are calling malloc() for each new delta. Some highly 
+	 * diverging files may result in slowness and use of too much memory */
 	
 	if(!e) 
 	{
@@ -151,7 +126,6 @@ inline unsigned int get_delta(buffer* base, unsigned int b_offset,
 		}
 	}
 
-	//printf("returning 0x%x-0x%x = 0x%x\n",b,a,b-a);
 	return b-a;
 
 }
@@ -163,7 +137,7 @@ inline void set_c(buffer* b, unsigned int offset, unsigned char val)
 	b->string[offset] = val;
 }
 
-int binary_search(int* first, int* last, int val)
+inline int binary_search(int* first, int* last, int val)
 {
 	int half, *middle;
 	int len = last-first;
@@ -213,7 +187,10 @@ inline int swap(int x)
 	return ((x&3)<<7) | (  (x&0x180)>>7) | (x & 0xfffffe7c);
 }
 
-#if 1
+
+
+
+
 inline void storeanyint(unsigned int v, FILE *f)
 {
 	v = htonl(v);
@@ -233,7 +210,6 @@ inline unsigned int readanyint(FILE *f)
 	}
 	return ntohl(v);
 }
-#endif
 
 inline void storeint(unsigned int v, int n, FILE *f)
 {
@@ -267,17 +243,6 @@ inline void storeint(unsigned int v, int n, FILE *f)
 		}
 	}
 
-}
-
-inline int cgetc(FILE *f)
-{
-	int r= fgetc(f);
-	if(r==EOF) 
-	{
-		puts("cgetc EOF");
-		exit(-1);
-	}
-	return r;
 }
 
 inline int readint(FILE *f)
@@ -323,6 +288,19 @@ inline int readint(FILE *f)
 	return v;
 }
 
+
+inline int cgetc(FILE *f)
+{
+	int r= fgetc(f);
+	if(r==EOF) 
+	{
+		puts("cgetc EOF");
+		exit(-1);
+	}
+	return r;
+}
+
+
 void store_hunk(buffer* base,buffer* version,
 		unsigned int v_start, 
 		unsigned int v_copy, 
@@ -346,16 +324,18 @@ void store_hunk(buffer* base,buffer* version,
 		b_copy - b_last_copy , l);
 #endif
 
-
 	v_last_start = v_start;
 	v_last_copy = v_copy; 
 	b_last_copy = b_copy;
 	fwrite(version->string+v_start, v_copy-v_start, 1, res);
 }
 
-int bufcmp(buffer* a,int oa, buffer* b, int ob, int len)
+int buffers_equal(buffer* a,int oa, buffer* b, int ob, int len)
 {
 	int i;
+
+	if(a->len < oa+len) return 0;
+	if(b->len < ob+len) return 0;
 
 	for(i=0; i< len; i++)
 	{
@@ -429,7 +409,7 @@ void diff(buffer* base, buffer* version)
 				{
 					hash_match* m = &(matches[index]);
 					if(m->file!=f->current &&
-								bufcmp( f->current, *(f->offset), m->file, m->offset, prefixlen))
+								buffers_equal( f->current, *(f->offset), m->file, m->offset, prefixlen))
 					{
 						int b_copy;
 						int v_copy;
@@ -508,7 +488,7 @@ void diff(buffer* base, buffer* version)
 						if(ahead && faults)
 						{
 							int d = get_delta(base,b_copy-ahead,version,v_copy-ahead,faults);
-							//if(!d) printf("d is 0 at line %d\n",__LINE__);
+							/*if(!d) printf("d is 0 at line %d\n",__LINE__);*/
 							if(num_dead_ends && binary_search( dead_ends, dead_ends+num_dead_ends, d))
 								ahead -= (faults);
 							
@@ -522,11 +502,13 @@ void diff(buffer* base, buffer* version)
 
 						delta_entry* pdelta=0;
 
+						unsigned char* pb = base->string+b_copy;
+						unsigned char* pv = version->string+v_copy;
 						/* while(b_copy+l<base->len && v_copy+l<version->len) */
 						while(v_copy+l<version->len)
 						{
-							unsigned int c_b = get_c(base, b_copy+l);
-							unsigned int c_v = get_c(version,v_copy+l);
+							unsigned int c_b = pb[l];
+							unsigned int c_v = pv[l];
 
 							if(c_b != c_v)
 							{
@@ -545,7 +527,7 @@ void diff(buffer* base, buffer* version)
 								 */
 
 								int d = get_delta(base,b_copy+l-faults,version,v_copy+l-faults,faults);
-								if(!d) printf("d is 0 at line %d\n",__LINE__);
+								/*if(!d) printf("d is 0 at line %d\n",__LINE__);*/
 
 								if(num_dead_ends==0 || (!binary_search( dead_ends, dead_ends+num_dead_ends, d)))
 								{
@@ -559,8 +541,6 @@ void diff(buffer* base, buffer* version)
 									}
 
 									faults = 0;
-
-
 									num_deltas++;
 								}
 								else
@@ -574,7 +554,7 @@ void diff(buffer* base, buffer* version)
 
 							if(faults > tolerance) 
 							{
-								l -= faults;
+								l -= (faults-1);
 								break;
 							}
 
@@ -585,7 +565,6 @@ void diff(buffer* base, buffer* version)
 
 
 						}
-
 
 						if(pass==1)
 						{
@@ -659,7 +638,7 @@ void diff(buffer* base, buffer* version)
 
 		if(pass==0)
 		{
-			int max_dead_ends=8;
+			int max_dead_ends=256;
 			dead_ends = (int*) malloc(max_dead_ends*sizeof(int));
 			for(i=0; i<sizeof(deltas)/sizeof(delta_entry*); i++)
 			{
@@ -692,6 +671,7 @@ void diff(buffer* base, buffer* version)
 
 	int num_distinct=0;
 
+#if 1
 	for(i=0; i<sizeof(deltas)/sizeof(delta_entry*); i++)
 	{
 		delta_entry* e;
@@ -704,26 +684,13 @@ void diff(buffer* base, buffer* version)
 				int sub=0;
 				int d = e->delta;
 
-#if 0
-				if(d<0) d = (-d)<<1 | 1;
-				else d = (d<<1) | 0;
-
-				//storeint(d, 1,res);
-				if(d==0)
-				{
-					printf("cannot store 0 as delta!\n");
-					exit(1);
-				}
-#endif
-				//printf("storing %d (%d)\n",d,e->width);
-				storeanyint(d, res);
-				//storeint(e->width, 1,res);
+				/* storeint(d<0 ? (((-d)<<1)|1) : (d<<1),1, res); */
+				storeanyint(d,res);
 				storeint(e->num_elems, 1, res);
 				
 				for(j=0; j<e->num_elems; j++)
 				{
 					int v = es[j]-sub;
-					//int v = (es[j] - (4-e->width))  -sub;
 
 					int rept=0;
 					while(v == es[j+1]-es[j] && j<e->num_elems)
@@ -742,6 +709,8 @@ void diff(buffer* base, buffer* version)
 
 		}
 	}
+#endif
+	/* storeint( 0,1,res); */
 	storeanyint( 0,res);
 
 	if(!quiet) fprintf(stderr,"%d (%d bytes) adds, %d/%d deltas\n",num_adds,addsize, num_deltas, num_distinct);
@@ -766,32 +735,27 @@ void reconstruct(FILE* base,buffer* dest, FILE *patch)
 		v_copy += v_copy_delta;
 		b_copy += b_copy_delta;
 
-		//printf("%d %d %d %d\n",v_start_delta,v_copy_delta,b_copy_delta,l);
 		if(l==0 && v_start_delta==0 && v_copy_delta==0 && b_copy_delta==0) break;
 
 		fread(dest->string+v_start, v_copy-v_start, 1, patch);
 		fseek(base, b_copy, SEEK_SET);
 		fread(dest->string+v_copy, l,1, base);
 	}
-	puts("end copy");
 
 	while(1)
 	{
+	  /*	unsigned int val; */
 		int delta,width,num_elems;
 		int offset=0, i;
-		//unsigned int d;
 		
-		if(! (delta = readanyint(patch)) ) break;
+		/*	if(! (val = readint(patch)) ) break; */
 
+		if(! (delta = readanyint(patch))) break;
 #if 0
-		if(delta&1) delta = -(delta>>1);
-		else delta>>=1;
+		if(val&1) delta = -(val>>1);
+		else delta = val>>1;
 #endif
-		//printf("delta is %d\n",delta);
 		
-		//for(d=(delta<0? -delta:delta),width=0; d; d>>=8,width++);
-		//printf("%d has width %d\n",delta,width);
-
 		width=tolerance;
 		num_elems = readint(patch);
 
@@ -816,12 +780,8 @@ void reconstruct(FILE* base,buffer* dest, FILE *patch)
 					a = (a<<8) | pval[(width-1)-j];
 				}
 
-				//printf("a is 0x%x\n",a);
 				a += delta;
-				//printf("delta is %d\n",delta);
-				//printf("a is 0x%x now\n",a);
 
-				//for(j=width-1; j>=0; j--)
 				for(j=0; j<width; j++)
 				{
 					pval[j] = a;
@@ -924,6 +884,8 @@ int main(int argc, char** argv)
 		}
 		else res = fopen(*argv,"wb0");
 
+// 		gzsetparams(res,9,Z_DEFAULT_STRATEGY);
+
 		if(!res)
 		{
 			fprintf(stderr,"output file open error on %s\n", *argv);
@@ -993,7 +955,7 @@ int main(int argc, char** argv)
 		if(memcmp(digest,digest2,sizeof(digest)))
 		{
 			puts("digest match error!");
-			//exit(-1);
+			exit(-1);
 		}
 		fwrite(buffers[1].string, buffers[1].len, 1, version);
 		fclose(version);

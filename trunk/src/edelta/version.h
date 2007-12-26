@@ -1,1 +1,1 @@
-#define VERSION "0.9e"
+#define VERSION "<development version>"

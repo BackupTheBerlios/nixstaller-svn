@@ -294,7 +294,7 @@ def getallbins(onlyforcuros):
         directory = stack.pop()
         for file in os.listdir(directory):
             fullname = os.path.join(directory, file)
-            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "edelta" or file == "lzma":
+            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "edelta" or file == "lzma" or file == "surunner":
                 bins.append(fullname)
             if os.path.isdir(fullname) and not os.path.islink(fullname):
                 stack.append(fullname)

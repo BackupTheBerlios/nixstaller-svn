@@ -197,7 +197,7 @@ Most screens are optional and can be shown in any particalur order. New type of 
 @subsection 0.1 @minus{}@minus{}> 0.1.1
 @itemize @bullet
 @item Fixed: Ncurses frontend crashes if only 1 language is available. 
-@item Fixed: geninstall.sh couldn't detect current directory with older versions of ksh. 
+@item Fixed: geninstall.sh couldn't detect current directory with older versions of ksh.
 @item Added norwegian language support.
 @end itemize
 
@@ -213,11 +213,10 @@ Installing Nixstaller is easy: just extract the files to a directory and your do
 @chapter Quickstart
 @itemize @bullet
 @item @ref{Installing, Install} Nixstaller.
-@item Go to a terminal and @command{cd} to the directory where you extracted Nixstaller.
-@item @command{./genprojdir.sh release/}
-@item Edit @file{release/config.lua} and optionally @file{release/run.lua}
-@item Put some files in @file{release/files_all/} and perhaps in @file{release/files_linux_all}, @file{release/files_freebsd_x86} etc.
-@item @command{./geninstall.sh release/}
+@item Open up a terminal and create a project directory: @command{genprojdir.sh <projectdirhere>}
+@item Edit @file{<projectdirhere>/config.lua} and optionally @file{<projectdirhere>/run.lua} or @file{<projectdirhere>/package.lua}.
+@item Put some files in @file{<projectdirhere>/files_all/} and perhaps in @file{<projectdirhere>/files_linux_all}, @file{<projectdirhere>/files_freebsd_x86} etc.
+@item @command{geninstall.sh <projectdirhere>/}
 @item @command{./setup.sh}
 @end itemize
 
@@ -1056,8 +1055,6 @@ The script accepts the following commandline parameters:
 
 @endtable
 
-Note that this script should be called within the main Nixstaller directory.
-
 
 
 @anchor{Creating the Installer}
@@ -1067,8 +1064,7 @@ After you have fully setup your project directory it's time to build the install
 This is pretty easy and is done via a shell script. It's important to call this script from the main directory of Nixstaller. The script is called @command{geninstall.sh} and has one required argument and one optional argument. The first argument is the path to the project directory, the second is the name of the installer script. The default name is @samp{setup.sh}.@*
 @*
 Here is an example that shows the shell commands that need to be executed when the path to the Nixstaller directory is @file{/home/rick/nixstaller} and the project directory is at @file{/home/rick/code/setup}:
-@codeblock{cd /home/rick/nixstaller
-./geninstall.sh /home/rick/code/setup}
+@codeblock{/home/rick/nixstaller/geninstall.sh /home/rick/code/setup}
 The resulting script, @samp{setup.sh}, is placed in the current directory.
 
 
@@ -1092,8 +1088,8 @@ We want to let the installer be able to do the following things:
 @end itemize
 
 @subsection Project Directory
-To set up a project directory we use @ref{genprojdir.sh}. This script will create the directory layout for us. Assuming our project directory is called @file{setup/}, call the script like this (@emph{from the main Nixstaller directory}):
-@codeblock{./genprojdir.sh -n "My Software 1.0" setup/}
+To set up a project directory we use @ref{genprojdir.sh}. This script will create the directory layout for us. Assuming our project directory is called @file{setup/}, call the script like this:
+@codeblock{genprojdir.sh -n "My Software 1.0" setup/}
 This creates the project directory, including dutch translations (default) and basic Lua script files. The generated Lua scripts already tell by default that the @code{SelectDirScreen} (@pxref{instscreens, this}) should be used and that the installation files need to be extracted to the destination directory. The only thing we have to do is create an introduction message and copy the files that should be installed.
 
 @subsection Introduction Message
@@ -1135,7 +1131,7 @@ If all went fine the directory structure should look like this:
     @end itemize
 @end itemize
 
-Now call @file{geninstall.sh} from the main Nixstaller directory and supply the project directory as first argument (@pxref{Creating the Installer}). This should supply you with an installer called @file{setup.sh}.
+Now call @file{geninstall.sh} and supply the project directory as first argument (@pxref{Creating the Installer}). This should supply you with an installer called @file{setup.sh}.
 
 @section Second Tutorial: A More Advanced Installer: Cube
 In this tutorial we'll be making a slightly more advanced installer for the game @uref{http://www.cubeengine.com/, Cube}. The installer has the following tasks:
@@ -1149,8 +1145,8 @@ In this tutorial we'll be making a slightly more advanced installer for the game
 @end itemize
 
 @subsection Project Directory
-Again we use @file{genprojdir.sh} to create an initial project directory. This time we will call it @samp{cube}. Here is the command: (again, call this from the main Nixstaller directory)
-@codeblock{./genprojdir.sh -o freebsd linux -n Cube cube/}
+Again we use @file{genprojdir.sh} to create an initial project directory. This time we will call it @samp{cube}. Here is the command: 
+@codeblock{genprojdir.sh -o freebsd linux -n Cube cube/}
 We've limited the supporting operating systems to Linux and FreeBSD, simply because there are only Cube binaries for these 2 systems.@*
 @*
 Next create the @file{welcome} file with the following contents:
@@ -1230,7 +1226,7 @@ Assuming that the project directory is called @file{cube/} the layout of this di
 
 The @file{cube/} subdirectory from the @file{files_all/} directory comes from the @file{cube_2005_08_29_unix.tar.gz} file. This file can be obtained through the @uref{http://www.cubeengine.com,Cube website}.@*
 @*
-Now call @file{geninstall.sh} from the Nixstaller directory, supply it with 2 arguments: the first should be the path to your project directory, the second @file{cube.sh}. After some waiting (the default lzma compression takes some time) you should now have an installer called @file{cube.sh}.
+Now call @file{geninstall.sh}, supply it with 2 arguments: the first should be the path to your project directory, the second @file{cube.sh}. After some waiting (the default lzma compression takes some time) you should now have an installer called @file{cube.sh}.
 
 @section Third Tutorial: Installer for Vim
 In the last tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim}. The installer should have the following features:
@@ -1252,7 +1248,7 @@ In the last tutorial we make a fairly advanced installer for the advanced text e
 
 @subsection Project Directory
 Again we start with creating the project directory:
-@codeblock{./genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -n "VIM 7.1" vim/}
+@codeblock{genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -n "VIM 7.1" vim/}
 The @samp{<pathtovimlogo>} part should be replaced to the path were the vim logo is located. The file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.@*
 @*
 Next copy this text to the @file{welcome} file:
@@ -1644,7 +1640,7 @@ The project directory should have the following structure:
     @end itemize
 @end itemize
 
-Calling @file{geninstall.sh} from the Nixstaller directory with the path to project directory as first argument and @samp{vim70.sh} as second argument should produce the installer.
+Calling @file{geninstall.sh} with the path to project directory as first argument and @samp{vim71.sh} as second argument should produce the installer.
 
 
 
