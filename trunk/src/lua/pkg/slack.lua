@@ -101,8 +101,8 @@ function create(src)
     -- Create directory structure
     check(os.mkdirrec(instfiles))
     check(os.mkdirrec(pkgbindir))
-    utils.moverec(src .. "/files", instfiles)
-    utils.moverec(src .. "/bins", pkgbindir)
+    checkmvrec(src .. "/files", instfiles)
+    checkmvrec(src .. "/bins", pkgbindir)
 
     -- Make description
     makedesc(pkgdir)
@@ -114,29 +114,18 @@ function create(src)
     checkcmd(OLDG.install.execute, string.format("cd %s && /sbin/makepkg -l y -c n %s/%s", pkgdir, curdir, pkgname()))
     
     -- Move install files back
-    utils.moverec(instfiles, src .. "/files")
-    utils.moverec(pkgbindir, src .. "/bins")
+    checkmvrec(instfiles, src .. "/files")
+    checkmvrec(pkgbindir, src .. "/bins")
 end
 
 function install(src)
-    -- UNDONE
---     local locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
---     while locked == 0 do
---         if gui.choicebox("Another program seems to be using the DEB database. \
--- Please close all applications that may use the database (ie Synaptic) \
--- and hit continue.", "Continue", "Abort") == 2 then
---             os.exit(1)
---         end
---         locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
---     end
-    
     checkcmd(OLDG.install.executeasroot, string.format("/sbin/upgradepkg --reinstall --install-new %s/%s", curdir, pkgname()))
 end
 
 function rollback(src)
     if instfiles and os.fileexists(instfiles) then
         -- Move install files back
-        utils.moverec(instfiles, src .. "/files")
-        utils.moverec(pkgbindir, src .. "/bins")
+        checkmvrec(instfiles, src .. "/files")
+        checkmvrec(pkgbindir, src .. "/bins")
     end
 end

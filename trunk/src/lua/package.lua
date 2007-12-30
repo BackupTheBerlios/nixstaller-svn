@@ -32,30 +32,12 @@ function checkcmd(f, cmd)
     end
 end
 
-local needsroot
-function needroot()
-    if needsroot == nil then -- Result will be cached
-        -- returns true if top most existing directory has write/read permissions for current user
-        local function checkdirs(dir)
-            local path = ""
-            local ret = false
-            for d in string.gmatch(dir, "/[^/]*") do
-                path = path .. d
-                if not os.fileexists(path) then
-                    break
-                end
-                ret = (os.writeperm(path) and os.readperm(path))
-            end
-            return ret
-        end
-        
-        needsroot = (pkg.register or not checkdirs(pkg.destdir) or not checkdirs(pkg.bindir))
-    end
-    return needsroot
+function checkmvrec(dir, dest)
+    check(utils.moverec(dir, dest) == 0)
 end
 
 function instcmd()
-    return (needroot() and install.executeasroot) or install.execute
+    return (pkg.needroot() and install.executeasroot) or install.execute
 end
 
 function genscript(file, dir)
@@ -74,14 +56,17 @@ export LD_LIBRARY_PATH
         check(script:write(string.format("KDEDIRS=\"%s/%s:$KDEDIRS\"\nexport KDEDIRS\n", pkg.destdir, pkg.name)))
     end
     
-    for i,v in pairs(pkg.binenv) do
-        if v[file] or v["All"] then
-            local val = ((v[file] and v[file]) or "") .. ((v["All"] and v["All"]) or "")
-            check(script:write(string.format("%s=\"%s\"\nexport %s\n", i, val, i)))
+    if pkg.binenv then
+        for i,v in pairs(pkg.binenv) do
+            if v[file] or v["All"] then
+                local val = ((v[file] and v[file]) or "") .. ((v["All"] and v["All"]) or "")
+                check(script:write(string.format("%s=\"%s\"\nexport %s\n", i, val, i)))
+            end
         end
     end
     
-    check(script:write(string.format("exec %s/%s/%s\n", pkg.destdir, pkg.name, file)))
+    local opts = pkg.binopts[file] or ""
+    check(script:write(string.format("exec %s/%s/%s %s\n", pkg.destdir, pkg.name, file, opts)))
 
     script:close() -- Flush
     
@@ -89,7 +74,8 @@ export LD_LIBRARY_PATH
 end
 
 function copyxdgutils(dir)
-    os.mkdirrec(dir .. "/xdg-utils")
+    dir = dir .. "/xdg-utils"
+    os.mkdirrec(dir)
     os.copy(curdir .. "/xdg-utils/xdg-desktop-menu", dir)
 end
 

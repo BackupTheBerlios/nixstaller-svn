@@ -519,7 +519,6 @@ void CBaseInstall::InitLua()
     
     // Initialize variables
     NLua::CLuaTable("menuentries", "install").Close();
-    NLua::LuaSet(false, "createpkg", "install");
     
     NLua::LoadFile("config/config.lua");
     NLua::LoadFile("install.lua");

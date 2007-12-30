@@ -5,7 +5,7 @@
 # Find main nixstaller directory
 if [ ! -z `dirname $0` ]; then
     NDIR="`dirname $0`"
-    echo "$NDIR" | grep "^/" || NDIR="`pwd`/$NDIR"
+    echo "$NDIR" | grep "^/" >/dev/null || NDIR="`pwd`/$NDIR"
 else
     OLDIFS="$IFS"
     

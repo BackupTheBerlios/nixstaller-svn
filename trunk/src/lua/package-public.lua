@@ -22,12 +22,39 @@ function pkg.addbinenv(var, val, bin)
     pkg.binenv[var][bin] = val
 end
 
+function pkg.addbinopts(bin, opts)
+    pkg.binopts = pkg.binopts or {}
+    pkg.binopts[bin] = opts
+end
+
 function pkg.getdatadir(f)
     return pkg.destdir .. "/" .. pkg.name .. ((f and ("/" .. f)) or "")
 end
 
 function pkg.getbindir(f)
     return pkg.bindir .. ((f and ("/" .. string.gsub(f, "/*.+/", ""))) or "")
+end
+
+local needsroot
+function pkg.needroot()
+    if needsroot == nil then -- Result will be cached
+        -- returns true if top most existing directory has write/read permissions for current user
+        local function checkdirs(dir)
+            local path = ""
+            local ret = false
+            for d in string.gmatch(dir, "/[^/]*") do
+                path = path .. d
+                if not os.fileexists(path) then
+                    break
+                end
+                ret = (os.writeperm(path) and os.readperm(path))
+            end
+            return ret
+        end
+        
+        needsroot = (pkg.register or not checkdirs(pkg.destdir) or not checkdirs(pkg.bindir))
+    end
+    return needsroot
 end
 
 function pkg.setpermissions()
@@ -61,8 +88,8 @@ function pkg.setpermissions()
 end
 
 function install.generatepkg()
-    if not install.createpkg then
-        error("Called generatepkg when install.createpkg is false.")
+    if not pkg.enable then
+        error("Called generatepkg when pkg.enable is false.")
     end
     
     if not pkg.register then

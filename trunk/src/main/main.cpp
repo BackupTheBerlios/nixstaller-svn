@@ -450,6 +450,7 @@ void CMain::InitLua()
     NLua::LuaSet("english", "defaultlang", "cfg");
     
     // Default pkg values
+    NLua::LuaSet(false, "enable", "pkg");
     NLua::LuaSet(true, "register", "pkg");
     NLua::LuaSet(false, "setkdeenv", "pkg");
     NLua::LuaSet("1", "release", "pkg");

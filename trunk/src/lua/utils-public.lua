@@ -19,8 +19,12 @@ utils = {}
 
 function utils.moverec(dir, dest)
     for f in io.dir(dir) do
-        checkcmd(install.execute, string.format("mv '%s/%s' '%s/'", dir, f, dest))
+        local ret = install.execute(string.format("mv \"%s/%s\" \"%s/\"", dir, f, dest))
+        if ret ~= 0 then
+            return ret
+        end
     end
+    return 0
 end
 
 function utils.recursivedir(src, func)

@@ -10,11 +10,9 @@ OVERALL
 - Initial value from constructor for radiobutton, menu etc?
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
-- cfg.createpkg
 - Desktopentry naming?
-- Update genprojdir.sh for new pkg options
-- Update version's in about etc
-- Remove checkcmd part from utils.moverec
+- Update versions in about etc
+- Add trap in geninstall.sh which cleans stuff?
 
 
 PACKAGING
@@ -59,6 +57,12 @@ DOCS:
 - Update index?
 - UNDONE's
 - Changelog
+- builddeps.sh?
+- pkg.addbinopts (note on that it can be called inside install.lua aswell)
+- install.generatepkg reference (add references to this in lua chapter?)
+- Update install.askrootpw() reference about pkg mode
+- pkg.enable
+- pkg.needroot()
 
 
 MAIN
@@ -68,7 +72,6 @@ MAIN
 
 LIBSU
 - Clean up/redesign
-- sudo support (changelog!)
 - Check tmp files leaving around (caused by sh errors?)
 
 

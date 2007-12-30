@@ -67,7 +67,7 @@ function install.gendesktopentries(global)
         end
         f:close()
         
-        if not install.createpkg then
+        if not pkg.enable then
             instxdgentries(global, fname) -- Package installations do it in generatepkg()
         end
     end

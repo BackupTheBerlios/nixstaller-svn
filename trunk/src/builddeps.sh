@@ -98,14 +98,14 @@ buildncurses()
     dodir "ncurses-5.6"
     
     case $CURRENT_OS in
-    	freebsd | netbsd | openbsd )
-    		COPTS="--enable-termcap"
-    		;;
-    	sunos )
-    		COPTS="--with-terminfo-dirs=/usr/share/lib/terminfo/"
-    		;;
+        freebsd | netbsd | openbsd )
+            COPTS="--enable-termcap"
+            ;;
+        sunos )
+            COPTS="--with-terminfo-dirs=/usr/share/lib/terminfo/"
+            ;;
     esac
-		
+
     # Examples may fail to build, just make sure to always call make install (no &&).
     ./configure --without-gpm --without-dlsym $COPTS && make ; make install DESTDIR="$DESTPREFIX" && make clean
     restoredir

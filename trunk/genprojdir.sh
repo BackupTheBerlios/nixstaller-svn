@@ -68,6 +68,7 @@ LANGUAGES=
 INTROPIC=
 LOGO=
 TARGETDIR=
+GENPKG=
 
 # List containing languages that couldn't be found in main lang/ directory
 NEWLANGUAGES=
@@ -88,6 +89,7 @@ usage()
     echo " --languages, -l l1[, l2, ...]    Languages to include (copied from main lang/ directory). Default: english dutch"
     echo " --logo file                      Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
     echo " --os, -o os1[, os2, ...]         Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
+    echo " --pkg                            Generate a template package.lua with defaults, adds specific 'Package Mode' code to install.lua."
     exit 1
 }
 
@@ -213,6 +215,10 @@ parseargs()
                 [ ! -f "${1}" ] && error "Couldn't find logo file ($1)"
                 LOGO="${1}"
                 shift
+                ;;
+            --pkg)
+                shift
+                GENPKG=1
                 ;;
             -*)
                 usage
@@ -353,7 +359,45 @@ EOF
 
 genrun()
 {
-    cat > ${TARGETDIR}/run.lua  << EOF
+    if [ ! -z $GENPKG ]; then
+        cat > ${TARGETDIR}/run.lua  << EOF
+-- Automaticly generated on `date`.
+-- This file is called when the installer is run.
+-- Don't place any (initialization) code outside the Init() or Install() functions.
+
+function Init()
+    -- This function is called as soon as the user launches the installer.
+    
+    -- The files that need to be packaged should be placed inside the directory returned from
+    -- 'install.getpkgdir()'. By setting install.destdir to this path, the packed installation files
+    -- are directly extracted, (re)packaged and installed to the user's system. If you need to compile
+    -- the software on the user's system, you probably need to extract the files somewhere else and place
+    -- any compiled files inside the 'temporary package directory' later.
+    install.destdir = install.getpkgdir()
+    
+    -- Installation screens to show (in given order). Custom screens should be placed here.
+    install.screenlist = { WelcomeScreen, LicenseScreen, PackageToggleScreen, PackageDirScreen, InstallScreen, SummaryScreen, FinishScreen }
+end
+
+function Install()
+    -- This function is called as soon as the 'InstallScreen' is shown.
+    
+    -- Check if we need root access. By asking the user here, he or she can decide to proceed
+    -- or not before the actual installation begins.
+    if pkg.needroot() then
+        install.askrootpw()
+    end
+    
+    -- This function extracts the files to 'install.destdir'.
+    install.extractfiles()
+    
+    -- This function generates and installs the package.
+    -- If you need to call 'install.gendesktopentries', do this before this function.
+    install.generatepkg()
+end
+EOF
+    else
+        cat > ${TARGETDIR}/run.lua  << EOF
 -- Automaticly generated on `date`.
 -- This file is called when the installer is run.
 -- Don't place any (initialization) code outside the Init() or Install() functions.
@@ -376,6 +420,63 @@ function Install()
     install.extractfiles()
 end
 EOF
+    fi
+}
+
+genpkg()
+{
+    cat > ${TARGETDIR}/package.lua  << EOF
+-- Automaticly generated on `date`.
+-- This file is used for 'Package Mode' configuration.
+
+-- Enables or disables Package Mode
+pkg.enable = true
+
+-- The package's name. Usually a simple (no spaces etc.) and lowercased version of 'cfg.appname'
+pkg.name = "mypkg"
+
+-- The software version
+pkg.version = "1"
+
+-- The package version (see the manual why this is different than pkg.version).
+pkg.release = "1"
+
+-- A short (max 1 line) description.
+pkg.summary = "Change this summary"
+
+-- A longer description for the installed package. Can be a few lines long
+pkg.description = [[
+Change this longer description.
+Which can have multiple lines.
+]]
+
+-- A group to which this package belongs to. See the manual for valid groups.
+pkg.group = "File" -- You probably want to change this!
+
+-- The software license of this package
+pkg.license = "GPLv2"
+
+-- The package maintainer/creator. Usually your name + email
+pkg.maintainer = "$USER $USER@email.com"
+
+-- URL to software's homepage
+pkg.url = "www.google.com"
+
+-- Table (array) that should contain (relative!) paths to any binaries that should have a 'binary script' (usually each binary).
+pkg.bins = {}
+
+-- (Default) Directory used as 'data directory'. When unspecified (or nil) a reasonable default is automaticly choosen.
+pkg.destdir = nil
+
+-- (Default) Directory used to place any 'binary scripts'. When unspecified (or nil) a reasonable default is automaticly choosen.
+pkg.bindir = nil
+
+-- Enable this for KDE software
+pkg.setkdeenv = false
+
+-- Whether the installer should (try to) register the software with the user's package manager.
+pkg.register = true
+EOF
 }
 
 createprojdir()
@@ -386,6 +487,10 @@ createprojdir()
     copylogo
     genconfig
     genrun
+    
+    if [ ! -z $GENPKG ]; then
+        genpkg
+    fi
 }
 
 hints()
@@ -395,6 +500,11 @@ hints()
     echo "In this directory you can..."
     echo "* Edit config.lua for general configuration options. (file has comments)"
     echo "* Edit run.lua for scripting the installation process. (file has comments)"
+    
+    if [ ! -z $GENPKG ]; then
+        echo "* Edit package.lua for package mode configuration. (file has comments)"
+    fi
+    
     echo "* Place the installation files in the files_all/ directory. (for platform specific files see the manual)"
     echo "* Put any files needed in runtime by the installer in the files_extra/ directory."
     echo "* Create 'welcome', 'license' or 'finish' text files for setting the text used by their respective screens."

@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <locale.h>
+#include <ctype.h>
 #include "tui.h"
 #include "inputfield.h"
 

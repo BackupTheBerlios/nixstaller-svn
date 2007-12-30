@@ -44,6 +44,10 @@ function bindest:verify()
     return true
 end
 
+function screen:canactivate()
+    return pkg.enable
+end
+
 function screen:activate()
     pkgdest:set(pkg.destdir)
     bindest:set(pkg.bindir)

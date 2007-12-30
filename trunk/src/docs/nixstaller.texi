@@ -578,6 +578,9 @@ This variable should contain a @ref{Strings,,string} containing the version of t
 This (optional) variable should contain a @ref{Strings,,string} describing an URL to the software's homepage.
 @end table
 
+@findex pkg.addbinopts
+To define any commandline arguments for binary scripts, the @code{pkg.addbinopts} function is used. This function accepts 2 arguments: the first is the relative path to the binary being executed (equally defined in @code{pkg.bins}), the second a @code{string} containing any commandline arguments. Note that this function can also be called inside @file{install.lua}, this may especially be useful incase the arguments need to be determined during installation.
+
 @findex pkg.addbinenv
 To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.@*
 @*
@@ -599,7 +602,8 @@ pkg.destdir = "/usr/local/share"
 pkg.bindir = "/usr/local/bin"
 pkg.register = true
 pkg.setkdeenv = false
-pkg.setenv("TEST_VER", "1")}
+pkg.addbinopts("bin/test", "@minus{}@minus{}some-argument")
+pkg.addbinenv("TEST_VER", "1")}
 
 
 @section Third Lua Script: @file{run.lua}
@@ -3323,8 +3327,7 @@ This function does the oppisite of @code{utils.basename}: it strips out the file
 @endluafunc
 
 @luafunc utils.moverec (s, d)
-@c UNDONE? (Exit status?)
-This function will move all the files from source directory @code{s} to the destination directory @code{d}.
+This function will move all the files from source directory @code{s} to the destination directory @code{d}. The function returns the exit status from the @command{mv} command. Note that this function can only be called during installation (in the @code{Install()} function).
 @endluafunc
 
 @luafunc utils.opendoc (f)

@@ -73,8 +73,8 @@ function create(src)
     -- Create directory structure
     check(os.mkdirrec(instfiles))
     check(os.mkdirrec(pkgbindir))
-    utils.moverec(src .. "/files", instfiles)
-    utils.moverec(src .. "/bins", pkgbindir)
+    checkmvrec(src .. "/files", instfiles)
+    checkmvrec(src .. "/bins", pkgbindir)
 
     -- Copy XDG desktop files
     copydeskfiles(pkgdir)
@@ -101,8 +101,8 @@ arch = %s
     checkcmd(OLDG.install.execute, string.format("cd %s && tar czf %s/%s --owner=root --group=root * .FILELIST .PKGINFO", pkgdir, curdir, pkgname()))
     
     -- Move install files back
-    utils.moverec(instfiles, src .. "/files")
-    utils.moverec(pkgbindir, src .. "/bins")
+    checkmvrec(instfiles, src .. "/files")
+    checkmvrec(pkgbindir, src .. "/bins")
 end
 
 function install(src)
@@ -120,7 +120,7 @@ end
 function rollback(src)
     if instfiles and os.fileexists(instfiles) then
         -- Move install files back
-        utils.moverec(instfiles, src .. "/files")
-        utils.moverec(pkgbindir, src .. "/bins")
+        checkmvrec(instfiles, src .. "/files")
+        checkmvrec(pkgbindir, src .. "/bins")
     end
 end

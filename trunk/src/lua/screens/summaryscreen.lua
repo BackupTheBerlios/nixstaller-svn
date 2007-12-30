@@ -20,7 +20,7 @@ module (..., package.seeall)
 screen = install.newscreen("Installation Summary")
 
 function screen:canactivate()
-    return install.createpkg
+    return pkg.enable
 end
 
 text = screen:addtextfield("The software has been installed to this system.\nAn installation summary is shown below.")

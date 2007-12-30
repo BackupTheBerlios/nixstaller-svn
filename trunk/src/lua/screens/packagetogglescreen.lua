@@ -20,7 +20,7 @@ module (..., package.seeall)
 screen = install.newscreen("Software registration") -- UNDONE? (title)
 
 function screen:canactivate()
-    return pkg.canregister
+    return pkg.enable and pkg.canregister
 end
 
 genpkg = screen:addcheckbox("By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.\n\nNote: When enabled, you need to grant the installer root access later on.\n\nWhen unsure, just leave it enabled.", {"Register software"})

@@ -80,13 +80,15 @@ function xdguninstscript()
 EXEC=""
 (xdg-desktop-menu --version >/dev/null 2>&1) && EXEC="xdg-desktop-menu"
 [ -z $EXEC ] && ("%s/xdg-utils/xdg-desktop-menu" --version 2>&1 >/dev/null) && EXEC="%s/xdg-utils/xdg-desktop-menu"
-if [ ! -z "$EXEC" ]; then
 ]], pkg.getdatadir(), pkg.getdatadir())
     
-    for n, _ in pairs(OLDG.install.menuentries) do
-        ret = ret .. string.format("    $EXEC uninstall --novendor %s.desktop\n", n)
+    if #OLDG.install.menuentries > 0 then
+        ret = ret .. "if [ ! -z \"$EXEC\" ]; then\n"
+        for n, _ in pairs(OLDG.install.menuentries) do
+            ret = ret .. string.format("    $EXEC uninstall --novendor %s.desktop\n", n)
+        end
+        ret = ret .. "fi\n"
     end
     
-    ret = ret .. "fi\n"
     return ret
 end

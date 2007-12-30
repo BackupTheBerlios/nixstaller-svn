@@ -23,7 +23,7 @@ function getpkgpath()
 end
 
 function installedver()
-    local cmd = check(io.popen(string.format("dpkg-query -W -f '${VERSION}' %s", pkg.name)))
+    local cmd = check(io.popen(string.format("(dpkg-query -W -f '${VERSION}' %s) 2>/dev/null", pkg.name)))
     local ver = cmd:read("*a")
     cmd:close()
     return (ver ~= "" and ver) or nil
@@ -71,6 +71,7 @@ function genxdgscript(dest)
     
     check(f:write("#!/bin/sh\n"))
     check(f:write(script))
+    check(f:write("exit 0\n")) -- dpkg wants clean exit status
     
     f:close()
     os.chmod(fname, "555")
@@ -87,8 +88,8 @@ function create(src)
     -- Create directory structure
     check(os.mkdirrec(instfiles))
     check(os.mkdirrec(debbin))
-    utils.moverec(src .. "/files", instfiles)
-    utils.moverec(src .. "/bins", debbin)
+    checkmvrec(src .. "/files", instfiles)
+    checkmvrec(src .. "/bins", debbin)
 
     local size = math.ceil((pkgsize(instfiles) + pkgsize(debbin)) / 1024)
     
@@ -117,8 +118,8 @@ Description: %s
     
     -- Move install files back
     checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
-    utils.moverec(instfiles, src .. "/files")
-    utils.moverec(debbin, src .. "/bins")
+    checkmvrec(instfiles, src .. "/files")
+    checkmvrec(debbin, src .. "/bins")
 end
 
 function install(src)
@@ -141,7 +142,7 @@ function rollback(src)
             checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
         end
         -- Move install files back
-        utils.moverec(instfiles, src .. "/files")
-        utils.moverec(debbin, src .. "/bins")
+        checkmvrec(instfiles, src .. "/files")
+        checkmvrec(debbin, src .. "/bins")
     end
 end

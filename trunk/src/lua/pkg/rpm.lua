@@ -66,7 +66,7 @@ Summary: %s
 Group: %s
 License: %s
 URL: %s
-Autoreq: 0
+AutoReqProv: 0
 
 %%description
 %s
@@ -81,6 +81,7 @@ Autoreq: 0
     if script then
         check(spec:write("\n%preun\n"))
         check(spec:write(script))
+        check(spec:write("exit 0\n")) -- rpm wants clean exit status
     end
     
     spec:close()
@@ -98,7 +99,7 @@ and hit continue.", "Continue", "Abort") == 2 then
         locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")
     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --force -i %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
+    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --force -U %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
 end
 
 function rollback(src)

@@ -647,9 +647,6 @@ elif env.GetOption('clean'):
     Execute(Delete('.sconsign.dblite'))
 
 
-# Builds LZMA encode/decode programs
-lzma, lzma_dec = env.SConscript('lzma/SConstruct', duplicate=0)
-
 # Builds bsdiff binaries
 edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
         
@@ -674,6 +671,6 @@ fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/di
 c_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 cpp_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
 
-Default(lzma, lzma_dec, edelta, surunner, ncurses, gtk, fltk, main)
-Default(env.Install(cpp_bin_dir, lzma), env.Install(c_bin_dir, lzma_dec), env.Install(c_bin_dir, Flatten(edelta)), env.Install(c_bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, ncurses), env.Install(cpp_bin_dir, gtk), env.Install(cpp_bin_dir, fltk))
+Default(edelta, surunner, ncurses, gtk, fltk, main)
+Default(env.Install(c_bin_dir, Flatten(edelta)), env.Install(c_bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, ncurses), env.Install(cpp_bin_dir, gtk), env.Install(cpp_bin_dir, fltk))
 
