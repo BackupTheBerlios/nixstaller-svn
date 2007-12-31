@@ -464,6 +464,9 @@ A description of the software to be installed. Usually not longer than a few sen
 @vindex pkg.destdir
 @item pkg.destdir
 A @ref{Strings,,string} containing the destination directory for the data directory. When unspecified a reasonable default is choosen for the user's system (mostly @file{/usr/local/share}).
+@vindex pkg.enable
+@item pkg.enable
+Boolean variable which tells whether Package Mode is enabled or not, default it's @code{false} (disabled).
 @vindex pkg.group
 @item pkg.group
 This variable should contain a @ref{Strings,,string} describing a valid @emph{package group}. Some package managers assign to each package a package group. Nixstaller has it's own range of package groups, these are translated to a similar group from the native package manager when the package is generated. Valid groups are listed in the table below.
@@ -579,13 +582,14 @@ This (optional) variable should contain a @ref{Strings,,string} describing an UR
 @end table
 
 @findex pkg.addbinopts
-To define any commandline arguments for binary scripts, the @code{pkg.addbinopts} function is used. This function accepts 2 arguments: the first is the relative path to the binary being executed (equally defined in @code{pkg.bins}), the second a @code{string} containing any commandline arguments. Note that this function can also be called inside @file{install.lua}, this may especially be useful incase the arguments need to be determined during installation.
+To define any commandline arguments for binary scripts, the @code{pkg.addbinopts} function is used. This function accepts 2 arguments: the first is the relative path to the binary being executed (equally defined as in @code{pkg.bins}), the second a @code{string} containing any commandline arguments. Note that this function can also be called inside @file{install.lua}, this may especially be useful incase the arguments need to be determined during installation.
 
 @findex pkg.addbinenv
 To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.@*
 @*
 An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
-@codeblock{pkg.name = "test"
+@codeblock{pkg.enable = true @minus{}@minus{} Important
+pkg.name = "test"
 pkg.version = "1.0a"
 pkg.release = "1"
 pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail.com>"
@@ -919,6 +923,9 @@ function Install()
 end}
 At first, in the @code{Init()} function, a new desktop menu entry is created. The @code{pkg.getbindir} function is used to retrieve the location of the binary script that is used to launch @file{bin/test} inside the data directory. The @code{pkg.getdatadir} is used to retrieve the location of a logo inside the data directory.@*
 After that @code{install.gendesktopentries} is called to install the desktop menu entry. To see if the entry needs to be installed globally, the write permissions of the data directory are checked. If the user cannot write to it, it is assumed the installation went with root access and therefore the package was not installed locally.
+
+@subsubsection Miscallenous
+The @code{pkg.needroot()} function can be used to check if the @code{install.generatepkg} function needs root permissions. This is especially useful in combination with @ref{install.askrootpw} because the user can then be asked to enter the root password before the installation begins.
 
 
 @subsection Using @samp{runtime files}
@@ -3080,7 +3087,12 @@ This function will extract all installation files to the directory that was spec
 
 @anchor{install.gendesktopentries}
 @luafunc install.gendesktopentries (g)
-This function will install any previously created desktop menu entries. The argument @code{g} is a @code{boolean} that is used to tell if the entries should be installed globally (@code{true}) or locally (@code{false}). When Package Mode is used, this function should always be called before @code{install.generatepkg}.
+This function will install any previously created desktop menu entries. The argument @code{g} is a @code{boolean} that is used to tell if the entries should be installed globally (@code{true}) or locally (@code{false}). When Package Mode is used, this function should always be called before @ref{install.generatepkg}.
+@endluafunc
+
+@anchor{install.generatepkg}
+@luafunc install.generatepkg ()
+When using Package Mode, this function is used to create and install the software package. Note that this function should always be called after @code{install.gendesktopentries}.
 @endluafunc
 
 @anchor{install.lockscreen}

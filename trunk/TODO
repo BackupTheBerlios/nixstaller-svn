@@ -13,6 +13,7 @@ OVERALL
 - Desktopentry naming?
 - Update versions in about etc
 - Add trap in geninstall.sh which cleans stuff?
+- Steps for install.generatepkg()? (Update docs)
 
 
 PACKAGING
@@ -58,10 +59,7 @@ DOCS:
 - UNDONE's
 - Changelog
 - builddeps.sh?
-- pkg.addbinopts (note on that it can be called inside install.lua aswell)
-- install.generatepkg reference (add references to this in lua chapter?)
 - Update install.askrootpw() reference about pkg mode
-- pkg.enable
 - pkg.needroot()
 
 
