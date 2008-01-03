@@ -487,7 +487,7 @@ function PrepareArchive()
     end
 
     if cfg.logo ~= nil then
-        ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.logo), string.format("%s/tmp/", confdir))
+        ret, msg = os.copy(string.format("%s/files_extra/%s" , confdir, cfg.logo), string.format("%s/tmp/", confdir))
         if ret == nil then
             print(string.format("Warning could not copy logo: %s", msg))
         end

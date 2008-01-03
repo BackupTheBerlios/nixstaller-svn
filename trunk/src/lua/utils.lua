@@ -85,7 +85,7 @@ EXEC=""
     if #OLDG.install.menuentries > 0 then
         ret = ret .. "if [ ! -z \"$EXEC\" ]; then\n"
         for n, _ in pairs(OLDG.install.menuentries) do
-            ret = ret .. string.format("    $EXEC uninstall --novendor %s.desktop\n", n)
+            ret = ret .. string.format("    $EXEC uninstall --novendor \"%s.desktop\"\n", n)
         end
         ret = ret .. "fi\n"
     end

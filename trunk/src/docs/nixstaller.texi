@@ -101,7 +101,7 @@ Most screens are optional and can be shown in any particalur order. New type of 
 @item radiobutton:set now accepts strings as arguments aswell
 @item SConstruct now works with latest SCons (0.97)
 @item Preparing/copying frontend binaries message in geninstall.lua
-@item --h/-h option in geninstall.sh
+@item @minus{}@minus{}h/-h option in geninstall.sh
 @item Fixed: Lua execution would stop UI updates
 @item startupinstaller.sh now checks if a frontend is really launched
 @item genprojdir.sh
@@ -582,7 +582,7 @@ This (optional) variable should contain a @ref{Strings,,string} describing an UR
 @end table
 
 @findex pkg.addbinopts
-To define any commandline arguments for binary scripts, the @code{pkg.addbinopts} function is used. This function accepts 2 arguments: the first is the relative path to the binary being executed (equally defined as in @code{pkg.bins}), the second a @code{string} containing any commandline arguments. Note that this function can also be called inside @file{install.lua}, this may especially be useful incase the arguments need to be determined during installation.
+To define any commandline arguments for binary scripts, the @code{pkg.addbinopts} function is used. This function accepts 2 arguments: the first is the relative path to the binary being executed (equally defined as in @code{pkg.bins}), the second a @code{string} containing any commandline arguments. Note that this function can also be called inside @file{run.lua}, this may especially be useful incase the arguments need to be determined during installation.
 
 @findex pkg.addbinenv
 To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.@*
@@ -1014,7 +1014,8 @@ As of version 0.3, nixstaller ships a script called @file{genprojdir.sh}. This s
 @item Language copying.
 @item Copy graphics used by the @code{cfg.intropic} and @code{cfg.logo} lua variables to the right place in the project directory.
 @item Generating a @file{config.lua} file based on defaults and/or commandline parameters.
-@item Generate a @file{run.lua} based on defaults.
+@item Generate a @file{run.lua} based on defaults and optionally containing some common code for Package Mode.
+@item Generate a template @file{package.lua} file with most variables defined and explaining comments.
 @end itemize
 
 The script accepts the following commandline parameters:
@@ -1024,44 +1025,48 @@ The script accepts the following commandline parameters:
     @addtableheadercol{Description}
 @endtablerow
 
-@addtablerownowrap{--help, -h}
+@addtablerownowrap{@minus{}@minus{}help, -h}
     @addtablecol{Displays usage}
 @endtablerow
 
-@addtablerownowrap{--appname, -n <name>}
+@addtablerownowrap{@minus{}@minus{}appname, -n <name>}
     @addtablecol{Sets @code{cfg.appname}. Default: MyApp}
 @endtablerow
 
-@addtablerownowrap{--arch <arch1>[, <arch2>, ...]}
+@addtablerownowrap{@minus{}@minus{}arch <arch1>[, <arch2>, ...]}
     @addtablecol{Sets @code{cfg.targetarch} to one or more following arguments (<arch1>, <arch2> etc). Default: current CPU arch.}
 @endtablerow
 
-@addtablerownowrap{--archtype, -a <type>}
+@addtablerownowrap{@minus{}@minus{}archtype, -a <type>}
     @addtablecol{Sets @code{cfg.archivetype} to <type>. Default: lzma.}
 @endtablerow
 
-@addtablerownowrap{--deflang, -d <lang>}
+@addtablerownowrap{@minus{}@minus{}deflang, -d <lang>}
     @addtablecol{Sets @code{cfg.defaultlang} to <lang>. Default: english}
 @endtablerow
 
-@addtablerownowrap{--frontends, -f <fr1>[, <fr2>, ...]}
+@addtablerownowrap{@minus{}@minus{}frontends, -f <fr1>[, <fr2>, ...]}
     @addtablecol{Sets @code{cfg.frontends} to one or more following arguments (<fr1>, <fr2> etc). Default: gtk fltk ncurses.}
 @endtablerow
 
-@addtablerownowrap{--intropic, -i <picture>}
+@addtablerownowrap{@minus{}@minus{}intropic, -i <picture>}
     @addtablecol{Copies the file <picture> to the @file{extra_files/} directory and sets @code{cfg.intropic} accordingly. Default: none.}
 @endtablerow
 
-@addtablerownowrap{--languages, -l <l1>[, <l2>, ...]}
+@addtablerownowrap{@minus{}@minus{}languages, -l <l1>[, <l2>, ...]}
     @addtablecol{Sets @code{cfg.languages} to one or more following arguments (<l1>, <l2> etc). Default: english dutch.}
 @endtablerow
 
-@addtablerownowrap{--logo <file>}
+@addtablerownowrap{@minus{}@minus{}logo <file>}
     @addtablecol{Copies the file <logo> to the @file{extra_files/} directory and sets @code{cfg.logo} accordingly. Default: a default logo (shipped with Nixstaller).}
 @endtablerow
 
-@addtablerownowrap{--os, -o <os1>[, <os2>, ...]}
+@addtablerownowrap{@minus{}@minus{}os, -o <os1>[, <os2>, ...]}
     @addtablecol{Sets @code{cfg.targetos} to one or more following arguments (<os1>, <os2> etc). Default: current OS.}
+@endtablerow
+
+@addtablerownowrap{@minus{}@minus{}pkg}
+    @addtablecol{Specificly used for Package Mode. A template @file{package.lua} file will be created and common code for Package Mode will be added to @code{run.lua}}.
 @endtablerow
 
 @endtable
@@ -1085,6 +1090,16 @@ For examples of project directory layouts see the @samp{example/} directory in t
 
 @node Tutorials
 @chapter Tutorials
+This chapter lists 4 tutorials which show some common installation types in practise.@*
+@*
+The first tutorial explains how to create a very simple installer. The main focus of this tutorial is as an introduction to Nixstaller and how to perform most of the basics.@*
+@*
+The second tutorial is more realistic, but still fairly simple. It expands on the basicis and introduces the creation of new installation screens.@*
+@*
+The third tutorial is pretty advanced. The main focus lies on how to create new installation screens and use their widgets to control the installation process.@*
+@*
+The fourth tutorial focuses on Package Mode and inclusion of dependencies.
+
 
 @anchor{first tutorial}
 @section First Tutorial: A Simple Installer
@@ -1654,6 +1669,161 @@ The project directory should have the following structure:
 Calling @file{geninstall.sh} with the path to project directory as first argument and @samp{vim71.sh} as second argument should produce the installer.
 
 
+@section Fourth Tutorial: Installer for BZFlag
+@comment UNDONE: Introduce deskentries here?
+This tutorial introduces @ref{pkgmode,,Package Mode}, desktop menu generation and including dependencies. The installer will support the following things:
+@itemize @bullet
+@item Run on your current OS and CPU architecture (it's a binary installer and we will only focus on building on your current system).
+@item Let the user select a language.
+@item Show a welcome screen with BZFlag graphics and short (intro) message.
+@item Let the user configure whether to enable package registration and setting the destination paths for the binary and data directories.
+@item Install BZFlag to the user's system, including a few (less common) dependencies, via the @samp{Package Mode way}.
+@item Create a desktop menu entry for BZFlag.
+@end itemize
+
+@subsection Project Directory
+Again the @file{genprojdir.sh} script is used to generate a project directory:
+@codeblock{genprojdir.sh -i <pathtobzflaglogo>/side.bmp -n "BZFlag" @minus{}@minus{}pkg bzflag/}
+The @samp{<pathtobzflaglogo>} part should be replaced by the path where @file{side.bmp} can be found, in the BZFlag archive it is located inside the @file{bzflag-2.0.10/package/win32/nsis/} directory. Notice that this time the @samp{@minus{}@minus{}pkg} argument is also passed, this will set up a template @file{package.lua} file and adds some handy Package Mode code to @file{run.lua}.@*
+@*
+Next we create a @file{welcome} file with the following content:
+@codeblock{BZFlag is a free online multiplayer cross-platform open source 3D tank
+battle game. The name originates from "Battle Zone capture the Flag". It runs on
+Irix, Linux, *BSD, Windows, Mac OS X, and many other platforms. It's one of the most
+popular games ever on Silicon Graphics machines and continues to be developed and
+improved to this day. It's one of the most popular open source games ever.
+@*
+(from bzflag.org)}
+
+@subsection Compilation of BZFlag and Dependencies
+Before we continue with the configuration of the installer, we first have to compile BZFlag and a few dependencies.@*
+@*
+To do this it's best to @samp{install} any files to a seperate directory structure, this is easily accomplished by setting the @samp{@minus{}@minus{}prefix} flag when @command{configure} is called. This @samp{prefix directory} is furtherly referred as @emph{PREFIX}.@*
+@*
+Using the data in the table below, BZFlag and it's dependencies can now be build.
+@starttable{.33, .33, .33}
+@addtableheaderrow{}
+    @addtableheadercol{Where to get it}
+    @addtableheadercol{How to compile}
+    @addtableheadercol{Comments}
+@endtablerow
+
+@addtablerow{SDL}
+    @addtablecol{@uref{http://www.sdl.org}}
+    @addtablecol{@command{./configure @minus{}@minus{}prefix=PREFIX && make && make install}}
+    @addtablecol{Make sure that you have X dev packages installed}
+@endtablerow
+
+@addtablerow{libCURL}
+    @addtablecol{@uref{http://curl.haxx.se}}
+    @addtablecol{@command{./configure @minus{}@minus{}prefix=PREFIX && make && make install}}
+    @addtablecol{}
+@endtablerow
+
+@addtablerow{BZFlag}
+    @addtablecol{@uref{http://bzflag.org}}
+    @addtablecol{@command{CPPFLAGS="-IPREFIX/include" LDFLAGS="-LPREFIX/lib" ./configure @minus{}@minus{}prefix=PREFIX @minus{}@minus{}with-sdl-prefix=PREFIX @minus{}@minus{}with-libcurl="PREFIX/lib" && make && make install}}
+    @addtablecol{}
+@endtablerow
+
+@endtable
+
+After everything is build, the PREFIX directory should now contain the files we need (and some more). It's now time to place those files in the @file{files_all/} directory inside the project directory. The directory structure should look like this:
+@itemize @bullet
+    @item @file{bin/}
+    @itemize @bullet
+        @item @file{bzadmin}
+        @item @file{bzflag}
+        @item @file{bzfs}
+    @end itemize
+    @item @file{lib/}
+    @itemize @bullet
+        @item @file{libcurl.so.X}
+        @item @file{libSDL-1.2.so.X}
+    @end itemize
+    @item @file{bzflag/}
+    @itemize @bullet
+        @item @emph{BZFlag data files}
+    @end itemize
+@end itemize
+
+The binaries and libraries can be found in @file{PREFIX/bin} and @file{PREFIX/lib} respectively. Note that the libraries inside @file{PREFIX/lib} are suffixed with @samp{.so.X.Y.Z} (the other libs are just symlinks to these). The binaries however, expect the libraries to be suffixed with @samp{.so.X}. For this reason you have to rename the libraries after you copied them. Finally the data files can be found inside @file{PREFIX/share/bzflag}.
+
+
+@subsection @file{package.lua}
+Now we need to edit the @file{package.lua} file. The contents (comments are stripped) are shown below.
+@codeblock{pkg.enable = true
+pkg.name = "bzflag"
+pkg.version = "2.0.10"
+pkg.release = "1"
+pkg.license = "GPLv2"
+pkg.bins = @{ "bin/bzfs" , "bin/bzflag", "bin/bzadmin" @}
+pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail>" @minus{}@minus{} You probably want to change this :-)
+pkg.description = [[
+BZFlag is a free online multiplayer cross-platform open source 3D tank
+battle game. The name originates from "Battle Zone capture the Flag".
+]]
+pkg.summary ="Use your tank to shoot others and capture flags in a 3D multiplayer world."
+pkg.group = "Games"
+pkg.url = "bzflag.org"}
+
+@subsection @file{run.lua}
+Now it's time to focus on the @file{run.lua} file. Compared to the previous tutorial it's fairly simple. The contents (again with any generated comments stripped out) are shown below.
+@codeblock{function Init()
+    install.destdir = install.getpkgdir() @minus{}@minus{} Files can be installed right away
+    install.screenlist = @{ WelcomeScreen, PackageToggleScreen, PackageDirScreen, InstallScreen, SummaryScreen @}
+end
+@*
+function Install()
+    install.setstepcount(2)
+@*
+    if pkg.needroot() then
+        install.askrootpw()
+    end
+@*
+    @minus{}@minus{} We need to let bzflag know where to find the data,
+    @minus{}@minus{} this is accomplished by using the '-directory' commandline option
+    pkg.addbinopts("bin/bzflag", string.format("-directory %s/bzflag", pkg.getdatadir()))
+@*
+    install.menuentries["bzflag"] = install.newdesktopentry(pkg.getbindir("bin/bzflag"), pkg.getdatadir("blue_icon.png"), "Game;ActionGame")
+@*
+    install.extractfiles()
+    install.gendesktopentries(pkg.needroot()) @minus{}@minus{} Assume global install if root access is necessary.
+    install.generatepkg()
+end}
+
+@subsection Finishing Up
+The project directory layout should now look like this:
+@itemize @bullet
+    @item @file{bzflag/}
+    @itemize @bullet
+        @item @file{lang/}
+        @itemize @bullet
+            @item @file{dutch/}
+            @itemize @bullet
+                @item @file{strings}
+            @end itemize
+            @item @file{english/}
+            @itemize @bullet
+                @item @file{strings}
+            @end itemize
+        @end itemize
+        @item @file{files_all/}
+        @itemize @bullet
+            @item @emph{BZFlag files}
+        @end itemize
+        @item @file{files_extra/}
+        @itemize @bullet
+            @item @file{side.bmp}
+        @end itemize
+        @item @file{welcome}
+        @item @file{config.lua}
+        @item @file{package.lua}
+        @item @file{run.lua}
+    @end itemize
+@end itemize
+
+The installer can now be generated using @file{geninstall.sh}.
 
 @node Compilation
 @chapter Compilation
@@ -1744,12 +1914,31 @@ All the header files from the static libraries can be found in the @file{src/inc
 @subsection Notes
 In the @file{src/libs/[osname]/[archname]/} directories you can find a @file{notes} file that contain several notes about which library versions are used and how they were compiled. It's recommended that the same library versions are used incase you want to compile your own.
 
+@anchor{builddeps.sh}
+@subsection @file{builddeps.sh}
+This script is located inside the @code{src/} directory and is used to easily retrieve and compile most dependencies. Usually it's called inside the @file{src/} directory itself. The script needs either @command{wget} or @command{fetch} to retrieve the dependencies and @command{nano} is used to let you edit lua's Makefile (to use g++ and -Os, see the @file{notes} files). The files are stored inside @file{src/deps/files}, the dependencies are installed (after compilation) to @file{src/deps/usr}.@*
+@*
+The script can build one or more targets, by specifying them at the command line. These targets are:
+@itemize @bullet
+@item zlib
+@item png
+@item jpeg
+@item fltk
+@item lua
+@item ncurses
+@item lzma
+@end itemize
+If no targets are specified, all of them will be build.
+
+@section Binaries
+Besides libraries, Nixstaller also needs 2 binaries. These two are used for lzma encoding and decoding. They can easily be fetched and compiled by using @file{builddeps.sh} with the @samp{lzma} target (@pxref{builddeps.sh}).
+
 @section SCons
 @uref{http://www.scons.org/, SCons} is used as built system to compile Nixstaller. Atleast version @samp{0.96.91} is required. SCons depends on @uref{http://www.python.org, python} so make sure to install that aswell.@*
 @*
 To start the compilation simply execute @command{scons} from the @file{src/} directory.@*
 @*
-SCons has several options that will affect the compilation, to see these run @command{scons --help} in the @file{src/} directory.@*
+SCons has several options that will affect the compilation, to see these run @command{scons @minus{}@minus{}help} in the @file{src/} directory.@*
 @*
 There are also a few build targets:
 @table @strong
@@ -1820,6 +2009,7 @@ This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend
 @item @uref{http://www.7-zip.org/sdk.html, lzma}: Very good compression algorithm.
 @item @strong{InternetNightmare}: Suggestions, testing, feedback.
 @item @strong{offer}: Suggestions, bug reporting, feedback.
+@item @strong{Tomasz Sałaciński}: Suggestions, bug reporting, feedback.
 @end itemize
 
 
@@ -3054,10 +3244,12 @@ Following functions should only be used within the @code{Install} function.
 
 @anchor{install.askrootpw}
 @luafunc install.askrootpw ()
-This function will ask the user to type the systems root password. Normally this is done automaticly if,
+This function will ask the user to type the systems root password. This is done automaticly if,
 @itemize @bullet
-@item @code{executeasroot()} is called,
-@item when @code{install.destdir} is set to a directory which cannot be written to by the user.
+@item @code{install.executeasroot()} is called,
+@item when @code{install.destdir} is set to a directory which cannot be written to by the user,
+@item incase @code{install.generatepkg} needs root (@code{pkg.needroot} is @code{true}),
+@item incase @code{install.gendesktopentries} is used to install any desktop menu entries globally.
 @end itemize
 A good reason to call this functions is when you're sure the script will execute one or more commands as root @emph{after} @code{install.extractfiles()} is called. This way the user can abort if he or she doesn't want to or cannot type the root password before the installation begins.@*
 @*
@@ -3092,7 +3284,7 @@ This function will install any previously created desktop menu entries. The argu
 
 @anchor{install.generatepkg}
 @luafunc install.generatepkg ()
-When using Package Mode, this function is used to create and install the software package. Note that this function should always be called after @code{install.gendesktopentries}.
+When using Package Mode, this function is used to create and install the software package. Like @ref{install.extractfiles}, this function will call @code{install.setstatus}. Note that this function should always be called after @code{install.gendesktopentries}.
 @endluafunc
 
 @anchor{install.lockscreen}
@@ -3127,7 +3319,7 @@ os.copy(file1, file2, "/usr/local/share")}
 @luafunc install.setstepcount (n)
 This function is used to specify how many @emph{steps} the installation has, specified by parameter @code{n}. This is used to divide the progress bar and to put a text in the form of (x/X) on the screen, where @samp{x} is the current step and @samp{X} the total count of steps. On each @code{install.setstatus} call the current step will be incremented by one. By default the step count is 1.@*
 @*
-Note that @code{install.extractfiles} will call this function aswell, so you most lickely want to increment @code{n} by one.
+Note that @code{install.extractfiles} and @code{install.generatepkg} both will call this function when they are executed, so you most lickely want to increment @code{n} by one or two.
 @endluafunc
 
 @anchor{screen}

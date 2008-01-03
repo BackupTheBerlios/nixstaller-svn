@@ -23,6 +23,7 @@
 - cfgmenu:set() function
 - Functionality to create xdg menu entries
 - sudo support
+- Fixed: geninstall incorrectly assumed logo to be in main project directory (should be in files_extra/)
 
 
 0.2.2 --> 0.3

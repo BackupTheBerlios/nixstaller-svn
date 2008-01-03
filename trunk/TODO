@@ -13,7 +13,6 @@ OVERALL
 - Desktopentry naming?
 - Update versions in about etc
 - Add trap in geninstall.sh which cleans stuff?
-- Steps for install.generatepkg()? (Update docs)
 
 
 PACKAGING
@@ -54,13 +53,10 @@ TRANSLATIONS
 
 
 DOCS:
-- Tutorials
-- Update index?
+- Tutorials (Cube/Vim desktopentries?)
 - UNDONE's
 - Changelog
-- builddeps.sh?
-- Update install.askrootpw() reference about pkg mode
-- pkg.needroot()
+- Features
 
 
 MAIN

@@ -289,7 +289,7 @@ copyintropic()
 copylogo()
 {
     if [ ! -z "${LOGO}" ]; then
-        requiredcp "${LOGO}" "${TARGETDIR}"
+        requiredcp "${LOGO}" "${TARGETDIR}/files_extra"
     fi
 }
 
@@ -381,6 +381,10 @@ end
 
 function Install()
     -- This function is called as soon as the 'InstallScreen' is shown.
+    
+    -- How many 'steps' the installation has (used to divide the progressbar). Since both
+    -- install.extractfiles and install.generatepkg count as one step, we start with 2.
+    install.setstepcount(2)
     
     -- Check if we need root access. By asking the user here, he or she can decide to proceed
     -- or not before the actual installation begins.
