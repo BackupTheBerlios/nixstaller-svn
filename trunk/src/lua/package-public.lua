@@ -161,7 +161,7 @@ function install.generatepkg()
             -- This should be done after the package is installed, because if a package is replaced
             -- it may uninstall any entries.
             for n, _ in pairs(install.menuentries) do
-                instxdgentries(needroot(), xdgentryfname(n))
+                instxdgentries(pkg.needroot(), xdgentryfname(n))
             end
         end
     end)

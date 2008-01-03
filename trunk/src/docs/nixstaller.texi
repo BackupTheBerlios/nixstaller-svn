@@ -85,6 +85,8 @@ Most screens are optional and can be shown in any particalur order. New type of 
 @item The files can be packed with gzip-, bzip2 and lzma compression.
 @item Installation files can be extracted to various directories; a temporary directory (useful for @samp{./configure && make && make install} like installers), a directory which can be selected by the user and a default directory.
 @item @uref{http://www.lua.org,Lua} support is provided to configure the installer, create installation screens and program the installation procedure. This allows very flexible configurations.
+@item A certain installation type, called @samp{Package Mode}, which allows software registration in the user's native package management system (rpm, dpkg, pacman and slackware's tgz are currently supported). When Package Mode fails to register the software it will continue with the installation and supply an uninstallation script. Package Mode also features basic dependency handling.
+@item Creation of desktop menu entries following the freedesktop standards.
 @end itemize
 
 
@@ -354,9 +356,9 @@ Other files include files needed during runtime (ie when the installer is starte
 @section Package Mode
 Besides the @emph{regular} installation mode, Nixstaller supports an additional mode called @emph{Package Mode}.@*
 @*
-The main reason for using this mode is that it allows easier package managing of the software to be installed. This is accomplished by either registering the software on the users package manager system (ie. rpm) or by creating a script that is used to uninstall the software.@*
+The main reason for using this mode is that it allows easier package managing of the software to be installed. This is accomplished by either registering the software on the users package manager system (ie. rpm) or by creating a script that is used to uninstall the software. Currently the following package managers are supported: rpm, dpkg (deb), pacman and slackware's installpkg. @*
 @*
-Another reason is dependency handling. At this point it is very basic, but more features will be added to feature releases of Nixstaller.
+Another reason to use Package Mode is dependency handling. At this point it is very basic, but more features will be added to feature releases of Nixstaller.
 
 @subsection How it works
 The files that should be installed are placed in a special directory, the @emph{temporary package directory}. The installer will then either package these files and use the local package manager system to install them or copy them directly to their destination. Whether a package is registered or not depends on user configuration, installer configuration and if there is support for the user's package manager.@*
@@ -880,8 +882,7 @@ As described in the previous chapter (described @ref{pkgmode,,here}) the files t
 @*
 For some installations it might be enough to set @code{install.destdir} to this location. The packaged files are extracted to the temporary package directory and are used directly for installation.@*
 @*
-@comment UNDONE
-For other installations, it might be necessary to first extract any files to a different place (setting @code{install.destdir} with @code{install.gettempdir()}) and place the files to be installed in the temporary package directory later. A good example is when software has to be compiled. An example of this case is shown in tutorial 4.
+For other installations, it might be necessary to first extract any files to a different place (setting @code{install.destdir} with @code{install.gettempdir()}) and place the files to be installed in the temporary package directory later. A good example is when software has to be compiled.
 
 @subsubsection Generating the package
 After @code{install.extractfiles} is called in the @code{Install()} function inside @file{run.lua}, @code{install.generatepkg()} should be called. This function will do the actual packaging and installing of the software.@*
@@ -1670,7 +1671,6 @@ Calling @file{geninstall.sh} with the path to project directory as first argumen
 
 
 @section Fourth Tutorial: Installer for BZFlag
-@comment UNDONE: Introduce deskentries here?
 This tutorial introduces @ref{pkgmode,,Package Mode}, desktop menu generation and including dependencies. The installer will support the following things:
 @itemize @bullet
 @item Run on your current OS and CPU architecture (it's a binary installer and we will only focus on building on your current system).
@@ -1709,7 +1709,7 @@ Using the data in the table below, BZFlag and it's dependencies can now be build
 @endtablerow
 
 @addtablerow{SDL}
-    @addtablecol{@uref{http://www.sdl.org}}
+    @addtablecol{@uref{http://www.libsdl.org}}
     @addtablecol{@command{./configure @minus{}@minus{}prefix=PREFIX && make && make install}}
     @addtablecol{Make sure that you have X dev packages installed}
 @endtablerow
@@ -1747,25 +1747,25 @@ After everything is build, the PREFIX directory should now contain the files we 
     @end itemize
 @end itemize
 
-The binaries and libraries can be found in @file{PREFIX/bin} and @file{PREFIX/lib} respectively. Note that the libraries inside @file{PREFIX/lib} are suffixed with @samp{.so.X.Y.Z} (the other libs are just symlinks to these). The binaries however, expect the libraries to be suffixed with @samp{.so.X}. For this reason you have to rename the libraries after you copied them. Finally the data files can be found inside @file{PREFIX/share/bzflag}.
+The binaries and libraries can be found in @file{PREFIX/bin} and @file{PREFIX/lib} respectively. The binaries are pretty big, you probably want to @samp{strip} them by running @command{strip -s <bins>}. Note that the libraries inside @file{PREFIX/lib} are suffixed with @samp{.so.X.Y.Z} (the other libs are just symlinks to these). The binaries however, expect the libraries to be suffixed with @samp{.so.X}. For this reason you have to rename the libraries after you copied them. Finally the data files can be found inside @file{PREFIX/share/bzflag}.
 
 
 @subsection @file{package.lua}
-Now we need to edit the @file{package.lua} file. The contents (comments are stripped) are shown below.
+Now we need to edit the @file{package.lua} file. The contents (comments and some defaults are stripped) are shown below.
 @codeblock{pkg.enable = true
 pkg.name = "bzflag"
 pkg.version = "2.0.10"
 pkg.release = "1"
-pkg.license = "GPLv2"
-pkg.bins = @{ "bin/bzfs" , "bin/bzflag", "bin/bzadmin" @}
-pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail>" @minus{}@minus{} You probably want to change this :-)
+pkg.summary ="Use your tank to shoot others and capture flags in a 3D multiplayer world."
 pkg.description = [[
 BZFlag is a free online multiplayer cross-platform open source 3D tank
 battle game. The name originates from "Battle Zone capture the Flag".
 ]]
-pkg.summary ="Use your tank to shoot others and capture flags in a 3D multiplayer world."
 pkg.group = "Games"
-pkg.url = "bzflag.org"}
+pkg.license = "GPLv2"
+pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail>" @minus{}@minus{} You probably want to change this :-)
+pkg.url = "bzflag.org"
+pkg.bins = @{ "bin/bzfs" , "bin/bzflag", "bin/bzadmin" @}}
 
 @subsection @file{run.lua}
 Now it's time to focus on the @file{run.lua} file. Compared to the previous tutorial it's fairly simple. The contents (again with any generated comments stripped out) are shown below.
@@ -1785,7 +1785,7 @@ function Install()
     @minus{}@minus{} this is accomplished by using the '-directory' commandline option
     pkg.addbinopts("bin/bzflag", string.format("-directory %s/bzflag", pkg.getdatadir()))
 @*
-    install.menuentries["bzflag"] = install.newdesktopentry(pkg.getbindir("bin/bzflag"), pkg.getdatadir("blue_icon.png"), "Game;ActionGame")
+    install.menuentries["bzflag"] = install.newdesktopentry(pkg.getbindir("bin/bzflag"), pkg.getdatadir("bzflag/blue_icon.png"), "Game;ActionGame")
 @*
     install.extractfiles()
     install.gendesktopentries(pkg.needroot()) @minus{}@minus{} Assume global install if root access is necessary.

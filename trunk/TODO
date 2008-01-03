@@ -1,35 +1,15 @@
 OVERALL
-- Make shared 'library' for scripts
-- Qt/KDE frontend
-- Fix installation if destdir has no read access?
-- Use locale fix from latest kdesu?
-- Dep handling?
-- Use deltas <--> patches for different frontends?
-- Modify Makeself?
-- Better util.a configure testing?
-- Initial value from constructor for radiobutton, menu etc?
-- Root usage: change to use privileged user? (default root)
-- Way to specifiy frontend when installer is started
-- Desktopentry naming?
 - Update versions in about etc
 - Add trap in geninstall.sh which cleans stuff?
 
 
-PACKAGING
-- More config options:
-    * Package Changelog?
-    * RPM: Vendor?, Icon?
-- RPM: Description formatting?
-- Set right ENV in bin scripts, make KDE/Gnome etc optional?
-- pacman: Check for locks (done for this release?)
-
-
 TEST
-- Bug: install.execute crashes with wrong arguments (fixed?)
+- OS specific:
+    - New su/sudo code
+    - Uninstall script
+    - slackware: description works?
 - Calling nixstaller scripts outside main directory and via $PATH
-- New su/sudo code
-- Uninstall script
-- slackware: description works?
+- Bug: install.execute crashes with wrong arguments (fixed?)
 - Check if ~ works (reported bug)
 - Default (empty) pkg values (update docs if necessary)
 
@@ -53,10 +33,31 @@ TRANSLATIONS
 
 
 DOCS:
-- Tutorials (Cube/Vim desktopentries?)
-- UNDONE's
 - Changelog
-- Features
+
+
+---------------------------------- LATER ---------------------------
+
+OVERALL
+- Make shared 'library' for scripts
+- Qt/KDE frontend
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Dep handling?
+- Use deltas <--> patches for different frontends?
+- Modify Makeself?
+- Better util.a configure testing?
+- Initial value from constructor for radiobutton, menu etc?
+- Root usage: change to use privileged user? (default root)
+- Way to specifiy frontend when installer is started
+
+
+PACKAGING
+- More config options:
+    * Package Changelog?
+    * RPM: Vendor?, Icon?
+- RPM: Description formatting?
+- pacman: Check for locks for future releases
 
 
 MAIN
@@ -98,4 +99,3 @@ DESIGN
 that will be called instead of virtual function, this function should call the virtual instead.
 - More usage of const?
 - Reorganize SConstruct
-
