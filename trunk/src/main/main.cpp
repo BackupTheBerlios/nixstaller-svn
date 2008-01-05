@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+    Copyright (C) 2006 - 2008 Rick Helmus (rhelmus_AT_gmail.com)
 
     This file is part of Nixstaller.
     
@@ -140,7 +140,7 @@ void CMain::Init(int argc, char **argv)
     else if (m_szCPUArch == "i86pc")
         m_szCPUArch = "x86";
     else if (m_szCPUArch == "amd64")
-    	m_szCPUArch = "x86_64";
+        m_szCPUArch = "x86_64";
 
     m_szOwnDir = GetCWD();
     

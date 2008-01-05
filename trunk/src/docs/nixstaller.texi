@@ -15,7 +15,7 @@
 @end macro
 
 @titlepage
-@title Nixstaller 0.3 Manual
+@title Nixstaller 0.4 Manual
 @author Rick Helmus
 @end titlepage
 
@@ -3629,7 +3629,7 @@ print(unpack(t))    @minus{}@minus{} Prints "Hello World"}
 Nixstaller is licensed under the GPLv2 license:
 
 @quotation
-Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+Copyright (C) 2006 - 2008 Rick Helmus (rhelmus_AT_gmail.com)
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

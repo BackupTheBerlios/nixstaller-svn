@@ -446,7 +446,7 @@ env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
 # Current version
-curnixstversion = '0.3'
+curnixstversion = '0.4'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
     print 'Stripping all binaries in the bin/%s directory...' % cur_os
