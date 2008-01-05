@@ -1,6 +1,7 @@
 OVERALL
 - Update versions in about etc
 - Add trap in geninstall.sh which cleans stuff?
+- Nixstaller installer
 
 
 TEST

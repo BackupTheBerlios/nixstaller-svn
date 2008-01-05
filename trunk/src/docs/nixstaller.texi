@@ -85,7 +85,7 @@ Most screens are optional and can be shown in any particalur order. New type of 
 @item The files can be packed with gzip-, bzip2 and lzma compression.
 @item Installation files can be extracted to various directories; a temporary directory (useful for @samp{./configure && make && make install} like installers), a directory which can be selected by the user and a default directory.
 @item @uref{http://www.lua.org,Lua} support is provided to configure the installer, create installation screens and program the installation procedure. This allows very flexible configurations.
-@item A certain installation type, called @samp{Package Mode}, which allows software registration in the user's native package management system (rpm, dpkg, pacman and slackware's tgz are currently supported). When Package Mode fails to register the software it will continue with the installation and supply an uninstallation script. Package Mode also features basic dependency handling.
+@item A certain installation type, called @samp{Package Mode}, which allows software registration in the user's native package manager  (rpm, dpkg, pacman and slackware's tgz are currently supported). When Package Mode fails to register the software it will continue with the installation and supply an uninstallation script. Package Mode also features basic dependency handling.
 @item Creation of desktop menu entries following the freedesktop standards.
 @end itemize
 
