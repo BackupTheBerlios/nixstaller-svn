@@ -82,7 +82,7 @@ EXEC=""
 [ -z "$EXEC" ] && ("%s/xdg-utils/xdg-desktop-menu" --version) 2>&1 >/dev/null && EXEC="%s/xdg-utils/xdg-desktop-menu"
 ]], pkg.getdatadir(), pkg.getdatadir())
     
-    if #OLDG.install.menuentries > 0 then
+    if not utils.emptytable(OLDG.install.menuentries) then
         ret = ret .. "if [ ! -z \"$EXEC\" ]; then\n"
         for n, _ in pairs(OLDG.install.menuentries) do
             ret = ret .. string.format("    $EXEC uninstall --novendor \"%s.desktop\"\n", n)

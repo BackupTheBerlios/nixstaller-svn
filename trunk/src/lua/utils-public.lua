@@ -68,3 +68,7 @@ function utils.opendoc(f)
     os.execute(string.format("%s %s >/dev/null 2>&1", bin, f))
 end
 
+function utils.emptytable(t)
+    return next(t) == nil
+end
+

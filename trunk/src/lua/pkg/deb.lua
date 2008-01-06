@@ -114,7 +114,7 @@ Description: %s
     checkcmd(OLDG.install.executeasroot, string.format("chown -R root %s/ %s", debbin, instfiles))
 
     -- Create the package (use low compression level for extra speed)
-    checkcmd(OLDG.install.execute, string.format("dpkg-deb -z1 -b %s/ %s/pkg.deb", debdir, curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("dpkg-deb -z1 -b %s/ %s/pkg.deb", debdir, curdir))
     
     -- Move install files back
     checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
@@ -123,14 +123,14 @@ Description: %s
 end
 
 function install(src)
-    local locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
-    while locked == 0 do
+    local locked = checklock("/var/lib/dpkg/lock", false)
+    while locked do
         if gui.choicebox("Another program seems to be using the DEB database. \
 Please close all applications that may use the database (ie Synaptic) \
 and hit continue.", "Continue", "Abort") == 2 then
             os.exit(1)
         end
-        locked = OLDG.install.executeasroot("lsof /var/lib/dpkg/lock >/dev/null")
+        locked = checklock("/var/lib/dpkg/lock", false)
     end
     
     checkcmd(OLDG.install.executeasroot, string.format("dpkg -i %s/pkg.deb", curdir))
