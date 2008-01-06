@@ -39,7 +39,7 @@ Maintainer:     %s
     end
     
     local uninstmsg
-    if pkg.register then
+    if pkg.register and pkg.canregister then
         uninstmsg = string.format("Software can be uninstalled via system's package manager.")
     else
         uninstmsg = string.format("Software can be uninstalled by running the following script:\n%s/uninstall-%s.", pkg.getbindir(), pkg.name)

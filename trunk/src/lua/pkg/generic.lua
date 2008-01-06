@@ -61,7 +61,8 @@ if [ ! -w "$PROGDIR" -o ! -w "$BINDIR" ]; then
 fi
 
 MD5BIN=`which md5sum 2>/dev/null`
-[ -z "$MD5BIN" -a ! -z "`which md5 2>/dev/null`" ] && MD5BIN="`which md5` -q"
+[ ! -f "$MD5BIN" -a -f "`which md5 2>/dev/null`" ] && MD5BIN="`which md5` -q"
+[ ! -f "$MD5BIN" -a -f "`which digest 2>/dev/null`" ] && MD5BIN="`which digest` -a md5"
 
 if [ -z "$MD5BIN" ]; then
     echo "WARNING: Could not find a suitable binary ('md5' or 'md5sum') to calculate MD5 sums in PATH."
@@ -152,6 +153,14 @@ fi
 
     table.insert(dirs, pkg.getdatadir())
     
+    if not os.fileexists(pkg.destdir) then
+        table.insert(dirs, pkg.destdir)
+    end
+
+    if not os.fileexists(pkg.bindir) then
+        table.insert(dirs, pkg.bindir)
+    end
+
     local countslash = function(s)
         local ret = 0
         for sl in string.gmatch(s, "/") do

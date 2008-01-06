@@ -64,8 +64,8 @@ export LD_LIBRARY_PATH
             end
         end
     end
-    
-    local opts = pkg.binopts[file] or ""
+
+    local opts = (pkg.binopts and pkg.binopts[file]) or ""
     check(script:write(string.format("exec %s/%s/%s %s\n", pkg.destdir, pkg.name, file, opts)))
 
     script:close() -- Flush
@@ -105,8 +105,12 @@ end
 
 pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 
+dofile("package-public.lua")
+
+if os.fileexists("config/package.lua") then
+    dofile("config/package.lua")
+end
+
 -- Defaults
 pkg.destdir = pkg.destdir or  pkg.packager.getpkgpath() .. "/share"
 pkg.bindir = pkg.bindir or pkg.packager.getpkgpath() .. "/bin"
-
-dofile("package-public.lua")

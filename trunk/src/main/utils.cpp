@@ -648,7 +648,12 @@ bool CPipedCMD::HasData()
     int ret = poll(&m_PollData, 1, 10);
     
     if (ret == -1) // Error occured
-        throw Exceptions::CExPoll(errno);
+    {
+        if (errno != EINTR) // ignore SIGCHLD
+            throw Exceptions::CExPoll(errno);
+        else
+            return false;
+    }
     else if (ret == 0)
         return false;
     else if (((m_PollData.revents & POLLIN) == POLLIN) || ((m_PollData.revents & POLLHUP) == POLLHUP))
@@ -690,7 +695,8 @@ void CPipedCMD::Abort(bool canthrow)
 {
     if (m_ChildPID)
     {
-        kill(-m_ChildPID, SIGTERM);
+        if (kill(-m_ChildPID, SIGTERM) >= 0)
+            (canthrow) ? WaitPID(m_ChildPID, NULL, 0) : waitpid(m_ChildPID, NULL, 0);
         Close(canthrow);
     }
 }

@@ -27,7 +27,7 @@ function installedver()
 end
 
 function present()
-    return os.exitstatus(os.execute("(/sbin/upgradepkg) >/dev/null 2>&1")) == 1
+    return os.fileexists("/sbin/upgradepkg") and os.exitstatus(os.execute("(/sbin/upgradepkg) >/dev/null 2>&1")) == 1
 end
 
 function missingtool()

@@ -576,7 +576,7 @@ if not env.GetOption('clean'):
         Exit(1)
         
     if not BUILD_TARGETS or 'ncurses' in map(str, BUILD_TARGETS):
-        if not conf.CheckLibWithHeader('ncurses', 'ncurses.h', 'C++', 'beep();', 0):
+        if not conf.CheckLibWithHeader('ncurses', 'curses.h', 'C++', 'beep();', 0):
             print "Couldn't find libncurses !"
             Exit(1)
             

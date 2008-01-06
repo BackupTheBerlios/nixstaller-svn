@@ -78,8 +78,8 @@ function xdguninstscript()
     
     local ret = string.format([[
 EXEC=""
-(xdg-desktop-menu --version >/dev/null 2>&1) && EXEC="xdg-desktop-menu"
-[ -z $EXEC ] && ("%s/xdg-utils/xdg-desktop-menu" --version 2>&1 >/dev/null) && EXEC="%s/xdg-utils/xdg-desktop-menu"
+(xdg-desktop-menu --version) >/dev/null 2>&1 && EXEC="xdg-desktop-menu"
+[ -z "$EXEC" ] && ("%s/xdg-utils/xdg-desktop-menu" --version) 2>&1 >/dev/null && EXEC="%s/xdg-utils/xdg-desktop-menu"
 ]], pkg.getdatadir(), pkg.getdatadir())
     
     if #OLDG.install.menuentries > 0 then

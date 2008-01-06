@@ -77,7 +77,7 @@ buildfltk()
     get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.7/fltk-1.1.7-source.tar.gz"
     untar "fltk-1.1.7-source.tar.gz"
     dodir "fltk-1.1.7"
-    CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xft --enable-xdbe && make && make install && make clean
+    CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
     restoredir
 }
 
@@ -139,14 +139,16 @@ buildlzma()
     get "http://heanet.dl.sourceforge.net/sourceforge/sevenzip/lzma457.tar.bz2"
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
-    make -f makefile.gcc
+    gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
+    $MAKE -f makefile.gcc
     cp lzma "$DESTPREFIX/bin"
     restoredir
     dodir "C/Compress/Lzma"
     gcc -Os LzmaStateDecode.c LzmaStateTest.c -o lzma-decode
     cp lzma-decode "$DESTPREFIX/bin"
     restoredir
-    strip -s "$DESTPREFIX/bin/lzma" "$DESTPREFIX/bin/lzma-decode"
+    [ $CURRENT_OS != "sunos" ] && STRIPARGS="-s"
+    strip $STRIPARGS "$DESTPREFIX/bin/lzma" "$DESTPREFIX/bin/lzma-decode"
 }
 
 BUILD="$*"
