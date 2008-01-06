@@ -34,7 +34,7 @@ end
 
 function checklock(file, root)
     local cmd = (root and install.executeasroot) or install.execute
-    local ret = cmd(string.format("[ `fuser %s 2>&1 | awk '{print NF}'` = 2 ] && exit 2", file))
+    local ret = cmd(string.format("[ \"`fuser %s 2>&1 | awk 'END {print NF}'`\" -gt 1 ] && exit 2", file))
     return ret == 2
 end
 
@@ -118,5 +118,5 @@ if os.fileexists("config/package.lua") then
 end
 
 -- Defaults
-pkg.destdir = pkg.destdir or  pkg.packager.getpkgpath() .. "/share"
+pkg.destdir = pkg.destdir or pkg.packager.getpkgpath() .. "/share"
 pkg.bindir = pkg.bindir or pkg.packager.getpkgpath() .. "/bin"

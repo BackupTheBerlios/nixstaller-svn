@@ -89,14 +89,14 @@ AutoReqProv: 0
 end
 
 function install(src)
-    local locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")
-    while locked == 0 do
+    local locked = checklock("/var/lib/rpm/*", true)
+    while locked do
         if gui.choicebox("Another program seems to be using the RPM database. \
 Please close all applications that may use the database (ie Smart or YaST) \
 and hit continue.", "Continue", "Abort") == 2 then
             os.exit(1)
         end
-        locked = OLDG.install.executeasroot("lsof -au 0 +d /var/lib/rpm >/dev/null")
+        locked = checklock("/var/lib/rpm/*", true)
     end
     
     checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --force -U %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))

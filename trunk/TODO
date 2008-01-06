@@ -1,6 +1,7 @@
 OVERALL
 - Add trap in geninstall.sh which cleans stuff?
 - Nixstaller installer
+- Mention that Solaris + desk entries may not work yet
 
 
 TEST
@@ -8,6 +9,7 @@ TEST
     - New su/sudo code
     - Uninstall script
     - slackware: description works?
+    - new fuser code for locks
 - Calling nixstaller scripts outside main directory and via $PATH
 - Bug: install.execute crashes with wrong arguments (fixed?)
 - Check if ~ works (reported bug)
@@ -34,6 +36,9 @@ TRANSLATIONS
 
 DOCS:
 - Changelog
+- pkg.setpermissions()
+- bzflag tut needs setpermissions?
+- utils.emptytable()
 
 
 ---------------------------------- LATER ---------------------------
@@ -58,6 +63,7 @@ PACKAGING
     * RPM: Vendor?, Icon?
 - RPM: Description formatting?
 - pacman: Check for locks for future releases
+- deb: way to remove temporary root owned files incase of an error
 
 
 MAIN
