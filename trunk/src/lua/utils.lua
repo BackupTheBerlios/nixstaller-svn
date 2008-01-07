@@ -61,7 +61,7 @@ end
 
 function instxdgentries(global, fname)
     local xdgbin
-    if os.execute("xdg-desktop-menu --version >/dev/null 2>&1") == 0 then
+    if os.execute("(xdg-desktop-menu --version) >/dev/null 2>&1") == 0 then
         xdgbin = "xdg-desktop-menu"
     else
         xdgbin = string.format("%s/xdg-utils/xdg-desktop-menu", curdir)
