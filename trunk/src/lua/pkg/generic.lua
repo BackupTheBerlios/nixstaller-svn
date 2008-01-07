@@ -60,12 +60,16 @@ if [ ! -w "$PROGDIR" -o ! -w "$BINDIR" ]; then
     exit 1
 fi
 
-MD5BIN=`which md5sum 2>/dev/null`
-[ ! -f "$MD5BIN" -a -f "`which md5 2>/dev/null`" ] && MD5BIN="`which md5` -q"
-[ ! -f "$MD5BIN" -a -f "`which digest 2>/dev/null`" ] && MD5BIN="`which digest` -a md5"
+MD5CMD=`which md5sum 2>/dev/null`
+if [ ! -f "$MD5CMD" -a -f "`which md5 2>/dev/null`" ]; then
+    MD5CMD="`which md5`"
+    [ "`uname`" = "NetBSD" ] && MD5CMD="$MD5CMD -n" || MD5CMD="$MD5CMD -q"
+elif [ ! -f "$MD5CMD" -a -f "`which digest 2>/dev/null`" ]; then
+    MD5CMD="`which digest` -a md5"
+fi
 
-if [ -z "$MD5BIN" ]; then
-    echo "WARNING: Could not find a suitable binary ('md5' or 'md5sum') to calculate MD5 sums in PATH."
+if [ -z "$MD5CMD" ]; then
+    echo "WARNING: Could not find a suitable binary ('md5', 'md5sum' or 'digest') to calculate MD5 sums in PATH."
     echo "For this reason files cannot be checked for modifications (files may be changed if they were overwritten by another package for example)."
     printf "Do you want to continue or abort? (y/N) "
     read yn
@@ -78,8 +82,8 @@ DIFFILES=
 
 checkfile()
 {
-    if [ ! -z "$MD5BIN" ]; then
-        SUM=`$MD5BIN "$1" | awk '{ print $1 }'`
+    if [ ! -z "$MD5CMD" ]; then
+        SUM=`$MD5CMD $MD5ARGS "$1" | awk '{ print $1 }'`
         if [ $SUM != $2 ]; then
             DIFFILES="$DIFFILES\n$1"
         fi
