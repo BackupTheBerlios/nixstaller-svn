@@ -1,7 +1,10 @@
 OVERALL
 - Add trap in geninstall.sh which cleans stuff?
 - Nixstaller installer
-- Mention that Solaris + desk entries may not work yet
+- Mention that Solaris + desk entries may not work yet?
+- Disable debug stuff
+- Check if libc diffs are generated
+- Update examples, add bzflag example
 
 
 TEST
@@ -17,28 +20,11 @@ TEST
 
 
 TRANSLATIONS
-- Check all sentences for punctation
-- "Could not use su or sudo to gain root access."
-- "Incorrect password given, please retype."
-- "Your account doesn't have permissions to "
-  "create the directory.\nTo create it with the root "
-  "(administrator) account, please enter the right password below."
-- Messages from new install screens
-- "This installation requires root (administrator) privileges in order to continue.\n"
-  "Please enter the administrative password below."
-- "You don't have write permissions for this directory.\n"
-  "The files can be extracted as the root user,\n"
-  "but you'll need to enter the administrative password for this later."
-- "Your account doesn't have permissions to "
-  "create the directory.\nTo create it with the root "
-  "(administrator) account, please enter the administrative password below."
+- Check for any missing messages
 
 
 DOCS:
 - Changelog
-- pkg.setpermissions()
-- bzflag tut needs setpermissions?
-- utils.emptytable()
 
 
 ---------------------------------- LATER ---------------------------
@@ -69,6 +55,10 @@ PACKAGING
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Improve/check lua error messages?
+
+
+TRANSLATIONS
+- Check all sentences for punctation
 
 
 LIBSU

@@ -47,7 +47,7 @@ const char *CFLTKDirDialog::AskPassword(LIBSU::CLibSU &suhandler)
     {
         ret = fl_password(GetTranslation("Your account doesn't have permissions to "
                 "create the directory.\nTo create it with the root "
-                "(administrator) account, please enter the right password below."));
+                "(administrator) account, please enter the administrative password below."));
 
         if (!ret || !ret[0])
             break;

@@ -925,6 +925,42 @@ end}
 At first, in the @code{Init()} function, a new desktop menu entry is created. The @code{pkg.getbindir} function is used to retrieve the location of the binary script that is used to launch @file{bin/test} inside the data directory. The @code{pkg.getdatadir} is used to retrieve the location of a logo inside the data directory.@*
 After that @code{install.gendesktopentries} is called to install the desktop menu entry. To see if the entry needs to be installed globally, the write permissions of the data directory are checked. If the user cannot write to it, it is assumed the installation went with root access and therefore the package was not installed locally.
 
+@subsubsection Permissions
+It's important that installed files have the right permissions set. For most software it's common to follow these rules:
+@starttable{.5,.5}
+@addtableheaderrow{File type}
+    @addtableheadercol{Owner permissions}
+    @addtableheadercol{Group permissions}
+    @addtableheadercol{Other permissions}
+@endtablerow
+
+@addtablerow{Directories}
+    @addtablecol{Read, write and executable}
+    @addtablecol{Read and executable}
+    @addtablecol{Read and executable}
+@endtablerow
+
+@addtablerow{Executables (binaries, scripts etc)}
+    @addtablecol{Read, write and executable}
+    @addtablecol{Read and executable}
+    @addtablecol{Read and executable}
+@endtablerow
+
+@addtablerow{Other files (ie data files)}
+    @addtablecol{Read and write}
+    @addtablecol{Read}
+    @addtablecol{Read}
+@endtablerow
+
+@endtable
+
+You can either set the permissions before generating the installer or during installation; just make sure that they are set before calling @code{install.generatepkg}.@*
+@*
+@findex pkg.setpermissions
+An easy way to set up permissions automaticly during installation is to use the @code{pkg.setpermissions} function. This function will traverse the whole temporary package directory and set up permissions following the rules in the table previously shown.@*
+@*
+Note that when using tools such as @samp{automake} permissions may also be automaticly set up when they are told to install files (ie @command{make install}).
+
 @subsubsection Miscallenous
 The @code{pkg.needroot()} function can be used to check if the @code{install.generatepkg} function needs root permissions. This is especially useful in combination with @ref{install.askrootpw} because the user can then be asked to enter the root password before the installation begins.
 
@@ -3528,6 +3564,10 @@ This function will strip the directory part of a given path (string argument @co
 
 @luafunc utils.dirname (p)
 This function does the oppisite of @code{utils.basename}: it strips out the filename at the end of the given path @code{p} and returns the remaining directory part.
+@endluafunc
+
+@luafunc utils.emptytable (t)
+Returns @code{true} if table @code{t} is empty.
 @endluafunc
 
 @luafunc utils.moverec (s, d)

@@ -402,6 +402,7 @@ void CMain::InitLua()
     NLua::LuaSet(m_szCPUArch, "arch", "os");
     NLua::LuaSet(m_szOwnDir, "curdir");
     
+    NLua::RegisterFunction(LuaTr, "tr");
     NLua::RegisterFunction(LuaInitDirIter, "dir", "io");
     NLua::RegisterFunction(LuaMD5, "md5", "io");
     
@@ -944,6 +945,28 @@ int CMain::LuaMD5(lua_State *L)
     else
         lua_pushnil(L);
         
+    return 1;
+}
+
+int CMain::LuaTr(lua_State *L)
+{
+    const char *str = luaL_checkstring(L, 1);
+    int args = lua_gettop(L);
+    
+    if (args == 1)
+        lua_pushstring(L, GetTranslation(str));
+    else if (args == 2)
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2)));
+    else if (args == 3)
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
+                       luaL_checkstring(L, 3)));
+    else if (args == 4)
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
+                       luaL_checkstring(L, 3), luaL_checkstring(L, 4)));
+    else // Limitation of max 4 args ...
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
+                       luaL_checkstring(L, 3), luaL_checkstring(L, 4), luaL_checkstring(L, 5)));
+    
     return 1;
 }
 

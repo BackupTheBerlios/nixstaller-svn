@@ -17,7 +17,7 @@
 
 module (..., package.seeall)
 
-screen = install.newscreen("Software registration") -- UNDONE? (title)
+screen = install.newscreen("Software registration")
 
 function screen:canactivate()
     return pkg.enable and pkg.canregister
@@ -35,7 +35,7 @@ function genpkg:verify()
     if (pkg.register) then
         local mtool = pkg.packager.missingtool()
         if mtool then
-            while gui.choicebox(string.format("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 1 do
+            while gui.choicebox(tr("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 1 do
                 mtool = pkg.packager.missingtool()
                 if not mtool then
                     break

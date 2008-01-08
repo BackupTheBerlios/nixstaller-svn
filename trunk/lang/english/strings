@@ -50,6 +50,12 @@ Exit program
 Create directory as root
 Create directory as root
 
+Ignore
+Ignore
+
+Abort
+Abort
+
 
 #-----------------------------------------------
 # Messages
@@ -84,14 +90,8 @@ Root access is required to continue
 Abort installation?
 ]
 
-[
-Incorrect password given for root user
-Please retype
-]
-[
-Incorrect password given for root user
-Please retype
-]
+Incorrect password given, please retype.
+Incorrect password given, please retype.
 
 # %s is replaced by appname
 Installation of %s complete!
@@ -109,21 +109,21 @@ Please choose another directory or rerun this program as a user who has read per
 [
 You don't have write permissions for this directory.
 The files can be extracted as the root user,
-but you'll need to enter the root password for this later.
+but you'll need to enter the administrative password for this later.
 ]
 [
 You don't have write permissions for this directory.
 The files can be extracted as the root user,
-but you'll need to enter the root password for this later.
+but you'll need to enter the administrative password for this later.
 ]
 
 [
-This installation requires root(administrator) privileges in order to continue
-Please enter the password of the root user
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
 ]
 [
-This installation requires root(administrator) privileges in order to continue
-Please enter the password of the root user
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
 ]
 
 # %s is replaced by directory name
@@ -142,11 +142,64 @@ Continue?
 
 [
 Your account doesn't have permissions to create the directory.
-To create it with the root (administrator) account, please enter it's password below.
+To create it with the root (administrator) account, please enter the administrative password below.
 ]
 [
 Your account doesn't have permissions to create the directory.
-To create it with the root (administrator) account, please enter it's password below.
+To create it with the root (administrator) account, please enter the administrative password below.
+]
+
+[
+Another program seems to be using the DEB database.
+Please close all applications that may use the database (ie Synaptic)
+and hit continue.
+]
+[
+Another program seems to be using the DEB database.
+Please close all applications that may use the database (ie Synaptic)
+and hit continue.
+]
+
+[
+Another program seems to be using pacman. Please close this program and
+hit continue.
+]
+[
+Another program seems to be using pacman. Please close this program and
+hit continue.
+]
+
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use the database (ie Smart or YaST)
+and hit continue.
+]
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use the database (ie Smart or YaST)
+and hit continue.
+]
+
+Package is already installed. Do you want to replace it?
+Package is already installed. Do you want to replace it?
+
+# First %s is replaced by current version, second by installer version.
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
 ]
 
 
@@ -199,6 +252,15 @@ Password dialog
 Files are being installed
 Files are being installed
 
+Software destination
+Software destination
+
+Software registration
+Software registration
+
+Installation Summary
+Installation Summary
+
 
 #-----------------------------------------------
 # Other
@@ -230,6 +292,65 @@ Directory name
 
 Root password
 Root password
+
+Register software
+Register software
+
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+
+
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+
+When unsure, just leave it enabled.
+]
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+
+When unsure, just leave it enabled.
+]
+
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+
 
 
 #-----------------------------------------------
@@ -277,14 +398,8 @@ Could not execute command: %s
 Could not create directory: %s
 Could not create directory: %s
 
-[
-Could not use su to gain root access.
-Make sure you can use su (adding the current user to the wheel group may help).
-]
-[
-Could not use su to gain root access.
-Make sure you can use su (adding the current user to the wheel group may help).
-]
+Could not use su or sudo to gain root access.
+Could not use su or sudo to gain root access.
 
 Not enough space for buttonbar entry
 Not enough space for buttonbar entry
@@ -328,6 +443,9 @@ uname returned an error: %s
 # %s is replaced by directory name
 Could not create directory '%s'
 Could not create directory '%s'
+
+Please enter a valid path.
+Please enter a valid path.
 
 
 #-----------------------------------------------

@@ -17,7 +17,7 @@
 
 module (..., package.seeall)
 
-screen = install.newscreen("Software destination") -- UNDONE? (title)
+screen = install.newscreen("Software destination")
 
 pkgdest = screen:adddirselector("In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.\n\nNote: if you don't have write access to this directory you need to grant the installer root access later on.\n\nIf unsure, just leave it as it is.")
 

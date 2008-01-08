@@ -124,7 +124,7 @@ function install.generatepkg()
                     if version == "unknown" or version == myver then
                         msg = "Package is already installed. Do you want to replace it?"
                     else
-                        msg = string.format("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, myver)
+                        msg = tr("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, myver)
                     end
                     
                     if msg and not gui.yesnobox(msg) then

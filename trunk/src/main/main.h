@@ -173,6 +173,7 @@ public:
     static int LuaExit(lua_State *L);
     static int LuaExitStatus(lua_State *L);
     static int LuaMD5(lua_State *L);
+    static int LuaTr(lua_State *L);
     static int LuaPanic(lua_State *L);
 };
 
