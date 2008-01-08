@@ -141,6 +141,7 @@ buildlzma()
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
     $MAKE -f makefile.gcc
+    mkdir -p "$DESTPREFIX/bin"
     cp lzma "$DESTPREFIX/bin"
     restoredir
     dodir "C/Compress/Lzma"
