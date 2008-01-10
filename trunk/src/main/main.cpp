@@ -278,7 +278,6 @@ void CMain::UpdateUI()
     
     if (m_lUITimer <= curtime)
     {
-        debugline("Updating UI\n");
         m_lUITimer = curtime + 10;
         CoreUpdateUI();
     }
@@ -864,7 +863,7 @@ int CMain::LuaYesNoBox(lua_State *L)
     
     EscapeControls(msg);
     
-    lua_pushboolean(L, pMain->YesNoBox(msg.c_str()));
+    lua_pushboolean(L, pMain->YesNoBox(GetTranslation(msg.c_str())));
     
     return 1;
 }
@@ -879,7 +878,14 @@ int CMain::LuaChoiceBox(lua_State *L)
     
     EscapeControls(msg);
     
-    int ret = pMain->ChoiceBox(msg.c_str(), but1, but2, but3) + 1; // +1: Convert 0-2 range to 1-3
+    if (but1)
+        but1 = GetTranslation(but1);
+    if (but2)
+        but2 = GetTranslation(but2);
+    if (but3)
+        but3 = GetTranslation(but3);
+
+    int ret = pMain->ChoiceBox(GetTranslation(msg.c_str()), but1, but2, but3) + 1; // +1: Convert 0-2 range to 1-3
     
     // UNDONE: FLTK doesn't return alternative number while ncurses returns -1.
     // For now we'll stick with the FLTK behaviour: return the last button.
@@ -902,7 +908,7 @@ int CMain::LuaWarnBox(lua_State *L)
     
     EscapeControls(msg);
     
-    pMain->WarnBox(msg.c_str());
+    pMain->WarnBox(GetTranslation(msg.c_str()));
     
     return 0;
 }
@@ -918,7 +924,7 @@ int CMain::LuaMSGBox(lua_State *L)
     
     EscapeControls(msg);
     
-    pMain->MsgBox(msg.c_str());
+    pMain->MsgBox(GetTranslation(msg.c_str()));
     
     return 0;
 }

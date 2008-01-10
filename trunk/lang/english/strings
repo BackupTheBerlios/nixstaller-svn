@@ -193,6 +193,7 @@ Version %s is already installed, you're trying to install version %s.
 Do you want to replace the installed package?
 ]
 
+# %s is replaced by missing tool (ie rpmbuild)
 [
 In order to let the installer register the software, the '%s' package needs to be available.
 Please install this package now and hit continue or press ignore to continue without software registration.
@@ -258,8 +259,8 @@ Software destination
 Software registration
 Software registration
 
-Installation Summary
-Installation Summary
+Installation summary
+Installation summary
 
 
 #-----------------------------------------------
@@ -280,6 +281,9 @@ Status
 
 Extracting files
 Extracting files
+
+Installing package
+Installing package
 
 Enable
 Enable

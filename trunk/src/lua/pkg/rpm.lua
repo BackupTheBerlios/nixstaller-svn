@@ -91,8 +91,8 @@ end
 function install(src)
     local locked = checklock("/var/lib/rpm/*", true)
     while locked do
-        if gui.choicebox("Another program seems to be using the RPM database. \
-Please close all applications that may use the database (ie Smart or YaST) \
+        if gui.choicebox("Another program seems to be using the RPM database.\
+Please close all applications that may use the database (ie Smart or YaST)\
 and hit continue.", "Continue", "Abort") == 2 then
             os.exit(1)
         end

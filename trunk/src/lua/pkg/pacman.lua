@@ -108,7 +108,7 @@ end
 function install(src)
     -- UNDONE: Pacman 3.1 seems to be able to place locks on other places?
     while os.fileexists("/tmp/pacman.lck") do
-        if gui.choicebox("Another program seems to be using pacman. Please close this program and \
+        if gui.choicebox("Another program seems to be using pacman. Please close this program and\
 hit continue.", "Continue", "Abort") == 2 then
             os.exit(1)
         end

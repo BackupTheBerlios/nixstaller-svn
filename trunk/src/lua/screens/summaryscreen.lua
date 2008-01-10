@@ -17,7 +17,7 @@
 
 module (..., package.seeall)
 
-screen = install.newscreen("Installation Summary")
+screen = install.newscreen("Installation summary")
 
 function screen:canactivate()
     return pkg.enable

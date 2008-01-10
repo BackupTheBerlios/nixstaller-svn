@@ -125,8 +125,8 @@ end
 function install(src)
     local locked = checklock("/var/lib/dpkg/lock", false)
     while locked do
-        if gui.choicebox("Another program seems to be using the DEB database. \
-Please close all applications that may use the database (ie Synaptic) \
+        if gui.choicebox("Another program seems to be using the DEB database.\
+Please close all applications that may use the database (ie Synaptic)\
 and hit continue.", "Continue", "Abort") == 2 then
             os.exit(1)
         end

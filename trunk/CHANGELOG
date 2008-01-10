@@ -25,6 +25,7 @@
 - sudo support
 - Fixed: geninstall incorrectly assumed logo to be in main project directory (should be in files_extra/)
 - Package Mode
+- Fixed: Lua messageboxes, warningboxes, choiceboxes and yesnoboxes were not using translations.
 
 
 0.2.2 --> 0.3

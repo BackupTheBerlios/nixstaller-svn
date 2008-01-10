@@ -36,7 +36,11 @@ OVERALL
 - Use locale fix from latest kdesu?
 - Dep handling?
 - Use deltas <--> patches for different frontends?
-- Modify Makeself?
+- Modify Makeself
+    - More commandline options (frontend choosing, package info?, plain install mode?)
+    - Merge makeself header with startinstaller?
+    - Remove some illogical commandline options?
+    - MD5 fixes for other platforms (Solaris, NetBSD etc)
 - Better util.a configure testing?
 - Initial value from constructor for radiobutton, menu etc?
 - Root usage: change to use privileged user? (default root)
