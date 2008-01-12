@@ -1,0 +1,38 @@
+Notes for freebsd libs:
+
+Host system: x86_64 FreeBSD 6.2-RELEASE and 5.5-RELEASE(only for creating 5.X compatible bins)
+
+JPEG:
+version: 6b
+
+PNG:
+version: 1.2.21
+notes: LDFLAGS and CPPFLAGS were changed to point to prefix directory where cust
+om zlib was installed.
+
+FLTK:
+version: 1.1.7
+notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, pn
+g and jpeg. CXXFLAGS set to -fexceptions for exception support. --enable-xft and
+ --enable-xdbe flags given for ./configure
+
+ZLIB:
+version: 1.2.3
+
+NCURSES:
+version: 5.6
+configure command: ./configure --enable-termcap
+
+X11 (libX11, libXext)
+version: 6.8.2
+notes: compiled from ports
+
+GCC (libstdc++, libutil)
+version: 3.4.6
+notes: used from basesystem
+
+LUA:
+version 5.1.2
+make command: make posix
+notes: src/Makefile was edited to use g++ instead of gcc (enables C++ exception support, important).
+The -Os flag seems to crash lua so this wasn't enabled.
