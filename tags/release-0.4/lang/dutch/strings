@@ -1,0 +1,548 @@
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+Next
+Volgende
+
+Back
+Vorige
+
+OK
+OK
+
+Cancel
+Annuleren
+
+Yes
+Ja
+
+No
+Nee
+
+Finish
+Beeindigen
+
+Select directory
+Selecteer directory
+
+Browse
+Blader
+
+Open directory
+Open directory
+
+Choose another directory
+Kies andere directory
+
+Continue as root
+Hervat als root
+
+Close
+Sluit
+
+Continue
+Ga verder
+
+Exit program
+Beindig programma
+
+Create directory as root
+Maak directory als root
+
+Ignore
+Negeer
+
+Abort
+Afbreken
+
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+[
+Install commands are still running
+If you abort now this may lead to a broken installation
+Are you sure?
+]
+[
+Installatie opdrachten zijn nog bezig
+Als u nu stopt kan dit lijden tot een gebroken installatie
+Weet u het zeker?
+]
+
+[
+This will abort the installation
+Are you sure?
+]
+[
+Dit zal de installatie onderbreken
+Weet u het zeker?
+]
+
+[
+Root access is required to continue
+Abort installation?
+]
+[
+Root rechten zijn vereist om door te kunnen gaan
+Installatie onderbreken?
+]
+
+Incorrect password given, please retype.
+Onjuist wachtwoord gegeven, type het opnieuw.
+
+# %s is replaced by appname
+Installation of %s complete!
+Installatie van %s gereed!
+
+[
+You don't have read permissions for this directory
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+[
+U heeft geen toegang om deze directory te lezen
+Kies een andere directory of start dit programma opnieuw met een gebruiker die wel toegang heeft.
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the administrative password for this later.
+]
+[
+U heeft geen toegang om te schrijven naar deze directory.
+De bestanden kunnen worden uitgepakt met systeembeheerder (root) rechten,
+maar u moet dan wel straks het juiste wachtwoord geven.
+]
+
+[
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
+]
+[
+De installatie heeft systeembeheerder (root) rechten nodig om door te kunnen gaan.
+Typ het beheerders wachtwoord om door te gaan.
+]
+
+# %s is replaced by directory name
+Directory %s does not exist, do you want to create it?
+Directory %s bestaat niet, wilt u deze aanmaken?
+
+# %s is replaced by appname
+[
+This will install %s
+Continue?
+]
+[
+%s zal nu worden geinstalleerd
+Doorgaan?
+]
+
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter the administrative password below.
+]
+[
+U heeft geen permissie om de directory te maken.
+Om deze met de systeembeheerder (root) gebruiker te maken, moet u het wachtwoord hieronder geven.
+]
+
+[
+Another program seems to be using the DEB database.
+Please close all applications that may use the database (ie Synaptic)
+and hit continue.
+]
+[
+Een ander programma lijkt de DEB database te gebruiken.
+Sluit alle mogelijke programma's af (bijvoorbeeld Synaptic)
+en druk op verder.
+]
+
+[
+Another program seems to be using pacman. Please close this program and
+hit continue.
+]
+[
+Een ander programma lijkt de pacman database te gebruiken. Sluit dit programma
+en drup op verder.
+]
+
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use the database (ie Smart or YaST)
+and hit continue.
+]
+[
+Een ander programma lijkt de RPM database te gebruiken.
+Sluit alle mogelijke programma's af (bijvoorbeeld Smart of YaST)
+en druk op verder.
+]
+
+Package is already installed. Do you want to replace it?
+Pakket is reeds geinstalleerd. Wilt u het vervangen?
+
+# First %s is replaced by current version, second by installer version.
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+[
+Versie %s is al geinstalleerd, u probeert versie %s te installeren.
+Wilt u het geinstalleerde pakket vervangen?
+]
+
+# %s is replaced by missing tool (ie rpmbuild)
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+[
+Het pakket '%s' is nodig om de software te kunnen registreren.
+Installeer dit pakken nu en druk op verder om door te gaan of druk op negeren om door te gaan zonder dat de software wordt gerigstreerd.
+]
+
+
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+# %s is replaced by parameter name from configmenu
+Please choose a new value for %s
+Kies een nieuwe waarde voor %s
+
+# %s is replaced by parameter name from configmenu
+Please select a directory for %s
+Selecteer een directory for %s
+
+# %s is replaced by parameter name from configmenu
+Please enter a new value for %s
+Typ een nieuwe waarde voor %s
+
+Please select a language
+Kies een taal
+
+Welcome
+Welkom
+
+License agreement
+Licentie overeenkomst
+
+Select destination directory
+Selecteer bestemmings directory
+
+Please read the following text
+Lees de volgende tekst
+
+Warning
+Waarschuwing
+
+Enter name of new directory
+Type de naam van de nieuwe directory
+
+About
+Over
+
+Select a directory
+Selecteer een directory
+
+Password dialog
+Wachtwoord venster
+
+Files are being installed
+Bestanden worden geinstalleerd
+
+Software destination
+Software bestemming
+
+Software registration
+Software registratie
+
+Installation summary
+Installatie samenvatting
+
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Progress
+Vooruitgang
+
+Language
+Taal
+
+I agree to this license agreement
+Ik ga akkoord met deze licentie overeenkomst
+
+Status
+Status
+
+Extracting files
+Bestanden uitpakken
+
+Installing package
+Pakket wordt geinstalleerd
+
+Enable
+Inschakelen
+
+Disable
+Uitschakelen
+
+Directory name
+Directory naam
+
+Root password
+Root wachtwoord
+
+Register software
+Registreer software
+
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+[
+In dit veld kunt u de bestemmings directory kiezen voor de data bestanden van de software. De bestanden worden in een subdirectory binnen deze directory geinstalleerd.
+
+Opmerking: Als u niet naar deze directory kunt schrijven, moet u het installatie programma later root rechten geven.
+
+Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
+]
+
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+[
+In dit veld kunt u de bestemmings directory kiezen voor de uitvoerbare bestanden van de software. De bestanden worden direct naar deze directory geinstalleerd.
+
+Opmerking: Als u niet naar deze directory kunt schrijven, moet u het installatie programma later root rechten geven.
+
+Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
+]
+
+
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+
+When unsure, just leave it enabled.
+]
+[
+Als de onderstaande optie aangevinkt is, zal het installatie programma (proberen) om de software door de pakketbeheerder te laten registreren. Dit zorgt ervoor dat de software makkelijk kan worden verwijderd of bijgewerkt.
+
+Opmerking: Als de optie is aangevinkt, moet u het installatie programma later root rechten geven.
+
+Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
+]
+
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+[
+De software is nu geinstalleerd op dit systeem.
+Een samenvatting van de installatie is hieronder gegeven.
+]
+
+
+
+#-----------------------------------------------
+# Error messages
+#-----------------------------------------------
+
+Could not create directory
+Kon directory niet maken
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+Deze installer zal de bestanden installeren naar de volgende directory:
+%s
+U heeft echter geen lees rechten van deze directory
+Herstart de installer met een gebruiker die dit wel heeft
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Kon directory niet openen %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Kon directory niet lezen %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Kon huidige directory niet lezen: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Lua fout ontdekt: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Kon opdracht niet uitvoeren: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Kon directory niet maken: %s
+
+Could not use su or sudo to gain root access.
+Kon su of sudo niet gebruiken om root rechten te krijgen.
+
+Not enough space for buttonbar entry
+Niet genoeg plaats voor knoppenbalk item
+
+# %s is replaced by error message
+Overflow detected: %s
+Overschreiding gevonden: %s
+
+# %s is replaced by error message
+Could not open pipe: %s
+Kon pipe niet openen: %s
+
+# %s is replaced by error message
+Could not read pipe: %s
+Kon pipe niet lezen: %s
+
+# %s is replaced by error message
+Could not close pipe: %s
+Kon pipe niet sluiten: %s
+
+# %s is replaced by error message
+Could not fork child: %s
+fork gaf een fout: %s
+
+# %s is replaced by error message
+Could not close file descriptor: %s
+Kon bestands verwijzing niet sluiten: %s
+
+# %s is replaced by error message
+Poll returned an error: %s
+Poll gaf een fout: %s
+
+# %s is replaced by error message
+Encountered an error while waiting on child process: %s
+Ontdekte een fout terwijl er werd gewacht op een kind proces: %s
+
+# %s is replaced by error message
+uname returned an error: %s
+uname gaf een fout: %s
+
+# %s is replaced by directory name
+Could not create directory '%s'
+Kon directory '%s' niet maken
+
+Please enter a valid path.
+Geef een geldige bestandsverwijzing.
+
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Voeg toe aan favorieten
+
+All Files (*)
+Alle bestanden (*)
+
+Custom Filter
+Eigen Filter
+
+Favorites
+Favorieten
+
+Filename:
+Bestand:
+
+File Systems
+Bestandssystemen
+
+Manage Favorites
+Beheer Favorieten
+
+Show:
+Filter:
+
+Create new directory
+Maak een nieuwe directory
+
+
+#-----------------------------------------------
+# Button bar from ncurses frontend
+#-----------------------------------------------
+
+Next field
+Volgend veld
+
+TAB
+TAB
+
+Exit
+Sluiten
+
+ESC
+ESC
+
+F2
+F2
+
+F3
+F3
+
+Done
+Klaar
+
+ENTER
+ENTER
+
+ARROWS
+PIJLEN
+
+ARROWS/PGUP/PGDOWN
+ARROWS/PGUP/PGDOWN
+
+Activate button
+Activeer knop
+
+Move to
+Ga naar
+
+Navigate
+Navigeer
+
+Character
+Letter
+
+Toggle
+Schakel in/uit
+
+Change
+Verander
+
+ARROWS/PGUP/PGDOWN/HOME/END
+PIJLEN/PGUP/PGDOWN/HOME/END
+
+SPACE
+SPATIE
+
+
+#-----------------------------------------------
+# Put your own translations below
+#-----------------------------------------------
