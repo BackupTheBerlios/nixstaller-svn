@@ -72,7 +72,7 @@ export LD_LIBRARY_PATH
     end
 
     local opts = (pkg.binopts and pkg.binopts[file]) or ""
-    check(script:write(string.format("exec %s/%s/%s %s\n", pkg.destdir, pkg.name, file, opts)))
+    check(script:write(string.format("exec %s/%s/%s %s $*\n", pkg.destdir, pkg.name, file, opts)))
 
     script:close() -- Flush
     

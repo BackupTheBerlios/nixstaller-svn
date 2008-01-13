@@ -65,7 +65,7 @@ Here is a list with the main features. Read further for more info to see what th
 
 @itemize @bullet
 @item 3 different frontends used for the installer: @uref{http://www.fltk.org,FLTK}, @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses} and @uref{http://www.gtk.org,GTK2}.
-@item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris Express/Nexenta (all x86, some x86_64).
+@item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris 10/Nexenta (all x86, some x86_64).
 @item An installer itself has the following features:
 @itemize @bullet
 @item Can be fully translated (no UTF yet). Translations for English and Dutch are supplied by default.
@@ -91,6 +91,37 @@ Most screens are optional and can be shown in any particalur order. New type of 
 
 
 @section Changelog
+@subsection 0.3 @minus{}@minus{}> 0.4
+@itemize @bullet
+@item install.execute / install.executeasroot now return exit code from command
+@item Fixed: accessing freed memory in Lua copy file function
+@item Fixed: libsu not returning valid exit code
+@item Fixed: GTK's textfield was editable
+@item Fixed: GTK labels were using less width then possible
+@item Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
+@item screen:addscreenend() function
+@item os.exitstatus() function
+@item Fixed: os.chmod crashed when file doesn't exist
+@item Fixed: geninstall.sh couldn't place installer in an absolute path
+@item x86_64 support.
+@item genprojdir.sh now defaults to current arch.
+@item geninstall.sh/genprojdir.sh can now be used from any directory.
+@item io.md5 lua function
+@item Fixed: Overflow crash with lua textfield
+@item Install summary screen
+@item xdg-open functionality through lua function
+@item utils package
+@item Fixed: Usage of '%' in messageboxes, yesnoboxes etc might crash.
+@item Dirselectors now translate '~/' as $HOME/ (suggested by Tomasz Sałaciński)
+@item Increased size of aboutdialogs (suggested by Tomasz Sałaciński)
+@item cfgmenu:set() function
+@item Functionality to create xdg menu entries
+@item sudo support
+@item Fixed: geninstall incorrectly assumed logo to be in main project directory (should be in files_extra/)
+@item Package Mode
+@item Fixed: Lua messageboxes, warningboxes, choiceboxes and yesnoboxes were not using translations.
+@end itemize
+
 @subsection 0.2.2 @minus{}@minus{}> 0.3
 @itemize @bullet
 @item Added missing ncurses buttonbar entries.
@@ -1129,13 +1160,13 @@ For examples of project directory layouts see the @samp{example/} directory in t
 @chapter Tutorials
 This chapter lists 4 tutorials which show some common installation types in practise.@*
 @*
-The first tutorial explains how to create a very simple installer. The main focus of this tutorial is as an introduction to Nixstaller and how to perform most of the basics.@*
+The @ref{first tutorial} explains how to create a very simple installer. The main focus of this tutorial is as an introduction to Nixstaller and how to perform most of the basics.@*
 @*
-The second tutorial is more realistic, but still fairly simple. It expands on the basicis and introduces the creation of new installation screens.@*
+The @ref{second tutorial} is more realistic, but still fairly simple. It expands on the basicis and introduces the creation of new installation screens.@*
 @*
-The third tutorial is pretty advanced. The main focus lies on how to create new installation screens and use their widgets to control the installation process.@*
+The @ref{third tutorial} is pretty advanced. The main focus lies on how to create new installation screens and use their widgets to control the installation process.@*
 @*
-The fourth tutorial focuses on Package Mode and inclusion of dependencies.
+The @ref{fourth tutorial} focuses on Package Mode and inclusion of dependencies.
 
 
 @anchor{first tutorial}
@@ -1196,6 +1227,7 @@ If all went fine the directory structure should look like this:
 
 Now call @file{geninstall.sh} and supply the project directory as first argument (@pxref{Creating the Installer}). This should supply you with an installer called @file{setup.sh}.
 
+@anchor{second tutorial}
 @section Second Tutorial: A More Advanced Installer: Cube
 In this tutorial we'll be making a slightly more advanced installer for the game @uref{http://www.cubeengine.com/, Cube}. The installer has the following tasks:
 @itemize @bullet
@@ -1291,6 +1323,7 @@ The @file{cube/} subdirectory from the @file{files_all/} directory comes from th
 @*
 Now call @file{geninstall.sh}, supply it with 2 arguments: the first should be the path to your project directory, the second @file{cube.sh}. After some waiting (the default lzma compression takes some time) you should now have an installer called @file{cube.sh}.
 
+@anchor{third tutorial}
 @section Third Tutorial: Installer for Vim
 In the last tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim}. The installer should have the following features:
 @itemize @bullet
@@ -1705,7 +1738,7 @@ The project directory should have the following structure:
 
 Calling @file{geninstall.sh} with the path to project directory as first argument and @samp{vim71.sh} as second argument should produce the installer.
 
-
+@anchor{fourth tutorial}
 @section Fourth Tutorial: Installer for BZFlag
 This tutorial introduces @ref{pkgmode,,Package Mode}, desktop menu generation and including dependencies. The installer will support the following things:
 @itemize @bullet

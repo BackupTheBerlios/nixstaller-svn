@@ -1,13 +1,13 @@
-0.3 -->
+0.3 --> 0.4
 - install.execute / install.executeasroot now return exit code from command
 - Fixed: accessing freed memory in Lua copy file function
-- Fixed: libsu returning valid exit code
+- Fixed: libsu not returning valid exit code
 - Fixed: GTK's textfield was editable
 - Fixed: GTK labels were using less width then possible
 - Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
 - screen:addscreenend() function
-- exitstatus() function
-- Fixed: os.chmod crashes when file doesn't exist
+- os.exitstatus() function
+- Fixed: os.chmod crashed when file doesn't exist
 - Fixed: geninstall.sh couldn't place installer in an absolute path
 - x86_64 support.
 - genprojdir.sh now defaults to current arch.

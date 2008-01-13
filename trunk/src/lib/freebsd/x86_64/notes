@@ -1,6 +1,6 @@
 Notes for freebsd libs:
 
-Host system: x86_64 FreeBSD 6.2-RELEASE and 5.5-RELEASE(only for creating 5.X compatible bins)
+Host system: x86_64 FreeBSD 6.2
 
 JPEG:
 version: 6b

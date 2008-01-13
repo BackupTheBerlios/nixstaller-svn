@@ -50,6 +50,12 @@ Beindig programma
 Create directory as root
 Maak directory als root
 
+Ignore
+Negeer
+
+Abort
+Afbreken
+
 
 #-----------------------------------------------
 # Messages
@@ -84,14 +90,8 @@ Root rechten zijn vereist om door te kunnen gaan
 Installatie onderbreken?
 ]
 
-[
-Incorrect password given for root user
-Please retype
-]
-[
-Onjuist wachtwoord gegeven voor root gebruiker
-Type het opnieuw
-]
+Incorrect password given, please retype.
+Onjuist wachtwoord gegeven, type het opnieuw.
 
 # %s is replaced by appname
 Installation of %s complete!
@@ -109,21 +109,21 @@ Kies een andere directory of start dit programma opnieuw met een gebruiker die w
 [
 You don't have write permissions for this directory.
 The files can be extracted as the root user,
-but you'll need to enter the root password for this later.
+but you'll need to enter the administrative password for this later.
 ]
 [
 U heeft geen toegang om te schrijven naar deze directory.
-De bestanden kunnen worden uitgepakt als de root gebruiker,
-maar u moet dan wel straks het root wachtwoord geven.
+De bestanden kunnen worden uitgepakt met systeembeheerder (root) rechten,
+maar u moet dan wel straks het juiste wachtwoord geven.
 ]
 
 [
-This installation requires root(administrator) privileges in order to continue
-Please enter the password of the root user
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
 ]
 [
-Deze installatie heeft root(systeembeheerder) rechten nodig om door te kunnen gaan
-Type het wachtwoord van de root gebruiker
+De installatie heeft systeembeheerder (root) rechten nodig om door te kunnen gaan.
+Typ het beheerders wachtwoord om door te gaan.
 ]
 
 # %s is replaced by directory name
@@ -142,11 +142,65 @@ Doorgaan?
 
 [
 Your account doesn't have permissions to create the directory.
-To create it with the root (administrator) account, please enter it's password below.
+To create it with the root (administrator) account, please enter the administrative password below.
 ]
 [
 U heeft geen permissie om de directory te maken.
-Om deze met de root (beheerder) gebruiker te maken, kunt u het wachtwoord hier onder geven.
+Om deze met de systeembeheerder (root) gebruiker te maken, moet u het wachtwoord hieronder geven.
+]
+
+[
+Another program seems to be using the DEB database.
+Please close all applications that may use the database (ie Synaptic)
+and hit continue.
+]
+[
+Een ander programma lijkt de DEB database te gebruiken.
+Sluit alle mogelijke programma's af (bijvoorbeeld Synaptic)
+en druk op verder.
+]
+
+[
+Another program seems to be using pacman. Please close this program and
+hit continue.
+]
+[
+Een ander programma lijkt de pacman database te gebruiken. Sluit dit programma
+en drup op verder.
+]
+
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use the database (ie Smart or YaST)
+and hit continue.
+]
+[
+Een ander programma lijkt de RPM database te gebruiken.
+Sluit alle mogelijke programma's af (bijvoorbeeld Smart of YaST)
+en druk op verder.
+]
+
+Package is already installed. Do you want to replace it?
+Pakket is reeds geinstalleerd. Wilt u het vervangen?
+
+# First %s is replaced by current version, second by installer version.
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+[
+Versie %s is al geinstalleerd, u probeert versie %s te installeren.
+Wilt u het geinstalleerde pakket vervangen?
+]
+
+# %s is replaced by missing tool (ie rpmbuild)
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+[
+Het pakket '%s' is nodig om de software te kunnen registreren.
+Installeer dit pakken nu en druk op verder om door te gaan of druk op negeren om door te gaan zonder dat de software wordt gerigstreerd.
 ]
 
 
@@ -199,6 +253,15 @@ Wachtwoord venster
 Files are being installed
 Bestanden worden geinstalleerd
 
+Software destination
+Software bestemming
+
+Software registration
+Software registratie
+
+Installation summary
+Installatie samenvatting
+
 
 #-----------------------------------------------
 # Other
@@ -219,6 +282,9 @@ Status
 Extracting files
 Bestanden uitpakken
 
+Installing package
+Pakket wordt geinstalleerd
+
 Enable
 Inschakelen
 
@@ -230,6 +296,65 @@ Directory naam
 
 Root password
 Root wachtwoord
+
+Register software
+Registreer software
+
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+[
+In dit veld kunt u de bestemmings directory kiezen voor de data bestanden van de software. De bestanden worden in een subdirectory binnen deze directory geinstalleerd.
+
+Opmerking: Als u niet naar deze directory kunt schrijven, moet u het installatie programma later root rechten geven.
+
+Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
+]
+
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+[
+In dit veld kunt u de bestemmings directory kiezen voor de uitvoerbare bestanden van de software. De bestanden worden direct naar deze directory geinstalleerd.
+
+Opmerking: Als u niet naar deze directory kunt schrijven, moet u het installatie programma later root rechten geven.
+
+Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
+]
+
+
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+
+When unsure, just leave it enabled.
+]
+[
+Als de onderstaande optie aangevinkt is, zal het installatie programma (proberen) om de software door de pakketbeheerder te laten registreren. Dit zorgt ervoor dat de software makkelijk kan worden verwijderd of bijgewerkt.
+
+Opmerking: Als de optie is aangevinkt, moet u het installatie programma later root rechten geven.
+
+Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
+]
+
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+[
+De software is nu geinstalleerd op dit systeem.
+Een samenvatting van de installatie is hieronder gegeven.
+]
+
 
 
 #-----------------------------------------------
@@ -277,14 +402,8 @@ Kon opdracht niet uitvoeren: %s
 Could not create directory: %s
 Kon directory niet maken: %s
 
-[
-Could not use su to gain root access.
-Make sure you can use su (adding the current user to the wheel group may help).
-]
-[
-Kon su niet gebruiken om root rechten te krijgen.
-Zorg ervoor dat je su kan gebruiken(de huidige gebruiker aan de wheel groep toevoegen kan helpen).
-]
+Could not use su or sudo to gain root access.
+Kon su of sudo niet gebruiken om root rechten te krijgen.
 
 Not enough space for buttonbar entry
 Niet genoeg plaats voor knoppenbalk item
@@ -328,6 +447,9 @@ uname gaf een fout: %s
 # %s is replaced by directory name
 Could not create directory '%s'
 Kon directory '%s' niet maken
+
+Please enter a valid path.
+Geef een geldige bestandsverwijzing.
 
 
 #-----------------------------------------------

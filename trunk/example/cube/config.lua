@@ -1,3 +1,3 @@
 -- config.lua from second tutorial
 cfg.appname = "Cube"
-cfg.targetos = { "linux" }
+cfg.targetos = { "linux", "freebsd" }
