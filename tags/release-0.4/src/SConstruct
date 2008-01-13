@@ -444,7 +444,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall -g3", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=[ 'DEBUG' ])
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=[ 'NDEBUG' ])
 
 Export("env")
 
