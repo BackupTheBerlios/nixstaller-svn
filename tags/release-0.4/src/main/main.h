@@ -137,6 +137,8 @@ protected:
     const char *GetAppRegDir(void);
     const char *GetRegConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
+
+    static int m_iLuaDirIterCount;
     
 public:
     std::string m_szCurLang;

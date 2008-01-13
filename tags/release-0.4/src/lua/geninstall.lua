@@ -123,7 +123,7 @@ function PackDirectory(dir, file)
 
     while (#dirlist > 0) do
         local subdir = table.remove(dirlist) -- pop
-            
+
         for f in io.dir(subdir) do
             local dpath
              
