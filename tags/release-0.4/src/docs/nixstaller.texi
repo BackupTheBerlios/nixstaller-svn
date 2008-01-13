@@ -120,6 +120,7 @@ Most screens are optional and can be shown in any particalur order. New type of 
 @item Fixed: geninstall incorrectly assumed logo to be in main project directory (should be in files_extra/)
 @item Package Mode
 @item Fixed: Lua messageboxes, warningboxes, choiceboxes and yesnoboxes were not using translations.
+@item Fixed: Calling io.dir() frequently in a short time might result in too many open file descriptors.
 @end itemize
 
 @subsection 0.2.2 @minus{}@minus{}> 0.3

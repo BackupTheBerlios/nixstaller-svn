@@ -26,7 +26,8 @@
 - Fixed: geninstall incorrectly assumed logo to be in main project directory (should be in files_extra/)
 - Package Mode
 - Fixed: Lua messageboxes, warningboxes, choiceboxes and yesnoboxes were not using translations.
-
+- Fixed: Calling io.dir() frequently in a short time might result in too many open file descriptors.
+  
 
 0.2.2 --> 0.3
 - Added missing ncurses buttonbar entries.
