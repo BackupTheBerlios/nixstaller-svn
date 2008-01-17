@@ -485,12 +485,17 @@ if 'stripbins' in COMMAND_LINE_TARGETS:
     stripallbins()
     Exit(0)
 
-if 'tardist' in COMMAND_LINE_TARGETS:
+if 'tardist' in COMMAND_LINE_TARGETS or 'tardev' in COMMAND_LINE_TARGETS:
     archname = 'nixstaller-' + curnixstversion + '.tar.gz'
     os.chdir("../")
     tarredfile = tarfile.open(archname, 'w:gz')
     stripallbins()
-    for dfile in distfiles_src+getallbins(False):
+    if 'tardev' in COMMAND_LINE_TARGETS:
+        flist = distfiles_src+getallbins(False)
+    else:
+        flist = distfiles_user+getallbins(False)
+
+    for dfile in flist:
         if os.path.isdir(dfile):
             stack = [ dfile ]
             while stack:
@@ -520,8 +525,7 @@ if 'setupdist' in COMMAND_LINE_TARGETS:
     stripallbins()
 
     print "Creating temporary project directory..."
-    #os.system("./genprojdir.sh -n Nixstaller -o linux netbsd freebsd openbsd sunos --arch x86 x86_64 --pkg "+workdir)
-    os.system("./genprojdir.sh -n Nixstaller  --pkg "+workdir)
+    os.system("./genprojdir.sh -n Nixstaller -o linux netbsd freebsd openbsd sunos --arch x86 x86_64 --pkg "+workdir)
     print "Copying all files to be installed..."
     os.makedirs(filesdir)
     for file in distfiles_user+getallbins(False):

@@ -85,7 +85,7 @@ checkfile()
 {
     if [ ! -z "$MD5CMD" ]; then
         SUM=`cat "$1" | $MD5CMD | awk '{ print $1 }'`
-        if [ $SUM != $2 ]; then
+        if [ "$SUM" != "$2" ]; then
             DIFFILES="$DIFFILES\n$1"
         fi
     fi

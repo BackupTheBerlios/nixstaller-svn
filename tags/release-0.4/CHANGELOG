@@ -27,6 +27,7 @@
 - Package Mode
 - Fixed: Lua messageboxes, warningboxes, choiceboxes and yesnoboxes were not using translations.
 - Fixed: Calling io.dir() frequently in a short time might result in too many open file descriptors.
+- OpenBSD 4.2 and FreeBSD 7 support
   
 
 0.2.2 --> 0.3

@@ -145,6 +145,7 @@ function install.generatepkg()
                 if type(msg2) == "table" and msg2[2] == "!check" then
                     pkg.packager.rollback(dir)
                     pkg.packager = generic
+                    pkg.canregister = false
                     install.print("WARNING: Failed to create system native package.\nReverting to generic package.")
                     f()
                 else
