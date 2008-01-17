@@ -486,7 +486,10 @@ if 'stripbins' in COMMAND_LINE_TARGETS:
     Exit(0)
 
 if 'tardist' in COMMAND_LINE_TARGETS or 'tardev' in COMMAND_LINE_TARGETS:
-    archname = 'nixstaller-' + curnixstversion + '.tar.gz'
+    if 'tardev' in COMMAND_LINE_TARGETS:
+        archname = 'nixstaller-dev-' + curnixstversion + '.tar.gz'
+    else:
+        archname = 'nixstaller-' + curnixstversion + '.tar.gz'
     os.chdir("../")
     tarredfile = tarfile.open(archname, 'w:gz')
     stripallbins()
