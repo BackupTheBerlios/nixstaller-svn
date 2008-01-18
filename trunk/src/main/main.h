@@ -137,6 +137,8 @@ protected:
     const char *GetAppRegDir(void);
     const char *GetRegConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
+
+    static int m_iLuaDirIterCount;
     
 public:
     std::string m_szCurLang;
@@ -216,7 +218,7 @@ public:
 #include "utils.h"
 #include "main/install/install.h"
 
-// #define RELEASE /* Enable on a release build */
+#define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };

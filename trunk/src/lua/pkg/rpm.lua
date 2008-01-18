@@ -99,7 +99,18 @@ and hit continue.", "Continue", "Abort") == 2 then
         locked = checklock("/var/lib/rpm/*", true)
     end
     
-    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --force -U %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, os.arch, pkg.name, pkg.version, pkg.release, os.arch))
+    local arch = os.arch
+    if os.arch == "x86" then
+        -- Figure out which arch rpmbuild used (i386, i586 etc)
+        for d in io.dir(string.format("%s/RPMS", src)) do
+            if string.match(d, "i?86") then
+                arch = d
+                break
+            end
+        end
+    end
+    
+    checkcmd(OLDG.install.executeasroot, string.format("rpm --relocate %s/files=%s --relocate %s/bins=%s --force -U %s/RPMS/%s/%s-%s-%s.%s.rpm", src, pkg.getdatadir(), src, pkg.bindir, src, arch, pkg.name, pkg.version, pkg.release, arch))
 end
 
 function rollback(src)

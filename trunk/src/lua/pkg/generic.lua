@@ -61,9 +61,10 @@ if [ ! -w "$PROGDIR" -o ! -w "$BINDIR" ]; then
 fi
 
 MD5CMD=`which md5sum 2>/dev/null`
-if [ ! -f "$MD5CMD" -a -f "`which md5 2>/dev/null`" ]; then
+if [ -f "$MD5CMD" ]; then
+    MD5CMD="$MD5CMD"
+elif [ -f "`which md5 2>/dev/null`" ]; then
     MD5CMD="`which md5`"
-    [ "`uname`" = "NetBSD" ] && MD5CMD="$MD5CMD -n" || MD5CMD="$MD5CMD -q"
 elif [ ! -f "$MD5CMD" -a -f "`which digest 2>/dev/null`" ]; then
     MD5CMD="`which digest` -a md5"
 fi
@@ -83,8 +84,8 @@ DIFFILES=
 checkfile()
 {
     if [ ! -z "$MD5CMD" ]; then
-        SUM=`$MD5CMD $MD5ARGS "$1" | awk '{ print $1 }'`
-        if [ $SUM != $2 ]; then
+        SUM=`cat "$1" | $MD5CMD | awk '{ print $1 }'`
+        if [ "$SUM" != "$2" ]; then
             DIFFILES="$DIFFILES\n$1"
         fi
     fi

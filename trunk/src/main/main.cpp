@@ -458,11 +458,21 @@ void CMain::InitLua()
     NLua::LuaSet("", "license", "pkg");
 }
 
+int CMain::m_iLuaDirIterCount = 0;
+
 // Directory iter functions. Based on examples from "Programming in lua"
 int CMain::LuaInitDirIter(lua_State *L)
 {
     const char *path = luaL_checkstring(L, 1);
     
+    if (m_iLuaDirIterCount > 5)
+    {
+        // HACK: Clean out any filedescriptors caused by this function.
+        // As this function may be called in a loop, Lua's GC may not be quick enough
+        // with collecting dir iters.
+        lua_gc(L, LUA_GCCOLLECT, 0);
+    }
+
     CDirIter *it = NULL;
     try
     {
@@ -471,9 +481,12 @@ int CMain::LuaInitDirIter(lua_State *L)
     catch (Exceptions::CExOpenDir &e)
     {
         it = NULL;
+        debugline("EXCEPTION: %s\n", e.what());
         // Don't do anything here, closure function will return nil
     }
     
+    m_iLuaDirIterCount++;
+
     CDirIter **d = (CDirIter **)lua_newuserdata(L, sizeof(CDirIter *));
     *d = it;
 
@@ -516,6 +529,7 @@ int CMain::LuaDirIterGC(lua_State *L)
 {
     CDirIter *d = *(CDirIter **)lua_touserdata(L, 1);
     delete d;
+    m_iLuaDirIterCount--;
     return 0;
 }
 

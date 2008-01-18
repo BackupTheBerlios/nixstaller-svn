@@ -18,7 +18,7 @@
 #     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 # Find main nixstaller directory
-if [ ! -z `dirname $0` ]; then
+if [ ! -z "`dirname $0`" ]; then
     NDIR="`dirname $0`"
 else
     OLDIFS="$IFS"
@@ -40,6 +40,7 @@ CURRENTOS=`echo "$CURRENTOS" | tr [:upper:] [:lower:]` # Convert to lowercase
 CURRENT_ARCH=`uname -m`
 echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86" # Convert iX86 --> x86
 echo $CURRENT_ARCH | grep "86pc" >/dev/null && CURRENT_ARCH="x86" # Convert 86pc --> x86
+echo $CURRENT_ARCH | grep "amd64" >/dev/null && CURRENT_ARCH="x86_64"
 
 # Default settings
 DEF_APPNAME="My App"
@@ -359,7 +360,7 @@ EOF
 
 genrun()
 {
-    if [ ! -z $GENPKG ]; then
+    if [ ! -z "$GENPKG" ]; then
         cat > ${TARGETDIR}/run.lua  << EOF
 -- Automaticly generated on `date`.
 -- This file is called when the installer is run.
@@ -492,7 +493,7 @@ createprojdir()
     genconfig
     genrun
     
-    if [ ! -z $GENPKG ]; then
+    if [ ! -z "$GENPKG" ]; then
         genpkg
     fi
 }
@@ -505,7 +506,7 @@ hints()
     echo "* Edit config.lua for general configuration options. (file has comments)"
     echo "* Edit run.lua for scripting the installation process. (file has comments)"
     
-    if [ ! -z $GENPKG ]; then
+    if [ ! -z "$GENPKG" ]; then
         echo "* Edit package.lua for package mode configuration. (file has comments)"
     fi
     

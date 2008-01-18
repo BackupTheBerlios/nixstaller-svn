@@ -14,14 +14,14 @@ Nixstaller is created with the following goals in mind:
 <li>Small 'size overhead', meaning that installer packages should not be much bigger than a regular compressed (tar) archive would be.</li>
 <li>Run on recent and less recent operating systems.</li>
 <li>Very few dependencies, especially for the end user.</li>
-<li>Support different frontends, to make sure that the installer will run on as much possible systems and possible have a native look.</li>
+<li>Support different frontends, to make sure that the installer will run on as much as possible systems and possibly have a native look.</li>
 <li>Make the creation of installers both easy and flexible.</li>
 <li>Installed software from Nixstaller should ideally be managed by the user's package manager, if not possible scripts will be provided.</li>
 <li>Dependency handling (this needs further research, possibly heading to 'self containing' packages).</li>
 </ul>
 
 <h3>Current Features</h3>
-Most of the goals are already implemented, though in future releases many of them will be furtherly extended.
+Most of the feature goals are already implemented, though in future releases many of them will be furtherly extended.
 
 <h4>Supported Systems</h4>
 Nixstaller runs on many different systems, the table below lists those which are currently supported.
@@ -35,21 +35,21 @@ Nixstaller runs on many different systems, the table below lists those which are
     </tr>
     <tr>
       <td>NetBSD</td>
-      <td>x86, x86_64 for 4.X</td>
+      <td>x86, x86_64</td>
       <td>2.1, 3.1, 4.0</td>
-      <td>Anything before 2.X</td>
+      <td>x86: Anything before 2.X<br>x86_64: Anything before 4.X</td>
     </tr>
     <tr>
       <td>FreeBSD</td>
-      <td>x86, x86_64 for 6.X</td>
-      <td>5.5, 6.2, PCBSD 1.4</td>
-      <td>Anything before 5.X</td>
+      <td>x86, x86_64</td>
+      <td>5.5, 6.2, 7.0-rc1, PCBSD 1.4</td>
+      <td>x86: Anything before 5.X<br>x86_64: Anything before 6.X</td>
     </tr>
     <tr>
       <td>Linux</td>
       <td>x86, x86_64</td>
-      <td>PCLinuxOS 0.93 and 0.94, OpenSUSE 10.3, Arch "Don't Panic", Fedora Core 6 and 8,  Knoppix 3.3-2003-11-19, Debian</td>
-      <td>Very old distributions (ie. systems using GCC 2.X)</td>
+      <td>PCLinuxOS 0.93 and 0.94, OpenSUSE 10.3, Arch Linux, Fedora Core 6 and 8, Knoppix 3.3-2003-11-19, Debian 4.0, Slackware 12, Zenwalk 4.8, Kubuntu 7.10</td>
+      <td>x86: Very old distributions (ie. systems using GCC 2.X)<br>x86_64: Older distributions using libstdc++.so.5 (gcc 3.3)</td>
     </tr>
     <tr>
       <td>OpenBSD</td>
@@ -60,8 +60,8 @@ Nixstaller runs on many different systems, the table below lists those which are
         <tr>
     <td>Solaris</td>
       <td>x86</td>
-      <td>Express 12-06, Nexenta alpha 7, Solaris 10-4</td>
-      <td>others (including older Solaris 10 versions) untested</td>
+      <td>Nexenta alpha 7, Solaris 10-4</td>
+      <td>Others (including older Solaris 10 versions) untested</td>
     </tr>
   </tbody>
 </table>
@@ -71,12 +71,12 @@ Nixstaller runs on many different systems, the table below lists those which are
 Nixstaller can be fully translated (including any text coming from scripts). At the moment however there is no good support for character encoding, meaning that things as UTF-8 may not work yet.
 
 <h4>Frontends</h4>
-Frontends are used to communicate with the end user. The frontends will let the user control and view the installation process. Because not every system is the same, Nixstaller comes with three different frontends:
+Frontends are used to communicate with the end user. The frontends will allow the user to control and view the installation process. Because not every system is the same, Nixstaller comes with three different frontends:
 
 <ul>
 <li>The ncurses frontend is a text based frontend. It should run on almost any system.</li>
 <li>The FLTK frontend is a graphic frontend using X11. Because it's linked staticly it runs on almost every system which has X11 running.</li>
-<li>The GTK+2 frontend is also a graphic frontend, but will only work with systems having GTK 2.4 and later. For systems such as those using Gnome it will have a 'native' look.</li>
+<li>The GTK+2 frontend is also a graphic frontend, but will only work with systems which have GTK 2.4 and later. For systems such as those using Gnome it will have a 'native' look.</li>
 </ul>
 When the installer is run, a suitable frontend is automaticly choosen (in order: GTK+2, FLTK, ncurses). The install creator can decide which frontends should be included.
 
@@ -98,7 +98,7 @@ Package Mode is especially handy for software managing (uninstallation, upgradin
 <li>Installers can be packed with gzip, bzip2 and lzma.</li>
 <li>The (default) logo can easily be customized.</li>
 <li>Usage of su and sudo, so that the user can grant the installer root access only when it needs too, instead of running it as the root user.</li>
-<li>To safe space, similar frontend binaries are compared to each other and only the differences are packaged with the installer.</li>
+<li>To save space, similar frontend binaries are compared to each other and only the differences are packaged with the installer.</li>
 </ul>
 
 <h3>Future Releases</h3>
@@ -114,6 +114,6 @@ The following features are planned or will be extended in future releases:
 <li>Support for more package managers, such as BSD and Solaris package.</li>
 <li>GUI tool for creating installers (see Nixstbuild).</li>
 </ul>
-This list is far from complete and it's very lickely that other features will be added to further releases.
+This list is far from complete and it's very likely that other features will be added to further releases.
 
 </html>
