@@ -2,11 +2,11 @@ opts = Options()
 opts.Add('CC', 'The C compiler', 'gcc')
 opts.Add('CXX', 'The C++ compiler', 'g++')
 
-env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH='.')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.', '../include/stdcxx'], CXX='$CC')
 
 Help(opts.GenerateHelpText(env))
 
-config_header = 'config.h'
+config_header = 'su-config.h'
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
@@ -57,6 +57,6 @@ libsu = env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp vaspri
 surunner = env.Program("surunner", "runner.c")
 
 # Builds test program
-env.Program("libtest", 'libtest.cpp', LIBPATH=".", LIBS=Split('$LIBS su'))
+#env.Program("libtest", 'libtest.cpp', LIBPATH=[".", LIBS=Split('$LIBS su'))
 
 Return('libsu', 'surunner')

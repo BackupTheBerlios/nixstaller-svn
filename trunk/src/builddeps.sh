@@ -31,7 +31,7 @@ get()
 
 untar()
 {
-    [ $2 = "bzip2" ] && UNCOMP=bzip2 || UNCOMP=gzip
+    [ "$2" = "bzip2" ] && UNCOMP=bzip2 || UNCOMP=gzip
     (cd "$DESTFILES/" && cat "$1" | $UNCOMP -cd | tar xvf -)
 }
 
@@ -51,6 +51,20 @@ buildzlib()
     untar "zlib-1.2.3.tar.gz"
     dodir "zlib-1.2.3/"
     ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    restoredir
+}
+
+buildstdcxx()
+{
+    get "http://archive.apache.org/dist/incubator/stdcxx/releases/stdcxx-incubating-4.2.0.tar.gz"
+    untar "stdcxx-incubating-4.2.0.tar.gz"
+    dodir "stdcxx-4.2.0"
+    gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
+    [ $CURRENT_OS = "netbsd" ] && ulimit -d 131072
+    $MAKE BUILDDIR="$DESTFILES/stdcxx-obj" BUILDMODE=static,optimized 
+    dodir stdcxx-obj
+    $MAKE install PREFIX=$DESTPREFIX
+    $MAKE clean
     restoredir
 }
 
@@ -140,7 +154,7 @@ buildlzma()
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
-    $MAKE -f makefile.gcc
+    $MAKE -f makefile.gcc CXX='gcc -Os' LDFLAGS="-L$DESTPREFIX/lib" LIB='-lstd -lsupc++ -lm'
     mkdir -p "$DESTPREFIX/bin"
     cp lzma "$DESTPREFIX/bin"
     restoredir
@@ -155,7 +169,7 @@ buildlzma()
 BUILD="$*"
 
 if [ -z $BUILD ]; then
-    BUILD="zlib png jpeg fltk lua ncurses lzma"
+    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma"
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
 #     fi
@@ -164,6 +178,7 @@ fi
 for B in $BUILD
 do
     case $B in
+        stdcxx ) buildstdcxx ;;
         zlib ) buildzlib ;;
         png ) buildpng ;;
         jpeg ) buildjpeg ;;
