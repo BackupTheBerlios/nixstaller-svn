@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <locale.h>
 #include "gtk.h"
 #include "luainput.h"
 

@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <new>
+#include <locale.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>

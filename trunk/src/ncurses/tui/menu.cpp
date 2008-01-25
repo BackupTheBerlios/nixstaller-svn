@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <algorithm>
 #include <ctype.h>
 #include "tui.h"
 #include "menu.h"

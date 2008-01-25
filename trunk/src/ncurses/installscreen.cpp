@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <algorithm>
 #include "main/main.h"
 #include "installscreen.h"
 #include "luagroup.h"

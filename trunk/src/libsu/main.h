@@ -38,7 +38,7 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 
-#include "config.h"
+#include "su-config.h"
 #include "libsu.h"
 
 #ifndef _GNU_SOURCE

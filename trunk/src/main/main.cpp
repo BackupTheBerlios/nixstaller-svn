@@ -17,8 +17,12 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <stdlib.h>
+#include <ctype.h>
+#include <locale.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>

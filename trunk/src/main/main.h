@@ -30,6 +30,8 @@
 #include <vector>
 #include <map>
 #include <limits>
+#include <fstream>
+
         
 typedef std::vector<std::string>::size_type TSTLVecSize;
 typedef std::string::size_type TSTLStrSize;
@@ -67,7 +69,7 @@ void ReportError(const char *msg);
 extern "C" int vasprintf (char **result, const char *format, va_list args);
 #endif
 
-#include "lua.h"
+#include "main/lua/lua.h"
                  
 class CMain;
 
