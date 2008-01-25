@@ -437,7 +437,7 @@ opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/
 opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
 opts.Add('gtklibsdir', 'Specifies where the library files for GTK are', '/usr/lib')
 opts.Add('CC', 'The C compiler', 'gcc')
-opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('CXX', 'The C++ compiler', 'gcc')
 opts.Add('LCVER', 'Manually overide used libc version', '')
 opts.Add('LCPPVER', 'Manually overide used libstdc++ version', '')
 opts.Add('OS', 'Manually overide target OS', '')
@@ -474,7 +474,7 @@ libc_ver = ''
 libstdcpp_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['.', inc_dir, 'include/stdcxx', 'include/'+cur_os, 'include/'+cur_os+'/ncurses', 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
+env.Append(CPPPATH=['.', inc_dir, 'include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch, 'include/'+cur_os, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
 # Current version
 curnixstversion = '0.4'

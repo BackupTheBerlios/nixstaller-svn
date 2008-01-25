@@ -63,7 +63,7 @@ buildstdcxx()
     [ $CURRENT_OS = "netbsd" ] && ulimit -d 131072
     $MAKE BUILDDIR="$DESTFILES/stdcxx-obj" BUILDMODE=static,optimized 
     dodir stdcxx-obj
-    $MAKE install PREFIX=$DESTPREFIX
+    $MAKE install LOCALES="" PREFIX=$DESTPREFIX
     $MAKE clean
     restoredir
 }

@@ -1,8 +1,20 @@
+import sys
+import platform
+
+cur_os = sys.platform.rstrip('1234567890')
+cur_arch = platform.machine()
+    
+if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
+    cur_arch = "x86"
+elif cur_arch == 'amd64':
+    cur_arch = "x86_64"
+
+
 opts = Options()
 opts.Add('CC', 'The C compiler', 'gcc')
-opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('CXX', 'The C++ compiler', 'gcc')
 
-env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.', '../include/stdcxx'], CXX='$CC')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.', '../include/stdcxx', '../include/stdcxx/cfg/'+cur_os+'/'+cur_arch], CXX='$CC')
 
 Help(opts.GenerateHelpText(env))
 
