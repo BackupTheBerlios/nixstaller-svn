@@ -120,51 +120,44 @@ do
         continue # No usable lzma-decoder
     fi
     
-    for LCPP in `createliblist "${LC}" libstdc++.so.`
+    for FR in $FRONTENDS
     do
-        if [ ! -d "${LCPP}" ]; then
+        if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
             continue
         fi
-              
-        for FR in $FRONTENDS
-        do
-            if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
-                continue
-            fi
+    
+        case $FR in
+            "gtk") ED_SRC=$GTK_SRC ;;
+            "fltk") ED_SRC=$FLTK_SRC ;;
+            "ncurs") ED_SRC=$NCURS_SRC ;;
+        esac
         
-            case $FR in
-                "gtk") ED_SRC=$GTK_SRC ;;
-                "fltk") ED_SRC=$FLTK_SRC ;;
-                "ncurs") ED_SRC=$NCURS_SRC ;;
-            esac
-            
-            [ $ARCH_TYPE != "lzma" ] || haslibs "${LC}/lzma-decode" || continue
-            haslibs "${LC}/edelta" || continue
+        [ $ARCH_TYPE != "lzma" ] || haslibs "${LC}/lzma-decode" || continue
+        haslibs "${LC}/edelta" || continue
 
-            unlzma $ED_SRC "${LC}"
-            unlzma "${LCPP}"/$FR "${LC}"
-            
-            if [ -f "${LCPP}/$FR" ]; then
-                FRBIN="${LCPP}/$FR"
-                if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
-                    edelta ${LC} $ED_SRC $FRBIN
-                fi
-                
-                # deltas and lzma packed bins probably aren't executable yet
-                # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
-                chmod +x $FRBIN
-                
-                haslibs $FRBIN || continue
-                
-                # Run it
-                `pwd`/$FRBIN
-                
-                RET=$?
-                if [ ! -f frontendstarted ]; then
-                    exit $RET
-                fi
+        unlzma $ED_SRC "${LC}"
+        unlzma "${LC}"/$FR "${LC}"
+        
+        if [ -f "${LC}/$FR" ]; then
+            FRBIN="${LC}/$FR"
+            if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
+                edelta ${LC} $ED_SRC $FRBIN
             fi
-        done
+            
+            # deltas and lzma packed bins probably aren't executable yet
+            # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
+            chmod +x $FRBIN
+            
+            haslibs $FRBIN || continue
+            
+            # Run it
+            `pwd`/$FRBIN
+            
+            RET=$?
+            if [ ! -f frontendstarted ]; then
+                exit $RET
+            fi
+        fi
     done
 done
 

@@ -439,7 +439,6 @@ opts.Add('gtklibsdir', 'Specifies where the library files for GTK are', '/usr/li
 opts.Add('CC', 'The C compiler', 'gcc')
 #opts.Add('CXX', 'The C++ compiler', 'gcc')
 opts.Add('LCVER', 'Manually overide used libc version', '')
-opts.Add('LCPPVER', 'Manually overide used libstdc++ version', '')
 opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
@@ -471,7 +470,6 @@ elif cur_arch == 'amd64':
 lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
 inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
 libc_ver = ''
-libstdcpp_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['.', inc_dir, 'include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch, 'include/'+cur_os, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
@@ -616,15 +614,6 @@ if not env.GetOption('clean'):
         print "Couldn't detect libc version!"
         Exit(1)
     
-    if not env['LCPPVER']:
-        libstdcpp_ver = conf.CheckLinkedLibVersion('stdc++', 'm')
-    else:
-        libstdcpp_ver = env['LCPPVER']
-        
-    if not libstdcpp_ver:
-        print "Couldn't detect libstdc++ version!"
-        Exit(1)
-        
     if not BUILD_TARGETS or 'ncurses' in map(str, BUILD_TARGETS):
         if not conf.CheckLibWithHeader('ncurses', 'curses.h', 'C++', 'beep();', 0):
             print "Couldn't find libncurses !"
@@ -718,9 +707,8 @@ ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses
 
 fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft X11 z '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
-c_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
-cpp_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'+libstdcpp_ver+'/'
+bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 
 Default(edelta, surunner, ncurses, gtk, fltk, main)
-Default(env.Install(c_bin_dir, Flatten(edelta)), env.Install(c_bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(cpp_bin_dir, ncurses), env.Install(cpp_bin_dir, gtk), env.Install(cpp_bin_dir, fltk))
+Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, gtk), env.Install(bin_dir, fltk))
 

@@ -1,30 +1,5 @@
 OVERALL
 - Add trap in geninstall.sh which cleans stuff?
-- Nixstaller installer
-- Mention that Solaris + desk entries may not work yet?
-- Disable debug stuff
-- Check if libc diffs are generated
-- Update notes files (check versions, host OS'es etc)
-
-
-TEST
-- OS specific:
-    - slackware: description works?
-    - new fuser code for locks
-- Bug: install.execute crashes with wrong arguments (fixed?)
-
-
-TRANSLATIONS
-- Check for any missing messages
-
-
-DOCS:
-- Changelog
-
-
----------------------------------- LATER ---------------------------
-
-OVERALL
 - Make shared 'library' for scripts
 - Qt/KDE frontend
 - Fix installation if destdir has no read access?
@@ -40,6 +15,11 @@ OVERALL
 - Initial value from constructor for radiobutton, menu etc?
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
+- libstdcxx:
+    - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
+    - Update FreeeBSD notes file for for libsupc++ (used from 6.X)
+    - Test regular C lua libs, update notes
+
 
 
 PACKAGING
