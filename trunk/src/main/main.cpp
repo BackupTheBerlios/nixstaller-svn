@@ -32,7 +32,9 @@
 #include <libgen.h>
 
 #include "main.h"
+#include "elfutils.h"
 #include "lua/lua.h"
+#include "lua/luaclass.h"
 #include "lua/luafunc.h"
 #include "lua/luatable.h"
 
@@ -424,11 +426,14 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaSetEnv, "setenv", "os", this);
     NLua::RegisterFunction(LuaExit, "exit", "os"); // Override
     NLua::RegisterFunction(LuaExitStatus, "exitstatus", "os");
+    NLua::RegisterFunction(LuaOpenElf, "openelf", "os");
 
     NLua::RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
     NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
     NLua::RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
     NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
+    
+    NLua::RegisterClassFunction(LuaGetElfSym, "getsym", "elfclass");
     
     // Set some default values for config variabeles
     NLua::LuaSet("", "appname", "cfg");
@@ -992,6 +997,73 @@ int CMain::LuaTr(lua_State *L)
                        luaL_checkstring(L, 3), luaL_checkstring(L, 4), luaL_checkstring(L, 5)));
     
     return 1;
+}
+
+int CMain::m_iLuaElfOpenCount = 0;
+
+int CMain::LuaOpenElf(lua_State *L)
+{
+    if (m_iLuaElfOpenCount > 10)
+    {
+        // HACK: Clean out any filedescriptors caused by this function.
+        // As this function may be called in a loop, Lua's GC may not be quick enough
+        // with collecting dir iters.
+        lua_gc(L, LUA_GCCOLLECT, 0);
+    }
+
+    CElfSymbolWrapper *elfw = NULL;
+    try
+    {
+        elfw = new CElfSymbolWrapper(luaL_checkstring(L, 1));
+    }
+    catch (Exceptions::CExElf &e)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not create ELF class: %s\n", e.what());
+        return 2;
+    }
+    
+    m_iLuaElfOpenCount++;
+    
+    NLua::CreateClass(elfw, "elfclass");
+    NLua::SetClassGC("elfclass", LuaElfGC);
+    
+    return 1;
+}
+
+int CMain::LuaGetElfSym(lua_State *L)
+{
+    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    TSTLVecSize n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
+    
+    if ((n < 0) || (n >= elfw->GetSymSize()))
+        return 0;
+    
+    TSTLVecSize index = SafeConvert<TSTLVecSize>(n);
+    
+    lua_newtable(L);
+    int tab = lua_gettop(L);
+    
+    CElfSymbolWrapper::SSymData sym = elfw->GetSym(index);
+    lua_pushstring(L, sym.name.c_str());
+    lua_setfield(L, tab, "name");
+    lua_pushstring(L, sym.binding.c_str());
+    lua_setfield(L, tab, "binding");
+    lua_pushstring(L, sym.version.c_str());
+    lua_setfield(L, tab, "version");
+    lua_pushboolean(L, sym.undefined);
+    lua_setfield(L, tab, "undefined");
+    
+    return 1;
+}
+
+int CMain::LuaElfGC(lua_State *L)
+{
+    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    delete elfw;
+    printf("m_iLuaElfOpenCount: %d\n", m_iLuaElfOpenCount);
+    m_iLuaElfOpenCount--;
+    return 0;
 }
 
 int CMain::LuaPanic(lua_State *L)

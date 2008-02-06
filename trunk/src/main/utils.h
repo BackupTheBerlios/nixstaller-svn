@@ -62,6 +62,7 @@ bool MKDirNeedsRoot(std::string dir);
 void MKDirRec(std::string dir);
 void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd);
 void UName(struct utsname &u);
+int Open(const char *f, int flags);
 void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &outh);
 std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos);
 long GetTime(void);

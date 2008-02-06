@@ -443,7 +443,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS=Split('std supc++ m'), CPPDEFINES=[ 'NDEBUG' ], CXX='$CC')
+env = Environment(options = opts, CCFLAGS = "-Wall -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS=Split('std supc++ m'), CPPDEFINES=[ 'DEBUG' ], CXX='$CC')
 
 Export("env")
 
@@ -693,9 +693,9 @@ edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS
 libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
 # Builds main lib
-main = env.Library("main/main", Split('libmd5/md5.c main/install/basescreen.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/main.cpp main/utils.cpp main/appmanager.cpp main/install/install.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
+main = env.Library("main/main", Split('libmd5/md5.c main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/appmanager.cpp  main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
 
-env.Prepend(LIBS = Split('main su lua'))
+env.Prepend(LIBS = Split('main su lua elf'))
 
 # UNDONE?
 if cur_os == 'netbsd':

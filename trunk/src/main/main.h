@@ -140,7 +140,7 @@ protected:
     const char *GetRegConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
 
-    static int m_iLuaDirIterCount;
+    static int m_iLuaDirIterCount, m_iLuaElfOpenCount;
     
 public:
     std::string m_szCurLang;
@@ -178,6 +178,11 @@ public:
     static int LuaExitStatus(lua_State *L);
     static int LuaMD5(lua_State *L);
     static int LuaTr(lua_State *L);
+    static int LuaOpenElf(lua_State *L);
+    static int LuaGetElfSym(lua_State *L);
+    static int LuaGetElfSymVerDefs(lua_State *L);
+    static int LuaGetElfSymVerNeeds(lua_State *L);
+    static int LuaElfGC(lua_State *L);
     static int LuaPanic(lua_State *L);
 };
 

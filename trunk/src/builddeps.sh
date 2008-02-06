@@ -166,10 +166,19 @@ buildlzma()
     strip $STRIPARGS "$DESTPREFIX/bin/lzma" "$DESTPREFIX/bin/lzma-decode"
 }
 
+buildelf()
+{
+    get "http://www.mr511.de/software/libelf-0.8.10.tar.gz"
+    untar "libelf-0.8.10.tar.gz"
+    dodir "libelf-0.8.10"
+    ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    restoredir
+}
+
 BUILD="$*"
 
 if [ -z $BUILD ]; then
-    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma"
+    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf"
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
 #     fi
@@ -188,6 +197,7 @@ do
         beecrypt ) buildbeecrypt ;;
         rpm ) buildrpm ;;
         lzma ) buildlzma ;;
+        elf ) buildelf ;;
         * ) echo "Wrong build option" ; exit 1 ;;
     esac
 done

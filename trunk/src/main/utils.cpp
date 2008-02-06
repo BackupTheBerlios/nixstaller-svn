@@ -468,6 +468,14 @@ pid_t Fork()
     return ret;
 }
 
+int Open(const char *f, int flags)
+{
+    int ret = open(f, flags);
+    if (ret == -1)
+        throw Exceptions::CExOpen(errno, f);
+    return ret;
+}
+
 void Close(int fd)
 {
     if (close(fd) == -1)

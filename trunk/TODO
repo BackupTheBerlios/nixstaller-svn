@@ -19,8 +19,14 @@ OVERALL
     - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
     - Update FreeeBSD notes file for for libsupc++ (used from 6.X)
     - Test regular C lua libs, update notes
-
-
+- Update to Lua 5.1.3
+- Limit textfield's amount of stored lines
+- libelf
+    - Add SConstruct check
+    - Mention credits, copyrights etc
+    - Lua GC'ing with a fixed amount of elf classes
+    - Check weak symbol versions
+    
 
 PACKAGING
 - More config options:

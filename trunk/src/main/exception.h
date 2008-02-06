@@ -86,6 +86,16 @@ class CExIO: virtual public CException
 {
 };
 
+class CExOpen: public CExErrno, public CExIO
+{
+    const char *m_szFile;
+    
+public:
+    CExOpen(int err, const char *file) : CExErrno(err), m_szFile(file) { };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Could not open file %s: %s"), m_szFile, Error()); };
+};
+
 class CExOpenDir: public CExErrno, public CExIO
 {
     const char *m_szDir;
@@ -257,6 +267,13 @@ public:
 class CExUser: public CException
 {
     virtual const char *what(void) throw() { return ""; };
+};
+
+class CExElf: public CExMessage
+{
+public:
+    CExElf(const char *msg) : CExMessage(msg) { }
+    virtual const char *what(void) throw() { return FormatText(GetTranslation("Lua Elf class error detected: %s"), Message()); };
 };
 
 }
