@@ -999,18 +999,8 @@ int CMain::LuaTr(lua_State *L)
     return 1;
 }
 
-int CMain::m_iLuaElfOpenCount = 0;
-
 int CMain::LuaOpenElf(lua_State *L)
 {
-    if (m_iLuaElfOpenCount > 10)
-    {
-        // HACK: Clean out any filedescriptors caused by this function.
-        // As this function may be called in a loop, Lua's GC may not be quick enough
-        // with collecting dir iters.
-        lua_gc(L, LUA_GCCOLLECT, 0);
-    }
-
     CElfSymbolWrapper *elfw = NULL;
     try
     {
@@ -1022,8 +1012,6 @@ int CMain::LuaOpenElf(lua_State *L)
         lua_pushfstring(L, "Could not create ELF class: %s\n", e.what());
         return 2;
     }
-    
-    m_iLuaElfOpenCount++;
     
     NLua::CreateClass(elfw, "elfclass");
     NLua::SetClassGC("elfclass", LuaElfGC);
@@ -1061,8 +1049,6 @@ int CMain::LuaElfGC(lua_State *L)
 {
     CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
     delete elfw;
-    printf("m_iLuaElfOpenCount: %d\n", m_iLuaElfOpenCount);
-    m_iLuaElfOpenCount--;
     return 0;
 }
 

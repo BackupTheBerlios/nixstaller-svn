@@ -140,7 +140,7 @@ protected:
     const char *GetRegConfFile(const char *progname);
     const char *GetSumListFile(const char *progname);
 
-    static int m_iLuaDirIterCount, m_iLuaElfOpenCount;
+    static int m_iLuaDirIterCount;
     
 public:
     std::string m_szCurLang;
