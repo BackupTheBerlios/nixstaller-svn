@@ -96,23 +96,25 @@ void CreateClass(void *prvdata, const char *type)
     lua_setmetatable(LuaState, table);
 }
 
-void SetClassGC(const char *name, lua_CFunction gc, void *gcdata)
+void DeleteClass(void *prvdata, const char *type)
 {
-    GetClassMT(name);
+    GetClassMT(type);
     int mt = lua_gettop(LuaState);
-    
-    lua_pushstring(LuaState, "__gc");
-    
-    if (gcdata)
-    {
-        lua_pushlightuserdata(LuaState, gcdata);
-        lua_pushcclosure(LuaState, gc, 1);
-    }
-    else
-        lua_pushcfunction(LuaState, gc);
-    
+    PushClass(type, prvdata);
+    int table = lua_gettop(LuaState);
+
+    // Clear mt[prvdata]
+    lua_pushlightuserdata(LuaState, static_cast<void *>(prvdata));
+    lua_pushnil(LuaState);
     lua_settable(LuaState, mt);
-    lua_pop(LuaState, 1);
+
+    // Clear mt[table]
+    lua_pushvalue(LuaState, table);
+    lua_pushnil(LuaState);
+    lua_settable(LuaState, mt);
+
+    lua_remove(LuaState, table);
+    lua_remove(LuaState, mt);
 }
 
 

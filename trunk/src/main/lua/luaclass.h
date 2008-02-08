@@ -28,6 +28,7 @@ void GetClassMT(const std::string &type);
 void PushClass(const std::string &type, void *prvdata);
 void PushClassData(const char *type, int index);
 void CreateClass(void *prvdata, const char *type);
+void DeleteClass(void *prvdata, const char *type);
 
 template <typename C> C *ToClassData(const char *type, int index)
 {
@@ -53,8 +54,6 @@ template <typename C> C *CheckClassData(const char *type, int index)
     
     return ret;
 }
-
-void SetClassGC(const char *name, lua_CFunction gc, void *gcdata=NULL);
 
 }
 

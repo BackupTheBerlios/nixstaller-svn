@@ -436,7 +436,8 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaGetElfSym, "getsym", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfSymVerDef, "getsymdef", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfSymVerNeed, "getsymneed", "elfclass");
-    
+    NLua::RegisterClassFunction(LuaCloseElf, "close", "elfclass");
+
     // Set some default values for config variabeles
     NLua::LuaSet("", "appname", "cfg");
     
@@ -538,6 +539,7 @@ int CMain::LuaDirIter(lua_State *L)
 
 int CMain::LuaDirIterGC(lua_State *L)
 {
+    debugline("LuaDirIterGC\n");
     CDirIter *d = *(CDirIter **)lua_touserdata(L, 1);
     delete d;
     m_iLuaDirIterCount--;
@@ -1016,7 +1018,6 @@ int CMain::LuaOpenElf(lua_State *L)
     }
     
     NLua::CreateClass(elfw, "elfclass");
-    NLua::SetClassGC("elfclass", LuaElfGC);
     
     return 1;
 }
@@ -1057,14 +1058,7 @@ int CMain::LuaGetElfSymVerDef(lua_State *L)
     
     TSTLVecSize index = SafeConvert<TSTLVecSize>(n);
     
-    lua_newtable(L);
-    int tab = lua_gettop(L);
-    
-    CElfSymbolWrapper::SVerSymData sym = elfw->GetSymVerDef(index);
-    lua_pushstring(L, sym.name.c_str());
-    lua_setfield(L, tab, "name");
-    lua_pushstring(L, sym.flags.c_str());
-    lua_setfield(L, tab, "flags");
+    lua_pushstring(L, elfw->GetSymVerDef(index).c_str());
     
     return 1;
 }
@@ -1082,18 +1076,21 @@ int CMain::LuaGetElfSymVerNeed(lua_State *L)
     lua_newtable(L);
     int tab = lua_gettop(L);
     
-    CElfSymbolWrapper::SVerSymData sym = elfw->GetSymVerNeed(index);
+    CElfSymbolWrapper::SVerSymNeedData sym = elfw->GetSymVerNeed(index);
     lua_pushstring(L, sym.name.c_str());
     lua_setfield(L, tab, "name");
     lua_pushstring(L, sym.flags.c_str());
     lua_setfield(L, tab, "flags");
-    
+    lua_pushstring(L, sym.lib.c_str());
+    lua_setfield(L, tab, "lib");
+
     return 1;
 }
 
-int CMain::LuaElfGC(lua_State *L)
+int CMain::LuaCloseElf(lua_State *L)
 {
     CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    NLua::DeleteClass(elfw, "elfclass");
     delete elfw;
     return 0;
 }

@@ -163,14 +163,7 @@ void CElfSymbolWrapper::ReadVerDef(Elf_Scn *section)
                     break;
                 
                 m_SymVerDefMap[def->vd_ndx] = s;
-                
-                const char *f = "";
-                if (def->vd_flags & VER_FLG_BASE)
-                    f = "BASE";
-                else if (def->vd_flags & VER_FLG_WEAK)
-                    f = "WEAK";
-
-                m_SymVerDef.push_back(SVerSymData(s, f));
+                m_SymVerDef.push_back(s);
             }
             offset += def->vd_next;
         }
@@ -194,6 +187,11 @@ void CElfSymbolWrapper::ReadVerNeed(Elf_Scn *section)
 
             int auxoffset = offset + need->vn_aux;
             
+            char *libname = elf_strptr(m_pElf, shdr.sh_link, need->vn_file);
+            assert(libname != NULL);
+            if (!libname)
+                continue;
+            
             for (unsigned j=0; j<need->vn_cnt; j++)
             {
                 GElf_Vernaux *aux = gelf_getvernaux(data, auxoffset);
@@ -212,7 +210,7 @@ void CElfSymbolWrapper::ReadVerNeed(Elf_Scn *section)
                 else if (aux->vna_flags & VER_FLG_WEAK)
                     f = "WEAK";
 
-                m_SymVerNeed.push_back(SVerSymData(s, f));
+                m_SymVerNeed.push_back(SVerSymNeedData(s, f, libname));
 
                 auxoffset += aux->vna_next;
             }
