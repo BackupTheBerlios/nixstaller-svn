@@ -180,8 +180,8 @@ public:
     static int LuaTr(lua_State *L);
     static int LuaOpenElf(lua_State *L);
     static int LuaGetElfSym(lua_State *L);
-    static int LuaGetElfSymVerDefs(lua_State *L);
-    static int LuaGetElfSymVerNeeds(lua_State *L);
+    static int LuaGetElfSymVerDef(lua_State *L);
+    static int LuaGetElfSymVerNeed(lua_State *L);
     static int LuaElfGC(lua_State *L);
     static int LuaPanic(lua_State *L);
 };

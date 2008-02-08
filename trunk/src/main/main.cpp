@@ -434,6 +434,8 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     
     NLua::RegisterClassFunction(LuaGetElfSym, "getsym", "elfclass");
+    NLua::RegisterClassFunction(LuaGetElfSymVerDef, "getsymdef", "elfclass");
+    NLua::RegisterClassFunction(LuaGetElfSymVerNeed, "getsymneed", "elfclass");
     
     // Set some default values for config variabeles
     NLua::LuaSet("", "appname", "cfg");
@@ -1022,9 +1024,9 @@ int CMain::LuaOpenElf(lua_State *L)
 int CMain::LuaGetElfSym(lua_State *L)
 {
     CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
-    TSTLVecSize n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
+    int n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
     
-    if ((n < 0) || (n >= elfw->GetSymSize()))
+    if ((n < 0) || (n >= static_cast<int>(elfw->GetSymSize())))
         return 0;
     
     TSTLVecSize index = SafeConvert<TSTLVecSize>(n);
@@ -1041,6 +1043,50 @@ int CMain::LuaGetElfSym(lua_State *L)
     lua_setfield(L, tab, "version");
     lua_pushboolean(L, sym.undefined);
     lua_setfield(L, tab, "undefined");
+    
+    return 1;
+}
+
+int CMain::LuaGetElfSymVerDef(lua_State *L)
+{
+    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    int n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
+    
+    if ((n < 0) || (n >= static_cast<int>(elfw->GetSymVerDefSize())))
+        return 0;
+    
+    TSTLVecSize index = SafeConvert<TSTLVecSize>(n);
+    
+    lua_newtable(L);
+    int tab = lua_gettop(L);
+    
+    CElfSymbolWrapper::SVerSymData sym = elfw->GetSymVerDef(index);
+    lua_pushstring(L, sym.name.c_str());
+    lua_setfield(L, tab, "name");
+    lua_pushstring(L, sym.flags.c_str());
+    lua_setfield(L, tab, "flags");
+    
+    return 1;
+}
+
+int CMain::LuaGetElfSymVerNeed(lua_State *L)
+{
+    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    int n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
+    
+    if ((n < 0) || (n >= static_cast<int>(elfw->GetSymVerNeedSize())))
+        return 0;
+    
+    TSTLVecSize index = SafeConvert<TSTLVecSize>(n);
+    
+    lua_newtable(L);
+    int tab = lua_gettop(L);
+    
+    CElfSymbolWrapper::SVerSymData sym = elfw->GetSymVerNeed(index);
+    lua_pushstring(L, sym.name.c_str());
+    lua_setfield(L, tab, "name");
+    lua_pushstring(L, sym.flags.c_str());
+    lua_setfield(L, tab, "flags");
     
     return 1;
 }

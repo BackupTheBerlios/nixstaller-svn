@@ -26,7 +26,7 @@ OVERALL
     - Mention credits, copyrights etc
     - Lua GC'ing with a fixed amount of elf classes
     - Check weak symbol versions
-    
+    - Verify interface versions
 
 PACKAGING
 - More config options:

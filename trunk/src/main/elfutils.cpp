@@ -155,19 +155,22 @@ void CElfSymbolWrapper::ReadVerDef(Elf_Scn *section)
                 break;
             
             int auxoffset = offset + def->vd_aux;
-            for (unsigned j=0; j</*def->vd_cnt*/1; j++)
+            GElf_Verdaux *aux = gelf_getverdaux(data, auxoffset);
+            if (aux)
             {
-                GElf_Verdaux *aux = gelf_getverdaux(data, auxoffset);
-                if (!aux)
-                    break;
-    
                 char *s = elf_strptr(m_pElf, shdr.sh_link, aux->vda_name);
                 if (!s)
                     break;
                 
-                m_SymVerDef[def->vd_ndx] = s;
+                m_SymVerDefMap[def->vd_ndx] = s;
+                
+                const char *f = "";
+                if (def->vd_flags & VER_FLG_BASE)
+                    f = "BASE";
+                else if (def->vd_flags & VER_FLG_WEAK)
+                    f = "WEAK";
 
-                auxoffset += aux->vda_next;
+                m_SymVerDef.push_back(SVerSymData(s, f));
             }
             offset += def->vd_next;
         }
@@ -201,9 +204,15 @@ void CElfSymbolWrapper::ReadVerNeed(Elf_Scn *section)
                 if (!s)
                     break;
                 
-                // Skip GLIBC_PRIVATE (UNDONE)
-//                 if (strcmp(s, "GLIBC_PRIVATE"))
-                m_SymVerNeed[aux->vna_other] = s;
+                m_SymVerNeedMap[aux->vna_other] = s;
+                
+                const char *f = "";
+                if (aux->vna_flags & VER_FLG_BASE)
+                    f = "BASE";
+                else if (aux->vna_flags & VER_FLG_WEAK)
+                    f = "WEAK";
+
+                m_SymVerNeed.push_back(SVerSymData(s, f));
 
                 auxoffset += aux->vna_next;
             }
@@ -231,28 +240,12 @@ void CElfSymbolWrapper::MapVersions(Elf_Scn *section)
             assert(m_Symbols[i].version.empty());
             
             if (m_Symbols.at(i).undefined)
-                m_Symbols[i*x].version = m_SymVerNeed[*sym];
+                m_Symbols[i*x].version = m_SymVerNeedMap[*sym];
             else
-                m_Symbols[i*x].version = m_SymVerDef[*sym];
+                m_Symbols[i*x].version = m_SymVerDefMap[*sym];
             
             offset += shdr.sh_entsize;
         }
         x++;
     }
 }
-
-void CElfSymbolWrapper::GetSymDefs(std::vector<std::string> &l) const
-{
-    for (TSymverMap::iterator it=m_SymVerDef.begin(); it!=m_SymVerDef.end(); it++)
-    {
-        if (it != m_SymVerDef.begin()) // Ignore first symbol (references to itself)
-            l.push_back(it->second);
-    }
-}
-
-void CElfSymbolWrapper::GetSymNeeds(std::vector<std::string> &l) const
-{
-    for (TSymverMap::iterator it=m_SymVerNeed.begin(); it!=m_SymVerNeed.end(); it++)
-        l.push_back(it->second);
-}
-

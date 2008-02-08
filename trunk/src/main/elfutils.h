@@ -31,6 +31,12 @@ public:
         SSymData(const std::string &n, const std::string &b,
                  bool u) : name(n), binding(b), undefined(u) {}
     };
+    
+    struct SVerSymData
+    {
+        std::string name, flags;
+        SVerSymData(const std::string &n, const std::string &f) : name(n), flags(f) { }
+    };
 
 private:
     Elf *m_pElf;
@@ -38,9 +44,11 @@ private:
     
     typedef std::vector<SSymData> TSymVec;
     typedef std::map<int, std::string> TSymverMap;
+    typedef std::vector<SVerSymData> TSymverVec;
     
     TSymVec m_Symbols;
-    TSymverMap m_SymVerDef, m_SymVerNeed;
+    TSymverMap m_SymVerDefMap, m_SymVerNeedMap;
+    TSymverVec m_SymVerDef, m_SymVerNeed;
     
     void ReadSymbols(Elf_Scn *section);
     void ReadVerDef(Elf_Scn *section);
@@ -54,6 +62,9 @@ public:
     const SSymData &GetSym(TSTLVecSize n) { return m_Symbols.at(n); }
     TSTLVecSize GetSymSize(void) const { return m_Symbols.size(); }
     
-    void GetSymDefs(std::vector<std::string> &l) const;
-    void GetSymNeeds(std::vector<std::string> &l) const;
+    const SVerSymData &GetSymVerDef(TSTLVecSize n) { return m_SymVerDef.at(n); }
+    TSTLVecSize GetSymVerDefSize(void) const { return m_SymVerDef.size(); }
+
+    const SVerSymData &GetSymVerNeed(TSTLVecSize n) { return m_SymVerNeed.at(n); }
+    TSTLVecSize GetSymVerNeedSize(void) const { return m_SymVerNeed.size(); }
 };
