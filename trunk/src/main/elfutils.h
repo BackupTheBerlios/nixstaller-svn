@@ -21,7 +21,7 @@
 #include <libelf/libelf.h>
 #include <libelf/gelf.h>
 
-class CElfSymbolWrapper
+class CElfWrapper
 {
 public:
     struct SSymData
@@ -47,20 +47,23 @@ private:
     typedef std::map<int, std::string> TSymverMap;
     typedef std::vector<std::string> TSymverDefVec;
     typedef std::vector<SVerSymNeedData> TSymverNeedVec;
+    typedef std::vector<std::string> TNeededLibs;
     
     TSymVec m_Symbols;
     TSymverMap m_SymVerDefMap, m_SymVerNeedMap;
     TSymverDefVec m_SymVerDef;
     TSymverNeedVec m_SymVerNeed;
+    TNeededLibs m_NeededLibs;
     
     void ReadSymbols(Elf_Scn *section);
     void ReadVerDef(Elf_Scn *section);
     void ReadVerNeed(Elf_Scn *section);
     void MapVersions(Elf_Scn *section);
+    void ReadNeededLibs(Elf_Scn *section);
     
 public:
-    CElfSymbolWrapper(const std::string &file);
-    ~CElfSymbolWrapper(void) { Close(); }
+    CElfWrapper(const std::string &file);
+    ~CElfWrapper(void) { Close(); }
     
     const SSymData &GetSym(TSTLVecSize n) { return m_Symbols.at(n); }
     TSTLVecSize GetSymSize(void) const { return m_Symbols.size(); }
@@ -71,5 +74,8 @@ public:
     const SVerSymNeedData &GetSymVerNeed(TSTLVecSize n) { return m_SymVerNeed.at(n); }
     TSTLVecSize GetSymVerNeedSize(void) const { return m_SymVerNeed.size(); }
     
+    const std::string &GetNeeded(TSTLVecSize n) { return m_NeededLibs.at(n); }
+    TSTLVecSize GetNeededSize(void) const { return m_NeededLibs.size(); }
+
     void Close(void) { if (m_pElf) elf_end(m_pElf); if (m_iFD) close(m_iFD); }
 };

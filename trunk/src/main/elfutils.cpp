@@ -57,7 +57,7 @@ GElf_Half *gelf_getversym(Elf_Data *data, int offset)
 // Frontend class for symbols using libelf/gelf
 // -------------------------------------
 
-CElfSymbolWrapper::CElfSymbolWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
+CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
 {
     if (elf_version(EV_CURRENT) == EV_NONE)
         throw Exceptions::CExElf("Elf library out of date.");
@@ -94,13 +94,20 @@ CElfSymbolWrapper::CElfSymbolWrapper(const std::string &file) : m_pElf(NULL), m_
             case SHT_GNU_versym:
                 versym = section;
                 break;
+            case SHT_DYNAMIC:
+                ReadNeededLibs(section);
+                break;
         }
     }
     
-    ReadSymbols(sym);
-    ReadVerDef(verdef);
-    ReadVerNeed(verneed);
-    MapVersions(versym);
+    if (sym)
+        ReadSymbols(sym);
+    if (verdef)
+        ReadVerDef(verdef);
+    if (verneed)
+        ReadVerNeed(verneed);
+    if (versym)
+        MapVersions(versym);
     
     elf_end(m_pElf);
     close(m_iFD);
@@ -108,7 +115,7 @@ CElfSymbolWrapper::CElfSymbolWrapper(const std::string &file) : m_pElf(NULL), m_
     m_iFD = 0;
 }
 
-void CElfSymbolWrapper::ReadSymbols(Elf_Scn *section)
+void CElfWrapper::ReadSymbols(Elf_Scn *section)
 {
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
@@ -139,7 +146,7 @@ void CElfSymbolWrapper::ReadSymbols(Elf_Scn *section)
     }
 }
 
-void CElfSymbolWrapper::ReadVerDef(Elf_Scn *section)
+void CElfWrapper::ReadVerDef(Elf_Scn *section)
 {
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
@@ -170,7 +177,7 @@ void CElfSymbolWrapper::ReadVerDef(Elf_Scn *section)
     }
 }
 
-void CElfSymbolWrapper::ReadVerNeed(Elf_Scn *section)
+void CElfWrapper::ReadVerNeed(Elf_Scn *section)
 {
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
@@ -219,7 +226,7 @@ void CElfSymbolWrapper::ReadVerNeed(Elf_Scn *section)
     }
 }
 
-void CElfSymbolWrapper::MapVersions(Elf_Scn *section)
+void CElfWrapper::MapVersions(Elf_Scn *section)
 {
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
@@ -245,5 +252,35 @@ void CElfSymbolWrapper::MapVersions(Elf_Scn *section)
             offset += shdr.sh_entsize;
         }
         x++;
+    }
+}
+
+void CElfWrapper::ReadNeededLibs(Elf_Scn *section)
+{
+    Elf_Data *data = NULL;
+    GElf_Shdr shdr;
+    gelf_getshdr(section, &shdr);
+
+    while ((data = elf_getdata (section, data)) != NULL)
+    {
+        int count = shdr.sh_size / shdr.sh_entsize, offset = 0;
+        for (int i=0; i<count; i++)
+        {
+            // gelf_getdyn doesn't seem to work (always returns NULL)
+            GElf_Dyn *dyn = (GElf_Dyn *) ((char *) data->d_buf + offset);
+            if (!dyn)
+                break;
+
+            if (dyn->d_tag == DT_NEEDED)
+            {
+                char *s = elf_strptr(m_pElf, shdr.sh_link, dyn->d_un.d_val);
+                
+                if (!s)
+                    break;
+                
+                m_NeededLibs.push_back(s);
+            }
+            offset += shdr.sh_entsize;
+        }
     }
 }

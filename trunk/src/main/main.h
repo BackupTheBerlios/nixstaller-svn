@@ -182,6 +182,7 @@ public:
     static int LuaGetElfSym(lua_State *L);
     static int LuaGetElfSymVerDef(lua_State *L);
     static int LuaGetElfSymVerNeed(lua_State *L);
+    static int LuaGetElfNeeded(lua_State *L);
     static int LuaCloseElf(lua_State *L);
     static int LuaElfGC(lua_State *L);
     static int LuaPanic(lua_State *L);

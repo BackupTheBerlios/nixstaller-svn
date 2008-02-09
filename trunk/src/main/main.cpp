@@ -436,6 +436,7 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaGetElfSym, "getsym", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfSymVerDef, "getsymdef", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfSymVerNeed, "getsymneed", "elfclass");
+    NLua::RegisterClassFunction(LuaGetElfNeeded, "getneeded", "elfclass");
     NLua::RegisterClassFunction(LuaCloseElf, "close", "elfclass");
 
     // Set some default values for config variabeles
@@ -1005,10 +1006,10 @@ int CMain::LuaTr(lua_State *L)
 
 int CMain::LuaOpenElf(lua_State *L)
 {
-    CElfSymbolWrapper *elfw = NULL;
+    CElfWrapper *elfw = NULL;
     try
     {
-        elfw = new CElfSymbolWrapper(luaL_checkstring(L, 1));
+        elfw = new CElfWrapper(luaL_checkstring(L, 1));
     }
     catch (Exceptions::CExElf &e)
     {
@@ -1024,7 +1025,7 @@ int CMain::LuaOpenElf(lua_State *L)
 
 int CMain::LuaGetElfSym(lua_State *L)
 {
-    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
     int n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
     
     if ((n < 0) || (n >= static_cast<int>(elfw->GetSymSize())))
@@ -1035,7 +1036,7 @@ int CMain::LuaGetElfSym(lua_State *L)
     lua_newtable(L);
     int tab = lua_gettop(L);
     
-    CElfSymbolWrapper::SSymData sym = elfw->GetSym(index);
+    CElfWrapper::SSymData sym = elfw->GetSym(index);
     lua_pushstring(L, sym.name.c_str());
     lua_setfield(L, tab, "name");
     lua_pushstring(L, sym.binding.c_str());
@@ -1050,7 +1051,7 @@ int CMain::LuaGetElfSym(lua_State *L)
 
 int CMain::LuaGetElfSymVerDef(lua_State *L)
 {
-    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
     int n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
     
     if ((n < 0) || (n >= static_cast<int>(elfw->GetSymVerDefSize())))
@@ -1065,7 +1066,7 @@ int CMain::LuaGetElfSymVerDef(lua_State *L)
 
 int CMain::LuaGetElfSymVerNeed(lua_State *L)
 {
-    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
     int n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
     
     if ((n < 0) || (n >= static_cast<int>(elfw->GetSymVerNeedSize())))
@@ -1076,7 +1077,7 @@ int CMain::LuaGetElfSymVerNeed(lua_State *L)
     lua_newtable(L);
     int tab = lua_gettop(L);
     
-    CElfSymbolWrapper::SVerSymNeedData sym = elfw->GetSymVerNeed(index);
+    CElfWrapper::SVerSymNeedData sym = elfw->GetSymVerNeed(index);
     lua_pushstring(L, sym.name.c_str());
     lua_setfield(L, tab, "name");
     lua_pushstring(L, sym.flags.c_str());
@@ -1087,9 +1088,24 @@ int CMain::LuaGetElfSymVerNeed(lua_State *L)
     return 1;
 }
 
+int CMain::LuaGetElfNeeded(lua_State *L)
+{
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
+    int n = luaL_checkint(L, 2) - 1; // Convert to 0 - size-1 range
+    
+    if ((n < 0) || (n >= static_cast<int>(elfw->GetNeededSize())))
+        return 0;
+    
+    TSTLVecSize index = SafeConvert<TSTLVecSize>(n);
+    
+    lua_pushstring(L, elfw->GetNeeded(index).c_str());
+    
+    return 1;
+}
+
 int CMain::LuaCloseElf(lua_State *L)
 {
-    CElfSymbolWrapper *elfw = NLua::CheckClassData<CElfSymbolWrapper>("elfclass", 1);
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
     NLua::DeleteClass(elfw, "elfclass");
     delete elfw;
     return 0;
