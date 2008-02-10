@@ -263,11 +263,12 @@ void CElfWrapper::ReadNeededLibs(Elf_Scn *section)
 
     while ((data = elf_getdata (section, data)) != NULL)
     {
-        int count = shdr.sh_size / shdr.sh_entsize, offset = 0;
+        int count = shdr.sh_size / shdr.sh_entsize;
         for (int i=0; i<count; i++)
         {
-            // gelf_getdyn doesn't seem to work (always returns NULL)
-            GElf_Dyn *dyn = (GElf_Dyn *) ((char *) data->d_buf + offset);
+            GElf_Dyn *dyn, sdyn;
+            dyn = gelf_getdyn(data, i, &sdyn);
+
             if (!dyn)
                 break;
 
@@ -280,7 +281,6 @@ void CElfWrapper::ReadNeededLibs(Elf_Scn *section)
                 
                 m_NeededLibs.push_back(s);
             }
-            offset += shdr.sh_entsize;
         }
     }
 }
