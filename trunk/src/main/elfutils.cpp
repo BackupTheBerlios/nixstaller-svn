@@ -95,7 +95,7 @@ CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
                 versym = section;
                 break;
             case SHT_DYNAMIC:
-                ReadNeededLibs(section);
+                ReadDyn(section);
                 break;
         }
     }
@@ -255,7 +255,7 @@ void CElfWrapper::MapVersions(Elf_Scn *section)
     }
 }
 
-void CElfWrapper::ReadNeededLibs(Elf_Scn *section)
+void CElfWrapper::ReadDyn(Elf_Scn *section)
 {
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
@@ -280,6 +280,16 @@ void CElfWrapper::ReadNeededLibs(Elf_Scn *section)
                     break;
                 
                 m_NeededLibs.push_back(s);
+            }
+            else if ((dyn->d_tag == DT_RPATH) || (dyn->d_tag == DT_RUNPATH))
+            {
+                char *s = elf_strptr(m_pElf, shdr.sh_link, dyn->d_un.d_val);
+                if (s)
+                {
+                    if (!m_RPath.empty())
+                        m_RPath += ":";
+                    m_RPath += s;
+                }
             }
         }
     }

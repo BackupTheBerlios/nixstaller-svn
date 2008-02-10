@@ -54,12 +54,13 @@ private:
     TSymverDefVec m_SymVerDef;
     TSymverNeedVec m_SymVerNeed;
     TNeededLibs m_NeededLibs;
+    std::string m_RPath;
     
     void ReadSymbols(Elf_Scn *section);
     void ReadVerDef(Elf_Scn *section);
     void ReadVerNeed(Elf_Scn *section);
     void MapVersions(Elf_Scn *section);
-    void ReadNeededLibs(Elf_Scn *section);
+    void ReadDyn(Elf_Scn *section);
     
 public:
     CElfWrapper(const std::string &file);
@@ -76,6 +77,8 @@ public:
     
     const std::string &GetNeeded(TSTLVecSize n) { return m_NeededLibs.at(n); }
     TSTLVecSize GetNeededSize(void) const { return m_NeededLibs.size(); }
+    
+    const std::string &GetRPath(void) { return m_RPath; }
 
     void Close(void) { if (m_pElf) elf_end(m_pElf); if (m_iFD) close(m_iFD); }
 };

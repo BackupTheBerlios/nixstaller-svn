@@ -437,6 +437,7 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaGetElfSymVerDef, "getsymdef", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfSymVerNeed, "getsymneed", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfNeeded, "getneeded", "elfclass");
+    NLua::RegisterClassFunction(LuaGetElfRPath, "getrpath", "elfclass");
     NLua::RegisterClassFunction(LuaCloseElf, "close", "elfclass");
 
     // Set some default values for config variabeles
@@ -1100,6 +1101,13 @@ int CMain::LuaGetElfNeeded(lua_State *L)
     
     lua_pushstring(L, elfw->GetNeeded(index).c_str());
     
+    return 1;
+}
+
+int CMain::LuaGetElfRPath(lua_State *L)
+{
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
+    lua_pushstring(L, elfw->GetRPath().c_str());
     return 1;
 }
 
