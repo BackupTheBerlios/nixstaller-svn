@@ -472,7 +472,7 @@ inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
 libc_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['.', inc_dir, 'include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch, 'include/'+cur_os, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
+env.Append(CPPPATH=['.', inc_dir, 'include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch, 'include/'+cur_os, 'include/libelf/'+cur_os+'/'+cur_arch, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
 # Current version
 curnixstversion = '0.4'
