@@ -44,6 +44,7 @@ class QBoxLayout;
 class QGridLayout;
 class QPushButton;
 class Ui_TextEditW;
+class CVarOutput;
 
 class BThread;
 
@@ -73,6 +74,7 @@ private slots:
     void openFinish();
     void saveConfig();
     void saveRun();
+    void savePackage();
     void generateRun();
     void insertTemplate();
     void openIntroPic();
@@ -97,6 +99,7 @@ private:
     void addTextTabs();
     void addConfigTab();
     void addRunTab();
+    void addPackagesTab();
     void readSettings();
     void writeSettings();
     QString strippedName(const QString &fullFileName);
@@ -157,6 +160,8 @@ private:
     QCheckBox *ct_feNcurses;
     QCheckBox *ct_feFltk;
     QCheckBox *ct_feGtk;
+    QCheckBox *ct_archx86;
+    QCheckBox *ct_archx86_64;
     QLineEdit *ct_img;
 
     // Run tab
@@ -170,6 +175,10 @@ private:
     QAction *rt_itia;
     QAction *rt_itra;
     QAction *rt_iimg;
+
+    // Packages Tab
+    QTextEdit *pt_textedit;
+    CVarOutput *varout;
 };
 
 #endif

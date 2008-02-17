@@ -16,5 +16,6 @@
     <file>cr32-action-up.png</file>
     <file>cr32-action-add.png</file>
     <file>cr32-action-remove.png</file>
+    <file>ark_addfile.png</file>
 </qresource>
 </RCC>

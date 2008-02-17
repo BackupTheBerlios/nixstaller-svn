@@ -20,7 +20,7 @@
 
 #include <string>
 #include <map>
-
+#include <iostream>
 
 using namespace std;
 
@@ -48,9 +48,32 @@ using namespace std;
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QScrollArea>
 
 #include "sdialog.h"
 #include "rungen.h"
+#include "cvaroutput.h"
+
+var_s pkgvars[] = {
+{ "pkg.enable", "Enable package building", VT_BOOLEAN, "false", 0 },
+{ "pkg.name", "Package name", VT_STRING, "", 0 },
+{ "pkg.version", "Package version", VT_STRING, "1.0", 0 },
+{ "pkg.release", "Package release", VT_STRING, "1", 0 },
+{ "pkg.maintainer", "Package Maintainer", VT_STRING, "You <you@you.com>", 0},
+{ "pkg.url", "URL", VT_STRING, "http://", 0},
+{ "pkg.bins", "Package Binaries", VT_LIST, "", 0},
+{ "pkg.license", "Software License", VT_STRING, "GPLv2", 0},
+{ "pkg.description", "Description", VT_MULTILINE, "Nixstaller generated package", 0},
+{ "pkg.summary", "Summary", VT_STRING, "Nixstaller generated package", 0},
+{ "pkg.group", "Package Group", VT_STRING, "File", 0},
+{ "pkg.destdir", "Destination DIrectory", VT_STRING, "/usr/local/share", 0},
+{ "pkg.bindir", "Binary Directory", VT_STRING, "/usr/local/bin", 0},
+{ "pkg.register", "Register", VT_BOOLEAN, "true", 0},
+{ "pkg.setkdeenv", "Set KDE environment", VT_BOOLEAN, "false", 0},
+{ "pkg.addbinopts", "App run parameters", VT_FUNC2, "Bin,Arg", 0},
+{ "pkg.binenv", "Binary Environment", VT_FUNC2, "Var,Value", 0 },
+{ 0, 0, VT_NULL, 0 }
+};
 
 map<QString, int> iimap;
 
@@ -96,6 +119,7 @@ nixstbuild::nixstbuild()
     addFileTab();
     addConfigTab();
     addRunTab();
+    addPackagesTab();
     addTextTabs();
 
     createActions();
@@ -159,6 +183,9 @@ bool nixstbuild::save()
     }
 
     settings.setValue("dir", qd->absolutePath());
+
+    saveConfig();
+    saveRun();
 
     consoleView = new QTextEdit();
     consoleView->setReadOnly(true);
@@ -299,6 +326,7 @@ void nixstbuild::addFileTab()
     ft_arch = new QComboBox(ft_parent);
     ft_arch->insertItem(0, "all");
     ft_arch->insertItem(1, "x86");
+    ft_arch->insertItem(2, "x86_64");
 
     ft_os = new QComboBox(ft_parent);
     ft_os->insertItem(0, "all");
@@ -327,6 +355,16 @@ void nixstbuild::addFileTab()
 
     connect(ft_addfile, SIGNAL(clicked()), this, SLOT(ft_addFile()));
     connect(ft_adddir, SIGNAL(clicked()), this, SLOT(ft_addDir()));
+}
+
+void nixstbuild::addPackagesTab()
+{
+    varout = new CVarOutput;
+    varout->init(pkgvars);
+    QScrollArea *scrolla = new QScrollArea;
+    scrolla->setWidget(varout->getLayout());
+    tabs->addTab(scrolla, QIcon(":/ark_addfile.png"), "Packaging");
+    connect(varout->getSaveButton(), SIGNAL(clicked()), this, SLOT(savePackage()));
 }
 
 void nixstbuild::addTextTabs()
@@ -387,14 +425,21 @@ void nixstbuild::addConfigTab()
     ct_layout->addWidget(new QLabel("Frontends:"), 4, 0);
     ct_layout->addLayout(ct_hlayout, 4, 1);
 
+    ct_layout->addWidget(new QLabel("Target architectures"), 5, 0);
     QHBoxLayout *ct_hlayout2 = new QHBoxLayout;
-    ct_layout->addWidget(new QLabel("Intro picture:"), 5, 0);
+    ct_hlayout2->addWidget(ct_archx86 = new QCheckBox("x86"));
+    ct_archx86->setChecked(true);
+    ct_hlayout2->addWidget(ct_archx86_64 = new QCheckBox("x86_64"));
+    ct_layout->addLayout(ct_hlayout2, 5, 1);
+
+    QHBoxLayout *ct_hlayout3 = new QHBoxLayout;
+    ct_layout->addWidget(new QLabel("Intro picture:"), 6, 0);
     ct_img = new QLineEdit;
     QPushButton *ct_oip = new QPushButton(QIcon(":/cr32-mime-image.png"), "", 0);
     connect(ct_oip, SIGNAL(clicked()), this, SLOT(openIntroPic()));
-    ct_hlayout2->addWidget(ct_img);
-    ct_hlayout2->addWidget(ct_oip);
-    ct_layout->addLayout(ct_hlayout2, 5, 1);
+    ct_hlayout3->addWidget(ct_img);
+    ct_hlayout3->addWidget(ct_oip);
+    ct_layout->addLayout(ct_hlayout3, 6, 1);
 
     ct_layout->setAlignment(Qt::AlignTop);
 
@@ -439,8 +484,8 @@ void nixstbuild::fvDeleteFile()
 {
     QString fpath = qdmodel->filePath(folderview->currentIndex());
     string cmd("rm -rf ");
-    cmd += fpath.toStdString();
     system(cmd.c_str());
+    qd->cd("/tmp/.nbtemp/");
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
 
@@ -462,7 +507,7 @@ void nixstbuild::ft_addFile()
         QFile::copy(files[i], qd->absolutePath()+"/"+strippedName(files[i]));
     }
 
-    qd->cdUp();
+    qd->cd("/tmp/.nbtemp/");
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
 
@@ -482,7 +527,7 @@ void nixstbuild::ft_addDir()
 
     QString cmd = "cp -r " + dir +" "+ qd->absolutePath();
     system(cmd.toStdString().c_str());
-    qd->cdUp();
+    qd->cd("/tmp/.nbtemp/");
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
 
@@ -577,11 +622,24 @@ void nixstbuild::saveConfig()
             out << ", ";
         out << "\"fltk\"";
     } 
-    if (ct_feFltk->checkState()==Qt::Checked)
+    if (ct_feGtk->checkState()==Qt::Checked)
     {
         if ((ct_feNcurses->checkState()==Qt::Checked) | (ct_feFltk->checkState()==Qt::Checked))
             out << ", ";
         out << "\"gtk\"";
+    }
+    out << " }\n";
+
+    out << "cfg.targetarch = { ";
+    if (ct_archx86->checkState()==Qt::Checked)
+    {
+        out << "\"x86\"";
+    }
+    if (ct_archx86_64->checkState()==Qt::Checked)
+    {
+        if (ct_archx86->checkState()==Qt::Checked)
+            out << ", ";
+        out << "\"x86_64\"";
     }
     out << " }\n";
 
@@ -605,6 +663,16 @@ void nixstbuild::saveRun()
     out << rt_textedit->toPlainText();
 
     statusBar()->showMessage("Run script saved", 5000);
+    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+}
+
+void nixstbuild::savePackage()
+{
+    QFile cfile(qd->absolutePath()+"/package.lua");
+    cfile.open(QFile::WriteOnly | QFile::Text);
+
+    QTextStream out(&cfile);
+    out << QString(varout->getScript().c_str());
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
 
