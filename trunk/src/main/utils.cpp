@@ -443,7 +443,7 @@ void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd)
     suhandler.SetCommand("mkdir -p " + dir);
     
     if (!suhandler.ExecuteCommand(passwd))
-        throw Exceptions::CExRootMKDir(dir.c_str());
+        throw Exceptions::CExRootMKDir(MakeCString(dir));
 }
 
 void UName(struct utsname &u)

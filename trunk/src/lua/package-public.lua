@@ -15,17 +15,6 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
-function pkg.addbinenv(var, val, bin)
-    bin = bin or "All"
-    pkg.binenv = pkg.binenv or {}
-    pkg.binenv[var] = pkg.binenv[var] or {}
-    pkg.binenv[var][bin] = val
-end
-
-function pkg.addbinopts(bin, opts)
-    pkg.binopts = pkg.binopts or {}
-    pkg.binopts[bin] = opts
-end
 
 function pkg.getdatadir(f)
     return pkg.destdir .. "/" .. pkg.name .. ((f and ("/" .. f)) or "")

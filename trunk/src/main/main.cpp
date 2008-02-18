@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
     PrintIntro();
 
-    LIBSU::SetRunnerPath(dirname(CreateText(argv[0])) + std::string("/../"));
+    LIBSU::SetRunnerPath(dirname(CreateText(argv[0])));
     
     g_RunScript = ((argc >= 5) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
     
@@ -541,7 +541,6 @@ int CMain::LuaDirIter(lua_State *L)
 
 int CMain::LuaDirIterGC(lua_State *L)
 {
-    debugline("LuaDirIterGC\n");
     CDirIter *d = *(CDirIter **)lua_touserdata(L, 1);
     delete d;
     m_iLuaDirIterCount--;

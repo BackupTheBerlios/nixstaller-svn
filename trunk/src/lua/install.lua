@@ -17,7 +17,7 @@
 
 dofile("utils.lua")
 dofile("package.lua")
-dofile("utils-public.lua")
+dofile("shared/utils-public.lua")
 
 do
     local oldf = install.newscreen

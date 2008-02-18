@@ -20,7 +20,10 @@ OLDG = getfenv(1)
 local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
-    
+
+dofile(maindir .. "/src/lua/shared/utils-public.lua")
+dofile(maindir .. "/src/lua/shared/package-public.lua")
+
 function Clean()
     if (os.fileexists(confdir .. "/tmp")) then
         local newdirlist = { confdir .. "/tmp" }
@@ -228,12 +231,49 @@ function TraverseBinLibDir(bindir, lib)
     end
 end
 
-function VerifyPackage()
+function GetFileDirs(basedir)
+    -- Platform indepent files
+    local ret = { }
+    local dir = string.format("%s/files_all", basedir)
+    
+    if os.isdir(dir) then
+        table.insert(ret, dir)
+    end
+    
+    -- CPU dependent files
+    for _, ARCH in pairs(cfg.targetarch) do
+        dir = string.format("%s/files_all_%s", basedir, ARCH) 
+        if os.isdir(dir) then
+            table.insert(ret, dir)
+        end
+    end
+    
+    for _, OS in pairs(cfg.targetos) do
+        -- OS dependent files
+        dir = string.format("%s/files_%s_all", basedir, OS) 
+        if os.isdir(dir) then
+            table.insert(ret, dir)
+        end
+        
+        -- OS/ARCH dependent files
+        for _, ARCH in pairs(cfg.targetarch) do
+            dir = string.format("%s/files_%s_%s", basedir, OS, ARCH) 
+            if os.isdir(dir) then
+                table.insert(ret, dir)
+            end
+        end
+    end
+    
+    return ret
+end
+
+function LoadPackage()
     if not os.fileexists(confdir .. "/package.lua") then
         return
     end
     
     -- These functions may be needed in the config package.lua, but are defined only at install
+    -- UNDONE: Still needed?
     function pkg.addbinenv() end
     function pkg.addbinopts() end
     
@@ -271,7 +311,7 @@ function Init()
     end
     
     dofile(confdir .. "/config.lua")
-    VerifyPackage()
+    LoadPackage()
     
     -- Find a LZMA and edelta bin which we can use
     local basebindir = string.format("%s/bin/%s/%s", maindir, os.osname, os.arch)
@@ -346,17 +386,21 @@ function PrepareArchive()
     RequiredCopy(maindir .. "/src/internal/about", confdir .. "/tmp")
     
     -- Lua scripts
+    os.mkdirrec(confdir .. "/tmp/shared")
+    RequiredCopy(maindir .. "/src/lua/deps.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/deps-public.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/install.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/package.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/package-public.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/utils.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/utils-public.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/pkg/groups.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/pkg/rpm.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/pkg/slack.lua", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/lua/shared/package-public.lua", confdir .. "/tmp/shared")
+    RequiredCopy(maindir .. "/src/lua/shared/utils-public.lua", confdir .. "/tmp/shared")
     RequiredCopy(maindir .. "/src/lua/screens/finishscreen.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/screens/installscreen.lua", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/lua/screens/langscreen.lua", confdir .. "/tmp")
@@ -500,6 +544,22 @@ function PrepareArchive()
                 
     inffile:write(cfg.archivetype)
     inffile:close()
+    
+    -- Add deps
+    if pkg.deps then
+        for _, d in ipairs(pkg.deps) do
+            local src = string.format("%s/deps/%s", confdir, d)
+            local dest = string.format("%s/tmp/deps/%s", confdir, d)
+            
+            os.mkdirrec(dest)
+            RequiredCopy(string.format("%s/config.lua", src), dest)
+            
+            local dirs = GetFileDirs(src)
+            for _, d in ipairs(dirs) do
+                PackDirectory(d, string.format("%s/%s", dest, utils.basename(d)))
+            end
+        end
+    end
 end
 
 function CreateArchive()
@@ -508,34 +568,10 @@ function CreateArchive()
 
     print("Generating archive...")
     
-    -- Platform indepent files
-    archdir = confdir .. "/files_all"
-    if os.isdir(archdir) then
-        PackDirectory(archdir, string.format("%s/tmp/%s_all", confdir, basename))
-    end
+    local dirs = GetFileDirs(confdir)
     
-    -- CPU dependent files
-    for _, ARCH in pairs(cfg.targetarch) do
-        archdir = string.format("%s/files_all_%s", confdir, ARCH) 
-        if os.isdir(archdir) then
-            PackDirectory(archdir, string.format("%s/tmp/%s_all_%s", confdir, basename, ARCH))
-        end
-    end
-    
-    for _, OS in pairs(cfg.targetos) do
-        -- OS dependent files
-        archdir = string.format("%s/files_%s_all", confdir, OS) 
-        if os.isdir(archdir) then
-            PackDirectory(archdir, string.format("%s/tmp/%s_%s_all", confdir, basename, OS))
-        end
-        
-        -- OS/ARCH dependent files
-        for _, ARCH in pairs(cfg.targetarch) do
-            archdir = string.format("%s/files_%s_%s", confdir, OS, ARCH) 
-            if os.isdir(archdir) then
-                PackDirectory(archdir, string.format("%s/tmp/%s_%s_%s", confdir, basename, OS, ARCH))
-            end
-        end
+    for _, d in ipairs(dirs) do
+        PackDirectory(d, string.format("%s/tmp/%s", confdir, string.gsub(utils.basename(d), "files", basename)))
     end
 end
 

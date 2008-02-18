@@ -112,9 +112,18 @@ end
 pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 
 dofile("package-public.lua")
+dofile("shared/package-public.lua")
 
 if os.fileexists("config/package.lua") then
     dofile("config/package.lua")
+end
+
+dofile("deps.lua")
+
+-- Init deps
+pkg.depmap = { }
+for _, d in ipairs(pkg.deps) do
+    pkg.depmap[d] = dofile(string.format("deps/%s/config.lua", d))
 end
 
 -- Defaults
