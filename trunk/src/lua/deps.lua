@@ -16,7 +16,24 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-depclass = { __index = depclass }
+depclass = { }
+depclass.__index = depclass
+
+function depclass:CopyFiles()
+    utils.recursivedir(pkg.getdepdir(self), function (f, rf)
+        local dest = string.format("%s/%s", install.getpkgdir(), rf)
+        if os.isdir(f) then
+            check(os.mkdirrec(dest))
+        else
+            check(os.copy(f, dest))
+        end
+    end)
+end
+
+function depclass:Install()
+    self:CopyFiles()
+end
+
 -- UNDONE
 
 function getmissinglibs(bin)
@@ -145,7 +162,7 @@ function extractdeps()
             elseif cfg.archivetype == "bzip2" then
                 extrcmd = string.format("cat %s | bzip -d | tar -C %s -xvf -", f, dest)
             else
-                extrcmd = string.format("(%s/lzma-decode %s dep.tar >/dev/null 2>&1 && tar -C %s -xvf dep.tar)", bindir, f, dest)
+                extrcmd = string.format("(%s/lzma-decode %s dep.tar >/dev/null 2>&1 && tar -C %s -xvf dep.tar && rm -f dep.tar)", bindir, f, dest)
             end
             
             install.execute(extrcmd)
@@ -155,12 +172,15 @@ end
 
 function checkdeps(bins, bdir, deps)
     local ret = { }
-    for _, b in ipairs(bins) do
-        local path = string.format("%s/%s", bdir, b)
-        libs = getmissinglibs(path) -- Collect any dep libs which are not found
-        for rd in pairs(getdepsfromlibs(libs)) do -- Check which deps provide missing libs
-            if not ret[rd] then
-                ret[rd] = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps) or { }
+    
+    if bins then
+        for _, b in ipairs(bins) do
+            local path = string.format("%s/%s", bdir, b)
+            libs = getmissinglibs(path) -- Collect any dep libs which are not found
+            for rd in pairs(getdepsfromlibs(libs)) do -- Check which deps provide missing libs
+                if not ret[rd] then
+                    ret[rd] = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps) or { }
+                end
             end
         end
     end
@@ -175,4 +195,5 @@ function checkdeps(bins, bdir, deps)
     return ret
 end
 
+    
 dofile("deps-public.lua")

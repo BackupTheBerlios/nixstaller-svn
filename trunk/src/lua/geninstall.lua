@@ -545,18 +545,20 @@ function PrepareArchive()
     inffile:write(cfg.archivetype)
     inffile:close()
     
-    -- Add deps
-    if pkg.deps then
-        for _, d in ipairs(pkg.deps) do
-            local src = string.format("%s/deps/%s", confdir, d)
-            local dest = string.format("%s/tmp/deps/%s", confdir, d)
-            
-            os.mkdirrec(dest)
-            RequiredCopy(string.format("%s/config.lua", src), dest)
-            
-            local dirs = GetFileDirs(src)
-            for _, d in ipairs(dirs) do
-                PackDirectory(d, string.format("%s/%s", dest, utils.basename(d)))
+    if pkg.enable then
+        -- Add deps
+        if pkg.deps then
+            for _, d in ipairs(pkg.deps) do
+                local src = string.format("%s/deps/%s", confdir, d)
+                local dest = string.format("%s/tmp/deps/%s", confdir, d)
+                
+                os.mkdirrec(dest)
+                RequiredCopy(string.format("%s/config.lua", src), dest)
+                
+                local dirs = GetFileDirs(src)
+                for _, d in ipairs(dirs) do
+                    PackDirectory(d, string.format("%s/%s", dest, utils.basename(d)))
+                end
             end
         end
     end

@@ -18,7 +18,7 @@
 function check(g, msg, ...)
     if not g then
         -- Special string is used to identify errors thrown by this function.
-        -- This is so install.generatepkg() can filter out other errors.
+        -- This is so that we can filter out other errors.
         error({msg, "!check"})
     end
     return g, msg, ...
@@ -123,7 +123,9 @@ dofile("deps.lua")
 -- Init deps
 pkg.depmap = { }
 for _, d in ipairs(pkg.deps) do
-    pkg.depmap[d] = dofile(string.format("deps/%s/config.lua", d))
+    local c = dofile(string.format("deps/%s/config.lua", d))
+    c.name = d
+    pkg.depmap[d] = c
 end
 
 -- Defaults
