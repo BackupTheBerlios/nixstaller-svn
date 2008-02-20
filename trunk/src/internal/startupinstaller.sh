@@ -17,8 +17,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # St, Fifth Floor, Boston, MA 02110-1301 USA
 
-
 # Does some simple checking, and tries to launch the right installer frontend
+
+source "utils.sh"
 
 # Unpacks $1.lzma to lzma and removes $1.lzma
 # $1: File to handle
@@ -41,8 +42,6 @@ configure()
 {
     echo "Collecting info for this system..."
     
-    OS=`uname`
-    CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
     echo "Operating system: $CURRENT_OS"
     
     if [ ! -d "./bin/$CURRENT_OS/" ]; then
@@ -50,16 +49,6 @@ configure()
         CURRENT_OS="linux"
     fi
 
-    CURRENT_ARCH=`uname -m`
-    # iX86 --> x86
-    echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86"
-
-    # Solaris uses i86pc instead of x86 (or i*86), convert
-    echo $CURRENT_ARCH | grep "i86pc" >/dev/null && CURRENT_ARCH="x86"   
-
-	# Some platforms use x86_64, some amd64...lets just stick to one :)
-	echo $CURRENT_ARCH | grep "amd64" >/dev/null && CURRENT_ARCH="x86_64" # Convert amd64 --> x86_64
-	
     echo "CPU Arch: $CURRENT_ARCH"
 
     if [ ! -d "./bin/$CURRENT_OS/$CURRENT_ARCH/" ]; then
@@ -80,19 +69,6 @@ edelta()
     "$1/edelta" -q patch "$2" "$3" "$3.tmp" >/dev/null
 }
 
-# $1: Executable that ldd needs to research
-haslibs()
-{
-    if [ $CURRENT_OS = "openbsd" ]; then
-        (ldd "$1" >/dev/null 2>&1) && return 0
-    else
-        if [ -z "`ldd \"$1\" | grep 'not found'`" ]; then
-           return 0
-        fi
-    fi
-    return 1
-}
-
 # Check which archive type to use
 ARCH_TYPE=`cat info`
 if [ -z "$ARCH_TYPE" ]; then
@@ -105,8 +81,6 @@ configure
 NCURS_SRC=`awk '$1=="ncurs"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
 FLTK_SRC=`awk '$1=="fltk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
 GTK_SRC=`awk '$1=="gtk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
-
-FRONTENDS="gtk fltk ncurs"
 
 touch frontendstarted # Frontend removes this file if it's started
 

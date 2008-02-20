@@ -21,6 +21,10 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
 
+maindir = args[1]
+confdir = args[2]
+outname = args[3] or "setup.sh"
+
 dofile(maindir .. "/src/lua/shared/utils-public.lua")
 dofile(maindir .. "/src/lua/shared/package-public.lua")
 
@@ -383,6 +387,7 @@ function PrepareArchive()
 
     -- Some internal stuff
     RequiredCopy(maindir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
+    RequiredCopy(maindir .. "/src/internal/utils.sh", confdir .. "/tmp")
     RequiredCopy(maindir .. "/src/internal/about", confdir .. "/tmp")
     
     -- Lua scripts

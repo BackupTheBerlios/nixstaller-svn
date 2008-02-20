@@ -91,8 +91,8 @@ int main(int argc, char **argv)
 
     LIBSU::SetRunnerPath(dirname(CreateText(argv[0])));
     
-    g_RunScript = ((argc >= 5) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
-    
+    g_RunScript = ((argc >= 1) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
+
     try
     {
         if (g_RunScript)
@@ -1130,10 +1130,13 @@ int CMain::LuaPanic(lua_State *L)
 
 void CLuaRunner::Init(int argc, char **argv)
 {
+    const int skip = 4; // bin name, "-c", scriptname
     CMain::Init(argc, argv);
     
-    NLua::LuaSet(argv[3], "maindir"); // Main nixstaller directory
-    NLua::LuaSet(argv[4], "confdir"); // Project configuration directory
-    NLua::LuaSet(((argc >= 6) ? argv[5] : "setup.sh"), "outname"); // Installer name
+    NLua::CLuaTable tab("args");
+    for (int i=(skip-1); i<argc; i++)
+        tab[(i-skip)+2] << argv[i];
+    tab.Close();
+    
     NLua::LoadFile(argv[2]); // Script to execute
 }

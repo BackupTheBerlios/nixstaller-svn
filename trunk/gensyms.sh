@@ -17,9 +17,6 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # St, Fifth Floor, Boston, MA 02110-1301 USA
 
-
-# Use some SH first to bootstrap...
-
 # Find main nixstaller directory
 if [ ! -z `dirname $0` ]; then
     NDIR="`dirname $0`"
@@ -40,23 +37,19 @@ fi
 
 source "$NDIR/src/internal/utils.sh"
 
-if [ -z "${1}" -o "${1}" = "--help" -o "${1}" = "-h" ]; then
-    echo "Usage: $0 <config dir> [ <installer name> ]"
-    echo
-    echo " <config dir>: The directory which holds the install config files"
-    echo " <installer name>: The file name of the created installer. Default: setup.sh"
-    exit 1
-fi
+CURDIR="`pwd`"
 
-if [ ! -d "${1}" ]; then
-    echo "No such directory: ${1}"
+if [ -z "${1}" -o "${1}" = "--help" -o "${1}" = "-h" ]; then
+    echo "Usage: $0 <files>"
+    echo
+    echo " <files>: File list of binaries and libraries to examine."
     exit 1
 fi
 
 BIN=`getluabin "$NDIR"`
 
 if [ ! -z "$BIN" ]; then
-    "$BIN" -c "$NDIR/src/lua/geninstall.lua" $NDIR $@ || exit 1
+    "$BIN" -c "$NDIR/src/lua/gensyms.lua" $@ || exit 1
     exit 0
 fi
 
