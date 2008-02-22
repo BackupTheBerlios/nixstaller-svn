@@ -22,6 +22,7 @@
         
 #include <exception>
 
+char *CreateText(const char *s, ...);
 const char *GetTranslation(const char *s);
 
 /* NOTES
@@ -75,7 +76,7 @@ class CExMessage: virtual public CException
     const char *m_szMessage;
     
 protected:
-    CExMessage(const char *msg) : m_szMessage(msg) { };
+    CExMessage(const char *msg) : m_szMessage(CreateText(msg)) { };
     const char *Message(void) { return m_szMessage; };
     virtual const char *what(void) throw() { return Message(); };
 };
@@ -91,7 +92,7 @@ class CExOpen: public CExErrno, public CExIO
     const char *m_szFile;
     
 public:
-    CExOpen(int err, const char *file) : CExErrno(err), m_szFile(file) { };
+    CExOpen(int err, const char *file) : CExErrno(err), m_szFile(CreateText(file)) { };
     virtual const char *what(void) throw()
     { return FormatText(GetTranslation("Could not open file %s: %s"), m_szFile, Error()); };
 };
@@ -101,7 +102,7 @@ class CExOpenDir: public CExErrno, public CExIO
     const char *m_szDir;
     
 public:
-    CExOpenDir(int err, const char *dir) : CExErrno(err), m_szDir(dir) { };
+    CExOpenDir(int err, const char *dir) : CExErrno(err), m_szDir(CreateText(dir)) { };
     virtual const char *what(void) throw()
     { return FormatText(GetTranslation("Could not open directory %s: %s"), m_szDir, Error()); };
 };
@@ -111,7 +112,7 @@ class CExReadDir: public CExIO, public CExErrno
     const char *m_szDir;
     
 public:
-    CExReadDir(int err, const char *dir) : CExErrno(err), m_szDir(dir) { };
+    CExReadDir(int err, const char *dir) : CExErrno(err), m_szDir(CreateText(dir)) { };
     virtual const char *what(void) throw()
     { return FormatText(GetTranslation("Could not read directory %s: %s"), m_szDir, Error()); };
 };
@@ -122,7 +123,7 @@ class CExReadExtrDir: public CExIO
     const char *m_szDir;
     
 public:
-    CExReadExtrDir(const char *dir) : m_szDir(dir) { };
+    CExReadExtrDir(const char *dir) : m_szDir(CreateText(dir)) { };
     virtual const char *what(void) throw()
     { return FormatText(GetTranslation("This installer will install files to the following directory:\n%s\n"
                         "However you don't have read permissions to this directory\n"
@@ -164,7 +165,7 @@ class CExCommand: public CException
     const char *m_szCommand;
     
 public:
-    CExCommand(const char *cmd) : m_szCommand(cmd) { };
+    CExCommand(const char *cmd) : m_szCommand(CreateText(cmd)) { };
     virtual const char *what(void) throw()
     { return FormatText(GetTranslation("Could not execute command: %s"), m_szCommand); };
 };
@@ -252,7 +253,7 @@ class CExRootMKDir: public CExIO
     const char *m_szDir;
     
 public:
-    CExRootMKDir(const char *dir) : m_szDir(dir) { };
+    CExRootMKDir(const char *dir) : m_szDir(CreateText(dir)) { };
     virtual const char *what(void) throw()
     { return FormatText(GetTranslation("Could not create directory \'%s\'"), m_szDir); };
 };

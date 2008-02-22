@@ -33,88 +33,43 @@ end
 function depclass:Install()
     self:CopyFiles()
 end
-
 -- UNDONE
 
+
 function getmissinglibs(bin)
+    local neededlibs = { }
+    local map = maplibs(bin)
+    
+    if not map then
+        return
+    end
+    
+    for l, v in pairs(map) do
+        if not v then
+            neededlibs[l] = true
+        end
+    end
+    
+    return neededlibs
+end
+
+function getsyms(bin)
     local elf = os.openelf(bin)
     
     if not elf then
         return
     end
     
-    local neededlibs = { }
-    
+    local ret = { }
     local n = 1
-    local need = elf:getneeded(n)
-    while need do
-        neededlibs[need] = true
+    local sym = elf:getsym(1)
+    while sym do
+        ret[sym.name] = (not sym.undefined or sym.binding ~= "GLOBAL")
         n = n + 1
-        need = elf:getneeded(n)
-    end
-    local rpath = elf:getrpath()
-    elf:close()
-    
-    if os.osname ~= "openbsd" then
-        local pipe = check(io.popen("ldd " .. bin))
-        
-        local line = pipe:read()
-        while line do
-            line = string.gsub(line, "^.*=> ", "")
-            line = string.gsub(line, " %(.*%)$", "")
-            if line and os.fileexists(line) then
-                neededlibs[utils.basename(line)] = nil
-            else
-                print("Missing lib", line)
-            end
-            line = pipe:read()
-        end
-        pipe:close()
-    else
-        -- OpenBSD's ldd will throw an error when a lib isn't found.
-        -- For this reason we have to search the lib manually.
-        -- 
-        -- Search order: LD_LIBRARY_PATH, f's own rpath or runpath, ldconfig hints
-        local lpaths = { }
-        
-        local ldpath = os.getenv("LD_LIBRARY_PATH")
-        if ldpath then
-            for p in string.gmatch(ldpath, "[^\:]+") do
-                table.insert(lpaths, p)
-            end
-        end
-
-        -- rpath/runpath
-        if rpath and #rpath > 0 then
-            for p in string.gmatch(rpath, "[^\:]+") do
-                -- Do we need this? (OpenBSD doesn't seem to support this at the moment)
-                p = string.gsub(p, "${ORIGIN}", dirname(f))
-                p = string.gsub(p, "$ORIGIN", dirname(f))
-                table.insert(lpaths, p)
-            end
-        end
-        
-        -- ldconfig hints
-        local pipe = io.popen("ldconfig -r | grep \"search directories\"")
-        local libs = pipe:read()
-        pipe:close()
-
-        libs = string.gsub(libs, ".*: ", "")
-        for p in string.gmatch(libs, "[^\:]+") do
-            table.insert(lpaths, p)
-        end
-
-        for _, nl in ipairs(neededlibs) do
-            for _, p in ipairs(lpaths) do
-                local lpath = string.format("%s/%s", p, nl)
-                if os.fileexists(lpath) then
-                    neededlibs[nl] = nil
-                end
-            end
-        end
+        sym = elf:getsym(n)
     end
     
-    return neededlibs
+    return ret
 end
 
 function getdepsfromlibs(libs) -- libs is a map, not a list
@@ -195,5 +150,76 @@ function checkdeps(bins, bdir, deps)
     return ret
 end
 
+local loadedsyms = pcall(dofile, string.format("%s/symmap", curdir))
+
+function checkelf(bin)
+    if loadedsyms == false then
+        install.print("Warning: no symbol mapfile found, binary compatibility checking will be disabled.")
+        loadedsyms = nil -- Mark as not usable
+    end
+    
+    if not loadedsyms then
+        return false -- Ignore what we can't check
+    end
+    
+    local libpath = install.getpkgdir("lib")
+    local map = maplibs(bin, libpath)
+    
+    if not map then
+        return false
+    end
+    
+    local binsyms = getsyms(bin)
+    
+    if not binsyms then
+        return false
+    end
+    
+    local foundsyms = { }
+    for l, v in pairs(map) do
+        assert(v and os.fileexists(v))
+        
+        if not os.fileexists(v) then
+            return false -- UNDONE
+        end
+        
+        foundsyms[l] = getsyms(v)
+    end
+    
+    local incompatlibs = { }
+    local incompatdeps = { }
+    local overridedeps = { }
+    for s, v in pairs(binsyms) do
+        if not v then
+            local found = false
+            for l, ls in pairs(foundsyms) do
+                found = ls[s]
+                if found then
+                    break
+                end
+            end
+            
+            if not found then
+                local lib = loadedsyms[s]
+                assert(lib and lib ~= bin)
+                
+                local dep = getdepsfromlibs{[lib] = true}
+
+                if dep then
+                    if not os.fileexists(string.format("%s/%s", libpath, lib)) then
+                        overridedeps[dep] = true
+                    else
+                        incompatdeps[dep] = true
+                    end
+                else
+                    incompatlibs[lib] = true
+                end
+            end
+        end
+    end
+    
+    local incompat = (not utils.emptytable(overridedeps) or not utils.emptytable(incompatdeps) or not utils.emptytable(incompatlibs))
+    return incompat, overridedeps, incompatdeps, incompatlibs
+end
     
 dofile("deps-public.lua")

@@ -49,7 +49,7 @@ fi
 BIN=`getluabin "$NDIR"`
 
 if [ ! -z "$BIN" ]; then
-    "$BIN" -c "$NDIR/src/lua/gensyms.lua" $@ || exit 1
+    "$BIN" -c "$NDIR/src/lua/gensyms.lua" $NDIR $@ || exit 1
     exit 0
 fi
 

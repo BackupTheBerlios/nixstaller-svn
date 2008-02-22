@@ -15,7 +15,12 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
-dest = (os.isdir(args[#args]) and args[#args]) or os.getcwd()
+dofile(args[1] .. "/src/lua/shared/utils.lua")
+dofile(args[1] .. "/src/lua/shared/utils-public.lua")
+
+table.remove(args, 1)
+
+dest = (#args > 1 and os.isdir(args[#args]) and args[#args]) or os.getcwd()
 out = io.open(string.format("%s/symmap", dest), "w")
 
 if not out then
@@ -43,7 +48,7 @@ for i, f in ipairs(args) do
     local sym = elf:getsym(1)
     local n = 1
     while sym do
-        out:write(string.format("syms[%s][%s] = { undefined = %s, version = \"%s\" }\n", f, sym.name,
+        out:write(string.format("syms[%s][%s] = { undefined = %s, version = \"%s\" }\n", utils.basename(f), sym.name,
                   tostring((sym.undefined and sym.binding == "GLOBAL")), sym.version))
         n = n + 1
         sym = elf:getsym(n)

@@ -38,14 +38,22 @@ function pkg.verifydeps(bins)
         local needs = checkdeps(bins, install.getpkgdir(), pkg.deps)
         
         install.print("Installing dependencies\n")
-        local function instdeps(deps)
+        local function instdeps(deps, incompat)
             for d, rd in pairs(deps) do
                 if #rd > 0 then
                     instdeps(rd)
                 end
                 if not installeddeps[d] and not faileddeps[d] then
                     -- Check if dep is usable
-                    if d.CanInstall and not d:CanInstall() then
+                    if incompat then
+                        if not d.HandleCompat or not d:HandleCompat() then
+                            faileddeps[d] = true
+                            install.print(string.format("Failed dependency: %s\n", d.name))
+                        else
+                            installeddeps[d] = true
+                            install.print(string.format("Installed dependency: %s\n", d.name))
+                        end
+                    elseif d.CanInstall and not d:CanInstall() then
                         faileddeps[d] = true
                         install.print(string.format("Failed dependency: %s\n", d.name))
                     else
@@ -63,6 +71,43 @@ function pkg.verifydeps(bins)
         end
         
         instdeps(needs)
+        
+        install.print("Verifying binary compatibility\n")
+        
+        local overridedeps, incompatdeps, incompatlibs = { }, { }, { }
+        
+        local function checkcompat()
+            local checkfiles = bins
+            
+            while #checkfiles > 0 do
+                local b = table.remove(checkfiles)
+                local map = maplibs(b, install.getpkgdir("lib"))
+                
+                for _, p in pairs(map) do
+                    table.insert(checkfiles, p)
+                end
+                
+                local i, od, id, il = checkelf(b)
+                if i then
+                    utils.tablemerge(overridedeps, od)
+                    utils.tablemerge(incompatdeps, id)
+                    utils.tablemerge(incompatlibs, il)
+                end
+            end
+        end
+        
+        checkcompat()
+        
+        if not utils.emptytable(overridedeps) then
+            installeddeps = { }
+            instdeps(overridedeps)
+            overridedeps = { }
+            checkcompat()
+            assert(#overridedeps == 0)
+        end
+
+        installeddeps = { }
+        instdeps(incompatdeps, true)
     end)
     
     if not success then

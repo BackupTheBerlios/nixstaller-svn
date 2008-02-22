@@ -311,7 +311,7 @@ function Init()
     end
     
     if (not string.find(confdir, "^/")) then
-        OLDG.confdir = curdir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
+        confdir = curdir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
     end
     
     dofile(confdir .. "/config.lua")
@@ -384,6 +384,9 @@ function PrepareArchive()
     os.copy(confdir .. "/welcome", destdir)
     os.copy(confdir .. "/license", destdir)
     os.copy(confdir .. "/finish", destdir)
+    
+    -- Symbol map
+    os.copy(confdir .. "/symmap", destdir)
 
     -- Some internal stuff
     RequiredCopy(maindir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")

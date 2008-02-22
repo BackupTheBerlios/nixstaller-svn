@@ -443,7 +443,7 @@ void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd)
     suhandler.SetCommand("mkdir -p " + dir);
     
     if (!suhandler.ExecuteCommand(passwd))
-        throw Exceptions::CExRootMKDir(MakeCString(dir));
+        throw Exceptions::CExRootMKDir(dir.c_str());
 }
 
 void UName(struct utsname &u)
@@ -695,7 +695,7 @@ int CPipedCMD::Close(bool canthrow)
     if (canthrow)
     {
         if (!WIFEXITED(stat) || (WEXITSTATUS(stat) == 127))
-            throw Exceptions::CExCommand(MakeCString(m_szCommand));
+            throw Exceptions::CExCommand(m_szCommand.c_str());
     }
     
     return WEXITSTATUS(stat);

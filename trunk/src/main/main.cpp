@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
     LIBSU::SetRunnerPath(dirname(CreateText(argv[0])));
     
-    g_RunScript = ((argc >= 1) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
+    g_RunScript = ((argc > 1) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
 
     try
     {

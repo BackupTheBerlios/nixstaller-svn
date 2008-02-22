@@ -92,3 +92,93 @@ EXEC=""
     
     return ret
 end
+
+function maplibs(bin, extrapath)
+    local elf = os.openelf(bin)
+    
+    if not elf then
+        return
+    end
+    
+    local map = { }
+    
+    local n = 1
+    local need = elf:getneeded(n)
+    while need do
+        map[need] = false
+        n = n + 1
+        need = elf:getneeded(n)
+    end
+    local rpath = elf:getrpath()
+    elf:close()
+    
+    if os.osname ~= "openbsd" then
+        local pipe = check(io.popen("ldd " .. bin))
+        
+        local line = pipe:read()
+        while line do
+            local path = string.gsub(line, "^.*=> ", "")
+            path = string.gsub(path, " %(.*%)$", "")
+            path = string.gsub(path, "^[%s]*", "")
+            local file = (path and utils.basename(path))
+            if path and os.fileexists(path) and map[file] ~= nil then
+                map[file] = path
+            end
+            line = pipe:read()
+        end
+        pipe:close()
+        
+        if extrapath then
+            for n in pairs(map) do
+                local file = string.format("%s/%s", extrapath, n)
+                if os.fileexists(file) then
+                    map[n] = file
+                end
+            end
+        end
+    else
+        -- OpenBSD's ldd will throw an error when a lib isn't found.
+        -- For this reason we have to search the lib manually.
+        -- 
+        -- Search order: LD_LIBRARY_PATH, f's own rpath or runpath, ldconfig hints
+        local lpaths = extrapath or { }
+        
+        local ldpath = os.getenv("LD_LIBRARY_PATH")
+        if ldpath then
+            for p in string.gmatch(ldpath, "[^\:]+") do
+                table.insert(lpaths, p)
+            end
+        end
+
+        -- rpath/runpath
+        if rpath and #rpath > 0 then
+            for p in string.gmatch(rpath, "[^\:]+") do
+                -- Do we need this? (OpenBSD doesn't seem to support this at the moment)
+                p = string.gsub(p, "${ORIGIN}", dirname(f))
+                p = string.gsub(p, "$ORIGIN", dirname(f))
+                table.insert(lpaths, p)
+            end
+        end
+        
+        -- ldconfig hints
+        local pipe = io.popen("ldconfig -r | grep \"search directories\"")
+        local libs = pipe:read()
+        pipe:close()
+
+        libs = string.gsub(libs, ".*: ", "")
+        for p in string.gmatch(libs, "[^\:]+") do
+            table.insert(lpaths, p)
+        end
+
+        for nl in pairs(map) do
+            for _, p in ipairs(lpaths) do
+                local lpath = string.format("%s/%s", p, nl)
+                if os.fileexists(lpath) then
+                    map[nl] = lpath
+                end
+            end
+        end
+    end
+    
+    return map
+end

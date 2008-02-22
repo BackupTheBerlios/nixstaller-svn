@@ -759,7 +759,8 @@ int CBaseInstall::LuaGetPkgDir(lua_State *L)
     if (!FileExists(ret))
         MKDirRec(ret);
     
-    lua_pushstring(L, ret);
+    const char *file = luaL_optstring(L, 1, "");
+    lua_pushfstring(L, "%s/%s", ret, file);
     return 1;
 }
 

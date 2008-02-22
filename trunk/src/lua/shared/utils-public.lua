@@ -79,3 +79,9 @@ function utils.tabelfind(t, val)
         end
     end
 end
+
+function utils.tablemerge(t1, t2)
+    for k, v in pairs(t2) do
+        t1[k] = v
+    end
+end

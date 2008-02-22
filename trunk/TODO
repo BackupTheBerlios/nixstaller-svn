@@ -28,7 +28,9 @@ OVERALL
     - Verify interface versions
 - Check if thrown exceptions aren't using temporary strings
 - Check if functions defenitions in LoadPackage are still required
-
+- deps:
+    - Check for static bins
+    
 
 PACKAGING
 - More config options:
@@ -45,7 +47,8 @@ MAIN
 
 
 DOCS
-- utils.tabelfind
+- utils.tabelfind? utils.tablemerge?
+- install.getpkgdir() (now with arg)
 
 
 TRANSLATIONS
