@@ -161,6 +161,9 @@ void CElfWrapper::ReadVerDef(Elf_Scn *section)
             if (!def)
                 break;
             
+            if (def->vd_version != VER_DEF_CURRENT)
+                continue; // UNDONE?
+                
             int auxoffset = offset + def->vd_aux;
             GElf_Verdaux *aux = gelf_getverdaux(data, auxoffset);
             if (aux)
@@ -191,6 +194,9 @@ void CElfWrapper::ReadVerNeed(Elf_Scn *section)
             GElf_Verneed *need = gelf_getverneed(data, offset);
             if (!need)
                 break;
+
+            if (need->vn_version != VER_NEED_CURRENT)
+                continue; // UNDONE?
 
             int auxoffset = offset + need->vn_aux;
             

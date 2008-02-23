@@ -29,7 +29,7 @@ OVERALL
 - Check if thrown exceptions aren't using temporary strings
 - Check if functions defenitions in LoadPackage are still required
 - deps:
-    - Check for static bins
+    - Check for static bins?
     
 
 PACKAGING

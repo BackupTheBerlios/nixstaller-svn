@@ -151,7 +151,7 @@ function maplibs(bin, extrapath)
         -- OpenBSD's ldd will throw an error when a lib isn't found.
         -- For this reason we have to search the lib manually.
         -- 
-        -- Search order: LD_LIBRARY_PATH, f's own rpath or runpath, ldconfig hints
+        -- Search order: extrapath, LD_LIBRARY_PATH, f's own rpath or runpath, ldconfig hints
         local lpaths = extrapath or { }
         
         local ldpath = os.getenv("LD_LIBRARY_PATH")
@@ -205,7 +205,8 @@ function getsyms(bin)
     local n = 1
     local sym = elf:getsym(1)
     while sym do
-        ret[sym.name] = (not sym.undefined or sym.binding ~= "GLOBAL")
+        ret[sym.name] = sym
+        ret[sym.name].undefined = (sym.undefined and sym.binding == "GLOBAL")
         n = n + 1
         sym = elf:getsym(n)
     end

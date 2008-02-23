@@ -36,12 +36,12 @@ function getallsyms(bin, out, lpath)
                     print(string.format("WARNING: Could not process file %s", l))
                 else
                     for s, v in pairs(lsyms) do
-                        if bsyms[s] == false then
+                        if bsyms[s] and bsyms[s].undefined then
                             out:write(string.format("syms[\"%s\"][\"%s\"] = \"%s\"\n", utils.basename(bin), s, l))
-                            bsyms[s] = true
+                            bsyms[s].undefined = false -- Don't have to check again
                         end
                     end
-                    getallsyms(lp, out)
+                    getallsyms(lp, out, lpath)
                 end
             end
         end

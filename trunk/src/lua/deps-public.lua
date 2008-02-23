@@ -88,7 +88,7 @@ function pkg.verifydeps(bins)
                     if p and os.fileexists(p) then
                         table.insert(checkfiles, p)
                     else
-                        install.print(string.format("WARNING: Missing library dependency: %s", l))
+                        install.print(string.format("WARNING: Missing library dependency: %s\n", l))
                     end
                 end
                 
@@ -114,6 +114,15 @@ function pkg.verifydeps(bins)
 
         installeddeps = { }
         instdeps(incompatdeps, true)
+        
+        print("overridedeps:")
+        table.foreach(overridedeps, print)
+        print("incompatdeps:")
+        table.foreach(incompatdeps, print)
+        print("incompatlibs:")
+        table.foreach(incompatlibs, print)
+        print("faileddeps:")
+        table.foreach(faileddeps, print)
     end)
     
     if not success then

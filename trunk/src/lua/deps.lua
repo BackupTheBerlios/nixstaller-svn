@@ -35,6 +35,50 @@ function depclass:Install()
 end
 -- UNDONE
 
+function getsymverneeds(bin)
+    local elf = os.openelf(bin)
+    
+    if not elf then
+        return
+    end
+    
+    local ret = { }
+    local n = 1
+    local ver = elf:getsymneed(n)
+    while ver do
+        if ver.flags ~= "BASE" and ver.flags ~= "WEAK" then
+            ret[ver.lib] = ret[ver.lib] or { }
+            ret[ver.lib][ver.name] = true
+        end
+        n = n + 1
+        ver = elf:getsymneed(n)
+    end
+    
+    elf:close()
+    
+    return ret
+end
+
+function getsymverdefs(bin)
+    local elf = os.openelf(bin)
+    
+    if not elf then
+        return
+    end
+    
+    local ret = { }
+    local n = 1
+    local ver = elf:getsymdef(n)
+    while ver do
+        ret[ver] = true
+        n = n + 1
+        ver = elf:getsymdef(n)
+    end
+    
+    elf:close()
+    
+    return ret
+end
 
 function getmissinglibs(bin)
     local neededlibs = { }
@@ -112,10 +156,12 @@ function checkdeps(bins, bdir, deps)
     if bins then
         for _, b in ipairs(bins) do
             local path = string.format("%s/%s", bdir, b)
-            libs = getmissinglibs(path) -- Collect any dep libs which are not found
-            for rd in pairs(getdepsfromlibs(libs)) do -- Check which deps provide missing libs
-                if not ret[rd] then
-                    ret[rd] = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps) or { }
+            if os.fileexists(path) then
+                libs = getmissinglibs(path) -- Collect any dep libs which are not found
+                for rd in pairs(getdepsfromlibs(libs)) do -- Check which deps provide missing libs
+                    if not ret[rd] then
+                        ret[rd] = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps) or { }
+                    end
                 end
             end
         end
@@ -155,48 +201,63 @@ function checkelf(bin)
         return false
     end
     
+    local wronglibs = { }
     local foundsyms = { }
+    local symverneeds = getsymverneeds(bin)
+    
     for l, v in pairs(map) do
-        print("v:", v, l)
---         assert(v and os.fileexists(v))
-        
-        if not v or not os.fileexists(v) then
-            return false -- UNDONE
+        if v and os.fileexists(v) then
+            foundsyms[l] = getsyms(v)
         end
-        
-        foundsyms[l] = getsyms(v)
+        if symverneeds and symverneeds[l] then
+            local verdefs = getsymverdefs(v)
+            if verdefs then
+                for vn in pairs(symverneeds[l]) do
+                    if verdefs[vn] then
+--                         print("Found symbol version:", vn)
+                    else
+                        wronglibs[l] = true
+                    end
+                end
+            end
+        end
     end
     
-    local incompatlibs = { }
-    local incompatdeps = { }
-    local overridedeps = { }
     for s, v in pairs(binsyms) do
-        if not v then
+        if v.undefined then
             local found = false
             for l, ls in pairs(foundsyms) do
-                found = ls[s]
+                found = (ls[s] and ls[s].version == v.version)
                 if found then
-                    print(string.format("Found symbol %s in %s", s, l))
+--                     print(string.format("Found symbol %s in %s", s, l))
                     break
                 end
             end
             
             if not found then
-                local lib = loadedsyms[bin][s]
+                local lib = loadedsyms[utils.basename(bin)][s]
                 assert(lib and lib ~= bin)
-                
+                wronglibs[lib] = true
                 local dep = getdepsfromlibs{[lib] = true}
-
-                if not utils.emptytable(dep) then
-                    if not os.fileexists(string.format("%s/%s", libpath, lib)) then
-                        utils.tablemerge(overridedeps, dep)
-                    else
-                        utils.tablemerge(incompatdeps, dep)
-                    end
-                else
-                    incompatlibs[lib] = true
-                end
             end
+        end
+    end
+    
+    local incompatlibs = { }
+    local incompatdeps = { }
+    local overridedeps = { }
+
+    for l in pairs(wronglibs) do
+        local dep = getdepsfromlibs{[l] = true}
+
+        if not utils.emptytable(dep) then
+            if not os.fileexists(string.format("%s/%s", libpath, l)) then
+                utils.tablemerge(overridedeps, dep)
+            else
+                utils.tablemerge(incompatdeps, dep)
+            end
+        else
+            incompatlibs[l] = true
         end
     end
     
