@@ -1017,6 +1017,12 @@ int CMain::LuaOpenElf(lua_State *L)
         lua_pushfstring(L, "Could not create ELF class: %s\n", e.what());
         return 2;
     }
+    catch (Exceptions::CExIO &e)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not open file: %s\n", e.what());
+        return 2;
+    }
     
     NLua::CreateClass(elfw, "elfclass");
     

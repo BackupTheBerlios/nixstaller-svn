@@ -94,6 +94,10 @@ EXEC=""
 end
 
 function maplibs(bin, extrapath)
+    if type(bin) ~= "string" then
+        print(debug.traceback())
+    end
+    
     local elf = os.openelf(bin)
     
     if not elf then
@@ -113,7 +117,11 @@ function maplibs(bin, extrapath)
     elf:close()
     
     if os.osname ~= "openbsd" then
-        local pipe = check(io.popen("ldd " .. bin))
+        local pipe = io.popen("ldd " .. bin)
+        
+        if not pipe then
+            return
+        end
         
         local line = pipe:read()
         while line do
@@ -130,9 +138,12 @@ function maplibs(bin, extrapath)
         
         if extrapath then
             for n in pairs(map) do
-                local file = string.format("%s/%s", extrapath, n)
-                if os.fileexists(file) then
-                    map[n] = file
+                for _, p in ipairs(extrapath) do
+                    local file = string.format("%s/%s", p, n)
+                    if os.fileexists(file) then
+                        map[n] = file
+                        break
+                    end
                 end
             end
         end
@@ -181,4 +192,25 @@ function maplibs(bin, extrapath)
     end
     
     return map
+end
+
+function getsyms(bin)
+    local elf = os.openelf(bin)
+    
+    if not elf then
+        return
+    end
+    
+    local ret = { }
+    local n = 1
+    local sym = elf:getsym(1)
+    while sym do
+        ret[sym.name] = (not sym.undefined or sym.binding ~= "GLOBAL")
+        n = n + 1
+        sym = elf:getsym(n)
+    end
+    
+    elf:close()
+    
+    return ret
 end

@@ -53,25 +53,6 @@ function getmissinglibs(bin)
     return neededlibs
 end
 
-function getsyms(bin)
-    local elf = os.openelf(bin)
-    
-    if not elf then
-        return
-    end
-    
-    local ret = { }
-    local n = 1
-    local sym = elf:getsym(1)
-    while sym do
-        ret[sym.name] = (not sym.undefined or sym.binding ~= "GLOBAL")
-        n = n + 1
-        sym = elf:getsym(n)
-    end
-    
-    return ret
-end
-
 function getdepsfromlibs(libs) -- libs is a map, not a list
     local ret = { }
     for l in pairs(libs) do
@@ -150,20 +131,19 @@ function checkdeps(bins, bdir, deps)
     return ret
 end
 
-local loadedsyms = pcall(dofile, string.format("%s/symmap", curdir))
-
+local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap", curdir))
 function checkelf(bin)
-    if loadedsyms == false then
+    if lsymstat == false then
         install.print("Warning: no symbol mapfile found, binary compatibility checking will be disabled.")
-        loadedsyms = nil -- Mark as not usable
+        lsymstat = nil -- Set to something else than true or false, so that the warning is only displayed once
     end
     
-    if not loadedsyms then
+    if not lsymstat then
         return false -- Ignore what we can't check
     end
     
     local libpath = install.getpkgdir("lib")
-    local map = maplibs(bin, libpath)
+    local map = maplibs(bin, { libpath })
     
     if not map then
         return false
@@ -177,9 +157,10 @@ function checkelf(bin)
     
     local foundsyms = { }
     for l, v in pairs(map) do
-        assert(v and os.fileexists(v))
+        print("v:", v, l)
+--         assert(v and os.fileexists(v))
         
-        if not os.fileexists(v) then
+        if not v or not os.fileexists(v) then
             return false -- UNDONE
         end
         
@@ -195,21 +176,22 @@ function checkelf(bin)
             for l, ls in pairs(foundsyms) do
                 found = ls[s]
                 if found then
+                    print(string.format("Found symbol %s in %s", s, l))
                     break
                 end
             end
             
             if not found then
-                local lib = loadedsyms[s]
+                local lib = loadedsyms[bin][s]
                 assert(lib and lib ~= bin)
                 
                 local dep = getdepsfromlibs{[lib] = true}
 
-                if dep then
+                if not utils.emptytable(dep) then
                     if not os.fileexists(string.format("%s/%s", libpath, lib)) then
-                        overridedeps[dep] = true
+                        utils.tablemerge(overridedeps, dep)
                     else
-                        incompatdeps[dep] = true
+                        utils.tablemerge(incompatdeps, dep)
                     end
                 else
                     incompatlibs[lib] = true

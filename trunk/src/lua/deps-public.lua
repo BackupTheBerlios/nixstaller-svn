@@ -40,8 +40,8 @@ function pkg.verifydeps(bins)
         install.print("Installing dependencies\n")
         local function instdeps(deps, incompat)
             for d, rd in pairs(deps) do
-                if #rd > 0 then
-                    instdeps(rd)
+                if type(rd) == "table" and not utils.emptytable(rd) then
+                    instdeps(rd, incompat)
                 end
                 if not installeddeps[d] and not faileddeps[d] then
                     -- Check if dep is usable
@@ -81,10 +81,15 @@ function pkg.verifydeps(bins)
             
             while #checkfiles > 0 do
                 local b = table.remove(checkfiles)
-                local map = maplibs(b, install.getpkgdir("lib"))
                 
-                for _, p in pairs(map) do
-                    table.insert(checkfiles, p)
+                local map = maplibs(b, { install.getpkgdir("lib") })
+                
+                for l, p in pairs(map) do
+                    if p and os.fileexists(p) then
+                        table.insert(checkfiles, p)
+                    else
+                        install.print(string.format("WARNING: Missing library dependency: %s", l))
+                    end
                 end
                 
                 local i, od, id, il = checkelf(b)
@@ -100,10 +105,11 @@ function pkg.verifydeps(bins)
         
         if not utils.emptytable(overridedeps) then
             installeddeps = { }
+            install.print("Overiding incompatible native dependencies.\n")
             instdeps(overridedeps)
             overridedeps = { }
             checkcompat()
-            assert(#overridedeps == 0)
+            assert(utils.emptytable(overridedeps))
         end
 
         installeddeps = { }
