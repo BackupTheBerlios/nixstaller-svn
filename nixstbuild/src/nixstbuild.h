@@ -102,6 +102,7 @@ private:
     void addPackagesTab();
     void readSettings();
     void writeSettings();
+    void reloadView();
     QString strippedName(const QString &fullFileName);
 
     QTextEdit *textEdit;

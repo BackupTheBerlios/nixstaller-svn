@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'textfedit.ui'
 **
-** Created: Sun Jun 24 23:24:18 2007
-**      by: Qt User Interface Compiler version 4.3.0
+** Created: Fri Feb 22 19:27:56 2008
+**      by: Qt User Interface Compiler version 4.3.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -37,9 +37,7 @@ public:
     {
     if (TextEditW->objectName().isEmpty())
         TextEditW->setObjectName(QString::fromUtf8("TextEditW"));
-    QSize size(400, 300);
-    size = size.expandedTo(TextEditW->minimumSizeHint());
-    TextEditW->resize(size);
+    TextEditW->resize(400, 300);
     gridLayout = new QGridLayout(TextEditW);
     gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
     vboxLayout = new QVBoxLayout();

@@ -66,8 +66,8 @@ var_s pkgvars[] = {
 { "pkg.description", "Description", VT_MULTILINE, "Nixstaller generated package", 0},
 { "pkg.summary", "Summary", VT_STRING, "Nixstaller generated package", 0},
 { "pkg.group", "Package Group", VT_STRING, "File", 0},
-{ "pkg.destdir", "Destination DIrectory", VT_STRING, "/usr/local/share", 0},
-{ "pkg.bindir", "Binary Directory", VT_STRING, "/usr/local/bin", 0},
+{ "pkg.destdir", "Destination DIrectory", VT_STRING, "", 0},
+{ "pkg.bindir", "Binary Directory", VT_STRING, "", 0},
 { "pkg.register", "Register", VT_BOOLEAN, "true", 0},
 { "pkg.setkdeenv", "Set KDE environment", VT_BOOLEAN, "false", 0},
 { "pkg.addbinopts", "App run parameters", VT_FUNC2, "Bin,Arg", 0},
@@ -136,8 +136,8 @@ void nixstbuild::initMainControls()
     qd = new QDir("/tmp");
     string cmd = "rm -rf " + qd->absolutePath().toStdString()+"/.nbtemp";
     system(cmd.c_str());
-    qd->mkdir("./.nbtemp");
-    qd->cd("./.nbtemp");
+    qd->mkdir("/tmp/.nbtemp");
+    qd->cd("/tmp/.nbtemp");
 
     //qd->mkdir("./lang");
 
@@ -162,15 +162,13 @@ void nixstbuild::closeEvent(QCloseEvent *event)
 
 void nixstbuild::newFile()
 {
-    string cmd = "rm -rf " + qd->absolutePath().toStdString();
-    system(cmd.c_str());
-    qd->cdUp();
+    system("rm -rf /tmp/.nbtemp");
+    qd->cd("/tmp/");
     qd->mkdir("./.nbtemp");
-    qd->cd("./.nbtemp");
-
-    //qd->mkdir("./lang");
+    qd->cd("/tmp/.nbtemp/");
 
     qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    cout << qd->absolutePath().toStdString() << endl;
 }
 
 bool nixstbuild::save()
@@ -217,6 +215,7 @@ void nixstbuild::about()
 {
     QMessageBox::about(this, tr("About Nixstbuild"),
             tr("<b>Nixstbuild</b> version 0.1 by InternetNightmare<br><br>This software is released under GPLv2 license that can be found here:<br><a href=\"http://www.gnu.org/licenses/gpl.txt\">http://www.gnu.org/licenses/gpl.txt</a>"));
+    cout << qd->absolutePath().toStdString() << endl;
 }
 
 void nixstbuild::documentWasModified()
@@ -419,6 +418,7 @@ void nixstbuild::addConfigTab()
     ct_feFltk = new QCheckBox("fltk");
     ct_feFltk->setChecked(true);
     ct_feGtk = new QCheckBox("gtk+");
+    ct_feGtk->setChecked(true);
     ct_hlayout->addWidget(ct_feNcurses);
     ct_hlayout->addWidget(ct_feFltk);
     ct_hlayout->addWidget(ct_feGtk);
@@ -475,6 +475,13 @@ void nixstbuild::addRunTab()
     tabs->addTab(rt_widget, QIcon(":/gear.png"), "Run");
 }
 
+void nixstbuild::reloadView()
+{
+    qd->cd("/tmp/.nbtemp");
+    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+
+}
+
 void nixstbuild::fvCustomContext(const QPoint &pos)
 {
     foldermenu->popup(folderview->mapToGlobal(pos));
@@ -482,11 +489,10 @@ void nixstbuild::fvCustomContext(const QPoint &pos)
 
 void nixstbuild::fvDeleteFile()
 {
-    QString fpath = qdmodel->filePath(folderview->currentIndex());
-    string cmd("rm -rf ");
-    system(cmd.c_str());
-    qd->cd("/tmp/.nbtemp/");
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    QString fpath = "rm -rf ";
+    fpath += qdmodel->filePath(folderview->currentIndex());
+    system(fpath.toStdString().c_str());
+    reloadView();
 }
 
 void nixstbuild::ft_addFile()
@@ -507,8 +513,7 @@ void nixstbuild::ft_addFile()
         QFile::copy(files[i], qd->absolutePath()+"/"+strippedName(files[i]));
     }
 
-    qd->cd("/tmp/.nbtemp/");
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::ft_addDir()
@@ -527,8 +532,7 @@ void nixstbuild::ft_addDir()
 
     QString cmd = "cp -r " + dir +" "+ qd->absolutePath();
     system(cmd.toStdString().c_str());
-    qd->cd("/tmp/.nbtemp/");
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::saveLicense()
@@ -540,7 +544,7 @@ void nixstbuild::saveLicense()
     out << teu_license->textEdit->toPlainText();
 
     statusBar()->showMessage("License saved", 5000);
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::saveWelcome()
@@ -552,7 +556,7 @@ void nixstbuild::saveWelcome()
     out << teu_welcome->textEdit->toPlainText();
 
     statusBar()->showMessage("Welcome saved", 5000);
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::saveFinish()
@@ -564,7 +568,7 @@ void nixstbuild::saveFinish()
     out << teu_finish->textEdit->toPlainText();
 
     statusBar()->showMessage("Finish saved", 5000);
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::openLicense()
@@ -604,7 +608,7 @@ void nixstbuild::saveConfig()
     out << "cfg.archivetype = \"" << ct_archiveType->currentText() << "\"\n";
     out << "cfg.defaultlang = \"" << ct_defaultLang->displayText() << "\"\n";
 
-    if ((ct_feNcurses->checkState()!=Qt::Checked) && (ct_feFltk->checkState()!=Qt::Checked))
+    if ((ct_feNcurses->checkState()!=Qt::Checked) && (ct_feFltk->checkState()!=Qt::Checked) && (ct_feFltk->checkState()!=Qt::Checked))
     {
         QMessageBox::warning(this, "Frontends", "You must include at least one frontend in your installer package");
         cfile.remove();
@@ -651,7 +655,7 @@ void nixstbuild::saveConfig()
     out << "\nlanguages = {'english'}\n";
 
     statusBar()->showMessage("Config saved", 5000);
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::saveRun()
@@ -663,7 +667,7 @@ void nixstbuild::saveRun()
     out << rt_textedit->toPlainText();
 
     statusBar()->showMessage("Run script saved", 5000);
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::savePackage()
@@ -673,7 +677,7 @@ void nixstbuild::savePackage()
 
     QTextStream out(&cfile);
     out << QString(varout->getScript().c_str());
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    reloadView();
 }
 
 void nixstbuild::generateRun()

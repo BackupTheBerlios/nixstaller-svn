@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'screeninput.ui'
 **
-** Created: Sun Jun 24 23:24:18 2007
-**      by: Qt User Interface Compiler version 4.3.0
+** Created: Fri Feb 22 19:27:56 2008
+**      by: Qt User Interface Compiler version 4.3.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -45,9 +45,7 @@ public:
     {
     if (ScreenInputDialog->objectName().isEmpty())
         ScreenInputDialog->setObjectName(QString::fromUtf8("ScreenInputDialog"));
-    QSize size(409, 210);
-    size = size.expandedTo(ScreenInputDialog->minimumSizeHint());
-    ScreenInputDialog->resize(size);
+    ScreenInputDialog->resize(409, 210);
     QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(0), static_cast<QSizePolicy::Policy>(0));
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);

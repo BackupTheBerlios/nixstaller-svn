@@ -3,10 +3,10 @@
 <KDevPrjSession>
  <DocsAndViews NumberOfDocuments="15" >
   <Doc0 NumberOfViews="1" URL="file:///home/internetnightmare/Projects/nixstbuild/src/nixstbuild.cpp" >
-   <View0 Encoding="UTF-8" line="365" Type="Source" />
+   <View0 Encoding="UTF-8" Type="Source" />
   </Doc0>
   <Doc1 NumberOfViews="1" URL="file:///home/internetnightmare/Projects/nixstbuild/src/nixstbuild.h" >
-   <View0 Encoding="" line="19" Type="Source" />
+   <View0 Encoding="" Type="Source" />
   </Doc1>
   <Doc2 NumberOfViews="1" URL="file:///home/internetnightmare/Projects/nixstbuild/src/rungen.cpp" >
    <View0 Encoding="" Type="Source" />
@@ -21,7 +21,7 @@
    <View0 Encoding="" Type="Source" />
   </Doc5>
   <Doc6 NumberOfViews="1" URL="file:///home/internetnightmare/Projects/nixstbuild/src/sdialog.cpp" >
-   <View0 Encoding="" line="0" Type="Source" />
+   <View0 Encoding="" Type="Source" />
   </Doc6>
   <Doc7 NumberOfViews="1" URL="file:///home/internetnightmare/Projects/nixstbuild/src/bdialog.h" >
    <View0 Encoding="" Type="Source" />
@@ -45,7 +45,7 @@
    <View0 Encoding="" Type="Source" />
   </Doc13>
   <Doc14 NumberOfViews="1" URL="file:///home/internetnightmare/Projects/nixstbuild/src/n2list.h" >
-   <View0 Encoding="" line="0" Type="Source" />
+   <View0 Encoding="" line="18" Type="Source" />
   </Doc14>
  </DocsAndViews>
  <pluginList>

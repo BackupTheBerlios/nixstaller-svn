@@ -210,7 +210,7 @@ void NBRunGen::sOK()
         {
             if (!isDefault(screenlist->topLevelItem(i)->text(0)))
             {
-                gscript += screenlist->topLevelItem(i)->text(0).toStdString() + " = install.newcfgscreen(\""+ screenlist->topLevelItem(i)->text(1).toStdString()  +"\")\n\t";
+                gscript += screenlist->topLevelItem(i)->text(0).toStdString() + " = install.newscreen(\""+ screenlist->topLevelItem(i)->text(1).toStdString()  +"\")\n\t";
             }
         }
         gscript += "\n";

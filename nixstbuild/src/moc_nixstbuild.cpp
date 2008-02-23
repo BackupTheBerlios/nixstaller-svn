@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'nixstbuild.h'
 **
-** Created: Sun Jun 24 23:25:16 2007
-**      by: The Qt Meta Object Compiler version 59 (Qt 4.3.0)
+** Created: Fri Feb 22 19:28:14 2008
+**      by: The Qt Meta Object Compiler version 59 (Qt 4.3.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'nixstbuild.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 59
-#error "This file was generated using the moc from 4.3.0. It"
+#error "This file was generated using the moc from 4.3.2. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -22,7 +22,7 @@ static const uint qt_meta_data_nixstbuild[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-      34,   10, // methods
+      27,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
@@ -43,24 +43,17 @@ static const uint qt_meta_data_nixstbuild[] = {
      184,   11,   11,   11, 0x08,
      194,   11,   11,   11, 0x08,
      208,   11,   11,   11, 0x08,
-     225,   11,   11,   11, 0x08,
-     240,   11,   11,   11, 0x08,
-     261,  257,   11,   11, 0x08,
-     285,   11,   11,   11, 0x08,
-     300,   11,   11,   11, 0x08,
-     315,   11,   11,   11, 0x08,
-     327,   11,   11,   11, 0x08,
-     340,   11,   11,   11, 0x08,
-     358,   11,   11,   11, 0x08,
-     370,   11,   11,   11, 0x08,
-     386,   11,   11,   11, 0x08,
-     399,   11,   11,   11, 0x08,
-     413,   11,   11,   11, 0x08,
-     432,   11,   11,   11, 0x08,
-     450,  445,   11,   11, 0x08,
-     473,   11,   11,   11, 0x08,
-     483,   11,   11,   11, 0x08,
-     514,  494,   11,   11, 0x08,
+     222,   11,   11,   11, 0x08,
+     239,   11,   11,   11, 0x08,
+     254,   11,   11,   11, 0x08,
+     275,  271,   11,   11, 0x08,
+     299,   11,   11,   11, 0x08,
+     321,  314,   11,   11, 0x08,
+     342,  314,   11,   11, 0x08,
+     368,  363,   11,   11, 0x08,
+     391,   11,   11,   11, 0x08,
+     401,   11,   11,   11, 0x08,
+     432,  412,   11,   11, 0x08,
 
        0        // eod
 };
@@ -71,13 +64,11 @@ static const char qt_meta_stringdata_nixstbuild[] = {
     "ft_addFile()\0ft_addDir()\0saveLicense()\0"
     "saveWelcome()\0saveFinish()\0openLicense()\0"
     "openWelcome()\0openFinish()\0saveConfig()\0"
-    "saveRun()\0generateRun()\0insertTemplate()\0"
-    "openIntroPic()\0settingsDialog()\0pos\0"
-    "fvCustomContext(QPoint)\0fvDeleteFile()\0"
-    "rt_icheckbox()\0rt_iradio()\0rt_iconfig()\0"
-    "rt_idirselector()\0rt_iinput()\0"
-    "rt_icheckboxh()\0rt_iradioh()\0rt_iconfigh()\0"
-    "rt_idirselectorh()\0rt_iinputh()\0line\0"
+    "saveRun()\0savePackage()\0generateRun()\0"
+    "insertTemplate()\0openIntroPic()\0"
+    "settingsDialog()\0pos\0fvCustomContext(QPoint)\0"
+    "fvDeleteFile()\0action\0rt_hovered(QAction*)\0"
+    "rt_clicked(QAction*)\0line\0"
     "cv_appendline(QString)\0cv_read()\0"
     "cv_close()\0exitCode,exitStatus\0"
     "cv_finished(int,QProcess::ExitStatus)\0"
@@ -123,28 +114,21 @@ int nixstbuild::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 11: openFinish(); break;
         case 12: saveConfig(); break;
         case 13: saveRun(); break;
-        case 14: generateRun(); break;
-        case 15: insertTemplate(); break;
-        case 16: openIntroPic(); break;
-        case 17: settingsDialog(); break;
-        case 18: fvCustomContext((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
-        case 19: fvDeleteFile(); break;
-        case 20: rt_icheckbox(); break;
-        case 21: rt_iradio(); break;
-        case 22: rt_iconfig(); break;
-        case 23: rt_idirselector(); break;
-        case 24: rt_iinput(); break;
-        case 25: rt_icheckboxh(); break;
-        case 26: rt_iradioh(); break;
-        case 27: rt_iconfigh(); break;
-        case 28: rt_idirselectorh(); break;
-        case 29: rt_iinputh(); break;
-        case 30: cv_appendline((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 31: cv_read(); break;
-        case 32: cv_close(); break;
-        case 33: cv_finished((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QProcess::ExitStatus(*)>(_a[2]))); break;
+        case 14: savePackage(); break;
+        case 15: generateRun(); break;
+        case 16: insertTemplate(); break;
+        case 17: openIntroPic(); break;
+        case 18: settingsDialog(); break;
+        case 19: fvCustomContext((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
+        case 20: fvDeleteFile(); break;
+        case 21: rt_hovered((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
+        case 22: rt_clicked((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
+        case 23: cv_appendline((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 24: cv_read(); break;
+        case 25: cv_close(); break;
+        case 26: cv_finished((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QProcess::ExitStatus(*)>(_a[2]))); break;
         }
-        _id -= 34;
+        _id -= 27;
     }
     return _id;
 }
