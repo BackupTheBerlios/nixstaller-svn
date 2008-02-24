@@ -26,9 +26,9 @@
 class CLuaProgressDialog: public CBaseLuaProgressDialog
 {
     GtkWidget *m_pDialog, *m_pTitle, *m_pSecTitle, *m_pProgBar, *m_pSecProgBar;
-    bool m_bRunning;
     
     virtual void CoreSetNextStep(void);
+    virtual void CoreSetProgress(int progress);
     virtual void CoreEnableSecProgBar(bool enable);
     virtual void CoreSetSecTitle(const char *title);
     virtual void CoreSetSecProgress(int progress);

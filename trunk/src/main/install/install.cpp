@@ -422,7 +422,7 @@ void CBaseInstall::UpdateExtrStatus(const char *s)
 
     if (m_szOS == "sunos") // HACK: Solaris tar outputs additional information after file name, remove it
     {
-        // Format is "x <filename>, <n> bytes, <n> tape blocks. The "x " part is already removed.
+        // Format is "x <filename>, <n> bytes, <n> tape blocks. The "x " part was already removed.
         
         // Search for second last comma
         TSTLStrSize commapos = stat.rfind(",");
@@ -766,7 +766,9 @@ int CBaseInstall::LuaNewProgressDialog(lua_State *L)
     cl->Run();
     NLua::Unreference(ref);
 
-    return 1;
+    lua_pop(L, 1);
+    
+    return 0;
 }
 
 int CBaseInstall::LuaGetTempDir(lua_State *L)

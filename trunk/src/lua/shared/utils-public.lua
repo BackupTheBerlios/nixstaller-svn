@@ -85,3 +85,11 @@ function utils.tablemerge(t1, t2)
         t1[k] = v
     end
 end
+
+function utils.mapsize(t)
+    local ret = 0
+    for k in pairs(t) do
+        ret = ret + 1
+    end
+    return ret
+end

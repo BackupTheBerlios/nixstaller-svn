@@ -117,8 +117,14 @@ function getdepsfromlibs(libs) -- libs is a map, not a list
     return ret
 end
 
-function extractdeps()
+function extractdeps(dialog)
+    local depsize = #pkg.deps
+    local count = 0
+    
+    dialog:enablesecbar(true)
+
     for n in pairs(pkg.depmap) do
+        dialog:setsectitle("Dependency: " .. n)
         local src = string.format("%s/deps/%s", curdir, n)
         local dest = string.format("%s/files", src)
         os.mkdirrec(dest)
@@ -135,6 +141,22 @@ function extractdeps()
         checkarch(string.format("%s/files_all_%s", src, os.arch))
         checkarch(string.format("%s/files_%s_%s", src, os.osname, os.arch))
 
+        local szmap = { }
+        local totalsize = 0
+        for _, f in ipairs(archives) do
+            local szfile = io.open(f .. ".sizes", "r")
+            if szfile then
+                szmap[f] = { }
+                for line in szfile:lines() do
+                    local sz = tonumber(string.match(line, "^[^%s]*"))
+                    szmap[f][string.gsub(line, "^[^%s]*%s*", "")] = sz
+                    totalsize = totalsize + sz
+                end
+            end
+            szfile:close()
+        end
+        
+        local extractedsz = 0
         for _, f in ipairs(archives) do
             local extrcmd
             if cfg.archivetype == "gzip" then
@@ -145,9 +167,26 @@ function extractdeps()
                 extrcmd = string.format("(%s/lzma-decode %s dep.tar >/dev/null 2>&1 && tar -C %s -xvf dep.tar && rm -f dep.tar)", bindir, f, dest)
             end
             
-            install.execute(extrcmd)
+            local pipe = check(io.popen(extrcmd))
+            for line in pipe:lines() do
+                local file = string.gsub(line, "^x ", "")
+                
+                if os.osname == "sunos" then
+                    -- Solaris put some extra info after filename, remove
+                    file = string.gsub(file, ", [%d]* bytes, [%d]* tape blocks", "")
+                end
+                
+                if szmap[f][file] and totalsize > 0 then
+                    extractedsz = extractedsz + szmap[f][file]
+                    dialog:setsecprogress(extractedsz / totalsize * 100)
+                end
+                for n=1,1000 do install.updateui() end
+            end
         end
+        count = count + 1
+        dialog:setprogress(count / depsize * 100)
     end
+    dialog:enablesecbar(false)
 end
 
 function checkdeps(bins, bdir, deps)

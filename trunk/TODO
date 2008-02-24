@@ -47,7 +47,7 @@ MAIN
 
 
 DOCS
-- utils.tabelfind? utils.tablemerge?
+- utils.tabelfind? utils.tablemerge? utils.mapsize?
 - install.getpkgdir() (now with arg)
 
 

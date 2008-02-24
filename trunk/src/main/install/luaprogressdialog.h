@@ -33,6 +33,7 @@ private:
     int m_iFunctionRef;
     
     virtual void CoreSetNextStep(void) = 0;
+    virtual void CoreSetProgress(int progress) = 0;
     virtual void CoreEnableSecProgBar(bool enable) = 0;
     virtual void CoreSetSecTitle(const char *title) = 0;
     virtual void CoreSetSecProgress(int progress) = 0;
@@ -52,6 +53,7 @@ public:
     static void LuaRegister(void);
     
     static int LuaNextStep(lua_State *L);
+    static int LuaSetProgress(lua_State *L);
     static int LuaEnableSecProgBar(lua_State *L);
     static int LuaSetSecTitle(lua_State *L);
     static int LuaSetSecProgress(lua_State *L);

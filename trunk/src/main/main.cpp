@@ -284,7 +284,6 @@ void CMain::UpdateUI()
     
     if (m_lUITimer <= curtime)
     {
-        debugline("UpdateUI\n");
         m_lUITimer = curtime + 10;
         CoreUpdateUI();
     }

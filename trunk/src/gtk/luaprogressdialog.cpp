@@ -27,7 +27,7 @@
 CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent, const CBaseLuaProgressDialog::TStepList &l,
                                        int r) : CBaseLuaProgressDialog(l, r)
 {
-    const int windoww = 500, windowh = 100;
+    const int windoww = 500, windowh = 0;
     
     m_pDialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_transient_for(GTK_WINDOW(m_pDialog), GTK_WINDOW(parent));
@@ -36,29 +36,38 @@ CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent, const CBaseLuaProgress
     gtk_window_set_position(GTK_WINDOW(m_pDialog), GTK_WIN_POS_CENTER_ON_PARENT);
     gtk_widget_show(GTK_WIDGET(m_pDialog));
     
-    GtkWidget *vbox = gtk_vbox_new(FALSE, 15);
+    GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
     gtk_widget_show(GTK_WIDGET(vbox));
     gtk_container_add(GTK_CONTAINER(m_pDialog), vbox);
     
+    GtkWidget *uvbox = gtk_vbox_new(FALSE, 15);
+    gtk_widget_show(GTK_WIDGET(uvbox));
+    gtk_box_pack_start(GTK_BOX(vbox), uvbox, TRUE, FALSE, 0);
+
     m_pTitle = gtk_label_new(l[0].c_str());
+    gtk_misc_set_alignment(GTK_MISC(m_pTitle), 0.0f, 0.0f);
     gtk_widget_show(GTK_WIDGET(m_pTitle));
-    gtk_box_pack_start(GTK_BOX(vbox), m_pTitle, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(uvbox), m_pTitle, TRUE, FALSE, 0);
     
     m_pProgBar = gtk_progress_bar_new();
     gtk_widget_show(GTK_WIDGET(m_pProgBar));
-    gtk_box_pack_start(GTK_BOX(vbox), m_pProgBar, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(uvbox), m_pProgBar, TRUE, FALSE, 0);
     
+    GtkWidget *dvbox = gtk_vbox_new(FALSE, 15);
+    gtk_box_pack_start(GTK_BOX(vbox), dvbox, TRUE, FALSE, 0);
+
     m_pSecTitle = gtk_label_new(NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), m_pSecTitle, FALSE, FALSE, 0);
+    gtk_widget_show(m_pSecTitle);
+    gtk_misc_set_alignment(GTK_MISC(m_pSecTitle), 0.0f, 0.0f);
+    gtk_box_pack_start(GTK_BOX(dvbox), m_pSecTitle, TRUE, FALSE, 0);
     
     m_pSecProgBar = gtk_progress_bar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), m_pSecProgBar, FALSE, FALSE, 0);
+    gtk_widget_show(m_pSecProgBar);
+    gtk_box_pack_start(GTK_BOX(dvbox), m_pSecProgBar, TRUE, FALSE, 0);
 }
 
 void CLuaProgressDialog::CoreSetNextStep()
 {
-    VerifyRunning();
-    
     const TStepList::size_type step = GetCurrentStep();
     gtk_label_set_text(GTK_LABEL(m_pTitle), GetStepList()[step].c_str());
     
@@ -66,44 +75,39 @@ void CLuaProgressDialog::CoreSetNextStep()
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pProgBar), n);
 }
 
+void CLuaProgressDialog::CoreSetProgress(int progress)
+{
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pProgBar), static_cast<double>(progress) / 100.0);
+}
+
 void CLuaProgressDialog::CoreEnableSecProgBar(bool enable)
 {
-    VerifyRunning();
     if (enable)
     {
-        gtk_widget_show(GTK_WIDGET(m_pSecTitle));
-        gtk_widget_show(GTK_WIDGET(m_pSecProgBar));
+//         gtk_widget_show(GTK_WIDGET(m_pSecTitle));
+//         gtk_widget_show(GTK_WIDGET(m_pSecProgBar));
+        gtk_widget_show(gtk_widget_get_parent(m_pSecTitle));
     }
     else
     {
-        gtk_widget_hide(GTK_WIDGET(m_pSecTitle));
-        gtk_widget_hide(GTK_WIDGET(m_pSecProgBar));
+//         gtk_widget_hide(GTK_WIDGET(m_pSecTitle));
+//         gtk_widget_hide(GTK_WIDGET(m_pSecProgBar));
+        gtk_widget_hide(gtk_widget_get_parent(m_pSecTitle));
     }
 }
 
 void CLuaProgressDialog::CoreSetSecTitle(const char *title)
 {
-    VerifyRunning();
     gtk_label_set_text(GTK_LABEL(m_pSecTitle), title);
 }
 
 void CLuaProgressDialog::CoreSetSecProgress(int progress)
 {
-    VerifyRunning();
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pSecProgBar), static_cast<double>(progress) / 100.0);
 }
 
 void CLuaProgressDialog::CoreRun()
 {
-    m_bRunning = true;
-    gtk_main_iteration_do(FALSE);
     CallFunction();
     gtk_widget_destroy(m_pDialog);
-    m_bRunning = false;
-}
-
-void CLuaProgressDialog::VerifyRunning()
-{
-    if (!m_bRunning)
-        luaL_error(NLua::LuaState, "Error: function called when progress dialog is not running.\n");
 }
