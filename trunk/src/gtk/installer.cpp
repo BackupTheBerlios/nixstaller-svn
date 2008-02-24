@@ -21,6 +21,7 @@
 #include "gtk.h"
 #include "installer.h"
 #include "installscreen.h"
+#include "luaprogressdialog.h"
 
 namespace {
 
@@ -360,6 +361,11 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
     gtk_object_set_user_data(GTK_OBJECT(gtkscreen->GetBox()), gtkscreen);
     gtk_widget_show(gtkscreen->GetBox());
     gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), gtkscreen->GetBox(), NULL);
+}
+
+CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::string> &l, int r)
+{
+    return new CLuaProgressDialog(GetMainWin(), l, r);
 }
 
 void CInstaller::LockScreen(bool cancel, bool prev, bool next)

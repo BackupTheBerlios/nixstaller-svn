@@ -27,6 +27,25 @@ function pkg.newdependency()
 end
 
 function pkg.verifydeps(bins)
+    gui.newprogressdialog({"Hi", "Bye", "Stuff", "And some other stuff"}, function(self)
+        local function wait() for i=1,200000 do install.updateui() end end
+        
+        wait()
+        self:nextstep()
+        self:enablesecbar(true)
+        self:setsectitle("Secondary title")
+        self:setsecprogress(25)
+        wait()
+        self:nextstep()
+        self:setsecprogress(50)
+        wait()
+        self:nextstep()
+        self:setsecprogress(75)
+        wait()
+        
+        
+    end)
+    
     local installeddeps = { }
     local faileddeps = { }
 

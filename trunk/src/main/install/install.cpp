@@ -36,6 +36,7 @@
 #include "main/install/lualabel.h"
 #include "main/install/luamenu.h"
 #include "main/install/luaprogressbar.h"
+#include "main/install/luaprogressdialog.h"
 #include "main/install/luaradiobutton.h"
 #include "main/install/luatextfield.h"
 #include "main/lua/lua.h"
@@ -489,6 +490,7 @@ void CBaseInstall::InitLua()
     CBaseLuaCFGMenu::LuaRegister();
     CBaseLuaMenu::LuaRegister();
     CBaseLuaProgressBar::LuaRegister();
+    CBaseLuaProgressDialog::LuaRegister();
     CBaseLuaTextField::LuaRegister();
     CBaseLuaLabel::LuaRegister();
 
@@ -509,6 +511,9 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaExtraFilesPath, "extrafilespath", "install", this);
     NLua::RegisterFunction(LuaGetLang, "getlang", "install", this);
     NLua::RegisterFunction(LuaSetLang, "setlang", "install", this);
+    NLua::RegisterFunction(LuaUpdateUI, "updateui", "install", this);
+    
+    NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "gui", this);
     
     const char *env = getenv("HOME");
     if (env)
@@ -739,6 +744,31 @@ int CBaseInstall::LuaAddScreen(lua_State *L)
     return 0;
 }
 
+int CBaseInstall::LuaNewProgressDialog(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    const int count = luaL_getn(L, 1);
+    
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+    int ref = NLua::MakeReference(2);
+    
+    CBaseLuaProgressDialog::TStepList l(count);
+    
+    for (int i=1; i<=count; i++)
+    {
+        lua_rawgeti(L, 1, i);
+        l[i-1] = luaL_checkstring(L, -1);
+        lua_pop(L, 1);
+    }
+    
+    CBaseLuaProgressDialog *cl = pInstaller->CoreCreateProgDialog(l, ref);
+    NLua::CreateClass(cl, "progressdialog");
+    cl->Run();
+    NLua::Unreference(ref);
+
+    return 1;
+}
+
 int CBaseInstall::LuaGetTempDir(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
@@ -905,6 +935,13 @@ int CBaseInstall::LuaSetLang(lua_State *L)
     CBaseInstall *pInstaller = GetFromClosure(L);
     pInstaller->m_szCurLang = luaL_checkstring(L, 1);
     pInstaller->UpdateLanguage();
+    return 0;
+}
+
+int CBaseInstall::LuaUpdateUI(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    pInstaller->UpdateUI();
     return 0;
 }
 

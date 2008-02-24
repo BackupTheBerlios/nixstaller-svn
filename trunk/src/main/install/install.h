@@ -18,6 +18,7 @@
 */
 
 class CBaseScreen;
+class CBaseLuaProgressDialog;
 
 class CBaseInstall: virtual public CMain
 {
@@ -60,6 +61,7 @@ private:
     
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
     virtual void CoreAddScreen(CBaseScreen *screen) = 0;
+    virtual CBaseLuaProgressDialog *CoreCreateProgDialog(const std::vector<std::string> &l, int r) = 0;
     virtual void LockScreen(bool cancel, bool prev, bool next) = 0;
     
 protected:
@@ -97,6 +99,7 @@ public:
     // Functions for lua binding
     static int LuaNewScreen(lua_State *L);
     static int LuaAddScreen(lua_State *L);
+    static int LuaNewProgressDialog(lua_State *L);
     static int LuaGetTempDir(lua_State *L);
     static int LuaGetPkgDir(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
@@ -112,6 +115,7 @@ public:
     static int LuaExtraFilesPath(lua_State *L);
     static int LuaGetLang(lua_State *L);
     static int LuaSetLang(lua_State *L);
+    static int LuaUpdateUI(lua_State *L);
 };
 
 // Utils
