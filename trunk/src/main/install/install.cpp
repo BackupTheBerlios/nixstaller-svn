@@ -761,13 +761,13 @@ int CBaseInstall::LuaNewProgressDialog(lua_State *L)
         lua_pop(L, 1);
     }
     
-    CBaseLuaProgressDialog *cl = pInstaller->CoreCreateProgDialog(l, ref);
+    CPointerWrapper<CBaseLuaProgressDialog> cl(pInstaller->CoreCreateProgDialog(l, ref));
     NLua::CreateClass(cl, "progressdialog");
+    lua_pop(L, 1);
     cl->Run();
+    NLua::DeleteClass(cl, "progressdialog");
     NLua::Unreference(ref);
 
-    lua_pop(L, 1);
-    
     return 0;
 }
 

@@ -21,6 +21,7 @@
 #include "hyperlink.h"
 #include "installer.h"
 #include "installscreen.h"
+#include "luaprogressdialog.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
@@ -44,14 +45,6 @@ void CInstaller::CreateHeader()
     m_pHeaderGroup->color(FL_WHITE);
     m_pHeaderGroup->box(FL_FLAT_BOX);
     m_pHeaderGroup->resizable(NULL);
-    
-/*    Fl_Shared_Image *img = Fl_Shared_Image::get(GetLogoFName());
-    if (img)
-    {
-        m_pLogoBox = new Fl_Box(HeaderSpacing(), HeaderSpacing(), img->w()+HeaderSpacing(), img->h());
-        m_pLogoBox->align(FL_ALIGN_TOP | FL_ALIGN_INSIDE);
-        m_pLogoBox->image(img);
-    }*/
     
     int w = 0, h = 0;
     const char *text = GetTranslation("About");
@@ -269,6 +262,11 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
     CInstallScreen *fltkscreen = dynamic_cast<CInstallScreen *>(screen);
     m_pWizard->add(fltkscreen->GetGroup());
     fltkscreen->GetGroup()->user_data(fltkscreen);
+}
+
+CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::string> &l, int r)
+{
+    return new CLuaProgressDialog(l, r);
 }
 
 void CInstaller::CoreUpdateUI(void)

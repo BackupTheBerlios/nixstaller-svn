@@ -17,14 +17,21 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef GTK_LUAPROGRESSDIALOG_H
-#define GTK_LUAPROGRESSDIALOG_H
+#ifndef NCURSES_LUAPROGRESSDIALOG_H
+#define NCURSES_LUAPROGRESSDIALOG_H
 
 #include "main/install/luaprogressdialog.h"
+#include "tui/window.h"
 
-class CLuaProgressDialog: public CBaseLuaProgressDialog
+namespace NNCurses {
+class CLabel;
+class CProgressBar;
+}
+
+class CLuaProgressDialog: public CBaseLuaProgressDialog, public NNCurses::CWindow
 {
-    GtkWidget *m_pDialog, *m_pTitle, *m_pSecTitle, *m_pProgBar, *m_pSecProgBar;
+    NNCurses::CLabel *m_pTitle, *m_pSecTitle;
+    NNCurses::CProgressBar *m_pProgBar, *m_pSecProgBar;
     
     virtual void CoreSetNextStep(void);
     virtual void CoreSetProgress(int progress);
@@ -33,8 +40,7 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog
     virtual void CoreSetSecProgress(int progress);
     
 public:
-    CLuaProgressDialog(GtkWidget *parent, const TStepList &l, int r);
-    virtual ~CLuaProgressDialog(void);
+    CLuaProgressDialog(const TStepList &l, int r);
 };
 
 #endif

@@ -44,7 +44,7 @@ CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent, const CBaseLuaProgress
     gtk_widget_show(GTK_WIDGET(uvbox));
     gtk_box_pack_start(GTK_BOX(vbox), uvbox, TRUE, FALSE, 0);
 
-    m_pTitle = gtk_label_new(l[0].c_str());
+    m_pTitle = gtk_label_new(MakeTranslation(l[0]));
     gtk_misc_set_alignment(GTK_MISC(m_pTitle), 0.0f, 0.0f);
     gtk_widget_show(GTK_WIDGET(m_pTitle));
     gtk_box_pack_start(GTK_BOX(uvbox), m_pTitle, TRUE, FALSE, 0);
@@ -66,10 +66,15 @@ CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent, const CBaseLuaProgress
     gtk_box_pack_start(GTK_BOX(dvbox), m_pSecProgBar, TRUE, FALSE, 0);
 }
 
+CLuaProgressDialog::~CLuaProgressDialog()
+{
+    gtk_widget_destroy(m_pDialog);
+}
+
 void CLuaProgressDialog::CoreSetNextStep()
 {
     const TStepList::size_type step = GetCurrentStep();
-    gtk_label_set_text(GTK_LABEL(m_pTitle), GetStepList()[step].c_str());
+    gtk_label_set_text(GTK_LABEL(m_pTitle), MakeTranslation(GetStepList()[step]));
     
     float n = static_cast<double>(step+1) / static_cast<double>(GetStepList().size());
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pProgBar), n);
@@ -83,31 +88,17 @@ void CLuaProgressDialog::CoreSetProgress(int progress)
 void CLuaProgressDialog::CoreEnableSecProgBar(bool enable)
 {
     if (enable)
-    {
-//         gtk_widget_show(GTK_WIDGET(m_pSecTitle));
-//         gtk_widget_show(GTK_WIDGET(m_pSecProgBar));
         gtk_widget_show(gtk_widget_get_parent(m_pSecTitle));
-    }
     else
-    {
-//         gtk_widget_hide(GTK_WIDGET(m_pSecTitle));
-//         gtk_widget_hide(GTK_WIDGET(m_pSecProgBar));
         gtk_widget_hide(gtk_widget_get_parent(m_pSecTitle));
-    }
 }
 
 void CLuaProgressDialog::CoreSetSecTitle(const char *title)
 {
-    gtk_label_set_text(GTK_LABEL(m_pSecTitle), title);
+    gtk_label_set_text(GTK_LABEL(m_pSecTitle), GetTranslation(title));
 }
 
 void CLuaProgressDialog::CoreSetSecProgress(int progress)
 {
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pSecProgBar), static_cast<double>(progress) / 100.0);
-}
-
-void CLuaProgressDialog::CoreRun()
-{
-    CallFunction();
-    gtk_widget_destroy(m_pDialog);
 }

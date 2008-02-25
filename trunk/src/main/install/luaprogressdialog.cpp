@@ -27,7 +27,7 @@
 // Base Lua Progress Dialog Class
 // -------------------------------------
 
-void CBaseLuaProgressDialog::CallFunction()
+void CBaseLuaProgressDialog::Run()
 {
     NLua::CLuaFunc func(m_iFunctionRef, LUA_REGISTRYINDEX);
     if (func)

@@ -117,7 +117,7 @@ function maplibs(bin, extrapath)
     elf:close()
     
     if os.osname ~= "openbsd" then
-        local pipe = io.popen("ldd " .. bin)
+        local pipe = io.popen(string.format("ldd %s 2>/dev/null", bin))
         
         if not pipe then
             return

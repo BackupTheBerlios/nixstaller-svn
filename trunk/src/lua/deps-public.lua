@@ -106,12 +106,13 @@ function pkg.verifydeps(bins)
                 end
             end
             
+            wait()
+            self:nextstep()
+            
             checkcompat()
             
             if not utils.emptytable(overridedeps) then
                 installeddeps = { }
-                wait()
-                self:nextstep()
                 instdeps(overridedeps)
                 overridedeps = { }
                 checkcompat()

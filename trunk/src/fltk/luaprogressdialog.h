@@ -17,14 +17,20 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef GTK_LUAPROGRESSDIALOG_H
-#define GTK_LUAPROGRESSDIALOG_H
+#ifndef FLTK_LUAPROGRESSDIALOG_H
+#define FLTK_LUAPROGRESSDIALOG_H
 
 #include "main/install/luaprogressdialog.h"
 
+class Fl_Box;
+class Fl_Progress;
+class Fl_Window;
+
 class CLuaProgressDialog: public CBaseLuaProgressDialog
 {
-    GtkWidget *m_pDialog, *m_pTitle, *m_pSecTitle, *m_pProgBar, *m_pSecProgBar;
+    Fl_Window *m_pDialog;
+    Fl_Box *m_pTitle, *m_pSecTitle;
+    Fl_Progress *m_pProgBar, *m_pSecProgBar;
     
     virtual void CoreSetNextStep(void);
     virtual void CoreSetProgress(int progress);
@@ -32,8 +38,11 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog
     virtual void CoreSetSecTitle(const char *title);
     virtual void CoreSetSecProgress(int progress);
     
+    int WidgetHeight(void) const { return 20; }
+    void UpdateWidgets(void);
+    
 public:
-    CLuaProgressDialog(GtkWidget *parent, const TStepList &l, int r);
+    CLuaProgressDialog(const TStepList &l, int r);
     virtual ~CLuaProgressDialog(void);
 };
 

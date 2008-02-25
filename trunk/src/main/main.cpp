@@ -854,14 +854,41 @@ int CMain::LuaGetFileSize(lua_State *L)
 
 int CMain::LuaLog(lua_State *L)
 {
-    std::string msg = luaL_checkstring(L, 1);
+    const int args = lua_gettop(L);
+    NLua::CLuaFunc tostring("tostring");
+    const char *ret;
+    std::string msg;
+
+//     if (tostring)
+    {
+        for (int i=1; i<=args; i++)
+        {
+            NLua::CLuaFunc tostring("tostring");
+            lua_pushvalue(L, i);
+            tostring.PushData();
+            if (tostring(1))
+            {
+                tostring >> ret;
+                if (i > 1)
+                    msg += "\t";
+                msg += ret;
+            }
+        }
+        
+        if (!msg.empty())
+        {
+            syslog(0, msg.c_str());
+            debugline("log: %s\n", msg.c_str());
+        }
+    }
+/*    std::string msg = luaL_checkstring(L, 1);
     int args = lua_gettop(L);
     
     for (int i=2; i<=args; i++)
         msg += luaL_checkstring(L, i);
     
     syslog(0, msg.c_str());
-    debugline("log: %s\n", msg.c_str());
+    debugline("log: %s\n", msg.c_str());*/
     
     return 0;
 }

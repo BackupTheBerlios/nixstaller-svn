@@ -21,6 +21,7 @@
 #define LUAPROGRESSDIALOG_H
 
 #include <vector>
+#include <string>
 
 class CBaseLuaProgressDialog
 {
@@ -37,18 +38,16 @@ private:
     virtual void CoreEnableSecProgBar(bool enable) = 0;
     virtual void CoreSetSecTitle(const char *title) = 0;
     virtual void CoreSetSecProgress(int progress) = 0;
-    virtual void CoreRun(void) = 0;
     
 protected:
     TStepList::size_type GetCurrentStep(void) const { return m_CurrentStep; }
     TStepList &GetStepList(void) { return m_StepList; }
-    void CallFunction(void);
     
 public:
     CBaseLuaProgressDialog(const TStepList &l, int ref) : m_CurrentStep(0), m_StepList(l), m_iFunctionRef(ref) { }
     virtual ~CBaseLuaProgressDialog(void) { }
     
-    void Run(void) { CoreRun(); }
+    void Run(void);
     
     static void LuaRegister(void);
     

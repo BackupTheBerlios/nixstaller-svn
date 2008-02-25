@@ -20,6 +20,7 @@
 #include <algorithm>
 #include "installer.h"
 #include "installscreen.h"
+#include "luaprogressdialog.h"
 #include "main/lua/luaclass.h"
 #include "tui/button.h"
 #include "tui/box.h"
@@ -301,4 +302,14 @@ CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 void CInstaller::CoreAddScreen(CBaseScreen *screen)
 {
     m_InstallScreens.push_back(dynamic_cast<CInstallScreen *>(screen));
+}
+
+CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::string> &l, int r)
+{
+    CLuaProgressDialog *dialog = new CLuaProgressDialog(l, r);
+    dialog->SetFColors(COLOR_GREEN, COLOR_BLUE);
+    dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
+    dialog->SetMinWidth(50);
+    NNCurses::TUI.AddGroup(dialog, true);
+    return dialog;
 }
