@@ -128,21 +128,21 @@ nixstbuild::nixstbuild()
     createStatusBar();
 
     readSettings();
-
 }
 
 void nixstbuild::initMainControls()
 {
-    qd = new QDir("/tmp");
-    string cmd = "rm -rf " + qd->absolutePath().toStdString()+"/.nbtemp";
-    system(cmd.c_str());
-    qd->mkdir("/tmp/.nbtemp");
+    qd = new QDir("/");
+    system("rm -rf /tmp/.nbtemp");
+    qd->cd("/tmp");
+    qd->mkdir("./.nbtemp");
     qd->cd("/tmp/.nbtemp");
-
-    //qd->mkdir("./lang");
 
     qdmodel = new QDirModel();
     folderview = new QTreeView();
+
+    writeConfig();
+
     folderview->setModel(qdmodel);
     folderview->setRootIndex(qdmodel->index(qd->absolutePath()));
 
@@ -163,12 +163,16 @@ void nixstbuild::closeEvent(QCloseEvent *event)
 void nixstbuild::newFile()
 {
     system("rm -rf /tmp/.nbtemp");
-    qd->cd("/tmp/");
+    qd->cd("/tmp");
     qd->mkdir("./.nbtemp");
-    qd->cd("/tmp/.nbtemp/");
+    qd->cd("/tmp/.nbtemp");
 
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
-    cout << qd->absolutePath().toStdString() << endl;
+    writeConfig();
+    //statusBar()->showMessage("License saved", 5000);
+    reloadView();
+
+    //qdmodel->refresh(qdmodel->index(qd->absolutePath()));
+    //cout << qd->absolutePath().toStdString() << endl;
 }
 
 bool nixstbuild::save()
@@ -478,8 +482,11 @@ void nixstbuild::addRunTab()
 void nixstbuild::reloadView()
 {
     qd->cd("/tmp/.nbtemp");
-    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 
+    folderview->setModel(qdmodel);
+    folderview->setRootIndex(qdmodel->index(qd->absolutePath()));
+
+    qdmodel->refresh(qdmodel->index(qd->absolutePath()));
 }
 
 void nixstbuild::fvCustomContext(const QPoint &pos)
@@ -490,8 +497,12 @@ void nixstbuild::fvCustomContext(const QPoint &pos)
 void nixstbuild::fvDeleteFile()
 {
     QString fpath = "rm -rf ";
-    fpath += qdmodel->filePath(folderview->currentIndex());
-    system(fpath.toStdString().c_str());
+    if (qdmodel->filePath(folderview->currentIndex()) != "/tmp/.nbtemp/nixstbuild")
+    {
+        fpath += qdmodel->filePath(folderview->currentIndex());
+        system(fpath.toStdString().c_str());
+    } else QMessageBox::warning(this, "Delete", "Can not delete Nixstbuild configuration file");
+
     reloadView();
 }
 
@@ -752,6 +763,17 @@ void nixstbuild::writeSettings()
     QSettings settings("INightmare", "Nixstbuild");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
+}
+
+void nixstbuild::writeConfig()
+{
+    QFile file(qd->absolutePath()+"/nixstbuild");
+    file.open(QFile::WriteOnly | QFile::Text);
+
+    QTextStream out(&file);
+    out << " ";
+
+    file.close();
 }
 
 QString nixstbuild::strippedName(const QString &fullFileName)
