@@ -1,3 +1,7 @@
+0.4 -->
+- Fixed: GTK input box would crash if initial value was set during construction (reported by dbert)
+
+
 0.3 --> 0.4
 - install.execute / install.executeasroot now return exit code from command
 - Fixed: accessing freed memory in Lua copy file function

@@ -19,6 +19,7 @@
 
 #include "main/main.h"
 #include "luaprogressdialog.h"
+#include "tui/button.h"
 #include "tui/label.h"
 #include "tui/progressbar.h"
 
@@ -28,11 +29,15 @@
 
 CLuaProgressDialog::CLuaProgressDialog(const TStepList &l, int r) : CBaseLuaProgressDialog(l, r)
 {
-//     AddWidget(m_pSecBox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false));
     AddWidget(m_pTitle = new NNCurses::CLabel(GetTranslation(l[0]), false));
     AddWidget(m_pProgBar = new NNCurses::CProgressBar(0.0f, 100.0f));
     AddWidget(m_pSecTitle = new NNCurses::CLabel("", false));
     AddWidget(m_pSecProgBar = new NNCurses::CProgressBar(0.0f, 100.0f));
+    
+    NNCurses::CBox *bbox = new NNCurses::CBox(NNCurses::CBox::HORIZONTAL, false);
+    AddWidget(bbox);
+    bbox->StartPack(m_pCancelButton = new NNCurses::CButton(GetTranslation("Cancel")), true, false, 0, 0);
+    
     m_pSecTitle->Enable(false);
     m_pSecProgBar->Enable(false);
 }
@@ -63,4 +68,18 @@ void CLuaProgressDialog::CoreSetSecTitle(const char *title)
 void CLuaProgressDialog::CoreSetSecProgress(int progress)
 {
     m_pSecProgBar->SetCurrent(progress);
+}
+
+bool CLuaProgressDialog::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
+{
+    if (NNCurses::CWindow::CoreHandleEvent(emitter, type))
+        return true;
+    
+    if ((type == EVENT_CALLBACK) && (emitter == m_pCancelButton))
+    {
+        SetCancelled();
+        return true;
+    }
+    
+    return false;
 }

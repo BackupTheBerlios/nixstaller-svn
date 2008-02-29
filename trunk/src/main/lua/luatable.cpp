@@ -206,6 +206,12 @@ void CLuaTable::CReturn::operator <<(const char *val)
     SetTable();
 }
 
+void CLuaTable::CReturn::operator <<(double val)
+{
+    lua_pushnumber(LuaState, val);
+    SetTable();
+}
+
 void CLuaTable::CReturn::operator <<(int val)
 {
     lua_pushinteger(LuaState, val);

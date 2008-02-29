@@ -565,6 +565,14 @@ void ConvertExToLuaError()
     }
 }
 
+int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+{
+    int ret = select(nfds, readfds, writefds, exceptfds, timeout);
+    if (ret == -1)
+        throw Exceptions::CExSelect(errno);
+    return ret;
+}
+
 // -------------------------------------
 // Directory iterator
 // -------------------------------------

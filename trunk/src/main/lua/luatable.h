@@ -52,6 +52,7 @@ public:
 
         void operator <<(const std::string &val);
         void operator <<(const char *val);
+        void operator <<(double val);
         void operator <<(int val);
         void operator <<(bool val);
         void operator >>(std::string &val);

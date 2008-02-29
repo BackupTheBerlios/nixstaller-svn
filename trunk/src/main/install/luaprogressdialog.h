@@ -32,6 +32,7 @@ private:
     TStepList::size_type m_CurrentStep;
     TStepList m_StepList;
     int m_iFunctionRef;
+    bool m_bCancelled;
     
     virtual void CoreSetNextStep(void) = 0;
     virtual void CoreSetProgress(int progress) = 0;
@@ -42,9 +43,11 @@ private:
 protected:
     TStepList::size_type GetCurrentStep(void) const { return m_CurrentStep; }
     TStepList &GetStepList(void) { return m_StepList; }
+    void SetCancelled(void) { m_bCancelled = true; }
     
 public:
-    CBaseLuaProgressDialog(const TStepList &l, int ref) : m_CurrentStep(0), m_StepList(l), m_iFunctionRef(ref) { }
+    CBaseLuaProgressDialog(const TStepList &l, int ref) : m_CurrentStep(0), m_StepList(l),
+                                                          m_iFunctionRef(ref), m_bCancelled(false) { }
     virtual ~CBaseLuaProgressDialog(void) { }
     
     void Run(void);
@@ -56,6 +59,7 @@ public:
     static int LuaEnableSecProgBar(lua_State *L);
     static int LuaSetSecTitle(lua_State *L);
     static int LuaSetSecProgress(lua_State *L);
+    static int LuaCancelled(lua_State *L);
 };
 
 #endif

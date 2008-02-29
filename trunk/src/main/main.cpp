@@ -31,6 +31,7 @@
 #include <dirent.h>
 #include <libgen.h>
 
+#include "curl.h"
 #include "main.h"
 #include "elfutils.h"
 #include "lua/lua.h"
@@ -56,6 +57,7 @@ void Quit(int ret)
 #endif
     
     FreeStrings();
+    curl_global_cleanup();
     exit(ret);
 }
 
@@ -90,6 +92,8 @@ int main(int argc, char **argv)
     PrintIntro();
 
     LIBSU::SetRunnerPath(dirname(CreateText(argv[0])));
+    
+    curl_global_init(CURL_GLOBAL_ALL);
     
     g_RunScript = ((argc > 1) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
 
@@ -427,6 +431,7 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaExit, "exit", "os"); // Override
     NLua::RegisterFunction(LuaExitStatus, "exitstatus", "os");
     NLua::RegisterFunction(LuaOpenElf, "openelf", "os");
+    NLua::RegisterFunction(LuaInitDownload, "initdownload", "os");
 
     NLua::RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
     NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
@@ -440,6 +445,10 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaGetElfRPath, "getrpath", "elfclass");
     NLua::RegisterClassFunction(LuaCloseElf, "close", "elfclass");
 
+    NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
+    NLua::RegisterClassFunction(LuaCloseDownload, "close", "downloadclass");
+    
+    
     // Set some default values for config variabeles
     NLua::LuaSet("", "appname", "cfg");
     
@@ -1154,6 +1163,88 @@ int CMain::LuaCloseElf(lua_State *L)
 int CMain::LuaPanic(lua_State *L)
 {
     throw Exceptions::CExLua(lua_tostring(L, 1));
+    return 0;
+}
+
+int CMain::LuaInitDownload(lua_State *L)
+{
+    const char *url = luaL_checkstring(L, 1);
+    const char *dest = luaL_checkstring(L, 2);
+
+    CCURLWrapper *curlw = NULL;
+    try
+    {
+        curlw = new CCURLWrapper(url, dest);
+        curlw->SetProgFunc(UpdateLuaDownloadProgress, curlw);
+    }
+    catch (Exceptions::CExCURL &e)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not create download class: %s\n", e.what());
+        return 2;
+    }
+    catch (Exceptions::CExIO &e)
+    {
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not open file: %s\n", e.what());
+        return 2;
+    }
+    
+    NLua::CreateClass(curlw, "downloadclass");
+    
+    return 1;
+}
+
+int CMain::LuaProcessDownload(lua_State *L)
+{
+    CCURLWrapper *curlw = NLua::CheckClassData<CCURLWrapper>("downloadclass", 1);
+    bool done;
+    
+    try
+    {
+        done = !curlw->Process();
+    }
+    catch (Exceptions::CExCURL &e)
+    {
+        NLua::LuaPushError(e.what());
+        return 2;
+    }
+    
+    if (done)
+    {
+        lua_pushboolean(L, false);
+        if (!curlw->Success())
+        {
+            lua_pushstring(L, curlw->ErrorMessage());
+            return 2;
+        }
+    }
+    else
+        lua_pushboolean(L, true);
+    
+    return 1;
+}
+
+int CMain::LuaCloseDownload(lua_State *L)
+{
+    CCURLWrapper *curlw = NLua::CheckClassData<CCURLWrapper>("downloadclass", 1);
+    NLua::DeleteClass(curlw, "downloadclass");
+    delete curlw;
+    return 0;
+}
+
+int CMain::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
+                                     double ultotal, double ulnow)
+{
+    CCURLWrapper *curlw = static_cast<CCURLWrapper *>(clientp);
+    NLua::CLuaFunc func("updateprogress", "downloadclass", curlw);
+    if (func)
+    {
+        NLua::PushClass("downloadclass", curlw);
+        func.PushData(); // Add 'self' to function argument list
+        func << dltotal << dlnow;
+        func(2);
+    }
     return 0;
 }
 

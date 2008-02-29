@@ -67,6 +67,7 @@ void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &
 std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos);
 long GetTime(void);
 void ConvertExToLuaError(void);
+int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 
 template <typename To, typename From> To SafeConvert(From from)
 {

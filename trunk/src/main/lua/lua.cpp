@@ -327,4 +327,20 @@ bool LuaToBool(int index)
     return lua_toboolean(LuaState, index);
 }
 
+void LuaPushError(const char *msg, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, msg);
+    vasprintf(&txt, msg, v);
+    va_end(v);
+    
+    lua_pushnil(LuaState);
+    lua_pushstring(LuaState, txt);
+    
+    free(txt);
+}
+
+
 }

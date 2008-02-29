@@ -17,9 +17,11 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "fltk.h"
 #include "main/main.h"
 #include "luaprogressdialog.h"
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
 #include <FL/Fl_Progress.H>
 #include <FL/Fl_Window.H>
 
@@ -29,7 +31,7 @@
 
 CLuaProgressDialog::CLuaProgressDialog(const CBaseLuaProgressDialog::TStepList &l, int r) : CBaseLuaProgressDialog(l, r)
 {
-    const int windoww = 500, windowh = 150, widgetw = windoww - 40, x = 10;
+    const int windoww = 500, windowh = 140, widgetw = windoww - 20, x = 10;
     m_pDialog = new Fl_Window(windoww, windowh);
     m_pDialog->set_modal();
     m_pDialog->begin();
@@ -48,6 +50,11 @@ CLuaProgressDialog::CLuaProgressDialog(const CBaseLuaProgressDialog::TStepList &
     m_pSecProgBar->maximum(100.0f);
     m_pSecProgBar->hide();
     
+    Fl_Button *button = new Fl_Button(0, windowh - WidgetHeight() - 5, 0, WidgetHeight(), GetTranslation("Cancel"));
+    SetButtonWidth(button);
+    button->position((windoww - button->w()) / 2, button->y());
+    button->callback(CancelCB, this);
+    
     UpdateWidgets();
     
     m_pDialog->end();
@@ -61,30 +68,31 @@ CLuaProgressDialog::~CLuaProgressDialog()
 
 void CLuaProgressDialog::UpdateWidgets()
 {
+    // totalh uses +1 widget because the cancel button
     if (m_pSecTitle->visible())
     {
-        const int totalh = 4 * (WidgetHeight() + 10);
+        const int totalh = 5 * (WidgetHeight() + 5);
         int y = (m_pDialog->h() - totalh) / 2;
         
         m_pTitle->position(m_pTitle->x(), y);
         
-        y += WidgetHeight() + 10;
+        y += WidgetHeight() + 5;
         m_pProgBar->position(m_pProgBar->x(), y);
 
-        y += WidgetHeight() + 10;
+        y += WidgetHeight() + 5;
         m_pSecTitle->position(m_pSecTitle->x(), y);
         
-        y += WidgetHeight() + 10;
+        y += WidgetHeight() + 5;
         m_pSecProgBar->position(m_pSecProgBar->x(), y);
     }
     else
     {
-        const int totalh = 2 * (WidgetHeight() + 10);
+        const int totalh = 3 * (WidgetHeight() + 5);
         int y = (m_pDialog->h() - totalh) / 2;
         
         m_pTitle->position(m_pTitle->x(), y);
         
-        y += WidgetHeight() + 10;
+        y += WidgetHeight() + 5;
         m_pProgBar->position(m_pProgBar->x(), y);
     }
 }
@@ -127,4 +135,10 @@ void CLuaProgressDialog::CoreSetSecTitle(const char *title)
 void CLuaProgressDialog::CoreSetSecProgress(int progress)
 {
     m_pSecProgBar->value(static_cast<float>(progress));
+}
+
+void CLuaProgressDialog::CancelCB(Fl_Widget *w, void *p)
+{
+    CLuaProgressDialog *dialog = static_cast<CLuaProgressDialog *>(p);
+    dialog->SetCancelled();
 }

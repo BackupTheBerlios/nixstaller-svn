@@ -187,6 +187,12 @@ public:
     static int LuaCloseElf(lua_State *L);
     static int LuaElfGC(lua_State *L);
     static int LuaPanic(lua_State *L);
+    static int LuaInitDownload(lua_State *L);
+    static int LuaProcessDownload(lua_State *L);
+    static int LuaCloseDownload(lua_State *L);
+    
+    static int UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
+                                         double ultotal, double ulnow);
 };
 
 class CLuaRunner: public CMain

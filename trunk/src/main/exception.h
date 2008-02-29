@@ -221,7 +221,15 @@ class CExPoll: public CExErrno
 public:
     CExPoll(int err) : CExErrno(err) { };
     virtual const char *what(void) throw()
-    { return FormatText(GetTranslation("Poll returned an error: %s"), Error()); };
+    { return FormatText(GetTranslation("poll returned an error: %s"), Error()); };
+};
+
+class CExSelect: public CExErrno
+{
+public:
+    CExSelect(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("select returned an error: %s"), Error()); };
 };
 
 class CExWaitPID: public CExErrno
@@ -274,7 +282,14 @@ class CExElf: public CExMessage
 {
 public:
     CExElf(const char *msg) : CExMessage(msg) { }
-    virtual const char *what(void) throw() { return FormatText(GetTranslation("Lua Elf class error detected: %s"), Message()); };
+    virtual const char *what(void) throw() { return FormatText(GetTranslation("Elf class error detected: %s"), Message()); };
+};
+
+class CExCURL: public CExMessage
+{
+public:
+    CExCURL(const char *msg) : CExMessage(msg) { }
+    virtual const char *what(void) throw() { return FormatText(GetTranslation("Error during file transfer: %s"), Message()); };
 };
 
 }

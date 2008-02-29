@@ -45,6 +45,7 @@ void CBaseLuaProgressDialog::LuaRegister()
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaEnableSecProgBar, "enablesecbar", "progressdialog");
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetSecTitle, "setsectitle", "progressdialog");
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetSecProgress, "setsecprogress", "progressdialog");
+    NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaCancelled, "cancelled", "progressdialog");
 }
 
 int CBaseLuaProgressDialog::LuaNextStep(lua_State *L)
@@ -89,4 +90,11 @@ int CBaseLuaProgressDialog::LuaSetSecProgress(lua_State *L)
     CBaseLuaProgressDialog *dialog = NLua::CheckClassData<CBaseLuaProgressDialog>("progressdialog", 1);
     dialog->CoreSetSecProgress(luaL_checkint(L, 2));
     return 0;
+}
+
+int CBaseLuaProgressDialog::LuaCancelled(lua_State *L)
+{
+    CBaseLuaProgressDialog *dialog = NLua::CheckClassData<CBaseLuaProgressDialog>("progressdialog", 1);
+    lua_pushboolean(L, dialog->m_bCancelled);
+    return 1;
 }

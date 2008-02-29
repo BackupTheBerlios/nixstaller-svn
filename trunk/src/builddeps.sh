@@ -175,10 +175,19 @@ buildelf()
     restoredir
 }
 
+buildcurl()
+{
+    get "http://curl.haxx.se/download/curl-7.18.0.tar.gz"
+    untar "curl-7.18.0.tar.gz"
+    dodir "curl-7.18.0"
+    ./configure --prefix=$DESTPREFIX --enable-static --disable-file --disable-ldap --disable-ldaps --disable-dict --disable-telnet --disable-thread --disable-ares --disable-debug --disable-crypto-auth --disable-cookies --without-ssl --without-libssh2 --without-libidn && make && make install && make clean
+    restoredir
+}
+
 BUILD="$*"
 
 if [ -z $BUILD ]; then
-    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf"
+    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf curl"
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
 #     fi
@@ -198,6 +207,7 @@ do
         rpm ) buildrpm ;;
         lzma ) buildlzma ;;
         elf ) buildelf ;;
+        curl ) buildcurl ;;
         * ) echo "Wrong build option" ; exit 1 ;;
     esac
 done

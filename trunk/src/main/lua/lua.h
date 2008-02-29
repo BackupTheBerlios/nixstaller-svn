@@ -70,6 +70,7 @@ int MakeReference(int index, int tab=LUA_REGISTRYINDEX);
 void Unreference(int ref, int tab=LUA_REGISTRYINDEX);
 
 bool LuaToBool(int index);
+void LuaPushError(const char *msg, ...);
 
 }
 

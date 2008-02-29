@@ -42,12 +42,14 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     }
     
     m_pEntry = gtk_entry_new();
-    g_signal_connect(G_OBJECT(m_pEntry), "insert_text", G_CALLBACK(InsertCB), const_cast<char *>(type));
-    g_signal_connect(G_OBJECT(m_pEntry), "changed", G_CALLBACK(InputChangedCB), this);
     
     if (val && *val)
         gtk_entry_set_text(GTK_ENTRY(m_pEntry), val);
     
+    // Do this after initial text is set! (Otherwise callback will crash)
+    g_signal_connect(G_OBJECT(m_pEntry), "insert_text", G_CALLBACK(InsertCB), const_cast<char *>(type));
+    g_signal_connect(G_OBJECT(m_pEntry), "changed", G_CALLBACK(InputChangedCB), this);
+
     gtk_entry_set_max_length(GTK_ENTRY(m_pEntry), max);
     gtk_container_add(GTK_CONTAINER(hbox), m_pEntry);
     

@@ -24,6 +24,7 @@
 
 class Fl_Box;
 class Fl_Progress;
+class Fl_Widget;
 class Fl_Window;
 
 class CLuaProgressDialog: public CBaseLuaProgressDialog
@@ -44,6 +45,8 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog
 public:
     CLuaProgressDialog(const TStepList &l, int r);
     virtual ~CLuaProgressDialog(void);
+    
+    static void CancelCB(Fl_Widget *w, void *p);
 };
 
 #endif

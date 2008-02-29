@@ -24,12 +24,14 @@
 #include "tui/window.h"
 
 namespace NNCurses {
+class CButton;
 class CLabel;
 class CProgressBar;
 }
 
 class CLuaProgressDialog: public CBaseLuaProgressDialog, public NNCurses::CWindow
 {
+    NNCurses::CButton *m_pCancelButton;
     NNCurses::CLabel *m_pTitle, *m_pSecTitle;
     NNCurses::CProgressBar *m_pProgBar, *m_pSecProgBar;
     
@@ -38,6 +40,8 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog, public NNCurses::CWindo
     virtual void CoreEnableSecProgBar(bool enable);
     virtual void CoreSetSecTitle(const char *title);
     virtual void CoreSetSecProgress(int progress);
+    
+    virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
     
 public:
     CLuaProgressDialog(const TStepList &l, int r);

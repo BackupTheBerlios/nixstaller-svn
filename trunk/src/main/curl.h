@@ -17,27 +17,29 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef GTK_LUAPROGRESSDIALOG_H
-#define GTK_LUAPROGRESSDIALOG_H
+#include <string>
+#include "curl/curl.h"
 
-#include "main/install/luaprogressdialog.h"
-
-class CLuaProgressDialog: public CBaseLuaProgressDialog
+class CCURLWrapper
 {
-    GtkWidget *m_pDialog, *m_pTitle, *m_pSecTitle, *m_pProgBar, *m_pSecProgBar;
+    CURL *m_pCurl;
+    CURLM *m_pCurlMulti;
+    FILE *m_pDestFile;
+    bool m_bDone, m_bInit;
+    long m_lTimer;
+    CURLcode m_Result;
     
-    virtual void CoreSetNextStep(void);
-    virtual void CoreSetProgress(int progress);
-    virtual void CoreEnableSecProgBar(bool enable);
-    virtual void CoreSetSecTitle(const char *title);
-    virtual void CoreSetSecProgress(int progress);
+    void Check(CURLcode code);
+    void CheckM(CURLMcode code);
+    void Perform(void);
     
 public:
-    CLuaProgressDialog(GtkWidget *parent, const TStepList &l, int r);
-    virtual ~CLuaProgressDialog(void);
+    CCURLWrapper(const char *url, const char *dest);
+    ~CCURLWrapper(void) { Close(); }
     
-    static void CancelCB(GtkWidget *widget, gpointer data);
+    void SetProgFunc(curl_progress_callback progfunc, void *data);
+    void Close(void);
+    bool Process(void);
+    bool Success(void) { return m_Result == CURLE_OK; }
+    const char *ErrorMessage(void) { return curl_easy_strerror(m_Result); }
 };
-
-#endif
-
