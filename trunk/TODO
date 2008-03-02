@@ -30,6 +30,7 @@ OVERALL
 - Check if functions defenitions in LoadPackage are still required
 - deps:
     - Check for static bins?
+- Check if lua function classes can be reused (for LuaLog)
     
 
 PACKAGING

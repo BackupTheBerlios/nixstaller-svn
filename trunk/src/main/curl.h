@@ -27,7 +27,7 @@ class CCURLWrapper
     FILE *m_pDestFile;
     bool m_bDone, m_bInit;
     long m_lTimer;
-    CURLcode m_Result;
+    std::string m_Result;
     
     void Check(CURLcode code);
     void CheckM(CURLMcode code);
@@ -40,6 +40,6 @@ public:
     void SetProgFunc(curl_progress_callback progfunc, void *data);
     void Close(void);
     bool Process(void);
-    bool Success(void) { return m_Result == CURLE_OK; }
-    const char *ErrorMessage(void) { return curl_easy_strerror(m_Result); }
+    bool Success(void) { return m_Result.empty(); }
+    const std::string &ErrorMessage(void) { return m_Result; }
 };

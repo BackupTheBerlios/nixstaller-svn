@@ -556,16 +556,39 @@ function PrepareArchive()
     if pkg.enable then
         -- Add deps
         if pkg.deps then
-            for _, d in ipairs(pkg.deps) do
-                local src = string.format("%s/deps/%s", confdir, d)
-                local dest = string.format("%s/tmp/deps/%s", confdir, d)
+            for _, dep in ipairs(pkg.deps) do
+                local src = string.format("%s/deps/%s", confdir, dep)
+                local dest = string.format("%s/tmp/deps/%s", confdir, dep)
+                local dlfile
                 
                 os.mkdirrec(dest)
                 RequiredCopy(string.format("%s/config.lua", src), dest)
                 
+                if pkg.externdeps and utils.tabelfind(pkg.externdeps, dep) then
+                    dlfile = io.open(string.format("%s/tmp/deps/%s/dlfiles", confdir, dep), "w")
+                    if not dlfile then
+                        ThrowError("Failed to create list file for downloadable files.")
+                    end
+                    dlfile:write("local ret = { }\n")
+                end
+                
                 local dirs = GetFileDirs(src)
+                local archdest = string.format("%s/deps", confdir)
                 for _, d in ipairs(dirs) do
-                    PackDirectory(d, string.format("%s/%s", dest, utils.basename(d)))
+                    local f = string.format("%s/%s_%s", dest, dep, utils.basename(d))
+                    PackDirectory(d, f)
+                    if dlfile then
+                        dlfile:write(string.format("ret[\"%s_%s\"] = \"%s\"\n", dep, utils.basename(d), io.md5(f)))
+                        -- Move archive away, but keep .sizes file
+                        if os.execute(string.format("mv %s %s", f, archdest)) ~= 0 then
+                            ThrowError("Failed to move downloadable dependency archive.")
+                        end
+                    end
+                end
+                
+                if dlfile then
+                    dlfile:write("return ret\n")
+                    dlfile:close()
                 end
             end
         end

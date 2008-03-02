@@ -864,40 +864,28 @@ int CMain::LuaGetFileSize(lua_State *L)
 int CMain::LuaLog(lua_State *L)
 {
     const int args = lua_gettop(L);
-    NLua::CLuaFunc tostring("tostring");
     const char *ret;
     std::string msg;
 
-//     if (tostring)
+    for (int i=1; i<=args; i++)
     {
-        for (int i=1; i<=args; i++)
+        NLua::CLuaFunc tostring("tostring"); // UNDONE
+        lua_pushvalue(L, i);
+        tostring.PushData();
+        if (tostring(1))
         {
-            NLua::CLuaFunc tostring("tostring");
-            lua_pushvalue(L, i);
-            tostring.PushData();
-            if (tostring(1))
-            {
-                tostring >> ret;
-                if (i > 1)
-                    msg += "\t";
-                msg += ret;
-            }
-        }
-        
-        if (!msg.empty())
-        {
-            syslog(0, msg.c_str());
-            debugline("log: %s\n", msg.c_str());
+            tostring >> ret;
+            if (i > 1)
+                msg += "\t";
+            msg += ret;
         }
     }
-/*    std::string msg = luaL_checkstring(L, 1);
-    int args = lua_gettop(L);
     
-    for (int i=2; i<=args; i++)
-        msg += luaL_checkstring(L, i);
-    
-    syslog(0, msg.c_str());
-    debugline("log: %s\n", msg.c_str());*/
+    if (!msg.empty())
+    {
+        syslog(0, msg.c_str());
+        debugline("log: %s\n", msg.c_str());
+    }
     
     return 0;
 }
@@ -1179,12 +1167,16 @@ int CMain::LuaInitDownload(lua_State *L)
     }
     catch (Exceptions::CExCURL &e)
     {
+        if (curlw)
+            delete curlw;
         lua_pushnil(L);
         lua_pushfstring(L, "Could not create download class: %s\n", e.what());
         return 2;
     }
     catch (Exceptions::CExIO &e)
     {
+        if (curlw)
+            delete curlw;
         lua_pushnil(L);
         lua_pushfstring(L, "Could not open file: %s\n", e.what());
         return 2;
@@ -1215,7 +1207,7 @@ int CMain::LuaProcessDownload(lua_State *L)
         lua_pushboolean(L, false);
         if (!curlw->Success())
         {
-            lua_pushstring(L, curlw->ErrorMessage());
+            lua_pushstring(L, curlw->ErrorMessage().c_str());
             return 2;
         }
     }

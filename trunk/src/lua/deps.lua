@@ -117,6 +117,119 @@ function getdepsfromlibs(libs) -- libs is a map, not a list
     return ret
 end
 
+local initdeps = { }
+function initdep(d, dialog)
+    if initdeps[d] ~= nil then
+        return initdeps[d]
+    end
+    
+    dialog:enablesecbar(true)
+    
+    local src = string.format("%s/deps/%s", curdir, d.name)
+    local dest = string.format("%s/files", src)
+    os.mkdirrec(dest)
+    
+    local archfiles = { }
+    archfiles[string.format("%s_files_all", d.name)] = true
+    archfiles[string.format("%s_files_%s_all", d.name, os.osname)] = true
+    archfiles[string.format("%s_files_all_%s", d.name, os.arch)] = true
+    archfiles[string.format("%s_files_%s_%s", d.name, os.osname, os.arch)] = true
+    
+    local dlfile = src .. "/dlfiles"
+    if os.fileexists(dlfile) and d.baseurl then
+        dialog:setsectitle("Downloading dependency " .. d.name)
+        local fmap = dofile(dlfile)
+        for f, sum in pairs(fmap) do
+            if archfiles[f] then
+                local path = string.format("%s/%s", src, f)
+                local download, msg = os.initdownload(string.format("%s/%s", d.baseurl, f), path)
+                
+                if download then
+                    function download:updateprogress(t, d)
+                        dialog:setsecprogress(d/t*100)
+                    end
+    
+                    local stat
+                    stat, msg = download:process()
+                    while stat and not dialog:cancelled() do
+                        stat, msg = download:process()
+                    end
+                    download:close()
+                end
+                
+                if not download or msg or dialog:cancelled() or io.md5(path) ~= sum then -- Error
+                    dialog:enablesecbar(false)
+                    initdeps[d] = false
+                    print("Failed dep:", d.name, msg)
+                    os.remove(path)
+                    return false
+                end
+            end
+        end
+    end
+    
+    dialog:setsectitle("Extracting dependency " .. d.name)
+    
+    local archives = { }
+    local function checkarch(a)
+        if os.fileexists(a) then
+            table.insert(archives, a)
+        end
+    end
+    
+    for a in pairs(archfiles) do
+        checkarch(src .. "/" .. a)
+    end
+
+    local szmap = { }
+    local totalsize = 0
+    for _, f in ipairs(archives) do
+        local szfile = io.open(f .. ".sizes", "r")
+        if szfile then
+            szmap[f] = { }
+            for line in szfile:lines() do
+                local sz = tonumber(string.match(line, "^[^%s]*"))
+                szmap[f][string.gsub(line, "^[^%s]*%s*", "")] = sz
+                totalsize = totalsize + sz
+            end
+        end
+        szfile:close()
+    end
+    
+    local extractedsz = 0
+    for _, f in ipairs(archives) do
+        local extrcmd
+        if cfg.archivetype == "gzip" then
+            extrcmd = string.format("cat %s | gzip -cd | tar -C %s -xvf -", f, dest)
+        elseif cfg.archivetype == "bzip2" then
+            extrcmd = string.format("cat %s | bzip -d | tar -C %s -xvf -", f, dest)
+        else
+            extrcmd = string.format("(%s/lzma-decode %s dep.tar >/dev/null 2>&1 && tar -C %s -xvf dep.tar && rm -f dep.tar)", bindir, f, dest)
+        end
+        
+        local pipe = check(io.popen(extrcmd))
+        for line in pipe:lines() do
+            local file = string.gsub(line, "^x ", "")
+            
+            if os.osname == "sunos" then
+                -- Solaris put some extra info after filename, remove
+                file = string.gsub(file, ", [%d]* bytes, [%d]* tape blocks", "")
+            end
+            
+            if szmap[f][file] and totalsize > 0 then
+                extractedsz = extractedsz + szmap[f][file]
+                dialog:setsecprogress(extractedsz / totalsize * 100)
+            end
+            for n=1,1000 do install.updateui() end
+        end
+    end
+    
+    dialog:enablesecbar(false)
+    initdeps[d] = true
+    return true
+end
+
+--[[
 function extractdeps(dialog)
     local depsize = #pkg.deps
     local count = 0
@@ -188,9 +301,10 @@ function extractdeps(dialog)
     end
     dialog:enablesecbar(false)
 end
+--]]
 
-function checkdeps(bins, bdir, deps)
-    local ret = { }
+function checkdeps(bins, bdir, deps, dialog)
+    local needs, failed = { }, { }
     
     if bins then
         for _, b in ipairs(bins) do
@@ -198,8 +312,12 @@ function checkdeps(bins, bdir, deps)
             if os.fileexists(path) then
                 libs = getmissinglibs(path) -- Collect any dep libs which are not found
                 for rd in pairs(getdepsfromlibs(libs)) do -- Check which deps provide missing libs
-                    if not ret[rd] then
-                        ret[rd] = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps) or { }
+                    if not needs[rd] and not failed[rd] then
+                        if initdep(rd, dialog) then
+                            needs[rd] = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps, dialog) or { }
+                        else
+                            failed[rd] = true
+                        end
                     end
                 end
             end
@@ -207,13 +325,17 @@ function checkdeps(bins, bdir, deps)
     end
     
     for _, d in ipairs(deps) do
-        if not ret[d] and d.required and d:required() then
+        if not needs[d] and not failed[d] and d.required and d:required() then
             -- Add deps which are always required
-            ret[d] = checkdeps(d.libs, pkg.getdepdir(d), d.deps) or { }
+            if initdep(d, dialog) then
+                needs[d] = checkdeps(d.libs, pkg.getdepdir(d), d.deps, dialog) or { }
+            else
+                failed[d] = true
+            end
         end
     end
     
-    return ret
+    return needs, failed
 end
 
 local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap", curdir))
@@ -247,15 +369,16 @@ function checkelf(bin)
     for l, v in pairs(map) do
         if v and os.fileexists(v) then
             foundsyms[l] = getsyms(v)
-        end
-        if symverneeds and symverneeds[l] then
-            local verdefs = getsymverdefs(v)
-            if verdefs then
-                for vn in pairs(symverneeds[l]) do
-                    if verdefs[vn] then
---                         print("Found symbol version:", vn)
-                    else
-                        wronglibs[l] = true
+            
+            if symverneeds and symverneeds[l] then
+                local verdefs = getsymverdefs(v)
+                if verdefs then
+                    for vn in pairs(symverneeds[l]) do
+                        if verdefs[vn] then
+    --                         print("Found symbol version:", vn)
+                        else
+                            wronglibs[l] = true
+                        end
                     end
                 end
             end

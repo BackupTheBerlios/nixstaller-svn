@@ -210,6 +210,9 @@ void CInstaller::UpdateButtons(void)
 
 void CInstaller::Back(void)
 {
+    if (m_bBusyActivate)
+        return;
+        
     gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard));
     CInstallScreen *screen = GetScreen(page);
     
@@ -229,10 +232,12 @@ void CInstaller::Back(void)
         
         if (screen && screen->CanActivate())
         {
+            m_bBusyActivate = true;
             gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
             screen->Activate();
             screen->SubLast();
             UpdateButtons();
+            m_bBusyActivate = false;
             return;
         }
     }
@@ -240,6 +245,9 @@ void CInstaller::Back(void)
 
 void CInstaller::Next(void)
 {
+    if (m_bBusyActivate)
+        return;
+        
     gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard));
     CInstallScreen *screen = GetScreen(page);
     
@@ -259,9 +267,11 @@ void CInstaller::Next(void)
         
         if (screen && screen->CanActivate())
         {
+            m_bBusyActivate = true;
             gtk_notebook_set_current_page(GTK_NOTEBOOK(m_pWizard), page);
             screen->Activate();
             UpdateButtons();
+            m_bBusyActivate = false;
             return;
         }
     }

@@ -28,8 +28,7 @@
 // -------------------------------------
 
 CCURLWrapper::CCURLWrapper(const char *url, const char *dest) : m_pCurl(NULL), m_pCurlMulti(NULL), m_pDestFile(NULL),
-                                                                m_bDone(false), m_bInit(true), m_lTimer(0),
-                                                                m_Result(CURLE_OK)
+                                                                m_bDone(false), m_bInit(true), m_lTimer(0)
 {
     m_pCurl = curl_easy_init();
     m_pCurlMulti = curl_multi_init();
@@ -44,6 +43,7 @@ CCURLWrapper::CCURLWrapper(const char *url, const char *dest) : m_pCurl(NULL), m
     Check(curl_easy_setopt(m_pCurl, CURLOPT_URL, url));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_WRITEDATA, m_pDestFile));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_NOPROGRESS, false));
+    Check(curl_easy_setopt(m_pCurl, CURLOPT_USERAGENT, "nixstaller"));
         
     CheckM(curl_multi_add_handle(m_pCurlMulti, m_pCurl));
 }
@@ -100,49 +100,48 @@ void CCURLWrapper::Close()
 
 bool CCURLWrapper::Process()
 {
-    if (m_bDone || (m_lTimer > GetTime()))
-        return !m_bDone;
+    if (m_bDone)
+        return false;
     
     if (m_bInit)
     {
         m_bInit = false;
         Perform(); // Perform atleast once
     }
-    
-    const long maxwait = 100;
-    long timeout;
-    int maxfd = 0;
-    fd_set sread, swrite, serror;
-    
-    FD_ZERO(&sread);
-    FD_ZERO(&swrite);
-    FD_ZERO(&serror);
-    
-    CheckM(curl_multi_fdset(m_pCurlMulti, &sread, &swrite, &serror, &maxfd));
-    CheckM(curl_multi_timeout(m_pCurlMulti, &timeout));
-    
-    if (timeout == -1)
-        timeout = maxwait;
-    
-    timeout = std::min(timeout, maxwait);
-
-    m_lTimer = GetTime() + maxwait;
-    
-    if (maxfd == -1)
+    else
     {
-        // UNDONE
-        debugline("maxfd == -1\n");
-        return true;
+        const long maxwait = 100; // msec
+        long timeout;
+        int maxfd = 0;
+        fd_set sread, swrite, serror;
+        
+        FD_ZERO(&sread);
+        FD_ZERO(&swrite);
+        FD_ZERO(&serror);
+        
+        CheckM(curl_multi_fdset(m_pCurlMulti, &sread, &swrite, &serror, &maxfd));
+        CheckM(curl_multi_timeout(m_pCurlMulti, &timeout));
+        
+        if (timeout == -1)
+            timeout = maxwait;
+        
+        timeout = std::min(timeout, maxwait);
+    
+        if (maxfd == -1)
+        {
+            // UNDONE
+            debugline("maxfd == -1\n");
+            return true;
+        }
+        
+        timeval tval;
+        tval.tv_sec = 0;
+        tval.tv_usec = timeout * 1000; // msec --> usec
+        int ret = Select(maxfd+1, &sread, &swrite, &serror, &tval);
+        
+        if (ret)
+            Perform();
     }
-    
-    // Change this if maxwait ever happens to be >= 1 sec!
-    timeval tval;
-    tval.tv_sec = 0;
-    tval.tv_usec = timeout;
-    int ret = Select(maxfd+1, &sread, &swrite, &serror, &tval);
-    
-    if (ret)
-        Perform();
     
     CURLMsg *msg;
     int qleft;
@@ -150,9 +149,16 @@ bool CCURLWrapper::Process()
     {
         if (msg->msg == CURLMSG_DONE)
         {
-            debugline("Transfer done (%d)\n", msg->data.result);
             m_bDone = true;
-            m_Result = msg->data.result;
+            if (msg->data.result != CURLE_OK)
+                m_Result = curl_easy_strerror(msg->data.result);
+            else
+            {
+                long status;
+                Check(curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &status));
+                if ((status >= 400) && (status < 600))// FTP/HTTP 4xx or 5xx code?
+                    m_Result = "Error starting download"; // UNDONE?
+            }
             break;
         }
     }

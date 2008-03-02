@@ -31,44 +31,41 @@ function pkg.verifydeps(bins)
     local faileddeps = { }
 
     local success, msg = pcall(function ()
-        gui.newprogressdialog({"Extracting dependencies", "Checking dependencies", "Installing dependencies", "Verifying binary compatibility", "Overiding incompatible native dependencies", "Handling incompatible dependencies"}, function(self)
+        gui.newprogressdialog({"Checking dependencies", "Installing dependencies", "Verifying binary compatibility", "Overiding incompatible native dependencies", "Handling incompatible dependencies"}, function(self)
             local function wait() for n=1,600000 do install.updateui() end end
             
-            extractdeps(self)
-            
-            wait()
-            self:nextstep()
-            local needs = checkdeps(bins, install.getpkgdir(), pkg.deps)
+            local needs, fails = checkdeps(bins, install.getpkgdir(), pkg.deps, self)
+            utils.tablemerge(faileddeps, fails)
             
             wait()
             self:nextstep()
             local function instdeps(deps, incompat)
                 for d, rd in pairs(deps) do
-                    if type(rd) == "table" and not utils.emptytable(rd) then
-                        instdeps(rd, incompat)
-                    end
                     if not installeddeps[d] and not faileddeps[d] then
-                        -- Check if dep is usable
-                        if incompat then
-                            if not d.HandleCompat or not d:HandleCompat() then
+                        if type(rd) == "table" and not utils.emptytable(rd) then
+                            instdeps(rd, incompat)
+                        end
+
+                        if not initdep(d, self) then
+                            faileddeps[d] = true
+                        else
+                            -- Check if dep is usable
+                            if incompat then
+                                if not d.HandleCompat or not d:HandleCompat() then
+                                    faileddeps[d] = true
+                                    install.print(string.format("Failed dependency: %s\n", d.name))
+                                else
+                                    installeddeps[d] = true
+                                    install.print(string.format("Installed dependency: %s\n", d.name))
+                                end
+                            elseif d.CanInstall and not d:CanInstall() then
                                 faileddeps[d] = true
                                 install.print(string.format("Failed dependency: %s\n", d.name))
                             else
+                                d:Install()
                                 installeddeps[d] = true
                                 install.print(string.format("Installed dependency: %s\n", d.name))
                             end
-                        elseif d.CanInstall and not d:CanInstall() then
-                            faileddeps[d] = true
-                            install.print(string.format("Failed dependency: %s\n", d.name))
-                        else
-                            -- UNDONE
-            --                 if d.needsdownload then
-            --                     download(d)
-            --                 end
-        
-                            d:Install()
-                            installeddeps[d] = true
-                            install.print(string.format("Installed dependency: %s\n", d.name))
                         end
                     end
                 end

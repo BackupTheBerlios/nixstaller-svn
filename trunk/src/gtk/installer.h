@@ -30,6 +30,7 @@ class CInstaller: public CGTKBase, public CBaseInstall
     GtkWidget *m_pWizard;
     bool m_bPrevButtonLocked;
     std::string m_CurTitle;
+    bool m_bBusyActivate; // Busy with activating a screen.
     
     void SetAboutLabel(void);
     
@@ -57,7 +58,7 @@ class CInstaller: public CGTKBase, public CBaseInstall
     virtual void CoreUpdateLanguage(void);
 
 public:
-    CInstaller(void) : m_bPrevButtonLocked(false) {}
+    CInstaller(void) : m_bPrevButtonLocked(false), m_bBusyActivate(false) {}
     virtual ~CInstaller(void) { DeleteScreens(); }
     
     virtual void Init(int argc, char **argv);
