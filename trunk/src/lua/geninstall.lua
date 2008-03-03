@@ -191,7 +191,9 @@ function PackDirectory(dir, file)
     
     local stat
     if cfg.archivetype == "gzip" then
-        stat = os.execute(string.format('gzip -c9 "%s.tmp" > "%s"', file, file))
+        -- use the '-n' option to omit timestamps. This is a quick hack to make sure that
+        -- file sums stay the same when no files of the archive were changed.
+        stat = os.execute(string.format('gzip -cn9 "%s.tmp" > "%s"', file, file))
     elseif cfg.archivetype == "bzip2" then
         stat = os.execute(string.format('cat "%s.tmp" | bzip2 -9 > "%s"', file, file)) -- Use cat so that bzip won't append ".bz2" to filename
     elseif cfg.archivetype == "lzma" then
@@ -202,6 +204,9 @@ function PackDirectory(dir, file)
         ThrowError("Failed to compress tar archive.")
     end
     
+    print("MD5:", io.md5(file .. ".tmp"), file .. ".tmp")
+    print("MD5:", io.md5(file), file)
+
     os.remove(tarlistfname)
     os.remove(file .. ".tmp")
     os.chdir(olddir)

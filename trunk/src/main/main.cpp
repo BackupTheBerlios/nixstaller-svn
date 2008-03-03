@@ -713,6 +713,12 @@ int CMain::LuaCPFile(lua_State *L)
 
     for (std::list<const char *>::iterator it=srcfiles.begin(); it!=srcfiles.end(); it++)
     {
+        CPointerWrapper<char, void> fname(StrDup(*it), free);
+        CPointerWrapper<char, void> destfile((!isdir) ? StrDup(dest) : CreateTmpText("%s/%s", (char *)dest, basename(fname)), free);
+
+        if (!strcmp(*it, destfile))
+            continue;
+        
         in = open(*it, O_RDONLY);
         if (in < 0)
         {
@@ -721,8 +727,6 @@ int CMain::LuaCPFile(lua_State *L)
             return 2;
         }
        
-        CPointerWrapper<char, void> fname(StrDup(*it), free);
-        CPointerWrapper<char, void> destfile((!isdir) ? StrDup(dest) : CreateTmpText("%s/%s", (char *)dest, basename(fname)), free);
         mode_t flags = O_WRONLY | (FileExists(destfile) ? O_TRUNC : O_CREAT);
         out = open(destfile, flags);
 
@@ -779,6 +783,7 @@ int CMain::LuaCPFile(lua_State *L)
                 umask(mask);
             }
         }
+        
         close(in);
         close(out);
 

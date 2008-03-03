@@ -1,6 +1,8 @@
 0.4 -->
 - Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)
 - Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.
+- Fixed: os.copy would try to copy file if source and destination file were equal.
+
 
 0.3 --> 0.4
 - install.execute / install.executeasroot now return exit code from command
