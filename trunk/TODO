@@ -1,11 +1,9 @@
 OVERALL
 - Add trap in geninstall.sh which cleans stuff?
-- Make shared 'library' for scripts
 - Qt/KDE frontend
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
-- Dep handling?
-- Use deltas <--> patches for different frontends?
+- Use deltas <--> patches for different frontends, OS'es, archs
 - Modify Makeself
     - More commandline options (frontend choosing, package info?, plain install mode?)
     - Merge makeself header with startinstaller?
@@ -25,12 +23,10 @@ OVERALL
     - Add SConstruct check
     - Mention credits, copyrights etc
     - Check weak symbol versions
-    - Verify interface versions
 - Check if thrown exceptions aren't using temporary strings
-- Check if functions defenitions in LoadPackage are still required
+- Check if functions definitions in LoadPackage are still required
 - deps:
     - Check for static bins?
-- Check if lua function classes can be reused (for LuaLog)
     
 
 PACKAGING
@@ -54,6 +50,7 @@ DOCS
 
 TRANSLATIONS
 - Check all sentences for punctation
+- Change "Install commands ..." message to something more appropiate
 
 
 LIBSU
@@ -69,14 +66,17 @@ NCURSES
 
 GTK
 - Move main window away from base frontend class?
+- Check if closing progress dialog via close border button works
 
 
 FLTK
 - Create a pack widget that works?
 - Textfield: Bigger? Smaller fonts?
+- Check if closing progress dialog via close border button works
 
 
 REGISTER
+- Remove?
 - Check if version is specified in config file?
 - Language updates: FLTK AppManager
 - Better error handling for register

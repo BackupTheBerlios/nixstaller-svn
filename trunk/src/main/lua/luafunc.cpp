@@ -48,8 +48,8 @@ namespace NLua {
 // Lua Function Wrapper Class
 // -------------------------------------
 
-CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iFuncRef(LUA_NOREF), m_iRetStartIndex(1),
-                                                        m_ArgLuaTable(LUA_REGISTRYINDEX)
+CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iFuncRef(LUA_NOREF), m_iRetStartIndex(0),
+                                                        m_ArgLuaTable()
 {
     GetGlobal(func, tab);
     if (lua_isnil(LuaState, -1))
@@ -62,8 +62,8 @@ CLuaFunc::CLuaFunc(const char *func, const char *tab) : m_bOK(true), m_iFuncRef(
 }
 
 CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(true), m_iFuncRef(LUA_NOREF),
-                                                                        m_iRetStartIndex(1),
-                                                                        m_ArgLuaTable(LUA_REGISTRYINDEX)
+                                                                        m_iRetStartIndex(0),
+                                                                        m_ArgLuaTable()
 {
     PushClass(type, prvdata);
 
@@ -82,8 +82,8 @@ CLuaFunc::CLuaFunc(const char *func, const char *type, void *prvdata) : m_bOK(tr
         m_iFuncRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
 }
 
-CLuaFunc::CLuaFunc(int ref, int tab) : m_bOK(true), m_iFuncRef(LUA_NOREF), m_iRetStartIndex(1),
-                                       m_ArgLuaTable(LUA_REGISTRYINDEX)
+CLuaFunc::CLuaFunc(int ref, int tab) : m_bOK(true), m_iFuncRef(LUA_NOREF), m_iRetStartIndex(0),
+                                       m_ArgLuaTable()
 {
     lua_rawgeti(LuaState, tab, ref);
     
@@ -107,10 +107,27 @@ void CLuaFunc::CheckSelf()
         throw Exceptions::CExLua("Tried to use invalid LuaFunc");
 }
 
+void CLuaFunc::CheckRets()
+{
+    if (m_iRetStartIndex) // Any returned args left?
+    {
+        m_ArgLuaTable.New();
+        m_iRetStartIndex = 0;
+    }
+}
+
 void CLuaFunc::PushData()
 {
     CheckSelf();
+    CheckRets();
     m_ArgLuaTable[m_ArgLuaTable.Size()+1].SetTable();
+}
+
+void CLuaFunc::PopData()
+{
+    CheckSelf();
+    m_ArgLuaTable[m_iRetStartIndex].GetTable();
+    m_iRetStartIndex++;
 }
 
 int CLuaFunc::operator ()(int ret)
@@ -141,7 +158,7 @@ int CLuaFunc::operator ()(int ret)
     int retstart = top - (count-1);
 
     m_iRetStartIndex = 1;
-    m_ArgLuaTable.New(LUA_REGISTRYINDEX);
+    m_ArgLuaTable.New();
     
     if (count)
     {

@@ -46,7 +46,7 @@ namespace {
 bool g_RunScript;
 }
 
-// Besides main(), other functions may wat to call this incase it wants to stop an exception flow (ie GTK frontend)
+// Besides main(), other functions may want to call this incase they cannot throw an exception
 void Quit(int ret)
 {
     if (!g_RunScript)
@@ -872,17 +872,20 @@ int CMain::LuaLog(lua_State *L)
     const char *ret;
     std::string msg;
 
-    for (int i=1; i<=args; i++)
+    NLua::CLuaFunc tostring("tostring");
+    if (tostring)
     {
-        NLua::CLuaFunc tostring("tostring"); // UNDONE
-        lua_pushvalue(L, i);
-        tostring.PushData();
-        if (tostring(1))
+        for (int i=1; i<=args; i++)
         {
-            tostring >> ret;
-            if (i > 1)
-                msg += "\t";
-            msg += ret;
+            lua_pushvalue(L, i);
+            tostring.PushData();
+            if (tostring(1))
+            {
+                tostring >> ret;
+                if (i > 1)
+                    msg += "\t";
+                msg += ret;
+            }
         }
     }
     
@@ -1240,7 +1243,7 @@ int CMain::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow
         NLua::PushClass("downloadclass", curlw);
         func.PushData(); // Add 'self' to function argument list
         func << dltotal << dlnow;
-        func(2);
+        func(0);
     }
     return 0;
 }

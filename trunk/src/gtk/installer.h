@@ -54,6 +54,7 @@ class CInstaller: public CGTKBase, public CBaseInstall
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(const std::vector<std::string> &l, int r);
+    virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
 
@@ -64,6 +65,8 @@ public:
     virtual void Init(int argc, char **argv);
     
     void SetTitle(const std::string &t);
+    
+    void Cancel(void);
     
     static gboolean AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);
     static gboolean AboutLeaveCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);

@@ -17,8 +17,12 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#ifndef INSTALL_H
+#define INSTALL_H
+
 class CBaseScreen;
 class CBaseLuaProgressDialog;
+class CBaseLuaDepScreen;
 
 class CBaseInstall: virtual public CMain
 {
@@ -62,6 +66,7 @@ private:
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
     virtual void CoreAddScreen(CBaseScreen *screen) = 0;
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(const std::vector<std::string> &l, int r) = 0;
+    virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f) = 0;
     virtual void LockScreen(bool cancel, bool prev, bool next) = 0;
     
 protected:
@@ -100,6 +105,7 @@ public:
     static int LuaNewScreen(lua_State *L);
     static int LuaAddScreen(lua_State *L);
     static int LuaNewProgressDialog(lua_State *L);
+    static int LuaShowDepScreen(lua_State *L);
     static int LuaGetTempDir(lua_State *L);
     static int LuaGetPkgDir(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
@@ -120,3 +126,5 @@ public:
 
 // Utils
 CBaseInstall *GetFromClosure(lua_State *L);
+
+#endif

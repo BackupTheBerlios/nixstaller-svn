@@ -34,7 +34,7 @@ void CBaseLuaProgressDialog::Run()
     {
         NLua::PushClass("progressdialog", this);
         func.PushData(); // Add 'self' to function argument list
-        func(1);
+        func(0);
     }
 }
 

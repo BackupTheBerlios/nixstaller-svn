@@ -21,6 +21,7 @@
 #include "gtk.h"
 #include "installer.h"
 #include "installscreen.h"
+#include "luadepscreen.h"
 #include "luaprogressdialog.h"
 
 namespace {
@@ -378,12 +379,27 @@ CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::
     return new CLuaProgressDialog(GetMainWin(), l, r);
 }
 
+CBaseLuaDepScreen *CInstaller::CoreCreateDepScreen(int f)
+{
+    return new CLuaDepScreen(GetMainWin(), this, f);
+}
+
 void CInstaller::LockScreen(bool cancel, bool prev, bool next)
 {
     gtk_widget_set_sensitive(m_pCancelButton, !cancel);
     gtk_widget_set_sensitive(m_pBackButton, !prev);
     gtk_widget_set_sensitive(m_pNextButton, !next);
     m_bPrevButtonLocked = prev;
+}
+
+void CInstaller::Cancel()
+{
+    if (AskQuit())
+    {
+        gtk_widget_destroy(GetMainWin());
+        // Call this here, because this function may be called during Lua execution
+        ::Quit(EXIT_FAILURE);
+    }
 }
 
 gboolean CInstaller::AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data)
@@ -401,13 +417,7 @@ gboolean CInstaller::AboutLeaveCB(GtkWidget *widget, GdkEventCrossing *crossing,
 void CInstaller::CancelCB(GtkWidget *widget, gpointer data)
 {
     CInstaller *parent = (CInstaller *)data;
-    
-    if (parent->AskQuit())
-    {
-        gtk_widget_destroy(parent->GetMainWin());
-        // Call this here, because this function may be called during Lua execution
-        Quit(EXIT_FAILURE);
-    }
+    parent->Cancel();
 }
 
 void CInstaller::BackCB(GtkWidget *widget, gpointer data)

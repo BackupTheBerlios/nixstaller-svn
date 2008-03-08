@@ -30,6 +30,8 @@ function pkg.verifydeps(bins)
     local installeddeps = { }
     local faileddeps = { }
 
+    install.showdepscreen(function () return {{name = "Foo", desc = "Handles drawing.", problem = "Missing (libfoo not found)"}, {name = "Bar", desc = "Handles sound.", problem = "Missing (libfbar not found)"}} end)
+    
     local success, msg = pcall(function ()
         gui.newprogressdialog({"Checking dependencies", "Installing dependencies", "Verifying binary compatibility", "Overiding incompatible native dependencies", "Handling incompatible dependencies"}, function(self)
             local function wait() for n=1,600000 do install.updateui() end end

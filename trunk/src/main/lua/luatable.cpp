@@ -37,9 +37,14 @@ CLuaTable::CLuaTable(const char *var, const char *type, void *prvdata) : m_bOK(t
     Open(var, type, prvdata);
 }
 
-CLuaTable::CLuaTable(int tab) : m_bOK(true), m_iTabRef(LUA_NOREF)
+CLuaTable::CLuaTable(int index) : m_bOK(true), m_iTabRef(LUA_NOREF)
 {
-    New(tab);
+    Open(index);
+}
+
+CLuaTable::CLuaTable() : m_bOK(true), m_iTabRef(LUA_NOREF)
+{
+    New();
 }
 
 void CLuaTable::GetTable(const std::string &tab, int index)
@@ -76,12 +81,12 @@ void CLuaTable::CheckSelf()
         throw Exceptions::CExLua("Tried to use invalid or closed table");
 }
 
-void CLuaTable::New(int tab)
+void CLuaTable::New()
 {
     Close();
     m_bOK = true;
     lua_newtable(LuaState);
-    m_iTabRef = luaL_ref(LuaState, tab);
+    m_iTabRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
 }
 
 void CLuaTable::Open(const char *var, const char *tab)
@@ -130,6 +135,20 @@ void CLuaTable::Open(const char *var, const char *type, void *prvdata)
     }
     
     lua_remove(LuaState, tab);
+}
+
+void CLuaTable::Open(int index)
+{
+    Close();
+    
+    if (lua_isnil(LuaState, index))
+        m_bOK = false;
+    else
+    {
+        m_bOK = true;
+        lua_pushvalue(LuaState, index);
+        m_iTabRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
+    }
 }
 
 void CLuaTable::Close()

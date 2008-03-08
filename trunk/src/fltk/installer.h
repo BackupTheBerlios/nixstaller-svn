@@ -65,6 +65,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(const std::vector<std::string> &l, int r);
+    virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f) {}
     virtual void CoreUpdateUI(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);

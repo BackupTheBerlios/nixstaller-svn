@@ -30,6 +30,7 @@
 #include "main/install/basescreen.h"
 #include "main/install/luacfgmenu.h"
 #include "main/install/luacheckbox.h"
+#include "main/install/luadepscreen.h"
 #include "main/install/luadirselector.h"
 #include "main/install/luagroup.h"
 #include "main/install/luainput.h"
@@ -512,9 +513,10 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaGetLang, "getlang", "install", this);
     NLua::RegisterFunction(LuaSetLang, "setlang", "install", this);
     NLua::RegisterFunction(LuaUpdateUI, "updateui", "install", this);
-    
+    NLua::RegisterFunction(LuaShowDepScreen, "showdepscreen", "install", this);
+        
     NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "gui", this);
-    
+
     const char *env = getenv("HOME");
     if (env)
         SetDestDir(env);
@@ -770,6 +772,20 @@ int CBaseInstall::LuaNewProgressDialog(lua_State *L)
 
     return 0;
 }
+
+int CBaseInstall::LuaShowDepScreen(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    luaL_checktype(L, 1, LUA_TFUNCTION);
+    int ref = NLua::MakeReference(1);
+    
+    CPointerWrapper<CBaseLuaDepScreen> screen(pInstaller->CoreCreateDepScreen(ref));
+    screen->Run();
+    NLua::Unreference(ref);
+
+    return 0;
+}
+
 
 int CBaseInstall::LuaGetTempDir(lua_State *L)
 {

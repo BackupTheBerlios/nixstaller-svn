@@ -63,12 +63,14 @@ public:
     
     CLuaTable(const char *var, const char *tab=NULL);
     CLuaTable(const char *var, const char *type, void *prvdata);
-    CLuaTable(int tab=LUA_GLOBALSINDEX); // Creates new table in the table from index 'tab'
+    CLuaTable(int index);
+    CLuaTable(); // Creates new table
     ~CLuaTable(void) { Close(); }
     
-    void New(int tab=LUA_GLOBALSINDEX);
+    void New(void);
     void Open(const char *var, const char *tab=NULL);
     void Open(const char *var, const char *type, void *prvdata);
+    void Open(int index);
     void Close(void);
     int Size(void);
     
