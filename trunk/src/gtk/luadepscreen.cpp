@@ -42,7 +42,7 @@ CLuaDepScreen::CLuaDepScreen(GtkWidget *parent, CInstaller *inst, int f) : CBase
     gtk_widget_show(vbox);
     gtk_container_add(GTK_CONTAINER(m_pDialog), vbox);
     
-    GtkWidget *title = gtk_label_new(GetTranslation("Dep blah blah"));
+    GtkWidget *title = gtk_label_new(GetTitle());
     gtk_label_set_line_wrap(GTK_LABEL(title), TRUE);
     gtk_widget_show(title);
     gtk_box_pack_start(GTK_BOX(vbox), title, FALSE, FALSE, 5);
@@ -113,9 +113,8 @@ GtkWidget *CLuaDepScreen::CreateListBox()
 
     g_object_unref(store);
     
-/*    GtkTreeSelection *select = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pListView));
-    gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
-    g_signal_connect(G_OBJECT(select), "changed", G_CALLBACK(SelectionCB), this);*/
+    GtkTreeSelection *select = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pListView));
+    gtk_tree_selection_set_mode(select, GTK_SELECTION_NONE);
     
     GtkCellRenderer *cellrenderer = gtk_cell_renderer_text_new();
     g_object_set(GTK_OBJECT(cellrenderer), "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);

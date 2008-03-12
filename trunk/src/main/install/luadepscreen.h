@@ -20,6 +20,9 @@
 #ifndef LUADEPSCREEN_H
 #define LUADEPSCREEN_H
 
+#include <string>
+#include <vector>
+
 class CBaseLuaDepScreen
 {
 protected:
@@ -43,6 +46,7 @@ private:
 protected:
     const TDepList &GetDepList(void) { return m_Dependencies; }
     void Refresh(void);
+    const char *GetTitle(void) const;
     
 public:
     CBaseLuaDepScreen(int f) : m_iLuaCheckRef(f) {}

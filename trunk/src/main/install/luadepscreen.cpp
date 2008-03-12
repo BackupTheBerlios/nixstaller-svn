@@ -34,6 +34,34 @@ void CBaseLuaDepScreen::Refresh()
         func(1);
         func.PopData();
         luaL_checktype(NLua::LuaState, -1, LUA_TTABLE);
+        NLua::CLuaTable deps(-1);
+        
+        m_Dependencies.clear();
+        
+        if (deps)
+        {
+            std::string key;
+            while (deps.Next(key))
+            {
+                deps[key].GetTable();
+                luaL_checktype(NLua::LuaState, -1, LUA_TTABLE);
+                NLua::CLuaTable tab(-1);
+                
+                if (tab)
+                {
+                    const char *d, *p;
+                    tab["desc"] >> d;
+                    tab["problem"] >> p;
+                    m_Dependencies.push_back(SDepInfo(key, d, p));
+                }
+                
+                lua_pop(NLua::LuaState, 1); // deps[key]
+            }
+        }
+        
+        lua_pop(NLua::LuaState, 1); // Func ret
+        
+#if 0
         int tab = lua_gettop(NLua::LuaState);
         int count = luaL_getn(NLua::LuaState, tab);
         
@@ -54,8 +82,13 @@ void CBaseLuaDepScreen::Refresh()
             }
         }
         lua_pop(NLua::LuaState, 1);
+#endif
     }
     
     CoreUpdateList();
 }
 
+const char *CBaseLuaDepScreen::GetTitle() const
+{
+    return GetTranslation("Dependency title here...");
+}

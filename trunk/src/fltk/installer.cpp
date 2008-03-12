@@ -21,6 +21,7 @@
 #include "hyperlink.h"
 #include "installer.h"
 #include "installscreen.h"
+#include "luadepscreen.h"
 #include "luaprogressdialog.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
@@ -267,6 +268,11 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
 CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::string> &l, int r)
 {
     return new CLuaProgressDialog(l, r);
+}
+
+CBaseLuaDepScreen *CInstaller::CoreCreateDepScreen(int f)
+{
+    return new CLuaDepScreen(this, f);
 }
 
 void CInstaller::CoreUpdateUI(void)

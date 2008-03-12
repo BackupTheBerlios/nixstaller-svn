@@ -169,6 +169,27 @@ int CLuaTable::Size()
     return ret;
 }
 
+bool CLuaTable::Next(std::string &key)
+{
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iTabRef);
+    int tab = lua_gettop(LuaState);
+
+    if (!key.empty())
+        lua_pushstring(LuaState, key.c_str());
+    else
+        lua_pushnil(LuaState);
+    
+    bool ret;
+    if ((ret = lua_next(LuaState, tab)))
+    {
+        key = luaL_checkstring(LuaState, -2);
+        lua_pop(LuaState, 2);
+    }
+    
+    lua_pop(LuaState, 1);
+    return ret;
+}
+
 // -------------------------------------
 // Lua Table Return Wrapper Class
 // -------------------------------------

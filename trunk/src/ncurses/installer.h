@@ -46,13 +46,12 @@ class CInstaller: public CNCursBase, public CBaseInstall
     void UpdateButtons(void);
     void PrevScreen(void);
     void NextScreen(void);
-    void AskQuit(void);
     void ActivateScreen(CInstallScreen *screen, bool sublast=false);
     
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(const std::vector<std::string> &l, int r);
-    virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f) {}
+    virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f);
     virtual void CoreUpdateUI(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
 
@@ -66,6 +65,8 @@ public:
     CInstaller(void);
     
     virtual void Init(int argc, char **argv);
+    
+    void AskQuit(void);
 };
 
 

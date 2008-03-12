@@ -73,6 +73,7 @@ public:
     void Open(int index);
     void Close(void);
     int Size(void);
+    bool Next(std::string &key);
     
     CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabRef); }

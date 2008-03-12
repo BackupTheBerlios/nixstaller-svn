@@ -204,9 +204,6 @@ function PackDirectory(dir, file)
         ThrowError("Failed to compress tar archive.")
     end
     
-    print("MD5:", io.md5(file .. ".tmp"), file .. ".tmp")
-    print("MD5:", io.md5(file), file)
-
     os.remove(tarlistfname)
     os.remove(file .. ".tmp")
     os.chdir(olddir)
