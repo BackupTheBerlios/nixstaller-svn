@@ -84,6 +84,9 @@ void CLuaDepScreen::CoreUpdateList()
                         GetTranslation(it->problem).c_str()));
         m_pListBox->add("\n");
     }
+    
+    if (GetDepList().empty())
+        m_bClose = true;
 }
 
 void CLuaDepScreen::CoreRun()
@@ -96,8 +99,6 @@ void CLuaDepScreen::RefreshCB(Fl_Widget *w, void *p)
 {
     CLuaDepScreen *screen = static_cast<CLuaDepScreen *>(p);
     screen->Refresh();
-    if (screen->GetDepList().empty())
-        screen->m_bClose = true;
 }
 
 void CLuaDepScreen::IgnoreCB(Fl_Widget *w, void *p)

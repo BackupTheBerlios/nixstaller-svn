@@ -27,6 +27,7 @@ OVERALL
 - Check if functions definitions in LoadPackage are still required
 - deps:
     - Check for static bins?
+- Check desktopentries in Ubuntu and destdir for SelectDirScreen
     
 
 PACKAGING

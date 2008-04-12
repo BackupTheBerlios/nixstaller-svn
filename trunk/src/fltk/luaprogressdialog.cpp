@@ -129,7 +129,7 @@ void CLuaProgressDialog::CoreEnableSecProgBar(bool enable)
 
 void CLuaProgressDialog::CoreSetSecTitle(const char *title)
 {
-    m_pSecTitle->label(GetTranslation(title));
+    m_pSecTitle->label(MakeTranslation(title));
 }
 
 void CLuaProgressDialog::CoreSetSecProgress(int progress)

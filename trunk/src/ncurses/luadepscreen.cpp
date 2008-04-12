@@ -57,6 +57,9 @@ void CLuaDepScreen::CoreUpdateList()
         m_pTextField->AddText(CreateText("%s: %s\n\n", GetTranslation("Problem"),
                               GetTranslation(it->problem).c_str()));
     }
+    
+    if (GetDepList().empty())
+        m_bClose = true;
 }
 
 void CLuaDepScreen::CoreRun()
@@ -83,8 +86,6 @@ bool CLuaDepScreen::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
         else if (emitter == m_pRefreshButton)
         {
             Refresh();
-            if (GetDepList().empty())
-                m_bClose = true;
             return true;
         }
         else if (emitter == m_pIgnoreButton)

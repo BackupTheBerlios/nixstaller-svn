@@ -426,5 +426,63 @@ function checkelf(bin)
     local incompat = (not utils.emptytable(overridedeps) or not utils.emptytable(incompatdeps) or not utils.emptytable(incompatlibs))
     return incompat, overridedeps, incompatdeps, incompatlibs
 end
+
+function instdeps(deps, incompat, instdeps, faileddeps)
+    for d, rd in pairs(deps) do
+        if not instdeps[d] and not faileddeps[d] then
+            if type(rd) == "table" and not utils.emptytable(rd) then
+                instdeps(rd, incompat)
+            end
+
+            if not initdep(d, self) then
+                faileddeps[d] = true
+            else
+                -- Check if dep is usable
+                if incompat then
+                    if not d.HandleCompat or not d:HandleCompat() then
+                        faileddeps[d] = true
+                        install.print(string.format("Failed dependency: %s\n", d.name))
+                    else
+                        instdeps[d] = true
+                        install.print(string.format("Installed dependency: %s\n", d.name))
+                    end
+                elseif d.CanInstall and not d:CanInstall() then
+                    faileddeps[d] = true
+                    install.print(string.format("Failed dependency: %s\n", d.name))
+                else
+                    d:Install()
+                    instdeps[d] = true
+                    install.print(string.format("Installed dependency: %s\n", d.name))
+                end
+            end
+        end
+    end
+end
+
+function checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
+    local checkfiles = { }
+    utils.tablemerge(checkfiles, bins)
     
+    while #checkfiles > 0 do
+        local b = table.remove(checkfiles)
+        local map = maplibs(b, { install.getpkgdir("lib") })
+        
+        for l, p in pairs(map) do
+            if p and os.fileexists(p) then
+                table.insert(checkfiles, p)
+            else
+                install.print(string.format("WARNING: Missing library dependency: %s\n", l))
+            end
+        end
+        
+        local i, od, id, il = checkelf(b)
+        if i then
+            utils.tablemerge(overridedeps, od)
+            utils.tablemerge(incompatdeps, id)
+            utils.tablemerge(incompatlibs, il)
+        end
+    end
+end
+
+
 dofile("deps-public.lua")

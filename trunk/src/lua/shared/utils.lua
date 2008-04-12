@@ -94,10 +94,6 @@ EXEC=""
 end
 
 function maplibs(bin, extrapath)
-    if type(bin) ~= "string" then
-        print(debug.traceback())
-    end
-    
     local elf = os.openelf(bin)
     
     if not elf then

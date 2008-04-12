@@ -89,6 +89,9 @@ void CLuaDepScreen::CoreUpdateList()
                            COLUMN_DESC, GetTranslation(it->description).c_str(),
                            COLUMN_PROB, GetTranslation(it->problem).c_str(), -1);
     }
+    
+    if (GetDepList().empty())
+        m_bClose = true;
 }
 
 void CLuaDepScreen::CoreRun()
@@ -163,8 +166,6 @@ void CLuaDepScreen::RefreshCB(GtkWidget *widget, gpointer data)
 {
     CLuaDepScreen *screen = static_cast<CLuaDepScreen *>(data);
     screen->Refresh();
-    if (screen->GetDepList().empty())
-        screen->m_bClose = true;
 }
 
 void CLuaDepScreen::IgnoreCB(GtkWidget *widget, gpointer data)

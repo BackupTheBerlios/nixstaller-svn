@@ -50,6 +50,7 @@ mode_t StrToMode(const char *str);
 std::string GetTranslation(const std::string &s);
 const char *GetTranslation(const char *s);
 inline char *MakeTranslation(const std::string &s) { return MakeCString(GetTranslation(s)); }
+inline char *MakeTranslation(const char *s) { return CreateText(GetTranslation(s)); }
 void ConvertTabs(std::string &text);
 char *StrDup(const char *str);
 void MakeAbsolute(std::string &dir);

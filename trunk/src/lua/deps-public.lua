@@ -30,107 +30,68 @@ function pkg.verifydeps(bins)
     local installeddeps = { }
     local faileddeps = { }
 
-    install.showdepscreen(function () return {Foo = {desc = "Handles drawing.", problem = "Missing (libfoo not found)"}, Bar = {desc = "Handles sound.", problem = "Missing (libbar not found)"}} end)
-    
     local success, msg = pcall(function ()
-        gui.newprogressdialog({"Checking dependencies", "Installing dependencies", "Verifying binary compatibility", "Overiding incompatible native dependencies", "Handling incompatible dependencies"}, function(self)
-            local function wait() for n=1,600000 do install.updateui() end end
-            
-            local needs, fails = checkdeps(bins, install.getpkgdir(), pkg.deps, self)
-            utils.tablemerge(faileddeps, fails)
-            
-            wait()
-            self:nextstep()
-            local function instdeps(deps, incompat)
-                for d, rd in pairs(deps) do
-                    if not installeddeps[d] and not faileddeps[d] then
-                        if type(rd) == "table" and not utils.emptytable(rd) then
-                            instdeps(rd, incompat)
-                        end
-
-                        if not initdep(d, self) then
-                            faileddeps[d] = true
-                        else
-                            -- Check if dep is usable
-                            if incompat then
-                                if not d.HandleCompat or not d:HandleCompat() then
-                                    faileddeps[d] = true
-                                    install.print(string.format("Failed dependency: %s\n", d.name))
-                                else
-                                    installeddeps[d] = true
-                                    install.print(string.format("Installed dependency: %s\n", d.name))
-                                end
-                            elseif d.CanInstall and not d:CanInstall() then
-                                faileddeps[d] = true
-                                install.print(string.format("Failed dependency: %s\n", d.name))
-                            else
-                                d:Install()
-                                installeddeps[d] = true
-                                install.print(string.format("Installed dependency: %s\n", d.name))
-                            end
-                        end
-                    end
-                end
-            end
-            
-            instdeps(needs)
-            
-            wait()
-            self:nextstep()
-            
+        install.showdepscreen(function ()
             local overridedeps, incompatdeps, incompatlibs = { }, { }, { }
+            faileddeps = { }
             
-            local function checkcompat()
-                local checkfiles = bins
+            gui.newprogressdialog({"Checking dependencies", "Installing dependencies", "Verifying binary compatibility", "Overiding incompatible native dependencies", "Handling incompatible dependencies"}, function(self)
+                local function wait() for n=1,600000 do install.updateui() end end
                 
-                while #checkfiles > 0 do
-                    local b = table.remove(checkfiles)
-                    
-                    local map = maplibs(b, { install.getpkgdir("lib") })
-                    
-                    for l, p in pairs(map) do
-                        if p and os.fileexists(p) then
-                            table.insert(checkfiles, p)
-                        else
-                            install.print(string.format("WARNING: Missing library dependency: %s\n", l))
-                        end
-                    end
-                    
-                    local i, od, id, il = checkelf(b)
-                    if i then
-                        utils.tablemerge(overridedeps, od)
-                        utils.tablemerge(incompatdeps, id)
-                        utils.tablemerge(incompatlibs, il)
-                    end
+                local needs, fails = checkdeps(bins, install.getpkgdir(), pkg.deps, self)
+                utils.tablemerge(faileddeps, fails)
+                
+                wait()
+                self:nextstep()
+                instdeps(needs, false, installeddeps, faileddeps)
+                
+                wait()
+                self:nextstep()
+                
+                wait()
+                self:nextstep()
+                checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
+                
+                if not utils.emptytable(overridedeps) then
+                    installeddeps = { }
+                    instdeps(overridedeps, false, installeddeps, faileddeps)
+                    overridedeps = { }
+                    checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
+                    assert(utils.emptytable(overridedeps))
                 end
-            end
-            
-            wait()
-            self:nextstep()
-            
-            checkcompat()
-            
-            if not utils.emptytable(overridedeps) then
+        
+                wait()
+                self:nextstep()
                 installeddeps = { }
-                instdeps(overridedeps)
-                overridedeps = { }
-                checkcompat()
-                assert(utils.emptytable(overridedeps))
-            end
-    
-            wait()
-            self:nextstep()
-            installeddeps = { }
-            instdeps(incompatdeps, true)
+                instdeps(incompatdeps, true, installeddeps, faileddeps)
+                
+                print("overridedeps:")
+                table.foreach(overridedeps, print)
+                print("incompatdeps:")
+                table.foreach(incompatdeps, print)
+                print("incompatlibs:")
+                table.foreach(incompatlibs, print)
+                print("faileddeps:")
+                table.foreach(faileddeps, print)
+            end)
             
-            print("overridedeps:")
-            table.foreach(overridedeps, print)
-            print("incompatdeps:")
-            table.foreach(incompatdeps, print)
-            print("incompatlibs:")
-            table.foreach(incompatlibs, print)
-            print("faileddeps:")
-            table.foreach(faileddeps, print)
+            local ret = { }
+            for k, v in pairs(incompatdeps) do
+                ret[k] = ret[k] or { }
+                ret[k].desc = "UNDONE"
+                ret[k].problem = "Incompatible"
+            end
+            for k, v in pairs(incompatlibs) do
+                ret[k] = ret[k] or { }
+                ret[k].desc = ""
+                ret[k].problem = "File missing"
+            end
+            for k, v in pairs(faileddeps) do
+                ret[k] = ret[k] or { }
+                ret[k].desc = "UNDONE"
+                ret[k].problem = "Failed to install"
+            end
+            return ret
         end)
     end)
     
