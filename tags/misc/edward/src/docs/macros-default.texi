@@ -1,0 +1,39 @@
+@macro starttable{row1, row2, row3, row4, row5}
+@multitable @columnfractions \row1\, \row2\, \row3\, \row4\, \row5\
+@end macro
+
+
+@macro addtableheadercol{col}
+@tab \col\
+@end macro
+
+
+@macro addtablecol{col}
+@tab \col\
+@end macro
+
+
+@macro endtablerow
+@end macro
+
+
+@macro addtableheaderrow{col}
+@headitem \col\
+@end macro
+
+
+@macro addtablerow{col}
+@item \col\
+@end macro
+
+
+@macro endtable
+@end multitable
+@end macro
+
+
+@macro codeblock{text}
+@example
+\text\
+@end example
+@end macro

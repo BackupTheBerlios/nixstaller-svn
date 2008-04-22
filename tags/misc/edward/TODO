@@ -1,0 +1,96 @@
+OVERALL
+- Add trap in geninstall.sh which cleans stuff?
+- Nixstaller installer
+- Mention that Solaris + desk entries may not work yet?
+- Disable debug stuff
+- Check if libc diffs are generated
+- Update notes files (check versions, host OS'es etc)
+
+
+TEST
+- OS specific:
+    - slackware: description works?
+    - new fuser code for locks
+- Bug: install.execute crashes with wrong arguments (fixed?)
+
+
+TRANSLATIONS
+- Check for any missing messages
+
+
+DOCS:
+- Changelog
+
+
+---------------------------------- LATER ---------------------------
+
+OVERALL
+- Make shared 'library' for scripts
+- Qt/KDE frontend
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Dep handling?
+- Use deltas <--> patches for different frontends?
+- Modify Makeself
+    - More commandline options (frontend choosing, package info?, plain install mode?)
+    - Merge makeself header with startinstaller?
+    - Remove some illogical commandline options?
+    - MD5 fixes for other platforms (Solaris, NetBSD etc)
+- Better util.a configure testing?
+- Initial value from constructor for radiobutton, menu etc?
+- Root usage: change to use privileged user? (default root)
+- Way to specifiy frontend when installer is started
+
+
+PACKAGING
+- More config options:
+    * Package Changelog?
+    * RPM: Vendor?, Icon?
+- RPM: Description formatting?
+- pacman: Check for locks for future releases
+- deb: way to remove temporary root owned files incase of an error
+
+
+MAIN
+- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+- Improve/check lua error messages?
+
+
+TRANSLATIONS
+- Check all sentences for punctation
+
+
+LIBSU
+- Clean up/redesign
+- Check tmp files leaving around (caused by sh errors?)
+
+
+NCURSES
+- Check chtype?
+- Better monochrome support?
+- Check for 'dynamic' CanFocus for CTextField?
+
+
+GTK
+- Move main window away from base frontend class?
+
+
+FLTK
+- Create a pack widget that works?
+- Textfield: Bigger? Smaller fonts?
+
+
+REGISTER
+- Check if version is specified in config file?
+- Language updates: FLTK AppManager
+- Better error handling for register
+- Check path for rm
+- exceptions
+
+
+DESIGN
+- Reorganize var and type names? (type prefixes etc)
+- Virtual functions that need to call parent function --> make additional function in base class
+that will be called instead of virtual function, this function should call the virtual instead.
+- More usage of const?
+- Reorganize SConstruct
