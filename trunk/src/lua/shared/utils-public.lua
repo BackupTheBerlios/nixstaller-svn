@@ -86,6 +86,12 @@ function utils.tablemerge(t1, t2)
     end
 end
 
+function utils.tableunmerge(t1, t2)
+    for k in pairs(t2) do
+        t1[k] = nil
+    end
+end
+
 function utils.mapsize(t)
     local ret = 0
     for k in pairs(t) do

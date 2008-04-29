@@ -43,7 +43,7 @@ function pkg.verifydeps(bins)
                 
                 wait()
                 self:nextstep()
-                instdeps(needs, false, installeddeps, faileddeps)
+                instdeps(needs, false, installeddeps, faileddeps, self)
                 
                 wait()
                 self:nextstep()
@@ -53,8 +53,10 @@ function pkg.verifydeps(bins)
                 checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
                 
                 if not utils.emptytable(overridedeps) then
-                    installeddeps = { }
-                    instdeps(overridedeps, false, installeddeps, faileddeps)
+                    utils.tableunmerge(installeddeps, overridedeps)
+                    needs = gatherdepdeps(overridedeps, self, faileddeps)
+                    utils.tablemerge(overridedeps, needs)
+                    instdeps(overridedeps, false, installeddeps, faileddeps, self)
                     overridedeps = { }
                     checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
                     assert(utils.emptytable(overridedeps))
@@ -62,8 +64,9 @@ function pkg.verifydeps(bins)
         
                 wait()
                 self:nextstep()
-                installeddeps = { }
-                instdeps(incompatdeps, true, installeddeps, faileddeps)
+                
+                utils.tableunmerge(installeddeps, incompatdeps)
+                instdeps(incompatdeps, true, installeddeps, faileddeps, self)
                 
                 print("overridedeps:")
                 table.foreach(overridedeps, print)
@@ -77,19 +80,19 @@ function pkg.verifydeps(bins)
             
             local ret = { }
             for k, v in pairs(incompatdeps) do
-                ret[k] = ret[k] or { }
-                ret[k].desc = "UNDONE"
-                ret[k].problem = "Incompatible"
+                ret[k.name] = ret[k.name] or { }
+                ret[k.name].desc = "UNDONE"
+                ret[k.name].problem = "Incompatible"
             end
             for k, v in pairs(incompatlibs) do
-                ret[k] = ret[k] or { }
-                ret[k].desc = ""
-                ret[k].problem = "File missing"
+                ret[k.name] = ret[k.name] or { }
+                ret[k.name].desc = ""
+                ret[k.name].problem = "File missing"
             end
             for k, v in pairs(faileddeps) do
-                ret[k] = ret[k] or { }
-                ret[k].desc = "UNDONE"
-                ret[k].problem = "Failed to install"
+                ret[k.name] = ret[k.name] or { }
+                ret[k.name].desc = "UNDONE"
+                ret[k.name].problem = "Failed to install"
             end
             return ret
         end)

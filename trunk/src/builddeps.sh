@@ -159,6 +159,7 @@ buildlzma()
     cp lzma "$DESTPREFIX/bin"
     restoredir
     dodir "C/Compress/Lzma"
+    patch < "$SRCDIR"/lzmastdout.diff
     gcc -Os LzmaStateDecode.c LzmaStateTest.c -o lzma-decode
     cp lzma-decode "$DESTPREFIX/bin"
     restoredir

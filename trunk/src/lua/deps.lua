@@ -204,7 +204,7 @@ function initdep(d, dialog)
         elseif cfg.archivetype == "bzip2" then
             extrcmd = string.format("cat %s | bzip -d | tar -C %s -xvf -", f, dest)
         else
-            extrcmd = string.format("(%s/lzma-decode %s dep.tar >/dev/null 2>&1 && tar -C %s -xvf dep.tar && rm -f dep.tar)", bindir, f, dest)
+            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -C %s -xvf -)", bindir, f, dest)
         end
         
         local pipe = check(io.popen(extrcmd))
@@ -229,80 +229,6 @@ function initdep(d, dialog)
     return true
 end
 
---[[
-function extractdeps(dialog)
-    local depsize = #pkg.deps
-    local count = 0
-    
-    dialog:enablesecbar(true)
-
-    for n in pairs(pkg.depmap) do
-        dialog:setsectitle("Dependency: " .. n)
-        local src = string.format("%s/deps/%s", curdir, n)
-        local dest = string.format("%s/files", src)
-        os.mkdirrec(dest)
-        
-        local archives = { }
-        local function checkarch(a)
-            if os.fileexists(a) then
-                table.insert(archives, a)
-            end
-        end
-        
-        checkarch(string.format("%s/files_all", src))
-        checkarch(string.format("%s/files_%s_all", src, os.osname))
-        checkarch(string.format("%s/files_all_%s", src, os.arch))
-        checkarch(string.format("%s/files_%s_%s", src, os.osname, os.arch))
-
-        local szmap = { }
-        local totalsize = 0
-        for _, f in ipairs(archives) do
-            local szfile = io.open(f .. ".sizes", "r")
-            if szfile then
-                szmap[f] = { }
-                for line in szfile:lines() do
-                    local sz = tonumber(string.match(line, "^[^%s]*"))
-                    szmap[f][string.gsub(line, "^[^%s]*%s*", "")] = sz
-                    totalsize = totalsize + sz
-                end
-            end
-            szfile:close()
-        end
-        
-        local extractedsz = 0
-        for _, f in ipairs(archives) do
-            local extrcmd
-            if cfg.archivetype == "gzip" then
-                extrcmd = string.format("cat %s | gzip -cd | tar -C %s -xvf -", f, dest)
-            elseif cfg.archivetype == "bzip2" then
-                extrcmd = string.format("cat %s | bzip -d | tar -C %s -xvf -", f, dest)
-            else
-                extrcmd = string.format("(%s/lzma-decode %s dep.tar >/dev/null 2>&1 && tar -C %s -xvf dep.tar && rm -f dep.tar)", bindir, f, dest)
-            end
-            
-            local pipe = check(io.popen(extrcmd))
-            for line in pipe:lines() do
-                local file = string.gsub(line, "^x ", "")
-                
-                if os.osname == "sunos" then
-                    -- Solaris put some extra info after filename, remove
-                    file = string.gsub(file, ", [%d]* bytes, [%d]* tape blocks", "")
-                end
-                
-                if szmap[f][file] and totalsize > 0 then
-                    extractedsz = extractedsz + szmap[f][file]
-                    dialog:setsecprogress(extractedsz / totalsize * 100)
-                end
-                for n=1,1000 do install.updateui() end
-            end
-        end
-        count = count + 1
-        dialog:setprogress(count / depsize * 100)
-    end
-    dialog:enablesecbar(false)
-end
---]]
-
 function checkdeps(bins, bdir, deps, dialog)
     local needs, failed = { }, { }
     
@@ -314,7 +240,11 @@ function checkdeps(bins, bdir, deps, dialog)
                 for rd in pairs(getdepsfromlibs(libs)) do -- Check which deps provide missing libs
                     if not needs[rd] and not failed[rd] then
                         if initdep(rd, dialog) then
-                            needs[rd] = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps, dialog) or { }
+                            local f
+                            needs[rd], f = checkdeps(rd.libs, pkg.getdepdir(rd), rd.deps, dialog) or { }
+                            if f then
+                                utils.tablemerge(failed, f)
+                            end
                         else
                             failed[rd] = true
                         end
@@ -400,7 +330,6 @@ function checkelf(bin)
                 local lib = loadedsyms[utils.basename(bin)][s]
                 assert(lib and lib ~= bin)
                 wronglibs[lib] = true
-                local dep = getdepsfromlibs{[lib] = true}
             end
         end
     end
@@ -427,23 +356,23 @@ function checkelf(bin)
     return incompat, overridedeps, incompatdeps, incompatlibs
 end
 
-function instdeps(deps, incompat, instdeps, faileddeps)
+function instdeps(deps, incompat, installeddeps, faileddeps, dialog)
     for d, rd in pairs(deps) do
-        if not instdeps[d] and not faileddeps[d] then
+        if not installeddeps[d] and not faileddeps[d] then
             if type(rd) == "table" and not utils.emptytable(rd) then
-                instdeps(rd, incompat)
+                instdeps(rd, incompat, installeddeps, faileddeps, dialog)
             end
 
-            if not initdep(d, self) then
+            if not initdep(d, dialog) then
                 faileddeps[d] = true
             else
                 -- Check if dep is usable
                 if incompat then
                     if not d.HandleCompat or not d:HandleCompat() then
-                        faileddeps[d] = true
+--                         faileddeps[d] = true
                         install.print(string.format("Failed dependency: %s\n", d.name))
                     else
-                        instdeps[d] = true
+                        installeddeps[d] = true
                         install.print(string.format("Installed dependency: %s\n", d.name))
                     end
                 elseif d.CanInstall and not d:CanInstall() then
@@ -451,7 +380,7 @@ function instdeps(deps, incompat, instdeps, faileddeps)
                     install.print(string.format("Failed dependency: %s\n", d.name))
                 else
                     d:Install()
-                    instdeps[d] = true
+                    installeddeps[d] = true
                     install.print(string.format("Installed dependency: %s\n", d.name))
                 end
             end
@@ -471,7 +400,7 @@ function checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
             if p and os.fileexists(p) then
                 table.insert(checkfiles, p)
             else
-                install.print(string.format("WARNING: Missing library dependency: %s\n", l))
+                install.print(string.format("WARNING: Missing library dependency: %s (%s)\n", l, tostring(p)))
             end
         end
         
@@ -482,6 +411,22 @@ function checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
             utils.tablemerge(incompatlibs, il)
         end
     end
+end
+
+function gatherdepdeps(deps, dialog, faileddeps)
+    local ret = { }
+    for k in pairs(deps) do
+        if initdep(k, dialog) and not faileddeps[k] then
+            local f
+            ret[k], f = checkdeps(k.libs, pkg.getdepdir(k), k.deps, dialog) or { }
+            if f then
+                utils.tablemerge(faileddeps, f)
+            end
+        else
+            faileddeps[k] = true
+        end
+    end
+    return ret
 end
 
 

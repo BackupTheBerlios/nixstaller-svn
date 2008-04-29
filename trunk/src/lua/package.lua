@@ -122,10 +122,12 @@ dofile("deps.lua")
 
 -- Init deps
 pkg.depmap = { }
-for _, d in ipairs(pkg.deps) do
-    local c = dofile(string.format("deps/%s/config.lua", d))
-    c.name = d
-    pkg.depmap[d] = c
+if pkg.deps then
+    for _, d in ipairs(pkg.deps) do
+        local c = dofile(string.format("deps/%s/config.lua", d))
+        c.name = d
+        pkg.depmap[d] = c
+    end
 end
 
 -- Defaults

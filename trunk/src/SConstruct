@@ -438,14 +438,19 @@ opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/i
 opts.Add('gtklibsdir', 'Specifies where the library files for GTK are', '/usr/lib')
 opts.Add('CC', 'The C compiler', 'gcc')
 #opts.Add('CXX', 'The C++ compiler', 'gcc')
+opts.Add('noapcpp', "Don't use apache's STL lib", "no")
 opts.Add('LCVER', 'Manually overide used libc version', '')
 opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS=Split('std supc++ m'), CPPDEFINES=[ 'DEBUG' ], CXX='$CC')
+env = Environment(options = opts, CCFLAGS = "-Wall -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', CPPDEFINES=[ 'DEBUG' ], LIBS='')
 
 Export("env")
+
+if env['noapcpp'] == "no":
+    env.Append(LIBS=Split('std supc++ m'))
+    env['CXX'] = '$CC'
 
 Help(opts.GenerateHelpText(env))
 
@@ -472,8 +477,11 @@ inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
 libc_ver = ''
 
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['.', inc_dir, 'include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch, 'include/'+cur_os, 'include/libelf/'+cur_os+'/'+cur_arch, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
+env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/libelf/'+cur_os+'/'+cur_arch, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
+if env['noapcpp'] == 'no':
+    env.Append(CPPPATH=['include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    
 # Current version
 curnixstversion = '0.4'
 

@@ -13,9 +13,15 @@ elif cur_arch == 'amd64':
 opts = Options()
 opts.Add('CC', 'The C compiler', 'gcc')
 #opts.Add('CXX', 'The C++ compiler', 'gcc')
+opts.Add('noapcpp', "Don't use apache's STL lib", "no")
 
-env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.', '../include/stdcxx', '../include/stdcxx/cfg/'+cur_os+'/'+cur_arch], CXX='$CC')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.'])
 
+if env['noapcpp'] == "no":
+    #env.Append(LIBS=Split('std supc++ m'))
+    env['CXX'] = '$CC'
+    env.Append(CPPPATH=['../include/stdcxx', '../include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    
 Help(opts.GenerateHelpText(env))
 
 config_header = 'su-config.h'
