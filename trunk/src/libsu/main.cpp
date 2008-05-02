@@ -26,7 +26,7 @@
 
 #include <main.h>
 #include <ctype.h>
-#include <sys/time.h>
+#include <time.h>
 
 static const char *TermStr = "Im Done Now :)"; // Lets just hope another program doesn't output this ;)
 
