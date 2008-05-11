@@ -26,14 +26,14 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog
 {
     GtkWidget *m_pDialog, *m_pTitle, *m_pSecTitle, *m_pProgBar, *m_pSecProgBar;
     
-    virtual void CoreSetNextStep(void);
+    virtual void CoreSetTitle(const char *title);
     virtual void CoreSetProgress(int progress);
     virtual void CoreEnableSecProgBar(bool enable);
     virtual void CoreSetSecTitle(const char *title);
     virtual void CoreSetSecProgress(int progress);
     
 public:
-    CLuaProgressDialog(GtkWidget *parent, const TStepList &l, int r);
+    CLuaProgressDialog(GtkWidget *parent, int r);
     virtual ~CLuaProgressDialog(void);
     
     static void CancelCB(GtkWidget *widget, gpointer data);

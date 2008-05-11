@@ -27,9 +27,9 @@
 // NCurses Lua Progress Dialog Class
 // -------------------------------------
 
-CLuaProgressDialog::CLuaProgressDialog(const TStepList &l, int r) : CBaseLuaProgressDialog(l, r)
+CLuaProgressDialog::CLuaProgressDialog(int r) : CBaseLuaProgressDialog(r)
 {
-    AddWidget(m_pTitle = new NNCurses::CLabel(GetTranslation(l[0]), false));
+    AddWidget(m_pTitle = new NNCurses::CLabel("", false));
     AddWidget(m_pProgBar = new NNCurses::CProgressBar(0.0f, 100.0f));
     AddWidget(m_pSecTitle = new NNCurses::CLabel("", false));
     AddWidget(m_pSecProgBar = new NNCurses::CProgressBar(0.0f, 100.0f));
@@ -42,11 +42,9 @@ CLuaProgressDialog::CLuaProgressDialog(const TStepList &l, int r) : CBaseLuaProg
     m_pSecProgBar->Enable(false);
 }
 
-void CLuaProgressDialog::CoreSetNextStep()
+void CLuaProgressDialog::CoreSetTitle(const char *title)
 {
-    const TStepList::size_type step = GetCurrentStep();
-    m_pTitle->SetText(GetTranslation(GetStepList()[step]));
-    m_pProgBar->SetCurrent((step+1) * 100 / SafeConvert<int>(GetStepList().size()));
+    m_pTitle->SetText(GetTranslation(title));
 }
 
 void CLuaProgressDialog::CoreSetProgress(int progress)

@@ -63,7 +63,6 @@ CLuaDepScreen::CLuaDepScreen(CInstaller *inst, int f) : CBaseLuaDepScreen(f), m_
     bpack->position((windoww - w) / 2, y);
     
     m_pDialog->end();
-    m_pDialog->show();
 }
 
 CLuaDepScreen::~CLuaDepScreen()
@@ -73,6 +72,9 @@ CLuaDepScreen::~CLuaDepScreen()
 
 void CLuaDepScreen::CoreUpdateList()
 {
+    if (!m_pDialog->visible())
+        m_pDialog->show();
+        
     m_pListBox->clear();
     
     for (TDepList::const_iterator it=GetDepList().begin(); it!=GetDepList().end(); it++)

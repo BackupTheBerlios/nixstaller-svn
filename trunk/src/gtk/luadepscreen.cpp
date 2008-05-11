@@ -36,7 +36,6 @@ CLuaDepScreen::CLuaDepScreen(GtkWidget *parent, CInstaller *inst, int f) : CBase
     gtk_window_set_default_size(GTK_WINDOW(m_pDialog), windoww, windowh);
     gtk_window_set_position(GTK_WINDOW(m_pDialog), GTK_WIN_POS_CENTER_ON_PARENT);
     g_signal_connect(G_OBJECT(m_pDialog), "delete_event", G_CALLBACK(DeleteCB), this);
-    gtk_widget_show(GTK_WIDGET(m_pDialog));
     
     GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
     gtk_widget_show(vbox);
@@ -78,6 +77,9 @@ CLuaDepScreen::~CLuaDepScreen()
 
 void CLuaDepScreen::CoreUpdateList()
 {
+    if (!GTK_WIDGET_VISIBLE(GTK_WIDGET(m_pDialog)))
+        gtk_widget_show(GTK_WIDGET(m_pDialog));
+        
     GtkTreeIter iter;
     GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pListView)));
     gtk_list_store_clear(store);

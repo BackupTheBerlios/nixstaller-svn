@@ -265,9 +265,9 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
     fltkscreen->GetGroup()->user_data(fltkscreen);
 }
 
-CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::string> &l, int r)
+CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(int r)
 {
-    return new CLuaProgressDialog(l, r);
+    return new CLuaProgressDialog(r);
 }
 
 CBaseLuaDepScreen *CInstaller::CoreCreateDepScreen(int f)

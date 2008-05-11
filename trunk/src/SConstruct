@@ -629,7 +629,7 @@ if not env.GetOption('clean'):
             
     if not BUILD_TARGETS or 'fltk' in map(str, BUILD_TARGETS):
         if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
-            print "Couldn\'t find libz !"
+            print "Couldn't find libz !"
             Exit(1)
         if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
             print "Couldn't find libX11 !"

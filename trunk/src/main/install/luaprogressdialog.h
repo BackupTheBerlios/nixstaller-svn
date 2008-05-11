@@ -25,36 +25,28 @@
 
 class CBaseLuaProgressDialog
 {
-public:
-    typedef std::vector<std::string> TStepList;
-    
-private:
-    TStepList::size_type m_CurrentStep;
-    TStepList m_StepList;
     int m_iFunctionRef;
     bool m_bCancelled;
     
-    virtual void CoreSetNextStep(void) = 0;
+    virtual void CoreSetTitle(const char *title) = 0;
     virtual void CoreSetProgress(int progress) = 0;
     virtual void CoreEnableSecProgBar(bool enable) = 0;
     virtual void CoreSetSecTitle(const char *title) = 0;
     virtual void CoreSetSecProgress(int progress) = 0;
     
 protected:
-    TStepList::size_type GetCurrentStep(void) const { return m_CurrentStep; }
-    TStepList &GetStepList(void) { return m_StepList; }
     void SetCancelled(void) { m_bCancelled = true; }
     
 public:
-    CBaseLuaProgressDialog(const TStepList &l, int ref) : m_CurrentStep(0), m_StepList(l),
-                                                          m_iFunctionRef(ref), m_bCancelled(false) { }
+    CBaseLuaProgressDialog(int ref) : m_iFunctionRef(ref),
+                                      m_bCancelled(false) { }
     virtual ~CBaseLuaProgressDialog(void) { }
     
     void Run(void);
     
     static void LuaRegister(void);
     
-    static int LuaNextStep(lua_State *L);
+    static int LuaSetTitle(lua_State *L);
     static int LuaSetProgress(lua_State *L);
     static int LuaEnableSecProgBar(lua_State *L);
     static int LuaSetSecTitle(lua_State *L);

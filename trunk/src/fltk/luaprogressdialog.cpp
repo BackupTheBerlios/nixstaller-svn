@@ -29,14 +29,14 @@
 // FLTK Lua Progress Dialog Class
 // -------------------------------------
 
-CLuaProgressDialog::CLuaProgressDialog(const CBaseLuaProgressDialog::TStepList &l, int r) : CBaseLuaProgressDialog(l, r)
+CLuaProgressDialog::CLuaProgressDialog(int r) : CBaseLuaProgressDialog(r)
 {
     const int windoww = 500, windowh = 140, widgetw = windoww - 20, x = 10;
     m_pDialog = new Fl_Window(windoww, windowh);
     m_pDialog->set_modal();
     m_pDialog->begin();
     
-    m_pTitle = new Fl_Box(x, 0, widgetw, WidgetHeight(), MakeTranslation(GetStepList()[0]));
+    m_pTitle = new Fl_Box(x, 0, widgetw, WidgetHeight());
     
     m_pProgBar = new Fl_Progress(x, 0, widgetw, WidgetHeight());
     m_pProgBar->minimum(0.0f);
@@ -97,13 +97,9 @@ void CLuaProgressDialog::UpdateWidgets()
     }
 }
 
-void CLuaProgressDialog::CoreSetNextStep()
+void CLuaProgressDialog::CoreSetTitle(const char *title)
 {
-    const TStepList::size_type step = GetCurrentStep();
-    m_pTitle->label(MakeTranslation(GetStepList()[step]));
-    
-    float n = static_cast<double>(step+1) / static_cast<double>(GetStepList().size()) * 100.0f;
-    m_pProgBar->value(n);
+    m_pTitle->label(MakeTranslation(title));
 }
 
 void CLuaProgressDialog::CoreSetProgress(int progress)
@@ -125,6 +121,7 @@ void CLuaProgressDialog::CoreEnableSecProgBar(bool enable)
     }
     
     UpdateWidgets();
+    m_pDialog->redraw();
 }
 
 void CLuaProgressDialog::CoreSetSecTitle(const char *title)

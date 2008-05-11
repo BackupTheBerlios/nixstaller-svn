@@ -305,9 +305,9 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
     m_InstallScreens.push_back(dynamic_cast<CInstallScreen *>(screen));
 }
 
-CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::string> &l, int r)
+CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(int r)
 {
-    CLuaProgressDialog *dialog = new CLuaProgressDialog(l, r);
+    CLuaProgressDialog *dialog = new CLuaProgressDialog(r);
     dialog->SetFColors(COLOR_GREEN, COLOR_BLUE);
     dialog->SetDFColors(COLOR_WHITE, COLOR_BLUE);
     dialog->SetMinWidth(50);

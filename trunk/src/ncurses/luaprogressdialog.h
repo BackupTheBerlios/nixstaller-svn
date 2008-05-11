@@ -35,7 +35,7 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog, public NNCurses::CWindo
     NNCurses::CLabel *m_pTitle, *m_pSecTitle;
     NNCurses::CProgressBar *m_pProgBar, *m_pSecProgBar;
     
-    virtual void CoreSetNextStep(void);
+    virtual void CoreSetTitle(const char *title);
     virtual void CoreSetProgress(int progress);
     virtual void CoreEnableSecProgBar(bool enable);
     virtual void CoreSetSecTitle(const char *title);
@@ -44,7 +44,7 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog, public NNCurses::CWindo
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
     
 public:
-    CLuaProgressDialog(const TStepList &l, int r);
+    CLuaProgressDialog(int r);
 };
 
 #endif

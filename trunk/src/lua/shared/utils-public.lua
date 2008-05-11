@@ -72,7 +72,7 @@ function utils.emptytable(t)
     return next(t) == nil
 end
 
-function utils.tabelfind(t, val)
+function utils.tablefind(t, val)
     for _, v in ipairs(t) do
         if v == val then
             return true

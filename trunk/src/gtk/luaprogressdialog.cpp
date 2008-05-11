@@ -24,8 +24,8 @@
 // GTK Lua Progress Dialog Class
 // -------------------------------------
 
-CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent, const CBaseLuaProgressDialog::TStepList &l,
-                                       int r) : CBaseLuaProgressDialog(l, r)
+CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent,
+                                       int r) : CBaseLuaProgressDialog(r)
 {
     const int windoww = 500, windowh = 0;
     
@@ -40,7 +40,7 @@ CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent, const CBaseLuaProgress
     gtk_widget_show(GTK_WIDGET(vbox));
     gtk_container_add(GTK_CONTAINER(m_pDialog), vbox);
     
-    m_pTitle = gtk_label_new(MakeTranslation(l[0]));
+    m_pTitle = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(m_pTitle), 0.0f, 0.0f);
     gtk_widget_show(GTK_WIDGET(m_pTitle));
     gtk_box_pack_start(GTK_BOX(vbox), m_pTitle, TRUE, FALSE, 0);
@@ -73,13 +73,9 @@ CLuaProgressDialog::~CLuaProgressDialog()
     gtk_widget_destroy(m_pDialog);
 }
 
-void CLuaProgressDialog::CoreSetNextStep()
+void CLuaProgressDialog::CoreSetTitle(const char *title)
 {
-    const TStepList::size_type step = GetCurrentStep();
-    gtk_label_set_text(GTK_LABEL(m_pTitle), MakeTranslation(GetStepList()[step]));
-    
-    float n = static_cast<double>(step+1) / static_cast<double>(GetStepList().size());
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pProgBar), n);
+    gtk_label_set_text(GTK_LABEL(m_pTitle), GetTranslation(title));
 }
 
 void CLuaProgressDialog::CoreSetProgress(int progress)

@@ -42,10 +42,18 @@ CLuaDepScreen::CLuaDepScreen(CInstaller *inst, int f) : CBaseLuaDepScreen(f), m_
     bbox->AddWidget(m_pCancelButton = new NNCurses::CButton(GetTranslation("Cancel")));
     bbox->AddWidget(m_pRefreshButton = new NNCurses::CButton(GetTranslation("Refresh")));
     bbox->AddWidget(m_pIgnoreButton = new NNCurses::CButton(GetTranslation("Ignore")));
+    
+    Enable(false);
 }
 
 void CLuaDepScreen::CoreUpdateList()
 {
+    if (!Enabled())
+    {
+        Enable(true);
+        NNCurses::TUI.ActivateGroup(this);
+    }
+        
     m_pTextField->ClearText();
     
     for (TDepList::const_iterator it=GetDepList().begin(); it!=GetDepList().end(); it++)

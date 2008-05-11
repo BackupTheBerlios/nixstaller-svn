@@ -749,21 +749,10 @@ int CBaseInstall::LuaAddScreen(lua_State *L)
 int CBaseInstall::LuaNewProgressDialog(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
-    const int count = luaL_getn(L, 1);
-    
-    luaL_checktype(L, 2, LUA_TFUNCTION);
-    int ref = NLua::MakeReference(2);
-    
-    CBaseLuaProgressDialog::TStepList l(count);
-    
-    for (int i=1; i<=count; i++)
-    {
-        lua_rawgeti(L, 1, i);
-        l[i-1] = luaL_checkstring(L, -1);
-        lua_pop(L, 1);
-    }
-    
-    CPointerWrapper<CBaseLuaProgressDialog> cl(pInstaller->CoreCreateProgDialog(l, ref));
+    luaL_checktype(L, 1, LUA_TFUNCTION);
+    int ref = NLua::MakeReference(1);
+        
+    CPointerWrapper<CBaseLuaProgressDialog> cl(pInstaller->CoreCreateProgDialog(ref));
     NLua::CreateClass(cl, "progressdialog");
     lua_pop(L, 1);
     cl->Run();

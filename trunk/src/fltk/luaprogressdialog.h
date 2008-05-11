@@ -33,7 +33,7 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog
     Fl_Box *m_pTitle, *m_pSecTitle;
     Fl_Progress *m_pProgBar, *m_pSecProgBar;
     
-    virtual void CoreSetNextStep(void);
+    virtual void CoreSetTitle(const char *title);
     virtual void CoreSetProgress(int progress);
     virtual void CoreEnableSecProgBar(bool enable);
     virtual void CoreSetSecTitle(const char *title);
@@ -43,7 +43,7 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog
     void UpdateWidgets(void);
     
 public:
-    CLuaProgressDialog(const TStepList &l, int r);
+    CLuaProgressDialog(int r);
     virtual ~CLuaProgressDialog(void);
     
     static void CancelCB(Fl_Widget *w, void *p);

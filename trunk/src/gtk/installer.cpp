@@ -374,9 +374,9 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
     gtk_notebook_append_page(GTK_NOTEBOOK(m_pWizard), gtkscreen->GetBox(), NULL);
 }
 
-CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(const std::vector<std::string> &l, int r)
+CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(int r)
 {
-    return new CLuaProgressDialog(GetMainWin(), l, r);
+    return new CLuaProgressDialog(GetMainWin(), r);
 }
 
 CBaseLuaDepScreen *CInstaller::CoreCreateDepScreen(int f)

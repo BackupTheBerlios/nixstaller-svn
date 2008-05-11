@@ -566,7 +566,7 @@ function PrepareArchive()
                 os.mkdirrec(dest)
                 RequiredCopy(string.format("%s/config.lua", src), dest)
                 
-                if pkg.externdeps and utils.tabelfind(pkg.externdeps, dep) then
+                if pkg.externdeps and utils.tablefind(pkg.externdeps, dep) then
                     dlfile = io.open(string.format("%s/tmp/deps/%s/dlfiles", confdir, dep), "w")
                     if not dlfile then
                         ThrowError("Failed to create list file for downloadable files.")

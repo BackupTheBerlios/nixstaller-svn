@@ -27,8 +27,12 @@ OVERALL
 - Check if functions definitions in LoadPackage are still required
 - deps:
     - Check for static bins?
+    - Registerdeps; needed? Only at package.lua?
+    - Cancelling
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
-    
+- Update gensyms.sh command help (-L option)
+- Dialog for fialed downloads
+
 
 PACKAGING
 - More config options:

@@ -65,7 +65,7 @@ private:
     
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
     virtual void CoreAddScreen(CBaseScreen *screen) = 0;
-    virtual CBaseLuaProgressDialog *CoreCreateProgDialog(const std::vector<std::string> &l, int r) = 0;
+    virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r) = 0;
     virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f) = 0;
     virtual void LockScreen(bool cancel, bool prev, bool next) = 0;
     

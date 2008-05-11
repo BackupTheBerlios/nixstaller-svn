@@ -28,72 +28,41 @@ end
 
 function pkg.verifydeps(bins)
     local installeddeps = { }
-    local faileddeps = { }
+    local wrongdeps, wronglibs
 
     local success, msg = pcall(function ()
         install.showdepscreen(function ()
-            local overridedeps, incompatdeps, incompatlibs = { }, { }, { }
-            faileddeps = { }
+            wrongdeps, wronglibs = { }, { }
             
-            gui.newprogressdialog({"Checking dependencies", "Installing dependencies", "Verifying binary compatibility", "Overiding incompatible native dependencies", "Handling incompatible dependencies"}, function(self)
-                local function wait() for n=1,600000 do install.updateui() end end
+            gui.newprogressdialog(function(self)
+                initprogress(bins)
                 
-                local needs, fails = checkdeps(bins, install.getpkgdir(), pkg.deps, self)
-                utils.tablemerge(faileddeps, fails)
+                local needs = checkdeps(bins, install.getpkgdir(), pkg.deps, self, wrongdeps, wronglibs)
                 
-                wait()
-                self:nextstep()
-                instdeps(needs, false, installeddeps, faileddeps, self)
-                
-                wait()
-                self:nextstep()
-                
-                wait()
-                self:nextstep()
-                checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
-                
-                if not utils.emptytable(overridedeps) then
-                    utils.tableunmerge(installeddeps, overridedeps)
-                    needs = gatherdepdeps(overridedeps, self, faileddeps)
-                    utils.tablemerge(overridedeps, needs)
-                    instdeps(overridedeps, false, installeddeps, faileddeps, self)
-                    overridedeps = { }
-                    checkcompat(bins, overridedeps, incompatdeps, incompatlibs)
-                    assert(utils.emptytable(overridedeps))
-                end
-        
-                wait()
-                self:nextstep()
-                
-                utils.tableunmerge(installeddeps, incompatdeps)
-                instdeps(incompatdeps, true, installeddeps, faileddeps, self)
-                
-                print("overridedeps:")
-                table.foreach(overridedeps, print)
-                print("incompatdeps:")
-                table.foreach(incompatdeps, print)
-                print("incompatlibs:")
-                table.foreach(incompatlibs, print)
-                print("faileddeps:")
-                table.foreach(faileddeps, print)
+                instdeps(needs, installeddeps, wrongdeps, self)
             end)
             
             local ret = { }
-            for k, v in pairs(incompatdeps) do
-                ret[k.name] = ret[k.name] or { }
+            for k, v in pairs(wrongdeps) do
+                ret[k.name] = { }
                 ret[k.name].desc = "UNDONE"
-                ret[k.name].problem = "Incompatible"
+                if v.failed then
+                    ret[k.name].problem = "Failed to install."
+                elseif v.incompatdep then
+                    ret[k.name].problem = "(Binary) incompatible."
+                end
             end
-            for k, v in pairs(incompatlibs) do
-                ret[k.name] = ret[k.name] or { }
-                ret[k.name].desc = ""
-                ret[k.name].problem = "File missing"
+            
+            for k, v in pairs(wronglibs) do
+                ret[k] = { }
+                ret[k].desc = "UNDONE"
+                if v.missinglib then
+                    ret[k].problem = "File missing."
+                elseif v.incompatlib then
+                    ret[k].problem = "(Binary) incompatible."
+                end
             end
-            for k, v in pairs(faileddeps) do
-                ret[k.name] = ret[k.name] or { }
-                ret[k.name].desc = "UNDONE"
-                ret[k.name].problem = "Failed to install"
-            end
+
             return ret
         end)
     end)
@@ -105,8 +74,8 @@ function pkg.verifydeps(bins)
         error(msg, 0) -- Rethrow (use level '0' to avoid adding extra info to msg)
     end
     
-    if not utils.emptytable(faileddeps) then
-        return false, faileddeps
+    if not utils.emptytable(wrongdeps) or not utils.emptytable(wronglibs) then
+        return false, wrongdeps, wronglibs
     end
     
     return true

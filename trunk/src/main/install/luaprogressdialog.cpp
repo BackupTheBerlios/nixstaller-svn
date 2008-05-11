@@ -40,7 +40,7 @@ void CBaseLuaProgressDialog::Run()
 
 void CBaseLuaProgressDialog::LuaRegister()
 {
-    NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaNextStep, "nextstep", "progressdialog");
+    NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetTitle, "settitle", "progressdialog");
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetProgress, "setprogress", "progressdialog");
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaEnableSecProgBar, "enablesecbar", "progressdialog");
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetSecTitle, "setsectitle", "progressdialog");
@@ -48,14 +48,10 @@ void CBaseLuaProgressDialog::LuaRegister()
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaCancelled, "cancelled", "progressdialog");
 }
 
-int CBaseLuaProgressDialog::LuaNextStep(lua_State *L)
+int CBaseLuaProgressDialog::LuaSetTitle(lua_State *L)
 {
     CBaseLuaProgressDialog *dialog = NLua::CheckClassData<CBaseLuaProgressDialog>("progressdialog", 1);
-    if (dialog->m_CurrentStep < (dialog->m_StepList.size() - 1))
-    {
-        dialog->m_CurrentStep++;
-        dialog->CoreSetNextStep();
-    }
+    dialog->CoreSetTitle(luaL_checkstring(L, 2));
     return 0;
 }
 
@@ -64,10 +60,7 @@ int CBaseLuaProgressDialog::LuaSetProgress(lua_State *L)
     CBaseLuaProgressDialog *dialog = NLua::CheckClassData<CBaseLuaProgressDialog>("progressdialog", 1);
     int p = luaL_checkint(L, 2);
     luaL_argcheck(L, ((p >= 0) && (p <= 100)), 2, "Wrong percentage given, should be 0-100.");
-    
-    int prog = dialog->m_CurrentStep * 100 / SafeConvert<int>(dialog->m_StepList.size());
-    prog += p * SafeConvert<int>(dialog->m_StepList.size()) / 100;
-    dialog->CoreSetProgress(prog);
+    dialog->CoreSetProgress(p);
     return 0;
 }
 
