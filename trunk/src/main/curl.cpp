@@ -44,6 +44,10 @@ CCURLWrapper::CCURLWrapper(const char *url, const char *dest) : m_pCurl(NULL), m
     Check(curl_easy_setopt(m_pCurl, CURLOPT_WRITEDATA, m_pDestFile));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_NOPROGRESS, false));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_USERAGENT, "nixstaller"));
+    Check(curl_easy_setopt(m_pCurl, CURLOPT_CONNECTTIMEOUT, 30));
+//     Check(curl_easy_setopt(m_pCurl, CURLOPT_NOSIGNAL, 1));
+/*    Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_LIMIT, 0));
+    Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_TIME, 30));*/
         
     CheckM(curl_multi_add_handle(m_pCurlMulti, m_pCurl));
 }
@@ -125,13 +129,14 @@ bool CCURLWrapper::Process()
         if (timeout == -1)
             timeout = maxwait;
         
+        debugline("timeout: %d\n", timeout);
         timeout = std::min(timeout, maxwait);
     
         if (maxfd == -1)
         {
             // UNDONE
             debugline("maxfd == -1\n");
-            return true;
+            return false;
         }
         
         timeval tval;
@@ -156,7 +161,7 @@ bool CCURLWrapper::Process()
             {
                 long status;
                 Check(curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &status));
-                if ((status >= 400) && (status < 600))// FTP/HTTP 4xx or 5xx code?
+                if ((status >= 400) && (status < 600)) // FTP/HTTP 4xx or 5xx code?
                     m_Result = "Error starting download"; // UNDONE?
             }
             break;

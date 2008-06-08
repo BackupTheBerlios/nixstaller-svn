@@ -120,6 +120,7 @@ function getdeplibpath(dep, lib)
 end
 
 local initdeps = { }
+local ignorefaileddl = false
 function initdep(d, dialog)
     if initdeps[d] ~= nil then
         return initdeps[d]
@@ -144,27 +145,40 @@ function initdep(d, dialog)
         for f, sum in pairs(fmap) do
             if archfiles[f] then
                 local path = string.format("%s/%s", src, f)
-                local download, msg = os.initdownload(string.format("%s/%s", d.baseurl, f), path)
-                
-                if download then
-                    function download:updateprogress(t, d)
-                        dialog:setsecprogress(d/t*100)
-                    end
-    
-                    local stat
-                    stat, msg = download:process()
-                    while stat and not dialog:cancelled() do
+                while true do
+                    local download, msg = os.initdownload(string.format("%s/%s", d.baseurl, f), path)
+                    
+                    if download then
+                        function download:updateprogress(t, d)
+                            dialog:setsecprogress(d/t*100)
+                        end
+        
+                        local stat
                         stat, msg = download:process()
+                        while stat and not dialog:cancelled() do
+                            stat, msg = download:process()
+                        end
+                        download:close()
                     end
-                    download:close()
-                end
-                
-                if not download or msg or dialog:cancelled() or io.md5(path) ~= sum then -- Error
-                    dialog:enablesecbar(false)
-                    initdeps[d] = false
-                    print("Failed dep:", d.name, msg)
-                    os.remove(path)
-                    return false
+                    
+                    if not download or msg or dialog:cancelled() or io.md5(path) ~= sum then -- Error
+                        local retry = false
+                        if not ignorefaileddl then
+                            local choice = gui.choicebox(string.format("Failed to download dependency:\n%s", msg or ""), "Retry", "Ignore", "Ignore all")
+                            retry = (choice == 1)
+                            ignorefaileddl = ignorefaileddl or (choice == 2)
+                        end
+                        
+                        if not retry then
+                            dialog:enablesecbar(false)
+                            initdeps[d] = false
+                            print("Failed dep:", d.name, msg)
+                            os.remove(path)
+                            return false
+                        end
+                    else
+                        break
+                    end
                 end
             end
         end
@@ -428,15 +442,18 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
     return needs
 end
 
-function instdeps(deps, installeddeps, wrongdeps, dialog)
+function instdeps(deps, installeddeps, wrongdeps, dialog, rec)
     dialog:settitle("Installing dependencies.")
-    incprogress(dialog)
+    
+    if not rec then
+        incprogress(dialog)
+    end
     
     for d, rd in pairs(deps) do
         if not installeddeps[d] and not wrongdeps[d] then
             -- if rd is a table, the dep needs other dependencies
             if type(rd) == "table" and not utils.emptytable(rd) then
-                instdeps(rd, installeddeps, wrongdeps, dialog)
+                instdeps(rd, installeddeps, wrongdeps, dialog, true)
             end
 
             if not initdep(d, dialog) then
