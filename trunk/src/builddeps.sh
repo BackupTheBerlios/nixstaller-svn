@@ -58,6 +58,8 @@ buildstdcxx()
 {
     get "http://archive.apache.org/dist/incubator/stdcxx/releases/stdcxx-incubating-4.2.0.tar.gz"
     untar "stdcxx-incubating-4.2.0.tar.gz"
+    dodir "stdcxx-4.2.0/include/ansi"
+    patch < "$SRCDIR"/stdcxx-gcc43.diff
     dodir "stdcxx-4.2.0"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
     [ $CURRENT_OS = "netbsd" ] && ulimit -d 131072

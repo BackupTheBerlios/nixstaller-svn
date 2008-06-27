@@ -50,10 +50,11 @@ CLuaProgressDialog::CLuaProgressDialog(int r) : CBaseLuaProgressDialog(r)
     m_pSecProgBar->maximum(100.0f);
     m_pSecProgBar->hide();
     
-    Fl_Button *button = new Fl_Button(0, windowh - WidgetHeight() - 5, 0, WidgetHeight(), GetTranslation("Cancel"));
-    SetButtonWidth(button);
-    button->position((windoww - button->w()) / 2, button->y());
-    button->callback(CancelCB, this);
+    m_pCancelButton = new Fl_Button(0, windowh - WidgetHeight() - 5, 0, WidgetHeight(), GetTranslation("Cancel"));
+    SetButtonWidth(m_pCancelButton);
+    m_pCancelButton->position((windoww - m_pCancelButton->w()) / 2, m_pCancelButton->y());
+    m_pCancelButton->callback(CancelCB, this);
+    m_pCancelButton->deactivate();
     
     UpdateWidgets();
     
@@ -138,4 +139,9 @@ void CLuaProgressDialog::CancelCB(Fl_Widget *w, void *p)
 {
     CLuaProgressDialog *dialog = static_cast<CLuaProgressDialog *>(p);
     dialog->SetCancelled();
+}
+
+void CLuaProgressDialog::CoreSetCancelButton(bool e)
+{
+    (e) ? m_pCancelButton->activate() : m_pCancelButton->deactivate();
 }

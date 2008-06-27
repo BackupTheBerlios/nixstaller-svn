@@ -23,6 +23,7 @@
 #include "main/install/luaprogressdialog.h"
 
 class Fl_Box;
+class Fl_Button;
 class Fl_Progress;
 class Fl_Widget;
 class Fl_Window;
@@ -32,12 +33,14 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog
     Fl_Window *m_pDialog;
     Fl_Box *m_pTitle, *m_pSecTitle;
     Fl_Progress *m_pProgBar, *m_pSecProgBar;
+    Fl_Button *m_pCancelButton;
     
     virtual void CoreSetTitle(const char *title);
     virtual void CoreSetProgress(int progress);
     virtual void CoreEnableSecProgBar(bool enable);
     virtual void CoreSetSecTitle(const char *title);
     virtual void CoreSetSecProgress(int progress);
+    virtual void CoreSetCancelButton(bool e);
     
     int WidgetHeight(void) const { return 20; }
     void UpdateWidgets(void);

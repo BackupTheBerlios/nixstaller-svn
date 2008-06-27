@@ -22,6 +22,7 @@ function pkg.newdependency()
     
     ret.libs = { }
     ret.deps = { }
+    ret.description = ""
     
     return ret
 end
@@ -45,7 +46,7 @@ function pkg.verifydeps(bins)
             local ret = { }
             for k, v in pairs(wrongdeps) do
                 ret[k.name] = { }
-                ret[k.name].desc = "UNDONE"
+                ret[k.name].desc = k.description
                 if v.failed then
                     ret[k.name].problem = "Failed to install."
                 elseif v.incompatdep then
@@ -55,7 +56,7 @@ function pkg.verifydeps(bins)
             
             for k, v in pairs(wronglibs) do
                 ret[k] = { }
-                ret[k].desc = "UNDONE"
+                ret[k].desc = ""
                 if v.missinglib then
                     ret[k].problem = "File missing."
                 elseif v.incompatlib then

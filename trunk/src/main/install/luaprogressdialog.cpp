@@ -46,6 +46,7 @@ void CBaseLuaProgressDialog::LuaRegister()
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetSecTitle, "setsectitle", "progressdialog");
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetSecProgress, "setsecprogress", "progressdialog");
     NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaCancelled, "cancelled", "progressdialog");
+    NLua::RegisterClassFunction(CBaseLuaProgressDialog::LuaSetCancelButton, "setcancelbutton", "progressdialog");
 }
 
 int CBaseLuaProgressDialog::LuaSetTitle(lua_State *L)
@@ -90,4 +91,11 @@ int CBaseLuaProgressDialog::LuaCancelled(lua_State *L)
     CBaseLuaProgressDialog *dialog = NLua::CheckClassData<CBaseLuaProgressDialog>("progressdialog", 1);
     lua_pushboolean(L, dialog->m_bCancelled);
     return 1;
+}
+
+int CBaseLuaProgressDialog::LuaSetCancelButton(lua_State *L)
+{
+    CBaseLuaProgressDialog *dialog = NLua::CheckClassData<CBaseLuaProgressDialog>("progressdialog", 1);
+    dialog->CoreSetCancelButton(NLua::LuaToBool(2));
+    return 0;
 }

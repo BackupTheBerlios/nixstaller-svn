@@ -121,7 +121,7 @@ end
 
 local initdeps = { }
 local ignorefaileddl = false
-function initdep(d, dialog)
+function initdep(d, dialog, wrongdeps)
     if initdeps[d] ~= nil then
         return initdeps[d]
     end
@@ -141,6 +141,7 @@ function initdep(d, dialog)
     local dlfile = src .. "/dlfiles"
     if os.fileexists(dlfile) and d.baseurl then
         dialog:setsectitle("Downloading dependency " .. d.name)
+        dialog:setcancelbutton(true)
         local fmap = dofile(dlfile)
         for f, sum in pairs(fmap) do
             if archfiles[f] then
@@ -161,19 +162,31 @@ function initdep(d, dialog)
                         download:close()
                     end
                     
-                    if not download or msg or dialog:cancelled() or io.md5(path) ~= sum then -- Error
+                    local dlsum = io.md5(path)
+                    if not download or msg or dialog:cancelled() or dlsum ~= sum then -- Error
+                        if dlsum ~= sum then
+                            msg = msg or "file differs from server"
+                        end
+                        
                         local retry = false
-                        if not ignorefaileddl then
-                            local choice = gui.choicebox(string.format("Failed to download dependency:\n%s", msg or ""), "Retry", "Ignore", "Ignore all")
+                        if not ignorefaileddl and not dialog:cancelled() then
+                            local guimsg = "Failed to download dependency"
+                            if msg then
+                                guimsg = guimsg .. ":\n" .. msg
+                            end
+                            local choice = gui.choicebox(guimsg, "Retry", "Ignore", "Ignore all")
                             retry = (choice == 1)
-                            ignorefaileddl = ignorefaileddl or (choice == 2)
+                            ignorefaileddl = (choice == 2)
                         end
                         
                         if not retry then
                             dialog:enablesecbar(false)
+                            dialog:setcancelbutton(false)
                             initdeps[d] = false
                             print("Failed dep:", d.name, msg)
                             os.remove(path)
+                            wrongdeps[d] = wrongdeps[d] or { }
+                            wrongdeps[d].faileddl = true
                             return false
                         end
                     else
@@ -182,6 +195,7 @@ function initdep(d, dialog)
                 end
             end
         end
+        dialog:setcancelbutton(false)
     end
     
     dialog:setsectitle("Extracting dependency " .. d.name)
@@ -298,8 +312,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                         bi.found = true
                         bi.path = getdeplibpath(dep, l)
                         bi.dep = dep
-                        initdep(dep, dialog)
-                        return true
+                        return initdep(dep, dialog, wrongdeps)
                     end
                     return false
                 end
@@ -404,10 +417,8 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                 for l, i in pairs(bininfo) do
                     if not i.native and i.dep and i.dep ~= mydep then
                         if not needs[i.dep] and not wrongdeps[i.dep] then
-                            if initdep(i.dep, dialog) then
+                            if initdep(i.dep, dialog, wrongdeps) then
                                 needs[i.dep] = checkdeps(i.dep.libs, pkg.getdepdir(i.dep), i.dep.deps, dialog, wrongdeps, wronglibs, i.dep) or { }
-                            else
-                                wrongdeps[i.dep] = { failed = true }
                             end
                         end
                     end
@@ -431,10 +442,8 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
     for _, d in ipairs(deps) do
         if not needs[d] and not wrongdeps[d] and d.required and d:required() then
             -- Add deps which are always required
-            if initdep(d, dialog) then
+            if initdep(d, dialog, wrongdeps) then
                 needs[d] = checkdeps(d.libs, pkg.getdepdir(d), d.deps, dialog, wrongdeps, wronglibs, d) or { }
-            else
-                wrongdeps[d] = { failed = true }
             end
         end
     end
@@ -456,9 +465,7 @@ function instdeps(deps, installeddeps, wrongdeps, dialog, rec)
                 instdeps(rd, installeddeps, wrongdeps, dialog, true)
             end
 
-            if not initdep(d, dialog) then
-                wrongdeps[d] = { failed = true }
-            else
+            if initdep(d, dialog, wrongdeps) then
                 -- Check if dep is usable
                 if d.CanInstall and not d:CanInstall() then
                     wrongdeps[d] = { failed = true }

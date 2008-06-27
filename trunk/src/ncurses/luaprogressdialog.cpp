@@ -38,6 +38,7 @@ CLuaProgressDialog::CLuaProgressDialog(int r) : CBaseLuaProgressDialog(r)
     AddWidget(bbox);
     bbox->StartPack(m_pCancelButton = new NNCurses::CButton(GetTranslation("Cancel")), true, false, 0, 0);
     
+    m_pCancelButton->Enable(false);
     m_pSecTitle->Enable(false);
     m_pSecProgBar->Enable(false);
 }
@@ -66,6 +67,11 @@ void CLuaProgressDialog::CoreSetSecTitle(const char *title)
 void CLuaProgressDialog::CoreSetSecProgress(int progress)
 {
     m_pSecProgBar->SetCurrent(progress);
+}
+
+void CLuaProgressDialog::CoreSetCancelButton(bool e)
+{
+    m_pCancelButton->Enable(e);
 }
 
 bool CLuaProgressDialog::CoreHandleEvent(NNCurses::CWidget *emitter, int type)

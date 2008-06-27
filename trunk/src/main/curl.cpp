@@ -28,7 +28,7 @@
 // -------------------------------------
 
 CCURLWrapper::CCURLWrapper(const char *url, const char *dest) : m_pCurl(NULL), m_pCurlMulti(NULL), m_pDestFile(NULL),
-                                                                m_bDone(false), m_bInit(true), m_lTimer(0)
+                                                                m_bDone(false), m_lTimer(0)
 {
     m_pCurl = curl_easy_init();
     m_pCurlMulti = curl_multi_init();
@@ -46,8 +46,8 @@ CCURLWrapper::CCURLWrapper(const char *url, const char *dest) : m_pCurl(NULL), m
     Check(curl_easy_setopt(m_pCurl, CURLOPT_USERAGENT, "nixstaller"));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_CONNECTTIMEOUT, 30));
 //     Check(curl_easy_setopt(m_pCurl, CURLOPT_NOSIGNAL, 1));
-/*    Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_LIMIT, 0));
-    Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_TIME, 30));*/
+    Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_LIMIT, 0));
+    Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_TIME, 30));
         
     CheckM(curl_multi_add_handle(m_pCurlMulti, m_pCurl));
 }
@@ -107,46 +107,17 @@ bool CCURLWrapper::Process()
     if (m_bDone)
         return false;
     
-    if (m_bInit)
-    {
-        m_bInit = false;
-        Perform(); // Perform atleast once
-    }
-    else
-    {
-        const long maxwait = 100; // msec
-        long timeout;
-        int maxfd = 0;
-        fd_set sread, swrite, serror;
-        
-        FD_ZERO(&sread);
-        FD_ZERO(&swrite);
-        FD_ZERO(&serror);
-        
-        CheckM(curl_multi_fdset(m_pCurlMulti, &sread, &swrite, &serror, &maxfd));
-        CheckM(curl_multi_timeout(m_pCurlMulti, &timeout));
-        
-        if (timeout == -1)
-            timeout = maxwait;
-        
-        debugline("timeout: %d\n", timeout);
-        timeout = std::min(timeout, maxwait);
+    if (m_lTimer > GetTime())
+        return true;
     
-        if (maxfd == -1)
-        {
-            // UNDONE
-            debugline("maxfd == -1\n");
-            return false;
-        }
-        
-        timeval tval;
-        tval.tv_sec = 0;
-        tval.tv_usec = timeout * 1000; // msec --> usec
-        int ret = Select(maxfd+1, &sread, &swrite, &serror, &tval);
-        
-        if (ret)
-            Perform();
-    }
+    Perform();
+    
+    const long maxwait = 250; // msec
+    long timeout = 0;
+    
+    CheckM(curl_multi_timeout(m_pCurlMulti, &timeout));
+    timeout = std::min(timeout, maxwait);
+    m_lTimer = GetTime() + timeout;
     
     CURLMsg *msg;
     int qleft;

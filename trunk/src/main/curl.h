@@ -25,7 +25,7 @@ class CCURLWrapper
     CURL *m_pCurl;
     CURLM *m_pCurlMulti;
     FILE *m_pDestFile;
-    bool m_bDone, m_bInit;
+    bool m_bDone;
     long m_lTimer;
     std::string m_Result;
     

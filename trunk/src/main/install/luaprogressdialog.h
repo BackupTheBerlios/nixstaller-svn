@@ -33,6 +33,7 @@ class CBaseLuaProgressDialog
     virtual void CoreEnableSecProgBar(bool enable) = 0;
     virtual void CoreSetSecTitle(const char *title) = 0;
     virtual void CoreSetSecProgress(int progress) = 0;
+    virtual void CoreSetCancelButton(bool e) = 0;
     
 protected:
     void SetCancelled(void) { m_bCancelled = true; }
@@ -52,6 +53,7 @@ public:
     static int LuaSetSecTitle(lua_State *L);
     static int LuaSetSecProgress(lua_State *L);
     static int LuaCancelled(lua_State *L);
+    static int LuaSetCancelButton(lua_State *L);
 };
 
 #endif

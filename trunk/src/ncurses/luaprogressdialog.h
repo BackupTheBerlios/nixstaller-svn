@@ -40,6 +40,7 @@ class CLuaProgressDialog: public CBaseLuaProgressDialog, public NNCurses::CWindo
     virtual void CoreEnableSecProgBar(bool enable);
     virtual void CoreSetSecTitle(const char *title);
     virtual void CoreSetSecProgress(int progress);
+    virtual void CoreSetCancelButton(bool e);
     
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
     

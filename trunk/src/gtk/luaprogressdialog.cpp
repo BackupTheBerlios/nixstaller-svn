@@ -63,9 +63,10 @@ CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent,
     gtk_box_pack_start(GTK_BOX(vbox), bbox, FALSE, FALSE, 5);
     
     GtkWidget *cancell = gtk_label_new(GetTranslation("Cancel"));
-    GtkWidget *cancelb = CreateButton(cancell, GTK_STOCK_CANCEL);
-    g_signal_connect(G_OBJECT(cancelb), "clicked", G_CALLBACK(CancelCB), this);
-    gtk_box_pack_start(GTK_BOX(bbox), cancelb, TRUE, FALSE, 5);
+    m_pCancelButton = CreateButton(cancell, GTK_STOCK_CANCEL);
+    gtk_widget_set_sensitive(m_pCancelButton, FALSE);
+    g_signal_connect(G_OBJECT(m_pCancelButton), "clicked", G_CALLBACK(CancelCB), this);
+    gtk_box_pack_start(GTK_BOX(bbox), m_pCancelButton, TRUE, FALSE, 5);
 }
 
 CLuaProgressDialog::~CLuaProgressDialog()
@@ -111,4 +112,9 @@ void CLuaProgressDialog::CancelCB(GtkWidget *widget, gpointer data)
 {
     CLuaProgressDialog *parent = static_cast<CLuaProgressDialog *>(data);
     parent->SetCancelled();
+}
+
+void CLuaProgressDialog::CoreSetCancelButton(bool e)
+{
+    gtk_widget_set_sensitive(m_pCancelButton, (e) ? TRUE : FALSE);
 }
