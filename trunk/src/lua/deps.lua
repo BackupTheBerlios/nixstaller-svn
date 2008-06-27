@@ -176,7 +176,7 @@ function initdep(d, dialog, wrongdeps)
                             end
                             local choice = gui.choicebox(guimsg, "Retry", "Ignore", "Ignore all")
                             retry = (choice == 1)
-                            ignorefaileddl = (choice == 2)
+                            ignorefaileddl = (choice == 3)
                         end
                         
                         if not retry then
@@ -258,6 +258,16 @@ function initdep(d, dialog, wrongdeps)
     return true
 end
 
+function resetfaileddl(wrongdeps)
+    for k, v in pairs(wrongdeps) do
+        if v.faileddl then
+            initdeps[k] = nil
+            v.faileddl = nil
+        end
+    end
+    ignorefaileddl = false
+end
+
 function verifysymverneeds(needs, lib, path)
     local verdefs = getsymverdefs(path)
     if verdefs then
@@ -308,11 +318,11 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                     
                     local dep = getdepfromlib(deps, l)
                     
-                    if dep then
+                    if dep and initdep(dep, dialog, wrongdeps) then
                         bi.found = true
                         bi.path = getdeplibpath(dep, l)
                         bi.dep = dep
-                        return initdep(dep, dialog, wrongdeps)
+                        return true
                     end
                     return false
                 end
@@ -352,8 +362,8 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                                 bininfo[l].syms = getsyms(bininfo[l].path)
                             end
                         end
-                    else
-                        wronglibs[l] = { missinglib = true }
+                    elseif bininfo[l].native then
+                        wronglibs[l] = wronglibs[l] or { missinglib = true }
                         install.print(string.format("WARNING: Missing library: %s\n", l))
                     end
                 end
@@ -401,8 +411,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                                                 end
                                             end
                                         else
-                                            wrongdeps[bininfo[lib].dep] = wrongdeps[bininfo[lib].dep] or { }
-                                            wrongdeps[bininfo[lib].dep].incompatdep = true
+                                            wrongdeps[bininfo[lib].dep] = wrongdeps[bininfo[lib].dep] or { incompatdep = true }
                                             install.print(string.format("Incompatible dependency: %s (%s, %s)\n", bininfo[lib].dep.name, lib, s))
                                         end
                                     end

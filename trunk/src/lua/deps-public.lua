@@ -49,10 +49,14 @@ function pkg.verifydeps(bins)
                 ret[k.name].desc = k.description
                 if v.failed then
                     ret[k.name].problem = "Failed to install."
+                elseif v.faileddl then
+                    ret[k.name].problem = "Failed to download."
                 elseif v.incompatdep then
                     ret[k.name].problem = "(Binary) incompatible."
                 end
             end
+            
+            resetfaileddl(wrongdeps)
             
             for k, v in pairs(wronglibs) do
                 ret[k] = { }
