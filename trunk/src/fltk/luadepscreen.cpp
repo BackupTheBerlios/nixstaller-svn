@@ -38,7 +38,7 @@ CLuaDepScreen::CLuaDepScreen(CInstaller *inst, int f) : CBaseLuaDepScreen(f), m_
     m_pDialog->set_modal();
     m_pDialog->begin();
     
-    m_pListBox = new Fl_Browser(x, 60, widgetw, windowh - 120, "GetTitle()\nhey\nhoh");
+    m_pListBox = new Fl_Browser(x, 60, widgetw, windowh - 120, GetTitle());
     m_pListBox->align(FL_ALIGN_TOP);
     
     const int y = m_pListBox->y() + m_pListBox->h() + 20, spacing = 20;

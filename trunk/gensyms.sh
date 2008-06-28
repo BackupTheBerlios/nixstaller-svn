@@ -40,7 +40,11 @@ source "$NDIR/src/internal/utils.sh"
 CURDIR="`pwd`"
 
 if [ -z "${1}" -o "${1}" = "--help" -o "${1}" = "-h" ]; then
-    echo "Usage: $0 <files>"
+    echo "Usage: $0 [options] <files>"
+    echo
+    echo "[options] can be one of the following things (all are optional):"
+    echo
+    echo " -L <dir>      Appends the directory path <dir> to the search path used for finding shared libraries."
     echo
     echo " <files>: File list of binaries and libraries to examine."
     exit 1

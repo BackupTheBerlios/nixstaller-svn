@@ -318,11 +318,21 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                     
                     local dep = getdepfromlib(deps, l)
                     
-                    if dep and initdep(dep, dialog, wrongdeps) then
-                        bi.found = true
-                        bi.path = getdeplibpath(dep, l)
-                        bi.dep = dep
-                        return true
+                    if dep then
+                        if initdep(dep, dialog, wrongdeps) then
+                            bi.found = true
+                            bi.path = getdeplibpath(dep, l)
+                            bi.dep = dep
+                            return true
+                        end
+                    else
+                        wronglibs[l] = wronglibs[l] or { }
+                        if bi.native then
+                            wronglibs[l].incompatlib = true
+                        else
+                            wronglibs[l].missinglib = true
+                        end
+                        install.print(string.format("WARNING: Missing/incompatible library: %s\n", l))
                     end
                     return false
                 end
@@ -340,31 +350,28 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                         markdep(bininfo[l], l)
                     end
                     
-                    if symverneeds and symverneeds[l] and bininfo[l].found then
-                        if not verifysymverneeds(symverneeds[l], l, p) then
-                            if bininfo[l].native then
-                                if not markdep(bininfo[l], l) then
-                                    wronglibs[l] = wrongdeps[l] or { }
-                                    wronglibs[l].incompatlib = true
+                    if bininfo[l].found then
+                        if symverneeds and symverneeds[l] and bininfo[l].found then
+                            if not verifysymverneeds(symverneeds[l], l, p) then
+                                if bininfo[l].native then
+                                    if not markdep(bininfo[l], l) and not bininfo[l].dep then
+                                        wronglibs[l] = wronglibs[l] or { }
+                                        wronglibs[l].incompatlib = true
+                                    end
+                                elseif not bininfo[l].dep.HandleCompat or
+                                    not bininfo[l].dep:HandleCompat() then
+                                    wrongdeps[bininfo[l].dep] = wrongdeps[bininfo[l].dep] or { }
+                                    wrongdeps[bininfo[l].dep].incompatdep = true
                                 end
-                            elseif not bininfo[l].dep.HandleCompat or
-                                   not bininfo[l].dep:HandleCompat() then
-                                wrongdeps[bininfo[l].dep] = wrongdeps[bininfo[l].dep] or { }
-                                wrongdeps[bininfo[l].dep].incompatdep = true
                             end
                         end
-                    end
-                    
-                    if bininfo[l].found then
+                        
                         if not wronglibs[l] and (not bininfo[l].native or
                             not wrongdeps[bininfo[l].dep]) then
                             if lsymstat then
                                 bininfo[l].syms = getsyms(bininfo[l].path)
                             end
                         end
-                    elseif bininfo[l].native then
-                        wronglibs[l] = wronglibs[l] or { missinglib = true }
-                        install.print(string.format("WARNING: Missing library: %s\n", l))
                     end
                 end
                 
@@ -389,7 +396,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                                     assert(lib and lib ~= b and bininfo[lib])
                                     if bininfo[lib].found then
                                         if bininfo[lib].native then
-                                            if not markdep(bininfo[lib], lib) then
+                                            if not markdep(bininfo[lib], lib) and not bininfo[lib].dep then
                                                 wronglibs[lib] = wronglibs[lib] or { }
                                                 wronglibs[lib].incompatlib = true
                                             elseif symverneeds and symverneeds[lib] and

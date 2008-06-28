@@ -90,5 +90,5 @@ void CBaseLuaDepScreen::Refresh()
 
 const char *CBaseLuaDepScreen::GetTitle() const
 {
-    return GetTranslation("Dependency title here...");
+    return GetTranslation("One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.");
 }

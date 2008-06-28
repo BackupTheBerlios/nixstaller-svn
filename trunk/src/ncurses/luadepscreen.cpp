@@ -33,7 +33,11 @@
 CLuaDepScreen::CLuaDepScreen(CInstaller *inst, int f) : CBaseLuaDepScreen(f), m_bClose(false),
                                                         m_pInstaller(inst)
 {
-    StartPack(new NNCurses::CLabel(GetTitle()), false, false, 0, 0);
+    const int maxw = NNCurses::GetMaxWidth() - 4;
+    NNCurses::CLabel *label = new NNCurses::CLabel(GetTitle());
+    label->SetMaxReqWidth(maxw);
+    StartPack(label, false, false, 0, 0);
+    
     AddWidget(m_pTextField = new NNCurses::CTextField(20, 10, false));
     StartPack(new NNCurses::CSeparator(ACS_HLINE), true, true, 0, 0);
     
