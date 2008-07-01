@@ -34,6 +34,7 @@ CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent,
     gtk_window_set_modal(GTK_WINDOW(m_pDialog), TRUE);
     gtk_window_set_default_size(GTK_WINDOW(m_pDialog), windoww, windowh);
     gtk_window_set_position(GTK_WINDOW(m_pDialog), GTK_WIN_POS_CENTER_ON_PARENT);
+    g_signal_connect(G_OBJECT(m_pDialog), "delete_event", G_CALLBACK(DeleteCB), this);
     gtk_widget_show(GTK_WIDGET(m_pDialog));
     
     GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
@@ -108,13 +109,20 @@ void CLuaProgressDialog::CoreSetSecProgress(int progress)
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pSecProgBar), static_cast<double>(progress) / 100.0);
 }
 
+void CLuaProgressDialog::CoreSetCancelButton(bool e)
+{
+    gtk_widget_set_sensitive(m_pCancelButton, (e) ? TRUE : FALSE);
+}
+
 void CLuaProgressDialog::CancelCB(GtkWidget *widget, gpointer data)
 {
     CLuaProgressDialog *parent = static_cast<CLuaProgressDialog *>(data);
     parent->SetCancelled();
 }
 
-void CLuaProgressDialog::CoreSetCancelButton(bool e)
+gboolean CLuaProgressDialog::DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-    gtk_widget_set_sensitive(m_pCancelButton, (e) ? TRUE : FALSE);
+    CLuaProgressDialog *parent = static_cast<CLuaProgressDialog *>(data);
+    parent->SetCancelled();
+    return TRUE;
 }

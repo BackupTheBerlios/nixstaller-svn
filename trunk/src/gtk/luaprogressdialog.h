@@ -38,6 +38,7 @@ public:
     virtual ~CLuaProgressDialog(void);
     
     static void CancelCB(GtkWidget *widget, gpointer data);
+    static gboolean DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data);
 };
 
 #endif
