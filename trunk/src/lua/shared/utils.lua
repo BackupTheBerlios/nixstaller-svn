@@ -211,3 +211,55 @@ function getsyms(bin)
     
     return ret
 end
+
+function getopt(args, sopts, lopts)
+    local curopt
+    local ret = { }
+    while #args > 0 do
+        local a = table.remove(args, 1)
+        
+        if a == "--" then
+            return ret
+        end
+
+        if not curopt then
+            if not string.find(a, "^(%-)") then
+                table.insert(args, a) -- Not a commandline option; stop parsing and put arg back
+                return ret
+            end
+            
+            if string.find(a, "^(%-%-)") then -- long option
+                local aname = string.gsub(a, "^(%-%-)", "")
+                local found = false
+                for _, lo in ipairs(lopts) do
+                    if lo[1] == aname then
+                        if lo[2] then
+                            curopt = aname
+                        else
+                            table.insert(ret, { name = aname, val = true })
+                        end
+                        found = true
+                        break
+                    end
+                end
+                if not found then
+                    return false, a
+                end
+            else
+                local aname = string.gsub(a, "^(%-)", "")
+                if string.find(sopts, aname .. ":") then -- argument with option
+                    curopt = aname
+                elseif string.find(sopts, aname) then
+                    table.insert(ret, { name = aname, val = true })
+                else
+                    return false, a
+                end
+            end
+        else
+            table.insert(ret, { name = curopt, val = a })
+            curopt = nil
+        end
+    end
+    
+    return ret
+end

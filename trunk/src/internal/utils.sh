@@ -57,3 +57,19 @@ getluabin()
     done
     return 1
 }
+
+runluascript()
+{
+    NDIR="$1"
+    BIN=`getluabin "$1"`
+    SCRIPT="$2"
+    shift 2
+
+    if [ ! -z "$BIN" ]; then
+        "$BIN" -c "$SCRIPT" "$NDIR" $0 $@ || exit 1
+        exit 0
+    fi
+    
+    echo "Could not find a suitable binary for this platform ($CURRENT_ARCH, $CURRENT_OS)"
+    exit 1
+}

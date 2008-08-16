@@ -42,6 +42,7 @@ CLuaDepScreen::CLuaDepScreen(GtkWidget *parent, CInstaller *inst, int f) : CBase
     gtk_container_add(GTK_CONTAINER(m_pDialog), vbox);
     
     GtkWidget *title = gtk_label_new(GetTitle());
+    gtk_widget_set_size_request(title, windoww-50, -1);
     gtk_label_set_line_wrap(GTK_LABEL(title), TRUE);
     gtk_widget_show(title);
     gtk_box_pack_start(GTK_BOX(vbox), title, FALSE, FALSE, 5);

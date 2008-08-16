@@ -1254,8 +1254,11 @@ int CMain::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow
 
 void CLuaRunner::Init(int argc, char **argv)
 {
-    const int skip = 4; // bin name, "-c", scriptname
+    const int skip = 6; // bin name, "-c", script name, nixstaller dir, caller name
     CMain::Init(argc, argv);
+    
+    NLua::LuaSet(argv[3], "ndir");
+    NLua::LuaSet(argv[4], "callscript");
     
     NLua::CLuaTable tab("args");
     for (int i=(skip-1); i<argc; i++)

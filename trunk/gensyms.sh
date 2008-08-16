@@ -22,8 +22,6 @@ if [ ! -z `dirname $0` ]; then
     NDIR="`dirname $0`"
     echo "$NDIR" | grep "^/" >/dev/null || NDIR="`pwd`/$NDIR"
 else
-    OLDIFS="$IFS"
-    
     for F in $PATH
     do
         if [ -f "$F/$0" ]; then
@@ -31,31 +29,8 @@ else
             break
         fi
     done
-    
-    IFS="$OLDIFS"
 fi
 
 source "$NDIR/src/internal/utils.sh"
 
-CURDIR="`pwd`"
-
-if [ -z "${1}" -o "${1}" = "--help" -o "${1}" = "-h" ]; then
-    echo "Usage: $0 [options] <files>"
-    echo
-    echo "[options] can be one of the following things (all are optional):"
-    echo
-    echo " -L <dir>      Appends the directory path <dir> to the search path used for finding shared libraries."
-    echo
-    echo " <files>: File list of binaries and libraries to examine."
-    exit 1
-fi
-
-BIN=`getluabin "$NDIR"`
-
-if [ ! -z "$BIN" ]; then
-    "$BIN" -c "$NDIR/src/lua/gensyms.lua" $NDIR $@ || exit 1
-    exit 0
-fi
-
-echo "Could not find a suitable binary for this platform ($CURRENT_ARCH, $CURRENT_OS)"
-exit 1
+runluascript "$NDIR" "$NDIR/src/lua/gensyms.lua" $@

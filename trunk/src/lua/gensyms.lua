@@ -15,8 +15,8 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
-dofile(args[1] .. "/src/lua/shared/utils.lua")
-dofile(args[1] .. "/src/lua/shared/utils-public.lua")
+dofile(ndir .. "/src/lua/shared/utils.lua")
+dofile(ndir .. "/src/lua/shared/utils-public.lua")
 
 
 local processedbins = { }
@@ -48,18 +48,55 @@ function getallsyms(bin, out, lpath)
     end
 end
 
-table.remove(args, 1)
+function Usage()
+    print(string.format("Usage: %s [options] <files>\n", callscript))
+    print([[
+[options] can be one of the following things (all are optional):
+
+ --libpath, -l <dir>      Appends the directory path <dir> to the search path used for finding shared libraries.
+ --dest, -d <dir>         Destination path for the output file. Default: current directory.
+
+ <files>:                 File list of binaries and libraries to examine.
+]])
+end
+
+if utils.emptytable(args) then
+    Usage()
+    os.exit(1)
+end
+
 searchpaths = { }
 binaries = { }
-for i, a in ipairs(args) do
-    if string.find(a, "-L", 1, true) then
-        table.insert(searchpaths, string.sub(a, 3))
-    else
-        table.insert(binaries, a)
+dest = os.getcwd()
+opts, failedarg = getopt(args, "l:d:", { {"libpath", true}, {"dest", true} })
+
+if not opts then
+    print("Error: Unknown commandline option: " .. failedarg)
+    Usage()
+    os.exit(1)
+end
+
+for _, o in ipairs(opts) do
+    if o.name == "h" or o.name == "help" then
+        Usage()
+        os.exit(0)
+    elseif o.name == "l" or o.name == "libpath" then
+        table.insert(searchpaths, o.val)
+    elseif o.name == "d" or o.name == "dest" then
+        dest = o.val
     end
 end
 
-dest = (#binaries > 1 and os.isdir(binaries[#binaries]) and binaries[#binaries]) or os.getcwd()
+if utils.emptytable(args) then
+    Usage()
+    os.exit(1)
+end
+
+-- Threat all remaining args as binaries/libraries to examine
+for _, f in ipairs(args) do
+    table.insert(binaries, f)
+end
+
 out = io.open(string.format("%s/symmap", dest), "w")
 
 if not out then

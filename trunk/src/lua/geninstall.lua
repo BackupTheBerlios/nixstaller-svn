@@ -21,12 +21,49 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
 
-maindir = args[1]
-confdir = args[2]
-outname = args[3] or "setup.sh"
 
-dofile(maindir .. "/src/lua/shared/utils-public.lua")
-dofile(maindir .. "/src/lua/shared/package-public.lua")
+dofile(ndir .. "/src/lua/shared/utils.lua")
+dofile(ndir .. "/src/lua/shared/utils-public.lua")
+dofile(ndir .. "/src/lua/shared/package-public.lua")
+
+
+function Usage()
+    print(string.format("Usage: %s <project dir> [ <installer name> ]\n", callscript))
+    print([[
+ <project dir>:     The project directory which should be used to generate the installer.
+ <installer name>:  The file name of the created installer. Default: setup.sh.
+]])
+end
+
+function CheckArgs()
+    opts, failedarg = getopt(args, "h", { {"help", false} })
+
+    if not opts then
+        print("Error: Unknown commandline option: " .. failedarg)
+        Usage()
+        os.exit(1)
+    end
+    
+    for _, o in ipairs(opts) do
+        if o.name == "h" or o.name == "help" then
+            Usage()
+            os.exit(0)
+        end
+    end
+    
+    if not args[1] then
+        print("Error: No project directory given.")
+        Usage()
+        os.exit(1)
+    end
+
+    confdir = args[1]
+    outname = args[2] or "setup.sh"
+    
+    if not os.isdir(confdir) then
+        ThrowError("'%s' does not exists or is not a directory.", confdir)
+    end
+end
 
 function Clean()
     if (os.fileexists(confdir .. "/tmp")) then
@@ -70,13 +107,13 @@ end
 function ThrowError(msg, ...)
     print(debug.traceback())
     Clean()
-    error(string.format(msg .. "\n", ...), 0)
+    error("Error: " .. string.format(msg, ...) .. "\n", 0)
 end
 
 function RequiredCopy(src, dest)
     local stat, msg = os.copy(src, dest)
     if (not stat) then
-        ThrowError("Error could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
+        ThrowError("Error: could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
     end
 end
 
@@ -96,7 +133,7 @@ function RecursiveCopy(src, dest)
                 table.insert(dirlist, subdir .. "/" .. f)
                 ret, msg = os.mkdir(fdest)
                 if ret == nil then
-                    ThrowError("Warning could not create subdirectory file: %s", msg)
+                    ThrowError("Could not create subdirectory file: %s", msg)
                 end
             else
                 RequiredCopy(fsrc, fdest)
@@ -298,7 +335,7 @@ function LoadPackage()
     checkfield("summary")
     checkfield("group")
     
-    dofile(maindir .. "/src/lua/pkg/groups.lua")
+    dofile(ndir .. "/src/lua/pkg/groups.lua")
     if not pkg.grouplist[pkg.group] then
         ThrowError("Wrong package group specified.")
     end
@@ -320,7 +357,7 @@ function Init()
     LoadPackage()
     
     -- Find a LZMA and edelta bin which we can use
-    local basebindir = string.format("%s/bin/%s/%s", maindir, os.osname, os.arch)
+    local basebindir = string.format("%s/bin/%s/%s", ndir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
                         if os.fileexists(bin) then
@@ -391,40 +428,40 @@ function PrepareArchive()
     os.copy(confdir .. "/symmap", destdir)
 
     -- Some internal stuff
-    RequiredCopy(maindir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/internal/utils.sh", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/internal/about", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/internal/utils.sh", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/internal/about", confdir .. "/tmp")
     
     -- Lua scripts
     os.mkdirrec(confdir .. "/tmp/shared")
-    RequiredCopy(maindir .. "/src/lua/deps.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/deps-public.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/install.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/package.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/package-public.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/pkg/groups.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/pkg/rpm.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/pkg/slack.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/shared/package-public.lua", confdir .. "/tmp/shared")
-    RequiredCopy(maindir .. "/src/lua/shared/utils.lua", confdir .. "/tmp/shared")
-    RequiredCopy(maindir .. "/src/lua/shared/utils-public.lua", confdir .. "/tmp/shared")
-    RequiredCopy(maindir .. "/src/lua/screens/finishscreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/installscreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/langscreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/licensescreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/packagedirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/packagetogglescreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/selectdirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/summaryscreen.lua", confdir .. "/tmp")
-    RequiredCopy(maindir .. "/src/lua/screens/welcomescreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/deps.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/deps-public.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/install.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/package.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/package-public.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/pkg/groups.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/pkg/rpm.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/pkg/slack.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/shared/package-public.lua", confdir .. "/tmp/shared")
+    RequiredCopy(ndir .. "/src/lua/shared/utils.lua", confdir .. "/tmp/shared")
+    RequiredCopy(ndir .. "/src/lua/shared/utils-public.lua", confdir .. "/tmp/shared")
+    RequiredCopy(ndir .. "/src/lua/screens/finishscreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/installscreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/langscreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/licensescreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/packagedirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/packagetogglescreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/selectdirscreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/summaryscreen.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/screens/welcomescreen.lua", confdir .. "/tmp")
     
     -- XDG utils
     os.mkdir(confdir .. "/tmp/xdg-utils")
-    RequiredCopy(maindir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
-    RequiredCopy(maindir .. "/src/xdg-utils/xdg-open", confdir .. "/tmp/xdg-utils")
+    RequiredCopy(ndir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
+    RequiredCopy(ndir .. "/src/xdg-utils/xdg-open", confdir .. "/tmp/xdg-utils")
     
     -- Language files
     for _, f in pairs(cfg.languages) do
@@ -448,7 +485,7 @@ function PrepareArchive()
     -- Copy all specified frontends for every given OS/ARCH and every available libc version
     for _, OS in pairs(cfg.targetos) do
         for _, ARCH in pairs(cfg.targetarch) do
-            local osdir = string.format("%s/bin/%s/%s", maindir, OS, ARCH)
+            local osdir = string.format("%s/bin/%s/%s", ndir, OS, ARCH)
             if (not os.fileexists(osdir)) then
                 print(string.format("Warning: No frontends for %s/%s", OS, ARCH))
             else
@@ -542,7 +579,7 @@ function PrepareArchive()
         end
     else
         -- Default logo
-        RequiredCopy(maindir .. "/src/img/installer.png", confdir .. "/tmp")
+        RequiredCopy(ndir .. "/src/img/installer.png", confdir .. "/tmp")
     end
     
     -- Internal config file(only stores archive type for now)
@@ -616,9 +653,10 @@ function CreateInstaller()
         outname = curdir .. "/" .. outname
     end
     os.execute(string.format("\"%s/makeself.sh\" --gzip \"%s/tmp\" \"%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1",
-                             maindir, confdir, outname))
+                             ndir, confdir, outname))
 end
 
+CheckArgs()
 Clean()
 Init()
 PrepareArchive()

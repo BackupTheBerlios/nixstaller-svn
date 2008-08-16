@@ -25,8 +25,6 @@ if [ ! -z `dirname $0` ]; then
     NDIR="`dirname $0`"
     echo "$NDIR" | grep "^/" >/dev/null || NDIR="`pwd`/$NDIR"
 else
-    OLDIFS="$IFS"
-    
     for F in $PATH
     do
         if [ -f "$F/$0" ]; then
@@ -34,31 +32,8 @@ else
             break
         fi
     done
-    
-    IFS="$OLDIFS"
 fi
 
 source "$NDIR/src/internal/utils.sh"
 
-if [ -z "${1}" -o "${1}" = "--help" -o "${1}" = "-h" ]; then
-    echo "Usage: $0 <config dir> [ <installer name> ]"
-    echo
-    echo " <config dir>: The directory which holds the install config files"
-    echo " <installer name>: The file name of the created installer. Default: setup.sh"
-    exit 1
-fi
-
-if [ ! -d "${1}" ]; then
-    echo "No such directory: ${1}"
-    exit 1
-fi
-
-BIN=`getluabin "$NDIR"`
-
-if [ ! -z "$BIN" ]; then
-    "$BIN" -c "$NDIR/src/lua/geninstall.lua" $NDIR $@ || exit 1
-    exit 0
-fi
-
-echo "Could not find a suitable binary for this platform ($CURRENT_ARCH, $CURRENT_OS)"
-exit 1
+runluascript "$NDIR" "$NDIR/src/lua/geninstall.lua" $@

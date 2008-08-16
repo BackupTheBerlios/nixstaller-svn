@@ -73,9 +73,9 @@ function utils.emptytable(t)
 end
 
 function utils.tablefind(t, val)
-    for _, v in ipairs(t) do
+    for i, v in ipairs(t) do
         if v == val then
-            return true
+            return i
         end
     end
 end
