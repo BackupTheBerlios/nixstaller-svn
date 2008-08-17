@@ -29,6 +29,10 @@ OVERALL
     - Check for static bins?
     - Registerdeps: Only at package.lua?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
+- Dep templates:
+    - externurl
+    - verify action
+    - For list: LSB Compliance, others?
 
 
 PACKAGING

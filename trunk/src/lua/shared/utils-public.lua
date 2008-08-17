@@ -54,7 +54,7 @@ function utils.basename(p)
 end
 
 function utils.dirname(p)
-    return string.match(p, "/.*/")
+    return string.match(p, "/*.*/")
 end
 
 function utils.opendoc(f)

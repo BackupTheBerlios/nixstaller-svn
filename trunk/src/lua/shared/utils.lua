@@ -132,7 +132,7 @@ function maplibs(bin, extrapath)
         end
         pipe:close()
         
-        if extrapath then
+        if extrapath and not utils.emptytable(extrapath) then
             for n in pairs(map) do
                 for _, p in ipairs(extrapath) do
                     local file = string.format("%s/%s", p, n)

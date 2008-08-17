@@ -49,12 +49,11 @@ function getallsyms(bin, out, lpath)
 end
 
 function Usage()
-    print(string.format("Usage: %s [options] <files>\n", callscript))
+    print(string.format("Usage: %s [<options>] <files>\n", callscript))
     print([[
-[options] can be one of the following things (all are optional):
-
- --libpath, -l <dir>      Appends the directory path <dir> to the search path used for finding shared libraries.
- --dest, -d <dir>         Destination path for the output file. Default: current directory.
+ <options> can be one of the following things (all are optional):
+  --libpath, -l <dir>      Appends the directory path <dir> to the search path used for finding shared libraries.
+  --dest, -d <dir>         Destination path for the output file. Default: current directory.
 
  <files>:                 File list of binaries and libraries to examine.
 ]])

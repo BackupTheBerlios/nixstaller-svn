@@ -30,8 +30,8 @@ dofile(ndir .. "/src/lua/shared/package-public.lua")
 function Usage()
     print(string.format("Usage: %s <project dir> [ <installer name> ]\n", callscript))
     print([[
- <project dir>:     The project directory which should be used to generate the installer.
- <installer name>:  The file name of the created installer. Default: setup.sh.
+ <project dir>      The project directory which should be used to generate the installer.
+ <installer name>   The file name of the created installer. Default: setup.sh.
 ]])
 end
 
