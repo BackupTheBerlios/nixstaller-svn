@@ -58,7 +58,8 @@ function Usage()
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
 
 
-<files>         File list of binaries and libraries to examine.
+<files>         When using the 'gen' action with templates: a list of libraries for the generated dependency.
+                Any other case: a list off all binaries and libraries from the project.
 ]])
 end
 
@@ -117,18 +118,19 @@ function CreateDep(name, desc, libs, full, prdir)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
-    local out = io:open(string.format("%s/config.lua", path))
+    local out = io.open(string.format("%s/config.lua", path), "w")
     if not out then
         error("Could not open output file.")
     end
     
-    -- Convert to comma seperated string
-    local libsstr = ""
+    -- Convert to comma seperated string list
+    local libsstr
     for _, l in ipairs(libs) do
-        if #libsstr == 0 then
-            libsstr = l
+        local s = '"' .. l .. '"'
+        if not libsstr then
+            libsstr = s
         else
-            libsstr = libsstr .. ", " .. l
+            libsstr = libsstr .. ", " .. s
         end
     end
     
@@ -140,7 +142,7 @@ function CreateDep(name, desc, libs, full, prdir)
 local dep = pkg.newdependency()
 
 -- Dependency description. Max one line.
-dep.description = %s
+dep.description = "%s"
 
 -- Libraries this dependency provides. Incase this is a full dependency,
 -- use relative paths from this dependency directory.
@@ -151,13 +153,11 @@ dep.full = %s
 
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, (full and "true") or "false")
+]], os.date(), desc, libsstr, (full and "true") or "false"))
 
     out:close()
 end
     
-end
-
 function CheckArgs()
     if not args[1] then
         ErrUsage("No action specified.")
@@ -172,13 +172,13 @@ function CheckArgs()
     
     if list then
         sopts = "hl:"
-        lopts = { {"help"}, {"libpath"} }
+        lopts = { {"help"}, {"libpath", true} }
     elseif gen then
-        sopts = "hbsfrcn:d:t:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true} }
+        sopts = "hbsfrcn:d:t:p:l:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true} }
     else
-        sopts = "hbsfrcl:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"libpath", true} }
+        sopts = "hbsfrcp:l:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true} }
     end
     
     opts, failedarg = getopt(args, sopts, lopts)
@@ -282,21 +282,44 @@ function Generate()
         end
     end
     
-    local libs = args
+    local libs
     if temp then
+        local found = false
         for _, t in pairs(pkg.deptemplates) do
             if t.name == temp then
                 name = name or t.name
                 desc = desc or t.description
---              UNDONE
---                 if not libs or utils.emptytable(libs) then
---                     libs = t.libs
---                 end
+                local map = GetLibMap()
+                
+                libs = { }
+                for l in pairs(map) do
+                    if IsInTemplate(t, l) then
+                        table.insert(libs, l)
+                    end
+                end
+                
                 if full == nil then
                     full = t.recommend
                 end
+                found = true
+                break
             end
         end
+        
+        if not found then
+            print("Error: Unkown template specified.")
+            io.write("Valid templates: ")
+            for _, t in pairs(pkg.deptemplates) do
+                io.write(t.name .. " ")
+            end
+            print("")
+        end
+        
+        if utils.emptytable(libs) then
+            print("WARNING: Found no relevant libraries for specified template. Either re-run this script with other binaries or fill the required libs manually.")
+        end
+    else
+        libs = args
     end
     
     CreateDep(name, desc, libs, full, prdir)

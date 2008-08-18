@@ -224,7 +224,7 @@ function getopt(args, sopts, lopts)
 
         if not curopt then
             if not string.find(a, "^(%-)") then
-                table.insert(args, a) -- Not a commandline option; stop parsing and put arg back
+                table.insert(args, 1, a) -- Not a commandline option; stop parsing and put arg back
                 return ret
             end
             
