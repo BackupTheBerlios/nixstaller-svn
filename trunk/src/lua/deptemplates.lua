@@ -26,15 +26,17 @@
 -- check        Function that is used to determine if a library is part of this template.
 -- libs         As an alternative to 'check', this field can be used to list libraries which
 --              belong to this this template.
--- recommend    Recommended usage, can be "simple" or "full". Default is "full".
+-- full         Recommended usage. Default is true.
 -- 
 -- New structures should be created with the newtemplate() function
 
 pkg.deptemplates = { }
 
-local function newtemplate(n, d, l, r)
-    r = r or "full"
-    local t = { name = n, description = d, notes = no, recommend = r }
+local function newtemplate(n, d, l, f)
+    if f == nil then
+        f = true
+    end
+    local t = { name = n, description = d, notes = no, full = f }
     if type(l) == "table" then
         t.libs = l
     else
@@ -47,18 +49,18 @@ end
 -- C library
 newtemplate("libc", "C system library.", function(l)
     return string.find(l, "^(libc.so.[%d])")
-end, "simple")
+end, false)
 
 -- C++ Library
 newtemplate("libstdc++-legacy", "C++ system library, revision 5 (legacy).", function(l)
-    return os.name == "linux" and string.find(l, "^(libstdc++.so.[1-5])")
+    return os.osname == "linux" and string.find(l, "^(libstdc%+%+.so.[1-5])")
 end)
 newtemplate("libstdc++", "C++ system library.", function(l)
-    return string.find(l, "^(libstdc++.so.[%d])")
+    return string.find(l, "^(libstdc%+%+.so.[%d])")
 end)
 
 -- Core X Libraries (UNDONE)
 newtemplate("X-core", "Core libraries from X.", function(l)
     return string.find(l, "libX11.so.*")
-end, "simple")
+end, false)
 

@@ -42,7 +42,7 @@ function Usage()
     --simple, -s            Generates 'simple dependencies'.
     --full, -f              Generates 'regular dependencies'.
     --recommend, -r         Generates either single or full dependencies, depending on what is recommended. This is the default.
-    --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option automaticly implies -f.
+    --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option is only valid when a template is used. This option only affects a full dependency.
     --name, -n <name>       Name of the dependency. This option is required when not using a template.
     --desc, -d <desc>       Dependency description. Required when not using a template.
     --template, -t <temp>   Generates the dependency from a given template <temp>.
@@ -53,7 +53,7 @@ function Usage()
     --simple, -s            Generates 'simple dependencies'.
     --full, -f              Generates 'regular dependencies'.
     --recommend, -r         Generates either single or full dependencies, depending on what is recommended. This is the default.
-    --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option automaticly imples -f.
+    --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option only affects full dependencies.
     --prdir, -p             The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
 
@@ -85,7 +85,7 @@ function CollectLibs(map, f, lpath)
         utils.tablemerge(map, m)
 
         for l, p in pairs(m) do
-            if p then
+            if p and not map[l] then
                 CollectLibs(map, p, lpath)
             end
         end
@@ -104,7 +104,7 @@ function GetLibMap()
         ErrUsage("No files given to examine.")
     end
     
-    for _, b in pairs(args) do
+    for _, b in ipairs(args) do
         if not os.fileexists(b) then
             error("Could not locate file: " .. b)
         end
@@ -114,7 +114,7 @@ function GetLibMap()
     return map
 end
 
-function CreateDep(name, desc, libs, full, prdir)
+function CreateDep(name, desc, libs, full, prdir, copy, libmap)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -156,6 +156,23 @@ return dep
 ]], os.date(), desc, libsstr, (full and "true") or "false"))
 
     out:close()
+    
+    if copy and full then
+        local dest = string.format("%s/files_%s_%s", path, os.osname, os.arch)
+        os.mkdir(dest)
+        for l, p in pairs(libmap) do
+            if utils.tablefind(libs, l) then
+                if not p or not os.fileexists(p) then
+                    print(string.format("WARNING: Failed to locate library '%s'", l))
+                else
+                    local stat, msg = os.copy(p, dest)
+                    if not stat then
+                        print(string.format("WARNING: could not copy library '%s' to '%s': %s", p, dest, msg or "(No error message)"))
+                    end
+                end
+            end
+        end
+    end
 end
     
 function CheckArgs()
@@ -279,19 +296,22 @@ function Generate()
             ErrUsage("A description must be given when no template is used.")
         elseif utils.emptytable(args) then
             ErrUsage("A library list must be given when no template is used.")
+        elseif copy then
+            ErrUsage("The copy option is only valid when a template is used.")
         end
     end
     
     local libs
     if temp then
         local found = false
+        libs = { }
+        local map = GetLibMap()
+        
         for _, t in pairs(pkg.deptemplates) do
             if t.name == temp then
                 name = name or t.name
                 desc = desc or t.description
-                local map = GetLibMap()
                 
-                libs = { }
                 for l in pairs(map) do
                     if IsInTemplate(t, l) then
                         table.insert(libs, l)
@@ -299,7 +319,7 @@ function Generate()
                 end
                 
                 if full == nil then
-                    full = t.recommend
+                    full = t.full
                 end
                 found = true
                 break
@@ -313,19 +333,77 @@ function Generate()
                 io.write(t.name .. " ")
             end
             print("")
+            exit(1)
         end
         
         if utils.emptytable(libs) then
             print("WARNING: Found no relevant libraries for specified template. Either re-run this script with other binaries or fill the required libs manually.")
         end
+        
+        CreateDep(name, desc, libs, full, prdir, copy, map)
     else
         libs = args
+        CreateDep(name, desc, libs, full, prdir, false)
     end
     
-    CreateDep(name, desc, libs, full, prdir)
+    print(string.format([[
+Dependency generation complete:
+Name                    %s
+Description             %s
+Libraries               %s
+Libraries copied        %s
+Type                    %s
+]], name, desc, tabtostr(libs), tostring(copy and full), (full and "full") or "simple"))
+
 end
 
 function Autogen()
+    local full -- Keep it nil, so 'recommend' is enabled by default
+    local copy = false
+    local prdir
+    
+    for _, o in ipairs(opts) do
+        if o.name == "s" or o.name == "simple" then
+            full = false
+        elseif o.name == "f" or o.name == "full" then
+            full = true
+        elseif o.name == "r" or o.name == "recommend" then
+            full = nil
+        elseif o.name == "c" or o.name == "copy" then
+            copy = true
+        elseif o.name == "p" or o.name == "prdir" then
+            prdir = o.val
+        end
+    end
+    
+    if not prdir or not os.isdir(prdir) then
+        ErrUsage("Wrong or no project directory specified.")
+    end
+    
+    local map = GetLibMap()
+    local templatemap = {}
+    for l in pairs(map) do
+        local found = false
+        for _, t in ipairs(pkg.deptemplates) do
+            if IsInTemplate(t, l) then
+                templatemap[t] = templatemap[t] or {}
+                if not utils.tablefind(templatemap[t], l) then
+                    table.insert(templatemap[t], l)
+                end
+                found = true
+                break
+            end
+        end
+        if not found then
+            print("WARNING: No template found which provides library " .. l)
+        end
+    end
+    
+    for t, l in pairs(templatemap) do
+        local fl = ((full == nil) and t.full) or full
+        CreateDep(t.name, t.description, l, fl, prdir, copy, map)
+        print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or ""))
+    end
 end
 
 CheckArgs()

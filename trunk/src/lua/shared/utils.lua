@@ -263,3 +263,15 @@ function getopt(args, sopts, lopts)
     
     return ret
 end
+
+function tabtostr(t)
+    local ret
+    for _, v in ipairs(t) do
+        if not ret then
+            ret = v
+        else
+            ret = ret .. ", " .. "v"
+        end
+    end
+    return ret
+end
