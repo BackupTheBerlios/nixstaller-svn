@@ -17,6 +17,7 @@
 
 dofile(ndir .. "/src/lua/shared/utils.lua")
 dofile(ndir .. "/src/lua/shared/utils-public.lua")
+dofile(ndir .. "/src/lua/shared/package-public.lua")
 dofile(ndir .. "/src/lua/deptemplates.lua")
 
 
@@ -29,6 +30,7 @@ function Usage()
 <action>        Should be one of the following:
 
  list       Lists dependency information from a given binary set.
+ scan       Scans a project directory for unspecified dependencies and suggests possible new templates.
  gen        Generates a new dependency file structure, optionally from a template.
  auto       Automaticly tries to generate dependencies from templates.
 
@@ -37,7 +39,11 @@ function Usage()
 
  Valid options for the 'list' action:
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
- 
+
+ Valid options for the 'scan' action:
+    --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    --prdir, -p             The project directory of the installer. This argument is required.
+    
  Valid options for the 'gen' action:
     --simple, -s            Generates 'simple dependencies'.
     --full, -f              Generates 'regular dependencies'.
@@ -48,6 +54,7 @@ function Usage()
     --template, -t <temp>   Generates the dependency from a given template <temp>.
     --prdir, -p             The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    --baseurl, -u <url>     Base URL (ie a server directory) where this dependency from can be fetched.
 
  Valid options for the 'auto' action:
     --simple, -s            Generates 'simple dependencies'.
@@ -56,6 +63,7 @@ function Usage()
     --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option only affects full dependencies.
     --prdir, -p             The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    --baseurl, -u <url>     Base URL (ie a server directory) from where the dependencies can be fetched.
 
 
 <files>         When using the 'gen' action with templates: a list of libraries for the generated dependency.
@@ -114,7 +122,7 @@ function GetLibMap()
     return map
 end
 
-function CreateDep(name, desc, libs, full, prdir, copy, libmap)
+function CreateDep(name, desc, libs, full, baseurl, prdir, copy, libmap)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -126,12 +134,19 @@ function CreateDep(name, desc, libs, full, prdir, copy, libmap)
     -- Convert to comma seperated string list
     local libsstr
     for _, l in ipairs(libs) do
-        local s = '"' .. l .. '"'
+        local s = '"lib/' .. l .. '"'
         if not libsstr then
             libsstr = s
         else
             libsstr = libsstr .. ", " .. s
         end
+    end
+    
+    local url
+    if not baseurl or not full then
+        url = "nil"
+    else
+        url = "\"" .. baseurl .. "\""
     end
     
     out:write(string.format([[
@@ -151,15 +166,20 @@ dep.libs = { %s }
 -- If this is a full dependency or not
 dep.full = %s
 
+-- Server directory (http, ftp) from where dependency files can be fetched.
+-- This is fully optional, works only with full dependencies and only effects
+-- dependencies set as extern in package.lua.
+pkg.baseurl = %s
+
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, (full and "true") or "false"))
+]], os.date(), desc, libsstr, (full and "true") or "false", url))
 
     out:close()
     
     if copy and full then
-        local dest = string.format("%s/files_%s_%s", path, os.osname, os.arch)
-        os.mkdir(dest)
+        local dest = string.format("%s/files_%s_%s/lib", path, os.osname, os.arch)
+        os.mkdirrec(dest)
         for l, p in pairs(libmap) do
             if utils.tablefind(libs, l) then
                 if not p or not os.fileexists(p) then
@@ -178,7 +198,7 @@ end
 function CheckArgs()
     if not args[1] then
         ErrUsage("No action specified.")
-    elseif args[1] ~= "list" and args[1] ~= "gen" and args[1] ~= "auto" then
+    elseif args[1] ~= "list" and args[1] ~= "scan" and args[1] ~= "gen" and args[1] ~= "auto" then
         ErrUsage("Wrong or no action specified.")
     end
     
@@ -191,11 +211,11 @@ function CheckArgs()
         sopts = "hl:"
         lopts = { {"help"}, {"libpath", true} }
     elseif gen then
-        sopts = "hbsfrcn:d:t:p:l:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true} }
+        sopts = "hbsfrcn:d:t:p:l:u:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"baseurl", true} }
     else
-        sopts = "hbsfrcp:l:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true} }
+        sopts = "hbsfrcp:l:u:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"baseurl", true} }
     end
     
     opts, failedarg = getopt(args, sopts, lopts)
@@ -262,10 +282,58 @@ function List()
     print("") -- Add newline
 end
 
+function Scan()
+    local prdir
+    
+    for _, o in ipairs(opts) do
+        if o.name == "p" or o.name == "prdir" then
+            prdir = o.val
+        end
+    end
+    
+    if not prdir or not os.isdir(prdir) then
+        ErrUsage("Wrong or no project directory specified.")
+    end
+    
+    -- Retrieve all current filed dependencies
+    local stat, msg = pcall(dofile, prdir .. "/package.lua")
+    if not stat then
+        error("Failed to load package.lua: " .. msg)
+    end
+    
+    local depmap = { }
+    
+    -- Load all deps
+    for _, d in ipairs(pkg.deps) do
+        local stat, ret = pcall(dofile, string.format("%s/deps/%s/config.lua", prdir, d))
+        if not stat then
+            print("WARNING: Failed to load package.lua: " .. ret)
+        else
+            for _, l in ipairs(ret.libs) do
+                depmap[utils.basename(l)] = d
+            end
+        end
+    end
+        
+    local map = GetLibMap()
+    local unknownlibs = { }
+    
+    for l, p in pairs(map) do
+        if depmap[l] then
+            print(string.format("Library '%s': OK (filed by dependency '%s')", l, depmap[l]))
+        elseif not unknownlibs[l] then
+            print(string.format("Library '%s': Not OK", l))
+            unknownlibs[l] = true
+        end
+    end
+    
+    -- ... UNDONE
+end
+
 function Generate()
     local full -- Keep it nil, so 'recommend' is enabled by default
     local copy = false
-    local name, desc, temp, prdir
+    local name, desc, temp, prdir, baseurl
     
     for _, o in ipairs(opts) do
         if o.name == "s" or o.name == "simple" then
@@ -284,6 +352,8 @@ function Generate()
             temp = o.val
         elseif o.name == "p" or o.name == "prdir" then
             prdir = o.val
+        elseif o.name == "u" or o.name == "baseurl" then
+            baseurl = o.val
         end
     end
     
@@ -340,10 +410,10 @@ function Generate()
             print("WARNING: Found no relevant libraries for specified template. Either re-run this script with other binaries or fill the required libs manually.")
         end
         
-        CreateDep(name, desc, libs, full, prdir, copy, map)
+        CreateDep(name, desc, libs, full, baseurl, prdir, copy, map)
     else
         libs = args
-        CreateDep(name, desc, libs, full, prdir, false)
+        CreateDep(name, desc, libs, full, baseurl, prdir, false)
     end
     
     print(string.format([[
@@ -360,7 +430,7 @@ end
 function Autogen()
     local full -- Keep it nil, so 'recommend' is enabled by default
     local copy = false
-    local prdir
+    local prdir, baseurl
     
     for _, o in ipairs(opts) do
         if o.name == "s" or o.name == "simple" then
@@ -373,6 +443,8 @@ function Autogen()
             copy = true
         elseif o.name == "p" or o.name == "prdir" then
             prdir = o.val
+        elseif o.name == "u" or o.name == "baseurl" then
+            baseurl = o.val
         end
     end
     
@@ -401,7 +473,7 @@ function Autogen()
     
     for t, l in pairs(templatemap) do
         local fl = ((full == nil) and t.full) or full
-        CreateDep(t.name, t.description, l, fl, prdir, copy, map)
+        CreateDep(t.name, t.description, l, fl, baseurl, prdir, copy, map)
         print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or ""))
     end
 end
@@ -410,6 +482,8 @@ CheckArgs()
 
 if list then
     List()
+elseif scan then
+    Scan()
 elseif gen then
     Generate()
 else

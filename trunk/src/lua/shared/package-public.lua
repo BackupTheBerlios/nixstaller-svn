@@ -31,3 +31,14 @@ function pkg.adddependency(name)
     pkg.deps = pkg.deps or { }
     table.insert(pkg.deps, name)
 end
+
+function pkg.newdependency()
+    local ret = { }
+    setmetatable(ret, depclass)
+    
+    ret.libs = { }
+    ret.deps = { }
+    ret.description = ""
+    
+    return ret
+end

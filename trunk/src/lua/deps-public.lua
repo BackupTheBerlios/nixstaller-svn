@@ -16,17 +16,6 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-function pkg.newdependency()
-    local ret = { }
-    setmetatable(ret, depclass)
-    
-    ret.libs = { }
-    ret.deps = { }
-    ret.description = ""
-    
-    return ret
-end
-
 function pkg.verifydeps(bins)
     local installeddeps = { }
     local wrongdeps, wronglibs
