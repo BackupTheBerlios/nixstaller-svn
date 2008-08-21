@@ -32,11 +32,11 @@
 
 pkg.deptemplates = { }
 
-local function newtemplate(n, d, l, f)
+local function newtemplate(n, d, l, f, no)
     if f == nil then
         f = true
     end
-    local t = { name = n, description = d, notes = no, full = f }
+    local t = { name = n, description = d, full = f, notes = no }
     if type(l) == "table" then
         t.libs = l
     else
@@ -49,18 +49,15 @@ end
 -- C library
 newtemplate("libc", "C system library.", function(l)
     return string.find(l, "^(libc.so.[%d])")
-end, false)
+end, false, "Never create a full dependency for this library!")
 
 -- C++ Library
-newtemplate("libstdc++-legacy", "C++ system library, revision 5 (legacy).", function(l)
-    return os.osname == "linux" and string.find(l, "^(libstdc%+%+.so.[1-5])")
-end)
 newtemplate("libstdc++", "C++ system library.", function(l)
-    return string.find(l, "^(libstdc%+%+.so.[%d])")
+    return string.find(l, "^(libstdc%+%+.so.%d)")
 end)
 
 -- Core X Libraries (UNDONE)
 newtemplate("X-core", "Core libraries from X.", function(l)
-    return string.find(l, "libX11.so.*")
+    return string.find(l, "libX11.so.%d")
 end, false)
 

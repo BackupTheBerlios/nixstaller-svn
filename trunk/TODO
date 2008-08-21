@@ -31,9 +31,9 @@ OVERALL
     - Force dyn libs to be in libs subdir?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
-    - verify action
     - For list: LSB Compliance, others?
     - os/arch options for copy files/templates?
+    - More templates
 - Overwrite options and commandline options for deputil.sh and genprojdir.sh
 
 

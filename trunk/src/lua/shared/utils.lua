@@ -270,7 +270,7 @@ function tabtostr(t)
         if not ret then
             ret = v
         else
-            ret = ret .. ", " .. "v"
+            ret = ret .. ", " .. v
         end
     end
     return ret

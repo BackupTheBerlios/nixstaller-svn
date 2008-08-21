@@ -29,7 +29,7 @@ function Usage()
     print([[
 <action>        Should be one of the following:
 
- list       Lists dependency information from a given binary set.
+ list       Lists all known dependency templates with info.
  scan       Scans a project directory for unspecified dependencies and suggests possible new templates.
  gen        Generates a new dependency file structure, optionally from a template.
  auto       Automaticly tries to generate dependencies from templates.
@@ -38,11 +38,12 @@ function Usage()
 <options>       Depending on the specified action, the following options exist:
 
  Valid options for the 'list' action:
-    --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    --template, -t <temp>   Lists info only about template <temp>.
+    --only-names            Lists only template names.
 
  Valid options for the 'scan' action:
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
-    --prdir, -p             The project directory of the installer. This argument is required.
+    --prdir, -p <dir>       The project directory of the installer. This argument is required.
     
  Valid options for the 'gen' action:
     --simple, -s            Generates 'simple dependencies'.
@@ -52,7 +53,7 @@ function Usage()
     --name, -n <name>       Name of the dependency. This option is required when not using a template.
     --desc, -d <desc>       Dependency description. Required when not using a template.
     --template, -t <temp>   Generates the dependency from a given template <temp>.
-    --prdir, -p             The project directory of the installer. This argument is required.
+    --prdir, -p <dir>       The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
     --baseurl, -u <url>     Base URL (ie a server directory) where this dependency from can be fetched.
 
@@ -61,7 +62,7 @@ function Usage()
     --full, -f              Generates 'regular dependencies'.
     --recommend, -r         Generates either single or full dependencies, depending on what is recommended. This is the default.
     --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option only affects full dependencies.
-    --prdir, -p             The project directory of the installer. This argument is required.
+    --prdir, -p <dir>       The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
     --baseurl, -u <url>     Base URL (ie a server directory) from where the dependencies can be fetched.
 
@@ -208,8 +209,11 @@ function CheckArgs()
     local failedarg, sopts, lopts
     
     if list then
-        sopts = "hl:"
-        lopts = { {"help"}, {"libpath", true} }
+        sopts = "ht:"
+        lopts = { {"help"}, {"template", true}, {"only-names"} }
+    elseif scan then
+        sopts = "hp:l:"
+        lopts = { {"help"}, {"prdir", true}, {"libpath", true} }
     elseif gen then
         sopts = "hbsfrcn:d:t:p:l:u:"
         lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"baseurl", true} }
@@ -235,51 +239,56 @@ function CheckArgs()
 end
 
 function List()
-    local processed, templates, knownlibs = { }, { }, { }
-    local map = GetLibMap()
+    local onlynames = false
+    local onlytemp
     
-    for _, t in pairs(pkg.deptemplates) do
-        local printedheader = false
-        
-        for l, p in pairs(map) do
-            if not knownlibs[l] and IsInTemplate(t, l) then
-                if not printedheader then
-                    printedheader = true
-                    print(string.format("\Libraries found from template '%s':", t.name))
-                end
-                print(string.format("\t%s (%s)", l, (not p and "Unknown path") or utils.dirname(p)))
-                knownlibs[l] = true
-                templates[t] = true
-            end
+    for _, o in ipairs(opts) do
+        if o.name == "-t" or o.name == "template" then
+            onlytemp = o.val
+        elseif o.name == "only-names" then
+            onlynames = true
         end
     end
     
-    local printedheader = false
-    for l, p in pairs(map) do
-        if not knownlibs[l] then
-            if not printedheader then
-                printedheader = true
-                print("\nLibraries which don't belong to any template:")
+    function printtemp(t)
+        if onlynames then
+            print(t.name)
+        else
+            print("Dependency name      " .. t.name)
+            print("Description          " .. t.description)
+            print("Recommended usage    " .. ((t.full and "as full dependency") or "as simple dependency"))
+            
+            io.write("Filed libraries      ")
+            if t.check then
+                print("dynamic (use scan action to check relevancy)")
+            else
+                print(tabtostr(t.libs))
             end
-            print(string.format("\t%s (%s)", l, (not p and "Unknown path") or utils.dirname(p)))
-            knownlibs[l] = true -- Still not known, but make sure that libs are only mentioned once
+            
+            if t.notes then
+                print("Notes                " .. t.notes)
+            end
+            
+            print("")
         end
     end
-
-    print("\n\nThe following templates are recommended to be used as simple dependencies:")
-    for t in pairs(templates) do
-        if t.recommend == "simple" then
-            io.write(t.name .. " ")
+    
+    local found = false
+    for _, t in ipairs(pkg.deptemplates) do
+        if onlytemp then
+            if t.name == onlytemp then
+                found = true
+                printtemp(t)
+                break
+            end
+        else
+            printtemp(t)
         end
     end
-    print("\n\nThe following templates are recommended to be used as full dependencies:")
-    for t in pairs(templates) do
-        if t.recommend == "full" then
-            io.write(t.name .. " ")
-        end
+    
+    if onlytemp and not found then
+        error("No such template: " .. onlytemp)
     end
-
-    print("") -- Add newline
 end
 
 function Scan()
@@ -327,7 +336,45 @@ function Scan()
         end
     end
     
-    -- ... UNDONE
+    local sugsimtemps, sugfulltemps
+    for l in pairs(unknownlibs) do
+        for _, t in ipairs(pkg.deptemplates) do
+            if IsInTemplate(t, l) then
+                if t.full then
+                    sugfulltemps = sugfulltemps or { }
+                    table.insert(sugfulltemps, t.name)
+                else
+                    sugsimtemps = sugsimtemps or { }
+                    table.insert(sugsimtemps, t.name)
+                end
+                unknownlibs[l] = nil
+                break
+            end
+        end
+    end
+    
+    print("")
+    
+    if sugsimtemps then
+        print("Templates suggested to be used as simple dependencies: " .. tabtostr(sugsimtemps))
+    end
+    
+    if sugsimtemps then
+        print("Templates suggested to be used as full dependencies: " .. tabtostr(sugfulltemps))
+    end
+
+    if not utils.emptytable(unknownlibs) then
+        local prheader = true
+        for l in pairs(unknownlibs) do
+            if prheader then
+                prheader = false
+                io.write("Unknown libraries: " .. l)
+            else
+                io.write(", " .. l)
+            end
+        end
+        print("")
+    end
 end
 
 function Generate()
@@ -423,7 +470,8 @@ Description             %s
 Libraries               %s
 Libraries copied        %s
 Type                    %s
-]], name, desc, tabtostr(libs), tostring(copy and full), (full and "full") or "simple"))
+Notes                   %s
+]], name, desc, tabtostr(libs), tostring(copy and full), (full and "full") or "simple"), (t.notes or "-"))
 
 end
 
@@ -475,6 +523,9 @@ function Autogen()
         local fl = ((full == nil) and t.full) or full
         CreateDep(t.name, t.description, l, fl, baseurl, prdir, copy, map)
         print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or ""))
+        if t.notes then
+            print("Notes: " .. t.notes)
+        end
     end
 end
 
