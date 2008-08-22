@@ -36,10 +36,10 @@ function Usage()
 end
 
 function CheckArgs()
-    opts, failedarg = getopt(args, "h", { {"help", false} })
+    local opts, msg = getopt(args, "h", { {"help", false} })
 
     if not opts then
-        print("Error: Unknown commandline option: " .. failedarg)
+        print("Error: " .. msg)
         Usage()
         os.exit(1)
     end

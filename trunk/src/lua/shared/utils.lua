@@ -243,7 +243,7 @@ function getopt(args, sopts, lopts)
                     end
                 end
                 if not found then
-                    return false, a
+                    return nil, "Unknown commandline option: " .. a
                 end
             else
                 local aname = string.gsub(a, "^(%-)", "")
@@ -252,13 +252,17 @@ function getopt(args, sopts, lopts)
                 elseif string.find(sopts, aname) then
                     table.insert(ret, { name = aname, val = true })
                 else
-                    return false, a
+                    return nil, "Unknown commandline option: " .. a
                 end
             end
         else
             table.insert(ret, { name = curopt, val = a })
             curopt = nil
         end
+    end
+    
+    if curopt then
+        return nil, "No value specified for " .. curopt
     end
     
     return ret

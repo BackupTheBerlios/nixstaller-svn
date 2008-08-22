@@ -32,7 +32,6 @@ OVERALL
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
     - For list: LSB Compliance, others?
-    - os/arch options for copy files/templates?
     - More templates
 - Overwrite options and commandline options for deputil.sh and genprojdir.sh
 
@@ -83,6 +82,7 @@ FLTK
 - Create a pack widget that works?
 - Textfield: Bigger? Smaller fonts?
 - Check if closing progress dialog via close border button works
+- Update libs
 
 
 REGISTER

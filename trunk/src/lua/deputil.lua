@@ -30,7 +30,7 @@ function Usage()
 <action>        Should be one of the following:
 
  list       Lists all known dependency templates with info.
- scan       Scans a project directory for unspecified dependencies and suggests possible new templates.
+ scan       Scans a project directory for unspecified dependencies and suggests possible usable templates.
  gen        Generates a new dependency file structure, optionally from a template.
  auto       Automaticly tries to generate dependencies from templates.
 
@@ -47,7 +47,7 @@ function Usage()
     
  Valid options for the 'gen' action:
     --simple, -s            Generates 'simple dependencies'.
-    --full, -f              Generates 'regular dependencies'.
+    --full, -f              Generates 'full dependencies'.
     --recommend, -r         Generates either single or full dependencies, depending on what is recommended. This is the default.
     --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option is only valid when a template is used. This option only affects a full dependency.
     --name, -n <name>       Name of the dependency. This option is required when not using a template.
@@ -56,18 +56,22 @@ function Usage()
     --prdir, -p <dir>       The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
     --baseurl, -u <url>     Base URL (ie a server directory) where this dependency from can be fetched.
+    --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
+    --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
 
  Valid options for the 'auto' action:
     --simple, -s            Generates 'simple dependencies'.
-    --full, -f              Generates 'regular dependencies'.
+    --full, -f              Generates 'full dependencies'.
     --recommend, -r         Generates either single or full dependencies, depending on what is recommended. This is the default.
     --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option only affects full dependencies.
     --prdir, -p <dir>       The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
     --baseurl, -u <url>     Base URL (ie a server directory) from where the dependencies can be fetched.
+    --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
+    --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
 
 
-<files>         When using the 'gen' action with templates: a list of libraries for the generated dependency.
+<files>         When using the 'gen' action without templates: a list of libraries for the generated dependency.
                 Any other case: a list off all binaries and libraries from the project.
 ]])
 end
@@ -123,7 +127,7 @@ function GetLibMap()
     return map
 end
 
-function CreateDep(name, desc, libs, full, baseurl, prdir, copy, libmap)
+function CreateDep(name, desc, libs, full, baseurl, prdir, copy, libmap, destos, destarch)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -179,7 +183,7 @@ return dep
     out:close()
     
     if copy and full then
-        local dest = string.format("%s/files_%s_%s/lib", path, os.osname, os.arch)
+        local dest = string.format("%s/files_%s_%s/lib", path, destos, destarch)
         os.mkdirrec(dest)
         for l, p in pairs(libmap) do
             if utils.tablefind(libs, l) then
@@ -206,7 +210,7 @@ function CheckArgs()
     _G[args[1]] = true -- set list, gen or auto to true
     table.remove(args, 1)
     
-    local failedarg, sopts, lopts
+    local msg, sopts, lopts
     
     if list then
         sopts = "ht:"
@@ -216,16 +220,16 @@ function CheckArgs()
         lopts = { {"help"}, {"prdir", true}, {"libpath", true} }
     elseif gen then
         sopts = "hbsfrcn:d:t:p:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"baseurl", true} }
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true} }
     else
         sopts = "hbsfrcp:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"baseurl", true} }
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true} }
     end
     
-    opts, failedarg = getopt(args, sopts, lopts)
+    opts, msg = getopt(args, sopts, lopts)
     
     if not opts then
-        ErrUsage("Unknown commandline option: %s", failedarg)
+        ErrUsage("Error: %s", msg)
     end
     
     for _, o in ipairs(opts) do
@@ -381,6 +385,7 @@ function Generate()
     local full -- Keep it nil, so 'recommend' is enabled by default
     local copy = false
     local name, desc, temp, prdir, baseurl
+    local destos, destarch = os.osname, os.arch
     
     for _, o in ipairs(opts) do
         if o.name == "s" or o.name == "simple" then
@@ -401,6 +406,10 @@ function Generate()
             prdir = o.val
         elseif o.name == "u" or o.name == "baseurl" then
             baseurl = o.val
+        elseif o.name == "destos" then
+            destos = o.val
+        elseif o.name == "destarch" then
+            destarch = o.val
         end
     end
     
@@ -457,7 +466,7 @@ function Generate()
             print("WARNING: Found no relevant libraries for specified template. Either re-run this script with other binaries or fill the required libs manually.")
         end
         
-        CreateDep(name, desc, libs, full, baseurl, prdir, copy, map)
+        CreateDep(name, desc, libs, full, baseurl, prdir, copy, map, destos, destarch)
     else
         libs = args
         CreateDep(name, desc, libs, full, baseurl, prdir, false)
@@ -479,6 +488,7 @@ function Autogen()
     local full -- Keep it nil, so 'recommend' is enabled by default
     local copy = false
     local prdir, baseurl
+    local destos, destarch = os.osname, os.arch
     
     for _, o in ipairs(opts) do
         if o.name == "s" or o.name == "simple" then
@@ -493,6 +503,10 @@ function Autogen()
             prdir = o.val
         elseif o.name == "u" or o.name == "baseurl" then
             baseurl = o.val
+        elseif o.name == "destos" then
+            destos = o.val
+        elseif o.name == "destarch" then
+            destarch = o.val
         end
     end
     
@@ -521,11 +535,8 @@ function Autogen()
     
     for t, l in pairs(templatemap) do
         local fl = ((full == nil) and t.full) or full
-        CreateDep(t.name, t.description, l, fl, baseurl, prdir, copy, map)
-        print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or ""))
-        if t.notes then
-            print("Notes: " .. t.notes)
-        end
+        CreateDep(t.name, t.description, l, fl, baseurl, prdir, copy, map, destos, destarch)
+        print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or "", ((t.notes and ", Notes: " .. t.notes) or "")))
     end
 end
 

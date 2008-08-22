@@ -67,10 +67,10 @@ end
 searchpaths = { }
 binaries = { }
 dest = os.getcwd()
-opts, failedarg = getopt(args, "l:d:", { {"libpath", true}, {"dest", true} })
+opts, msg = getopt(args, "l:d:", { {"libpath", true}, {"dest", true} })
 
 if not opts then
-    print("Error: Unknown commandline option: " .. failedarg)
+    print("Error: " .. msg)
     Usage()
     os.exit(1)
 end
