@@ -58,6 +58,9 @@ function Usage()
     --baseurl, -u <url>     Base URL (ie a server directory) where this dependency from can be fetched.
     --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
     --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
+    --overwrite             Overwrites any existing files. Default is to ask.
+    --rm-existing           Removes any existing files. Default is to ask.
+    --skip-existing         Skips creation of dependency incase it already exists. Default is to ask.
 
  Valid options for the 'auto' action:
     --simple, -s            Generates 'simple dependencies'.
@@ -69,6 +72,9 @@ function Usage()
     --baseurl, -u <url>     Base URL (ie a server directory) from where the dependencies can be fetched.
     --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
     --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
+    --overwrite             Overwrites any existing files. Default is to ask.
+    --rm-existing           Removes any existing files. Default is to ask.
+    --skip-existing         Skips creation of dependency incase it already exists. Default is to ask.
 
 
 <files>         When using the 'gen' action without templates: a list of libraries for the generated dependency.
@@ -125,6 +131,37 @@ function GetLibMap()
     end
     
     return map
+end
+
+function CheckExisting(prdir, d, exist)
+    local path = string.format("%s/deps/%s", prdir, d)
+    if exist == "overwrite" or not os.isdir(path) then
+        return true
+    end
+    
+    if exist == "rm-existing" then
+        local ret, msg = utils.removerec(path)
+        if not ret then
+            error(string.format("Could not remove existing dependency: %s", msg))
+        end
+        return true
+    elseif exist == "skip-existing" then
+        return false
+    elseif exist == "ask" then
+        print(string.format("Dependency '%s' already exists.", d))
+        io.write("Do you want to [o]verwrite, [r]emove it or [s]kip it? ")
+        repeat
+            local e = io.read(1)
+            if e == "o" then
+                return CheckExisting(prdir, d, "overwrite")
+            elseif e == "r" then
+                return CheckExisting(prdir, d, "rm-existing")
+            elseif e == "s" then
+                return CheckExisting(prdir, d, "skip-existing")
+            end
+        until false
+    end
+    assert(false)
 end
 
 function CreateDep(name, desc, libs, full, baseurl, prdir, copy, libmap, destos, destarch)
@@ -220,10 +257,10 @@ function CheckArgs()
         lopts = { {"help"}, {"prdir", true}, {"libpath", true} }
     elseif gen then
         sopts = "hbsfrcn:d:t:p:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true} }
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
     else
         sopts = "hbsfrcp:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true} }
+        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
     end
     
     opts, msg = getopt(args, sopts, lopts)
@@ -235,7 +272,7 @@ function CheckArgs()
     for _, o in ipairs(opts) do
         if o.name == "h" or o.name == "help" then
             Usage()
-            exit(0)
+            os.exit(0)
         end
     end
     
@@ -386,6 +423,7 @@ function Generate()
     local copy = false
     local name, desc, temp, prdir, baseurl
     local destos, destarch = os.osname, os.arch
+    local exist = "ask"
     
     for _, o in ipairs(opts) do
         if o.name == "s" or o.name == "simple" then
@@ -410,6 +448,8 @@ function Generate()
             destos = o.val
         elseif o.name == "destarch" then
             destarch = o.val
+        elseif o.name == "overwrite" or o.name == "rm-existing" or o.name == "skip-existing" then
+            exist = o.name
         end
     end
     
@@ -459,15 +499,25 @@ function Generate()
                 io.write(t.name .. " ")
             end
             print("")
-            exit(1)
+            os.exit(1)
         end
         
         if utils.emptytable(libs) then
             print("WARNING: Found no relevant libraries for specified template. Either re-run this script with other binaries or fill the required libs manually.")
         end
         
+        if not CheckExisting(prdir, name, exist) then
+            print(string.format("Skipping existing dependency '%s'", name))
+            os.exit(1)
+        end
+        
         CreateDep(name, desc, libs, full, baseurl, prdir, copy, map, destos, destarch)
     else
+        if not CheckExisting(prdir, name, exist) then
+            print(string.format("Skipping existing dependency '%s'", name))
+            os.exit(1)
+        end
+
         libs = args
         CreateDep(name, desc, libs, full, baseurl, prdir, false)
     end
@@ -489,6 +539,7 @@ function Autogen()
     local copy = false
     local prdir, baseurl
     local destos, destarch = os.osname, os.arch
+    local exist = "ask"
     
     for _, o in ipairs(opts) do
         if o.name == "s" or o.name == "simple" then
@@ -507,6 +558,8 @@ function Autogen()
             destos = o.val
         elseif o.name == "destarch" then
             destarch = o.val
+        elseif o.name == "overwrite" or o.name == "rm-existing" or o.name == "skip-existing" then
+            exist = o.name
         end
     end
     
@@ -534,9 +587,13 @@ function Autogen()
     end
     
     for t, l in pairs(templatemap) do
-        local fl = ((full == nil) and t.full) or full
-        CreateDep(t.name, t.description, l, fl, baseurl, prdir, copy, map, destos, destarch)
-        print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or "", ((t.notes and ", Notes: " .. t.notes) or "")))
+        if not CheckExisting(prdir, t.name, exist) then
+            print(string.format("Skipping existing dependency '%s'", t.name))
+        else
+            local fl = ((full == nil) and t.full) or full
+            CreateDep(t.name, t.description, l, fl, baseurl, prdir, copy, map, destos, destarch)
+            print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or "", ((t.notes and ", Notes: " .. t.notes) or "")))
+        end
     end
 end
 

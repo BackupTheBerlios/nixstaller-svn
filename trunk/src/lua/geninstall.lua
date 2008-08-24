@@ -66,46 +66,11 @@ function CheckArgs()
 end
 
 function Clean()
-    if (os.fileexists(confdir .. "/tmp")) then
-        local newdirlist = { confdir .. "/tmp" }
-        local olddirlist = { }
-        
-        while (#newdirlist > 0) do
-            local d = newdirlist[#newdirlist]
-            local newdir = false
-    
-            for f in io.dir(d) do
-                local dpath = string.format("%s/%s", d, f)
-                if (os.isdir(dpath)) then
-                    local processed = false
-                    for _, o in pairs(olddirlist) do
-                        if (o == dpath) then
-                            processed = true
-                            break
-                        end
-                    end
-                    
-                    if not processed then
-                        table.insert(newdirlist, dpath)
-                        newdir = true
-                        break
-                    end
-                else
-                    os.remove(dpath)
-                end
-            end
-            
-            if not newdir then
-                local d = table.remove(newdirlist)
-                table.insert(olddirlist, d)
-                os.remove(d)
-            end
-        end
-    end
+    utils.removerec(confdir .. "/tmp")
 end
 
 function ThrowError(msg, ...)
-    print(debug.traceback())
+--     print(debug.traceback())
     Clean()
     error("Error: " .. string.format(msg, ...) .. "\n", 0)
 end

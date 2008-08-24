@@ -4,6 +4,7 @@
 - Fixed: os.copy would try to copy file if source and destination file were equal.
 - Fixed: utils.dirname() would handle relative paths wrong.
 - Better commandline arguments handling.
+- utils.removerec() function.
 
 
 0.3 --> 0.4

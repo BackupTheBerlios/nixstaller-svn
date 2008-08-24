@@ -33,7 +33,7 @@ OVERALL
 - Dep templates:
     - For list: LSB Compliance, others?
     - More templates
-- Overwrite options and commandline options for deputil.sh and genprojdir.sh
+- Overwrite options and commandline options for genprojdir.sh
 
 
 PACKAGING
@@ -55,6 +55,7 @@ MAIN
 DOCS
 - utils.tabelfind? utils.tablemerge? utils.mapsize?
 - install.getpkgdir() (now with arg)
+- utils.removerec()
 
 
 TRANSLATIONS

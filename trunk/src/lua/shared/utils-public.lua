@@ -49,6 +49,44 @@ function utils.recursivedir(src, func)
     end
 end
 
+function utils.removerec(path)
+    if os.fileexists(path) then
+        local newdirlist = { path }
+        local olddirlist = { }
+        
+        while (#newdirlist > 0) do
+            local d = newdirlist[#newdirlist]
+            local newdir = false
+    
+            for f in io.dir(d) do
+                local dpath = string.format("%s/%s", d, f)
+                if os.isdir(dpath) then
+                    if not utils.tablefind(olddirlist, dpath) then
+                        table.insert(newdirlist, dpath)
+                        newdir = true
+                        break
+                    end
+                else
+                    local ret, msg = os.remove(dpath)
+                    if not ret then
+                        return ret, msg
+                    end
+                end
+            end
+            
+            if not newdir then
+                local d = table.remove(newdirlist)
+                table.insert(olddirlist, d)
+                local ret, msg = os.remove(d)
+                if not ret then
+                    return ret, msg
+                end
+            end
+        end
+    end
+    return true
+end
+
 function utils.basename(p)
     return string.gsub(p, "/*.+/", "")
 end
