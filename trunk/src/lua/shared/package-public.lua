@@ -36,7 +36,9 @@ function pkg.newdependency()
     local ret = { }
     setmetatable(ret, depclass)
     
+    ret.full = true
     ret.libs = { }
+    ret.libdir = "lib/"
     ret.deps = { }
     ret.description = ""
     

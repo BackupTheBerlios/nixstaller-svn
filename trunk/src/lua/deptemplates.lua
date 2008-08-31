@@ -25,18 +25,21 @@
 -- description  Dependency description.
 -- check        Function that is used to determine if a library is part of this template.
 -- libs         As an alternative to 'check', this field can be used to list libraries which
---              belong to this this template.
+--              belong to this this template. It should contain a table (array) containing strings
+--              of the library name, without any starting "lib" and ending ".so.<version> part".
+--              So if you want to look for "libfoo.so.<version>" simply specify "foo".
 -- full         Recommended usage. Default is true.
+-- notes        Notes for this dependency.
 -- 
 -- New structures should be created with the newtemplate() function
 
 pkg.deptemplates = { }
 
-local function newtemplate(n, d, l, f, no)
+local function newtemplate(n, d, l, f, no, inst)
     if f == nil then
         f = true
     end
-    local t = { name = n, description = d, full = f, notes = no }
+    local t = { name = n, description = d, full = f, notes = no, install = inst }
     if type(l) == "table" then
         t.libs = l
     else
@@ -47,17 +50,25 @@ end
 
 
 -- C library
-newtemplate("libc", "C system library.", function(l)
-    return string.find(l, "^(libc.so.[%d])")
-end, false, "Never create a full dependency for this library!")
+newtemplate("libc", "C system library.", {"c"}, false, "Never create a full dependency for this library!")
 
 -- C++ Library
-newtemplate("libstdc++", "C++ system library.", function(l)
-    return string.find(l, "^(libstdc%+%+.so.%d)")
-end)
+newtemplate("libstdc++", "C++ system library.", {"stdc++"})
 
 -- Core X Libraries (UNDONE)
-newtemplate("X-core", "Core libraries from X.", function(l)
-    return string.find(l, "libX11.so.%d")
-end, false)
+newtemplate("X-core", "Core libraries from X.", {"X11"}, false)
 
+-- ATK
+newtemplate("ATK", "Accessibility toolkit.", {"atk-1.0"}, false)
+
+-- GLib
+newtemplate("GLib2", "Library of useful routines for C programming.", {"glib-2.0", "gio-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0"}, false)
+
+-- GTK2
+newtemplate("GTK2", "Used to build graphical interfaces.", {"gtk-x11-2.0", "gdk-x11-2.0", "gdk_pixbuf-2.0", "gdk_pixbuf_xlib-2.0", "gthread-2.0"}, false)
+
+-- Pango
+newtemplate("Pango", "System for Layout and Rendering of Internationalised Text.", {"pango-1.0", "pangocairo-1.0", "pangoft2-1.0", "pangox-1.0", "pangoxft-1.0"}, false)
+
+-- Cairo
+newtemplate("Cairo", "Vector Graphics Library with Cross-Device Output Support.", {"cairo"}, false)

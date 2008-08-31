@@ -36,4 +36,4 @@ fi
 
 source "$NDIR/src/internal/utils.sh"
 
-runluascript "$NDIR" "$NDIR/src/lua/deputil.lua" $@
+runluascript "$NDIR" "$NDIR/src/lua/deputil.lua" "$@"

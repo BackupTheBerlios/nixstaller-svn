@@ -103,19 +103,16 @@ end
 
 function getdepfromlib(deps, lib)
     for _, d in ipairs(deps) do
-        for _, dl in ipairs(pkg.depmap[d].libs) do
-            if utils.basename(dl) == lib then
-                return pkg.depmap[d]
-            end
+        if utils.tablefind(pkg.depmap[d].libs, lib) then
+            return pkg.depmap[d]
         end
     end
 end
 
 function getdeplibpath(dep, lib)
-    for _, l in ipairs(dep.libs) do
-        if utils.basename(l) == lib then
-            return pkg.getdepdir(dep, l)
-        end
+    local l = utils.tablefind(dep.libs, lib)
+    if l then
+        return pkg.getdepdir(dep, dep.libdir .. "/" .. l)
     end
 end
 
@@ -124,6 +121,11 @@ local ignorefaileddl = false
 function initdep(d, dialog, wrongdeps)
     if initdeps[d] ~= nil then
         return initdeps[d]
+    end
+    
+    if not d.full then
+        initdeps[d] = true
+        return true
     end
     
     dialog:enablesecbar(true)
@@ -291,7 +293,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
     
     local needs = { }
     
-    if bins then
+    if (not mydep or mydep.full) and bins then
         for _, b in ipairs(bins) do
             local bprog = progstep
             local path = string.format("%s/%s", bdir, b)
@@ -434,7 +436,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                     if not i.native and i.dep and i.dep ~= mydep then
                         if not needs[i.dep] and not wrongdeps[i.dep] then
                             if initdep(i.dep, dialog, wrongdeps) then
-                                needs[i.dep] = checkdeps(i.dep.libs, pkg.getdepdir(i.dep), i.dep.deps, dialog, wrongdeps, wronglibs, i.dep) or { }
+                                needs[i.dep] = checkdeps(i.dep.libs, pkg.getdepdir(i.dep, i.dep.libdir), i.dep.deps, dialog, wrongdeps, wronglibs, i.dep) or { }
                             end
                         end
                     end
@@ -459,7 +461,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
         if not needs[d] and not wrongdeps[d] and d.required and d:required() then
             -- Add deps which are always required
             if initdep(d, dialog, wrongdeps) then
-                needs[d] = checkdeps(d.libs, pkg.getdepdir(d), d.deps, dialog, wrongdeps, wronglibs, d) or { }
+                needs[d] = checkdeps(d.libs, pkg.getdepdir(d, d.libdir), d.deps, dialog, wrongdeps, wronglibs, d) or { }
             end
         end
     end
@@ -475,7 +477,7 @@ function instdeps(deps, installeddeps, wrongdeps, dialog, rec)
     end
     
     for d, rd in pairs(deps) do
-        if not installeddeps[d] and not wrongdeps[d] then
+        if not installeddeps[d] and not wrongdeps[d] and d.full then
             -- if rd is a table, the dep needs other dependencies
             if type(rd) == "table" and not utils.emptytable(rd) then
                 instdeps(rd, installeddeps, wrongdeps, dialog, true)

@@ -31,12 +31,17 @@ function Usage()
 
  list       Lists all known dependency templates with info.
  scan       Scans a project directory for unspecified dependencies and suggests possible usable templates.
- gen        Generates a new dependency file structure, optionally from a template.
+ gen        Generates a new dependency file structure.
+ gent       Generates a new dependency file structure from a template.
  auto       Automaticly tries to generate dependencies from templates.
 
 
 <options>       Depending on the specified action, the following options exist:
 
+ General options:
+    --help, -h              Show this message.
+    --                      Stop parsing arguments.
+    
  Valid options for the 'list' action:
     --template, -t <temp>   Lists info only about template <temp>.
     --only-names            Lists only template names.
@@ -46,39 +51,37 @@ function Usage()
     --prdir, -p <dir>       The project directory of the installer. This argument is required.
     
  Valid options for the 'gen' action:
-    --simple, -s            Generates 'simple dependencies'.
+    --simple, -s            Generates 'simple dependencies'. This is the default.
     --full, -f              Generates 'full dependencies'.
-    --recommend, -r         Generates either single or full dependencies, depending on what is recommended. This is the default.
-    --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option is only valid when a template is used. This option only affects a full dependency.
-    --name, -n <name>       Name of the dependency. This option is required when not using a template.
-    --desc, -d <desc>       Dependency description. Required when not using a template.
-    --template, -t <temp>   Generates the dependency from a given template <temp>.
-    --prdir, -p <dir>       The project directory of the installer. This argument is required.
-    --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
-    --baseurl, -u <url>     Base URL (ie a server directory) where this dependency from can be fetched.
-    --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
-    --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
-    --overwrite             Overwrites any existing files. Default is to ask.
-    --rm-existing           Removes any existing files. Default is to ask.
-    --skip-existing         Skips creation of dependency incase it already exists. Default is to ask.
+    --name, -n <name>       Name of the dependency. This option is required.
+    --desc, -d <desc>       Dependency description. This option is required.
+    --libs, -a <libs>       Comma seperated list of all libraries for this dependency.
+
+ Valid options for the 'gent' action:
+    --simple, -s            Generates 'simple dependencies'. Default is what the given template recommends.
+    --full, -f              Generates 'full dependencies'. Default is what the given template recommends.
+    --name, -n <name>       Name of the dependency. Default: template name.
+    --desc, -d <desc>       Dependency description. Default: description from template.
+    --template, -t <temp>   Generates the dependency from the given template <temp>. This option is required.
 
  Valid options for the 'auto' action:
-    --simple, -s            Generates 'simple dependencies'.
-    --full, -f              Generates 'full dependencies'.
-    --recommend, -r         Generates either single or full dependencies, depending on what is recommended. This is the default.
-    --copy, -c              Copies shared libraries automaticly. The files are copied to a 'lib/' subdirectory, inside the platform/OS specific files folder. This option only affects full dependencies.
+    --simple, -s            Generates 'simple dependencies'. Default is what the relevant template recommends.
+    --full, -f              Generates 'full dependencies'. Default is what the relevant template recommends.
+
+ Valid options for the 'gen', 'gent' and 'auto' actions:
+    --copy, -c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the --libdir option, inside the platform/OS specific files folder. This option only affects a full dependencies.
     --prdir, -p <dir>       The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
-    --baseurl, -u <url>     Base URL (ie a server directory) from where the dependencies can be fetched.
+    --libdir <dir>          Subdirectory (relative to files_<os>_<arch> directories) where libraries from the generated dependencies are found (also affects --copy). Default: 'lib/'.
+    --baseurl, -u <url>     Base URL (ie a server directory) where this dependency from can be downloaded.
     --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
     --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
-    --overwrite             Overwrites any existing files. Default is to ask.
+    --overwrite             Overwrite any existing files. Default is to ask.
     --rm-existing           Removes any existing files. Default is to ask.
-    --skip-existing         Skips creation of dependency incase it already exists. Default is to ask.
+    --skip-existing         Skips generation of a dependency incase it already exists. Default is to ask.
 
 
-<files>         When using the 'gen' action without templates: a list of libraries for the generated dependency.
-                Any other case: a list off all binaries and libraries from the project.
+<files>         A list off all binaries and libraries from the project, used to gather necessary libraries for dependency generation. This is required for the 'scan', 'gent', 'auto' actions and when 'gen' is used with the --full and --copy options.
 ]])
 end
 
@@ -92,7 +95,12 @@ function IsInTemplate(t, l)
     if t.check then
         return t.check(l)
     end
-    return utils.tablefind(t.libs, l)
+    for _, tl in ipairs(t.libs) do
+        local pattern = string.format("^lib%s%%.so%%.%%d", escapepat(tl))
+        if string.find(l, pattern) then
+            return true
+        end
+    end
 end
 
 function CollectLibs(map, f, lpath)
@@ -164,7 +172,7 @@ function CheckExisting(prdir, d, exist)
     assert(false)
 end
 
-function CreateDep(name, desc, libs, full, baseurl, prdir, copy, libmap, destos, destarch)
+function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap, destos, destarch)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -176,7 +184,7 @@ function CreateDep(name, desc, libs, full, baseurl, prdir, copy, libmap, destos,
     -- Convert to comma seperated string list
     local libsstr
     for _, l in ipairs(libs) do
-        local s = '"lib/' .. l .. '"'
+        local s = '"' .. l .. '"'
         if not libsstr then
             libsstr = s
         else
@@ -201,9 +209,11 @@ local dep = pkg.newdependency()
 -- Dependency description. Max one line.
 dep.description = "%s"
 
--- Libraries this dependency provides. Incase this is a full dependency,
--- use relative paths from this dependency directory.
+-- Libraries this dependency provides.
 dep.libs = { %s }
+
+-- Subdirectory (relative to files_<os>_<arch> directories) where libraries can be found.
+dep.libdir = "%s"
 
 -- If this is a full dependency or not
 dep.full = %s
@@ -215,12 +225,12 @@ pkg.baseurl = %s
 
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, (full and "true") or "false", url))
+]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url))
 
     out:close()
     
     if copy and full then
-        local dest = string.format("%s/files_%s_%s/lib", path, destos, destarch)
+        local dest = string.format("%s/files_%s_%s/%s", path, destos, destarch, libdir)
         os.mkdirrec(dest)
         for l, p in pairs(libmap) do
             if utils.tablefind(libs, l) then
@@ -236,7 +246,44 @@ return dep
         end
     end
 end
+
+function ParseGenArgs()
+    local full -- Keep it nil, so caller can handle a default.
+    local copy = false
+    local prdir, baseurl
+    local libdir = "lib/"
+    local destos, destarch = os.osname, os.arch
+    local exist = "ask"
     
+    for _, o in ipairs(opts) do
+        if o.name == "s" or o.name == "simple" then
+            full = false
+        elseif o.name == "f" or o.name == "full" then
+            full = true
+        elseif o.name == "c" or o.name == "copy" then
+            copy = true
+        elseif o.name == "p" or o.name == "prdir" then
+            prdir = o.val
+        elseif o.name == "u" or o.name == "baseurl" then
+            baseurl = o.val
+        elseif o.name == "libdir" then
+            libdir = o.val
+        elseif o.name == "destos" then
+            destos = o.val
+        elseif o.name == "destarch" then
+            destarch = o.val
+        elseif o.name == "overwrite" or o.name == "rm-existing" or o.name == "skip-existing" then
+            exist = o.name
+        end
+    end
+    
+    if not prdir or not os.isdir(prdir) then
+        ErrUsage("Wrong or no project directory specified.")
+    end
+    
+    return full, copy, prdir, baseurl, libdir, destos, destarch, exist
+end
+
 function CheckArgs()
     if not args[1] then
         ErrUsage("No action specified.")
@@ -256,11 +303,14 @@ function CheckArgs()
         sopts = "hp:l:"
         lopts = { {"help"}, {"prdir", true}, {"libpath", true} }
     elseif gen then
-        sopts = "hbsfrcn:d:t:p:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
+        sopts = "hbsfcn:d:p:l:u:a:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"usebins"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true} }
+    elseif gent then
+        sopts = "hsfcn:d:t:p:l:u:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }    
     else
-        sopts = "hbsfrcp:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"recommend"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
+        sopts = "hsfcp:l:u:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
     end
     
     opts, msg = getopt(args, sopts, lopts)
@@ -382,11 +432,15 @@ function Scan()
         for _, t in ipairs(pkg.deptemplates) do
             if IsInTemplate(t, l) then
                 if t.full then
-                    sugfulltemps = sugfulltemps or { }
-                    table.insert(sugfulltemps, t.name)
+                    if not sugfulltemps or not utils.tablefind(sugfulltemps, t.name) then
+                        sugfulltemps = sugfulltemps or { }
+                        table.insert(sugfulltemps, t.name)
+                    end
                 else
-                    sugsimtemps = sugsimtemps or { }
-                    table.insert(sugsimtemps, t.name)
+                    if not sugsimtemps or not utils.tablefind(sugsimtemps, t.name) then
+                        sugsimtemps = sugsimtemps or { }
+                        table.insert(sugsimtemps, t.name)
+                    end
                 end
                 unknownlibs[l] = nil
                 break
@@ -397,11 +451,13 @@ function Scan()
     print("")
     
     if sugsimtemps then
-        print("Templates suggested to be used as simple dependencies: " .. tabtostr(sugsimtemps))
+        print("(New) Templates suggested to be used as simple dependencies: " .. tabtostr(sugsimtemps))
+        print("")
     end
     
-    if sugsimtemps then
-        print("Templates suggested to be used as full dependencies: " .. tabtostr(sugfulltemps))
+    if sugfulltemps then
+        print("(New) Templates suggested to be used as full dependencies: " .. tabtostr(sugfulltemps))
+        print("")
     end
 
     if not utils.emptytable(unknownlibs) then
@@ -419,108 +475,50 @@ function Scan()
 end
 
 function Generate()
-    local full -- Keep it nil, so 'recommend' is enabled by default
-    local copy = false
-    local name, desc, temp, prdir, baseurl
-    local destos, destarch = os.osname, os.arch
-    local exist = "ask"
+    local full, copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
+    local name, desc
+    local libs = { }
+    
+    if full == nil then
+        full = false -- Default
+    end
     
     for _, o in ipairs(opts) do
-        if o.name == "s" or o.name == "simple" then
-            full = false
-        elseif o.name == "f" or o.name == "full" then
-            full = true
-        elseif o.name == "r" or o.name == "recommend" then
-            full = nil
-        elseif o.name == "c" or o.name == "copy" then
-            copy = true
-        elseif o.name == "n" or o.name == "name" then
+        if o.name == "n" or o.name == "name" then
             name = o.val
         elseif o.name == "d" or o.name == "desc" then
             desc = o.val
-        elseif o.name == "t" or o.name == "template" then
-            temp = o.val
-        elseif o.name == "p" or o.name == "prdir" then
-            prdir = o.val
-        elseif o.name == "u" or o.name == "baseurl" then
-            baseurl = o.val
-        elseif o.name == "destos" then
-            destos = o.val
-        elseif o.name == "destarch" then
-            destarch = o.val
-        elseif o.name == "overwrite" or o.name == "rm-existing" or o.name == "skip-existing" then
-            exist = o.name
+        elseif o.name == "a" or o.name == "libs" then
+            for l in string.gmatch(o.val, "[^,]+") do
+                if not utils.tablefind(libs, l) then
+                    table.insert(libs, l)
+                end
+            end
         end
     end
     
-    if not prdir or not os.isdir(prdir) then
-        ErrUsage("Wrong or no project directory specified.")
-    elseif not temp then
-        if not name then
-            ErrUsage("A name must be given when no template is used.")
-        elseif not desc then
-            ErrUsage("A description must be given when no template is used.")
-        elseif utils.emptytable(args) then
-            ErrUsage("A library list must be given when no template is used.")
-        elseif copy then
-            ErrUsage("The copy option is only valid when a template is used.")
-        end
+    if not name then
+        ErrUsage("A name must be given when the 'gen' action is used.")
+    elseif not desc then
+        ErrUsage("A description must be given when the 'gen' action is used.")
     end
     
-    local libs
-    if temp then
-        local found = false
-        libs = { }
-        local map = GetLibMap()
-        
-        for _, t in pairs(pkg.deptemplates) do
-            if t.name == temp then
-                name = name or t.name
-                desc = desc or t.description
-                
-                for l in pairs(map) do
-                    if IsInTemplate(t, l) then
-                        table.insert(libs, l)
-                    end
-                end
-                
-                if full == nil then
-                    full = t.full
-                end
-                found = true
-                break
-            end
-        end
-        
-        if not found then
-            print("Error: Unkown template specified.")
-            io.write("Valid templates: ")
-            for _, t in pairs(pkg.deptemplates) do
-                io.write(t.name .. " ")
-            end
-            print("")
-            os.exit(1)
-        end
-        
+    if not utils.emptytable(args) then
         if utils.emptytable(libs) then
-            print("WARNING: Found no relevant libraries for specified template. Either re-run this script with other binaries or fill the required libs manually.")
+            print("WARNING: Use the --libs (or-a) option to specify any libraries from this dependency.")
         end
-        
-        if not CheckExisting(prdir, name, exist) then
-            print(string.format("Skipping existing dependency '%s'", name))
-            os.exit(1)
+        if not copy then
+            print("WARNING: --copy (or -c) option not specified, libraries will not be copied automaticly.")
         end
-        
-        CreateDep(name, desc, libs, full, baseurl, prdir, copy, map, destos, destarch)
-    else
-        if not CheckExisting(prdir, name, exist) then
-            print(string.format("Skipping existing dependency '%s'", name))
-            os.exit(1)
-        end
-
-        libs = args
-        CreateDep(name, desc, libs, full, baseurl, prdir, false)
     end
+    
+    if not CheckExisting(prdir, name, exist) then
+        print(string.format("Skipping existing dependency '%s'", name))
+        os.exit(1)
+    end
+
+    local map = (copy and full and GetLibMap())
+    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch)
     
     print(string.format([[
 Dependency generation complete:
@@ -528,45 +526,102 @@ Name                    %s
 Description             %s
 Libraries               %s
 Libraries copied        %s
+Library subdirectory    %s
+Type                    %s
+]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple"))
+
+end
+
+function GenerateFromTemp()
+    local full, copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
+    local name, desc, temp
+    
+    for _, o in ipairs(opts) do
+        if o.name == "n" or o.name == "name" then
+            name = o.val
+        elseif o.name == "d" or o.name == "desc" then
+            desc = o.val
+        elseif o.name == "t" or o.name == "template" then
+            temp = o.val
+        end
+    end
+    
+    if not temp then
+        ErrUsage("No template specified.")
+    end
+    
+    if utils.emptytable(args) then
+        ErrUsage("A list of binaries/libraries must be given (used to collect libraries for generated dependencies).")
+    end
+    
+    local libs = {}
+    local notes = "-"
+    local found = false
+    local map = GetLibMap()
+    
+    for _, t in pairs(pkg.deptemplates) do
+        if t.name == temp then
+            name = name or t.name
+            desc = desc or t.description
+            
+            for l in pairs(map) do
+                if IsInTemplate(t, l) then
+                    table.insert(libs, l)
+                end
+            end
+            
+            if full == nil then
+                full = t.full
+            end
+            
+            notes = t.notes
+            
+            found = true
+            break
+        end
+    end
+    
+    if not found then
+        print("Error: Unkown template specified.")
+        io.write("Valid templates: ")
+        for _, t in pairs(pkg.deptemplates) do
+            io.write(t.name .. " ")
+        end
+        print("")
+        os.exit(1)
+    end
+    
+    if utils.emptytable(libs) then
+        print("WARNING: Found no relevant libraries for specified template. Either re-run this script with other binaries or fill in the required libs manually.")
+    end
+    
+    if not CheckExisting(prdir, name, exist) then
+        print(string.format("Skipping existing dependency '%s'", name))
+        os.exit(1)
+    end
+    
+    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch)
+    
+    print(string.format([[
+Dependency generation complete:
+Name                    %s
+Description             %s
+Libraries               %s
+Libraries copied        %s
+Library subdirectory    %s
 Type                    %s
 Notes                   %s
-]], name, desc, tabtostr(libs), tostring(copy and full), (full and "full") or "simple"), (t.notes or "-"))
+]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple", notes))
 
 end
 
 function Autogen()
-    local full -- Keep it nil, so 'recommend' is enabled by default
-    local copy = false
-    local prdir, baseurl
-    local destos, destarch = os.osname, os.arch
-    local exist = "ask"
+    local full, copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
     
-    for _, o in ipairs(opts) do
-        if o.name == "s" or o.name == "simple" then
-            full = false
-        elseif o.name == "f" or o.name == "full" then
-            full = true
-        elseif o.name == "r" or o.name == "recommend" then
-            full = nil
-        elseif o.name == "c" or o.name == "copy" then
-            copy = true
-        elseif o.name == "p" or o.name == "prdir" then
-            prdir = o.val
-        elseif o.name == "u" or o.name == "baseurl" then
-            baseurl = o.val
-        elseif o.name == "destos" then
-            destos = o.val
-        elseif o.name == "destarch" then
-            destarch = o.val
-        elseif o.name == "overwrite" or o.name == "rm-existing" or o.name == "skip-existing" then
-            exist = o.name
-        end
+    if utils.emptytable(args) then
+        ErrUsage("A list of binaries/libraries must be given (used to collect libraries for generated dependencies).")
     end
-    
-    if not prdir or not os.isdir(prdir) then
-        ErrUsage("Wrong or no project directory specified.")
-    end
-    
+
     local map = GetLibMap()
     local templatemap = {}
     for l in pairs(map) do
@@ -591,7 +646,7 @@ function Autogen()
             print(string.format("Skipping existing dependency '%s'", t.name))
         else
             local fl = ((full == nil) and t.full) or full
-            CreateDep(t.name, t.description, l, fl, baseurl, prdir, copy, map, destos, destarch)
+            CreateDep(t.name, t.description, l, libdir, fl, baseurl, prdir, copy, map, destos, destarch)
             print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or "", ((t.notes and ", Notes: " .. t.notes) or "")))
         end
     end
@@ -605,6 +660,8 @@ elseif scan then
     Scan()
 elseif gen then
     Generate()
+elseif gent then
+    GenerateFromTemp()
 else
     Autogen()
 end

@@ -279,3 +279,7 @@ function tabtostr(t)
     end
     return ret
 end
+
+function escapepat(s)
+    return string.gsub(s, "([%%%.%?%*%+%-%(%)%[%]%^%$])", "%%%1")
+end
