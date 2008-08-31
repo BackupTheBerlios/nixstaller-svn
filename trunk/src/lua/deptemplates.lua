@@ -65,7 +65,43 @@ newtemplate("ATK", "Accessibility toolkit.", {"atk-1.0"}, false)
 newtemplate("GLib2", "Library of useful routines for C programming.", {"glib-2.0", "gio-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0"}, false)
 
 -- GTK2
-newtemplate("GTK2", "Used to build graphical interfaces.", {"gtk-x11-2.0", "gdk-x11-2.0", "gdk_pixbuf-2.0", "gdk_pixbuf_xlib-2.0", "gthread-2.0"}, false)
+newtemplate("GTK2", "Used to build graphical interfaces.", {"gtk-x11-2.0", "gdk-x11-2.0", "gdk_pixbuf-2.0", "gdk_pixbuf_xlib-2.0", "gthread-2.0"}, false, "", function (libmap, full, copy)
+    if full and copy then
+        -- Find out GTK lib path
+        local gtklibpath
+        for k, v in pairs(libmap) do
+            if v and string.find(k, "libgtk") then
+                gtklibpath = utils.dirname(v)
+                break
+            end
+        end
+
+        if gtklibpath then
+            local gtksublibs
+            local tmp = string.format("%s/../lib/gtk-2.0", utils.dirname(v))
+            if utils.isdir(tmp) then
+                for d in io.dir(tmp) do
+                    if string.find(d, "^2%.") then -- Match "2."
+                        gtksublibs = tmp .. "/" .. d
+                        break
+                    end
+                end
+            end
+            
+            local etcpath
+            local tmp = string.format("%s/../etc/gtk-2.0", utils.dirname(v))
+            if utils.isdir(tmp) then
+                etcpath = tmp
+            elseif utils.isdir("/etc/gtk-2.0") then
+                etcpath = "/etc/gtk-2.0"
+            end
+            
+            
+                
+        end
+                
+        
+end)
 
 -- Pango
 newtemplate("Pango", "System for Layout and Rendering of Internationalised Text.", {"pango-1.0", "pangocairo-1.0", "pangoft2-1.0", "pangox-1.0", "pangoxft-1.0"}, false)
