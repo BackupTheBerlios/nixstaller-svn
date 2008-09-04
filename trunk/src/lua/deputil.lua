@@ -172,7 +172,7 @@ function CheckExisting(prdir, d, exist)
     assert(false)
 end
 
-function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap, destos, destarch)
+function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap, destos, destarch, postf)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -229,21 +229,25 @@ return dep
 
     out:close()
     
+    local copydest = string.format("%s/files_%s_%s/%s", path, destos, destarch, libdir)
     if copy and full then
-        local dest = string.format("%s/files_%s_%s/%s", path, destos, destarch, libdir)
-        os.mkdirrec(dest)
+        os.mkdirrec(copydest)
         for l, p in pairs(libmap) do
             if utils.tablefind(libs, l) then
                 if not p or not os.fileexists(p) then
                     print(string.format("WARNING: Failed to locate library '%s'", l))
                 else
-                    local stat, msg = os.copy(p, dest)
+                    local stat, msg = os.copy(p, copydest)
                     if not stat then
-                        print(string.format("WARNING: could not copy library '%s' to '%s': %s", p, dest, msg or "(No error message)"))
+                        print(string.format("WARNING: could not copy library '%s' to '%s': %s", p, copydest, msg or "(No error message)"))
                     end
                 end
             end
         end
+    end
+    
+    if postf then
+        postf(path, string.format("files_%s_%s", destos, destarch), libmap, full, copy)
     end
 end
 
@@ -264,6 +268,9 @@ function ParseGenArgs()
             copy = true
         elseif o.name == "p" or o.name == "prdir" then
             prdir = o.val
+            if not string.find(prdir, "^/") then -- Not an absolute path?
+                prdir = os.getcwd() .. "/" .. prdir
+            end
         elseif o.name == "u" or o.name == "baseurl" then
             baseurl = o.val
         elseif o.name == "libdir" then
@@ -287,7 +294,7 @@ end
 function CheckArgs()
     if not args[1] then
         ErrUsage("No action specified.")
-    elseif args[1] ~= "list" and args[1] ~= "scan" and args[1] ~= "gen" and args[1] ~= "auto" then
+    elseif args[1] ~= "list" and args[1] ~= "scan" and args[1] ~= "gen" and args[1] ~= "gent" and args[1] ~= "auto" then
         ErrUsage("Wrong or no action specified.")
     end
     
@@ -316,7 +323,7 @@ function CheckArgs()
     opts, msg = getopt(args, sopts, lopts)
     
     if not opts then
-        ErrUsage("Error: %s", msg)
+        ErrUsage(msg)
     end
     
     for _, o in ipairs(opts) do
@@ -558,6 +565,7 @@ function GenerateFromTemp()
     local notes = "-"
     local found = false
     local map = GetLibMap()
+    local postf
     
     for _, t in pairs(pkg.deptemplates) do
         if t.name == temp then
@@ -575,6 +583,7 @@ function GenerateFromTemp()
             end
             
             notes = t.notes
+            postf = t.post
             
             found = true
             break
@@ -600,7 +609,7 @@ function GenerateFromTemp()
         os.exit(1)
     end
     
-    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch)
+    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch, postf)
     
     print(string.format([[
 Dependency generation complete:
@@ -646,7 +655,7 @@ function Autogen()
             print(string.format("Skipping existing dependency '%s'", t.name))
         else
             local fl = ((full == nil) and t.full) or full
-            CreateDep(t.name, t.description, l, libdir, fl, baseurl, prdir, copy, map, destos, destarch)
+            CreateDep(t.name, t.description, l, libdir, fl, baseurl, prdir, copy, map, destos, destarch, t.post)
             print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or "", ((t.notes and ", Notes: " .. t.notes) or "")))
         end
     end

@@ -72,7 +72,7 @@ fi
 if [ -z "$MD5CMD" ]; then
     echo "WARNING: Could not find a suitable binary ('md5', 'md5sum' or 'digest') to calculate MD5 sums in PATH."
     echo "For this reason files cannot be checked for modifications (files may be changed if they were overwritten by another package for example)."
-    printf "Do you want to continue or abort? (y/N) "
+    printf "Do you want to continue? (y/N) "
     read yn
     if [ "$yn" != "y" -a "$yn" != "Y" ]; then
         exit 1

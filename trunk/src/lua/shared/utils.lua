@@ -246,13 +246,16 @@ function getopt(args, sopts, lopts)
                     return nil, "Unknown commandline option: " .. a
                 end
             else
-                local aname = string.gsub(a, "^(%-)", "")
-                if string.find(sopts, aname .. ":") then -- argument with option
-                    curopt = aname
-                elseif string.find(sopts, aname) then
-                    table.insert(ret, { name = aname, val = true })
-                else
-                    return nil, "Unknown commandline option: " .. a
+                for aname in string.gmatch(string.gsub(a, "^%-", ""), ".") do
+                    if curopt then -- Argument with option has been given before, can't be good.
+                        return nil, string.format("Commandline option %s requires a value.", curopt)
+                    elseif string.find(sopts, aname .. ":") then -- argument with option
+                        curopt = aname
+                    elseif string.find(sopts, aname) then
+                        table.insert(ret, { name = aname, val = true })
+                    else
+                        return nil, "Unknown commandline option: " .. a
+                    end
                 end
             end
         else

@@ -28,12 +28,12 @@ OVERALL
 - deps:
     - Check for static bins?
     - Registerdeps: Only at package.lua?
-    - Force dyn libs to be in libs subdir?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
     - For list: LSB Compliance, others?
     - More templates
 - Overwrite options and commandline options for genprojdir.sh
+- handle chained short options with genprojdir.sh? (getopt?)
 
 
 PACKAGING
@@ -43,6 +43,7 @@ PACKAGING
 - RPM: Description formatting?
 - pacman: Check for locks for future releases
 - deb: way to remove temporary root owned files incase of an error
+- Handle cases were multiple package managers exist
 
 
 MAIN

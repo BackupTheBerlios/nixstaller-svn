@@ -77,33 +77,15 @@ end
 
 function RequiredCopy(src, dest)
     local stat, msg = os.copy(src, dest)
-    if (not stat) then
+    if not stat then
         ThrowError("Error: could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
     end
 end
 
-function RecursiveCopy(src, dest)
-    local dirlist = { "." }
-    local ret, msg
-    
-    while (#dirlist > 0) do
-        local subdir = table.remove(dirlist) -- pop
-        local srcpath = string.format("%s/%s/", src, subdir)
-        local destpath = string.format("%s/%s/", dest, subdir)
-        
-        for f in io.dir(srcpath) do
-            local fsrc = srcpath .. f
-            local fdest = destpath .. f
-            if (os.isdir(fsrc)) then
-                table.insert(dirlist, subdir .. "/" .. f)
-                ret, msg = os.mkdir(fdest)
-                if ret == nil then
-                    ThrowError("Could not create subdirectory file: %s", msg)
-                end
-            else
-                RequiredCopy(fsrc, fdest)
-            end
-        end
+function RequiredCopyRec(src, dest)
+    local stat, msg = utils.copyrec(src, dest)
+    if not stat then
+        ThrowError(msg)
     end
 end
 
@@ -442,8 +424,10 @@ function PrepareArchive()
     end
     
     -- 'Extra' files
-    os.mkdir(confdir .. "/tmp/files_extra")
-    RecursiveCopy(confdir .. "/files_extra/", confdir .. "/tmp/files_extra/")
+    if os.isdir(confdir .. "/files_extra/") then
+        os.mkdir(confdir .. "/tmp/files_extra")
+        RequiredCopyRec(confdir .. "/files_extra/", confdir .. "/tmp/files_extra/")
+    end
     
     print("Preparing/copying frontend binaries")
     

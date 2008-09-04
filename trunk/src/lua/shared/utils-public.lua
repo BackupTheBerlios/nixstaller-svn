@@ -27,6 +27,44 @@ function utils.moverec(dir, dest)
     return 0
 end
 
+function utils.copyrec(src, dest)
+    local dirlist = { "." }
+    local ret, msg
+    
+    while (#dirlist > 0) do
+        local subdir = table.remove(dirlist) -- pop
+        local srcpath = string.format("%s/%s/", src, subdir)
+        local destpath = string.format("%s/%s/", dest, subdir)
+        
+        ret, msg = os.mkdirrec(destpath)
+        if ret == nil then
+            return nil, "Could not create subdirectory: " .. msg
+        end
+
+        if not os.fileexists(srcpath) then
+            return nil, "Non existing source path: " .. srcpath
+        end
+        
+        for f in io.dir(srcpath) do
+            local fsrc = srcpath .. f
+            local fdest = destpath .. f
+            if os.isdir(fsrc) then
+                table.insert(dirlist, subdir .. "/" .. f)
+                ret, msg = os.mkdirrec(fdest)
+                if ret == nil then
+                    return nil, "Could not create subdirectory: " .. msg
+                end
+            else
+                ret, msg = os.copy(fsrc, fdest)
+                if ret == nil then
+                    return nil, string.format("Error: could not copy file %s to %s: %s", src, dest, msg or "(No error message)")
+                end
+            end
+        end
+    end
+    return true
+end
+
 function utils.recursivedir(src, func)
     local dirstack = { "." }
     
