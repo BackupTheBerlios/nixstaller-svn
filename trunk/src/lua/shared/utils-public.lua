@@ -175,3 +175,24 @@ function utils.mapsize(t)
     end
     return ret
 end
+
+function utils.patch(file, pattern, newstr)
+    local tmpf = file .. ".tmp"
+    local stat, msg = os.rename(file, tmpf)
+    if not stat then
+        return nil, msg
+    end
+    
+    local out = io.open(file, "w")
+    if out then
+        for l in io.lines(tmpf) do
+            out:write(string.gsub(l, pattern, newstr), "\n")
+        end
+        out:close()
+    else
+        os.rename(tmpf, file)
+        return nil, "Failed to open output file."
+    end
+    os.remove(tmpf)
+    return true
+end

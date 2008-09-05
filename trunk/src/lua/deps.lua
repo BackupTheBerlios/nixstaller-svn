@@ -294,13 +294,13 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
     local needs = { }
     
     if (not mydep or mydep.full) and bins then
-        for _, b in ipairs(bins) do
+        for i, b in ipairs(bins) do
             local bprog = progstep
             local path = string.format("%s/%s", bdir, b)
             if os.fileexists(path) then
                 local function setstat(msg)
                     local s = (mydep and string.format("dependency %s", mydep.name)) or string.format("binary %s", b)
-                    dialog:settitle(string.format("Checking dependencies for %s: %s", s, msg))
+                    dialog:settitle(string.format("Checking dependencies for %s: %s (%d/%d)", s, msg, i, #bins))
                 end
                 
                 local bininfo = { }
@@ -458,10 +458,11 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
     end
     
     for _, d in ipairs(deps) do
-        if not needs[d] and not wrongdeps[d] and d.required and d:required() then
+        local dep = pkg.depmap[d]
+        if dep and not needs[dep] and not wrongdeps[dep] and dep.Required and dep:Required() then
             -- Add deps which are always required
-            if initdep(d, dialog, wrongdeps) then
-                needs[d] = checkdeps(d.libs, pkg.getdepdir(d, d.libdir), d.deps, dialog, wrongdeps, wronglibs, d) or { }
+            if initdep(dep, dialog, wrongdeps) then
+                needs[dep] = checkdeps(dep.libs, pkg.getdepdir(dep, dep.libdir), dep.deps, dialog, wrongdeps, wronglibs, dep) or { }
             end
         end
     end

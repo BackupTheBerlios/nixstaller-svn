@@ -28,12 +28,15 @@ OVERALL
 - deps:
     - Check for static bins?
     - Registerdeps: Only at package.lua?
+    - bins field, which checks for bin compat.
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
     - For list: LSB Compliance, others?
     - More templates
+    - Check pango.aliases vs pangox.aliases
 - Overwrite options and commandline options for genprojdir.sh
 - handle chained short options with genprojdir.sh? (getopt?)
+- Update genprojdir.sh post message for deps.
 
 
 PACKAGING
@@ -57,6 +60,7 @@ DOCS
 - utils.tabelfind? utils.tablemerge? utils.mapsize?
 - install.getpkgdir() (now with arg)
 - utils.removerec()
+- Nested block strings ([=[]=])
 
 
 TRANSLATIONS

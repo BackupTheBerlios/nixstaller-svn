@@ -5,6 +5,8 @@
 - Fixed: utils.dirname() would handle relative paths wrong.
 - Better commandline arguments handling.
 - utils.removerec() function.
+- utils.copyrec() function.
+- utils.patch() function.
 
 
 0.3 --> 0.4

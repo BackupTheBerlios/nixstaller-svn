@@ -172,7 +172,7 @@ function CheckExisting(prdir, d, exist)
     assert(false)
 end
 
-function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap, destos, destarch, postf)
+function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap, destos, destarch, postf, installf, requiref)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -221,11 +221,22 @@ dep.full = %s
 -- Server directory (http, ftp) from where dependency files can be fetched.
 -- This is fully optional, works only with full dependencies and only effects
 -- dependencies set as extern in package.lua.
-pkg.baseurl = %s
+dep.baseurl = %s
+
+-- Install function. This is called when the dependency is installed.
+function dep:Install()
+%s
+end
+
+-- Require function. Called to check if dependency is required. Note that even if this function
+-- returns false, the dependency may still be installed when autodetection marks it as necessary.
+function dep:Require()
+%s
+end
 
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url))
+]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, installf, requiref))
 
     out:close()
     
@@ -562,10 +573,10 @@ function GenerateFromTemp()
     end
     
     local libs = {}
-    local notes = "-"
+    local notes
     local found = false
     local map = GetLibMap()
-    local postf
+    local postf, installf, requiref
     
     for _, t in pairs(pkg.deptemplates) do
         if t.name == temp then
@@ -584,6 +595,8 @@ function GenerateFromTemp()
             
             notes = t.notes
             postf = t.post
+            installf = t.install
+            requiref = t.require
             
             found = true
             break
@@ -609,7 +622,7 @@ function GenerateFromTemp()
         os.exit(1)
     end
     
-    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch, postf)
+    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch, postf, installf, requiref)
     
     print(string.format([[
 Dependency generation complete:
@@ -620,7 +633,7 @@ Libraries copied        %s
 Library subdirectory    %s
 Type                    %s
 Notes                   %s
-]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple", notes))
+]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple", notes or "-"))
 
 end
 
@@ -655,7 +668,7 @@ function Autogen()
             print(string.format("Skipping existing dependency '%s'", t.name))
         else
             local fl = ((full == nil) and t.full) or full
-            CreateDep(t.name, t.description, l, libdir, fl, baseurl, prdir, copy, map, destos, destarch, t.post)
+            CreateDep(t.name, t.description, l, libdir, fl, baseurl, prdir, copy, map, destos, destarch, t.post, t.install, t.require)
             print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or "", ((t.notes and ", Notes: " .. t.notes) or "")))
         end
     end
