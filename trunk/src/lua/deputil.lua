@@ -422,13 +422,15 @@ function Scan()
     local depmap = { }
     
     -- Load all deps
-    for _, d in ipairs(pkg.deps) do
-        local stat, ret = pcall(dofile, string.format("%s/deps/%s/config.lua", prdir, d))
-        if not stat then
-            print("WARNING: Failed to load package.lua: " .. ret)
-        else
-            for _, l in ipairs(ret.libs) do
-                depmap[utils.basename(l)] = d
+    if pkg.deps then
+        for _, d in ipairs(pkg.deps) do
+            local stat, ret = pcall(dofile, string.format("%s/deps/%s/config.lua", prdir, d))
+            if not stat then
+                print("WARNING: Failed to load package.lua: " .. ret)
+            else
+                for _, l in ipairs(ret.libs) do
+                    depmap[utils.basename(l)] = d
+                end
             end
         end
     end
