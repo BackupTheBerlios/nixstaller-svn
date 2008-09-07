@@ -29,12 +29,14 @@ OVERALL
     - Check for static bins?
     - Registerdeps: Only at package.lua?
     - bins field, which checks for bin compat.
+    - Default pkg.verifydeps to use pkg.bins?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
     - For list: LSB Compliance, others?
     - More templates
     - Check pango.aliases vs pangox.aliases
-- Overwrite options and commandline options for genprojdir.sh
+    - Add auto option for generating 'unknown deps'
+- Overwrite-options and commandline options for genprojdir.sh
 - handle chained short options with genprojdir.sh? (getopt?)
 - Update genprojdir.sh post message for deps.
 
@@ -47,6 +49,7 @@ PACKAGING
 - pacman: Check for locks for future releases
 - deb: way to remove temporary root owned files incase of an error
 - Handle cases were multiple package managers exist
+- Check for removal of bin dir in uninstall-* script (should it be removed?).
 
 
 MAIN

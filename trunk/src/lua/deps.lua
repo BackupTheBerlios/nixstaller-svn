@@ -110,9 +110,9 @@ function getdepfromlib(deps, lib)
 end
 
 function getdeplibpath(dep, lib)
-    local l = utils.tablefind(dep.libs, lib)
-    if l then
-        return pkg.getdepdir(dep, dep.libdir .. "/" .. l)
+    local i = utils.tablefind(dep.libs, lib)
+    if i then
+        return pkg.getdepdir(dep, dep.libdir .. "/" .. dep.libs[i])
     end
 end
 
@@ -291,6 +291,10 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
         lsymstat = nil -- Set to something else than true or false, so that the warning is only displayed once
     end
     
+    if not deps then
+        return
+    end
+    
     local needs = { }
     
     if (not mydep or mydep.full) and bins then
@@ -341,37 +345,39 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                 
                 setstat("Find missing")
                 
-                for l, p in pairs(map) do
-                    bininfo[l] = { found = false, native = false }
-                    
-                    if p then -- Lib is already present
-                        bininfo[l].native = true
-                        bininfo[l].found = true
-                        bininfo[l].path = p
-                    else
-                        markdep(bininfo[l], l)
-                    end
-                    
-                    if bininfo[l].found then
-                        if symverneeds and symverneeds[l] and bininfo[l].found then
-                            if not verifysymverneeds(symverneeds[l], l, p) then
-                                if bininfo[l].native then
-                                    if not markdep(bininfo[l], l) and not bininfo[l].dep then
-                                        wronglibs[l] = wronglibs[l] or { }
-                                        wronglibs[l].incompatlib = true
-                                    end
-                                elseif not bininfo[l].dep.HandleCompat or
-                                    not bininfo[l].dep:HandleCompat() then
-                                    wrongdeps[bininfo[l].dep] = wrongdeps[bininfo[l].dep] or { }
-                                    wrongdeps[bininfo[l].dep].incompatdep = true
-                                end
-                            end
+                if map then
+                    for l, p in pairs(map) do
+                        bininfo[l] = { found = false, native = false }
+                        
+                        if p then -- Lib is already present
+                            bininfo[l].native = true
+                            bininfo[l].found = true
+                            bininfo[l].path = p
+                        else
+                            markdep(bininfo[l], l)
                         end
                         
-                        if not wronglibs[l] and (not bininfo[l].native or
-                            not wrongdeps[bininfo[l].dep]) then
-                            if lsymstat then
-                                bininfo[l].syms = getsyms(bininfo[l].path)
+                        if bininfo[l].found then
+                            if symverneeds and symverneeds[l] and bininfo[l].found then
+                                if not verifysymverneeds(symverneeds[l], l, p) then
+                                    if bininfo[l].native then
+                                        if not markdep(bininfo[l], l) and not bininfo[l].dep then
+                                            wronglibs[l] = wronglibs[l] or { }
+                                            wronglibs[l].incompatlib = true
+                                        end
+                                    elseif not bininfo[l].dep.HandleCompat or
+                                        not bininfo[l].dep:HandleCompat() then
+                                        wrongdeps[bininfo[l].dep] = wrongdeps[bininfo[l].dep] or { }
+                                        wrongdeps[bininfo[l].dep].incompatdep = true
+                                    end
+                                end
+                            end
+                            
+                            if not wronglibs[l] and (not bininfo[l].native or
+                                not wrongdeps[bininfo[l].dep]) then
+                                if lsymstat then
+                                    bininfo[l].syms = getsyms(bininfo[l].path)
+                                end
                             end
                         end
                     end

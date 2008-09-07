@@ -271,6 +271,16 @@ function getopt(args, sopts, lopts)
     return ret
 end
 
+function optlisttotab(val)
+    local ret = { }
+    for i in string.gmatch(val, "[^,]+") do
+        if not utils.tablefind(ret, i) then
+            table.insert(ret, i)
+        end
+    end
+    return ret
+end
+
 function tabtostr(t)
     local ret
     for _, v in ipairs(t) do
@@ -279,6 +289,14 @@ function tabtostr(t)
         else
             ret = ret .. ", " .. v
         end
+    end
+    return ret
+end
+
+function mapkeytotab(t)
+    local ret = { }
+    for k in pairs(t) do
+        table.insert(ret, k)
     end
     return ret
 end

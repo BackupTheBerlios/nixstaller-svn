@@ -21,7 +21,7 @@ dofile(ndir .. "/src/lua/shared/package-public.lua")
 dofile(ndir .. "/src/lua/deptemplates.lua")
 
 
-list, gen, auto = false, false, false
+list, gen, gent, auto = false, false, false
 
 
 function Usage()
@@ -56,6 +56,7 @@ function Usage()
     --name, -n <name>       Name of the dependency. This option is required.
     --desc, -d <desc>       Dependency description. This option is required.
     --libs, -a <libs>       Comma seperated list of all libraries for this dependency.
+    --deps, -D <deps>       Comma seperated list of any dependencies for the generated dependency itself.
 
  Valid options for the 'gent' action:
     --simple, -s            Generates 'simple dependencies'. Default is what the given template recommends.
@@ -63,10 +64,13 @@ function Usage()
     --name, -n <name>       Name of the dependency. Default: template name.
     --desc, -d <desc>       Dependency description. Default: description from template.
     --template, -t <temp>   Generates the dependency from the given template <temp>. This option is required.
+    --libs, -a <libs>       Comma seperated list of any additional libraries for this dependency.
+    --deps, -D <deps>       Comma seperated list of any dependencies for the generated dependency itself.
 
  Valid options for the 'auto' action:
     --simple, -s            Generates 'simple dependencies'. Default is what the relevant template recommends.
     --full, -f              Generates 'full dependencies'. Default is what the relevant template recommends.
+    --unknown, -U           Creates dependencies for libraries which are not listed by any template. The dependency will be named after the library, without the lib prefix and '.so.<version>' suffix (so libfoo.so.1 becomes foo), have an empty description and is defined as full by default.
 
  Valid options for the 'gen', 'gent' and 'auto' actions:
     --copy, -c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the --libdir option, inside the platform/OS specific files folder. This option only affects a full dependencies.
@@ -103,6 +107,16 @@ function IsInTemplate(t, l)
     end
 end
 
+function GetLibPath()
+    local lpath = { }
+    for _, o in ipairs(opts) do
+        if o.name == "l" or o.name == "libpath" then
+            table.insert(lpath, o.val)
+        end
+    end
+    return lpath
+end
+
 function CollectLibs(map, f, lpath)
     local m = maplibs(f, lpath)
     
@@ -120,12 +134,7 @@ function CollectLibs(map, f, lpath)
 end
 
 function GetLibMap()
-    local map, lpath = { }, { }
-    for _, o in ipairs(opts) do
-        if o.name == "l" or o.name == "libpath" then
-            table.insert(lpath, o.val)
-        end
-    end
+    local map, lpath = { }, GetLibPath()
 
     if utils.emptytable(args) then
         ErrUsage("No files given to examine.")
@@ -172,7 +181,7 @@ function CheckExisting(prdir, d, exist)
     assert(false)
 end
 
-function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap, destos, destarch, postf, installf, requiref)
+function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, libmap, destos, destarch, postf, installf, requiref)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -182,15 +191,22 @@ function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap,
     end
     
     -- Convert to comma seperated string list
-    local libsstr
-    for _, l in ipairs(libs) do
-        local s = '"' .. l .. '"'
-        if not libsstr then
-            libsstr = s
-        else
-            libsstr = libsstr .. ", " .. s
+    function tolist(tab)
+        local ret
+        for _, l in ipairs(tab) do
+            local s = '"' .. l .. '"'
+            if not ret then
+                ret = s
+            else
+                ret = ret .. ", " .. s
+            end
         end
+        
+        return ret
     end
+    
+    local libsstr = tolist(libs) or ""
+    local depsstr = tolist(deps) or ""
     
     local url
     if not baseurl or not full then
@@ -198,6 +214,9 @@ function CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, libmap,
     else
         url = "\"" .. baseurl .. "\""
     end
+    
+    installf = installf or "    self:CopyFiles()"
+    requiref = requiref or "    return false"
     
     out:write(string.format([[
 -- Automaticly generated on %s.
@@ -223,6 +242,9 @@ dep.full = %s
 -- dependencies set as extern in package.lua.
 dep.baseurl = %s
 
+-- Dependencies for this dependency itself (similar to pkg.deps).
+dep.deps = { %s }
+
 -- Install function. This is called when the dependency is installed.
 function dep:Install()
 %s
@@ -236,7 +258,7 @@ end
 
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, installf, requiref))
+]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, depsstr, installf, requiref))
 
     out:close()
     
@@ -309,7 +331,7 @@ function CheckArgs()
         ErrUsage("Wrong or no action specified.")
     end
     
-    _G[args[1]] = true -- set list, gen or auto to true
+    _G[args[1]] = true -- set list, gen, gent or auto to true
     table.remove(args, 1)
     
     local msg, sopts, lopts
@@ -321,14 +343,14 @@ function CheckArgs()
         sopts = "hp:l:"
         lopts = { {"help"}, {"prdir", true}, {"libpath", true} }
     elseif gen then
-        sopts = "hbsfcn:d:p:l:u:a:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"usebins"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true} }
+        sopts = "hbsfcn:d:p:l:u:a:D:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"usebins"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
     elseif gent then
-        sopts = "hsfcn:d:t:p:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }    
-    else
-        sopts = "hsfcp:l:u:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
+        sopts = "hsfcn:d:t:p:l:u:a:D:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
+    else -- auto
+        sopts = "hsfcp:l:u:U"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"unknown"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
     end
     
     opts, msg = getopt(args, sopts, lopts)
@@ -419,85 +441,139 @@ function Scan()
         error("Failed to load package.lua: " .. msg)
     end
     
-    local depmap = { }
-    
-    -- Load all deps
-    if pkg.deps then
-        for _, d in ipairs(pkg.deps) do
-            local stat, ret = pcall(dofile, string.format("%s/deps/%s/config.lua", prdir, d))
-            if not stat then
-                print("WARNING: Failed to load package.lua: " .. ret)
-            else
-                for _, l in ipairs(ret.libs) do
-                    depmap[utils.basename(l)] = d
+    function getlibdeppath(deppath, lib)
+        for d in io.dir(deppath) do
+            if string.find(d, "files_.+_.+") then
+                local lpath = string.format("%s/%s/%s", deppath, d, lib)
+                if os.fileexists(lpath) then
+                    return lpath
                 end
             end
         end
     end
-        
-    local map = GetLibMap()
-    local unknownlibs = { }
     
-    for l, p in pairs(map) do
-        if depmap[l] then
-            print(string.format("Library '%s': OK (filed by dependency '%s')", l, depmap[l]))
-        elseif not unknownlibs[l] then
-            print(string.format("Library '%s': Not OK", l))
-            unknownlibs[l] = true
-        end
-    end
-    
-    local sugsimtemps, sugfulltemps
-    for l in pairs(unknownlibs) do
-        for _, t in ipairs(pkg.deptemplates) do
-            if IsInTemplate(t, l) then
-                if t.full then
-                    if not sugfulltemps or not utils.tablefind(sugfulltemps, t.name) then
-                        sugfulltemps = sugfulltemps or { }
-                        table.insert(sugfulltemps, t.name)
-                    end
+    local loadeddeps, depmap = { }, { }
+    function loaddeps(deps, dep)
+        dep = dep or "main"
+        for _, d in ipairs(deps) do
+            local deppath = string.format("%s/deps/%s", prdir, d)
+            if loadeddeps[d] == nil then
+                local stat, ret = pcall(dofile, deppath .. "/config.lua")
+                if not stat then
+                    print("WARNING: Failed to load package.lua: " .. ret)
+                    loadeddeps[d] = false
                 else
-                    if not sugsimtemps or not utils.tablefind(sugsimtemps, t.name) then
-                        sugsimtemps = sugsimtemps or { }
-                        table.insert(sugsimtemps, t.name)
-                    end
+                    loadeddeps[d] = ret
                 end
-                unknownlibs[l] = nil
-                break
+            end
+            
+            if loadeddeps[d] then
+                loadeddeps[d].name = d
+                for _, l in ipairs(loadeddeps[d].libs) do
+                    depmap[dep] = depmap[dep] or { }
+                    depmap[dep][utils.basename(l)] = d
+                end
+                if loadeddeps[d].deps then
+                    loaddeps(loadeddeps[d].deps, loadeddeps[d])
+                end
             end
         end
     end
     
-    print("")
-    
-    if sugsimtemps then
-        print("(New) Templates suggested to be used as simple dependencies: " .. tabtostr(sugsimtemps))
-        print("")
+    if pkg.deps then
+        loaddeps(pkg.deps) -- Load all deps
     end
     
-    if sugfulltemps then
-        print("(New) Templates suggested to be used as full dependencies: " .. tabtostr(sugfulltemps))
-        print("")
-    end
-
-    if not utils.emptytable(unknownlibs) then
-        local prheader = true
+    function dumpinfo(dep, lpath)
+        local map
+        if dep then
+            map = { }
+            for _, l in ipairs(dep.libs) do
+                local lp = getlibdeppath(string.format("%s/deps/%s", prdir, dep.name), dep.libdir .. "/" .. l)
+                if lp then
+                    CollectLibs(map, lp, lpath)
+                end
+            end
+            
+            print(string.format("===============================\nResults for dependency %s:\n", dep.name))
+        else
+            map = GetLibMap()
+            print("===============================\nGeneral results:\n")
+        end
+        
+        -- Get all unknown libs
+        local unknownlibs = { }
+        local depind = dep or "main"
+        for l in pairs(map) do
+            if not unknownlibs[l] and (not depmap[depind] or not depmap[depind][l]) then
+                -- Library is not part of dep itself?
+                if not dep or not dep.libs or not utils.tablefind(dep.libs, l) then
+                    unknownlibs[l] = true
+                end
+            end
+        end
+        
+        local sugsimtemps, sugfulltemps = { }, { }
         for l in pairs(unknownlibs) do
-            if prheader then
-                prheader = false
-                io.write("Unknown libraries: " .. l)
-            else
-                io.write(", " .. l)
+            for _, t in ipairs(pkg.deptemplates) do
+                if IsInTemplate(t, l) then
+                    if t.full then
+                        sugfulltemps[t] = sugfulltemps[t] or { }
+                        table.insert(sugfulltemps[t], l)
+                    else
+                        sugsimtemps[t] = sugsimtemps[t] or { }
+                        table.insert(sugsimtemps[t], l)
+                    end
+                    unknownlibs[l] = nil
+                    break
+                end
             end
         end
-        print("")
+        
+        if not utils.emptytable(sugsimtemps) then
+            print("(New) Templates suggested to be used as simple dependencies: ")
+            for t, l in pairs(sugsimtemps) do
+                print(string.format("- %s (libs: %s)", t.name, tabtostr(l)))
+            end
+            print("")
+        end
+        
+        if not utils.emptytable(sugfulltemps) then
+            print("(New) Templates suggested to be used as full dependencies: ")
+            for t, l in pairs(sugfulltemps) do
+                io.write(string.format("%s (libs: %s) ", t.name, tabtostr(l)))
+            end
+            print("")
+        end
+    
+        if not utils.emptytable(unknownlibs) then
+            io.write("(Remaining) Unknown libraries: ")
+            for l in pairs(unknownlibs) do
+                io.write(l .. " ")
+            end
+            print("")
+        end
+        
+        if utils.emptytable(sugsimtemps) and utils.emptytable(sugfulltemps) and utils.emptytable(unknownlibs) then
+            print("All OK.")
+        end
     end
+    
+    local lpath = GetLibPath()
+    dumpinfo(nil, lpath)
+    
+    for _, d in pairs(loadeddeps) do
+        dumpinfo(d, lpath)
+    end
+    
+    print("===============================\n\nNOTE: If one or more templates were used to create a dependency, but are still suggested it's lickely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this by checking the libs field from the respective dependencies. To regenerate a dependency (with the gen or gent actions) with additional libraries use the --libs option.\n")
 end
 
 function Generate()
     local full, copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
     local name, desc
     local libs = { }
+    local deps
     
     if full == nil then
         full = false -- Default
@@ -509,13 +585,13 @@ function Generate()
         elseif o.name == "d" or o.name == "desc" then
             desc = o.val
         elseif o.name == "a" or o.name == "libs" then
-            for l in string.gmatch(o.val, "[^,]+") do
-                if not utils.tablefind(libs, l) then
-                    table.insert(libs, l)
-                end
-            end
+            libs = optlisttotab(o.val)
+        elseif o.name == "D" or o.name == "deps" then
+            deps = optlisttotab(o.val)
         end
     end
+    
+    deps = deps or { }
     
     if not name then
         ErrUsage("A name must be given when the 'gen' action is used.")
@@ -525,7 +601,7 @@ function Generate()
     
     if not utils.emptytable(args) then
         if utils.emptytable(libs) then
-            print("WARNING: Use the --libs (or-a) option to specify any libraries from this dependency.")
+            print("WARNING: Use the --libs (or -a) option to specify any libraries from this dependency.")
         end
         if not copy then
             print("WARNING: --copy (or -c) option not specified, libraries will not be copied automaticly.")
@@ -538,7 +614,7 @@ function Generate()
     end
 
     local map = (copy and full and GetLibMap())
-    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch)
+    CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, map, destos, destarch)
     
     print(string.format([[
 Dependency generation complete:
@@ -548,14 +624,17 @@ Libraries               %s
 Libraries copied        %s
 Library subdirectory    %s
 Type                    %s
-]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple"))
+Dependencies            %s
+]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple", tabtostr(deps)))
 
 end
 
 function GenerateFromTemp()
     local full, copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
     local name, desc, temp
-    
+    local libs = { }
+    local deps
+
     for _, o in ipairs(opts) do
         if o.name == "n" or o.name == "name" then
             name = o.val
@@ -563,8 +642,14 @@ function GenerateFromTemp()
             desc = o.val
         elseif o.name == "t" or o.name == "template" then
             temp = o.val
+        elseif o.name == "a" or o.name == "libs" then
+            libs = optlisttotab(o.val)
+        elseif o.name == "D" or o.name == "deps" then
+            deps = optlisttotab(o.val)
         end
     end
+    
+    deps = deps or { }
     
     if not temp then
         ErrUsage("No template specified.")
@@ -574,7 +659,6 @@ function GenerateFromTemp()
         ErrUsage("A list of binaries/libraries must be given (used to collect libraries for generated dependencies).")
     end
     
-    local libs = {}
     local notes
     local found = false
     local map = GetLibMap()
@@ -586,7 +670,7 @@ function GenerateFromTemp()
             desc = desc or t.description
             
             for l in pairs(map) do
-                if IsInTemplate(t, l) then
+                if not utils.tablefind(libs, l) and IsInTemplate(t, l) then
                     table.insert(libs, l)
                 end
             end
@@ -624,7 +708,7 @@ function GenerateFromTemp()
         os.exit(1)
     end
     
-    CreateDep(name, desc, libs, libdir, full, baseurl, prdir, copy, map, destos, destarch, postf, installf, requiref)
+    CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, map, destos, destarch, postf, installf, requiref)
     
     print(string.format([[
 Dependency generation complete:
@@ -635,43 +719,104 @@ Libraries copied        %s
 Library subdirectory    %s
 Type                    %s
 Notes                   %s
-]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple", notes or "-"))
+Dependencies            %s
+]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple", notes or "-", tabtostr(deps)))
 
 end
 
 function Autogen()
     local full, copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
+    local autounknown = false
+    
+    for _, o in ipairs(opts) do
+        if o.name == "U" or o.name == "unknown" then
+            autounknown = true
+        end
+    end
     
     if utils.emptytable(args) then
         ErrUsage("A list of binaries/libraries must be given (used to collect libraries for generated dependencies).")
     end
 
-    local map = GetLibMap()
-    local templatemap = {}
-    for l in pairs(map) do
-        local found = false
-        for _, t in ipairs(pkg.deptemplates) do
-            if IsInTemplate(t, l) then
-                templatemap[t] = templatemap[t] or {}
-                if not utils.tablefind(templatemap[t], l) then
-                    table.insert(templatemap[t], l)
+    local lpath = GetLibPath()
+    local depmap, checked, missinglibs = { }, { }, { }
+    local totallibmap = { }
+    
+    function check(depinfo)
+        local map
+        if depinfo then
+            if not depinfo.map then
+                map = { }
+                for _, p in pairs(depinfo.libs) do
+                    CollectLibs(map, p, lpath)
                 end
-                found = true
-                break
+            end
+        else
+            map = GetLibMap()
+        end
+        
+        for l, p in pairs(map) do
+            local template
+            for _, t in ipairs(pkg.deptemplates) do
+                if IsInTemplate(t, l) then
+                    template = t
+                    break
+                end
+            end
+            
+            if not template then
+                if not missinglibs[l] then
+                    print("WARNING: No template found which provides library " .. l)
+                    if autounknown then
+                        print("A dependency for this unknown library will be generated.")
+                        template = { name = string.gsub(l, "(lib)(.+)%.so.+", "%2"), description = "", libs = { l },
+                                    full = (full ~= nil and full) or true }
+                        missinglibs[l] = template
+                    else
+                        missinglibs[l] = true -- Just mark as true incase no auto unknowns
+                    end
+                elseif autounknown then
+                    template = missinglibs[l]
+                end
+            end
+            
+            if template then
+                depmap[template] = depmap[template] or { libs = { }, deps = { }, name = template.name }
+                if not depmap[template].libs[l] then
+                    depmap[template].libs[l] = p
+                elseif depmap[template].libs[l] ~= p then
+                    print(string.format("WARNING: Found duplicate location for lib %s (%s, %s)", l, depmap[template].libs[l], p))
+                end
+                
+                if depinfo and depinfo.name ~= template.name then
+                    depinfo.deps[template.name] = true
+                end
             end
         end
-        if not found then
-            print("WARNING: No template found which provides library " .. l)
+        
+        utils.tablemerge(totallibmap, map)
+        
+        for t, v in pairs(depmap) do
+            if not checked[v] then
+                checked[v] = true
+                check(v)
+            end
         end
     end
     
-    for t, l in pairs(templatemap) do
+    check()
+    
+    -- Generate all deps
+    for t, di in pairs(depmap) do
         if not CheckExisting(prdir, t.name, exist) then
             print(string.format("Skipping existing dependency '%s'", t.name))
         else
             local fl = ((full == nil) and t.full) or full
-            CreateDep(t.name, t.description, l, libdir, fl, baseurl, prdir, copy, map, destos, destarch, t.post, t.install, t.require)
-            print(string.format("Generated dependency %s (\"%s\", %s, libs: \"%s\"%s%s)", t.name, t.description, (fl and "full") or "simple", tabtostr(l), (copy and fl and " (copied)") or "", ((t.notes and ", Notes: " .. t.notes) or "")))
+            local libs = mapkeytotab(di.libs)
+            local deps = mapkeytotab(di.deps)
+            
+            CreateDep(t.name, t.description, libs, libdir, fl, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.require)
+            print(string.format("Generated %s dependency %s (libs: %s; deps: %s)", (fl and "full") or "simple", t.name, tabtostr(libs) or "-", tabtostr(deps) or "-"))
         end
     end
 end
