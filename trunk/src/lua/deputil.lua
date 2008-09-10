@@ -495,10 +495,10 @@ function Scan()
                 end
             end
             
-            print(string.format("===============================\nResults for dependency %s:\n", dep.name))
+            io.write(string.format("Results for dependency %s: ", dep.name))
         else
             map = GetLibMap()
-            print("===============================\nGeneral results:\n")
+            io.write("Primary dependency results: ")
         end
         
         -- Get all unknown libs
@@ -513,7 +513,7 @@ function Scan()
             end
         end
         
-        local sugsimtemps, sugfulltemps = { }, { }
+        local sugsimtemps, sugfulltemps, sugdeps = { }, { }, { }
         for l in pairs(unknownlibs) do
             for _, t in ipairs(pkg.deptemplates) do
                 if IsInTemplate(t, l) then
@@ -528,34 +528,70 @@ function Scan()
                     break
                 end
             end
+
+            -- Check if existing deps provide library
+            for _, d in pairs(loadeddeps) do
+                if d and utils.tablefind(d.libs, l) then
+                    sugdeps[d] = sugdeps[d] or { }
+                    table.insert(sugdeps[d], l)
+                    unknownlibs[l] = nil
+                    break
+                end
+            end
         end
         
+        local ok = true
+        
         if not utils.emptytable(sugsimtemps) then
-            print("(New) Templates suggested to be used as simple dependencies: ")
+            ok = false
+            print("\n* (New) Templates suggested to be used as simple dependencies:")
             for t, l in pairs(sugsimtemps) do
-                print(string.format("- %s (libs: %s)", t.name, tabtostr(l)))
+                print(string.format("   - %s (libs: %s)", t.name, tabtostr(l)))
             end
             print("")
         end
         
         if not utils.emptytable(sugfulltemps) then
-            print("(New) Templates suggested to be used as full dependencies: ")
+            if ok then
+                ok = false
+                print("")
+            end
+            print("* (New) Templates suggested to be used as full dependencies:")
             for t, l in pairs(sugfulltemps) do
-                io.write(string.format("%s (libs: %s) ", t.name, tabtostr(l)))
+                print(string.format("   - %s (libs: %s) ", t.name, tabtostr(l)))
             end
             print("")
         end
     
+        if not utils.emptytable(sugdeps) then
+            if ok then
+                ok = false
+                print("")
+            end
+            print("* Existing dependencies who provide missing libraries and are not registrated yet:")
+            for d, l in pairs(sugdeps) do
+                print(string.format("   - %s (libs: %s) ", d.name, tabtostr(l)))
+            end
+            print("")
+        end
+
         if not utils.emptytable(unknownlibs) then
-            io.write("(Remaining) Unknown libraries: ")
+            if ok then
+                ok = false
+                print("")
+            end
+        
+            io.write("* (Remaining) Unknown libraries: ")
             for l in pairs(unknownlibs) do
                 io.write(l .. " ")
             end
             print("")
         end
         
-        if utils.emptytable(sugsimtemps) and utils.emptytable(sugfulltemps) and utils.emptytable(unknownlibs) then
-            print("All OK.")
+        if ok then
+            print("OK")
+        else
+            print("------------")
         end
     end
     
@@ -563,10 +599,12 @@ function Scan()
     dumpinfo(nil, lpath)
     
     for _, d in pairs(loadeddeps) do
-        dumpinfo(d, lpath)
+        if d then
+            dumpinfo(d, lpath)
+        end
     end
     
-    print("===============================\n\nNOTE: If one or more templates were used to create a dependency, but are still suggested it's lickely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this by checking the libs field from the respective dependencies. To regenerate a dependency (with the gen or gent actions) with additional libraries use the --libs option.\n")
+    print("\n\nNOTE: If one or more templates were used to create a dependency, but are still suggested it's lickely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this by checking the libs field from the respective dependencies. To regenerate a dependency (with the gen or gent actions) with additional libraries use the --libs option.\n")
 end
 
 function Generate()
@@ -739,19 +777,26 @@ function Autogen()
     end
 
     local lpath = GetLibPath()
-    local depmap, checked, missinglibs = { }, { }, { }
+    local depmap, checkstack, missinglibs = { }, { }, { }
     local totallibmap = { }
+    local init = true
     
-    function check(depinfo)
+    repeat
         local map
-        if depinfo then
-            if not depinfo.map then
-                map = { }
-                for _, p in pairs(depinfo.libs) do
-                    CollectLibs(map, p, lpath)
-                end
+        local depinfo
+        
+        if not init then
+            depinfo = table.remove(checkstack, 1) -- Pop oldest
+            if not depinfo then
+                break
+            end
+
+            map = { }
+            for _, p in pairs(depinfo.libs) do
+                CollectLibs(map, p, lpath)
             end
         else
+            init = false
             map = GetLibMap()
         end
         
@@ -766,13 +811,13 @@ function Autogen()
             
             if not template then
                 if not missinglibs[l] then
-                    print("WARNING: No template found which provides library " .. l)
                     if autounknown then
-                        print("A dependency for this unknown library will be generated.")
+                        -- Create dummy template for this unknown lib.
                         template = { name = string.gsub(l, "(lib)(.+)%.so.+", "%2"), description = "", libs = { l },
-                                    full = (full ~= nil and full) or true }
+                                    full = (full ~= nil and full) or true, unknown = true }
                         missinglibs[l] = template
                     else
+                        print("WARNING: No template found which provides library " .. l)
                         missinglibs[l] = true -- Just mark as true incase no auto unknowns
                     end
                 elseif autounknown then
@@ -781,9 +826,18 @@ function Autogen()
             end
             
             if template then
-                depmap[template] = depmap[template] or { libs = { }, deps = { }, name = template.name }
+                local newt = false
+                if not depmap[template] then
+                    depmap[template] = { libs = { }, deps = { }, name = template.name }
+                    table.insert(checkstack, depmap[template])
+                    newt = true
+                end
+                
                 if not depmap[template].libs[l] then
                     depmap[template].libs[l] = p
+                    if not newt and not utils.tablefind(checkstack, depmap[template]) then
+                        table.insert(checkstack, depmap[template]) -- Recheck, as new lib(s) need to be checked
+                    end
                 elseif depmap[template].libs[l] ~= p then
                     print(string.format("WARNING: Found duplicate location for lib %s (%s, %s)", l, depmap[template].libs[l], p))
                 end
@@ -795,17 +849,8 @@ function Autogen()
         end
         
         utils.tablemerge(totallibmap, map)
-        
-        for t, v in pairs(depmap) do
-            if not checked[v] then
-                checked[v] = true
-                check(v)
-            end
-        end
-    end
-    
-    check()
-    
+    until false
+
     -- Generate all deps
     for t, di in pairs(depmap) do
         if not CheckExisting(prdir, t.name, exist) then
@@ -816,7 +861,13 @@ function Autogen()
             local deps = mapkeytotab(di.deps)
             
             CreateDep(t.name, t.description, libs, libdir, fl, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.require)
-            print(string.format("Generated %s dependency %s (libs: %s; deps: %s)", (fl and "full") or "simple", t.name, tabtostr(libs) or "-", tabtostr(deps) or "-"))
+            
+            if t.unknown then
+                io.write(string.format("Generated %s dependency for unknown library %s ", (fl and "full") or "simple", libs[1]))
+            else
+                io.write(string.format("Generated %s dependency %s ", (fl and "full") or "simple", t.name))
+            end
+            print(string.format("(libs: %s; deps: %s)", tabtostr(libs) or "-", tabtostr(deps) or "-"))
         end
     end
 end

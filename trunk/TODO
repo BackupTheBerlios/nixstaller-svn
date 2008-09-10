@@ -15,7 +15,7 @@ OVERALL
 - Way to specifiy frontend when installer is started
 - libstdcxx:
     - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
-    - Update FreeeBSD notes file for for libsupc++ (used from 6.X)
+    - Update FreeBSD notes file for for libsupc++ (used from 6.X)
     - Test regular C lua libs, update notes
 - Update to Lua 5.1.3
 - Limit textfield's amount of stored lines
@@ -35,7 +35,6 @@ OVERALL
     - For list: LSB Compliance, others?
     - More templates
     - Check pango.aliases vs pangox.aliases
-    - Add auto option for generating 'unknown deps'
 - Overwrite-options and commandline options for genprojdir.sh
 - handle chained short options with genprojdir.sh? (getopt?)
 - Update genprojdir.sh post message for deps.
@@ -60,7 +59,7 @@ MAIN
 
 
 DOCS
-- utils.tabelfind? utils.tablemerge? utils.mapsize?
+- utils.tabelfind, utils.tablemerge, utils.mapsize and the rest from CHANGELOG
 - install.getpkgdir() (now with arg)
 - utils.removerec()
 - Nested block strings ([=[]=])
