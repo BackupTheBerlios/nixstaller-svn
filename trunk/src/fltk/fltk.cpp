@@ -82,22 +82,30 @@ CFLTKBase::CFLTKBase(void) : m_pAboutDisp(NULL), m_pAboutOKButton(NULL), m_pAbou
 {
     fl_register_images();
     Fl::visual(FL_RGB | FL_DOUBLE | FL_INDEX);
+#if defined(__APPLE__)
+	// needed by OS X to set up the default mouse cursor before anything is rendered
+	fl_open_display();
+#endif
     Fl::scheme("plastic");
     Fl::background(230, 230, 230);
     
     // HACK: Switch that annoying bell off!
     // UNDONE: Doesn't work on NetBSD yet :(
+	#ifndef __APPLE__
     XKeyboardControl XKBControl;
     XKBControl.bell_duration = 0;
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+	#endif
 }
 
 CFLTKBase::~CFLTKBase()
 {
     // HACK: Restore bell volume
+	#ifndef __APPLE__
     XKeyboardControl XKBControl;
     XKBControl.bell_duration = -1;
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+	#endif
 }
 
 void CFLTKBase::CreateAbout()

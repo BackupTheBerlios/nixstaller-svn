@@ -30,6 +30,7 @@ OVERALL
     - Registerdeps: Only at package.lua?
     - bins field, which checks for bin compat.
     - Default pkg.verifydeps to use pkg.bins?
+    - Auto generate symmap?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
     - For list: LSB Compliance, others?

@@ -614,14 +614,20 @@ if not env.GetOption('clean'):
         conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
     
     if not conf.env['LCVER']:
-        libc_ver = conf.CheckLinkedLibVersion('c')
+        if cur_os == 'darwin':
+            libc_ver = 'libc.dylib'
+        else:
+            libc_ver = conf.CheckLinkedLibVersion('c')
     else:
         libc_ver = env['LCVER']
         
     if not libc_ver:
         print "Couldn't detect libc version!"
         Exit(1)
-    
+
+    if not BUILD_TARGETS and cur_os == 'darwin':
+        BUILD_TARGETS = ['fltk']
+
     if not BUILD_TARGETS or 'ncurses' in map(str, BUILD_TARGETS):
         if not conf.CheckLibWithHeader('ncurses', 'curses.h', 'C++', 'beep();', 0):
             print "Couldn't find libncurses !"
@@ -631,18 +637,19 @@ if not env.GetOption('clean'):
         if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++', 'gzFile f;', 0):
             print "Couldn't find libz !"
             Exit(1)
-        if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
-            print "Couldn't find libX11 !"
-            Exit(1)
-        if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
-            print "Couldn't find libXext !"
-            Exit(1)
-        if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
-            print "Xft needs additional libs?"
-            if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0, 'freetype Xrender fontconfig'):
-                print "Couldn't find libXft !"
+        if not cur_os == 'darwin':
+            if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Couldn't find libX11 !"
                 Exit(1)
-            fltklibs = "freetype Xrender fontconfig"
+            if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Couldn't find libXext !"
+                Exit(1)
+            if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Xft needs additional libs?"
+                if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0, 'freetype Xrender fontconfig'):
+                    print "Couldn't find libXft !"
+                    Exit(1)
+                fltklibs = "freetype Xrender fontconfig"
         if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
             print "Couldn't find libpng !"
             Exit(1)
@@ -713,10 +720,17 @@ gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscr
 
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadepscreen.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaprogressdialog.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncurses'))
 
-fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft X11 '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
+if cur_os == 'darwin':
+	fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg '+fltklibs), LINKFLAGS=Split("$LINKFLAGS -framework Carbon -framework ApplicationServices"))
+else:
+	fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft X11 '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 
-Default(edelta, surunner, ncurses, gtk, fltk, main)
-Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, gtk), env.Install(bin_dir, fltk))
+if cur_os == 'darwin':
+    Default(edelta, surunner, fltk, main)
+    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk))
+else:
+    Default(edelta, surunner, ncurses, gtk, fltk, main)
+    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, gtk), env.Install(bin_dir, fltk))
 

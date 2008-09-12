@@ -72,7 +72,7 @@ buildstdcxx()
 
 buildpng()
 {
-    get "http://belnet.dl.sourceforge.net/sourceforge/libpng/libpng-1.2.21.tar.gz"
+    get "http://prdownloads.sourceforge.net/sourceforge/libpng/libpng-1.2.21.tar.gz"
     untar "libpng-1.2.21.tar.gz"
     dodir "libpng-1.2.21/"
     ./configure --prefix="$DESTPREFIX" --disable-shared && make && make install && make clean
@@ -90,10 +90,17 @@ buildjpeg()
 
 buildfltk()
 {
-    get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.7/fltk-1.1.7-source.tar.gz"
-    untar "fltk-1.1.7-source.tar.gz"
-    dodir "fltk-1.1.7"
-    CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
+	if [ $CURRENT_OS = "darwin" ]; then
+		get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
+		untar "fltk-1.1.9-source.tar.gz"
+	    dodir "fltk-1.1.9"
+		CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX && make && make install && make clean
+	else # UNDONE: Test new FLTK for the rest
+	    get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.7/fltk-1.1.7-source.tar.gz"
+    	untar "fltk-1.1.7-source.tar.gz"
+    	dodir "fltk-1.1.7"
+		CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
+    fi
     restoredir
 }
 
@@ -103,7 +110,11 @@ buildlua()
     untar "lua-5.1.2.tar.gz"
     dodir "lua-5.1.2"
     nano -w src/Makefile
-    make posix && make install INSTALL_TOP=$DESTPREFIX
+	if [ $CURRENT_OS = "darwin" ]; then
+		make macosx && make install INSTALL_TOP=$DESTPREFIX
+	else
+		make posix && make install INSTALL_TOP=$DESTPREFIX
+	fi
     restoredir
 }
 
@@ -190,7 +201,11 @@ buildcurl()
 BUILD="$*"
 
 if [ -z $BUILD ]; then
-    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf curl"
+	if [ $CURRENT_OS = "darwin" ]; then
+		BUILD="png jpeg fltk lua ncurses lzma elf curl"
+	else
+	    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf curl"
+	fi
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
 #     fi
