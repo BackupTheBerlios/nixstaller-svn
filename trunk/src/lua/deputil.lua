@@ -34,6 +34,7 @@ function Usage()
  gen        Generates a new dependency file structure.
  gent       Generates a new dependency file structure from a template.
  auto       Automaticly tries to generate dependencies from templates.
+ edit       Edits an existing dependency.
 
 
 <options>       Depending on the specified action, the following options exist:
@@ -83,9 +84,19 @@ function Usage()
     --overwrite             Overwrite any existing files. Default is to ask.
     --rm-existing           Removes any existing files. Default is to ask.
     --skip-existing         Skips generation of a dependency incase it already exists. Default is to ask.
+ 
+ Valid options for the 'edit' action:
+    --dep, -d <dep>         Dependency to edit. This option is required.
+    --simple, -s            Converts a full dependency to a simple version. Either this or the --full option is required.
+    --full, -f              Converts a simple dependency to a full version. Either this or the --simple option is required.
+    --remove, -r            Removes any existing libraries. Only works when using the '--simple' option.
+    --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    --copy, -c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the --libdir option, inside the platform/OS specific files folder. This option only works when using '--full'.
+    --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
+    --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
 
 
-<files>         A list off all binaries and libraries from the project, used to gather necessary libraries for dependency generation. This is required for the 'scan', 'gent', 'auto' actions and when 'gen' is used with the --full and --copy options.
+<files>         A list off all binaries and libraries from the project, used to gather necessary libraries for dependency generation. This is required for the 'edit', 'scan', 'gent', 'auto' actions and when 'gen' is used with the --full and --copy options.
 ]])
 end
 
@@ -148,6 +159,18 @@ function GetLibMap()
     end
     
     return map
+end
+
+function GetLibDepPath(prdir, dep, lib)
+    local deppath = string.format("%s/deps/%s", prdir, dep.name)
+    for d in io.dir(deppath) do
+        if string.find(d, "files_.+_.+") then
+            local lpath = string.format("%s/%s/%s/%s", deppath, d, dep.libdir, lib)
+            if os.fileexists(lpath) then
+                return lpath
+            end
+        end
+    end
 end
 
 function CheckExisting(prdir, d, exist)
@@ -284,6 +307,30 @@ return dep
     end
 end
 
+function LoadDep(prdir, name)
+    local path = string.format("%s/deps/%s/config.lua", prdir, name)
+    local stat, ret = pcall(dofile, path)
+    if not stat then
+        return nil, ret
+    end
+    
+    function default(var, val)
+        if ret[var] == nil then
+            ret[var] = val
+        end
+    end
+    
+    default("full", true)
+    default("libdir", "lib/")
+    default("description", "")
+    default("libs", { })
+    default("deps", { })
+    
+    ret.name = name
+    
+    return ret
+end
+
 function ParseGenArgs()
     local full -- Keep it nil, so caller can handle a default.
     local copy = false
@@ -327,11 +374,11 @@ end
 function CheckArgs()
     if not args[1] then
         ErrUsage("No action specified.")
-    elseif args[1] ~= "list" and args[1] ~= "scan" and args[1] ~= "gen" and args[1] ~= "gent" and args[1] ~= "auto" then
+    elseif args[1] ~= "list" and args[1] ~= "scan" and args[1] ~= "gen" and args[1] ~= "gent" and args[1] ~= "auto" and args[1] ~= "edit" then
         ErrUsage("Wrong or no action specified.")
     end
     
-    _G[args[1]] = true -- set list, gen, gent or auto to true
+    _G[args[1]] = true -- set action variable (eg scan) to true
     table.remove(args, 1)
     
     local msg, sopts, lopts
@@ -348,9 +395,12 @@ function CheckArgs()
     elseif gent then
         sopts = "hsfcn:d:t:p:l:u:a:D:"
         lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
-    else -- auto
+    elseif auto then
         sopts = "hsfcp:l:u:U"
         lopts = { {"help"}, {"simple"}, {"full"}, {"unknown"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"} }
+    elseif edit then
+        sopts = "hsfp:d:rcl:"
+        lopts = { {"help"}, {"simple"}, {"full"}, {"prdir", true}, {"dep", true}, {"remove"}, {"copy"}, {"libpath", true}, {"destos", true}, {"destarch", true} }
     end
     
     opts, msg = getopt(args, sopts, lopts)
@@ -441,26 +491,14 @@ function Scan()
         error("Failed to load package.lua: " .. msg)
     end
     
-    function getlibdeppath(deppath, lib)
-        for d in io.dir(deppath) do
-            if string.find(d, "files_.+_.+") then
-                local lpath = string.format("%s/%s/%s", deppath, d, lib)
-                if os.fileexists(lpath) then
-                    return lpath
-                end
-            end
-        end
-    end
-    
     local loadeddeps, depmap = { }, { }
     function loaddeps(deps, dep)
         dep = dep or "main"
         for _, d in ipairs(deps) do
-            local deppath = string.format("%s/deps/%s", prdir, d)
             if loadeddeps[d] == nil then
-                local stat, ret = pcall(dofile, deppath .. "/config.lua")
-                if not stat then
-                    print("WARNING: Failed to load package.lua: " .. ret)
+                local ret, msg = LoadDep(prdir, d)
+                if not ret then
+                    print("WARNING: Failed to load config.lua: " .. msg)
                     loadeddeps[d] = false
                 else
                     loadeddeps[d] = ret
@@ -468,7 +506,6 @@ function Scan()
             end
             
             if loadeddeps[d] then
-                loadeddeps[d].name = d
                 for _, l in ipairs(loadeddeps[d].libs) do
                     depmap[dep] = depmap[dep] or { }
                     depmap[dep][utils.basename(l)] = d
@@ -489,7 +526,7 @@ function Scan()
         if dep then
             map = { }
             for _, l in ipairs(dep.libs) do
-                local lp = getlibdeppath(string.format("%s/deps/%s", prdir, dep.name), dep.libdir .. "/" .. l)
+                local lp = GetLibDepPath(prdir, dep, l)
                 if lp then
                     CollectLibs(map, lp, lpath)
                 end
@@ -872,6 +909,141 @@ function Autogen()
     end
 end
 
+function EditDep()
+    local full, depname, prdir, copy, rem
+    local destos, destarch = os.osname, os.arch
+    
+    for _, o in ipairs(opts) do
+        if o.name == "d" or o.name == "dep" then
+            depname = o.val
+        elseif o.name == "s" or o.name == "simple" then
+            full = false
+        elseif o.name == "f" or o.name == "full" then
+            full = true
+        elseif o.name == "p" or o.name == "prdir" then
+            prdir = o.val
+            if not string.find(prdir, "^/") then -- Not an absolute path?
+                prdir = os.getcwd() .. "/" .. prdir
+            end
+        elseif o.name == "r" or o.name == "remove" then
+            rem = true
+        elseif o.name == "c" or o.name == "copy" then
+            copy = true
+        elseif o.name == "destos" then
+            destos = o.val
+        elseif o.name == "destarch" then
+            destarch = o.val
+        end
+    end
+    
+    if not depname then
+        ErrUsage("No dependency specified.")
+    elseif full == nil then
+        ErrUsage("Need to specify the --simple or --full option.")
+    elseif not prdir or not os.isdir(prdir) then
+        ErrUsage("Wrong or no project directory specified.")
+    end
+    
+    local dep, msg = LoadDep(prdir, depname)
+    if not dep then
+        error("Error: Failed to load config.lua: " .. msg)
+    end
+    
+    if dep.full and full then
+        print("WARNING: Dependency is already marked as full.")
+    elseif not dep.full and not full then
+        print("WARNING: Dependency is already marked as simple.")
+    else
+        -- Try to patch config file.
+        local cpath = string.format("%s/deps/%s/config.lua", prdir, depname)
+        local tcpath = cpath .. ".tmp"
+        os.copy(cpath, tcpath)
+        utils.patch(tcpath, "[%s]*dep%.full[%s]*=[%s]*" .. tostring(not full), "dep.full = " .. tostring(full))
+        
+        local stat, newdep = pcall(dofile, tcpath)
+        if stat and newdep and newdep.full == full then
+            -- Copy temp script to original script
+            if os.copy(tcpath, cpath) then
+                print("Successfully patched config.lua")
+            end
+        else
+            print("WARNING: Failed to patch config file, keeping original. Please change the 'full' field from the dependency manually.")
+        end
+    
+        os.remove(tcpath)
+    end
+    
+    if not full and rem then
+        for _, l in ipairs(dep.libs) do
+            local lp = GetLibDepPath(prdir, dep, l)
+            if lp then
+                local stat, msg = os.remove(lp)
+                if not stat then
+                    print(string.format("WARNING: Failed to remove '%s': %s", lp, msg))
+                else
+                    print("Removed lib: " .. lp)
+                end
+            end
+        end
+    elseif full and copy then
+        local map = GetLibMap()
+        
+        for dir in io.dir(string.format("%s/deps", prdir)) do
+            if dir ~= dep.name then
+                local subdep = LoadDep(prdir, dir)
+                if subdep then
+                    -- Dependency depends on given dep?
+                    if utils.tablefind(subdep.deps, dep.name) then
+                        for _, l in ipairs(subdep.libs) do
+                            local lp = GetLibDepPath(prdir, subdep, l)
+                            if lp then
+                                CollectLibs(map, lp, lpath)
+                            end
+                        end
+                    end
+                end
+            end
+            
+            -- Check if we're set yet
+            local done = true
+            for _, l in ipairs(dep.libs) do
+                if not map[l] then
+                    done = false
+                    break
+                end
+            end
+            
+            if done then
+                break
+            end
+        end
+        
+        -- Also add own libs to map (this is so we can copy own dependent libs)
+        for _, l in ipairs(dep.libs) do
+            if map[l] then
+                CollectLibs(map, map[l], lpath)
+            end
+        end
+
+        local dest = string.format("%s/deps/%s/files_%s_%s/%s", prdir, dep.name, destos, destarch, dep.libdir)
+        
+        os.mkdirrec(dest)
+        
+        for _, l in ipairs(dep.libs) do
+            if map[l] and os.fileexists(map[l]) then
+                local stat, msg = os.copy(map[l], dest)
+                if not stat then
+                    print(string.format("WARNING: Failed to copy library '%s': %s", map[l], msg))
+                else
+                    print("Copied library: " .. l)
+                end
+            else
+                print("WARNING: Could not locate library " .. l)
+            end
+        end
+    end
+end
+
 CheckArgs()
 
 if list then
@@ -882,6 +1054,8 @@ elseif gen then
     Generate()
 elseif gent then
     GenerateFromTemp()
-else
+elseif auto then
     Autogen()
+elseif edit then
+    EditDep()
 end

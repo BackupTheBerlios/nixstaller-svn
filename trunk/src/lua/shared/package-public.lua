@@ -36,6 +36,7 @@ function pkg.newdependency()
     local ret = { }
     setmetatable(ret, depclass)
     
+    -- Sync with LoadDep() from deputils.lua!
     ret.full = true
     ret.libs = { }
     ret.libdir = "lib/"

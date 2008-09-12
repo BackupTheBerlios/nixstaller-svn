@@ -35,6 +35,7 @@ OVERALL
     - For list: LSB Compliance, others?
     - More templates
     - Check pango.aliases vs pangox.aliases
+    - Generate HandleCompat function
 - Overwrite-options and commandline options for genprojdir.sh
 - handle chained short options with genprojdir.sh? (getopt?)
 - Update genprojdir.sh post message for deps.
