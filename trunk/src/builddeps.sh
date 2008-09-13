@@ -56,11 +56,11 @@ buildzlib()
 
 buildstdcxx()
 {
-    get "http://archive.apache.org/dist/incubator/stdcxx/releases/stdcxx-incubating-4.2.0.tar.gz"
-    untar "stdcxx-incubating-4.2.0.tar.gz"
-    dodir "stdcxx-4.2.0/include/ansi"
-    patch < "$SRCDIR"/stdcxx-gcc43.diff
-    dodir "stdcxx-4.2.0"
+    get "http://www.apache.org/dist/stdcxx/stdcxx-4.2.1.tar.gz"
+    untar "stdcxx-4.2.1.tar.gz"
+#     dodir "stdcxx-4.2.0/include/ansi"
+#     patch < "$SRCDIR"/stdcxx-gcc43.diff
+    dodir "stdcxx-4.2.1"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
     [ $CURRENT_OS = "netbsd" ] && ulimit -d 131072
     $MAKE BUILDDIR="$DESTFILES/stdcxx-obj" BUILDMODE=static,optimized 
@@ -90,17 +90,10 @@ buildjpeg()
 
 buildfltk()
 {
-	if [ $CURRENT_OS = "darwin" ]; then
-		get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
-		untar "fltk-1.1.9-source.tar.gz"
-	    dodir "fltk-1.1.9"
-		CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX && make && make install && make clean
-	else # UNDONE: Test new FLTK for the rest
-	    get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.7/fltk-1.1.7-source.tar.gz"
-    	untar "fltk-1.1.7-source.tar.gz"
-    	dodir "fltk-1.1.7"
-		CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
-    fi
+    get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
+    untar "fltk-1.1.9-source.tar.gz"
+    dodir "fltk-1.1.9"
+    CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX && make && make install && make clean
     restoredir
 }
 
@@ -110,11 +103,11 @@ buildlua()
     untar "lua-5.1.2.tar.gz"
     dodir "lua-5.1.2"
     nano -w src/Makefile
-	if [ $CURRENT_OS = "darwin" ]; then
-		make macosx && make install INSTALL_TOP=$DESTPREFIX
-	else
-		make posix && make install INSTALL_TOP=$DESTPREFIX
-	fi
+    if [ $CURRENT_OS = "darwin" ]; then
+        make macosx && make install INSTALL_TOP=$DESTPREFIX
+    else
+        make posix && make install INSTALL_TOP=$DESTPREFIX
+    fi
     restoredir
 }
 

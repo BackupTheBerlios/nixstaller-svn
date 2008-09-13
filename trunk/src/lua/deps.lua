@@ -366,7 +366,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                                             wronglibs[l].incompatlib = true
                                         end
                                     elseif not bininfo[l].dep.HandleCompat or
-                                        not bininfo[l].dep:HandleCompat() then
+                                        not bininfo[l].dep:HandleCompat(l) then
                                         wrongdeps[bininfo[l].dep] = wrongdeps[bininfo[l].dep] or { }
                                         wrongdeps[bininfo[l].dep].incompatdep = true
                                     end
@@ -411,7 +411,7 @@ function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
                                                 not verifysymverneeds(symverneeds[lib], lib,
                                                                     bininfo[lib].path) and
                                                 (not bininfo[lib].dep.HandleCompat or
-                                                    not bininfo[lib].dep:HandleCompat()) then
+                                                    not bininfo[lib].dep:HandleCompat(lib)) then
                                                 wrongdeps[bininfo[lib].dep] = wrongdeps[bininfo[lib].dep] or { }
                                                 wrongdeps[bininfo[lib].dep].incompatdep = true
                                             else

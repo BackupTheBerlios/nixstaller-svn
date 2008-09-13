@@ -7,6 +7,7 @@
 - utils.removerec() function.
 - utils.copyrec() function.
 - utils.patch() function.
+- Updated to FLTK 1.1.9
 
 
 0.3 --> 0.4

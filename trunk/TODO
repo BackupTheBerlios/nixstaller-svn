@@ -28,7 +28,7 @@ OVERALL
 - deps:
     - Check for static bins?
     - Registerdeps: Only at package.lua?
-    - bins field, which checks for bin compat.
+    - bins field, which checks for bin compat? If yes change deputil.lua HandleCompat function generation.
     - Default pkg.verifydeps to use pkg.bins?
     - Auto generate symmap?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
@@ -36,10 +36,10 @@ OVERALL
     - For list: LSB Compliance, others?
     - More templates
     - Check pango.aliases vs pangox.aliases
-    - Generate HandleCompat function
 - Overwrite-options and commandline options for genprojdir.sh
 - handle chained short options with genprojdir.sh? (getopt?)
 - Update genprojdir.sh post message for deps.
+- Nicer way to run apps on exit. Or atleast document it
 
 
 PACKAGING
@@ -92,7 +92,7 @@ FLTK
 - Create a pack widget that works?
 - Textfield: Bigger? Smaller fonts?
 - Check if closing progress dialog via close border button works
-- Update libs
+- Check update: test for regressions, check current hacks.
 
 
 REGISTER

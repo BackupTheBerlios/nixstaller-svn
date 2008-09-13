@@ -204,7 +204,7 @@ function CheckExisting(prdir, d, exist)
     assert(false)
 end
 
-function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, libmap, destos, destarch, postf, installf, requiref)
+function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, libmap, destos, destarch, postf, installf, requiref, compatf)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -240,6 +240,7 @@ function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, l
     
     installf = installf or "    self:CopyFiles()"
     requiref = requiref or "    return false"
+    compatf = compatf or "    return false"
     
     out:write(string.format([[
 -- Automaticly generated on %s.
@@ -279,9 +280,16 @@ function dep:Require()
 %s
 end
 
+-- Called if dependency itself seems to be incompatible. You can use this for example to recompile
+-- any libraries. The 'lib' argument contains the faulty library. By returning true the dependency
+-- will be installed as usual, otherwise it will be marked as incompatible.
+function dep:HandleCompat(lib)
+%s
+end
+
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, depsstr, installf, requiref))
+]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, depsstr, installf, requiref, compatf))
 
     out:close()
     
@@ -737,7 +745,7 @@ function GenerateFromTemp()
     local notes
     local found = false
     local map = GetLibMap()
-    local postf, installf, requiref
+    local postf, installf, requiref, compatf
     
     for _, t in pairs(pkg.deptemplates) do
         if t.name == temp then
@@ -758,6 +766,7 @@ function GenerateFromTemp()
             postf = t.post
             installf = t.install
             requiref = t.require
+            compatf = t.compat
             
             found = true
             break
@@ -783,7 +792,7 @@ function GenerateFromTemp()
         os.exit(1)
     end
     
-    CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, map, destos, destarch, postf, installf, requiref)
+    CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, map, destos, destarch, postf, installf, requiref, compatf)
     
     print(string.format([[
 Dependency generation complete:
@@ -897,7 +906,7 @@ function Autogen()
             local libs = mapkeytotab(di.libs)
             local deps = mapkeytotab(di.deps)
             
-            CreateDep(t.name, t.description, libs, libdir, fl, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.require)
+            CreateDep(t.name, t.description, libs, libdir, fl, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.require, t.compat)
             
             if t.unknown then
                 io.write(string.format("Generated %s dependency for unknown library %s ", (fl and "full") or "simple", libs[1]))
