@@ -27,15 +27,21 @@ OVERALL
 - Check if functions definitions in LoadPackage are still required
 - deps:
     - Check for static bins?
-    - Registerdeps: Only at package.lua?
     - bins field, which checks for bin compat? If yes change deputil.lua HandleCompat function generation.
     - Default pkg.verifydeps to use pkg.bins?
     - Auto generate symmap?
+    - Handle simple dep checking
+    - symmap --> symmap.lua?
+    - gensyms.lua option to (not) compress output file
+    - Test: deps depending on main libs, main bins depending on main libs
+    - Better progress indication
+    - Additional wrongdeps/wronglibs checks?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
     - For list: LSB Compliance, others?
     - More templates
     - Check pango.aliases vs pangox.aliases
+    - Generate CanInstall() function
 - Overwrite-options and commandline options for genprojdir.sh
 - handle chained short options with genprojdir.sh? (getopt?)
 - Update genprojdir.sh post message for deps.
@@ -67,6 +73,10 @@ DOCS
 - Nested block strings ([=[]=])
 
 
+RELEASE
+- Remove/disable asserts in lua code
+
+
 TRANSLATIONS
 - Check all sentences for punctation
 - Change "Install commands ..." message to something more appropiate
@@ -93,6 +103,8 @@ FLTK
 - Textfield: Bigger? Smaller fonts?
 - Check if closing progress dialog via close border button works
 - Check update: test for regressions, check current hacks.
+- Title in depscreen does not line break.
+- Refresh does not always enable both bars (FLTK specific?)
 
 
 REGISTER

@@ -838,8 +838,12 @@ function Autogen()
             end
 
             map = { }
-            for _, p in pairs(depinfo.libs) do
-                CollectLibs(map, p, lpath)
+            for l, p in pairs(depinfo.libs) do
+                if p then
+                    CollectLibs(map, p, lpath)
+                elseif not copy then --HACK: When files are copied, warning is displayed somewhere else.
+                    print("WARNING: Missing library: ".. l)
+                end
             end
         else
             init = false

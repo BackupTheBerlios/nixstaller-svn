@@ -111,6 +111,13 @@ end
 
 pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 
+
+-- Defaults
+pkg.destdir = pkg.packager.getpkgpath() .. "/share"
+pkg.bindir = pkg.packager.getpkgpath() .. "/bin"
+pkg.deps = { }
+
+
 dofile("package-public.lua")
 dofile("shared/package-public.lua")
 
@@ -136,7 +143,3 @@ if pkg.deps then
         end
     end
 end
-
--- Defaults
-pkg.destdir = pkg.destdir or pkg.packager.getpkgpath() .. "/share"
-pkg.bindir = pkg.bindir or pkg.packager.getpkgpath() .. "/bin"

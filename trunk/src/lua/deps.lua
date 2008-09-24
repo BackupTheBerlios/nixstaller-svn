@@ -16,6 +16,8 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
+local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap", curdir))
+
 depclass = { }
 depclass.__index = depclass
 
@@ -278,6 +280,7 @@ function verifysymverneeds(needs, path)
 --                         print("Found symbol version:", vn)
                 return true
             else
+--                 print("Missing symbol version:", vn, path)
                 return false
             end
         end
@@ -382,7 +385,6 @@ function collectlibinfo(infomap, bin, deps, wrongdeps, wronglibs, dialog)
     end
     
     for lib, path in pairs(infomap[bin].map) do
-        print("Collect:", lib)
         if not infomap[lib] then
             infomap[lib] = { found = false, native = false, usedby = { } }
             
@@ -438,8 +440,6 @@ function collectlibinfo(infomap, bin, deps, wrongdeps, wronglibs, dialog)
     end
 end
 
--- UNDONE: Move up
-local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap", curdir))
 -- UNDONE: Clear on restart
 local indirectsyms = { }
 local checkeddeps = { }
@@ -492,18 +492,22 @@ function checkdeps(bins, bdir, dialog, wrongdeps, wronglibs)
                                 if v.undefined then
                                     local found = false
                                     local supposedlib = loadedsyms[b][sym]
-                                    assert(supposedlib)
+                                    print("supposedlib:", supposedlib, b, sym)
+--                                     assert(supposedlib)
                                     
                                     if supposedlib and infomap[supposedlib] and infomap[supposedlib].syms and
-                                       infomap[supposedlib].syms[sym] then
+                                       infomap[supposedlib].syms[sym] and
+                                       not infomap[supposedlib].syms[sym].undefined then
                                         infomap[supposedlib].usedby[b] = true
                                         found = true
                                     else
                                         for lib, info in pairs(infomap) do
                                             found = info.syms and info.syms[sym] and
+                                                    not info.syms[sym].undefined and
                                                     info.syms[sym].version == v.version
                                             if found then
                                                 infomap[lib].usedby[b] = true
+                                                print(sym .. " --> " .. lib)
                                                 break
                                             end
                                         end
@@ -524,6 +528,15 @@ function checkdeps(bins, bdir, dialog, wrongdeps, wronglibs)
                                                 end
                                                 
                                                 found = true
+                                            end
+                                        else
+                                            if not infomap[supposedlib] or infomap[supposedlib].native then
+                                                wronglibs[supposedlib] = wronglibs[supposedlib] or { }
+                                                wronglibs[supposedlib].incompatlib = true
+                                            elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.HandleCompat or
+                                                   not infomap[supposedlib].dep:HandleCompat(supposedlib)) then
+                                                wrongdeps[infomap[supposedlib].dep] = wrongdeps[infomap[supposedlib].dep] or { }
+                                                wrongdeps[infomap[supposedlib].dep].incompatdep = true
                                             end
                                         end
                                     end
@@ -567,357 +580,5 @@ function instdeps(deps, installeddeps, wrongdeps, dialog)
         end
     end
 end
-
---[[
-function checkdeps(bins, bdir, deps, dialog, wrongdeps, wronglibs, mydep)
-    if lsymstat == false then
-        install.print("WARNING: no symbol mapfile found, binary compatibility checking will be partly disabled.\n")
-        lsymstat = nil -- Set to something else than true or false, so that the warning is only displayed once
-    end
-    
-    if not deps then
-        return
-    end
-    
-    if mydep and checkeddeps[mydep] then
-        print("Skipping already checked dependency " .. mydep.name)
---         return checkeddeps[mydep]
-    end
-    
-    local needs = { }
-    
-    if bins then
-        for i, b in ipairs(bins) do
-            --     UNDONE: Remove
-            if mydep then
-                table.insert(tree, mydep.name)
-                io.write("Checking: ")
-                for _, t in ipairs(tree) do
-                    io.write(t .. " --> ")
-                end
-                print("")
-            end
-            
-            local bprog = progstep
-            local path = string.format("%s/%s", bdir, b)
-            if os.fileexists(path) then
-                local function setstat(msg)
-                    local s = (mydep and string.format("dependency %s", mydep.name)) or string.format("binary %s", b)
-                    dialog:settitle(string.format("Checking dependencies for %s: %s (%d/%d)", s, msg, i, #bins))
-                end
-                
-                local bininfo = { }
-                local map = maplibs(path)
-                local symverneeds = getsymverneeds(path)
-                
-                local function markdep(bi, l)
-                    if mydep then
-                        local mp = getdeplibpath(mydep, l)
-                        if mp then
-                            bi.found = true
-                            bi.path = mp
-                            bi.dep = mydep
-                            return true
-                        end
-                    end
-                    
-                    local dep = getdepfromlib(deps, l)
-                    
-                    if dep and dep.full then
-                        if initdep(dep, dialog, wrongdeps) then
-                            bi.found = true
-                            bi.path = getdeplibpath(dep, l)
-                            bi.dep = dep
-                            return true
-                        end
-                    else
-                        wronglibs[l] = wronglibs[l] or { }
-                        if bi.native then
-                            wronglibs[l].incompatlib = true
-                        else
-                            wronglibs[l].missinglib = true
-                        end
-                        install.print(string.format("WARNING: Missing/incompatible library: %s\n", l))
-                    end
-                    return false
-                end
-                
-                local function getbininfo(lib, path)
-                    local ret = { found = false, native = false }
-                    
-                    if path then -- Lib is already present
-                        ret.native = true
-                        ret.found = true
-                        ret.path = path
-                    else
-                        markdep(ret, lib)
-                    end
-                    
-                    if ret.found then
-                        if symverneeds and symverneeds[lib] then
-                            if not verifysymverneeds(symverneeds[lib], lib, ret.path) then
-                                if ret.native then
-                                    if not markdep(ret, lib) and not ret.dep then
-                                        wronglibs[lib] = wronglibs[lib] or { }
-                                        wronglibs[lib].incompatlib = true
-                                    end
-                                elseif not ret.dep.HandleCompat or
-                                    not ret.dep:HandleCompat(lib) then
-                                    wrongdeps[ret.dep] = wrongdeps[ret.dep] or { }
-                                    wrongdeps[ret.dep].incompatdep = true
-                                end
-                            end
-                        end
-                        
-                        if not wronglibs[lib] and (ret.native or not wrongdeps[ret.dep]) then
-                            if lsymstat then
-                                ret.syms = getsyms(ret.path)
-                            end
-                        end
-                    end
-                    return ret
-                end
-                
-                local function handleinvaliddep(bi, lib, sym)
-                    if bi.native then
-                        if not markdep(bi, lib) and not bi.dep then
-                            wronglibs[lib] = wronglibs[lib] or { }
-                            wronglibs[lib].incompatlib = true
-                        elseif symverneeds and symverneeds[lib] and
-                            not verifysymverneeds(symverneeds[lib], lib, bi.path) and
-                            (not bi.dep.HandleCompat or not bi.dep:HandleCompat(lib)) then
-                            wrongdeps[bi.dep] = wrongdeps[bi.dep] or { }
-                            wrongdeps[bi.dep].incompatdep = true
-                        else
-                            local syms = getsyms(bi.path)
-                            if not syms or not syms[sym] or syms[sym].version ~= v.version then
-                                wrongdeps[bi.dep] = wrongdeps[bi.dep] or { }
-                                wrongdeps[bi.dep].incompatdep = true
-                                install.print(string.format("Incompatible dependency: %s (%s, %s)\n", bi.dep.name, lib, sym))
-                            else
-                                install.print(string.format("Overrided dependency: %s (%s)\n", bi.dep.name, lib))
-                            end
-                        end
-                    else
-                        wrongdeps[bi.dep] = wrongdeps[bi.dep] or { incompatdep = true }
-                        install.print(string.format("Incompatible dependency: %s (%s, %s)\n", bi.dep.name, lib, sym))
-                    end
-                end
-                
-                setstat("Find missing")
-                
-                if map then
-                    for l, p in pairs(map) do
-                        bininfo[l] = getbininfo(l, p)
-                        
-                        if bininfo[l].found then
---                             -- Check for any previous collected indirect symbol dependencies and try to solve them here
---                             for ib, is in pairs(indirectsyms) do
---                                 for s, sinfo in pairs(is) do
---                                     print("Route:", tabtostr(sinfo.route))
---                                     if sinfo.route[1] == l then
---                                         print("Found ind lib", l)
---                                         table.remove(sinfo.route, 1)
---                                         if utils.emptytable(sinfo.route) then
---                                             -- Found destination library
---                                             if bininfo[l].syms and bininfo[l].syms[s] and bininfo[l].syms[s].version == sinfo.version then
---                                                 print(string.format("Solved indirect symbol %s from %s with %s via %s (%s)", s, ib, l, b, (mydep and mydep.name) or ""))
---                                             else
---                                                 -- Symbol was not found, try to override dep
---                                                 handleinvaliddep(bininfo[l], l, s)
---                                             end
---                                             sinfo.found = true
---                                         elseif bininfo[l].native then
---                                             -- Find final lib through maps
---                                         else
---                                             -- lib will be seached in a next cycle
---                                         end
---                                     end
---                                 end
---                             end
-                            --[=[
-                            for ib, il in pairs(indirectsyms) do
-                                print("Checking:", ib, l)
-                                print("Contains:")
-                                table.foreach(il, print)
-                                if il[l] then
-                                    print("Found ind lib", l)
-                                    for is, iv in pairs(il[l]) do
-                                        if bininfo[l].syms and bininfo[l].syms[is] and bininfo[l].syms[is].version == iv.version then
-                                            print(string.format("Solved indirect symbol %s from %s with %s via %s (%s)", is, ib, l, b, (mydep and mydep.name) or ""))
-                                        else
-                                            -- Symbol was not found, try to override dep
-                                            handleinvaliddep(bininfo[l], l, is)
-                                        end
-                                        il[l][is] = nil
-                                    end
-                                end
-                            end
-                            --]=]
-                        end
-                    end
-                end
-                
-                if lsymstat then
-                    local binsyms = getsyms(path)
-                    if binsyms then
-                        setstat("Verifying compatibility")
-                        for s, v in pairs(binsyms) do
-                            if v.undefined then
-                                local found = false
-                                for _, bi in pairs(bininfo) do
-                                    found = bi.found and (bi.syms and bi.syms[s] and
-                                            bi.syms[s].version == v.version)
-                                    if found then
---                                         print(string.format("Found symbol %s in %s", s, bi.path))
-                                        break
-                                    end
-                                end
-                                
-                                if not found then
-                                    local lib = loadedsyms[utils.basename(b)][s]
-
-                                    assert(lib)
-                                    assert(type(lib) ~= "string" or lib ~= b)
-                                    assert(type(lib) == "string" or lib.lib ~= b)
-
-                                    -- This may happen incase a symbol is resolved indirectly
-                                    -- In this case 'lib' points to a 'route' to the lib which
-                                    -- contains the symbol.
-                                    if not bininfo[lib] then
-                                        assert(type(lib) == "table")
-                                        indirectsyms[b] = indirectsyms[b] or { }
-                                        indirectsyms[b][s] = { version = v.version, route = lib }
-                                        print(string.format("Found indirect symbol %s from %s", s, b))
-                                    end
-                                    
-                                    if bininfo[lib] and bininfo[lib].found then
-                                        handleinvaliddep(bininfo[lib], lib, s)
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-                
-                local subinc = (not mydep and (progstep / utils.mapsize(bininfo)))
-                bprog = 0
-                for l, i in pairs(bininfo) do
-                    -- Check for any previous collected indirect symbol dependencies and try to solve them here
-                    if i.found then
-                        for ib, is in pairs(indirectsyms) do
-                            for s, sinfo in pairs(is) do
-                                print("Route:", tabtostr(sinfo.route))
-                                if sinfo.route[1] == l then
-                                    print("Found ind lib", l)
-                                    table.remove(sinfo.route, 1)
-                                    if utils.emptytable(sinfo.route) then
-                                        -- Found destination library
-                                        if i.syms and i.syms[s] and i.syms[s].version == sinfo.version then
-                                            print(string.format("Solved indirect symbol %s from %s with %s via %s (%s)", s, ib, l, b, (mydep and mydep.name) or ""))
-                                        else
-                                            -- Symbol was not found, try to override dep
-                                            handleinvaliddep(i, l, s)
-                                        end
-                                        sinfo.found = true
-                                    elseif i.native then
-                                        -- Find final lib through maps
-                                    else
-                                        -- lib will be searched in a next cycle
-                                    end
-                                end
-                            end
-                        end
-                        
-                        if not i.native and i.dep and i.dep ~= mydep then
-                            if not needs[i.dep] and not wrongdeps[i.dep] then
-                                if initdep(i.dep, dialog, wrongdeps) then
-                                    needs[i.dep] = checkdeps(i.dep.libs, pkg.getdepdir(i.dep, i.dep.libdir), i.dep.deps, dialog, wrongdeps, wronglibs, i.dep) or { }
-                                end
-                            end
-                        end
-                    end
-                    
-                    if not mydep then
-                        incprogress(dialog, subinc)
-                    end
-                end
-            end
-            
-            if not mydep then
-                incprogress(dialog, bprog)
-            end
-            
-            --     UNDONE: Remove
-            if mydep then
-                table.remove(tree)
-            end
-        end
-        
-        -- Check if all unresolved indirect syms are now solved. If not, no dependency was
-        -- found that has the needed lib, then mark it as missing.
-        for _, b in ipairs(bins) do
-            if indirectsyms[b] then
-                for is, sinfo in pairs(indirectsyms[b]) do
-                    if not sinfo.found then
-                        print("Symbol still missing:", is, b)
---                         wronglibs[il] = wronglibs[il] or { }
---                         wronglibs[il].missinglib = true
-                    end
-                end
-            end
-        end
-    end
-    
-    dialog:settitle("Gathering mandatory dependencies.")
-    if not mydep then
-        incprogress(dialog)
-    end
-    
-    for _, d in ipairs(deps) do
-        local dep = pkg.depmap[d]
-        if dep and not needs[dep] and not wrongdeps[dep] and dep.Required and dep:Required() then
-            -- Add deps which are always required
-            if initdep(dep, dialog, wrongdeps) then
-                needs[dep] = checkdeps(dep.libs, pkg.getdepdir(dep, dep.libdir), dep.deps, dialog, wrongdeps, wronglibs, dep) or { }
-            end
-        end
-    end
-
-    if mydep then
-        checkeddeps[mydep] = needs
-    end
-    
-    return needs
-end
-
-function instdeps(deps, installeddeps, wrongdeps, dialog, rec)
-    dialog:settitle("Installing dependencies.")
-    
-    if not rec then
-        incprogress(dialog)
-    end
-    
-    for d, rd in pairs(deps) do
-        if not installeddeps[d] and not wrongdeps[d] and d.full then
-            -- if rd is a table, the dep needs other dependencies
-            if type(rd) == "table" and not utils.emptytable(rd) then
-                instdeps(rd, installeddeps, wrongdeps, dialog, true)
-            end
-
-            if initdep(d, dialog, wrongdeps) then
-                -- Check if dep is usable
-                if d.CanInstall and not d:CanInstall() then
-                    wrongdeps[d] = { failed = true }
-                else
-                    d:Install()
-                    installeddeps[d] = true
-                    install.print(string.format("Installed dependency: %s\n", d.name))
-                end
-            end
-        end
-    end
-end
---]]
 
 dofile("deps-public.lua")

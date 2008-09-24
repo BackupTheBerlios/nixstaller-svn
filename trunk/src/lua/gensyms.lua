@@ -63,7 +63,7 @@ function getallsyms(bin, lpath)
                     print(string.format("WARNING: Could not process file %s", l))
                 else
                     for s, v in pairs(lsyms) do
-                        if bsyms[s] and bsyms[s].undefined then
+                        if bsyms[s] and bsyms[s].undefined and not v.undefined then
                             symoutmap[binname] = symoutmap[binname] or { }
                             symoutmap[binname][s] = l
                             bsyms[s].undefined = false -- Don't have to check again
@@ -78,15 +78,10 @@ function getallsyms(bin, lpath)
                     local libs = getalllibs(bin, map, lpath)
                     for l, info in pairs(libs) do
                         local isyms = info.path and getsyms(info.path)
-                        if isyms and isyms[s] then
+                        if isyms and isyms[s] and not isyms[s].undefined then
                             print(string.format("Binary '%s' has symbol dependency on %s which is indirectly provided by '%s'", bin, s, l))
-                            -- Make route from start to this lib
-                            local p, r = l, { }
-                            while p and p ~= binname do
-                                table.insert(r, 1, p)
-                                p = libs[p] and libs[p].parent
-                            end
-                            symoutmap[binname][s] = r
+                            symoutmap[binname] = symoutmap[binname] or { }
+                            symoutmap[binname][s] = l
                             v.undefined = false
                             break
                         end
@@ -177,22 +172,7 @@ for bin, syms in pairs(symoutmap) do
     out:write(string.format("syms[\"%s\"] = { }\n", bin))
     
     for s, l in pairs(syms) do
-        local ltext
-        if type(l) == "string" then
-            ltext = string.format("\"%s\"", l)
-        else
-            -- Indirect dependency
-            local r
-            for _, rl in ipairs(l) do
-                if not r then
-                    r = "\"" .. rl .. "\""
-                else
-                    r = r .. ", \"" .. rl .. "\""
-                end
-            end
-            ltext = string.format("{ %s }", r)
-        end
-        out:write(string.format("syms[\"%s\"][\"%s\"] = %s\n", bin, s, ltext))
+        out:write(string.format("syms[\"%s\"][\"%s\"] = \"%s\"\n", bin, s, l))
     end
 end
 

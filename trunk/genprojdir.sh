@@ -21,8 +21,6 @@
 if [ ! -z "`dirname $0`" ]; then
     NDIR="`dirname $0`"
 else
-    OLDIFS="$IFS"
-    
     for F in $PATH
     do
         if [ -f "$F/$0" ]; then
@@ -30,8 +28,6 @@ else
             break
         fi
     done
-    
-    IFS="$OLDIFS"
 fi
 
 CURRENTOS=`uname`

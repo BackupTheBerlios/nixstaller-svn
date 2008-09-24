@@ -27,11 +27,6 @@ function pkg.addbinopts(bin, opts)
     pkg.binopts[bin] = opts
 end
 
-function pkg.adddependency(name)
-    pkg.deps = pkg.deps or { }
-    table.insert(pkg.deps, name)
-end
-
 function pkg.newdependency()
     local ret = { }
     setmetatable(ret, depclass)
