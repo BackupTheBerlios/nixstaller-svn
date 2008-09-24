@@ -61,6 +61,7 @@ private:
     void ReadVerNeed(Elf_Scn *section);
     void MapVersions(Elf_Scn *section);
     void ReadDyn(Elf_Scn *section);
+    void CleanSymbols(void);
     
 public:
     CElfWrapper(const std::string &file);

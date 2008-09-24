@@ -214,7 +214,7 @@ function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, l
     end
     
     -- Convert to comma seperated string list
-    function tolist(tab)
+    local function tolist(tab)
         local ret
         for _, l in ipairs(tab) do
             local s = '"' .. l .. '"'
@@ -322,7 +322,7 @@ function LoadDep(prdir, name)
         return nil, ret
     end
     
-    function default(var, val)
+    local function default(var, val)
         if ret[var] == nil then
             ret[var] = val
         end
@@ -439,7 +439,7 @@ function List()
         end
     end
     
-    function printtemp(t)
+    local function printtemp(t)
         if onlynames then
             print(t.name)
         else
@@ -500,7 +500,7 @@ function Scan()
     end
     
     local loadeddeps, depmap = { }, { }
-    function loaddeps(deps, dep)
+    local function loaddeps(deps, dep)
         dep = dep or "main"
         for _, d in ipairs(deps) do
             if loadeddeps[d] == nil then
@@ -529,7 +529,7 @@ function Scan()
         loaddeps(pkg.deps) -- Load all deps
     end
     
-    function dumpinfo(dep, lpath)
+    local function dumpinfo(dep, lpath)
         local map
         if dep then
             map = { }
@@ -859,7 +859,7 @@ function Autogen()
                 if not missinglibs[l] then
                     if autounknown then
                         -- Create dummy template for this unknown lib.
-                        template = { name = string.gsub(l, "(lib)(.+)%.so.+", "%2"), description = "", libs = { l },
+                        template = { name = string.gsub(l, "(lib)(.+)%.so.*", "%2"), description = "", libs = { l },
                                     full = (full ~= nil and full) or true, unknown = true }
                         missinglibs[l] = template
                     else

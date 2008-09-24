@@ -93,7 +93,11 @@ buildfltk()
     get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
     untar "fltk-1.1.9-source.tar.gz"
     dodir "fltk-1.1.9"
-    CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    if [ $CURRENT_OS = "darwin" ]; then
+        CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    else
+        CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
+    fi
     restoredir
 }
 
@@ -193,7 +197,7 @@ buildcurl()
 
 BUILD="$*"
 
-if [ -z $BUILD ]; then
+if [ -z "$BUILD" ]; then
 	if [ $CURRENT_OS = "darwin" ]; then
 		BUILD="png jpeg fltk lua ncurses lzma elf curl"
 	else

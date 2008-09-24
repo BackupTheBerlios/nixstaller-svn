@@ -109,6 +109,8 @@ CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
     if (versym)
         MapVersions(versym);
     
+    CleanSymbols();
+    
     elf_end(m_pElf);
     close(m_iFD);
     m_pElf = NULL;
@@ -140,8 +142,14 @@ void CElfWrapper::ReadSymbols(Elf_Scn *section)
             }
             
             const char *name = elf_strptr(m_pElf, shdr.sh_link, sym.st_name);
-            if (name)
-                m_Symbols.push_back(SSymData(name, binding, (sym.st_shndx == SHN_UNDEF)));
+            
+            // HACK: We basicly want to add any symbols, even if they have invalid names.
+            // This is so to keep the vector range the same as the one from libelf. When
+            // everything is processed, the vector will be cleaned from any nameless symbols.
+            if (!name || !name[0])
+                name = "";
+            
+            m_Symbols.push_back(SSymData(name, binding, (sym.st_shndx == SHN_UNDEF)));
         }
     }
 }
@@ -238,7 +246,7 @@ void CElfWrapper::MapVersions(Elf_Scn *section)
     GElf_Shdr shdr;
     gelf_getshdr(section, &shdr);
 
-    int x = 0;
+    int x = 1;
     while ((data = elf_getdata (section, data)) != NULL)
     {
         int count = shdr.sh_size / shdr.sh_entsize, offset = 0;
@@ -248,9 +256,9 @@ void CElfWrapper::MapVersions(Elf_Scn *section)
             if (!sym)
                 break;
             
-            assert(m_Symbols[i].version.empty());
+            assert(m_Symbols.at(i*x).version.empty());
             
-            if (m_Symbols.at(i).undefined)
+            if (m_Symbols.at(i*x).undefined)
                 m_Symbols[i*x].version = m_SymVerNeedMap[*sym];
             else
                 m_Symbols[i*x].version = m_SymVerDefMap[*sym];
@@ -298,5 +306,17 @@ void CElfWrapper::ReadDyn(Elf_Scn *section)
                 }
             }
         }
+    }
+}
+
+void CElfWrapper::CleanSymbols()
+{
+    TSymVec::iterator it=m_Symbols.begin();
+    while (it != m_Symbols.end())
+    {
+        if (it->name.empty())
+            it = m_Symbols.erase(it);
+        else
+            it++;
     }
 }

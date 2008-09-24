@@ -72,7 +72,7 @@ post = function (dest, destdir, libmap, full, copy)
         
         -- GTK2 (and co) query programs don't return any error code incase of failure. To see if
         -- the call was successfull, we simply check if anything was written to stderr.
-        function runquery(cmd, output)
+        local function runquery(cmd, output)
             local pipe = io.popen(string.format("%s 2>&1 >%s", cmd, output), "r")
             
             if not pipe then

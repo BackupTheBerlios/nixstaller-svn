@@ -42,7 +42,7 @@
 pkg.deptemplates = { }
 
 function newtemplate(t)
-    function default(field, val)
+    local function default(field, val)
         if t[field] == nil then
             t[field] = val
         end

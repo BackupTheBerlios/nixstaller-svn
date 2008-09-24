@@ -123,10 +123,17 @@ dofile("deps.lua")
 -- Init deps
 pkg.depmap = { }
 if pkg.deps then
-    for _, d in ipairs(pkg.deps) do
-        local c = dofile(string.format("deps/%s/config.lua", d))
-        c.name = d
-        pkg.depmap[d] = c
+    local stack = { pkg.deps }
+    while not utils.emptytable(stack) do
+        local deps = table.remove(stack)      
+        for _, d in ipairs(deps) do
+            if not pkg.depmap[d] then
+                local c = dofile(string.format("deps/%s/config.lua", d))
+                c.name = d
+                pkg.depmap[d] = c
+                table.insert(stack, c.deps)
+            end
+        end
     end
 end
 

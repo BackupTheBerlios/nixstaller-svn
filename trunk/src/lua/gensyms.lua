@@ -18,9 +18,36 @@
 dofile(ndir .. "/src/lua/shared/utils.lua")
 dofile(ndir .. "/src/lua/shared/utils-public.lua")
 
+-- Get all dependant libraries from bin, recursively
+function getalllibs(startlib, map, lpath)
+    local ret = { }
+    local stack = { }
+    local par = utils.basename(startlib)
+    
+    for l, p in pairs(map) do
+        if p then
+            table.insert(stack, { lib = l, path = p, parent = par })
+        end
+    end
+    
+    while not utils.emptytable(stack) do
+        local libinfo = table.remove(stack)
+        local libmap = maplibs(libinfo.path, lpath)
+        if libmap then
+            ret[libinfo.lib] = libinfo
+            for l, p in pairs(libmap) do
+                if p and not ret[l] then
+                    table.insert(stack, { lib = l, path = p, parent = libinfo.lib })
+                end
+            end
+        end
+    end
+    
+    return ret
+end
 
-local processedbins = { }
-function getallsyms(bin, out, lpath)
+local processedbins, symoutmap = { }, { }
+function getallsyms(bin, lpath)
     if not processedbins[bin] then
         processedbins[bin] = true
         local map = maplibs(bin, lpath)
@@ -29,7 +56,7 @@ function getallsyms(bin, out, lpath)
         if not map or not bsyms then
             print(string.format("WARNING: Could not process file %s", bin))
         else
-            out:write(string.format("syms[\"%s\"] = { }\n", utils.basename(bin)))
+            local binname = utils.basename(bin)
             for l, lp in pairs(map) do
                 local lsyms = lp and getsyms(lp)
                 if not lsyms then
@@ -37,11 +64,38 @@ function getallsyms(bin, out, lpath)
                 else
                     for s, v in pairs(lsyms) do
                         if bsyms[s] and bsyms[s].undefined then
-                            out:write(string.format("syms[\"%s\"][\"%s\"] = \"%s\"\n", utils.basename(bin), s, l))
+                            symoutmap[binname] = symoutmap[binname] or { }
+                            symoutmap[binname][s] = l
                             bsyms[s].undefined = false -- Don't have to check again
                         end
                     end
-                    getallsyms(lp, out, lpath)
+                end
+                getallsyms(lp, lpath)
+            end
+            for s, v in pairs(bsyms) do
+                if v.undefined then
+                    -- Check if it's in a non direct lib dep
+                    local libs = getalllibs(bin, map, lpath)
+                    for l, info in pairs(libs) do
+                        local isyms = info.path and getsyms(info.path)
+                        if isyms and isyms[s] then
+                            print(string.format("Binary '%s' has symbol dependency on %s which is indirectly provided by '%s'", bin, s, l))
+                            -- Make route from start to this lib
+                            local p, r = l, { }
+                            while p and p ~= binname do
+                                table.insert(r, 1, p)
+                                p = libs[p] and libs[p].parent
+                            end
+                            symoutmap[binname][s] = r
+                            v.undefined = false
+                            break
+                        end
+                    end
+                    
+                    if v.undefined then
+                        -- Still not found
+                        print(string.format("Binary %s has undefined symbol: %s", bin, s))
+                    end
                 end
             end
         end
@@ -96,19 +150,7 @@ for _, f in ipairs(args) do
     table.insert(binaries, f)
 end
 
-out = io.open(string.format("%s/symmap", dest), "w")
-
-if not out then
-    error("Could not open output file.")
-end
-
-out:write("local syms = { }\n")
-
 for i, f in ipairs(binaries) do
-    if f == dest then
-        break
-    end
-    
     if not os.fileexists(f) then
         error(string.format("Could not locate file: %s", f))
     end
@@ -118,7 +160,40 @@ for i, f in ipairs(binaries) do
         error(string.format("Could not open file: %s (%s)", f, msg))
     end
     
-    getallsyms(f, out, searchpaths)
+    getallsyms(f, searchpaths)
+end
+
+-- Dump gathered symbol info to file
+local fname = string.format("%s/symmap", dest)
+out = io.open(fname, "w")
+
+if not out then
+    error("Could not open output file.")
+end
+
+out:write("local syms = { }\n")
+
+for bin, syms in pairs(symoutmap) do
+    out:write(string.format("syms[\"%s\"] = { }\n", bin))
+    
+    for s, l in pairs(syms) do
+        local ltext
+        if type(l) == "string" then
+            ltext = string.format("\"%s\"", l)
+        else
+            -- Indirect dependency
+            local r
+            for _, rl in ipairs(l) do
+                if not r then
+                    r = "\"" .. rl .. "\""
+                else
+                    r = r .. ", \"" .. rl .. "\""
+                end
+            end
+            ltext = string.format("{ %s }", r)
+        end
+        out:write(string.format("syms[\"%s\"][\"%s\"] = %s\n", bin, s, ltext))
+    end
 end
 
 out:write("return syms\n")

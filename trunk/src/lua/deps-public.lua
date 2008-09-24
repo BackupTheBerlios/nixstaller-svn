@@ -27,9 +27,10 @@ function pkg.verifydeps(bins)
             gui.newprogressdialog(function(self)
                 initprogress(bins)
                 
-                local needs = checkdeps(bins, install.getpkgdir(), pkg.deps, self, wrongdeps, wronglibs)
+--                 local needs = checkdeps(bins, install.getpkgdir(), pkg.deps, self, wrongdeps, wronglibs)
+                local deps = checkdeps(bins, install.getpkgdir(), self, wrongdeps, wronglibs)
                 
-                instdeps(needs, installeddeps, wrongdeps, self)
+                instdeps(deps, installeddeps, wrongdeps, self)
             end)
             
             local ret = { }
