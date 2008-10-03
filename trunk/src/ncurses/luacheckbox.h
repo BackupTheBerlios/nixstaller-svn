@@ -40,7 +40,7 @@ protected:
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
     
 public:
-    CLuaCheckbox(const char *desc, const TOptions &l);
+    CLuaCheckbox(const char *desc, const TOptions &l, const std::vector<TSTLVecSize> &e);
 };
 
 #endif

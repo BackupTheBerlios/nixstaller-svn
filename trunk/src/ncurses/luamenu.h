@@ -39,7 +39,7 @@ protected:
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
     
 public:
-    CLuaMenu(const char *desc, const TOptions &l);
+    CLuaMenu(const char *desc, const TOptions &l, TSTLVecSize e);
 };
 
 #endif

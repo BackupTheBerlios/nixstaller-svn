@@ -27,6 +27,7 @@ class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
 {
     typedef std::vector<GtkWidget *> TRadioList;
     TRadioList m_RadioButtons;
+    bool m_bInit;
     
     virtual const char *EnabledButton(void);
     virtual void Enable(TSTLVecSize n);
@@ -34,7 +35,7 @@ class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
     virtual void CoreActivateWidget(void);
 
 public:
-    CLuaRadioButton(const char *desc, const TOptions &l);
+    CLuaRadioButton(const char *desc, const TOptions &l, TSTLVecSize e);
     
     static void ToggleCB(GtkToggleButton *togglebutton, gpointer data);
 };

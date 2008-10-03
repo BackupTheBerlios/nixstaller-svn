@@ -17,6 +17,8 @@
 
 
 function pkg.verifydeps(bins, libs)
+    bins = bins or pkg.bins
+    
     local installeddeps = { }
     local wrongdeps, wronglibs
 

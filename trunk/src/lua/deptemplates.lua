@@ -36,6 +36,7 @@
 --              Default is to call self:CopyFiles().
 -- required     As the 'install' field, but for the Required() function. Default is to simply return false.
 -- compat       As the 'install' field, but for the HandleCompat() function. Default is to simply return false.
+-- caninstall   As the 'install' field, but for the CanInstall() function. Default is to simply return true.
 --
 -- New structures should be created with the newtemplate() function
 
@@ -52,6 +53,7 @@ function newtemplate(t)
     default("install", "    self:CopyFiles()")
     default("required", "    return false")
     default("compat", "    return false")
+    default("caninstall", "    return true")
     
     table.insert(pkg.deptemplates, t)
 end

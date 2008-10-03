@@ -27,7 +27,8 @@
 // Lua Checkbox Class
 // -------------------------------------
 
-CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaRadioButton(l)
+CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l,
+                                 TSTLVecSize e) : CBaseLuaWidget(desc), CBaseLuaRadioButton(l)
 {
     TSTLVecSize size = l.size(), n;
     
@@ -37,7 +38,7 @@ CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLua
         button->type(FL_RADIO_BUTTON);
         button->callback(ToggleCB, this);
         
-        if (m_RadioButtons.empty())
+        if (e == n)
             button->setonly();
         
         m_RadioButtons.push_back(button);

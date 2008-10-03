@@ -20,6 +20,7 @@
 #ifndef TEXTWINDOW
 #define TEXTWINDOW
 
+#include "main/main.h"
 #include "basescroll.h"
 
 namespace NNCurses {
@@ -47,6 +48,7 @@ public:
     
     void AddText(const std::string &t);
     void SetText(const std::string &t) { ClearText(); AddText(t); }
+    void SetMaxLength(TSTLStrSize l, TSTLStrSize c);
     void ClearText(void);
     void LoadFile(const char *f);
     void SetFollow(bool f);

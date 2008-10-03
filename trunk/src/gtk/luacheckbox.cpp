@@ -25,7 +25,8 @@
 // Lua Checkbox Class
 // -------------------------------------
 
-CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l)
+CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l,
+                           const std::vector<TSTLVecSize> &e) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l), m_bInit(true)
 {
     TSTLVecSize size = l.size(), n;
     
@@ -36,6 +37,12 @@ CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget
         gtk_widget_show(m_Checkboxes[n]);
         gtk_container_add(GTK_CONTAINER(GetBox()), m_Checkboxes[n]);
     }
+    
+    size = e.size();
+    for (n=0; n<size; n++)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(m_Checkboxes[e[n]]), TRUE);
+        
+    m_bInit = false;
 }
 
 bool CLuaCheckbox::Enabled(TSTLVecSize n)
@@ -68,5 +75,6 @@ void CLuaCheckbox::CoreActivateWidget()
 void CLuaCheckbox::ToggleCB(GtkToggleButton *togglebutton, gpointer data)
 {
     CLuaCheckbox *box = static_cast<CLuaCheckbox *>(data);
-    box->SafeLuaDataChanged();
+    if (!box->m_bInit)
+        box->SafeLuaDataChanged();
 }

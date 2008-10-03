@@ -41,7 +41,7 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
     int GroupHeight(void) const { return 125; }
     
 public:
-    CLuaMenu(const char *desc, const TOptions &l);
+    CLuaMenu(const char *desc, const TOptions &l, TSTLVecSize e);
     
     static void SelectionCB(Fl_Widget *w, void *p);
 };

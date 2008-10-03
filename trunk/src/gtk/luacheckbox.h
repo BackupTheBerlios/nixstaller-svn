@@ -28,6 +28,7 @@
 class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
 {
     std::vector<GtkWidget *> m_Checkboxes;
+    bool m_bInit;
     
     virtual bool Enabled(TSTLVecSize n);
     virtual void Enable(TSTLVecSize n, bool b);
@@ -35,7 +36,7 @@ class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
     virtual void CoreActivateWidget(void);
     
 public:
-    CLuaCheckbox(const char *desc, const TOptions &l);
+    CLuaCheckbox(const char *desc, const TOptions &l, const std::vector<TSTLVecSize> &e);
     
     static void ToggleCB(GtkToggleButton *togglebutton, gpointer data);
 };

@@ -25,7 +25,8 @@
 // Lua Menu Class
 // -------------------------------------
 
-CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaMenu(l), m_iCurValue(-1)
+CLuaMenu::CLuaMenu(const char *desc, const TOptions &l,
+                   TSTLVecSize e) : CBaseLuaWidget(desc), CBaseLuaMenu(l), m_iCurValue(-1)
 {
     m_pMenu = new Fl_Hold_Browser(0, 0, 0, GroupHeight());
     m_pMenu->callback(SelectionCB, this);
@@ -35,8 +36,9 @@ CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), 
     
     if (m_pMenu->size() > 0)
     {
-        m_pMenu->value(1);
-        m_iCurValue = 1;
+        int val = SafeConvert<int>(e) + 1;
+        m_pMenu->value(val);
+        m_iCurValue = val;
     }
     
     GetGroup()->add(m_pMenu);

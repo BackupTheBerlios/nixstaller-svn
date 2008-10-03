@@ -51,12 +51,12 @@ CLuaProgressDialog::CLuaProgressDialog(GtkWidget *parent,
     gtk_box_pack_start(GTK_BOX(vbox), m_pProgBar, TRUE, FALSE, 0);
     
     m_pSecTitle = gtk_label_new(NULL);
-    gtk_widget_show(m_pSecTitle);
+//     gtk_widget_show(m_pSecTitle);
     gtk_misc_set_alignment(GTK_MISC(m_pSecTitle), 0.0f, 0.0f);
     gtk_box_pack_start(GTK_BOX(vbox), m_pSecTitle, TRUE, FALSE, 0);
     
     m_pSecProgBar = gtk_progress_bar_new();
-    gtk_widget_show(m_pSecProgBar);
+//     gtk_widget_show(m_pSecProgBar);
     gtk_box_pack_start(GTK_BOX(vbox), m_pSecProgBar, TRUE, FALSE, 0);
     
     GtkWidget *bbox = gtk_hbox_new(FALSE, 0);

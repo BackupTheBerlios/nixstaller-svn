@@ -25,7 +25,8 @@
 // Lua Menu Class
 // -------------------------------------
 
-CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaMenu(l)
+CLuaMenu::CLuaMenu(const char *desc, const TOptions &l,
+                   TSTLVecSize e) : CBaseLuaWidget(desc), CBaseLuaMenu(l)
 {
     m_pMenu = new NNCurses::CMenu(15, 7);
     
@@ -33,6 +34,8 @@ CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), 
         m_pMenu->AddEntry(*it, GetTranslation(*it));
     
     AddWidget(m_pMenu);
+    
+    m_pMenu->Select(l.at(e));
 }
 
 std::string CLuaMenu::Selection()

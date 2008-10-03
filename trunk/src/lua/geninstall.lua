@@ -262,11 +262,6 @@ function LoadPackage()
         return
     end
     
-    -- These functions may be needed in the config package.lua, but are defined only at install
-    -- UNDONE: Still needed?
-    function pkg.addbinenv() end
-    function pkg.addbinopts() end
-    
     dofile(confdir .. "/package.lua")
     
     local function checkfield(s)

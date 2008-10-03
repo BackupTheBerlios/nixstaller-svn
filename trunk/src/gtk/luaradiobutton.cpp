@@ -25,7 +25,8 @@
 // Lua Radio Button Class
 // -------------------------------------
 
-CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaRadioButton(l)
+CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l,
+                                 TSTLVecSize e) : CBaseLuaWidget(desc), CBaseLuaRadioButton(l), m_bInit(true)
 {
     TSTLVecSize size = l.size(), n;
     
@@ -36,10 +37,15 @@ CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLua
         else
             m_RadioButtons.push_back(gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(m_RadioButtons[0]),
                                      GetTranslation(l[n].c_str())));
+        if (n == e)
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(m_RadioButtons[n]), TRUE);
+        
         g_signal_connect(G_OBJECT(m_RadioButtons[n]), "toggled", G_CALLBACK(ToggleCB), this);
         gtk_widget_show(m_RadioButtons[n]);
         gtk_container_add(GTK_CONTAINER(GetBox()), m_RadioButtons[n]);
     }
+    
+    m_bInit = false;
 }
 
 const char *CLuaRadioButton::EnabledButton()
@@ -81,5 +87,6 @@ void CLuaRadioButton::CoreActivateWidget()
 void CLuaRadioButton::ToggleCB(GtkToggleButton *togglebutton, gpointer data)
 {
     CLuaRadioButton *radio = static_cast<CLuaRadioButton *>(data);
-    radio->SafeLuaDataChanged();
+    if (!radio->m_bInit)
+        radio->SafeLuaDataChanged();
 }

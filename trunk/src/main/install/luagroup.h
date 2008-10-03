@@ -46,11 +46,14 @@ private:
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type) = 0;
-    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l) = 0;
-    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l) = 0;
+    virtual CBaseLuaCheckbox *CreateCheckbox(const char *desc, const std::vector<std::string> &l,
+                                             const std::vector<TSTLVecSize> &e) = 0;
+    virtual CBaseLuaRadioButton *CreateRadioButton(const char *desc, const std::vector<std::string> &l,
+                                                   TSTLVecSize e) = 0;
     virtual CBaseLuaDirSelector *CreateDirSelector(const char *desc, const char *val) = 0;
     virtual CBaseLuaCFGMenu *CreateCFGMenu(const char *desc) = 0;
-    virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l) = 0;
+    virtual CBaseLuaMenu *CreateMenu(const char *desc, const std::vector<std::string> &l,
+                                     TSTLVecSize e) = 0;
     virtual CBaseLuaImage *CreateImage(const char *file) = 0;
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) = 0;
     virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) = 0;

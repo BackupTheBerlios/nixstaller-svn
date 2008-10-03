@@ -151,6 +151,12 @@ void CTextField::AddText(const std::string &t)
     RequestQueuedDraw();
 }
 
+void CTextField::SetMaxLength(TSTLStrSize l, TSTLStrSize c)
+{
+    m_pTextWidget->SetMaxLength(l, c);
+    RequestQueuedDraw();
+}
+
 void CTextField::ClearText()
 {
     m_pTextWidget->Clear();

@@ -26,7 +26,8 @@
 // Lua Checkbox Class
 // -------------------------------------
 
-CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l)
+CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l,
+                           const std::vector<TSTLVecSize> &e) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l)
 {
     m_pCheckbox = new NNCurses::CCheckbox;
     
@@ -34,6 +35,9 @@ CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget
         m_pCheckbox->AddChoice(GetTranslation(*it));
     
     AddWidget(m_pCheckbox);
+    
+    for (std::vector<TSTLVecSize>::const_iterator it=e.begin(); it!=e.end(); it++)
+        m_pCheckbox->Select(*it);
 }
 
 bool CLuaCheckbox::Enabled(TSTLVecSize n)

@@ -49,16 +49,18 @@ CBaseLuaInputField *CLuaGroup::CreateInputField(const char *label, const char *d
     return ret;
 }
 
-CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l)
+CBaseLuaCheckbox *CLuaGroup::CreateCheckbox(const char *desc, const std::vector<std::string> &l,
+                                            const std::vector<TSTLVecSize> &e)
 {
-    CLuaCheckbox *ret = new CLuaCheckbox(desc, l);
+    CLuaCheckbox *ret = new CLuaCheckbox(desc, l, e);
     AddWidget(ret);
     return ret;
 }
 
-CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l)
+CBaseLuaRadioButton *CLuaGroup::CreateRadioButton(const char *desc, const std::vector<std::string> &l,
+                                                  TSTLVecSize e)
 {
-    CLuaRadioButton *ret = new CLuaRadioButton(desc, l);
+    CLuaRadioButton *ret = new CLuaRadioButton(desc, l, e);
     AddWidget(ret);
     return ret;
 }
@@ -77,9 +79,10 @@ CBaseLuaCFGMenu *CLuaGroup::CreateCFGMenu(const char *desc)
     return ret;
 }
 
-CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l)
+CBaseLuaMenu *CLuaGroup::CreateMenu(const char *desc, const std::vector<std::string> &l,
+                                    TSTLVecSize e)
 {
-    CLuaMenu *ret = new CLuaMenu(desc, l);
+    CLuaMenu *ret = new CLuaMenu(desc, l, e);
     AddWidget(ret);
     return ret;
 }

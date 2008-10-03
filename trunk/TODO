@@ -10,26 +10,17 @@ OVERALL
     - Remove some illogical commandline options?
     - MD5 fixes for other platforms (Solaris, NetBSD etc)
 - Better util.a configure testing?
-- Initial value from constructor for radiobutton, menu etc?
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
 - libstdcxx:
     - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
 - Test regular C lua libs, update notes
-- Limit textfield's amount of stored lines
-- libelf
-    - Add SConstruct check
-    - Mention credits, copyrights etc
-    - Check weak symbol versions
 - Check if thrown exceptions aren't using temporary strings
-- Check if functions definitions in LoadPackage are still required
 - deps:
     - Check for static bins?
     - bins field, which checks for bin compat? If yes change deputil.lua HandleCompat function generation.
-    - Default pkg.verifydeps to use pkg.bins?
     - Auto generate symmap?
-    - Handle simple dep checking
     - symmap --> symmap.lua?
     - gensyms.lua option to (not) compress output file
     - Better progress indication
@@ -38,11 +29,10 @@ OVERALL
 - Dep templates:
     - For list: LSB Compliance, others?
     - More templates
-    - Check pango.aliases vs pangox.aliases
-    - Generate CanInstall() function
-- Overwrite-options and commandline options for genprojdir.sh
-- handle chained short options with genprojdir.sh? (getopt?)
-- Update genprojdir.sh post message for deps.
+- genprojdir.sh:
+    - Overwrite-options and commandline options for genprojdir.sh
+    - handle chained short options with genprojdir.sh? (getopt?)
+    - Update genprojdir.sh post message for deps.
 - Nicer way to run apps on exit. Or atleast document it
 
 
@@ -54,7 +44,6 @@ PACKAGING
 - pacman: Check for locks for future releases
 - deb: way to remove temporary root owned files incase of an error
 - Handle cases were multiple package managers exist
-- Check for removal of bin dir in uninstall-* script (should it be removed?).
 
 
 MAIN
@@ -70,6 +59,7 @@ DOCS
 - utils.removerec()
 - Nested block strings ([=[]=])
 - install.updateui()? (If yes update CHANGELOG)
+- addcheckbox + addradiobutton + addmenu functions now have additional arg for default enabled option(s)
 
 
 RELEASE
@@ -78,7 +68,7 @@ RELEASE
 
 TRANSLATIONS
 - Check all sentences for punctation
-- Change "Install commands ..." message to something more appropiate
+- Change "Install commands ..." cancel message to something more appropiate
 
 
 LIBSU
@@ -112,8 +102,4 @@ REGISTER
 
 
 DESIGN
-- Reorganize var and type names? (type prefixes etc)
-- Virtual functions that need to call parent function --> make additional function in base class
-that will be called instead of virtual function, this function should call the virtual instead.
-- More usage of const?
 - Reorganize SConstruct

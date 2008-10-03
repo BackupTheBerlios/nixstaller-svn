@@ -35,6 +35,8 @@ class CBaseLuaTextField: virtual public CBaseLuaWidget
     
 protected:
     bool Follow(void) const { return m_bFollow; }
+    int MaxSize(void) const { return 4 * 1024 * 1024; } // 4MB max
+    int ClearSize(void) const { return 512; } // Bytes to remove when size exceeds max
     
 public:
     CBaseLuaTextField(void) : m_bFollow(false) { }

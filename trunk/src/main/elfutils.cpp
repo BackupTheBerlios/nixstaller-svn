@@ -24,7 +24,7 @@
 #include "elfutils.h"
 
 namespace {
-// Functions copied from RPM
+// Functions copied from RPM (lib/rpmds.c, author unknown...)
 
 GElf_Verdef *gelf_getverdef(Elf_Data *data, int offset)
 {

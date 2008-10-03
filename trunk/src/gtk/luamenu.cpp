@@ -25,11 +25,13 @@
 // Lua Menu Class
 // -------------------------------------
 
-CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaMenu(l), m_bInitSel(true)
+CLuaMenu::CLuaMenu(const char *desc, const TOptions &l,
+                   TSTLVecSize e) : CBaseLuaWidget(desc), CBaseLuaMenu(l), m_bInitSel(true)
 {
     gtk_container_add(GTK_CONTAINER(GetBox()), CreateMenu());
+    TSTLVecSize n = 0;
     
-    for (TOptions::const_iterator it=l.begin(); it!=l.end(); it++)
+    for (TOptions::const_iterator it=l.begin(); it!=l.end(); it++, n++)
     {
         GtkTreeIter iter;
         GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pMenu)));
@@ -37,7 +39,7 @@ CLuaMenu::CLuaMenu(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), 
         gtk_list_store_set(store, &iter, COLUMN_TITLE, GetTranslation(it->c_str()), COLUMN_VAR,
                            it->c_str(), -1);
     
-        if (m_bInitSel)
+        if (n == e)
         {
             GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pMenu));
             gtk_tree_selection_select_iter(selection, &iter);

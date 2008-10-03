@@ -28,7 +28,8 @@ namespace NNCurses {
 // -------------------------------------
 
 CTextBase::CTextBase(bool c, bool w) : m_bCenter(c), m_bWrap(w), m_iMaxReqWidth(0),
-                                       m_iMaxReqHeight(0), m_LongestLine(0), m_iCurWidth(0)
+                                       m_iMaxReqHeight(0), m_MaxLength(0), m_ClearLength(0),
+                                       m_LongestLine(0), m_iCurWidth(0)
 {
 }
 
@@ -180,6 +181,50 @@ void CTextBase::AddText(std::string t)
 {
     ConvertTabs(t);
     m_QueuedText += t;
+    
+    // UNDONE: Doesn't remove queued text
+    if (m_MaxLength > 0)
+    {
+        TSTLStrSize curlen = m_QueuedText.length();
+        for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end(); it++)
+            curlen += it->length();
+        
+        if (curlen > m_MaxLength)
+        {
+            bool checklongest = false;
+            TSTLStrSize remlen = m_ClearLength + (curlen - m_MaxLength);
+            debugline("About to remove %u chars\n", remlen);
+            
+            for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end();)
+            {
+                const TSTLStrSize len = it->length();
+                
+                if (len == m_LongestLine)
+                    checklongest = true;
+
+                if (remlen >= len) // Remove complete line?
+                {
+                    it = m_Lines.erase(it);
+                    remlen -= len;
+                    if (remlen == 0)
+                        break;
+                }
+                else
+                {
+                    it->erase(0, remlen - 1);
+                    break;
+                }
+            }
+            
+            if (checklongest)
+            {
+                m_LongestLine = 0;
+                for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end(); it++)
+                    m_LongestLine = std::max(m_LongestLine, it->length());
+            }
+        }
+    }
+    
     RequestQueuedDraw();
 }
 
@@ -190,5 +235,6 @@ void CTextBase::Clear()
     m_QueuedText.clear();
     RequestQueuedDraw();
 }
+
 
 }

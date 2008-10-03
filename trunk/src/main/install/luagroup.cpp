@@ -114,6 +114,7 @@ int CBaseLuaGroup::LuaAddCheckbox(lua_State *L)
     
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
+    luaL_argcheck(L, (count > 0), 3, "Empty table given");
     std::vector<std::string> l(count);
     
     for (int i=1; i<=count; i++)
@@ -124,7 +125,21 @@ int CBaseLuaGroup::LuaAddCheckbox(lua_State *L)
         lua_pop(L, 1);
     }
     
-    group->AddWidget(group->CreateCheckbox(desc, l), "checkbox");
+    std::vector<TSTLVecSize> e;
+    if (lua_istable(L, 4))
+    {
+        count = luaL_getn(L, 4);
+        for (int i=1; i<=count; i++)
+        {
+            lua_rawgeti(L, 4, i);
+            int n = luaL_checkint(L, -1) - 1;
+            luaL_argcheck(L, ((n >= 0) && (n < l.size())), 4, "Tried to set non existing checkbox entry");
+            e.push_back(SafeConvert<TSTLVecSize>(n));
+            lua_pop(L, 1);
+        }
+    }
+
+    group->AddWidget(group->CreateCheckbox(desc, l, e), "checkbox");
     
     return 1;
 }
@@ -136,9 +151,9 @@ int CBaseLuaGroup::LuaAddRadioButton(lua_State *L)
     
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
+    luaL_argcheck(L, (count > 0), 3, "Empty table given");
     std::vector<std::string> l(count);
 
-    
     for (int i=1; i<=count; i++)
     {
         lua_rawgeti(L, 3, i);
@@ -147,7 +162,10 @@ int CBaseLuaGroup::LuaAddRadioButton(lua_State *L)
         lua_pop(L, 1);
     }
     
-    group->AddWidget(group->CreateRadioButton(desc, l), "radiobutton");
+    int e = luaL_optint(L, 4, 1) - 1;
+    luaL_argcheck(L, ((e >= 0) && (e < l.size())), 4, "Tried to set non existing radiobutton entry");
+    
+    group->AddWidget(group->CreateRadioButton(desc, l, SafeConvert<TSTLVecSize>(e)), "radiobutton");
 
     return 1;
 }
@@ -180,6 +198,7 @@ int CBaseLuaGroup::LuaAddMenu(lua_State *L)
     
     luaL_checktype(L, 3, LUA_TTABLE);
     int count = luaL_getn(L, 3);
+    luaL_argcheck(L, (count > 0), 3, "Empty table given");
     std::vector<std::string> l(count);
     
     for (int i=1; i<=count; i++)
@@ -190,7 +209,10 @@ int CBaseLuaGroup::LuaAddMenu(lua_State *L)
         lua_pop(L, 1);
     }
     
-    group->AddWidget(group->CreateMenu(desc, l), "menu");
+    int e = luaL_optint(L, 4, 1) - 1;
+    luaL_argcheck(L, ((e >= 0) && (e < l.size())), 4, "Tried to select non existing menu entry");
+    
+    group->AddWidget(group->CreateMenu(desc, l, SafeConvert<TSTLVecSize>(e)), "menu");
     
     return 1;
 }

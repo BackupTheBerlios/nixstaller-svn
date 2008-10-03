@@ -9,6 +9,10 @@
 - utils.patch() function.
 - Updated to FLTK 1.1.9
 - Decreased FLTK textfield font size
+- Lua textfield now has max amount of characters (4 MB)
+- Lua addcheckbox function now accepts additional argument to enable one or more options.
+- Lua addradiobutton function now accepts additional argument to preselect an option
+- Lua addmenu function now accepts additional argument to preselect an option
 
 
 0.3 --> 0.4

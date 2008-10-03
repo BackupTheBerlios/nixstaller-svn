@@ -75,6 +75,16 @@ void CLuaTextField::AddText(const char *text)
     gtk_text_buffer_get_end_iter(textbuffer, &iter);
     gtk_text_buffer_insert(textbuffer, &iter, text, -1);
     
+    const int size = gtk_text_buffer_get_char_count(textbuffer);
+    if (size > MaxSize())
+    {
+        GtkTextIter end;
+        gtk_text_buffer_get_start_iter(textbuffer, &iter);
+        gtk_text_buffer_get_iter_at_offset(textbuffer, &end, ClearSize() + (size - MaxSize()));
+        gtk_text_buffer_delete(textbuffer, &iter, &end);
+        gtk_text_buffer_get_end_iter(textbuffer, &iter);
+    }
+    
     if (Follow())
         DoFollow(textbuffer, &iter);
 }

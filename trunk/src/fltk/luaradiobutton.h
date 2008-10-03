@@ -43,7 +43,7 @@ class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
     int ButtonHeight(void) const { return 15; }
 
 public:
-    CLuaRadioButton(const char *desc, const TOptions &l);
+    CLuaRadioButton(const char *desc, const TOptions &l, TSTLVecSize e);
     
     static void ToggleCB(Fl_Widget *w, void *p);
 };

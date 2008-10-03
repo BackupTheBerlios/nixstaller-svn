@@ -36,7 +36,7 @@ private:
     virtual void Enable(TSTLVecSize n) = 0;
 
 protected:
-    CBaseLuaRadioButton(const TOptions &opts) : m_Options(opts) {}
+    CBaseLuaRadioButton(const TOptions &opts) : m_Options(opts) {  }
     
     TOptions &GetOptions(void) { return m_Options; }
     

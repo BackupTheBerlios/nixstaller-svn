@@ -49,6 +49,14 @@ void CLuaTextField::Load(const char *file)
 void CLuaTextField::AddText(const char *text)
 {
     m_pBuffer->append(text);
+    
+    const int size = m_pBuffer->length();
+    if (size > MaxSize())
+    {
+        const int end = ClearSize() + (size - MaxSize());
+        m_pBuffer->remove(0, end);
+    }
+    
     if (Follow())
         DoFollow();
 }

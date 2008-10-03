@@ -25,7 +25,8 @@
 // Lua Radio Button Class
 // -------------------------------------
 
-CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaRadioButton(l)
+CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l,
+                                 TSTLVecSize e) : CBaseLuaWidget(desc), CBaseLuaRadioButton(l)
 {
     m_pRadioButton = new NNCurses::CRadioButton;
     
@@ -33,6 +34,7 @@ CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l) : CBaseLua
         m_pRadioButton->AddChoice(GetTranslation(*it));
     
     AddWidget(m_pRadioButton);
+    m_pRadioButton->Select(e);
 }
 
 const char *CLuaRadioButton::EnabledButton()

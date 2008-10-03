@@ -27,6 +27,7 @@
 CLuaTextField::CLuaTextField(const char *desc, bool wrap) : CBaseLuaWidget(desc), m_iDefWidth(15), m_iDefHeight(5)
 {
     AddWidget(m_pTextField = new NNCurses::CTextField(m_iDefWidth, m_iDefHeight, wrap));
+    m_pTextField->SetMaxLength(MaxSize(), ClearSize());
 }
 
 void CLuaTextField::Load(const char *file)

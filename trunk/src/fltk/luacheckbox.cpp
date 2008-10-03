@@ -27,7 +27,8 @@
 // Lua Checkbox Class
 // -------------------------------------
 
-CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l)
+CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l,
+                           const std::vector<TSTLVecSize> &e) : CBaseLuaWidget(desc), CBaseLuaCheckbox(l)
 {
     TSTLVecSize size = l.size(), n;
     
@@ -39,6 +40,10 @@ CLuaCheckbox::CLuaCheckbox(const char *desc, const TOptions &l) : CBaseLuaWidget
         m_Checkboxes.push_back(button);
         GetGroup()->add(button);
     }
+    
+    size = e.size();
+    for (n=0; n<size; n++)
+        m_Checkboxes.at(e[n])->value(true);
 }
 
 bool CLuaCheckbox::Enabled(TSTLVecSize n)

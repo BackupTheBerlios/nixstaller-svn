@@ -42,7 +42,7 @@ class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
     int ButtonHeight(void) const { return 15; }
     
 public:
-    CLuaCheckbox(const char *desc, const TOptions &l);
+    CLuaCheckbox(const char *desc, const TOptions &l, const std::vector<TSTLVecSize> &e);
     
     static void ToggleCB(Fl_Widget *w, void *p);
 };

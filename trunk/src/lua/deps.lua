@@ -308,9 +308,9 @@ function verifysymverneeds(needs, path)
     return true
 end
 
-function markdep(bininfo, lib, deps, parent, wrongdeps, wronglibs, dialog)
+function markdepfromlib(bininfo, lib, deps, parent, wrongdeps, wronglibs, dialog)
     assert(not bininfo.main)
-    
+
     if parent then
         local p = getdeplibpath(parent, lib)
         if p then
@@ -322,8 +322,13 @@ function markdep(bininfo, lib, deps, parent, wrongdeps, wronglibs, dialog)
             return true
         end
     end
-    
+
     local dep = deps and getdepfromlib(deps, lib)
+    return markdep(bininfo, lib, dep, deps, wrongdeps, wronglibs, dialog)
+end
+
+function markdep(bininfo, lib, dep, deps, wrongdeps, wronglibs, dialog)
+    assert(not bininfo.main)
     
     if dep and dep.full then
         if initdep(dep, dialog, wrongdeps) then
@@ -335,13 +340,19 @@ function markdep(bininfo, lib, deps, parent, wrongdeps, wronglibs, dialog)
             return true
         end
     else
-        wronglibs[lib] = wronglibs[lib] or { }
-        if bininfo.native then
-            wronglibs[lib].incompatlib = true
+        if dep then
+            wrongdeps[dep] = wrongdeps[dep] or { }
+            wrongdeps[dep].incompatdep = true
+            install.print(string.format("WARNING: Missing/incompatible dependency: %s\n", dep.name))
         else
-            wronglibs[lib].missinglib = true
+            wronglibs[lib] = wronglibs[lib] or { }
+            if bininfo.native then
+                wronglibs[lib].incompatlib = true
+            else
+                wronglibs[lib].missinglib = true
+            end
+            install.print(string.format("WARNING: Missing/incompatible library: %s\n", lib))
         end
-        install.print(string.format("WARNING: Missing/incompatible library: %s\n", lib))
     end
     return false
 end
@@ -364,8 +375,8 @@ function collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dial
                 print("Overrided mainlib:", lib)
             else
                 local dep = deps and getdepfromlib(deps, lib)
-                if (dep and dep.Required and dep:Required()) or not path then
-                    markdep(infomap[lib], lib, deps, infomap[bin].dep, wrongdeps, wronglibs, dialog)
+                if (dep and dep.Required and dep:Required() and dep.full) or not path then
+                    markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep, wrongdeps, wronglibs, dialog)
                 elseif path then -- Lib is already present
                     infomap[lib].native = true
                     infomap[lib].found = true
@@ -379,7 +390,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dial
                 if not infomap[lib].main and infomap[bin].symverneeds and infomap[bin].symverneeds[lib] then
                     if not verifysymverneeds(infomap[bin].symverneeds[lib], infomap[lib].path) then
                         if infomap[lib].native then
-                            markdep(infomap[lib], lib, deps, infomap[bin].dep, wrongdeps, wronglibs, dialog)
+                            markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep, wrongdeps, wronglibs, dialog)
                         elseif not infomap[lib].dep.HandleCompat or not infomap[lib].dep:HandleCompat(lib) then
                             wrongdeps[infomap[lib].dep] = wrongdeps[infomap[lib].dep] or { }
                             wrongdeps[infomap[lib].dep].incompatdep = true
@@ -410,7 +421,7 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver, wrongdeps, wro
     assert(not infomap[incompatlib].main)
     
     if infomap[incompatlib].native then
-        if markdep(infomap[incompatlib], incompatlib, infomap[lib].deps, infomap[lib].dep, wrongdeps, wronglibs, dialog) then
+        if markdepfromlib(infomap[incompatlib], incompatlib, infomap[lib].deps, infomap[lib].dep, wrongdeps, wronglibs, dialog) then
             local ok = true
             infomap[incompatlib].map = maplibs(infomap[incompatlib].path)
             infomap[incompatlib].symverneeds = getsymverneeds(infomap[incompatlib].path)
@@ -568,7 +579,7 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
     function checkbins(bins, dep, deps)
         for _, bin in ipairs(bins) do
             
-            if dep then -- HACK: Only update progress for main bins/libs
+            if not dep then -- HACK: Only update progress for main bins/libs
                 incprogress(dialog)
             end
             
@@ -577,20 +588,19 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
                 local infomap = { }
                 infomap[bin] = { }
                 infomap[bin].map = maplibs(path)
-                infomap[bin].path = path
-                infomap[bin].native = false
-                
-                if dep then
-                    infomap[bin].dep = dep
-                else
-                    infomap[bin].main = true
-                end
-                
-                infomap[bin].found = true
                 infomap[bin].symverneeds = getsymverneeds(path)
                 infomap[bin].syms = lsymstat and getsyms(path)
                 infomap[bin].usedby = { }
-                infomap[bin].deps = deps
+
+                if dep then
+                    markdep(infomap[bin], bin, dep, deps, nil, wrongdeps, wronglibs, dialog)
+                else
+                    infomap[bin].main = true
+                    infomap[bin].path = path
+                    infomap[bin].native = false
+                    infomap[bin].found = true
+                    infomap[bin].deps = deps
+                end
                 
                 collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dialog)
                 
@@ -625,8 +635,8 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
     for _, dep in pairs(pkg.depmap) do
         incprogress(dialog)
         if not needs[dep] and dep.Required and dep:Required() and dep.full then
-            needs[dep] = true
             checkbins(dep.libs, dep, dep.deps)
+            needs[dep] = true
         end
     end
     

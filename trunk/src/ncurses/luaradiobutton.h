@@ -40,7 +40,7 @@ protected:
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int event);
 
 public:
-    CLuaRadioButton(const char *desc, const TOptions &l);
+    CLuaRadioButton(const char *desc, const TOptions &l, TSTLVecSize e);
 };
 
 #endif

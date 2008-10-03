@@ -106,7 +106,7 @@ buildlua()
     get "http://www.lua.org/ftp/lua-5.1.4.tar.gz"
     untar "lua-5.1.4.tar.gz"
     dodir "lua-5.1.4"
-    CFLAGS="-Os -Wall"
+    CFLAGS="-Os -Wall -DLUA_USE_POSIX"
     if [ $CURRENT_OS = "darwin" ]; then
         make macosx CFLAGS="$CFLAGS" && make install INSTALL_TOP=$DESTPREFIX
     else

@@ -38,7 +38,7 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
     GtkWidget *CreateMenu(void);
     
 public:
-    CLuaMenu(const char *desc, const TOptions &l);
+    CLuaMenu(const char *desc, const TOptions &l, TSTLVecSize e);
     
     static void SelectionCB(GtkTreeSelection *selection, gpointer data);
 };
