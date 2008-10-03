@@ -16,8 +16,7 @@ OVERALL
 - libstdcxx:
     - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
-    - Test regular C lua libs, update notes
-- Update to Lua 5.1.3
+- Test regular C lua libs, update notes
 - Limit textfield's amount of stored lines
 - libelf
     - Add SConstruct check
@@ -33,7 +32,6 @@ OVERALL
     - Handle simple dep checking
     - symmap --> symmap.lua?
     - gensyms.lua option to (not) compress output file
-    - Test: deps depending on main libs, main bins depending on main libs
     - Better progress indication
     - Additional wrongdeps/wronglibs checks?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
@@ -71,6 +69,7 @@ DOCS
 - install.getpkgdir() (now with arg)
 - utils.removerec()
 - Nested block strings ([=[]=])
+- install.updateui()? (If yes update CHANGELOG)
 
 
 RELEASE
@@ -95,15 +94,11 @@ NCURSES
 
 GTK
 - Move main window away from base frontend class?
-- Check if closing progress dialog via close border button works
 
 
 FLTK
 - Create a pack widget that works?
-- Textfield: Bigger? Smaller fonts?
-- Check if closing progress dialog via close border button works
 - Check update: test for regressions, check current hacks.
-- Title in depscreen does not line break.
 - Refresh does not always enable both bars (FLTK specific?)
 
 

@@ -21,10 +21,12 @@
 #include "installer.h"
 #include "luadepscreen.h"
 #include "FL/Fl.H"
+#include "FL/Fl_Box.H"
 #include "FL/Fl_Browser.H"
 #include "FL/Fl_Button.H"
 #include "FL/Fl_Pack.H"
 #include "FL/Fl_Window.H"
+#include <FL/fl_draw.H>
 
 // -------------------------------------
 // FLTK Lua Dependency Screen Class
@@ -38,10 +40,18 @@ CLuaDepScreen::CLuaDepScreen(CInstaller *inst, int f) : CBaseLuaDepScreen(f), m_
     m_pDialog->set_modal();
     m_pDialog->begin();
     
-    m_pListBox = new Fl_Browser(x, 60, widgetw, windowh - 120, GetTitle());
-    m_pListBox->align(FL_ALIGN_TOP);
+    Fl_Box *title = new Fl_Box(x, 20, widgetw, 0, GetTitle());
+    fl_font(title->labelfont(), title->labelsize());
+    int w = widgetw, h;
+    fl_measure(GetTitle(), w, h);
+    title->size(title->w(), h);
+    title->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_WRAP);
     
-    const int y = m_pListBox->y() + m_pListBox->h() + 20, spacing = 20;
+    int y = title->y() + title->h() + 20;
+    m_pListBox = new Fl_Browser(x, y, widgetw, windowh - y - 60);
+    
+    y = m_pListBox->y() + m_pListBox->h() + 20;
+    const int spacing = 20;
     Fl_Pack *bpack = new Fl_Pack(x, y, widgetw, 25);
     bpack->type(Fl_Pack::HORIZONTAL);
     bpack->spacing(spacing);
@@ -59,7 +69,7 @@ CLuaDepScreen::CLuaDepScreen(CInstaller *inst, int f) : CBaseLuaDepScreen(f), m_
     SetButtonWidth(ignoreb);
     
     bpack->end();
-    int w = cancelb->w() + refreshb->w() + ignoreb->w() + 2 * spacing;
+    w = cancelb->w() + refreshb->w() + ignoreb->w() + 2 * spacing;
     bpack->position((windoww - w) / 2, y);
     
     m_pDialog->end();

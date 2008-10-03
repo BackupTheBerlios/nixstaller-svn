@@ -8,6 +8,7 @@
 - utils.copyrec() function.
 - utils.patch() function.
 - Updated to FLTK 1.1.9
+- Decreased FLTK textfield font size
 
 
 0.3 --> 0.4

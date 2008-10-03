@@ -34,7 +34,7 @@
 --              copy additional files.
 -- install      String that contains Lua code used in the Install() function inside the generated config.lua.
 --              Default is to call self:CopyFiles().
--- require      As the 'install' field, but for the Require() function. Default is to simply return false.
+-- required     As the 'install' field, but for the Required() function. Default is to simply return false.
 -- compat       As the 'install' field, but for the HandleCompat() function. Default is to simply return false.
 --
 -- New structures should be created with the newtemplate() function
@@ -50,7 +50,7 @@ function newtemplate(t)
     
     default("full", true)
     default("install", "    self:CopyFiles()")
-    default("require", "    return false")
+    default("required", "    return false")
     default("compat", "    return false")
     
     table.insert(pkg.deptemplates, t)

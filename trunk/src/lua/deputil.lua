@@ -204,7 +204,7 @@ function CheckExisting(prdir, d, exist)
     assert(false)
 end
 
-function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, libmap, destos, destarch, postf, installf, requiref, compatf)
+function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, libmap, destos, destarch, postf, installf, requiredf, compatf)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -239,7 +239,7 @@ function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, l
     end
     
     installf = installf or "    self:CopyFiles()"
-    requiref = requiref or "    return false"
+    requiredf = requiredf or "    return false"
     compatf = compatf or "    return false"
     
     out:write(string.format([[
@@ -274,9 +274,9 @@ function dep:Install()
 %s
 end
 
--- Require function. Called to check if dependency is required. Note that even if this function
+-- Required function. Called to check if dependency is required. Note that even if this function
 -- returns false, the dependency may still be installed when autodetection marks it as necessary.
-function dep:Require()
+function dep:Required()
 %s
 end
 
@@ -289,7 +289,7 @@ end
 
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, depsstr, installf, requiref, compatf))
+]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, depsstr, installf, requiredf, compatf))
 
     out:close()
     
@@ -745,7 +745,7 @@ function GenerateFromTemp()
     local notes
     local found = false
     local map = GetLibMap()
-    local postf, installf, requiref, compatf
+    local postf, installf, requiredf, compatf
     
     for _, t in pairs(pkg.deptemplates) do
         if t.name == temp then
@@ -765,7 +765,7 @@ function GenerateFromTemp()
             notes = t.notes
             postf = t.post
             installf = t.install
-            requiref = t.require
+            requiredf = t.required
             compatf = t.compat
             
             found = true
@@ -792,7 +792,7 @@ function GenerateFromTemp()
         os.exit(1)
     end
     
-    CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, map, destos, destarch, postf, installf, requiref, compatf)
+    CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, map, destos, destarch, postf, installf, requiredf, compatf)
     
     print(string.format([[
 Dependency generation complete:
@@ -910,7 +910,7 @@ function Autogen()
             local libs = mapkeytotab(di.libs)
             local deps = mapkeytotab(di.deps)
             
-            CreateDep(t.name, t.description, libs, libdir, fl, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.require, t.compat)
+            CreateDep(t.name, t.description, libs, libdir, fl, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.required, t.compat)
             
             if t.unknown then
                 io.write(string.format("Generated %s dependency for unknown library %s ", (fl and "full") or "simple", libs[1]))

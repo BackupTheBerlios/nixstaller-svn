@@ -34,6 +34,7 @@ CLuaTextField::CLuaTextField(const char *desc, bool wrap) : CBaseLuaWidget(desc)
     
     m_pDisplay = new Fl_Text_Display(0, 0, 0, FieldHeight());
     m_pDisplay->buffer(m_pBuffer);
+    m_pDisplay->textsize(12);
     
     GetGroup()->add(m_pDisplay);
 }

@@ -35,6 +35,7 @@ CLuaProgressDialog::CLuaProgressDialog(int r) : CBaseLuaProgressDialog(r)
     m_pDialog = new Fl_Window(windoww, windowh);
     m_pDialog->set_modal();
     m_pDialog->begin();
+    m_pDialog->callback(CancelCB, this);
     
     m_pTitle = new Fl_Box(x, 0, widgetw, WidgetHeight());
     

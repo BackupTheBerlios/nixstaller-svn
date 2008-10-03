@@ -16,7 +16,7 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-function pkg.verifydeps(bins)
+function pkg.verifydeps(bins, libs)
     local installeddeps = { }
     local wrongdeps, wronglibs
 
@@ -25,11 +25,7 @@ function pkg.verifydeps(bins)
             wrongdeps, wronglibs = { }, { }
             
             gui.newprogressdialog(function(self)
-                initprogress(bins)
-                
---                 local needs = checkdeps(bins, install.getpkgdir(), pkg.deps, self, wrongdeps, wronglibs)
-                local deps = checkdeps(bins, install.getpkgdir(), self, wrongdeps, wronglibs)
-                
+                local deps = checkdeps(bins, libs, install.getpkgdir(), self, wrongdeps, wronglibs)
                 instdeps(deps, installeddeps, wrongdeps, self)
             end)
             

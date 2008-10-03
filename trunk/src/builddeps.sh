@@ -103,14 +103,14 @@ buildfltk()
 
 buildlua()
 {
-    get "http://www.lua.org/ftp/lua-5.1.2.tar.gz"
-    untar "lua-5.1.2.tar.gz"
-    dodir "lua-5.1.2"
-    nano -w src/Makefile
+    get "http://www.lua.org/ftp/lua-5.1.4.tar.gz"
+    untar "lua-5.1.4.tar.gz"
+    dodir "lua-5.1.4"
+    CFLAGS="-Os -Wall"
     if [ $CURRENT_OS = "darwin" ]; then
-        make macosx && make install INSTALL_TOP=$DESTPREFIX
+        make macosx CFLAGS="$CFLAGS" && make install INSTALL_TOP=$DESTPREFIX
     else
-        make posix && make install INSTALL_TOP=$DESTPREFIX
+        make posix CFLAGS="$CFLAGS" && make install INSTALL_TOP=$DESTPREFIX
     fi
     restoredir
 }

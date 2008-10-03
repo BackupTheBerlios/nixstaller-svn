@@ -127,6 +127,11 @@ end
 
 dofile("deps.lua")
 
+-- Defaults (again, incase scripts nil'ed something)
+pkg.destdir = pkg.destdir or pkg.packager.getpkgpath() .. "/share"
+pkg.bindir = pkg.bindir or pkg.packager.getpkgpath() .. "/bin"
+pkg.deps = pkg.deps or { }
+
 -- Init deps
 pkg.depmap = { }
 if pkg.deps then
