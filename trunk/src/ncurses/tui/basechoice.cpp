@@ -43,6 +43,9 @@ void CBaseChoice::Move(int n)
 
 void CBaseChoice::DoDraw()
 {
+    if (m_ChoiceList.empty())
+        return;
+        
     int x = 0, y = (Height() / SafeConvert<int>(m_ChoiceList.size())) / 2, cur = 0;
     for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++, cur++)
     {
@@ -111,6 +114,9 @@ int CBaseChoice::CoreRequestHeight()
 
 bool CBaseChoice::CoreHandleKey(chtype key)
 {
+    if (m_ChoiceList.empty())
+        return false;
+        
     if (key == KEY_UP)
         Move(-1);
     else if (key == KEY_DOWN)

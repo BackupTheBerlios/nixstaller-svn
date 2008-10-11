@@ -39,6 +39,7 @@ class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget
     int m_ColumnWidths[2];
     
     virtual void CoreAddVar(const char *name);
+    virtual void CoreDelVar(const char *name);
     virtual void CoreUpdateVar(const char *name);
     virtual void CoreUpdateLanguage(void);
     virtual int CoreRequestWidth(void) { return 200; }

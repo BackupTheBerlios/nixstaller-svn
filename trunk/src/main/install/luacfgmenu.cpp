@@ -98,6 +98,7 @@ void CBaseLuaCFGMenu::LuaRegister()
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddString, "addstring", "configmenu");
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddList, "addlist", "configmenu");
     NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaAddBool, "addbool", "configmenu");
+    NLua::RegisterClassFunction(CBaseLuaCFGMenu::LuaDelVar, "del", "configmenu");
 }
 
 int CBaseLuaCFGMenu::LuaAddDir(lua_State *L)
@@ -168,6 +169,23 @@ int CBaseLuaCFGMenu::LuaAddBool(lua_State *L)
     return 0;
 }
 
+int CBaseLuaCFGMenu::LuaDelVar(lua_State *L)
+{
+    CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
+    const char *var = luaL_checkstring(L, 2);
+    
+    if (menu->m_Variables[var])
+    {
+        menu->CoreDelVar(var);
+        delete menu->m_Variables[var];
+        menu->m_Variables.erase(var);
+    }
+    else
+        luaL_error(L, "No variable %s found in menu", var);
+
+    return 0;
+}
+
 int CBaseLuaCFGMenu::LuaGet(lua_State *L)
 {
     CBaseLuaCFGMenu *menu = CheckLuaWidgetClass<CBaseLuaCFGMenu>("configmenu", 1);
@@ -181,7 +199,7 @@ int CBaseLuaCFGMenu::LuaGet(lua_State *L)
             lua_pushstring(L, menu->m_Variables[var]->val.c_str());
     }
     else
-        luaL_error(L, "No variable %s found in menu\n", var);
+        luaL_error(L, "No variable %s found in menu", var);
     
     return 1;
 }
@@ -202,7 +220,7 @@ int CBaseLuaCFGMenu::LuaSet(lua_State *L)
             menu->VerifyListOpt(menu->m_Variables[var]);
     }
     else
-        luaL_error(L, "No variable %s found in menu\n", var);
+        luaL_error(L, "No variable %s found in menu", var);
     
     menu->CoreUpdateVar(var);
     return 0;

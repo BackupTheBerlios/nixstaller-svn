@@ -49,6 +49,7 @@ private:
     TVarType m_Variables;
 
     virtual void CoreAddVar(const char *name) = 0;
+    virtual void CoreDelVar(const char *name) = 0;
     virtual void CoreUpdateVar(const char *name) = 0;
 
     void AddVar(const char *name, const char *desc, const char *val, EVarType type, TOptionsType *l=NULL);
@@ -64,6 +65,7 @@ public:
     static int LuaAddString(lua_State *L);
     static int LuaAddList(lua_State *L);
     static int LuaAddBool(lua_State *L);
+    static int LuaDelVar(lua_State *L);
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);
 };

@@ -14,7 +14,8 @@
 - Lua addradiobutton function now accepts additional argument to preselect an option
 - Lua addmenu function now accepts additional argument to preselect an option
 - add() and del() functions for luaradiobutton, luacheckbox and luamenu
-- luamenu can be empty
+- luamenu, luacheckbox and luaradiobutton can now be empty
+- del() function for luacfgmenu
 
 
 0.3 --> 0.4

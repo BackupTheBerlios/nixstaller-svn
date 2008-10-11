@@ -44,6 +44,12 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     m_pMenu->AddEntry(name, GetTranslation(name));
 }
 
+void CLuaCFGMenu::CoreDelVar(const char *name)
+{
+    m_pMenu->DelEntry(name);
+    UpdateDesc();
+}
+
 void CLuaCFGMenu::CoreUpdateVar(const char *name)
 {
 }

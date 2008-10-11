@@ -111,31 +111,31 @@ int CBaseLuaGroup::LuaAddCheckbox(lua_State *L)
 {
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_checkstring(L, 2);
-    
-    luaL_checktype(L, 3, LUA_TTABLE);
-    int count = luaL_getn(L, 3);
-    luaL_argcheck(L, (count > 0), 3, "Empty table given");
-    std::vector<std::string> l(count);
-    
-    for (int i=1; i<=count; i++)
-    {
-        lua_rawgeti(L, 3, i);
-        const char *s = luaL_checkstring(L, -1);
-        l[i-1] = s;
-        lua_pop(L, 1);
-    }
-    
+    std::vector<std::string> l;
     std::vector<TSTLVecSize> e;
-    if (lua_istable(L, 4))
+    
+    if (lua_istable(L, 3))
     {
-        count = luaL_getn(L, 4);
+        int count = luaL_getn(L, 3);
         for (int i=1; i<=count; i++)
         {
-            lua_rawgeti(L, 4, i);
-            int n = luaL_checkint(L, -1) - 1;
-            luaL_argcheck(L, ((n >= 0) && (n < l.size())), 4, "Tried to set non existing checkbox entry");
-            e.push_back(SafeConvert<TSTLVecSize>(n));
+            lua_rawgeti(L, 3, i);
+            const char *s = luaL_checkstring(L, -1);
+            l.push_back(s);
             lua_pop(L, 1);
+        }
+        
+        if (lua_istable(L, 4))
+        {
+            count = luaL_getn(L, 4);
+            for (int i=1; i<=count; i++)
+            {
+                lua_rawgeti(L, 4, i);
+                int n = luaL_checkint(L, -1) - 1;
+                luaL_argcheck(L, ((n >= 0) && (n < l.size())), 4, "Tried to set non existing checkbox entry");
+                e.push_back(SafeConvert<TSTLVecSize>(n));
+                lua_pop(L, 1);
+            }
         }
     }
 
@@ -148,24 +148,27 @@ int CBaseLuaGroup::LuaAddRadioButton(lua_State *L)
 {
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_checkstring(L, 2);
+    std::vector<std::string> l;
+    TSTLVecSize sel = 0;
     
-    luaL_checktype(L, 3, LUA_TTABLE);
-    int count = luaL_getn(L, 3);
-    luaL_argcheck(L, (count > 0), 3, "Empty table given");
-    std::vector<std::string> l(count);
-
-    for (int i=1; i<=count; i++)
+    if (lua_istable(L, 3))
     {
-        lua_rawgeti(L, 3, i);
-        const char *s = luaL_checkstring(L, -1);
-        l[i-1] = s;
-        lua_pop(L, 1);
+        int count = luaL_getn(L, 3);
+    
+        for (int i=1; i<=count; i++)
+        {
+            lua_rawgeti(L, 3, i);
+            const char *s = luaL_checkstring(L, -1);
+            l.push_back(s);
+            lua_pop(L, 1);
+        }
+        
+        int e = luaL_optint(L, 4, 1) - 1;
+        luaL_argcheck(L, ((e >= 0) && (e < l.size())), 4, "Tried to set non existing radiobutton entry");
+        sel = SafeConvert<TSTLVecSize>(e);
     }
     
-    int e = luaL_optint(L, 4, 1) - 1;
-    luaL_argcheck(L, ((e >= 0) && (e < l.size())), 4, "Tried to set non existing radiobutton entry");
-    
-    group->AddWidget(group->CreateRadioButton(desc, l, SafeConvert<TSTLVecSize>(e)), "radiobutton");
+    group->AddWidget(group->CreateRadioButton(desc, l, sel), "radiobutton");
 
     return 1;
 }

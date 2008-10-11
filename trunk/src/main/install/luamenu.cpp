@@ -48,6 +48,10 @@ int CBaseLuaMenu::LuaGet(lua_State *L)
 int CBaseLuaMenu::LuaSet(lua_State *L)
 {
     CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
+    
+    if (menu->m_Options.empty())
+        luaL_error(L, "Tried to select entry in empty menu.");
+    
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;
     
@@ -78,7 +82,7 @@ int CBaseLuaMenu::LuaDel(lua_State *L)
     CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
     
     if (menu->m_Options.empty())
-        return 0;
+        luaL_error(L, "Can't delete entry; menu is empty.");
         
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;

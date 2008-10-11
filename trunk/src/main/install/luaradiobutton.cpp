@@ -38,13 +38,20 @@ void CBaseLuaRadioButton::LuaRegister()
 int CBaseLuaRadioButton::LuaGet(lua_State *L)
 {
     CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
-    lua_pushstring(L, rad->EnabledButton());
+    if (rad->m_Options.empty())
+        lua_pushnil(L);
+    else
+        lua_pushstring(L, rad->EnabledButton());
     return 1;
 }
 
 int CBaseLuaRadioButton::LuaSet(lua_State *L)
 {
     CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
+    
+    if (rad->m_Options.empty())
+        luaL_error(L, "Tried to select entry in empty radiobutton widget.");
+
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;
     
@@ -88,8 +95,8 @@ int CBaseLuaRadioButton::LuaDel(lua_State *L)
 {
     CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
     
-    if (rad->m_Options.size() == 1)
-        luaL_error(L, "Can't delete entry; radiobuttons cannot be empty.");
+    if (rad->m_Options.empty())
+        luaL_error(L, "Can't delete entry; no radiobuttons.");
         
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;

@@ -34,7 +34,9 @@ CLuaRadioButton::CLuaRadioButton(const char *desc, const TOptions &l,
         m_pRadioButton->AddChoice(GetTranslation(*it));
     
     AddWidget(m_pRadioButton);
-    m_pRadioButton->Select(e);
+    
+    if (!l.empty())
+        m_pRadioButton->Select(e);
 }
 
 const char *CLuaRadioButton::EnabledButton()
@@ -56,10 +58,14 @@ void CLuaRadioButton::Enable(TSTLVecSize n)
 
 void CLuaRadioButton::AddButton(const std::string &label, TSTLVecSize n)
 {
-    if (n >= GetOptions().size())
+    const TSTLVecSize size = GetOptions().size();
+    if (n >= size)
         m_pRadioButton->AddChoice(GetTranslation(label));
     else
         m_pRadioButton->InsertChoice(GetTranslation(label), n);
+        
+    if (size == 1)
+        m_pRadioButton->Select(0);
 }
 
 void CLuaRadioButton::DelButton(TSTLVecSize n)

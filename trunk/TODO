@@ -41,7 +41,7 @@ OVERALL
     - Convert utf to native for ncurses frontend?
 - Installer profiles?
 - Allow empty checkboxes/radiobuttons/menus?
-- Lua funciton to (un)hide widgets?
+- Lua function to (un)hide widgets?
 - Fix installer screens when checkboxes/radiobuttons are added
 
 
@@ -70,6 +70,9 @@ DOCS
 - Nested block strings ([=[]=])
 - install.updateui()? (If yes update CHANGELOG)
 - addcheckbox + addradiobutton + addmenu functions now have additional arg for default enabled option(s)
+- add/del options for menu, radiobutton, checkbox
+- menu, radiobutton, checkbox can now be empty
+- del() function for luacfgmenu
 
 
 RELEASE

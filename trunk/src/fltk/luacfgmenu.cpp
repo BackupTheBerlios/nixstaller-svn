@@ -86,6 +86,30 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     }
 }
 
+void CLuaCFGMenu::CoreDelVar(const char *name)
+{
+    const int size = m_pVarListView->size();
+    int index = -1;
+    
+    for (int i=1; i<=size; i++)
+    {
+        if (m_pVarListView->data(i) && !strcmp(static_cast<const char *>(m_pVarListView->data(i)), name))
+        {
+            index = i;
+            break;
+        }
+    }
+    
+    if (index != -1)
+    {
+        m_pVarListView->remove(index);
+        TVarType &vars = GetVariables();
+        for (TVarType::iterator it=vars.begin(); it!=vars.end(); it++)
+            SetVarColumnW(it->first.c_str());
+        UpdateSelection();
+    }
+}
+
 void CLuaCFGMenu::CoreUpdateVar(const char *name)
 {
     UpdateSelection();

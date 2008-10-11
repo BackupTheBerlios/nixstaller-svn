@@ -39,6 +39,12 @@ int CBaseLuaCheckbox::LuaGet(lua_State *L)
 {
     CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
     
+    if (box->m_Options.empty())
+    {
+        lua_pushnil(L);
+        return 1;
+    }
+    
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;
     if (vartype == LUA_TNUMBER)
@@ -58,6 +64,10 @@ int CBaseLuaCheckbox::LuaGet(lua_State *L)
 int CBaseLuaCheckbox::LuaSet(lua_State *L)
 {
     CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
+    
+    if (box->m_Options.empty())
+        luaL_error(L, "Tried to select entry in empty checkbox widget.");
+
     int args = lua_gettop(L);
     
     luaL_checktype(L, args, LUA_TBOOLEAN);
@@ -110,8 +120,8 @@ int CBaseLuaCheckbox::LuaDel(lua_State *L)
 {
     CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
     
-    if (box->m_Options.size() == 1)
-        luaL_error(L, "Can't delete entry; checkboxes cannot be empty.");
+    if (box->m_Options.empty())
+        luaL_error(L, "Can't delete entry; checkbox is empty.");
         
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;

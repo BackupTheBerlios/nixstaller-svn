@@ -180,6 +180,48 @@ void CLuaCFGMenu::CoreAddVar(const char *name)
     }
 }
 
+void CLuaCFGMenu::CoreDelVar(const char *name)
+{
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(m_pVarListView));
+    GtkTreeIter iter, prev, next;
+    
+    if (!gtk_tree_model_get_iter_first(model, &iter))
+        return;
+    
+    bool found = false, hasprev = false, hasnext;
+    do
+    {
+        gchar *var;
+        gtk_tree_model_get(model, &iter, COLUMN_VAR, &var, -1);
+        next = iter;
+        hasnext = gtk_tree_model_iter_next(model, &next);
+
+        if (!strcmp(var, name))
+        {
+            GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pVarListView));
+            if (hasprev)
+                gtk_tree_selection_select_iter(selection, &prev);
+            else if (hasnext)
+                gtk_tree_selection_select_iter(selection, &next);
+            else
+                m_bInitSelection = true;
+                
+            GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pVarListView)));
+            gtk_list_store_remove(store, &iter);
+        }
+
+        g_free(var);
+        
+        if (found)
+            break;
+            
+        prev = iter;
+        hasprev = true;
+        iter = next;
+    }
+    while (hasnext);
+}
+
 void CLuaCFGMenu::CoreUpdateVar(const char *name)
 {
     if (name == CurSelection())
