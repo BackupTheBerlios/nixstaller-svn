@@ -54,6 +54,19 @@ void CLuaRadioButton::Enable(TSTLVecSize n)
     m_pRadioButton->Select(n);
 }
 
+void CLuaRadioButton::AddButton(const std::string &label, TSTLVecSize n)
+{
+    if (n >= GetOptions().size())
+        m_pRadioButton->AddChoice(GetTranslation(label));
+    else
+        m_pRadioButton->InsertChoice(GetTranslation(label), n);
+}
+
+void CLuaRadioButton::DelButton(TSTLVecSize n)
+{
+    m_pRadioButton->DeleteChoice(n);
+}
+
 void CLuaRadioButton::CoreUpdateLanguage()
 {
     TOptions &opts = GetOptions();

@@ -34,6 +34,8 @@ class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget
     
     virtual const char *EnabledButton(void);
     virtual void Enable(TSTLVecSize n);
+    virtual void AddButton(const std::string &label, TSTLVecSize n);
+    virtual void DelButton(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     
 protected:

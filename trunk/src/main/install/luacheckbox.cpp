@@ -31,6 +31,8 @@ void CBaseLuaCheckbox::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaGet, "get", "checkbox");
     NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaSet, "set", "checkbox");
+    NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaAdd, "add", "checkbox");
+    NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaDel, "del", "checkbox");
 }
 
 int CBaseLuaCheckbox::LuaGet(lua_State *L)
@@ -79,5 +81,53 @@ int CBaseLuaCheckbox::LuaSet(lua_State *L)
         box->Enable(n, e);
     }
     
+    return 0;
+}
+
+int CBaseLuaCheckbox::LuaAdd(lua_State *L)
+{
+    CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
+    const char *label = luaL_checkstring(L, 2);
+    int pos = luaL_optint(L, 3, -1);
+    
+    TSTLVecSize n;
+    if (pos < 0)
+        n = box->m_Options.size();
+    else
+        n = SafeConvert<TSTLVecSize>(pos) - 1;
+    
+    if (n >= box->m_Options.size())
+        box->m_Options.push_back(label);
+    else
+        box->m_Options.insert(box->m_Options.begin() + n, label);
+    
+    box->AddOption(label, n);
+    
+    return 0;
+}
+
+int CBaseLuaCheckbox::LuaDel(lua_State *L)
+{
+    CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
+    
+    if (box->m_Options.size() == 1)
+        luaL_error(L, "Can't delete entry; checkboxes cannot be empty.");
+        
+    int vartype = lua_type(L, 2);
+    TSTLVecSize n = 0;
+    
+    if (vartype == LUA_TNUMBER)
+        n = SafeConvert<TSTLVecSize>(lua_tointeger(L, 2)) - 1;
+    else if (vartype == LUA_TSTRING)
+        n = std::distance(box->m_Options.begin(),
+                          std::find(box->m_Options.begin(), box->m_Options.end(), lua_tostring(L, 2)));
+    else
+        luaL_typerror(L, 2, "Number or String");
+
+    luaL_argcheck(L, ((n >= 0) && (n < box->m_Options.size())), 2, "Tried to delete non existing checkbutton entry");
+
+    box->DelOption(n);
+
+    box->m_Options.erase(box->m_Options.begin() + n);
     return 0;
 }

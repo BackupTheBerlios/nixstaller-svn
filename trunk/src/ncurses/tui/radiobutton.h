@@ -27,18 +27,19 @@ namespace NNCurses {
 
 class CRadioButton: public CBaseChoice
 {
-    TSTLVecSize m_ActiveEntry;
+    SEntry *m_pActiveEntry;
     bool m_bInitSelect;
     
 protected:
     virtual void CoreInit(void);
     virtual std::string CoreGetText(const SEntry &entry);
     virtual void CoreSelect(SEntry &entry);
+    virtual void CoreDeleteChoice(SEntry &entry);
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     
 public:
-    CRadioButton(void) : m_ActiveEntry(0), m_bInitSelect(true) { }
-    std::string GetSelection(void) { return GetChoiceList().at(m_ActiveEntry).name; }
+    CRadioButton(void) : m_pActiveEntry(NULL), m_bInitSelect(true) { }
+    std::string GetSelection(void) { return m_pActiveEntry->name; }
 };
 
 }

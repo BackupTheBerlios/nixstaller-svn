@@ -18,6 +18,8 @@
 */
 
 #include "main/main.h"
+#include "fltk.h"
+#include "luagroup.h"
 #include "luaradiobutton.h"
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Round_Button.H>
@@ -65,6 +67,45 @@ void CLuaRadioButton::Enable(TSTLVecSize n)
     m_RadioButtons.at(n)->setonly();
 }
 
+void CLuaRadioButton::AddButton(const std::string &label, TSTLVecSize n)
+{
+    Fl_Round_Button *button = new Fl_Round_Button(0, 0, 0, ButtonHeight(), MakeTranslation(label));
+    button->type(FL_RADIO_BUTTON);
+    button->callback(ToggleCB, this);
+    
+    if (n >= GetOptions().size())
+    {
+        m_RadioButtons.push_back(button);
+        GetGroup()->add(button);
+    }
+    else
+    {
+        m_RadioButtons.insert(m_RadioButtons.begin() + n, button);
+        GetGroup()->insert(*button, n+1); // +1: First is titel
+    }
+    
+    RedrawWidgetRecursive(GetGroup());
+    GetParent()->UpdateLayout();
+}
+
+void CLuaRadioButton::DelButton(TSTLVecSize n)
+{
+    if (m_RadioButtons.at(n)->value())
+    {
+        if (n > 0)
+            m_RadioButtons.at(n-1)->setonly();
+        else if (n < (GetOptions().size()-1))
+            m_RadioButtons.at(n+1)->setonly();
+    }
+    
+    GetGroup()->remove(m_RadioButtons[n]);
+    delete m_RadioButtons[n];
+    m_RadioButtons.erase(m_RadioButtons.begin() + n);
+    
+    RedrawWidgetRecursive(GetGroup());
+    GetParent()->UpdateLayout();
+}
+
 void CLuaRadioButton::CoreUpdateLanguage()
 {
     TOptions &opts = GetOptions();
@@ -110,6 +151,6 @@ void CLuaRadioButton::UpdateSize()
 
 void CLuaRadioButton::ToggleCB(Fl_Widget *w, void *p)
 {
-    CLuaRadioButton *box = static_cast<CLuaRadioButton *>(p);
-    box->LuaDataChanged();
+    CLuaRadioButton *rad = static_cast<CLuaRadioButton *>(p);
+    rad->LuaDataChanged();
 }

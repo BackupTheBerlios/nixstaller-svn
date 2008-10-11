@@ -31,31 +31,81 @@ void CBaseLuaRadioButton::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaGet, "get", "radiobutton");
     NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaSet, "set", "radiobutton");
+    NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaAdd, "add", "radiobutton");
+    NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaDel, "del", "radiobutton");
 }
 
 int CBaseLuaRadioButton::LuaGet(lua_State *L)
 {
-    CBaseLuaRadioButton *box = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
-    lua_pushstring(L, box->EnabledButton());
+    CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
+    lua_pushstring(L, rad->EnabledButton());
     return 1;
 }
 
 int CBaseLuaRadioButton::LuaSet(lua_State *L)
 {
-    CBaseLuaRadioButton *box = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
+    CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
     int vartype = lua_type(L, 2);
     TSTLVecSize n = 0;
     
     if (vartype == LUA_TNUMBER)
         n = SafeConvert<TSTLVecSize>(lua_tointeger(L, 2)) - 1;
     else if (vartype == LUA_TSTRING)
-        n = std::distance(box->m_Options.begin(),
-                          std::find(box->m_Options.begin(), box->m_Options.end(), lua_tostring(L, 2)));
+        n = std::distance(rad->m_Options.begin(),
+                          std::find(rad->m_Options.begin(), rad->m_Options.end(), lua_tostring(L, 2)));
     else
         luaL_typerror(L, 2, "Number or String");
 
-    luaL_argcheck(L, ((n >= 0) && (n < box->m_Options.size())), 2, "Tried to set non existing radiobutton entry");
+    luaL_argcheck(L, ((n >= 0) && (n < rad->m_Options.size())), 2, "Tried to set non existing radiobutton entry");
     
-    box->Enable(n);
+    rad->Enable(n);
+    return 0;
+}
+
+int CBaseLuaRadioButton::LuaAdd(lua_State *L)
+{
+    CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
+    const char *label = luaL_checkstring(L, 2);
+    int pos = luaL_optint(L, 3, -1);
+    
+    TSTLVecSize n;
+    if (pos < 0)
+        n = rad->m_Options.size();
+    else
+        n = SafeConvert<TSTLVecSize>(pos) - 1;
+    
+    if (n >= rad->m_Options.size())
+        rad->m_Options.push_back(label);
+    else
+        rad->m_Options.insert(rad->m_Options.begin() + n, label);
+    
+    rad->AddButton(label, n);
+    
+    return 0;
+}
+
+int CBaseLuaRadioButton::LuaDel(lua_State *L)
+{
+    CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
+    
+    if (rad->m_Options.size() == 1)
+        luaL_error(L, "Can't delete entry; radiobuttons cannot be empty.");
+        
+    int vartype = lua_type(L, 2);
+    TSTLVecSize n = 0;
+    
+    if (vartype == LUA_TNUMBER)
+        n = SafeConvert<TSTLVecSize>(lua_tointeger(L, 2)) - 1;
+    else if (vartype == LUA_TSTRING)
+        n = std::distance(rad->m_Options.begin(),
+                          std::find(rad->m_Options.begin(), rad->m_Options.end(), lua_tostring(L, 2)));
+    else
+        luaL_typerror(L, 2, "Number or String");
+
+    luaL_argcheck(L, ((n >= 0) && (n < rad->m_Options.size())), 2, "Tried to delete non existing radiobutton entry");
+
+    rad->DelButton(n);
+
+    rad->m_Options.erase(rad->m_Options.begin() + n);
     return 0;
 }

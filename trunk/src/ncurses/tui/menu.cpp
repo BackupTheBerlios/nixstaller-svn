@@ -226,6 +226,36 @@ void CMenu::AddEntry(const std::string &id, const std::string &name)
     RequestUpdate();
 }
 
+void CMenu::DelEntry(const std::string &id)
+{
+    TMenuList::iterator line = std::lower_bound(m_MenuList.begin(), m_MenuList.end(), id);
+    
+    if ((line != m_MenuList.end()) && (line->id == id))
+    {
+        bool checklongest = (line->name.length() == m_LongestLine);
+        
+        if (line == m_MenuList.end()-1)
+            Move(-1);
+        else
+            Move(1);
+            
+        m_MenuList.erase(line);
+        
+        if (checklongest)
+        {
+            m_LongestLine = 0;
+            for (TMenuList::iterator it=m_MenuList.begin(); it!=m_MenuList.end(); it++)
+                m_LongestLine = std::max(m_LongestLine, it->name.length());
+        }
+        
+        PushEvent(EVENT_DATACHANGED);
+    }
+    else
+        assert(false);
+    
+    RequestUpdate();
+}
+
 void CMenu::Select(const std::string &id)
 {
     if (!GetWin())

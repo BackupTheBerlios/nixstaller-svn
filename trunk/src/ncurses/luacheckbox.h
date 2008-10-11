@@ -27,13 +27,14 @@ namespace NNCurses {
     class CCheckbox;
 }
 
-
 class CLuaCheckbox: public CBaseLuaCheckbox, public CLuaWidget
 {
     NNCurses::CCheckbox *m_pCheckbox;
     
     virtual bool Enabled(TSTLVecSize n);
     virtual void Enable(TSTLVecSize n, bool b);
+    virtual void AddOption(const std::string &label, TSTLVecSize n);
+    virtual void DelOption(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     
 protected:

@@ -134,5 +134,18 @@ void CBaseChoice::CoreGetButtonDescs(TButtonDescList &list)
     list.push_back(TButtonDescPair("ARROWS", "Navigate"));
 }
 
+void CBaseChoice::InsertChoice(const std::string &c, int n)
+{
+     m_ChoiceList.insert(m_ChoiceList.begin() + n, SEntry(c, false));
+     PushEvent(EVENT_REQUPDATE);
+}
+
+void CBaseChoice::DeleteChoice(int n)
+{
+    CoreDeleteChoice(m_ChoiceList[n]);
+    m_ChoiceList.erase(m_ChoiceList.begin() + n);
+    PushEvent(EVENT_REQUPDATE);
+}
+
 
 }

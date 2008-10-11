@@ -40,7 +40,6 @@ class CMenu: public CBaseScroll
     typedef std::vector<SEntry> TMenuList;
 
     TMenuList m_MenuList;
-    std::string m_MarkedLine;
     int m_iMaxWidth, m_iMaxHeight;
     TSTLStrSize m_LongestLine;
     int m_iXOffset, m_iYOffset;
@@ -70,6 +69,7 @@ public:
 
     void AddEntry(const std::string &id, const std::string &name);
     void AddEntry(const std::string &name) { AddEntry(name, name); }
+    void DelEntry(const std::string &id);
     void Select(const std::string &id);
     std::string Value(void) { return m_MenuList.at(GetCurrent()).id; }
     bool Empty(void) { return m_MenuList.empty(); }

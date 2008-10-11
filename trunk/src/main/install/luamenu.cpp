@@ -31,12 +31,17 @@ void CBaseLuaMenu::LuaRegister()
 {
     NLua::RegisterClassFunction(LuaGet, "get", "menu");
     NLua::RegisterClassFunction(LuaSet, "set", "menu");
+    NLua::RegisterClassFunction(LuaAdd, "add", "menu");
+    NLua::RegisterClassFunction(LuaDel, "del", "menu");
 }
 
 int CBaseLuaMenu::LuaGet(lua_State *L)
 {
     CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
-    lua_pushstring(L, menu->Selection().c_str());
+    if (menu->m_Options.empty())
+        lua_pushnil(L);
+    else
+        lua_pushstring(L, menu->Selection().c_str());
     return 1;
 }
 
@@ -56,5 +61,40 @@ int CBaseLuaMenu::LuaSet(lua_State *L)
 
     luaL_argcheck(L, ((n >= 0) && (n < menu->m_Options.size())), 2, "Tried to select non existing menu entry");
     menu->Select(n);
+    return 0;
+}
+
+int CBaseLuaMenu::LuaAdd(lua_State *L)
+{
+    CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
+    const char *label = luaL_checkstring(L, 2);
+    menu->m_Options.push_back(label);
+    menu->AddOption(label);
+    return 0;
+}
+
+int CBaseLuaMenu::LuaDel(lua_State *L)
+{
+    CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
+    
+    if (menu->m_Options.empty())
+        return 0;
+        
+    int vartype = lua_type(L, 2);
+    TSTLVecSize n = 0;
+    
+    if (vartype == LUA_TNUMBER)
+        n = SafeConvert<TSTLVecSize>(lua_tointeger(L, 2)) - 1;
+    else if (vartype == LUA_TSTRING)
+        n = std::distance(menu->m_Options.begin(),
+                          std::find(menu->m_Options.begin(), menu->m_Options.end(), lua_tostring(L, 2)));
+    else
+        luaL_typerror(L, 2, "Number or String");
+
+    luaL_argcheck(L, ((n >= 0) && (n < menu->m_Options.size())), 2, "Tried to delete non existing checkbutton entry");
+
+    menu->DelOption(n);
+
+    menu->m_Options.erase(menu->m_Options.begin() + n);
     return 0;
 }

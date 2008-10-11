@@ -59,6 +59,7 @@ public:
 
 // Utils
 void SetButtonWidth(Fl_Button *button);
+void RedrawWidgetRecursive(Fl_Widget *w);
 inline int ButtonHeight(void) { return 25; }
 
 #endif

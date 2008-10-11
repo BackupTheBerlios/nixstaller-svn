@@ -196,23 +196,26 @@ int CBaseLuaGroup::LuaAddMenu(lua_State *L)
     CBaseLuaGroup *group = NLua::CheckClassData<CBaseLuaGroup>("group", 1);
     const char *desc = luaL_checkstring(L, 2);
     
-    luaL_checktype(L, 3, LUA_TTABLE);
-    int count = luaL_getn(L, 3);
-    luaL_argcheck(L, (count > 0), 3, "Empty table given");
-    std::vector<std::string> l(count);
+    std::vector<std::string> l;
+    TSTLVecSize sel = 0;
     
-    for (int i=1; i<=count; i++)
+    if (lua_istable(L, 3))
     {
-        lua_rawgeti(L, 3, i);
-        const char *s = luaL_checkstring(L, -1);
-        l[i-1] = s;
-        lua_pop(L, 1);
+        const int count = luaL_getn(L, 3);
+        for (int i=1; i<=count; i++)
+        {
+            lua_rawgeti(L, 3, i);
+            const char *s = luaL_checkstring(L, -1);
+            l.push_back(s);
+            lua_pop(L, 1);
+        }
+        
+        int e = luaL_optint(L, 4, 1) - 1;
+        luaL_argcheck(L, ((e >= 0) && (e < l.size())), 4, "Tried to select non existing menu entry");
+        sel = SafeConvert<TSTLVecSize>(e);
     }
     
-    int e = luaL_optint(L, 4, 1) - 1;
-    luaL_argcheck(L, ((e >= 0) && (e < l.size())), 4, "Tried to select non existing menu entry");
-    
-    group->AddWidget(group->CreateMenu(desc, l, SafeConvert<TSTLVecSize>(e)), "menu");
+    group->AddWidget(group->CreateMenu(desc, l, sel), "menu");
     
     return 1;
 }

@@ -34,6 +34,8 @@ private:
     
     virtual std::string Selection(void) = 0;
     virtual void Select(TSTLVecSize n) = 0;
+    virtual void AddOption(const std::string &label) = 0;
+    virtual void DelOption(TSTLVecSize n) = 0;
     
 protected:
     CBaseLuaMenu(const TOptions &opts) : m_Options(opts) {}
@@ -46,6 +48,8 @@ public:
     static void LuaRegister(void);
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);
+    static int LuaAdd(lua_State *L);
+    static int LuaDel(lua_State *L);
 };
 
 #endif

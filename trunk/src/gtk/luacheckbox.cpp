@@ -55,6 +55,28 @@ void CLuaCheckbox::Enable(TSTLVecSize n, bool b)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(m_Checkboxes[n]), (b) ? TRUE : FALSE);
 }
 
+void CLuaCheckbox::AddOption(const std::string &label, TSTLVecSize n)
+{
+    GtkWidget *button = gtk_check_button_new_with_label(GetTranslation(label.c_str()));
+    if ((m_Checkboxes.empty()) || (n >= GetOptions().size()))
+        m_Checkboxes.push_back(button);
+    else
+        m_Checkboxes.insert(m_Checkboxes.begin() + n, button);
+    
+    g_signal_connect(G_OBJECT(m_Checkboxes[n]), "toggled", G_CALLBACK(ToggleCB), this);
+    gtk_widget_show(m_Checkboxes[n]);
+    gtk_container_add(GTK_CONTAINER(GetBox()), m_Checkboxes[n]);
+    
+    if (n < (GetOptions().size()-1))
+        gtk_box_reorder_child(GTK_BOX(GetBox()), m_Checkboxes[n], n+1); // +1: Skip title
+}
+
+void CLuaCheckbox::DelOption(TSTLVecSize n)
+{
+    gtk_widget_destroy(m_Checkboxes[n]);
+    m_Checkboxes.erase(m_Checkboxes.begin() + n);
+}
+
 void CLuaCheckbox::CoreUpdateLanguage()
 {
     TOptions &opts = GetOptions();

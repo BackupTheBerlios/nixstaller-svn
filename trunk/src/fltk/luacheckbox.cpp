@@ -18,7 +18,9 @@
 */
 
 #include "main/main.h"
+#include "fltk.h"
 #include "luacheckbox.h"
+#include "luagroup.h"
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Group.H>
 #include <FL/fl_draw.H>
@@ -54,6 +56,36 @@ bool CLuaCheckbox::Enabled(TSTLVecSize n)
 void CLuaCheckbox::Enable(TSTLVecSize n, bool b)
 {
     m_Checkboxes.at(n)->value(b);
+}
+
+void CLuaCheckbox::AddOption(const std::string &label, TSTLVecSize n)
+{
+    Fl_Check_Button *button = new Fl_Check_Button(0, 0, 0, ButtonHeight(), MakeTranslation(label));
+    button->type(FL_TOGGLE_BUTTON);
+    button->callback(ToggleCB, this);
+    
+    if (n >= GetOptions().size())
+    {
+        m_Checkboxes.push_back(button);
+        GetGroup()->add(button);
+    }
+    else
+    {
+        m_Checkboxes.insert(m_Checkboxes.begin() + n, button);
+        GetGroup()->insert(*button, n+1); // +1: First is titel
+    }
+    
+    RedrawWidgetRecursive(GetGroup());
+    GetParent()->UpdateLayout();
+}
+
+void CLuaCheckbox::DelOption(TSTLVecSize n)
+{
+    GetGroup()->remove(m_Checkboxes[n]);
+    delete m_Checkboxes[n];
+    m_Checkboxes.erase(m_Checkboxes.begin() + n);
+    RedrawWidgetRecursive(GetGroup());
+    GetParent()->UpdateLayout();
 }
 
 void CLuaCheckbox::CoreUpdateLanguage()

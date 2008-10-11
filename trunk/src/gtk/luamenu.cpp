@@ -69,25 +69,39 @@ std::string CLuaMenu::Selection()
 void CLuaMenu::Select(TSTLVecSize n)
 {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pMenu));
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(m_pMenu));
     GtkTreeIter iter;
     
-    if (!gtk_tree_model_get_iter_first(model, &iter))
-        return;
-    
-    bool done = false;
-    do
+    if (SearchItem(n, iter))
     {
-        gchar *var;
-        gtk_tree_model_get(model, &iter, COLUMN_VAR, &var, -1);
-        if (var == GetOptions()[n])
-        {
-            gtk_tree_selection_select_iter(selection, &iter);
-            done = true;
-        }
-        g_free(var);
+        gtk_tree_selection_select_iter(selection, &iter);
+        m_bInitSel = false;
     }
-    while (!done && gtk_tree_model_iter_next(model, &iter));
+}
+
+void CLuaMenu::AddOption(const std::string &label)
+{
+    GtkTreeIter iter;
+    GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pMenu)));
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, COLUMN_TITLE, GetTranslation(label.c_str()), COLUMN_VAR,
+                       label.c_str(), -1);
+    if (m_bInitSel)
+    {
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(m_pMenu));
+        gtk_tree_selection_select_iter(selection, &iter);
+        m_bInitSel = false;
+    }
+}
+
+void CLuaMenu::DelOption(TSTLVecSize n)
+{
+    GtkTreeIter iter;
+    GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(m_pMenu)));
+    
+    if (SearchItem(n, iter))
+        gtk_list_store_remove(store, &iter);
+    else
+        assert(false); // Should not happen
 }
 
 void CLuaMenu::CoreUpdateLanguage()
@@ -141,6 +155,27 @@ GtkWidget *CLuaMenu::CreateMenu()
     gtk_widget_show_all(sw);
     
     return sw;
+}
+
+bool CLuaMenu::SearchItem(TSTLVecSize n, GtkTreeIter &iter)
+{
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(m_pMenu));
+    
+    if (!gtk_tree_model_get_iter_first(model, &iter))
+        return false;
+    
+    bool found = false;
+    do
+    {
+        gchar *var;
+        gtk_tree_model_get(model, &iter, COLUMN_VAR, &var, -1);
+        if (var == GetOptions()[n])
+            found = true;
+        g_free(var);
+    }
+    while (!found && gtk_tree_model_iter_next(model, &iter));
+    
+    return found;
 }
 
 void CLuaMenu::SelectionCB(GtkTreeSelection *selection, gpointer data)

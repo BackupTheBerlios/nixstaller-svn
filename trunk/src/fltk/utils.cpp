@@ -30,3 +30,16 @@ void SetButtonWidth(Fl_Button *button)
     fl_measure(button->label(), w, h);
     button->size(w+spacing, button->h());
 }
+
+void RedrawWidgetRecursive(Fl_Widget *w)
+{
+    // Recursively redraw everything, based on Fl_Widget::hide()
+    for (Fl_Widget *p = w->parent(); p; p = p->parent())
+    {
+        if (p->box() || !p->parent())
+        {
+            p->redraw();
+            break;
+        }
+    }
+}

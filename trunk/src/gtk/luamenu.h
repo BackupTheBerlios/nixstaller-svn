@@ -32,10 +32,13 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
     
     virtual std::string Selection(void);
     virtual void Select(TSTLVecSize n);
+    virtual void AddOption(const std::string &label);
+    virtual void DelOption(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     virtual void CoreActivateWidget(void);
     
     GtkWidget *CreateMenu(void);
+    bool SearchItem(TSTLVecSize n, GtkTreeIter &iter);
     
 public:
     CLuaMenu(const char *desc, const TOptions &l, TSTLVecSize e);

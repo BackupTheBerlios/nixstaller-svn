@@ -51,6 +51,19 @@ bool CLuaCheckbox::Enabled(TSTLVecSize n)
     return false;
 }
 
+void CLuaCheckbox::AddOption(const std::string &label, TSTLVecSize n)
+{
+    if (n >= GetOptions().size())
+        m_pCheckbox->AddChoice(GetTranslation(label));
+    else
+        m_pCheckbox->InsertChoice(GetTranslation(label), n);
+}
+
+void CLuaCheckbox::DelOption(TSTLVecSize n)
+{
+    m_pCheckbox->DeleteChoice(n);
+}
+
 void CLuaCheckbox::Enable(TSTLVecSize n, bool b)
 {
     if (Enabled(n) != b)

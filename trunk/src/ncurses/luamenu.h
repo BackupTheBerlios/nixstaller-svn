@@ -33,6 +33,8 @@ class CLuaMenu: public CBaseLuaMenu, public CLuaWidget
     
     virtual std::string Selection(void);
     virtual void Select(TSTLVecSize n);
+    virtual void AddOption(const std::string &label);
+    virtual void DelOption(TSTLVecSize n);
     virtual void CoreUpdateLanguage(void);
     
 protected:

@@ -54,6 +54,7 @@ protected:
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual std::string CoreGetText(const SEntry &entry) = 0;
     virtual void CoreSelect(SEntry &entry) = 0;
+    virtual void CoreDeleteChoice(SEntry &entry) = 0;
     
     CBaseChoice(void) : m_iSelection(0), m_iUsedWidth(0) { }
     
@@ -62,6 +63,8 @@ protected:
 
 public:
     void AddChoice(const std::string &c) { m_ChoiceList.push_back(SEntry(c, false)); }
+    void InsertChoice(const std::string &c, int n);
+    void DeleteChoice(int n);
     void Select(int n) { CoreSelect(m_ChoiceList.at(n)); }
     void SetName(int n, const std::string &name) { m_ChoiceList.at(n).name = name; RequestQueuedDraw(); }
 };

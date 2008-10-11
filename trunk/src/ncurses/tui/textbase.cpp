@@ -193,7 +193,6 @@ void CTextBase::AddText(std::string t)
         {
             bool checklongest = false;
             TSTLStrSize remlen = m_ClearLength + (curlen - m_MaxLength);
-            debugline("About to remove %u chars\n", remlen);
             
             for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end();)
             {

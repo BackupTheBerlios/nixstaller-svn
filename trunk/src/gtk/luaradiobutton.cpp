@@ -67,6 +67,43 @@ void CLuaRadioButton::Enable(TSTLVecSize n)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(m_RadioButtons[n]), TRUE);
 }
 
+void CLuaRadioButton::AddButton(const std::string &label, TSTLVecSize n)
+{
+    if (m_RadioButtons.empty())
+        m_RadioButtons.push_back(gtk_radio_button_new_with_label(NULL, GetTranslation(label.c_str())));
+    else
+    {
+        GtkWidget *button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(m_RadioButtons[0]),
+                            GetTranslation(label.c_str()));
+        
+        if (n >= GetOptions().size())
+            m_RadioButtons.push_back(button);
+        else
+            m_RadioButtons.insert(m_RadioButtons.begin() + n, button);
+    }
+    
+    g_signal_connect(G_OBJECT(m_RadioButtons[n]), "toggled", G_CALLBACK(ToggleCB), this);
+    gtk_widget_show(m_RadioButtons[n]);
+    gtk_container_add(GTK_CONTAINER(GetBox()), m_RadioButtons[n]);
+    
+    if (n < (GetOptions().size()-1))
+        gtk_box_reorder_child(GTK_BOX(GetBox()), m_RadioButtons[n], n+1); // +1: Skip title
+}
+
+void CLuaRadioButton::DelButton(TSTLVecSize n)
+{
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(m_RadioButtons[n])))
+    {
+        if (n > 0)
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(m_RadioButtons[n-1]), TRUE);
+        else if (n < (GetOptions().size()-1))
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(m_RadioButtons[n+1]), TRUE);
+    }
+    
+    gtk_widget_destroy(m_RadioButtons[n]);
+    m_RadioButtons.erase(m_RadioButtons.begin() + n);
+}
+
 void CLuaRadioButton::CoreUpdateLanguage()
 {
     TOptions &opts = GetOptions();
@@ -87,6 +124,8 @@ void CLuaRadioButton::CoreActivateWidget()
 void CLuaRadioButton::ToggleCB(GtkToggleButton *togglebutton, gpointer data)
 {
     CLuaRadioButton *radio = static_cast<CLuaRadioButton *>(data);
-    if (!radio->m_bInit)
+    // 2 signals are created: one by the button that was enabled and one by
+    // the button that is now enabled. As we want just one signal catch only the latter.
+    if (!radio->m_bInit && gtk_toggle_button_get_active(togglebutton))
         radio->SafeLuaDataChanged();
 }

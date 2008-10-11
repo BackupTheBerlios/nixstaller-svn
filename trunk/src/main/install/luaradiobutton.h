@@ -34,6 +34,8 @@ private:
     
     virtual const char *EnabledButton(void) = 0;
     virtual void Enable(TSTLVecSize n) = 0;
+    virtual void AddButton(const std::string &label, TSTLVecSize n) = 0;
+    virtual void DelButton(TSTLVecSize n) = 0;
 
 protected:
     CBaseLuaRadioButton(const TOptions &opts) : m_Options(opts) {  }
@@ -46,6 +48,8 @@ public:
     static void LuaRegister(void);
     static int LuaGet(lua_State *L);
     static int LuaSet(lua_State *L);
+    static int LuaAdd(lua_State *L);
+    static int LuaDel(lua_State *L);
 };
 
 

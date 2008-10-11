@@ -45,12 +45,34 @@ std::string CRadioButton::CoreGetText(const SEntry &entry)
 
 void CRadioButton::CoreSelect(SEntry &entry)
 {
-    TChoiceList &list = GetChoiceList();
-    
-    list.at(m_ActiveEntry).enabled = false;
+    if (m_pActiveEntry)
+        m_pActiveEntry->enabled = false;
     entry.enabled = true;
-    m_ActiveEntry = std::distance(list.begin(), std::find(list.begin(), list.end(), entry));
+    m_pActiveEntry = &entry;
     m_bInitSelect = false;
+}
+
+void CRadioButton::CoreDeleteChoice(SEntry &entry)
+{
+    if (&entry == m_pActiveEntry)
+    {
+        TChoiceList &list = GetChoiceList();
+        TChoiceList::iterator it = std::find(list.begin(), list.end(), entry);
+        if (it != list.end())
+        {
+            if (it != list.begin())
+                m_pActiveEntry = &*(it-1);
+            else if (it != list.end()-1)
+                m_pActiveEntry = &*(it+1);
+            else
+                m_pActiveEntry = NULL;
+        }
+        else
+            m_pActiveEntry = NULL;
+        
+        if (m_pActiveEntry)
+            m_pActiveEntry->enabled = true;
+    }
 }
 
 void CRadioButton::CoreGetButtonDescs(TButtonDescList &list)

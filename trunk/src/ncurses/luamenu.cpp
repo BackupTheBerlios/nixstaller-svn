@@ -35,7 +35,8 @@ CLuaMenu::CLuaMenu(const char *desc, const TOptions &l,
     
     AddWidget(m_pMenu);
     
-    m_pMenu->Select(l.at(e));
+    if (!l.empty())
+        m_pMenu->Select(l.at(e));
 }
 
 std::string CLuaMenu::Selection()
@@ -57,6 +58,16 @@ std::string CLuaMenu::Selection()
 void CLuaMenu::Select(TSTLVecSize n)
 {
     m_pMenu->Select(GetOptions().at(n));
+}
+
+void CLuaMenu::AddOption(const std::string &label)
+{
+    m_pMenu->AddEntry(label, GetTranslation(label));
+}
+
+void CLuaMenu::DelOption(TSTLVecSize n)
+{
+    m_pMenu->DelEntry(GetOptions()[n]);
 }
 
 void CLuaMenu::CoreUpdateLanguage()

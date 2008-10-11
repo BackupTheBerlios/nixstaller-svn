@@ -34,6 +34,15 @@ OVERALL
     - handle chained short options with genprojdir.sh? (getopt?)
     - Update genprojdir.sh post message for deps.
 - Nicer way to run apps on exit. Or atleast document it
+- utf8:
+    - Check if FLTK 1.3 is usable enough (or will be soon)
+    - Fix ncurses and perhaps others for width calculating
+    - Convert language files to utf?
+    - Convert utf to native for ncurses frontend?
+- Installer profiles?
+- Allow empty checkboxes/radiobuttons/menus?
+- Lua funciton to (un)hide widgets?
+- Fix installer screens when checkboxes/radiobuttons are added
 
 
 PACKAGING
@@ -51,6 +60,7 @@ MAIN
 - Improve/check lua error messages?
 - Dynamic checkboxes/radiobuttons/menus (add/del functions)
 - Make startinstall code more flexible
+- Run function for install screens
 
 
 DOCS

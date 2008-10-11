@@ -13,6 +13,8 @@
 - Lua addcheckbox function now accepts additional argument to enable one or more options.
 - Lua addradiobutton function now accepts additional argument to preselect an option
 - Lua addmenu function now accepts additional argument to preselect an option
+- add() and del() functions for luaradiobutton, luacheckbox and luamenu
+- luamenu can be empty
 
 
 0.3 --> 0.4

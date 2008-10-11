@@ -58,7 +58,24 @@ std::string CLuaMenu::Selection()
 
 void CLuaMenu::Select(TSTLVecSize n)
 {
-    m_pMenu->value(SafeConvert<int>(n)+1);
+    m_iCurValue = SafeConvert<int>(n) + 1;
+    m_pMenu->value(m_iCurValue);
+}
+
+void CLuaMenu::AddOption(const std::string &label)
+{
+    m_pMenu->add(MakeTranslation(label), MakeCString(label));
+    if (m_pMenu->size() == 1)
+    {
+        m_iCurValue = 1;
+        m_pMenu->value(1);
+    }
+}
+
+void CLuaMenu::DelOption(TSTLVecSize n)
+{
+    m_pMenu->remove(SafeConvert<int>(n) + 1);
+    m_iCurValue = m_pMenu->value();
 }
 
 void CLuaMenu::CoreUpdateLanguage()
