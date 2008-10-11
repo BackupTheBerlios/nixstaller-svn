@@ -377,18 +377,59 @@ void CInstaller::Init(int argc, char **argv)
     m_pMainWindow->show(argc, argv);
 }
 
-void CInstaller::CancelCB(Fl_Widget *w, void *p)
+bool CInstaller::AskQuit()
 {
-    CInstaller *installer = static_cast<CInstaller *>(p);
-    
     const char *msg;
-    if (installer->Installing())
+    if (Installing())
         msg = GetTranslation("Install commands are still running\n"
-                "If you abort now this may lead to a broken installation\n"
-                "Are you sure?");
+                             "If you abort now this may lead to a broken installation\n"
+                             "Are you sure?");
     else
         msg = GetTranslation("This will abort the installation\nAre you sure?");
     
-    if (fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL))
-        throw Exceptions::CExUser();
+    return fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL)==1;
 }
+
+void CInstaller::Cancel()
+{
+	if (AskQuit())
+	{
+		Fl::delete_widget(GetMainWindow());
+		// Call this here, because this function may be called during Lua execution
+		::Quit(EXIT_FAILURE);
+	}
+}
+
+void CInstaller::CancelCB(Fl_Widget *w, void *p)
+{
+    CInstaller *installer = static_cast<CInstaller *>(p);
+    installer->Cancel();
+}
+
+void CInstaller::BackCB(Fl_Widget *w, void *p)
+{
+	CInstaller *installer = static_cast<CInstaller *>(p);
+
+	try
+	{
+		installer->Back();
+	}
+	catch (Exceptions::CException &)
+	{
+		HandleError();
+	}
+};
+
+void CInstaller::NextCB(Fl_Widget *w, void *p)
+{
+	CInstaller *installer = static_cast<CInstaller *>(p);
+	
+	try
+	{
+		installer->Next();
+	}
+	catch (Exceptions::CException &)
+	{
+		HandleError();
+	}
+};

@@ -108,6 +108,7 @@ public:
     static int LuaShowDepScreen(lua_State *L);
     static int LuaGetTempDir(lua_State *L);
     static int LuaGetPkgDir(lua_State *L);
+	static int LuaGetMacAppPath(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);
     static int LuaExecuteCMDAsRoot(lua_State *L);

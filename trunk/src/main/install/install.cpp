@@ -45,6 +45,11 @@
 #include "main/lua/luafunc.h"
 #include "main/lua/luatable.h"
 
+#if defined(__APPLE__)
+// Include Location Services header files
+#include <sys/param.h>
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 // -------------------------------------
 // Base Installer Class
 // -------------------------------------
@@ -499,6 +504,7 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaAddScreen, "addscreen", "install", this);
     NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
     NLua::RegisterFunction(LuaGetPkgDir, "getpkgdir", "install", this);
+    NLua::RegisterFunction(LuaGetMacAppPath, "getmacapppath", "install", this);
     NLua::RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
     NLua::RegisterFunction(LuaExecuteCMD, "execute", "install", this);
     NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executeasroot", "install", this);
@@ -799,6 +805,40 @@ int CBaseInstall::LuaGetPkgDir(lua_State *L)
     const char *file = luaL_optstring(L, 1, "");
     lua_pushfstring(L, "%s/%s", ret, file);
     return 1;
+}
+
+int CBaseInstall::LuaGetMacAppPath(lua_State *L)
+{
+#if defined(__APPLE__)
+    const char *bundleID = lua_tostring(L, 1);
+
+    OSStatus rc;
+    CFURLRef url = NULL;
+    CFStringRef id = CFStringCreateWithBytes(NULL, 
+                                             (const unsigned char *)bundleID, strlen(bundleID), 
+                                             kCFStringEncodingUTF8, 0);
+    rc = LSFindApplicationForInfo(kLSUnknownCreator, id, NULL, NULL, &url);
+    CFRelease(id);
+    if (rc == noErr) {
+        char buf[MAXPATHLEN];
+        if (CFURLGetFileSystemRepresentation(url, true, (unsigned char *)buf, MAXPATHLEN)) {
+            if (strstr(buf, "/.Trash/")) {
+                lua_pushnil(L);
+                lua_pushfstring(L, "Found application in the Trash: %s",buf);
+                return 2;
+            } else {
+                lua_pushstring(L, buf);
+                return 1;
+            }
+        }
+    }
+    lua_pushnil(L);
+    lua_pushstring(L,"Error Finding Application Path");
+#else
+    lua_pushnil(L);
+    lua_pushstring(L,"GetMacAppPath can only be run on Mac OS X");
+#endif
+    return 2;
 }
 
 int CBaseInstall::LuaExtractFiles(lua_State *L)

@@ -94,9 +94,9 @@ buildfltk()
     untar "fltk-1.1.9-source.tar.gz"
     dodir "fltk-1.1.9"
     if [ $CURRENT_OS = "darwin" ]; then
-        CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX && make && make install && make clean
+        ./configure --prefix=$DESTPREFIX && make && make install && make clean
     else
-        CXXFLAGS="-fexceptions" ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
+        ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
     fi
     restoredir
 }
@@ -164,7 +164,11 @@ buildlzma()
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
-    $MAKE -f makefile.gcc CXX='gcc -Os' LDFLAGS="-L$DESTPREFIX/lib" LIB='-lstd -lsupc++ -lm'
+	if [ $CURRENT_OS = "darwin" ]; then
+		$MAKE -f makefile.gcc CXX='gcc -Os' LIB='-lstdc++ -lm'
+	else
+		$MAKE -f makefile.gcc CXX='gcc -Os' LDFLAGS="-L$DESTPREFIX/lib" LIB='-lstd -lsupc++ -lm'
+	fi
     mkdir -p "$DESTPREFIX/bin"
     cp lzma "$DESTPREFIX/bin"
     restoredir
@@ -173,7 +177,7 @@ buildlzma()
     gcc -Os LzmaStateDecode.c LzmaStateTest.c -o lzma-decode
     cp lzma-decode "$DESTPREFIX/bin"
     restoredir
-    [ $CURRENT_OS != "sunos" ] && STRIPARGS="-s"
+    [ $CURRENT_OS != "sunos" -a $CURRENT_OS != "darwin" ] && STRIPARGS="-s"
     strip $STRIPARGS "$DESTPREFIX/bin/lzma" "$DESTPREFIX/bin/lzma-decode"
 }
 

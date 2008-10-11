@@ -62,6 +62,8 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     void Back(void);
     void Next(void);
 
+    bool AskQuit(void);
+
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r);
@@ -70,15 +72,20 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
 
+protected:
+    Fl_Window *GetMainWindow(void) { return m_pMainWindow; };
+
 public:
     CInstaller(void) : m_pLogoBox(NULL), m_bPrevButtonLocked(false) {}
     virtual ~CInstaller(void) { DeleteScreens(); }
     
     virtual void Init(int argc, char **argv);
-    
+
+    void Cancel(void);
+
     static void CancelCB(Fl_Widget *w, void *p);
-    static void BackCB(Fl_Widget *w, void *p) { ((CInstaller *)p)->Back(); };
-    static void NextCB(Fl_Widget *w, void *p) { ((CInstaller *)p)->Next(); };
+    static void BackCB(Fl_Widget *w, void *p);
+    static void NextCB(Fl_Widget *w, void *p);
 };
 
 #endif
