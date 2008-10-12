@@ -18,13 +18,14 @@
 */
 
 #include "gtk.h"
+#include "installscreen.h"
 #include "luawidget.h"
 
 // -------------------------------------
 // Base GTK Lua Widget Class
 // -------------------------------------
 
-CLuaWidget::CLuaWidget(void)
+CLuaWidget::CLuaWidget() : m_pInstallScreen(NULL)
 {
     m_pBox = gtk_vbox_new(FALSE, 0);
     
@@ -54,6 +55,11 @@ void CLuaWidget::SafeLuaDataChanged()
     {
         HandleError();
     }
+}
+
+void CLuaWidget::UpdateScreenLayout()
+{
+    m_pInstallScreen->UpdateSubScreens();
 }
 
 void CLuaWidget::SetMaxWidth(int w)

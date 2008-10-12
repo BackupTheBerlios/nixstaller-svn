@@ -27,11 +27,13 @@ class CLuaWidget;
 class Fl_Group;
 class Fl_Pack;
 class Fl_Widget;
+class CInstallScreen;
 
 class CLuaGroup: public CBaseLuaGroup
 {
     Fl_Pack *m_pMainPack;
     int m_iMaxWidth;
+    CInstallScreen *m_pInstallScreen;
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type);
@@ -56,7 +58,7 @@ class CLuaGroup: public CBaseLuaGroup
     int RequestedWidgetsW(void);
     
 public:
-    CLuaGroup(void);
+    CLuaGroup(CInstallScreen *screen);
     virtual ~CLuaGroup(void) { DeleteWidgets(); }
     
     Fl_Group *GetGroup(void);

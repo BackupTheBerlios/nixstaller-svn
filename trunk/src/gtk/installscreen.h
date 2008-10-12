@@ -56,6 +56,7 @@ public:
     bool SubBack(void);
     bool SubNext(bool check=true);
     void SubLast(void);
+    void UpdateSubScreens(void);
 };
 
 #endif

@@ -46,7 +46,7 @@ CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner) : CB
 
 CBaseLuaGroup *CInstallScreen::CreateGroup()
 {
-    CLuaGroup *ret = new CLuaGroup();
+    CLuaGroup *ret = new CLuaGroup(this);
     gtk_object_set_user_data(GTK_OBJECT(ret->GetBox()), ret);
     gtk_box_pack_start(GTK_BOX(m_pGroupBox), ret->GetBox(), TRUE, FALSE, WidgetGroupSpacing());
     gtk_widget_hide(ret->GetBox());
@@ -228,4 +228,37 @@ void CInstallScreen::SubLast()
 {
     if (!m_WidgetRanges.empty())
         ActivateSubScreen(m_WidgetRanges.size()-1);
+}
+
+void CInstallScreen::UpdateSubScreens()
+{
+    CPointerWrapper<GList> list(gtk_container_get_children(GTK_CONTAINER(m_pGroupBox)), g_list_free);
+    
+    if (!m_WidgetRanges.empty() && list)
+    {
+        GtkWidget *curstartw = m_WidgetRanges[m_CurSubScreen];
+        
+        ResetWidgetRange();
+        
+        GList *entry = list;
+        TSTLVecSize startind = 0, size = m_WidgetRanges.size();
+        bool init = true;
+        
+        while (entry)
+        {
+            // Found the widget? If we didn't yet and are at the last screen assume it's just there
+            if ((startind == (size-1)) || (entry->data == curstartw))
+            {
+                ActivateSubScreen(startind);
+                break;
+            }
+            
+            if (init)
+                init = false;
+            else if (entry->data == m_WidgetRanges.at(startind+1))
+                startind++;
+            
+            entry = g_list_next(entry);
+        }
+    }
 }

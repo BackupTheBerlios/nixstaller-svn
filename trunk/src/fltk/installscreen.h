@@ -25,6 +25,7 @@
 class CInstaller;
 class CBaseLuaGroup;
 class CLuaGroup;
+class Fl_Box;
 class Fl_Group;
 class Fl_Pack;
 class Fl_Widget;
@@ -67,6 +68,7 @@ public:
     bool SubBack(void);
     bool SubNext(bool check=true);
     void SubLast(void);
+    void UpdateSubScreens(void);
 };
 
 #endif

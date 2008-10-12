@@ -19,6 +19,7 @@
 
 #include "main/main.h"
 #include "gtk.h"
+#include "installscreen.h"
 #include "luagroup.h"
 #include "luacfgmenu.h"
 #include "luacheckbox.h"
@@ -35,7 +36,7 @@
 // Lua Widget Group Class
 // -------------------------------------
 
-CLuaGroup::CLuaGroup()
+CLuaGroup::CLuaGroup(CInstallScreen *screen) : m_pInstallScreen(screen)
 {
     m_pBox = gtk_hbox_new(FALSE, 10);
     gtk_widget_show(m_pBox);
@@ -121,6 +122,8 @@ CBaseLuaLabel *CLuaGroup::CreateLabel(const char *title)
 
 void CLuaGroup::AddWidget(CLuaWidget *w)
 {
+    w->SetScreen(m_pInstallScreen);
+    
     gtk_widget_show(w->GetBox());
     
     GtkWidget *box = gtk_vbox_new(FALSE, 0);

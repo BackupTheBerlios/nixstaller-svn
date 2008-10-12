@@ -36,6 +36,7 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     NNCurses::CBox *m_pTopBox, *m_pGroupBox;
     TSTLVecSize m_CurSubScreen;
     std::vector<NNCurses::CWidget *> m_WidgetRanges;
+    bool m_bDirty, m_bCleaning;
     
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
@@ -48,8 +49,10 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     void ActivateSubScreen(TSTLVecSize screen);
     
 protected:
-    virtual void CoreActivate(void) { ResetWidgetRange(); CBaseScreen::CoreActivate(); }
+    virtual void CoreActivate(void);
     virtual void CoreInit(void) { ResetWidgetRange(); }
+    virtual void CoreDraw(void);
+    virtual bool CoreHandleEvent(CWidget *emitter, int event);
     
 public:
     CInstallScreen(const std::string &title);

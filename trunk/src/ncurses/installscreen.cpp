@@ -28,7 +28,8 @@
 // -------------------------------------
 
 CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false, 1),
-                                                           m_pTitle(NULL), m_pGroupBox(NULL), m_CurSubScreen(0)
+                                                           m_pTitle(NULL), m_pGroupBox(NULL), m_CurSubScreen(0),
+                                                           m_bDirty(false), m_bCleaning(false)
 {
     m_pTopBox = new NNCurses::CBox(HORIZONTAL, false);
     
@@ -202,8 +203,69 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
         start++;
     }
     
+    m_WidgetRanges[screen]->ReqFocus();
     m_CurSubScreen = screen;
     UpdateCounter();
+}
+
+void CInstallScreen::CoreActivate()
+{
+    ResetWidgetRange();
+    
+    if (!m_WidgetRanges.empty())
+        m_WidgetRanges[0]->ReqFocus();
+    
+    CBaseScreen::CoreActivate();
+}
+
+void CInstallScreen::CoreDraw()
+{
+    CBox::CoreDraw();
+
+    if (m_bDirty && !m_WidgetRanges.empty() && m_pGroupBox)
+    {
+        m_bDirty = false;
+        m_bCleaning = true;
+        
+        const TChildList &list = m_pGroupBox->GetChildList();
+        NNCurses::CWidget *curstartw = m_WidgetRanges[m_CurSubScreen];
+        
+        ResetWidgetRange();
+        
+        const TSTLVecSize size = m_WidgetRanges.size();
+        for (TSTLVecSize n=0; n<size; n++)
+        {
+            if ((n+1) < size)
+            {
+                TChildList::const_iterator start = std::find(list.begin(), list.end(), m_WidgetRanges[n]);
+                if (start != list.end())
+                {
+                    TChildList::const_iterator end = std::find(start, list.end(), m_WidgetRanges[n+1]);
+                    TChildList::const_iterator it = std::find(start, end, curstartw);
+                    if (it != end)
+                    {
+                        ActivateSubScreen(n);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // last screen, assume it's there
+                ActivateSubScreen(n);
+                break;
+            }
+        }
+        m_bCleaning = false;
+    }
+}
+
+bool CInstallScreen::CoreHandleEvent(CWidget *emitter, int event)
+{
+    if (event == EVENT_REQUPDATE)
+        m_bDirty = !m_bCleaning;
+    
+    return CBox::CoreHandleEvent(emitter, event);
 }
 
 bool CInstallScreen::HasPrevWidgets() const

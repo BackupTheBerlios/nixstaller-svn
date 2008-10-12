@@ -69,12 +69,15 @@ void CLuaCheckbox::AddOption(const std::string &label, TSTLVecSize n)
     
     if (n < (GetOptions().size()-1))
         gtk_box_reorder_child(GTK_BOX(GetBox()), m_Checkboxes[n], n+1); // +1: Skip title
+    
+    UpdateScreenLayout();
 }
 
 void CLuaCheckbox::DelOption(TSTLVecSize n)
 {
     gtk_widget_destroy(m_Checkboxes[n]);
     m_Checkboxes.erase(m_Checkboxes.begin() + n);
+    UpdateScreenLayout();
 }
 
 void CLuaCheckbox::CoreUpdateLanguage()

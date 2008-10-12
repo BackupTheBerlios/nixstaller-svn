@@ -113,10 +113,6 @@ void CInstaller::PrevScreen()
     if (m_InstallScreens[m_CurrentScreen]->SubBack())
     {
         UpdateButtons();
-        
-        if (CanFocusChilds(m_pScreenBox))
-            m_pScreenBox->ReqFocus();
-        
         return;
     }
     
@@ -144,10 +140,6 @@ void CInstaller::NextScreen()
     if (m_InstallScreens[m_CurrentScreen]->SubNext())
     {
         UpdateButtons();
-        
-        if (CanFocusChilds(m_pScreenBox))
-            m_pScreenBox->ReqFocus();
-
         return;
     }
     
@@ -198,9 +190,7 @@ void CInstaller::ActivateScreen(CInstallScreen *screen, bool sublast)
     while (m_InstallScreens.at(m_CurrentScreen) != screen)
         m_CurrentScreen++;
     
-    if (CanFocusChilds(m_pScreenBox))
-        m_pScreenBox->ReqFocus();
-    else
+    if (!CanFocusChilds(m_pScreenBox))
         m_pNextButton->ReqFocus();
 }
 

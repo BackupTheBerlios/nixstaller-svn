@@ -19,6 +19,7 @@
 
 #include "main/main.h"
 #include "fltk.h"
+#include "installscreen.h"
 #include "luagroup.h"
 #include "luacfgmenu.h"
 #include "luacheckbox.h"
@@ -37,7 +38,7 @@
 // Lua Widget Group Class
 // -------------------------------------
 
-CLuaGroup::CLuaGroup() : m_iMaxWidth(0)
+CLuaGroup::CLuaGroup(CInstallScreen *screen) : m_iMaxWidth(0), m_pInstallScreen(screen)
 {
     m_pMainPack = new Fl_Pack(0, 0, 0, 0);
     m_pMainPack->resizable(NULL);
@@ -229,7 +230,8 @@ void CLuaGroup::UpdateLayout()
     if (totalwidgeth > m_pMainPack->h())
         m_pMainPack->size(m_pMainPack->w(), totalwidgeth);
     
-    m_pMainPack->parent()->redraw(); // Important
+    m_pInstallScreen->UpdateSubScreens();
+//     m_pMainPack->parent()->redraw(); // Important (still?)
 }
 
 void CLuaGroup::SetSize(int maxw, int maxh)

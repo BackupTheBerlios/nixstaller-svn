@@ -23,9 +23,12 @@
 #include "main/install/luagroup.h"
 #include "luawidget.h"
 
+class CInstallScreen;
+
 class CLuaGroup: public CBaseLuaGroup
 {
     GtkWidget *m_pBox;
+    CInstallScreen *m_pInstallScreen;
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type);
@@ -46,7 +49,7 @@ class CLuaGroup: public CBaseLuaGroup
     void AddWidget(CLuaWidget *w);
     
 public:
-    CLuaGroup(void);
+    CLuaGroup(CInstallScreen *screen);
     virtual ~CLuaGroup(void) { DeleteWidgets(); }
     
     GtkWidget *GetBox(void) { return m_pBox; }

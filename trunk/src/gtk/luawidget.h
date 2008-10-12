@@ -22,22 +22,27 @@
 
 #include "main/install/luawidget.h"
 
+class CInstallScreen;
+
 class CLuaWidget: virtual public CBaseLuaWidget
 {
     GtkWidget *m_pBox, *m_pTitle;
     int m_iMaxWidth;
+    CInstallScreen *m_pInstallScreen;
     
     virtual void CoreSetTitle(void);
     virtual void CoreUpdateMaxWidth(int w) {}
     
 protected:
     void SafeLuaDataChanged(void);
+    void UpdateScreenLayout(void);
     
 public:
     CLuaWidget(void);
     
     GtkWidget *GetBox(void) { return m_pBox; }
     void SetMaxWidth(int w);
+    void SetScreen(CInstallScreen *screen) { m_pInstallScreen = screen; }
 };
 
 #endif

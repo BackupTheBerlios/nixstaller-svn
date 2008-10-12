@@ -88,6 +88,8 @@ void CLuaRadioButton::AddButton(const std::string &label, TSTLVecSize n)
     
     if (n < (GetOptions().size()-1))
         gtk_box_reorder_child(GTK_BOX(GetBox()), m_RadioButtons[n], n+1); // +1: Skip title
+    
+    UpdateScreenLayout();
 }
 
 void CLuaRadioButton::DelButton(TSTLVecSize n)
@@ -102,6 +104,7 @@ void CLuaRadioButton::DelButton(TSTLVecSize n)
     
     gtk_widget_destroy(m_RadioButtons[n]);
     m_RadioButtons.erase(m_RadioButtons.begin() + n);
+    UpdateScreenLayout();
 }
 
 void CLuaRadioButton::CoreUpdateLanguage()

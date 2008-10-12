@@ -43,6 +43,7 @@ OVERALL
 - Allow empty checkboxes/radiobuttons/menus?
 - Lua function to (un)hide widgets?
 - Fix installer screens when checkboxes/radiobuttons are added
+- Check messages like pkg enable screen which refer to a default
 
 
 PACKAGING
@@ -97,12 +98,14 @@ NCURSES
 
 GTK
 - Move main window away from base frontend class?
+- Update layout when lualabel changes text
 
 
 FLTK
 - Create a pack widget that works?
 - Check update: test for regressions, check current hacks.
-- Refresh does not always enable both bars (FLTK specific?)
+- Progressdialog: Refresh does not always enable both bars (FLTK specific?)
+- Update layout when lualabel changes text
 
 
 REGISTER

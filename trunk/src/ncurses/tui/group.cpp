@@ -327,7 +327,7 @@ void CGroup::SetValidWidget(CWidget *ignore)
     while ((itprev != m_Childs.begin()) || (*itnext != m_Childs.back()));
     
     // Haven't found a focusable widget
-    m_pFocusedWidget = NULL;
+    FocusWidget(NULL);
 }
 
 }

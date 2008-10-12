@@ -229,5 +229,5 @@ int ContainerSize(GtkContainer *c)
     for (; entry; entry=g_list_next(entry), ret++)
         ;
     
-    return ret;;
+    return ret;
 }

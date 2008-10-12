@@ -60,7 +60,7 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title),
 
 CBaseLuaGroup *CInstallScreen::CreateGroup(void)
 {
-    CLuaGroup *ret = new CLuaGroup;
+    CLuaGroup *ret = new CLuaGroup(this);
     ret->GetGroup()->user_data(ret);
     ret->GetGroup()->hide();
     m_pWidgetPack->add(ret->GetGroup());
@@ -275,4 +275,31 @@ void CInstallScreen::SubLast()
 {
     if (!m_WidgetRanges.empty())
         ActivateSubScreen(m_WidgetRanges.size()-1);
+}
+
+void CInstallScreen::UpdateSubScreens()
+{
+    if (m_WidgetRanges.empty())
+        m_pWidgetPack->redraw(); // Only redraw
+    else
+    {
+        Fl_Widget *group = m_pMainPack->child(m_WidgetRanges[m_CurSubScreen]);
+        
+        ResetWidgetRange();
+        
+        TSTLVecSize ind = SafeConvert<TSTLVecSize>(m_pWidgetPack->find(group));
+        
+        if (ind != m_pWidgetPack->children())
+        {
+            TSTLVecSize size = m_WidgetRanges.size();
+            for (TSTLVecSize n=0; n<size; n++)
+            {
+                if (m_WidgetRanges[n] >= ind)
+                {
+                    ActivateSubScreen(n);
+                    break;
+                }
+            }
+        }
+    }
 }
