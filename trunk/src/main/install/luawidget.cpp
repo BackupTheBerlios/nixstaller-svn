@@ -51,3 +51,16 @@ bool CBaseLuaWidget::Check()
     
     return ret;
 }
+
+void CBaseLuaWidget::LuaRegister()
+{
+    NLua::RegisterClassFunction(CBaseLuaWidget::LuaVisible, "visible", "widget");
+}
+
+int CBaseLuaWidget::LuaVisible(lua_State *L)
+{
+    CBaseLuaWidget *widget = CheckLuaWidgetClass<CBaseLuaWidget>("widget", 1);
+    widget->SetVisible(NLua::LuaToBool(2));
+    
+    return 0;
+}

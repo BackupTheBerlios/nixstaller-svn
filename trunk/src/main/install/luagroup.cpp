@@ -37,8 +37,16 @@
 // Base Lua Group Class
 // -------------------------------------
 
+std::map<std::string, bool> CBaseLuaGroup::m_RegisteredWidgets;
+
 void CBaseLuaGroup::AddWidget(CBaseLuaWidget *w, const char *type)
 {
+    if (m_RegisteredWidgets.find(type) == m_RegisteredWidgets.end())
+    {
+        m_RegisteredWidgets[type] = true;
+        NLua::SetClassBase(type, "widget");
+    }
+    
     w->Init(type);
     NLua::CreateClass(w, type);
     m_WidgetList.push_back(w);
@@ -59,6 +67,17 @@ void CBaseLuaGroup::UpdateLanguage()
 {
     for (TWidgetList::iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)
         (*it)->UpdateLanguage();
+}
+
+bool CBaseLuaGroup::IsVisible() const
+{
+    for (TWidgetList::const_iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)
+    {
+        if ((*it)->IsVisible())
+            return true;
+    }
+    
+    return false;
 }
 
 bool CBaseLuaGroup::CheckWidgets()

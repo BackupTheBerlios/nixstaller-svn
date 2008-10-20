@@ -215,5 +215,6 @@ void CGTKBase::Run()
 {
     CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
     gtk_widget_show(m_pMainWindow);
-    gtk_main();
+    while (gtk_main_iteration_do(FALSE))
+        CoreRun();
 }

@@ -18,6 +18,8 @@
 */
 
 #include "main/main.h"
+#include "fltk.h"
+#include "luagroup.h"
 #include "luaimage.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Group.H>
@@ -51,5 +53,13 @@ CLuaImage::CLuaImage(const char *file) : CBaseLuaWidget(""), m_iImageW(0), m_iIm
         m_iImageH = img->h();
     }
     else
-        GetGroup()->hide();
+        SetVisible(false);
+}
+
+void CLuaImage::CoreSetVisible(bool v)
+{
+    if (v && !m_iImageW)
+        SetVisible(false);
+    else
+        CLuaWidget::UpdateVisible(v);
 }

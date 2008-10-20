@@ -18,6 +18,8 @@
 */
 
 #include "main/main.h"
+#include "fltk.h"
+#include "luagroup.h"
 #include "luawidget.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
@@ -44,11 +46,22 @@ void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
         m_pTitle->label(MakeTranslation(GetTitle()));
+    RedrawWidgetRecursive(GetGroup());
+    GetParent()->UpdateLayout();
 }
 
 void CLuaWidget::CoreActivateWidget()
 {
     Fl::focus(m_pMainPack);
+}
+
+void CLuaWidget::UpdateVisible(bool v)
+{
+    if (GetParent()) // Parent may be NULL when called from constructor
+    {
+        RedrawWidgetRecursive(GetGroup());
+        GetParent()->UpdateLayout();
+    }
 }
 
 Fl_Group *CLuaWidget::GetGroup()

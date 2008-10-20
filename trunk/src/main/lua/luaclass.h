@@ -29,6 +29,7 @@ void PushClass(const std::string &type, void *prvdata);
 void PushClassData(const char *type, int index);
 void CreateClass(void *prvdata, const char *type);
 void DeleteClass(void *prvdata, const char *type);
+void SetClassBase(const std::string &type, const std::string &basetype);
 
 template <typename C> C *ToClassData(const char *type, int index)
 {

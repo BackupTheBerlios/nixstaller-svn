@@ -84,8 +84,13 @@ void CInstallScreen::ResetWidgetRange()
     for (; entry; entry=g_list_next(entry))
     {
         GtkWidget *w = GTK_WIDGET(entry->data);
-        if (ContainerEmpty(GTK_CONTAINER(w)))
+        CLuaGroup *lg = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(w)));
+        
+        if (!lg->IsVisible() || ContainerEmpty(GTK_CONTAINER(w)))
+        {
+            gtk_widget_hide(w);
             continue;
+        }
         
         const int newh = CheckTotalWidgetH(w);
 
@@ -105,7 +110,7 @@ void CInstallScreen::ResetWidgetRange()
             endedscreen = false;
             gtk_widget_hide(w);
         }
-        CLuaGroup *lg = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(w)));
+        
         endedscreen = lg->EndsScreen();
     }
     
@@ -185,7 +190,9 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
     
     while (entry && (entry != end))
     {
-        gtk_widget_show(GTK_WIDGET(entry->data));
+        CLuaGroup *lg = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(entry->data)));
+        if ((!lg || lg->IsVisible()) && !ContainerEmpty(GTK_CONTAINER(entry->data)))
+            gtk_widget_show(GTK_WIDGET(entry->data));
         entry = g_list_next(entry);
     }
     

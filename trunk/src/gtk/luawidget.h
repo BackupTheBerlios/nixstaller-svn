@@ -31,6 +31,7 @@ class CLuaWidget: virtual public CBaseLuaWidget
     CInstallScreen *m_pInstallScreen;
     
     virtual void CoreSetTitle(void);
+    virtual void CoreSetVisible(bool v) { UpdateScreenLayout(); }
     virtual void CoreUpdateMaxWidth(int w) {}
     
 protected:

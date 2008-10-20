@@ -111,7 +111,7 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
     const int x = m_pWizard->x()+ScreenSpacing(), y = m_pWizard->y()+ScreenSpacing();
     const int w = m_pWizard->w()-(2*ScreenSpacing()), h = m_pWizard->h()-(2*ScreenSpacing());
     screen->SetSize(x, y, w, h);
-    screen->Activate();
+    CBaseInstall::ActivateScreen(screen);
     m_pWizard->value(screen->GetGroup());
 }
 

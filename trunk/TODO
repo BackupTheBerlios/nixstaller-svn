@@ -40,9 +40,6 @@ OVERALL
     - Convert language files to utf?
     - Convert utf to native for ncurses frontend?
 - Installer profiles?
-- Allow empty checkboxes/radiobuttons/menus?
-- Lua function to (un)hide widgets?
-- Fix installer screens when checkboxes/radiobuttons are added
 - Check messages like pkg enable screen which refer to a default
 
 
@@ -59,9 +56,7 @@ PACKAGING
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Improve/check lua error messages?
-- Dynamic checkboxes/radiobuttons/menus (add/del functions)
 - Make startinstall code more flexible
-- Run function for install screens
 
 
 DOCS
@@ -98,14 +93,12 @@ NCURSES
 
 GTK
 - Move main window away from base frontend class?
-- Update layout when lualabel changes text
 
 
 FLTK
 - Create a pack widget that works?
 - Check update: test for regressions, check current hacks.
 - Progressdialog: Refresh does not always enable both bars (FLTK specific?)
-- Update layout when lualabel changes text
 
 
 REGISTER

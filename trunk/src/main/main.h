@@ -109,21 +109,17 @@ public:
 
 class CMain
 {
-    virtual void CoreUpdateUI(void) = 0; // Called during installation, lua execution etc
-
 protected:
     const std::string m_szRegVer;
     std::string m_szOS, m_szCPUArch, m_szOwnDir;
     char *m_szAppConfDir;
     LIBSU::CLibSU m_SUHandler;
     char *m_szPassword;
-    long m_lUITimer;
 
     const char *GetLogoFName(void);
     const char *GetAboutFName(void);
     bool GetSUPasswd(const char *msg, bool mandatory);
     bool ReadLang();
-    void UpdateUI(void);
     
     virtual char *GetPassword(const char *title) = 0;
     virtual void MsgBox(const char *str, ...) = 0;
@@ -146,7 +142,7 @@ public:
     std::string m_szCurLang;
     std::vector<std::string> m_Languages;
     
-    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL), m_lUITimer(0)
+    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL)
     { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
     virtual ~CMain(void);
     
@@ -197,7 +193,6 @@ public:
 
 class CLuaRunner: public CMain
 {
-    virtual void CoreUpdateUI(void) {}
     virtual char *GetPassword(const char *) { return 0; };
     virtual void MsgBox(const char *str, ...) { };
     virtual bool YesNoBox(const char *str, ...) { return false; };

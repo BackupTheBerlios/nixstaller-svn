@@ -101,11 +101,11 @@ CFLTKBase::CFLTKBase(void) : m_pAboutDisp(NULL), m_pAboutOKButton(NULL), m_pAbou
 CFLTKBase::~CFLTKBase()
 {
     // HACK: Restore bell volume
-	#ifndef __APPLE__
+    #ifndef __APPLE__
     XKeyboardControl XKBControl;
     XKBControl.bell_duration = -1;
     XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
-	#endif
+    #endif
 }
 
 void CFLTKBase::CreateAbout()
@@ -240,5 +240,6 @@ void CFLTKBase::CoreUpdateLanguage()
 void CFLTKBase::Run()
 {
     CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
-    Fl::run();
+    while (Fl::check())
+        CoreRun();
 }

@@ -43,6 +43,8 @@ protected:
 private:
     TWidgetList m_WidgetList;
     bool m_bEndsScreen;
+    
+    static std::map<std::string, bool> m_RegisteredWidgets;
 
     virtual CBaseLuaInputField *CreateInputField(const char *label, const char *desc, const char *val,
             int max, const char *type) = 0;
@@ -73,6 +75,7 @@ public:
     virtual ~CBaseLuaGroup(void) {}
     
     void UpdateLanguage(void);
+    bool IsVisible(void) const;
     bool CheckWidgets(void);
     void SetScreenEnds(bool e) { m_bEndsScreen = e; }
     bool EndsScreen(void) const { return m_bEndsScreen; }

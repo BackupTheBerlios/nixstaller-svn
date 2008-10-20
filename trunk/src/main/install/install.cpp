@@ -54,12 +54,25 @@
 // Base Installer Class
 // -------------------------------------
 
-CBaseInstall::CBaseInstall(void) : m_ulTotalArchSize(1), m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
+CBaseInstall::CBaseInstall(void) : m_lUITimer(0), m_lRunTimer(0), m_pCurScreen(NULL), m_ulTotalArchSize(1),
+                                   m_fExtrPercent(0.0f), m_szCurArchFName(NULL),
                                    m_bAlwaysRoot(false), m_sInstallSteps(1), m_sCurrentStep(0),
                                    m_fInstallProgress(0.0f), m_iUpdateStatLuaFunc(LUA_NOREF),
                                    m_iUpdateProgLuaFunc(LUA_NOREF), m_iUpdateOutputLuaFunc(LUA_NOREF),
                                    m_bInstalling(false)
 {
+}
+
+void CBaseInstall::UpdateUI()
+{
+    long curtime = GetTime();
+    
+    if (m_lUITimer <= curtime)
+    {
+        m_lUITimer = curtime + 10;
+        Run();
+        CoreUpdateUI();
+    }
 }
 
 void CBaseInstall::AddScreen(CBaseScreen *screen)
@@ -489,6 +502,7 @@ void CBaseInstall::InitLua()
     
     CBaseScreen::LuaRegister();
     CBaseLuaGroup::LuaRegister();
+    CBaseLuaWidget::LuaRegister();
     CBaseLuaInputField::LuaRegister();
     CBaseLuaCheckbox::LuaRegister();
     CBaseLuaRadioButton::LuaRegister();
@@ -569,6 +583,24 @@ void CBaseInstall::DeleteScreens()
     {
         delete m_ScreenList.back();
         m_ScreenList.pop_back();
+    }
+}
+
+void CBaseInstall::ActivateScreen(CBaseScreen *screen)
+{
+    m_pCurScreen = screen;
+    screen->Activate();
+}
+
+void CBaseInstall::Run()
+{
+    long curtime = GetTime();
+    
+    if (m_lRunTimer <= curtime)
+    {
+        m_lRunTimer = curtime + 10;
+        if (m_pCurScreen)
+            m_pCurScreen->Update();
     }
 }
 

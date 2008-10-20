@@ -35,6 +35,7 @@ class CLuaWidget: virtual public CBaseLuaWidget
     
     virtual void CoreSetTitle(void);
     virtual void CoreActivateWidget(void);
+    virtual void CoreSetVisible(bool v) { UpdateVisible(v); }
     virtual bool CoreExpand(void) { return true; }
     virtual int CoreRequestWidth(void) = 0;
     virtual int CoreRequestHeight(int maxw) = 0;
@@ -42,6 +43,7 @@ class CLuaWidget: virtual public CBaseLuaWidget
     
 protected:
     CLuaGroup *GetParent(void) { return m_pParent; }
+    void UpdateVisible(bool v);
     
 public:
     CLuaWidget(void);

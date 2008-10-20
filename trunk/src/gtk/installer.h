@@ -57,6 +57,7 @@ class CInstaller: public CGTKBase, public CBaseInstall
     virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
+    virtual void CoreRun(void) { CBaseInstall::Run(); }
 
 public:
     CInstaller(void) : m_bPrevButtonLocked(false), m_bBusyActivate(false) {}

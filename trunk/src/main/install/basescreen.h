@@ -49,6 +49,7 @@ public:
     void UpdateLanguage(void);
     bool CanActivate(void) { return CallLuaBoolFunc("canactivate", true); }
     void Activate(void) { CoreActivate(); }
+    void Update(void);
     bool Back(void) { return CallLuaBoolFunc("back", true); }
     bool Next(void) { return CallLuaBoolFunc("next", true); }
     

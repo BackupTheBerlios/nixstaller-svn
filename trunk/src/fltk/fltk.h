@@ -37,6 +37,8 @@ class CFLTKBase: virtual public CMain
     
     void CreateAbout(void);
     
+    virtual void CoreRun(void) = 0;
+    
 protected:
     virtual char *GetPassword(const char *str);
     virtual void MsgBox(const char *str, ...);

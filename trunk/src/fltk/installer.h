@@ -71,6 +71,7 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     virtual void CoreUpdateUI(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
+    virtual void CoreRun(void) { CBaseInstall::Run(); }
 
 protected:
     Fl_Window *GetMainWindow(void) { return m_pMainWindow; };

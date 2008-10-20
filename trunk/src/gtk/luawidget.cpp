@@ -42,6 +42,7 @@ void CLuaWidget::CoreSetTitle()
         gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
         SetMaxWidth(m_iMaxWidth); // Need to update this with new text
         gtk_widget_show(m_pTitle);
+        UpdateScreenLayout();
     }
 }
 
@@ -59,7 +60,8 @@ void CLuaWidget::SafeLuaDataChanged()
 
 void CLuaWidget::UpdateScreenLayout()
 {
-    m_pInstallScreen->UpdateSubScreens();
+    if (m_pInstallScreen)
+        m_pInstallScreen->UpdateSubScreens();
 }
 
 void CLuaWidget::SetMaxWidth(int w)

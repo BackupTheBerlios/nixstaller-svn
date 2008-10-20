@@ -63,12 +63,28 @@ void PushClassData(const char *type, int index)
         lua_getfield(LuaState, LUA_REGISTRYINDEX, type);
         int field = lua_gettop(LuaState);
         
-        if (lua_rawequal(LuaState, -1, -2))
+        bool found = (lua_rawequal(LuaState, field, mt));
+        int submt = mt;
+        while (!found && (lua_getmetatable(LuaState, submt) != 0))
+        {
+            // Type != from direct metatable, search for parent metatables (metatable of metatable)
+            
+            if (submt != mt)
+                lua_remove(LuaState, submt); // Remove old sub metatable
+            submt = lua_gettop(LuaState);
+            found = (lua_rawequal(LuaState, field, submt));
+            
+            if (found)
+                lua_remove(LuaState, submt); // Remove sub metatable
+        }
+
+        if (found)
         {
             // get mt[table]
             lua_pushvalue(LuaState, index);
             lua_gettable(LuaState, mt);
         }
+
         lua_remove(LuaState, field);
     }
     
@@ -115,6 +131,17 @@ void DeleteClass(void *prvdata, const char *type)
 
     lua_remove(LuaState, table);
     lua_remove(LuaState, mt);
+}
+
+void SetClassBase(const std::string &type, const std::string &basetype)
+{
+    GetClassMT(type);
+    int table = lua_gettop(LuaState);
+    
+    GetClassMT(basetype);
+    lua_setmetatable(LuaState, table);
+    
+    lua_remove(LuaState, table);
 }
 
 

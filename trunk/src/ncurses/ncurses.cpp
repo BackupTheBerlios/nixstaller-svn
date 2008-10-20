@@ -91,7 +91,7 @@ void StartFrontend(int argc, char **argv)
     NNCurses::TUI.AddGroup(interface, true);
     interface->Init(argc, argv);
 
-    interface->Run();
+    interface->CNCursBase::Run();
 }
 
 void StopFrontend()
@@ -243,5 +243,5 @@ void CNCursBase::CoreGetButtonDescs(NNCurses::TButtonDescList &list)
 void CNCursBase::Run()
 {
     while (NNCurses::TUI.Run())
-        ;
+        CoreRun();
 }

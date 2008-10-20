@@ -282,17 +282,6 @@ bool CMain::ReadLang()
     return true;
 }
 
-void CMain::UpdateUI()
-{
-    long curtime = GetTime();
-    
-    if (m_lUITimer <= curtime)
-    {
-        m_lUITimer = curtime + 10;
-        CoreUpdateUI();
-    }
-}
-
 #ifdef WITH_APPMANAGER
 std::string CMain::ReadRegField(std::ifstream &file)
 {

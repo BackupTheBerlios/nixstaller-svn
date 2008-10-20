@@ -101,8 +101,12 @@ void CInstallScreen::ResetWidgetRange()
     {
         CLuaGroup *lg = GetGroup(m_pWidgetPack->child(i));
         Fl_Group *group = lg->GetGroup();
-        if (!group->children())
+        
+        if (!lg->IsVisible() || !group->children())
+        {
+            group->hide();
             continue;
+        }
         
         const int newh = CheckTotalWidgetH(group);
 
@@ -224,8 +228,12 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
     int h = 0;
     while (start != end)
     {
-        h += CheckTotalWidgetH(m_pWidgetPack->child(start)) + WidgetHSpacing();
-        m_pWidgetPack->child(start)->show();
+        CLuaGroup *lg = GetGroup(m_pWidgetPack->child(start));
+        if ((!lg || lg->IsVisible()) && lg->GetGroup()->children())
+        {
+            h += CheckTotalWidgetH(m_pWidgetPack->child(start)) + WidgetHSpacing();
+            m_pWidgetPack->child(start)->show();
+        }
         start++;
     }
     

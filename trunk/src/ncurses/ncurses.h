@@ -28,6 +28,8 @@ class CNCursBase: virtual public CMain, public NNCurses::CWindow
 {
     void ShowAbout(void);
 
+    virtual void CoreRun(void) = 0;
+    
 protected:
     virtual char *GetPassword(const char *str);
     virtual void MsgBox(const char *str, ...);

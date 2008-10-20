@@ -65,6 +65,19 @@ void CInstallScreen::CoreUpdateLanguage(void)
         m_pTitle->SetText(GetTranslation(GetTitle()));
 }
 
+bool CInstallScreen::VisibleWidget(NNCurses::CWidget *w)
+{
+    CGroup *g = m_pGroupBox->GetGroupWidget(w);
+    if (!g)
+        return true;
+    
+    if (g->Empty())
+        return false;
+        
+    CLuaGroup *lg = dynamic_cast<CLuaGroup *>(g);
+    return lg->IsVisible();
+}
+
 int CInstallScreen::CheckWidgetHeight(NNCurses::CWidget *w)
 {
     int ret = m_pGroupBox->GetTotalWidgetH(w);
@@ -98,9 +111,11 @@ void CInstallScreen::ResetWidgetRange()
         
         for (TChildList::const_iterator it=list.begin(); it!=list.end(); it++)
         {
-            CGroup *g = m_pGroupBox->GetGroupWidget(*it);
-            if (g && g->Empty())
+            if (!VisibleWidget(*it))
+            {
+                (*it)->Enable(false);
                 continue;
+            }
             
             int newh = CheckWidgetHeight(*it);
             if (!endedscreen && ((newh + h) <= MaxScreenHeight()))
@@ -199,7 +214,8 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
     
     while (start != end)
     {
-        (*start)->Enable(true);
+        if (VisibleWidget(*start))
+            (*start)->Enable(true);
         start++;
     }
     

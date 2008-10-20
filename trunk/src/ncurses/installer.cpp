@@ -182,7 +182,7 @@ void CInstaller::AskQuit()
 void CInstaller::ActivateScreen(CInstallScreen *screen, bool sublast)
 {
     screen->Enable(true);
-    screen->Activate();
+    CBaseInstall::ActivateScreen(screen);
     if (sublast)
         screen->SubLast();
     

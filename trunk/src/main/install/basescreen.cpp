@@ -77,6 +77,13 @@ void CBaseScreen::UpdateLanguage()
         (*it)->UpdateLanguage();
 }
 
+void CBaseScreen::Update()
+{
+    NLua::CLuaFunc luafunc("update", "screen", this);
+    if (luafunc)
+        luafunc(0);
+}
+
 void CBaseScreen::LuaRegister()
 {
     NLua::RegisterClassFunction(CBaseScreen::LuaAddGroup, "addgroup", "screen");

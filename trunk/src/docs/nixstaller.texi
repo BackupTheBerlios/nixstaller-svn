@@ -836,7 +836,7 @@ function Init()
     check2 = group:addlabel("Right label.")
 @*
     install.screenlist = @{ WelcomeScreen, myscreen, InstallScreen @}
-done}
+end}
 
 This function does the following things:
 @itemize @bullet

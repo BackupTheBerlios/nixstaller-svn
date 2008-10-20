@@ -224,7 +224,7 @@ void CTextBase::AddText(std::string t)
         }
     }
     
-    RequestQueuedDraw();
+    PushEvent(EVENT_REQUPDATE);
 }
 
 void CTextBase::Clear()
@@ -232,7 +232,7 @@ void CTextBase::Clear()
     m_LongestLine = 0;
     m_Lines.clear();
     m_QueuedText.clear();
-    RequestQueuedDraw();
+    PushEvent(EVENT_REQUPDATE);
 }
 
 

@@ -41,6 +41,7 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void);
     
+    bool VisibleWidget(NNCurses::CWidget *w);
     int CheckWidgetHeight(NNCurses::CWidget *w);
     void ResetWidgetRange(void);
     int MaxScreenHeight(void) const;

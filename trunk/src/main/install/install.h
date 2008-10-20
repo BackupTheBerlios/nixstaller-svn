@@ -32,7 +32,9 @@ protected:
 private:
     typedef std::map<char *, arch_size_entry_s> TArchType;
     
+    long m_lUITimer, m_lRunTimer;
     TScreenList m_ScreenList;
+    CBaseScreen *m_pCurScreen;
     unsigned long m_ulTotalArchSize;
     float m_fExtrPercent;
     TArchType m_ArchList;
@@ -44,6 +46,7 @@ private:
     int m_iUpdateStatLuaFunc, m_iUpdateProgLuaFunc, m_iUpdateOutputLuaFunc;
     bool m_bInstalling;
      
+    void UpdateUI(void);
     void AddScreen(CBaseScreen *screen);
     void Install(int statluafunc, int progluafunc, int outluafunc);
     void InitArchive(char *archname);
@@ -63,6 +66,7 @@ private:
     void RegisterInstall(void);
     bool IsInstalled(bool checkver);
     
+    virtual void CoreUpdateUI(void) = 0; // Called during installation, lua execution etc
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
     virtual void CoreAddScreen(CBaseScreen *screen) = 0;
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r) = 0;
@@ -78,6 +82,8 @@ protected:
     // be automaticly deleted
     void DeleteScreens(void);
     TScreenList &GetScreenList(void) { return m_ScreenList; }
+    void ActivateScreen(CBaseScreen *screen);
+    void Run(void);
     
 public:
     install_info_s m_InstallInfo;
@@ -108,7 +114,7 @@ public:
     static int LuaShowDepScreen(lua_State *L);
     static int LuaGetTempDir(lua_State *L);
     static int LuaGetPkgDir(lua_State *L);
-	static int LuaGetMacAppPath(lua_State *L);
+    static int LuaGetMacAppPath(lua_State *L);
     static int LuaExtractFiles(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);
     static int LuaExecuteCMDAsRoot(lua_State *L);

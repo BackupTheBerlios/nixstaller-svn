@@ -54,6 +54,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f);
     virtual void CoreUpdateUI(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
+    virtual void CoreRun(void) { CBaseInstall::Run(); }
 
 protected:
     virtual void InitLua(void);

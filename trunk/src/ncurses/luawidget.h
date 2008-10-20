@@ -35,6 +35,7 @@ class CLuaWidget: virtual public CBaseLuaWidget, public NNCurses::CBox
     
     virtual void CoreSetTitle(void);
     virtual void CoreActivateWidget(void);
+    virtual void CoreSetVisible(bool v) { RequestUpdate(); }
     
 public:
     CLuaWidget(void);

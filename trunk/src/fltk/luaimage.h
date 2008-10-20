@@ -27,6 +27,7 @@ class CLuaImage: public CBaseLuaImage, public CLuaWidget
 {
     int m_iImageW, m_iImageH;
     
+    virtual void CoreSetVisible(bool v);
     virtual bool CoreExpand(void) { return false; }
     virtual int CoreRequestWidth(void) { return m_iImageW; }
     virtual int CoreRequestHeight(int maxw) { return m_iImageH; }
