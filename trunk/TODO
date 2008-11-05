@@ -29,6 +29,8 @@ OVERALL
 - Dep templates:
     - For list: LSB Compliance, others?
     - More templates
+    - Check recommended full/simple for existing templates
+    - Test templates and check if they can be full and need extra code for being full.
 - genprojdir.sh:
     - Overwrite-options and commandline options for genprojdir.sh
     - handle chained short options with genprojdir.sh? (getopt?)

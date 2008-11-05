@@ -110,10 +110,24 @@ function IsInTemplate(t, l)
     if t.check then
         return t.check(l)
     end
-    for _, tl in ipairs(t.libs) do
-        local pattern = string.format("^lib%s%%.so%%.%%d", escapepat(tl))
-        if string.find(l, pattern) then
-            return true
+    
+    if t.libs then
+        -- Check libs, escaping any search patterns
+        for _, tl in ipairs(t.libs) do
+            local pattern = string.format("^lib%s%%.so%%.%%d", escapepat(tl))
+            if string.find(l, pattern) then
+                return true
+            end
+        end
+    end
+    
+    if t.patlibs then
+        -- Check libs, allowing search patterns
+        for _, tl in ipairs(t.patlibs) do
+            local pattern = string.format("^lib%s%%.so[%%.%%d]?", tl)
+            if string.find(l, pattern) then
+                return true
+            end
         end
     end
 end
@@ -389,7 +403,9 @@ end
 function CheckArgs()
     if not args[1] then
         ErrUsage("No action specified.")
-    elseif args[1] ~= "list" and args[1] ~= "scan" and args[1] ~= "gen" and args[1] ~= "gent" and args[1] ~= "auto" and args[1] ~= "edit" then
+    elseif args[1] ~= "list" and args[1] ~= "scan" and args[1] ~= "gen" and
+           args[1] ~= "gent" and args[1] ~= "auto" and args[1] ~= "edit" and
+           args[1] ~= "mktemps" then
         ErrUsage("Wrong or no action specified.")
     end
     
@@ -416,6 +432,9 @@ function CheckArgs()
     elseif edit then
         sopts = "hsfp:d:rcl:"
         lopts = { {"help"}, {"simple"}, {"full"}, {"prdir", true}, {"dep", true}, {"remove"}, {"copy"}, {"libpath", true}, {"destos", true}, {"destarch", true} }
+    elseif mktemps then
+        sopts = "hl:"
+        lopts = { {"help"}, {"libpath", true} }
     end
     
     opts, msg = getopt(args, sopts, lopts)
@@ -458,7 +477,12 @@ function List()
             if t.check then
                 print("dynamic (use scan action to check relevancy)")
             else
-                print(tabtostr(t.libs))
+                if t.libs then
+                    print(tabtostr(t.libs))
+                end
+                if t.patlibs then
+                    print(tabtostr(t.patlibs))
+                end
             end
             
             if t.notes then
@@ -871,7 +895,8 @@ function Autogen()
                 if not missinglibs[l] then
                     if autounknown then
                         -- Create dummy template for this unknown lib.
-                        template = { name = string.gsub(l, "(lib)(.+)%.so.*", "%2"), description = "", libs = { l },
+                        local lname = string.gsub(l, "(lib)(.+)%.so.*", "%2")
+                        template = { name = lname, description = "", libs = { lname },
                                     full = (full ~= nil and full) or true, unknown = true }
                         missinglibs[l] = template
                     else
@@ -1065,6 +1090,68 @@ function EditDep()
     end
 end
 
+-- UNDONE: Document this?
+function MakeTemps()
+    if utils.emptytable(args) then
+        ErrUsage("A list of binaries/libraries must be given (used to collect libraries for generated dependencies).")
+    end
+
+    local lpath = GetLibPath()
+    local checkstack, created = { }, { }
+    local init = true
+    
+    repeat
+        local map
+        local depinfo
+        
+        if not init then
+            local p = table.remove(checkstack, 1) -- Pop oldest
+            if not p then
+                break
+            end
+            
+            map = { }
+            CollectLibs(map, p, lpath)
+        else
+            init = false
+            map = GetLibMap()
+        end
+        
+        for l, p in pairs(map) do
+            local exists = false
+            if not created[l] then
+                for _, t in ipairs(pkg.deptemplates) do
+                    if IsInTemplate(t, l) then
+                        exists = true
+                        break
+                    end
+                end
+                
+                if not exists then
+                    -- Create dummy template for this unknown lib.
+                    created[l] = true
+                    local lname = string.gsub(l, "(lib)(.+)%.so.*", "%2")
+                    print(string.format([[
+-- %s
+newtemplate{
+name = "%s",
+description = "",
+libs = { "%s" },
+full = true,
+}
+]], lname, lname, lname))
+
+                    if not p then
+                        print("WARNING: Missing library: ".. l)
+                    else
+                        table.insert(checkstack, p)
+                    end
+                end
+            end
+        end
+    until false
+end
+
 CheckArgs()
 
 if list then
@@ -1079,4 +1166,6 @@ elseif auto then
     Autogen()
 elseif edit then
     EditDep()
+elseif mktemps then
+    MakeTemps()
 end
