@@ -59,6 +59,9 @@ function newtemplate(t)
     table.insert(pkg.deptemplates, t)
 end
 
+-------------------------------------------------------------
+-- System Libraries
+-------------------------------------------------------------
 
 -- Core system libraries
 newtemplate{
@@ -85,14 +88,6 @@ description = "C++ system library.",
 libs = { "stdc++" }
 }
 
--- Bzip2
-newtemplate{
-name = "Bzip2",
-description = "Bzip2 compression library.",
-libs = { "bz2" },
-full = true,
-}
-
 -- zlib
 newtemplate{
 name = "zlib",
@@ -101,125 +96,61 @@ libs = { "z" },
 full = true,
 }
 
--- fam
+-------------------------------------------------------------
+-- SDL
+-------------------------------------------------------------
+
+-- SDL-1.2
 newtemplate{
-name = "fam",
-description = "File alteration monitor.",
-libs = { "fam" },
+name = "SDL-1.2",
+description = "Core library from SDL (Simple DirectMedia Layer).",
+libs = { "SDL-1.2" },
 full = false,
 }
 
--- libacl
+-- SDL_net-1.2
 newtemplate{
-name = "libacl",
-description = "Library for handling Access Control Lists.",
-libs = { "acl" },
+name = "SDL_net-1.2",
+description = "Small cross-platform networking library for use with SDL.",
+libs = { "SDL_net-1.2" },
 full = false,
 }
 
--- libattr
+-- SDL_image-1.2
 newtemplate{
-name = "attr",
-description = "Library for handling Extended Attributes",
-libs = { "attr" },
+name = "SDL_image-1.2",
+description = "Library to load images of various formats as SDL surfaces.",
+libs = { "SDL_image-1.2" },
 full = false,
 }
 
--- libidn
+-- SDL_mixer-1.2
 newtemplate{
-name = "libidn",
-description = "Support for Internationalized Domain Names.",
-libs = { "idn" },
+name = "SDL_mixer-1.2",
+description = "A multichannel audio mixer from SDL.",
+libs = { "SDL_image-1.2" },
 full = false,
 }
 
--- OpenSSL
+-- SDL_Pango
 newtemplate{
-name = "OpenSSL",
-description = "The Open Source toolkit for SSL/TLS.",
-libs = { "ssl", "crypto" },
+name = "SDL_Pango",
+description = "Programming Pango via SDL.",
+libs = { "SDL_Pango" },
 full = false,
 }
 
--- OpenLDAP client
+-- SDL_gfx
 newtemplate{
-name = "lber-2.4",
-description = "OpenLDAP client libraries.",
-libs = { "lber-2.4", "ldap-2.4", "ldap_r-2.4" },
+name = "SDL_gfx",
+description = "SDL graphics routines for primitives and other support functions.",
+libs = { "SDL_gfx" },
 full = false,
 }
 
--- Cyrus SASL
-newtemplate{
-name = "sasl",
-description = "The Cyrus SASL API.",
-libs = { "sasl2" },
-full = false,
-}
-
--- libxml2
-newtemplate{
-name = "libxml2",
-description = "Library for handling xml files.",
-libs = { "xml2" },
-full = true,
-}
-
--- expat
-newtemplate{
-name = "expat",
-description = "An XML 1.0 parser written in C.",
-libs = { "expat" },
-full = false,
-}
-
--- musicbrainz
-newtemplate{
-name = "musicbrainz",
-description = "MusicBrainz is the second generation incarnation of the CD Index.",
-libs = { "musicbrainz" },
-full = true,
-}
-
--- asound (ALSA)
-newtemplate{
-name = "ALSA",
-description = "Advanced Linux Sound Architecture.",
-libs = { "asound" },
-full = false,
-}
-
--- libogg
-newtemplate{
-name = "libogg",
-description = "Libogg is a library for manipulating ogg bitstreams.",
-libs = { "ogg" },
-full = false,
-}
-
--- libtag
-newtemplate{
-name = "libtag",
-description = "Provides an interface for reading additional data from MP3, Ogg Vorbis, and MPEG files.",
-libs = { "tag", "tag_c" },
-full = false,
-}
-
--- pcre
-newtemplate{
-name = "pcre",
-description = "Library providing PERL regexp functionality.",
-libs = { "pcre", "pcrecpp", "pcreposix" },
-full = false,
-}
-
--- ICU
-newtemplate{
-name = "ICU",
-description = "ICU is a set of libraries that provides robust and full-featured Unicode support.",
-libs = { "icudata", "icui18n", "icuio", "icule", "iculx", "icutu", "icuuc" },
-full = false,
-}
+-------------------------------------------------------------
+-- X11
+-------------------------------------------------------------
 
 -- X core libs (see http://www.x.org/wiki/ModuleDescriptions)
 newtemplate{
@@ -266,53 +197,9 @@ libs = { "GL", "GLU", "GLcore", "IndirectGL", "OSMesa" },
 full = false,
 }
 
--- fontconfig
-newtemplate{
-name = "fontconfig",
-description = "Library for configuring and customizing font access.",
-libs = { "fontconfig" },
-full = false,
-}
-
--- freetype
-newtemplate{
-name = "freetype",
-description = "This library features TrueType fonts for open source projects.",
-libs = { "freetype" },
-full = false,
-}
-
--- gif
-newtemplate{
-name = "gif",
-description = "Library handling GIF files.",
-libs = { "gif", "ungif" },
-full = true,
-}
-
--- jpeg
-newtemplate{
-name = "jpeg",
-description = "Library handling JPEG files.",
-libs = { "jpeg" },
-full = true,
-}
-
--- png
-newtemplate{
-name = "png",
-description = "Library handling PNG files.",
-libs = { "png12", "png" },
-full = true,
-}
-
--- Libart
-newtemplate{
-name = "Libart",
-description = " Libart is a rary for high-performance 2D graphics.",
-libs = { "art_lgpl_2" },
-full = true,
-}
+-------------------------------------------------------------
+-- GTK
+-------------------------------------------------------------
 
 -- ATK
 newtemplate{
@@ -338,6 +225,14 @@ libs = { "cairo" },
 full = false
 }
 
+-- Bigger templates, split in other files.
+dofile(ndir .. "/src/lua/deptemplates/gtk.lua")
+dofile(ndir .. "/src/lua/deptemplates/pango.lua")
+
+-------------------------------------------------------------
+-- QT
+-------------------------------------------------------------
+
 -- QT3
 newtemplate{
 name = "Qt3",
@@ -354,6 +249,10 @@ libs = { "Qt3Support", "QtCLucene", "QtCore", "QtDBus", "QtNetwork", "QtTest", "
 full = false,
 }
 
+-------------------------------------------------------------
+-- KDE 3
+-------------------------------------------------------------
+
 -- kdelibs3
 newtemplate{
 name = "kdelibs3",
@@ -361,6 +260,10 @@ description = "Core libraries from the KDE 4 environment.",
 libs = { "DCOP", "connectionmanager", "kabc", "kabc_dir", "kabc_file", "kabc_ldapkio", "katepartinterfaces", "kdecore", "kdefakes", "kdeinit_cupsdconf", "kdeinit_dcopserver", "kdeinit_kaddprinterwizard", "kdeinit_kbuildsycoca", "kdeinit_kcmshell", "kdeinit_kconf_update", "kdeinit_kcookiejar", "kdeinit_kded", "kdeinit_kio_http_cache_cleaner", "kdeinit_kio_uiserver", "kdeinit_klauncher", "kdeinit_knotify", "kdemm", "kdeprint", "kdeprint_management", "kdesasl", "kdesu", "kdeui", "kdnssd", "khtml", "kimproxy", "kio", "kjava", "kjs", "kmdi", "kmdi2", "kmediaplayer", "kmid", "knewstuff", "kntlm", "kparts", "kresources", "kscreensaver", "kscript", "kspell", "kspell2", "ktexteditor", "kunittest", "kutils", "kwalletbackend", "kwalletclient", "networkstatus", "vcard", "kdefx" },
 full = false,
 }
+
+-------------------------------------------------------------
+-- KDE 4
+-------------------------------------------------------------
 
 -- Phonon (either part of KDE4 or QT4, so we just use a seperate template)
 newtemplate{
@@ -418,8 +321,230 @@ patlibs = { "kdeinit4_.+" },
 full = false,
 }
 
+-------------------------------------------------------------
+-- Graphics support
+-------------------------------------------------------------
 
+-- fontconfig
+newtemplate{
+name = "fontconfig",
+description = "Library for configuring and customizing font access.",
+libs = { "fontconfig" },
+full = false,
+}
 
--- Bigger templates, split in other files.
-dofile(ndir .. "/src/lua/deptemplates/gtk.lua")
-dofile(ndir .. "/src/lua/deptemplates/pango.lua")
+-- freetype
+newtemplate{
+name = "freetype",
+description = "This library features TrueType fonts for open source projects.",
+libs = { "freetype" },
+full = false,
+}
+
+-- gif
+newtemplate{
+name = "gif",
+description = "Library handling GIF files.",
+libs = { "gif", "ungif" },
+full = true,
+}
+
+-- jpeg
+newtemplate{
+name = "jpeg",
+description = "Library handling JPEG files.",
+libs = { "jpeg" },
+full = true,
+}
+
+-- png
+newtemplate{
+name = "png",
+description = "Library handling PNG files.",
+libs = { "png12", "png" },
+full = true,
+}
+
+-- Libart
+newtemplate{
+name = "Libart",
+description = " Libart is a rary for high-performance 2D graphics.",
+libs = { "art_lgpl_2" },
+full = true,
+}
+
+-------------------------------------------------------------
+-- Multimedia Support
+-------------------------------------------------------------
+
+-- musicbrainz
+newtemplate{
+name = "musicbrainz",
+description = "MusicBrainz is the second generation incarnation of the CD Index.",
+libs = { "musicbrainz" },
+full = true,
+}
+
+-- asound (ALSA)
+newtemplate{
+name = "ALSA",
+description = "Advanced Linux Sound Architecture.",
+libs = { "asound" },
+full = false,
+}
+
+-- libogg
+newtemplate{
+name = "libogg",
+description = "Libogg is a library for manipulating ogg bitstreams.",
+libs = { "ogg" },
+full = false,
+}
+
+-- vorbis
+newtemplate{
+name = "vorbis",
+description = "The vorbis general audio compression codec.",
+libs = { "vorbis", "vorbisenc", "vorbisfile" },
+full = false,
+}
+
+-- libtag
+newtemplate{
+name = "libtag",
+description = "Provides an interface for reading additional data from MP3, Ogg Vorbis, and MPEG files.",
+libs = { "tag", "tag_c" },
+full = false,
+}
+
+-- openal
+newtemplate{
+name = "openal",
+description = "Open Audio Library.",
+libs = { "openal" },
+full = false,
+}
+
+-- mad
+newtemplate{
+name = "mad",
+description = "MPEG Audio Decoder.",
+libs = { "mad" },
+full = false,
+}
+
+-------------------------------------------------------------
+-- File system support
+-------------------------------------------------------------
+
+-- fam
+newtemplate{
+name = "fam",
+description = "File alteration monitor.",
+libs = { "fam" },
+full = false,
+}
+
+-- libacl
+newtemplate{
+name = "libacl",
+description = "Library for handling Access Control Lists.",
+libs = { "acl" },
+full = false,
+}
+
+-- libattr
+newtemplate{
+name = "attr",
+description = "Library for handling Extended Attributes",
+libs = { "attr" },
+full = false,
+}
+
+-------------------------------------------------------------
+-- Security
+-------------------------------------------------------------
+
+-- OpenSSL
+newtemplate{
+name = "OpenSSL",
+description = "The Open Source toolkit for SSL/TLS.",
+libs = { "ssl", "crypto" },
+full = false,
+}
+
+-- Cyrus SASL
+newtemplate{
+name = "sasl",
+description = "The Cyrus SASL API.",
+libs = { "sasl2" },
+full = false,
+}
+
+-------------------------------------------------------------
+-- Misc. libraries
+-------------------------------------------------------------
+
+-- Bzip2
+newtemplate{
+name = "Bzip2",
+description = "Bzip2 compression library.",
+libs = { "bz2" },
+full = true,
+}
+
+-- libidn
+newtemplate{
+name = "libidn",
+description = "Support for Internationalized Domain Names.",
+libs = { "idn" },
+full = false,
+}
+
+-- OpenLDAP client
+newtemplate{
+name = "lber-2.4",
+description = "OpenLDAP client libraries.",
+libs = { "lber-2.4", "ldap-2.4", "ldap_r-2.4" },
+full = false,
+}
+
+-- libxml2
+newtemplate{
+name = "libxml2",
+description = "Library for handling xml files.",
+libs = { "xml2" },
+full = true,
+}
+
+-- expat
+newtemplate{
+name = "expat",
+description = "An XML 1.0 parser written in C.",
+libs = { "expat" },
+full = false,
+}
+
+-- pcre
+newtemplate{
+name = "pcre",
+description = "Library providing PERL regexp functionality.",
+libs = { "pcre", "pcrecpp", "pcreposix" },
+full = false,
+}
+
+-- ICU
+newtemplate{
+name = "ICU",
+description = "ICU is a set of libraries that provides robust and full-featured Unicode support.",
+libs = { "icudata", "icui18n", "icuio", "icule", "iculx", "icutu", "icuuc" },
+full = false,
+}
+
+-- physfs-1.0
+newtemplate{
+name = "physfs-1.0",
+description = "PhysicsFS file abstraction layer for games.",
+libs = { "physfs-1.0" },
+full = true,
+}

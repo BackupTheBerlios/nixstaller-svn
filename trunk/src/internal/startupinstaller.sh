@@ -19,7 +19,7 @@
 
 # Does some simple checking, and tries to launch the right installer frontend
 
-source "utils.sh"
+. "utils.sh"
 
 # Unpacks $1.lzma to lzma and removes $1.lzma
 # $1: File to handle

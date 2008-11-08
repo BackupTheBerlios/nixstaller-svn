@@ -31,6 +31,6 @@ else
     done
 fi
 
-source "$NDIR/src/internal/utils.sh"
+. "$NDIR/src/internal/utils.sh"
 
 runluascript "$NDIR" "$NDIR/src/lua/gensyms.lua" $@
