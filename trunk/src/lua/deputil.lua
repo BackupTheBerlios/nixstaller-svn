@@ -20,6 +20,14 @@ dofile(ndir .. "/src/lua/shared/utils-public.lua")
 dofile(ndir .. "/src/lua/shared/package-public.lua")
 dofile(ndir .. "/src/lua/deptemplates.lua")
 
+-- UNDONE: Remove(?)
+local templibcount, tempcount = 0, 0
+for n, t in ipairs(pkg.deptemplates) do
+    templibcount = templibcount + #t.libs
+    tempcount = n
+end
+
+print(string.format("Loaded %d libraries filed by %d templates.", templibcount, tempcount))
 
 list, gen, gent, auto = false, false, false
 

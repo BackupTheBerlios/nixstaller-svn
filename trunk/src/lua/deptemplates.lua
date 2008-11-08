@@ -178,7 +178,7 @@ libs = { "Xaw", "Xaw6", "Xaw7", "Xaw8", "Xt", "oldX" },
 newtemplate{
 name = "xcb",
 description = "XCB libraries.",
-libs = { "xcb-composite", "xcb-damage", "xcb-dpms", "xcb-glx", "xcb-randr", "xcb-record", "xcb-render", "xcb-res", "xcb-screensaver", "xcb-shape", "xcb-shm", "xcb-sync", "xcb-xevie", "xcb-xf86dri", "xcb-xfixes", "xcb-xinerama", "xcb-xlib", "xcb-xprint", "xcb-xtest", "xcb-xv", "xcb-xvmc", "xcb" },
+libs = { "xcb-composite", "xcb-damage", "xcb-dpms", "xcb-glx", "xcb-randr", "xcb-record", "xcb-render", "xcb-render-util", "xcb-res", "xcb-screensaver", "xcb-shape", "xcb-shm", "xcb-sync", "xcb-xevie", "xcb-xf86dri", "xcb-xfixes", "xcb-xinerama", "xcb-xlib", "xcb-xprint", "xcb-xtest", "xcb-xv", "xcb-xvmc", "xcb" },
 full = false,
 }
 
@@ -228,6 +228,46 @@ full = false
 -- Bigger templates, split in other files.
 dofile(ndir .. "/src/lua/deptemplates/gtk.lua")
 dofile(ndir .. "/src/lua/deptemplates/pango.lua")
+
+-- gtksourceview-2.0
+newtemplate{
+name = "gtksourceview-2.0",
+description = "GTK Sourceview widget.",
+libs = { "gtksourceview-2.0" },
+full = false,
+}
+
+-- vte
+newtemplate{
+name = "vte",
+description = "Terminal emulator widget for GTK+ 2.0.",
+libs = { "vte" },
+full = false,
+}
+
+-- glade-2.0
+newtemplate{
+name = "glade-2.0",
+description = "This library allows to load externally stored user interfaces into programs.",
+libs = { "glade-2.0" },
+full = false,
+}
+
+-- libsexy
+newtemplate{
+name = "libsexy",
+description = "Extended widgets for GTK+.",
+libs = { "sexy" },
+full = false,
+}
+
+-- gtkspell                                                                   
+newtemplate{                                                                  
+name = "gtkspell",                                                            
+description = "Spell checking for GTK widgets.",
+libs = { "gtkspell" },                                                        
+full = false,                                                                  
+}
 
 -------------------------------------------------------------
 -- QT
@@ -318,6 +358,146 @@ name = "KDE4-libs",
 description = "Core libraries from the KDE 4 environment.",
 libs = { "kde3support", "kdesu", "kdeui", "kdnssd", "kfile", "khtml", "kimproxy", "kio", "kjs", "kjsapi", "kjsembed", "kmediaplayer", "knewstuff2", "knotifyconfig", "kntlm", "kparts", "krosscore", "krossui", "ktexteditor", "kunittest", "kutils", "kwalletbackend", "nepomuk", "solid", "threadweaver", "kdecore", "kdefakes", "kpty" },
 patlibs = { "kdeinit4_.+" },
+full = false,
+}
+
+-------------------------------------------------------------
+-- GNOME
+-------------------------------------------------------------
+
+-- gnomeui-2
+newtemplate{
+name = "gnomeui-2",
+description = "GNOME 2 User Intreface library.",
+libs = { "gnomeui-2" },
+full = false,
+}
+
+-- gnome-2
+newtemplate{
+name = "gnome-2",
+description = "Core GNOME 2 library.",
+libs = { "gnome-2" },
+full = false,
+}
+
+-- gnome-desktop-2
+newtemplate{
+name = "gnome-desktop-2",
+description = "GNOME 2 utility library for loading .desktop files.",
+libs = { "gnome-desktop-2" },
+full = false,
+}
+
+-- gnomecanvas-2
+newtemplate{
+name = "gnomecanvas-2",
+description = "A powerful object-oriented display.",
+libs = { "gnomecanvas-2" },
+full = false,
+}
+
+-- gnomevfs-2
+newtemplate{
+name = "gnomevfs-2",
+description = "GNOME VFS is the GNOME virtual file system.",
+libs = { "gnomevfs-2" },
+full = false,
+}
+
+-- gnome-keyring
+newtemplate{
+name = "gnome-keyring",
+description = "GNOME Keyring password manager.",
+libs = { "gnome-keyring" },
+full = false,
+}
+
+-- bonoboui-2
+newtemplate{
+name = "bonoboui-2",
+description = "The GNOME bonobo UI library.",
+libs = { "bonoboui-2" },
+full = false,
+}
+
+-- bonobo
+newtemplate{
+name = "bonobo",
+description = "Bonobo CORBA interfaces library.",
+libs = { "bonobo-activation", "bonobo-2" },
+full = false,
+}
+
+-- ORBit
+newtemplate{
+name = "ORBit",
+description = "High-Performance CORBA Object Request Broker.",
+libs = { "ORBit-2", "ORBitCosNaming-2", "ORBit-imodule-2" },
+full = false,
+}
+
+-- gconf
+newtemplate{
+name = "gconf",
+description = "GNOME configuration database system.",
+libs = { "gconf-2" },
+full = false,
+}
+
+-- startup-notification
+newtemplate{
+name = "startup-notification",
+description = "Library which allows programs to give visual feedback when they are launched.",
+libs = { "startup-notification-1" },
+full = false,
+}
+
+-- gnome-media-profiles
+newtemplate{           
+name = "gnome-media-profiles",
+description = "Libraries for the GNOME media utilities.",             
+libs = { "gnome-media-profiles" },
+full = false,
+}
+
+-- nautilus-burn
+newtemplate{    
+name = "nautilus-burn",
+description = "Lets you burn CDs and DVDs easily with Nautilus.",      
+libs = { "nautilus-burn" },
+full = false,
+}
+
+-- nautilus-burn
+newtemplate{    
+name = "nautilus-extension",
+description = "Required for Nautilus extensions.",      
+libs = { "nautilus-extension" },
+full = false,
+}
+
+-- totem-plparser
+newtemplate{     
+name = "totem-plparser",
+description = "A library to parse playlists.",       
+libs = { "totem-plparser", "totem-plparser-mini" },
+full = false,
+}
+
+-- gsf
+newtemplate{
+name = "gsf",
+description = "GNOME Structured File Library.",
+libs = { "gsf-1" },
+full = false,       
+}
+
+-- rsvg
+newtemplate{
+name = "rsvg",                                                                
+description = "The rsvg library is an efficient renderer for Scalable Vector Graphics (SVG) pictures.",
+libs = { "rsvg-2" },
 full = false,
 }
 
@@ -433,6 +613,23 @@ libs = { "mad" },
 full = false,
 }
 
+-- GStreamer base
+newtemplate{
+name = "GStreamer-base",
+description = "A streaming media framework.",
+libs = { "gstaudio-0.10", "gstcdda-0.10", "gstfft-0.10", "gstinterfaces-0.10", "gstnetbuffer-0.10", "gstpbutils-0.10", "gstriff-0.10", "gstrtp-0.10", "gstrtsp-0.10", "gstsdp-0.10", "gsttag-0.10", "gstvideo-0.10" },
+full = false,
+}
+
+-- GStreamer core
+newtemplate{
+name = "GStreamer-core",
+description = "A streaming media framework.",
+libs = { "gstbase-0.10", "gstcheck-0.10", "gstcontroller-0.10", "gstdataprotocol-0.10", "gstnet-0.10", "gstreamer-0.10" },
+full = false,
+}
+
+
 -------------------------------------------------------------
 -- File system support
 -------------------------------------------------------------
@@ -481,6 +678,74 @@ libs = { "sasl2" },
 full = false,
 }
 
+-- gnutls
+newtemplate{
+name = "gnutls",
+description = "Portable library which implements TLS and SSL.",
+libs = { "gnutls", "gnutls-extra", "gnutls-openssl" },
+full = false,
+}
+
+-- nss
+newtemplate{
+name = "nss",
+description = "Mozilla network security services.",
+libs = { "freebl3", "nss3", "nssckbi", "nssdbm3", "nssutil3", "smime3", "softokn3", "ssl3" },
+full = false,
+}
+
+-- krb
+newtemplate{
+name = "krb",
+description = "Kerberos is a system for authenticating users and services on a network.",
+libs = { "des425", "gssapi_krb5", "k5crypto", "krb4", "krb5", "krb5support" },
+full = false,
+}
+
+-- keyutils
+newtemplate{
+name = "keyutils",
+description = "a set of utilities for managing the key retention facility in the kernel.",
+libs = { "keyutils" },
+full = false,
+}
+
+-- gcrypt
+newtemplate{
+name = "gcrypt",
+description = "GNU Crypto library.",
+libs = { "gcrypt" },
+full = false,
+}
+
+-------------------------------------------------------------
+-- dbus
+-------------------------------------------------------------
+
+-- dbus
+newtemplate{
+name = "dbus",
+description = "Message bus, used for sending messages between applications.",
+libs = { "dbus-1" },
+full = false,
+}
+
+-- dbus-glib
+newtemplate{
+name = "dbus-glib",
+description = "dbus glib binding.",
+libs = { "dbus-glib-1" },
+full = false,
+}
+
+-- dbus-qt3
+newtemplate{
+name = "dbus-qt3",
+description = "dbus QT 3 binding.",
+libs = { "dbus-qt-1" },
+full = false,
+}
+
 -------------------------------------------------------------
 -- Misc. libraries
 -------------------------------------------------------------
@@ -490,7 +755,7 @@ newtemplate{
 name = "Bzip2",
 description = "Bzip2 compression library.",
 libs = { "bz2" },
-full = true,
+full = false,
 }
 
 -- libidn
@@ -514,7 +779,7 @@ newtemplate{
 name = "libxml2",
 description = "Library for handling xml files.",
 libs = { "xml2" },
-full = true,
+full = false,
 }
 
 -- expat
@@ -546,5 +811,101 @@ newtemplate{
 name = "physfs-1.0",
 description = "PhysicsFS file abstraction layer for games.",
 libs = { "physfs-1.0" },
-full = true,
+full = false,
+}
+
+-- popt
+newtemplate{
+name = "popt",
+description = "Library for parsing commandline parameters.",
+libs = { "popt" },
+full = false,
+}
+
+-- python 2.5
+newtemplate{
+name = "python-2.5",
+description = "Interactive high-level object-oriented language (version 2.5).",
+libs = { "python2.5" },
+full = false,
+}
+
+-- sqlite3
+newtemplate{
+name = "sqlite3",
+description = "SQLite is a C library that implements an SQL database engine.",
+libs = { "sqlite3" },
+full = false,
+}
+
+-- nspr
+newtemplate{
+name = "nspr",
+description = "NetScape Portable Runtime Library",
+libs = { "nspr4", "plc4", "plds4" },
+full = false,
+}
+
+-- hal
+newtemplate{
+name = "hal",
+description = "Hardware Abstraction Layer.",
+libs = { "hal", "hal-storage" },
+full = false,
+}
+
+-- com_err
+newtemplate{
+name = "com_err",
+description = "A common error-handling mechanism.",
+libs = { "com_err", "ss" },
+full = false,
+}
+
+-- Evolution Data Center
+newtemplate{
+name = "evolution-datacenter-1.2",
+description = "Camel is a generic messaging library.",
+libs = { "camel-1.2", "camel-provider-1.2", "ebook-1.2", "ecal-1.2", "edata-book-1.2", "edata-cal-1.2", "edataserver-1.2", "edataserverui-1.2", "egroupwise-1.2", "exchange-storage-1.2", "gdata-1.2", "gdata-google-1.2" },
+full = false,
+}
+
+-- soup-2.4
+newtemplate{
+name = "soup-2.4",
+description = "An HTTP library implementation in C.",
+libs = { "soup-2.4" },
+full = false,
+}
+
+-- ncurses
+newtemplate{
+name = "ncurses",
+description = "ncurses allows the programmer to write text user interfaces in a terminal-independent manner.",
+libs = { "ncurses", "ncursesw", "menu", "menuw", "form", "formw", "ncurses++", "ncurses++w", "panel", "panelw", "tic" },
+full = false,
+}
+
+-- libnotify
+newtemplate{
+name = "libnotify",
+description = "dbus notifications library.",
+libs = { "notify" },
+full = false,
+}
+
+-- libpurple
+newtemplate{
+name = "libpurple",
+description = "Library providing support for various IM protocols.",
+libs = { "purple", "purple-client" },
+full = false,
+}
+
+-- enchant
+newtemplate{
+name = "enchant",
+description = "Wrapper library for various spell checking engines.",
+libs = { "enchant" },
+full = false,
 }
