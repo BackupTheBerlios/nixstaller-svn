@@ -20,7 +20,7 @@ newtemplate{
 name = "GTK2",
 description = "Used to build graphical interfaces.",
 libs = { "gtk-x11-2.0", "gdk-x11-2.0", "gdk_pixbuf-2.0", "gdk_pixbuf_xlib-2.0", "gthread-2.0" },
-full = false,
+tags = { "common-desktop", "GTK" },
 
 post = function (dest, destdir, libmap, full, copy)
     -- If we're creating a full dependency and are copying files, we have to make

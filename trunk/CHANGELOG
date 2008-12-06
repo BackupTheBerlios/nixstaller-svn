@@ -18,6 +18,10 @@
 - del() function for luacfgmenu
 - visible() function for every widget
 - screen:update() function
+- Changed --help output from generated installer
+- Installer frontend can be specified through commandline argument
+- Installer can dump configuration info.
+- Made genprojdir.sh help output more consistent
 
 
 0.3 --> 0.4

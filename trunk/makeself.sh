@@ -64,7 +64,7 @@
 #           Unset the $CDPATH variable to avoid problems if it is set. (Debian)
 #           Better handling of dot files in the archive directory.
 #
-# (C) 1998-2005 by Stéphane Peter <megastep@megastep.org>
+# (C) 1998-2005 by Stï¿½phane Peter <megastep@megastep.org>
 #
 # This software is released under the terms of the GNU GPL version 2 and above
 # Please read the license at http://www.gnu.org/copyleft/gpl.html
@@ -197,6 +197,59 @@ do
 	LSM_CMD="cat \"$2\" >> \"\$archname\""
 	shift 2
 	;;
+    # Nixstaller options
+    --instname)
+    INSTNAME="$2"
+    shift 2
+    ;;
+    --instpack)
+    INSTPACK="$2"
+    shift 2
+    ;;
+    --instos)
+    INSTOS="$2"
+    shift 2
+    ;;
+    --instarch)
+    INSTARCH="$2"
+    shift 2
+    ;;
+    --instfrontends)
+    INSTFRONTENDS="$2"
+    shift 2
+    ;;
+    --pkgname)
+    PKGNAME="$2"
+    shift 2
+    ;;
+    --pkgversion)
+    PKGVERSION="$2"
+    shift 2
+    ;;
+    --pkgsummary)
+    PKGSUMMARY="$2"
+    shift 2
+    ;;
+    --pkgdesc)
+    PKGDESC="$2"
+    shift 2
+    ;;
+    --pkggroup)
+    PKGGROUP="$2"
+    shift 2
+    ;;
+    --pkglicense)
+    PKGLICENSE="$2"
+    shift 2
+    ;;
+    --pkgmaint)
+    PKGMAINT="$2"
+    shift 2
+    ;;
+    --pkgurl)
+    PKGURL="$2"
+    shift 2
+    ;;
     -h | --help)
 	MS_Usage
 	;;

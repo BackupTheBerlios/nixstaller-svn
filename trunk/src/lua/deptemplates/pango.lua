@@ -20,7 +20,7 @@ newtemplate{
 name = "Pango",
 description = "System for Layout and Rendering of Internationalised Text.",
 libs = { "pango-1.0", "pangocairo-1.0", "pangoft2-1.0", "pangox-1.0", "pangoxft-1.0" },
-full = false,
+tags = { "common-desktop", "GTK" },
 
 post = function (dest, destdir, libmap, full, copy)
     -- If we're creating a full dependency and are copying files, we have to make

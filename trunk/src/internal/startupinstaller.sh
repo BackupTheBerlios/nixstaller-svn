@@ -55,6 +55,20 @@ configure()
         echo "Warning: No installer for \"$CURRENT_ARCH\" found, defaulting to x86..."
         CURRENT_ARCH="x86"
     fi
+    
+    while true
+    do
+        case "${1}" in
+            --frontend )
+                FRONTENDS="$2"
+                [ "$FRONTENDS" = "ncurses" ] && FRONTENDS="ncurs" # Convert from user string
+                shift 2
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
 }
 
 # Uses edelta to reconstruct frontend binaries
@@ -75,7 +89,7 @@ if [ -z "$ARCH_TYPE" ]; then
     ARCH_TYPE="gzip"
 fi
 
-configure
+configure $*
 
 # Get source frontend to use for edelta
 NCURS_SRC=`awk '$1=="ncurs"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`

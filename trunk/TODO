@@ -5,9 +5,7 @@ OVERALL
 - Use locale fix from latest kdesu?
 - Use deltas <--> patches for different frontends, OS'es, archs
 - Modify Makeself
-    - More commandline options (frontend choosing, package info?, plain install mode?)
-    - Merge makeself header with startinstaller?
-    - Remove some illogical commandline options?
+    - Remove some illogical commandline options (finished?)
     - MD5 fixes for other platforms (Solaris, NetBSD etc)
 - Better util.a configure testing?
 - Root usage: change to use privileged user? (default root)
@@ -27,10 +25,11 @@ OVERALL
     - Additional wrongdeps/wronglibs checks?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
-    - For list: LSB Compliance, others?
-    - More templates
-    - Check recommended full/simple for existing templates
-    - Test templates and check if they can be full and need extra code for being full.
+    - For list: LSB Compliance, others? --> LSB tag?
+    - More templates?
+    - Test templates and check if they can be full and need extra code for being full (eg fontconfig, freetype) (finished?).
+    - Add description for all options (finished?)
+    - Check for messages using 'library' and change (finished?)
 - genprojdir.sh:
     - Overwrite-options and commandline options for genprojdir.sh
     - handle chained short options with genprojdir.sh? (getopt?)
@@ -43,6 +42,8 @@ OVERALL
     - Convert utf to native for ncurses frontend?
 - Installer profiles?
 - Check messages like pkg enable screen which refer to a default
+- Set textfield size on demand/automaticly
+- Unattended installations?
 
 
 PACKAGING
@@ -62,7 +63,7 @@ MAIN
 
 
 DOCS
-- utils.tabelfind, utils.tablemerge, utils.mapsize and the rest from CHANGELOG
+- utils.tablefind, utils.tablemerge, utils.mapsize and the rest from CHANGELOG
 - install.getpkgdir() (now with arg)
 - utils.removerec()
 - Nested block strings ([=[]=])
@@ -71,6 +72,7 @@ DOCS
 - add/del options for menu, radiobutton, checkbox
 - menu, radiobutton, checkbox can now be empty
 - del() function for luacfgmenu
+- GTK/Pango templates
 
 
 RELEASE

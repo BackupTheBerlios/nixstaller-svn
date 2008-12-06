@@ -77,15 +77,16 @@ usage()
     echo
     echo "[options] can be one of the following things (all are optional):"
     echo
-    echo " --appname, -n name               The application name. Default: My App"
-    echo " --arch arch1[, arch2, ...]       CPU architectures the installer should support. Valid values: x86, x86_64. Default: current arch."
+    echo " --help, -h                       Print this message."
+    echo " --appname, -n <name>             The application name. Default: My App"
+    echo " --arch <arch>                    One or more CPU architectures the installer should support. Valid values: x86, x86_64. Default: current arch."
     echo " --archtype, -a lzma/gzip/bzip2   The archive type used for packing the installation files. Default: lzma"
-    echo " --deflang, -d lang               The default language. Default: english"
-    echo " --frontends, -f fr1[, fr2, ...]  Frontends to include. Valid values: gtk, fltk, ncurses. Default: gtk fltk ncurses."
-    echo " --intropic, -i picture           Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
-    echo " --languages, -l l1[, l2, ...]    Languages to include (copied from main lang/ directory). Default: english dutch"
-    echo " --logo file                      Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
-    echo " --os, -o os1[, os2, ...]         Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
+    echo " --deflang, -d <lang>             The default language. Default: english"
+    echo " --frontends, -f <frontends>      One or more frontends to include. Valid values: gtk, fltk and ncurses. Default: gtk fltk ncurses."
+    echo " --intropic, -i <picture>         Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
+    echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch"
+    echo " --logo <file>                    Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
+    echo " --os, -o <OSs>                   Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
     echo " --pkg                            Generate a template package.lua with defaults, adds specific 'Package Mode' code to install.lua."
     exit 1
 }

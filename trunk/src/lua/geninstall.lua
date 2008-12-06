@@ -609,8 +609,30 @@ function CreateInstaller()
     if (not string.find(outname, "^/")) then
         outname = curdir .. "/" .. outname
     end
-    os.execute(string.format("\"%s/makeself.sh\" --gzip \"%s/tmp\" \"%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1",
-                             ndir, confdir, outname))
+    
+    -- Add nixstaller specific options
+    local nixstopts = ""
+    function addarg(arg, val)
+        if val then
+            nixstopts = string.format("%s %s \"%s\"", nixstopts, arg, val)
+        end
+    end
+    
+    addarg("--instname", cfg.appname)
+    addarg("--instpack", cfg.archivetype)
+    addarg("--instos", tabtostr(cfg.targetos))
+    addarg("--instarch", tabtostr(cfg.targetarch))
+    addarg("--instfrontends", tabtostr(cfg.frontends))
+    addarg("--pkgname", pkg.name)
+    addarg("--pkgversion", pkg.version .. "-" .. pkg.release)
+    addarg("--pkgsummary", pkg.summary)
+    addarg("--pkgdesc", pkg.description)
+    addarg("--pkggroup", pkg.group)
+    addarg("--pkglicense", pkg.license)
+    addarg("--pkgmaint", pkg.maintainer)
+    addarg("--pkgurl", pkg.url)
+    
+    os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1", ndir, ndir, nixstopts, confdir, outname))
 end
 
 CheckArgs()
