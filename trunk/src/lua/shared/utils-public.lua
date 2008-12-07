@@ -196,3 +196,16 @@ function utils.patch(file, pattern, newstr)
     os.remove(tmpf)
     return true
 end
+
+function utils.mkdirperm(dir)
+    local path = ""
+    local ret = false
+    for d in string.gmatch(dir, "/[^/]*") do
+        path = path .. d
+        if not os.fileexists(path) then
+            break
+        end
+        ret = (os.writeperm(path) and os.readperm(path))
+    end
+    return ret
+end

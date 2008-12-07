@@ -22,6 +22,8 @@
 - Installer frontend can be specified through commandline argument
 - Installer can dump configuration info.
 - Made genprojdir.sh help output more consistent
+- install.executecmd() and install.executecmdasroot() functions
+- install.extract() function
 
 
 0.3 --> 0.4

@@ -51,8 +51,8 @@ private:
     void Install(int statluafunc, int progluafunc, int outluafunc);
     void InitArchive(char *archname);
     void ExtractFiles(void);
-    int ExecuteCommand(const char *cmd, bool required, const char *path);
-    int ExecuteCommandAsRoot(const char *cmd, bool required, const char *path);
+    int ExecuteCommand(const char *cmd, bool required, const char *path, int luaout);
+    int ExecuteCommandAsRoot(const char *cmd, bool required, const char *path, int luaout);
     const char *GetDefaultPath(void) const { return "/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
     void VerifyIfInstalling(void);
     void UpdateStatusText(const char *str);
@@ -102,7 +102,7 @@ public:
     bool VerifyDestDir();
 
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
-    static void CMDSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->AddOutput(std::string(s)); };
+    static void CMDSUOutFunc(const char *s, void *p);
     static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->UpdateUI(); };
     
     static void LuaHook(lua_State *L, lua_Debug *ar);

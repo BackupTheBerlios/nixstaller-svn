@@ -25,21 +25,7 @@ function pkg.getbindir(f)
 end
 
 function pkg.needroot()
-    -- returns true if top most existing directory has write/read permissions for current user
-    local function checkdirs(dir)
-        local path = ""
-        local ret = false
-        for d in string.gmatch(dir, "/[^/]*") do
-            path = path .. d
-            if not os.fileexists(path) then
-                break
-            end
-            ret = (os.writeperm(path) and os.readperm(path))
-        end
-        return ret
-    end
-        
-    return ((pkg.register and pkg.canregister) or not checkdirs(pkg.destdir) or not checkdirs(pkg.bindir))
+    return ((pkg.register and pkg.canregister) or not utils.mkdirperm(pkg.destdir) or not utils.mkdirperm(pkg.bindir))
 end
 
 function pkg.setpermissions()

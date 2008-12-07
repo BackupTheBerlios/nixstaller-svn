@@ -100,6 +100,8 @@ void CBaseInstall::Init(int argc, char **argv)
     lua_pushlightuserdata(NLua::LuaState, this);
     lua_setfield(NLua::LuaState, LUA_REGISTRYINDEX, "installer");
     NLua::LuaSetHook(LuaHook);
+    
+    m_SUHandler.SetThinkFunc(SUThinkFunc, this);
 }
 
 void CBaseInstall::CoreUpdateLanguage()
@@ -285,12 +287,10 @@ void CBaseInstall::ExtractFiles()
     }
 }
 
-int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path)
+int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path, int luaout)
 {
-    VerifyIfInstalling();
-    
     if (m_bAlwaysRoot)
-        return ExecuteCommandAsRoot(cmd, required, path);
+        return ExecuteCommandAsRoot(cmd, required, path, luaout);
     
     // Redirect stderr to stdout, so that errors will be displayed too
     const char *append = " 2>&1";
@@ -303,7 +303,9 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
     else
         setenv("PATH", GetDefaultPath(), 1);
     
-    AddOutput(CreateText("\n=============================\nExecute: %s\n\n", cmd));
+    NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
+    if (!func)
+        luaL_error(NLua::LuaState, "Error: could not use output function\n");
     
     CPipedCMD pipe(command);
     std::string line;
@@ -321,7 +323,8 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
                 line += (char)ch;
                 if ((char)ch == '\n')
                 {
-                    AddOutput(line.c_str());
+                    func << line;
+                    func(0);
                     line.clear();
                 }
             }
@@ -329,28 +332,30 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
     }
             
     if (!line.empty())
-        AddOutput(line.c_str());
-            
-    AddOutput("=============================\n");
+    {
+        func << line.c_str();
+        func(0);
+    }
+    
     return pipe.Close(required); // By calling Close() explicity its able to throw exceptions
 }
 
-int CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const char *path)
+int CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const char *path, int luaout)
 {
-    VerifyIfInstalling();
-    
     GetSUPasswd("This installation requires root (administrator) privileges in order to continue.\n"
                 "Please enter the administrative password below.", true);
     
-    m_SUHandler.SetOutputFunc(CMDSUOutFunc, this);
+    NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
+    if (!func)
+        luaL_error(NLua::LuaState, "Error: could not use output function\n");
+
+    m_SUHandler.SetOutputFunc(CMDSUOutFunc, &func);
 
     if (!path || !path[0])
         path = GetDefaultPath();
     
     m_SUHandler.SetPath(path);
     m_SUHandler.SetCommand(cmd);
-    
-    AddOutput(CreateText("\n=============================\nExecute: %s\n\n", cmd));
     
     if (!m_SUHandler.ExecuteCommand(m_szPassword))
     {
@@ -362,7 +367,7 @@ int CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const cha
         }
     }
     
-    AddOutput("=============================\n");
+    m_SUHandler.SetOutputFunc(NULL);
     
     return m_SUHandler.Ret();
 }
@@ -519,14 +524,14 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
     NLua::RegisterFunction(LuaGetPkgDir, "getpkgdir", "install", this);
     NLua::RegisterFunction(LuaGetMacAppPath, "getmacapppath", "install", this);
-    NLua::RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
-    NLua::RegisterFunction(LuaExecuteCMD, "execute", "install", this);
-    NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executeasroot", "install", this);
+//     NLua::RegisterFunction(LuaExtractFiles, "extractfiles", "install", this);
+    NLua::RegisterFunction(LuaExecuteCMD, "executecmd", "install", this);
+    NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executecmdasroot", "install", this);
     NLua::RegisterFunction(LuaAskRootPW, "askrootpw", "install", this);
-    NLua::RegisterFunction(LuaSetStatusMSG, "setstatus", "install", this);
-    NLua::RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
-    NLua::RegisterFunction(LuaPrintInstOutput, "print", "install", this);
-    NLua::RegisterFunction(LuaStartInstall, "startinstall", "install", this);
+//     NLua::RegisterFunction(LuaSetStatusMSG, "setstatus", "install", this);
+//     NLua::RegisterFunction(LuaSetStepCount, "setstepcount", "install", this);
+//     NLua::RegisterFunction(LuaPrintInstOutput, "print", "install", this);
+//     NLua::RegisterFunction(LuaStartInstall, "startinstall", "install", this);
     NLua::RegisterFunction(LuaLockScreen, "lockscreen", "install", this);
     NLua::RegisterFunction(LuaVerifyDestDir, "verifydestdir", "install", this);
     NLua::RegisterFunction(LuaExtraFilesPath, "extrafilespath", "install", this);
@@ -654,6 +659,13 @@ bool CBaseInstall::VerifyDestDir(void)
     }
     
     return true;
+}
+
+void CBaseInstall::CMDSUOutFunc(const char *s, void *p)
+{
+    NLua::CLuaFunc *func = static_cast<NLua::CLuaFunc *>(p);
+    (*func) << s;
+    (*func)(0);
 }
 
 #ifdef WITH_APPMANAGER
@@ -885,14 +897,17 @@ int CBaseInstall::LuaExecuteCMD(lua_State *L)
     CBaseInstall *pInstaller = GetFromClosure(L);
     const char *cmd = luaL_checkstring(L, 1);
     
+    luaL_checktype(NLua::LuaState, 2, LUA_TFUNCTION);
+    int luaout = NLua::MakeReference(2);
+    
     bool required = true;
     
-    if (lua_isboolean(L, 2))
-        required = lua_toboolean(L, 2);
+    if (lua_isboolean(L, 3))
+        required = lua_toboolean(L, 3);
     
-    const char *path = lua_tostring(L, 3);
+    const char *path = lua_tostring(L, 4);
     
-    lua_pushinteger(L, pInstaller->ExecuteCommand(cmd, required, path));
+    lua_pushinteger(L, pInstaller->ExecuteCommand(cmd, required, path, luaout));
     return 1;
 }
 
@@ -901,21 +916,23 @@ int CBaseInstall::LuaExecuteCMDAsRoot(lua_State *L)
     CBaseInstall *pInstaller = GetFromClosure(L);
     const char *cmd = luaL_checkstring(L, 1);
     
+    luaL_checktype(NLua::LuaState, 2, LUA_TFUNCTION);
+    int luaout = NLua::MakeReference(2);
+    
     bool required = true;
     
-    if (lua_isboolean(L, 2))
-        required = lua_toboolean(L, 2);
+    if (lua_isboolean(L, 3))
+        required = lua_toboolean(L, 3);
     
-    const char *path = lua_tostring(L, 3);
+    const char *path = lua_tostring(L, 4);
     
-    lua_pushinteger(L, pInstaller->ExecuteCommandAsRoot(cmd, required, path));
+    lua_pushinteger(L, pInstaller->ExecuteCommandAsRoot(cmd, required, path, luaout));
     return 1;
 }
 
 int CBaseInstall::LuaAskRootPW(lua_State *L)
 {
     CBaseInstall *pInstaller = GetFromClosure(L);
-    pInstaller->VerifyIfInstalling();
     pInstaller->GetSUPasswd("This installation requires root (administrator) privileges in order to continue.\n"
         "Please enter the administrative password below.", true);
     return 0;

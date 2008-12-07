@@ -48,6 +48,7 @@ public:
     void Run(void);
     
     static void DestroyCB(GtkWidget *widget, gpointer data) { gtk_main_quit (); };
+    static gboolean IdleRunner(gpointer data) { (static_cast<CGTKBase *>(data))->CoreRun(); return TRUE; }
 };
 
 // Utils

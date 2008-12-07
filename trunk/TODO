@@ -6,7 +6,6 @@ OVERALL
 - Use deltas <--> patches for different frontends, OS'es, archs
 - Modify Makeself
     - Remove some illogical commandline options (finished?)
-    - MD5 fixes for other platforms (Solaris, NetBSD etc)
 - Better util.a configure testing?
 - Root usage: change to use privileged user? (default root)
 - Way to specifiy frontend when installer is started
@@ -21,7 +20,7 @@ OVERALL
     - Auto generate symmap?
     - symmap --> symmap.lua?
     - gensyms.lua option to (not) compress output file
-    - Better progress indication
+    - Better progress indication --> Remove any (debug) timeouts
     - Additional wrongdeps/wronglibs checks?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
@@ -40,10 +39,15 @@ OVERALL
     - Fix ncurses and perhaps others for width calculating
     - Convert language files to utf?
     - Convert utf to native for ncurses frontend?
+    - Neater tr() function? Document it?
 - Installer profiles?
 - Check messages like pkg enable screen which refer to a default
 - Set textfield size on demand/automaticly
 - Unattended installations?
+
+
+TEST
+- MD5 code for instheader.sh, makeself.sh and generic packages.
 
 
 PACKAGING
@@ -60,12 +64,19 @@ MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Improve/check lua error messages?
 - Make startinstall code more flexible
+    - Check if all lua functions from install package need to be inside Install() (update docs)
+    - Check SUThinkFunc set from Install()
+    - Progress/status msg for extract and others
+    - Remove old C++ code (ExtractFiles, m_bAlwaysRoot, ...)
+    - Test translations
+    - Re-enable SU passwd cleaning at end of install?
 
 
 DOCS
 - utils.tablefind, utils.tablemerge, utils.mapsize and the rest from CHANGELOG
 - install.getpkgdir() (now with arg)
 - utils.removerec()
+- utils.mkdirperm()? (If yes, CHANGELOG)
 - Nested block strings ([=[]=])
 - install.updateui()? (If yes update CHANGELOG)
 - addcheckbox + addradiobutton + addmenu functions now have additional arg for default enabled option(s)

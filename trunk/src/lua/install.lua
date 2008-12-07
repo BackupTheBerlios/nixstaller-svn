@@ -41,6 +41,75 @@ do
     end
 end
 
+-- UNDONE: Function name?
+function install.extract(luaout)
+    local archives = { } -- Files to extract
+    
+    local function checkarch(a)
+        local path = string.format("%s/%s", curdir, a)
+        if os.fileexists(path) then
+            table.insert(archives, path)
+        end
+    end
+    
+    checkarch("instarchive_all")
+    checkarch(string.format("instarchive_%s_all", os.osname))
+    checkarch(string.format("instarchive_all_%s", os.arch))
+    checkarch(string.format("instarchive_%s_%s", os.osname, os.arch))
+    
+    if utils.emptytable(archives) then
+        return
+    end
+    
+    local szmap = { }
+    local totalsize = 0
+    for _, f in ipairs(archives) do
+        local szfile = io.open(f .. ".sizes", "r")
+        if szfile then
+            szmap[f] = { }
+            for line in szfile:lines() do
+                local sz = tonumber(string.match(line, "^[^%s]*"))
+                szmap[f][string.gsub(line, "^[^%s]*%s*", "")] = sz
+                totalsize = totalsize + sz
+            end
+            szfile:close()
+        else
+            print("No sizes for", f)
+        end
+    end
+    
+    local doasroot = not os.writeperm(install.destdir)
+    local extractedsz = 0
+    
+    for _, f in ipairs(archives) do
+        local extrcmd
+        if cfg.archivetype == "gzip" then
+            extrcmd = string.format("cat %s | gzip -cd | tar xvf -", f)
+        elseif cfg.archivetype == "bzip2" then
+            extrcmd = string.format("cat %s | bzip -d | tar xvf -", f)
+        else
+            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar xvf -)", bindir, f)
+        end
+        
+        local exec = (doasroot and install.executecmdasroot) or install.executecmd
+        exec(extrcmd, function (s)
+            local file = string.gsub(s, "^x ", "")
+            
+            if os.osname == "sunos" then
+                -- Solaris puts some extra info after filename, remove
+                file = string.gsub(file, ", [%d]* bytes, [%d]* tape blocks", "")
+            end
+            
+            if szmap[f] and szmap[f][file] and totalsize > 0 then
+                extractedsz = extractedsz + szmap[f][file]
+            end
+            
+            luaout("Extracting file: " .. file .. "\n", extractedsz / totalsize * 100)
+        end, true)
+    end
+    
+end
+
 function install.newdesktopentry(b, i, c)
     -- Defaults
     t = {}

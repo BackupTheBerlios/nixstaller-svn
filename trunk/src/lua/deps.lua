@@ -245,8 +245,8 @@ function initdep(d, dialog, wrongdeps)
                 szmap[f][string.gsub(line, "^[^%s]*%s*", "")] = sz
                 totalsize = totalsize + sz
             end
+            szfile:close()
         end
-        szfile:close()
     end
     
     local extractedsz = 0
@@ -269,7 +269,7 @@ function initdep(d, dialog, wrongdeps)
                 file = string.gsub(file, ", [%d]* bytes, [%d]* tape blocks", "")
             end
             
-            if szmap[f][file] and totalsize > 0 then
+            if szmap[f] and szmap[f][file] and totalsize > 0 then
                 extractedsz = extractedsz + szmap[f][file]
                 dialog:setsecprogress(extractedsz / totalsize * 100)
             end

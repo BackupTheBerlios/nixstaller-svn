@@ -60,14 +60,19 @@ if [ ! -w "$PROGDIR" -o ! -w "$BINDIR" ]; then
     exit 1
 fi
 
+OLD_PATH=$PATH
+PATH="$OLD_PATH:/bin:/usr/bin:/sbin:/usr/local/ssl/bin:/usr/local/bin:/opt/openssl/bin"
+
 MD5CMD=`which md5sum 2>/dev/null`
-if [ -f "$MD5CMD" ]; then
-    MD5CMD="$MD5CMD"
-elif [ -f "`which md5 2>/dev/null`" ]; then
-    MD5CMD="`which md5`"
-elif [ ! -f "$MD5CMD" -a -f "`which digest 2>/dev/null`" ]; then
-    MD5CMD="`which digest` -a md5"
+if [ ! -f "$MD5CMD" ]; then
+    if [ -f "`which md5 2>/dev/null`" ]; then
+        MD5CMD="`which md5`"
+    elif [ -f "`which digest 2>/dev/null`" ]; then
+        MD5CMD="`which digest` -a md5"
+    fi
 fi
+
+PATH=$OLD_PATH
 
 if [ -z "$MD5CMD" ]; then
     echo "WARNING: Could not find a suitable binary ('md5', 'md5sum' or 'digest') to calculate MD5 sums in PATH."
