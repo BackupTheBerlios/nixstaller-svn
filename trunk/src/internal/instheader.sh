@@ -74,8 +74,17 @@ MS_Check()
 {
     OLD_PATH=\$PATH
     PATH=\${GUESS_MD5_PATH:-"\$OLD_PATH:/bin:/usr/bin:/sbin:/usr/local/ssl/bin:/usr/local/bin:/opt/openssl/bin"}
-    MD5_PATH=\`exec 2>&-; which md5sum || type md5sum\`
-    MD5_PATH=\${MD5_PATH:-\`exec 2>&-; which md5 || type md5\`}
+    
+    # Added: Better way to get MD5 sum
+    MD5CMD="\`which md5sum 2>/dev/null\`"
+    if [ ! -f "\$MD5CMD" ]; then
+        if [ -f "\`which md5 2>/dev/null\`" ]; then
+            MD5CMD="\`which md5\`"
+        elif [ -f "\`which digest 2>/dev/null\`" ]; then
+            MD5CMD="\`which digest\` -a md5"
+        fi
+    fi
+    
     PATH=\$OLD_PATH
     MS_Printf "Verifying archive integrity..."
     offset=\`head -n $SKIP "\$1" | wc -c | tr -d " "\`
@@ -84,12 +93,12 @@ MS_Check()
     for s in \$filesizes
     do
     crc=\`echo \$CRCsum | cut -d" " -f\$i\`
-    if test -x "\$MD5_PATH"; then
+    if [ ! -z "\$MD5CMD" ]; then
         md5=\`echo \$MD5 | cut -d" " -f\$i\`
         if test \$md5 = "00000000000000000000000000000000"; then
         test x\$verb = xy && echo " \$1 does not contain an embedded MD5 checksum." >&2
         else
-        md5sum=\`MS_dd "\$1" \$offset \$s | "\$MD5_PATH" | cut -b-32\`;
+        md5sum=\`MS_dd "\$1" \$offset \$s | \$MD5CMD | cut -b-32\`;
         if test "\$md5sum" != "\$md5"; then
             echo "Error in MD5 checksums: \$md5sum is different from \$md5" >&2
             exit 2

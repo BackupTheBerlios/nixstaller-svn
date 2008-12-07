@@ -624,7 +624,9 @@ function CreateInstaller()
     addarg("--instarch", tabtostr(cfg.targetarch))
     addarg("--instfrontends", tabtostr(cfg.frontends))
     addarg("--pkgname", pkg.name)
-    addarg("--pkgversion", pkg.version .. "-" .. pkg.release)
+    if pkg.version then
+        addarg("--pkgversion", pkg.version .. "-" .. pkg.release)
+    end
     addarg("--pkgsummary", pkg.summary)
     addarg("--pkgdesc", pkg.description)
     addarg("--pkggroup", pkg.group)

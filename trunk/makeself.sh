@@ -387,30 +387,24 @@ fi
 # Try to locate a MD5 binary
 OLD_PATH=$PATH
 PATH=${GUESS_MD5_PATH:-"$OLD_PATH:/bin:/usr/bin:/sbin:/usr/local/ssl/bin:/usr/local/bin:/opt/openssl/bin"}
-# Modded by Rick...try additional ways to figure out where md5(sum) is
-#MD5_PATH=`type -p md5sum`
-#MD5_PATH=${MD5_PATH:-`type -p md5`}
 
-MD5_PATH=`type -p md5sum`
-if ! test -x "$MD5_PATH"; then
-	MD5_PATH=`type -p md5`
-fi
-if ! test -x "$MD5_PATH"; then
-	MD5_PATH=`which md5sum`
-fi
-if ! test -x "$MD5_PATH"; then
-	MD5_PATH=`which md5`
+# Added: Better way to get MD5 sum
+MD5CMD=`which md5sum 2>/dev/null`
+if [ ! -f "$MD5CMD" ]; then
+    if [ -f "`which md5 2>/dev/null`" ]; then
+        MD5CMD="`which md5`"
+    elif [ -f "`which digest 2>/dev/null`" ]; then
+        MD5CMD="`which digest` -a md5"
+    fi
 fi
 
-#MD5_PATH=`which md5sum`
-#MD5_PATH=${MD5_PATH:-`which md5`}
 PATH=$OLD_PATH
 
 if test "$NOMD5" = y; then
 	echo "skipping md5sum at user request"
 else
-	if test -x "$MD5_PATH"; then
-		md5sum=`cat "$tmpfile" | "$MD5_PATH" | cut -b-32`;
+	if [ ! -z "$MD5CMD" ]; then
+		md5sum=`cat "$tmpfile" | $MD5CMD | cut -b-32`;
 		echo "MD5: $md5sum"
 	else
 		echo "MD5: none, md5sum binary not found"
