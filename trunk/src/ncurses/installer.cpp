@@ -165,20 +165,6 @@ void CInstaller::NextScreen()
     NNCurses::TUI.Quit();
 }
 
-void CInstaller::AskQuit()
-{
-    const char *msg;
-    if (Installing())
-        msg = GetTranslation("Install commands are still running\n"
-                "If you abort now this may lead to a broken installation\n"
-                "Are you sure?");
-    else
-        msg = GetTranslation("This will abort the installation\nAre you sure?");
-    
-    if (NNCurses::YesNoBox(msg))
-        throw Exceptions::CExUser();
-}
-
 void CInstaller::ActivateScreen(CInstallScreen *screen, bool sublast)
 {
     screen->Enable(true);
@@ -232,7 +218,8 @@ bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
         }
         else if (emitter == m_pCancelButton)
         {
-            AskQuit();
+            if (AskQuit())
+                throw Exceptions::CExUser();
             return true;
         }
         else if (m_pNextButton->Enabled())
@@ -251,7 +238,8 @@ bool CInstaller::CoreHandleKey(chtype key)
 {
     if (NNCurses::IsEscape(key))
     {
-        AskQuit();
+        if (AskQuit())
+            throw Exceptions::CExUser();
         return true;
     }
     

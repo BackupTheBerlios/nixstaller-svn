@@ -27,7 +27,7 @@ class CLuaProgressBar: public CBaseLuaProgressBar, public CLuaWidget
 {
     GtkWidget *m_pProgressBar;
     
-    virtual void SetProgress(int n);
+    virtual void SetProgress(float n);
     virtual void CoreActivateWidget(void) {}
     
 public:

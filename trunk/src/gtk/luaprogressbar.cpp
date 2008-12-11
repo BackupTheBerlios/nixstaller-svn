@@ -31,7 +31,7 @@ CLuaProgressBar::CLuaProgressBar(const char *desc) : CBaseLuaWidget(desc)
     gtk_container_add(GTK_CONTAINER(GetBox()), m_pProgressBar);
 }
 
-void CLuaProgressBar::SetProgress(int n)
+void CLuaProgressBar::SetProgress(float n)
 {
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(m_pProgressBar), static_cast<double>(n) / 100.0);
 }

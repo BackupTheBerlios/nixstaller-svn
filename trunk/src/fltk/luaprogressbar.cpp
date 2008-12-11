@@ -33,9 +33,9 @@ CLuaProgressBar::CLuaProgressBar(const char *desc) : CBaseLuaWidget(desc)
     GetGroup()->add(m_pProgressBar);
 }
 
-void CLuaProgressBar::SetProgress(int n)
+void CLuaProgressBar::SetProgress(float n)
 {
-    m_pProgressBar->value(static_cast<float>(n));
+    m_pProgressBar->value(n);
 }
 
 void CLuaProgressBar::UpdateSize()

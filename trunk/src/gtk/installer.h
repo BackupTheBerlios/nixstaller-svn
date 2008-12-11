@@ -46,8 +46,6 @@ class CInstaller: public CGTKBase, public CBaseInstall
     void Back(void);
     void Next(void);
 
-    bool AskQuit(void);
-    
     int GetMainSpacing(void) const { return 10; }
     
     virtual void CoreUpdateUI(void);

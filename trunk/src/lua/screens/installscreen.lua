@@ -41,7 +41,7 @@ function screen:activate()
     
     install.lockscreen(false, true, true) -- Disable Back and Next buttons
     
-    if not gui.choicebox(tr("This will install %s\nContinue?", cfg.appname), "Exit program", "Continue") then
+    if gui.choicebox(tr("This will install %s\nContinue?", cfg.appname), "Exit program", "Continue") == 1 then
         os.exit(1)
     end
     
@@ -147,5 +147,19 @@ function install.print(msg)
     verifyinstalling()
     output:add(msg)
 end
+
+install.setaskquit(function ()
+    local msg
+    if installing then
+        msg = [[
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
+Are you sure?]]
+    else
+        msg = "This will abort the installation\nAre you sure?"
+    end
+    
+    return gui.yesnobox(msg)
+end)
 
 return screen

@@ -65,11 +65,11 @@ MAIN
 - Improve/check lua error messages?
 - Make startinstall code more flexible
     - Check if all lua functions from install package need to be inside Install() (update docs)
-    - Check SUThinkFunc set from Install()
-    - Progress/status msg for extract and others
     - Remove old C++ code (ExtractFiles, m_bAlwaysRoot, ...)
     - Test translations
     - Re-enable SU passwd cleaning at end of install?
+    - Make new functions 'public'?
+- Change PATH handling for ExecuteCommand/ExecuteCommandAsRoot to use user's/root $PATH
 
 
 DOCS
@@ -92,7 +92,7 @@ RELEASE
 
 TRANSLATIONS
 - Check all sentences for punctation
-- Change "Install commands ..." cancel message to something more appropiate
+- Change "Install commands ..." cancel message to something more appropiate --> Update translations
 
 
 LIBSU

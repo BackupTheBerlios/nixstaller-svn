@@ -263,6 +263,7 @@ function initdep(d, dialog, wrongdeps)
         local pipe = check(io.popen(extrcmd))
         for line in pipe:lines() do
             local file = string.gsub(line, "^x ", "")
+            file = string.gsub(file, "\n$", "")
             
             if os.osname == "sunos" then
                 -- Solaris puts some extra info after filename, remove

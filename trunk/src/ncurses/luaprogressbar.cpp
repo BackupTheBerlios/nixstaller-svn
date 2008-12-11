@@ -29,8 +29,8 @@ CLuaProgressBar::CLuaProgressBar(const char *desc) : CBaseLuaWidget(desc)
     StartPack(m_pProgressBar = new NNCurses::CProgressBar(0.0f, 100.0f), false, false, 0, 0);
 }
 
-void CLuaProgressBar::SetProgress(int n)
+void CLuaProgressBar::SetProgress(float n)
 {
-    m_pProgressBar->SetCurrent(static_cast<float>(n));
+    m_pProgressBar->SetCurrent(n);
 }
 

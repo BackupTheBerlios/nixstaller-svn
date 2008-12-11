@@ -19,7 +19,11 @@ module (..., package.seeall)
 
 screen = install.newscreen("Select destination directory")
 
-dir = screen:adddirselector("", install.destdir)
+dir = screen:adddirselector()
+
+function screen:activate()
+    dir:set(install.destdir)
+end
 
 function dir:datachanged()
     install.destdir = dir:get()

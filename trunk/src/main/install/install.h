@@ -45,6 +45,7 @@ private:
     float m_fInstallProgress;
     int m_iUpdateStatLuaFunc, m_iUpdateProgLuaFunc, m_iUpdateOutputLuaFunc;
     bool m_bInstalling;
+    int m_iAskQuitLuaFunc;
      
     void UpdateUI(void);
     void AddScreen(CBaseScreen *screen);
@@ -99,7 +100,8 @@ public:
     void SetDestDir(const std::string &dir) { SetDestDir(dir.c_str()); }
     void SetDestDir(const char *dir);
     std::string GetDestDir(void);
-    bool VerifyDestDir();
+    bool VerifyDestDir(void);
+    bool AskQuit(void);
 
     static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
     static void CMDSUOutFunc(const char *s, void *p);
@@ -129,6 +131,7 @@ public:
     static int LuaGetLang(lua_State *L);
     static int LuaSetLang(lua_State *L);
     static int LuaUpdateUI(lua_State *L);
+    static int LuaSetAskQuit(lua_State *L);
 };
 
 // Utils

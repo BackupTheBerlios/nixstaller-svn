@@ -33,9 +33,9 @@ void CBaseLuaProgressBar::LuaRegister()
 int CBaseLuaProgressBar::LuaSet(lua_State *L)
 {
     CBaseLuaProgressBar *bar = CheckLuaWidgetClass<CBaseLuaProgressBar>("progressbar", 1);
-    int n = luaL_checkint(L, 2);
+    float n = static_cast<float>(luaL_checknumber(L, 2));
     
-    if ((n < 0) || (n > 100))
+    if ((n < 0.0f) || (n > 100.0f))
         luaL_error(L, "Wrong value specified, should be between 0-100");
     
     bar->SetProgress(n);

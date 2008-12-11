@@ -59,7 +59,7 @@ CBaseInstall::CBaseInstall(void) : m_lUITimer(0), m_lRunTimer(0), m_pCurScreen(N
                                    m_bAlwaysRoot(false), m_sInstallSteps(1), m_sCurrentStep(0),
                                    m_fInstallProgress(0.0f), m_iUpdateStatLuaFunc(LUA_NOREF),
                                    m_iUpdateProgLuaFunc(LUA_NOREF), m_iUpdateOutputLuaFunc(LUA_NOREF),
-                                   m_bInstalling(false)
+                                   m_bInstalling(false), m_iAskQuitLuaFunc(LUA_NOREF)
 {
 }
 
@@ -538,6 +538,7 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaGetLang, "getlang", "install", this);
     NLua::RegisterFunction(LuaSetLang, "setlang", "install", this);
     NLua::RegisterFunction(LuaUpdateUI, "updateui", "install", this);
+    NLua::RegisterFunction(LuaSetAskQuit, "setaskquit", "install", this);
     NLua::RegisterFunction(LuaShowDepScreen, "showdepscreen", "install", this);
         
     NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "gui", this);
@@ -659,6 +660,22 @@ bool CBaseInstall::VerifyDestDir(void)
     }
     
     return true;
+}
+
+bool CBaseInstall::AskQuit()
+{
+    bool ret;
+    NLua::CLuaFunc func(m_iAskQuitLuaFunc, LUA_REGISTRYINDEX);
+    
+    if (func)
+    {
+        func(1);
+        func >> ret;
+    }
+    else
+        luaL_error(NLua::LuaState, "Could not use askquit function");
+    
+    return ret;
 }
 
 void CBaseInstall::CMDSUOutFunc(const char *s, void *p)
@@ -908,6 +925,7 @@ int CBaseInstall::LuaExecuteCMD(lua_State *L)
     const char *path = lua_tostring(L, 4);
     
     lua_pushinteger(L, pInstaller->ExecuteCommand(cmd, required, path, luaout));
+    NLua::Unreference(luaout);
     return 1;
 }
 
@@ -927,6 +945,7 @@ int CBaseInstall::LuaExecuteCMDAsRoot(lua_State *L)
     const char *path = lua_tostring(L, 4);
     
     lua_pushinteger(L, pInstaller->ExecuteCommandAsRoot(cmd, required, path, luaout));
+    NLua::Unreference(luaout);
     return 1;
 }
 
@@ -1039,6 +1058,21 @@ int CBaseInstall::LuaUpdateUI(lua_State *L)
     CBaseInstall *pInstaller = GetFromClosure(L);
     pInstaller->UpdateUI();
     return 0;
+}
+
+int CBaseInstall::LuaSetAskQuit(lua_State *L)
+{
+    CBaseInstall *pInstaller = GetFromClosure(L);
+    luaL_checktype(L, 1, LUA_TFUNCTION);
+    
+    if (pInstaller->m_iAskQuitLuaFunc != LUA_NOREF)
+    {
+        lua_rawgeti(NLua::LuaState, LUA_REGISTRYINDEX, pInstaller->m_iAskQuitLuaFunc);
+        NLua::Unreference(pInstaller->m_iAskQuitLuaFunc);
+    }
+    
+    pInstaller->m_iAskQuitLuaFunc = NLua::MakeReference(1);
+    return 1;
 }
 
 // -------------------------------------

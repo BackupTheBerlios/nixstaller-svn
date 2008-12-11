@@ -24,6 +24,7 @@
 - Made genprojdir.sh help output more consistent
 - install.executecmd() and install.executecmdasroot() functions
 - install.extract() function
+- Additional precision for progressbars (only allowed integers)
 
 
 0.3 --> 0.4

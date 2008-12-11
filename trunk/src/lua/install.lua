@@ -73,8 +73,6 @@ function install.extract(luaout)
                 totalsize = totalsize + sz
             end
             szfile:close()
-        else
-            print("No sizes for", f)
         end
     end
     
@@ -94,6 +92,7 @@ function install.extract(luaout)
         local exec = (doasroot and install.executecmdasroot) or install.executecmd
         exec(extrcmd, function (s)
             local file = string.gsub(s, "^x ", "")
+            file = string.gsub(file, "\n$", "")
             
             if os.osname == "sunos" then
                 -- Solaris puts some extra info after filename, remove

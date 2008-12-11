@@ -29,7 +29,7 @@ class CLuaProgressBar: public CBaseLuaProgressBar, public CLuaWidget
 {
     Fl_Progress *m_pProgressBar;
     
-    virtual void SetProgress(int n);
+    virtual void SetProgress(float n);
     virtual int CoreRequestWidth(void) { return 150; }
     virtual int CoreRequestHeight(int maxw) { return BarHeight(); }
     virtual void UpdateSize(void);

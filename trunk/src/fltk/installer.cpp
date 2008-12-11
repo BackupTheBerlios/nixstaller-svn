@@ -377,19 +377,6 @@ void CInstaller::Init(int argc, char **argv)
     m_pMainWindow->show(argc, argv);
 }
 
-bool CInstaller::AskQuit()
-{
-    const char *msg;
-    if (Installing())
-        msg = GetTranslation("Install commands are still running\n"
-                             "If you abort now this may lead to a broken installation\n"
-                             "Are you sure?");
-    else
-        msg = GetTranslation("This will abort the installation\nAre you sure?");
-    
-    return fl_choice(msg, GetTranslation("No"), GetTranslation("Yes"), NULL)==1;
-}
-
 void CInstaller::Cancel()
 {
 	if (AskQuit())

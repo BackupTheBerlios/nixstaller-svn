@@ -341,19 +341,6 @@ void CInstaller::SetTitle(const std::string &t)
     g_free(markup);
 }
 
-bool CInstaller::AskQuit()
-{
-    const char *msg;
-    if (Installing())
-        msg = GetTranslation("Install commands are still running\n"
-        "If you abort now this may lead to a broken installation\n"
-        "Are you sure?");
-    else
-        msg = GetTranslation("This will abort the installation\nAre you sure?");
-    
-    return YesNoBox(msg);
-}
-
 void CInstaller::CoreUpdateUI()
 {
     gtk_main_iteration_do(FALSE);

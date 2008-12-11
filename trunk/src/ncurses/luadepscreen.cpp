@@ -78,8 +78,8 @@ void CLuaDepScreen::CoreRun()
 {
     while (!m_bClose)
     {
-        if (!NNCurses::TUI.Run(1000))
-            m_pInstaller->AskQuit();
+        if (!NNCurses::TUI.Run(1000) && m_pInstaller->AskQuit())
+            throw Exceptions::CExUser();
     }
 }
 
@@ -92,7 +92,8 @@ bool CLuaDepScreen::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
     {
         if (emitter == m_pCancelButton)
         {
-            m_pInstaller->AskQuit();
+            if (m_pInstaller->AskQuit())
+                throw Exceptions::CExUser();
             return true;
         }
         else if (emitter == m_pRefreshButton)

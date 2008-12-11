@@ -66,8 +66,6 @@ public:
     CInstaller(void);
     
     virtual void Init(int argc, char **argv);
-    
-    void AskQuit(void);
 };
 
 

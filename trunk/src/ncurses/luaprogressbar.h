@@ -31,7 +31,7 @@ class CLuaProgressBar: public CBaseLuaProgressBar, public CLuaWidget
 {
     NNCurses::CProgressBar *m_pProgressBar;
     
-    virtual void SetProgress(int n);
+    virtual void SetProgress(float n);
     
 public:
     CLuaProgressBar(const char *desc);
