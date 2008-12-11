@@ -30,35 +30,17 @@ protected:
     typedef std::vector<CBaseScreen *> TScreenList;
     
 private:
-    typedef std::map<char *, arch_size_entry_s> TArchType;
-    
     long m_lUITimer, m_lRunTimer;
     TScreenList m_ScreenList;
     CBaseScreen *m_pCurScreen;
-    unsigned long m_ulTotalArchSize;
-    float m_fExtrPercent;
-    TArchType m_ArchList;
-    char *m_szCurArchFName;
-    bool m_bAlwaysRoot; // If we need root access during whole installation
-    short m_sInstallSteps; // Count of things we got to do for installing(extracting files, running commands etc)
-    short m_sCurrentStep;
-    float m_fInstallProgress;
-    int m_iUpdateStatLuaFunc, m_iUpdateProgLuaFunc, m_iUpdateOutputLuaFunc;
-    bool m_bInstalling;
     int m_iAskQuitLuaFunc;
      
     void UpdateUI(void);
     void AddScreen(CBaseScreen *screen);
-    void Install(int statluafunc, int progluafunc, int outluafunc);
-    void InitArchive(char *archname);
-    void ExtractFiles(void);
     int ExecuteCommand(const char *cmd, bool required, const char *path, int luaout);
     int ExecuteCommandAsRoot(const char *cmd, bool required, const char *path, int luaout);
     const char *GetDefaultPath(void) const { return "/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
     void VerifyIfInstalling(void);
-    void UpdateStatusText(const char *str);
-    void AddOutput(const std::string &str);
-    void SetProgress(int percent);
     
     // App register stuff
     void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
@@ -78,7 +60,6 @@ protected:
     virtual void InitLua(void);
     virtual void CoreUpdateLanguage(void);
 
-    bool Installing(void) const { return m_bInstalling; }
     // This function is not called by the destructor, because in some frontends a lua screen is part of the gui and will
     // be automaticly deleted
     void DeleteScreens(void);
@@ -87,15 +68,12 @@ protected:
     void Run(void);
     
 public:
-    install_info_s m_InstallInfo;
     std::string m_szBinDir;
 
     CBaseInstall(void);
     virtual ~CBaseInstall(void) { };
 
     virtual void Init(int argc, char **argv);
-
-    void UpdateExtrStatus(const char *s);
     
     void SetDestDir(const std::string &dir) { SetDestDir(dir.c_str()); }
     void SetDestDir(const char *dir);
@@ -103,7 +81,6 @@ public:
     bool VerifyDestDir(void);
     bool AskQuit(void);
 
-    static void ExtrSUOutFunc(const char *s, void *p) { ((CBaseInstall *)p)->UpdateExtrStatus(s); };
     static void CMDSUOutFunc(const char *s, void *p);
     static void SUThinkFunc(void *p) { ((CBaseInstall *)p)->UpdateUI(); };
     
@@ -117,14 +94,9 @@ public:
     static int LuaGetTempDir(lua_State *L);
     static int LuaGetPkgDir(lua_State *L);
     static int LuaGetMacAppPath(lua_State *L);
-    static int LuaExtractFiles(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);
     static int LuaExecuteCMDAsRoot(lua_State *L);
     static int LuaAskRootPW(lua_State *L);
-    static int LuaSetStatusMSG(lua_State *L);
-    static int LuaSetStepCount(lua_State *L);
-    static int LuaPrintInstOutput(lua_State *L);
-    static int LuaStartInstall(lua_State *L);
     static int LuaLockScreen(lua_State *L);
     static int LuaVerifyDestDir(lua_State *L);
     static int LuaExtraFilesPath(lua_State *L);

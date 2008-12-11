@@ -131,7 +131,7 @@ CMain::~CMain()
             delete [] (*p).second;
     }
     
-//    FreeStrings();
+    CleanPasswdString(m_szPassword);
     closelog();
 }
 
@@ -281,113 +281,6 @@ bool CMain::ReadLang()
 
     return true;
 }
-
-#ifdef WITH_APPMANAGER
-std::string CMain::ReadRegField(std::ifstream &file)
-{
-    std::string line, ret;
-    std::string::size_type index = 0;
-    
-    std::getline(file, line);
-    EatWhite(line);
-    
-    if (line[0] != '\"')
-        return "";
-    
-    line.erase(0, 1); // Remove initial "
-    while ((index = line.find("\\\"", index+1)) != std::string::npos)
-        line.replace(index, 2, "\"");
-
-    ret = line;
-    
-    while(line[line.length()-1] != '\"' && file && std::getline(file, line))
-    {
-        EatWhite(line);
-        while ((index = line.find("\\\"")) != std::string::npos)
-            line.replace(index, 2, "\"");
-        ret += "\n" + line;
-    }
-    
-    ret.erase(ret.length()-1, 1); // Remove trailing "
-    return ret;
-}
-
-app_entry_s *CMain::GetAppRegEntry(const char *progname)
-{
-    const char *filename = GetRegConfFile(progname);
-    if (!FileExists(filename))
-        return NULL;
-
-    app_entry_s *pAppEntry = new app_entry_s;
-    pAppEntry->name = progname;
-    
-    std::ifstream file(filename);
-    std::string str, field;
-    
-    while(file && (file >> str))
-    {
-        field = ReadRegField(file);
-        
-        if (str == "version")
-            pAppEntry->version = field;
-        else if (str == "description")
-            pAppEntry->description = field;
-        else if (str == "url")
-            pAppEntry->url = field;
-    }
-
-    file.close();
-
-    filename = GetSumListFile(progname);
-    if (FileExists(filename))
-    {
-        std::string line, sum;
-
-        std::ifstream sumfile(filename);
-        while(sumfile)
-        {
-            if (!(sumfile >> sum) || !std::getline(sumfile, line))
-                break;
-            pAppEntry->FileSums[EatWhite(line)] = sum;
-        }
-    }
-    
-    return pAppEntry;
-}
-
-const char *CMain::GetAppRegDir()
-{
-    if (!m_szAppConfDir)
-    {
-        const char *home = getenv("HOME");
-        if (!home)
-            ThrowError(false, "Couldn't find out your home directory!");
-        
-        m_szAppConfDir = CreateText("%s/.nixstaller", home);
-        
-        if (mkdir(m_szAppConfDir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
-            ThrowError(false, "Could not create nixstaller config directory!(%s)", strerror(errno));
-    }
-    
-    return m_szAppConfDir;
-}
-
-const char *CMain::GetRegConfFile(const char *progname)
-{
-    const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
-    if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
-        ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
-    return CreateText("%s/config", dir);
-}
-
-const char *CMain::GetSumListFile(const char *progname)
-{
-    const char *dir = CreateText("%s/%s", GetAppRegDir(), progname);
-    if (mkdir(dir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH)) && (errno != EEXIST))
-        ThrowError(false, "Could not create nixstaller app-config directory!(%s)", strerror(errno));
-    return CreateText("%s/list", dir);
-}
-#endif
 
 void CMain::InitLua()
 {

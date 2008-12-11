@@ -182,6 +182,8 @@ function PackDirectory(dir, file)
         stat = os.execute(string.format('cat "%s.tmp" | bzip2 -9 > "%s"', file, file)) -- Use cat so that bzip won't append ".bz2" to filename
     elseif cfg.archivetype == "lzma" then
         stat = os.execute(string.format('"%s" e "%s.tmp" "%s" 2>/dev/null', LZMABin, file, file))
+    else
+        ThrowError("Wrong archive type specified!")
     end
     
     if stat ~= 0 then
@@ -296,6 +298,7 @@ function Init()
     end
     
     dofile(confdir .. "/config.lua")
+    
     LoadPackage()
     
     -- Find a LZMA and edelta bin which we can use

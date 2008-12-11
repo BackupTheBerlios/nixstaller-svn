@@ -65,10 +65,9 @@ MAIN
 - Improve/check lua error messages?
 - Make startinstall code more flexible
     - Check if all lua functions from install package need to be inside Install() (update docs)
-    - Remove old C++ code (ExtractFiles, m_bAlwaysRoot, ...)
     - Test translations
     - Re-enable SU passwd cleaning at end of install?
-    - Make new functions 'public'?
+    - Make new lua functions 'public'?
 - Change PATH handling for ExecuteCommand/ExecuteCommandAsRoot to use user's/root $PATH
 
 

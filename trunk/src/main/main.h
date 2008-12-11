@@ -37,25 +37,6 @@ typedef std::vector<std::string>::size_type TSTLVecSize;
 typedef std::string::size_type TSTLStrSize;
 
 #include "exception.h"
-        
-struct install_info_s
-{
-    std::string version, program_name, description, url, intropicname, archive_type, dest_dir;
-};
-
-struct arch_size_entry_s
-{
-    unsigned int totalsize;
-    std::map<std::string, unsigned int> filesizes;
-    arch_size_entry_s(void) : totalsize(1) { };
-};
-
-struct app_entry_s
-{
-    std::string name, version, description, url;
-    std::map<std::string, std::string> FileSums;
-    app_entry_s(void) : name("-"), version("-"), description("-"), url("-") { };
-};
 
 void Quit(int ret);
 void HandleError(void);
@@ -70,49 +51,11 @@ extern "C" int vasprintf (char **result, const char *format, va_list args);
 #endif
 
 #include "main/lua/lua.h"
-                 
-class CMain;
-
-#ifdef WITH_APPMANAGER
-
-class CRegister
-{
-    CMain *m_pOwner;
-    char *m_szConfDir;
-    const std::string m_szRegVer;
-    LIBSU::CLibSU m_SUHandler;
-    
-    void WriteRegEntry(const char *entry, const std::string &field, std::ofstream &file);
-    std::string ReadRegField(std::ifstream &file);
-    const char *GetAppRegDir(void);
-    const char *GetConfFile(const char *progname);
-    const char *GetSumListFile(const char *progname);
-    app_entry_s *GetAppEntry(const char *progname);
-    void WriteSums(const char *filename, std::ofstream &outfile, const std::string *var);
-    
-public:
-    typedef void (*TUpFunc)(int, const std::string &, void *);
-    typedef char *(*TPasFunc)(void *);
-    enum EUninstRet { UNINST_SUCCESS, UNINST_WRONGPASS, UNINST_NULLPASS, UNINST_SUERR };
-
-    CRegister(CMain *owner) : m_pOwner(owner), m_szConfDir(NULL), m_szRegVer("1.0") { };
-
-    bool IsInstalled(bool checkver);
-    void RemoveFromRegister(app_entry_s *pApp);
-    void RegisterInstall(void);
-    EUninstRet Uninstall(app_entry_s *pApp, bool checksum, TUpFunc UpFunc, TPasFunc PasFunc, void *pData);
-    void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
-    void CalcSums(const char *dir);
-    bool CheckSums(const char *progname);
-};
-#endif
 
 class CMain
 {
 protected:
-    const std::string m_szRegVer;
     std::string m_szOS, m_szCPUArch, m_szOwnDir;
-    char *m_szAppConfDir;
     LIBSU::CLibSU m_SUHandler;
     char *m_szPassword;
 
@@ -129,20 +72,13 @@ protected:
     virtual void InitLua(void);
     virtual void CoreUpdateLanguage(void) = 0;
 
-    // App register stuff
-    std::string ReadRegField(std::ifstream &file);
-    app_entry_s *GetAppRegEntry(const char *progname);
-    const char *GetAppRegDir(void);
-    const char *GetRegConfFile(const char *progname);
-    const char *GetSumListFile(const char *progname);
-
     static int m_iLuaDirIterCount;
     
 public:
     std::string m_szCurLang;
     std::vector<std::string> m_Languages;
     
-    CMain(void) : m_szRegVer("1.0"), m_szAppConfDir(NULL), m_szPassword(NULL)
+    CMain(void) : m_szPassword(NULL)
     { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
     virtual ~CMain(void);
     
@@ -203,28 +139,6 @@ class CLuaRunner: public CMain
 public:
     virtual void Init(int argc, char **argv);
 };
-
-#ifdef WITH_APPMANAGER
-
-class CBaseAppManager: virtual public CMain
-{
-    const char *GetSumListFile(const char *progname);
-    app_entry_s *GetAppEntry(const char *progname);
-    
-protected:
-    void RemoveFromRegister(app_entry_s *pApp);
-    void Uninstall(app_entry_s *pApp, bool checksum);
-    void GetRegisterEntries(std::vector<app_entry_s *> *AppVec);
-    bool CheckSums(const char *progname);
-    
-    virtual void AddUninstOutput(const std::string &str) = 0;
-    virtual void SetProgress(int percent) = 0;
-    
-public:
-    virtual ~CBaseAppManager(void) { };
-};
-
-#endif
 
 #include "utils.h"
 #include "main/install/install.h"

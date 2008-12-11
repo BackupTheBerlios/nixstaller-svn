@@ -93,7 +93,6 @@ distfiles_src = distfiles_user + [
 'src/edelta/README',
 'src/edelta/sha1.c',
 'src/edelta/version.h',
-'src/fltk/appmanager.cpp',
 'src/fltk/dirdialog.cpp',
 'src/fltk/dirdialog.h',
 'src/fltk/fltk.cpp',
@@ -184,11 +183,9 @@ distfiles_src = distfiles_user + [
 'src/libsu/terminal.cpp',
 'src/libsu/utils.cpp',
 'src/libsu/vasprintf.c',
-'src/main/appmanager.cpp',
 'src/main/exception.h',
 'src/main/main.cpp',
 'src/main/main.h',
-'src/main/register.cpp',
 'src/main/utils.cpp',
 'src/main/utils.h',
 'src/main/vasprintf.c',
@@ -727,7 +724,7 @@ edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS
 libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
 # Builds main lib
-main = env.Library("main/main", Split('libmd5/md5.c main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/appmanager.cpp  main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
+main = env.Library("main/main", Split('libmd5/md5.c main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
 
 env.Prepend(LIBS = Split('main su lua elf curl z'))
 
@@ -740,9 +737,9 @@ gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscr
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadepscreen.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaprogressdialog.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncurses'))
 
 if cur_os == 'darwin':
-    fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg '+fltklibs), LINKFLAGS=Split("$LINKFLAGS -framework Carbon -framework ApplicationServices"))
+    fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg '+fltklibs), LINKFLAGS=Split("$LINKFLAGS -framework Carbon -framework ApplicationServices"))
 else:
-    fltk = env.Program('fltk/fltk', Split('fltk/appmanager.cpp fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft X11 '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
+    fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft X11 '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 
