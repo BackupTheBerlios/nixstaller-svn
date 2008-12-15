@@ -48,8 +48,8 @@ bool g_RunScript, g_RunUnattended;
 // Besides main(), other functions may want to call this incase they cannot throw an exception
 void Quit(int ret)
 {
-    if (!g_RunScript)
-        /*StopFrontend()*/;
+    if (!g_RunScript && !g_RunUnattended)
+        StopFrontend();
     
 #ifndef RELEASE
     NLua::StackDump("Clean stack?\n");
@@ -99,10 +99,14 @@ int main(int argc, char **argv)
     
     curl_global_init(CURL_GLOBAL_ALL);
     
-    g_RunScript = ((argc > 1) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
+    if (argc > 1)
+    {
+        if (!strcmp(argv[1], "run"))
+            g_RunScript = true;
+        else if (!strcmp(argv[1], "unattended"))
+            g_RunUnattended = true;
+    }
     
-    g_RunUnattended = true; // UNDONE
-
     try
     {
         if (g_RunScript)
@@ -884,7 +888,7 @@ int CMain::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow
 
 void CLuaRunner::Init(int argc, char **argv)
 {
-    const int skip = 6; // bin name, "-c", script name, nixstaller dir, caller name
+    const int skip = 6; // bin name, <action>, script name, nixstaller dir, caller name
     CMain::Init(argc, argv);
     
     NLua::LuaSet(argv[3], "ndir");

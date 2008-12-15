@@ -59,6 +59,7 @@ General:
 --info, -i              Print some info about this installer.
 --check, -c             Check integrity of the archive.
 --frontend, -f <fr>     Specify frontend
+--unattended, -u        Run installer unattended (no interaction)
 
 Advanced:
 --keep                  Do not erase temporary target directory.
@@ -251,6 +252,10 @@ EOLSM
     -f | --frontend)
     scriptargs="\$scriptargs --frontend \$2"
     shift 2
+    ;;
+    -u | --unattended)
+    scriptargs="\$scriptargs --unattended"
+    shift
     ;;
     --phase2)
     copy=phase2

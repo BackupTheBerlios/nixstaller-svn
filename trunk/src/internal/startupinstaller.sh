@@ -64,6 +64,10 @@ configure()
                 [ "$FRONTENDS" = "ncurses" ] && FRONTENDS="ncurs" # Convert from user string
                 shift 2
                 ;;
+            --unattended )
+                ARGS="unattended"
+                shift
+                ;;
             *)
                 break
                 ;;
@@ -139,7 +143,7 @@ do
             haslibs $FRBIN || continue
             
             # Run it
-            `pwd`/$FRBIN
+            `pwd`/$FRBIN $ARGS
             
             RET=$?
             if [ ! -f frontendstarted ]; then

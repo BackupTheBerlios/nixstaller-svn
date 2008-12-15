@@ -66,7 +66,7 @@ runluascript()
     shift 2
 
     if [ ! -z "$BIN" ]; then
-        "$BIN" -c "$SCRIPT" "$NDIR" $0 "$@" || exit 1
+        "$BIN" run "$SCRIPT" "$NDIR" $0 "$@" || exit 1
         exit 0
     fi
     
