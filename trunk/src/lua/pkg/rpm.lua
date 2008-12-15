@@ -46,6 +46,17 @@ function canxdg()
     return true
 end
 
+function verifylock()
+    local locked = checklock("/var/lib/rpm/*", true)
+    if locked then
+        return false, [[
+Another program seems to be using the RPM database.
+Please close all applications that may use the database (ie Smart or YaST).]]
+    end
+    
+    return true
+end
+
 function create(src)
     local specdir = src .. "/SPECS"
     check(os.mkdir(specdir))
@@ -89,16 +100,6 @@ AutoReqProv: 0
 end
 
 function install(src)
-    local locked = checklock("/var/lib/rpm/*", true)
-    while locked do
-        if gui.choicebox("Another program seems to be using the RPM database.\
-Please close all applications that may use the database (ie Smart or YaST)\
-and hit continue.", "Continue", "Abort") == 2 then
-            os.exit(1)
-        end
-        locked = checklock("/var/lib/rpm/*", true)
-    end
-    
     local arch = os.arch
     if os.arch == "x86" then
         -- Figure out which arch rpmbuild used (i386, i586 etc)

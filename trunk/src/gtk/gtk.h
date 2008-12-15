@@ -23,34 +23,6 @@
 #include "main/main.h"
 #include "include/gtk/gtk/gtk.h"
 
-class CGTKBase: virtual public CMain
-{
-    GtkWidget *m_pMainWindow;
-    GtkWidget *m_pAboutDialog;
-    
-    void CreateAbout(void);
-    
-    virtual void CoreRun(void) = 0;
-    
-protected:
-    virtual char *GetPassword(const char *str);
-    virtual void MsgBox(const char *str, ...);
-    virtual bool YesNoBox(const char *str, ...);
-    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
-    virtual void WarnBox(const char *str, ...);
-
-    GtkWidget *GetMainWin(void) { return m_pMainWindow; };
-    void ShowAbout(void);
-    
-public:
-    CGTKBase(void);
-
-    void Run(void);
-    
-    static void DestroyCB(GtkWidget *widget, gpointer data) { gtk_main_quit (); };
-    static gboolean IdleRunner(gpointer data) { (static_cast<CGTKBase *>(data))->CoreRun(); return TRUE; }
-};
-
 // Utils
 void MessageBox(GtkMessageType type, const char *msg);
 GtkWidget *CreateButton(GtkWidget *label, const gchar *image=NULL, bool fromstock = true);

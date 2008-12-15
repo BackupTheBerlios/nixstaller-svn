@@ -23,41 +23,7 @@
 #include "main/main.h"
 
 class Fl_Button;
-class Fl_Pack;
-class Fl_Return_Button;
-class Fl_Text_Display;
 class Fl_Widget;
-class Fl_Window;
-
-class CFLTKBase: virtual public CMain
-{
-    Fl_Text_Display *m_pAboutDisp;
-    Fl_Return_Button *m_pAboutOKButton;
-    Fl_Window *m_pAboutWindow;
-    
-    void CreateAbout(void);
-    
-    virtual void CoreRun(void) = 0;
-    
-protected:
-    virtual char *GetPassword(const char *str);
-    virtual void MsgBox(const char *str, ...);
-    virtual bool YesNoBox(const char *str, ...);
-    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
-    virtual void WarnBox(const char *str, ...);
-    virtual void CoreUpdateLanguage(void);
-
-    void ShowAbout(bool show);
-    
-public:
-    CFLTKBase(void);
-    virtual ~CFLTKBase(void);
-
-    void Run(void);
-    
-    static void AboutOKCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(false); };
-    static void ShowAboutCB(Fl_Widget *, void *p) { ((CFLTKBase *)p)->ShowAbout(true); };
-};
 
 // Utils
 void SetButtonWidth(Fl_Button *button);

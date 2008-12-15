@@ -17,25 +17,16 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef SEPERATOR
-#define SEPERATOR
+#ifndef UNATT_INSTALL_H
+#define UNATT_INSTALL_H
 
-#include "tui.h"
-#include "widget.h"
+#include "main/install/install.h"
 
-namespace NNCurses {
-
-class CSeparator: public CWidget
+class CBaseUnattInstall: public CBaseInstall
 {
-    chtype m_Fill;
-    
 protected:
-    virtual void DoDraw(void) { HLine(this, 0, 0, m_Fill, Width()); }
-    
-public:
-    CSeparator(chtype fill) : m_Fill(fill) { }
+    virtual void CoreUpdateLanguage(void) { }
+    virtual void InitLua(void);
 };
-
-}
 
 #endif

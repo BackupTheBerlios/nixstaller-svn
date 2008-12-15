@@ -19,45 +19,12 @@
 function pkg.verifydeps(bins, libs)
     bins = bins or pkg.bins
     
-    local installeddeps = { }
-    local wrongdeps, wronglibs
-
     local success, msg = pcall(function ()
-        install.showdepscreen(function ()
-            wrongdeps, wronglibs = { }, { }
-            
-            gui.newprogressdialog(function(self)
-                local deps = checkdeps(bins, libs, install.getpkgdir(), self, wrongdeps, wronglibs)
-                instdeps(deps, installeddeps, wrongdeps, self)
-            end)
-            
-            local ret = { }
-            for k, v in pairs(wrongdeps) do
-                ret[k.name] = { }
-                ret[k.name].desc = k.description
-                if v.failed then
-                    ret[k.name].problem = "Failed to install."
-                elseif v.faileddl then
-                    ret[k.name].problem = "Failed to download."
-                elseif v.incompatdep then
-                    ret[k.name].problem = "(Binary) incompatible."
-                end
-            end
-            
-            resetfaileddl(wrongdeps)
-            
-            for k, v in pairs(wronglibs) do
-                ret[k] = { }
-                ret[k].desc = ""
-                if v.missinglib then
-                    ret[k].problem = "File missing."
-                elseif v.incompatlib then
-                    ret[k].problem = "(Binary) incompatible."
-                end
-            end
-
-            return ret
-        end)
+        if install.unattended then
+            verifydeps(bins, libs) -- UNDONE: Handle missing deps
+        else
+            install.showdepscreen(function () return verifydeps(bins, libs) end)
+        end
     end)
     
     if not success then
@@ -67,8 +34,8 @@ function pkg.verifydeps(bins, libs)
         error(msg, 0) -- Rethrow (use level '0' to avoid adding extra info to msg)
     end
     
-    if not utils.emptytable(wrongdeps) or not utils.emptytable(wronglibs) then
-        return false, wrongdeps, wronglibs
+    if not utils.emptytable(depprocess.wrongdeps) or not utils.emptytable(depprocess.wronglibs) then
+        return false, depprocess.wrongdeps, depprocess.wronglibs
     end
     
     return true

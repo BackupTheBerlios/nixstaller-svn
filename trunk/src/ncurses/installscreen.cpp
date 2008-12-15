@@ -88,6 +88,34 @@ int CInstallScreen::CheckWidgetHeight(NNCurses::CWidget *w)
     return ret;
 }
 
+void CInstallScreen::FocusFirstWidget(TSTLVecSize screen)
+{
+    if (!m_WidgetRanges.empty())
+    {
+        const TChildList &list = m_pGroupBox->GetChildList();
+        TChildList::const_iterator start = std::find(list.begin(), list.end(), m_WidgetRanges[screen]), end;
+        
+        if (start != list.end())
+        {
+            if ((m_WidgetRanges.size()-1) > screen)
+                end = std::find(list.begin(), list.end(), m_WidgetRanges[screen+1]);
+            else
+                end = list.end();
+            
+            do
+            {
+                if (VisibleWidget(*start) && ((*start)->CanFocus() || m_pGroupBox->CanFocusChilds(*start)))
+                {
+                    (*start)->ReqFocus();
+                    break;
+                }
+                start++;
+            }
+            while (start != end);
+        }
+    }
+}
+
 void CInstallScreen::ResetWidgetRange()
 {
     m_WidgetRanges.clear();
@@ -219,7 +247,7 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
         start++;
     }
     
-    m_WidgetRanges[screen]->ReqFocus();
+    FocusFirstWidget(screen);
     m_CurSubScreen = screen;
     UpdateCounter();
 }
@@ -227,10 +255,7 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
 void CInstallScreen::CoreActivate()
 {
     ResetWidgetRange();
-    
-    if (!m_WidgetRanges.empty())
-        m_WidgetRanges[0]->ReqFocus();
-    
+    FocusFirstWidget(0);
     CBaseScreen::CoreActivate();
 }
 

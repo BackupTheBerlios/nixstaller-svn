@@ -33,30 +33,31 @@
 
 #include "curl.h"
 #include "main.h"
+#include "install/unattinstall.h"
 #include "elfutils.h"
 #include "lua/lua.h"
 #include "lua/luaclass.h"
 #include "lua/luafunc.h"
 #include "lua/luatable.h"
 
-std::list<char *> StringList;
-std::map<std::string, char *> Translations;
-
 namespace {
-bool g_RunScript;
+bool g_RunScript, g_RunUnattended;
 }
+
 
 // Besides main(), other functions may want to call this incase they cannot throw an exception
 void Quit(int ret)
 {
     if (!g_RunScript)
-        StopFrontend();
+        /*StopFrontend()*/;
     
 #ifndef RELEASE
     NLua::StackDump("Clean stack?\n");
 #endif
     
     FreeStrings();
+    FreeTranslations();
+
     curl_global_cleanup();
     exit(ret);
 }
@@ -74,10 +75,13 @@ void HandleError(void)
     }
     catch(Exceptions::CException &e)
     {
-        if (g_RunScript)
-            fprintf(stderr, GetTranslation(e.what())); // No specific way to complain, just use stderr
+        fflush(stdout);
+        fflush(stderr);
+        
+        if (g_RunScript || g_RunUnattended)
+            fprintf(stderr, "Error: %s\n", GetTranslation(e.what())); // No specific way to complain, just use stderr
         else
-            ReportError(GetTranslation(e.what()));
+            ReportError(CreateText("Error: %s", GetTranslation(e.what())));
     }
     
     Quit(EXIT_FAILURE);
@@ -96,6 +100,8 @@ int main(int argc, char **argv)
     curl_global_init(CURL_GLOBAL_ALL);
     
     g_RunScript = ((argc > 1) && !strcmp(argv[1], "-c")); // Caller (usually geninstall.sh) wants to run a lua script?
+    
+    g_RunUnattended = true; // UNDONE
 
     try
     {
@@ -104,10 +110,13 @@ int main(int argc, char **argv)
             CLuaRunner lr;
             lr.Init(argc, argv);
         }
-        else
+        else if (g_RunUnattended)
         {
-            StartFrontend(argc, argv);
+            CBaseUnattInstall ui;
+            ui.Init(argc, argv);
         }
+        else
+            StartFrontend(argc, argv);
     }
     catch(Exceptions::CException &e)
     {
@@ -122,18 +131,6 @@ int main(int argc, char **argv)
 // -------------------------------------
 // Main Class
 // -------------------------------------
-
-CMain::~CMain()
-{
-    if (!Translations.empty())
-    {
-        for(std::map<std::string, char *>::iterator p=Translations.begin(); p!=Translations.end(); p++)
-            delete [] (*p).second;
-    }
-    
-    CleanPasswdString(m_szPassword);
-    closelog();
-}
 
 void CMain::Init(int argc, char **argv)
 {
@@ -155,131 +152,6 @@ void CMain::Init(int argc, char **argv)
     m_szOwnDir = GetCWD();
     
     InitLua();
-    
-    if (m_Languages.empty())
-    {
-        char *s = new char[8];
-        strcpy(s, "english");
-        m_Languages.push_back(s);
-    }
-    
-    if (!NLua::LuaGet(m_szCurLang, "defaultlang", "cfg"))
-        m_szCurLang = "english";
-    
-    if (std::find(m_Languages.begin(), m_Languages.end(), m_szCurLang) == m_Languages.end())
-        m_szCurLang = m_Languages.front();
-    
-    debugline("defaultlang: %s\n", m_szCurLang.c_str());
-    UpdateLanguage();
-    
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetTerminalOutput(false);
-}
-
-const char *CMain::GetLogoFName()
-{
-    std::string ret = "installer.png"; // Default
-    NLua::LuaGet(ret, "logo", "cfg");
-    return CreateText("%s/%s", m_szOwnDir.c_str(), ret.c_str());
-}
-
-const char *CMain::GetAboutFName()
-{
-    return CreateText("%s/about", m_szOwnDir.c_str());
-}
-
-bool CMain::GetSUPasswd(const char *msg, bool mandatory)
-{
-    if ((!m_szPassword || !m_szPassword[0]) && m_SUHandler.NeedPassword())
-    {
-        while(true)
-        {
-            CleanPasswdString(m_szPassword);
-            
-            m_szPassword = GetPassword(GetTranslation(msg));
-            
-            // Check if password is invalid
-            if (!m_szPassword || !m_szPassword[0])
-            {
-                if (!mandatory)
-                    return false;
-                
-                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
-                    GetTranslation("No"), GetTranslation("Yes"), NULL))
-                    throw Exceptions::CExUser();
-            }
-            else
-            {
-                if (m_SUHandler.TestSU(m_szPassword))
-                    break;
-
-                // Some error appeared
-                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    WarnBox(GetTranslation("Incorrect password given, please retype."));
-                else
-                {
-                    const char *msg = "Could not use su or sudo to gain root access.";
-                    
-                    if (mandatory)
-                        throw Exceptions::CExSU(msg);
-                    else
-                    {
-                        WarnBox(GetTranslation(msg));
-                        return false;
-                    }
-                }
-            }
-        }
-    }
-    
-    return true;
-}
-
-bool CMain::ReadLang()
-{
-    // Clear all translations
-    if (!Translations.empty())
-    {
-        std::map<std::string, char *>::iterator p = Translations.begin();
-        for(;p!=Translations.end();p++)
-            delete [] (*p).second;
-        Translations.clear();
-    }
-    
-    std::ifstream file(CreateText("%s/config/lang/%s/strings", m_szOwnDir.c_str(), m_szCurLang.c_str()));
-
-    if (!file)
-    {
-        debugline("WARNING: Failed to load language file for %s\n", m_szCurLang.c_str());
-        return false;
-    }
-    
-    std::string text, srcmsg;
-    bool atsrc = true;
-    while (file)
-    {
-        std::getline(file, text);
-        EatWhite(text);
-
-        if (text.empty() || text[0] == '#')
-            continue;
-
-        if (text[0] == '[')
-            GetTextFromBlock(file, text);
-        
-        if (atsrc)
-            srcmsg = text;
-        else
-        {
-            Translations[srcmsg] = new char[text.length()+1];
-            text.copy(Translations[srcmsg], std::string::npos);
-            Translations[srcmsg][text.length()] = 0;
-        }
-
-        atsrc = !atsrc;
-    }
-
-    return true;
 }
 
 void CMain::InitLua()
@@ -293,7 +165,6 @@ void CMain::InitLua()
     NLua::LuaSet(m_szCPUArch, "arch", "os");
     NLua::LuaSet(m_szOwnDir, "curdir");
     
-    NLua::RegisterFunction(LuaTr, "tr");
     NLua::RegisterFunction(LuaInitDirIter, "dir", "io");
     NLua::RegisterFunction(LuaMD5, "md5", "io");
     
@@ -315,10 +186,7 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaOpenElf, "openelf", "os");
     NLua::RegisterFunction(LuaInitDownload, "initdownload", "os");
 
-    NLua::RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
-    NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
-    NLua::RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
-    NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
+    NLua::RegisterFunction(LuaAbort, "abort");
     
     NLua::RegisterClassFunction(LuaGetElfSym, "getsym", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfSymVerDef, "getsymdef", "elfclass");
@@ -330,37 +198,10 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
     NLua::RegisterClassFunction(LuaCloseDownload, "close", "downloadclass");
     
-    
-    // Set some default values for config variabeles
-    NLua::LuaSet("", "appname", "cfg");
-    
-    NLua::CLuaTable tab("languages", "cfg");
-    tab[1] << "english";
-    tab[2] << "dutch";
-    
-    tab.Open("targetos", "cfg");
-    tab[1] << m_szOS;
-    
-    tab.Open("targetarch", "cfg");
-    tab[1] << m_szCPUArch;
-    
-    tab.Open("frontends", "cfg");
-    tab[1] << "gtk";
-    tab[2] << "fltk";
-    tab[3] << "ncurses";
-    
+    // Create cfg and pkg Lua packages.
+    NLua::CLuaTable tab("cfg");
+    tab.Open("pkg");
     tab.Close();
-    
-    NLua::LuaSet("lzma", "archivetype", "cfg");
-    NLua::LuaSet("english", "defaultlang", "cfg");
-    
-    // Default pkg values
-    NLua::LuaSet(false, "enable", "pkg");
-    NLua::LuaSet(true, "register", "pkg");
-    NLua::LuaSet(false, "setkdeenv", "pkg");
-    NLua::LuaSet("1", "release", "pkg");
-    NLua::LuaSet("", "url", "pkg");
-    NLua::LuaSet("", "license", "pkg");
 }
 
 int CMain::m_iLuaDirIterCount = 0;
@@ -794,83 +635,6 @@ int CMain::LuaSetEnv(lua_State *L)
     return 0;
 }
 
-int CMain::LuaYesNoBox(lua_State *L)
-{
-    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    std::string msg = luaL_checkstring(L, 1);
-    int args = lua_gettop(L);
-    
-    for (int i=2; i<=args; i++)
-        msg += luaL_checkstring(L, i);
-    
-    EscapeControls(msg);
-    
-    lua_pushboolean(L, pMain->YesNoBox(GetTranslation(msg.c_str())));
-    
-    return 1;
-}
-
-int CMain::LuaChoiceBox(lua_State *L)
-{
-    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    std::string msg = luaL_checkstring(L, 1);
-    const char *but1 = luaL_checkstring(L, 2);
-    const char *but2 = luaL_checkstring(L, 3);
-    const char *but3 = lua_tostring(L, 4);
-    
-    EscapeControls(msg);
-    
-    if (but1)
-        but1 = GetTranslation(but1);
-    if (but2)
-        but2 = GetTranslation(but2);
-    if (but3)
-        but3 = GetTranslation(but3);
-
-    int ret = pMain->ChoiceBox(GetTranslation(msg.c_str()), but1, but2, but3) + 1; // +1: Convert 0-2 range to 1-3
-    
-    // UNDONE: FLTK doesn't return alternative number while ncurses returns -1.
-    // For now we'll stick with the FLTK behaviour: return the last button.
-    if (ret == 0) // Ncurses returns -1 and we added 1 thus zero...
-        ret = 3;
-    
-    lua_pushinteger(L, ret);
-    
-    return 1;
-}
-
-int CMain::LuaWarnBox(lua_State *L)
-{
-    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    std::string msg = luaL_checkstring(L, 1);
-    int args = lua_gettop(L);
-    
-    for (int i=2; i<=args; i++)
-        msg += luaL_checkstring(L, i);
-    
-    EscapeControls(msg);
-    
-    pMain->WarnBox(GetTranslation(msg.c_str()));
-    
-    return 0;
-}
-
-int CMain::LuaMSGBox(lua_State *L)
-{
-    CMain *pMain = (CMain *)lua_touserdata(L, lua_upvalueindex(1));
-    std::string msg = luaL_checkstring(L, 1);
-    int args = lua_gettop(L);
-    
-    for (int i=2; i<=args; i++)
-        msg += luaL_checkstring(L, i);
-    
-    EscapeControls(msg);
-    
-    pMain->MsgBox(GetTranslation(msg.c_str()));
-    
-    return 0;
-}
-
 int CMain::LuaExit(lua_State *L)
 {
     throw Exceptions::CExUser();
@@ -893,28 +657,6 @@ int CMain::LuaMD5(lua_State *L)
     else
         lua_pushnil(L);
         
-    return 1;
-}
-
-int CMain::LuaTr(lua_State *L)
-{
-    const char *str = luaL_checkstring(L, 1);
-    int args = lua_gettop(L);
-    
-    if (args == 1)
-        lua_pushstring(L, GetTranslation(str));
-    else if (args == 2)
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2)));
-    else if (args == 3)
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
-                       luaL_checkstring(L, 3)));
-    else if (args == 4)
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
-                       luaL_checkstring(L, 3), luaL_checkstring(L, 4)));
-    else // Limitation of max 4 args ...
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
-                       luaL_checkstring(L, 3), luaL_checkstring(L, 4), luaL_checkstring(L, 5)));
-    
     return 1;
 }
 
@@ -1112,6 +854,12 @@ int CMain::LuaCloseDownload(lua_State *L)
     CCURLWrapper *curlw = NLua::CheckClassData<CCURLWrapper>("downloadclass", 1);
     NLua::DeleteClass(curlw, "downloadclass");
     delete curlw;
+    return 0;
+}
+
+int CMain::LuaAbort(lua_State *L)
+{
+    throw Exceptions::CExLuaAbort(lua_tostring(L, 1));
     return 0;
 }
 

@@ -72,13 +72,13 @@ end
 function ThrowError(msg, ...)
 --     print(debug.traceback())
     Clean()
-    error("Error: " .. string.format(msg, ...) .. "\n", 0)
+    abort("Error: " .. string.format(msg, ...) .. "\n", 0)
 end
 
 function RequiredCopy(src, dest)
     local stat, msg = os.copy(src, dest)
     if not stat then
-        ThrowError("Error: could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
+        ThrowError("Could not copy required file %s to %s: %s", src, dest, msg or "(No error message)")
     end
 end
 
@@ -264,7 +264,7 @@ function LoadPackage()
         return
     end
     
-    dofile(confdir .. "/package.lua")
+    loadpackagecfg(confdir)
     
     local function checkfield(s)
         if not pkg[s] or #pkg[s] == 0 then
@@ -297,7 +297,7 @@ function Init()
         confdir = curdir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
     end
     
-    dofile(confdir .. "/config.lua")
+    loadconfig(confdir)
     
     LoadPackage()
     
@@ -382,6 +382,8 @@ function PrepareArchive()
     RequiredCopy(ndir .. "/src/lua/deps.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/deps-public.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/install.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/attinstall.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/unattinstall.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/package.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/package-public.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")

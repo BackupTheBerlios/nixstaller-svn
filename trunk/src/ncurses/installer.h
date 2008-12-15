@@ -21,7 +21,9 @@
 #define INSTALLER_H
 
 #include <vector>
+#include "main/install/attinstall.h"
 #include "ncurses.h"
+#include "tui/window.h"
 
 namespace NNCurses {
 
@@ -32,7 +34,7 @@ class CWidget;
 
 class CInstallScreen;
 
-class CInstaller: public CNCursBase, public CBaseInstall
+class CInstaller: public NNCurses::CWindow, public CBaseAttInstall
 {
     typedef std::vector<CInstallScreen *> TScreenList;
     NNCurses::CButton *m_pCancelButton, *m_pPrevButton, *m_pNextButton;
@@ -41,6 +43,7 @@ class CInstaller: public CNCursBase, public CBaseInstall
     TSTLVecSize m_CurrentScreen;
     bool m_bPrevButtonLocked;
     
+    void ShowAbout(void);
     bool FirstValidScreen(void);
     bool LastValidScreen(void);
     void UpdateButtons(void);
@@ -48,26 +51,31 @@ class CInstaller: public CNCursBase, public CBaseInstall
     void NextScreen(void);
     void ActivateScreen(CInstallScreen *screen, bool sublast=false);
     
+    virtual char *GetPassword(const char *str);
+    virtual void MsgBox(const char *str, ...);
+    virtual bool YesNoBox(const char *str, ...);
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
+    virtual void WarnBox(const char *str, ...);
+    virtual void InitLua(void);
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r);
     virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f);
-    virtual void CoreUpdateUI(void);
+    virtual void CoreUpdate(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
-    virtual void CoreRun(void) { CBaseInstall::Run(); }
 
 protected:
-    virtual void InitLua(void);
     virtual void CoreUpdateLanguage(void);
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
     virtual bool CoreHandleKey(chtype key);
+    virtual void CoreGetButtonDescs(NNCurses::TButtonDescList &list);
 
 public:
     CInstaller(void);
     
     virtual void Init(int argc, char **argv);
+    
+    void Run(void);
 };
-
-
 
 #endif

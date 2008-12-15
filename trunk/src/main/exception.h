@@ -81,6 +81,12 @@ protected:
     virtual const char *what(void) throw() { return Message(); };
 };
 
+// Generic exception, incase specific exception info was lost (eg lua error)
+class CExGeneric: public CExMessage
+{
+public:
+    CExGeneric(const char *msg) : CExMessage(msg) { }
+};
 
 // Class for grouping IO exceptions
 class CExIO: virtual public CException
@@ -152,6 +158,12 @@ class CExLua: public CExMessage
 public:
     CExLua(const char *msg) : CExMessage(msg) { };
     virtual const char *what(void) throw() { return FormatText(GetTranslation("Lua error detected: %s"), Message()); };
+};
+
+class CExLuaAbort: public CExMessage
+{
+public:
+    CExLuaAbort(const char *msg) : CExMessage(msg) { };
 };
 
 class CExSU: public CExMessage

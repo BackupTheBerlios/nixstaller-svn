@@ -20,6 +20,7 @@
 #ifndef INSTALLER_H
 #define INSTALLER_H
 
+#include "main/install/attinstall.h"
 #include "fltk.h"
 
 class CInstallScreen;
@@ -27,12 +28,17 @@ class Fl_Box;
 class Fl_Button;
 class Fl_Group;
 class Fl_Pack;
+class Fl_Return_Button;
+class Fl_Text_Display;
 class Fl_Widget;
 class Fl_Window;
 class Fl_Wizard;
 
-class CInstaller: public CFLTKBase, public CBaseInstall
+class CInstaller: public CBaseAttInstall
 {
+    Fl_Text_Display *m_pAboutDisp;
+    Fl_Return_Button *m_pAboutOKButton;
+    Fl_Window *m_pAboutWindow;
     Fl_Window *m_pMainWindow;
     Fl_Group *m_pHeaderGroup;
     Fl_Box *m_pTitle, *m_pLogoBox, *m_pAboutBox;
@@ -41,6 +47,9 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     Fl_Wizard *m_pWizard;
     bool m_bPrevButtonLocked;
     std::string m_CurTitle;
+    
+    void CreateAbout(void);
+    void ShowAbout(bool show);
     
     int WindowW(void) const { return 600; }
     int WindowH(void) const { return 400; }
@@ -62,26 +71,33 @@ class CInstaller: public CFLTKBase, public CBaseInstall
     void Back(void);
     void Next(void);
 
+    virtual char *GetPassword(const char *str);
+    virtual void MsgBox(const char *str, ...);
+    virtual bool YesNoBox(const char *str, ...);
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
+    virtual void WarnBox(const char *str, ...);
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r);
     virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f);
-    virtual void CoreUpdateUI(void);
+    virtual void CoreUpdate(void);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
-    virtual void CoreRun(void) { CBaseInstall::Run(); }
 
 protected:
     Fl_Window *GetMainWindow(void) { return m_pMainWindow; };
 
 public:
-    CInstaller(void) : m_pLogoBox(NULL), m_bPrevButtonLocked(false) {}
-    virtual ~CInstaller(void) { DeleteScreens(); }
+    CInstaller(void);
+    virtual ~CInstaller(void);
     
     virtual void Init(int argc, char **argv);
 
+    void Run(void);
     void Cancel(void);
 
+    static void AboutOKCB(Fl_Widget *, void *p) { ((CInstaller *)p)->ShowAbout(false); };
+    static void ShowAboutCB(Fl_Widget *, void *p) { ((CInstaller *)p)->ShowAbout(true); };
     static void CancelCB(Fl_Widget *w, void *p);
     static void BackCB(Fl_Widget *w, void *p);
     static void NextCB(Fl_Widget *w, void *p);

@@ -23,10 +23,12 @@
 #include "luadepscreen.h"
 #include "luaprogressdialog.h"
 #include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
 #include "tui/button.h"
 #include "tui/box.h"
 #include "tui/dialog.h"
 #include "tui/separator.h"
+#include "tui/textfield.h"
 
 // -------------------------------------
 // Main installer screen
@@ -168,7 +170,7 @@ void CInstaller::NextScreen()
 void CInstaller::ActivateScreen(CInstallScreen *screen, bool sublast)
 {
     screen->Enable(true);
-    CBaseInstall::ActivateScreen(screen);
+    CBaseAttInstall::ActivateScreen(screen);
     if (sublast)
         screen->SubLast();
     
@@ -180,8 +182,118 @@ void CInstaller::ActivateScreen(CInstallScreen *screen, bool sublast)
         m_pNextButton->ReqFocus();
 }
 
-void CInstaller::CoreUpdateUI()
+char *CInstaller::GetPassword(const char *str)
 {
+    return StrDup(NNCurses::InputBox(str, "", 0, '*').c_str());
+}
+
+void CInstaller::ShowAbout()
+{
+    NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
+    NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 25, 0);
+    
+    NNCurses::CTextField *text = new NNCurses::CTextField(35, 12, false);
+    text->LoadFile(GetAboutFName());
+    dialog->AddWidget(text);
+    
+    dialog->AddButton(new NNCurses::CButton(GetTranslation("OK")));
+    
+    NNCurses::TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    delete dialog;
+}
+
+void CInstaller::MsgBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    NNCurses::MessageBox(text);
+    
+    free(text);
+}
+
+bool CInstaller::YesNoBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    bool ret = NNCurses::YesNoBox(text);
+    
+    free(text);
+    
+    return ret;
+}
+
+int CInstaller::ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, button3);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
+    NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 35, 0, text);
+        
+    NNCurses::CButton *buttons[3];
+    
+    dialog->AddButton(buttons[0] = new NNCurses::CButton(button1));
+    dialog->AddButton(buttons[1] = new NNCurses::CButton(button2));
+    
+    if (button3)
+        dialog->AddButton(buttons[2] = new NNCurses::CButton(button3));
+    
+    NNCurses::TUI.AddGroup(dialog, true);
+    
+    while (dialog->Run())
+        ;
+    
+    int ret = -1;
+    for (int i=0; i<3; i++)
+    {
+        if (dialog->ActivatedWidget() == buttons[i])
+        {
+            ret = i;
+            break;
+        }
+    }
+    
+    delete dialog;
+    free(text);
+    
+    return ret;
+}
+
+void CInstaller::WarnBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    NNCurses::WarningBox(text);
+    
+    free(text);
+}
+
+void CInstaller::CoreUpdate()
+{
+    CBaseAttInstall::CoreUpdate();
     NNCurses::TUI.Run(0);
 }
 
@@ -193,15 +305,9 @@ void CInstaller::LockScreen(bool cancel, bool prev, bool next)
     m_bPrevButtonLocked = prev;
 }
 
-void CInstaller::InitLua()
-{
-    CNCursBase::InitLua();
-    CBaseInstall::InitLua();
-}
-
 bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
 {
-    if (CNCursBase::CoreHandleEvent(emitter, type))
+    if (NNCurses::CWindow::CoreHandleEvent(emitter, type))
         return true;
     
     if (type == EVENT_CALLBACK)
@@ -236,19 +342,40 @@ bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
 
 bool CInstaller::CoreHandleKey(chtype key)
 {
-    if (NNCurses::IsEscape(key))
+    if (NNCurses::CWindow::CoreHandleKey(key))
+        return true;
+    
+    if (key == KEY_F(2))
+    {
+        ShowAbout();
+        return true;
+    }
+    else if (NNCurses::IsEscape(key))
     {
         if (AskQuit())
             throw Exceptions::CExUser();
         return true;
     }
     
-    return CNCursBase::CoreHandleKey(key);
+    return false;
+}
+
+void CInstaller::CoreGetButtonDescs(NNCurses::TButtonDescList &list)
+{
+    list.push_back(NNCurses::TButtonDescPair("F2", "About"));
+    CWindow::CoreGetButtonDescs(list);
+}
+
+void CInstaller::InitLua()
+{
+    // Overide print function
+    NLua::RegisterFunction(LuaLog, "print", NULL, this);
+    CBaseAttInstall::InitLua();
 }
 
 void CInstaller::Init(int argc, char **argv)
 {
-    CBaseInstall::Init(argc, argv);
+    CBaseAttInstall::Init(argc, argv);
     
     UpdateButtons();
 
@@ -264,7 +391,7 @@ void CInstaller::Init(int argc, char **argv)
 
 void CInstaller::CoreUpdateLanguage()
 {
-    CBaseInstall::CoreUpdateLanguage();
+    CBaseAttInstall::CoreUpdateLanguage();
     m_pCancelButton->SetText(GetTranslation("Cancel"));
     m_pPrevButton->SetText(GetTranslation("Back"));
     UpdateButtons();
@@ -301,4 +428,10 @@ CBaseLuaDepScreen *CInstaller::CoreCreateDepScreen(int f)
     dialog->SetMinWidth(50);
     NNCurses::TUI.AddGroup(dialog, true);
     return dialog;
+}
+
+void CInstaller::Run()
+{
+    while (NNCurses::TUI.Run())
+        Update();
 }

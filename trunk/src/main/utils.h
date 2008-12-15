@@ -32,6 +32,7 @@ char *CreateText(const char *s, ...);
 inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
 char *CreateTmpText(const char *s, ...);
 void FreeStrings(void);
+void FreeTranslations(void);
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 bool WriteAccess(const char *file);
@@ -68,6 +69,7 @@ void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &
 std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos);
 long GetTime(void);
 void ConvertExToLuaError(void);
+void ConvertLuaErrorToEx(void);
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 
 template <typename To, typename From> To SafeConvert(From from)

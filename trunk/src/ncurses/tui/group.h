@@ -56,7 +56,6 @@ protected:
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual void CoreDrawLayout(void) { }
 
-    bool CanFocusChilds(CWidget *w);
     void FocusWidget(CWidget *w) { CoreFocusWidget(w); }
     void InitChild(CWidget *w);
     void DrawChilds(void) { CoreDrawChilds(); }
@@ -77,7 +76,8 @@ public:
     CGroup *GetGroupWidget(CWidget *w) { return m_GroupMap[w]; }
     bool Empty(void) { return m_Childs.empty(); }
     void RequestUpdate(void);
-    
+    bool CanFocusChilds(CWidget *w);
+
     bool SetNextFocWidget(bool cont); // cont : Checks widget after current focused widget
     bool SetPrevFocWidget(bool cont);
     void SetValidWidget(CWidget *ignore);

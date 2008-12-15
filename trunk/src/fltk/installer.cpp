@@ -27,18 +27,87 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Pack.H>
+#include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Shared_Image.H>
+#include <FL/Fl_Text_Buffer.H>
+#include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Wizard.H>
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
+#include <FL/x.H>
 
 // -------------------------------------
 // Main installer screen
 // -------------------------------------
+
+CInstaller::CInstaller(void) : m_pAboutDisp(NULL), m_pAboutOKButton(NULL), m_pAboutWindow(NULL),
+                               m_pLogoBox(NULL), m_bPrevButtonLocked(false)
+{
+    fl_register_images();
+    Fl::visual(FL_RGB | FL_DOUBLE | FL_INDEX);
+#if defined(__APPLE__)
+    // needed by OS X to set up the default mouse cursor before anything is rendered
+    fl_open_display();
+#endif
+    Fl::scheme("plastic");
+    Fl::background(230, 230, 230);
+    
+#ifndef __APPLE__
+    // HACK: Switch that annoying bell off!
+    // UNDONE: Doesn't work on NetBSD yet :(
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = 0;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+#endif
+}
+
+CInstaller::~CInstaller(void)
+{
+    DeleteScreens();
+    
+#ifndef __APPLE__
+    // HACK: Restore bell volume
+    XKeyboardControl XKBControl;
+    XKBControl.bell_duration = -1;
+    XChangeKeyboardControl(fl_display, KBBellDuration, &XKBControl);
+#endif
+}
+
+void CInstaller::CreateAbout()
+{
+    m_pAboutWindow = new Fl_Window(580, 400, GetTranslation("About"));
+    m_pAboutWindow->set_modal();
+    m_pAboutWindow->hide();
+    m_pAboutWindow->begin();
+
+    Fl_Text_Buffer *pBuffer = new Fl_Text_Buffer;
+    pBuffer->loadfile(GetAboutFName());
+    
+    m_pAboutDisp = new Fl_Text_Display(20, 20, 540, 350, GetTranslation("About"));
+    m_pAboutDisp->buffer(pBuffer);
+    
+    m_pAboutOKButton = new Fl_Return_Button((580-80)/2, 370, 80, 25, GetTranslation("OK"));
+    m_pAboutOKButton->callback(AboutOKCB, this);
+    
+    m_pAboutWindow->end();
+}
+
+void CInstaller::ShowAbout(bool show)
+{
+    if (show)
+    {
+        m_pAboutWindow->hotspot(m_pAboutOKButton);
+        m_pAboutWindow->take_focus();
+        m_pAboutWindow->show();
+    }
+    else
+        m_pAboutWindow->hide();
+}
 
 void CInstaller::CreateHeader()
 {
@@ -111,7 +180,7 @@ void CInstaller::ActivateScreen(CInstallScreen *screen)
     const int x = m_pWizard->x()+ScreenSpacing(), y = m_pWizard->y()+ScreenSpacing();
     const int w = m_pWizard->w()-(2*ScreenSpacing()), h = m_pWizard->h()-(2*ScreenSpacing());
     screen->SetSize(x, y, w, h);
-    CBaseInstall::ActivateScreen(screen);
+    CBaseAttInstall::ActivateScreen(screen);
     m_pWizard->value(screen->GetGroup());
 }
 
@@ -253,6 +322,74 @@ void CInstaller::Next()
     m_pMainWindow->hide(); // Close main window, will shutdown the rest
 }
 
+char *CInstaller::GetPassword(const char *str)
+{
+    const char *passwd = fl_password(str);
+    
+    if (!passwd)
+        return NULL;
+    
+    return StrDup(passwd);
+}
+
+void CInstaller::MsgBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    fl_message(text);
+    
+    free(text);
+}
+
+bool CInstaller::YesNoBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    int ret = fl_choice(text, GetTranslation("No"), GetTranslation("Yes"), NULL);
+    free(text);
+    
+    return (ret!=0);
+}
+
+int CInstaller::ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, button3);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    int ret = fl_choice(text, button3, button2, button1); // FLTK displays buttons in other order
+    free(text);
+    
+    return (2 - ret);
+}
+
+void CInstaller::WarnBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    fl_alert(text);
+    
+    free(text);
+}
+
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
     return new CInstallScreen(title);
@@ -275,8 +412,9 @@ CBaseLuaDepScreen *CInstaller::CoreCreateDepScreen(int f)
     return new CLuaDepScreen(this, f);
 }
 
-void CInstaller::CoreUpdateUI(void)
+void CInstaller::CoreUpdate()
 {
+    CBaseAttInstall::CoreUpdate();
     Fl::wait(0.0f);
 }
 
@@ -290,8 +428,34 @@ void CInstaller::LockScreen(bool cancel, bool prev, bool next)
 
 void CInstaller::CoreUpdateLanguage(void)
 {
-    CBaseInstall::CoreUpdateLanguage();
-    CFLTKBase::CoreUpdateLanguage();
+    CBaseAttInstall::CoreUpdateLanguage();
+    
+    // Translations for FL ASK dialogs
+    fl_yes = GetTranslation("Yes");
+    fl_no = GetTranslation("No");
+    fl_ok = GetTranslation("OK");
+    fl_cancel = GetTranslation("Cancel");
+    fl_close = GetTranslation("Close");
+
+    // Translations for FLTK's File Chooser
+    Fl_File_Chooser::add_favorites_label = GetTranslation("Add to Favorites");
+    Fl_File_Chooser::all_files_label = GetTranslation("All Files (*)");
+    Fl_File_Chooser::custom_filter_label = GetTranslation("Custom Filter");
+    Fl_File_Chooser::favorites_label = GetTranslation("Favorites");
+    Fl_File_Chooser::filename_label = GetTranslation("Filename:");
+    Fl_File_Chooser::filesystems_label = GetTranslation("File Systems");
+    Fl_File_Chooser::manage_favorites_label = GetTranslation("Manage Favorites");
+    Fl_File_Chooser::new_directory_label = GetTranslation("Enter name of new directory");
+    Fl_File_Chooser::new_directory_tooltip = GetTranslation("Create new directory");
+    Fl_File_Chooser::show_label = GetTranslation("Show:");
+    
+    // About window
+    if (m_pAboutWindow) // May be called before CreateAbout()
+    {
+        m_pAboutWindow->label(GetTranslation("About"));
+        m_pAboutDisp->label(GetTranslation("About"));
+        m_pAboutOKButton->label(GetTranslation("OK"));
+    }
 
     CInstallScreen *screen = GetScreen(m_pWizard->value());
     if (screen)
@@ -351,7 +515,7 @@ void CInstaller::Init(int argc, char **argv)
     
     maingroup->end();
     
-    CBaseInstall::Init(argc, argv);
+    CBaseAttInstall::Init(argc, argv);
     
     Fl_Shared_Image *img = Fl_Shared_Image::get(GetLogoFName());
     if (img)
@@ -375,6 +539,13 @@ void CInstaller::Init(int argc, char **argv)
     
     m_pMainWindow->end();
     m_pMainWindow->show(argc, argv);
+}
+
+void CInstaller::Run()
+{
+    CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
+    while (Fl::check())
+        Update();
 }
 
 void CInstaller::Cancel()

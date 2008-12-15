@@ -43,11 +43,14 @@ OVERALL
 - Installer profiles?
 - Check messages like pkg enable screen which refer to a default
 - Set textfield size on demand/automaticly
-- Unattended installations?
+- Unattended installations
+    - Nicer way for dialog handling in deps.lua
+- Move curdir lua variable to install package?
 
 
 TEST
 - MD5 code for instheader.sh, makeself.sh and generic packages.
+- Defaults for all lua config files.
 
 
 PACKAGING
@@ -77,12 +80,13 @@ DOCS
 - utils.removerec()
 - utils.mkdirperm()? (If yes, CHANGELOG)
 - Nested block strings ([=[]=])
-- install.updateui()? (If yes update CHANGELOG)
+- install.update()? (If yes update CHANGELOG)
 - addcheckbox + addradiobutton + addmenu functions now have additional arg for default enabled option(s)
 - add/del options for menu, radiobutton, checkbox
 - menu, radiobutton, checkbox can now be empty
 - del() function for luacfgmenu
 - GTK/Pango templates
+- Apple stuff
 
 
 RELEASE
@@ -92,6 +96,8 @@ RELEASE
 TRANSLATIONS
 - Check all sentences for punctation
 - Change "Install commands ..." cancel message to something more appropiate --> Update translations
+- verifylock() messages
+- "Reverting to generic package."
 
 
 LIBSU
@@ -113,6 +119,7 @@ FLTK
 - Create a pack widget that works?
 - Check update: test for regressions, check current hacks.
 - Progressdialog: Refresh does not always enable both bars (FLTK specific?)
+- Check why Text Buffer appending is slow (Fixed with 1.3?)
 
 
 REGISTER

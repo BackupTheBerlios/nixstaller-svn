@@ -77,6 +77,18 @@ function genxdgscript(dest)
     os.chmod(fname, "555")
 end
 
+function verifylock()
+    local locked = checklock("/var/lib/dpkg/lock", false)
+    
+    if locked then
+        return false, [[
+Another program seems to be using the DEB database.
+Please close all applications that may use the database (ie Synaptic).]]
+    end
+    
+    return true
+end
+
 function create(src)
     local debdir = curdir .. "/deb"
     debbin = string.format("%s/%s", debdir, pkg.bindir)
@@ -123,16 +135,6 @@ Description: %s
 end
 
 function install(src)
-    local locked = checklock("/var/lib/dpkg/lock", false)
-    while locked do
-        if gui.choicebox("Another program seems to be using the DEB database.\
-Please close all applications that may use the database (ie Synaptic)\
-and hit continue.", "Continue", "Abort") == 2 then
-            os.exit(1)
-        end
-        locked = checklock("/var/lib/dpkg/lock", false)
-    end
-    
     checkcmd(OLDG.install.executeasroot, string.format("dpkg -i %s/pkg.deb", curdir))
 end
 

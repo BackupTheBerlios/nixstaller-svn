@@ -29,6 +29,7 @@ class CWindowManager: public CGroup
 {
     std::deque<CWidget *> m_WidgetQueue;
     TChildList m_ActiveWidgets; // List of last active widgets
+    CWidget *m_pLockedWidget;
     
 protected:
     virtual bool CoreHandleKey(chtype key);
@@ -43,7 +44,8 @@ protected:
     virtual void CoreDrawLayout(void);
     
 public:
-    CWindowManager(void) { }
+    CWindowManager(void) : m_pLockedWidget(NULL) { }
+    void LockWidget(CWidget *w) { m_pLockedWidget = w; }
 };
 
 }

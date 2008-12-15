@@ -17,84 +17,60 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include <fstream>
-#include <sys/wait.h>
-#include <sys/utsname.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <libgen.h>
-#include <poll.h>
-#include <errno.h>
 
-#include "main/main.h"
-#include "main/install/basescreen.h"
-#include "main/install/luacfgmenu.h"
-#include "main/install/luacheckbox.h"
-#include "main/install/luadepscreen.h"
-#include "main/install/luadirselector.h"
-#include "main/install/luagroup.h"
-#include "main/install/luainput.h"
-#include "main/install/lualabel.h"
-#include "main/install/luamenu.h"
-#include "main/install/luaprogressbar.h"
-#include "main/install/luaprogressdialog.h"
-#include "main/install/luaradiobutton.h"
-#include "main/install/luatextfield.h"
+#include "main/install/install.h"
 #include "main/lua/lua.h"
-#include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
-#include "main/lua/luatable.h"
 
 #if defined(__APPLE__)
 // Include Location Services header files
 #include <sys/param.h>
 #include <ApplicationServices/ApplicationServices.h>
 #endif
+
+std::map<std::string, char *> Translations;
+
 // -------------------------------------
-// Base Installer Class
+// Base Install Class
 // -------------------------------------
 
-CBaseInstall::CBaseInstall(void) : m_lUITimer(0), m_lRunTimer(0), m_pCurScreen(NULL),
-                                   m_iAskQuitLuaFunc(LUA_NOREF)
+void CBaseInstall::ReadLang()
 {
-}
-
-void CBaseInstall::UpdateUI()
-{
-    long curtime = GetTime();
+    FreeTranslations();
     
-    if (m_lUITimer <= curtime)
+    std::ifstream file(CreateText("%s/config/lang/%s/strings", GetOwnDir().c_str(), m_szCurLang.c_str()));
+
+    if (!file)
     {
-        m_lUITimer = curtime + 10;
-        Run();
-        CoreUpdateUI();
+        debugline("WARNING: Failed to load language file for %s\n", m_szCurLang.c_str());
+        return;
     }
-}
-
-void CBaseInstall::AddScreen(CBaseScreen *screen)
-{
-    m_ScreenList.push_back(screen);
-    CoreAddScreen(screen);
-}
-
-void CBaseInstall::Init(int argc, char **argv)
-{   
-    m_szBinDir = dirname(CreateText(argv[0]));
-    NLua::LuaSet(m_szBinDir, "bindir");
     
-    CMain::Init(argc, argv); // Init main, will also read config files
-    
-    lua_pushlightuserdata(NLua::LuaState, this);
-    lua_setfield(NLua::LuaState, LUA_REGISTRYINDEX, "installer");
-    NLua::LuaSetHook(LuaHook);
-    
-    m_SUHandler.SetThinkFunc(SUThinkFunc, this);
-}
+    std::string text, srcmsg;
+    bool atsrc = true;
+    while (file)
+    {
+        std::getline(file, text);
+        EatWhite(text);
 
-void CBaseInstall::CoreUpdateLanguage()
-{
-    for (TScreenList::iterator it=m_ScreenList.begin(); it!=m_ScreenList.end(); it++)
-        (*it)->UpdateLanguage();
+        if (text.empty() || text[0] == '#')
+            continue;
+
+        if (text[0] == '[')
+            GetTextFromBlock(file, text);
+        
+        if (atsrc)
+            srcmsg = text;
+        else
+        {
+            Translations[srcmsg] = new char[text.length()+1];
+            text.copy(Translations[srcmsg], std::string::npos);
+            Translations[srcmsg][text.length()] = 0;
+        }
+
+        atsrc = !atsrc;
+    }
 }
 
 int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path, int luaout)
@@ -119,7 +95,7 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
             
     while (pipe)
     {
-        UpdateUI();
+        Update();
                 
         if (pipe.HasData())
         {
@@ -147,285 +123,120 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
     return pipe.Close(required); // By calling Close() explicity its able to throw exceptions
 }
 
-int CBaseInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const char *path, int luaout)
+const char *CBaseInstall::GetLogoFName()
 {
-    GetSUPasswd("This installation requires root (administrator) privileges in order to continue.\n"
-                "Please enter the administrative password below.", true);
-    
-    NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
-    if (!func)
-        luaL_error(NLua::LuaState, "Error: could not use output function\n");
-
-    m_SUHandler.SetOutputFunc(CMDSUOutFunc, &func);
-
-    if (!path || !path[0])
-        path = GetDefaultPath();
-    
-    m_SUHandler.SetPath(path);
-    m_SUHandler.SetCommand(cmd);
-    
-    if (!m_SUHandler.ExecuteCommand(m_szPassword))
-    {
-        if (required)
-        {
-            CleanPasswdString(m_szPassword);
-            m_szPassword = NULL;
-            throw Exceptions::CExCommand(cmd);
-        }
-    }
-    
-    m_SUHandler.SetOutputFunc(NULL);
-    
-    return m_SUHandler.Ret();
+    std::string ret = "installer.png"; // Default
+    NLua::LuaGet(ret, "logo", "cfg");
+    return CreateText("%s/%s", GetOwnDir().c_str(), ret.c_str());
 }
 
-void CBaseInstall::SetDestDir(const char *dir)
+const char *CBaseInstall::GetAboutFName()
 {
-    NLua::LuaSet(dir, "destdir", "install");
-}
-
-std::string CBaseInstall::GetDestDir(void)
-{
-    std::string ret;
-    NLua::LuaGet(ret, "destdir", "install");
-    return ret;
+    return CreateText("%s/about", GetOwnDir().c_str());
 }
 
 void CBaseInstall::InitLua()
 {
     CMain::InitLua();
     
-    CBaseScreen::LuaRegister();
-    CBaseLuaGroup::LuaRegister();
-    CBaseLuaWidget::LuaRegister();
-    CBaseLuaInputField::LuaRegister();
-    CBaseLuaCheckbox::LuaRegister();
-    CBaseLuaRadioButton::LuaRegister();
-    CBaseLuaDirSelector::LuaRegister();
-    CBaseLuaCFGMenu::LuaRegister();
-    CBaseLuaMenu::LuaRegister();
-    CBaseLuaProgressBar::LuaRegister();
-    CBaseLuaProgressDialog::LuaRegister();
-    CBaseLuaTextField::LuaRegister();
-    CBaseLuaLabel::LuaRegister();
-
-    NLua::RegisterFunction(LuaNewScreen, "newscreen", "install", this);
-    NLua::RegisterFunction(LuaAddScreen, "addscreen", "install", this);
+    NLua::RegisterFunction(LuaTr, "tr");
+    
+    NLua::RegisterFunction(LuaUpdate, "update", "install", this);
+    NLua::RegisterFunction(LuaGetLang, "getlang", "install", this);
+    NLua::RegisterFunction(LuaSetLang, "setlang", "install", this);
+    NLua::RegisterFunction(LuaExecuteCMD, "executecmd", "install", this);
     NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
     NLua::RegisterFunction(LuaGetPkgDir, "getpkgdir", "install", this);
     NLua::RegisterFunction(LuaGetMacAppPath, "getmacapppath", "install", this);
-    NLua::RegisterFunction(LuaExecuteCMD, "executecmd", "install", this);
-    NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executecmdasroot", "install", this);
-    NLua::RegisterFunction(LuaAskRootPW, "askrootpw", "install", this);
-    NLua::RegisterFunction(LuaLockScreen, "lockscreen", "install", this);
-    NLua::RegisterFunction(LuaVerifyDestDir, "verifydestdir", "install", this);
     NLua::RegisterFunction(LuaExtraFilesPath, "extrafilespath", "install", this);
-    NLua::RegisterFunction(LuaGetLang, "getlang", "install", this);
-    NLua::RegisterFunction(LuaSetLang, "setlang", "install", this);
-    NLua::RegisterFunction(LuaUpdateUI, "updateui", "install", this);
-    NLua::RegisterFunction(LuaSetAskQuit, "setaskquit", "install", this);
-    NLua::RegisterFunction(LuaShowDepScreen, "showdepscreen", "install", this);
-        
-    NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "gui", this);
-
-    const char *env = getenv("HOME");
-    if (env)
-        SetDestDir(env);
-    else
-        SetDestDir("/");
-    
-    // Initialize variables
-    NLua::CLuaTable("menuentries", "install").Close();
-    
-    NLua::LoadFile("config/config.lua");
-    NLua::LoadFile("install.lua");
-
-    NLua::CLuaTable table("languages", "cfg");
-    
-    if (table)
-    {
-        int size = table.Size();
-        std::string lang;
-        for (int i=1; i<=size; i++)
-        {
-            table[i] >> lang;
-            m_Languages.push_back(lang);
-        }
-    }
-    
-    table.Close();
 }
 
-void CBaseInstall::DeleteScreens()
-{
-    debugline("Deleting %u screens...\n", m_ScreenList.size());
-    while (!m_ScreenList.empty())
-    {
-        delete m_ScreenList.back();
-        m_ScreenList.pop_back();
-    }
-}
-
-void CBaseInstall::ActivateScreen(CBaseScreen *screen)
-{
-    m_pCurScreen = screen;
-    screen->Activate();
-}
-
-void CBaseInstall::Run()
+void CBaseInstall::Update()
 {
     long curtime = GetTime();
     
-    if (m_lRunTimer <= curtime)
+    if (m_lUpdateTimer <= curtime)
     {
-        m_lRunTimer = curtime + 10;
-        if (m_pCurScreen)
-            m_pCurScreen->Update();
+        m_lUpdateTimer = curtime + 10;
+        CoreUpdate();
     }
 }
 
-bool CBaseInstall::VerifyDestDir(void)
+void CBaseInstall::Init(int argc, char **argv)
 {
-    std::string dir = GetDestDir();
+    CMain::Init(argc, argv);
+    NLua::LuaGet(m_szCurLang, "defaultlang", "cfg");
+    UpdateLanguage();
+}
+
+int CBaseInstall::LuaTr(lua_State *L)
+{
+    const char *str = luaL_checkstring(L, 1);
+    int args = lua_gettop(L);
     
-    if (FileExists(dir))
-    {
-        if (!ReadAccess(dir))
-        {
-            MsgBox(GetTranslation("You don't have read permissions for this directory.\n"
-                                  "Please choose another directory or rerun this program as a user who has read permissions."));
-            return false;
-        }
-        if (!WriteAccess(dir))
-        {
-            return (ChoiceBox(GetTranslation("You don't have write permissions for this directory.\n"
-                                             "The files can be extracted as the root user,\n"
-                                             "but you'll need to enter the administrative password for this later."),
-                    GetTranslation("Choose another directory"),
-                    GetTranslation("Continue as root"), NULL) == 1);
-        }
-    }
-    else
-    {
-        // Create directory?
-        if (YesNoBox(CreateText(GetTranslation("Directory %s does not exist, do you want to create it?"), dir.c_str())))
-        {
-            try
-            {
-                if (MKDirNeedsRoot(dir))
-                {
-                    GetSUPasswd("Your account doesn't have permissions to "
-                            "create the directory.\nTo create it with the root "
-                            "(administrator) account, please enter the administrative password below.", false);
-                    MKDirRecRoot(dir, m_SUHandler, m_szPassword);
-                }
-                else
-                    MKDirRec(dir);
-            }
-            catch(Exceptions::CExIO &e)
-            {
-                WarnBox(e.what());
-                return false;
-            }
-            
-            return true;
-        }
-        return false;
-    }
+    if (args == 1)
+        lua_pushstring(L, GetTranslation(str));
+    else if (args == 2)
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2)));
+    else if (args == 3)
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
+                       luaL_checkstring(L, 3)));
+    else if (args == 4)
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
+                       luaL_checkstring(L, 3), luaL_checkstring(L, 4)));
+    else // Limitation of max 4 args ...
+        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
+                       luaL_checkstring(L, 3), luaL_checkstring(L, 4), luaL_checkstring(L, 5)));
     
-    return true;
-}
-
-bool CBaseInstall::AskQuit()
-{
-    bool ret;
-    NLua::CLuaFunc func(m_iAskQuitLuaFunc, LUA_REGISTRYINDEX);
-    
-    if (func)
-    {
-        func(1);
-        func >> ret;
-    }
-    else
-        luaL_error(NLua::LuaState, "Could not use askquit function");
-    
-    return ret;
-}
-
-void CBaseInstall::CMDSUOutFunc(const char *s, void *p)
-{
-    NLua::CLuaFunc *func = static_cast<NLua::CLuaFunc *>(p);
-    (*func) << s;
-    (*func)(0);
-}
-
-void CBaseInstall::LuaHook(lua_State *L, lua_Debug *ar)
-{
-    lua_getfield(L, LUA_REGISTRYINDEX, "installer");
-    CBaseInstall *pInstaller = static_cast<CBaseInstall *>(lua_touserdata(L, -1));
-    lua_pop(L, 1);
-        
-    try
-    {
-        pInstaller->UpdateUI();
-    }
-    catch(Exceptions::CException &e)
-    {
-        ConvertExToLuaError();
-    }
-}
-
-int CBaseInstall::LuaNewScreen(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    const char *name = luaL_optstring(L, 1, "");
-    NLua::CreateClass(pInstaller->CreateScreen(name), "screen");
     return 1;
 }
 
-int CBaseInstall::LuaAddScreen(lua_State *L)
+int CBaseInstall::LuaUpdate(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    CBaseScreen *screen = NLua::CheckClassData<CBaseScreen>("screen", 1);
-    pInstaller->AddScreen(screen);
-    lua_pop(NLua::LuaState, 1);
+    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
+    installer->Update();
     return 0;
 }
 
-int CBaseInstall::LuaNewProgressDialog(lua_State *L)
+int CBaseInstall::LuaGetLang(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    luaL_checktype(L, 1, LUA_TFUNCTION);
-    int ref = NLua::MakeReference(1);
-        
-    CPointerWrapper<CBaseLuaProgressDialog> cl(pInstaller->CoreCreateProgDialog(ref));
-    NLua::CreateClass(cl, "progressdialog");
-    lua_pop(L, 1);
-    cl->Run();
-    NLua::DeleteClass(cl, "progressdialog");
-    NLua::Unreference(ref);
+    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
+    lua_pushstring(L, installer->m_szCurLang.c_str());
+    return 1;
+}
 
+int CBaseInstall::LuaSetLang(lua_State *L)
+{
+    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
+    installer->m_szCurLang = luaL_checkstring(L, 1);
+    installer->UpdateLanguage();
     return 0;
 }
 
-int CBaseInstall::LuaShowDepScreen(lua_State *L)
+int CBaseInstall::LuaExecuteCMD(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    luaL_checktype(L, 1, LUA_TFUNCTION);
-    int ref = NLua::MakeReference(1);
+    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
+    const char *cmd = luaL_checkstring(L, 1);
     
-    CPointerWrapper<CBaseLuaDepScreen> screen(pInstaller->CoreCreateDepScreen(ref));
-    screen->Run();
-    NLua::Unreference(ref);
-
-    return 0;
+    luaL_checktype(NLua::LuaState, 2, LUA_TFUNCTION);
+    int luaout = NLua::MakeReference(2);
+    
+    bool required = true;
+    
+    if (lua_isboolean(L, 3))
+        required = lua_toboolean(L, 3);
+    
+    const char *path = lua_tostring(L, 4);
+    
+    lua_pushinteger(L, installer->ExecuteCommand(cmd, required, path, luaout));
+    NLua::Unreference(luaout);
+    return 1;
 }
-
 
 int CBaseInstall::LuaGetTempDir(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    const char *ret = CreateText("%s/tmp", pInstaller->m_szOwnDir.c_str());
+    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
+    const char *ret = CreateText("%s/tmp", installer->GetOwnDir().c_str());
     
     if (!FileExists(ret))
         MKDir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
@@ -436,8 +247,8 @@ int CBaseInstall::LuaGetTempDir(lua_State *L)
 
 int CBaseInstall::LuaGetPkgDir(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    const char *ret = CreateText("%s/pkg/files", pInstaller->m_szOwnDir.c_str());
+    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
+    const char *ret = CreateText("%s/pkg/files", installer->GetOwnDir().c_str());
     
     if (!FileExists(ret))
         MKDirRec(ret);
@@ -456,7 +267,7 @@ int CBaseInstall::LuaGetMacAppPath(lua_State *L)
     CFURLRef url = NULL;
     CFStringRef id = CFStringCreateWithBytes(NULL, 
                                              (const unsigned char *)bundleID, strlen(bundleID), 
-                                             kCFStringEncodingUTF8, 0);
+                                              kCFStringEncodingUTF8, 0);
     rc = LSFindApplicationForInfo(kLSUnknownCreator, id, NULL, NULL, &url);
     CFRelease(id);
     if (rc == noErr) {
@@ -481,117 +292,10 @@ int CBaseInstall::LuaGetMacAppPath(lua_State *L)
     return 2;
 }
 
-int CBaseInstall::LuaExecuteCMD(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    const char *cmd = luaL_checkstring(L, 1);
-    
-    luaL_checktype(NLua::LuaState, 2, LUA_TFUNCTION);
-    int luaout = NLua::MakeReference(2);
-    
-    bool required = true;
-    
-    if (lua_isboolean(L, 3))
-        required = lua_toboolean(L, 3);
-    
-    const char *path = lua_tostring(L, 4);
-    
-    lua_pushinteger(L, pInstaller->ExecuteCommand(cmd, required, path, luaout));
-    NLua::Unreference(luaout);
-    return 1;
-}
-
-int CBaseInstall::LuaExecuteCMDAsRoot(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    const char *cmd = luaL_checkstring(L, 1);
-    
-    luaL_checktype(NLua::LuaState, 2, LUA_TFUNCTION);
-    int luaout = NLua::MakeReference(2);
-    
-    bool required = true;
-    
-    if (lua_isboolean(L, 3))
-        required = lua_toboolean(L, 3);
-    
-    const char *path = lua_tostring(L, 4);
-    
-    lua_pushinteger(L, pInstaller->ExecuteCommandAsRoot(cmd, required, path, luaout));
-    NLua::Unreference(luaout);
-    return 1;
-}
-
-int CBaseInstall::LuaAskRootPW(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    pInstaller->GetSUPasswd("This installation requires root (administrator) privileges in order to continue.\n"
-        "Please enter the administrative password below.", true);
-    return 0;
-}
-
-int CBaseInstall::LuaLockScreen(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    pInstaller->LockScreen(NLua::LuaToBool(1), NLua::LuaToBool(2), NLua::LuaToBool(3));
-    return 0;
-}
-
-int CBaseInstall::LuaVerifyDestDir(lua_State *L)
-{
-    lua_pushboolean(L, GetFromClosure(L)->VerifyDestDir());
-    return 1;
-}
-
 int CBaseInstall::LuaExtraFilesPath(lua_State *L)
 {
-    CBaseInstall *pInstaller = GetFromClosure(L);
+    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
     const char *file = luaL_optstring(L, 1, "");
-    lua_pushfstring(L, "%s/files_extra/%s", pInstaller->m_szOwnDir.c_str(), file);
+    lua_pushfstring(L, "%s/files_extra/%s", installer->GetOwnDir().c_str(), file);
     return 1;
-}
-
-int CBaseInstall::LuaGetLang(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    lua_pushstring(L, pInstaller->m_szCurLang.c_str());
-    return 1;
-}
-
-int CBaseInstall::LuaSetLang(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    pInstaller->m_szCurLang = luaL_checkstring(L, 1);
-    pInstaller->UpdateLanguage();
-    return 0;
-}
-
-int CBaseInstall::LuaUpdateUI(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    pInstaller->UpdateUI();
-    return 0;
-}
-
-int CBaseInstall::LuaSetAskQuit(lua_State *L)
-{
-    CBaseInstall *pInstaller = GetFromClosure(L);
-    luaL_checktype(L, 1, LUA_TFUNCTION);
-    
-    if (pInstaller->m_iAskQuitLuaFunc != LUA_NOREF)
-    {
-        lua_rawgeti(NLua::LuaState, LUA_REGISTRYINDEX, pInstaller->m_iAskQuitLuaFunc);
-        NLua::Unreference(pInstaller->m_iAskQuitLuaFunc);
-    }
-    
-    pInstaller->m_iAskQuitLuaFunc = NLua::MakeReference(1);
-    return 1;
-}
-
-// -------------------------------------
-// Util functions
-// -------------------------------------
-
-CBaseInstall *GetFromClosure(lua_State *L)
-{
-    return reinterpret_cast<CBaseInstall *>(lua_touserdata(L, lua_upvalueindex(1)));
 }

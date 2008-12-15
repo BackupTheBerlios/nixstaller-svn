@@ -141,6 +141,7 @@ void CTUI::AddGroup(CGroup *g, bool activate)
 
 void CTUI::ActivateGroup(CGroup *g)
 {
+    m_pWinManager->LockWidget(g);
     g->ReqFocus();
     g->SetNextFocWidget(false);
     UpdateButtonBar();

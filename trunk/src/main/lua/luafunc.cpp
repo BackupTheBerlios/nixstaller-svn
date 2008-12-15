@@ -143,15 +143,7 @@ int CLuaFunc::operator ()(int ret)
         m_ArgLuaTable[i].GetTable();
     
     if (lua_pcall(LuaState, size, ret, 0) != 0)
-    {
-        const char *errmsg = lua_tostring(LuaState, -1);
-        if (!errmsg)
-            errmsg = "Unknown error!";
-        else if (!strcmp(errmsg, "CExUser"))
-            throw Exceptions::CExUser();
-            
-        throw Exceptions::CExLua(errmsg);
-    }
+        ConvertLuaErrorToEx();
     
     const int top = lua_gettop(LuaState);
     int count = top - oldtop;

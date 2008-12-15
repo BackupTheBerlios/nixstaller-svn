@@ -91,6 +91,10 @@ function canxdg()
     return false
 end
 
+function verifylock()
+    return true -- Slack doesn't seem to lock :)
+end
+
 function create(src)
     local pkgdir = curdir .. "/slack"
     pkgbindir = string.format("%s/%s", pkgdir, pkg.bindir)

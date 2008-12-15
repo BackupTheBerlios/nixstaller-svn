@@ -17,25 +17,17 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef SEPERATOR
-#define SEPERATOR
+#include "main/install/unattinstall.h"
 
-#include "tui.h"
-#include "widget.h"
+// -------------------------------------
+// Base Attended Installer Class
+// -------------------------------------
 
-namespace NNCurses {
-
-class CSeparator: public CWidget
+void CBaseUnattInstall::InitLua()
 {
-    chtype m_Fill;
+    CBaseInstall::InitLua();
     
-protected:
-    virtual void DoDraw(void) { HLine(this, 0, 0, m_Fill, Width()); }
+    NLua::LuaSet(true, "unattended", "install");
     
-public:
-    CSeparator(chtype fill) : m_Fill(fill) { }
-};
-
+    NLua::LoadFile("install.lua");
 }
-
-#endif

@@ -154,6 +154,9 @@ void CWindowManager::CoreAddWidget(CWidget *w)
 
 void CWindowManager::CoreRemoveWidget(CWidget *w)
 {
+    if (w == m_pLockedWidget)
+        m_pLockedWidget = NULL;
+    
     TChildList::iterator it = std::find(m_ActiveWidgets.begin(), m_ActiveWidgets.end(), w);
     
     if (it != m_ActiveWidgets.end())
@@ -170,6 +173,9 @@ void CWindowManager::CoreRemoveWidget(CWidget *w)
 
 void CWindowManager::CoreFocusWidget(CWidget *w)
 {
+    if (m_pLockedWidget && (w != m_pLockedWidget))
+        return;
+    
     CWidget *focwidget = GetFocusedWidget();
     
     if (focwidget != w)

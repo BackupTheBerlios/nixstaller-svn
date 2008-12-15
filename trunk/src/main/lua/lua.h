@@ -72,6 +72,11 @@ void Unreference(int ref, int tab=LUA_REGISTRYINDEX);
 bool LuaToBool(int index);
 void LuaPushError(const char *msg, ...);
 
+template <typename C> C GetFromClosure(int n=1)
+{
+    return reinterpret_cast<C>(lua_touserdata(LuaState, lua_upvalueindex(n)));
+}
+
 }
 
 #endif

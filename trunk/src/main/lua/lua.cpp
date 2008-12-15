@@ -32,7 +32,7 @@ const luaL_Reg libtable[] = {
     { LUA_STRLIBNAME, luaopen_string },
     { LUA_MATHLIBNAME, luaopen_math },
     { LUA_LOADLIBNAME, luaopen_package },
-    { LUA_DBLIBNAME, luaopen_debug }, // No debug
+    { LUA_DBLIBNAME, luaopen_debug },
     { NULL, NULL }
 };
 
@@ -195,15 +195,7 @@ void GetGlobal(const char *var, const char *tab)
 void LoadFile(const char *name)
 {
     if (luaL_dofile(LuaState, name))
-    {
-        const char *errmsg = lua_tostring(LuaState, -1);
-        if (!errmsg)
-            errmsg = "Unknown error!";
-        else if (!strcmp(errmsg, "CExUser"))
-            throw Exceptions::CExUser();
-            
-        throw Exceptions::CExLua(CreateText("While parsing %s: %s\n", name, errmsg));
-    }
+        ConvertLuaErrorToEx();
 }
 
 bool LuaGet(std::string &out, const char *var, const char *tab)

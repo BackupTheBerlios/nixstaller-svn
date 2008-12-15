@@ -183,7 +183,7 @@ function GetLibMap()
     
     for _, b in ipairs(args) do
         if not os.fileexists(b) then
-            error("Could not locate file: " .. b)
+            abort("Could not locate file: " .. b)
         end
         CollectLibs(map, b, lpath)
     end
@@ -212,7 +212,7 @@ function CheckExisting(prdir, d, exist)
     if exist == "rm-existing" then
         local ret, msg = utils.removerec(path)
         if not ret then
-            error(string.format("Could not remove existing dependency: %s", msg))
+            abort(string.format("Could not remove existing dependency: %s", msg))
         end
         return true
     elseif exist == "skip-existing" then
@@ -240,7 +240,7 @@ function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, l
     
     local out = io.open(string.format("%s/config.lua", path), "w")
     if not out then
-        error("Could not open output file.")
+        abort("Could not open output file.")
     end
     
     -- Convert to comma seperated string list
@@ -574,7 +574,7 @@ function List()
     end
     
     if onlytemp and not found then
-        error("No such template: " .. onlytemp)
+        abort("No such template: " .. onlytemp)
     end
 end
 
@@ -592,9 +592,9 @@ function Scan()
     end
     
     -- Retrieve all current filed dependencies
-    local stat, msg = pcall(dofile, prdir .. "/package.lua")
+    local stat, msg = pcall(loadpackagecfg, prdir)
     if not stat then
-        error("Failed to load package.lua: " .. msg)
+        abort("Failed to load package.lua: " .. msg)
     end
     
     local loadeddeps, depmap = { }, { }
@@ -1062,7 +1062,7 @@ function EditDep()
     
     local dep, msg = LoadDep(prdir, depname)
     if not dep then
-        error("Error: Failed to load config.lua: " .. msg)
+        abort("Error: Failed to load config.lua: " .. msg)
     end
     
     if dep.full and full then
@@ -1177,9 +1177,9 @@ function ListDeps()
     end
     
     -- Retrieve all current filed dependencies
-    local stat, msg = pcall(dofile, prdir .. "/package.lua")
+    local stat, msg = pcall(loadpackagecfg, prdir)
     if not stat then
-        error("Failed to load package.lua: " .. msg)
+        abort("Failed to load package.lua: " .. msg)
     end
     
     local loadeddeps, depmap = { }, { }
@@ -1244,7 +1244,7 @@ function MakeTemps()
     
     for _, b in ipairs(args) do
         if not os.fileexists(b) then
-            error("Could not locate file: " .. b)
+            abort("Could not locate file: " .. b)
         end
         table.insert(checkstack, b)
     end

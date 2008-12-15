@@ -114,7 +114,7 @@ function install.extractfiles()
     install.setstatus("Extracting files")
 
     install.extract(function(f, p)
-                        output:add(f)
+                        output:add(f .. "\n")
                         progressbar:set(installprogress + (p / stepcount))
                     end)
 end

@@ -147,12 +147,12 @@ end
 
 for i, f in ipairs(binaries) do
     if not os.fileexists(f) then
-        error(string.format("Could not locate file: %s", f))
+        abort(string.format("Could not locate file: %s", f))
     end
     
     local elf, msg = os.openelf(f)
     if not elf then
-        error(string.format("Could not open file: %s (%s)", f, msg))
+        abort(string.format("Could not open file: %s (%s)", f, msg))
     end
     
     getallsyms(f, searchpaths)
@@ -163,7 +163,7 @@ local fname = string.format("%s/symmap", dest)
 out = io.open(fname, "w")
 
 if not out then
-    error("Could not open output file.")
+    abort("Could not open output file.")
 end
 
 out:write("local syms = { }\n")

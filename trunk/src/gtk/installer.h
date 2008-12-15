@@ -20,10 +20,14 @@
 #ifndef INSTALLER_H
 #define INSTALLER_H
 
+#include "main/install/attinstall.h"
+
 class CInstallScreen;
 
-class CInstaller: public CGTKBase, public CBaseInstall
+class CInstaller: public CBaseAttInstall
 {
+    GtkWidget *m_pMainWindow;
+    GtkWidget *m_pAboutDialog;
     GtkWidget *m_pTitle, *m_pLogo, *m_pAboutLabel;
     GtkWidget *m_pCancelLabel, *m_pBackLabel, *m_pNextLabel;
     GtkWidget *m_pCancelButton, *m_pBackButton, *m_pNextButton;
@@ -32,7 +36,9 @@ class CInstaller: public CGTKBase, public CBaseInstall
     std::string m_CurTitle;
     bool m_bBusyActivate; // Busy with activating a screen.
     
+    void CreateAbout(void);
     void SetAboutLabel(void);
+    void ShowAbout(void);
     
     void InitAboutSection(GtkWidget *parentbox);
     void InitScreenSection(GtkWidget *parentbox);
@@ -48,25 +54,31 @@ class CInstaller: public CGTKBase, public CBaseInstall
 
     int GetMainSpacing(void) const { return 10; }
     
-    virtual void CoreUpdateUI(void);
+    virtual char *GetPassword(const char *str);
+    virtual void MsgBox(const char *str, ...);
+    virtual bool YesNoBox(const char *str, ...);
+    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
+    virtual void WarnBox(const char *str, ...);
+    virtual void CoreUpdate(void);
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r);
     virtual CBaseLuaDepScreen *CoreCreateDepScreen(int f);
     virtual void LockScreen(bool cancel, bool prev, bool next);
     virtual void CoreUpdateLanguage(void);
-    virtual void CoreRun(void) { CBaseInstall::Run(); }
 
 public:
-    CInstaller(void) : m_bPrevButtonLocked(false), m_bBusyActivate(false) {}
+    CInstaller(void);
     virtual ~CInstaller(void) { DeleteScreens(); }
     
     virtual void Init(int argc, char **argv);
     
+    void Run(void);
     void SetTitle(const std::string &t);
-    
     void Cancel(void);
     
+    static void DestroyCB(GtkWidget *widget, gpointer data) { gtk_main_quit (); };
+    static gboolean IdleRunner(gpointer data) { (static_cast<CInstaller *>(data))->Update(); return TRUE; }
     static gboolean AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);
     static gboolean AboutLeaveCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);
     static gboolean AboutCB(GtkWidget *widget, GdkEvent *event, gpointer data)

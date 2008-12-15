@@ -66,7 +66,29 @@ function install.generatepkg()
     if not pkg.register then
         pkg.packager = generic
     end
-
+    
+    if pkg.packager ~= generic then
+        local clear, msg = pkg.packager.verifylock()
+        if not clear then -- Package manager is locked (ie in use)
+            if install.unattended then
+                install.print(msg .. "\n")
+            else
+                while not clear do
+                    if gui.choicebox(msg, "Continue", "Don't register") == 2 then
+                        pkg.packager = generic
+                        break
+                    end
+                    clear, msg = pkg.packager.verifylock()
+                end
+            end
+            
+            if not clear then
+                install.print("Reverting to generic package.\n")
+                pkg.packager = generic
+            end
+        end
+    end
+    
     local success, msg = pcall(function ()
         local dir = curdir .. "/pkg"
         
@@ -93,17 +115,29 @@ function install.generatepkg()
                 end
                 
                 if version then
-                    local msg
-                    local myver = pkg.version .. "-" .. pkg.release
-                    -- If type is string we don't know the version
-                    if version == "unknown" or version == myver then
-                        msg = "Package is already installed. Do you want to replace it?"
+                    if install.unattended then
+                        local msg
+                        local myver = pkg.version .. "-" .. pkg.release
+                        if version == "unknown" or version == myver then
+                            msg = "Package is already installed."
+                        else
+                            msg = tr("Version %s is already installed, you're trying to install version %s.", version, myver)
+                        end
+                        
+                        -- UNDONE
+                        abort(msg .. "\n")
                     else
-                        msg = tr("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, myver)
-                    end
-                    
-                    if msg and not gui.yesnobox(msg) then
-                        os.exit(1)
+                        local msg
+                        local myver = pkg.version .. "-" .. pkg.release
+                        if version == "unknown" or version == myver then
+                            msg = "Package is already installed. Do you want to replace it?"
+                        else
+                            msg = tr("Version %s is already installed, you're trying to install version %s.\nDo you want to replace the installed package?", version, myver)
+                        end
+                        
+                        if msg and not gui.yesnobox(msg) then
+                            os.exit(1)
+                        end
                     end
                 end
             end

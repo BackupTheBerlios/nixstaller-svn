@@ -297,6 +297,8 @@ void CGroup::SetValidWidget(CWidget *ignore)
     
     itprev = itnext = std::find(m_Childs.begin(), m_Childs.end(), ignore);
     
+    assert(itprev != m_Childs.end());
+    
     do
     {
         if (itprev != m_Childs.begin())

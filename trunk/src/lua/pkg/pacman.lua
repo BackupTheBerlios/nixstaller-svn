@@ -63,6 +63,13 @@ function canxdg()
     return false
 end
 
+function verifylock()
+    if os.fileexists("/tmp/pacman.lck") then
+        return false, "Another program seems to be using pacman. Please close this program."
+    end
+    return true
+end
+
 function create(src)
     local pkgdir = curdir .. "/pac"
     pkgbindir = string.format("%s/%s", pkgdir, pkg.bindir)
@@ -106,14 +113,6 @@ arch = %s
 end
 
 function install(src)
-    -- UNDONE: Pacman 3.1 seems to be able to place locks on other places?
-    while os.fileexists("/tmp/pacman.lck") do
-        if gui.choicebox("Another program seems to be using pacman. Please close this program and\
-hit continue.", "Continue", "Abort") == 2 then
-            os.exit(1)
-        end
-    end
-    
     checkcmd(OLDG.install.executeasroot, string.format("pacman --force --upgrade %s/%s", curdir, pkgname()))
 end
 

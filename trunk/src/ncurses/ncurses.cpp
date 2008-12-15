@@ -20,24 +20,12 @@
 #include "ncurses.h"
 #include "installer.h"
 #include "main/lua/lua.h"
-#include "main/lua/luafunc.h"
 #include "tui/tui.h"
-#include "tui/widget.h"
-#include "tui/window.h"
-#include "tui/box.h"
-#include "tui/label.h"
-#include "tui/button.h"
-#include "tui/textfield.h"
-#include "tui/menu.h"
-#include "tui/inputfield.h"
-#include "tui/progressbar.h"
 #include "tui/dialog.h"
-#include "tui/radiobutton.h"
 
 namespace {
 bool g_bGotGUI = false;
 }
-
 
 #ifndef RELEASE
 void debugline(const char *t, ...)
@@ -91,157 +79,11 @@ void StartFrontend(int argc, char **argv)
     NNCurses::TUI.AddGroup(interface, true);
     interface->Init(argc, argv);
 
-    interface->CNCursBase::Run();
+    interface->Run();
 }
 
 void StopFrontend()
 {
     NNCurses::TUI.StopNCurses();
     g_bGotGUI = false;
-}
-
-// -------------------------------------
-// Base NCurses Frontend Class
-// -------------------------------------
-
-char *CNCursBase::GetPassword(const char *str)
-{
-    return StrDup(NNCurses::InputBox(str, "", 0, '*').c_str());
-}
-
-void CNCursBase::ShowAbout()
-{
-    NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
-    NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 25, 0);
-    
-    NNCurses::CTextField *text = new NNCurses::CTextField(35, 12, false);
-    text->LoadFile(GetAboutFName());
-    dialog->AddWidget(text);
-    
-    dialog->AddButton(new NNCurses::CButton(GetTranslation("OK")));
-    
-    NNCurses::TUI.AddGroup(dialog, true);
-    
-    while (dialog->Run())
-        ;
-    
-    delete dialog;
-}
-
-void CNCursBase::MsgBox(const char *str, ...)
-{
-    char *text;
-    va_list v;
-    
-    va_start(v, str);
-    vasprintf(&text, str, v);
-    va_end(v);
-    
-    NNCurses::MessageBox(text);
-    
-    free(text);
-}
-
-bool CNCursBase::YesNoBox(const char *str, ...)
-{
-    char *text;
-    va_list v;
-    
-    va_start(v, str);
-    vasprintf(&text, str, v);
-    va_end(v);
-    
-    bool ret = NNCurses::YesNoBox(text);
-    
-    free(text);
-    
-    return ret;
-}
-
-int CNCursBase::ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...)
-{
-    char *text;
-    va_list v;
-    
-    va_start(v, button3);
-    vasprintf(&text, str, v);
-    va_end(v);
-    
-    NNCurses::TColorPair fc(COLOR_GREEN, COLOR_BLUE), dfc(COLOR_WHITE, COLOR_BLUE);
-    NNCurses::CDialog *dialog = NNCurses::CreateBaseDialog(fc, dfc, 35, 0, text);
-        
-    NNCurses::CButton *buttons[3];
-    
-    dialog->AddButton(buttons[0] = new NNCurses::CButton(button1));
-    dialog->AddButton(buttons[1] = new NNCurses::CButton(button2));
-    
-    if (button3)
-        dialog->AddButton(buttons[2] = new NNCurses::CButton(button3));
-    
-    NNCurses::TUI.AddGroup(dialog, true);
-    
-    while (dialog->Run())
-        ;
-    
-    int ret = -1;
-    for (int i=0; i<3; i++)
-    {
-        if (dialog->ActivatedWidget() == buttons[i])
-        {
-            ret = i;
-            break;
-        }
-    }
-    
-    delete dialog;
-    free(text);
-    
-    return ret;
-}
-
-void CNCursBase::WarnBox(const char *str, ...)
-{
-    char *text;
-    va_list v;
-    
-    va_start(v, str);
-    vasprintf(&text, str, v);
-    va_end(v);
-    
-    NNCurses::WarningBox(text);
-    
-    free(text);
-}
-
-void CNCursBase::InitLua()
-{
-    // Overide print function
-    NLua::RegisterFunction(LuaLog, "print", NULL, this);
-    CMain::InitLua();
-}
-
-bool CNCursBase::CoreHandleKey(chtype key)
-{
-    if (NNCurses::CWindow::CoreHandleKey(key))
-        return true;
-    
-    if (key == KEY_F(2))
-    {
-        ShowAbout();
-        return true;
-    }
-    
-    return false;
-}
-
-void CNCursBase::CoreGetButtonDescs(NNCurses::TButtonDescList &list)
-{
-    list.push_back(NNCurses::TButtonDescPair("F2", "About"));
-    CWindow::CoreGetButtonDescs(list);
-}
-
-void CNCursBase::Run()
-{
-    while (NNCurses::TUI.Run())
-        CoreRun();
 }

@@ -43,6 +43,7 @@ class CInstallScreen: public CBaseScreen, public NNCurses::CBox
     
     bool VisibleWidget(NNCurses::CWidget *w);
     int CheckWidgetHeight(NNCurses::CWidget *w);
+    void FocusFirstWidget(TSTLVecSize screen);
     void ResetWidgetRange(void);
     int MaxScreenHeight(void) const;
     void UpdateCounter(void);

@@ -304,3 +304,49 @@ end
 function escapepat(s)
     return string.gsub(s, "([%%%.%?%*%+%-%(%)%[%]%^%$])", "%%%1")
 end
+
+function loadconfig(path)
+    dofile(path .. "/config.lua")
+    
+    local function default(var, val)
+        if cfg[var] == nil then
+            cfg[var] = val
+        end
+    end
+    
+    default("appname", "")
+    default("languages", { "english", "dutch" })
+    default("defaultlang", "english")
+    default("targetos", { os.osname })
+    default("targetarch", { os.arch })
+    default("frontends", { "gtk", "fltk", "ncurses" })
+    default("archivetype", "lzma")
+
+    if not utils.tablefind(cfg.languages, cfg.defaultlang) then
+        cfg.defaultlang = cfg.languages[1]
+    end
+end
+
+function loadpackagecfg(path)
+    dofile(path .. "/package.lua")
+    
+    local function default(var, val)
+        if pkg[var] == nil then
+            pkg[var] = val
+        end
+    end
+    
+    default("deps", { })
+    default("enable", false)
+    default("register", true)
+    default("setkdeenv", false)
+    default("release", "1")
+    default("url", "")
+    default("license", "")
+end
+
+function loadrun(path)
+    install.destdir = os.getenv("HOME") or "/"
+    install.menuentries = { }
+    dofile(path .. "/run.lua")
+end

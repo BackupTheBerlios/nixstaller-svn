@@ -49,10 +49,58 @@ void SetHandCursor(GtkWidget *widget, bool on)
 // Install Frontend Class
 // -------------------------------------
 
+CInstaller::CInstaller(void) : m_bPrevButtonLocked(false), m_bBusyActivate(false)
+{
+    g_set_application_name("Nixstaller");
+    m_pMainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    g_signal_connect(G_OBJECT(m_pMainWindow), "destroy", G_CALLBACK(DestroyCB), NULL);
+}
+
+void CInstaller::CreateAbout()
+{
+    const int windoww = 580, windowh = 400;
+    
+    m_pAboutDialog = gtk_dialog_new_with_buttons(GetTranslation("About"), GTK_WINDOW(m_pMainWindow),
+            GtkDialogFlags(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+                           GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+    gtk_window_set_default_size(GTK_WINDOW(m_pAboutDialog), windoww, windowh);
+    
+    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
+    GtkTextIter iter;
+    std::string buf;
+    std::ifstream aboutfile(GetAboutFName());
+    char c;
+    
+    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+    
+    while (aboutfile.get(c))
+        buf += c;
+    
+    gtk_text_buffer_insert(buffer, &iter, buf.c_str(), -1);
+    
+    GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+    GtkWidget *textview = gtk_text_view_new_with_buffer(GTK_TEXT_BUFFER(buffer));
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+    gtk_container_add(GTK_CONTAINER(scrolled), textview);
+    gtk_widget_show(textview);
+    
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(m_pAboutDialog)->vbox), scrolled);
+    gtk_widget_show(scrolled);
+}
+
 void CInstaller::SetAboutLabel()
 {
     gtk_label_set_markup(GTK_LABEL(m_pAboutLabel),
                          CreateText("<span size=\"small\" color=\"blue\"><u>%s</u></span>", GetTranslation("About")));
+}
+
+void CInstaller::ShowAbout()
+{
+    gtk_window_set_title(GTK_WINDOW(m_pAboutDialog), GetTranslation("About"));
+    gtk_dialog_run(GTK_DIALOG(m_pAboutDialog));
+    gtk_widget_hide(m_pAboutDialog);
 }
 
 void CInstaller::InitAboutSection(GtkWidget *parentbox)
@@ -278,14 +326,111 @@ void CInstaller::Next(void)
     }
     
     // No screens left
-    gtk_widget_destroy(GetMainWin());
+    gtk_widget_destroy(m_pMainWindow);
+}
+
+char *CInstaller::GetPassword(const char *str)
+{
+    const int windoww = 400;
+    
+    GtkWidget *dialog = gtk_dialog_new_with_buttons(GetTranslation("Password dialog"), NULL, GTK_DIALOG_MODAL,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_OK,
+            NULL);
+    gtk_window_set_default_size(GTK_WINDOW(dialog), windoww, -1);
+    
+    GtkWidget *label = gtk_label_new(str);
+    gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), label, TRUE, TRUE, 15);
+    gtk_widget_show(label);
+
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    
+    GtkWidget *input = gtk_entry_new();
+    gtk_entry_set_visibility(GTK_ENTRY(input), FALSE);
+    gtk_box_pack_end(GTK_BOX(hbox), input, TRUE, TRUE, 15);
+    gtk_widget_show(input);
+    
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), hbox);
+    gtk_widget_show(hbox);
+    
+    gint dialogret = gtk_dialog_run(GTK_DIALOG(dialog));
+    char *ret = (dialogret == GTK_RESPONSE_OK) ? StrDup(gtk_entry_get_text(GTK_ENTRY(input))) : NULL;
+    
+    gtk_widget_destroy(dialog);
+
+    return ret;
+}
+
+void CInstaller::MsgBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    MessageBox(GTK_MESSAGE_INFO, text);
+    
+    free(text);
+}
+
+bool CInstaller::YesNoBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, text);
+    bool yes = (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES);
+    gtk_widget_destroy(dialog);
+    
+    free(text);
+    
+    return yes;
+}
+
+int CInstaller::ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, button3);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    GtkWidget *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, text);
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog), button1, 0, button2, 1, button3, 2, NULL);
+    int ret = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    
+    free(text);
+    
+    return ret;
+}
+
+void CInstaller::WarnBox(const char *str, ...)
+{
+    char *text;
+    va_list v;
+    
+    va_start(v, str);
+    vasprintf(&text, str, v);
+    va_end(v);
+    
+    MessageBox(GTK_MESSAGE_WARNING, text);
+    
+    free(text);
 }
 
 void CInstaller::Init(int argc, char **argv)
 {
     const int windoww = 600, windowh = 400;
     
-    GtkWidget *mainwin = GetMainWin();
+    GtkWidget *mainwin = m_pMainWindow;
     g_signal_connect(G_OBJECT(mainwin), "delete_event", G_CALLBACK(DeleteCB), this);
     gtk_window_set_default_size(GTK_WINDOW(mainwin), windoww, windowh);
     
@@ -298,7 +443,7 @@ void CInstaller::Init(int argc, char **argv)
     gtk_widget_show_all(vbox);
     gtk_container_add(GTK_CONTAINER(mainwin), vbox);
 
-    CBaseInstall::Init(argc, argv);
+    CBaseAttInstall::Init(argc, argv);
     
     // Logo might be set in lua config, so load it after init
     gtk_image_set_from_file(GTK_IMAGE(m_pLogo), GetLogoFName());
@@ -321,7 +466,7 @@ void CInstaller::Init(int argc, char **argv)
 
 void CInstaller::CoreUpdateLanguage()
 {
-    CBaseInstall::CoreUpdateLanguage();
+    CBaseAttInstall::CoreUpdateLanguage();
     
     SetAboutLabel();
     
@@ -341,8 +486,9 @@ void CInstaller::SetTitle(const std::string &t)
     g_free(markup);
 }
 
-void CInstaller::CoreUpdateUI()
+void CInstaller::CoreUpdate()
 {
+    CBaseAttInstall::CoreUpdate();
     gtk_main_iteration_do(FALSE);
 }
 
@@ -363,12 +509,12 @@ void CInstaller::CoreAddScreen(CBaseScreen *screen)
 
 CBaseLuaProgressDialog *CInstaller::CoreCreateProgDialog(int r)
 {
-    return new CLuaProgressDialog(GetMainWin(), r);
+    return new CLuaProgressDialog(m_pMainWindow, r);
 }
 
 CBaseLuaDepScreen *CInstaller::CoreCreateDepScreen(int f)
 {
-    return new CLuaDepScreen(GetMainWin(), this, f);
+    return new CLuaDepScreen(m_pMainWindow, this, f);
 }
 
 void CInstaller::LockScreen(bool cancel, bool prev, bool next)
@@ -379,11 +525,20 @@ void CInstaller::LockScreen(bool cancel, bool prev, bool next)
     m_bPrevButtonLocked = prev;
 }
 
+
+void CInstaller::Run()
+{
+    CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
+    gtk_widget_show(m_pMainWindow);
+    g_idle_add(IdleRunner, this);
+    gtk_main();
+}
+
 void CInstaller::Cancel()
 {
     if (AskQuit())
     {
-        gtk_widget_destroy(GetMainWin());
+        gtk_widget_destroy(m_pMainWindow);
         // Call this here, because this function may be called during Lua execution
         ::Quit(EXIT_FAILURE);
     }

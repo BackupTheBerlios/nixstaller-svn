@@ -36,14 +36,19 @@ function depclass:Install()
     self:CopyFiles()
 end
 
--- UNDONE
-local progstep = 0
-local curprogress = 0
+depprocess = {
+progstep = 0,
+curprogress = 0,
+wrongdeps = { },
+wronglibs = { },
+installeddeps = { },
+notifier = nil
+}
 
 function initprogress(bins, mainlibs)
     -- Rough progress indication
     
-    curprogress = 0
+    depprocess.curprogress = 0
     local count = 0
     
     if bins then
@@ -58,15 +63,22 @@ function initprogress(bins, mainlibs)
     
     count = count + 1 -- Installing deps
     
-    progstep = 100 / count
+    depprocess.progstep = 100 / count
 end
 
-function incprogress(dialog, step)
-    step = step or progstep
-    curprogress = curprogress + step
-    dialog:setprogress(curprogress)
-    for n=1,100000 do
-        install.updateui()
+function incprogress(step)
+    if not install.unattended then
+        step = step or depprocess.progstep
+        depprocess.curprogress = depprocess.curprogress + step
+        depprocess.notifier:setprogress(depprocess.curprogress)
+    end
+end
+
+function setstatus(s)
+    if install.unattended then
+        install.print(s .. "\n")
+    else
+        depprocess.notifier:settitle(s)
     end
 end
 
@@ -139,7 +151,7 @@ end
 
 local initdeps = { }
 local ignorefaileddl = false
-function initdep(d, dialog, wrongdeps)
+function initdep(d)
     if initdeps[d] ~= nil then
         return initdeps[d]
     end
@@ -149,7 +161,71 @@ function initdep(d, dialog, wrongdeps)
         return true
     end
     
-    dialog:enablesecbar(true)
+    local function enablesecbar(e)
+        if not install.unattended then
+            depprocess.notifier:enablesecbar(e)
+        end
+    end
+
+    local printedprog = 0
+    local function setsecprogress(p)
+        if install.unattended then
+            if printedprog >= 100 then
+                return
+            end
+            
+            while (p - printedprog) >= 10 do
+                printedprog = printedprog + 10
+                install.print(string.format("%d%% ", printedprog))
+            end
+        else
+            depprocess.notifier:setsecprogress(p)
+        end
+    end
+
+    local function notifydownload()
+        if install.unattended then
+            install.print("Downloading dependency " .. d.name .. ": ")
+        else
+            depprocess.notifier:setsectitle("Downloading dependency " .. d.name)
+            depprocess.notifier:setcancelbutton(true)
+        end
+    end
+    
+    local function notifyenddownload()
+        setsecprogress(100)
+        if install.unattended then
+            install.print("\n")
+            printedprog = 0
+        else
+            depprocess.notifier:setcancelbutton(true)
+        end
+    end
+    
+    local function notifyextract()
+        if install.unattended then
+            install.print("Extracting dependency " .. d.name .. ": ")
+        else
+            depprocess.notifier:setsectitle("Extracting dependency " .. d.name)
+        end
+    end
+    
+    local function notifyendextract()
+        if install.unattended then
+            install.print("\n")
+            printedprog = 0
+        end
+    end
+    
+    local function cancelled()
+        if install.unattended then
+            return false
+        else
+            return depprocess.notifier:cancelled()
+        end
+    end
+    
+    enablesecbar(true)
     
     local src = string.format("%s/deps/%s", curdir, d.name)
     local dest = string.format("%s/files", src)
@@ -163,8 +239,7 @@ function initdep(d, dialog, wrongdeps)
     
     local dlfile = src .. "/dlfiles"
     if os.fileexists(dlfile) and d.baseurl then
-        dialog:setsectitle("Downloading dependency " .. d.name)
-        dialog:setcancelbutton(true)
+        notifydownload()
         local fmap = dofile(dlfile)
         for f, sum in pairs(fmap) do
             if archfiles[f] then
@@ -174,42 +249,49 @@ function initdep(d, dialog, wrongdeps)
                     
                     if download then
                         function download:updateprogress(t, d)
-                            dialog:setsecprogress(d/t*100)
+                            if d > 0 then
+                                setsecprogress(d/t*100)
+                            end
                         end
         
                         local stat
                         stat, msg = download:process()
-                        while stat and not dialog:cancelled() do
+                        while stat and not cancelled() do
                             stat, msg = download:process()
                         end
                         download:close()
                     end
                     
                     local dlsum = io.md5(path)
-                    if not download or msg or dialog:cancelled() or dlsum ~= sum then -- Error
+                    if not download or msg or cancelled() or dlsum ~= sum then -- Error
                         if dlsum ~= sum then
                             msg = msg or "file differs from server"
                         end
                         
                         local retry = false
-                        if not ignorefaileddl and not dialog:cancelled() then
-                            local guimsg = "Failed to download dependency"
+                        if not ignorefaileddl and not cancelled() then
+                            local usermsg = "Failed to download dependency"
                             if msg then
-                                guimsg = guimsg .. ":\n" .. msg
+                                usermsg = usermsg .. ":\n" .. msg
                             end
-                            local choice = gui.choicebox(guimsg, "Retry", "Ignore", "Ignore all")
-                            retry = (choice == 1)
-                            ignorefaileddl = (choice == 3)
+                            
+                            if install.unattended then
+                                abort(usermsg)
+                            else
+                                local choice = gui.choicebox(usermsg, "Retry", "Ignore", "Ignore all")
+                                retry = (choice == 1)
+                                ignorefaileddl = (choice == 3)
+                            end
                         end
                         
                         if not retry then
-                            dialog:enablesecbar(false)
-                            dialog:setcancelbutton(false)
+                            enablesecbar(false)
+                            notifyenddownload()
                             initdeps[d] = false
                             print("Failed dep:", d.name, msg)
                             os.remove(path)
-                            wrongdeps[d] = wrongdeps[d] or { }
-                            wrongdeps[d].faileddl = true
+                            depprocess.wrongdeps[d] = depprocess.wrongdeps[d] or { }
+                            depprocess.wrongdeps[d].faileddl = true
                             return false
                         end
                     else
@@ -218,10 +300,10 @@ function initdep(d, dialog, wrongdeps)
                 end
             end
         end
-        dialog:setcancelbutton(false)
+        notifyenddownload()
     end
     
-    dialog:setsectitle("Extracting dependency " .. d.name)
+    notifyextract()
     
     local archives = { }
     local function checkarch(a)
@@ -272,18 +354,19 @@ function initdep(d, dialog, wrongdeps)
             
             if szmap[f] and szmap[f][file] and totalsize > 0 then
                 extractedsz = extractedsz + szmap[f][file]
-                dialog:setsecprogress(extractedsz / totalsize * 100)
+                setsecprogress(extractedsz / totalsize * 100)
             end
         end
     end
     
-    dialog:enablesecbar(false)
+    enablesecbar(false)
+    notifyendextract()
     initdeps[d] = true
     return true
 end
 
-function resetfaileddl(wrongdeps)
-    for k, v in pairs(wrongdeps) do
+function resetfaileddl()
+    for k, v in pairs(depprocess.wrongdeps) do
         if v.faileddl then
             initdeps[k] = nil
             v.faileddl = nil
@@ -293,15 +376,12 @@ function resetfaileddl(wrongdeps)
 end
 
 function verifysymverneeds(needs, path)
-    print("verifysymverneeds:", path)
     local verdefs = getsymverdefs(path)
     if verdefs then
         for vn in pairs(needs) do
             if verdefs[vn] then
-                print("Found symbol version:", vn)
                 return true
             else
-                print("Missing symbol version:", vn)
                 return false
             end
         end
@@ -309,7 +389,7 @@ function verifysymverneeds(needs, path)
     return true
 end
 
-function markdepfromlib(bininfo, lib, deps, parent, wrongdeps, wronglibs, dialog)
+function markdepfromlib(bininfo, lib, deps, parent)
     assert(not bininfo.main)
 
     if parent then
@@ -325,14 +405,14 @@ function markdepfromlib(bininfo, lib, deps, parent, wrongdeps, wronglibs, dialog
     end
 
     local dep = deps and getdepfromlib(deps, lib)
-    return markdep(bininfo, lib, dep, deps, wrongdeps, wronglibs, dialog)
+    return markdep(bininfo, lib, dep, deps)
 end
 
-function markdep(bininfo, lib, dep, deps, wrongdeps, wronglibs, dialog)
+function markdep(bininfo, lib, dep, deps)
     assert(not bininfo.main)
     
     if dep and dep.full then
-        if initdep(dep, dialog, wrongdeps) then
+        if initdep(dep) then
             bininfo.found = true
             bininfo.native = false
             bininfo.path = getdeplibpath(dep, lib)
@@ -342,15 +422,15 @@ function markdep(bininfo, lib, dep, deps, wrongdeps, wronglibs, dialog)
         end
     else
         if dep then
-            wrongdeps[dep] = wrongdeps[dep] or { }
-            wrongdeps[dep].incompatdep = true
+            depprocess.wrongdeps[dep] = depprocess.wrongdeps[dep] or { }
+            depprocess.wrongdeps[dep].incompatdep = true
             install.print(string.format("WARNING: Missing/incompatible dependency: %s\n", dep.name))
         else
-            wronglibs[lib] = wronglibs[lib] or { }
+            depprocess.wronglibs[lib] = depprocess.wronglibs[lib] or { }
             if bininfo.native then
-                wronglibs[lib].incompatlib = true
+                depprocess.wronglibs[lib].incompatlib = true
             else
-                wronglibs[lib].missinglib = true
+                depprocess.wronglibs[lib].missinglib = true
             end
             install.print(string.format("WARNING: Missing/incompatible library: %s\n", lib))
         end
@@ -358,7 +438,7 @@ function markdep(bininfo, lib, dep, deps, wrongdeps, wronglibs, dialog)
     return false
 end
 
-function collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dialog)
+function collectlibinfo(infomap, bin, mainlibs, deps)
     if not infomap[bin].map then
         return
     end
@@ -377,7 +457,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dial
             else
                 local dep = deps and getdepfromlib(deps, lib)
                 if (dep and dep.Required and dep:Required() and dep.full) or not path then
-                    markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep, wrongdeps, wronglibs, dialog)
+                    markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep)
                 elseif path then -- Lib is already present
                     infomap[lib].native = true
                     infomap[lib].found = true
@@ -391,10 +471,10 @@ function collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dial
                 if not infomap[lib].main and infomap[bin].symverneeds and infomap[bin].symverneeds[lib] then
                     if not verifysymverneeds(infomap[bin].symverneeds[lib], infomap[lib].path) then
                         if infomap[lib].native then
-                            markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep, wrongdeps, wronglibs, dialog)
+                            markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep)
                         elseif not infomap[lib].dep.HandleCompat or not infomap[lib].dep:HandleCompat(lib) then
-                            wrongdeps[infomap[lib].dep] = wrongdeps[infomap[lib].dep] or { }
-                            wrongdeps[infomap[lib].dep].incompatdep = true
+                            depprocess.wrongdeps[infomap[lib].dep] = depprocess.wrongdeps[infomap[lib].dep] or { }
+                            depprocess.wrongdeps[infomap[lib].dep].incompatdep = true
                         end
                     end
                 end
@@ -408,7 +488,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dial
                 infomap[lib].map = maplibs(infomap[lib].path)
                 infomap[lib].symverneeds = getsymverneeds(infomap[lib].path)
                 if infomap[lib].map then
-                    collectlibinfo(infomap, lib, mainlibs, infomap[lib].deps, wrongdeps, wronglibs, dialog)
+                    collectlibinfo(infomap, lib, mainlibs, infomap[lib].deps)
                 else
                     -- UNDONE?
                 end
@@ -418,11 +498,11 @@ function collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dial
     end
 end
 
-function handleinvaliddep(infomap, incompatlib, lib, sym, symver, wrongdeps, wronglibs, dialog)
+function handleinvaliddep(infomap, incompatlib, lib, sym, symver)
     assert(not infomap[incompatlib].main)
     
     if infomap[incompatlib].native then
-        if markdepfromlib(infomap[incompatlib], incompatlib, infomap[lib].deps, infomap[lib].dep, wrongdeps, wronglibs, dialog) then
+        if markdepfromlib(infomap[incompatlib], incompatlib, infomap[lib].deps, infomap[lib].dep) then
             local ok = true
             infomap[incompatlib].map = maplibs(infomap[incompatlib].path)
             infomap[incompatlib].symverneeds = getsymverneeds(infomap[incompatlib].path)
@@ -460,8 +540,8 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver, wrongdeps, wro
             end
             
             if not ok then
-                wrongdeps[infomap[incompatlib].dep] = wrongdeps[infomap[incompatlib].dep] or { }
-                wrongdeps[infomap[incompatlib].dep].incompatdep = true
+                depprocess.wrongdeps[infomap[incompatlib].dep] = depprocess.wrongdeps[infomap[incompatlib].dep] or { }
+                depprocess.wrongdeps[infomap[incompatlib].dep].incompatdep = true
                 install.print(string.format("Incompatible dependency: %s (%s, %s)\n", infomap[incompatlib].dep.name, incompatlib, sym))
             else
                 install.print(string.format("Overrided dependency: %s (%s)\n", infomap[incompatlib].dep.name, incompatlib))
@@ -469,13 +549,13 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver, wrongdeps, wro
             end
         end
     elseif not infomap[incompatlib].dep.HandleCompat or not infomap[incompatlib].dep:HandleCompat(incompatlib) then
-        wrongdeps[infomap[incompatlib].dep] = wrongdeps[infomap[incompatlib].dep] or { incompatdep = true }
+        depprocess.wrongdeps[infomap[incompatlib].dep] = depprocess.wrongdeps[infomap[incompatlib].dep] or { incompatdep = true }
         install.print(string.format("Incompatible dependency: %s (%s, %s)\n", infomap[incompatlib].dep.name, incompatlib, sym))
     end
     return false
 end
 
-function verifysyms(infomap, bin, wrongdeps, wronglibs, dialog)
+function verifysyms(infomap, bin)
     local stack = { }
     local checked = { }
     
@@ -515,8 +595,8 @@ function verifysyms(infomap, bin, wrongdeps, wronglibs, dialog)
                         -- Main libs aren't checked, since we and the user can't fix them (UNDONE?)
                         if supposedlib and infomap[supposedlib] and infomap[supposedlib].found and
                            not infomap[supposedlib].main then
-                            if handleinvaliddep(infomap, supposedlib, b, sym, v.version, wrongdeps, wronglibs, dialog) then
-                                collectlibinfo(infomap, supposedlib, mainlibs, infomap[supposedlib].deps, wrongdeps, wronglibs, dialog)
+                            if handleinvaliddep(infomap, supposedlib, b, sym, v.version) then
+                                collectlibinfo(infomap, supposedlib, mainlibs, infomap[supposedlib].deps)
                                 
                                 -- Check for any new or affected dependencies
                                 for lib, info in pairs(infomap) do
@@ -531,13 +611,13 @@ function verifysyms(infomap, bin, wrongdeps, wronglibs, dialog)
                             end
                         else
                             if not infomap[supposedlib] or infomap[supposedlib].native then
-                                wronglibs[supposedlib] = wronglibs[supposedlib] or { }
-                                wronglibs[supposedlib].incompatlib = true
+                                depprocess.wronglibs[supposedlib] = depprocess.wronglibs[supposedlib] or { }
+                                depprocess.wronglibs[supposedlib].incompatlib = true
                                 print("incompatlib:", supposedlib, b, sym)
                             elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.HandleCompat or
                                     not infomap[supposedlib].dep:HandleCompat(supposedlib)) then
-                                wrongdeps[infomap[supposedlib].dep] = wrongdeps[infomap[supposedlib].dep] or { }
-                                wrongdeps[infomap[supposedlib].dep].incompatdep = true
+                                depprocess.wrongdeps[infomap[supposedlib].dep] = depprocess.wrongdeps[infomap[supposedlib].dep] or { }
+                                depprocess.wrongdeps[infomap[supposedlib].dep].incompatdep = true
                             end
                         end
                     end
@@ -548,7 +628,7 @@ function verifysyms(infomap, bin, wrongdeps, wronglibs, dialog)
     end
 end
 
-function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
+function checkdeps(bins, libs, bdir)
     if lsymstat == false then
         install.print("WARNING: no symbol mapfile found, binary compatibility checking will be partly disabled.\n")
         lsymstat = nil -- Set to something else than true or false, so that the warning is only displayed once
@@ -561,27 +641,18 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
     initprogress(bins, libs)
     
     local mainlibs = { }
-    local checkbins = { }
     if libs then
         for _, l in ipairs(libs) do
             mainlibs[l] = string.format("%s/%s", bdir, l)
-            table.insert(checkbins, l)
         end
     end
 
     local needs = { }
     
-    if bins then
+    local function checkbins(bins, dep, deps)
         for _, bin in ipairs(bins) do
-            table.insert(checkbins, bin)
-        end
-    end
-    
-    function checkbins(bins, dep, deps)
-        for _, bin in ipairs(bins) do
-            
             if not dep then -- HACK: Only update progress for main bins/libs
-                incprogress(dialog)
+                incprogress()
             end
             
             local path = string.format("%s/%s", (dep and pkg.getdepdir(dep, dep.libdir)) or bdir, bin)
@@ -594,7 +665,7 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
                 infomap[bin].usedby = { }
 
                 if dep then
-                    markdep(infomap[bin], bin, dep, deps, nil, wrongdeps, wronglibs, dialog)
+                    markdep(infomap[bin], bin, dep, deps, nil)
                 else
                     infomap[bin].main = true
                     infomap[bin].path = path
@@ -603,10 +674,10 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
                     infomap[bin].deps = deps
                 end
                 
-                collectlibinfo(infomap, bin, mainlibs, deps, wrongdeps, wronglibs, dialog)
+                collectlibinfo(infomap, bin, mainlibs, deps)
                 
                 if lsymstat then
-                    verifysyms(infomap, bin, wrongdeps, wronglibs, dialog)
+                    verifysyms(infomap, bin)
                 end
                 
                 -- Gather all deps to be installed
@@ -621,20 +692,20 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
     
     if bins then
         -- Check main binaries
-        dialog:settitle("Gathering main binary dependencies.")
+        setstatus("Gathering main binary dependencies.")
         checkbins(bins, nil, pkg.deps)
     end
     
     if libs then
         -- Check main libraries
-        dialog:settitle("Gathering main library dependencies.")
+        setstatus("Gathering main library dependencies.")
         checkbins(libs, nil, pkg.deps)
     end
     
     -- Check deps which say they are required
-    dialog:settitle("Gathering mandatory dependencies.")
+    setstatus("Gathering mandatory dependencies.")
     for _, dep in pairs(pkg.depmap) do
-        incprogress(dialog)
+        incprogress()
         if not needs[dep] and dep.Required and dep:Required() and dep.full then
             checkbins(dep.libs, dep, dep.deps)
             needs[dep] = true
@@ -644,25 +715,67 @@ function checkdeps(bins, libs, bdir, dialog, wrongdeps, wronglibs)
     return needs
 end
 
-function instdeps(deps, installeddeps, wrongdeps, dialog)
-    dialog:settitle("Installing dependencies.")
+function instdeps(deps)
+    setstatus("Installing dependencies.")
     
-    incprogress(dialog)
+    incprogress()
     
     for dep in pairs(deps) do
-        if not installeddeps[dep] and not wrongdeps[dep] and dep.full then
-            if initdep(dep, dialog, wrongdeps) then
+        if not depprocess.installeddeps[dep] and not depprocess.wrongdeps[dep] and dep.full then
+            if initdep(dep) then
                 -- Check if dep is usable
                 if dep.CanInstall and not dep:CanInstall() then
-                    wrongdeps[dep] = { failed = true }
+                    depprocess.wrongdeps[dep] = { failed = true }
                 else
                     dep:Install()
-                    installeddeps[dep] = true
+                    depprocess.installeddeps[dep] = true
                     install.print(string.format("Installed dependency: %s\n", dep.name))
                 end
             end
         end
     end
+end
+
+function verifydeps(bins, libs)
+    depprocess.wrongdeps, depprocess.wronglibs = { }, { }
+
+    if install.unattended then
+        local deps = checkdeps(bins, libs, install.getpkgdir())
+        instdeps(deps, self)
+    else
+        gui.newprogressdialog(function(self)
+            depprocess.notifier = self
+            local deps = checkdeps(bins, libs, install.getpkgdir())
+            instdeps(deps, self)
+        end)
+    end
+    
+    local ret = { }
+    for k, v in pairs(depprocess.wrongdeps) do
+        ret[k.name] = { }
+        ret[k.name].desc = k.description
+        if v.failed then
+            ret[k.name].problem = "Failed to install."
+        elseif v.faileddl then
+            ret[k.name].problem = "Failed to download."
+        elseif v.incompatdep then
+            ret[k.name].problem = "(Binary) incompatible."
+        end
+    end
+    
+    resetfaileddl()
+    
+    for k, v in pairs(depprocess.wronglibs) do
+        ret[k] = { }
+        ret[k].desc = ""
+        if v.missinglib then
+            ret[k].problem = "File missing."
+        elseif v.incompatlib then
+            ret[k].problem = "(Binary) incompatible."
+        end
+    end
+
+    return ret
 end
 
 dofile("deps-public.lua")

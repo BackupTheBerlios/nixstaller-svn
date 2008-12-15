@@ -19,27 +19,11 @@ dofile("shared/utils.lua")
 dofile("shared/utils-public.lua")
 dofile("package.lua")
 
-do
-    local oldf = install.newscreen
-    
-    function install.newscreen(t) -- Overide function
-        local ret = oldf(t)
-        local wrapfuncs = { "addinput", "addcheckbox", "addradiobutton", "adddirselector", "addcfgmenu", "addmenu", "addimage",
-                            "addprogressbar", "addtextfield", "addlabel" }
-        
-        -- Create wrappers for widget creation functions from luagroups: the functions given in 'wrapfuncs'
-        -- will be added to the installscreen. These will create a new luagroup and call the function
-        -- with the same name from that group.
-        for i,v in pairs(wrapfuncs) do
-            ret[v] = function(self, ...)
-                        local group = self:addgroup()
-                        return group[v](group, ...)
-                     end
-        end
-
-        return ret
-    end
-end
+-- 'secure' our environment by creating a new one. This is mainly for dofile not corrupting our own env.
+OLDG = getfenv(1)
+local P = {}
+setmetatable(P, {__index = _G})
+setfenv(1, P)
 
 -- UNDONE: Function name?
 function install.extract(luaout)
@@ -103,7 +87,7 @@ function install.extract(luaout)
                 extractedsz = extractedsz + szmap[f][file]
             end
             
-            luaout("Extracting file: " .. file .. "\n", extractedsz / totalsize * 100)
+            luaout("Extracting file: " .. file, extractedsz / totalsize * 100)
         end, true)
     end
     
@@ -142,59 +126,13 @@ function install.gendesktopentries(global)
 end
 
 
--- Private functions
+-- End Public functions
 -----------------------------
 
--- 'secure' our environment by creating a new one. This is mainly for dofile not corrupting our own env.
-OLDG = getfenv(1)
-local P = {}
-setmetatable(P, {__index = _G})
-setfenv(1, P)
+loadconfig("config")
 
-function GenerateDefaultScreens()
-    package.path = "?.lua"
-    package.cpath = ""
-    LangScreen = require "langscreen"
-    OLDG.WelcomeScreen = require "welcomescreen"
-    OLDG.LicenseScreen = require "licensescreen"
-    OLDG.SelectDirScreen = require "selectdirscreen"
-    OLDG.PackageDirScreen = require "packagedirscreen"
-    OLDG.PackageToggleScreen = require "packagetogglescreen"
-    OLDG.InstallScreen = require "installscreen"
-    OLDG.SummaryScreen = require "summaryscreen"
-    OLDG.FinishScreen = require "finishscreen"
-    OLDG.install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
+if install.unattended then
+    dofile("unattinstall.lua")
+else
+    dofile("attinstall.lua")
 end
-
-function LoadConfig()
-    local file = "config/run.lua"
-    
-    if (os.fileexists(file)) then
-        dofile(file)
-        
-        if (Init) then
-            Init()
-        end
-    end
-end
-
-function AddScreens()
-    install.addscreen(LangScreen)
-    
-    if (install.screenlist ~= nil and #install.screenlist > 0) then
-        for _, s in pairs(install.screenlist) do
-            install.addscreen(s)
-        end
-    else
-        install.addscreen(WelcomeScreen)
-        install.addscreen(LicenseScreen)
-        install.addscreen(SelectDirScreen)
-        install.addscreen(InstallScreen)
-        install.addscreen(FinishScreen)
-    end
-end
-
-GenerateDefaultScreens()
-LoadConfig()
-AddScreens()
-

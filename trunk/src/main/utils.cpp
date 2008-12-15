@@ -30,6 +30,7 @@
 #include "main.h"
 #include "lua/lua.h"
 
+std::list<char *> StringList;
 extern std::map<std::string, char *> Translations;
 
 void PrintIntro()
@@ -85,6 +86,17 @@ void FreeStrings()
         debugline("STRING: %s\n", StringList.back());
         free(StringList.back());
         StringList.pop_back();
+    }
+}
+
+void FreeTranslations(void)
+{
+    if (!Translations.empty())
+    {
+        std::map<std::string, char *>::iterator p = Translations.begin();
+        for(; p!=Translations.end(); p++)
+            delete [] (*p).second;
+        Translations.clear();
     }
 }
 
@@ -555,14 +567,31 @@ void ConvertExToLuaError()
     }
     catch(Exceptions::CExUser &e)
     {
-        // HACK: NLua::LoadFile/LuaFunc() uses this to identify user exception.
+        // HACK: ConvertLuaErrorToEx() uses this to identify user exception.
         lua_pushstring(NLua::LuaState, "CExUser");
         lua_error(NLua::LuaState);
     }
     catch(Exceptions::CException &e)
     {
-        luaL_error(NLua::LuaState, e.what());
+        // HACK: ConvertLuaErrorToEx() uses this to seperate regular exceptions from lua errors.
+        lua_pushfstring(NLua::LuaState, "CException%s", e.what());
+        lua_error(NLua::LuaState);
     }
+}
+
+void ConvertLuaErrorToEx()
+{
+    const char *errmsg = lua_tostring(NLua::LuaState, -1);
+    const size_t exlen = strlen("CException");
+    
+    if (!errmsg)
+        errmsg = "Unknown error!";
+    else if (!strcmp(errmsg, "CExUser"))
+        throw Exceptions::CExUser();
+    else if (!strncmp(errmsg, "CException", exlen))
+        throw Exceptions::CExGeneric(&errmsg[exlen]);
+        
+    throw Exceptions::CExLua(errmsg);
 }
 
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)

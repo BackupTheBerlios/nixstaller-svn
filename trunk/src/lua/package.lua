@@ -112,17 +112,16 @@ end
 pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 
 
--- Defaults
+-- Install defaults
 pkg.destdir = pkg.packager.getpkgpath() .. "/share"
 pkg.bindir = pkg.packager.getpkgpath() .. "/bin"
-pkg.deps = { }
 
 
 dofile("package-public.lua")
 dofile("shared/package-public.lua")
 
 if os.fileexists("config/package.lua") then
-    dofile("config/package.lua")
+    loadpackagecfg("config")
 end
 
 dofile("deps.lua")
@@ -130,7 +129,6 @@ dofile("deps.lua")
 -- Defaults (again, incase scripts nil'ed something)
 pkg.destdir = pkg.destdir or pkg.packager.getpkgpath() .. "/share"
 pkg.bindir = pkg.bindir or pkg.packager.getpkgpath() .. "/bin"
-pkg.deps = pkg.deps or { }
 
 -- Init deps
 pkg.depmap = { }

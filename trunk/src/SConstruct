@@ -252,7 +252,6 @@ distfiles_src = distfiles_user + [
 'src/ncurses/luawidget.h',
 'src/ncurses/ncurses.cpp',
 'src/ncurses/ncurses.h',
-'src/ncurses/utils.cpp',
 'src/ncurses/tui/basechoice.cpp',
 'src/ncurses/tui/basechoice.h',
 'src/ncurses/tui/basescroll.cpp',
@@ -724,7 +723,7 @@ edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS
 libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
 # Builds main lib
-main = env.Library("main/main", Split('libmd5/md5.c main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
+main = env.Library("main/main", Split('libmd5/md5.c main/install/attinstall.cpp main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/install/unattinstall.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
 
 env.Prepend(LIBS = Split('main su lua elf curl z'))
 

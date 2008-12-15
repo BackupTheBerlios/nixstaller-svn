@@ -54,36 +54,19 @@ extern "C" int vasprintf (char **result, const char *format, va_list args);
 
 class CMain
 {
-protected:
-    std::string m_szOS, m_szCPUArch, m_szOwnDir;
-    LIBSU::CLibSU m_SUHandler;
-    char *m_szPassword;
-
-    const char *GetLogoFName(void);
-    const char *GetAboutFName(void);
-    bool GetSUPasswd(const char *msg, bool mandatory);
-    bool ReadLang();
-    
-    virtual char *GetPassword(const char *title) = 0;
-    virtual void MsgBox(const char *str, ...) = 0;
-    virtual bool YesNoBox(const char *str, ...) = 0;
-    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) = 0;
-    virtual void WarnBox(const char *str, ...) = 0;
-    virtual void InitLua(void);
-    virtual void CoreUpdateLanguage(void) = 0;
-
     static int m_iLuaDirIterCount;
+    std::string m_szOS, m_szCPUArch, m_szOwnDir;
+
+protected:
+    const std::string &GetOwnDir(void) const { return m_szOwnDir; }
     
+    virtual void InitLua(void);
+
 public:
-    std::string m_szCurLang;
-    std::vector<std::string> m_Languages;
-    
-    CMain(void) : m_szPassword(NULL)
-    { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
-    virtual ~CMain(void);
+    CMain(void) { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
+    virtual ~CMain(void) { closelog(); }
     
     virtual void Init(int argc, char **argv);
-    virtual void UpdateLanguage(void) { ReadLang(); CoreUpdateLanguage(); };
     
     // Functions for lua binding
     static int LuaInitDirIter(lua_State *L);
@@ -102,14 +85,9 @@ public:
     static int LuaGetFileSize(lua_State *L);
     static int LuaLog(lua_State *L);
     static int LuaSetEnv(lua_State *L);
-    static int LuaMSGBox(lua_State *L);
-    static int LuaYesNoBox(lua_State *L);
-    static int LuaChoiceBox(lua_State *L);
-    static int LuaWarnBox(lua_State *L);
     static int LuaExit(lua_State *L);
     static int LuaExitStatus(lua_State *L);
     static int LuaMD5(lua_State *L);
-    static int LuaTr(lua_State *L);
     static int LuaOpenElf(lua_State *L);
     static int LuaGetElfSym(lua_State *L);
     static int LuaGetElfSymVerDef(lua_State *L);
@@ -122,6 +100,7 @@ public:
     static int LuaInitDownload(lua_State *L);
     static int LuaProcessDownload(lua_State *L);
     static int LuaCloseDownload(lua_State *L);
+    static int LuaAbort(lua_State *L);
     
     static int UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
                                          double ultotal, double ulnow);
@@ -129,13 +108,6 @@ public:
 
 class CLuaRunner: public CMain
 {
-    virtual char *GetPassword(const char *) { return 0; };
-    virtual void MsgBox(const char *str, ...) { };
-    virtual bool YesNoBox(const char *str, ...) { return false; };
-    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) { return 0; };
-    virtual void WarnBox(const char *str, ...) { };
-    virtual void CoreUpdateLanguage(void) {}
-
 public:
     virtual void Init(int argc, char **argv);
 };
@@ -151,4 +123,4 @@ inline void debugline(const char *, ...) { };
 void debugline(const char *t, ...); // Defined in frontend code
 #endif
 
-#endif 
+#endif

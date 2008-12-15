@@ -21,28 +21,5 @@
 #define FR_NCURSES_H
 
 #include "main/main.h"
-#include "tui/tui.h"
-#include "tui/window.h"
-
-class CNCursBase: virtual public CMain, public NNCurses::CWindow
-{
-    void ShowAbout(void);
-
-    virtual void CoreRun(void) = 0;
-    
-protected:
-    virtual char *GetPassword(const char *str);
-    virtual void MsgBox(const char *str, ...);
-    virtual bool YesNoBox(const char *str, ...);
-    virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
-    virtual void WarnBox(const char *str, ...);
-    virtual void InitLua(void);
-
-    virtual bool CoreHandleKey(chtype key);
-    virtual void CoreGetButtonDescs(NNCurses::TButtonDescList &list);
-    
-public:
-    void Run(void);
-};
 
 #endif
