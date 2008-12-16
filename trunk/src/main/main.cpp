@@ -202,8 +202,10 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
     NLua::RegisterClassFunction(LuaCloseDownload, "close", "downloadclass");
     
-    // Create cfg and pkg Lua packages.
+    // Create cfg and pkg Lua packages with defaults.
     NLua::CLuaTable tab("cfg");
+    tab.Open("opts", "cfg");
+    
     tab.Open("pkg");
     tab.Close();
 }

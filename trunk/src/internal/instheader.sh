@@ -49,6 +49,7 @@ MS_dd()
 
 MS_Help()
 {
+    # Keep spacing between left and right column in sync with geninstall.lua!
     cat << EOH >&2
 Usage: \$0 [options]"
 
@@ -67,6 +68,9 @@ Advanced:
 --target dir            Sets temporary target directory.
 --tar arg1 [arg2 ...]   Access the core contents of the archive through the tar command.
 EOH
+    if [ ! -z "$UNATTHELP" ]; then
+        MS_Printf "\nUnattended:\n$UNATTHELP" >&2
+    fi
 }
 
 # UNDONE: Check for other ways to find md5 checker
@@ -255,8 +259,11 @@ EOLSM
     ;;
     -u | --unattended)
     scriptargs="\$scriptargs --unattended"
+    unattended=1
     shift
     ;;
+    # Auto generated options
+$OPTHANDLERS
     --phase2)
     copy=phase2
     shift

@@ -617,7 +617,7 @@ function CreateInstaller()
     
     -- Add nixstaller specific options
     local nixstopts = ""
-    function addarg(arg, val)
+    local function addarg(arg, val)
         if val then
             nixstopts = string.format("%s %s \"%s\"", nixstopts, arg, val)
         end
@@ -638,6 +638,44 @@ function CreateInstaller()
     addarg("--pkglicense", pkg.license)
     addarg("--pkgmaint", pkg.maintainer)
     addarg("--pkgurl", pkg.url)
+    
+    local function addoptarg(n, a)
+        local left
+        if not utils.emptystring(a.short) then
+            left = string.format("--%s, -%s", n, a.short)
+        else
+            left = string.format("--%s", n)
+        end
+        
+        if not utils.emptystring(a.optname) then
+            left = string.format("%s <%s>", left, a.optname)
+        end
+        
+        local right = a.desc
+        if a.required then
+            right = right .. " (Required)"
+        end
+        
+        local opthandler
+        if not utils.emptystring(a.short) then
+            opthandler = string.format("   -%s | --%s)\n", a.short, n)
+        else
+            opthandler = string.format("   --%s)\n", n)
+        end
+        
+        if a.opttype then
+            opthandler = string.format("%s    scriptargs=\"\$scriptargs --%s \\$2\"\n    shift 2\n", opthandler, n)
+        else
+            opthandler = string.format("%s    scriptargs=\"\$scriptargs --%s\"\n    shift\n", opthandler, n)
+        end
+        
+        opthandler = opthandler .. "    ;;\n"
+        nixstopts = string.format("%s --addopthandler \'%s\' --addopthelp \"%-24s%s\"", nixstopts, opthandler, left, right)
+    end
+    
+    for n, a in pairs(cfg.opts) do
+        addoptarg(n, a)
+    end
     
     os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1", ndir, ndir, nixstopts, confdir, outname))
 end

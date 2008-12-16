@@ -148,6 +148,10 @@ function utils.emptytable(t)
     return next(t) == nil
 end
 
+function utils.emptystring(s)
+    return s == nil or #s == 0
+end
+
 function utils.tablefind(t, val)
     for i, v in ipairs(t) do
         if v == val then

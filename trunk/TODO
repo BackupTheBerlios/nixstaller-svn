@@ -44,6 +44,9 @@ OVERALL
 - Check messages like pkg enable screen which refer to a default
 - Set textfield size on demand/automaticly
 - Unattended installations
+    - Fix unattended cmd line parameters
+    - Check for required arguments
+    - Make it optionally available
 - Move curdir lua variable to install package?
 - Mail suggestions?
 
@@ -87,6 +90,7 @@ DOCS
 - del() function for luacfgmenu
 - GTK/Pango templates
 - Apple stuff
+- utils.emptystring()? (CHANGELOG)
 
 
 RELEASE

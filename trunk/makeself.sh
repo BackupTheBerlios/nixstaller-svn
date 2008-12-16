@@ -250,6 +250,14 @@ do
     PKGURL="$2"
     shift 2
     ;;
+    --addopthandler)
+    OPTHANDLERS="$OPTHANDLERS $2"
+    shift 2
+    ;;
+    --addopthelp)
+    UNATTHELP="$UNATTHELP""$2\n"
+    shift 2
+    ;;
     -h | --help)
 	MS_Usage
 	;;
