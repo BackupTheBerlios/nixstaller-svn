@@ -163,8 +163,6 @@ void CMain::InitLua()
     lua_atpanic(NLua::LuaState, LuaPanic);
     
     // Register some globals for lua
-    NLua::LuaSet("0.4", "version");
-    
     NLua::LuaSet(m_szOS, "osname", "os");
     NLua::LuaSet(m_szCPUArch, "arch", "os");
     NLua::LuaSet(m_szOwnDir, "curdir");
@@ -202,12 +200,7 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
     NLua::RegisterClassFunction(LuaCloseDownload, "close", "downloadclass");
     
-    // Create cfg and pkg Lua packages with defaults.
-    NLua::CLuaTable tab("cfg");
-    tab.Open("opts", "cfg");
-    
-    tab.Open("pkg");
-    tab.Close();
+    NLua::LoadFile(CreateText("%s/main.lua", LuaSrcPath()));
 }
 
 int CMain::m_iLuaDirIterCount = 0;
@@ -891,6 +884,8 @@ int CMain::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow
 void CLuaRunner::Init(int argc, char **argv)
 {
     const int skip = 6; // bin name, <action>, script name, nixstaller dir, caller name
+    m_NixstDir = argv[3];
+    
     CMain::Init(argc, argv);
     
     NLua::LuaSet(argv[3], "ndir");

@@ -258,6 +258,10 @@ do
     UNATTHELP="$UNATTHELP""$2\n"
     shift 2
     ;;
+    --addoptchecker)
+    OPTCHECKERS="$OPTCHECKERS""$2"
+    shift 2
+    ;;
     -h | --help)
 	MS_Usage
 	;;

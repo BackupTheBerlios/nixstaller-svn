@@ -321,6 +321,7 @@ function loadconfig(path)
     default("targetarch", { os.arch })
     default("frontends", { "gtk", "fltk", "ncurses" })
     default("archivetype", "lzma")
+    default("unattended", false)
 
     if not utils.tablefind(cfg.languages, cfg.defaultlang) then
         cfg.defaultlang = cfg.languages[1]

@@ -61,6 +61,7 @@ protected:
     const std::string &GetOwnDir(void) const { return m_szOwnDir; }
     
     virtual void InitLua(void);
+    virtual const char *LuaSrcPath(void) const { return m_szOwnDir.c_str(); }
 
 public:
     CMain(void) { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
@@ -108,8 +109,11 @@ public:
 
 class CLuaRunner: public CMain
 {
+    std::string m_NixstDir;
+    
 public:
     virtual void Init(int argc, char **argv);
+    virtual const char *LuaSrcPath(void) const { return CreateText("%s/src/lua", m_NixstDir.c_str()); }
 };
 
 #include "utils.h"

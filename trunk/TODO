@@ -91,6 +91,7 @@ DOCS
 - GTK/Pango templates
 - Apple stuff
 - utils.emptystring()? (CHANGELOG)
+- Unattended installs (cfg.unopts, cfg.unattended etc)
 
 
 RELEASE

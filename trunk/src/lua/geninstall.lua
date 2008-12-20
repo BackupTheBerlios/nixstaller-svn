@@ -381,6 +381,7 @@ function PrepareArchive()
     os.mkdirrec(confdir .. "/tmp/shared")
     RequiredCopy(ndir .. "/src/lua/deps.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/deps-public.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/main.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/install.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/attinstall.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/unattinstall.lua", confdir .. "/tmp")
@@ -656,25 +657,43 @@ function CreateInstaller()
             right = right .. " (Required)"
         end
         
-        local opthandler
+        local opthandler, optchecker
         if not utils.emptystring(a.short) then
             opthandler = string.format("   -%s | --%s)\n", a.short, n)
         else
             opthandler = string.format("   --%s)\n", n)
         end
         
+        if a.required then
+            local optchk = string.format("has%s", n)
+            opthandler = string.format("%s    %s=1\n", opthandler, optchk)
+            -- $unattended is set by script header.
+            optchecker = string.format([[
+if [ -z "$%s" -a ! -z "$unattended" ]; then
+    echo Required option \"%s\" not given. >&2
+    MS_Help
+    exit 1
+fi]], optchk, n)
+        end
+
         if a.opttype then
             opthandler = string.format("%s    scriptargs=\"\$scriptargs --%s \\$2\"\n    shift 2\n", opthandler, n)
         else
             opthandler = string.format("%s    scriptargs=\"\$scriptargs --%s\"\n    shift\n", opthandler, n)
         end
         
-        opthandler = opthandler .. "    ;;\n"
-        nixstopts = string.format("%s --addopthandler \'%s\' --addopthelp \"%-24s%s\"", nixstopts, opthandler, left, right)
+        opthandler = opthandler .. "    gaveunopt=1\n    ;;\n"
+        nixstopts = string.format("%s --addopthandler \'%s\' --addopthelp \'%-24s%s\'", nixstopts, opthandler, left, right)
+        
+        if optchecker then
+            nixstopts = string.format("%s --addoptchecker \'%s\'", nixstopts, optchecker)
+        end
     end
     
-    for n, a in pairs(cfg.opts) do
-        addoptarg(n, a)
+    if cfg.unattended then
+        for n, a in pairs(cfg.unopts) do
+            addoptarg(n, a)
+        end
     end
     
     os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1", ndir, ndir, nixstopts, confdir, outname))

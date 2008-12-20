@@ -15,6 +15,9 @@ targetdir="$archdirname"
 filesizes="$filesizes"
 keep=$KEEP
 
+# If \$UNATTHELP is empty, cfg.unattended was not enabled.
+[ ! -z "$UNATTHELP" ] && CANUNATT=1 || CANUNATT=
+
 print_cmd_arg=""
 if type printf > /dev/null; then
     print_cmd="printf"
@@ -60,7 +63,11 @@ General:
 --info, -i              Print some info about this installer.
 --check, -c             Check integrity of the archive.
 --frontend, -f <fr>     Specify frontend
---unattended, -u        Run installer unattended (no interaction)
+EOH
+    if [ ! -z "\$CANUNATT" ]; then
+        echo '--unattended, -u        Run installer unattended (no interaction)'
+    fi
+    cat << EOH >&2
 
 Advanced:
 --keep                  Do not erase temporary target directory.
@@ -69,7 +76,7 @@ Advanced:
 --tar arg1 [arg2 ...]   Access the core contents of the archive through the tar command.
 EOH
     if [ ! -z "$UNATTHELP" ]; then
-        MS_Printf "\nUnattended:\n$UNATTHELP" >&2
+        MS_Printf "\nUnattended (requires -u/--unattended):\n$UNATTHELP" >&2
     fi
 }
 
@@ -258,9 +265,15 @@ EOLSM
     shift 2
     ;;
     -u | --unattended)
-    scriptargs="\$scriptargs --unattended"
-    unattended=1
-    shift
+    if [ ! -z "\$CANUNATT" ]; then
+        scriptargs="\$scriptargs --unattended"
+        unattended=1
+        shift
+    else
+        echo "Unattended installations not enabled."
+        MS_Help
+        exit 1
+    fi
     ;;
     # Auto generated options
 $OPTHANDLERS
@@ -280,6 +293,13 @@ $OPTHANDLERS
     break ;;
     esac
 done
+
+$OPTCHECKERS
+
+if [ ! -z "\$gaveunopt" -a -z "\$unattended" ]; then
+    echo "Option(s) for unattended installation given while launching a regular installation. Specify --unattended or -u to start an unattended installation."
+    exit 1
+fi
 
 case "\$copy" in
 copy)
