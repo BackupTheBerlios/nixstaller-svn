@@ -55,7 +55,7 @@ void CLuaWidget::CoreActivateWidget()
     Fl::focus(m_pMainPack);
 }
 
-void CLuaWidget::UpdateVisible(bool v)
+void CLuaWidget::UpdateEnable(bool e)
 {
     if (GetParent()) // Parent may be NULL when called from constructor
     {

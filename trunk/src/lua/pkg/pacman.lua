@@ -18,6 +18,10 @@
 local OLDG = _G
 module (..., package.seeall)
 
+function name()
+    return "pacman (eg. Arch Linux)"
+end
+
 function getpkgpath()
     return "/usr" -- UNDONE?
 end

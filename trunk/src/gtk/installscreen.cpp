@@ -86,7 +86,7 @@ void CInstallScreen::ResetWidgetRange()
         GtkWidget *w = GTK_WIDGET(entry->data);
         CLuaGroup *lg = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(w)));
         
-        if (!lg->IsVisible() || ContainerEmpty(GTK_CONTAINER(w)))
+        if (!lg->IsEnabled() || ContainerEmpty(GTK_CONTAINER(w)))
         {
             gtk_widget_hide(w);
             continue;
@@ -166,6 +166,12 @@ bool CInstallScreen::CheckWidgets()
             break;
         }
         
+        // Need to recheck this everytime, as verify() functions from Lua may invalidate it
+        if (HasNextWidgets())
+            end = g_list_find(start, m_WidgetRanges[m_CurSubScreen+1]);
+        else
+            end = NULL;
+        
         start = g_list_next(start);
     }
 
@@ -191,7 +197,7 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
     while (entry && (entry != end))
     {
         CLuaGroup *lg = static_cast<CLuaGroup *>(gtk_object_get_user_data(GTK_OBJECT(entry->data)));
-        if ((!lg || lg->IsVisible()) && !ContainerEmpty(GTK_CONTAINER(entry->data)))
+        if ((!lg || lg->IsEnabled()) && !ContainerEmpty(GTK_CONTAINER(entry->data)))
             gtk_widget_show(GTK_WIDGET(entry->data));
         entry = g_list_next(entry);
     }

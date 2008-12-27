@@ -1,14 +1,8 @@
 OVERALL
 - Add trap in geninstall.sh which cleans stuff?
-- Qt/KDE frontend
-- Fix installation if destdir has no read access?
-- Use locale fix from latest kdesu?
 - Use deltas <--> patches for different frontends, OS'es, archs
 - Modify Makeself
     - Remove some illogical commandline options (finished?)
-- Better util.a configure testing?
-- Root usage: change to use privileged user? (default root)
-- Way to specifiy frontend when installer is started
 - libstdcxx:
     - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
@@ -44,9 +38,10 @@ OVERALL
 - Check messages like pkg enable screen which refer to a default
 - Set textfield size on demand/automaticly
 - Unattended installations
-    - Fix unattended cmd line parameters
     - Check for required arguments
-    - Make it optionally available
+    - Reset cfg.unopts[].value? if not document for defaults
+    - Show LICENSE, WELCOME? and FINISH?
+    - Control verbosity?
 - Move curdir lua variable to install package?
 - Mail suggestions?
 
@@ -57,17 +52,16 @@ TEST
 
 
 PACKAGING
-- More config options:
-    * Package Changelog?
-    * RPM: Vendor?, Icon?
 - RPM: Description formatting?
 - pacman: Check for locks for future releases
 - deb: way to remove temporary root owned files incase of an error
-- Handle cases were multiple package managers exist
+- Handle cases were multiple package managers exist:
+    - Check if pkg.canregister is still valid
+    - unattended installs
+- Check for deb to dpkg changes (lock translations)
 
 
 MAIN
-- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Improve/check lua error messages?
 - Make startinstall code more flexible
     - Check if all lua functions from install package need to be inside Install() (update docs)
@@ -92,6 +86,8 @@ DOCS
 - Apple stuff
 - utils.emptystring()? (CHANGELOG)
 - Unattended installs (cfg.unopts, cfg.unattended etc)
+- verifydeps uses setstatus
+- os.geteuid()? (CHANGELOG)
 
 
 RELEASE
@@ -103,11 +99,52 @@ TRANSLATIONS
 - Change "Install commands ..." cancel message to something more appropiate --> Update translations
 - verifylock() messages
 - "Reverting to generic package."
+- Check unattended installs
+
+
+LIBSU
+- Check tmp files leaving around (caused by sh errors?)
+
+
+NCURSES
+
+
+GTK
+
+
+FLTK
+- Check update: test for regressions, check current hacks.
+- Progressdialog: Refresh does not always enable both bars (FLTK specific?)
+- Check why Text Buffer appending is slow (Fixed with 1.3?)
+
+
+DESIGN
+
+
+-----------------------------------------------------------------------
+LATER
+-----------------------------------------------------------------------
+
+OVERALL
+- Qt/KDE frontend
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Better util.a configure testing?
+- Root usage: change to use privileged user? (default root)
+
+
+PACKAGING
+- More config options:
+    * Package Changelog?
+    * RPM: Vendor?, Icon?
+
+
+MAIN
+- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 
 
 LIBSU
 - Clean up/redesign
-- Check tmp files leaving around (caused by sh errors?)
 
 
 NCURSES
@@ -122,18 +159,6 @@ GTK
 
 FLTK
 - Create a pack widget that works?
-- Check update: test for regressions, check current hacks.
-- Progressdialog: Refresh does not always enable both bars (FLTK specific?)
-- Check why Text Buffer appending is slow (Fixed with 1.3?)
-
-
-REGISTER
-- Remove?
-- Check if version is specified in config file?
-- Language updates: FLTK AppManager
-- Better error handling for register
-- Check path for rm
-- exceptions
 
 
 DESIGN

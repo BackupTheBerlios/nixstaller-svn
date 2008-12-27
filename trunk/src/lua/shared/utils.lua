@@ -212,7 +212,7 @@ function getsyms(bin)
     return ret
 end
 
-function getopt(args, sopts, lopts)
+function getopt(args, sopts, lopts, ignore)
     local curopt
     local ret = { }
     while #args > 0 do
@@ -242,18 +242,20 @@ function getopt(args, sopts, lopts)
                         break
                     end
                 end
-                if not found then
+                if not ignore and not found then
                     return nil, "Unknown commandline option: " .. a
                 end
             else
                 for aname in string.gmatch(string.gsub(a, "^%-", ""), ".") do
                     if curopt then -- Argument with option has been given before, can't be good.
-                        return nil, string.format("Commandline option %s requires a value.", curopt)
+                        if not ignore then
+                            return nil, string.format("Commandline option %s requires a value.", curopt)
+                        end
                     elseif string.find(sopts, aname .. ":") then -- argument with option
                         curopt = aname
                     elseif string.find(sopts, aname) then
                         table.insert(ret, { name = aname, val = true })
-                    else
+                    elseif not ignore then
                         return nil, "Unknown commandline option: " .. a
                     end
                 end
@@ -264,7 +266,7 @@ function getopt(args, sopts, lopts)
         end
     end
     
-    if curopt then
+    if not ignore and curopt then
         return nil, "No value specified for " .. curopt
     end
     
@@ -321,10 +323,28 @@ function loadconfig(path)
     default("targetarch", { os.arch })
     default("frontends", { "gtk", "fltk", "ncurses" })
     default("archivetype", "lzma")
-    default("unattended", false)
+    default("mode", "both")
 
     if not utils.tablefind(cfg.languages, cfg.defaultlang) then
         cfg.defaultlang = cfg.languages[1]
+    end
+    
+    if cfg.archivetype ~= "gzip" and cfg.archivetype ~= "bzip2" and cfg.archivetype ~= "lzma" then
+        error("Wrong archive type specified!", 0)
+    end
+    
+    if cfg.mode ~= "attended" and cfg.mode ~= "unattended" and cfg.mode ~= "both" then
+        error("Wrong mode specified!", 0)
+    end
+    
+    for n, o in pairs(cfg.unopts) do
+        if o.opttype then
+            if o.opttype ~= "string" and o.opttype ~= "list" then
+                error(string.format("Wrong opttype specified for unattended option '%s'", n))
+            elseif not o.optname then
+                error(string.format("No optname specified for unattended option '%s'", n))
+            end
+        end
     end
 end
 
@@ -350,4 +370,8 @@ function loadrun(path)
     install.destdir = os.getenv("HOME") or "/"
     install.menuentries = { }
     dofile(path .. "/run.lua")
+end
+
+function haveunopt(arg)
+    return cfg.unopts[arg] and cfg.unopts[arg].value and cfg.unopts[arg].internal
 end

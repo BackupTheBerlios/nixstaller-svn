@@ -75,7 +75,7 @@ public:
     virtual ~CBaseLuaGroup(void) {}
     
     void UpdateLanguage(void);
-    bool IsVisible(void) const;
+    bool IsEnabled(void) const;
     bool CheckWidgets(void);
     void SetScreenEnds(bool e) { m_bEndsScreen = e; }
     bool EndsScreen(void) const { return m_bEndsScreen; }

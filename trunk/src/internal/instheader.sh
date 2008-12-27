@@ -15,12 +15,13 @@ targetdir="$archdirname"
 filesizes="$filesizes"
 keep=$KEEP
 
-# If \$UNATTHELP is empty, cfg.unattended was not enabled.
-[ ! -z "$UNATTHELP" ] && CANUNATT=1 || CANUNATT=
+[ "$INSTMODE" = "both" -o "$INSTMODE" = "attended" ] && CANATT=1 || CANATT=
+[ "$INSTMODE" = "both" -o "$INSTMODE" = "unattended" ] && CANUNATT=1 || CANUNATT=
 
 print_cmd_arg=""
 if type printf > /dev/null; then
     print_cmd="printf"
+    print_cmd_arg="--"
 elif test -x /usr/ucb/echo; then
     print_cmd="/usr/ucb/echo"
 else
@@ -59,25 +60,32 @@ Usage: \$0 [options]"
 [options] can be one of the following things (all are optional):
 
 General:
---help, -h              Print this message.
---info, -i              Print some info about this installer.
---check, -c             Check integrity of the archive.
---frontend, -f <fr>     Specify frontend
+--help, -h                  Print this message.
+--info, -i                  Print some info about this installer.
+--check, -c                 Check integrity of the archive.
 EOH
+    
+    if [ ! -z "\$CANATT" ]; then
+        echo '--frontend, -f <fr>         Specify frontend' >&2
+    fi
+    
     if [ ! -z "\$CANUNATT" ]; then
-        echo '--unattended, -u        Run installer unattended (no interaction)'
+        echo '--unattended, -u            Run installer unattended (no interaction)' >&2
+        if [ ! -z "$UNATTHELP" ]; then
+            if [ "\$CANATT" ]; then
+                MS_Printf "\nUnattended (requires -u/--unattended):\n"
+            fi
+            MS_Printf "$UNATTHELP"
+        fi
     fi
     cat << EOH >&2
 
 Advanced:
---keep                  Do not erase temporary target directory.
---nox11                 Do not spawn an xterm.
---target dir            Sets temporary target directory.
---tar arg1 [arg2 ...]   Access the core contents of the archive through the tar command.
+--keep                      Do not erase temporary target directory.
+--nox11                     Do not spawn an xterm.
+--target dir                Sets temporary target directory.
+--tar arg1 [arg2 ...]       Access the core contents of the archive through the tar command.
 EOH
-    if [ ! -z "$UNATTHELP" ]; then
-        MS_Printf "\nUnattended (requires -u/--unattended):\n$UNATTHELP" >&2
-    fi
 }
 
 # UNDONE: Check for other ways to find md5 checker
@@ -158,6 +166,8 @@ verbose=n
 
 initargs="\$@"
 
+[ "$INSTMODE" = "unattended" ] && { unattended=1; scriptargs="\$scriptargs --unattended"; } || unattended=
+
 # UNDONE: Remove undocumented options (?)
 while true
 do
@@ -167,20 +177,21 @@ do
     exit 0
     ;;
     -i | --info)
-    PrintInfo "Date of packaging        " "$DATE"
-    PrintInfo "Installer name           " "$INSTNAME"
-    PrintInfo "Compression              " "$INSTPACK"
-    PrintInfo "Supported OSs            " "$INSTOS"
-    PrintInfo "Supported CPU Arch's     " "$INSTARCH"
-    PrintInfo "Frontends                " "$INSTFRONTENDS"
-    PrintInfo "Package name             " "$PKGNAME"
-    PrintInfo "Package version          " "$PKGVERSION"
-    PrintInfo "Package summary          " "$PKGSUMMARY"
-    PrintInfo "Package description      " "$PKGDESC"
-    PrintInfo "Package group            " "$PKGGROUP"
-    PrintInfo "Package license          " "$PKGLICENSE"
-    PrintInfo "Package maintainer       " "$PKGMAINT"
-    PrintInfo "Package URL              " "$PKGURL"
+    PrintInfo "Date of packaging            " "$DATE"
+    PrintInfo "Installer name               " "$INSTNAME"
+    PrintInfo "Compression                  " "$INSTPACK"
+    PrintInfo 'Mode (Attended/Unattended)   ' "$INSTMODE"
+    PrintInfo "Supported OSs                " "$INSTOS"
+    PrintInfo "Supported CPU Arch's         " "$INSTARCH"
+    PrintInfo "Frontends                    " "$INSTFRONTENDS"
+    PrintInfo "Package name                 " "$PKGNAME"
+    PrintInfo "Package version              " "$PKGVERSION"
+    PrintInfo "Package summary              " "$PKGSUMMARY"
+    PrintInfo "Package description          " "$PKGDESC"
+    PrintInfo "Package group                " "$PKGGROUP"
+    PrintInfo "Package license              " "$PKGLICENSE"
+    PrintInfo "Package maintainer           " "$PKGMAINT"
+    PrintInfo "Package URL                  " "$PKGURL"
     exit 0
     ;;
     --dumpconf)
@@ -261,8 +272,14 @@ EOLSM
     shift
     ;;
     -f | --frontend)
-    scriptargs="\$scriptargs --frontend \$2"
-    shift 2
+    if [ ! -z "\$CANATT" ]; then
+        scriptargs="\$scriptargs --frontend \$2"
+        shift 2
+    else
+        echo "Attended installations not enabled."
+        MS_Help
+        exit 1
+    fi
     ;;
     -u | --unattended)
     if [ ! -z "\$CANUNATT" ]; then

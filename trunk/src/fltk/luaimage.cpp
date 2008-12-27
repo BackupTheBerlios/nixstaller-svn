@@ -53,13 +53,13 @@ CLuaImage::CLuaImage(const char *file) : CBaseLuaWidget(""), m_iImageW(0), m_iIm
         m_iImageH = img->h();
     }
     else
-        SetVisible(false);
+        SetEnable(false);
 }
 
 void CLuaImage::CoreSetVisible(bool v)
 {
     if (v && !m_iImageW)
-        SetVisible(false);
+        SetEnable(false);
     else
-        CLuaWidget::UpdateVisible(v);
+        CLuaWidget::UpdateEnable(v);
 }

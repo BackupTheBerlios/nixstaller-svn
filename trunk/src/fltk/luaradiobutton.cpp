@@ -73,6 +73,8 @@ void CLuaRadioButton::AddButton(const std::string &label, TSTLVecSize n)
     button->type(FL_RADIO_BUTTON);
     button->callback(ToggleCB, this);
     
+    bool first = m_RadioButtons.empty();
+    
     if (n >= GetOptions().size())
     {
         m_RadioButtons.push_back(button);
@@ -84,13 +86,16 @@ void CLuaRadioButton::AddButton(const std::string &label, TSTLVecSize n)
         GetGroup()->insert(*button, n+1); // +1: First is titel
     }
     
+    if (first)
+        Enable(0);
+    
     RedrawWidgetRecursive(GetGroup());
     GetParent()->UpdateLayout();
 }
 
 void CLuaRadioButton::DelButton(TSTLVecSize n)
 {
-    if (m_RadioButtons.at(n)->value())
+    if (m_RadioButtons.at(n)->value() && (GetOptions().size() > 1))
     {
         if (n > 0)
             m_RadioButtons.at(n-1)->setonly();

@@ -17,7 +17,11 @@
 
 local OLDG = _G
 module (..., package.seeall)
-    
+
+function name()
+    return "rpm (eg. Fedora, Mandriva)"
+end
+
 function getpkgpath()
     return "/usr/local" -- UNDONE?
 end

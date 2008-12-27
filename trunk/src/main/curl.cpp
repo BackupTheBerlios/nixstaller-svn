@@ -42,10 +42,8 @@ CCURLWrapper::CCURLWrapper(const char *url, const char *dest) : m_pCurl(NULL), m
     
     Check(curl_easy_setopt(m_pCurl, CURLOPT_URL, url));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_WRITEDATA, m_pDestFile));
-    Check(curl_easy_setopt(m_pCurl, CURLOPT_NOPROGRESS, false));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_USERAGENT, "nixstaller"));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_CONNECTTIMEOUT, 30));
-//     Check(curl_easy_setopt(m_pCurl, CURLOPT_NOSIGNAL, 1));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_LIMIT, 0));
     Check(curl_easy_setopt(m_pCurl, CURLOPT_LOW_SPEED_TIME, 30));
         

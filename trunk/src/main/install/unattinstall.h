@@ -27,6 +27,9 @@ class CBaseUnattInstall: public CBaseInstall
 protected:
     virtual void CoreUpdateLanguage(void) { }
     virtual void InitLua(void);
+    
+public:
+    virtual void Init(int argc, char **argv);
 };
 
 #endif

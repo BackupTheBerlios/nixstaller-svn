@@ -5,6 +5,8 @@
 - Fixed: utils.dirname() would handle relative paths wrong.
 - Fixed: selectdirscreen would ignore customly set install.destdir values.
 - Fixed: File extraction progress indication ignored total install progress.
+- Fixed: ncurses frontend wouldn't update screen fast enough for stuff called from verify() functions.
+- Fixed: If verify function from lua widget would return nothing, true was assumed (is now false)
 - Better commandline arguments handling.
 - utils.removerec() function.
 - utils.copyrec() function.
@@ -15,10 +17,10 @@
 - Lua addcheckbox function now accepts additional argument to enable one or more options.
 - Lua addradiobutton function now accepts additional argument to preselect an option
 - Lua addmenu function now accepts additional argument to preselect an option
-- add() and del() functions for luaradiobutton, luacheckbox and luamenu
+- add(), del() and clear() functions for luaradiobutton, luacheckbox and luamenu
 - luamenu, luacheckbox and luaradiobutton can now be empty
 - del() function for luacfgmenu
-- visible() function for every widget
+- enable() function for every widget
 - screen:update() function
 - Changed --help output from generated installer
 - Installer frontend can be specified through commandline argument

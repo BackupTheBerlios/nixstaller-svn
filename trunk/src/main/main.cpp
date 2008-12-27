@@ -187,6 +187,7 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaExitStatus, "exitstatus", "os");
     NLua::RegisterFunction(LuaOpenElf, "openelf", "os");
     NLua::RegisterFunction(LuaInitDownload, "initdownload", "os");
+    NLua::RegisterFunction(LuaGetEUID, "geteuid", "os");
 
     NLua::RegisterFunction(LuaAbort, "abort");
     
@@ -860,6 +861,12 @@ int CMain::LuaAbort(lua_State *L)
 {
     throw Exceptions::CExLuaAbort(lua_tostring(L, 1));
     return 0;
+}
+
+int CMain::LuaGetEUID(lua_State *L)
+{
+    lua_pushnumber(L, geteuid());
+    return 1;
 }
 
 int CMain::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,

@@ -76,7 +76,7 @@ end
 
 function setstatus(s)
     if install.unattended then
-        install.print(s .. "\n")
+        install.print("\n*  " .. tr(s) .. "\n\n")
     else
         depprocess.notifier:settitle(s)
     end
@@ -193,7 +193,6 @@ function initdep(d)
     end
     
     local function notifyenddownload()
-        setsecprogress(100)
         if install.unattended then
             install.print("\n")
             printedprog = 0
@@ -244,6 +243,12 @@ function initdep(d)
         for f, sum in pairs(fmap) do
             if archfiles[f] then
                 local path = string.format("%s/%s", src, f)
+                
+                -- For unattended installs
+                local retries, maxretries = 0, (cfg.unopts["dlretries"] and
+                    cfg.unopts["dlretries"].value and
+                    cfg.unopts["dlretries"].internal) or 3
+                
                 while true do
                     local download, msg = os.initdownload(string.format("%s/%s", d.baseurl, f), path)
                     
@@ -272,11 +277,20 @@ function initdep(d)
                         if not ignorefaileddl and not cancelled() then
                             local usermsg = "Failed to download dependency"
                             if msg then
-                                usermsg = usermsg .. ":\n" .. msg
+                                if install.unattended then
+                                    usermsg = usermsg .. ":" .. msg
+                                else
+                                    usermsg = usermsg .. ":\n" .. msg
+                                end
                             end
                             
                             if install.unattended then
-                                abort(usermsg)
+                                retries = retries + 1
+                                retry = (retries <= maxretries)
+                                install.print(usermsg .. "\n")
+                                if retry then
+                                    install.print(string.format("Retrying ... (%d/%d)\n", retries, maxretries))
+                                end
                             else
                                 local choice = gui.choicebox(usermsg, "Retry", "Ignore", "Ignore all")
                                 retry = (choice == 1)
@@ -288,7 +302,6 @@ function initdep(d)
                             enablesecbar(false)
                             notifyenddownload()
                             initdeps[d] = false
-                            print("Failed dep:", d.name, msg)
                             os.remove(path)
                             depprocess.wrongdeps[d] = depprocess.wrongdeps[d] or { }
                             depprocess.wrongdeps[d].faileddl = true
@@ -300,6 +313,7 @@ function initdep(d)
                 end
             end
         end
+        setsecprogress(100)
         notifyenddownload()
     end
     

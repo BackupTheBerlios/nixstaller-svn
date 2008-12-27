@@ -33,6 +33,7 @@ void CBaseLuaCheckbox::LuaRegister()
     NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaSet, "set", "checkbox");
     NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaAdd, "add", "checkbox");
     NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaDel, "del", "checkbox");
+    NLua::RegisterClassFunction(CBaseLuaCheckbox::LuaClear, "clear", "checkbox");
 }
 
 int CBaseLuaCheckbox::LuaGet(lua_State *L)
@@ -139,5 +140,20 @@ int CBaseLuaCheckbox::LuaDel(lua_State *L)
     box->DelOption(n);
 
     box->m_Options.erase(box->m_Options.begin() + n);
+    return 0;
+}
+
+int CBaseLuaCheckbox::LuaClear(lua_State *L)
+{
+    CBaseLuaCheckbox *box = CheckLuaWidgetClass<CBaseLuaCheckbox>("checkbox", 1);
+    
+    TSTLVecSize size = box->m_Options.size();
+    while (size)
+    {
+        box->DelOption(size-1);
+        box->m_Options.pop_back();
+        size--;
+    }
+    
     return 0;
 }

@@ -18,6 +18,10 @@
 local OLDG = _G
 module (..., package.seeall)
 
+function name()
+    return "Slackware tgz (eg. Slackware, Zenwalk)"
+end
+
 function getpkgpath()
     return "/usr/local" -- UNDONE?
 end

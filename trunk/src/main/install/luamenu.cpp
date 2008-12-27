@@ -33,6 +33,7 @@ void CBaseLuaMenu::LuaRegister()
     NLua::RegisterClassFunction(LuaSet, "set", "menu");
     NLua::RegisterClassFunction(LuaAdd, "add", "menu");
     NLua::RegisterClassFunction(LuaDel, "del", "menu");
+    NLua::RegisterClassFunction(LuaClear, "clear", "menu");
 }
 
 int CBaseLuaMenu::LuaGet(lua_State *L)
@@ -100,5 +101,20 @@ int CBaseLuaMenu::LuaDel(lua_State *L)
     menu->DelOption(n);
 
     menu->m_Options.erase(menu->m_Options.begin() + n);
+    return 0;
+}
+
+int CBaseLuaMenu::LuaClear(lua_State *L)
+{
+    CBaseLuaMenu *menu = CheckLuaWidgetClass<CBaseLuaMenu>("menu", 1);
+    
+    TSTLVecSize size = menu->m_Options.size();
+    while (size)
+    {
+        menu->DelOption(size-1);
+        menu->m_Options.pop_back();
+        size--;
+    }
+    
     return 0;
 }

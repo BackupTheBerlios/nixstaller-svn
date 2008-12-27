@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/lua/lua.h"
+#include "main/lua/luatable.h"
 #include "main/install/unattinstall.h"
 
 // -------------------------------------
@@ -28,6 +30,16 @@ void CBaseUnattInstall::InitLua()
     CBaseInstall::InitLua();
     
     NLua::LuaSet(true, "unattended", "install");
-    
+
     NLua::LoadFile("install.lua");
+}
+
+void CBaseUnattInstall::Init(int argc, char **argv)
+{
+    NLua::CLuaTable tab("args");
+    for (int i=1; i<argc; i++) // Skip first arg, as this contains the action to do
+        tab[i-1] << argv[i];
+    tab.Close();
+    
+    CBaseInstall::Init(argc, argv);
 }

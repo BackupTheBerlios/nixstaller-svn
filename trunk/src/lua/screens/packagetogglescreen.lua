@@ -17,6 +17,25 @@
 
 module (..., package.seeall)
 
+function checktool()
+    local mtool = pkg.packager.missingtool()
+    if mtool then
+        while gui.choicebox(tr("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 1 do
+            mtool = pkg.packager.missingtool()
+            if not mtool then
+                break
+            end
+        end
+    end
+    
+    pkg.register = not pkg.packager.missingtool()
+    if not pkg.register then
+        -- Update to generic
+        pkg.packager = pkg.packagers["generic"]
+        pkg.updatepackager()
+    end
+end
+
 screen = install.newscreen("Software registration")
 
 function screen:canactivate()
@@ -25,6 +44,11 @@ end
 
 genpkg = screen:addcheckbox("By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.\n\nNote: When enabled, you need to grant the installer root access later on.\n\nWhen unsure, just leave it enabled.", {"Register software"})
 
+screen:addscreenend()
+
+local pkgchoice = screen:addradiobutton("Multiple package managers were found, please choose which one should be used.")
+pkgchoice:enable(false)
+
 function screen:activate()
     genpkg:set(1, pkg.register)
 end
@@ -32,18 +56,34 @@ end
 function genpkg:verify()
     pkg.register = genpkg:get(1)
     
-    if (pkg.register) then
-        local mtool = pkg.packager.missingtool()
-        if mtool then
-            while gui.choicebox(tr("In order to let the installer register the software, the '%s' package needs to be available.\nPlease install this package now and hit continue or press ignore to continue without software registration.", mtool), "Continue", "Ignore") == 1 do
-                mtool = pkg.packager.missingtool()
-                if not mtool then
-                    break
+    if pkg.register then
+        if utils.mapsize(pkg.packagers) > 2 then
+            pkgchoice:enable(true)
+            pkgchoice:clear()
+            for p in pairs(pkg.packagers) do
+                if p ~= "generic" then
+                    pkgchoice:add(pkg.packagers[p].name())
                 end
             end
+        else
+            checktool()
         end
-        pkg.register = not pkg.packager.missingtool()
     end
+    
+    return true
+end
+
+function pkgchoice:verify()
+    local choice = self:get()
+    for _, p in pairs(pkg.packagers) do
+        if p.name() == choice then
+            pkg.packager = p
+            break
+        end
+    end
+    pkg.updatepackager()
+    checktool()
+    return true
 end
 
 return screen

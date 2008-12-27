@@ -69,11 +69,11 @@ void CBaseLuaGroup::UpdateLanguage()
         (*it)->UpdateLanguage();
 }
 
-bool CBaseLuaGroup::IsVisible() const
+bool CBaseLuaGroup::IsEnabled() const
 {
     for (TWidgetList::const_iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)
     {
-        if ((*it)->IsVisible())
+        if ((*it)->IsEnabled())
             return true;
     }
     
@@ -84,7 +84,7 @@ bool CBaseLuaGroup::CheckWidgets()
 {
     for (TWidgetList::iterator it=m_WidgetList.begin(); it!=m_WidgetList.end(); it++)
     {
-        if (!(*it)->Check())
+        if ((*it)->IsEnabled() && !(*it)->Check())
         {
             (*it)->ActivateWidget();
             return false;

@@ -47,6 +47,8 @@ bool CBaseLuaWidget::Check()
 
         if (func(1) > 0)
             func >> ret;
+        else
+            ret = false;
     }
     
     return ret;
@@ -54,13 +56,12 @@ bool CBaseLuaWidget::Check()
 
 void CBaseLuaWidget::LuaRegister()
 {
-    NLua::RegisterClassFunction(CBaseLuaWidget::LuaVisible, "visible", "widget");
+    NLua::RegisterClassFunction(CBaseLuaWidget::LuaEnable, "enable", "widget");
 }
 
-int CBaseLuaWidget::LuaVisible(lua_State *L)
+int CBaseLuaWidget::LuaEnable(lua_State *L)
 {
     CBaseLuaWidget *widget = CheckLuaWidgetClass<CBaseLuaWidget>("widget", 1);
-    widget->SetVisible(NLua::LuaToBool(2));
-    
+    widget->SetEnable(NLua::LuaToBool(2));
     return 0;
 }

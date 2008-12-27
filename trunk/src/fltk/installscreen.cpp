@@ -102,7 +102,7 @@ void CInstallScreen::ResetWidgetRange()
         CLuaGroup *lg = GetGroup(m_pWidgetPack->child(i));
         Fl_Group *group = lg->GetGroup();
         
-        if (!lg->IsVisible() || !group->children())
+        if (!lg->IsEnabled() || !group->children())
         {
             group->hide();
             continue;
@@ -175,6 +175,12 @@ bool CInstallScreen::CheckWidgets()
             ret = false;
             break;
         }
+        
+        // Need to recheck this everytime, as verify() functions from Lua may invalidate it
+        if (HasNextWidgets())
+            end = m_WidgetRanges[m_CurSubScreen+1];
+        else
+            end = size;
     }
 
     return ret;
@@ -229,7 +235,7 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
     while (start != end)
     {
         CLuaGroup *lg = GetGroup(m_pWidgetPack->child(start));
-        if ((!lg || lg->IsVisible()) && lg->GetGroup()->children())
+        if ((!lg || lg->IsEnabled()) && lg->GetGroup()->children())
         {
             h += CheckTotalWidgetH(m_pWidgetPack->child(start)) + WidgetHSpacing();
             m_pWidgetPack->child(start)->show();

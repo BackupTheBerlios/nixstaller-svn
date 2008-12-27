@@ -75,7 +75,7 @@ bool CInstallScreen::VisibleWidget(NNCurses::CWidget *w)
         return false;
         
     CLuaGroup *lg = dynamic_cast<CLuaGroup *>(g);
-    return lg->IsVisible();
+    return lg->IsEnabled();
 }
 
 int CInstallScreen::CheckWidgetHeight(NNCurses::CWidget *w)
@@ -218,6 +218,15 @@ bool CInstallScreen::CheckWidgets()
         CLuaGroup *w = dynamic_cast<CLuaGroup *>(*start);
         if (w && !w->CheckWidgets())
             return false;
+        
+        // HACK: Update screen, as verify() may invalidate subscreens
+        NNCurses::TUI.Run(0);
+    
+        // Need to recheck this everytime, as verify() functions from Lua may invalidate it
+        if (HasNextWidgets())
+            end = std::find(start, list.end(), m_WidgetRanges[m_CurSubScreen+1]);
+        else
+            end = list.end();
         
         start++;
     }

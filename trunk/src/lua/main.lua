@@ -15,13 +15,35 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
--- Called from main.cpp
+-- Called from main/main.cpp
 
 -- Initialize globals
 version = "0.5"
 cfg = { unopts = { } }
 pkg = { }
 
-
 -- Default unattended startup options
-cfg.unopts["verbose"] = { short = "v", desc = "Enable verbose output" }
+-- cfg.unopts["verbose"] = { short = "v", desc = "Enable verbose output" }
+
+-- Functions for easy way to enable common options
+-- The internal variable is used to check if opts were defined here and
+-- should be handled by the user or automaticly
+
+function cfg.adddestunopt()
+    cfg.unopts["destdir"] = {
+        short = "d",
+        desc = "Sets the destination directory. Make sure you have read/write access to this directory.",
+        opttype = "string",
+        optname = "d",
+        internal = true }
+end
+
+function cfg.addlicenseunopts()
+    cfg.unopts["accept-license"] = {
+        short = "l",
+        desc = "Accepts the software's license agreement.",
+        internal = true }
+    cfg.unopts["show-license"] = {
+        desc = "Shows the software's license agreement.",
+        internal = true }
+end

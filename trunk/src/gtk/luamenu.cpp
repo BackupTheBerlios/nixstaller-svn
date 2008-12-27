@@ -102,6 +102,9 @@ void CLuaMenu::DelOption(TSTLVecSize n)
         gtk_list_store_remove(store, &iter);
     else
         assert(false); // Should not happen
+    
+    if (GetOptions().size() <= 1)
+        m_bInitSel = true;
 }
 
 void CLuaMenu::CoreUpdateLanguage()
@@ -169,7 +172,7 @@ bool CLuaMenu::SearchItem(TSTLVecSize n, GtkTreeIter &iter)
     {
         gchar *var;
         gtk_tree_model_get(model, &iter, COLUMN_VAR, &var, -1);
-        if (var == GetOptions()[n])
+        if (GetOptions()[n] == var)
             found = true;
         g_free(var);
     }

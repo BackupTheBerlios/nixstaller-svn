@@ -56,7 +56,7 @@ configure()
         CURRENT_ARCH="x86"
     fi
     
-    while true
+    while [ "$1" != "" ]
     do
         case "${1}" in
             --frontend )
@@ -69,7 +69,8 @@ configure()
                 shift
                 ;;
             *)
-                break
+                ARGS="$ARGS $1"
+                shift
                 ;;
         esac
     done

@@ -29,16 +29,16 @@ class CBaseLuaWidget
 {
     std::string m_Title;
     const char *m_szLuaType;
-    bool m_bVisible;
+    bool m_bEnabled;
     
     virtual void CoreUpdateLanguage(void) {}
     virtual void CoreSetTitle(void) = 0;
     virtual void CoreActivateWidget(void) = 0;
-    virtual void CoreSetVisible(bool v) = 0;
+    virtual void CoreSetEnable(bool e) = 0;
 
 protected:
-    CBaseLuaWidget(const char *title) : m_szLuaType(0), m_bVisible(true) { if (title && *title) m_Title = title; }
-    CBaseLuaWidget(void) : m_szLuaType(0), m_bVisible(true) {}
+    CBaseLuaWidget(const char *title) : m_szLuaType(0), m_bEnabled(true) { if (title && *title) m_Title = title; }
+    CBaseLuaWidget(void) : m_szLuaType(0), m_bEnabled(true) {}
     
     void LuaDataChanged(void);
     const std::string &GetTitle(void) const { return m_Title; }
@@ -51,11 +51,11 @@ public:
     void Init(const char *type) { m_szLuaType = type; CoreSetTitle(); }
     bool Check(void);
     void ActivateWidget(void) { CoreActivateWidget(); }
-    void SetVisible(bool v) { m_bVisible = v; CoreSetVisible(v); }
-    bool IsVisible(void) const { return m_bVisible; }
+    void SetEnable(bool e) { m_bEnabled = e; CoreSetEnable(e); }
+    bool IsEnabled(void) const { return m_bEnabled; }
     
     static void LuaRegister(void);
-    static int LuaVisible(lua_State *L);
+    static int LuaEnable(lua_State *L);
 };
 
 template <typename C> C *CheckLuaWidgetClass(const char *type, int index)

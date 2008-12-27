@@ -206,6 +206,10 @@ do
     INSTPACK="$2"
     shift 2
     ;;
+    --instmode)
+    INSTMODE="$2"
+    shift 2
+    ;;
     --instos)
     INSTOS="$2"
     shift 2

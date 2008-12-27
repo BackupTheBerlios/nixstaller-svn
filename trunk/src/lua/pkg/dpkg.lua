@@ -18,6 +18,10 @@
 local OLDG = _G
 module (..., package.seeall)
 
+function name()
+    return "dpkg (eg. Ubuntu, Debian)"
+end
+
 function getpkgpath()
     return "/usr/local" -- UNDONE?
 end
@@ -82,7 +86,7 @@ function verifylock()
     
     if locked then
         return false, [[
-Another program seems to be using the DEB database.
+Another program seems to be using the dpkg database.
 Please close all applications that may use the database (ie Synaptic).]]
     end
     

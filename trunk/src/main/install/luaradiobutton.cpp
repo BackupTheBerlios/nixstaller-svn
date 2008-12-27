@@ -33,6 +33,7 @@ void CBaseLuaRadioButton::LuaRegister()
     NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaSet, "set", "radiobutton");
     NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaAdd, "add", "radiobutton");
     NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaDel, "del", "radiobutton");
+    NLua::RegisterClassFunction(CBaseLuaRadioButton::LuaClear, "clear", "radiobutton");
 }
 
 int CBaseLuaRadioButton::LuaGet(lua_State *L)
@@ -114,5 +115,20 @@ int CBaseLuaRadioButton::LuaDel(lua_State *L)
     rad->DelButton(n);
 
     rad->m_Options.erase(rad->m_Options.begin() + n);
+    return 0;
+}
+
+int CBaseLuaRadioButton::LuaClear(lua_State *L)
+{
+    CBaseLuaRadioButton *rad = CheckLuaWidgetClass<CBaseLuaRadioButton>("radiobutton", 1);
+    
+    TSTLVecSize size = rad->m_Options.size();
+    while (size)
+    {
+        rad->DelButton(size-1);
+        rad->m_Options.pop_back();
+        size--;
+    }
+    
     return 0;
 }

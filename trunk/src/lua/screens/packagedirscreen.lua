@@ -29,6 +29,7 @@ function pkgdest:verify()
     pkg.destdir = pkgdest:get()
     bindest:set(string.gsub(pkg.destdir, "/[%w]*$", "/bin"))
     pkg.bindir = bindest:get()
+    pkg.setdestdir, pkg.setbindir = true, true
     return true
 end
 

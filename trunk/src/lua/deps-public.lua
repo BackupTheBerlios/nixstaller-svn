@@ -17,11 +17,38 @@
 
 
 function pkg.verifydeps(bins, libs)
+    install.setstatus("Verifying dependencies")
+    
     bins = bins or pkg.bins
     
     local success, msg = pcall(function ()
         if install.unattended then
-            verifydeps(bins, libs) -- UNDONE: Handle missing deps
+            local failed = verifydeps(bins, libs)
+            if not utils.emptytable(failed) then -- Something went wrong?
+                install.print(tr("One or more package dependencies could not be resolved. Details are given below."))
+                install.print("\n\n")
+                
+                for n, d in pairs(failed) do
+                    install.print(string.format([[
+%s:
+    %s:    %s
+    %s:    %s
+]], n, tr("Description"), tr(d.desc), tr("Problem"), tr(d.problem)))
+                end
+                
+                install.print("\n")
+                
+                if cfg.unopts["ignore-failed-deps"] and cfg.unopts["ignore-failed-deps"].value and
+                   cfg.unopts["ignore-failed-deps"].internal then
+                    install.print("\n" .. tr("Continuing installation anyway...") .. "\n")
+                else
+                    install.print(tr("Please fix these issues now and rerun the installer.") .. "\n")
+                    if cfg.unopts["ignore-failed-deps"] and cfg.unopts["ignore-failed-deps"].internal then
+                        install.print(tr("Alternatively rerun with the --ignore-failed-deps options, risking any dependency errors when using the installed software.") .. "\n")
+                    end
+                    os.exit(1)
+                end
+            end
         else
             install.showdepscreen(function () return verifydeps(bins, libs) end)
         end

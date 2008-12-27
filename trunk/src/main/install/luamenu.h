@@ -50,6 +50,7 @@ public:
     static int LuaSet(lua_State *L);
     static int LuaAdd(lua_State *L);
     static int LuaDel(lua_State *L);
+    static int LuaClear(lua_State *L);
 };
 
 #endif

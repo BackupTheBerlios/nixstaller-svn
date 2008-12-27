@@ -40,3 +40,59 @@ function pkg.newdependency()
     
     return ret
 end
+
+-- Function for easy way to enable common options
+-- The internal variable is used to check if opts were defined here and
+-- should be handled by the user or automaticly
+
+function pkg.addpkgunopts(deps)
+    cfg.unopts["overwrite"] = {
+        short = "O",
+        desc = "Install package, even if it overwrites any existing.",
+        internal = true }
+        
+    cfg.unopts["datadir"] = {
+        short = "d",
+        desc = "Sets the data destination directory. The data files are installed inside a subdirectory inside this directory. Make sure you have read/write access to this directory.",
+        opttype = "string",
+        optname = "d",
+        internal = true }
+        
+    cfg.unopts["bindir"] = {
+        short = "b",
+        desc = "Sets the destination directory for any executables. Make sure you have read/write access to this directory.",
+        opttype = "string",
+        optname = "d",
+        internal = true }
+    
+    cfg.unopts["packager"] = {
+        desc = "If the installer finds more than 1 package manager, use this to specify which one should be used. Run the installer without to see which are available.",
+        opttype = "string",
+        optname = "p",
+        internal = true }
+
+    if pkg.register then
+        cfg.unopts["no-register"] = {
+            short = "r",
+            desc = "Disable package registration, therefore allowing non root installs.",
+            internal = true }
+    else
+        cfg.unopts["register"] = {
+            short = "r",
+            desc = "Tries to register the package in the system's package manager. Works only when executed as root.",
+            internal = true }
+    end
+    
+    if deps then
+        cfg.unopts["dlretries"] = {
+            desc = "Amount of retries incase downloading a dependency fails. Default: 3.",
+            opttype="string",
+            optname="n",
+            internal = true }
+            
+        cfg.unopts["ignore-failed-deps"] = {
+            short = "D",
+            desc = "Ignore any missing or faulty dependencies.",
+            internal = true }
+    end
+end

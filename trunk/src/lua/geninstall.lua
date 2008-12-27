@@ -182,8 +182,6 @@ function PackDirectory(dir, file)
         stat = os.execute(string.format('cat "%s.tmp" | bzip2 -9 > "%s"', file, file)) -- Use cat so that bzip won't append ".bz2" to filename
     elseif cfg.archivetype == "lzma" then
         stat = os.execute(string.format('"%s" e "%s.tmp" "%s" 2>/dev/null', LZMABin, file, file))
-    else
-        ThrowError("Wrong archive type specified!")
     end
     
     if stat ~= 0 then
@@ -387,7 +385,7 @@ function PrepareArchive()
     RequiredCopy(ndir .. "/src/lua/unattinstall.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/package.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/package-public.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/pkg/deb.lua", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/lua/pkg/dpkg.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/pkg/groups.lua", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
@@ -626,6 +624,7 @@ function CreateInstaller()
     
     addarg("--instname", cfg.appname)
     addarg("--instpack", cfg.archivetype)
+    addarg("--instmode", cfg.mode)
     addarg("--instos", tabtostr(cfg.targetos))
     addarg("--instarch", tabtostr(cfg.targetarch))
     addarg("--instfrontends", tabtostr(cfg.frontends))
@@ -657,6 +656,9 @@ function CreateInstaller()
             right = right .. " (Required)"
         end
         
+        -- Get rid of single ' chars
+        right = string.gsub(right, "'", "'\"'\"'")
+
         local opthandler, optchecker
         if not utils.emptystring(a.short) then
             opthandler = string.format("   -%s | --%s)\n", a.short, n)
@@ -677,20 +679,20 @@ fi]], optchk, n)
         end
 
         if a.opttype then
-            opthandler = string.format("%s    scriptargs=\"\$scriptargs --%s \\$2\"\n    shift 2\n", opthandler, n)
+            opthandler = string.format("%s    scriptargs=\"\$scriptargs --%s $2\"\n    shift 2\n", opthandler, n)
         else
             opthandler = string.format("%s    scriptargs=\"\$scriptargs --%s\"\n    shift\n", opthandler, n)
         end
         
         opthandler = opthandler .. "    gaveunopt=1\n    ;;\n"
-        nixstopts = string.format("%s --addopthandler \'%s\' --addopthelp \'%-24s%s\'", nixstopts, opthandler, left, right)
+        nixstopts = string.format("%s --addopthandler \'%s\' --addopthelp \'%-28s%s\'", nixstopts, opthandler, left, right)
         
         if optchecker then
             nixstopts = string.format("%s --addoptchecker \'%s\'", nixstopts, optchecker)
         end
     end
     
-    if cfg.unattended then
+    if cfg.mode == "both" or cfg.mode == "unattended" then
         for n, a in pairs(cfg.unopts) do
             addoptarg(n, a)
         end

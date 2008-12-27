@@ -58,11 +58,24 @@ function pkg.setpermissions()
     end
 end
 
+-- Used by packagetogglescreen
+function pkg.updatepackager()
+    -- Custom set package dirs? (package.lua, packagedirscreen etc)
+    if not pkg.setdestdir then
+        pkg.destdir = pkg.packager.getpkgpath() .. "/share"
+    end
+    if not pkg.setbindir then
+        pkg.bindir = pkg.packager.getpkgpath() .. "/bin"
+    end
+end
+
 function install.generatepkg()
     if not pkg.enable then
         error("Called generatepkg when pkg.enable is false.")
     end
     
+    install.setstatus("Installing package")
+
     if not pkg.register then
         pkg.packager = generic
     end
@@ -102,8 +115,6 @@ function install.generatepkg()
     
         copyxdgutils(dir .. "/files")
         
-        install.setstatus("Installing package")
-        
         local version
         
         local f = function()
@@ -124,8 +135,10 @@ function install.generatepkg()
                             msg = tr("Version %s is already installed, you're trying to install version %s.", version, myver)
                         end
                         
-                        -- UNDONE
-                        abort(msg .. "\n")
+                        if not cfg.unopts["overwrite"] or (not cfg.unopts["overwrite"].value and
+                           cfg.unopts["overwrite"].internal) then
+                            abort(msg .. "\n")
+                        end
                     else
                         local msg
                         local myver = pkg.version .. "-" .. pkg.release

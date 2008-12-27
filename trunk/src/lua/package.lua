@@ -33,6 +33,9 @@ function checkcmd(f, cmd)
 end
 
 function checklock(file, root)
+    if not os.fileexists(file) then
+        return false
+    end
     local cmd = (root and install.executeasroot) or install.execute
     local ret = cmd(string.format("[ \"`fuser %s 2>&1 | awk 'END {print NF}'`\" -gt 1 ] && exit 2", file))
     return ret == 2
@@ -97,25 +100,44 @@ function copydeskfiles(deskdir)
     end
 end
 
+-- Called by unattinstall.lua after config.lua was loaded
+function checkunpkgman()
+    if utils.mapsize(pkg.packagers) > 2 then
+        local p = { }
+        for k in pairs(pkg.packagers) do
+            if k ~= "generic" then
+                table.insert(p, k)
+            end
+        end
+        
+        if haveunopt("packager") then
+            if not utils.tablefind(p, cfg.unopts["packager"].value) then
+                abort("Wrong packager specified, should be one of the following: " .. tabtostr(p))
+            end
+            local s = cfg.unopts["packager"].value
+            pkg.packager = pkg.packagers[s]
+            pkg.updatepackager()
+        else
+            abort(string.format("Multiple package managers were found: %s\nPlease use the --packager option to specify which one should be used.", tabtostr(p)))
+        end
+    end
+end
+
 dofile("groups.lua")
 
 package.path = "?.lua"
 package.cpath = ""
 
-packagers = { "deb", "pacman", "slack", "rpm", "generic" }
-
-for _, p in ipairs(packagers) do
+pkg.packagers = { } -- Used by package toggle screen
+for _, p in ipairs{"dpkg", "pacman", "slack", "rpm", "generic"} do
     require(p)
-    pkg.packager = pkg.packager or (_G[p].present() and _G[p])
+    if _G[p].present() then
+        pkg.packagers[p] = _G[p]
+        pkg.packager = pkg.packager or _G[p]
+    end
 end
 
 pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
-
-
--- Install defaults
-pkg.destdir = pkg.packager.getpkgpath() .. "/share"
-pkg.bindir = pkg.packager.getpkgpath() .. "/bin"
-
 
 dofile("package-public.lua")
 dofile("shared/package-public.lua")
@@ -126,9 +148,10 @@ end
 
 dofile("deps.lua")
 
--- Defaults (again, incase scripts nil'ed something)
-pkg.destdir = pkg.destdir or pkg.packager.getpkgpath() .. "/share"
-pkg.bindir = pkg.bindir or pkg.packager.getpkgpath() .. "/bin"
+pkg.setdestdir = pkg.destdir ~= nil
+pkg.setbindir = pkg.bindir ~= nil
+pkg.updatepackager()
+
 
 -- Init deps
 pkg.depmap = { }
