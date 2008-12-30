@@ -29,23 +29,29 @@ function screen:activate()
     text:clear()
     text:add(string.format([[
 GENERAL INFO
-Name:           %s
-Version:        %s-%s
-Maintainer:     %s
+Name            %s
+Version         %s-%s
+Maintainer      %s
 ]], cfg.appname, pkg.version, pkg.release, pkg.maintainer))
 
     if pkg.url then
-        text:add(string.format("URL:            %s", pkg.url))
+        text:add(string.format("URL             %s\n", pkg.url))
     end
     
     local uninstmsg
-    if pkg.register and pkg.canregister then
+    if pkg.register and not pkg.regfailed then
+        text:add("Registrated    Yes\n")
         uninstmsg = string.format("Software can be uninstalled via system's package manager.")
     else
+        text:add("Registrated     No")
+        if pkg.regfailed then
+            text:add(" (Failed)")
+        end
+        text:add("\n")
         uninstmsg = string.format("Software can be uninstalled by running the following script:\n%s/uninstall-%s", pkg.getbindir(), pkg.name)
     end
     
-    text:add(string.format("\n\nUNINSTALLATION\n%s\n", uninstmsg))
+    text:add(string.format("\nUNINSTALLATION\n%s\n", uninstmsg))
 
     text:add("\n\nINSTALLED EXECUTABLES\n")
     for _, v in ipairs(pkg.bins) do

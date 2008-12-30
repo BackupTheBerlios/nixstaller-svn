@@ -158,7 +158,7 @@ pkg.depmap = { }
 if pkg.deps then
     local stack = { pkg.deps }
     while not utils.emptytable(stack) do
-        local deps = table.remove(stack)      
+        local deps = table.remove(stack)
         for _, d in ipairs(deps) do
             if not pkg.depmap[d] then
                 local c = dofile(string.format("deps/%s/config.lua", d))

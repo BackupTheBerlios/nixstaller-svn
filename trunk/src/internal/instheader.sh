@@ -83,7 +83,7 @@ EOH
 Advanced:
 --keep                      Do not erase temporary target directory.
 --nox11                     Do not spawn an xterm.
---target dir                Sets temporary target directory.
+--target dir                Sets target directory for core contents (default is a temporary directory).
 --tar arg1 [arg2 ...]       Access the core contents of the archive through the tar command.
 EOH
 }

@@ -180,6 +180,12 @@ function utils.mapsize(t)
     return ret
 end
 
+function utils.tableappend(t, t2)
+    for _, v in ipairs(t2) do
+        table.insert(t, v)
+    end
+end
+
 function utils.patch(file, pattern, newstr)
     local tmpf = file .. ".tmp"
     local stat, msg = os.rename(file, tmpf)

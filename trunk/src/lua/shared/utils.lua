@@ -375,3 +375,27 @@ end
 function haveunopt(arg)
     return cfg.unopts[arg] and cfg.unopts[arg].value and cfg.unopts[arg].internal
 end
+
+function loaddep(prdir, name)
+    local path = string.format("%s/deps/%s/config.lua", prdir, name)
+    local stat, ret = pcall(dofile, path)
+    if not stat then
+        return nil, ret
+    end
+    
+    local function default(var, val)
+        if ret[var] == nil then
+            ret[var] = val
+        end
+    end
+    
+    default("full", true)
+    default("libdir", "lib/")
+    default("description", "")
+    default("libs", { })
+    default("deps", { })
+    
+    ret.name = name
+    
+    return ret
+end

@@ -70,7 +70,10 @@ function getallsyms(bin, lpath)
                         end
                     end
                 end
-                getallsyms(lp, lpath)
+                
+                if lp then
+                    getallsyms(lp, lpath)
+                end
             end
             for s, v in pairs(bsyms) do
                 if v.undefined then

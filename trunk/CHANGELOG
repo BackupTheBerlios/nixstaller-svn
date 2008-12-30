@@ -11,6 +11,7 @@
 - utils.removerec() function.
 - utils.copyrec() function.
 - utils.patch() function.
+- utils.tableappend() function.
 - Updated to FLTK 1.1.9
 - Decreased FLTK textfield font size
 - Lua textfield now has max amount of characters (4 MB)
@@ -30,6 +31,7 @@
 - install.extract() function
 - Additional precision for progressbars (only allowed integers)
 - Moved lots of install code to Lua
+- Summaryscreen now shows if package was registrated and if it failed to do so
 
 
 0.3 --> 0.4

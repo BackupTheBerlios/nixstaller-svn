@@ -78,7 +78,7 @@ public:
     void Cancel(void);
     
     static void DestroyCB(GtkWidget *widget, gpointer data) { gtk_main_quit (); };
-    static gboolean IdleRunner(gpointer data) { (static_cast<CInstaller *>(data))->Update(); return TRUE; }
+    static gboolean TimedRunner(gpointer data) { (static_cast<CInstaller *>(data))->Update(); return TRUE; }
     static gboolean AboutEnterCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);
     static gboolean AboutLeaveCB(GtkWidget *widget, GdkEventCrossing *crossing, gpointer data);
     static gboolean AboutCB(GtkWidget *widget, GdkEvent *event, gpointer data)

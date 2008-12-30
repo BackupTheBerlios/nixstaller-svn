@@ -544,18 +544,25 @@ void CInstaller::Init(int argc, char **argv)
 void CInstaller::Run()
 {
     CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
-    while (Fl::check())
-        Update();
+    Fl::add_timeout(0.01, TimedRunner, this);
+    Fl::run();
 }
 
 void CInstaller::Cancel()
 {
-	if (AskQuit())
-	{
-		Fl::delete_widget(GetMainWindow());
-		// Call this here, because this function may be called during Lua execution
-		::Quit(EXIT_FAILURE);
-	}
+    if (AskQuit())
+    {
+        Fl::delete_widget(GetMainWindow());
+        // Call this here, because this function may be called during Lua execution
+        ::Quit(EXIT_FAILURE);
+    }
+}
+
+void CInstaller::TimedRunner(void *p)
+{
+    CInstaller *installer = static_cast<CInstaller *>(p);
+    installer->Update();
+    Fl::repeat_timeout(0.01, TimedRunner, p);
 }
 
 void CInstaller::CancelCB(Fl_Widget *w, void *p)
@@ -566,28 +573,28 @@ void CInstaller::CancelCB(Fl_Widget *w, void *p)
 
 void CInstaller::BackCB(Fl_Widget *w, void *p)
 {
-	CInstaller *installer = static_cast<CInstaller *>(p);
+    CInstaller *installer = static_cast<CInstaller *>(p);
 
-	try
-	{
-		installer->Back();
-	}
-	catch (Exceptions::CException &)
-	{
-		HandleError();
-	}
+    try
+    {
+        installer->Back();
+    }
+    catch (Exceptions::CException &)
+    {
+        HandleError();
+    }
 };
 
 void CInstaller::NextCB(Fl_Widget *w, void *p)
 {
-	CInstaller *installer = static_cast<CInstaller *>(p);
-	
-	try
-	{
-		installer->Next();
-	}
-	catch (Exceptions::CException &)
-	{
-		HandleError();
-	}
+    CInstaller *installer = static_cast<CInstaller *>(p);
+    
+    try
+    {
+        installer->Next();
+    }
+    catch (Exceptions::CException &)
+    {
+        HandleError();
+    }
 };

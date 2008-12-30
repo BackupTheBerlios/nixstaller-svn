@@ -530,7 +530,7 @@ void CInstaller::Run()
 {
     CreateAbout(); // Create after everything is initialized: only then GetAboutFName() returns a valid filename
     gtk_widget_show(m_pMainWindow);
-    g_idle_add(IdleRunner, this);
+    g_timeout_add(10, TimedRunner, this);
     gtk_main();
 }
 

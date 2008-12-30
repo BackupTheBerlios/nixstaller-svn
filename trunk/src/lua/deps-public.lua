@@ -20,6 +20,7 @@ function pkg.verifydeps(bins, libs)
     install.setstatus("Verifying dependencies")
     
     bins = bins or pkg.bins
+    libs = libs or pkg.libs
     
     local success, msg = pcall(function ()
         if install.unattended then

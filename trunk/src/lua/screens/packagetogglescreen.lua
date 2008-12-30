@@ -75,8 +75,8 @@ end
 
 function pkgchoice:verify()
     local choice = self:get()
-    for _, p in pairs(pkg.packagers) do
-        if p.name() == choice then
+    for n, p in pairs(pkg.packagers) do
+        if n ~= "generic" and p.name() == choice then
             pkg.packager = p
             break
         end

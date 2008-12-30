@@ -96,6 +96,7 @@ public:
     void Run(void);
     void Cancel(void);
 
+    static void TimedRunner(void *p);
     static void AboutOKCB(Fl_Widget *, void *p) { ((CInstaller *)p)->ShowAbout(false); };
     static void ShowAboutCB(Fl_Widget *, void *p) { ((CInstaller *)p)->ShowAbout(true); };
     static void CancelCB(Fl_Widget *w, void *p);

@@ -352,30 +352,6 @@ return dep
     end
 end
 
-function LoadDep(prdir, name)
-    local path = string.format("%s/deps/%s/config.lua", prdir, name)
-    local stat, ret = pcall(dofile, path)
-    if not stat then
-        return nil, ret
-    end
-    
-    local function default(var, val)
-        if ret[var] == nil then
-            ret[var] = val
-        end
-    end
-    
-    default("full", true)
-    default("libdir", "lib/")
-    default("description", "")
-    default("libs", { })
-    default("deps", { })
-    
-    ret.name = name
-    
-    return ret
-end
-
 function ParseFullArgs()
     local ret = { fullall = false, restfull = nil, tags = { } }
     for _, o in ipairs(opts) do
@@ -602,7 +578,7 @@ function Scan()
         dep = dep or "main"
         for _, d in ipairs(deps) do
             if loadeddeps[d] == nil then
-                local ret, msg = LoadDep(prdir, d)
+                local ret, msg = loaddep(prdir, d)
                 if not ret then
                     print("WARNING: Failed to load config.lua: " .. msg)
                     loadeddeps[d] = false
@@ -1060,7 +1036,7 @@ function EditDep()
         ErrUsage("Wrong or no project directory specified.")
     end
     
-    local dep, msg = LoadDep(prdir, depname)
+    local dep, msg = loaddep(prdir, depname)
     if not dep then
         abort("Error: Failed to load config.lua: " .. msg)
     end
@@ -1106,7 +1082,7 @@ function EditDep()
         
         for dir in io.dir(string.format("%s/deps", prdir)) do
             if dir ~= dep.name then
-                local subdep = LoadDep(prdir, dir)
+                local subdep = loaddep(prdir, dir)
                 if subdep then
                     -- Dependency depends on given dep?
                     if utils.tablefind(subdep.deps, dep.name) then
@@ -1190,7 +1166,7 @@ function ListDeps()
             depmap[d][dep] = true
 
             if loadeddeps[d] == nil then
-                local ret, msg = LoadDep(prdir, d)
+                local ret, msg = loaddep(prdir, d)
                 if not ret then
                     print("WARNING: Failed to load config.lua: " .. msg)
                     loadeddeps[d] = false

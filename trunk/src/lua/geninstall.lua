@@ -367,9 +367,6 @@ function PrepareArchive()
     os.copy(confdir .. "/license", destdir)
     os.copy(confdir .. "/finish", destdir)
     
-    -- Symbol map
-    os.copy(confdir .. "/symmap", destdir)
-
     -- Some internal stuff
     RequiredCopy(ndir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/internal/utils.sh", confdir .. "/tmp")
@@ -541,55 +538,104 @@ function PrepareArchive()
     inffile:close()
     
     if pkg.enable then
+        local depmap = { }
+
         -- Add deps
         if pkg.deps then
             local stack = { pkg.deps }
-            local copied = { }
             while not utils.emptytable(stack) do
                 local deps = table.remove(stack)
                 for _, dep in ipairs(deps) do
-                    if not copied[dep] then
-                        local src = string.format("%s/deps/%s", confdir, dep)
-                        local dest = string.format("%s/tmp/deps/%s", confdir, dep)
-                        local dlfile
-                        
-                        os.mkdirrec(dest)
-                        
-                        local cfgfile = string.format("%s/config.lua", src)
-                        RequiredCopy(cfgfile, dest)
-                        
-                        if pkg.externdeps and utils.tablefind(pkg.externdeps, dep) then
-                            dlfile = io.open(string.format("%s/tmp/deps/%s/dlfiles", confdir, dep), "w")
-                            if not dlfile then
-                                ThrowError("Failed to create list file for downloadable files.")
-                            end
-                            dlfile:write("local ret = { }\n")
+                    if not depmap[dep] then
+                        local d, msg = loaddep(confdir, dep)
+                        if not d then
+                            ThrowError("Failed to load dependency: %s", msg)
                         end
-                        
-                        local dirs = GetFileDirs(src)
-                        local archdest = string.format("%s/deps", confdir)
-                        for _, d in ipairs(dirs) do
-                            local f = string.format("%s/%s_%s", dest, dep, utils.basename(d))
-                            PackDirectory(d, f)
-                            if dlfile then
-                                dlfile:write(string.format("ret[\"%s_%s\"] = \"%s\"\n", dep, utils.basename(d), io.md5(f)))
-                                -- Move archive away, but keep .sizes file
-                                if os.execute(string.format("mv %s %s", f, archdest)) ~= 0 then
-                                    ThrowError("Failed to move downloadable dependency archive.")
-                                end
-                            end
-                        end                   
-                        
-                        if dlfile then
-                            dlfile:write("return ret\n")
-                            dlfile:close()
-                        end
-                        
-                        copied[dep] = true
-                        local d = dofile(cfgfile)
+                        depmap[dep] = d
                         table.insert(stack, d.deps)
                     end
                 end
+            end
+            
+            for dep in pairs(depmap) do
+                local src = string.format("%s/deps/%s", confdir, dep)
+                local dest = string.format("%s/tmp/deps/%s", confdir, dep)
+                local dlfile
+                
+                os.mkdirrec(dest)
+                
+                local cfgfile = string.format("%s/config.lua", src)
+                RequiredCopy(cfgfile, dest)
+                
+                if pkg.externdeps and utils.tablefind(pkg.externdeps, dep) then
+                    dlfile = io.open(string.format("%s/tmp/deps/%s/dlfiles", confdir, dep), "w")
+                    if not dlfile then
+                        ThrowError("Failed to create list file for downloadable files.")
+                    end
+                    dlfile:write("local ret = { }\n")
+                end
+                
+                local dirs = GetFileDirs(src)
+                local archdest = string.format("%s/deps", confdir)
+                for _, d in ipairs(dirs) do
+                    local f = string.format("%s/%s_%s", dest, dep, utils.basename(d))
+                    PackDirectory(d, f)
+                    if dlfile then
+                        dlfile:write(string.format("ret[\"%s_%s\"] = \"%s\"\n", dep, utils.basename(d), io.md5(f)))
+                        -- Move archive away, but keep .sizes file
+                        if os.execute(string.format("mv %s %s", f, archdest)) ~= 0 then
+                            ThrowError("Failed to move downloadable dependency archive.")
+                        end
+                    end
+                end
+                
+                if dlfile then
+                    dlfile:write("return ret\n")
+                    dlfile:close()
+                end
+            end
+        end
+        
+        -- Symbol map
+        local sympath = confdir .. "/symmap"
+        if os.fileexists(sympath) then
+            os.copy(sympath, destdir)
+        elseif pkg.autosymmap then
+            local binlist = "" -- All bins/libs for symmap
+            local pathlist = ""
+            local givenpaths = { }
+            local function addbins(startpath, bins, subpath)
+                for _, b in ipairs(bins) do
+                    if subpath then
+                        b = subpath .. "/" .. b
+                    end
+                    local path = string.format("%s/files_%s_%s/%s", startpath, os.osname, os.arch, b)
+                    binlist = binlist .. " " .. path
+                    
+                    local dirp = utils.dirname(path)
+                    if not givenpaths[p] then
+                        pathlist = string.format("%s -l %s", pathlist, dirp)
+                        givenpaths[dirp] = true
+                    end
+                end
+            end
+            
+            if pkg.bins then
+                addbins(confdir, pkg.bins)
+            end
+            
+            if pkg.libs then
+                addbins(confdir, pkg.libs)
+            end
+            
+            for n, d in pairs(depmap) do
+                if d.libs and d.full then
+                    addbins(string.format("%s/deps/%s", confdir, n), d.libs, d.libdir)
+                end
+            end
+            
+            if os.execute(string.format("%s/gensyms.sh %s -d %s/tmp %s", ndir, pathlist, confdir, binlist)) ~= 0 then
+                print("WARNING: Failed to automaticly generate symbol map file.")
             end
         end
     end

@@ -200,17 +200,23 @@ Maintainer:     %s
 ]], cfg.appname, pkg.version, pkg.release, pkg.maintainer))
     
     if pkg.url then
-        install.print(string.format("URL:            %s", pkg.url))
+        install.print(string.format("URL:            %s\n", pkg.url))
     end
     
     local uninstmsg
-    if pkg.register and pkg.canregister then
+    if pkg.register and not pkg.regfailed then
+        install.print("Registrated    Yes\n")
         uninstmsg = string.format("Software can be uninstalled via system's package manager.")
     else
+        install.print("Registrated     No")
+        if pkg.regfailed then
+            install.print(" (Failed)")
+        end
+        install.print("\n")
         uninstmsg = string.format("Software can be uninstalled by running the following script:\n%s/uninstall-%s", pkg.getbindir(), pkg.name)
     end
     
-    install.print(string.format("\n\nUNINSTALLATION\n%s\n", uninstmsg))
+    install.print(string.format("\nUNINSTALLATION\n%s\n", uninstmsg))
     
     install.print("\n\nINSTALLED EXECUTABLES\n")
     for _, v in ipairs(pkg.bins) do
