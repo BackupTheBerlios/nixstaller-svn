@@ -52,7 +52,7 @@ class CInstaller: public CBaseAttInstall
     void ShowAbout(bool show);
     
     int WindowW(void) const { return 600; }
-    int WindowH(void) const { return 400; }
+    int WindowH(void) const { return 420; }
     int HeaderSpacing(void) const { return 5; }
     int ScreenSpacing(void) const { return 10; }
     int ButtonWOffset(void) const { return 10; }

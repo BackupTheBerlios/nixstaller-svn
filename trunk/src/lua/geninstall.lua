@@ -597,7 +597,7 @@ function PrepareArchive()
         end
         
         -- Symbol map
-        local sympath = confdir .. "/symmap"
+        local sympath = confdir .. "/symmap.lua"
         if os.fileexists(sympath) then
             os.copy(sympath, destdir)
         elseif pkg.autosymmap then
@@ -714,11 +714,12 @@ function CreateInstaller()
         
         if a.required then
             local optchk = string.format("has%s", n)
+            optchk = string.gsub(optchk, "%-", "%_") -- sh doesn't like dashes inside variable names
             opthandler = string.format("%s    %s=1\n", opthandler, optchk)
             -- $unattended is set by script header.
             optchecker = string.format([[
 if [ -z "$%s" -a ! -z "$unattended" ]; then
-    echo Required option \"%s\" not given. >&2
+    echo Required option "%s" not given. >&2
     MS_Help
     exit 1
 fi]], optchk, n)

@@ -19,6 +19,10 @@
 function pkg.verifydeps(bins, libs)
     install.setstatus("Verifying dependencies")
     
+    if not pkg.deps or utils.emptytable(pkg.deps) then
+        return true
+    end
+    
     bins = bins or pkg.bins
     libs = libs or pkg.libs
     

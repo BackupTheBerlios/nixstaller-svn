@@ -28,7 +28,7 @@
 // Lua Text Field Class
 // -------------------------------------
 
-CLuaTextField::CLuaTextField(const char *desc, bool wrap) : CBaseLuaWidget(desc), m_bWrap(wrap)
+CLuaTextField::CLuaTextField(const char *desc, bool wrap, const char *size) : CBaseLuaWidget(desc), m_bWrap(wrap), m_Size(size)
 {
     m_pBuffer = new Fl_Text_Buffer;
     
@@ -87,4 +87,14 @@ void CLuaTextField::DoFollow()
     // Move cursor to last line and last word
     m_pDisplay->scroll(m_pBuffer->length(), m_pDisplay->word_end(m_pBuffer->length()));
     Fl::wait(0.0); // Update screen
+}
+
+int CLuaTextField::FieldHeight(void) const
+{
+    if (m_Size == "small")
+        return 120;
+    else if (m_Size == "medium")
+        return 170;
+    else // big
+        return 220;
 }

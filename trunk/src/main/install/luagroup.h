@@ -58,7 +58,7 @@ private:
                                      TSTLVecSize e) = 0;
     virtual CBaseLuaImage *CreateImage(const char *file) = 0;
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc) = 0;
-    virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap) = 0;
+    virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap, const char *size) = 0;
     virtual CBaseLuaLabel *CreateLabel(const char *title) = 0;
     
     void AddWidget(CBaseLuaWidget *w, const char *type);

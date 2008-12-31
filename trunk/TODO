@@ -9,9 +9,6 @@ OVERALL
 - Test regular C lua libs, update notes
 - deps:
     - Check for static bins?
-    - bins field, which checks for bin compat? If yes change deputil.lua HandleCompat function generation and geninstall autosyms.
-    - symmap --> symmap.lua?
-    - gensyms.lua option to (not) compress output file
     - Better progress indication --> Remove any (debug) timeouts
     - Additional wrongdeps/wronglibs checks?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
@@ -21,31 +18,21 @@ OVERALL
     - Test templates and check if they can be full and need extra code for being full (eg fontconfig, freetype) (finished?).
     - Add description for all options (finished?)
     - Check for messages using 'library' and change (finished?)
-- genprojdir.sh:
-    - Overwrite-options and commandline options for genprojdir.sh
-    - Update genprojdir.sh post message for deps.
 - Nicer way to run apps on exit. Or atleast document it
-- utf8:
-    - Check if FLTK 1.3 is usable enough (or will be soon)
-    - Fix ncurses and perhaps others for width calculating
-    - Convert language files to utf?
-    - Convert utf to native for ncurses frontend?
-    - Neater tr() function? Document it?
 - Installer profiles?
 - Check messages like pkg enable screen which refer to a default
-- Set textfield size on demand/automaticly
 - Unattended installations
     - Check for required arguments
     - Reset cfg.unopts[].value? if not document for defaults
-    - Show LICENSE, WELCOME? and FINISH?
     - Control verbosity?
+    - Make --destdir option required? set default?
 - Move curdir lua variable to install package?
 - Mail suggestions?
+- Move pkg.verifydeps to install package? (If yes modify genprojdir.sh)
 
 
 TEST
 - MD5 code for instheader.sh, makeself.sh and generic packages.
-- Defaults for all lua config files.
 
 
 PACKAGING
@@ -95,7 +82,12 @@ TRANSLATIONS
 - verifylock() messages
 - "Reverting to generic package."
 - Check unattended installs
-
+- utf8:
+    - Check if FLTK 1.3 is usable enough (or will be soon)
+    - Fix ncurses and perhaps others for width calculating
+    - Convert language files to utf?
+    - Convert utf to native for ncurses frontend?
+- Neater tr() function? Document it?
 
 LIBSU
 - Check tmp files leaving around (caused by sh errors?)
@@ -126,7 +118,8 @@ OVERALL
 - Use locale fix from latest kdesu?
 - Better util.a configure testing?
 - Root usage: change to use privileged user? (default root)
-
+- deps:
+    - bins field, which checks for bin compat? If yes change deputil.lua HandleCompat function generation and geninstall autosyms.
 
 PACKAGING
 - More config options:
@@ -149,7 +142,6 @@ NCURSES
 
 
 GTK
-- Move main window away from base frontend class?
 
 
 FLTK

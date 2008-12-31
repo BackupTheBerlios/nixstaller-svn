@@ -271,7 +271,17 @@ int CBaseLuaGroup::LuaAddTextField(lua_State *L)
     if (lua_isboolean(L, 3))
         wrap = lua_toboolean(L, 3);
 
-    group->AddWidget(group->CreateTextField(desc, wrap), "textfield");
+    const char *size = "medium";
+    if (lua_isstring(L, 4))
+    {
+        const char *s = lua_tostring(L, 4);
+        if (!strcmp(s, "small"))
+            size = "small";
+        else if (!strcmp(s, "big"))
+            size = "big";
+    }
+    
+    group->AddWidget(group->CreateTextField(desc, wrap, size), "textfield");
     
     return 1;
 }

@@ -36,7 +36,7 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     void DoFollow(GtkTextBuffer *textbuffer, GtkTextIter *iter);
     
 public:
-    CLuaTextField(const char *desc, bool wrap);
+    CLuaTextField(const char *desc, bool wrap, const char *size);
 };
 
 #endif

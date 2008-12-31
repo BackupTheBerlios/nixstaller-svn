@@ -53,11 +53,13 @@ Maintainer      %s
     
     text:add(string.format("\nUNINSTALLATION\n%s\n", uninstmsg))
 
-    text:add("\n\nINSTALLED EXECUTABLES\n")
-    for _, v in ipairs(pkg.bins) do
-        text:add(string.format("%s/%s\n", pkg.getbindir(), v))
+    if pkg.bins then
+        text:add("\n\nINSTALLED EXECUTABLES\n")
+        for _, v in ipairs(pkg.bins) do
+            text:add(string.format("%s/%s\n", pkg.getbindir(), v))
+        end
     end
-
+    
     text:add("\n\nINSTALLED DATA FILES\n")
     utils.recursivedir(pkg.getdatadir(), function (f)
         text:add(f .. "\n")

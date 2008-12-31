@@ -162,7 +162,7 @@ for i, f in ipairs(binaries) do
 end
 
 -- Dump gathered symbol info to file
-local fname = string.format("%s/symmap", dest)
+local fname = string.format("%s/symmap.lua", dest)
 out = io.open(fname, "w")
 
 if not out then

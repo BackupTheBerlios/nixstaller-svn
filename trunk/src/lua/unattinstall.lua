@@ -127,7 +127,7 @@ if licensef then
         os.exit(0)
     end
     
-    if not haveunopt("accept-license") then
+    if cfg["accept-license"] and cfg["accept-license"].internal and not cfg["accept-license"].value then
         licensef:close()
         abort([[
 You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.]])
@@ -218,9 +218,11 @@ Maintainer:     %s
     
     install.print(string.format("\nUNINSTALLATION\n%s\n", uninstmsg))
     
-    install.print("\n\nINSTALLED EXECUTABLES\n")
-    for _, v in ipairs(pkg.bins) do
-        install.print(string.format("%s/%s\n", pkg.getbindir(), v))
+    if pkg.bins then
+        install.print("\n\nINSTALLED EXECUTABLES\n")
+        for _, v in ipairs(pkg.bins) do
+            install.print(string.format("%s/%s\n", pkg.getbindir(), v))
+        end
     end
     
     install.print("\n\nINSTALLED DATA FILES\n")

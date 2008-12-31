@@ -30,7 +30,7 @@ namespace NNCurses {
 class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
 {
     NNCurses::CTextField *m_pTextField;
-    const int m_iDefWidth, m_iDefHeight;
+    const int m_iDefWidth;
     
     virtual void Load(const char *file);
     virtual void AddText(const char *text);
@@ -38,7 +38,7 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     virtual void UpdateFollow(void);
     
 public:
-    CLuaTextField(const char *desc, bool wrap);
+    CLuaTextField(const char *desc, bool wrap, const char *size);
 };
 
 #endif

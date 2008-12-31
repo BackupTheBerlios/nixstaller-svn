@@ -16,7 +16,7 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap", curdir))
+local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap.lua", curdir))
 
 depclass = { }
 depclass.__index = depclass

@@ -24,9 +24,16 @@
 // Lua Text Field Class
 // -------------------------------------
 
-CLuaTextField::CLuaTextField(const char *desc, bool wrap) : CBaseLuaWidget(desc), m_iDefWidth(15), m_iDefHeight(5)
+CLuaTextField::CLuaTextField(const char *desc, bool wrap, const char *size) : CBaseLuaWidget(desc), m_iDefWidth(15)
 {
-    AddWidget(m_pTextField = new NNCurses::CTextField(m_iDefWidth, m_iDefHeight, wrap));
+    int height;
+    if (!strcmp(size, "small"))
+        height = 4;
+    else if (!strcmp(size, "medium"))
+        height = 6;
+    else
+        height = 8;
+    AddWidget(m_pTextField = new NNCurses::CTextField(m_iDefWidth, height, wrap));
     m_pTextField->SetMaxLength(MaxSize(), ClearSize());
 }
 

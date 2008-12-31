@@ -29,7 +29,7 @@ GtkWidget *CreateButton(GtkWidget *label, const gchar *image=NULL, bool fromstoc
 void SetButtonStock(GtkWidget *button, const gchar *image);
 void SetWidgetVisible(GtkWidget *w, bool v);
 GtkWidget *CreateDirChooser(const char *title);
-inline int MaxScreenHeight(void) { return 300; }
+inline int MaxScreenHeight(void) { return 320; }
 inline int WidgetGroupSpacing(void) { return 10; }
 inline int MaxWidgetHeight(void) { return MaxScreenHeight() - (2*WidgetGroupSpacing()); }
 bool ContainerEmpty(GtkContainer *c);

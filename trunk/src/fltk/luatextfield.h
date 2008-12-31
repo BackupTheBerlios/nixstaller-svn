@@ -31,6 +31,7 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     Fl_Text_Buffer *m_pBuffer;
     Fl_Text_Display *m_pDisplay;
     bool m_bWrap;
+    std::string m_Size;
     
     virtual void Load(const char *file);
     virtual void AddText(const char *text);
@@ -40,12 +41,11 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     virtual int CoreRequestHeight(int maxw) { return FieldHeight(); }
     virtual void UpdateSize(void);
     
-    int FieldHeight(void) const { return 125; }
-    
     void DoFollow(void);
+    int FieldHeight(void) const;
     
 public:
-    CLuaTextField(const char *desc, bool wrap);
+    CLuaTextField(const char *desc, bool wrap, const char *size);
 };
 
 #endif

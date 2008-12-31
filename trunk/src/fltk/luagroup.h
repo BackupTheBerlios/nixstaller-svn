@@ -47,7 +47,7 @@ class CLuaGroup: public CBaseLuaGroup
                                      TSTLVecSize e);
     virtual CBaseLuaImage *CreateImage(const char *file);
     virtual CBaseLuaProgressBar *CreateProgressBar(const char *desc);
-    virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap);
+    virtual CBaseLuaTextField *CreateTextField(const char *desc, bool wrap, const char *size);
     virtual CBaseLuaLabel *CreateLabel(const char *title);
     
     int WidgetSpacing(void) const { return 10; }

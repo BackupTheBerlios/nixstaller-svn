@@ -32,6 +32,8 @@
 - Additional precision for progressbars (only allowed integers)
 - Moved lots of install code to Lua
 - Summaryscreen now shows if package was registrated and if it failed to do so
+- Increased default lua textfield size and made it configurable (suggested by Markus Fischer)
+- --overwrite and --rm-existing options for genprojdir.sh.
 
 
 0.3 --> 0.4

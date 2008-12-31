@@ -25,12 +25,19 @@
 // Lua Text Field Class
 // -------------------------------------
 
-CLuaTextField::CLuaTextField(const char *desc, bool wrap) : CBaseLuaWidget(desc)
+CLuaTextField::CLuaTextField(const char *desc, bool wrap, const char *size) : CBaseLuaWidget(desc)
 {
     GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled), GTK_SHADOW_ETCHED_IN);
-    gtk_widget_set_size_request(scrolled, -1, 150);
+    
+    if (!strcmp(size, "small"))
+        gtk_widget_set_size_request(scrolled, -1, 125);
+    else if (!strcmp(size, "medium"))
+        gtk_widget_set_size_request(scrolled, -1, 175);
+    else // big
+        gtk_widget_set_size_request(scrolled, -1, 225);
+    
     gtk_widget_show(scrolled);
     gtk_container_add(GTK_CONTAINER(GetBox()), scrolled);
     
