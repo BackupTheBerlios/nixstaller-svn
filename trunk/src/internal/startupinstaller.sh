@@ -21,6 +21,18 @@
 
 . "./utils.sh"
 
+# Uses edelta to reconstruct frontend binaries
+# $1: libc directory to be used(for lzma and edelta)
+# $2: source file
+# $3: diff file
+edelta()
+{
+    unlzma "$3" "$1"
+    
+    mv "$3" "$3.tmp"
+    "$1/edelta" -q patch "$2" "$3" "$3.tmp" >/dev/null
+}
+
 # Unpacks $1.lzma to lzma and removes $1.lzma
 # $1: File to handle
 # $2: libc directory to be used for lzma
@@ -29,6 +41,45 @@ unlzma()
     if [ $ARCH_TYPE = "lzma" -a ! -z "$1" -a -f "$1".lzma ]; then
         "${2}/lzma-decode" "${1}.lzma" "$1" 2>&1 >/dev/null && rm "${1}.lzma"
     fi
+}
+
+# Prepares frontend binary (extracting and patching)
+# $1: libc directory for used binaries
+# $2: frontend
+prepbin()
+{
+    BIN="$1/$2"
+    PATCHORDER="$BIN"
+    TOPBIN=
+    
+    while [ ! -z "$BIN" ]
+    do
+        BASE=`awk '$1=="'"$BIN"'"{print $2}' ./bin/deltas`
+        
+        if [ -z "$BASE" ]; then
+            # Top bin
+            TOPBIN="$BIN"
+            BIN=
+        else
+            BIN="$BASE"
+            PATCHORDER="$BASE $PATCHORDER"
+        fi
+    done
+    
+    PREV=
+    for BIN in $PATCHORDER
+    do
+        if [ ! -f "$BIN" ]; then # Not prepared yet?
+            if [ "$BIN" = "$TOPBIN" ]; then
+                unlzma "$BIN" "$1"
+            else
+                unlzma "$BIN.diff" "$1"
+                edelta "$1" "$PREV" "$BIN.diff"
+                mv "$BIN.diff" "$BIN"
+            fi
+        fi
+        PREV="$BIN"
+    done
 }
 
 # $1: Base directory
@@ -76,17 +127,7 @@ configure()
     done
 }
 
-# Uses edelta to reconstruct frontend binaries
-# $1: libc directory to be used(for lzma and edelta)
-# $2: source file
-# $3: diff file
-edelta()
-{
-    unlzma "$3" "$1"
-    
-    mv "$3" "$3.tmp"
-    "$1/edelta" -q patch "$2" "$3" "$3.tmp" >/dev/null
-}
+
 
 # Check which archive type to use
 ARCH_TYPE=`cat info`
@@ -95,11 +136,6 @@ if [ -z "$ARCH_TYPE" ]; then
 fi
 
 configure $*
-
-# Get source frontend to use for edelta
-NCURS_SRC=`awk '$1=="ncurs"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
-FLTK_SRC=`awk '$1=="fltk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
-GTK_SRC=`awk '$1=="gtk"{print $2}' ./bin/$CURRENT_OS/$CURRENT_ARCH/edelta_src`
 
 touch frontendstarted # Frontend removes this file if it's started
 
@@ -119,23 +155,13 @@ do
             continue
         fi
     
-        case $FR in
-            "gtk") ED_SRC=$GTK_SRC ;;
-            "fltk") ED_SRC=$FLTK_SRC ;;
-            "ncurs") ED_SRC=$NCURS_SRC ;;
-        esac
-        
         [ $ARCH_TYPE != "lzma" ] || haslibs "${LC}/lzma-decode" || continue
         haslibs "${LC}/edelta" || continue
 
-        unlzma $ED_SRC "${LC}"
-        unlzma "${LC}"/$FR "${LC}"
+        prepbin "$LC" "$FR"
         
         if [ -f "${LC}/$FR" ]; then
             FRBIN="${LC}/$FR"
-            if [ ! -z "$ED_SRC" -a $FRBIN != $ED_SRC ]; then
-                edelta ${LC} $ED_SRC $FRBIN
-            fi
             
             # deltas and lzma packed bins probably aren't executable yet
             # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file

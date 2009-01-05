@@ -1,38 +1,25 @@
 OVERALL
-- Add trap in geninstall.sh which cleans stuff?
-- Use deltas <--> patches for different frontends, OS'es, archs
-- Modify Makeself
-    - Remove some illogical commandline options (finished?)
 - libstdcxx:
     - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
 - Test regular C lua libs, update notes
 - deps:
-    - Check for static bins?
-    - Better progress indication --> Remove any (debug) timeouts
     - Additional wrongdeps/wronglibs checks?
 - Check desktopentries in Ubuntu and destdir for SelectDirScreen
 - Dep templates:
-    - For list: LSB Compliance, others? --> LSB tag?
-    - More templates?
     - Test templates and check if they can be full and need extra code for being full (eg fontconfig, freetype) (finished?).
     - Add description for all options (finished?)
     - Check for messages using 'library' and change (finished?)
 - Nicer way to run apps on exit. Or atleast document it
 - Installer profiles?
-- Check messages like pkg enable screen which refer to a default
-- Unattended installations
-    - Check for required arguments
-    - Reset cfg.unopts[].value? if not document for defaults
-    - Control verbosity?
-    - Make --destdir option required? set default?
-- Move curdir lua variable to install package?
 - Mail suggestions?
-- Move pkg.verifydeps to install package? (If yes modify genprojdir.sh)
+    - Bold labels
+    - Change banners (or atleast screen titles)
 
 
 TEST
 - MD5 code for instheader.sh, makeself.sh and generic packages.
+- New delta code (mainly when new bins are ready and asserts)
 
 
 PACKAGING
@@ -66,14 +53,19 @@ DOCS
 - GTK/Pango templates
 - Apple stuff
 - utils.emptystring()? (CHANGELOG)
-- Unattended installs (cfg.unopts, cfg.unattended etc)
 - verifydeps uses setstatus
 - os.geteuid()? (CHANGELOG)
 - utils.tableappend()
+- Unattended installations
+    - Reset cfg.unopts[].value? if not document for defaults
+    - --destdir option: mention that defaults have to be checked
+- deps: main libs are not checked
+- appicon (XPM only)
 
 
 RELEASE
 - Remove/disable asserts in lua code
+- Reenable MD5 checking for InitDeltaBins()
 
 
 TRANSLATIONS
@@ -88,6 +80,8 @@ TRANSLATIONS
     - Convert language files to utf?
     - Convert utf to native for ncurses frontend?
 - Neater tr() function? Document it?
+- Modified packtogglescreen message
+
 
 LIBSU
 - Check tmp files leaving around (caused by sh errors?)
@@ -113,6 +107,7 @@ LATER
 -----------------------------------------------------------------------
 
 OVERALL
+- Add trap in geninstall.sh which cleans stuff?
 - Qt/KDE frontend
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
@@ -120,6 +115,14 @@ OVERALL
 - Root usage: change to use privileged user? (default root)
 - deps:
     - bins field, which checks for bin compat? If yes change deputil.lua HandleCompat function generation and geninstall autosyms.
+    - Better progress indication?
+- Dep templates:
+    - For list: LSB Compliance, others? --> LSB tag?
+    - More templates?
+- Unattended installations
+    - Control verbosity?
+- Move curdir lua variable to install package?
+
 
 PACKAGING
 - More config options:

@@ -41,6 +41,10 @@
 #include <FL/fl_draw.H>
 #include <FL/x.H>
 
+#ifndef __APPLE__
+#include <X11/xpm.h>
+#endif
+
 // -------------------------------------
 // Main installer screen
 // -------------------------------------
@@ -537,8 +541,25 @@ void CInstaller::Init(int argc, char **argv)
         }
     }
     
+#ifndef __APPLE__
+    Pixmap p, m;
+    char *file = CreateText(GetAppIconFName()); // XpmReadFileToPixmap wants a char*
+    XpmReadFileToPixmap(fl_display, DefaultRootWindow(fl_display), file, &p, &m, NULL);
+    m_pMainWindow->icon((char *)p);
+#endif
+
     m_pMainWindow->end();
     m_pMainWindow->show(argc, argv);
+    
+#ifndef __APPLE__
+    // From: http://www.mail-archive.com/fltk@easysw.com/msg02863.html
+    XWMHints *hints;
+    hints = XGetWMHints(fl_display, fl_xid(m_pMainWindow));
+    hints->icon_pixmap = p;
+    hints->icon_mask = m;
+    hints->flags = IconPixmapHint | IconMaskHint;
+    XSetWMHints(fl_display, fl_xid(m_pMainWindow), hints);
+#endif
 }
 
 void CInstaller::Run()

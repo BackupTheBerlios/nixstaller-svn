@@ -32,6 +32,7 @@ class CBaseInstall: public CMain
 
 protected:
     const char *GetLogoFName(void);
+    const char *GetAppIconFName(void);
     const char *GetAboutFName(void);
     const char *GetDefaultPath(void) const { return "/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
 

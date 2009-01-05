@@ -34,6 +34,10 @@
 - Summaryscreen now shows if package was registrated and if it failed to do so
 - Increased default lua textfield size and made it configurable (suggested by Markus Fischer)
 - --overwrite and --rm-existing options for genprojdir.sh.
+- New and more optimized binary delta code, causing less size overhead from binaries.
+- "Uncompressing nixstaller" message changed to "Uncompressing Installer for <cfg.appname>" (based on suggestion by Markus Fischer)
+- Improved default logo
+- Added "application icon" supports, which is configurable.
 
 
 0.3 --> 0.4

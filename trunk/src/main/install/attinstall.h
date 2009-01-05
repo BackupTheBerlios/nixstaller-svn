@@ -65,8 +65,6 @@ protected:
     void ActivateScreen(CBaseScreen *screen);
     
 public:
-    std::string m_szBinDir;
-
     CBaseAttInstall(void);
     virtual ~CBaseAttInstall(void) { CleanPasswdString(m_szPassword); };
 

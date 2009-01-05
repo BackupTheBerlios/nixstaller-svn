@@ -467,7 +467,6 @@ function collectlibinfo(infomap, bin, mainlibs, deps)
                 infomap[lib].native = false
                 infomap[lib].path = mainlibs[lib]
                 infomap[lib].deps = pkg.deps
-                print("Overrided mainlib:", lib)
             else
                 local dep = deps and getdepfromlib(deps, lib)
                 if (dep and dep.Required and dep:Required() and dep.full) or not path then
@@ -627,7 +626,6 @@ function verifysyms(infomap, bin)
                             if not infomap[supposedlib] or infomap[supposedlib].native then
                                 depprocess.wronglibs[supposedlib] = depprocess.wronglibs[supposedlib] or { }
                                 depprocess.wronglibs[supposedlib].incompatlib = true
-                                print("incompatlib:", supposedlib, b, sym)
                             elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.HandleCompat or
                                     not infomap[supposedlib].dep:HandleCompat(supposedlib)) then
                                 depprocess.wrongdeps[infomap[supposedlib].dep] = depprocess.wrongdeps[infomap[supposedlib].dep] or { }

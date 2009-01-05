@@ -337,6 +337,12 @@ function loadconfig(path)
         error("Wrong mode specified!", 0)
     end
     
+    for _, fr in ipairs(cfg.frontends) do
+        if fr ~= "fltk" and fr ~= "gtk" and fr ~= "ncurses" then
+            error("One or more invalid frontend(s) specified!")
+        end
+    end
+    
     for n, o in pairs(cfg.unopts) do
         if o.opttype then
             if o.opttype ~= "string" and o.opttype ~= "list" then

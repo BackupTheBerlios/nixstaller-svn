@@ -17,8 +17,6 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include <libgen.h>
-
 #include "main/install/attinstall.h"
 #include "main/install/basescreen.h"
 #include "main/install/luacfgmenu.h"
@@ -100,9 +98,6 @@ void CBaseAttInstall::AddScreen(CBaseScreen *screen)
 
 void CBaseAttInstall::Init(int argc, char **argv)
 {   
-    m_szBinDir = dirname(CreateText(argv[0]));
-    NLua::LuaSet(m_szBinDir, "bindir");
-    
     CBaseInstall::Init(argc, argv); // Init main, will also read config files
     
     lua_pushlightuserdata(NLua::LuaState, this);

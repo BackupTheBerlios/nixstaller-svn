@@ -19,6 +19,8 @@
 
 #include <sys/stat.h>
 
+#include <libgen.h>
+
 #include "main/install/install.h"
 #include "main/lua/lua.h"
 #include "main/lua/luafunc.h"
@@ -130,6 +132,13 @@ const char *CBaseInstall::GetLogoFName()
     return CreateText("%s/%s", GetOwnDir().c_str(), ret.c_str());
 }
 
+const char *CBaseInstall::GetAppIconFName()
+{
+    std::string ret = "appicon.xpm"; // Default
+    NLua::LuaGet(ret, "appicon", "cfg");
+    return CreateText("%s/%s", GetOwnDir().c_str(), ret.c_str());
+}
+
 const char *CBaseInstall::GetAboutFName()
 {
     return CreateText("%s/about", GetOwnDir().c_str());
@@ -164,6 +173,7 @@ void CBaseInstall::Update()
 
 void CBaseInstall::Init(int argc, char **argv)
 {
+    NLua::LuaSet(dirname(CreateText(argv[0])), "bindir");
     CMain::Init(argc, argv);
     NLua::LuaGet(m_szCurLang, "defaultlang", "cfg");
     UpdateLanguage();

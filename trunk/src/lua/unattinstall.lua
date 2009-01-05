@@ -136,28 +136,33 @@ You need to accept to license agreement in order to install this software. Use t
     licensef:close()
 end
 
--- Handle args set by pkg.addpkgunopts()
-if haveunopt("destdir") then
-    install.destdir = cfg.unopts["destdir"].value
+if pkg.enable then
+    -- Handle args set by pkg.addpkgunopts()
+    if haveunopt("datadir") then
+        pkg.destdir = cfg.unopts["datadir"].value
+        pkg.setdestdir = true
+    end
+    if haveunopt("bindir") then
+        pkg.bindir = cfg.unopts["bindir"].value
+        pkg.setbindir = true
+    end
+    if haveunopt("register") then
+        pkg.register = true
+    end
+    if haveunopt("no-register") then
+        pkg.register = false
+    end
+    checkunpkgman()
 end
-if haveunopt("datadir") then
-    pkg.destdir = cfg.unopts["datadir"].value
-    pkg.setdestdir = true
-end
-if haveunopt("bindir") then
-    pkg.bindir = cfg.unopts["bindir"].value
-    pkg.setbindir = true
-end
-if haveunopt("register") then
-    pkg.register = true
-end
-if haveunopt("no-register") then
-    pkg.register = false
-end
-checkunpkgman()
 
 if os.fileexists("config/run.lua") then
     loadrun("config")
+    
+    -- Need to do this here as loadrun resets install.destdir
+    if haveunopt("destdir") then
+        install.destdir = cfg.unopts["destdir"].value
+    end
+    
     if UnattendedInit then
         UnattendedInit()
     end

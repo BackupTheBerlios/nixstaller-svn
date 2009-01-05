@@ -400,12 +400,11 @@ EOF
 function UnattendedInit()
     -- This function is called as soon as an unattended installation is started.
     
-    -- The destination directory for the installation files. The --destdir option lets the user
-    -- change this variable.
-    install.destdir = cfg.unopts["destdir"].value
-    
-    -- Installation screens to show (in given order). Custom screens should be placed here.
-    install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
+    -- Set install.destdir to a default incase the user did not gave then --destdir
+    -- option (remove this if cfg.adddestunopt() is not called in config.lua!).
+    if not cfg.unopts["destdir"].value then
+        install.destdir = os.getenv("HOME") -- Default directory
+    end
 end
 EOF
         fi
@@ -445,7 +444,7 @@ EOF
     else
         cat << EOF
 function Install()
-    - This function is called as soon as the installation starts (for attended installs,
+    -- This function is called as soon as the installation starts (for attended installs,
     -- when the 'InstallScreen' is shown).
     
     -- This function extracts the files to 'install.destdir'.
@@ -508,13 +507,17 @@ EOF
 
 -- Commandline options for unattended installations
 
--- Option to set install.destdir
-cfg.adddestunopt()
-
--- Uncomment the next line to add license options. This will also force the user to
--- accept the license.
+-- Uncomment the next line to add license options. This will also make sure
+-- that the user has to accept the license.
 -- cfg.addlicenseunopts()
 EOF
+        if [ -z "$GENPKG" ]; then
+            cat >> ${TARGETDIR}/config.lua  << EOF
+
+-- Option to set install.destdir
+cfg.adddestunopt()
+EOF
+        fi
     fi
 }
 

@@ -430,9 +430,8 @@ void CInstaller::Init(int argc, char **argv)
 {
     const int windoww = 600, windowh = 400;
     
-    GtkWidget *mainwin = m_pMainWindow;
-    g_signal_connect(G_OBJECT(mainwin), "delete_event", G_CALLBACK(DeleteCB), this);
-    gtk_window_set_default_size(GTK_WINDOW(mainwin), windoww, windowh);
+    g_signal_connect(G_OBJECT(m_pMainWindow), "delete_event", G_CALLBACK(DeleteCB), this);
+    gtk_window_set_default_size(GTK_WINDOW(m_pMainWindow), windoww, windowh);
     
     GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
 
@@ -441,12 +440,15 @@ void CInstaller::Init(int argc, char **argv)
     InitButtonSection(vbox);
 
     gtk_widget_show_all(vbox);
-    gtk_container_add(GTK_CONTAINER(mainwin), vbox);
+    gtk_container_add(GTK_CONTAINER(m_pMainWindow), vbox);
 
     CBaseAttInstall::Init(argc, argv);
     
     // Logo might be set in lua config, so load it after init
     gtk_image_set_from_file(GTK_IMAGE(m_pLogo), GetLogoFName());
+    
+    // Same for appicon...
+    gtk_window_set_default_icon_from_file(GetAppIconFName(), NULL);
     
     // Activate first screen
     gint page = 0;

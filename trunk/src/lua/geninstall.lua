@@ -257,6 +257,140 @@ function GetFileDirs(basedir)
     return ret
 end
 
+function GetAllBins(path, bins)
+    local allbins = { }
+    local function getbins(path) -- Gets bins from all highest sub directories
+        for f in io.dir(path) do
+            local p = path .. "/" .. f
+            if os.isdir(p) then
+                getbins(p)
+            elseif utils.tablefind(bins, f) then
+                table.insert(allbins, p)
+            end
+        end
+    end
+    
+    -- Get all binaries
+    getbins(path)
+    return allbins
+end
+
+function InitDeltaBins()
+    local path = string.format("%s/bin/bindeltas.lua", ndir)
+    if os.fileexists(path) then
+        local regen = false
+        if not pcall(dofile, path) then
+            print("WARNING: Failed to load bin delta file, regenerating...")
+            regen = true
+        elseif not binsums or not deltasizes then
+            print("WARNING: Incorrect bin delta file, regenerating...")
+            regen = true
+        elseif false then -- UNDONE: Remove!
+            for bin, sum in pairs(binsums) do
+                if io.md5(bin) ~= sum then
+                    print("WARNING: One or more binaries changed since last time, regenerating bin delta file...")
+                    regen = true
+                    break
+                end
+            end
+        end
+        
+        if not regen then
+            return
+        end
+    end
+    -- Generate new one
+    
+    local allbins = GetAllBins(ndir .. "/bin", { "fltk", "ncurs", "gtk" })
+    
+    -- Create big map, containing all possible delta sizes for every bin
+    local sizemap = { }
+    local tmpfile = os.tmpname()
+    for _, base in ipairs(allbins) do
+        for _, bin in ipairs(allbins) do
+            if bin ~= base then
+                os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s\"", EdeltaBin, base, bin, tmpfile))
+                sizemap[bin] = sizemap[bin] or { }
+                sizemap[bin][base] = os.filesize(tmpfile)
+            end
+        end
+    end
+    os.remove(tmpfile)
+    
+    -- Store results
+    local out, msg = io.open(path, "w")
+    if not out then
+        ThrowError("Failed to create bin delta file: %s", msg)
+    end
+    
+    out:write(string.format([[
+-- Automaticly generated on %s by geninstall.lua.
+deltasizes = { }
+]], os.date()))
+    
+    for bin, bases in pairs(sizemap) do
+        out:write(string.format("deltasizes[\"%s\"] = { }\n", bin))
+        for b, s in pairs(bases) do
+            out:write(string.format("deltasizes[\"%s\"][\"%s\"] = %d\n", bin, b, s))
+        end
+    end
+    
+    out:write("binsums = { }\n")
+    for _, bin in ipairs(allbins) do
+        out:write(string.format("binsums[\"%s\"] = \"%s\"\n", bin, io.md5(bin)))
+    end
+    
+    out:close()
+end
+
+function GetOptDeltas(binlist)
+    local topbin
+    local optdeltas = { }
+    local stack = { binlist }
+    while true do
+        local bins = table.remove(stack)
+        local opts = { }
+        
+        for _, bin in ipairs(bins) do
+            for base, s in pairs(deltasizes[bin]) do
+                if (not opts[bin] or opts[bin].size > s) and utils.tablefind(bins, base) then
+                    opts[bin] = opts[bin] or { }
+                    opts[bin].size = s
+                    opts[bin].base = base
+                end
+            end
+        end
+        
+        local newbins = { }
+        for bin, ideal in pairs(opts) do
+            if opts[ideal.base] and opts[ideal.base].base == bin then -- Already got sub as base?
+                local cursizediff = os.filesize(bin) - ideal.size
+                local othersizediff = os.filesize(ideal.base) - opts[ideal.base].size
+                if cursizediff <= othersizediff then
+                    -- Current is fine, clear other
+                    opts[ideal.base] = nil
+                    table.insert(newbins, ideal.base)
+                else
+                    -- Other one is better, clear current
+                    opts[bin] = nil
+                    table.insert(newbins, bin)
+                end
+            end
+        end
+        
+        utils.tablemerge(optdeltas, opts)
+    
+        if not utils.emptytable(newbins) then
+            table.insert(stack, newbins)
+        else
+            assert(#bins == 1)
+            topbin = bins[1]
+            break
+        end
+    end
+    return optdeltas, topbin
+end
+
 function LoadPackage()
     if not os.fileexists(confdir .. "/package.lua") then
         return
@@ -338,6 +472,8 @@ function Init()
         ThrowError("Could not find a suitable edelta encoder")
     end
     
+    InitDeltaBins()
+    
 print(string.format([[
 Configuration:
 ---------------------------------
@@ -350,8 +486,9 @@ Installer name: %s
      Frontends: %s
      Intro pic: %s
           Logo: %s
+       Appicon: %s
 ---------------------------------
-]], outname, StrPack(cfg.targetos), StrPack(cfg.targetarch), cfg.archivetype, StrPack(cfg.languages), confdir, StrPack(cfg.frontends), cfg.intropic or "None", cfg.logo or "Default"))
+]], outname, StrPack(cfg.targetos), StrPack(cfg.targetarch), cfg.archivetype, StrPack(cfg.languages), confdir, StrPack(cfg.frontends), cfg.intropic or "None", cfg.logo or "Default", cfg.appicon or "Default"))
 end
 
 -- Creates directory layout for installer archive
@@ -427,85 +564,91 @@ function PrepareArchive()
     
     print("Preparing/copying frontend binaries")
     
-    -- Copy all specified frontends for every given OS/ARCH and every available libc version
-    for _, OS in pairs(cfg.targetos) do
-        for _, ARCH in pairs(cfg.targetarch) do
-            local osdir = string.format("%s/bin/%s/%s", ndir, OS, ARCH)
-            if (not os.fileexists(osdir)) then
+    local binlist, frlist = { }, { }
+    local copybins = { "edelta", "surunner" }
+    
+    if cfg.archivetype == "lzma" then
+        table.insert(copybins, "lzma-decode")
+    end
+    
+    local copyfr = { }
+    for _, fr in ipairs(cfg.frontends) do
+        if fr == "ncurses" then
+            table.insert(copyfr, "ncurs")
+        else
+            table.insert(copyfr, fr)
+        end
+    end
+    
+    for _, OS in ipairs(cfg.targetos) do
+        for _, ARCH in ipairs(cfg.targetarch) do
+            local dir = string.format("%s/bin/%s/%s", ndir, OS, ARCH)
+            if not os.fileexists(dir) then
                 print(string.format("Warning: No frontends for %s/%s", OS, ARCH))
             else
-                local fr_diff_src = { }
-                
-                for LC in io.dir(osdir) do
-                    local lcpath = osdir .. "/" .. LC
-                    if (string.find(LC, "^libc") and os.isdir(lcpath)) then
-                        for _, FR in pairs(cfg.frontends) do
-                            local frfound = false
-                            local binname
-                            
-                            if (FR == "fltk") then
-                                binname = "fltk"
-                            elseif (FR == "ncurses") then
-                                binname = "ncurs"
-                            elseif (FR == "gtk") then
-                                binname = "gtk"
-                            else
-                                ThrowError("Unknown frontend: %s", FR)
-                            end
-                            
-                            binpath = string.format("%s/%s", lcpath, binname)
-                            if os.fileexists(binpath) then
-                                local destpath = string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC)
-                                os.mkdirrec(destpath)
-                                
-                                if not fr_diff_src[binname] then
-                                    fr_diff_src[binname] = binpath
-                                    
-                                    local ed_src = io.open(string.format("%s/tmp/bin/%s/%s/edelta_src", confdir, OS, ARCH), "a")
-                                    ed_src:write(string.format("%s bin/%s/%s/%s/%s\n", binname, OS, ARCH, LC, binname))
-                                    ed_src:close()
-
-                                    if (cfg.archivetype == "lzma") then
-                                        if os.execute(string.format("\"%s\" e \"%s\" \"%\s/%s.lzma\" 2>/dev/null", LZMABin,
-                                                    binpath, destpath, binname)) == 0 then
-                                            frfound = true
-                                        end
-                                    else
-                                        if os.copy(binpath, destpath) ~= nil then
-                                            frfound = true
-                                        end
-                                    end
-                                else
-                                    local destbin = destpath .. "/" .. binname
-                                    
-                                    if os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s\"", EdeltaBin,
-                                                                fr_diff_src[binname], binpath, destbin)) == 0 then
-                                        frfound = true
-                                    end
-                                    
-                                    if (cfg.archivetype == "lzma") then
-                                        os.execute(string.format("\"%s\" e \"%s\" \"%s\" 2>/dev/null", LZMABin,
-                                                destbin, destbin .. ".lzma"))
-                                        os.remove(destbin)
-                                    end
-                                end
-                            end
-                            
-                            if not frfound then
-                                print(string.format("Warning: no frontend '%s' found for %s/%s/%s",
-                                                    FR, OS, ARCH, LC))
-                            end
-                        end
-                    end
-                    if (cfg.archivetype == "lzma") then
-                        RequiredCopy(lcpath .. "/lzma-decode", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
-                    end
-                    RequiredCopy(lcpath .. "/edelta", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
-                    RequiredCopy(lcpath .. "/surunner", string.format("%s/tmp/bin/%s/%s/%s", confdir, OS, ARCH, LC))
-                end
+                utils.tableappend(binlist, GetAllBins(dir, copybins))
+                utils.tableappend(frlist, GetAllBins(dir, copyfr))
             end
         end
     end
+    
+    -- Copy all helper bins
+    for _, bin in ipairs(binlist) do
+        local relbinpath = string.gsub(bin, "^.*/bin", "bin")
+        local destpath = string.format("%s/tmp/%s", confdir, relbinpath)
+        os.mkdirrec(utils.dirname(destpath))
+        RequiredCopy(bin, destpath)
+    end
+    
+    -- Find optimal delta paths
+    local optdeltas, topbin = GetOptDeltas(frlist)
+    os.mkdir(confdir .. "/tmp/bin")
+    local deltafile = io.open(string.format("%s/tmp/bin/deltas", confdir), "w")
+    
+    if not deltafile then
+        ThrowError("Failed to open delta file")
+    end
+    
+    -- Copy and prepare all frontends
+    for _, bin in ipairs(frlist) do
+        local relbinpath = string.gsub(bin, "^.*/bin", "bin")
+        local destpath = string.format("%s/tmp/%s", confdir, relbinpath)
+        local binname = utils.basename(bin)
+        
+        os.mkdirrec(utils.dirname(destpath))
+
+        if optdeltas[bin] then
+            local relbase = string.gsub(optdeltas[bin].base, "^.*/bin", "bin")
+            deltafile:write(string.format("%s %s\n", relbinpath, relbase))
+        end
+
+        if not optdeltas[bin] then -- Top level bin?
+            if cfg.archivetype == "lzma" then
+                if os.execute(string.format("\"%s\" e \"%s\" \"%s.lzma\" 2>/dev/null", LZMABin,
+                            bin, destpath)) ~= 0 then
+                    ThrowError("Failed to pack binary %s", relbinpath)
+                end
+            else
+                RequiredCopy(bin, destpath)
+            end
+        else
+            local base = optdeltas[bin].base
+            if os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s.diff\"", EdeltaBin,
+                                        base, bin, destpath)) ~= 0 then
+                ThrowError("Failed to diff binary: %s", relbinpath)
+            end
+            
+            if cfg.archivetype == "lzma" then
+                if os.execute(string.format("\"%s\" e \"%s.diff\" \"%s.diff.lzma\" 2>/dev/null", LZMABin,
+                            destpath, destpath)) ~= 0 then
+                    ThrowError("Failed to pack binary %s", relbinpath)
+                end
+                os.remove(destpath)
+            end
+        end
+    end
+    
+    deltafile:close()
     
     -- Intro picture; for backward compatibility we also check the main project dir
     if cfg.intropic ~= nil then
@@ -518,15 +661,19 @@ function PrepareArchive()
     end
 
     if cfg.logo ~= nil then
-        ret, msg = os.copy(string.format("%s/files_extra/%s" , confdir, cfg.logo), string.format("%s/tmp/", confdir))
-        if ret == nil then
-            print(string.format("Warning could not copy logo: %s", msg))
-        end
+        RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.logo), string.format("%s/tmp/", confdir))
     else
         -- Default logo
         RequiredCopy(ndir .. "/src/img/installer.png", confdir .. "/tmp")
     end
     
+    if cfg.appicon ~= nil then
+        RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.appicon), string.format("%s/tmp/", confdir))
+    else
+        -- Default icon
+        RequiredCopy(ndir .. "/src/img/appicon.xpm", confdir .. "/tmp")
+    end
+
     -- Internal config file(only stores archive type for now)
     local inffile, msg = io.open(string.format("%s/tmp/info", confdir), "w")
 
@@ -634,7 +781,7 @@ function PrepareArchive()
                 end
             end
             
-            if os.execute(string.format("%s/gensyms.sh %s -d %s/tmp %s", ndir, pathlist, confdir, binlist)) ~= 0 then
+            if os.execute(string.format("%s/gensyms.sh %s -d %s %s", ndir, pathlist, destdir, binlist)) ~= 0 then
                 print("WARNING: Failed to automaticly generate symbol map file.")
             end
         end
@@ -745,7 +892,8 @@ fi]], optchk, n)
         end
     end
     
-    os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"nixstaller\" sh ./startupinstaller.sh > /dev/null 2>&1", ndir, ndir, nixstopts, confdir, outname))
+    local label = string.format("Installer for %s", cfg.appname)
+    os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"%s\" sh ./startupinstaller.sh > /dev/null 2>&1", ndir, ndir, nixstopts, confdir, outname, label))
 end
 
 CheckArgs()
