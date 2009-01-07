@@ -39,7 +39,28 @@ void CLuaWidget::CoreSetTitle()
 {
     if (!GetTitle().empty())
     {
-        gtk_label_set(GTK_LABEL(m_pTitle), GetTranslation(GetTitle().c_str()));
+        const char *tr = GetTranslation(GetTitle().c_str());
+        gchar *t = g_markup_escape_text(tr, strlen(tr)); // glib BUG?: -1 doesn't work as auto size
+        const char *markup = t;
+        
+        // Update style
+        if (LabelBold())
+            markup = CreateText("<b>%s</b>", markup);
+        
+        if (LabelItalic())
+            markup = CreateText("<i>%s</i>", markup);
+        
+        // Update size
+        switch (LabelSize())
+        {
+            case LABEL_SMALL: markup = CreateText("<small>%s</small>", markup); break;
+            case LABEL_BIG: markup = CreateText("<big>%s</big>", markup); break;
+            default: break; // Go away warning
+        }
+        
+        gtk_label_set_markup(GTK_LABEL(m_pTitle), markup);
+        g_free(t);
+
         SetMaxWidth(m_iMaxWidth); // Need to update this with new text
         gtk_widget_show(m_pTitle);
         UpdateScreenLayout();

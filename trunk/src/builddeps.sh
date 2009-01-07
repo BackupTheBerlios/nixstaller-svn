@@ -96,7 +96,7 @@ buildfltk()
     if [ $CURRENT_OS = "darwin" ]; then
         ./configure --prefix=$DESTPREFIX && make && make install && make clean
     else
-        ./configure --prefix=$DESTPREFIX --enable-xdbe && make && make install && make clean
+        ./configure --prefix=$DESTPREFIX --enable-xdbe --enable-xft && make && make install && make clean
     fi
     restoredir
 }

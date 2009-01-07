@@ -27,13 +27,6 @@
 
 void CBaseLuaLabel::LuaRegister()
 {
-    NLua::RegisterClassFunction(CBaseLuaLabel::LuaSet, "set", "label");
-}
-
-int CBaseLuaLabel::LuaSet(lua_State *L)
-{
-    CBaseLuaLabel *sel = CheckLuaWidgetClass<CBaseLuaLabel>("label", 1);
-    const char *text = luaL_checkstring(L, 2);
-    sel->SetLabel(text);
-    return 0;
+    // Deprecated function, link to widget:setlabel()
+    NLua::RegisterClassFunction(CBaseLuaWidget::LuaSetLabel, "set", "label");
 }

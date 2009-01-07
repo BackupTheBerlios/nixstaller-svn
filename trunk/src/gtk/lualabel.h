@@ -25,7 +25,6 @@
 
 class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
     virtual void CoreActivateWidget(void) {}
     
 public:

@@ -44,8 +44,30 @@ CLuaWidget::CLuaWidget(void)
 
 void CLuaWidget::CoreSetTitle()
 {
+    // Update style
+    if (LabelBold())
+    {
+        if (LabelItalic())
+            m_pTitle->labelfont(FL_HELVETICA_BOLD_ITALIC);
+        else
+            m_pTitle->labelfont(FL_HELVETICA_BOLD);
+    }
+    else if (LabelItalic())
+        m_pTitle->labelfont(FL_HELVETICA_ITALIC);
+    else // Normal
+        m_pTitle->labelfont(FL_HELVETICA);
+    
+    // Update size
+    switch (LabelSize())
+    {
+        case LABEL_SMALL: m_pTitle->labelsize(12); break;
+        case LABEL_NORMAL: m_pTitle->labelsize(14); break;
+        case LABEL_BIG: m_pTitle->labelsize(16); break;
+    }
+    
     if (!GetTitle().empty())
         m_pTitle->label(MakeTranslation(GetTitle()));
+    
     RedrawWidgetRecursive(GetGroup());
     GetParent()->UpdateLayout();
 }

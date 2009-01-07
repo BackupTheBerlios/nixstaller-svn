@@ -25,8 +25,6 @@
 
 class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
 {
-    virtual void SetLabel(const char *text) { SetTitle(text); }
-    
 public:
     CLuaLabel(const char *title) : CBaseLuaWidget(title) { }
 };

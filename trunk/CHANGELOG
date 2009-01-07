@@ -38,6 +38,8 @@
 - "Uncompressing nixstaller" message changed to "Uncompressing Installer for <cfg.appname>" (based on suggestion by Markus Fischer)
 - Improved default logo
 - Added "application icon" supports, which is configurable.
+- Moved label:set() function to generic widget:setlabel()
+- Widget label attributes (bold, italic, size)
 
 
 0.3 --> 0.4

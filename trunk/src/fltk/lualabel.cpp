@@ -25,8 +25,3 @@
 // FLTK Lua Label Class
 // -------------------------------------
 
-void CLuaLabel::SetLabel(const char *text)
-{
-    SetTitle(text);
-    GetParent()->UpdateLayout();
-}

@@ -27,9 +27,14 @@ struct lua_State;
 
 class CBaseLuaWidget
 {
+protected:
+    enum ELabelSize { LABEL_SMALL, LABEL_NORMAL, LABEL_BIG };
+
+private:
     std::string m_Title;
     const char *m_szLuaType;
-    bool m_bEnabled;
+    bool m_bEnabled, m_bLabelBold, m_bLabelItalic;
+    ELabelSize m_eLabelSize;
     
     virtual void CoreUpdateLanguage(void) {}
     virtual void CoreSetTitle(void) = 0;
@@ -37,11 +42,14 @@ class CBaseLuaWidget
     virtual void CoreSetEnable(bool e) = 0;
 
 protected:
-    CBaseLuaWidget(const char *title) : m_szLuaType(0), m_bEnabled(true) { if (title && *title) m_Title = title; }
-    CBaseLuaWidget(void) : m_szLuaType(0), m_bEnabled(true) {}
+    CBaseLuaWidget(const char *title);
+    CBaseLuaWidget(void);
     
     void LuaDataChanged(void);
     const std::string &GetTitle(void) const { return m_Title; }
+    bool LabelBold(void) const { return m_bLabelBold; }
+    bool LabelItalic(void) const { return m_bLabelItalic; }
+    ELabelSize LabelSize(void) const { return m_eLabelSize; }
 
 public:
     virtual ~CBaseLuaWidget(void) { };
@@ -56,6 +64,8 @@ public:
     
     static void LuaRegister(void);
     static int LuaEnable(lua_State *L);
+    static int LuaSetLabel(lua_State *L);
+    static int LuaSetLabelAttr(lua_State *L);
 };
 
 template <typename C> C *CheckLuaWidgetClass(const char *type, int index)

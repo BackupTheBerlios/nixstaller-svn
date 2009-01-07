@@ -26,13 +26,10 @@ struct lua_State;
 
 class CBaseLuaLabel: virtual public CBaseLuaWidget
 {
-    virtual void SetLabel(const char *text) = 0;
-
 public:
     virtual ~CBaseLuaLabel(void) {}
 
     static void LuaRegister(void);
-    static int LuaSet(lua_State *L);
 };
 
 

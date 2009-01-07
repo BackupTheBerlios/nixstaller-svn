@@ -25,7 +25,6 @@
 
 class CLuaLabel: public CBaseLuaLabel, public CLuaWidget
 {
-    virtual void SetLabel(const char *text);
     virtual int CoreRequestWidth(void) { return 0; }
     virtual int CoreRequestHeight(int maxw) { return 0; }
     
