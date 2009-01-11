@@ -301,17 +301,19 @@ function InitDeltaBins()
     end
     -- Generate new one
     
+    print("WARNING: No bin delta file, regenerating...")
+    
     local allbins = GetAllBins(ndir .. "/bin", { "fltk", "ncurs", "gtk" })
     
     -- Create big map, containing all possible delta sizes for every bin
-    local sizemap = { }
+    deltasizes = { }
     local tmpfile = os.tmpname()
     for _, base in ipairs(allbins) do
         for _, bin in ipairs(allbins) do
             if bin ~= base then
                 os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s\"", EdeltaBin, base, bin, tmpfile))
-                sizemap[bin] = sizemap[bin] or { }
-                sizemap[bin][base] = os.filesize(tmpfile)
+                deltasizes[bin] = deltasizes[bin] or { }
+                deltasizes[bin][base] = os.filesize(tmpfile)
             end
         end
     end
@@ -328,7 +330,7 @@ function InitDeltaBins()
 deltasizes = { }
 ]], os.date()))
     
-    for bin, bases in pairs(sizemap) do
+    for bin, bases in pairs(deltasizes) do
         out:write(string.format("deltasizes[\"%s\"] = { }\n", bin))
         for b, s in pairs(bases) do
             out:write(string.format("deltasizes[\"%s\"][\"%s\"] = %d\n", bin, b, s))
