@@ -454,6 +454,17 @@ EOF
     fi
 }
 
+getfinishinstall()
+{
+    cat << EOF
+function Finish(err)
+    -- This function is called when the installer exits. The variable 'err' is a bool,
+    -- that is true when an error occured. Common usages for this function are clearing temporary
+    -- files and executing a final command (when err is false).
+end
+EOF
+}
+
 genconfig()
 {
     IP=
@@ -536,6 +547,9 @@ EOF
     [ ! -z "$code" ] && printf "$code\n\n" >> "${TARGETDIR}/run.lua"
 
     code="`getruninstall`"
+    [ ! -z "$code" ] && printf "$code\n\n" >> "${TARGETDIR}/run.lua"
+    
+    code="`getfinishinstall`"
     [ ! -z "$code" ] && printf "$code\n\n" >> "${TARGETDIR}/run.lua"
 }
 

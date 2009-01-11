@@ -84,6 +84,6 @@ void StartFrontend(int argc, char **argv)
 
 void StopFrontend()
 {
-    NNCurses::TUI.StopNCurses();
     g_bGotGUI = false;
+    NNCurses::TUI.StopNCurses();
 }

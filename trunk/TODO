@@ -10,12 +10,10 @@ OVERALL
     - Test templates and check if they can be full and need extra code for being full (eg fontconfig, freetype) (finished?).
     - Add description for all options (finished?)
     - Check for messages using 'library' and change (finished?)
-- Nicer way to run apps on exit. Or atleast document it
 - Installer profiles?
 - Mail suggestions?
     - Change banners (or atleast screen titles)
 - Update copyright years
-- Fix: Equalize vertical group spacing (GTK divides space equally, others have just offset)
 
 
 TEST
@@ -37,7 +35,6 @@ MAIN
     - Test translations
     - Re-enable SU passwd cleaning at end of install?
     - Make new lua functions 'public'?
-- Change PATH handling for ExecuteCommand/ExecuteCommandAsRoot to use user's/root $PATH
 
 
 DOCS
@@ -63,6 +60,8 @@ DOCS
 - deps: main libs are not checked
 - appicon (XPM only)
 - Deprecate lualabel:set()
+- Changed PATH handling for install.execute/install.executeasroot
+- Finish() function (examples for executing commands, no gui functions here)
 
 
 RELEASE

@@ -41,13 +41,19 @@
 #include "lua/luatable.h"
 
 namespace {
-bool g_RunScript, g_RunUnattended;
+bool g_RunScript, g_RunUnattended, g_Error = false;
 }
 
+bool HadError()
+{
+    return g_Error;
+}
 
 // Besides main(), other functions may want to call this incase they cannot throw an exception
 void Quit(int ret)
 {
+    g_Error = (ret != 0);
+    
     if (!g_RunScript && !g_RunUnattended)
         StopFrontend();
     

@@ -37,10 +37,12 @@ private:
     TScreenList m_ScreenList;
     CBaseScreen *m_pCurScreen;
     int m_iAskQuitLuaFunc;
+    bool m_bGotGUI;
      
     bool GetSUPasswd(const char *msg, bool mandatory);
     void AddScreen(CBaseScreen *screen);
     int ExecuteCommandAsRoot(const char *cmd, bool required, const char *path, int luaout);
+    void VerifyGUI(void);
     
     virtual char *GetPassword(const char *title) = 0;
     virtual void MsgBox(const char *str, ...) = 0;
@@ -66,7 +68,7 @@ protected:
     
 public:
     CBaseAttInstall(void);
-    virtual ~CBaseAttInstall(void) { CleanPasswdString(m_szPassword); };
+    virtual ~CBaseAttInstall(void) { CleanPasswdString(m_szPassword); m_bGotGUI = false; };
 
     virtual void Init(int argc, char **argv);
     

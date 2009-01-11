@@ -38,6 +38,7 @@ typedef std::string::size_type TSTLStrSize;
 
 #include "exception.h"
 
+bool HadError(void);
 void Quit(int ret);
 void HandleError(void);
 

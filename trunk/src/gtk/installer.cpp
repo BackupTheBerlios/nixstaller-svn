@@ -596,7 +596,7 @@ gboolean CInstaller::DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     CInstaller *parent = (CInstaller *)data;
     
-    if (parent->AskQuit())
+    if (GTK_WIDGET_IS_SENSITIVE(parent->m_pCancelButton) && parent->AskQuit())
         return FALSE;
     else
         return TRUE;

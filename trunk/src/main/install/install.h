@@ -34,7 +34,6 @@ protected:
     const char *GetLogoFName(void);
     const char *GetAppIconFName(void);
     const char *GetAboutFName(void);
-    const char *GetDefaultPath(void) const { return "/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."; };
 
     virtual void CoreUpdateLanguage(void) = 0;
     virtual void InitLua(void);
@@ -42,6 +41,7 @@ protected:
     
 public:
     CBaseInstall(void) : m_lUpdateTimer(0) { }
+    virtual ~CBaseInstall(void);
     
     void UpdateLanguage(void) { ReadLang(); CoreUpdateLanguage(); };
     void Update(void);

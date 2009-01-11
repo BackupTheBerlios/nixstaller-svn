@@ -3,10 +3,13 @@
 - Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.
 - Fixed: os.copy would try to copy file if source and destination file were equal.
 - Fixed: utils.dirname() would handle relative paths wrong.
-- Fixed: selectdirscreen would ignore customly set install.destdir values.
+- Fixed: selectdirscreen would ignore customly set install.destdir values. (reported by WP van Paassen)
 - Fixed: File extraction progress indication ignored total install progress.
 - Fixed: ncurses frontend wouldn't update screen fast enough for stuff called from verify() functions.
 - Fixed: If verify function from lua widget would return nothing, true was assumed (is now false)
+- Fixed: FLTK frontend wouldn't vertically space out widgets equally
+- Fixed: install.execute() wouldn't restore $PATH incase caller used custom path. (Reported by Markus Fischer)
+- Fixed: User could still cancel installation by closing window if cancel button was locked.
 - Better commandline arguments handling.
 - utils.removerec() function.
 - utils.copyrec() function.
@@ -18,16 +21,16 @@
 - Lua addcheckbox function now accepts additional argument to enable one or more options.
 - Lua addradiobutton function now accepts additional argument to preselect an option
 - Lua addmenu function now accepts additional argument to preselect an option
-- add(), del() and clear() functions for luaradiobutton, luacheckbox and luamenu
+- add(), del() and clear() functions for luaradiobutton, luacheckbox and luamenu (partly suggested by John Tsolox)
 - luamenu, luacheckbox and luaradiobutton can now be empty
 - del() function for luacfgmenu
 - enable() function for every widget
-- screen:update() function
+- screen:update() function (suggested by John Tsolox)
 - Changed --help output from generated installer
 - Installer frontend can be specified through commandline argument
 - Installer can dump configuration info.
 - Made genprojdir.sh help output more consistent
-- install.executecmd() and install.executecmdasroot() functions
+- install.executecmd() and install.executecmdasroot() functions (based on suggestion by John Tsolox)
 - install.extract() function
 - Additional precision for progressbars (only allowed integers)
 - Moved lots of install code to Lua
@@ -37,9 +40,13 @@
 - New and more optimized binary delta code, causing less size overhead from binaries.
 - "Uncompressing nixstaller" message changed to "Uncompressing Installer for <cfg.appname>" (based on suggestion by Markus Fischer)
 - Improved default logo
-- Added "application icon" supports, which is configurable.
+- Added "application icon" supports, which is configurable. (suggested by Markus Fischer)
 - Moved label:set() function to generic widget:setlabel()
-- Widget label attributes (bold, italic, size)
+- Widget label attributes (bold, italic, size) (based on suggestion by John Tsolox)
+- install.execute() and install.executeasroot() don't override default $PATH anymore (suggested by Markus Fischer)
+- Unattended installation mode (suggested by rrussell)
+- Dependency handling
+- Finish() function for run.lua
 
 
 0.3 --> 0.4

@@ -3669,7 +3669,7 @@ t[4] = 20}
 @endluafunc
 
 @luafunc pairs (t)
-As the above function as @code{ipairs} (well mostly, see the @uref{http://www.lua.org/manual/5.1, Lua manual for details}). This function also accepts other key index types than numbers.@*
+As the above function (well mostly, see the @uref{http://www.lua.org/manual/5.1, Lua manual for details}). This function also accepts other key index types than numbers.@*
 Example:
 @codeblock{t = @{ @}
 t.name = "Rick"

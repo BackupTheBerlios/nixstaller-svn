@@ -49,7 +49,7 @@ CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title),
     
     m_pWidgetPack = new Fl_Pack(0, 0, 1, 0); // HACK: Dummy width, otherwise widgets won't shown up :)
     m_pWidgetPack->type(Fl_Pack::VERTICAL);
-    m_pWidgetPack->spacing(WidgetHSpacing());
+//     m_pWidgetPack->spacing(WidgetHSpacing());
     m_pWidgetPack->resizable(NULL);
     m_pWidgetPack->end();
 
@@ -65,6 +65,34 @@ CBaseLuaGroup *CInstallScreen::CreateGroup(void)
     ret->GetGroup()->hide();
     m_pWidgetPack->add(ret->GetGroup());
     return ret;
+}
+
+int CInstallScreen::GetWidgetSpacing()
+{
+    const int size = m_pWidgetPack->children();
+    
+    if (!size)
+        return 0;
+    
+    int totalsize = 0;
+    int start = m_WidgetRanges[m_CurSubScreen], end;
+    
+    if ((m_WidgetRanges.size()-1) > m_CurSubScreen)
+        end = m_WidgetRanges[m_CurSubScreen+1];
+    else
+        end = size;
+    
+    while (start != end)
+    {
+        CLuaGroup *lg = GetGroup(m_pWidgetPack->child(start));
+        if ((!lg || lg->IsEnabled()) && lg->GetGroup()->children())
+            totalsize += m_pWidgetPack->child(start)->h();
+        start++;
+    }
+    
+    assert(totalsize <= m_iMaxHeight);
+    
+    return (m_iMaxHeight - totalsize) / size;
 }
 
 CLuaGroup *CInstallScreen::GetGroup(Fl_Widget *w)
@@ -87,14 +115,14 @@ void CInstallScreen::ResetWidgetRange()
     m_WidgetRanges.clear();
     m_CurSubScreen = 0;
     
-    const int size = m_pWidgetPack->children();
+    const int size = m_pWidgetPack->children(), spacing = MinWidgetSpacing();
     
     if (!size)
         return;
     
     m_WidgetRanges.push_back(0);
     
-    int h = 0, starth = 0;
+    int h = 0, drawwidgets = 0, totalh = 0;
     bool enablewidgets = true, endedscreen = false;
     
     for (int i=0; i<size; i++)
@@ -112,10 +140,11 @@ void CInstallScreen::ResetWidgetRange()
 
         if (!endedscreen && ((newh + h) <= m_iMaxHeight))
         {
-            h += newh + WidgetHSpacing();
+            h += newh + spacing;
             if (enablewidgets)
             {
-                starth = h;
+                drawwidgets++;
+                totalh += newh;
                 group->show();
             }
             else
@@ -132,6 +161,7 @@ void CInstallScreen::ResetWidgetRange()
         endedscreen = lg->EndsScreen();
     }
     
+    int starth = totalh + (GetWidgetSpacing() * (drawwidgets-1));
     int y = m_pWidgetGroup->y() + ((m_iMaxHeight - starth) / 2); // Center
     m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), starth);
     
@@ -189,6 +219,7 @@ bool CInstallScreen::CheckWidgets()
 void CInstallScreen::CoreActivate(void)
 {
     ResetWidgetRange();
+    m_pWidgetPack->spacing(GetWidgetSpacing());
     CBaseScreen::CoreActivate();
 }
 
@@ -215,11 +246,14 @@ void CInstallScreen::SetSize(int x, int y, int w, int h)
     }
     
     m_pWidgetPack->size(w, 0);
+//     m_pWidgetPack->spacing(GetWidgetSpacing());
 }
 
 void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
 {
-    const int size = m_pWidgetPack->children();
+    m_CurSubScreen = screen; // Need to set this before call GetWidgetSpacing()
+    const int size = m_pWidgetPack->children(), spacing = GetWidgetSpacing();
+    m_pWidgetPack->spacing(spacing);
     
     for (int i=0; i<size; i++)
         m_pWidgetPack->child(i)->hide();
@@ -237,7 +271,7 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
         CLuaGroup *lg = GetGroup(m_pWidgetPack->child(start));
         if ((!lg || lg->IsEnabled()) && lg->GetGroup()->children())
         {
-            h += CheckTotalWidgetH(m_pWidgetPack->child(start)) + WidgetHSpacing();
+            h += CheckTotalWidgetH(m_pWidgetPack->child(start)) + spacing;
             m_pWidgetPack->child(start)->show();
         }
         start++;
@@ -246,11 +280,10 @@ void CInstallScreen::ActivateSubScreen(TSTLVecSize screen)
     if (h)
     {
         UpdateCounter();
-        int y = m_pWidgetGroup->y() + ((m_iMaxHeight - h) / 2); // Center
+        int y = m_pWidgetGroup->y() + ((m_iMaxHeight - (h-spacing)) / 2); // Center
         m_pWidgetPack->resize(m_pWidgetPack->x(), y, m_pWidgetPack->w(), h);
     }
     
-    m_CurSubScreen = screen;
     UpdateCounter();
 }
 

@@ -231,7 +231,6 @@ void CLuaGroup::UpdateLayout()
         m_pMainPack->size(m_pMainPack->w(), totalwidgeth);
     
     m_pInstallScreen->UpdateSubScreens();
-//     m_pMainPack->parent()->redraw(); // Important (still?)
 }
 
 void CLuaGroup::SetSize(int maxw, int maxh)

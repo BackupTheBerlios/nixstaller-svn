@@ -589,7 +589,8 @@ void CInstaller::TimedRunner(void *p)
 void CInstaller::CancelCB(Fl_Widget *w, void *p)
 {
     CInstaller *installer = static_cast<CInstaller *>(p);
-    installer->Cancel();
+    if (installer->m_pCancelButton->active())
+        installer->Cancel();
 }
 
 void CInstaller::BackCB(Fl_Widget *w, void *p)

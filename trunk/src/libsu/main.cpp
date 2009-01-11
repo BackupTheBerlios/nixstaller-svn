@@ -45,7 +45,7 @@ void SetDefSuType()
 }
 
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false),
-                                    m_iLastRET(0), m_szUser("root"), m_szPath("/bin:/usr/bin"),
+                                    m_iLastRET(0), m_szUser("root"),
                                     m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL),
                                     m_pOutputFunc(NULL), m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
 {
@@ -147,7 +147,7 @@ void CLibSU::ConstructCommand(std::string &command, std::vector<std::string> &ar
     
     if (UsingSudo())
     {
-        args.push_back("-s");
+        args.push_back("-i");
         args.push_back("--");
         args.push_back("-c");
     }
@@ -245,7 +245,9 @@ int CLibSU::Exec(const std::string &command, const std::vector<std::string> &arg
     log("\n");
     argp[i] = 0L;
     
-    setenv("PATH", m_szPath.c_str(), 1);
+    if (!m_szPath.empty())
+        setenv("PATH", m_szPath.c_str(), 1);
+    
     execv(realcmd.c_str(), (char * const *)argp);
     SetError(SU_ERROR_EXECUTE, "execv(\"%s\"): %s", m_szPath.c_str(), strerror(errno));
     return -1;
@@ -279,6 +281,7 @@ std::string CLibSU::ReadLine(bool block)
         SetError(SU_ERROR_INTERNAL, "fcntl(F_GETFL): %s", strerror(errno));
         return ret;
     }
+    
     int oflags = flags;
     if (block)
         flags &= ~O_NONBLOCK;

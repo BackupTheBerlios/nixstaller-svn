@@ -33,7 +33,7 @@
 
 namespace LIBSU
 {
-//  #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
+// #define ENABLE_LOGGING /* If set, debug stuff will be logged to log.txt file */
 
 enum ESuType { TYPE_SU, TYPE_SUDO, TYPE_MAYBESU, TYPE_MAYBESUDO, TYPE_UNKNOWN };
 

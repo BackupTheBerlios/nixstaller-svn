@@ -39,8 +39,11 @@ void StartFrontend(int argc, char **argv)
 
 void StopFrontend()
 {
-    delete pInterface;
+    // As this function may be called from the interface's destructor, make sure pInterface is NULL
+    // before deleting it.
+    CInstaller *inter = pInterface;
     pInterface = NULL;
+    delete inter;
 }
 
 void ReportError(const char *msg)

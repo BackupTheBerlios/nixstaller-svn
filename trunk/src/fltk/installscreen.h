@@ -42,7 +42,8 @@ class CInstallScreen: public CBaseScreen
     virtual CBaseLuaGroup *CreateGroup(void);
     virtual void CoreUpdateLanguage(void) {}
     
-    int WidgetHSpacing(void) const { return 10; }
+    int MinWidgetSpacing(void) const { return 10; }
+    int GetWidgetSpacing(void);
 
     CLuaGroup *GetGroup(Fl_Widget *w);
     int CheckTotalWidgetH(Fl_Widget *w);

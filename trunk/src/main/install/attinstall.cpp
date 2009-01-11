@@ -39,7 +39,8 @@
 // Base Attended Installer Class
 // -------------------------------------
 
-CBaseAttInstall::CBaseAttInstall(void) : m_szPassword(NULL), m_pCurScreen(NULL), m_iAskQuitLuaFunc(LUA_NOREF)
+CBaseAttInstall::CBaseAttInstall(void) : m_szPassword(NULL), m_pCurScreen(NULL), m_iAskQuitLuaFunc(LUA_NOREF),
+                                         m_bGotGUI(true)
 {
 }
 
@@ -133,9 +134,10 @@ int CBaseAttInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const 
     m_SUHandler.SetOutputFunc(CMDSUOutFunc, &func);
 
     if (!path || !path[0])
-        path = GetDefaultPath();
+        m_SUHandler.SetPath("");
+    else
+        m_SUHandler.SetPath(path);
     
-    m_SUHandler.SetPath(path);
     m_SUHandler.SetCommand(cmd);
     
     if (!m_SUHandler.ExecuteCommand(m_szPassword))
@@ -151,6 +153,14 @@ int CBaseAttInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const 
     m_SUHandler.SetOutputFunc(NULL);
     
     return m_SUHandler.Ret();
+}
+
+void CBaseAttInstall::VerifyGUI()
+{
+    // m_bGotGUI can only be false when the destructor was called. In that case,
+    // the only lua code can come from the Finish() function from run.lua
+    if (!m_bGotGUI)
+        luaL_error(NLua::LuaState, "Can't use GUI functions in Finish()");
 }
 
 std::string CBaseAttInstall::GetDestDir(void)
@@ -306,6 +316,7 @@ void CBaseAttInstall::LuaHook(lua_State *L, lua_Debug *ar)
 int CBaseAttInstall::LuaYesNoBox(lua_State *L)
 {
     CBaseAttInstall *pInstaller = NLua::GetFromClosure<CBaseAttInstall *>();
+    pInstaller->VerifyGUI();
     std::string msg = luaL_checkstring(L, 1);
     int args = lua_gettop(L);
     
@@ -322,6 +333,7 @@ int CBaseAttInstall::LuaYesNoBox(lua_State *L)
 int CBaseAttInstall::LuaChoiceBox(lua_State *L)
 {
     CBaseAttInstall *pInstaller = NLua::GetFromClosure<CBaseAttInstall *>();
+    pInstaller->VerifyGUI();
     std::string msg = luaL_checkstring(L, 1);
     const char *but1 = luaL_checkstring(L, 2);
     const char *but2 = luaL_checkstring(L, 3);
@@ -351,6 +363,7 @@ int CBaseAttInstall::LuaChoiceBox(lua_State *L)
 int CBaseAttInstall::LuaWarnBox(lua_State *L)
 {
     CBaseAttInstall *pInstaller = NLua::GetFromClosure<CBaseAttInstall *>();
+    pInstaller->VerifyGUI();
     std::string msg = luaL_checkstring(L, 1);
     int args = lua_gettop(L);
     
@@ -367,6 +380,7 @@ int CBaseAttInstall::LuaWarnBox(lua_State *L)
 int CBaseAttInstall::LuaMSGBox(lua_State *L)
 {
     CBaseAttInstall *pInstaller = NLua::GetFromClosure<CBaseAttInstall *>();
+    pInstaller->VerifyGUI();
     std::string msg = luaL_checkstring(L, 1);
     int args = lua_gettop(L);
     

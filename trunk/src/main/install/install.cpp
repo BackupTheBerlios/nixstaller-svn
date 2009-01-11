@@ -37,6 +37,23 @@ std::map<std::string, char *> Translations;
 // Base Install Class
 // -------------------------------------
 
+CBaseInstall::~CBaseInstall()
+{
+    try
+    {
+        NLua::CLuaFunc luafunc("Finish");
+        if (luafunc)
+        {
+            luafunc << HadError();
+            luafunc(0);
+        }
+    }
+    catch(Exceptions::CException &e)
+    {
+        HandleError();
+    }
+}
+
 void CBaseInstall::ReadLang()
 {
     FreeTranslations();
@@ -83,10 +100,12 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
     strcpy(command, cmd);
     strcat(command, append);
     
+    const char *oldpath = NULL;
     if (path && *path)
+    {
+        oldpath = getenv("PATH");
         setenv("PATH", path, 1);
-    else
-        setenv("PATH", GetDefaultPath(), 1);
+    }
     
     NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
     if (!func)
@@ -121,6 +140,9 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
         func << line.c_str();
         func(0);
     }
+    
+    if (oldpath)
+        setenv("PATH", oldpath, 1);
     
     return pipe.Close(required); // By calling Close() explicity its able to throw exceptions
 }

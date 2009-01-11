@@ -352,7 +352,7 @@ bool CInstaller::CoreHandleKey(chtype key)
     }
     else if (NNCurses::IsEscape(key))
     {
-        if (AskQuit())
+        if (m_pCancelButton->Enabled() && AskQuit())
             throw Exceptions::CExUser();
         return true;
     }
