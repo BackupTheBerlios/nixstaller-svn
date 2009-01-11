@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006 - 2008 Rick Helmus (rhelmus_AT_gmail.com)
+    Copyright (C) 2006 - 2009 Rick Helmus (rhelmus_AT_gmail.com)
     Copyright (C) 1994, 2003 Free Software Foundation, Inc.
 
     This file is part of Nixstaller.
