@@ -34,7 +34,7 @@ class CTextField: public CBaseScroll
 
 protected:
     virtual void CoreDraw(void);
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
     virtual void CoreDrawLayout(void);
@@ -48,7 +48,7 @@ public:
     
     void AddText(const std::string &t);
     void SetText(const std::string &t) { ClearText(); AddText(t); }
-    void SetMaxLength(TSTLStrSize l, TSTLStrSize c);
+    void SetMaxChars(TSTLStrSize m, TSTLStrSize c);
     void ClearText(void);
     void LoadFile(const char *f);
     void SetFollow(bool f);

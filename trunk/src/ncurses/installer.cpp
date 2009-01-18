@@ -340,7 +340,7 @@ bool CInstaller::CoreHandleEvent(NNCurses::CWidget *emitter, int type)
     return false;
 }
 
-bool CInstaller::CoreHandleKey(chtype key)
+bool CInstaller::CoreHandleKey(wchar_t key)
 {
     if (NNCurses::CWindow::CoreHandleKey(key))
         return true;

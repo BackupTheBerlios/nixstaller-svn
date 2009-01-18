@@ -103,7 +103,7 @@ void CGroup::UpdateFocus()
     }
 }
 
-bool CGroup::CoreHandleKey(chtype key)
+bool CGroup::CoreHandleKey(wchar_t key)
 {
     if (m_pFocusedWidget)
         return m_pFocusedWidget->HandleKey(key);

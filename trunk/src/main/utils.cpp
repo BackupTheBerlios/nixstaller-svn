@@ -603,14 +603,32 @@ int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
     return ret;
 }
 
-TSTLStrSize MBWidth(const std::string &str)
+TSTLStrSize MBWidth(std::string str)
 {
     if (str.empty())
         return 0;
 
+    // Remove newlines, as wcswidth can't really handle them
+    TSTLStrSize start = 0;
+    while (start < str.length())
+    {
+        start = str.find_first_of("\n", start);
+        
+        if (start != std::string::npos)
+        {
+            str.erase(start, 1);
+            // keep start the same as 1 char was just removed
+            continue;
+        }
+        else
+            break;
+
+        start++;
+    }
+    
     TSTLStrSize ret = 0;
     std::wstring utf16;
-    std::string::const_iterator end = utf8::find_invalid(str.begin(), str.end());
+    std::string::iterator end = utf8::find_invalid(str.begin(), str.end());
     assert(end == str.end());
     
     // HACK: Just append length of invalid part
@@ -719,71 +737,6 @@ size_t MBWidth(std::string str)
     }
     else
         return str.length();
-}
-#endif
-
-#if 0
-// Based on code from: http://canonical.org/~kragen/strlen-utf8.html
-size_t MBWidth(const std::string &s)
-{
-    size_t i = 0, ret = 0;
-    while (s[i])
-    {
-        if ((s[i] & 0xc0) != 0x80)
-            ret++;
-        i++;
-    }
-    
-    return ret;
-}
-
-size_t GetMBLenFromW(const std::string &str, size_t width)
-{
-    if (width == 0)
-        return 0;
-    
-    size_t ret = 0, w = 0;
-    while (str[ret])
-    {
-        if ((str[ret] & 0xc0) != 0x80)
-            w++;
-        
-        // We have to get all chars before w > width 
-        if (w > width)
-        {
-            debugline("GetMBLenFromW: %s, %u, %u, %u, %s, %u\n", str.c_str(), width, w, ret, str.substr(0, ret).c_str(), MBWidth(str));
-            return ret; // Return previous length as it's not incremented yet
-        }
-
-        ret++;
-    }
-    
-    return ret;
-}
-#endif
-
-#if 0
-size_t GetMBLenFromW(const std::string &str, size_t width)
-{
-    const TSTLStrSize length = str.length();
-    const size_t mbw = MBWidth(str.substr(0, width));
-    
-    // Common case is that each char takes 1 col, so check that first
-    if (mbw == width)
-        return width;
-    else if ((mbw < width) && mbw) // full string is less or equal than width, no need to do more
-        return length;
-    
-    // UNDONE: This is rather inefficient...
-    for (TSTLStrSize end = 0; end < length; end++)
-    {
-        size_t w = MBWidth(str.substr(0, end+1));
-        if (w == width)
-            return end+1;
-        else if (w > width)
-            return end; // Now too long, return previous length
-    }
-    return length;
 }
 #endif
 

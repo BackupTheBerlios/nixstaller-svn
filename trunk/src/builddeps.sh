@@ -117,9 +117,9 @@ buildlua()
 
 buildncurses()
 {
-    get "ftp://invisible-island.net/ncurses/ncurses-5.6.tar.gz"
-    untar "ncurses-5.6.tar.gz"
-    dodir "ncurses-5.6"
+    get "ftp://invisible-island.net/ncurses/ncurses-5.7.tar.gz"
+    untar "ncurses-5.7.tar.gz"
+    dodir "ncurses-5.7"
     
     case $CURRENT_OS in
         freebsd | netbsd | openbsd )

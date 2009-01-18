@@ -39,13 +39,13 @@ private:
     
     TSTLStrSize GetStrPosition(void);
     void Move(int n, bool relative);
-    bool ValidChar(chtype *ch);
-    void Addch(chtype ch);
+    bool ValidChar(wchar_t *ch);
+    void Addch(wchar_t ch);
     void Delch(TSTLStrSize pos);
     
 protected:
     virtual void DoDraw(void);
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual void UpdateFocus(void);
     virtual bool CoreCanFocus(void) { return true; }
     

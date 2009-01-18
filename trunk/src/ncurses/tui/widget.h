@@ -75,7 +75,7 @@ protected:
     
     virtual void UpdateEnabled(void) { }
     
-    virtual bool CoreHandleKey(chtype key) { return false; }
+    virtual bool CoreHandleKey(wchar_t key) { return false; }
     virtual bool CoreHandleEvent(CWidget *emitter, int event) { return false; }
     
     virtual int CoreRequestWidth(void) { return GetMinWidth(); }
@@ -97,7 +97,7 @@ protected:
     void SetParent(CGroup *g) { m_pParent = g; m_pParentWin = NULL; }
     void SetParent(WINDOW *w) { m_pParent = NULL; m_pParentWin = w; }
 
-    bool HandleKey(chtype key) { return CoreHandleKey(key); }
+    bool HandleKey(wchar_t key) { return CoreHandleKey(key); }
     bool HandleEvent(CWidget *emitter, int event) { return CoreHandleEvent(emitter, event); }
     void PushEvent(int type);
     

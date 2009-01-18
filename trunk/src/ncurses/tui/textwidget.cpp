@@ -51,11 +51,13 @@ void CTextWidget::DoDraw()
         if (y >= Height())
             break;
         
-        int len = SafeConvert<int>(it->length());
-        if (len >= m_iXOffset)
+        int width = SafeConvert<int>(MBWidth(*it));
+        if (width >= m_iXOffset)
         {
-            int end = std::min(Width(), len-m_iXOffset);
-            AddStr(this, 0, y, it->substr(m_iXOffset, end).c_str());
+            int endw = std::min(Width(), width-m_iXOffset);
+            TSTLStrSize start = GetMBLenFromW(*it, m_iXOffset);
+            TSTLStrSize end = GetMBLenFromW(it->substr(start), endw);
+            AddStr(this, 0, y, it->substr(start, end).c_str());
         }
     }
 }

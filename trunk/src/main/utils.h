@@ -71,7 +71,7 @@ long GetTime(void);
 void ConvertExToLuaError(void);
 void ConvertLuaErrorToEx(void);
 int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
-TSTLStrSize MBWidth(const std::string &str);
+TSTLStrSize MBWidth(std::string str);
 TSTLStrSize GetMBLenFromW(const std::string &str, size_t width);
 TSTLStrSize GetMBWidthFromC(const std::string &str, std::string::const_iterator cur, int n);
 TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur, TSTLStrSize width, bool roundup);

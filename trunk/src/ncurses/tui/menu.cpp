@@ -105,7 +105,7 @@ void CMenu::DoDraw()
     }
 }
 
-bool CMenu::CoreHandleKey(chtype key)
+bool CMenu::CoreHandleKey(wchar_t key)
 {
     if (CBaseScroll::CoreHandleKey(key))
         return true;

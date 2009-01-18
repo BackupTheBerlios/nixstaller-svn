@@ -47,7 +47,7 @@ protected:
     virtual void CoreTouchSize(void);
     virtual void UpdateSize(void);
     virtual void UpdateFocus(void);
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual void CoreAddWidget(CWidget *w) { InitChild(w); };
     virtual void CoreRemoveWidget(CWidget *w) { }

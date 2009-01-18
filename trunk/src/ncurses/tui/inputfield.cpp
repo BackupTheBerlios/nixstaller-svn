@@ -19,6 +19,7 @@
 
 #include <locale.h>
 #include <ctype.h>
+#include <wctype.h>
 #include "utf8.h"
 #include "tui.h"
 #include "inputfield.h"
@@ -103,8 +104,6 @@ void CInputField::Move(int n, bool relative)
     else
         end = m_Text.end();
     
-    debugline("twidth: %u, maxwidth: %u, fitw: %u, cursor: %u, substr: %s\n", MBWidth(std::string(start, end)), maxwidth, GetFitfromW(m_Text, start, maxwidth, false), m_CursorPos, std::string(start, end).c_str());
-    
     const TSTLStrSize realmaxw = GetFitfromW(m_Text, start, maxwidth, false);
     if ((MBWidth(std::string(start, end)) + pastend) > realmaxw)
     {
@@ -112,20 +111,18 @@ void CInputField::Move(int n, bool relative)
         {
             m_StartPos++;
             utf8::next(start, m_Text.end());
-            debugline("twidth(2): %u, start: %u, maxwidth: %u, substr: %s\n", MBWidth(std::string(start, end)), m_StartPos, realmaxw, std::string(start, end).c_str());
             if ((MBWidth(std::string(start, end)) + pastend) <= realmaxw)
                 break;
         }
         m_CursorPos = utf8::distance(start, end) - 1 + pastend;
-        debugline("twidth(3): %u, start: %u, maxwidth: %u, substr: %s\n", MBWidth(std::string(start, end)), m_StartPos, realmaxw, std::string(start, end).c_str());
     }
     
     RequestQueuedDraw();
 }
 
-bool CInputField::ValidChar(chtype *ch)
+bool CInputField::ValidChar(wchar_t *ch)
 {
-    if (IsTAB(*ch) || !isprint(*ch))
+    if (IsTAB(*ch) || !iswprint(*ch))
         return false;
     
     if ((m_eInputType == INT) || (m_eInputType == FLOAT))
@@ -138,15 +135,19 @@ bool CInputField::ValidChar(chtype *ch)
         }
         
         std::string legal = LegalNrTokens((m_eInputType == FLOAT), m_Text, GetStrPosition());
+        char mb[MB_CUR_MAX];
+        
+        int ret = wctomb(mb, *ch);
+        mb[ret] = 0;
 
-        if (legal.find(*ch) == std::string::npos)
+        if (legal.find(mb) == std::string::npos)
             return false; // Illegal char
     }
     
     return true;
 }
 
-void CInputField::Addch(chtype ch)
+void CInputField::Addch(wchar_t ch)
 {
     TSTLStrSize chars = utf8::distance(m_Text.begin(), m_Text.end());
     
@@ -155,10 +156,14 @@ void CInputField::Addch(chtype ch)
     
     TSTLStrSize pos = GetStrPosition();
     
+    char mb[MB_CUR_MAX];
+    int ret = wctomb(mb, ch);
+    mb[ret] = 0;
+    
     if (pos >= chars)
-        m_Text += ch;
+        m_Text += mb;
     else
-        m_Text.insert(pos, 1, ch);
+        m_Text.insert(pos, mb);
     
     Move(1, true);
     PushEvent(EVENT_DATACHANGED);
@@ -200,7 +205,7 @@ void CInputField::DoDraw()
     }
 }
 
-bool CInputField::CoreHandleKey(chtype key)
+bool CInputField::CoreHandleKey(wchar_t key)
 {
     if (key == KEY_LEFT)
         Move(-1, true);
@@ -219,10 +224,13 @@ bool CInputField::CoreHandleKey(chtype key)
         Delch(m_StartPos + m_CursorPos - 1);
         Move(-1, true);
     }
-    else if (ValidChar(&key))
-        Addch(key);
     else
-        return false;
+    {
+        if (ValidChar(&key))
+            Addch(key);
+        else
+            return false;
+    }
     
     return true;
 }

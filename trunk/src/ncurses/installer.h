@@ -67,7 +67,7 @@ class CInstaller: public NNCurses::CWindow, public CBaseAttInstall
 protected:
     virtual void CoreUpdateLanguage(void);
     virtual bool CoreHandleEvent(NNCurses::CWidget *emitter, int type);
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual void CoreGetButtonDescs(NNCurses::TButtonDescList &list);
 
 public:

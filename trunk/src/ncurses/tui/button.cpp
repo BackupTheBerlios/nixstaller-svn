@@ -54,7 +54,7 @@ void CButton::UpdateColors()
     }
 }
 
-bool CButton::CoreHandleKey(chtype key)
+bool CButton::CoreHandleKey(wchar_t key)
 {
     if (CBox::CoreHandleKey(key))
         return true;
@@ -84,7 +84,7 @@ void CButton::SetText(const std::string &title)
     else
         m_pLabel->SetText(title);
     
-    SetMinWidth(SafeConvert<int>(title.length()) + m_iExtraWidth);
+    SetMinWidth(SafeConvert<int>(MBWidth(title)) + m_iExtraWidth);
 //     RequestQueuedDraw();
     RequestUpdate();
 }

@@ -35,7 +35,7 @@ private:
     int m_iMaxReqWidth, m_iMaxReqHeight;
     TLinesList m_Lines;
     std::string m_QueuedText;
-    TSTLStrSize m_MaxLength, m_ClearLength, m_LongestLine;
+    TSTLStrSize m_MaxChars, m_ClearChars, m_LongestLine;
     int m_iCurWidth;
     
     TSTLStrSize GetNextLine(const std::string &text, TSTLStrSize start, int width);
@@ -61,7 +61,7 @@ protected:
 public:
     void AddText(std::string t);
     void SetText(const std::string &t) { Clear(); AddText(t); }
-    void SetMaxLength(TSTLStrSize l, TSTLStrSize c) { m_MaxLength = l; m_ClearLength = c; }
+    void SetMaxChars(TSTLStrSize m, TSTLStrSize c) { m_MaxChars = m; m_ClearChars = c; }
     void Clear(void);
     void SetMaxReqWidth(int w) { m_iMaxReqWidth = w; }
     void SetMaxReqHeight(int h) { m_iMaxReqHeight = h; }

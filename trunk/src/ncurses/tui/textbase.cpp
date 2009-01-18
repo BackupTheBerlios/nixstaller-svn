@@ -18,6 +18,7 @@
 */
 
 #include <ctype.h>
+#include "utf8.h"
 #include "tui.h"
 #include "textbase.h"
 
@@ -28,7 +29,7 @@ namespace NNCurses {
 // -------------------------------------
 
 CTextBase::CTextBase(bool c, bool w) : m_bCenter(c), m_bWrap(w), m_iMaxReqWidth(0),
-                                       m_iMaxReqHeight(0), m_MaxLength(0), m_ClearLength(0),
+                                       m_iMaxReqHeight(0), m_MaxChars(0), m_ClearChars(0),
                                        m_LongestLine(0), m_iCurWidth(0)
 {
 }
@@ -181,44 +182,57 @@ void CTextBase::AddText(std::string t)
     ConvertTabs(t);
     m_QueuedText += t;
     
-    // UNDONE: Doesn't remove queued text
-    if (m_MaxLength > 0)
+    if (m_MaxChars > 0)
     {
-        TSTLStrSize curlen = m_QueuedText.length();
+        TSTLStrSize curchars = utf8::distance(m_QueuedText.begin(), m_QueuedText.end());
         for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end(); it++)
-            curlen += it->length();
-        
-        if (curlen > m_MaxLength)
+            curchars += utf8::distance(it->begin(), it->end());
+
+        if (curchars > m_MaxChars)
         {
             bool checklongest = false;
-            TSTLStrSize remlen = m_ClearLength + (curlen - m_MaxLength);
+            TSTLStrSize remchars = m_ClearChars + (curchars - m_MaxChars);
             
             for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end();)
             {
-                const TSTLStrSize len = it->length();
+                const TSTLStrSize chars = utf8::distance(it->begin(), it->end());
                 
-                if (len == m_LongestLine)
+                if (MBWidth(*it) == m_LongestLine)
                     checklongest = true;
 
-                if (remlen >= len) // Remove complete line?
+                if (remchars >= chars) // Remove complete line?
                 {
                     it = m_Lines.erase(it);
-                    remlen -= len;
-                    if (remlen == 0)
+                    remchars -= chars;
+                    if (remchars == 0)
                         break;
                 }
                 else
                 {
-                    it->erase(0, remlen - 1);
+                    std::string::iterator end = it->begin();
+                    utf8::advance(end, remchars - 1, it->end());
+                    it->erase(it->begin(), end);
+                    remchars = 0;
                     break;
                 }
+            }
+            
+            if (remchars > 0) // Didn't remove enough from processed text?
+            {
+                std::string::iterator end = m_QueuedText.begin();
+                while ((end != m_QueuedText.end()) && (remchars > 0))
+                {
+                    utf8::next(end, m_QueuedText.end());
+                    remchars--;
+                }
+                m_QueuedText.erase(m_QueuedText.begin(), end);
             }
             
             if (checklongest)
             {
                 m_LongestLine = 0;
                 for (TLinesList::iterator it = m_Lines.begin(); it != m_Lines.end(); it++)
-                    m_LongestLine = std::max(m_LongestLine, it->length());
+                    m_LongestLine = std::max(m_LongestLine, MBWidth(*it));
             }
         }
     }

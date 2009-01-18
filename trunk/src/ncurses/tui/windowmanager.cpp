@@ -27,7 +27,7 @@ namespace NNCurses {
 // Window Manager Class
 // -------------------------------------
 
-bool CWindowManager::CoreHandleKey(chtype key)
+bool CWindowManager::CoreHandleKey(wchar_t key)
 {
     if (CGroup::CoreHandleKey(key))
         return true;

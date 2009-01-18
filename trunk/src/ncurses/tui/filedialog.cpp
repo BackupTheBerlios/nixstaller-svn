@@ -134,7 +134,7 @@ std::string CFileDialog::AskPassword(LIBSU::CLibSU &suhandler)
     return ret;
 }
 
-bool CFileDialog::CoreHandleKey(chtype key)
+bool CFileDialog::CoreHandleKey(wchar_t key)
 {
     if (CDialog::CoreHandleKey(key))
         return true;

@@ -50,9 +50,9 @@ void CBaseChoice::DoDraw()
     for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++, cur++)
     {
         std::string text = CoreGetText(*it);
-        int length = SafeConvert<int>(text.length());
+        int width = SafeConvert<int>(MBWidth(text));
         
-        if ((x + length) > m_iUsedWidth)
+        if ((x + width) > m_iUsedWidth)
         {
             x = 0;
             y++;
@@ -68,7 +68,7 @@ void CBaseChoice::DoDraw()
         if (highlight)
             SetAttr(this, A_REVERSE, false);
         
-        x += length + 1;
+        x += width + 1;
     }
 }
 
@@ -77,7 +77,7 @@ int CBaseChoice::CoreRequestWidth()
     int ret = 1;
     
     for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++)
-        ret = std::max(ret, SafeConvert<int>(CoreGetText(*it).length()));
+        ret = std::max(ret, SafeConvert<int>(MBWidth(CoreGetText(*it))));
     
     if (GetMinWidth())
         ret = std::max(ret, GetMinWidth());
@@ -94,15 +94,15 @@ int CBaseChoice::CoreRequestHeight()
     {
         for (TChoiceList::iterator it=m_ChoiceList.begin(); it!=m_ChoiceList.end(); it++)
         {
-            int length = SafeConvert<int>(CoreGetText(*it).length());
+            int w = SafeConvert<int>(MBWidth(CoreGetText(*it)));
             
-            if ((x + length) > width)
+            if ((x + w) > width)
             {
                 x = 0;
                 lines++;
             }
 
-            x += CoreGetText(*it).length() + 1;
+            x += w + 1;
         }
     }
     
@@ -112,7 +112,7 @@ int CBaseChoice::CoreRequestHeight()
     return lines;
 }
 
-bool CBaseChoice::CoreHandleKey(chtype key)
+bool CBaseChoice::CoreHandleKey(wchar_t key)
 {
     if (m_ChoiceList.empty())
         return false;

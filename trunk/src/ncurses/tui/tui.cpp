@@ -99,9 +99,10 @@ bool CTUI::Run(int delay)
     timeout(delay);
     
     // Handle keys
-    chtype key = getch();
+    wint_t key;
+    chtype keystat = get_wch(&key);
     
-    if (key != static_cast<chtype>(ERR)) // Input available?
+    if ((keystat != static_cast<chtype>(ERR)) && (key != WEOF)) // Input available?
     {
         if (!m_pWinManager->HandleKey(key) && IsEscape(key))
             return false;

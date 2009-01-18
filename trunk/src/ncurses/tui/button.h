@@ -36,7 +36,7 @@ protected:
     virtual void DoDraw(void);
     virtual bool CoreCanFocus(void) { return true; }
     virtual void UpdateColors(void);
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     
     virtual int FieldX(void) const { return m_iExtraWidth/2; }

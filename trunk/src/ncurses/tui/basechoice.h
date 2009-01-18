@@ -49,7 +49,7 @@ protected:
     virtual void DoDraw(void);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual bool CoreCanFocus(void) { return true; }
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     virtual std::string CoreGetText(const SEntry &entry) = 0;

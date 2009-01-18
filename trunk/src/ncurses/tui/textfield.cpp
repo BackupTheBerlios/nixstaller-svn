@@ -60,7 +60,7 @@ void CTextField::CoreDraw()
     }
 }
 
-bool CTextField::CoreHandleKey(chtype key)
+bool CTextField::CoreHandleKey(wchar_t key)
 {
     if (CBaseScroll::CoreHandleKey(key))
         return true;
@@ -151,9 +151,9 @@ void CTextField::AddText(const std::string &t)
     RequestQueuedDraw();
 }
 
-void CTextField::SetMaxLength(TSTLStrSize l, TSTLStrSize c)
+void CTextField::SetMaxChars(TSTLStrSize m, TSTLStrSize c)
 {
-    m_pTextWidget->SetMaxLength(l, c);
+    m_pTextWidget->SetMaxChars(m, c);
     RequestQueuedDraw();
 }
 

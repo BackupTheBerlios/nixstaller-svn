@@ -50,7 +50,7 @@ class CFileDialog: public CDialog
     std::string AskPassword(LIBSU::CLibSU &suhandler);
     
 protected:
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual void CoreGetButtonDescs(TButtonDescList &list);
     

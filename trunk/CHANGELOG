@@ -47,6 +47,8 @@
 - Unattended installation mode (suggested by rrussell)
 - Dependency handling
 - Finish() function for run.lua
+- Updated to ncurses 5.7
+- UTF-8 support
 
 
 0.3 --> 0.4

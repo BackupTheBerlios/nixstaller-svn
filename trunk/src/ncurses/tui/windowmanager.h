@@ -32,7 +32,7 @@ class CWindowManager: public CGroup
     CWidget *m_pLockedWidget;
     
 protected:
-    virtual bool CoreHandleKey(chtype key);
+    virtual bool CoreHandleKey(wchar_t key);
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
     virtual int CoreRequestWidth(void);
     virtual int CoreRequestHeight(void);
