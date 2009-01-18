@@ -91,11 +91,13 @@ void CMenu::DoDraw()
         if (highlight)
             SetAttr(this, A_REVERSE, true);
         
-        int len = SafeConvert<int>(it->name.length());
-        if (len >= m_iXOffset)
+        int width = SafeConvert<int>(MBWidth(it->name));
+        if (width >= m_iXOffset)
         {
-            int end = std::min(ScrollFieldWidth(), len-m_iXOffset);
-            AddStr(this, 1, y, it->name.substr(m_iXOffset, end).c_str());
+            int endw = std::min(ScrollFieldWidth(), width-m_iXOffset);
+            TSTLStrSize start = GetMBLenFromW(it->name, m_iXOffset);
+            TSTLStrSize end = GetMBLenFromW(it->name.substr(start), endw);
+            AddStr(this, 1, y, it->name.substr(start, end).c_str());
         }
         
         if (highlight)
@@ -222,7 +224,7 @@ CMenu::TScrollRange CMenu::CoreGetScrollRegion()
 void CMenu::AddEntry(const std::string &id, const std::string &name)
 {
     m_MenuList.insert(std::lower_bound(m_MenuList.begin(), m_MenuList.end(), name), SEntry(id, name));
-    m_LongestLine = std::max(m_LongestLine, name.length());
+    m_LongestLine = std::max(m_LongestLine, MBWidth(name));
     RequestUpdate();
 }
 
@@ -232,7 +234,7 @@ void CMenu::DelEntry(const std::string &id)
     
     if ((line != m_MenuList.end()) && (line->id == id))
     {
-        bool checklongest = (line->name.length() == m_LongestLine);
+        bool checklongest = (MBWidth(line->name) == m_LongestLine);
         
         if (line == m_MenuList.end()-1)
             Move(-1);
@@ -245,7 +247,7 @@ void CMenu::DelEntry(const std::string &id)
         {
             m_LongestLine = 0;
             for (TMenuList::iterator it=m_MenuList.begin(); it!=m_MenuList.end(); it++)
-                m_LongestLine = std::max(m_LongestLine, it->name.length());
+                m_LongestLine = std::max(m_LongestLine, MBWidth(it->name));
         }
         
         PushEvent(EVENT_DATACHANGED);

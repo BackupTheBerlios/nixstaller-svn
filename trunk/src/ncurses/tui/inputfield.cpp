@@ -19,6 +19,7 @@
 
 #include <locale.h>
 #include <ctype.h>
+#include "utf8.h"
 #include "tui.h"
 #include "inputfield.h"
 
@@ -44,10 +45,17 @@ CInputField::~CInputField(void)
         TUI.UnLockCursor();
 }
 
+TSTLStrSize CInputField::GetStrPosition()
+{
+    std::string::iterator it = m_Text.begin();
+    utf8::advance(it, m_StartPos + m_CursorPos, m_Text.end());
+    return std::distance(m_Text.begin(), it);
+}
+
 void CInputField::Move(int n, bool relative)
 {
-    TSTLStrSize len = m_Text.length();
-    int w = Width()-3; // -3, because we want to scroll before char is at last available position and we have a frame
+    const TSTLStrSize chars = utf8::distance(m_Text.begin(), m_Text.end());
+    const TSTLStrSize maxwidth = SafeConvert<TSTLStrSize>(Width()-2); // -3 because we have a frame and to keep cursor inside it
     
     if (relative)
     {
@@ -72,9 +80,9 @@ void CInputField::Move(int n, bool relative)
         {
             TSTLStrSize newpos = m_CursorPos + n;
             
-            // Don't go past str length and prevent overflows
-            if (((newpos+m_StartPos) > len) || (newpos < m_CursorPos))
-                newpos = (len - m_StartPos);
+            // Don't go past str width and prevent overflows
+            if (((newpos+m_StartPos) > chars) || (newpos < m_CursorPos))
+                newpos = (chars - m_StartPos);
             
             m_CursorPos = newpos;
         }
@@ -82,18 +90,34 @@ void CInputField::Move(int n, bool relative)
     else
     {
         m_StartPos = 0;
-        m_CursorPos = n;
+        m_CursorPos = std::min(SafeConvert<TSTLStrSize>(n), chars);
     }
 
-    if (m_CursorPos > static_cast<TSTLStrSize>(w))
+    std::string::iterator start = m_Text.begin();
+    utf8::advance(start, m_StartPos, m_Text.end());
+    
+    bool pastend = ((m_StartPos+m_CursorPos) >= chars);
+    std::string::iterator end;
+    if (!pastend)
+        utf8::advance(end = start, m_CursorPos+1, m_Text.end());
+    else
+        end = m_Text.end();
+    
+    debugline("twidth: %u, maxwidth: %u, fitw: %u, cursor: %u, substr: %s\n", MBWidth(std::string(start, end)), maxwidth, GetFitfromW(m_Text, start, maxwidth, false), m_CursorPos, std::string(start, end).c_str());
+    
+    const TSTLStrSize realmaxw = GetFitfromW(m_Text, start, maxwidth, false);
+    if ((MBWidth(std::string(start, end)) + pastend) > realmaxw)
     {
-        m_StartPos += (m_CursorPos - w);
-        
-        TSTLStrSize max = len - w;
-        if (m_StartPos > max)
-            m_StartPos = max;
-                
-        m_CursorPos = w;
+        while (start != end)
+        {
+            m_StartPos++;
+            utf8::next(start, m_Text.end());
+            debugline("twidth(2): %u, start: %u, maxwidth: %u, substr: %s\n", MBWidth(std::string(start, end)), m_StartPos, realmaxw, std::string(start, end).c_str());
+            if ((MBWidth(std::string(start, end)) + pastend) <= realmaxw)
+                break;
+        }
+        m_CursorPos = utf8::distance(start, end) - 1 + pastend;
+        debugline("twidth(3): %u, start: %u, maxwidth: %u, substr: %s\n", MBWidth(std::string(start, end)), m_StartPos, realmaxw, std::string(start, end).c_str());
     }
     
     RequestQueuedDraw();
@@ -113,7 +137,7 @@ bool CInputField::ValidChar(chtype *ch)
                 *ch = ',';
         }
         
-        std::string legal = LegalNrTokens((m_eInputType == FLOAT), m_Text, GetPosition());
+        std::string legal = LegalNrTokens((m_eInputType == FLOAT), m_Text, GetStrPosition());
 
         if (legal.find(*ch) == std::string::npos)
             return false; // Illegal char
@@ -124,14 +148,14 @@ bool CInputField::ValidChar(chtype *ch)
 
 void CInputField::Addch(chtype ch)
 {
-    TSTLStrSize length = m_Text.length();
+    TSTLStrSize chars = utf8::distance(m_Text.begin(), m_Text.end());
     
-    if (m_iMaxChars && (SafeConvert<int>(length) >= m_iMaxChars))
+    if (m_iMaxChars && (SafeConvert<int>(chars) >= m_iMaxChars))
         return;
     
-    TSTLStrSize pos = GetPosition();
+    TSTLStrSize pos = GetStrPosition();
     
-    if (pos >= length)
+    if (pos >= chars)
         m_Text += ch;
     else
         m_Text.insert(pos, 1, ch);
@@ -142,28 +166,38 @@ void CInputField::Addch(chtype ch)
 
 void CInputField::Delch(TSTLStrSize pos)
 {
-    if ((m_Text.empty()) || (pos > m_Text.size()))
+    if ((m_Text.empty()) || (pos >= SafeConvert<TSTLStrSize>(utf8::distance(m_Text.begin(), m_Text.end()))))
         return;
     
-    m_Text.erase(pos, 1);
+    std::string::iterator start = m_Text.begin(), end;
+    utf8::advance(start, pos, m_Text.end());
+    utf8::next(end = start, m_Text.end());
+    m_Text.erase(start, end);
     RequestQueuedDraw();
     PushEvent(EVENT_DATACHANGED);
 }
 
 void CInputField::DoDraw()
 {
-    TSTLStrSize end = m_StartPos + Width()-2, length = m_Text.length();
-    
-    if (end > length)
-        end = length;
+    std::string::iterator first = m_Text.begin(), last;
+    utf8::advance(first, m_StartPos, m_Text.end());
+    last = first + GetMBLenFromW(std::string(first, m_Text.end()), Width()-2); // -2 for the border and cursor
     
     if (m_cOut)
-        AddStr(this, 1, 1, std::string(end-m_StartPos, m_cOut).c_str());
+    {
+        TSTLStrSize charn = utf8::distance(first, last);
+        AddStr(this, 1, 1, std::string(charn, m_cOut).c_str());
+    }
     else
-        AddStr(this, 1, 1, m_Text.substr(m_StartPos, end).c_str());
+        AddStr(this, 1, 1, std::string(first, last).c_str());
     
     if (Focused())
-        TUI.LockCursor(GetWX(GetWin()) + SafeConvert<int>(m_CursorPos)+1, GetWY(GetWin())+1);
+    {
+        std::string::iterator start = m_Text.begin();
+        utf8::advance(start, m_StartPos, m_Text.end());
+        int cursx = SafeConvert<int>(GetMBWidthFromC(m_Text, start, m_CursorPos)) + 1;
+        TUI.LockCursor(GetWX(GetWin()) + cursx, GetWY(GetWin())+1);
+    }
 }
 
 bool CInputField::CoreHandleKey(chtype key)
@@ -179,10 +213,10 @@ bool CInputField::CoreHandleKey(chtype key)
     else if (IsEnter(key))
         PushEvent(EVENT_CALLBACK);
     else if (key == KEY_DC)
-        Delch(GetPosition());
+        Delch(m_StartPos + m_CursorPos);
     else if (IsBackspace(key))
     {
-        Delch(GetPosition()-1);
+        Delch(m_StartPos + m_CursorPos - 1);
         Move(-1, true);
     }
     else if (ValidChar(&key))

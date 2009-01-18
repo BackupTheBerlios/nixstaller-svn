@@ -30,13 +30,14 @@ class CInputField: public CWidget
 public:
     enum EInputType { STRING, INT, FLOAT };
     
+private:
     std::string m_Text;
     int m_iMaxChars;
     char m_cOut;
     EInputType m_eInputType;
     TSTLStrSize m_StartPos, m_CursorPos;
     
-    TSTLStrSize GetPosition(void) { return m_StartPos + m_CursorPos; }
+    TSTLStrSize GetStrPosition(void);
     void Move(int n, bool relative);
     bool ValidChar(chtype *ch);
     void Addch(chtype ch);

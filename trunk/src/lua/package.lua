@@ -161,7 +161,7 @@ if pkg.deps then
         local deps = table.remove(stack)
         for _, d in ipairs(deps) do
             if not pkg.depmap[d] then
-                local c = dofile(string.format("deps/%s/config.lua", d))
+                local c = loaddep(".", d)
                 c.name = d
                 pkg.depmap[d] = c
                 table.insert(stack, c.deps)

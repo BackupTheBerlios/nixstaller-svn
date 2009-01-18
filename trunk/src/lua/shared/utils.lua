@@ -397,6 +397,7 @@ function loaddep(prdir, name)
     end
     
     default("full", true)
+    default("standalone", true)
     default("libdir", "lib/")
     default("description", "")
     default("libs", { })

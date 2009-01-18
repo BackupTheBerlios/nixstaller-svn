@@ -27,6 +27,7 @@
 #include <errno.h>
         
 #include "libmd5/md5.h"
+#include "utf8.h"
 #include "main.h"
 #include "lua/lua.h"
 
@@ -218,8 +219,8 @@ std::string &EatWhite(std::string &str, bool skipnewlines)
 
 void EscapeControls(std::string &text)
 {
-    TSTLStrSize length = text.length(), start = 0;
-    while (start < length)
+    TSTLStrSize start = 0;
+    while (start < text.length())
     {
         start = text.find_first_of("%", start);
         
@@ -601,6 +602,190 @@ int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
         throw Exceptions::CExSelect(errno);
     return ret;
 }
+
+TSTLStrSize MBWidth(const std::string &str)
+{
+    if (str.empty())
+        return 0;
+
+    TSTLStrSize ret = 0;
+    std::wstring utf16;
+    std::string::const_iterator end = utf8::find_invalid(str.begin(), str.end());
+    assert(end == str.end());
+    
+    // HACK: Just append length of invalid part
+    if (end != str.end())
+        ret = std::distance(end, str.end());
+    
+    utf8::utf8to16(str.begin(), end, std::back_inserter(utf16));
+    ret += wcswidth(utf16.c_str(), utf16.length());
+    
+    return ret;
+}
+
+TSTLStrSize GetMBLenFromW(const std::string &str, size_t width)
+{
+    if (str.empty())
+        return 0;
+
+    utf8::iterator<std::string::const_iterator> it(str.begin(), str.begin(), str.end());
+    for (; it.base() != str.end(); it++)
+    {
+        TSTLStrSize w = MBWidth(std::string(str.begin(), it.base()));
+        if (w == width)
+            break;
+        else if (w > width) // This may happen with multi-column chars
+        {
+            if (it.base() != str.begin())
+                it--;
+            break;
+        }
+    }
+    
+    return std::distance(str.begin(), it.base());
+}
+
+TSTLStrSize GetMBWidthFromC(const std::string &str, std::string::const_iterator cur, int n)
+{
+    if (str.empty())
+        return 0;
+    
+    std::string::const_iterator it = cur;
+    if (n < 0)
+    {
+        while ((n < 0) && (it != str.begin()))
+        {
+            utf8::prior(it, str.begin());
+            n++;
+        }
+        return MBWidth(std::string(it, cur));
+    }
+    else
+    {
+        while ((n > 0) && (it != str.end()))
+        {
+            utf8::next(it, str.end());
+            n--;
+        }
+        return MBWidth(std::string(cur, it));
+    }
+}
+
+TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur, TSTLStrSize width, bool roundup)
+{
+    std::string::const_iterator it = cur;
+    TSTLStrSize prev = 0;
+    while (it != str.end())
+    {
+        utf8::next(it, str.end());
+        TSTLStrSize w = MBWidth(std::string(cur, it));
+        if (w == width)
+            return w;
+        else if (w > width)
+            return (roundup) ? w : prev;
+        prev = w;
+    }
+    return width;
+}
+
+#if 0
+size_t MBWidth(std::string str)
+{
+    // Remove newlines, as wcswidth can't really handle them
+    TSTLStrSize start = 0;
+    while (start < str.length())
+    {
+        start = str.find_first_of("\n", start);
+        
+        if (start != std::string::npos)
+        {
+            str.erase(start, 1);
+            // keep start the same as 1 char was just removed
+            continue;
+        }
+        else
+            break;
+
+        start++;
+    }
+    
+    wchar_t *wc = ToWC(str.c_str());
+    if (wc)
+    {
+        size_t ret = wcswidth(wc, wcslen(wc));
+        debugline("MBWidth: %s: %u, %u\n", str.c_str(), wcslen(wc), wcswidth(wc, wcslen(wc)));
+        delete [] wc;
+        return ret;
+    }
+    else
+        return str.length();
+}
+#endif
+
+#if 0
+// Based on code from: http://canonical.org/~kragen/strlen-utf8.html
+size_t MBWidth(const std::string &s)
+{
+    size_t i = 0, ret = 0;
+    while (s[i])
+    {
+        if ((s[i] & 0xc0) != 0x80)
+            ret++;
+        i++;
+    }
+    
+    return ret;
+}
+
+size_t GetMBLenFromW(const std::string &str, size_t width)
+{
+    if (width == 0)
+        return 0;
+    
+    size_t ret = 0, w = 0;
+    while (str[ret])
+    {
+        if ((str[ret] & 0xc0) != 0x80)
+            w++;
+        
+        // We have to get all chars before w > width 
+        if (w > width)
+        {
+            debugline("GetMBLenFromW: %s, %u, %u, %u, %s, %u\n", str.c_str(), width, w, ret, str.substr(0, ret).c_str(), MBWidth(str));
+            return ret; // Return previous length as it's not incremented yet
+        }
+
+        ret++;
+    }
+    
+    return ret;
+}
+#endif
+
+#if 0
+size_t GetMBLenFromW(const std::string &str, size_t width)
+{
+    const TSTLStrSize length = str.length();
+    const size_t mbw = MBWidth(str.substr(0, width));
+    
+    // Common case is that each char takes 1 col, so check that first
+    if (mbw == width)
+        return width;
+    else if ((mbw < width) && mbw) // full string is less or equal than width, no need to do more
+        return length;
+    
+    // UNDONE: This is rather inefficient...
+    for (TSTLStrSize end = 0; end < length; end++)
+    {
+        size_t w = MBWidth(str.substr(0, end+1));
+        if (w == width)
+            return end+1;
+        else if (w > width)
+            return end; // Now too long, return previous length
+    }
+    return length;
+}
+#endif
 
 // -------------------------------------
 // Directory iterator

@@ -425,7 +425,7 @@ end
 function markdep(bininfo, lib, dep, deps)
     assert(not bininfo.main)
     
-    if dep and dep.full then
+    if dep and dep.full and (dep.standalone or bininfo.native) then
         if initdep(dep) then
             bininfo.found = true
             bininfo.native = false
@@ -437,8 +437,8 @@ function markdep(bininfo, lib, dep, deps)
     else
         if dep then
             depprocess.wrongdeps[dep] = depprocess.wrongdeps[dep] or { }
-            depprocess.wrongdeps[dep].incompatdep = true
-            install.print(string.format("WARNING: Missing/incompatible dependency: %s\n", dep.name))
+            depprocess.wrongdeps[dep].missing = true
+            install.print(string.format("WARNING: Missing dependency: %s\n", dep.name))
         else
             depprocess.wronglibs[lib] = depprocess.wronglibs[lib] or { }
             if bininfo.native then
@@ -469,7 +469,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps)
                 infomap[lib].deps = pkg.deps
             else
                 local dep = deps and getdepfromlib(deps, lib)
-                if (dep and dep.Required and dep:Required() and dep.full) or not path then
+                if (dep and dep.full and dep.Required and dep:Required()) or not path then
                     markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep)
                 elseif path then -- Lib is already present
                     infomap[lib].native = true
@@ -485,6 +485,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps)
                     if not verifysymverneeds(infomap[bin].symverneeds[lib], infomap[lib].path) then
                         if infomap[lib].native then
                             markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep)
+                            install.print(string.format("Overrided dependency: %s (%s)\n", infomap[lib].dep.name, lib))
                         elseif not infomap[lib].dep.HandleCompat or not infomap[lib].dep:HandleCompat(lib) then
                             depprocess.wrongdeps[infomap[lib].dep] = depprocess.wrongdeps[infomap[lib].dep] or { }
                             depprocess.wrongdeps[infomap[lib].dep].incompatdep = true
@@ -568,7 +569,7 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver)
     return false
 end
 
-function verifysyms(infomap, bin)
+function verifysyms(infomap)
     local stack = { }
     local checked = { }
     
@@ -605,32 +606,37 @@ function verifysyms(infomap, bin)
                     end
                     
                     if not found then
-                        -- Main libs aren't checked, since we and the user can't fix them (UNDONE?)
-                        if supposedlib and infomap[supposedlib] and infomap[supposedlib].found and
-                           not infomap[supposedlib].main then
-                            if handleinvaliddep(infomap, supposedlib, b, sym, v.version) then
-                                collectlibinfo(infomap, supposedlib, mainlibs, infomap[supposedlib].deps)
-                                
-                                -- Check for any new or affected dependencies
-                                for lib, info in pairs(infomap) do
-                                    if info.found and not utils.tablefind(stack, lib) then
-                                        if not checked[lib] or infomap[supposedlib].usedby[lib] then
-                                            table.insert(stack, lib)
+                        if supposedlib then
+                            -- Main libs aren't checked, since we and the user can't fix them (UNDONE?)
+                            if infomap[supposedlib] and infomap[supposedlib].found and
+                            not infomap[supposedlib].main then
+                                if handleinvaliddep(infomap, supposedlib, b, sym, v.version) then
+                                    collectlibinfo(infomap, supposedlib, mainlibs, infomap[supposedlib].deps)
+                                    
+                                    -- Check for any new or affected dependencies
+                                    for lib, info in pairs(infomap) do
+                                        if info.found and not utils.tablefind(stack, lib) then
+                                            if not checked[lib] or infomap[supposedlib].usedby[lib] then
+                                                table.insert(stack, lib)
+                                            end
                                         end
                                     end
+                                    
+                                    found = true
                                 end
-                                
-                                found = true
+                            else
+                                if not infomap[supposedlib] or infomap[supposedlib].native then
+                                    depprocess.wronglibs[supposedlib] = depprocess.wronglibs[supposedlib] or { }
+                                    depprocess.wronglibs[supposedlib].incompatlib = true
+                                elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.HandleCompat or
+                                        not infomap[supposedlib].dep:HandleCompat(supposedlib)) then
+                                    depprocess.wrongdeps[infomap[supposedlib].dep] = depprocess.wrongdeps[infomap[supposedlib].dep] or { }
+                                    depprocess.wrongdeps[infomap[supposedlib].dep].incompatdep = true
+                                end
                             end
                         else
-                            if not infomap[supposedlib] or infomap[supposedlib].native then
-                                depprocess.wronglibs[supposedlib] = depprocess.wronglibs[supposedlib] or { }
-                                depprocess.wronglibs[supposedlib].incompatlib = true
-                            elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.HandleCompat or
-                                    not infomap[supposedlib].dep:HandleCompat(supposedlib)) then
-                                depprocess.wrongdeps[infomap[supposedlib].dep] = depprocess.wrongdeps[infomap[supposedlib].dep] or { }
-                                depprocess.wrongdeps[infomap[supposedlib].dep].incompatdep = true
-                            end
+                            -- Don't know where the sym should be defined
+                            install.print(string.format("WARNING: Undefined symbol '%s' (used by %s)\n", sym, b))
                         end
                     end
                 end
@@ -689,7 +695,7 @@ function checkdeps(bins, libs, bdir)
                 collectlibinfo(infomap, bin, mainlibs, deps)
                 
                 if lsymstat then
-                    verifysyms(infomap, bin)
+                    verifysyms(infomap)
                 end
                 
                 -- Gather all deps to be installed
@@ -772,6 +778,8 @@ function verifydeps(bins, libs)
             ret[k.name].problem = "Failed to download."
         elseif v.incompatdep then
             ret[k.name].problem = "(Binary) incompatible."
+        elseif v.missing then
+            ret[k.name].problem = "Missing."
         end
     end
     

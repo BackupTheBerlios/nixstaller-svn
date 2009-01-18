@@ -2,22 +2,17 @@ OVERALL
 - libstdcxx:
     - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
+    - Only use it on some platforms?
 - Test regular C lua libs, update notes
-- deps:
-    - Additional wrongdeps/wronglibs checks?
-- Check desktopentries in Ubuntu and destdir for SelectDirScreen
-- Dep templates:
-    - Test templates and check if they can be full and need extra code for being full (eg fontconfig, freetype) (finished?).
-    - Add description for all options (finished?)
-    - Check for messages using 'library' and change (finished?)
-- Installer profiles?
-- Mail suggestions?
-    - Change banners (or atleast screen titles)
-
+- Update ncurses to 5.7
 
 TEST
 - MD5 code for instheader.sh, makeself.sh and generic packages.
 - New delta code (mainly when new bins are ready and asserts)
+- Realistic package for dependency system
+- ncurses utf8:
+    - buttonbar
+    - menu
 
 
 PACKAGING
@@ -47,7 +42,7 @@ DOCS
 - add/del options for menu, radiobutton, checkbox
 - menu, radiobutton, checkbox can now be empty
 - del() function for luacfgmenu
-- GTK/Pango templates
+- GTK/Pango templates (update reference in deptemplates!)
 - Apple stuff
 - utils.emptystring()? (CHANGELOG)
 - verifydeps uses setstatus
@@ -66,6 +61,7 @@ DOCS
 RELEASE
 - Remove/disable asserts in lua code
 - Reenable MD5 checking for InitDeltaBins()
+- Final bindeltas file (re-enable MD5 checking)
 
 
 TRANSLATIONS
@@ -120,9 +116,13 @@ OVERALL
 - Dep templates:
     - For list: LSB Compliance, others? --> LSB tag?
     - More templates?
+    - Fix more templates so they can be full.
+    - Way to tell that dep shouldn't be standalone
 - Unattended installations
     - Control verbosity?
 - Move curdir lua variable to install package?
+- Installer profiles
+- Configurable background parts (background images)
 
 
 PACKAGING

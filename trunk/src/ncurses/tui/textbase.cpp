@@ -39,7 +39,7 @@ TSTLStrSize CTextBase::GetNextLine(const std::string &text, TSTLStrSize start, i
     
     if (m_bWrap)
     {
-        end = start + width-1;
+        end = start + GetMBLenFromW(text.substr(start, std::string::npos), width)-1;
         
         if (end < start) // Overflow
             end = length - 1;
@@ -88,10 +88,7 @@ void CTextBase::UpdateText(int width)
         
         TSTLStrSize newlen = (end-start)+1;
         m_Lines.push_back(m_QueuedText.substr(start, newlen));
-            
-        if (newlen > m_LongestLine)
-            m_LongestLine = newlen;
-            
+        m_LongestLine = std::max(m_LongestLine, MBWidth(m_QueuedText.substr(start, newlen)));
         start = end + 1;
     }
     
@@ -114,11 +111,13 @@ int CTextBase::CoreRequestWidth()
     if (!m_QueuedText.empty())
     {
         TSTLStrSize longest = 0, start = 0, end, length = m_QueuedText.length();
-        const int width = (m_bWrap && (m_iMaxReqWidth > 0)) ? m_iMaxReqWidth : SafeConvert<int>(length);
+        const int width = (m_bWrap && (m_iMaxReqWidth > 0)) ? m_iMaxReqWidth : SafeConvert<int>(MBWidth(m_QueuedText));
         while (start < length)
         {
             end = GetNextLine(m_QueuedText, start, width);
-            longest = std::max(longest, (end - start)+1);
+            if (end >= length-1)
+                end = length-1;
+            longest = std::max(longest, MBWidth(m_QueuedText.substr(start, (end - start)+1)));
             start = end + 1;
         }
         

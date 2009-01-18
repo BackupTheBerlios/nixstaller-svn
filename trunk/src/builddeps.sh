@@ -131,7 +131,7 @@ buildncurses()
     esac
 
     # Examples may fail to build, just make sure to always call make install (no &&).
-    ./configure --without-gpm --without-dlsym $COPTS && make ; make install DESTDIR="$DESTPREFIX" && make clean
+    ./configure --without-gpm --without-dlsym --enable-widec $COPTS && make ; make install DESTDIR="$DESTPREFIX" && make clean
     restoredir
 }
 

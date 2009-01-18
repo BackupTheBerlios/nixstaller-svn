@@ -61,8 +61,9 @@ function Usage()
     --prdir, -p <dir>       The project directory of the installer. This argument is required.
     
  Valid options for the 'gen' action:
-    --simple, -s            Generates 'simple dependencies'. This is the default.
-    --full, -f              Generates 'full dependencies'.
+    --simple, -s            Generates a simple dependency. This is the default.
+    --full, -f              Generates a full dependency.
+    --no-standalone         Generates a full non-standalone dependency.
     --name, -n <name>       Name of the dependency. This option is required.
     --desc, -d <desc>       Dependency description. This option is required.
     --libs, -a <libs>       Comma seperated list of all libraries for this dependency.
@@ -71,8 +72,10 @@ function Usage()
  Valid options for the 'gent' action:
     --simple, -s            Generates a simple dependency. This is the default.
     --full, -f              Generates a full dependency.
-    --simple-tag <tags>     Generates a simple dependency incase the given template has one or more of the specified tags. <tags> is a comma seperated list. Prefix a tag with '!' to exclude templates.
-    --full-tag <tags>       As 'simple-tag', but for full dependencies.
+    --no-standalone         Generates a full non-standalone dependency.
+    --simple-tag <tags>     Generates a simple dependency incase the given template has one or more of the specified tags. <tags> is a comma seperated list. Prefix a tag with '!' to exclude templates. Remaining templates give full dependencies.
+    --full-tag <tags>       As 'simple-tag', but for full dependencies and remaining templates give simple dependencies.
+    --nostand-tag <tags>    As 'simple-tag', but for non-standalone dependencies and remaining templates will be standalone. Note that this doesn't whether dependencies are full or not.
     --name, -n <name>       Name of the dependency. Default: template name.
     --desc, -d <desc>       Dependency description. Default: description from template.
     --template, -t <temp>   Generates the dependency from the given template <temp>. This option is required.
@@ -80,12 +83,15 @@ function Usage()
     --deps, -D <deps>       Comma seperated list of any dependencies for the generated dependency itself.
 
  Valid options for the 'auto' action:
-     --simple-tag <tags>     Generates simple dependencies from templates which have one or more of the specified tags. <tags> is a comma seperated list. Prefix a tag with '!' to exclude templates.
-    --full-tag <tags>       As 'simple-tag', but for full dependencies.
-    --simple, -s            Generates 'simple dependencies'. Default is what the relevant template recommends.
-    --full, -f              Generates 'full dependencies'. Default is what the relevant template recommends.
+    --simple, -s            Generates simple dependencies. This is the default.
+    --full, -f              Generates full dependencies.
+    --no-standalone         Generates full non-standalone dependencies.
+    --simple-tag <tags>     Generates simple dependencies from templates which have one or more of the specified tags. <tags> is a comma seperated list. Prefix a tag with '!' to exclude templates. Remaining templates give full dependencies.
+    --full-tag <tags>       As 'simple-tag', but for full dependencies and remaining templates give simple dependencies.
+    --nostand-tag <tags>    As 'simple-tag', but for non-standalone dependencies and remaining templates will be standalone. Note that this doesn't affect whether dependencies are full or not.
     --unknown-full, -U      Creates dependencies for libraries which are not listed by any template. The dependency will be named after the library, without the lib prefix and '.so.<version>' suffix (so libfoo.so.1 becomes foo), have an empty description and is defined as full.
     --unknown-simple        As 'unknown-full', but generates simple dependencies.
+    --unknown-nostand       As 'unknown-full', but generates non-standalone full dependencies.
     --verbose, -v           Show more verbose output.
 
  Valid options for the 'gen', 'gent' and 'auto' actions:
@@ -234,7 +240,7 @@ function CheckExisting(prdir, d, exist)
     assert(false)
 end
 
-function CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, libmap, destos, destarch, postf, installf, requiredf, compatf, caninstallf)
+function CreateDep(name, desc, libs, libdir, full, standalone, baseurl, deps, prdir, copy, libmap, destos, destarch, postf, installf, requiredf, compatf, caninstallf)
     local path = string.format("%s/deps/%s", prdir, name)
     os.mkdirrec(path)
     
@@ -289,8 +295,11 @@ dep.libs = { %s }
 -- Subdirectory (relative to files_<os>_<arch> directories) where libraries can be found.
 dep.libdir = "%s"
 
--- If this is a full dependency or not
+-- If this is a full dependency or not.
 dep.full = %s
+
+-- If this is a standalone dependency or not (only applies to full dependencies).
+dep.standalone = %s
 
 -- Server directory (http, ftp) from where dependency files can be fetched.
 -- This is fully optional, works only with full dependencies and only effects
@@ -326,7 +335,7 @@ end
 
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, libdir, (full and "true") or "false", url, depsstr, installf, requiredf, compatf, caninstallf))
+]], os.date(), desc, libsstr, libdir, (full and "true") or "false", (standalone and "true") or "false", url, depsstr, installf, requiredf, compatf, caninstallf))
 
     out:close()
     
@@ -353,22 +362,34 @@ return dep
 end
 
 function ParseFullArgs()
-    local ret = { fullall = false, restfull = nil, tags = { } }
+    local ret = { fullall = false, standall = true, restfull = nil, reststand = nil, tags = { }, sttags = { } }
     for _, o in ipairs(opts) do
         if o.name == "s" or o.name == "simple" then
-            ret.fullall = false
+            ret.fullall, ret.standall = false, false
         elseif o.name == "f" or o.name == "full" then
-            ret.fullall = true
+            ret.fullall, ret.standall = true, true
+        elseif o.name == "no-standalone" then
+            ret.fullall, ret.standall = true, false
         elseif o.name == "S" or o.name == "simple-tag" or
-               o.name == "F" or o.name == "full-tag" then
-            ret.fullall = nil
-            ret.restfull = (o.name == "S" or o.name == "simple-tag")
+               o.name == "F" or o.name == "full-tag" or
+               o.name == "nostand-tag" then
+            local tagtab
+            if o.name == "nostand-tag" then
+                ret.standall = nil
+                ret.reststand = (o.name == "nostand-tag")
+                tagtab = ret.sttags
+            else
+                ret.fullall = nil
+                ret.restfull = (o.name == "S" or o.name == "simple-tag")
+                tagtab = ret.tags
+            end
+            
             local tags = optlisttotab(o.val)
             for _, t in ipairs(tags) do
                 if string.find(t, "^%!") then -- Starts with '!' ?
-                    ret.tags[string.sub(t, 2)] = false -- mark as false, trim '!'
+                    tagtab[string.sub(t, 2)] = false -- mark as false, trim '!'
                 else
-                    ret.tags[t] = true
+                    tagtab[t] = true
                 end
             end
         end
@@ -378,25 +399,45 @@ function ParseFullArgs()
 end
 
 function UseTempFull(fulltab, temp)
-    if fulltab.fullall ~= nil then
-        return fulltab.fullall
+    -- Returns true if only found normal tags (those not prefixed with !)
+    local function positivetag(tagtab)
+        local ret = false
+        for _, t in ipairs(temp.tags) do
+            if tagtab[t] ~= nil then
+                ret = tagtab[t]
+                if not ret then
+                    break
+                end
+            end
+        end
+        return ret
     end
     
-    local positivetag = false -- Found only normal tags (those not prefixed with !)
-    for _, t in ipairs(temp.tags) do
-        if fulltab.tags[t] ~= nil then
-            positivetag = fulltab.tags[t]
-            if not positivetag then
-                break
-            end
+    local retf, rets
+    
+    if fulltab.fullall ~= nil then
+        retf = fulltab.fullall
+    else
+        local pos = positivetag(fulltab.tags)
+        if fulltab.restfull then
+            retf = not pos -- simple-tag was specified
+        else
+            retf = pos -- full-tag was specified
         end
     end
     
-    if fulltab.restfull then
-        return not positivetag -- simple-tag was specified
+    if fulltab.standall ~= nil then
+        rets = fulltab.standall
     else
-        return positivetag -- full-tag was specified
+        local pos = positivetag(fulltab.sttags)
+        if fulltab.reststand then
+            rets = not pos -- nostand-tag was specified
+        else
+            rets = pos
+        end
     end
+    
+    return retf, rets
 end
 
 function ParseGenArgs()
@@ -456,13 +497,13 @@ function CheckArgs()
         lopts = { {"help"}, {"prdir", true}, {"libpath", true} }
     elseif action == "gen" then
         sopts = "hbsfcn:d:p:l:u:a:D:"
-        lopts = { {"help"}, {"simple"}, {"full"}, {"copy"}, {"name", true}, {"desc", true}, {"usebins"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
+        lopts = { {"help"}, {"simple"}, {"full"}, {"no-standalone"}, {"copy"}, {"name", true}, {"desc", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
     elseif action == "gent" then
         sopts = "hsS:fF:cn:d:t:p:l:u:a:D:"
-        lopts = { {"help"}, {"simple"}, { "simple-tag", true }, {"full"}, { "full-tag", true }, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
+        lopts = { {"help"}, {"simple"}, { "simple-tag", true }, {"full"}, { "full-tag", true },  {"no-standalone"},  {"nostand-tag", true}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
     elseif action == "auto" then
         sopts = "hsS:fF:cp:l:u:Uv"
-        lopts = { {"help"}, {"simple"}, { "simple-tag", true }, {"full"}, { "full-tag", true }, {"unknown-simple"}, {"unknown-full"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"verbose"} }
+        lopts = { {"help"}, {"simple"}, { "simple-tag", true }, {"full"}, { "full-tag", true }, {"no-standalone"},  {"nostand-tag", true}, {"unknown-simple"}, {"unknown-full"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"verbose"} }
     elseif action == "edit" then
         sopts = "hsfp:d:rcl:"
         lopts = { {"help"}, {"simple"}, {"full"}, {"prdir", true}, {"dep", true}, {"remove"}, {"copy"}, {"libpath", true}, {"destos", true}, {"destarch", true} }
@@ -517,15 +558,11 @@ function List()
             print("Tags                 " .. (tabtostr(t.tags) or ""))
             
             io.write("Filed libraries      ")
-            if t.check then
-                print("dynamic (use scan action to check relevancy)")
-            else
-                if t.libs then
-                    print(tabtostr(t.libs))
-                end
-                if t.patlibs then
-                    print(tabtostr(t.patlibs))
-                end
+            if t.libs then
+                print(tabtostr(t.libs))
+            end
+            if t.patlibs then
+                print(tabtostr(t.patlibs))
             end
             
             if t.notes then
@@ -585,15 +622,15 @@ function Scan()
                 else
                     loadeddeps[d] = ret
                 end
-            end
             
-            if loadeddeps[d] then
-                for _, l in ipairs(loadeddeps[d].libs) do
-                    depmap[dep] = depmap[dep] or { }
-                    depmap[dep][utils.basename(l)] = d
-                end
-                if loadeddeps[d].deps then
-                    loaddeps(loadeddeps[d].deps, loadeddeps[d])
+                if loadeddeps[d] then
+                    for _, l in ipairs(loadeddeps[d].libs) do
+                        depmap[dep] = depmap[dep] or { }
+                        depmap[dep][utils.basename(l)] = d
+                    end
+                    if loadeddeps[d].deps then
+                        loaddeps(loadeddeps[d].deps, loadeddeps[d])
+                    end
                 end
             end
         end
@@ -634,15 +671,6 @@ function Scan()
         
         local sugtemps, sugdeps = { }, { }
         for l in pairs(unknownlibs) do
-            for _, t in ipairs(pkg.deptemplates) do
-                if IsInTemplate(t, l, map) then
-                    sugtemps[t] = sugtemps[t] or { }
-                    table.insert(sugtemps[t], l)
-                    unknownlibs[l] = nil
-                    break
-                end
-            end
-
             -- Check if existing deps provide library
             for _, d in pairs(loadeddeps) do
                 if d and utils.tablefind(d.libs, l) then
@@ -650,6 +678,18 @@ function Scan()
                     table.insert(sugdeps[d], l)
                     unknownlibs[l] = nil
                     break
+                end
+            end
+
+            if unknownlibs[l] then
+                -- Check if we can make a suggestion
+                for _, t in ipairs(pkg.deptemplates) do
+                    if IsInTemplate(t, l, map) then
+                        sugtemps[t] = sugtemps[t] or { }
+                        table.insert(sugtemps[t], l)
+                        unknownlibs[l] = nil
+                        break
+                    end
                 end
             end
         end
@@ -755,7 +795,18 @@ function Generate()
     end
 
     local map = (copy and fulltab.fullall and GetLibMap())
-    CreateDep(name, desc, libs, libdir, fulltab.fullall, baseurl, deps, prdir, copy, map, destos, destarch)
+    CreateDep(name, desc, libs, libdir, fulltab.fullall, fulltab.standall, baseurl, deps, prdir, copy, map, destos, destarch)
+    
+    local typ
+    if fulltab.fullall then
+        if fulltab.standall then
+            typ = "full (standalone)"
+        else
+            typ = "full (not standalone)"
+        end
+    else
+        typ = "simple"
+    end
     
     print(string.format([[
 Dependency generation complete:
@@ -766,7 +817,7 @@ Libraries copied        %s
 Library subdirectory    %s
 Type                    %s
 Dependencies            %s
-]], name, desc, tabtostr(libs), tostring(copy and fulltab.fullall), libdir, (fulltab.fullall and "full") or "simple", tabtostr(deps)))
+]], name, desc, tabtostr(libs) or "-", tostring(copy and fulltab.fullall), libdir, typ, tabtostr(deps) or "-"))
 
 end
 
@@ -801,7 +852,7 @@ function GenerateFromTemp()
         ErrUsage("A list of binaries/libraries must be given (used to collect libraries for generated dependencies).")
     end
     
-    local full
+    local full, standalone
     local notes
     local found = false
     local map = GetLibMap()
@@ -818,7 +869,7 @@ function GenerateFromTemp()
                 end
             end
             
-            full = UseTempFull(fulltab, t)
+            full, standalone = UseTempFull(fulltab, t)
             notes = t.notes
             postf = t.post
             installf = t.install
@@ -850,7 +901,18 @@ function GenerateFromTemp()
         os.exit(1)
     end
     
-    CreateDep(name, desc, libs, libdir, full, baseurl, deps, prdir, copy, map, destos, destarch, postf, installf, requiredf, compatf, caninstallf)
+    CreateDep(name, desc, libs, libdir, full, standalone, baseurl, deps, prdir, copy, map, destos, destarch, postf, installf, requiredf, compatf, caninstallf)
+    
+    local typ
+    if full then
+        if standalone then
+            typ = "full (standalone)"
+        else
+            typ = "full (not standalone)"
+        end
+    else
+        typ = "simple"
+    end
     
     print(string.format([[
 Dependency generation complete:
@@ -862,22 +924,25 @@ Library subdirectory    %s
 Type                    %s
 Notes                   %s
 Dependencies            %s
-]], name, desc, tabtostr(libs), tostring(copy and full), libdir, (full and "full") or "simple", notes or "-", tabtostr(deps)))
+]], name, desc, tabtostr(libs) or "-", tostring(copy and full), libdir, typ, notes or "-", tabtostr(deps) or "-"))
 
 end
 
 function Autogen()
     local fulltab = ParseFullArgs()
     local fullunknown = false
+    local standunknown = true
     local copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
     local autounknown = false
     local verbose = false
     
     for _, o in ipairs(opts) do
         if o.name == "U" or o.name == "unknown-full" then
-            autounknown, fullunknown = true, true
+            autounknown, fullunknown, standunknown = true, true, true
         elseif o.name == "unknown-simple" then
             autounknown, fullunknown = true, false
+        elseif o.name == "unknown-nostand" then
+            autounknown, fullunknown, standunknown = true, true, false
         elseif o.name == "v" or o.name == "verbose" then
             verbose = true
         end
@@ -972,29 +1037,40 @@ function Autogen()
         if not CheckExisting(prdir, t.name, exist) then
             print(string.format("Skipping existing dependency '%s'", t.name))
         else
-            local fl
+            local fl, st
             if t.unknown then
-                fl = fullunknown
+                fl, st = fullunknown, standunknown
             else
-                fl = UseTempFull(fulltab, t)
+                fl, st = UseTempFull(fulltab, t)
             end
             
             local libs = mapkeytotab(di.libs)
             local deps = mapkeytotab(di.deps)
             
-            CreateDep(t.name, t.description, libs, libdir, fl, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.required, t.compat, t.caninstall)
+            CreateDep(t.name, t.description, libs, libdir, fl, st, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.required, t.compat, t.caninstall)
+            
+            local typ
+            if fl then
+                if st then
+                    typ = "standalone"
+                else
+                    typ = "full (not standalone)"
+                end
+            else
+                typ = "simple"
+            end
             
             if verbose then
                 if t.unknown then
-                    print(string.format("Generated %s dependency for unknown library %s (libs: %s; deps %s)", (fl and "full") or "simple", libs[1], tabtostr(libs) or "-", tabtostr(deps) or "-"))
+                    print(string.format("Generated %s dependency for unknown library %s (libs: %s; deps %s)", typ, libs[1], tabtostr(libs) or "-", tabtostr(deps) or "-"))
                 else
-                    print(string.format("Generated %s dependency %s (libs: %s; deps: %s; tags: %s)", (fl and "full") or "simple", t.name, tabtostr(libs) or "-", tabtostr(deps) or "-", tabtostr(t.tags)))
+                    print(string.format("Generated %s dependency %s (libs: %s; deps: %s; tags: %s)", typ, t.name, tabtostr(libs) or "-", tabtostr(deps) or "-", tabtostr(t.tags)))
                 end
             else
                 if t.unknown then
-                    print(string.format("Generated %s dependency for unknown library %s", (fl and "full") or "simple"))
+                    print(string.format("Generated %s dependency for unknown library %s", typ, libs[1]))
                 else
-                    print(string.format("Generated %s dependency %s", (fl and "full") or "simple", t.name))
+                    print(string.format("Generated %s dependency %s", typ, t.name))
                 end
             end
         end
@@ -1202,8 +1278,9 @@ DEPENDENCY "%s"
     - Dependencies      %s
     - Required by       %s
     - Full              %s
+    - Standalone        %s
     - Base URL          %s
-]], n, d.description, libs, deps, reqs, (d.full and "Yes") or "No", tostring(d.baseurl)))
+]], n, d.description, libs, deps, reqs, (d.full and "Yes") or "No", (d.standalone and "Yes") or "No", tostring(d.baseurl)))
     end
     
     print("\nNOTE: Only dependencies are shown if they are registrated in package.lua or by another dependency.")
