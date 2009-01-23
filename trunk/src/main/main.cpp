@@ -30,6 +30,7 @@
 #include <sys/wait.h>
 #include <dirent.h>
 #include <libgen.h>
+#include <langinfo.h>
 
 #include "curl.h"
 #include "main.h"
@@ -194,6 +195,7 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaOpenElf, "openelf", "os");
     NLua::RegisterFunction(LuaInitDownload, "initdownload", "os");
     NLua::RegisterFunction(LuaGetEUID, "geteuid", "os");
+    NLua::RegisterFunction(LuaHasUTF8, "hasutf8", "os");
 
     NLua::RegisterFunction(LuaAbort, "abort");
     
@@ -872,6 +874,13 @@ int CMain::LuaAbort(lua_State *L)
 int CMain::LuaGetEUID(lua_State *L)
 {
     lua_pushnumber(L, geteuid());
+    return 1;
+}
+
+int CMain::LuaHasUTF8(lua_State *L)
+{
+    // From: http://www.cl.cam.ac.uk/~mgk25/unicode.html
+    lua_pushboolean(L, (strcmp(nl_langinfo(CODESET), "UTF-8") == 0));
     return 1;
 }
 

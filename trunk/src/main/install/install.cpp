@@ -197,29 +197,24 @@ void CBaseInstall::Init(int argc, char **argv)
 {
     NLua::LuaSet(dirname(CreateText(argv[0])), "bindir");
     CMain::Init(argc, argv);
-    NLua::LuaGet(m_szCurLang, "defaultlang", "cfg");
+//     NLua::LuaGet(m_szCurLang, "defaultlang", "cfg");
     UpdateLanguage();
 }
 
 int CBaseInstall::LuaTr(lua_State *L)
 {
-    const char *str = luaL_checkstring(L, 1);
+    std::string ret = GetTranslation(luaL_checkstring(L, 1));
     int args = lua_gettop(L);
     
-    if (args == 1)
-        lua_pushstring(L, GetTranslation(str));
-    else if (args == 2)
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2)));
-    else if (args == 3)
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
-                       luaL_checkstring(L, 3)));
-    else if (args == 4)
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
-                       luaL_checkstring(L, 3), luaL_checkstring(L, 4)));
-    else // Limitation of max 4 args ...
-        lua_pushstring(L, CreateText(GetTranslation(str), luaL_checkstring(L, 2),
-                       luaL_checkstring(L, 3), luaL_checkstring(L, 4), luaL_checkstring(L, 5)));
+    for (int n=2; n<=args; n++)
+    {
+        TSTLStrSize pos = ret.find("%s");
+        if (pos == std::string::npos)
+            luaL_error(L, "Too few modifiers ('%s') given.");
+        ret.replace(pos, 2, luaL_checkstring(L, n));
+    }
     
+    lua_pushstring(L, ret.c_str());
     return 1;
 }
 

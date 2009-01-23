@@ -49,6 +49,7 @@ private:
     virtual bool YesNoBox(const char *str, ...) = 0;
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...) = 0;
     virtual void WarnBox(const char *str, ...) = 0;
+    virtual int TextWidth(const char *str) = 0;
     virtual CBaseScreen *CreateScreen(const std::string &title) = 0;
     virtual void CoreAddScreen(CBaseScreen *screen) = 0;
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r) = 0;
@@ -86,6 +87,7 @@ public:
     static int LuaYesNoBox(lua_State *L);
     static int LuaChoiceBox(lua_State *L);
     static int LuaWarnBox(lua_State *L);
+    static int LuaTextWidth(lua_State *L);
     static int LuaNewScreen(lua_State *L);
     static int LuaAddScreen(lua_State *L);
     static int LuaNewProgressDialog(lua_State *L);

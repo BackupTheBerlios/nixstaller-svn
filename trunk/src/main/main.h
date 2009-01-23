@@ -104,6 +104,7 @@ public:
     static int LuaCloseDownload(lua_State *L);
     static int LuaAbort(lua_State *L);
     static int LuaGetEUID(lua_State *L);
+    static int LuaHasUTF8(lua_State *L);
     
     static int UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
                                          double ultotal, double ulnow);

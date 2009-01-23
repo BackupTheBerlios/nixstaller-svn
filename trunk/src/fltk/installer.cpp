@@ -394,6 +394,12 @@ void CInstaller::WarnBox(const char *str, ...)
     free(text);
 }
 
+int CInstaller::TextWidth(const char *str)
+{
+    fl_font(FL_HELVETICA, 14); // Defaults
+    return static_cast<int>(fl_width(str));
+}
+
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
     return new CInstallScreen(title);

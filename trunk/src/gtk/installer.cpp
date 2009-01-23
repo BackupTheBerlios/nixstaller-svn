@@ -240,12 +240,12 @@ void CInstaller::UpdateButtons(void)
 {
     CInstallScreen *curscreen = GetScreen(gtk_notebook_get_current_page(GTK_NOTEBOOK(m_pWizard)));
     
-    if (FirstValidScreen() && !curscreen->HasPrevWidgets())
+    if (FirstValidScreen() && (!curscreen || !curscreen->HasPrevWidgets()))
         gtk_widget_set_sensitive(m_pBackButton, FALSE);
     else if (!m_bPrevButtonLocked)
         gtk_widget_set_sensitive(m_pBackButton, TRUE);
     
-    if (LastValidScreen() && !curscreen->HasNextWidgets())
+    if (LastValidScreen() && (!curscreen || !curscreen->HasNextWidgets()))
     {
         gtk_label_set(GTK_LABEL(m_pNextLabel), GetTranslation("Finish"));
         SetButtonStock(m_pNextButton, GTK_STOCK_QUIT);
@@ -424,6 +424,22 @@ void CInstaller::WarnBox(const char *str, ...)
     MessageBox(GTK_MESSAGE_WARNING, text);
     
     free(text);
+}
+
+int CInstaller::TextWidth(const char *str)
+{
+    // Uses a dummy label widget to retrieve the requested width from str
+    static GtkWidget *lab = NULL;
+    
+    if (!lab)
+        lab = gtk_label_new(str);
+    else
+        gtk_label_set(GTK_LABEL(lab), str);
+    
+    GtkRequisition req;
+    gtk_widget_size_request(lab, &req);
+    
+    return req.width;
 }
 
 void CInstaller::Init(int argc, char **argv)

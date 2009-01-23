@@ -49,6 +49,11 @@
 - Finish() function for run.lua
 - Updated to ncurses 5.7
 - UTF-8 support
+- setlabelwidth() from Lua label class now wants real width
+- gui.textwidth() function
+- cfg.autolang option to let the installer try to automaticly select a language
+- config.lua file for translations
+- tr() function
 
 
 0.3 --> 0.4

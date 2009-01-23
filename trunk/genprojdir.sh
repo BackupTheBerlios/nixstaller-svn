@@ -49,6 +49,7 @@ DEF_FRONTENDS="gtk fltk ncurses"
 DEF_LANGUAGES="english dutch"
 DEF_INTROPIC=
 DEF_LOGO=
+DEF_AUTOLANG="true"
 
 # Valid settings
 VAL_MODE="both attended unattended"
@@ -65,6 +66,7 @@ TARGETOS=
 TARGETARCH=
 FRONTENDS=
 LANGUAGES=
+AUTOLANG=
 INTROPIC=
 LOGO=
 TARGETDIR=
@@ -78,7 +80,6 @@ NEWLANGUAGES=
 
 usage()
 {
-    # UNDONE
     echo "Usage: $0 [options] <target dir>"
     echo
     echo "[options] can be one of the following things (all are optional):"
@@ -94,6 +95,7 @@ usage()
     echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch"
     echo " --logo <file>                    Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
     echo "--mode, -m                        Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
+    echo "--no-autolang                     Disables automaticly choosing a language."
     echo " --os, -o <OSs>                   Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
     echo " --overwrite                      Overwrite any existing files. Default is to ask."
     echo " --pkg                            Generate a template package.lua with defaults, adds specific 'Package Mode' code to install.lua."
@@ -247,6 +249,10 @@ parseargs()
                 MODE="${1}"
                 shift
                 ;;
+            --no-autolang)
+                AUTOLANG="false"
+                shift
+                ;;
             -*)
                 usage
                 ;;
@@ -278,6 +284,7 @@ parseargs()
     APPNAME=${APPNAME:=$DEF_APPNAME}
     ARCHIVETYPE=${ARCHIVETYPE:=$DEF_ARCHIVETYPE}
     DEFAULTLANG=${DEFAULTLANG:=$DEF_DEFAULTLANG}
+    AUTOLANG=${AUTOLANG:=$DEF_AUTOLANG}
     TARGETOS=${TARGETOS:=$DEF_TARGETOS}
     TARGETARCH=${TARGETARCH:=$DEF_TARGETARCH}
     FRONTENDS=${FRONTENDS:=$DEF_FRONTENDS}
@@ -490,10 +497,6 @@ cfg.appname = "$APPNAME"
 -- Archive type used to pack the installer
 cfg.archivetype = "$ARCHIVETYPE"
 
--- Default language (you can use this to change the language of the language
--- selection screen)
-cfg.defaultlang = "$DEFAULTLANG"
-
 -- Target Operating Systems
 cfg.targetos = `toluatable $TARGETOS`
 
@@ -503,8 +506,16 @@ cfg.targetarch = `toluatable $TARGETARCH`
 -- Frontends to include
 cfg.frontends = `toluatable $FRONTENDS`
 
+-- Default language (you can use this to change the language of the language
+-- selection screen)
+cfg.defaultlang = "$DEFAULTLANG"
+
 -- Translations to include
 cfg.languages = `toluatable $LANGUAGES`
+
+-- When enabled the installer will automaticly guess the right language. If this fails
+-- or when this option is disabled, the user has to choose a language.
+cfg.autolang = $AUTOLANG
 
 -- Picture used for the 'WelcomeScreen'
 cfg.intropic = ${IP:=nil}

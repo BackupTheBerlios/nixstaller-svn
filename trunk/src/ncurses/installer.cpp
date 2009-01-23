@@ -291,6 +291,11 @@ void CInstaller::WarnBox(const char *str, ...)
     free(text);
 }
 
+int CInstaller::TextWidth(const char *str)
+{
+    return static_cast<int>(MBWidth(str));
+}
+
 void CInstaller::CoreUpdate()
 {
     CBaseAttInstall::CoreUpdate();

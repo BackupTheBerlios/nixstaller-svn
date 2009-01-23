@@ -88,23 +88,8 @@ void CLuaInputField::SetLabel()
     if (GetLabel().empty())
         return;
     
-    std::string label = GetTranslation(GetLabel());
-    TSTLStrSize max = SafeConvert<TSTLStrSize>(GetLabelWidth());
-    if (GetLabel().length() > max)
-        gtk_label_set(GTK_LABEL(m_pLabel), label.substr(0, max).c_str());
-    else
-        gtk_label_set(GTK_LABEL(m_pLabel), label.c_str());
-    
-    PangoContext *context = pango_layout_get_context(gtk_label_get_layout(GTK_LABEL(m_pLabel)));
-    PangoFontMetrics *metrics = pango_context_get_metrics(context, m_pLabel->style->font_desc,
-                                                          pango_context_get_language(context));
-
-    gint char_width = pango_font_metrics_get_approximate_char_width(metrics);
-    gint digit_width = pango_font_metrics_get_approximate_digit_width(metrics);
-    gint w = PANGO_PIXELS(std::max(char_width, digit_width));
-    pango_font_metrics_unref(metrics);
-    
-    gtk_widget_set_size_request(m_pLabel, w * GetLabelWidth(), -1);
+    gtk_label_set(GTK_LABEL(m_pLabel), GetTranslation(GetLabel().c_str()));
+    gtk_widget_set_size_request(m_pLabel, GetLabelWidth(), -1);
 }
 
 void CLuaInputField::InsertCB(GtkEditable *editable, gchar *nt, gint new_text_length, gint *position,

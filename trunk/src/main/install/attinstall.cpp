@@ -201,6 +201,7 @@ void CBaseAttInstall::InitLua()
     NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
     NLua::RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
     NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
+    NLua::RegisterFunction(LuaTextWidth, "textwidth", "gui", this);
     NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "gui", this);
 
     NLua::LoadFile("install.lua");
@@ -392,6 +393,13 @@ int CBaseAttInstall::LuaMSGBox(lua_State *L)
     pInstaller->MsgBox(GetTranslation(msg.c_str()));
     
     return 0;
+}
+
+int CBaseAttInstall::LuaTextWidth(lua_State *L)
+{
+    CBaseAttInstall *pInstaller = NLua::GetFromClosure<CBaseAttInstall *>();
+    lua_pushinteger(L, pInstaller->TextWidth(luaL_checkstring(L, 1)));
+    return 1;
 }
 
 int CBaseAttInstall::LuaNewScreen(lua_State *L)

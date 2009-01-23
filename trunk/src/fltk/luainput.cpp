@@ -46,7 +46,6 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     {
         m_pLabel = new Fl_Box(0, 0, 0, inputh, GetTranslation(label));
         m_pLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        m_pLabel->labelfont(FL_COURIER); // Use a fixed font, so we can easily calc the width from GetLabelWidth()
     }
     
     if (GetType() == "number")
@@ -116,16 +115,8 @@ void CLuaInputField::UpdateSize()
     }
     
     std::string label = GetTranslation(GetLabel());
-    TSTLStrSize max = SafeConvert<TSTLStrSize>(GetLabelWidth()), length = label.length();
-    
-    if (length > max)
-        m_pLabel->label(MakeCString(label.substr(0, max)));
-    
-    fl_font(m_pLabel->labelfont(), m_pLabel->labelsize());
-    int w = static_cast<int>(fl_width(' ')) * GetLabelWidth();
-    m_pLabel->size(w, m_pLabel->h());
-    
-    m_pInputField->size(GetGroup()->w() - PackSpacing() - w, m_pInputField->h());
+    m_pLabel->size(GetLabelWidth(), m_pLabel->h());
+    m_pInputField->size(GetGroup()->w() - PackSpacing() - GetLabelWidth(), m_pInputField->h());
 }
 
 void CLuaInputField::InputChangedCB(Fl_Widget *w, void *p)

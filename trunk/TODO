@@ -4,7 +4,6 @@ OVERALL
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
     - Only use it on some platforms?
 - Test regular C lua libs, update notes
-- Update ncurses to 5.7
 
 TEST
 - MD5 code for instheader.sh, makeself.sh and generic packages.
@@ -12,7 +11,7 @@ TEST
 - Realistic package for dependency system
 - ncurses utf8:
     - buttonbar
-    - menu
+    - buttons
 
 
 PACKAGING
@@ -47,6 +46,7 @@ DOCS
 - utils.emptystring()? (CHANGELOG)
 - verifydeps uses setstatus
 - os.geteuid()? (CHANGELOG)
+- os.hasutf8()? (CHANGELOG)
 - utils.tableappend()
 - Unattended installations
     - Reset cfg.unopts[].value? if not document for defaults
@@ -56,6 +56,12 @@ DOCS
 - Deprecate lualabel:set()
 - Changed PATH handling for install.execute/install.executeasroot
 - Finish() function (examples for executing commands, no gui functions here)
+- Language:
+    - cfg.autolang
+    - tr()
+    - lang/config.lua
+- gui.textwidth() and label:setlabelwidth()
+- Update chapter?
 
 
 RELEASE
@@ -75,7 +81,7 @@ TRANSLATIONS
     - Fix ncurses and perhaps others for width calculating
     - Convert language files to utf?
     - Convert utf to native for ncurses frontend?
-- Neater tr() function? Document it?
+    - way to specify encoding?
 - Modified packtogglescreen message
 
 

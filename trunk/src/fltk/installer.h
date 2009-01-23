@@ -76,6 +76,7 @@ class CInstaller: public CBaseAttInstall
     virtual bool YesNoBox(const char *str, ...);
     virtual int ChoiceBox(const char *str, const char *button1, const char *button2, const char *button3, ...);
     virtual void WarnBox(const char *str, ...);
+    virtual int TextWidth(const char *str);
     virtual CBaseScreen *CreateScreen(const std::string &title);
     virtual void CoreAddScreen(CBaseScreen *screen);
     virtual CBaseLuaProgressDialog *CoreCreateProgDialog(int r);

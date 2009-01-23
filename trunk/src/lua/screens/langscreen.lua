@@ -20,21 +20,30 @@ module (..., package.seeall)
 
 screen = install.newscreen("Please select a language")
 
-menu = screen:addmenu("", cfg.languages or {})
+menu = screen:addmenu("")
+for l, v in pairs(install.langinfo) do
+    menu:add(v.name)
+end
 
 function menu:verify()
-    install.setlang(menu:get())
+    local choice = menu:get()
+    for l, v in pairs(install.langinfo) do
+        if v.name == choice then
+            install.setlang(l)
+            break
+        end
+    end
     return true
 end
 
 function screen:canactivate()
-    return #cfg.languages > 1
+    return not install.didautolang and utils.mapsize(install.langinfo) > 1
 end
 
 function screen:activate()
-    for i, v in ipairs(cfg.languages) do
-        if v == install.getlang() then
-            menu:set(i)
+    for l, v in pairs(install.langinfo) do
+        if l == install.getlang() then
+            menu:set(v.name)
             break
         end
     end

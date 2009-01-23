@@ -125,11 +125,63 @@ function install.gendesktopentries(global)
     end
 end
 
-
 -- End Public functions
 -----------------------------
 
+local function initlang()
+    install.langinfo = { }
+    local hasutf8 = os.hasutf8()
+    
+    -- Read language configs
+    for _, l in ipairs(cfg.languages) do
+        local conf = string.format("%s/config/lang/%s/config.lua", curdir, l)
+        
+        _G.lang = { }
+        if os.fileexists(conf) then
+            dofile(conf)
+        end
+        
+        local function default(var, val)
+            if lang[var] == nil then
+                lang[var] = val
+            end
+        end
+        
+        default("name", l)
+        default("utf8", true)
+        
+        if hasutf8 or not lang.utf8 then
+            install.langinfo[l] = lang
+        end
+    end
+    
+    -- Set language
+    install.didautolang = false -- Used by language screen
+    if cfg.autolang then
+        local curlang = os.setlocale()
+        for l, v in pairs(install.langinfo) do
+            if v.locales then
+                for _, loc in ipairs(lang.locales) do
+                    if string.find(curlang, loc) then
+                        install.setlang(l)
+                        install.didautolang = true
+                        break
+                    end
+                end
+                if install.didautolang then
+                    break
+                end
+            end
+        end
+    end
+    
+    if not install.didautolang and cfg.defaultlang then
+        install.setlang(cfg.defaultlang)
+    end
+end
+
 loadconfig("config")
+initlang()
 
 if install.unattended then
     dofile("unattinstall.lua")

@@ -553,6 +553,7 @@ function PrepareArchive()
         os.mkdirrec(langdest)
         
         os.copy(langsrc .. "/strings", langdest)
+        os.copy(langsrc .. "/config.lua", langdest)
         os.copy(langsrc .. "/welcome", langdest)
         os.copy(langsrc .. "/license", langdest)
         os.copy(langsrc .. "/finish", langdest)
