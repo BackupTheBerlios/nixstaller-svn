@@ -334,7 +334,7 @@ void CInstallScreen::UpdateSubScreens()
         
         ResetWidgetRange();
         
-        TSTLVecSize ind = SafeConvert<TSTLVecSize>(m_pWidgetPack->find(group));
+        int ind = m_pWidgetPack->find(group);
         
         if (ind != m_pWidgetPack->children())
         {

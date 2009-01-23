@@ -1,7 +1,7 @@
 //
-// "$Id: Fl_JPEG_Image.H 6614 2009-01-01 16:11:32Z matt $"
+// "$Id: fl_types.h 6299 2008-09-18 19:09:34Z fabien $"
 //
-// JPEG image header file for the Fast Light Tool Kit (FLTK).
+// Simple "C"-style types for the Fast Light Tool Kit (FLTK).
 //
 // Copyright 1998-2009 by Bill Spitzak and others.
 //
@@ -25,28 +25,39 @@
 //     http://www.fltk.org/str.php
 //
 
-/* \file
-   Fl_JPEG_Image class . */
+/** \file 
+ *  This file contains simple "C"-style type definitions.
+ */
 
-#ifndef Fl_JPEG_Image_H
-#define Fl_JPEG_Image_H
-#  include "Fl_Image.H"
+#ifndef FL_TYPES_H
+#define FL_TYPES_H
 
-/**
-  The Fl_JPEG_Image class supports loading, caching,
-  and drawing of Joint Photographic Experts Group (JPEG) File
-  Interchange Format (JFIF) images. The class supports grayscale
-  and color (RGB) JPEG image files.
-*/
-class FL_EXPORT Fl_JPEG_Image : public Fl_RGB_Image {
+/** \name	Miscellaneous */
+/*@{*/	// group: Miscellaneous
 
-  public:
+/** unsigned char */
+typedef unsigned char uchar;
+/** unsigned long */
+typedef unsigned long ulong;
 
-  Fl_JPEG_Image(const char* filename);
-};
+/** Flexible length utf8 Unicode text
+ *
+ *  \todo FIXME: temporary (?) typedef to mark UTF8 and Unicode conversions
+ */
+typedef char *Fl_String;
+
+/** Flexible length utf8 Unicode read-only string
+ *  \sa Fl_String
+ */
+typedef const char *Fl_CString;
+
+/** 24-bit Unicode character + 8-bit indicator for keyboard flags */
+typedef unsigned int Fl_Unichar;
+ 
+/*@}*/	// group: Miscellaneous
 
 #endif
 
 //
-// End of "$Id: Fl_JPEG_Image.H 6614 2009-01-01 16:11:32Z matt $".
+// End of "$Id: fl_types.h 6299 2008-09-18 19:09:34Z fabien $".
 //

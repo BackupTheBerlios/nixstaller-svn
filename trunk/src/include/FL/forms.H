@@ -1,9 +1,9 @@
 //
-// "$Id: forms.H 4288 2005-04-16 00:13:17Z mike $"
+// "$Id: forms.H 6614 2009-01-01 16:11:32Z matt $"
 //
 // Forms emulation header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2005 by Bill Spitzak and others.
+// Copyright 1998-2009 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -208,8 +208,10 @@ inline void fl_reset_focus_object(Fl_Widget* o) {Fl::focus(o);}
 
 inline void fl_set_object_boxtype(Fl_Widget* o, Fl_Boxtype a) {o->box(a);}
 inline void fl_set_object_lsize(Fl_Widget* o,int s) {o->labelsize(s);}
+
+/* forms lib font indexes must be byte sized - extract correct byte from style word */
 inline void fl_set_object_lstyle(Fl_Widget* o,int a) {
-  o->labelfont((uchar)a); o->labeltype((Fl_Labeltype)(a>>8));}
+  o->labelfont((Fl_Font)(a&0xff)); o->labeltype((Fl_Labeltype)(a>>8));}
 inline void fl_set_object_lcol(Fl_Widget* o, unsigned a) {o->labelcolor(a);}
 #define fl_set_object_lcolor  fl_set_object_lcol
 inline void fl_set_object_lalign(Fl_Widget* o, Fl_Align a) {o->align(a);}
@@ -374,7 +376,7 @@ inline void fl_set_font_name(Fl_Font n,const char* s) {Fl::set_font(n,s);}
 
 inline void fl_mapcolor(Fl_Color c, uchar r, uchar g, uchar b) {Fl::set_color(c,r,g,b);}
 
-#define fl_set_clipping(x,y,w,h) fl_clip(x,y,w,h)
+#define fl_set_clipping(x,y,w,h) fl_push_clip(x,y,w,h)
 #define fl_unset_clipping() fl_pop_clip()
 
 ////////////////////////////////////////////////////////////////
@@ -662,7 +664,7 @@ FL_EXPORT int fl_show_choice(
     const char *b1,
     const char *b2);
 
-inline void fl_set_goodies_font(uchar a, uchar b) {fl_message_font(a,b);}
+inline void fl_set_goodies_font(Fl_Font a, Fl_Fontsize b) {fl_message_font(a,b);}
 #define fl_show_messages fl_message
 inline int fl_show_choices(const char* c,int n,const char* b1,const char* b2,
 			   const char* b3, int) {
@@ -840,5 +842,5 @@ inline void fl_draw() {Fl::flush();}
 #endif	/* define __FORMS_H__ */
 
 //
-// End of "$Id: forms.H 4288 2005-04-16 00:13:17Z mike $".
+// End of "$Id: forms.H 6614 2009-01-01 16:11:32Z matt $".
 //

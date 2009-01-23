@@ -1,9 +1,9 @@
 //
-// "$Id: glut.H 5889 2007-06-07 17:28:43Z matt $"
+// "$Id: glut.H 6614 2009-01-01 16:11:32Z matt $"
 //
 // GLUT emulation header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2007 by Bill Spitzak and others.
+// Copyright 1998-2009 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -42,13 +42,14 @@
 
 #  include "gl.h"
 
-////////////////////////////////////////////////////////////////
-// GLUT is emulated using this window class and these static variables
-// (plus several more static variables hidden in glut_compatability.cxx):
 
 #  include "Fl.H"
 #  include "Fl_Gl_Window.H"
 
+/** 
+  GLUT is emulated using this window class and these static variables
+  (plus several more static variables hidden in glut_compatability.cxx):
+*/
 class FL_EXPORT Fl_Glut_Window : public Fl_Gl_Window {
   void _init();
   int mouse_down;
@@ -237,7 +238,7 @@ enum {GLUT_LEFT, GLUT_ENTERED};
 inline void glutVisibilityFunc(void (*f)(int s)) {glut_window->visibility=f;}
 enum {GLUT_NOT_VISIBLE, GLUT_VISIBLE};
 
-inline void glutIdleFunc(void (*f)()) {Fl::set_idle(f);}
+FL_EXPORT void glutIdleFunc(void (*f)());
 
 // Warning: this cast may not work on all machines:
 inline void glutTimerFunc(unsigned int msec, void (*f)(int), int value) {
@@ -407,7 +408,10 @@ FL_EXPORT GLUTproc glutGetProcAddress(const char *procName);
 //inline void glutVideoPan(int x, int y, int width, int height);
 
 // Font argument must be a void* for compatability, so...
-extern FL_EXPORT struct Fl_Glut_Bitmap_Font {uchar font; int size;}
+/** fltk glut font/size attributes used in the glutXXX functions */
+struct Fl_Glut_Bitmap_Font {Fl_Font font; Fl_Fontsize size;};
+
+extern FL_EXPORT struct Fl_Glut_Bitmap_Font
   glutBitmap9By15, glutBitmap8By13, glutBitmapTimesRoman10,
   glutBitmapTimesRoman24, glutBitmapHelvetica10, glutBitmapHelvetica12,
   glutBitmapHelvetica18;
@@ -483,5 +487,5 @@ FL_EXPORT void glutSolidIcosahedron();
 #endif // !Fl_glut_H
 
 //
-// End of "$Id: glut.H 5889 2007-06-07 17:28:43Z matt $".
+// End of "$Id: glut.H 6614 2009-01-01 16:11:32Z matt $".
 //

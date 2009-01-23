@@ -1,9 +1,9 @@
 //
-// "$Id: x.H 5262 2006-07-18 11:23:20Z matt $"
+// "$Id: x.H 6614 2009-01-01 16:11:32Z matt $"
 //
 // X11 header file for the Fast Light Tool Kit (FLTK).
 //
-// Copyright 1998-2005 by Bill Spitzak and others.
+// Copyright 1998-2009 by Bill Spitzak and others.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -30,7 +30,7 @@
 // need to call Xlib directly.  These symbols may not exist on non-X
 // systems.
 
-#ifndef Fl_X_H
+#if !defined(Fl_X_H) && !defined(FL_DOXYGEN) 
 #  define Fl_X_H
 
 #  include "Enumerations.H"
@@ -50,7 +50,7 @@
 #    endif
 #    include <X11/Xatom.h>
 #    include "Fl_Window.H"
-
+#    include "Xutf8.h"
 // Mirror X definition of Region to Fl_Region, for portability...
 typedef Region Fl_Region;
 
@@ -68,7 +68,8 @@ extern FL_EXPORT Colormap fl_colormap;
 // drawing functions:
 extern FL_EXPORT GC fl_gc;
 extern FL_EXPORT Window fl_window;
-extern FL_EXPORT XFontStruct* fl_xfont;
+//extern FL_EXPORT XFontStruct* fl_xfont;
+extern FL_EXPORT XUtf8FontStruct* fl_xfont;
 extern FL_EXPORT void *fl_xftfont;
 FL_EXPORT ulong fl_xpixel(Fl_Color i);
 FL_EXPORT ulong fl_xpixel(uchar r, uchar g, uchar b);
@@ -144,5 +145,5 @@ extern FL_EXPORT int fl_parse_color(const char* p, uchar& r, uchar& g, uchar& b)
 #endif
 
 //
-// End of "$Id: x.H 5262 2006-07-18 11:23:20Z matt $".
+// End of "$Id: x.H 6614 2009-01-01 16:11:32Z matt $".
 //

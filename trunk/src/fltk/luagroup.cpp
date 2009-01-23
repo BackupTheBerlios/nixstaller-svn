@@ -205,7 +205,6 @@ void CLuaGroup::UpdateLayout()
             w += extraw;
         
         assert(w <= m_iMaxWidth);
-        
         int h = widget->RequestHeight(w);
         totalwidgeth = std::max(totalwidgeth, h);
         widget->SetSize(w, h);

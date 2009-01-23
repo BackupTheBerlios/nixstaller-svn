@@ -90,9 +90,13 @@ buildjpeg()
 
 buildfltk()
 {
-    get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
-    untar "fltk-1.1.9-source.tar.gz"
-    dodir "fltk-1.1.9"
+#     get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
+#     untar "fltk-1.1.9-source.tar.gz"
+#     dodir "fltk-1.1.9"
+    get "http://ftp.easysw.com/pub/fltk/snapshots/fltk-1.3.x-r6643.tar.gz"
+    untar "fltk-1.3.x-r6643.tar.gz"
+    dodir "fltk-1.3.x-r6643"
+
     if [ $CURRENT_OS = "darwin" ]; then
         ./configure --prefix=$DESTPREFIX && make && make install && make clean
     else

@@ -67,7 +67,8 @@ DOCS
 RELEASE
 - Remove/disable asserts in lua code
 - Reenable MD5 checking for InitDeltaBins()
-- Final bindeltas file (re-enable MD5 checking)
+- Final bindeltas file
+- about, nixstaller version etc
 
 
 TRANSLATIONS
@@ -83,6 +84,7 @@ TRANSLATIONS
     - Convert utf to native for ncurses frontend?
     - way to specify encoding?
 - Modified packtogglescreen message
+- "Files are being installed" --> Software is ...
 
 
 LIBSU
@@ -98,7 +100,6 @@ GTK
 FLTK
 - Check update: test for regressions, check current hacks.
 - Progressdialog: Refresh does not always enable both bars (FLTK specific?)
-- Check why Text Buffer appending is slow (Fixed with 1.3?)
 - Test Xft for every platform
 
 

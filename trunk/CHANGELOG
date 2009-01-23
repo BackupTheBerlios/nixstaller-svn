@@ -10,12 +10,13 @@
 - Fixed: FLTK frontend wouldn't vertically space out widgets equally
 - Fixed: install.execute() wouldn't restore $PATH incase caller used custom path. (Reported by Markus Fischer)
 - Fixed: User could still cancel installation by closing window if cancel button was locked.
+- Fixed: Lua textfield from FLTK frontend was slow when large amounts of text were added.
 - Better commandline arguments handling.
 - utils.removerec() function.
 - utils.copyrec() function.
 - utils.patch() function.
 - utils.tableappend() function.
-- Updated to FLTK 1.1.9
+- Updated to FLTK 1.3
 - Decreased FLTK textfield font size
 - Lua textfield now has max amount of characters (4 MB)
 - Lua addcheckbox function now accepts additional argument to enable one or more options.

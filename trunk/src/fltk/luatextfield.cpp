@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/main.h"
 #include "luatextfield.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Text_Buffer.H>
@@ -34,7 +35,9 @@ CLuaTextField::CLuaTextField(const char *desc, bool wrap, const char *size) : CB
     
     m_pDisplay = new Fl_Text_Display(0, 0, 0, FieldHeight());
     m_pDisplay->buffer(m_pBuffer);
-    m_pDisplay->textsize(12);
+    m_pDisplay->textsize(13);
+    // Use a monospace font, so we can easily calc the width for line wrapping
+    m_pDisplay->textfont(FL_COURIER);
     
     GetGroup()->add(m_pDisplay);
 }
@@ -77,8 +80,9 @@ void CLuaTextField::UpdateSize()
     
     if (m_bWrap)
     {
-        // Undocumented in FLTK: passing 0 will automaticly take the width margin for wrapping
-        m_pDisplay->wrap_mode(true, 0);
+        fl_font(m_pDisplay->textfont(), m_pDisplay->textsize());
+        int wrapw = (m_pDisplay->w() / fl_width(' ')) - 5; // Substract a little for scrollbar
+        m_pDisplay->wrap_mode(true, wrapw);
     }
 }
 
