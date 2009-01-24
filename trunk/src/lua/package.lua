@@ -112,13 +112,13 @@ function checkunpkgman()
         
         if haveunopt("packager") then
             if not utils.tablefind(p, cfg.unopts["packager"].value) then
-                abort("Wrong packager specified, should be one of the following: " .. tabtostr(p))
+                abort(tr("Wrong packager specified, should be one of the following: %s", tabtostr(p)))
             end
             local s = cfg.unopts["packager"].value
             pkg.packager = pkg.packagers[s]
             pkg.updatepackager()
         else
-            abort(string.format("Multiple package managers were found: %s\nPlease use the --packager option to specify which one should be used.", tabtostr(p)))
+            abort(tr("Multiple package managers were found: %s\nPlease use the --packager option to specify which one should be used.", tabtostr(p)))
         end
     end
 end

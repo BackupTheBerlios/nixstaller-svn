@@ -21,7 +21,7 @@ No
 Nee
 
 Finish
-Beeindigen
+Beëindigen
 
 Select directory
 Selecteer directory
@@ -45,7 +45,7 @@ Continue
 Ga verder
 
 Exit program
-Beindig programma
+Beëindig programma
 
 Create directory as root
 Maak directory als root
@@ -56,37 +56,43 @@ Negeer
 Abort
 Afbreken
 
+Don't register
+Registreer niet
+
+Refresh
+Bijwerken
+
 
 #-----------------------------------------------
 # Messages
 #-----------------------------------------------
 
 [
-Install commands are still running
-If you abort now this may lead to a broken installation
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
 Are you sure?
 ]
 [
-Installatie opdrachten zijn nog bezig
-Als u nu stopt kan dit lijden tot een gebroken installatie
+De installatie is op dit moment nog bezig.
+Als u nu stopt kan dit leiden tot een gebroken installatie.
+Wilt u alsnog stoppen?
+]
+
+[
+This will abort the installation.
+Are you sure?
+]
+[
+Dit zal de installatie onderbreken.
 Weet u het zeker?
 ]
 
 [
-This will abort the installation
-Are you sure?
-]
-[
-Dit zal de installatie onderbreken
-Weet u het zeker?
-]
-
-[
-Root access is required to continue
+Root access is required to continue.
 Abort installation?
 ]
 [
-Root rechten zijn vereist om door te kunnen gaan
+Root rechten zijn vereist om door te kunnen gaan.
 Installatie onderbreken?
 ]
 
@@ -98,11 +104,11 @@ Installation of %s complete!
 Installatie van %s gereed!
 
 [
-You don't have read permissions for this directory
+You don't have read permissions for this directory.
 Please choose another directory or rerun this program as a user who has read permissions.
 ]
 [
-U heeft geen toegang om deze directory te lezen
+U heeft geen toegang om deze directory te lezen.
 Kies een andere directory of start dit programma opnieuw met een gebruiker die wel toegang heeft.
 ]
 
@@ -114,7 +120,7 @@ but you'll need to enter the administrative password for this later.
 [
 U heeft geen toegang om te schrijven naar deze directory.
 De bestanden kunnen worden uitgepakt met systeembeheerder (root) rechten,
-maar u moet dan wel straks het juiste wachtwoord geven.
+hierbij moet u echter later het juiste wachtwoord geven.
 ]
 
 [
@@ -132,11 +138,11 @@ Directory %s bestaat niet, wilt u deze aanmaken?
 
 # %s is replaced by appname
 [
-This will install %s
+This will install %s.
 Continue?
 ]
 [
-%s zal nu worden geinstalleerd
+%s zal nu worden geïnstalleerd.
 Doorgaan?
 ]
 
@@ -150,38 +156,31 @@ Om deze met de systeembeheerder (root) gebruiker te maken, moet u het wachtwoord
 ]
 
 [
-Another program seems to be using the DEB database.
-Please close all applications that may use the database (ie Synaptic)
-and hit continue.
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
 ]
 [
-Een ander programma lijkt de DEB database te gebruiken.
-Sluit alle mogelijke programma's af (bijvoorbeeld Synaptic)
-en druk op verder.
+Een ander programma lijkt de dpkg database te gebruiken.
+Sluit alle mogelijke programma's af (bijvoorbeeld Synaptic).
 ]
 
-[
-Another program seems to be using pacman. Please close this program and
-hit continue.
-]
-[
-Een ander programma lijkt de pacman database te gebruiken. Sluit dit programma
-en drup op verder.
-]
+Another program seems to be using pacman. Please close this program.
+Een ander programma lijkt pacman te gebruiken. Beïndig dit programma.
 
 [
 Another program seems to be using the RPM database.
-Please close all applications that may use the database (ie Smart or YaST)
-and hit continue.
+Please close all applications that may use this database (eg. Smart or YaST).
 ]
 [
 Een ander programma lijkt de RPM database te gebruiken.
-Sluit alle mogelijke programma's af (bijvoorbeeld Smart of YaST)
-en druk op verder.
+Sluit alle mogelijke programma's af (bijvoorbeeld Smart of YaST).
 ]
 
 Package is already installed. Do you want to replace it?
-Pakket is reeds geinstalleerd. Wilt u het vervangen?
+Pakket is reeds geïnstalleerd. Wilt u het vervangen?
+
+Package is already installed. Use the --overwrite option to install anyway.
+Pakket is reeds geïnstalleerd. Gebruik de --overwrite optie om alsnog te installeren.
 
 # First %s is replaced by current version, second by installer version.
 [
@@ -189,8 +188,8 @@ Version %s is already installed, you're trying to install version %s.
 Do you want to replace the installed package?
 ]
 [
-Versie %s is al geinstalleerd, u probeert versie %s te installeren.
-Wilt u het geinstalleerde pakket vervangen?
+Versie %s is al geïnstalleerd, u probeert versie %s te installeren.
+Wilt u het geïnstalleerde pakket vervangen?
 ]
 
 # %s is replaced by missing tool (ie rpmbuild)
@@ -203,6 +202,23 @@ Het pakket '%s' is nodig om de software te kunnen registreren.
 Installeer dit pakken nu en druk op verder om door te gaan of druk op negeren om door te gaan zonder dat de software wordt gerigstreerd.
 ]
 
+One or more package dependencies could not be resolved. Details are given below.
+Eén of meer pakket afhankelijkheden konden niet worden opgelost. Details staan hieronder gegeven.
+
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+Als alternatief kunt de installatie opnieuw starten met de --ignore-failed-deps optie, waarbij problemen met afhankelijkheden worden genegeerd.
+
+Please fix these issues now and rerun the installer.
+Verhelp deze problemen nu en start het installatie programma opnieuw.
+
+Continuing installation anyway...
+Installatie wordt alsnog voortgezet...
+
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+Eén of meer pakket afhankelijkheden konden niet worden opgelost. Details staan hieronder gegeven. Verhelp deze problemen nu en druk op Bijwerken. U kunt ook op Negeren drukken, waarbij u mogelijke problemen met afhankelijkheden riskeert.
+
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
+U dient de licentie overeenkomst te accepteren om de software te installeren. Gebruikt de --show-license optie om de overeenkomst weer te geven en de --accept-license optie om de overeenkomst te accepteren.
 
 #-----------------------------------------------
 # Window titles
@@ -250,8 +266,8 @@ Selecteer een directory
 Password dialog
 Wachtwoord venster
 
-Files are being installed
-Bestanden worden geinstalleerd
+Software is being installed
+Software wordt geïnstalleerd
 
 Software destination
 Software bestemming
@@ -282,8 +298,23 @@ Status
 Extracting files
 Bestanden uitpakken
 
+Verifying dependencies
+Afhankelijkheden controleren
+
+Gathering main binary dependencies.
+Verzamelen van hoofd binaire afhankelijkheden.
+
+Extracting dependency %s
+Uitpakken van afhankelijkheid %s
+
+Gathering mandatory dependencies.
+Verzamelen van onmisbare afhankelijkheden.
+
+Installing dependencies.
+Afhankelijkheden worden geïnstalleerd.
+
 Installing package
-Pakket wordt geinstalleerd
+Pakket wordt geïnstalleerd
 
 Enable
 Inschakelen
@@ -300,6 +331,46 @@ Root wachtwoord
 Register software
 Registreer software
 
+Name
+Naam
+
+Problem
+Probleem
+
+Description
+Omschrijving
+
+Failed to install.
+Fout tijdens installatie.
+
+Failed to download.
+Fout tijdens download.
+
+(Binary) incompatible.
+(Binair) incompatibel.
+
+Missing.
+Afwezig.
+
+File missing.
+Bestand afwezig.
+
+(Binary) incompatible.
+(Binary) incompatible.
+
+Multiple package managers were found, please choose which one should be used.
+Er zijn meerdere pakketbeheerders gevonden. Kies welke moet worden gebruikt.
+
+# %s is replaced by possible package managers
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
+[
+Er zijn meerdere pakketbeheerders gevonden: %s
+Gebruik de --packager optie om aan te geven welke moet worden gebruikt.
+]
+
 [
 In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
 
@@ -308,7 +379,7 @@ Note: if you don't have write access to this directory you need to grant the ins
 If unsure, just leave it as it is.
 ]
 [
-In dit veld kunt u de bestemmings directory kiezen voor de data bestanden van de software. De bestanden worden in een subdirectory binnen deze directory geinstalleerd.
+In dit veld kunt u de bestemmings directory kiezen voor de data bestanden van de software. De bestanden worden in een subdirectory binnen deze directory geïnstalleerd.
 
 Opmerking: Als u niet naar deze directory kunt schrijven, moet u het installatie programma later root rechten geven.
 
@@ -323,7 +394,7 @@ Note: if you don't have write access to this directory you need to grant the ins
 When unsure, just leave it as it is.
 ]
 [
-In dit veld kunt u de bestemmings directory kiezen voor de uitvoerbare bestanden van de software. De bestanden worden direct naar deze directory geinstalleerd.
+In dit veld kunt u de bestemmings directory kiezen voor de uitvoerbare bestanden van de software. De bestanden worden direct naar deze directory geïnstalleerd.
 
 Opmerking: Als u niet naar deze directory kunt schrijven, moet u het installatie programma later root rechten geven.
 
@@ -335,15 +406,11 @@ Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
 By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
 
 Note: When enabled, you need to grant the installer root access later on.
-
-When unsure, just leave it enabled.
 ]
 [
 Als de onderstaande optie aangevinkt is, zal het installatie programma (proberen) om de software door de pakketbeheerder te laten registreren. Dit zorgt ervoor dat de software makkelijk kan worden verwijderd of bijgewerkt.
 
 Opmerking: Als de optie is aangevinkt, moet u het installatie programma later root rechten geven.
-
-Als u niet zeker bent van een keuze, laat deze dan ongewijzigd.
 ]
 
 [
@@ -351,7 +418,7 @@ The software has been installed to this system.
 An installation summary is shown below.
 ]
 [
-De software is nu geinstalleerd op dit systeem.
+De software is nu geïnstalleerd op dit systeem.
 Een samenvatting van de installatie is hieronder gegeven.
 ]
 
@@ -360,6 +427,9 @@ Een samenvatting van de installatie is hieronder gegeven.
 #-----------------------------------------------
 # Error messages
 #-----------------------------------------------
+
+Error
+Fout
 
 Could not create directory
 Kon directory niet maken
@@ -433,8 +503,12 @@ Could not close file descriptor: %s
 Kon bestands verwijzing niet sluiten: %s
 
 # %s is replaced by error message
-Poll returned an error: %s
-Poll gaf een fout: %s
+poll returned an error: %s
+poll gaf een fout: %s
+
+# %s is replaced by error message
+select returned an error: %s
+select gaf een fout: %s
 
 # %s is replaced by error message
 Encountered an error while waiting on child process: %s
@@ -450,6 +524,19 @@ Kon directory '%s' niet maken
 
 Please enter a valid path.
 Geef een geldige bestandsverwijzing.
+
+# %s is replaced by error message
+Error during file transfer: %s
+Fout ontdekt tijdens bestandsoverdracht: %s
+
+# %s is replaced by error message
+Elf class error detected: %s
+Elf class gaf een fout: %s
+
+# First %s is replaced by file, second by error message
+Could not open file %s: %s
+Kon bestand %s niet openen: %s
+
 
 
 #-----------------------------------------------

@@ -49,7 +49,7 @@ function pkg.verifydeps(bins, libs)
                 else
                     install.print(tr("Please fix these issues now and rerun the installer.") .. "\n")
                     if cfg.unopts["ignore-failed-deps"] and cfg.unopts["ignore-failed-deps"].internal then
-                        install.print(tr("Alternatively rerun with the --ignore-failed-deps options, risking any dependency errors when using the installed software.") .. "\n")
+                        install.print(tr("Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.") .. "\n")
                     end
                     os.exit(1)
                 end

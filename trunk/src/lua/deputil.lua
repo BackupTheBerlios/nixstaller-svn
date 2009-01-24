@@ -189,7 +189,7 @@ function GetLibMap()
     
     for _, b in ipairs(args) do
         if not os.fileexists(b) then
-            abort("Could not locate file: " .. b)
+            abort(tr("Could not locate file: %s", b))
         end
         CollectLibs(map, b, lpath)
     end
@@ -246,7 +246,7 @@ function CreateDep(name, desc, libs, libdir, full, standalone, baseurl, deps, pr
     
     local out = io.open(string.format("%s/config.lua", path), "w")
     if not out then
-        abort("Could not open output file.")
+        abort("Could not open output config.lua file.")
     end
     
     -- Convert to comma seperated string list
@@ -1114,7 +1114,7 @@ function EditDep()
     
     local dep, msg = loaddep(prdir, depname)
     if not dep then
-        abort("Error: Failed to load config.lua: " .. msg)
+        abort("Failed to load config.lua: " .. msg)
     end
     
     if dep.full and full then
@@ -1297,7 +1297,7 @@ function MakeTemps()
     
     for _, b in ipairs(args) do
         if not os.fileexists(b) then
-            abort("Could not locate file: " .. b)
+            abort(tr("Could not locate file: %s", b))
         end
         table.insert(checkstack, b)
     end

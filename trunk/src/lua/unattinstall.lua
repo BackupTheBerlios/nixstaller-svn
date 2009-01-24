@@ -47,7 +47,7 @@ function install.setstatus(msg)
 **********************************
 %s
 **********************************
-]], msg))
+]], tr(msg)))
 end
 
 function install.print(msg)
@@ -121,16 +121,15 @@ end
 local licensef = io.open(licensefname, "r")
 if licensef then
     if haveunopt("show-license") then
-        print("\nLicense Agreement:\n")
+        print(string.format("\n%s:\n", tr("License agreement")))
         print(licensef:read("*a"))
         licensef:close()
         os.exit(0)
     end
     
-    if cfg["accept-license"] and cfg["accept-license"].internal and not cfg["accept-license"].value then
+    if cfg.unopts["accept-license"] and cfg.unopts["accept-license"].internal and not cfg.unopts["accept-license"].value then
         licensef:close()
-        abort([[
-You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.]])
+        abort("You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.")
     end
     
     licensef:close()
@@ -170,13 +169,13 @@ end
 
 if os.fileexists(install.destdir) then
     if not os.readperm(install.destdir) then
-        abort("Cannot read destination directory, restart installer with as a user who can (eg. root)")
+        abort("Cannot read destination directory, restart installer with as a user who can (eg. root).")
     elseif not os.writeperm(install.destdir) then
-        abort("Cannot write to destination directory, restart installer with as a user who can (eg. root)")
+        abort("Cannot write to destination directory, restart installer with as a user who can (eg. root).")
     end
 else
     if not utils.mkdirperm(install.destdir) then
-        abort("Cannot create destination directory, restart installer with as a user who can (eg. root)")
+        abort("Cannot create destination directory, restart installer with as a user who can (eg. root).")
     end
     os.mkdirrec(install.destdir)
 end

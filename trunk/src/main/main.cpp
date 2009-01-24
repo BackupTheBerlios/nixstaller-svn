@@ -86,9 +86,9 @@ void HandleError(void)
         fflush(stderr);
         
         if (g_RunScript || g_RunUnattended)
-            fprintf(stderr, "Error: %s\n", GetTranslation(e.what())); // No specific way to complain, just use stderr
+            fprintf(stderr, "%s: %s\n", GetTranslation("Error"), GetTranslation(e.what())); // No specific way to complain, just use stderr
         else
-            ReportError(CreateText("Error: %s", GetTranslation(e.what())));
+            ReportError(CreateText("%s: %s", GetTranslation("Error"), GetTranslation(e.what())));
     }
     
     Quit(EXIT_FAILURE);

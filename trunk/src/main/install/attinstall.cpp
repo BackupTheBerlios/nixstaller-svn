@@ -60,7 +60,7 @@ bool CBaseAttInstall::GetSUPasswd(const char *msg, bool mandatory)
                 if (!mandatory)
                     return false;
                 
-                if (ChoiceBox(GetTranslation("Root access is required to continue\nAbort installation?"),
+                if (ChoiceBox(GetTranslation("Root access is required to continue.\nAbort installation?"),
                     GetTranslation("No"), GetTranslation("Yes"), NULL))
                     throw Exceptions::CExUser();
             }

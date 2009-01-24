@@ -163,7 +163,7 @@ public:
 class CExLuaAbort: public CExMessage
 {
 public:
-    CExLuaAbort(const char *msg) : CExMessage(msg) { };
+    CExLuaAbort(const char *msg) : CExMessage(GetTranslation(msg)) { };
 };
 
 class CExSU: public CExMessage

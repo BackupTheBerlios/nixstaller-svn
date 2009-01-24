@@ -87,7 +87,7 @@ function verifylock()
     if locked then
         return false, [[
 Another program seems to be using the dpkg database.
-Please close all applications that may use the database (ie Synaptic).]]
+Please close all applications that may use this database (eg. Synaptic).]]
     end
     
     return true

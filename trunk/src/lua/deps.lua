@@ -203,9 +203,9 @@ function initdep(d)
     
     local function notifyextract()
         if install.unattended then
-            install.print("Extracting dependency " .. d.name .. ": ")
+            install.print(tr("Extracting dependency %s", d.name) .. ": ")
         else
-            depprocess.notifier:setsectitle("Extracting dependency " .. d.name)
+            depprocess.notifier:setsectitle(tr("Extracting dependency %s", d.name))
         end
     end
     

@@ -55,7 +55,7 @@ function verifylock()
     if locked then
         return false, [[
 Another program seems to be using the RPM database.
-Please close all applications that may use the database (ie Smart or YaST).]]
+Please close all applications that may use this database (eg. Smart or YaST).]]
     end
     
     return true

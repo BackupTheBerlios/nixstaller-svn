@@ -130,7 +130,7 @@ function install.generatepkg()
                         local msg
                         local myver = pkg.version .. "-" .. pkg.release
                         if version == "unknown" or version == myver then
-                            msg = "Package is already installed."
+                            msg = "Package is already installed. Use the --overwrite option to install anyway."
                         else
                             msg = tr("Version %s is already installed, you're trying to install version %s.", version, myver)
                         end

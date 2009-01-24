@@ -56,37 +56,42 @@ Ignore
 Abort
 Abort
 
+Don't register
+Don't register
+
+Refresh
+Refresh
 
 #-----------------------------------------------
 # Messages
 #-----------------------------------------------
 
 [
-Install commands are still running
-If you abort now this may lead to a broken installation
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
 Are you sure?
 ]
 [
-Install commands are still running
-If you abort now this may lead to a broken installation
-Are you sure?
-]
-
-[
-This will abort the installation
-Are you sure?
-]
-[
-This will abort the installation
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
 Are you sure?
 ]
 
 [
-Root access is required to continue
+This will abort the installation.
+Are you sure?
+]
+[
+This will abort the installation.
+Are you sure?
+]
+
+[
+Root access is required to continue.
 Abort installation?
 ]
 [
-Root access is required to continue
+Root access is required to continue.
 Abort installation?
 ]
 
@@ -98,11 +103,11 @@ Installation of %s complete!
 Installation of %s complete!
 
 [
-You don't have read permissions for this directory
+You don't have read permissions for this directory.
 Please choose another directory or rerun this program as a user who has read permissions.
 ]
 [
-You don't have read permissions for this directory
+You don't have read permissions for this directory.
 Please choose another directory or rerun this program as a user who has read permissions.
 ]
 
@@ -132,11 +137,11 @@ Directory %s does not exist, do you want to create it?
 
 # %s is replaced by appname
 [
-This will install %s
+This will install %s.
 Continue?
 ]
 [
-This will install %s
+This will install %s.
 Continue?
 ]
 
@@ -150,38 +155,31 @@ To create it with the root (administrator) account, please enter the administrat
 ]
 
 [
-Another program seems to be using the DEB database.
-Please close all applications that may use the database (ie Synaptic)
-and hit continue.
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
 ]
 [
-Another program seems to be using the DEB database.
-Please close all applications that may use the database (ie Synaptic)
-and hit continue.
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
 ]
 
-[
-Another program seems to be using pacman. Please close this program and
-hit continue.
-]
-[
-Another program seems to be using pacman. Please close this program and
-hit continue.
-]
+Another program seems to be using pacman. Please close this program.
+Another program seems to be using pacman. Please close this program.
 
 [
 Another program seems to be using the RPM database.
-Please close all applications that may use the database (ie Smart or YaST)
-and hit continue.
+Please close all applications that may use this database (eg. Smart or YaST).
 ]
 [
 Another program seems to be using the RPM database.
-Please close all applications that may use the database (ie Smart or YaST)
-and hit continue.
+Please close all applications that may use this database (eg. Smart or YaST).
 ]
 
 Package is already installed. Do you want to replace it?
 Package is already installed. Do you want to replace it?
+
+Package is already installed. Use the --overwrite option to install anyway.
+Package is already installed. Use the --overwrite option to install anyway.
 
 # First %s is replaced by current version, second by installer version.
 [
@@ -202,6 +200,24 @@ Please install this package now and hit continue or press ignore to continue wit
 In order to let the installer register the software, the '%s' package needs to be available.
 Please install this package now and hit continue or press ignore to continue without software registration.
 ]
+
+One or more package dependencies could not be resolved. Details are given below.
+One or more package dependencies could not be resolved. Details are given below.
+
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+
+Please fix these issues now and rerun the installer.
+Please fix these issues now and rerun the installer.
+
+Continuing installation anyway...
+Continuing installation anyway...
+
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
 
 
 #-----------------------------------------------
@@ -250,8 +266,8 @@ Select a directory
 Password dialog
 Password dialog
 
-Files are being installed
-Files are being installed
+Software is being installed
+Software is being installed
 
 Software destination
 Software destination
@@ -282,6 +298,21 @@ Status
 Extracting files
 Extracting files
 
+Verifying dependencies
+Verifying dependencies
+
+Gathering main binary dependencies.
+Gathering main binary dependencies.
+
+Extracting dependency %s
+Extracting dependency %s
+
+Gathering mandatory dependencies.
+Gathering mandatory dependencies.
+
+Installing dependencies.
+Installing dependencies.
+
 Installing package
 Installing package
 
@@ -299,6 +330,46 @@ Root password
 
 Register software
 Register software
+
+Name
+Name
+
+Problem
+Problem
+
+Description
+Description
+
+Failed to install.
+Failed to install.
+
+Failed to download.
+Failed to download.
+
+(Binary) incompatible.
+(Binary) incompatible.
+
+Missing.
+Missing.
+
+File missing.
+File missing.
+
+(Binary) incompatible.
+(Binary) incompatible.
+
+Multiple package managers were found, please choose which one should be used.
+Multiple package managers were found, please choose which one should be used.
+
+# %s is replaced by possible package managers
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
 
 [
 In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
@@ -335,15 +406,11 @@ When unsure, just leave it as it is.
 By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
 
 Note: When enabled, you need to grant the installer root access later on.
-
-When unsure, just leave it enabled.
 ]
 [
 By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
 
 Note: When enabled, you need to grant the installer root access later on.
-
-When unsure, just leave it enabled.
 ]
 
 [
@@ -360,6 +427,9 @@ An installation summary is shown below.
 #-----------------------------------------------
 # Error messages
 #-----------------------------------------------
+
+Error
+Error
 
 Could not create directory
 Could not create directory
@@ -433,8 +503,12 @@ Could not close file descriptor: %s
 Could not close file descriptor: %s
 
 # %s is replaced by error message
-Poll returned an error: %s
-Poll returned an error: %s
+poll returned an error: %s
+poll returned an error: %s
+
+# %s is replaced by error message
+select returned an error: %s
+select returned an error: %s
 
 # %s is replaced by error message
 Encountered an error while waiting on child process: %s
@@ -450,6 +524,35 @@ Could not create directory '%s'
 
 Please enter a valid path.
 Please enter a valid path.
+
+# %s is replaced by error message
+Error during file transfer: %s
+Error during file transfer: %s
+
+# %s is replaced by error message
+Elf class error detected: %s
+Elf class error detected: %s
+
+# First %s is replaced by file, second by error message
+Could not open file %s: %s
+Could not open file %s: %s
+
+# %s is replaced by filename
+Could not locate file: %s
+Could not locate file: %s
+
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+
+# %s is replaced by list of possible packagers
+Wrong packager specified, should be one of the following: %s
+Wrong packager specified, should be one of the following: %s
 
 
 #-----------------------------------------------

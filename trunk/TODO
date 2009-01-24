@@ -60,6 +60,7 @@ DOCS
     - cfg.autolang
     - tr()
     - lang/config.lua
+    - save files as utf8
 - gui.textwidth() and label:setlabelwidth()
 - Update chapter?
 
@@ -69,22 +70,11 @@ RELEASE
 - Reenable MD5 checking for InitDeltaBins()
 - Final bindeltas file
 - about, nixstaller version etc
+- Enable RELEASE, disable libsu logging
 
 
 TRANSLATIONS
-- Check all sentences for punctation
-- Change "Install commands ..." cancel message to something more appropiate --> Update translations
-- verifylock() messages
-- "Reverting to generic package."
 - Check unattended installs
-- utf8:
-    - Check if FLTK 1.3 is usable enough (or will be soon)
-    - Fix ncurses and perhaps others for width calculating
-    - Convert language files to utf?
-    - Convert utf to native for ncurses frontend?
-    - way to specify encoding?
-- Modified packtogglescreen message
-- "Files are being installed" --> Software is ...
 
 
 LIBSU
@@ -157,6 +147,13 @@ GTK
 
 FLTK
 - Create a pack widget that works?
+
+
+TRANSLATIONS
+- utf8:
+    - Convert language files to utf?
+    - Convert utf to native for ncurses frontend?
+    - way to specify encoding?
 
 
 DESIGN
