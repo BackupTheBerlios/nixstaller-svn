@@ -18,8 +18,8 @@
 */
 
 #include <vector>
-#include <libelf/libelf.h>
-#include <libelf/gelf.h>
+#include "libelf/libelf.h"
+#include "libelf/gelf.h"
 
 class CElfWrapper
 {

@@ -199,7 +199,7 @@ buildcurl()
     get "http://curl.haxx.se/download/curl-7.19.3.tar.gz"
     untar "curl-7.19.3.tar.gz"
     dodir "curl-7.19.3"
-    ./configure --prefix=$DESTPREFIX --enable-static --disable-file --disable-ldap --disable-ldaps --disable-dict --disable-telnet --disable-thread --disable-ares --disable-debug --disable-crypto-auth --disable-cookies --without-ssl --without-libssh2 --without-libidn && make && make install && make clean
+    ./configure --prefix=$DESTPREFIX --enable-static --disable-shared --disable-file --disable-ldap --disable-ldaps --disable-dict --disable-telnet --disable-thread --disable-ares --disable-debug --disable-crypto-auth --disable-cookies --without-ssl --without-libssh2 --without-libidn && make && make install && make clean
     restoredir
 }
 

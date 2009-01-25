@@ -55,6 +55,9 @@ TSTLStrSize CInputField::GetStrPosition()
 
 void CInputField::Move(int n, bool relative)
 {
+    if (!Width())
+        return;
+    
     const TSTLStrSize chars = utf8::distance(m_Text.begin(), m_Text.end());
     const TSTLStrSize maxwidth = SafeConvert<TSTLStrSize>(Width()-2); // -3 because we have a frame and to keep cursor inside it
     

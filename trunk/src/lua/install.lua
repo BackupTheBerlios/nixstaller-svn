@@ -183,6 +183,9 @@ end
 loadconfig("config")
 initlang()
 
+install.destdir = os.getenv("HOME") or "/"
+install.menuentries = { }
+
 if install.unattended then
     dofile("unattinstall.lua")
 else
