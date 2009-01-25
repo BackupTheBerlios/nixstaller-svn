@@ -1327,7 +1327,7 @@ Now call @file{geninstall.sh}, supply it with 2 arguments: the first should be t
 
 @anchor{third tutorial}
 @section Third Tutorial: Installer for Vim
-In the last tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim}. The installer should have the following features:
+In this tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim}. The installer should have the following features:
 @itemize @bullet
     @item Run on every OS that Nixstaller supports (linux, freebsd, netbsd, openbsd and sunos).
     @item Let the user select a language.

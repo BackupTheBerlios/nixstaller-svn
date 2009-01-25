@@ -55,6 +55,7 @@
 - cfg.autolang option to let the installer try to automaticly select a language
 - config.lua file for translations
 - tr() function
+- Improved translation strings
 
 
 0.3 --> 0.4

@@ -355,9 +355,6 @@ Afwezig.
 File missing.
 Bestand afwezig.
 
-(Binary) incompatible.
-(Binary) incompatible.
-
 Multiple package managers were found, please choose which one should be used.
 Er zijn meerdere pakketbeheerders gevonden. Kies welke moet worden gebruikt.
 
@@ -537,6 +534,22 @@ Elf class gaf een fout: %s
 Could not open file %s: %s
 Kon bestand %s niet openen: %s
 
+# %s is replaced by filename
+Could not locate file: %s
+Kon bestand %s niet vinden
+
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+Kan bestemmingsdirectory niet lezen, herstart het installatieprogramma met een gebruiker welke dit wel kan (bijvoorbeeld root).
+
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+Kan niet schrijven naar de bestemmingsdirectory, herstart het installatieprogramma met een gebruiker welke dit wel kan (bijvoorbeeld root).
+
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+Kan bestemmingsdirectory niet maken, herstart het installatieprogramma met een gebruiker welke dit wel kan (bijvoorbeeld root).
+
+# %s is replaced by list of possible packagers
+Wrong packager specified, should be one of the following: %s
+Verkeerde pakketbeheerder geselecteerd, geldige zijn: %s
 
 
 #-----------------------------------------------

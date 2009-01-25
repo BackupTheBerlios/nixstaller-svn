@@ -12,20 +12,13 @@ TEST
 - ncurses utf8:
     - buttonbar
     - buttons
-
-
-PACKAGING
-- RPM: Description formatting?
-- pacman: Check for locks for future releases
-- deb: way to remove temporary root owned files incase of an error
-- Check for deb to dpkg changes (lock translations)
+- translations
 
 
 MAIN
 - Improve/check lua error messages?
 - Make startinstall code more flexible
     - Check if all lua functions from install package need to be inside Install() (update docs)
-    - Test translations
     - Re-enable SU passwd cleaning at end of install?
     - Make new lua functions 'public'?
 
@@ -73,27 +66,10 @@ RELEASE
 - Enable RELEASE, disable libsu logging
 
 
-TRANSLATIONS
-- Check unattended installs
-
-
-LIBSU
-- Check tmp files leaving around (caused by sh errors?)
-
-
-NCURSES
-
-
-GTK
-
-
 FLTK
 - Check update: test for regressions, check current hacks.
 - Progressdialog: Refresh does not always enable both bars (FLTK specific?)
 - Test Xft for every platform
-
-
-DESIGN
 
 
 -----------------------------------------------------------------------
@@ -126,6 +102,9 @@ PACKAGING
 - More config options:
     * Package Changelog?
     * RPM: Vendor?, Icon?
+- RPM: Description formatting?
+- pacman: Check for locks for future releases
+- deb: way to remove temporary root owned files incase of an error
 
 
 MAIN
@@ -154,6 +133,10 @@ TRANSLATIONS
     - Convert language files to utf?
     - Convert utf to native for ncurses frontend?
     - way to specify encoding?
+
+
+LIBSU
+- Check tmp files leaving around (caused by sh errors?)
 
 
 DESIGN
