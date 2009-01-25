@@ -72,16 +72,16 @@ buildstdcxx()
 
 buildpng()
 {
-    get "http://prdownloads.sourceforge.net/sourceforge/libpng/libpng-1.2.21.tar.gz"
-    untar "libpng-1.2.21.tar.gz"
-    dodir "libpng-1.2.21/"
+    get "http://prdownloads.sourceforge.net/sourceforge/libpng/libpng-1.2.34.tar.gz"
+    untar "libpng-1.2.34.tar.gz"
+    dodir "libpng-1.2.34/"
     ./configure --prefix="$DESTPREFIX" --disable-shared && make && make install && make clean
     restoredir
 }
 
 buildjpeg()
 {
-    get "http://freshmeat.net/redir/libjpeg/5665/url_tgz/jpegsrc.v6b.tar.gz"
+    get "ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v6b.tar.gz"
     untar "jpegsrc.v6b.tar.gz"
     dodir "jpeg-6b"
     ./configure --prefix=$DESTPREFIX && make && make install-lib && make clean
@@ -196,9 +196,9 @@ buildelf()
 
 buildcurl()
 {
-    get "http://curl.haxx.se/download/curl-7.18.0.tar.gz"
-    untar "curl-7.18.0.tar.gz"
-    dodir "curl-7.18.0"
+    get "http://curl.haxx.se/download/curl-7.19.3.tar.gz"
+    untar "curl-7.19.3.tar.gz"
+    dodir "curl-7.19.3"
     ./configure --prefix=$DESTPREFIX --enable-static --disable-file --disable-ldap --disable-ldaps --disable-dict --disable-telnet --disable-thread --disable-ares --disable-debug --disable-crypto-auth --disable-cookies --without-ssl --without-libssh2 --without-libidn && make && make install && make clean
     restoredir
 }

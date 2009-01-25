@@ -606,8 +606,8 @@ if not env.GetOption('clean'):
 
     if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
-    if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
-        conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
+    if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);'):
+        conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);')
     
     if not conf.env['LCVER']:
         if cur_os == 'darwin':
