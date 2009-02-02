@@ -11,6 +11,8 @@
 - Fixed: install.execute() wouldn't restore $PATH incase caller used custom path. (Reported by Markus Fischer)
 - Fixed: User could still cancel installation by closing window if cancel button was locked.
 - Fixed: Lua textfield from FLTK frontend was slow when large amounts of text were added.
+- Fixed: GTK screen titles weren't always centered.
+- Fixed: GTK password dialog didn't finish on enter keypress.
 - Better commandline arguments handling.
 - utils.removerec() function.
 - utils.copyrec() function.
@@ -56,6 +58,8 @@
 - config.lua file for translations
 - tr() function
 - Improved translation strings
+- More reliable way for checking if package manager is locked.
+- genprojdir.sh now generates os, arch and os/arch specific file dirs
 
 
 0.3 --> 0.4

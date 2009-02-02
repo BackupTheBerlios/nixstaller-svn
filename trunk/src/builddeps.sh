@@ -24,8 +24,8 @@ get()
         return
     fi
     
-    wget -P "$DESTFILES" "$1" && return
-    cd "$DESTFILES" ; fetch "$1" ; cd - ; return
+    [ -x "`which wget`" ]  && wget -P "$DESTFILES" "$1" && return
+    [ -x "`which fetch`" ] && { cd "$DESTFILES" ; fetch "$1" ; cd - ; } && return
     echo "Download file manually"
 }
 

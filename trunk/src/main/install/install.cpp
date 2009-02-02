@@ -197,7 +197,6 @@ void CBaseInstall::Init(int argc, char **argv)
 {
     NLua::LuaSet(dirname(CreateText(argv[0])), "bindir");
     CMain::Init(argc, argv);
-//     NLua::LuaGet(m_szCurLang, "defaultlang", "cfg");
     UpdateLanguage();
 }
 

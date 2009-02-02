@@ -42,8 +42,29 @@ curprogress = 0,
 wrongdeps = { },
 wronglibs = { },
 installeddeps = { },
-notifier = nil
+notifier = nil,
+libpaths = { }
 }
+
+function adddepprob(dep, field)
+    depprocess.wrongdeps[dep] = depprocess.wrongdeps[dep] or { }
+    depprocess.wrongdeps[dep][field] = depprocess.wrongdeps[dep][field] or { }
+    depprocess.wrongdeps[dep][field] = true
+end
+
+function adddeplibprob(dep, field, lib, other)
+    other = other or true
+    depprocess.wrongdeps[dep] = depprocess.wrongdeps[dep] or { }
+    depprocess.wrongdeps[dep][field] = depprocess.wrongdeps[dep][field] or { }
+    if not depprocess.wrongdeps[dep][field][lib] then
+        depprocess.wrongdeps[dep][field][lib] = other
+    end
+end
+
+function addlibprob(lib, field, val)
+    depprocess.wronglibs[lib] = depprocess.wronglibs[lib] or { }
+    depprocess.wronglibs[lib][field] = val
+end
 
 function initprogress(bins, mainlibs)
     -- Rough progress indication
@@ -303,8 +324,7 @@ function initdep(d)
                             notifyenddownload()
                             initdeps[d] = false
                             os.remove(path)
-                            depprocess.wrongdeps[d] = depprocess.wrongdeps[d] or { }
-                            depprocess.wrongdeps[d].faileddl = true
+                            adddepprob(d, "faileddl")
                             return false
                         end
                     else
@@ -380,9 +400,9 @@ function initdep(d)
 end
 
 function resetfaileddl()
-    for k, v in pairs(depprocess.wrongdeps) do
+    for dep, v in pairs(depprocess.wrongdeps) do
         if v.faileddl then
-            initdeps[k] = nil
+            initdeps[dep] = nil
             v.faileddl = nil
         end
     end
@@ -401,6 +421,115 @@ function verifysymverneeds(needs, path)
         end
     end
     return true
+end
+
+function guesslibpaths(bins, libs)
+    -- As there doesn't seem to be a cross platform way to figure out where
+    -- libraries are usually found and even the OS specific ways are rather
+    -- hackish, we just take a guess from the paths from all the libraries
+    -- that are found.
+    
+    -- First add LD_LIBRARY_PATH's
+    local ldpath = os.getenv("LD_LIBRARY_PATH")
+    if ldpath then
+        for p in string.gmatch(ldpath, "[^\:]+") do
+            depprocess.libpaths[p] = true
+        end
+    end    
+    
+    local searched = { }
+    local function getpaths(bin, deps)
+        local map = maplibs(bin)
+        if map then
+            for l, p in pairs(map) do
+                if not searched[l] then
+                    searched[l] = true
+                    if p then
+                        depprocess.libpaths[utils.dirname(p)] = true
+                        local ndeps = getnativedeps(deps, l)
+                        if ndeps then
+                            getpaths(p, ndeps)
+                        end
+                    else
+                        local dep = getdepfromlib(deps, l)
+                        if dep then
+                            local path = getdeplibpath(dep, l)
+                            getpaths(path, dep.deps)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    if bins then
+        for _, b in ipairs(bins) do
+            getpaths(install.getpkgdir(b), pkg.deps)
+        end
+    end
+    
+    if libs then
+        for _, l in ipairs(libs) do
+            getpaths(install.getpkgdir(l), pkg.deps)
+        end
+    end
+end
+
+-- Gets libraries with the same name, but different versions
+function getversionlibs(lib)
+    local libnover = string.match(lib, "^.*%.so") -- libname without versions
+    local ret = { }
+
+    if not utils.emptystring(libnover) then
+        for p in pairs(depprocess.libpaths) do
+            for f in io.dir(p) do
+                local path = p .. "/" .. f
+                if not os.isdir(path) then
+                    if string.find(f, escapepat(libnover)) then
+                        table.insert(ret, path)
+                    end
+                end
+            end
+        end
+    end
+    
+    return ret
+end
+
+-- Splits library version into a table
+function splitlibversion(lib)
+    local split = { }
+    for v in string.gmatch(lib, "%.(%d+)") do
+        table.insert(split, v)
+    end
+    return split
+end
+
+-- Returns newer and older library (if any)
+function checklibversion(lib)
+    local older, newer = nil, nil
+            
+    local version = splitlibversion(lib)
+    local others = getversionlibs(lib)
+    
+    if not utils.emptytable(version) and not utils.emptytable(others) then
+        for _, l in ipairs(others) do
+            local otherver = splitlibversion(l)
+            for i, v in ipairs(version) do
+                if v < otherver[i] then
+                    newer = l
+                elseif v > otherver[i] then
+                    older = l
+                end
+                
+                if newer and older then
+                    return newer, older
+                end
+            end
+        end
+    end
+    
+    return newer, older
 end
 
 function markdepfromlib(bininfo, lib, deps, parent)
@@ -436,17 +565,36 @@ function markdep(bininfo, lib, dep, deps)
         end
     else
         if dep then
-            depprocess.wrongdeps[dep] = depprocess.wrongdeps[dep] or { }
-            depprocess.wrongdeps[dep].missing = true
-            install.print(string.format("WARNING: Missing dependency: %s\n", dep.name))
-        else
-            depprocess.wronglibs[lib] = depprocess.wronglibs[lib] or { }
-            if bininfo.native then
-                depprocess.wronglibs[lib].incompatlib = true
+            local newer, older = checklibversion(lib)
+            
+            if older or newer then
+                if not newer then
+                    adddeplibprob(dep, "older", lib, older)
+                elseif not older then
+                    adddeplibprob(dep, "newer", lib, newer)
+                else -- both
+                    adddeplibprob(dep, "mismatch", lib)
+                end
             else
-                depprocess.wronglibs[lib].missinglib = true
+                adddeplibprob(dep, "missing", lib)
             end
-            install.print(string.format("WARNING: Missing/incompatible library: %s\n", lib))
+        else
+            if bininfo.native then
+                addlibprob(lib, "incompatlib", true)
+            else
+                local newer, older = checklibversion(lib)
+                if older or newer then
+                    if not newer then
+                        addlibprob(lib, "older", older)
+                    elseif not older then
+                        addlibprob(lib, "newer", newer)
+                    else -- both
+                        addlibprob(lib, "mismatch", true)
+                    end
+                else
+                    addlibprob(lib, "missing", true)
+                end
+            end            
         end
     end
     return false
@@ -487,8 +635,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps)
                             markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep)
                             install.print(string.format("Overrided dependency: %s (%s)\n", infomap[lib].dep.name, lib))
                         elseif not infomap[lib].dep.HandleCompat or not infomap[lib].dep:HandleCompat(lib) then
-                            depprocess.wrongdeps[infomap[lib].dep] = depprocess.wrongdeps[infomap[lib].dep] or { }
-                            depprocess.wrongdeps[infomap[lib].dep].incompatdep = true
+                            adddeplibprob(infomap[lib].dep, "incompatdep", lib)
                         end
                     end
                 end
@@ -554,8 +701,7 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver)
             end
             
             if not ok then
-                depprocess.wrongdeps[infomap[incompatlib].dep] = depprocess.wrongdeps[infomap[incompatlib].dep] or { }
-                depprocess.wrongdeps[infomap[incompatlib].dep].incompatdep = true
+                adddeplibprob(infomap[incompatlib].dep, "incompatdep", incompatlib)
                 install.print(string.format("Incompatible dependency: %s (%s, %s)\n", infomap[incompatlib].dep.name, incompatlib, sym))
             else
                 install.print(string.format("Overrided dependency: %s (%s)\n", infomap[incompatlib].dep.name, incompatlib))
@@ -563,7 +709,7 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver)
             end
         end
     elseif not infomap[incompatlib].dep.HandleCompat or not infomap[incompatlib].dep:HandleCompat(incompatlib) then
-        depprocess.wrongdeps[infomap[incompatlib].dep] = depprocess.wrongdeps[infomap[incompatlib].dep] or { incompatdep = true }
+        adddeplibprob(infomap[incompatlib].dep, "incompatdep", incompatlib)
         install.print(string.format("Incompatible dependency: %s (%s, %s)\n", infomap[incompatlib].dep.name, incompatlib, sym))
     end
     return false
@@ -587,7 +733,9 @@ function verifysyms(infomap)
             for sym, v in pairs(syms) do
                 if v.undefined then
                     local found = false
-                    local supposedlib = loadedsyms[b][sym]
+                    -- Use basename, for main bins/libs as these may contain directories
+                    local symb = utils.basename(b)
+                    local supposedlib = loadedsyms and loadedsyms[symb] and loadedsyms[symb][sym]
                     
                     if supposedlib and infomap[supposedlib] and infomap[supposedlib].syms and
                        infomap[supposedlib].syms[sym] and not infomap[supposedlib].syms[sym].undefined then
@@ -626,12 +774,10 @@ function verifysyms(infomap)
                                 end
                             else
                                 if not infomap[supposedlib] or infomap[supposedlib].native then
-                                    depprocess.wronglibs[supposedlib] = depprocess.wronglibs[supposedlib] or { }
-                                    depprocess.wronglibs[supposedlib].incompatlib = true
+                                    addlibprob(supposedlib, "incompatlib", true)
                                 elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.HandleCompat or
                                         not infomap[supposedlib].dep:HandleCompat(supposedlib)) then
-                                    depprocess.wrongdeps[infomap[supposedlib].dep] = depprocess.wrongdeps[infomap[supposedlib].dep] or { }
-                                    depprocess.wrongdeps[infomap[supposedlib].dep].incompatdep = true
+                                    adddeplibprob(infomap[supposedlib].dep, "incompatdep", supposedlib)
                                 end
                             end
                         else
@@ -743,7 +889,7 @@ function instdeps(deps)
             if initdep(dep) then
                 -- Check if dep is usable
                 if dep.CanInstall and not dep:CanInstall() then
-                    depprocess.wrongdeps[dep] = { failed = true }
+                    adddepprob(dep, "failed")
                 else
                     dep:Install()
                     depprocess.installeddeps[dep] = true
@@ -769,17 +915,39 @@ function verifydeps(bins, libs)
     end
     
     local ret = { }
-    for k, v in pairs(depprocess.wrongdeps) do
-        ret[k.name] = { }
-        ret[k.name].desc = k.description
-        if v.failed then
-            ret[k.name].problem = "Failed to install."
-        elseif v.faileddl then
-            ret[k.name].problem = "Failed to download."
-        elseif v.incompatdep then
-            ret[k.name].problem = "(Binary) incompatible."
-        elseif v.missing then
-            ret[k.name].problem = "Missing."
+    for dep, probs in pairs(depprocess.wrongdeps) do
+        ret[dep.name] = { }
+        ret[dep.name].desc = dep.description
+        
+        for k, v in pairs(probs) do
+            local str
+            if k == "failed" then
+                str = "Failed to install."
+            elseif k == "faileddl" then
+                str = "Failed to download."
+            else -- Lib specific error
+                for lib, other in pairs(v) do
+                    if k == "incompatdep" then
+                        str = tr("Incompatible library: %s.", lib)
+                    elseif k == "missing" then
+                        str = tr("Missing library: %s.", lib)
+                    elseif k == "older" then
+                        str = tr("Library %s is too old (required: %s).", other, lib)
+                    elseif k == "newer" then
+                        str = tr("Library %s is too new (required: %s).", other, lib)
+                    elseif k == "mismatch" then
+                        str = tr("Wrong library version (required: %s).", lib)
+                    end
+                end
+            end
+            
+            assert(str)
+            
+            if ret[dep.name].problem then
+                ret[dep.name].problem = ret[dep.name].problem .. "\n" .. str
+            else
+                ret[dep.name].problem = str
+            end
         end
     end
     
@@ -788,11 +956,19 @@ function verifydeps(bins, libs)
     for k, v in pairs(depprocess.wronglibs) do
         ret[k] = { }
         ret[k].desc = ""
-        if v.missinglib then
+        if v.missing then
             ret[k].problem = "File missing."
         elseif v.incompatlib then
             ret[k].problem = "(Binary) incompatible."
+        elseif v.older then
+            ret[k].problem = tr("Too new (available: %s)", v.older)
+        elseif v.newer then
+            ret[k].problem = tr("Too old (available: %s)", v.older)
+        elseif v.mismatch then
+            ret[k].problem = "Version mismatch."
         end
+        
+        assert(ret[k].problem)
     end
 
     return ret

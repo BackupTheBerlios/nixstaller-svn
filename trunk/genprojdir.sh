@@ -298,6 +298,24 @@ createlayout()
     mkdir -p "${TARGETDIR}" || error "Failed to create target directory"
     mkdir -p "${TARGETDIR}/files_all" || error "Failed to create files_all directory"
     mkdir -p "${TARGETDIR}/files_extra" || error "Failed to create files_extra directory"
+    
+    # OS Specific file dirs
+    for OS in $TARGETOS
+    do
+        mkdir -p "${TARGETDIR}/files_${OS}_all" || error "Failed to create files_$OS_all directory."
+        
+        # OS/Arch specific dirs
+        for ARCH in $TARGETARCH
+        do
+            mkdir -p "${TARGETDIR}/files_${OS}_${ARCH}" || error "Failed to create files_$OS_$ARCH directory."
+        done
+    done
+    
+    # Arch specific dirs
+    for ARCH in $TARGETARCH
+    do
+        mkdir -p "${TARGETDIR}/files_all_${ARCH}" || error "Failed to create files_all_$ARCH directory."
+    done    
 }
 
 copylanguages()
@@ -307,14 +325,15 @@ copylanguages()
         SRC=
         if [ ! -d "${NDIR}/lang/${L}" ]; then
             NEWLANGUAGES="$NEWLANGUAGES $L"
-            SRC="${NDIR}/lang/english/strings"
+            SRC="${NDIR}/lang/english/"
         else
-            SRC="${NDIR}/lang/${L}/strings"
+            SRC="${NDIR}/lang/${L}/"
         fi
         
         DEST="${TARGETDIR}"/lang/"${L}"
         mkdir -p "${DEST}"
-        requiredcp "${SRC}" "${DEST}"
+        requiredcp "${SRC}/strings" "${DEST}"
+        cp "${SRC}/config.lua" "${DEST}"
     done
 }
 

@@ -32,15 +32,6 @@ function checkcmd(f, cmd)
     end
 end
 
-function checklock(file, root)
-    if not os.fileexists(file) then
-        return false
-    end
-    local cmd = (root and install.executeasroot) or install.execute
-    local ret = cmd(string.format("[ \"`fuser %s 2>&1 | awk 'END {print NF}'`\" -gt 1 ] && exit 2", file))
-    return ret == 2
-end
-
 function checkmvrec(dir, dest)
     check(utils.moverec(dir, dest) == 0)
 end

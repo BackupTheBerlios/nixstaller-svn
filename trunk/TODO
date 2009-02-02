@@ -4,6 +4,9 @@ OVERALL
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
     - Only use it on some platforms?
 - Test regular C lua libs, update notes
+- print when dep is verified in attended installs?
+- Check return value of pkg.verifydeps()
+
 
 TEST
 - MD5 code for instheader.sh, makeself.sh and generic packages.
@@ -13,6 +16,8 @@ TEST
     - buttonbar
     - buttons
 - translations
+- genprojdir copying lang configs
+- depscreen
 
 
 MAIN
@@ -55,7 +60,18 @@ DOCS
     - lang/config.lua
     - save files as utf8
 - gui.textwidth() and label:setlabelwidth()
-- Update chapter?
+- Updating chapter?
+- bzflag tutorial:
+    - 'bzflag-2.0.10/...' --> make this generic
+    - use --deps for genprojdir.sh
+    - Additional dep code for package.lua and run.lua
+    - Move binaries to arch/os specific dirs
+    - deputil.sh: scan, auto (with and without pretend)
+
+
+TRANSLATIONS
+- pkg.name's
+- depscreen translations
 
 
 RELEASE

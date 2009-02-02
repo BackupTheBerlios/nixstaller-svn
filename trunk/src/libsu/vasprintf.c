@@ -20,6 +20,8 @@
 
 /* File copied(and modified) from 'libiberty' from the GCC project. */
 
+#include "su-config.h"
+
 #ifndef HAVE_VASPRINTF
 
 #include <stdarg.h>

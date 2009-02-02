@@ -64,8 +64,11 @@ void CLuaDepScreen::CoreUpdateList()
     {
         m_pTextField->AddText(CreateText("%s: %s\n", GetTranslation("Name"),
                               GetTranslation(it->name).c_str()));
-        m_pTextField->AddText(CreateText("%s: %s\n", GetTranslation("Description"),
-                              GetTranslation(it->description).c_str()));
+                              
+        if (!it->description.empty())
+            m_pTextField->AddText(CreateText("%s: %s\n", GetTranslation("Description"),
+                                  GetTranslation(it->description).c_str()));
+                                  
         m_pTextField->AddText(CreateText("%s: %s\n\n", GetTranslation("Problem"),
                               GetTranslation(it->problem).c_str()));
     }

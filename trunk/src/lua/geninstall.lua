@@ -568,7 +568,7 @@ function PrepareArchive()
     print("Preparing/copying frontend binaries")
     
     local binlist, frlist = { }, { }
-    local copybins = { "edelta", "surunner" }
+    local copybins = { "edelta", "surunner", "lock" }
     
     if cfg.archivetype == "lzma" then
         table.insert(copybins, "lzma-decode")
@@ -699,7 +699,7 @@ function PrepareArchive()
                     if not depmap[dep] then
                         local d, msg = loaddep(confdir, dep)
                         if not d then
-                            ThrowError("Failed to load dependency: %s", msg)
+                            ThrowError("Failed to load dependency %s: %s", dep, msg)
                         end
                         depmap[dep] = d
                         table.insert(stack, d.deps)
@@ -814,7 +814,7 @@ function CreateInstaller()
     local nixstopts = ""
     local function addarg(arg, val)
         if val then
-            nixstopts = string.format("%s %s \"%s\"", nixstopts, arg, val)
+            nixstopts = string.format("%s %s \'%s\'", nixstopts, arg, val)
         end
     end
     
@@ -894,7 +894,7 @@ fi]], optchk, n)
             addoptarg(n, a)
         end
     end
-    
+
     local label = string.format("Installer for %s", cfg.appname)
     os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"%s\" sh ./startupinstaller.sh > /dev/null 2>&1", ndir, ndir, nixstopts, confdir, outname, label))
 end

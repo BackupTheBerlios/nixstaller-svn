@@ -321,7 +321,7 @@ def getallbins(onlyforcuros):
         directory = stack.pop()
         for file in os.listdir(directory):
             fullname = os.path.join(directory, file)
-            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "edelta" or file == "lzma" or file == "surunner":
+            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "edelta" or file == "lzma" or file == "surunner" or file == "lock":
                 bins.append(fullname)
             if os.path.isdir(fullname) and not os.path.islink(fullname):
                 stack.append(fullname)
@@ -722,6 +722,9 @@ edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS
 # Builds libsu
 libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
+# Builds lock tool
+lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
+
 # Builds main lib
 main = env.Library("main/main", Split('libmd5/md5.c main/install/attinstall.cpp main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/install/unattinstall.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
 
@@ -743,9 +746,9 @@ else:
 bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
 
 if cur_os == 'darwin':
-    Default(edelta, surunner, fltk, main)
-    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk))
+    Default(edelta, surunner, lock, fltk, main)
+    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(lock)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk))
 else:
-    Default(edelta, surunner, ncurses, gtk, fltk, main)
-    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, gtk), env.Install(bin_dir, fltk))
+    Default(edelta, surunner, lock, ncurses, gtk, fltk, main)
+    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(lock)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, gtk), env.Install(bin_dir, fltk))
 

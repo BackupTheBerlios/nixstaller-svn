@@ -93,6 +93,7 @@ function Usage()
     --unknown-simple        As 'unknown-full', but generates simple dependencies.
     --unknown-nostand       As 'unknown-full', but generates non-standalone full dependencies.
     --verbose, -v           Show more verbose output.
+    --pretend               Don't do anything, just print what would happen.
 
  Valid options for the 'gen', 'gent' and 'auto' actions:
     --copy, -c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the --libdir option, inside the platform/OS specific files folder. This option only affects a full dependencies.
@@ -503,7 +504,7 @@ function CheckArgs()
         lopts = { {"help"}, {"simple"}, { "simple-tag", true }, {"full"}, { "full-tag", true },  {"no-standalone"},  {"nostand-tag", true}, {"copy"}, {"name", true}, {"desc", true}, {"template", true}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"libs", true}, {"deps", true} }
     elseif action == "auto" then
         sopts = "hsS:fF:cp:l:u:Uv"
-        lopts = { {"help"}, {"simple"}, { "simple-tag", true }, {"full"}, { "full-tag", true }, {"no-standalone"},  {"nostand-tag", true}, {"unknown-simple"}, {"unknown-full"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"verbose"} }
+        lopts = { {"help"}, {"simple"}, { "simple-tag", true }, {"full"}, { "full-tag", true }, {"no-standalone"},  {"nostand-tag", true}, {"unknown-simple"}, {"unknown-full"}, {"copy"}, {"prdir", true}, {"libpath", true}, {"libdir", true}, {"baseurl", true}, {"destos", true}, {"destarch", true}, {"overwrite"}, {"rm-existing"}, {"skip-existing"}, {"verbose"}, {"pretend"} }
     elseif action == "edit" then
         sopts = "hsfp:d:rcl:"
         lopts = { {"help"}, {"simple"}, {"full"}, {"prdir", true}, {"dep", true}, {"remove"}, {"copy"}, {"libpath", true}, {"destos", true}, {"destarch", true} }
@@ -621,16 +622,14 @@ function Scan()
                     loadeddeps[d] = false
                 else
                     loadeddeps[d] = ret
+                    loaddeps(loadeddeps[d].deps, loadeddeps[d])
                 end
+            end
             
-                if loadeddeps[d] then
-                    for _, l in ipairs(loadeddeps[d].libs) do
-                        depmap[dep] = depmap[dep] or { }
-                        depmap[dep][utils.basename(l)] = d
-                    end
-                    if loadeddeps[d].deps then
-                        loaddeps(loadeddeps[d].deps, loadeddeps[d])
-                    end
+            if loadeddeps[d] then
+                for _, l in ipairs(loadeddeps[d].libs) do
+                    depmap[dep] = depmap[dep] or { }
+                    depmap[dep][utils.basename(l)] = d
                 end
             end
         end
@@ -935,6 +934,7 @@ function Autogen()
     local copy, prdir, baseurl, libdir, destos, destarch, exist = ParseGenArgs()
     local autounknown = false
     local verbose = false
+    local pretend = false
     
     for _, o in ipairs(opts) do
         if o.name == "U" or o.name == "unknown-full" then
@@ -945,6 +945,8 @@ function Autogen()
             autounknown, fullunknown, standunknown = true, true, false
         elseif o.name == "v" or o.name == "verbose" then
             verbose = true
+        elseif o.name == "pretend" then
+            pretend = true
         end
     end
     
@@ -1047,7 +1049,9 @@ function Autogen()
             local libs = mapkeytotab(di.libs)
             local deps = mapkeytotab(di.deps)
             
-            CreateDep(t.name, t.description, libs, libdir, fl, st, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.required, t.compat, t.caninstall)
+            if not pretend then
+                CreateDep(t.name, t.description, libs, libdir, fl, st, baseurl, deps, prdir, copy, totallibmap, destos, destarch, t.post, t.install, t.required, t.compat, t.caninstall)
+            end
             
             local typ
             if fl then
@@ -1060,17 +1064,18 @@ function Autogen()
                 typ = "simple"
             end
             
+            local genstr = (pretend and "Would generate") or "Generated"
             if verbose then
                 if t.unknown then
-                    print(string.format("Generated %s dependency for unknown library %s (libs: %s; deps %s)", typ, libs[1], tabtostr(libs) or "-", tabtostr(deps) or "-"))
+                    print(string.format("%s %s dependency for unknown library %s (libs: %s; deps %s)", genstr, typ, libs[1], tabtostr(libs) or "-", tabtostr(deps) or "-"))
                 else
-                    print(string.format("Generated %s dependency %s (libs: %s; deps: %s; tags: %s)", typ, t.name, tabtostr(libs) or "-", tabtostr(deps) or "-", tabtostr(t.tags)))
+                    print(string.format("%s %s dependency %s (libs: %s; deps: %s; tags: %s)", genstr, typ, t.name, tabtostr(libs) or "-", tabtostr(deps) or "-", tabtostr(t.tags)))
                 end
             else
                 if t.unknown then
-                    print(string.format("Generated %s dependency for unknown library %s", typ, libs[1]))
+                    print(string.format("%s %s dependency for unknown library %s", genstr, typ, libs[1]))
                 else
-                    print(string.format("Generated %s dependency %s", typ, t.name))
+                    print(string.format("%s %s dependency %s", genstr, typ, t.name))
                 end
             end
         end
@@ -1248,11 +1253,6 @@ function ListDeps()
                     loadeddeps[d] = false
                 else
                     loadeddeps[d] = ret
-                end
-            end
-            
-            if loadeddeps[d] then
-                if loadeddeps[d].deps then
                     loaddeps(loadeddeps[d].deps, loadeddeps[d].name) -- Go through all deps recursively
                 end
             end
@@ -1270,7 +1270,8 @@ function ListDeps()
         local libs = (d.libs and not utils.emptytable(d.libs) and tabtostr(d.libs)) or "None"
         local deps = (d.deps and not utils.emptytable(d.deps) and tabtostr(d.deps)) or "None"
         local reqs = (depmap[d.name] and not utils.emptytable(depmap[d.name]) and tabtostr(mapkeytotab(depmap[d.name]))) or "None"
-        
+        local stnd = (d.full and ((d.standalone and "Yes") or "No")) or "-"
+        local url = (utils.emptystring(d.baseurl) and "-") or d.baseurl
         print(string.format([[
 DEPENDENCY "%s"
     - Description       %s
@@ -1280,7 +1281,7 @@ DEPENDENCY "%s"
     - Full              %s
     - Standalone        %s
     - Base URL          %s
-]], n, d.description, libs, deps, reqs, (d.full and "Yes") or "No", (d.standalone and "Yes") or "No", tostring(d.baseurl)))
+]], n, d.description, libs, deps, reqs, (d.full and "Yes") or "No", stnd, url))
     end
     
     print("\nNOTE: Only dependencies are shown if they are registrated in package.lua or by another dependency.")

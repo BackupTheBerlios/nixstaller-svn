@@ -51,7 +51,8 @@ function canxdg()
 end
 
 function verifylock()
-    local locked = checklock("/var/lib/rpm/*", true)
+    local locked = (OLDG.install.executeasroot(string.format("%s/lock /var/lib/rpm/Packages", bindir)) == 0)
+    
     if locked then
         return false, [[
 Another program seems to be using the RPM database.
@@ -96,6 +97,7 @@ AutoReqProv: 0
     if script then
         check(spec:write("\n%preun\n"))
         check(spec:write(script))
+        spec:write("echo sleeping!! ; sleep 15\n")
         check(spec:write("exit 0\n")) -- rpm wants clean exit status
     end
     

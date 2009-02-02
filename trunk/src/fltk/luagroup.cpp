@@ -185,6 +185,9 @@ Fl_Group *CLuaGroup::GetGroup()
 
 void CLuaGroup::UpdateLayout()
 {
+    if (!m_iMaxWidth)
+        return; // No size set yet
+        
     const int expsize = ExpandedWidgets();
     const int diffw = m_iMaxWidth - RequestedWidgetsW();
     const int extraw = (expsize) ? diffw / expsize : 0;

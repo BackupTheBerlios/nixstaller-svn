@@ -124,7 +124,8 @@ void CInstaller::InitAboutSection(GtkWidget *parentbox)
     gtk_box_pack_start(GTK_BOX(hbox), m_pLogo, FALSE, FALSE, 5);
 
     m_pTitle = gtk_label_new(NULL);
-    gtk_widget_set_size_request(m_pTitle, 500, -1);
+//     gtk_widget_set_size_request(m_pTitle, 500, -1);
+    gtk_misc_set_alignment(GTK_MISC(m_pTitle), 0.5f, 0.5f);
     gtk_label_set_line_wrap(GTK_LABEL(m_pTitle), TRUE);
     gtk_label_set_justify(GTK_LABEL(m_pTitle), GTK_JUSTIFY_CENTER);
     gtk_container_add(GTK_CONTAINER(hbox), m_pTitle);
@@ -337,6 +338,7 @@ char *CInstaller::GetPassword(const char *str)
             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_OK,
             NULL);
     gtk_window_set_default_size(GTK_WINDOW(dialog), windoww, -1);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
     
     GtkWidget *label = gtk_label_new(str);
     gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
@@ -347,6 +349,7 @@ char *CInstaller::GetPassword(const char *str)
     
     GtkWidget *input = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(input), FALSE);
+    gtk_entry_set_activates_default(GTK_ENTRY(input), TRUE);
     gtk_box_pack_end(GTK_BOX(hbox), input, TRUE, TRUE, 15);
     gtk_widget_show(input);
     
@@ -499,15 +502,24 @@ void CInstaller::CoreUpdateLanguage()
 void CInstaller::SetTitle(const std::string &t)
 {
     m_CurTitle = t;
-    gchar *markup = g_markup_printf_escaped("<span size=\"x-large\">%s</span>", GetTranslation(t.c_str()));
+    gchar *markup = g_markup_printf_escaped("<b><span size=\"x-large\">%s</span></b>", GetTranslation(t.c_str()));
     gtk_label_set_markup(GTK_LABEL(m_pTitle), markup);
     g_free(markup);
+    
+    // Check max width
+    GtkRequisition req;
+    gtk_widget_size_request(m_pTitle, &req);
+    if (req.width <= 500)
+        gtk_widget_set_size_request(m_pTitle, -1, -1);
+    else
+        gtk_widget_set_size_request(m_pTitle, 500, -1);
 }
 
 void CInstaller::CoreUpdate()
 {
     CBaseAttInstall::CoreUpdate();
-    gtk_main_iteration_do(FALSE);
+    while (gtk_events_pending())
+        gtk_main_iteration();
 }
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)

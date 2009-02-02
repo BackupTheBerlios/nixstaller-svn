@@ -34,6 +34,8 @@ class CLuaDepScreen: public CBaseLuaDepScreen
     CInstaller *m_pInstaller;
     bool m_bClose;
     
+    void AddText(const std::string &s);
+    
     virtual void CoreUpdateList(void);
     virtual void CoreRun(void);
     

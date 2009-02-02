@@ -80,6 +80,19 @@ CLuaDepScreen::~CLuaDepScreen()
     delete m_pDialog;
 }
 
+void CLuaDepScreen::AddText(const std::string &s)
+{
+    TSTLStrSize start = 0, length = s.length();
+    while (start < length)
+    {
+        TSTLStrSize ind = s.find("\n", start);
+        m_pListBox->add(s.substr(start, (ind-start)).c_str());
+        if (ind == std::string::npos)
+            break;
+        start = ind + 1;
+    }
+}
+
 void CLuaDepScreen::CoreUpdateList()
 {
     if (!m_pDialog->visible())
@@ -89,12 +102,11 @@ void CLuaDepScreen::CoreUpdateList()
     
     for (TDepList::const_iterator it=GetDepList().begin(); it!=GetDepList().end(); it++)
     {
-        m_pListBox->add(CreateText("@m%s\n", GetTranslation(it->name).c_str()));
-        m_pListBox->add(CreateText("%s: %s\n", GetTranslation("Description"),
-                        GetTranslation(it->description.c_str())));
-        m_pListBox->add(CreateText("%s: %s\n", GetTranslation("Problem"),
-                        GetTranslation(it->problem).c_str()));
-        m_pListBox->add("\n");
+        AddText("@m" + GetTranslation(it->name));
+        if (!it->description.empty())
+            AddText(GetTranslation(std::string("Description")) + ": " + GetTranslation(it->description));
+        AddText(GetTranslation(std::string("Problem")) + ": " + GetTranslation(it->problem));
+        AddText("");
     }
     
     if (GetDepList().empty())

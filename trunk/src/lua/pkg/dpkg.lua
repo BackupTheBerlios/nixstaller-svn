@@ -82,7 +82,7 @@ function genxdgscript(dest)
 end
 
 function verifylock()
-    local locked = checklock("/var/lib/dpkg/lock", false)
+    local locked = (OLDG.install.executeasroot(string.format("%s/lock /var/lib/dpkg/lock", bindir)) == 0)
     
     if locked then
         return false, [[

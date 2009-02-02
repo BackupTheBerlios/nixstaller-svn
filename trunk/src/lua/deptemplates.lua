@@ -973,3 +973,11 @@ description = "Wrapper library for various spell checking engines.",
 libs = { "enchant" },
 tags = { "small", "unknown-copy" },
 }
+
+-- cURL (libcurl)
+newtemplate{
+name = "cURL",
+description = "A free and easy-to-use client-side URL transfer library.",
+libs = { "curl" },
+tags = { "common", "small" },
+}

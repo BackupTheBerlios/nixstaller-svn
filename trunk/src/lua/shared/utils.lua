@@ -304,7 +304,8 @@ function mapkeytotab(t)
 end
 
 function escapepat(s)
-    return string.gsub(s, "([%%%.%?%*%+%-%(%)%[%]%^%$])", "%%%1")
+    local ret = string.gsub(s, "([%%%.%?%*%+%-%(%)%[%]%^%$])", "%%%1")
+    return ret
 end
 
 function loadconfig(path)

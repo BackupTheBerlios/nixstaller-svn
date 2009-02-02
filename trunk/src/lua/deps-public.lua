@@ -26,6 +26,8 @@ function pkg.verifydeps(bins, libs)
     bins = bins or pkg.bins
     libs = libs or pkg.libs
     
+    guesslibpaths(bins, libs)
+    
     local success, msg = pcall(function ()
         if install.unattended then
             local failed = verifydeps(bins, libs)

@@ -126,11 +126,13 @@ function utils.removerec(path)
 end
 
 function utils.basename(p)
-    return string.gsub(p, "/*.+/", "")
+    local ret = string.gsub(p, "/*.+/", "")
+    return ret
 end
 
 function utils.dirname(p)
-    return string.match(p, "/*.*/")
+    local ret = string.match(p, "/*.*/")
+    return ret
 end
 
 function utils.opendoc(f)
