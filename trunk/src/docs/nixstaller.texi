@@ -31,14 +31,14 @@ This document describes how to use Nixstaller to create installers for UNIX like
 Here is a short description for what you can find in this document:
 @menu
 * Features:: What Nixstaller can do.
-* Installing:: How to install Nixstaller.
+* Installation:: How to install Nixstaller.
 * Quickstart:: If you're in a hurry or want a quick reference.
 * Basics:: Explains the basics behind Nixstaller.
 * Lua Scripts:: Explains how Nixstaller is scripted.
 * Creating Installers:: How Installers are made.
 * Tutorials:: Step by step guides for creating Installers.
 * Compilation:: Info on compiling Nixstaller.
-* Miscallenous:: Credits and Feedback.
+* Miscellaneous:: Credits and Feedback.
 * Lua Basics:: Explains the basics of the Lua scripting language.
 * Lua Library Reference:: Explains Most of the Lua Library Functions, including extensions from Nixstaller.
 * License:: The Nixstaller license.
@@ -79,7 +79,7 @@ Here is a list with the main features. Read further for more info to see what th
 @item A screen which can show text after the installation.
 @item A generic screen which can be made with a script.
 @end itemize
-Most screens are optional and can be shown in any particalur order. New type of installation screens can be created manually.
+Most screens are optional and can be shown in any particular order. New type of installation screens can be created manually.
 @end itemize
 @item Frontends are build in a way that they can be used on many different systems by linking less common libraries staticly.
 @item The files can be packed with gzip-, bzip2 and lzma compression.
@@ -147,7 +147,7 @@ Most screens are optional and can be shown in any particalur order. New type of 
 @item FLTK layout: Logo support, screen header, white backgrounds, Xft font rendering
 @item Fixed: Empty folders weren't included in installation files package
 @item Fixed: Manual example code was using exit() instead of os.exit()
-@item Fixed: Overide os.exit() instead of exit()
+@item Fixed: Override os.exit() instead of exit()
 @item Track widget behaviour with customly defined widget:datachanged() and widget:verify() lua functions.
 @item Control screen activation with customly defined screen:canactivate() and screen:activate() lua functions.
 @item Updated to Lua 5.1.2
@@ -187,9 +187,9 @@ Most screens are optional and can be shown in any particalur order. New type of 
 
 @strong{OVERALL}
 @itemize @bullet
-@item Fixed: Tried to default to english incase only one language was available even if this wasn't English.
+@item Fixed: Tried to default to english in case only one language was available even if this wasn't English.
 @item Fixed: Startup script wouldn't detect libstdc++ on Gentoo (reported by Edward Rudd).
-@item Startup script now defaults to Linux incase no frontends are found for the current OS and defaults to x86 incase no frontends are found for the current CPU arch.
+@item Startup script now defaults to Linux in case no frontends are found for the current OS and defaults to x86 in case no frontends are found for the current CPU arch.
 @end itemize
 
 
@@ -233,21 +233,21 @@ Most screens are optional and can be shown in any particalur order. New type of 
 @itemize @bullet
 @item Fixed: Ncurses frontend crashes if only 1 language is available. 
 @item Fixed: geninstall.sh couldn't detect current directory with older versions of ksh.
-@item Added norwegian language support.
+@item Added Norwegian language support.
 @end itemize
 
 
 
-@node Installing
-@chapter Installing
-Installing Nixstaller is easy: just extract the files to a directory and your done. All the work (ie. calling scripts) is done inside this directory.
+@node Installation
+@chapter Installation
+The installation of Nixstaller is easy: just extract the files to a directory and you're done. You can either directly call any script from this directory, or add it to the $PATH environment variable.
 
 
 
 @node Quickstart
 @chapter Quickstart
 @itemize @bullet
-@item @ref{Installing, Install} Nixstaller.
+@item @ref{Installation, Install} Nixstaller.
 @item Open up a terminal and create a project directory: @command{genprojdir.sh <projectdirhere>}
 @item Edit @file{<projectdirhere>/config.lua} and optionally @file{<projectdirhere>/run.lua} or @file{<projectdirhere>/package.lua}.
 @item Put some files in @file{<projectdirhere>/files_all/} and perhaps in @file{<projectdirhere>/files_linux_all}, @file{<projectdirhere>/files_freebsd_x86} etc.
@@ -262,25 +262,26 @@ Also read the @ref{Tutorials, tutorials}.
 @node Basics
 @chapter Basics
 
+@section Introduction
+This chapter will focus on basic background info on Nixstaller and it's features and is meant to give a idea how everything works. Most of the practical information is given in the next chapters.
 
 @section Installation package
 The final product of Nixstaller is an @emph{install package}. The package itself is simply a self-extracting archive in the form of a shell script. When the package (the shell script) is executed it will extract a few files to a temporary directory and will call another script. This second script will detect a usable frontend and calls it.
 An install package itself contains the following files:
 @itemize @bullet
-@item One or more frontends. Depending on the configuration there can be multiple frontends for different systems.
-@item One or two lua scripts which tell what the installer should do.
+@item Frontend(s). These binaries will do all the installation work. To allow the installer to run on various systems, multiple frontends can be included.
+@item One or more lua scripts which tell what the installer should do.
 @item Translation files. (optional)
 @item Some text files used for displaying a introduction text, license info and/or a finish message. (optional)
-@item An archive file containing the files to be used for the installation.
-@item A script that is called when the package is extracted.
-@item Other files needed runtime, such as images, logos and any other files specified by the install creator. (optional)
+@item One or more archive files containing the files to be used for the installation. Optionally, these files can be separated for various platforms. 
+@item Other files needed at runtime, such as images, logos and any other files as specified by the install creator. (optional)
 @end itemize
 
 The items important for the install creator are discussed in this and following chapters.
 
 
 @section Frontends
-The @emph{frontend} is a program from which the user can interact. When the install package is executed by the user a suitable frontend will be launched. This is determined by if X is running and which frontends are included in the package for the user's system.
+The @emph{frontend} is a program from which the user can interact. When the install package is executed by the user a suitable frontend will be launched. The ideal frontend is found by if the X environment is available, if required frontend dependencies are met and of course which frontends are included.
 
 Currently there are 3 frontends for Nixstaller.
 @ifhtml
@@ -306,42 +307,44 @@ and the third by @uref{http://www.gtk.org/,GTK2}:
 
 @end ifhtml
 @ifnothtml
-The first is powered by FLTK, the second is powered by ncursesand the third by GTK2.
+The first is powered by FLTK, the second is powered by ncurses and the third by GTK2.
 @end ifnothtml
 You can select which frontend(s) you want to include.@*
 @*
 The ncurses frontend is text based and should run on nearly all systems. It doesn't require X and has the least dependencies.@*
 @*
-The FLTK frontend is a graphical frontend. Some commonly available X11 libraries are required to run. Like the ncurses frontend, the FLTK frontend has also very few dependencies and runs on many systems. @*
+The FLTK frontend is a graphical frontend. Some commonly available X11 libraries are required to run. Like the ncurses frontend, the FLTK frontend has very few dependencies and runs on many systems. @*
 @*
 The GTK2 frontend depends on GTK+ 2.4 or later. For this reason it may not run on every system. However, because it's dynamicly linked, it's also the smallest frontend.@*
 @*
-The selection of a frontend may depend on the package requirements: Is your software text based? The ncurses frontend might be enough. If your software however requires GTK2 it makes sence to only include this frontend. If size isn't a big issue you may aswell just include all the frontends and therefore increase the chance that the a suitable frontend can be found on various systems.
+The selection of a frontend may depend on the package requirements: Is your software text based? The ncurses frontend might be enough. If your software however requires GTK2 it makes sense to only include this frontend. If size isn't a big issue you may aswell just include all the frontends and therefore increase the chance that the a suitable frontend will be found on various systems.
+
+
+@section Unattended installations
+As of version 0.5, Nixstaller also supports @emph{unattended installations}. These are, as the name suggests, installations who don't need any user interaction and are especially useful for automated (batch) installations. Instead of a frontend, commandline arguments are used to configure the installation process. The default is to have regular @emph{attended installations}, through configuration it's possible to make the installer only support unattended installations or both. In the latter case the user has to specify the @minus{}@minus{}unattended (or @minus{}u) commandline option to let installer run unattended.
 
 
 @section Lua scripts
-The installation is controlled by one mandatory and two optional lua scripts. These are explained in the @ref{Lua Scripts} chapter.
+The installation itself is controlled by a few Lua scripts. These are explained in the @ref{Lua Scripts} chapter.
 
 
 @anchor{Translations}
 @section Translations
-The text used by the frontends can be translated via @emph{translation files}. Each file is simply called @file{strings} and will contain all (English) strings used by the installer with the translation beneath them. Any line that starts with a @samp{#} will be ignored.
+The text used by the frontends can be translated via @emph{translation files}. The text strings for each language are each stored in a file called @file{strings} and will contain all (English) strings used by the installer with the translation below. Any line that starts with a @samp{#} will be ignored.
 
-Currently there are already 2 translations: Dutch and English. You can find these in the @file{lang/} directory. You can 'translate' the English @file{'strings'} file in order to modify the English texts used by the installer.
+Currently there are already two translations: Dutch and English. You can find these in the @file{lang/} directory inside the main Nixstaller directory. You can 'translate' the English @file{'strings'} file in order to modify the English texts used by the installer.
 
-Here is a example taken from the file:
+Here is a example taken from the Dutch @file{strings} file:
 @codeblock{License agreement
 Licentie overeenkomst}
 
-@samp{Licentie overeenkomst} is dutch for @samp{License agreement}. It's very important that the English text (the first line) is exactly the same as used by the installer.
+@samp{Licentie overeenkomst} is Dutch for @samp{License agreement}. It's very important that the English text (the first line) is exactly the same as used by the installer.
 If you read further in this file you will see the following sentence:
 @codeblock{Installation of %s complete!
 Installatie van %s gereed!}
 
-Notice the @samp{%s}? The @samp{%s} will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name. What will be replaced is usually commented in the @file{strings} file itself.
+Notice the @samp{%s}? The @samp{%s} will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name. What will be replaced is usually given in the form of a comment in the @file{strings} file itself.
 
-
-@strong{IMPORTANT}: Currently there is no UTF support yet. This means that you can't use any 'special' characters yet (such as accented characters).
 
 @subsection Multiline translations
 Some translations need more than one line. If this is the case the text should be put between 2 square brackets.
@@ -356,6 +359,9 @@ Wilt u het aanmaken?
 ]}
 
 If you want to put a @samp{]} in the translation itself you should put a backslash before it: @samp{\]}.
+
+@subsection Translation configuration
+Each translation can (and should) be configured through a Lua script (@pxref{Lua Scripts}). In this file variables such as the display name, auto detection and UTF-8 requirement can be defined.
 
 @subsection Other things that can be translated
 There are other things to be translated as well:
@@ -377,40 +383,53 @@ This is the message that is displayed on the @samp{Introduction installscreen}.
 @item License agreement
 This is the text used to display the License Agreement.
 @item Finish message
-This is the message that is displayed after the installation has (succesfully) finished.
+This is the message that is displayed after the installation has (successfully) finished.
 @end table
 
-Each of these items are stored in plain text files. The @emph{welcome message} is in the file @file{welcome}, the @emph{license agreement} is in a file called @file{license} and the @emph{finish message} is in the file @file{finish}. For translations of any of these texts there should be a copy of the file put in a seperate directory. Chapter @ref{Creating Installers} describes the file layout and mentions where to put all the files.
+Each of these items are stored in plain text files. The @emph{welcome message} in the file @file{welcome}, the @emph{license agreement} in a file called @file{license} and the @emph{finish message} in a file called @file{finish}. For translations of any of these texts there should be a translated copy of the file put in a separate directory. The chapter @ref{Creating Installers} describes the file layout and mentions where to put these files.
 
 @section Other files
-Other files include files needed during runtime (ie when the installer is started, but not installing yet) and the files to be used during installation. Examples of runtime files are graphics such as a logo or text files that need to be displayed. The next chapter will cover how to specify these files.
+Other files include files needed during runtime (eg. when the installer is started, but not installing yet) and the files to be used during installation. Examples of runtime files are graphics such as a logo or text files that need to be displayed. The next chapter will cover how to specify these files.
 
 @anchor{pkgmode}
 @section Package Mode
 Besides the @emph{regular} installation mode, Nixstaller supports an additional mode called @emph{Package Mode}.@*
 @*
-The main reason for using this mode is that it allows easier package managing of the software to be installed. This is accomplished by either registering the software on the users package manager system (ie. rpm) or by creating a script that is used to uninstall the software. Currently the following package managers are supported: rpm, dpkg (deb), pacman and slackware's installpkg. @*
+The first reason for using this mode is that it allows easier package managing of the software to be installed. This is accomplished by either registering the software on the users package manager system (eg. rpm) or by creating a script that is used to uninstall the software. Currently the following package managers are supported: rpm, dpkg (deb), pacman and slackware's installpkg. @*
 @*
-Another reason to use Package Mode is dependency handling. At this point it is very basic, but more features will be added to feature releases of Nixstaller.
+The second reason to use Package Mode is to allow dependency handling.
+
+@subsection Dependencies
+Most, if not all, software have dependencies on other files or software. Reasons include code sharing (to minimize disk and memory usage) or simply because they cannot be shipped with the software itself.
+
+A common group are dependencies on shared libraries. Depending on these shared or dynamic libraries have the advantage that parts of common code can be shared by any software and the fact that updating such libraries (eg. to fix bugs) will affect any software depending on them. The latter is also one of the major drawbacks using dynamic libraries. Updates can introduce binary incompatibilities or, when a new major release is installed or when a library for some reason is removed, the software can't find it and simply won't work anymore.
+
+One way to be sure that software works (and keeps working) on various systems, is to link any shared code @emph{static}. Doing so the code will be part of the executable itself. However this also removes the benefits of using shared libraries: the executable will be bigger, use (slightly) more memory and won't benefit of any library updates.
+
+Nixstaller's dependency handling makes it possible to combine the best of both worlds. Any libraries (and related) files can be supplied with the installer. When the software is being installed, Nixstaller checks for any missing or incompatible libraries. In case these are found, they will be installed inside a separate directory inside the @emph{data directory} (described below). Installing libraries to a isolated place has the benefit that no problems will occur for example by package management (these often overwrite files without even asking to do so).
+
+As software may have several, sometimes dozens, of dependencies the install package size may grow a lot. For this you can tell that the installer should download some or all dependencies separately. The obvious drawback is that the user needs an Internet connection in case the installer finds the need to install dependencies.
+
+Some dependencies however cannot be supplied. An example would be the C library (libc). Doing so would in most cases simply result in crashes. Another reason why a dependency cannot be supplied is because it's simply too big to do so, take for example the KDE libraries. For this, Nixstaller allows the use of @emph{simple dependencies}. These dependencies, unlike the previously discussed @emph{full dependencies} don't supply anything by their self, but are purely used to verify what's on the user's system. When any problems are found, the user will be presented with a list of details and told to fix them (for example by using a package manager).
+
+A combination of a full and simple dependency also exist: these will supply all or a part of any required files, but will only install when the dependency is actually available. This is useful for dependencies that cannot ship all files (think of configuration files which need to be set up) but are still able to provide any libraries in case they are incompatible. These dependencies are referred as @emph{non standalone full dependencies}.
+
 
 @subsection How it works
-The files that should be installed are placed in a special directory, the @emph{temporary package directory}. The installer will then either package these files and use the local package manager system to install them or copy them directly to their destination. Whether a package is registered or not depends on user configuration, installer configuration and if there is support for the user's package manager.@*
-@*
-The files are not directly placed in the destination directory, but instead are placed in a subdirectory inside the destination directory. This subdirectory is generally referred as the @emph{data directory}. Scripts will be installed to another directory, the @emph{binary directory}, that will launch an executable from the data directory. These scripts can set up an environment (usually by setting one or more shell variables) so that the executable is able run. Besides the @emph{binary scripts}, the binary directory is also used to store any uninstallation scripts. Usually the binary directory is defined within the user's @var{PATH} variable. @*
-@*
-The fact that seperate scripts are used to set up an environment is how the current dependency handling works. The shell variable @var{LD_LIBRARY_PATH} is used to let programs find dynamic libraries in non default directories. In these binary scripts @var{LD_LIBRARY_PATH} is set to include a subdirectory called @file{lib/} in the data directory. So to include any (dynamic library) dependencies you simply have to make sure they are placed within a subdirectory called @file{lib/} located inside the temporary package directory.@*
-@*
-For KDE programs the @var{KDEDIRS} shell variable can be set up to include the @emph{data directory} so that KDE programs are able to run.@*
-@*
-Besides @var{LD_LIBRARY_PATH} and @var{KDEDIRS} any other shell variables can be set, this is discussed in the next chapter.@*
-@*
+During the installation, first all the files that should be installed are being placed inside a special directory, called the @emph{temporary package directory}. This directory will later be used for the actual installation, by either packaging the files and registering them with the local package manager or by simply copying them to the destination path. Whether a package is registered or not depends on user configuration, installer configuration and if there is support for the user's package manager.
+
+After the files are placed inside the temporary package directory, dependencies will be checked. All dependencies that should be installed are placed in the temporary package directory aswell. Any dynamic libraries (coming from dependencies or from the 'main' software) must be placed inside a subdirectory called @file{lib/} inside the temporary package directory. Note that this process for dependencies will be done automatically by default.
+
+When the actual installation begins, the files (from the temporary package directory) are not placed directly in the destination directory, but instead are placed in a subdirectory inside the destination directory. This subdirectory is referred as the @emph{data directory}. A common example of a data directory would be @file{/usr/local/share/<appname>}, in this case @file{/usr/local/share} is the destination directory. Some additional scripts will be installed to another directory, the @emph{binary directory}, that will launch an executable from the data directory. The scripts have the same name as the binary that they will run and can set up an environment (usually by setting one or more shell variables) so that the real executable is able run. Besides the @emph{binary scripts}, the binary directory is also used to store any uninstallation scripts (in case the software isn't registered by a package manager). Usually the binary directory is a directory who is defined inside the user's @var{PATH} variable (eg. /usr/local/bin).
+
+Because dependencies are installed to a isolated place, most software needs to be aware of this in order to find them. One way to tell where  dynamic libraries can be found, is by setting the @var{LD_LIBRARY_PATH} environment variable. This will be automatically done inside each of the binary scripts. As this software itself is not placed in a regular directory too, it's possible that measures have to be taken for that aswell. KDE programs for example need to have the variable @var{KDEDIRS} set (this can be done automatically aswell). Setting other environment variables is possible and will be discussed in the next chapter.
+
 To summarize:
 @itemize @bullet
-@item Files to be installed are placed inside the @emph{temporary package directory}.
-@item Depending on configurations and the user's system the files are being registrated into the local package manager or simply copied.
+@item All files, including dependencies, that should be installed are placed inside the @emph{temporary package directory}. All the dynamic libraries should be put in a @file{lib/} subdirectory inside this directory.
+@item Depending on configurations and the user's system the files are being registered into the local package manager or simply copied.
 @item All the files are installed to the @emph{data directory}, which is a subdirectory inside the destination directory.
 @item The user should launch any executables via @emph{binary scripts}. These scripts will set up an environment and launch the actual executable.
-@item Basic dependency handling can be achieved by putting required dynamic libraries inside a @file{lib/} subdirectory inside the data directory.
 @item Using Package Mode the user can uninstall the software via his system's package manager or via a script (which is located inside the binary directory).
 @end itemize
 
@@ -424,16 +443,19 @@ Nixstaller can easily create and install so called @emph{.desktop} files that ar
 @chapter Lua Scripts
 
 @section Introduction
-This chapter discusses how to use Lua for scripting the installer.@*
-@*
-The creation and behaviour of the installer is controlled by 3 Lua scripts: @file{config.lua}, @file{run.lua} and @file{package.lua}. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or atleast keep it close.@*
+This chapter discusses how to use Lua for scripting the installer.
+
+The creation and behaviour of the installer is controlled by several Lua scripts. If you're not familiar with Lua or programming in general it's recommended to read the appendix @ref{Lua Basics} or at least keep it close.@*
 @*
 The appendix @ref{Lua Library Reference} is a complete reference for all the Lua functionality (including extensions from Nixstaller). You will probably want to check this after you read this and the @ref{Tutorials,,tutorials chapter}.
 
 @anchor{config.lua}
-@section First Lua Script: @file{config.lua}
-The first Lua script, @file{config.lua}, is as the name says used for configuration. This file is pretty small and should only contain a few variable assignments. The variables are all in the @code{cfg} module:
+@section General configuration
+Most of the general configuration such as the Software's name, what kind of compressing should be used, which languages to include, are handled in the project's @file{config.lua} file. In most cases this file autogenerated when a project directory is created (@pxref{Creating Installers}). All of the variables are inside the @code{cfg} module:
 @table @code
+@vindex cfg.appicon
+@item cfg.appicon
+An optional variable containing a @ref{Strings,,string} with the filename of a icon to use as a 'application icon' for the installer (this icon is mostly placed on the window border and taskbar). The files have to be formatted as XPM. The file should be placed in the @file{files_extra/} directory. If unspecified a default icon is used.
 @vindex cfg.appname
 @item cfg.appname
 This variable is a @ref{Strings,,string} which should contain the name of your application.
@@ -449,59 +471,105 @@ Bzip2 usually compresses better (makes the archive smaller) than gzip, but is sl
 LZMA compresses the best of all three. Compression is fairly slow, but decompression is rather fast.
 @end table
 If this variable is not specified it will default to "lzma". If you're testing your installer it might be a good idea to use "gzip" and switch to "lzma" when the installer is done. That way you have fast compression while testing and good compression for the user.
+@vindex cfg.autolang
+@item cfg.autolang
+This @code{boolean} variable specifies whether the installer should try to automaticly select a language. When this fails or when this variable is set to @code{false} and when there are atleast two languages to choose from, the user will be asked to select a language. The default is @code{true}.
 @vindex cfg.defaultlang
 @item cfg.defaultlang
-This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language can be any of the strings from the @code{languages} variable (see below). The default for this variable is "english" or the first valid language if English is not available.
+This variable should contain a @ref{Strings,,string} defining the default language. The default language is used to translate the language selection screen itself. The specified language must be one of the strings from the @code{languages} variable (see below). The default for this variable is "english" or the first valid language if English is not available.
 @vindex cfg.frontends
 @item cfg.frontends
 This variable should point to an array (@pxref{Tables}) containing @ref{Strings,,strings} with the names of the frontends you want to include. Valid values are: "gtk", "fltk", "ncurses". The default is @code{@{ "gtk", "fltk", "ncurses" @}}.
 @vindex cfg.intropic
 @item cfg.intropic
-An optional variable containing a @ref{Strings,,string} with the filename of a picture to use in the welcomescreen. Valid file formats are png, jpeg, bmp and gif. If the size is more than 300x200 px the image will be resized to fit. The file should be placed in the @file{files_extra/} directory or, for backward compatibility, in the main project directory.
+An optional variable containing a @ref{Strings,,string} with the file name of a picture to use in the welcomescreen. Valid file formats are png, jpeg, bmp and gif. If the size is more than 300x200 px the image will be resized to fit. The file should be placed in the @file{files_extra/} directory or, for backward compatibility, in the main project directory.
 @vindex cfg.languages
 @item cfg.languages
 An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of the languages to include for translations. The language names should be the same as the name of the subdirectories in the @file{lang/} directory from your project directory. The default is @code{@{ "english", "dutch" @}}.
 @vindex cfg.logo
 @item cfg.logo
 An optional variable containing a @ref{Strings,,string} with the filename of a picture to use as a logo. Valid file formats are png, jpeg, bmp and gif. The file should be placed in the @file{files_extra/} directory. If unspecified a default logo is used.
+@vindex cfg.mode
+@item cfg.mode
+Sets if the installer should be attended, unattended or both. Valid values are @code{"attended"} (default), @code{"unattended"} and @code{"both"}. When @code{"both"} is used, the user needs to pass the @minus{}@minus{}unattend (or @minus{}u) commandline option to start an unattended installation.
 @vindex cfg.targetarch
 @item cfg.targetarch
 A variable that should contain an array (@pxref{Tables}) of @ref{Strings,,strings} for the CPU architectures this installer should support. Nixstaller currently only supports @samp{x86} and @samp{x86_64}. This variable will default to the current CPU arch when not specified.
 @vindex cfg.targetos
 @item cfg.targetos
-An array (@pxref{Tables}) of @ref{Strings,,strings} holding the names of the OSs (Operating Systems) which the installer should support. The OS names should be the lowercased output from the shell command @command{uname}. If not specified the variable will default to the current OS.
+An array (@pxref{Tables}) of @ref{Strings,,strings} holding the names of the OSs (Operating Systems) which the installer should support. The OS names should be the lower cased output from the shell command @command{uname}. If not specified the variable will default to the current OS.
+@vindex cfg.unopts
+@item cfg.unopts
+This variable is a @ref{luamap, map} that holds all commandline arguments used by unattended installations. Each parameters has a @emph{long} and a (optional) @emph{short} name. The long name is used to index this map. The values in the map are @ref{records}, containing a few variables to configure the commandline argument. Each record can have the following fields:
+@table @code
+@item desc
+Contains a description for this argument (used by the installer to give usage information).
+@item optname
+A parameter can be used to set values (see below). The @code{optname} variable contains a @code{string} containing a @emph{short} (few characters at most) name for the variable or setting that it will be used for. Like @code{desc} this variable is used to display usage information.
+@item opttype
+This variable is used to specify what kind of data this argument can be set. Valid values are: @code{"string"} (uses the given value directly), @code{"list"} (argument expects a comma seperated list, which will be automatically converted to a Lua table) and @code{nil} (None, this is the default). Note that when @code{opttype} is not @code{nil}, @code{optname} has to be set as well.
+@item short
+This variable should contain a string of exactly 1 character, and is used as a short alternative for this parameter.
 @end table
-Here is an example @file{config.lua} file with all the above variables:
-@codeblock{@minus{}@minus{} Example showing every variable
+To make things more clear, here is an example:
+@codeblock{cfg.unopts["opt"] = @{ desc = "My first option.", short = "o" @}
+cfg.unopts["varopt"] = @{ desc = "Second option, used to set a variable.", optname = "var", opttype = "string"  @} }
+The user could then run the installer (assuming that cfg.mode is set to unattended) like this: @*
+@command{./setup.sh -o --varopt "My user value"}
+@end table
+
+Finally there are a few functions inside the @code{cfg} module that can be used to add a few common commandline arguments for unattended installers. These are:
+@luafunc cfg.adddestunopt ()
+This function will add an option to set the destination directory (@code{install.destdir}, discussed further).
+@endluafunc
+@luafunc cfg.addlicenseunopts ()
+This function will add two parameters: the first will print the license agreement and quit. The second will accept the license. When this function is called, the user must use the second parameter to start the installation.
+@endluafunc
+Besides these functions there is also the @code{pkg.addpkgunopts} function. This function is discussed in the next section.
+
+Here is a final example @file{config.lua} file with all the above variables (excluding @code{cfg.unopts}):
+@codeblock{@minus{}@minus{} Example showing most cfg variables
+cfg.appicon = "myicon.xpm"
 cfg.appname = "Test App"
 cfg.archivetype = "gzip"
+cfg.autolang = true
 cfg.defaultlang = "english"
 cfg.frontends = @{ "fltk" @}
 cfg.intropic = "intro.png"
 cfg.logo = "mylogo.png"
 cfg.languages = @{ "english" @}
+cfg.mode = "both"
 cfg.targetarch = @{ "x86" @}
 cfg.targetos = @{ "sunos", "netbsd", "linux" @}}
 
-@section Second Lua Script: @file{package.lua}
-This file is only necessary when using @ref{pkgmode,,Package Mode}. Like @file{config.lua} this file is fairly simple and is only used for setting up Lua variables. All the variables are inside the @code{pkg} package. Descriptions of them are listed below.
+@section Package configuration
+This file is only relevant when using @ref{pkgmode,,Package Mode}. Like @file{config.lua} this file is fairly simple and is only used for setting up Lua variables. All the variables are inside the @code{pkg} package. Descriptions of them are listed below.
 
 @table @code
+@vindex pkg.autosymmap
+@item pkg.autosymmap
+Symbol map files are not discussed yet, they are described @ref{symmap, here}. If set to @code{true} (the default), @code{geninstall.sh} will automaticly create a symbol map file if it's non existant. For this to work it's important that the @code{pkg.bins}, @code{pkg.libs} and @code{pkg.deps} fields are set up correctly. Note that this file is not saved to the project directory but directly inside the installer package itself.
 @vindex pkg.bindir
 @item pkg.bindir
-This variable should contain a @ref{Strings,,string} describing the location of the binary directory. When unspecified, a reasonable default is choosen for the user's system (mostly @file{/usr/local/bin}).
+This variable should contain a @ref{Strings,,string} describing the location of the binary directory. When unspecified, a reasonable default is chosen for the user's system (mostly @file{/usr/local/bin}).
 @vindex pkg.bins
 @item pkg.bins
 This variable holds an array (@pxref{Tables}) with @ref{Strings,, strings} pointing to any executables, relative to the @emph{data directory}. These are used for the generation of @emph{binary scripts}.
+@vindex pkg.deps
+@item pkg.deps
+A @code{table} containing @code{strings} of all dependency names. Note that only @emph{direct} dependencies have to be specified here (ie. dependencies for the main software, not from other dependencies).
 @vindex pkg.description
 @item pkg.description
 A description of the software to be installed. Usually not longer than a few sentences.
 @vindex pkg.destdir
 @item pkg.destdir
-A @ref{Strings,,string} containing the destination directory for the data directory. When unspecified a reasonable default is choosen for the user's system (mostly @file{/usr/local/share}).
+A @ref{Strings,,string} containing the destination directory for the data directory. When unspecified a reasonable default is chosen for the user's system (mostly @file{/usr/local/share}).
 @vindex pkg.enable
 @item pkg.enable
 Boolean variable which tells whether Package Mode is enabled or not, default it's @code{false} (disabled).
+@vindex pkg.externdeps
+@item pkg.externdeps
+Table containing the names of all (including @emph{indirect}) dependencies that are external and need to be downloaded during installation. Note that each dependency given here, has to have their @code{baseurl} set for this to work (discussed later in this chapter).
 @vindex pkg.group
 @item pkg.group
 This variable should contain a @ref{Strings,,string} describing a valid @emph{package group}. Some package managers assign to each package a package group. Nixstaller has it's own range of package groups, these are translated to a similar group from the native package manager when the package is generated. Valid groups are listed in the table below.
@@ -579,7 +647,7 @@ This variable should contain a @ref{Strings,,string} describing a valid @emph{pa
 @endtablerow
 
 @addtablerow{System}
-    @addtablecol{System adminstration tools.}
+    @addtablecol{System administration tools.}
 @endtablerow
 
 @addtablerow{Text}
@@ -587,6 +655,9 @@ This variable should contain a @ref{Strings,,string} describing a valid @emph{pa
 @endtablerow
 @endtable
 
+@vindex pkg.libs
+@item pkg.libs
+As @code{pkg.bins}, but for all main (dynamic) libraries (ie. libraries not coming from dependency packages). This field is used for dependency checking.
 @vindex pkg.license
 @item pkg.license
 This (optional) variable should contain a @ref{Strings,,string} describing the used software license.
@@ -595,7 +666,7 @@ This (optional) variable should contain a @ref{Strings,,string} describing the u
 This variable should contain a @ref{Strings,,string} describing the author's of the installer, usually with an e-mail address after that.
 @vindex pkg.name
 @item pkg.name
-This variable should contain a @ref{Strings,,string} describing the name of the package to be installed. Usually this is a simple, lowercased name without spaces.
+This variable should contain a @ref{Strings,,string} describing the name of the package to be installed. Usually this is a simple, lower cased name without spaces.
 @vindex pkg.register
 @item pkg.register
 A boolean variable which tells to enable or disable package registration. When unspecified it defaults to @code{true}.
@@ -617,19 +688,24 @@ This (optional) variable should contain a @ref{Strings,,string} describing an UR
 @end table
 
 @findex pkg.addbinopts
-To define any commandline arguments for binary scripts, the @code{pkg.addbinopts} function is used. This function accepts 2 arguments: the first is the relative path to the binary being executed (equally defined as in @code{pkg.bins}), the second a @code{string} containing any commandline arguments. Note that this function can also be called inside @file{run.lua}, this may especially be useful incase the arguments need to be determined during installation.
+To define any commandline arguments for binary scripts, the @code{pkg.addbinopts} function is used. This function accepts 2 arguments: the first is the relative path to the binary being executed (equally defined as in @code{pkg.bins}), the second a @code{string} containing any commandline arguments. Note that this function can also be called inside @file{run.lua}, this may especially be useful in case the arguments need to be determined during installation.
 
 @findex pkg.addbinenv
-To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.@*
-@*
+To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.
+
+@findex pkg.addpkgunopts
+Finally the @code{pkg.addpkgunopts} is used to add a few common commandline arguments for unattended installations. These include parameters for: allow to overwrite a package, setting the binary and data directory, amount of download retries and some others. This function accepts one argument, if it's @code{true} the function will add a few arguments specific for dependency checking. @strong{Note:} Always call this function @emph{after} @code{pkg.register} is set.
+
 An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
 @codeblock{pkg.enable = true @minus{}@minus{} Important
+pkg.autosymmap = true
 pkg.name = "test"
 pkg.version = "1.0a"
 pkg.release = "1"
 pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail.com>"
 pkg.url = "www.rick-soft.org"
 pkg.bins = @{ "bin/test" @}
+pkg.libs = @{ "lib/libtest.so.1" @}
 pkg.license = "GPLv2"
 pkg.description = [[
 This package is nothing more than a test package.
@@ -640,38 +716,54 @@ pkg.group = "File"
 pkg.destdir = "/usr/local/share"
 pkg.bindir = "/usr/local/bin"
 pkg.register = true
+pkg.deps = @{ "dep1", "dep2" @}
+pkg.externdeps = @{ "dep2" @}
 pkg.setkdeenv = false
 pkg.addbinopts("bin/test", "@minus{}@minus{}some-argument")
-pkg.addbinenv("TEST_VER", "1")}
+pkg.addbinenv("TEST_VER", "1")
+pkg.addpkgunopts(true)}
 
 
-@section Third Lua Script: @file{run.lua}
-The third Lua script is used to control the installer. Although this file is optional, it's pretty common to have one. Generally speaking, the following things can be accomplished using this file:
+@section Installation process configuration
+The Lua script @file{run.lua} is used to control the install process. Although this file is optional, it's pretty common to have one. Generally speaking, the following things can be accomplished using this file:
 @itemize @bullet
-@item Configuring installation screens.
-@item Creating new installation screens.
-@item Controlling the installation process.
+@item Configuring the installation process itself, such as the creation and selection of installation screens.
+@item Parsing any commandline arguments for unattended installs.
+@item Executing and programming the installation process.
 @end itemize
 
-There are 2 (optional) functions that are called automaticly. The first is called @code{Init()} which is called just after the installer launches and is used for initialization. In this function you can set the destination path for the installation files and configure or create new installation screens. The second function is called @code{Install()} and is called as soon as the installation begins. This function controles the installation process.
+There are a few (optional) functions that are called automatically. First of all there are two initialization functions: @code{Init()} and @code{UnattendedInit()}. As the name suggests, both functions are used for initialization. The first is called during attended installations, while the second is called for unattended installations. This seperation is done because the initialization process commonly differs between both install modes. Both functions are (when existant) called as soon as the installer launches. When the installation starts the @code{Install()} function is called. This function contains all the code to commit the installation. Finally when the installer exits, the @code{Finish()} function will be called. This function can be used to clean things up. Notice that this function is also called when the installer aborts (for example the user cancelled the installation or an error occured). When this happens, the first argument given to this function will be @code{true}, otherwise it will be @code{false}.
 
 The file layout generally looks like this:
-@codeblock{function Init()
+@codeblock{@minus{}@minus{} For attended installations
+function Init()
     @minus{}@minus{} Set the install destination path
     @minus{}@minus{} Create new installation screens
     @minus{}@minus{} Set which screens to use
 end
 @*
+@minus{}@minus{} For unattended installations
+function UnattendedInit()
+    @minus{}@minus{} Set the installation path (if not given by the user)
+    @minus{}@minus{} Parse any commandline arguments given.
+end
+@*
 function Install()
-    @minus{}@minus{} Do pre-install things (ie asking the root password)
+    @minus{}@minus{} Do pre-install things (eg. asking the root password)
     @minus{}@minus{} Extract the installation files
-    @minus{}@minus{} Do post-install things (ie compile the extracted files)
-end}
+    @minus{}@minus{} Do post-install things (eg. compile the extracted files)
+end
+@*
+function Finish(err)
+    @minus{}@minus{} Clean things up
+    @minus{}@minus{} Possible launch a program when err is false
+end
+}
 
 The above items are discussed below.
 
 @subsection Setting the install destination path
-The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (ie /usr), let the user specify it through the @code{SelectDirScreen} (see below) or point it to a temporary directory. The latter is accomplished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).
+The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (eg. /usr), let the user specify it through the @code{SelectDirScreen} (see below) or point it to a temporary directory. The latter is accomplished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).
 
 
 @anchor{deskentrieslua}
@@ -685,9 +777,9 @@ When the @file{.desktop} file is generated, this table would be translated to th
 @*
 Any of these tables should be stored inside the @code{install.menuentries} variable. This variable itself is a table aswell, it is indexed by @ref{Strings,,strings} which represent the filename for this menu entry (without the .desktop part).@*
 @*
-Besides the @code{Name} field in our example, there are atleast two other fields which are common to have. The @code{Icon} field is used to specify a path to a filename used for an icon. The @code{Catagories} field can be used to specify to which catagory or catagories this software belongs. Valid catagories and more info about these and many other fields are described in the @uref{http://standards.freedesktop.org/menu-spec/latest/,desktop menu specification from the freedesktop project}.@*
+Besides the @code{Name} field in our example, there are at least two other fields which are common to have. The @code{Icon} field is used to specify a path to a filename used for an icon. The @code{Categories} field can be used to specify to which category or categories this software belongs. Valid categories and more info about these and many other fields are described in the @uref{http://standards.freedesktop.org/menu-spec/latest/,desktop menu specification from the freedesktop project}.@*
 @*
-For convience and because some fields are mandatory, it's better to use the @code{install.newdesktopentry} function to create a table. This function requires three arguments: the first is a path to the executable, the second argument is a path to a logo for the menu entry (use @code{nil} for none), the last argument describes one or more catagories for this menu entry. This function will also automaticly set the @code{Name} field to @code{cfg.appname}, the @code{Type} field to "Application" and the @code{Encoding} field to "UTF-8".@*
+For convenience and because some fields are mandatory, it's better to use the @code{install.newdesktopentry} function to create a table. This function requires three arguments: the first is a path to the executable, the second argument is a path to a logo for the menu entry (use @code{nil} for none), the last argument describes one or more categories for this menu entry. This function will also automatically set the @code{Name} field to @code{cfg.appname}, the @code{Type} field to "Application" and the @code{Encoding} field to "UTF-8".@*
 Here is some example usage:
 @codeblock{@minus{}@minus{} This will create a new desktop entry, which will be stored to @file{myapp.desktop}
 install.menuentries["myapp"] = install.newdesktopentry("/usr/local/bin/myapp",
@@ -698,7 +790,9 @@ The actual installation of the menu entries is controlled by the @code{install.g
 
 
 @subsection Installation screens
-As discussed before, installation screens are meant to let the user interact with the installer. You can use @emph{predefined} screens or create new screens. The following predefined screens exist:
+As discussed before, installation screens are meant to let the user interact with the installer. You can use @emph{predefined} screens or create new screens. Obviously, unattended installations will not support any installation screens and will fail if you try to use them.
+
+The following predefined screens exist:
 @anchor{instscreens}
 @table @code
 @vindex WelcomeScreen
@@ -789,6 +883,8 @@ By defining a @code{canactivate} function inside the screen's class we can tell 
 @*
 When an @code{activate} function is defined inside the screen's class it will be called when the screen is actually activated. Note that @code{canactivate} may be called multiple times, for this reason put any code that is required when the screen is activated in the @code{activate} function and not in the @code{canactivate} function.
 
+@subsubsection Execute code when a screen is activated
+To execute code during when the screen is activated, you should define a @code{update} function inside the screen class. This function will be called several times a second. You can use this to update widgets (for example enabling or disabling them) or check any background processes.
 
 @subsubsection Widget Placement
 The widgets are placed vertically in order. When there is no room for a widget the screen is split into one or more @emph{subscreens}. Each subscreen has the same title as the original screen and has a @emph{counter} that shows current subscreen in the form X/Y where X is the current screen and Y the total number of subscreens. When the widget does not fit into a new subscreen or does not fit horizontally an error will be thrown. If a widget fits or not depends on each frontend and how the widget is configured. For this reason always verify the installer for each frontend!
@@ -796,7 +892,10 @@ The widgets are placed vertically in order. When there is no room for a widget t
 Widgets can be horizontally grouped aswell. To do this a special @emph{group widget} needs to be created which will hold one or more widgets. The @ref{screen:addgroup} function creates a new group widget and returns a variable pointing to the group's @ref{Classes,,class}. The same functions for install screens are used to add widgets to a group widget. However these functions are called via the group's own class, @emph{ie} @code{group:addinput} (where @code{group} is a group widget variable).
 
 @subsubsection Tracking Widget Behaviour
-Commonly you may want to keep track of your widgets, for example to handle datachanges or verify user input. For this 2 functions can be defined @emph{in the widget class}. The first function, called @code{datachanged}, is called by the widget as soon as the user changes any data from the widget (@emph{ie} when the user selects a menu option). The second function, called @code{verify}, is called when the user presses the @samp{Next} button. When this function returns @code{false} the corresponding widget will get focus and the current installation screen remains active.
+Commonly you may want to keep track of your widgets, for example to handle data changes or verify user input. For this 2 functions can be defined @emph{in the widget class}. The first function, called @code{datachanged}, is called by the widget as soon as the user changes any data from the widget (@emph{ie} when the user selects a menu option). The second function, called @code{verify}, is called when the user presses the @samp{Next} button. When this function returns @code{false} the corresponding widget will get focus and the current installation screen remains active.
+
+@subsubsection Widget activation
+Each widget can be enabled or disabled. This is done via the @code{enable()} member function. This function requires one argument, which should be @code{true} or @code{false} to enable or disable the widget respectively.
 
 @subsubsection Example
 An example @code{Init} function is shown below, which covers anything we just discussed.
@@ -816,6 +915,15 @@ function Init()
     end
 @*
     namefield = myscreen:addinput("Your name")
+@*
+    function myscreen:update()
+        @minus{}@minus{} Enable widget when checkmyprocess() (some random example function) returns true
+        if checkmyprocess() then
+            namefield:enable(true)
+        else
+            namefield:enable(false)
+        end
+    end
 @*
     function namefield:datachanged()
         @minus{}@minus{} Display messagebox as soon user changes any data from the inputfield
@@ -851,33 +959,47 @@ You can use this screen to configure some settings.
 @item
 A @code{canactivate} and an @code{activate} function is defined for the screen. The first function tells that the screen may be displayed (this is the default and is only shown here for example usage). The second function will show a messagebox as soon as the screen is activated.
 @item
-An inputfield widget is created on our new screen labeled with "Your name". We define 2 functions to keep track of any datachanges and to verify if the user typed anything.
+An inputfield widget is created on our new screen labeled with "Your name". We define 2 functions to keep track of any data changes and to verify if the user typed anything.
+@item
+An @code{update} function is defined inside the screen calls to enable or disable the inputfield widget.
 @item
 Two label widgets are created and grouped next to eachother.
 @item
 Finally we define which screens should be shown and in which order. In our case first the welcome screen will be displayed, following by our custom screen and ending with the installation screen.
 @end itemize
 
+@subsection Handling commandline arguments
+As said, unattended installations use a seperate function (@code{UnattendedInit()}) for initialization. A common thing to do in this function is to handle any given commandline arguments. As described at the start of this chapter, commandline arguments are configured through the @code{cfg.unopts} variable. This same variable is also used to use them during installation. Any given commandline arguments will have their @code{value} record variable set, depending on their @code{opttype}. When the @code{opttype} is set to @code{"string"} then @code{value} will also be a @code{string}. When @code{opttype} is set to @code{"list"} then @code{value} will be a table (array). Incase @code{opttype} was not set (or is set to @code{nil}), @code{value} will be @code{true} incase the commandline argument was given.
+
+Here is an example @code{UnattendedInit()} function:
+@codeblock{function UnattendedInit()
+    local myvar = cfg.unopts["myvar"].value or "default" @minus{}@minus{} See @ref{and or trick}
+    if cfg.unopts["myswitch"].value then
+        enableswitch = true
+    end
+end
+}
+
 @subsection The installation process
-By defining an @code{Install()} function we can control the installation proces. If this function is not defined a default is generated and looks like this:
+By defining an @code{Install()} function we can control the installation process. If this function is not defined a default is generated and looks like this:
 @codeblock{function Install()
     install.extractfiles()
 end}
 The @ref{install.extractfiles} function is used to extract the installation files to the path defined by @code{install.destdir}.@*
 @*
-There are various Lua functions that can be used for installation. Files can be read or created with the @ref{io, io package}, there are functions that work with the OS (Operating System) of the user in the @ref{os, os package}.@*
+There are various Lua functions that can be used for installation. Files can be read or created with the @ref{io, io package} and there are various functions that work with the OS (Operating System) of the user in the @ref{os, os package}.@*
 @*
 A common thing is to execute various shell commands. For this three functions are generally used:
 @table
 @item @ref{install.execute}
 This function will execute a shell command and show all the generated output in a window.
 @item @ref{install.executeasroot}
-As @code{install.execute}, but using @samp{su} to execute it as the root user. If the root password is not given yet the user will be asked to type it.
+As @code{install.execute}, but the command is executed as the root user. If the root password is not given yet the user will be asked to type it.
 @item @ref{install.askrootpw}
 Asks the user to type the root password. If this has been done before the function doesn't do anything. Mostly this function is used somewhere at the beginning of the @code{Install} function so that the user knows root access is required before the installation begins and can abort if he or she wants to.
 @end table
 
-To let the user know whats happening there are three functions that can be used:
+To let the user know what is happening there are three functions that can be used:
 @table
 @item @ref{install.print}
 Displays a given string on the status window from the install screen.
@@ -887,15 +1009,14 @@ Can be used to set a short status message on the top of the install screen.
 Sets how many @emph{steps} the installation has. Follow the link for more information.
 @end table
 
-If you've created any desktop menu entries, the @ref{install.gendesktopentries} function needs to be called to install them. This function is usually called after @code{install.extractfiles} and before @code{install.generatepkg} (the latter function is only used for Package Mode and is discussed later). The @code{install.gendesktopentries} function needs one boolean argument. If this argument is @code{true} the desktop entries are installed globally (accessible to any user), when it is @code{false} the entries are only installed for the current user. One way to decide if the entries should be installed globally or not, is to check if the destination directory is writeable for the user. If this directory is writeable it can be asumed that the install went locally (and thus the function argument should be @code{false}).
+If you've created any desktop menu entries, the @ref{install.gendesktopentries} function needs to be called to install them. This function is usually called after @code{install.extractfiles} and before @code{install.generatepkg} (the latter function is only used for Package Mode and is discussed later). The @code{install.gendesktopentries} function needs one boolean argument. If this argument is @code{true} the desktop entries are installed globally (accessible to any user), when it is @code{false} the entries are only installed for the current user. One way to decide if the entries should be installed globally or not, is to check if the destination directory is writeable for the user. If this directory is writeable it can be assumed that the install went locally (and thus the function argument should be @code{false}).
 In the @file{run.lua} file you could use something like the code below to achieve this.
 @codeblock{install.gendesktopentries(not os.writeperm(install.destdir)}
-
 
 To finish this section here is an example of an @code{Install()} function.
 @codeblock{@minus{}@minus{} Example Install() function
 function Install()
-    install.setstepcount(2) @minus{}@minus{} Note that extracting files counts automaticly as one step
+    install.setstepcount(2) @minus{}@minus{} Note that extracting files counts automatically as one step
     install.extractfiles()
     install.setstatus("Executing random command")
     install.execute("ls -a") @minus{}@minus{} Contents of directory pointed by install.destdir variable will be displayed
@@ -905,6 +1026,27 @@ function Install()
 end}
 
 We start with defining the number of installation steps (2). Then the installation files are extracted to the directory that is defined by the @code{install.destdir} variable (see previous section). Then the status message is changed and a random shell command is executed. The last line shows how to retrieve a value with the @ref{input:get, get method function} from the inputfield class.
+
+
+@subsection The @code{Finish()} function
+As been said, this function will be called as soon as the installation ends. The function will be called with one argument which is @code{true} in case the installation did not end normally (for example the user aborted the installation or an error occured). You can use this function to clean any temporary resources or launch another program for example. The latter happens in the given example:
+@codeblock{function Finish(err)
+    if not err then
+        @minus{}@minus{} The ampersand (@samp{&}) is important, this keeps the software running when the installer exits
+        os.execute("/usr/bin/guiapp &")
+    end
+end
+}
+
+
+@subsection Unattended installations
+As some functionality requires user interaction, these are not available when the installer runs unattended. This may important when @code{cfg.mode} is set to @code{"both"}, where both installation types are possible. The @code{install.unattended} variable is set to @code{true} when the installer runs unattended. By checking this variable, you will have to make sure that no missing functionality is used during unattended installs. Functionality that @emph{cannot} be used during unattended installations:
+@itemize @bullet
+@item Installation screens
+@item Functions from the @code{gui} package.
+@item @ref{install.lockscreen}
+@end itemize
+Also note that when @code{install.askrootpw()} or @code{install.executeasroot()} is called during unattended installs, these functions will fail and print a message in case the installer does not run as the root user. This way the installer will be forced to run as the root user.
 
 
 @subsection Package Mode
@@ -922,11 +1064,11 @@ After @code{install.extractfiles} is called in the @code{Install()} function ins
 Note: This function should always be called @emph{after} @code{install.gendesktopentries()}.
 
 @subsubsection Specific Installation Screens
-A few predefined installation screens exist specificly for Package Mode. These are listed below.
+A few predefined installation screens exist specifically for Package Mode. These are listed below.
 @table @code
 @vindex PackageToggleScreen
 @item PackageToggleScreen
-Lets the user enable or disable package registration (setting @code{pkg.register}). This screen is not shown incase the installer is unable to register a package.
+Lets the user enable or disable package registration (setting @code{pkg.register}). This screen is not shown in case the installer is unable to register a package.
 @vindex PackageDirScreen
 @item PackageDirScreen
 This screen lets the user specify the locations for the data and binary directory (let the user set @code{pkg.destdir} and @code{pkg.bindir}).
@@ -979,7 +1121,7 @@ It's important that installed files have the right permissions set. For most sof
     @addtablecol{Read and executable}
 @endtablerow
 
-@addtablerow{Other files (ie data files)}
+@addtablerow{Other files (eg. data files)}
     @addtablecol{Read and write}
     @addtablecol{Read}
     @addtablecol{Read}
@@ -990,21 +1132,50 @@ It's important that installed files have the right permissions set. For most sof
 You can either set the permissions before generating the installer or during installation; just make sure that they are set before calling @code{install.generatepkg}.@*
 @*
 @findex pkg.setpermissions
-An easy way to set up permissions automaticly during installation is to use the @code{pkg.setpermissions} function. This function will traverse the whole temporary package directory and set up permissions following the rules in the table previously shown.@*
+An easy way to set up permissions automatically during installation is to use the @code{pkg.setpermissions} function. This function will traverse the whole temporary package directory and set up permissions following the rules in the table previously shown.@*
 @*
-Note that when using tools such as @samp{automake} permissions may also be automaticly set up when they are told to install files (ie @command{make install}).
+Note that when using tools such as @samp{automake} permissions may also be automatically set up when they are told to install files (eg. @command{make install}).
 
-@subsubsection Miscallenous
+@subsubsection Miscellaneous
 The @code{pkg.needroot()} function can be used to check if the @code{install.generatepkg} function needs root permissions. This is especially useful in combination with @ref{install.askrootpw} because the user can then be asked to enter the root password before the installation begins.
 
 
 @subsection Using @samp{runtime files}
-Any files that were put in the @file{extra_files/} directory can be accessed during or before the installation through the @ref{install.extrafilespath} function. This function returns a path to where you can find these files. The function accepts one optional argument containing a @ref{Strings, string} describing a filename. This filename is purely for convience and is simply appended to the returned value. Example: assuming we put a file called @file{readme.txt} in the @file{extra_files/} directory, we can access it as follows:
+Any files that were put in the @file{extra_files/} directory can be accessed during or before the installation through the @ref{install.extrafilespath} function. This function returns a path to where you can find these files. The function accepts one optional argument containing a @ref{Strings, string} describing a filename. This filename is purely for convenience and is simply appended to the returned value. Example: assuming we put a file called @file{readme.txt} in the @file{extra_files/} directory, we can access it as follows:
 @codeblock{readmefilepath = install.extrafilespath("readme.txt")}
 
-@subsection Translations
+@section Translations
 @emph{Any text} that is used by installation screens, widgets or functions indirectly using these (such as @ref{install.setstatus}) can be translated. This also includes option names from widgets such as radiobuttons or menus. Generally speaking: any text that is displayed, besides installation output, can be translated. As discussed before (@pxref{Translations}) the @file{strings} file is used to translate various strings. To translate text used from the @file{run.lua} file, simply add any strings to the @file{strings} file from the desired language in your project directory.
 
+@subsubsection Configuration
+Each translation is configured through a Lua script, called @file{config.lua} (not to be confused with the script used for installer configuration). These scripts are pretty small and only contain a few variable assignments. The structure looks like this:
+@codeblock{return @{
+    @minus{}@minus{} Variable assignments
+@}
+}
+In other words, this file return a table containing all the info for a language. The variables that this table can hold are described below.
+@table @code
+@item name
+A @code{string} containing the actual name of this language. This name is usually written in the translated language itself. If not given, the name from the subdirectory of the translation (explained in the next chapter) will be used.
+@item utf8
+A @code{boolean} variable that should be set to @code{true} if UTF-8 is required. At this point Nixstaller only supports UTF-8 as character set, so this variable is usally @code{true} for anything except English. Default: @code{true}.
+@item locales
+A @code{table} (array) that holds one or more @code{strings} of relevant locale(s) for this translation. When @code{cfg.autolang} is enabled, this variable is used to see if any of the @code{strings} match the user's locale. Note that there is already a match when one of the @code{strings} are found @emph{somewhere} inside the user's locale @code{string}. This way it's possible to tell that a translation can be used by several locales.
+@end table
+Here is an example, showing the file that is used for the Dutch translations:
+@codeblock{return @{
+    name = "Nederlands",
+    utf8 = true,
+    locales = @{ "nl" @}
+@}
+}
+Note that the @code{locales} variable is not a full locale name. This way all locales that have @samp{nl} somewhere in the name (usually at the beginning), will be matched.
+
+@subsubsection Translate strings
+In most cases, the actual translation happens automaticly (assuming that the @file{strings} file is set up correctly). In some cases however, you need to do it manually. This is done through the @ref{tr} function. When calling this function with the English @code{string} as first argument, it will return the right translated @code{string} back. One of the reasons to use this function is with strings having @emph{modifiers} in them. These modifiers are presented as one or more @samp{%s} parts in a string. When the string is actually used, any modifiers will be replaced by something else, such as the software's name, an error message, etc. As Nixstaller cannot know which variables to use for this replacement, you will have to do so manually. This can be done by again using the @code{tr} function, however any variables that should be used to replace the modifiers must be given (in order) as following arguments to this function.
+
+Here is an example used by the internal Lua source code:
+@codeblock{gui.msgbox(tr("Installation of %s complete!", cfg.appname))}
 
 
 @node Creating Installers
@@ -1059,7 +1230,7 @@ As mentioned in the file structure above, there are 4 "@file{files_}" directory 
 @item @file{files_all/}
 In this directory you should put all the files to be installed. These will be extracted for any OS and CPU architecture.
 @item @file{files_<os>_all/}
-In this directory you can put files that will only be extracted if the user's system equals to @samp{<os>}. The @samp{<os>} part should be replaced by a lowercased version from the output of @command{uname} shell command. Some examples: @file{files_linux_all/}, @file{files_sunos_all/}.
+In this directory you can put files that will only be extracted if the user's system equals to @samp{<os>}. The @samp{<os>} part should be replaced by a lower cased version from the output of @command{uname} shell command. Some examples: @file{files_linux_all/}, @file{files_sunos_all/}.
 @item @file{files_all_<arch>/}
 Similar to the previous item, @file{files_<os>_all/}, this directory should contain all the files that need to be installed for a CPU architecture specified by @samp{<arch>}. The @code{<arch>} part should be replaced by either @samp{x86} for Intel 32 bit compatible systems, @samp{x86_64} for AMD 64 bit x86 compatible systems or replaced by the output from the shell command @command{uname -m}. Note that currently there are only @samp{x86} and for some operating systems @samp{x86_64} frontend binaries available.
 @item @file{files_<os>_<arch>/}
@@ -1077,18 +1248,18 @@ These files were already discussed in the @ref{Basics,,basics chapter}. Simply p
 Lua scripting files were discussed in the @ref{Lua Scripts,,previous chapter}. Simply put the files in the root of the project directory.
 
 @anchor{genprojdir.sh}
-@section Automaticly Generating Project Directories
-As of version 0.3, nixstaller ships a script called @file{genprojdir.sh}. This script is able to save you lot of copying by generating a project directory automaticly. The script handles the following things:
+@section Automatically Generating Project Directories
+As of version 0.3, nixstaller ships a script called @file{genprojdir.sh}. This script is able to save you lot of copying by generating a project directory automatically. The script handles the following things:
 @itemize @bullet
 @item Creation of a basic directory layout.
 @item Language copying.
 @item Copy graphics used by the @code{cfg.intropic} and @code{cfg.logo} lua variables to the right place in the project directory.
-@item Generating a @file{config.lua} file based on defaults and/or commandline parameters.
+@item Generating a @file{config.lua} file based on defaults and/or commandline arguments.
 @item Generate a @file{run.lua} based on defaults and optionally containing some common code for Package Mode.
 @item Generate a template @file{package.lua} file with most variables defined and explaining comments.
 @end itemize
 
-The script accepts the following commandline parameters:
+The script accepts the following commandline arguments:
 
 @starttable{.5,.5}
 @addtableheaderrow{Parameter}
@@ -1136,7 +1307,7 @@ The script accepts the following commandline parameters:
 @endtablerow
 
 @addtablerownowrap{@minus{}@minus{}pkg}
-    @addtablecol{Specificly used for Package Mode. A template @file{package.lua} file will be created and common code for Package Mode will be added to @code{run.lua}}.
+    @addtablecol{Specifically used for Package Mode. A template @file{package.lua} file will be created and common code for Package Mode will be added to @code{run.lua}}.
 @endtablerow
 
 @endtable
@@ -1164,7 +1335,7 @@ This chapter lists 4 tutorials which show some common installation types in prac
 @*
 The @ref{first tutorial} explains how to create a very simple installer. The main focus of this tutorial is as an introduction to Nixstaller and how to perform most of the basics.@*
 @*
-The @ref{second tutorial} is more realistic, but still fairly simple. It expands on the basicis and introduces the creation of new installation screens.@*
+The @ref{second tutorial} is more realistic, but still fairly simple. It expands on the basics and introduces the creation of new installation screens.@*
 @*
 The @ref{third tutorial} is pretty advanced. The main focus lies on how to create new installation screens and use their widgets to control the installation process.@*
 @*
@@ -1288,7 +1459,7 @@ The default comments in the file are omitted, you may keep them if you want. The
 @*
 First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newscreen}. Then a radiobutton widget is added to this screen through the @ref{screen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{install.screenlist} variable. Since we don't want a license or finish message shown we left these screens out.@*
 @*
-The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{install.destdir} variable. After that we check what the user chose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assigning it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automaticly included to this string (@pxref{Strings}). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
+The second function, @code{Install()}, is called when the Installation Screen is activated. When @ref{install.extractfiles} is executed all the installation files are extracted to the directory assigned to the @code{install.destdir} variable. After that we check what the user chose from the radiobutton from our install screen. If it's @samp{"Yes"} then the script will be made. First we create the filename and assigning it to the local variable @code{filename}. Then the file is opened (and created if it doesn't exist yet). If there were no errors the script is written to file and the file is closed. Note that the @code{[[]]} block threats the part between it as a string and that newlines are automatically included to this string (@pxref{Strings}). The @ref{os.chmod} function alters the permissions of the script file so that it can be executed.
 
 @subsection Creating the Installer
 Assuming that the project directory is called @file{cube/} the layout of this directory should look like this:
@@ -1396,9 +1567,9 @@ The file starts with;
 @*
     advmenu = screen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
     advmenu:addstring("CC", "Used C compiler")
-    advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
-    advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
-    advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
+    advmenu:addstring("CFLAGS", "Custom compiler flags (eg. -O2)")
+    advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (eg. -I/usr/local/include)")
+    advmenu:addstring("LDFLAGS", "Custom linker flags (eg. -L/usr/local/lib)")
 @*
     install.screenlist = @{ WelcomeScreen, screen, InstallScreen, FinishScreen @}
 end}
@@ -1485,13 +1656,13 @@ This function, similar to the previous 2, is used to get a string to be used for
 end}
 
 @subsubsection Function @code{getconfigureopts()}
-This function returns the string that should be given as a shell argument to the @code{configure} command. The function uses the previous three functions, seperated by a space, to form the right string. This is the function:
+This function returns the string that should be given as a shell argument to the @code{configure} command. The function uses the previous three functions, separated by a space, to form the right string. This is the function:
 @codeblock{function getconfigureopts()
     return getprefixconf() .. " " .. getscriptconf() .. " " .. getguiconf() .. " " .. getideconf()
 end}
 
 @subsubsection Function @code{handleadvmenu()}
-This function will set several shell environment variables that can be configured through the @samp{Advanced compilation options} menu. Before a variable is set, it will be checked if the user didn't leave it blank. This is done because if the environment variable was already set (ie because the user set it in the shell from where the installer was executed) it would be cleared otherwise. Here is the function code:
+This function will set several shell environment variables that can be configured through the @samp{Advanced compilation options} menu. Before a variable is set, it will be checked if the user didn't leave it blank. This is done because if the environment variable was already set (eg. because the user set it in the shell from where the installer was executed) it would be cleared otherwise. Here is the function code:
 @codeblock{function handleadvmenu()
     if (#advmenu:get("CC") > 0) then
         os.setenv("CC", advmenu:get("CC"))
@@ -1514,7 +1685,7 @@ The last function will do the actual installation. Here is how it looks like:
     local prefix = prefixfield:get()
     handleadvmenu()
 @*
-    @minus{}@minus{} 1: Extracting Files (Automaticly set by install.extractfiles)
+    @minus{}@minus{} 1: Extracting Files (Automatically set by install.extractfiles)
     @minus{}@minus{} 2: ./configure
     @minus{}@minus{} 3: make
     @minus{}@minus{} 4: make install
@@ -1582,9 +1753,9 @@ The @file{run.lua} file is now completely discussed and should look like this:
 @*
     advmenu = screen:addcfgmenu("Advanced compiler options. If you don't know what these do just leave them blank.")
     advmenu:addstring("CC", "Used C compiler")
-    advmenu:addstring("CFLAGS", "Custom compiler flags (ie -O2)")
-    advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (ie -I/usr/local/include)")
-    advmenu:addstring("LDFLAGS", "Custom linker flags (ie -L/usr/local/lib)")
+    advmenu:addstring("CFLAGS", "Custom compiler flags (eg. -O2)")
+    advmenu:addstring("CPPFLAGS", "Custom preprocessor flags (eg. -I/usr/local/include)")
+    advmenu:addstring("LDFLAGS", "Custom linker flags (eg. -L/usr/local/lib)")
 @*
     install.screenlist = @{ WelcomeScreen, screen, InstallScreen, FinishScreen @}
 end
@@ -1676,7 +1847,7 @@ function Install()
     local prefix = prefixfield:get()
     handleadvmenu()
 @*
-    @minus{}@minus{} 1: Extracting Files (Automaticly set by install.extractfiles)
+    @minus{}@minus{} 1: Extracting Files (Automatically set by install.extractfiles)
     @minus{}@minus{} 2: ./configure
     @minus{}@minus{} 3: make
     @minus{}@minus{} 4: make install
@@ -1769,7 +1940,7 @@ improved to this day. It's one of the most popular open source games ever.
 @subsection Compilation of BZFlag and Dependencies
 Before we continue with the configuration of the installer, we first have to compile BZFlag and a few dependencies.@*
 @*
-To do this it's best to @samp{install} any files to a seperate directory structure, this is easily accomplished by setting the @samp{@minus{}@minus{}prefix} flag when @command{configure} is called. This @samp{prefix directory} is furtherly referred as @emph{PREFIX}.@*
+To do this it's best to @samp{install} any files to a separate directory structure, this is easily accomplished by setting the @samp{@minus{}@minus{}prefix} flag when @command{configure} is called. This @samp{prefix directory} is furtherly referred as @emph{PREFIX}.@*
 @*
 Using the data in the table below, BZFlag and it's dependencies can now be build.
 @starttable{.33, .33, .33}
@@ -1900,7 +2071,7 @@ The installer can now be generated using @file{geninstall.sh}.
 @chapter Compilation
 
 @section Introduction
-This chapter is important for people who want to compile the frontends used by Nixstaller. Some reasons may be if you changed the source code or you're porting to a new platform for example. There are some things to watchout for, therefore if you really need to compile then read this chapter as a whole.
+This chapter is important for people who want to compile the frontends used by Nixstaller. Some reasons may be if you changed the source code or you're porting to a new platform for example. There are some things to watch out for, therefore if you really need to compile then read this chapter as a whole.
 
 @section Libraries
 
@@ -1973,7 +2144,7 @@ For this reason most libraries are linked staticly. This will add size to the re
 
 @endtable
 
-All the static libraries with the exception from @file{libutil.a} needs to be copied to the @file{src/lib/[osname]/[archname]} directory. The @samp{[osname]} refers to the lowercased output from the command @command{uname}. @samp{archname} refers to either @samp{x86}, @samp{x86_64} or the output from @command{uname -m}. The main reason for putting the static libraries in a seperate directory is that 'clean' versions can be compiled and used. 'clean' in the way that the libraries have no CPU specific optimizations.@*
+All the static libraries with the exception from @file{libutil.a} needs to be copied to the @file{src/lib/[osname]/[archname]} directory. The @samp{[osname]} refers to the lower cased output from the command @command{uname}. @samp{archname} refers to either @samp{x86}, @samp{x86_64} or the output from @command{uname -m}. The main reason for putting the static libraries in a separate directory is that 'clean' versions can be compiled and used. 'clean' in the way that the libraries have no CPU specific optimizations.@*
 @*
 The search path to X11 libraries defaults to @file{/usr/X11R6/lib}. This can be changed by the @samp{xlibsdir} parameter passed to SCons, which is discussed later.@*
 @*
@@ -1983,7 +2154,7 @@ The search path to GTK2 libraries defaults to @file{/usr/lib}. This can be chang
 All the header files from the static libraries can be found in the @file{src/include/} directory. You normally don't have to bother with these. The path to the X11 headers can be specified with the @samp{xincdir} parameter passed to SCons (discussed later). The included GTK2 headers are from the older 2.4 version. This ensures that the frontend runs on systems with GTK+ 2.4 or later.
 
 @subsection Notes
-In the @file{src/libs/[osname]/[archname]/} directories you can find a @file{notes} file that contain several notes about which library versions are used and how they were compiled. It's recommended that the same library versions are used incase you want to compile your own.
+In the @file{src/libs/[osname]/[archname]/} directories you can find a @file{notes} file that contain several notes about which library versions are used and how they were compiled. It's recommended that the same library versions are used in case you want to compile your own.
 
 @anchor{builddeps.sh}
 @subsection @file{builddeps.sh}
@@ -2005,7 +2176,7 @@ If no targets are specified, all of them will be build.
 Besides libraries, Nixstaller also needs 2 binaries. These two are used for lzma encoding and decoding. They can easily be fetched and compiled by using @file{builddeps.sh} with the @samp{lzma} target (@pxref{builddeps.sh}).
 
 @section SCons
-@uref{http://www.scons.org/, SCons} is used as built system to compile Nixstaller. Atleast version @samp{0.96.91} is required. SCons depends on @uref{http://www.python.org, python} so make sure to install that aswell.@*
+@uref{http://www.scons.org/, SCons} is used as built system to compile Nixstaller. At least version @samp{0.96.91} is required. SCons depends on @uref{http://www.python.org, python} so make sure to install that aswell.@*
 @*
 To start the compilation simply execute @command{scons} from the @file{src/} directory.@*
 @*
@@ -2043,7 +2214,7 @@ After compilation is done the binaries will be put in the @file{bin/} directory.
     @end itemize
 @end itemize
 
-The binaries are each put on seperate @samp{libc} and, incase of C++ binaries, in seperate @samp{libstdc++} directories aswell. The reason for this is that they are linked dynamicly. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} and @file{libstdc++.so.4} while FreeBSD 6.X is using @file{libc.so.6} and @file{libstdc++.so.5}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started (and obviously created when the binaries were in place) it will then choose the right binaries for the users system.@*
+The binaries are each put on separate @samp{libc} and, in case of C++ binaries, in separate @samp{libstdc++} directories aswell. The reason for this is that they are linked dynamicly. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} and @file{libstdc++.so.4} while FreeBSD 6.X is using @file{libc.so.6} and @file{libstdc++.so.5}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started (and obviously created when the binaries were in place) it will then choose the right binaries for the users system.@*
 @*
 Besides the frontends there are some other binaries. Here is an explanation for each of them:
 @table @file
@@ -2064,8 +2235,8 @@ This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend
 
 
 
-@node Miscallenous
-@chapter Miscallenous
+@node Miscellaneous
+@chapter Miscellaneous
 
 @section Credits
 @itemize @bullet
@@ -2275,7 +2446,7 @@ c = a > b    @minus{}@minus{} c = false
 @*
 text1 = "Apple"
 text2 = "Orange"
-c = text1 < text2   @minus{}@minus{} c = true (alphabetical comparisation)
+c = text1 < text2   @minus{}@minus{} c = true (alphabetical comparison)
 @*
 c = 5 > 2 and "5" < "2"   @minus{}@minus{} false (second expression is false)}
 
@@ -2364,7 +2535,7 @@ repeat
 @*
     n = n + 1
 until n > 10}
-This does exactly the same as the @code{while} example. So why choose @code{repeat} over @code{while}? A reason is when you want to execute the code in the block atleast once. With a @code{while} loop the expression has to be @code{true} before the loop can even begin. With the @code{repeat} - @code{until} statement however it will check the expression at the end of the block and therefore execute the code atleast once.
+This does exactly the same as the @code{while} example. So why choose @code{repeat} over @code{while}? A reason is when you want to execute the code in the block at least once. With a @code{while} loop the expression has to be @code{true} before the loop can even begin. With the @code{repeat} - @code{until} statement however it will check the expression at the end of the block and therefore execute the code at least once.
 
 @subsubsection @code{for} loops
 There are 2 kind of @code{for} loops: the @emph{numeric} and the @emph{generic}. We will discuss the first here, the @emph{generic} @code{for} loop will be explained @ref{Traversing Tables, here}.
@@ -2380,7 +2551,7 @@ This will assign @emph{expr1} to the variable @code{var}. Note that this variabl
 @item expr2
 As long as @emph{expr2} is unequal to @code{var} the loop repeats itself.
 @item expr3
-This is optional. @emph{expr3} is used to specify how much @code{var} should increment (or decrement incase a negative value is specified). If not specified it defaults to @samp{1}.
+This is optional. @emph{expr3} is used to specify how much @code{var} should increment (or decrement in case a negative value is specified). If not specified it defaults to @samp{1}.
 @end table
 
 Now some examples:
@@ -2405,7 +2576,7 @@ Here is an example:
 @codeblock{n = 1
 while (true)  @minus{}@minus{} Infinite loop
     if (n == 50) then
-        break @minus{}@minus{} Not infinite afterall
+        break @minus{}@minus{} Not infinite after all
     end
     n = n + 1
 end}
@@ -2429,7 +2600,7 @@ Which @emph{arguments} or @emph{parameters} this function expects.
 @end table
 
 @subsubsection Functions arguments
-Some functions may need data from the caller. To pass this data @emph{function parameters} are used. These are variables which are @emph{local} (not exist outside the function) to this function. Here is an example to acclompish this:
+Some functions may need data from the caller. To pass this data @emph{function parameters} are used. These are variables which are @emph{local} (not exist outside the function) to this function. Here is an example to accomplish this:
 @codeblock{counter = 0
 @*
 function increment(n) @minus{}@minus{} Function that increments @samp{counter} by @code{n}
@@ -2441,9 +2612,9 @@ increment(5)
 @minus{}@minus{} counter is now 5
 increment(-2)
 @minus{}@minus{} counter is now 3}
-You can also specify multiple function arguments: just seperate them with a comma (@samp{,}).@*
+You can also specify multiple function arguments: just separate them with a comma (@samp{,}).@*
 @*
-If the user doesn't specify one or more parameters then they will be @code{nil}. With that info we can make it so that some arguments have default values incase they are not given by the caller. For example:
+If the user doesn't specify one or more parameters then they will be @code{nil}. With that info we can make it so that some arguments have default values in case they are not given by the caller. For example:
 @codeblock{function increment(n)
     if (not n) then
         n = 1
@@ -2497,7 +2668,7 @@ end
 count = 0    @minus{}@minus{} Global variable
 @*
 function g()
-    local count     @minus{}@minus{} Overide count
+    local count     @minus{}@minus{} Override count
     count = 1       @minus{}@minus{} Modify our own count
 end
 @*
@@ -2506,7 +2677,7 @@ As shown above @code{local} variables can have the same name as a existing globa
 
 
 @section Advanced Lua
-In this section some of the more advanced features of Lua will be shown. Atleast the first 2 sections about tables are important. For less advanced installers these might be enough for now.
+In this section some of the more advanced features of Lua will be shown. At least the first 2 sections about tables are important. For less advanced installers these might be enough for now.
 
 @subsection Functions As Variables
 Functions are also a variable type. The way we did to create functions so far is actually a shortcut to assign a function to a (global) variable:
@@ -2552,7 +2723,7 @@ Tables are generic types also called @emph{objects}. Tables can be used to creat
 @subsubsection Creating A @code{table}
 Before we go in to details, lets start with how to create a table. Unlike other types, you have to @emph{construct} tables. The simplest way of doing this is like this:
 @codeblock{t = @{ @}}
-The 2 curley braces are the key to construct a new table. There are other ways to construct a table, these will be handled in the next sections.@*
+The 2 curly braces are the key to construct a new table. There are other ways to construct a table, these will be handled in the next sections.@*
 @*
 Another thing to remember is that variables can only @emph{point} to a table. The following example shows an error:
 @codeblock{t = @{ @}   @minus{}@minus{} Construct a new table
@@ -2569,7 +2740,10 @@ t = @{ @} @minus{}@minus{} Construct new table
 t[1] = 5
 t[2] = 6
 t[3] = 7}
-In this example the table referenced by @code{t} has 3 entries. Each are @emph{indexed} by numbers: @code{t[1]} points to 5, @code{t[2]} to 6 and @code{t[3]} to 7. Unlike languages such as C the arrays from Lua can be indexed with any type (except @code{nil}). And as usual, the data can be from any type and @code{nil} can be used to remove the data. Some more examples:
+In this example the table referenced by @code{t} has 3 entries. Each are @emph{indexed} by numbers: @code{t[1]} points to 5, @code{t[2]} to 6 and @code{t[3]} to 7.
+
+@anchor{luamap}
+Unlike languages such as C, the arrays from Lua can be indexed with any type (except @code{nil}). And as usual, the data can be from any type while @code{nil} is used to remove the data. Tables that are indexed by other types than numbers are sometimes called @emph{maps}. Some more examples:
 @codeblock{t = @{ @}
 t["Name"] = "Rick"
 t["Phone"] = 123456789
@@ -2578,6 +2752,7 @@ This time we used @code{string}s to index a table. Mixes of types can be used fo
 @*
 Usually though we use numbers only as indexes. Records (see below) are mainly used for strings. When you use numbers to index an array it's recommended to start with @samp{1} instead of @samp{0} like some other languages do. A reason for this is that most Lua functions that operate on tables (or arrays) expect that @samp{1} is the first index.
 
+@anchor{records}
 @subsubsection Table Seen As A Record
 As explained in the previous section tables can be @emph{indexed}. Another way to assign data to a table is by using @emph{records}. This is the general syntax:
 @codeblock{tablename.fieldname}
@@ -2586,7 +2761,7 @@ And an example:
 t.Name = "Rick"
 t.Phone = 123456789
 t.Country = "The Netherlands"}
-Looks familiar? It's infact the same as the example shown with the array indexed by strings. In other words
+Looks familiar? It's in fact the same as the example shown with the array indexed by strings. In other words
 @codeblock{t["field"] = 1}
 is the same as
 @codeblock{t.field = 1}
@@ -2595,7 +2770,7 @@ The reason for this alternative syntax is to have a shortcut specifically for re
 @anchor{modules}
 @subsubsection Table Seen As A Package
 Another popular way is to use tables for @emph{packages} or @emph{modules}. A good example are the Lua libraries discussed later. 
-A package is basicly a record which is defined somewhere else. This record contains mostly functions and sometimes other variables. As said before,functions are a variable type. Using that knowledge we can create a package like this:
+A package is basically a record which is defined somewhere else. This record contains mostly functions and sometimes other variables. As said before,functions are a variable type. Using that knowledge we can create a package like this:
 @codeblock{mypackage = @{ @}
 mypackage.f = function()
                 @minus{}@minus{} Some code
@@ -2636,7 +2811,7 @@ To traverse a table we can use the @emph{generic} @code{for} loop combined with 
 end}
 @table @emph
 @item vars
-These are 1 or more variables (depending on the used iterator). Multiple variables are as usual seperated with a comma.
+These are 1 or more variables (depending on the used iterator). Multiple variables are as usual separated with a comma.
 @item expression
 Normally the iterator function
 @end table
@@ -2670,8 +2845,8 @@ Table entry: 2
 Contains: 105}
 As you can see it omits the @code{"name"} index. Note that, as other Lua functions, @code{ipairs} expects that @samp{1} is used as the first index for an array.
 
-@subsubsection Table Constructers
-For now we only used one way to construct tables. Another way is to assign data right away when the table is constructed. For this you can use different ways to acclompish this. @*
+@subsubsection Table Constructors
+For now we only used one way to construct tables. Another way is to assign data right away when the table is constructed. For this you can use different ways to accomplish this. @*
 @*
 The first way is specifically for arrays indexed by numbers, example:
 @codeblock{array = @{ 5, 10, "Hello World" @}}
@@ -2773,7 +2948,7 @@ Returns the length of the string @code{s}. The @samp{#} operator does the same.
 @endluafunc
 
 @luafunc string.lower (s)
-Returns a lowercased version of string @code{s}. Characters that don't have a lowercased version are untouched.
+Returns a lower cased version of string @code{s}. Characters that don't have a lower cased version are untouched.
 @endluafunc
 
 @luafunc string.upper (s)
@@ -2823,7 +2998,7 @@ Alternate form. In the authors opinion not really important. See the man pages o
 (as in zero) If a width is given (see below), it will use zeros instead of blanks for padding.
 @end table
 @item [width]
-Optional. If a number is given it will make the converted text atleast @samp{n} wide by filling it with spaces if necessary.
+Optional. If a number is given it will make the converted text at least @samp{n} wide by filling it with spaces if necessary.
 @item [.precision]
 Optional. Should be a number. The meaning depends on the type and is given below for each one.
 @item type
@@ -2852,7 +3027,7 @@ The same as @samp{%e} and @samp{%E} or @samp{%f}. This depends on the given prec
 Will produce a string that is @samp{safe} for Lua. This means that special characters such as newlines, quotes, backslashes etc are properly escaped.
 @end table
 @end table
-The returned string from @code{string.format} will contain all the result(s) from the control modifier(s), at the place where the control modifier(s) orginally were placed. Each control modifier will use the next given function argument.@*
+The returned string from @code{string.format} will contain all the result(s) from the control modifier(s), at the place where the control modifier(s) originally were placed. Each control modifier will use the next given function argument.@*
 @*
 To clear things up, here are some examples:
 @codeblock{name = "Rick"
@@ -2873,7 +3048,7 @@ Lua has a few advanced functions to find and replace (sub)strings. For now I wil
 Lua has a few functions to help you when working with tables. These functions are all in the @emph{table} module.
 
 @luafunc table.concat (t, [, sep=""[, i=1[, j=#t]]])
-Returns a string that has all elements of table @code{t} next to eachother. Each entry can be seperated by the string @code{sep}. The @code{i} and @code{j} variables are used to indicate a starting and ending index.
+Returns a string that has all elements of table @code{t} next to eachother. Each entry can be separated by the string @code{sep}. The @code{i} and @code{j} variables are used to indicate a starting and ending index.
 Examples:
 @codeblock{t = @{ "Hello", "World", "!" @}
 t2 = @{ 5, 10, 15 @}
@@ -2903,7 +3078,7 @@ table.remove(t)       @minus{}@minus{} t = @{ 10 @}}
 @endluafunc
 
 @luafunc table.sort (t[, c])
-Only works with arrays with numeric indexes. This function will sort all the entries from the table @code{t}. The optional argument @code{c} can be used to specify a function that is a replacement of the @samp{<} operator. This function is called to check if one table entry is smaller than another. The function recieves 2 arguments, the first and second entry, and should return @code{true} if the first entry is less than the second.
+Only works with arrays with numeric indexes. This function will sort all the entries from the table @code{t}. The optional argument @code{c} can be used to specify a function that is a replacement of the @samp{<} operator. This function is called to check if one table entry is smaller than another. The function receives 2 arguments, the first and second entry, and should return @code{true} if the first entry is less than the second.
 Examples:
 @codeblock{fruits = @{ "Lemon", "Apple", "Orange" @}
 table.sort(fruits)    @minus{}@minus{} fruits = @{ "Apple", "Lemon", "Orange" @}
@@ -2940,7 +3115,7 @@ If no arguments are given returns a @samp{random} number between 0 and 1. If @co
 @endluafunc
 
 @luafunc math.randomseed (n)
-Sets the @samp{seed} for the @code{math.random} function. For each seed an unique series of numbers will be returned by the @code{math.random} function. So if the seed is always the same (ie not changed) @code{math.random} will always return the same values. To get @samp{real} random numbers a way is to set the seed to the system time when the Lua script is started. The system time can be retrieved by the @ref{os.time} function.
+Sets the @samp{seed} for the @code{math.random} function. For each seed an unique series of numbers will be returned by the @code{math.random} function. So if the seed is always the same (ie. not changed) @code{math.random} will always return the same values. To get @samp{real} random numbers a way is to set the seed to the system time when the Lua script is started. The system time can be retrieved by the @ref{os.time} function.
 @endluafunc
 
 
@@ -2948,7 +3123,7 @@ Sets the @samp{seed} for the @code{math.random} function. For each seed an uniqu
 @section Functions That Interact With The OS
 In the @code{os} package you can find functions that will handle OS specific things. Nixstaller has included some extra functions to this module.@*
 @*
-On failure (ie a file doesn't exist), some functions will return 2 things: @code{nil} and a string containing an error message. On success these functions will return @code{true}. With this you can easily handle errors like so:
+On failure (eg. a file doesn't exist), some functions will return 2 things: @code{nil} and a string containing an error message. On success these functions will return @code{true}. With this you can easily handle errors like so:
 @codeblock{@minus{}@minus{} Function taken from internal Nixstaller code
 @minus{}@minus{} (ThrowError is just a function that cleans some stuff up and calls error())
 function RequiredCopy(src, dest)
@@ -3058,7 +3233,7 @@ Renames the file or directory @code{f} to @code{f2}. On error it will return @co
 @endluafunc
 
 @luafunc os.setenv (e, v[, o=true])
-This function is used to change or add a shell environment variable. The name of this variable is specified by the argument @code{e}. The value should be a string and is specified by @code{v}. The optional argument, @code{o}, is used to specify if the value should be overwritten incase the variable already exists.
+This function is used to change or add a shell environment variable. The name of this variable is specified by the argument @code{e}. The value should be a string and is specified by @code{v}. The optional argument, @code{o}, is used to specify if the value should be overwritten in case the variable already exists.
 @endluafunc
 
 @anchor{os.time}
@@ -3082,7 +3257,7 @@ The @code{io} package provides several Input/Output functions. As with some func
 At first some functions of the @code{io} package will be discussed. After that the @code{file} class will be explained. Instead of adding examples for most functions, this section ends with a few bigger examples. This is because most functions need eachother.
 
 @luafunc io.dir (d)
-This function is a function iterator (@pxref{Traversing Tables}) that is used to scan directory @code{d}. On success the function will return a string containing the next file or directory name. On failure (ie. the directory does not exist) it will return @code{nil} and a string containing the error message.@*
+This function is a function iterator (@pxref{Traversing Tables}) that is used to scan directory @code{d}. On success the function will return a string containing the next file or directory name. On failure (eg. the directory does not exist) it will return @code{nil} and a string containing the error message.@*
 Example:
 @codeblock{@minus{}@minus{} This will list every file and directory in the current directory
 for d in io.dir(".") do
@@ -3117,13 +3292,13 @@ On success, this function will return a @emph{file handle}. This is a @ref{Class
 @endluafunc
 
 @luafunc io.popen (c[, m="r"])
-This will execute the shell command @code{c} in a seperate process. The function returns a @emph{file handle} like @code{io.open} does. More on file handles @ref{File Handles, here}.@*
+This will execute the shell command @code{c} in a separate process. The function returns a @emph{file handle} like @code{io.open} does. More on file handles @ref{File Handles, here}.@*
 @*
 If @code{m} is "r" all data from the command that is written to the standard output can be read. If "w" is specified the standard input from the file is linked to the data provided from writes.
 @endluafunc
 
 @luafunc io.tmpfile ()
-Creates a temporary file and returns a @emph{file handle}. This file has a random name and is opened as "r+b" (@pxref{io.open}). On exit the file is removed automaticly.
+Creates a temporary file and returns a @emph{file handle}. This file has a random name and is opened as "r+b" (@pxref{io.open}). On exit the file is removed automatically.
 @endluafunc
 
 @luafunc io.type (t)
@@ -3135,7 +3310,7 @@ This function checks the file handle @code{f}. If the file is opened it will ret
 File handles are @ref{Classes, classes} that can operate on files, such as reading or writing. They are returned from @code{io.open}, @code{io.popen} and @code{io.tmpfile}. The file handle class is referred with the name @code{file} each time below.
 
 @luafunc file:close ()
-Closes the file. When a file is closed you cannot read or write from/to it anymore. Note that each file eventually is closed automaticly.
+Closes the file. When a file is closed you cannot read or write from/to it anymore. Note that each file eventually is closed automatically.
 @endluafunc
 
 @luafunc file:flush ()
@@ -3184,7 +3359,7 @@ Writes are fully buffered, this is the default. Data will only be written when t
 @item "line"
 Like "full", but the data is also written after each newline.
 @end table
-The optional @code{s} argument specifies the buffer size in bytes. By default this is a value which suids the system the most.
+The optional @code{s} argument specifies the buffer size in bytes. By default this is a value which suites the system the most.
 @endluafunc
 
 @luafunc file:write (...)
@@ -3197,7 +3372,7 @@ Here follow a few examples of the IO related functions that were discussed.@*
 @codeblock{@minus{}@minus{} This code will open a file, read and display its contents and close it
 f, msg = io.fopen("test.txt", "r")    @minus{}@minus{} f will contain the file handle, msg an error message on failure
 @*
-@minus{}@minus{} File could not be opened? (ie doesn't exists)
+@minus{}@minus{} File could not be opened? (eg. doesn't exists)
 if (not f) then
     print("Could not open file: " .. msg)
     os.exit()    @minus{}@minus{} @xref{os.exit}
@@ -3288,7 +3463,7 @@ By default @code{install.screenlist} is set like this:
 
 @anchor{install.extrafilespath}
 @luafunc install.extrafilespath ([f])
-This function returns a path to where the files are located which were placed in the @file{extra_files/} directory from the project directory. The optional string argument @code{f} is used for convience and is simply appended to the returned path.@*
+This function returns a path to where the files are located which were placed in the @file{extra_files/} directory from the project directory. The optional string argument @code{f} is used for convenience and is simply appended to the returned path.@*
 For example, if a file called @file{README} was placed in the @file{extra_files/} directory before the installer was created, we can access it as follows:
 @codeblock{readmefile = install.extrafilespath("README")}
 @endluafunc
@@ -3315,12 +3490,12 @@ Following functions should only be used within the @code{Install} function.
 
 @anchor{install.askrootpw}
 @luafunc install.askrootpw ()
-This function will ask the user to type the systems root password. This is done automaticly if,
+This function will ask the user to type the systems root password. This is done automatically if,
 @itemize @bullet
 @item @code{install.executeasroot()} is called,
 @item when @code{install.destdir} is set to a directory which cannot be written to by the user,
-@item incase @code{install.generatepkg} needs root (@code{pkg.needroot} is @code{true}),
-@item incase @code{install.gendesktopentries} is used to install any desktop menu entries globally.
+@item in case @code{install.generatepkg} needs root (@code{pkg.needroot} is @code{true}),
+@item in case @code{install.gendesktopentries} is used to install any desktop menu entries globally.
 @end itemize
 A good reason to call this functions is when you're sure the script will execute one or more commands as root @emph{after} @code{install.extractfiles()} is called. This way the user can abort if he or she doesn't want to or cannot type the root password before the installation begins.@*
 @*
@@ -3329,7 +3504,7 @@ When this function is called more than once it won't do anything (the password i
 
 @anchor{install.execute}
 @luafunc install.execute (c[, r=true[, p="/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
-This function will execute the shell command defined by string @code{s}. The optional boolean argument, @code{r}, tells that the installation should be aborted when the command failes to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (@pxref{Strings}).@*
+This function will execute the shell command defined by string @code{s}. The optional boolean argument, @code{r}, tells that the installation should be aborted when the command fails to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (@pxref{Strings}).@*
 @*
 This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.@*
 @*
@@ -3345,7 +3520,7 @@ This function does essentially the same as @code{install.execute}, but using the
 
 @anchor{install.extractfiles}
 @luafunc install.extractfiles ()
-This function will extract all installation files to the directory that was specified by the global variable @code{install.destdir}. This function will automaticly call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
+This function will extract all installation files to the directory that was specified by the global variable @code{install.destdir}. This function will automatically call @code{install.setstatus()} to notify the user that the files are extracted. Each file which was extracted is printed on the screen, and the progress bar is updated properly.
 @endluafunc
 
 @anchor{install.gendesktopentries}
@@ -3369,9 +3544,9 @@ Prints the message specified by argument @code{s} on the status window from the 
 @endluafunc
 
 @luafunc install.newdesktopentry (b, l, c)
-This function is used to create new desktop menu entry tables. The first argument, @code{b}, should be a full path to the executable. The second argument, @code{l}, should either be a path to an image that is used as icon for the entry or @code{nil} for none. The third argument, @code{c}, should be one or more valid catagories.@*
+This function is used to create new desktop menu entry tables. The first argument, @code{b}, should be a full path to the executable. The second argument, @code{l}, should either be a path to an image that is used as icon for the entry or @code{nil} for none. The third argument, @code{c}, should be one or more valid categories.@*
 @*
-This function automaticly sets the @code{Name} field to @code{cfg.appname}, the @code{Type} field to @code{"Application"} and the Encoding field to @code{"UTF-8"}.@*
+This function automatically sets the @code{Name} field to @code{cfg.appname}, the @code{Type} field to @code{"Application"} and the Encoding field to @code{"UTF-8"}.@*
 @*
 More info on usage can be found @ref{deskentrieslua,,here}.
 @endluafunc
@@ -3390,7 +3565,7 @@ os.copy(file1, file2, "/usr/local/share")}
 @luafunc install.setstepcount (n)
 This function is used to specify how many @emph{steps} the installation has, specified by parameter @code{n}. This is used to divide the progress bar and to put a text in the form of (x/X) on the screen, where @samp{x} is the current step and @samp{X} the total count of steps. On each @code{install.setstatus} call the current step will be incremented by one. By default the step count is 1.@*
 @*
-Note that @code{install.extractfiles} and @code{install.generatepkg} both will call this function when they are executed, so you most lickely want to increment @code{n} by one or two.
+Note that @code{install.extractfiles} and @code{install.generatepkg} both will call this function when they are executed, so you most likely want to increment @code{n} by one or two.
 @endluafunc
 
 @anchor{screen}
@@ -3440,7 +3615,7 @@ text = group:addlabel("Thanks for downloading my software!")}
 
 @anchor{screen:addimage}
 @luafunc screen:addimage (f)
-This widget displays an image loaded from file @code{f}. The image is scaled down incase it's larger than 300x200 px. Valid formats are: png, jpeg, gif and bmp.
+This widget displays an image loaded from file @code{f}. The image is scaled down in case it's larger than 300x200 px. Valid formats are: png, jpeg, gif and bmp.
 @endluafunc
 
 @anchor{screen:addinput}
@@ -3598,7 +3773,7 @@ This function will strip the directory part of a given path (string argument @co
 @endluafunc
 
 @luafunc utils.dirname (p)
-This function does the oppisite of @code{utils.basename}: it strips out the filename at the end of the given path @code{p} and returns the remaining directory part.
+This function does the opposite of @code{utils.basename}: it strips out the filename at the end of the given path @code{p} and returns the remaining directory part.
 @endluafunc
 
 @luafunc utils.emptytable (t)
@@ -3639,7 +3814,7 @@ Executes the Lua script specified by argument @code{f}. You can use this if you 
 Example:
 @codeblock{if (os.osname == "linux") then
     dofile("linux.lua")
-elseif (os.osname == "solaris") then
+elseif (os.osname == "sunos") then
     dofile("solaris.lua")
 else
     dofile("generic.lua")

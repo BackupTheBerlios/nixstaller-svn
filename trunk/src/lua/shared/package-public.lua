@@ -86,8 +86,8 @@ function pkg.addpkgunopts(deps)
     if deps then
         cfg.unopts["dlretries"] = {
             desc = "Amount of retries incase downloading a dependency fails. Default: 3.",
-            opttype="string",
-            optname="n",
+            opttype = "string",
+            optname = "n",
             internal = true }
             
         cfg.unopts["ignore-failed-deps"] = {

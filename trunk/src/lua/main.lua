@@ -22,9 +22,6 @@ version = "0.5"
 cfg = { unopts = { } }
 pkg = { }
 
--- Default unattended startup options
--- cfg.unopts["verbose"] = { short = "v", desc = "Enable verbose output" }
-
 -- Functions for easy way to enable common options
 -- The internal variable is used to check if opts were defined here and
 -- should be handled by the user or automaticly

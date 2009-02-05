@@ -5,7 +5,13 @@ OVERALL
     - Only use it on some platforms?
 - Test regular C lua libs, update notes
 - print when dep is verified in attended installs?
-- Check return value of pkg.verifydeps()
+- Check return value of pkg.verifydeps() --> call verifydeps() automaticly?
+- Allow unattended installs even if X isn't running
+- check if pkg.enable is set in verifydeps()
+- lowercase dep class functions
+- Do bin scripts handle custom dep lib dirs? Remove this functionality? (if not update docs)
+- appicon support for genprojdir.sh
+- More logic config.lua for translations --> Sync with docs.
 
 
 TEST
@@ -18,6 +24,7 @@ TEST
 - translations
 - genprojdir copying lang configs
 - depscreen
+- pacman present() fix
 
 
 MAIN
@@ -30,7 +37,7 @@ MAIN
 
 DOCS
 - utils.tablefind, utils.tablemerge, utils.mapsize and the rest from CHANGELOG
-- install.getpkgdir() (now with arg)
+- install.getpkgdir() (now with arg, CHANGELOG)
 - utils.removerec()
 - utils.mkdirperm()? (If yes, CHANGELOG)
 - Nested block strings ([=[]=])
@@ -59,6 +66,7 @@ DOCS
     - tr()
     - lang/config.lua
     - save files as utf8
+    - only utf8 translations can be used on systems using utf8 locales.
 - gui.textwidth() and label:setlabelwidth()
 - Updating chapter?
 - bzflag tutorial:
@@ -67,6 +75,21 @@ DOCS
     - Additional dep code for package.lua and run.lua
     - Move binaries to arch/os specific dirs
     - deputil.sh: scan, auto (with and without pretend)
+- CHANGELOG
+- Features
+- Setting the destination path section should mention package mode
+- scripts:
+    - new run stuff
+        - pkg.verifydeps()?
+        - install.getpkgdir() (now with arg, CHANGELOG)
+        - install.extract()
+        - install.executecmd() and install.executecmdasroot()
+        - tr()
+- Dep handling:
+    - Restructure explenation?
+        - probs: explenation of pkg.deps, pkg.libs, pkg.autosymmap
+        - Explain dep packages
+        - 
 
 
 TRANSLATIONS

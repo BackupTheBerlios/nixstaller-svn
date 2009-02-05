@@ -45,6 +45,10 @@ function missingtool()
 end
 
 function present()
+    -- Extra check, incase a pacman game is launched ... :-)
+    if not os.isdir("/var/lib/pacman") then
+        return false
+    end
     return os.exitstatus(os.execute("(pacman --version) >/dev/null 2>&1")) == 2
 end
 

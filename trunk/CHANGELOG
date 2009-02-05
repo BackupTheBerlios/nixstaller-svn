@@ -13,6 +13,7 @@
 - Fixed: Lua textfield from FLTK frontend was slow when large amounts of text were added.
 - Fixed: GTK screen titles weren't always centered.
 - Fixed: GTK password dialog didn't finish on enter keypress.
+- Fixed: When checking if the pacman packager is present and a pacman game was present, the installer would launch the game (reported by John Tsolox).
 - Better commandline arguments handling.
 - utils.removerec() function.
 - utils.copyrec() function.
