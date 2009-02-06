@@ -15,10 +15,7 @@
 - Fixed: GTK password dialog didn't finish on enter keypress.
 - Fixed: When checking if the pacman packager is present and a pacman game was present, the installer would launch the game (reported by John Tsolox).
 - Better commandline arguments handling.
-- utils.removerec() function.
-- utils.copyrec() function.
-- utils.patch() function.
-- utils.tableappend() function.
+- Several new util functions: utils.removerec(), utils.copyrec(), utils.patch(), utils.tableappend(), utils.tablefind(), utils.tablemerge(), utils.mapsize(), utils.emptystring() and utils.mkdirperm()
 - Updated to FLTK 1.3
 - Decreased FLTK textfield font size
 - Lua textfield now has max amount of characters (4 MB)
@@ -61,6 +58,8 @@
 - Improved translation strings
 - More reliable way for checking if package manager is locked.
 - genprojdir.sh now generates os, arch and os/arch specific file dirs
+- install.getpkgdir() now accepts optional file argument for convenience.
+- install.update() function
 
 
 0.3 --> 0.4

@@ -96,7 +96,7 @@ int CBaseLuaMenu::LuaDel(lua_State *L)
     else
         luaL_typerror(L, 2, "Number or String");
 
-    luaL_argcheck(L, ((n >= 0) && (n < menu->m_Options.size())), 2, "Tried to delete non existing checkbutton entry");
+    luaL_argcheck(L, ((n >= 0) && (n < menu->m_Options.size())), 2, "Tried to delete non existing menu entry");
 
     menu->DelOption(n);
 

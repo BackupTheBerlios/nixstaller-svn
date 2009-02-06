@@ -26,7 +26,7 @@
 // Base Lua Inputfield Class
 // -------------------------------------
 
-CBaseLuaInputField::CBaseLuaInputField(const char *l, const char *t) : m_iLabelWidth(15)
+CBaseLuaInputField::CBaseLuaInputField(const char *l, const char *t) : m_iLabelWidth(0)
 {
     if (l && *l)
         m_Label = l;
@@ -71,5 +71,7 @@ int CBaseLuaInputField::LuaSetLabelWidth(lua_State *L)
     int width = luaL_checkint(L, 2);
     
     field->SetLabelWidth(width);
+    field->CoreUpdateLabelWidth();
+    
     return 0;
 }

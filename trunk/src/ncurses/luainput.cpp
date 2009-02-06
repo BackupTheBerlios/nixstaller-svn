@@ -35,6 +35,7 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     {
         NNCurses::CBox *labelbox = new NNCurses::CBox(NNCurses::CBox::VERTICAL, false);
         m_pLabel = new NNCurses::CLabel(GetTranslation(label), false);
+        SetLabelWidth(static_cast<int>(MBWidth(GetDefaultLabelWChars())));
         UpdateLabelWidth();
         m_pLabel->SetMaxReqHeight(1);
         labelbox->StartPack(m_pLabel, true, false, 0, 0);

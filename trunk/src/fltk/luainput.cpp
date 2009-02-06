@@ -46,6 +46,8 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     {
         m_pLabel = new Fl_Box(0, 0, 0, inputh, GetTranslation(label));
         m_pLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        fl_font(m_pLabel->labelfont(), m_pLabel->labelsize());
+        SetLabelWidth(static_cast<int>(fl_width(GetDefaultLabelWChars().c_str())));
     }
     
     if (GetType() == "number")

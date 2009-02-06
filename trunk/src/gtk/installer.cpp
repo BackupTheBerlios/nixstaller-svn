@@ -431,18 +431,7 @@ void CInstaller::WarnBox(const char *str, ...)
 
 int CInstaller::TextWidth(const char *str)
 {
-    // Uses a dummy label widget to retrieve the requested width from str
-    static GtkWidget *lab = NULL;
-    
-    if (!lab)
-        lab = gtk_label_new(str);
-    else
-        gtk_label_set(GTK_LABEL(lab), str);
-    
-    GtkRequisition req;
-    gtk_widget_size_request(lab, &req);
-    
-    return req.width;
+    return ::TextWidth(str);
 }
 
 void CInstaller::Init(int argc, char **argv)

@@ -10,7 +10,7 @@ OVERALL
 - check if pkg.enable is set in verifydeps()
 - lowercase dep class functions
 - Do bin scripts handle custom dep lib dirs? Remove this functionality? (if not update docs)
-- appicon support for genprojdir.sh
+- appicon support for genprojdir.sh (update docs)
 - More logic config.lua for translations --> Sync with docs.
 
 
@@ -36,38 +36,19 @@ MAIN
 
 
 DOCS
-- utils.tablefind, utils.tablemerge, utils.mapsize and the rest from CHANGELOG
-- install.getpkgdir() (now with arg, CHANGELOG)
-- utils.removerec()
-- utils.mkdirperm()? (If yes, CHANGELOG)
-- Nested block strings ([=[]=])
 - install.update()? (If yes update CHANGELOG)
-- addcheckbox + addradiobutton + addmenu functions now have additional arg for default enabled option(s)
-- add/del options for menu, radiobutton, checkbox
-- menu, radiobutton, checkbox can now be empty
-- del() function for luacfgmenu
 - GTK/Pango templates (update reference in deptemplates!)
 - Apple stuff
-- utils.emptystring()? (CHANGELOG)
 - verifydeps uses setstatus
 - os.geteuid()? (CHANGELOG)
 - os.hasutf8()? (CHANGELOG)
-- utils.tableappend()
 - Unattended installations
     - Reset cfg.unopts[].value? if not document for defaults
     - --destdir option: mention that defaults have to be checked
 - deps: main libs are not checked
-- appicon (XPM only)
-- Deprecate lualabel:set()
-- Changed PATH handling for install.execute/install.executeasroot
-- Finish() function (examples for executing commands, no gui functions here)
 - Language:
-    - cfg.autolang
-    - tr()
-    - lang/config.lua
     - save files as utf8
     - only utf8 translations can be used on systems using utf8 locales.
-- gui.textwidth() and label:setlabelwidth()
 - Updating chapter?
 - bzflag tutorial:
     - 'bzflag-2.0.10/...' --> make this generic
@@ -81,20 +62,20 @@ DOCS
 - scripts:
     - new run stuff
         - pkg.verifydeps()?
-        - install.getpkgdir() (now with arg, CHANGELOG)
-        - install.extract()
-        - install.executecmd() and install.executecmdasroot()
-        - tr()
 - Dep handling:
     - Restructure explenation?
-        - probs: explenation of pkg.deps, pkg.libs, pkg.autosymmap
+        - probs: explenation of pkg.deps, pkg.libs, pkg.autosymmap, section deps in lua scripts
         - Explain dep packages
         - 
+- More links instead of "in the next/previous chapter/section"?
+- Mention 'self' usage in lua classes reference.
+- widget:setlabel used in tutorials/examples?
 
 
 TRANSLATIONS
 - pkg.name's
 - depscreen translations
+- "Tried to delete non existing menu entry" ?
 
 
 RELEASE
@@ -135,6 +116,7 @@ OVERALL
 - Move curdir lua variable to install package?
 - Installer profiles
 - Configurable background parts (background images)
+- Seperate dep installing and collecting? --> Allows to configure them during installation
 
 
 PACKAGING

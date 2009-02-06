@@ -43,10 +43,11 @@ public:
     
     void SetValue(const char *v) { CoreSetValue(v); }
     const char *GetValue(void) { return CoreGetValue(); }
-    void SetLabelWidth(int w) { m_iLabelWidth = w; CoreUpdateLabelWidth(); }
+    void SetLabelWidth(int w) { m_iLabelWidth = w; }
 
     const std::string &GetLabel(void) { return m_Label; }
     int GetLabelWidth(void) const { return m_iLabelWidth; };
+    std::string GetDefaultLabelWChars(void) const { return std::string(15, 'A'); }
 
     static void LuaRegister(void);
     

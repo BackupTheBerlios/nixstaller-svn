@@ -94,7 +94,7 @@ usage()
     echo " --intropic, -i <picture>         Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
     echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch"
     echo " --logo <file>                    Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
-    echo "--mode, -m                        Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
+    echo "--mode, -m <mode>                 Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
     echo "--no-autolang                     Disables automaticly choosing a language."
     echo " --os, -o <OSs>                   Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
     echo " --overwrite                      Overwrite any existing files. Default is to ask."

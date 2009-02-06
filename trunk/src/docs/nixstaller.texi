@@ -325,7 +325,7 @@ As of version 0.5, Nixstaller also supports @emph{unattended installations}. The
 
 
 @section Lua scripts
-The installation itself is controlled by a few Lua scripts. These are explained in the @ref{Lua Scripts} chapter.
+The installation itself is controlled by a few Lua scripts. @uref{http://www.lua.org,Lua} is a easy to learn, easy to use and flexible programming language. The specifics about the used Lua scripts are explained in the @ref{Lua Scripts} chapter.
 
 
 @anchor{Translations}
@@ -410,6 +410,7 @@ Nixstaller's dependency handling makes it possible to combine the best of both w
 
 As software may have several, sometimes dozens, of dependencies the install package size may grow a lot. For this you can tell that the installer should download some or all dependencies separately. The obvious drawback is that the user needs an Internet connection in case the installer finds the need to install dependencies.
 
+@anchor{simplefulldeps}
 Some dependencies however cannot be supplied. An example would be the C library (libc). Doing so would in most cases simply result in crashes. Another reason why a dependency cannot be supplied is because it's simply too big to do so, take for example the KDE libraries. For this, Nixstaller allows the use of @emph{simple dependencies}. These dependencies, unlike the previously discussed @emph{full dependencies} don't supply anything by their self, but are purely used to verify what's on the user's system. When any problems are found, the user will be presented with a list of details and told to fix them (for example by using a package manager).
 
 A combination of a full and simple dependency also exist: these will supply all or a part of any required files, but will only install when the dependency is actually available. This is useful for dependencies that cannot ship all files (think of configuration files which need to be set up) but are still able to provide any libraries in case they are incompatible. These dependencies are referred as @emph{non standalone full dependencies}.
@@ -422,7 +423,8 @@ After the files are placed inside the temporary package directory, dependencies 
 
 When the actual installation begins, the files (from the temporary package directory) are not placed directly in the destination directory, but instead are placed in a subdirectory inside the destination directory. This subdirectory is referred as the @emph{data directory}. A common example of a data directory would be @file{/usr/local/share/<appname>}, in this case @file{/usr/local/share} is the destination directory. Some additional scripts will be installed to another directory, the @emph{binary directory}, that will launch an executable from the data directory. The scripts have the same name as the binary that they will run and can set up an environment (usually by setting one or more shell variables) so that the real executable is able run. Besides the @emph{binary scripts}, the binary directory is also used to store any uninstallation scripts (in case the software isn't registered by a package manager). Usually the binary directory is a directory who is defined inside the user's @var{PATH} variable (eg. /usr/local/bin).
 
-Because dependencies are installed to a isolated place, most software needs to be aware of this in order to find them. One way to tell where  dynamic libraries can be found, is by setting the @var{LD_LIBRARY_PATH} environment variable. This will be automatically done inside each of the binary scripts. As this software itself is not placed in a regular directory too, it's possible that measures have to be taken for that aswell. KDE programs for example need to have the variable @var{KDEDIRS} set (this can be done automatically aswell). Setting other environment variables is possible and will be discussed in the next chapter.
+Because dependencies are installed to a isolated place, most software needs to be aware of this in order to find them. One way to tell where dynamic libraries can be found, is by setting the @var{LD_LIBRARY_PATH} environment variable. This will be automatically done inside each of the binary scripts. As this software itself is not placed in a regular directory too, it's possible that measures have to be taken for that aswell. KDE programs for example need to have the variable @var{KDEDIRS} set (this can be done automatically aswell). Setting other environment variables is possible and will be discussed in the next chapter.
+
 
 To summarize:
 @itemize @bullet
@@ -556,6 +558,7 @@ This variable should contain a @ref{Strings,,string} describing the location of 
 @item pkg.bins
 This variable holds an array (@pxref{Tables}) with @ref{Strings,, strings} pointing to any executables, relative to the @emph{data directory}. These are used for the generation of @emph{binary scripts}.
 @vindex pkg.deps
+@anchor{pkg.deps}
 @item pkg.deps
 A @code{table} containing @code{strings} of all dependency names. Note that only @emph{direct} dependencies have to be specified here (ie. dependencies for the main software, not from other dependencies).
 @vindex pkg.description
@@ -568,6 +571,7 @@ A @ref{Strings,,string} containing the destination directory for the data direct
 @item pkg.enable
 Boolean variable which tells whether Package Mode is enabled or not, default it's @code{false} (disabled).
 @vindex pkg.externdeps
+@anchor{pkg.externdeps}
 @item pkg.externdeps
 Table containing the names of all (including @emph{indirect}) dependencies that are external and need to be downloaded during installation. Note that each dependency given here, has to have their @code{baseurl} set for this to work (discussed later in this chapter).
 @vindex pkg.group
@@ -657,7 +661,7 @@ This variable should contain a @ref{Strings,,string} describing a valid @emph{pa
 
 @vindex pkg.libs
 @item pkg.libs
-As @code{pkg.bins}, but for all main (dynamic) libraries (ie. libraries not coming from dependency packages). This field is used for dependency checking.
+As @code{pkg.bins}, but for all main (dynamic) libraries (ie. libraries not coming from dependencies, but from the software itself). This field is used for dependency checking.
 @vindex pkg.license
 @item pkg.license
 This (optional) variable should contain a @ref{Strings,,string} describing the used software license.
@@ -694,7 +698,7 @@ To define any commandline arguments for binary scripts, the @code{pkg.addbinopts
 To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.
 
 @findex pkg.addpkgunopts
-Finally the @code{pkg.addpkgunopts} is used to add a few common commandline arguments for unattended installations. These include parameters for: allow to overwrite a package, setting the binary and data directory, amount of download retries and some others. This function accepts one argument, if it's @code{true} the function will add a few arguments specific for dependency checking. @strong{Note:} Always call this function @emph{after} @code{pkg.register} is set.
+Finally the @code{pkg.addpkgunopts()} function is used to add a few common commandline arguments for unattended installations. These include parameters for: allow to overwrite a package, setting the binary and data directory, amount of download retries and some others. This function accepts one argument, if it's @code{true} the function will add a few arguments specific for dependency checking. @strong{Note:} Always call this function @emph{after} @code{pkg.register} is set.
 
 An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
 @codeblock{pkg.enable = true @minus{}@minus{} Important
@@ -969,7 +973,7 @@ Finally we define which screens should be shown and in which order. In our case 
 @end itemize
 
 @subsection Handling commandline arguments
-As said, unattended installations use a seperate function (@code{UnattendedInit()}) for initialization. A common thing to do in this function is to handle any given commandline arguments. As described at the start of this chapter, commandline arguments are configured through the @code{cfg.unopts} variable. This same variable is also used to use them during installation. Any given commandline arguments will have their @code{value} record variable set, depending on their @code{opttype}. When the @code{opttype} is set to @code{"string"} then @code{value} will also be a @code{string}. When @code{opttype} is set to @code{"list"} then @code{value} will be a table (array). Incase @code{opttype} was not set (or is set to @code{nil}), @code{value} will be @code{true} incase the commandline argument was given.
+As said, unattended installations use a seperate function (@code{UnattendedInit()}) for initialization. A common thing to do in this function is to handle any given commandline arguments. As described at the start of this chapter, commandline arguments are configured through the @code{cfg.unopts} variable. This same variable is also used to use them during installation. Any given commandline arguments will have their @code{value} record variable set, depending on their @code{opttype}. When the @code{opttype} is set to @code{"string"} then @code{value} will also be a @code{string}. When @code{opttype} is set to @code{"list"} then @code{value} will be a table (array). In case @code{opttype} was not set (or is set to @code{nil}), @code{value} will be @code{true} incase the commandline argument was given.
 
 Here is an example @code{UnattendedInit()} function:
 @codeblock{function UnattendedInit()
@@ -977,8 +981,7 @@ Here is an example @code{UnattendedInit()} function:
     if cfg.unopts["myswitch"].value then
         enableswitch = true
     end
-end
-}
+end}
 
 @subsection The installation process
 By defining an @code{Install()} function we can control the installation process. If this function is not defined a default is generated and looks like this:
@@ -1035,8 +1038,8 @@ As been said, this function will be called as soon as the installation ends. The
         @minus{}@minus{} The ampersand (@samp{&}) is important, this keeps the software running when the installer exits
         os.execute("/usr/bin/guiapp &")
     end
-end
-}
+end}
+@strong{Note}: You cannot use any GUI functions (ie. functions from the @code{gui} package) inside this function.
 
 
 @subsection Unattended installations
@@ -1144,6 +1147,62 @@ The @code{pkg.needroot()} function can be used to check if the @code{install.gen
 Any files that were put in the @file{extra_files/} directory can be accessed during or before the installation through the @ref{install.extrafilespath} function. This function returns a path to where you can find these files. The function accepts one optional argument containing a @ref{Strings, string} describing a filename. This filename is purely for convenience and is simply appended to the returned value. Example: assuming we put a file called @file{readme.txt} in the @file{extra_files/} directory, we can access it as follows:
 @codeblock{readmefilepath = install.extrafilespath("readme.txt")}
 
+
+@section Dependencies
+Dependencies are configured through one Lua script. This script is called @file{config.lua}, not to be confused with the Lua script for the main installer configuration.
+
+The structure of this script looks like this:
+@codeblock{local dep = pkg.newdependency()
+@minus{}@minus{} Set several dependency variables, such as a description, what libraries it provides etc.
+return dep}
+
+@findex pkg.newdependency
+As you can see at first the @code{pkg.newdependency()} function is called. This function will create a new @code{table}, which is used to fill in the dependency information. This @code{table} is actually a @ref{Classes,,class} and will now be referred as the @emph{dependency class}. The @code{class} is assigned to a @code{local} variable simply to keep this information to the script file itself.
+
+After the @code{class} is created, any @code{member variables} need to be filled in that are used to configure the dependency. These variables are (@code{dep} refers to the dependency class variable):
+
+@defvr Variable dep:baseurl
+In case this dependency is set as external, that is it's included in the @ref{pkg.externdeps} @code{table}, this field is used to specify the @emph{base URL} from where the installer must download all the relevant dependency files. These files are discussed in the next chapter. The URL should point to a directory (on the server) where these files can be found.
+@end defvr
+@defvr Variable deps
+This is essentially the same as @ref{pkg.deps}, but used for dependencies of the dependency itself.
+@end defvr
+@defvr Variable description
+Should contain a @code{string} with a short (max 1 line) description for this dependency.
+@end defvr
+@defvr Variable full
+A @code{boolean} variable, that must be set to @code{true} in case this dependency is full (simple and full dependencies were discussed @ref{simplefulldeps,,here}). The default is @code{true}.
+@end defvr
+@defvr Variable libs
+A @code{table} (array) containing all the @emph{file names} (so no (relative) paths) from the libraries this dependency provides.
+@end defvr
+@defvr Variable standalone
+Should be set to @code{true} if this is a standalone dependency (only applies to full dependencies). Default is @code{true}.
+@end defvr
+
+Besides these variables, a few functions can be defined to control the behaviour of this dependency. These functions must be defined inside the dependency class. These functions are listed below (again, the @code{dep} variable refers to the dependency class):
+@luafunc dep:caninstall ()
+This function is called right before @code{dep:install()} (see below) is called. Return @code{false} in case the dependency cannot be installed for some reason, otherwise return @code{true}. When this function is not defined, one will be automatically created which will always return @code{true}.
+@endluafunc
+@luafunc dep:handlecompat (lib)
+This function is called when a dependency if found to be incompatible (ie. one of the libraries are binary incompatible). The @code{lib} argument contains the file name of the incompatible library. You can use this function to handle these incompatibilities (eg. by compiling the dependency). When the incompatibility is resolved @code{true} should be returned, otherwise @code{false} must be returned. When this function is not defined, one will be automatically created which will always return @code{false}.
+@endluafunc
+@luafunc dep:install ()
+This function will be called when the dependency has to be installed to the @emph{temporary package directory}. An easy way to copy all the dependency files is to call the @code{copyfiles()} function, which is a predefined @code{member function} inside the dependency table. If no @code{install()} function is defined, one will be automatically created which will look like this:
+@codeblock{function dep:install()
+    self:copyfiles() @minus{}@minus{} For @code{self}, @xref{Classes,,class}
+end}
+@endluafunc
+@luafunc dep:required ()
+This function is used to create your own way of detecting dependencies. Normally only dynamic libraries are used to find required dependencies. By returning @code{true} inside this function, the dependency will be marked as required. When this function is not defined, one will be automatically created which will always return @code{false}.@*
+Example:
+@codeblock{function dep:required()
+    @minus{}@minus{} Mark this dependency as required when @file{somebin} is absent.
+    return not os.fileexists("/usr/bin/somebin")
+end}
+@endluafunc
+
+
 @section Translations
 @emph{Any text} that is used by installation screens, widgets or functions indirectly using these (such as @ref{install.setstatus}) can be translated. This also includes option names from widgets such as radiobuttons or menus. Generally speaking: any text that is displayed, besides installation output, can be translated. As discussed before (@pxref{Translations}) the @file{strings} file is used to translate various strings. To translate text used from the @file{run.lua} file, simply add any strings to the @file{strings} file from the desired language in your project directory.
 
@@ -1151,8 +1210,7 @@ Any files that were put in the @file{extra_files/} directory can be accessed dur
 Each translation is configured through a Lua script, called @file{config.lua} (not to be confused with the script used for installer configuration). These scripts are pretty small and only contain a few variable assignments. The structure looks like this:
 @codeblock{return @{
     @minus{}@minus{} Variable assignments
-@}
-}
+@}}
 In other words, this file return a table containing all the info for a language. The variables that this table can hold are described below.
 @table @code
 @item name
@@ -1167,10 +1225,10 @@ Here is an example, showing the file that is used for the Dutch translations:
     name = "Nederlands",
     utf8 = true,
     locales = @{ "nl" @}
-@}
-}
+@}}
 Note that the @code{locales} variable is not a full locale name. This way all locales that have @samp{nl} somewhere in the name (usually at the beginning), will be matched.
 
+@anchor{Translate strings}
 @subsubsection Translate strings
 In most cases, the actual translation happens automaticly (assuming that the @file{strings} file is set up correctly). In some cases however, you need to do it manually. This is done through the @ref{tr} function. When calling this function with the English @code{string} as first argument, it will return the right translated @code{string} back. One of the reasons to use this function is with strings having @emph{modifiers} in them. These modifiers are presented as one or more @samp{%s} parts in a string. When the string is actually used, any modifiers will be replaced by something else, such as the software's name, an error message, etc. As Nixstaller cannot know which variables to use for this replacement, you will have to do so manually. This can be done by again using the @code{tr} function, however any variables that should be used to replace the modifiers must be given (in order) as following arguments to this function.
 
@@ -1258,9 +1316,7 @@ As of version 0.3, nixstaller ships a script called @file{genprojdir.sh}. This s
 @item Generate a @file{run.lua} based on defaults and optionally containing some common code for Package Mode.
 @item Generate a template @file{package.lua} file with most variables defined and explaining comments.
 @end itemize
-
 The script accepts the following commandline arguments:
-
 @starttable{.5,.5}
 @addtableheaderrow{Parameter}
     @addtableheadercol{Description}
@@ -1286,6 +1342,10 @@ The script accepts the following commandline arguments:
     @addtablecol{Sets @code{cfg.defaultlang} to <lang>. Default: english}
 @endtablerow
 
+@addtablerownowrap{@minus{}@minus{}deps}
+    @addtablecol{Add specific dependency code to generated lua scripts. Needs @minus{}@minus{}pkg option.}
+@endtablerow
+
 @addtablerownowrap{@minus{}@minus{}frontends, -f <fr1>[, <fr2>, ...]}
     @addtablecol{Sets @code{cfg.frontends} to one or more following arguments (<fr1>, <fr2> etc). Default: gtk fltk ncurses.}
 @endtablerow
@@ -1302,12 +1362,28 @@ The script accepts the following commandline arguments:
     @addtablecol{Copies the file <logo> to the @file{extra_files/} directory and sets @code{cfg.logo} accordingly. Default: a default logo (shipped with Nixstaller).}
 @endtablerow
 
+@addtablerownowrap{@minus{}@minus{}mode, -m <mode>}
+    @addtablecol{Sets the installer mode. Valid values: both, attended, unattended. Default: attended}
+@endtablerow
+
+@addtablerownowrap{@minus{}@minus{}no-autolang}
+    @addtablecol{Disables automaticly choosing a language.}
+@endtablerow
+
 @addtablerownowrap{@minus{}@minus{}os, -o <os1>[, <os2>, ...]}
     @addtablecol{Sets @code{cfg.targetos} to one or more following arguments (<os1>, <os2> etc). Default: current OS.}
 @endtablerow
 
+@addtablerownowrap{@minus{}@minus{}overwrite}
+    @addtablecol{Overwrite any existing files. Default is to ask.}
+@endtablerow
+
 @addtablerownowrap{@minus{}@minus{}pkg}
-    @addtablecol{Specifically used for Package Mode. A template @file{package.lua} file will be created and common code for Package Mode will be added to @code{run.lua}}.
+    @addtablecol{Specifically used for Package Mode. A template @file{package.lua} file will be created and common code for Package Mode will be added to @code{run.lua}.}
+@endtablerow
+
+@addtablerownowrap{@minus{}@minus{}rm-existing}
+    @addtablecol{Removes any existing files. Default is to ask.}
 @endtablerow
 
 @endtable
@@ -2311,6 +2387,8 @@ this
 is
 a string
 with newlines]]}
+If you want to @samp{nest} these text blocks, add a equal sign between the two square brackets (so the first new level becomes @code{[=[ ... ]=]}).@*
+@*
 Special characters such as newlines and (double)quotes need to be 'escaped'. This means that you need to put a backslash (@samp{\}) and another character next to it, which will be replaced by another character. Here are some most used @samp{escape sequences}:
 @table @samp
 @item \n
@@ -2732,6 +2810,7 @@ In this example, @code{t2} will @strong{not} be a copy of @code{t}. Instead @cod
 @*
 When all references to a table are gone, for example by setting @code{t} and @code{t2} to @code{nil}, the table will be removed by Lua's garbage collector.
 
+@anchor{arrays}
 @subsubsection Tables Seen As An Array
 As been said, tables can be used in many ways. Lets start with the @emph{array} like feature. You can see an array like a datablock. This block can expanded, indexed and traversed. Here are the usual examples:
 @codeblock{
@@ -3472,9 +3551,17 @@ For example, if a file called @file{README} was placed in the @file{extra_files/
 The function returns a string with the currently loaded language.
 @endluafunc
 
+@luafunc install.getpkgdir (f)
+This function returns the @emph{temporary package directory}. This is the directory that is used to place files that will be installed when using Package Mode. It's optional argument, @code{f}, should be a filename that will simply be appended to the returned path.
+@endluafunc
+
 @anchor{install.gettempdir}
 @luafunc install.gettempdir ()
 This function is used to assign a temporary directory the the @code{install.destdir} variable. Setting @code{install.destdir} to a temporary directory is useful for installers that need to do additional tasks with the installation files such as compilation.
+@endluafunc
+
+@luafunc install.update ()
+This function will update the frontend (drawing, handling input etc.). Usually this is done automatically, however in rare cases this needs to be done manually. A good example would be a loop (for loop, while loop etc) with many cycles.
 @endluafunc
 
 @subsubsection Functions used in the @code{Init} function
@@ -3503,7 +3590,7 @@ When this function is called more than once it won't do anything (the password i
 @endluafunc
 
 @anchor{install.execute}
-@luafunc install.execute (c[, r=true[, p="/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
+@luafunc install.execute (c[, r=true[, p=os.getenv("PATH")]])
 This function will execute the shell command defined by string @code{s}. The optional boolean argument, @code{r}, tells that the installation should be aborted when the command fails to execute. With the optional argument @code{p} you can specify a value which is used to change the @code{PATH} shell variable before the command is executed. For longer shell commands it might be handy to use the @code{[[} and @code{]]} operators (@pxref{Strings}).@*
 @*
 This function writes all the output from the command to a status window so the user can see whats happening. Because of this it's better to use this command instead of @code{os.execute}. Another reason is that @code{os.execute} will block all user input when it's called, so that for example the user cannot abort the installation without manually killing it.@*
@@ -3513,9 +3600,28 @@ Note that when @code{install.destdir} is unwritable for the current user and the
 The function returns the exit status code from the command that was executed.
 @endluafunc
 
+@anchor{install.executecmd}
+@luafunc install.executecmd (c, f[, r=true[, p=os.getenv("PATH")])
+This function is the base for @ref{install.execute} and in most cases you want to use that function. Except for the @code{f} argument, all the arguments are the same as those from @code{install.execute}. The @code{f} argument should hold a Lua function that is used to handle (eg. display) any output that the executed command produced. The given function will be called with one argument, that holds a @code{string} containing the command output. Note that this function may be called more than once untill the command is finished.@*
+Example:
+@codeblock{install.executecmd("ls -a", function (s) print(s) end) @minus{}@minus{} Print all output to console.}
+The function returns the exit status code from the command that was executed.
+@endluafunc
+
 @anchor{install.executeasroot}
-@luafunc install.executeasroot (c[, r=true[, p="/bin:/sbin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/X11R6/bin:."]])
+@luafunc install.executeasroot (c[, r=true[, p=os.getenv("PATH")]])
 This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so. The function returns the exit status code from the command that was executed.
+@endluafunc
+
+@luafunc install.executecmdasroot (c, f[, r=true[, p=os.getenv("PATH")]])
+This function is the base for @ref{install.executeasroot} and usually that function is used instead. The @code{f} argument is used for the same purpose as the @ref{install.executecmd} uses it. The other arguments are the same as those from the @code{install.executeasroot()} function. Like the other functions, the function returns the exit status code from the executed command.
+@endluafunc
+
+@luafunc install.extract (f)
+This function is the base for @ref{install.extractfiles} and usually that function is used instead. This function will extract all the installation files to the path specified by the @code{install.destdir} variable. The argument @code{f} must contain a Lua function that will be called to update the extraction process. The given function is called after a file was extracted and gets 2 arguments; the first contains the filename and the second the current progress (in percent).@*
+Example:
+@codeblock{@minus{}@minus{} Extracts all files and prints the filenames with progress to the console.
+install.extract(function(f, p) print(string.format("%s (%d%%)", s, p)) end}
 @endluafunc
 
 @anchor{install.extractfiles}
@@ -3578,8 +3684,17 @@ Creates a new @samp{config menu}. The string parameter @code{t} sets a title. Th
 @endluafunc
 
 @anchor{screen:addcheckbox}
-@luafunc screen:addcheckbox (t, o)
-Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
+@luafunc screen:addcheckbox (t, o[, e])
+Adds a checkbox widget to the install screen. The argument @code{t} can be used to set a title (simply use "" for no title). The second argument, @code{o}, should be an array containing strings which specify the name for each option. The last optional argument @code{e} should be an array with all the option numbers to enable. The function will return a class with the following members (chkbox is just a name that should be replaced by the variable containing the class):
+@luafunc chkbox:add (o[, p])
+Adds option @code{o} at position @code{p}. When @code{p} is not given, the option will be added to the end.
+@endluafunc
+@luafunc chkbox:clear ()
+Removes all previously added options.
+@endluafunc
+@luafunc chkbox:del (o)
+Deletes option @code{o}. @code{o} can be a string containing the option name or can be an option number.
+@endluafunc
 @luafunc chkbox:get (o)
 Returns @code{true} if the option @code{o} is enabled or @code{false} when disabled. @code{o} can be a string containing the option name or can be an option number.
 @endluafunc
@@ -3637,8 +3752,9 @@ Returns the current value hold by the input field.
 @luafunc input:set (s)
 Sets the current value to the string @code{s}.
 @endluafunc
-@luafunc input:setlabelwidth (n)
-This function sets a fixed labelwidth to @code{n} characters. This function is typically used to let multiple inputfields start at the same horizontal position, by setting their labelwidth to the same value. The default value is @samp{15}.
+@anchor{input:setlabelwidth}
+@luafunc input:setlabelwidth (w)
+This function sets the label width to @code{w} units wide. A usable value for @code{w} is frontend and font specific, therefore always use the @ref{gui.textwidth} function to get a reasonable width. This function is typically used to let multiple inputfields start at the same horizontal position, by setting their label width to the same value. The default value is to have space for about 15 @samp{A} characters.
 @endluafunc
 @endluafunc
 
@@ -3646,13 +3762,23 @@ This function sets a fixed labelwidth to @code{n} characters. This function is t
 @luafunc screen:addlabel (l)
 This widget displays a simple text label with the text specified by argument @code{l}. The function returns a class with the following method (replace label with the actual variable name):
 @luafunc label:set (l)
-Sets the label text to string @code{l}.
+Sets the label text to string @code{l}.@*
+@strong{Note}: This function is now @emph{deprecated} and should not be used in new code. Use the @ref{widget:setlabel} function instead.
 @endluafunc
 @endluafunc
 
 @anchor{screen:addmenu}
-@luafunc screen:addmenu (t, o)
-This function will add a menu (or listbox) widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. Note that depending on the frontend the given options may be sorted when presented to the user. The function returns a class with the following methods (menu should be replaced by the variable that is pointing to the class):
+@luafunc screen:addmenu (t, o[, e])
+This function will add a menu (or listbox) widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. The optional argument @code{e} should be an option number to enable beforehand. Note that depending on the frontend the given options may be sorted when presented to the user. The function returns a class with the following methods (menu should be replaced by the variable that is pointing to the class):
+@luafunc menu:add (o)
+Adds option @code{o} to the menu.
+@endluafunc
+@luafunc menu:clear ()
+Removes all previously added options.
+@endluafunc
+@luafunc menu:del (o)
+Deletes option @code{o}. @code{o} can be a string containing the option name or can be an option number.
+@endluafunc
 @luafunc menu:get ()
 Returns the name of the option that is enabled.
 @endluafunc
@@ -3670,8 +3796,17 @@ The argument @code{v} should be a number between 0 and 100. This number tells ho
 @endluafunc
 
 @anchor{screen:addradiobutton}
-@luafunc screen:addradiobutton (t, o)
-This function will add a radio button widget to the install screen. The parameter @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
+@luafunc screen:addradiobutton (t, o[, e])
+This function will add a radio button widget to the install screen. The argument @code{t} specifies a title (set to "" for none). The parameter @code{o} should be an array containing string entries with the options that can be selected. The optional argument @code{e} should be an option number to enable beforehand. This function will return a class with the following methods (radio should be replaced by the variable that is pointing to the class):
+@luafunc radio:add (o)
+Adds option @code{o} at position @code{p}. When @code{p} is not given, the option will be added to the end.
+@endluafunc
+@luafunc radio:clear ()
+Removes all previously added options.
+@endluafunc
+@luafunc radio:del (o)
+Deletes option @code{o}. @code{o} can be a string containing the option name or can be an option number.
+@endluafunc
 @luafunc radio:get ()
 Returns the name of the option that is enabled.
 @endluafunc
@@ -3681,8 +3816,8 @@ Enables the option @code{o}, which can be an array index or string with the opti
 @endluafunc
 
 @anchor{screen:addtextfield}
-@luafunc screen:addtextfield ([t="", [w=false])
-This widget is used to display multiple lines of text. When necessary, the user can scroll through the text lines. The optional argument @code{t} sets a title. Optional argument @code{w} enables or disables word wrapping. The function returns a class with the following methods (replace textfield with the actual variable name):
+@luafunc screen:addtextfield ([t=""[, w=false[, s="medium"]])
+This widget is used to display multiple lines of text. When necessary, the user can scroll through the text lines. The optional argument @code{t} sets a title. Optional argument @code{w} enables or disables word wrapping. The optional argument @code{s} specifies the size of the widget and must be "small", "medium" or "big". The function returns a class with the following methods (replace textfield with the actual variable name):
 @luafunc textfield:add (s)
 Adds the text from the string argument @code{s}.
 @endluafunc
@@ -3699,6 +3834,33 @@ If argument @code{f} is @code{true} @samp{follow mode} is enabled, when @code{f}
 
 @luafunc screen:addscreenend ()
 After this function is called any new widgets are created in a new subscreen (whether they would fit on the current subscreen or not).
+@endluafunc
+
+@subsection The generic @code{widget} class
+Each widget @emph{inherits} all member functions from the generic @code{widget} class. So each widget will always have the functions described below. Replace the @code{widget} part with the actual variable pointing the to the widget.
+@luafunc widget:enable (e)
+When @code{e} is @code{true} this widget will be enabled, when @code{e} is @code{false} it will be disabled.
+@endluafunc
+@anchor{widget:setlabel}
+@luafunc widget:setlabel (l)
+Sets the widget's label (or title) to the @code{string} @code{s}. Note that not all widgets have labels (ie. the image widget).
+@endluafunc
+@luafunc widget:setlabelattr (a[, s])
+Modifies the @emph{text attribute} of the widget's label. The @code{string} argument @code{a} tells what attribute to change:
+@table
+@item "bold"
+Makes the text bold.
+@item "italic"
+Makes the text italic.
+@item "size"
+Modifies the text size. The @code{s} argument is used to specify the size and must be one of the following:
+@itemize @bullet
+@item "small"
+@item "normal"
+@item "big"
+@end itemize
+The default text size is "normal"
+@end table
 @endluafunc
 
 
@@ -3721,6 +3883,10 @@ This function adds a parameter which the user can edit with a predefined list of
 
 @luafunc cfgmenu:addstring (p, d[, v])
 This function adds a parameter that can the user can modify through an input field. Argument @code{p} sets the parameter name, @code{d} the description and @code{v} should be a string with the initial value.
+@endluafunc
+
+@luafunc cfgmenu:del (p)
+Deletes parameter @code{p}.
 @endluafunc
 
 @luafunc cfgmenu:get (p)
@@ -3751,6 +3917,11 @@ Example:
 @codeblock {gui.msgbox("Thank you for downloading myapp 0.1! For updates please check www.myapp.org")}
 @endluafunc
 
+@anchor{gui.textwidth}
+@luafunc gui.textwidth (s)
+Returns the space needed to display @code{string} @code{s}. This function is usally used in combination with @ref{input:setlabelwidth}.
+@endluafunc
+
 @luafunc gui.warnbox (m, ...)
 The same as @code{gui.msgbox}, but used to alert the user. For example in ncurses the dialog has another color (red) and with the FLTK frontend a warning sign will be shown.
 @endluafunc
@@ -3772,12 +3943,28 @@ Several utility functions exist in the @code{utils} package, these are described
 This function will strip the directory part of a given path (string argument @code{p}) and returns the remaining filename.
 @endluafunc
 
+@luafunc utils.copyrec (s, d)
+Copies all files and directories recursively from source directory @code{d} to destination @code{d}.
+@endluafunc
+
 @luafunc utils.dirname (p)
 This function does the opposite of @code{utils.basename}: it strips out the filename at the end of the given path @code{p} and returns the remaining directory part.
 @endluafunc
 
+@luafunc utils.emptystring (s)
+Returns @code{true} when @code{string} @code{s} is @code{nil} or empty (@samp{""}).
+@endluafunc
+
 @luafunc utils.emptytable (t)
 Returns @code{true} if table @code{t} is empty.
+@endluafunc
+
+@luafunc utils.mapsize (t)
+Returns the size of @ref{luamap,, map} @code{t}.
+@endluafunc
+
+@luafunc utils.mkdirperm (d)
+Returns @code{true} if the installer has permission to create directory @code{d}.
 @endluafunc
 
 @luafunc utils.moverec (s, d)
@@ -3788,6 +3975,10 @@ This function will move all the files from source directory @code{s} to the dest
 This function can be used to open a document. Argument @code{f} should contain the filename. The function tries to find a suitable application and opens the given file with this application.
 @endluafunc
 
+@luafunc utils.patch (f, p, n)
+This function will @samp{patch} file @code{f}. It will substitute all instances @code{p} with the new @code{string} @code{n}. Note that argument @code{p} may be a @uref{http://www.lua.org/pil/20.2.html,string pattern}.
+@endluafunc
+
 @luafunc utils.recursivedir (p, f)
 This function will recursively traverse a directory, specified by the argument @code{p}, and call the given function @code{f} on every file inside this or any subdirectory. The given function @code{f} should accept two arguments: the first argument is used to pass the full path to the file, the second argument is used to pass the relative path seen from the starting directory to the file.@*
 Example:
@@ -3795,9 +3986,36 @@ Example:
 utils.recursivedir("/usr/share", function (path, relpath) print(path .. "\n") end)}
 @endluafunc
 
+@luafunc utils.removerec (d)
+Removes all files and directories recursively inside directory @code{d}.
+@endluafunc
 
-@section Other Functions
-The last few functions are not in any package but are global functions.
+@luafunc utils.tableappend (t1, t2)
+Appends all the values from table @code{t2} to table @code{t1}. Note that this function only works on @ref{arrays}.
+@endluafunc
+
+@luafunc utils.tablefind (t, v)
+This function finds value @code{v} inside array @code{t} and returns the numeric index from where the value was found.@*
+Example:
+@codeblock{t = @{ "first", "second", "third" @}
+print(utils.tablefind(t, "second")) @minus{}@minus{} Prints @samp{2}}
+@endluafunc
+
+@luafunc utils.tablemerge (t1, t2)
+Merges all values from table @code{t2} in to table @code{t1}.@*
+Example:
+@codeblock{t1 = @{ @}
+t1[1] = "first"
+t1[3] = "third"
+t2 = @{ @}
+t2[2] = "second"
+utils.tablemerge(t1, t2)
+@minus{}@minus{} t1 now looks like this: @{ "first", "second", "third" @}}
+@endluafunc
+
+
+@section Other Functions and Variables
+The last few functions and variables are not in any package but are global.
 
 @defvr Variable version
 This variable contains a string used to identify the current Nixstaller version. The current value is "0.4".
@@ -3871,6 +4089,10 @@ Example:
 print(unpack(t))    @minus{}@minus{} Prints "Hello World"}
 @endluafunc
 
+@anchor{tr}
+@luafunc tr(s[, ...])
+This function will return the translated text from @code{string} @code{s}. If @code{s} contains one or more @emph{modifiers}, they will be replaced (in order) by any of the following arguments after @code{s}. For more information see @ref{Translate strings}.
+@endluafunc
 
 
 

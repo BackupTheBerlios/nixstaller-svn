@@ -35,6 +35,7 @@ CLuaInputField::CLuaInputField(const char *label, const char *desc, const char *
     {
         GtkWidget *labelbox = gtk_vbox_new(FALSE, 0);
         m_pLabel = gtk_label_new(NULL); // Text will be set in SetLabel()
+        SetLabelWidth(TextWidth(GetDefaultLabelWChars().c_str()));
         SetLabel();
         gtk_misc_set_alignment(GTK_MISC(m_pLabel), 0.0f, 0.0f);
         gtk_box_pack_start(GTK_BOX(labelbox), m_pLabel, TRUE, FALSE, 0);
