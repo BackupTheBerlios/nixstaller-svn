@@ -32,20 +32,14 @@ MAIN
 - Make startinstall code more flexible
     - Check if all lua functions from install package need to be inside Install() (update docs)
     - Re-enable SU passwd cleaning at end of install?
-    - Make new lua functions 'public'?
 
 
 DOCS
-- install.update()? (If yes update CHANGELOG)
 - GTK/Pango templates (update reference in deptemplates!)
 - Apple stuff
-- verifydeps uses setstatus
-- os.geteuid()? (CHANGELOG)
-- os.hasutf8()? (CHANGELOG)
 - Unattended installations
     - Reset cfg.unopts[].value? if not document for defaults
     - --destdir option: mention that defaults have to be checked
-- deps: main libs are not checked
 - Language:
     - save files as utf8
     - only utf8 translations can be used on systems using utf8 locales.
@@ -58,18 +52,11 @@ DOCS
     - deputil.sh: scan, auto (with and without pretend)
 - CHANGELOG
 - Features
-- Setting the destination path section should mention package mode
-- scripts:
-    - new run stuff
-        - pkg.verifydeps()?
 - Dep handling:
     - Restructure explenation?
         - probs: explenation of pkg.deps, pkg.libs, pkg.autosymmap, section deps in lua scripts
-        - Explain dep packages
-        - 
 - More links instead of "in the next/previous chapter/section"?
-- Mention 'self' usage in lua classes reference.
-- widget:setlabel used in tutorials/examples?
+- Compiling for bin compat?
 
 
 TRANSLATIONS

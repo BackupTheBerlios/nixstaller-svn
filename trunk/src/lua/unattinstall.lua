@@ -72,6 +72,11 @@ function install.executeasroot(cmd, req, path)
     return install.execute(cmd, req, path)
 end
 
+function install.executecmdasroot(cmd, out, req, path)
+    install.askrootpw()
+    return install.executecmd(cmd, out, req, path)
+end
+        
 function install.askrootpw()
     if os.geteuid() ~= 0 then
         abort([[

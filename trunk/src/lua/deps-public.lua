@@ -69,7 +69,7 @@ function pkg.verifydeps(bins, libs)
     end
     
     if not utils.emptytable(depprocess.wrongdeps) or not utils.emptytable(depprocess.wronglibs) then
-        return false, depprocess.wrongdeps, depprocess.wronglibs
+        return nil, mapkeytotab(depprocess.wrongdeps), mapkeytotab(depprocess.wronglibs)
     end
     
     return true

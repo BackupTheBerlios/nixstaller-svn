@@ -38,11 +38,11 @@ function Usage()
 
  list       Lists all known dependency templates with info.
  scan       Scans a project directory for unspecified dependencies and suggests possible usable templates.
- gen        Generates a new dependency file structure.
- gent       Generates a new dependency file structure from a template.
- auto       Automaticly generates dependencies from templates.
- edit       Edits an existing dependency.
- deps       List all dependencies from a project.
+ gen        Generates a new dependency package file structure.
+ gent       Generates a new dependency package file structure from a template.
+ auto       Automaticly generates dependency packages from templates.
+ edit       Edits an existing dependency package.
+ deps       List all dependency packages from a project.
 
 
 <options>       Depending on the specified action, the following options exist:

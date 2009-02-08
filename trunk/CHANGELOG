@@ -60,6 +60,7 @@
 - genprojdir.sh now generates os, arch and os/arch specific file dirs
 - install.getpkgdir() now accepts optional file argument for convenience.
 - install.update() function
+- install.setaskquit() function
 
 
 0.3 --> 0.4

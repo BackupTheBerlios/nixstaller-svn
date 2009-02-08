@@ -319,9 +319,15 @@ std::string GetTranslation(const std::string &s)
     if (p != Translations.end())
         return (*p).second;
     
-    // No translation found
+#ifndef RELEASE
     if (!Translations.empty())
-        debugline("WARNING: No translation for %s\n", s.c_str());
+    {
+        std::string esc = s;
+        EscapeControls(esc);
+        debugline("WARNING: No translation for %s\n", esc.c_str());
+    }
+#endif
+    
     return s;
 }
 
@@ -332,8 +338,16 @@ const char *GetTranslation(const char *s)
         return (*p).second;
     
     // No translation found
+    
+#ifndef RELEASE
     if (!Translations.empty())
-        debugline("WARNING: No translation for %s\n", s);
+    {
+        std::string esc = s;
+        EscapeControls(esc);
+        debugline("WARNING: No translation for %s\n", esc.c_str());
+    }
+#endif
+    
     return s;
 }
 

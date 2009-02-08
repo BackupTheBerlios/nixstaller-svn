@@ -549,6 +549,7 @@ This file is only relevant when using @ref{pkgmode,,Package Mode}. Like @file{co
 
 @table @code
 @vindex pkg.autosymmap
+@anchor{pkg.autosymmap}
 @item pkg.autosymmap
 Symbol map files are not discussed yet, they are described @ref{symmap, here}. If set to @code{true} (the default), @code{geninstall.sh} will automaticly create a symbol map file if it's non existant. For this to work it's important that the @code{pkg.bins}, @code{pkg.libs} and @code{pkg.deps} fields are set up correctly. Note that this file is not saved to the project directory but directly inside the installer package itself.
 @vindex pkg.bindir
@@ -698,9 +699,10 @@ To define any commandline arguments for binary scripts, the @code{pkg.addbinopts
 To define shell variables in binary scripts, the @code{pkg.addbinenv} function should be used. This function accepts three (string) arguments. The first is the name of the variable and the second the value for this variable. The third argument is optional, if specified it should contain one of the binaries specified in @code{pkg.bins}. When the third argument is specified, the given variable is only set for this binary script, otherwise the variable is set for every binary script.
 
 @findex pkg.addpkgunopts
-Finally the @code{pkg.addpkgunopts()} function is used to add a few common commandline arguments for unattended installations. These include parameters for: allow to overwrite a package, setting the binary and data directory, amount of download retries and some others. This function accepts one argument, if it's @code{true} the function will add a few arguments specific for dependency checking. @strong{Note:} Always call this function @emph{after} @code{pkg.register} is set.
+Finally the @code{pkg.addpkgunopts()} function is used to add a few common commandline arguments for unattended installations using Package Mode. The parameters that will be added will give the following functionality: allow to overwrite a package, setting the binary and data directories, selecting which packager to use (in case more than 1 was detected) and enable or disable package registration (depending on @code{pkg.register}). This function accepts one argument, if it's @code{true} the function will add additional arguments specific for dependency checking. These are: amount of download retries and whether failed dependencies should be ignored.@*
+@strong{Note:} Always call this function @emph{after} @code{pkg.register} is set.
 
-An example of usage from the previously discussed variables and the @code{pkg.addbinenv} function is shown below.
+An example of usage from the previously discussed variables and functions is shown below.
 @codeblock{pkg.enable = true @minus{}@minus{} Important
 pkg.autosymmap = true
 pkg.name = "test"
@@ -767,7 +769,7 @@ end
 The above items are discussed below.
 
 @subsection Setting the install destination path
-The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are three choices: use a static directory (eg. /usr), let the user specify it through the @code{SelectDirScreen} (see below) or point it to a temporary directory. The latter is accomplished by assigning the variable to the returned path from @ref{install.gettempdir}. The main purpose for a temporary directory is that the installation files need to be used for further installation (@emph{ie} compiling).
+The @code{install.destdir} variable is used to specify a destination path for the installation files. Generally there are four choices: use a static directory (eg. /usr), let the user specify it through the @code{SelectDirScreen} (see below), point it to a temporary directory or set it to the @emph{temporary package directory} (used by Package Mode, @pxref{temppkgdir,here}). Setting the destination path to a temporary directory is accomplished by assigning the @code{install.destdir} variable to the returned path from @ref{install.gettempdir}. The main reason to use a temporary directory is that the installation files need to be used or modified before the actual installation (eg. compiling).
 
 
 @anchor{deskentrieslua}
@@ -1043,7 +1045,7 @@ end}
 
 
 @subsection Unattended installations
-As some functionality requires user interaction, these are not available when the installer runs unattended. This may important when @code{cfg.mode} is set to @code{"both"}, where both installation types are possible. The @code{install.unattended} variable is set to @code{true} when the installer runs unattended. By checking this variable, you will have to make sure that no missing functionality is used during unattended installs. Functionality that @emph{cannot} be used during unattended installations:
+As some functionality requires user interaction, these are not available when the installer runs unattended. This may important when @code{cfg.mode} is set to @code{"both"}, where both installation types are possible. The @ref{install.unattended} variable is set to @code{true} when the installer runs unattended. By checking this variable, you will have to make sure that no missing functionality is used during unattended installs. Functionality that @emph{cannot} be used during unattended installations:
 @itemize @bullet
 @item Installation screens
 @item Functions from the @code{gui} package.
@@ -1055,6 +1057,7 @@ Also note that when @code{install.askrootpw()} or @code{install.executeasroot()}
 @subsection Package Mode
 When using Package Mode, besides creating a @file{package.lua} file we have to set up a few things in @file{run.lua} aswell.
 
+@anchor{temppkgdir}
 @subsubsection Temporary Package Directory
 As described in the previous chapter (described @ref{pkgmode,,here}) the files to be installed need to be placed in the @emph{temporary package directory}. To retrieve the location of this directory the @code{install.getpkgdir} Lua function is used.@*
 @*
@@ -1062,9 +1065,14 @@ For some installations it might be enough to set @code{install.destdir} to this 
 @*
 For other installations, it might be necessary to first extract any files to a different place (setting @code{install.destdir} with @code{install.gettempdir()}) and place the files to be installed in the temporary package directory later. A good example is when software has to be compiled.
 
-@subsubsection Generating the package
-After @code{install.extractfiles} is called in the @code{Install()} function inside @file{run.lua}, @code{install.generatepkg()} should be called. This function will do the actual packaging and installing of the software.@*
-Note: This function should always be called @emph{after} @code{install.gendesktopentries()}.
+@subsubsection Verifying dependencies and generating the package
+Inside the @code{Install()} function from @file{run.lua} there has to be called a function to verify dependencies and a function to do the actual package installation. These functions are @code{pkg.verifydeps()} and @code{install.generatepkg()}. Both functions should be called as soon as the temporary package directory is set up (in most cases after @code{install.extractfiles()}). Additionally, the @code{install.generatepkg()} function must also be called after any calls to @code{install.gendesktopentries()}.
+
+@findex pkg.verifydeps
+The first function, @code{pkg.verifydeps()}, is used to verify all the dependencies. This function accepts two optional arguments. The first should be a @code{table} (array) with (relative) paths to the binaries that should be checked. If not specified or @code{nil}, @code{pkg.bins} will be used. The second argument, also a @code{table}, is used for all the @samp{main libraries} (libraries not coming from dependencies). When the second argument is not given or @code{nil}, @code{pkg.libs} will be used. When this function encounters any problems, the user will be asked to solve them. Additionally the user can also choose to ignore them and continue the installation. In this case the function will return three variables. The first will be @code{nil} and is used to tell that the user ignored the problems. The second variable is table containing all the failed dependencies. The third will be a table containing all the libraries that failed and are not provided by any known dependencies (usually this table should be empty, as this points to dependencies that were not correctly set up). If @code{pkg.verifydeps()} returns normally however, it will return @code{true} instead. In most cases it's enough to just call this function without any arguments and simply ignore and return values. Note that the @code{pkg.verifydeps()} function calls @ref{install.setstatus} to update the installation progress and that any incompatibilities coming from the main libraries are not reported.
+
+The @ref{install.generatepkg} function will do all the necessary steps to package and install the software.
+
 
 @subsubsection Specific Installation Screens
 A few predefined installation screens exist specifically for Package Mode. These are listed below.
@@ -1140,7 +1148,11 @@ An easy way to set up permissions automatically during installation is to use th
 Note that when using tools such as @samp{automake} permissions may also be automatically set up when they are told to install files (eg. @command{make install}).
 
 @subsubsection Miscellaneous
+@findex pkg.needroot
 The @code{pkg.needroot()} function can be used to check if the @code{install.generatepkg} function needs root permissions. This is especially useful in combination with @ref{install.askrootpw} because the user can then be asked to enter the root password before the installation begins.
+
+@findex pkg.getdepdir
+With the @code{pkg.getdepdir()} function the directory can be obtained where the installation files of a dependency can be found. The function accepts two arguments. The first should be the name of the dependency. The second is optional and can be a filename which will be appended to the returned path. If the dependency is not found @code{nil} will be returned.
 
 
 @subsection Using @samp{runtime files}
@@ -1148,6 +1160,7 @@ Any files that were put in the @file{extra_files/} directory can be accessed dur
 @codeblock{readmefilepath = install.extrafilespath("readme.txt")}
 
 
+@anchor{depconfig}
 @section Dependencies
 Dependencies are configured through one Lua script. This script is called @file{config.lua}, not to be confused with the Lua script for the main installer configuration.
 
@@ -1240,7 +1253,7 @@ Here is an example used by the internal Lua source code:
 @chapter Creating Installers
 
 @section Introduction
-In this chapter the creation of an installer is discussed. The previous chapters discussed Nixstaller and Lua basics. In this chapter we will use these in practise.
+In this chapter the creation of an installer is discussed. The previous chapters discussed Nixstaller and Lua basics. In this chapter we use that information in practise.
 
 
 @section Projects
@@ -1264,11 +1277,13 @@ A project for an installer is nothing more than a directory with a certain file 
         @item @file{files_all_<arch>/}
         @item @file{files_<os>_<arch>/}
         @item @file{files_extra/}
-
+        
         @item @file{welcome}
         @item @file{license}
         @item @file{finish}
         
+        @item @file{deps/}
+
         @item @file{config.lua}
         @item @file{run.lua}
     @end itemize
@@ -1388,6 +1403,216 @@ The script accepts the following commandline arguments:
 
 @endtable
 
+
+@section Dependencies
+After the project directory is created you can start adding dependencies if using Package Mode (it's handy to use the @minus{}@minus{}pkg and @minus{}@minus{}deps option when invoking genprojdir.sh). For each dependency, a @emph{dependency package} is used to store all the relevant files. These packages can be seen as @samp{mini project directories}. Dependency packages are stored inside the project's @file{deps/} directory. The file layout looks like this:
+@itemize @bullet
+    @item @file{Project Directory/}
+    @itemize @bullet
+        @item @file{deps/}
+        @itemize @bullet
+            @item @file{<dependency>}
+            @itemize @bullet
+                @item @file{files_all/}
+                @item @file{files_<os>_all/}
+                @item @file{files_all_<arch>/}
+                @item @file{files_<os>_<arch>/}
+                @item @file{files_extra/}
+                
+                @item @file{config.lua}
+            @end itemize
+        @end itemize
+    @end itemize
+@end itemize
+Each dependency is stored inside it's own subdirectory (@samp{<dependency>} in the layout above). The name of this directory is also used as the dependency name. The @file{files_} directories are used in the same way as the regular project versions and are only relevant to full dependencies. All the dynamic libraries that a dependency provides @emph{must} be inside a @file{lib/} subdirectory inside the @file{files_} directories. The @file{config.lua} file was discussed earlier (@pxref{depconfig, here}).
+
+
+@subsection External dependencies
+When the installer is created (discussed in the next section) the file archives from external dependencies (those that will need to be downloaded seperately) will be stored inside the project's @file{deps/} directories. Their name will start with the dependency name followed by the archive name, seperated by an underscore. So if dependency @samp{dep1} would be external, the file archive for the files in the @file{files_all} directory would be named @file{dep1_files_all}. All the archives should be placed inside the server's directory which is defined by the @code{baseurl} variable inside the dependency's @file{config.lua} file.
+
+
+@anchor{symmap}
+@subsection Symbol maps
+To let the installer be able to check for binary incompatibilities it needs to have a @emph{symbol map}. This is a Lua file that is used to let the installer know where all binary symbols can be found for each executable/library that will be verified. Symbols are basically all the functions and variables inside an executable or library. This file is important because it lets the installer know where any missing symbols are usually defined, therefore it can can tell the user which libraries are incompatible.
+
+@subsubsection Creating symbol map files
+The symbol map file is called @file{symmap.lua} and should be placed inside the project's main directory. It can be created with the @command{gensyms.sh} script. This script accepts two optional parameters and needs a list of all @emph{main} binaries and libraries after any given parameters.
+
+The first parameter is called @samp{@minus{}@minus{}libpath} (shortened: @samp{@minus{}l}) and is used to add a directory to the search path which is used to find any dynamic libraries. You can add multiple directories by using this parameter multiple times for each directory. Note that the search path by default includes directories which are usually used to find libraries, for example @file{/usr/lib}.
+
+The second parameter is called @samp{@minus{}@minus{}dest} (shortened: @samp{@minus{}d}) and is used to specify a destination directory. When this parameter is not given the current directory will be used.@*
+@*
+Below is an example of how to create a symbol map. The project has two binaries, called @file{bin1} and @file{bin2}. Some of the dynamic libraries that these binaries use are found inside the non default directory @file{$HOME/lib}.@*
+@codeblock{gensyms -l $HOME/lib bin1 bin2}
+Assuming that the binaries are inside the current directory, this command creates a symbol map file and is saved to the current directory.
+
+@subsubsection Automatically creating a symbol map file
+It's also possible to automatically create a symbol map file. This is achieved by setting @code{pkg.autosymmap} to @code{true} inside the project's @file{package.lua} file (@pxref{pkg.autosymmap, here}). The binaries and libraries that should be used to examine are read from the @code{pkg.bins} and @code{pkg.libs} variables. The search path is automatically extended with all the @file{lib/} subdirectories from the @file{files_} directory of the current OS and CPU architecture from each dependency package. Note that the resulting file will not be stored inside the project's directory and will not be generated if a @file{symmap.lua} file is present inside the project's directory. For that reason, always be sure to remove any old files when enabling @code{pkg.autosymmap}.
+
+@subsection Automatically creating dependency packages
+As it's common for software to have many dependencies, it would be cumbersome to create all the dependency packages by hand. For this reason Nixstaller ships with a script called @command{deputil.sh}. This script supports many features to automate the creation of dependency packages.
+
+@subsubsection Dependency templates
+The script supports a large (over 100) collection of @emph{dependency templates}. These templates contain information about dependencies, such as a description, which files need to be copied for full dependencies, which dynamic libraries the dependency contains etc. With templates the creation of a dependency package can be fully automated. Most dependency templates also have one or more @emph{tags}. These tags are used to group dependency templates. Currently, the following tags exist:
+@table @command
+@item small
+Small dependency.
+@item KDE4
+Dependencies from the KDE 4 environment.
+@item GNOME-extra
+Unofficial GNOME dependencies.
+@item common
+Dependency which is commonly available on most systems.
+@item unknown-full
+Unknown if it can be used as a full dependency.
+@item full-never
+Should never be used as a full dependency.
+@item X11
+Dependencies from X11.
+@item SDL-extra
+Unofficial SDL dependencies.
+@item GTK
+Dependencies from the GTK toolkit.
+@item full-config
+Needs one more more configuration file(s) in order to be a full dependency (and are not copied/generated when 'auto copy' is used).
+@item common-desktop
+Dependency which is commonly available on most desktop systems.
+@item SDL
+Dependencies from the Simple DirectMedia Layer.
+@item KDE3
+Dependencies from the KDE 3 environment.
+@item GNOME
+Dependencies from the GNOME environment.
+@item GTK-extra
+Unofficial GTK dependencies.
+@item unknown-copy
+Unknown if the 'auto copy' option copies all files for this template.
+@end table
+With these tags you can get a basic idea of the properties from each dependency. They can also be used, as we will see later, to include or exclude any actions on dependency groups.
+
+
+@subsubsection Usage
+The @command{deputil.sh} script supports various @emph{actions}. The name of the action should always be the first parameter when calling the script. The supported actions are shown below.
+@table @command
+@item list
+Lists all supported dependency templates with relevant information.
+@item scan
+Scans a project directory for unspecified dependencies and suggests possible usable templates.
+@item gen
+Generates a new dependency package file structure.
+@item gent
+Generates a new dependency package file structure from a template.
+@item auto
+Automaticly generates dependency packages from templates.
+@item edit
+Edits an existing dependency package.
+@item deps
+List all dependency packages from a project.
+@end table
+Each action supports various option parameters. Passing the @command{@minus{}@minus{}help} parameter to @command{deputil.sh} will display display the script's usage and all the possible parameters, the output of this command is shown below.
+@codeblock{Usage: deputil.sh <action> <options> <files>
+@*
+<action>        Should be one of the following:
+@*
+ list       Lists all known dependency templates with info.
+ scan       Scans a project directory for unspecified dependencies and suggests possible usable templates.
+ gen        Generates a new dependency file structure.
+ gent       Generates a new dependency file structure from a template.
+ auto       Automaticly generates dependencies from templates.
+ edit       Edits an existing dependency.
+ deps       List all dependencies from a project.
+@*
+@*
+<options>       Depending on the specified action, the following options exist:
+@*
+ General options:
+    @minus{}@minus{}help, @minus{}h              Show this message.
+    @minus{}@minus{}                      Stop parsing arguments.
+@*
+ Valid options for the 'list' action:
+    @minus{}@minus{}template, @minus{}t <temp>   Lists info only about template <temp>.
+    @minus{}@minus{}only@minus{}names            Lists only template names.
+    @minus{}@minus{}tags                  Lists all known tags with descriptions.
+@*
+ Valid options for the 'scan' action:
+    @minus{}@minus{}libpath, @minus{}l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    @minus{}@minus{}prdir, @minus{}p <dir>       The project directory of the installer. This argument is required.
+@*
+ Valid options for the 'gen' action:
+    @minus{}@minus{}simple, @minus{}s            Generates a simple dependency. This is the default.
+    @minus{}@minus{}full, @minus{}f              Generates a full dependency.
+    @minus{}@minus{}no@minus{}standalone         Generates a full non@minus{}standalone dependency.
+    @minus{}@minus{}name, @minus{}n <name>       Name of the dependency. This option is required.
+    @minus{}@minus{}desc, @minus{}d <desc>       Dependency description. This option is required.
+    @minus{}@minus{}libs, @minus{}a <libs>       Comma seperated list of all libraries for this dependency.
+    @minus{}@minus{}deps, @minus{}D <deps>       Comma seperated list of any dependencies for the generated dependency itself.
+@*
+ Valid options for the 'gent' action:
+    @minus{}@minus{}simple, @minus{}s            Generates a simple dependency. This is the default.
+    @minus{}@minus{}full, @minus{}f              Generates a full dependency.
+    @minus{}@minus{}no@minus{}standalone         Generates a full non@minus{}standalone dependency.
+    @minus{}@minus{}simple@minus{}tag <tags>     Generates a simple dependency incase the given template has one or more of the specified tags. <tags> is a comma seperated list. Prefix a tag with '!' to exclude templates. Remaining templates give full dependencies.
+    @minus{}@minus{}full@minus{}tag <tags>       As 'simple@minus{}tag', but for full dependencies and remaining templates give simple dependencies.
+    @minus{}@minus{}nostand@minus{}tag <tags>    As 'simple@minus{}tag', but for non@minus{}standalone dependencies and remaining templates will be standalone. Note that this doesn't whether dependencies are full or not.
+    @minus{}@minus{}name, @minus{}n <name>       Name of the dependency. Default: template name.
+    @minus{}@minus{}desc, @minus{}d <desc>       Dependency description. Default: description from template.
+    @minus{}@minus{}template, @minus{}t <temp>   Generates the dependency from the given template <temp>. This option is required.
+    @minus{}@minus{}libs, @minus{}a <libs>       Comma seperated list of any additional libraries for this dependency.
+    @minus{}@minus{}deps, @minus{}D <deps>       Comma seperated list of any dependencies for the generated dependency itself.
+@*
+ Valid options for the 'auto' action:
+    @minus{}@minus{}simple, @minus{}s            Generates simple dependencies. This is the default.
+    @minus{}@minus{}full, @minus{}f              Generates full dependencies.
+    @minus{}@minus{}no@minus{}standalone         Generates full non@minus{}standalone dependencies.
+    @minus{}@minus{}simple@minus{}tag <tags>     Generates simple dependencies from templates which have one or more of the specified tags. <tags> is a comma seperated list. Prefix a tag with '!' to exclude templates. Remaining templates give full dependencies.
+    @minus{}@minus{}full@minus{}tag <tags>       As 'simple@minus{}tag', but for full dependencies and remaining templates give simple dependencies.
+    @minus{}@minus{}nostand@minus{}tag <tags>    As 'simple@minus{}tag', but for non@minus{}standalone dependencies and remaining templates will be standalone. Note that this doesn't affect whether dependencies are full or not.
+    @minus{}@minus{}unknown@minus{}full, @minus{}U      Creates dependencies for libraries which are not listed by any template. The dependency will be named after the library, without the lib prefix and '.so.<version>' suffix (so libfoo.so.1 becomes foo), have an empty description and is defined as full.
+    @minus{}@minus{}unknown@minus{}simple        As 'unknown@minus{}full', but generates simple dependencies.
+    @minus{}@minus{}unknown@minus{}nostand       As 'unknown@minus{}full', but generates non@minus{}standalone full dependencies.
+    @minus{}@minus{}verbose, @minus{}v           Show more verbose output.
+    @minus{}@minus{}pretend               Don't do anything, just print what would happen.
+@*
+ Valid options for the 'gen', 'gent' and 'auto' actions:
+    @minus{}@minus{}copy, @minus{}c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the @minus{}@minus{}libdir option, inside the platform/OS specific files folder. This option only affects a full dependencies.
+    @minus{}@minus{}prdir, @minus{}p <dir>       The project directory of the installer. This argument is required.
+    @minus{}@minus{}libpath, @minus{}l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    @minus{}@minus{}libdir <dir>          Subdirectory (relative to files_<os>_<arch> directories) where libraries from the generated dependencies are found (also affects @minus{}@minus{}copy). Default: 'lib/'.
+    @minus{}@minus{}baseurl, @minus{}u <url>     Base URL (ie a server directory) where this dependency from can be downloaded.
+    @minus{}@minus{}destos <os>           Sets the <os> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
+    @minus{}@minus{}destarch <arch>       Sets the <arch> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
+    @minus{}@minus{}overwrite             Overwrite any existing files. Default is to ask.
+    @minus{}@minus{}rm@minus{}existing           Removes any existing files. Default is to ask.
+    @minus{}@minus{}skip@minus{}existing         Skips generation of a dependency incase it already exists. Default is to ask.
+@*
+ Valid options for the 'edit' action:
+    @minus{}@minus{}dep, @minus{}d <dep>         Dependency to edit. This option is required.
+    @minus{}@minus{}simple, @minus{}s            Converts a full dependency to a simple version. Either this or the @minus{}@minus{}full option is required.
+    @minus{}@minus{}full, @minus{}f              Converts a simple dependency to a full version. Either this or the @minus{}@minus{}simple option is required.
+    @minus{}@minus{}remove, @minus{}r            Removes any existing libraries. Only works when using the '@minus{}@minus{}simple' option.
+    @minus{}@minus{}libpath, @minus{}l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
+    @minus{}@minus{}copy, @minus{}c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the @minus{}@minus{}libdir option, inside the platform/OS specific files folder. This option only works when using '@minus{}@minus{}full'.
+    @minus{}@minus{}destos <os>           Sets the <os> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
+    @minus{}@minus{}destarch <arch>       Sets the <arch> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
+@*
+ Valid options for the 'deps' action:
+    @minus{}@minus{}prdir, @minus{}p <dir>       The project directory of the installer. This argument is required.
+@*
+<files>         A list off all binaries and libraries from the project, used to gather necessary libraries for dependency generation. This is required for the 'edit', 'scan', 'gent', 'auto' actions and when 'gen' is used with the @minus{}@minus{}full and @minus{}@minus{}copy options.}
+
+@subsubsection Usage strategy
+The first step is to search which dependencies are required. By using the @command{scan} action you can see what dynamic libraries are required and which templates can be used for dependency generation. After that, any existing @emph{full} dependency packages will then also be scanned. At the end the scan action will present a complete list of suggested templates and any unknown libraries from the main software and existing dependency packages.
+
+The next step is to decide which dependencies should be full or simple and which full dependencies should be standalone. This decision can be based on various things such as the size, if it's common to be available, if a dependency can be trully full, if a dependency is stable or not etc. The tags from dependency templates can also help you with this decision For example, any templates which have the tag @command{small} can easily be full. On the other hand, dependencies with the tag KDE4 are usually to big and thus it's a good idea to make these dependencies simple.
+
+After you decided which dependencies should be full or simple and which full dependencies should be standalone, it's time to create the dependency packages. The easiest way to do this is to use the @command{auto} action. This will automatically create dependency packages from suggested dependency templates. This process can be configured so that files can be automatically copied, mark dependencies as full etc.  It's best to start with the @command{@minus{}@minus{}pretend} option to see what will happen. This way you can also experiment with the @command{@minus{}@minus{}full-tag}, @command{@minus{}@minus{}simple-tag} and @command{@minus{}@minus{}no-standalone} parameters. When using these parameters you can @emph{exclude} any tags by inserting a @samp{!} before the tag name. Other handy parameters are @command{@minus{}@minus{}copy} to copy files automatically and the @command{@minus{}@minus{}unknown-*} options to create basic dependency packages for unknown libraries.  When you're happy with the results you can remove the @command{@minus{}@minus{}pretend} option to automatically populate the @file{deps/} directory of your project with dependency packages. When it's finished you should add all the @emph{main dependencies} (dependencies not coming from other dependencies) to the @code{pkg.deps} @code{table}.
+
+Now it's time to run @command{deputil.sh} again with the @command{scan} option to see if everything is OK. Note that this time all the generated dependency packages @emph{which are full} will also be checked, so it's possible that you may need to create some more dependency packages. This is accomplished with the @command{gen} and @command{gent} actions. Just repeat this process until the @command{scan} action reports that everything is OK.
+
+If you want an overview from all the dependency packages you can use the @command{deps} action. If you want to edit a dependency, especially to make it full or simpe, it's handy to use @command{edit} action.
+
+@subsubsection Final notes
+Filling in all the right dependencies can be a tricky process, especially if you're not experienced with packaging. Always look carefully what happens. It's also an idea to check the configuration and supplied files from the generated dependency packages. And as always, be sure to test everything and if possible on different systems (this is easily accomplished with virtualization).
 
 
 @anchor{Creating the Installer}
@@ -2865,13 +3090,30 @@ end}
 
 @anchor{Classes}
 @subsubsection Table Seen As A Class
-Tables can also be threaded as @emph{classes}. Simply put, these are data types much like records; they have their own variables, called @emph{members} and their own functions, called @emph{methods}. Each class has to be created, mostly through another function.@*
+Tables can also be treated as @emph{classes}. Simply put, these are data types much like records; they have their own variables, called @emph{members} and their own functions, called @emph{methods}. Each class has to be created, mostly through another function.@*
 @*
 In this guide we'll skip the details about defining new classes and terms such as inheritance. Instead the only thing that is discussed is how to use them, since a few functions from the Lua Library deal with classes.@*
 @*
-Usually calling function methods from a class is slightly different than that from packages: with packages you used the @samp{.} operator, with classes you use the @samp{:} operator instead.@*
+Usually calling function methods from a class is slightly different than those from packages: with packages you used the @samp{.} operator, with classes you use the @samp{:} operator instead. The @samp{:} operator is basically a shortcut to pass an additional argument to the method function. When defining a method function, the @samp{:} operator also adds this additional argument. This argument is called @code{self} and is always the first argument which points to the class itself.@*
 @*
-Here follows an example using the @code{io} package from the Lua library. @xref{io} where all the IO functionality is discussed.
+To clarify, here are some examples. The first is without the @code{:} operator.
+@codeblock{@minus{}@minus{} The variable @code{class} is some kind of variable created somewhere else.
+function class.first(self, arg)
+    @minus{}@minus{} Do something with arg...
+end
+@*
+@minus{}@minus{} Call it
+class.first(class, "Howdy")}
+The code below is essentially the same as the above example, but using the @code{:} operator.
+@codeblock{@minus{}@minus{} The variable @code{class} is some kind of variable created somewhere else.
+function class:first(arg)
+    @minus{}@minus{} Do something with arg...
+end
+@*
+@minus{}@minus{} Call it
+class:first("Howdy")}
+
+Finally, here follows another example using the @code{io} package from the Lua library. @xref{io} where all the IO functionality is discussed.
 @codeblock{@minus{}@minus{} The following line opens the file 'myfile.txt' for reading (specified by "r").
 @minus{}@minus{} The io.open function returns a class that can be used to operate on the opened file.
 file = io.open("myfile.txt", "r")
@@ -3540,6 +3782,15 @@ By default @code{install.screenlist} is set like this:
 @codeblock{install.screenlist = @{ WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen @}}
 @end defvr
 
+@anchor{install.unattended}
+@defvr Variable install.unattended
+This @code{boolean} variable is set to @code{true} when the installer is running in @emph{unattended mode}. This variable is most used when the installer can run in both modes (@code{cfg.mode} is set to "both") to make sure that specific functions for attended installations won't be run.@*
+Example:
+@codeblock{if not install.unattended then
+    gui.msgbox("Installation will begin") @minus{}@minus{} functions from the @code{gui} package cannot be used in unattended installs.
+end}
+@end defvr
+
 @anchor{install.extrafilespath}
 @luafunc install.extrafilespath ([f])
 This function returns a path to where the files are located which were placed in the @file{extra_files/} directory from the project directory. The optional string argument @code{f} is used for convenience and is simply appended to the returned path.@*
@@ -3560,12 +3811,23 @@ This function returns the @emph{temporary package directory}. This is the direct
 This function is used to assign a temporary directory the the @code{install.destdir} variable. Setting @code{install.destdir} to a temporary directory is useful for installers that need to do additional tasks with the installation files such as compilation.
 @endluafunc
 
+@luafunc install.setaskquit (f)
+This function can be used to modify the behaviour when the user wants to cancel the installation. The argument @code{f} should be a function, that must return @code{true} in cast the installation should be aborted and @code{false} if not. The @code{install.setaskquit} function will return the function that was previously in use, so that it can easily be restored.@*
+Example:
+@codeblock{oldask = install.setaskquit(function ()
+    return gui.yesnobox("This will abort the installation while something important is happening. Are you sure?")
+end)
+@minus{}@minus{} Do the important thing
+install.setaskquit(oldask) @minus{}@minus{} Restore}
+@strong{Note}: This function can only used within attended installations.
+@endluafunc
+
 @luafunc install.update ()
 This function will update the frontend (drawing, handling input etc.). Usually this is done automatically, however in rare cases this needs to be done manually. A good example would be a loop (for loop, while loop etc) with many cycles.
 @endluafunc
 
 @subsubsection Functions used in the @code{Init} function
-Following functions should only be used within the @code{Init} function.
+Following functions should only be used within the @code{Init} function (so not @code{UnattendedInit}).
 
 @anchor{install.newscreen}
 @luafunc install.newscreen ([t])
@@ -3671,7 +3933,7 @@ os.copy(file1, file2, "/usr/local/share")}
 @luafunc install.setstepcount (n)
 This function is used to specify how many @emph{steps} the installation has, specified by parameter @code{n}. This is used to divide the progress bar and to put a text in the form of (x/X) on the screen, where @samp{x} is the current step and @samp{X} the total count of steps. On each @code{install.setstatus} call the current step will be incremented by one. By default the step count is 1.@*
 @*
-Note that @code{install.extractfiles} and @code{install.generatepkg} both will call this function when they are executed, so you most likely want to increment @code{n} by one or two.
+Note that @code{install.extractfiles()}, @code{pkg.verifydeps()} and @code{install.generatepkg()} all call the @code{install.setstatus()} function when they are executed, so you most likely want to increment @code{n} by one or three (depending if Package Mode is used).
 @endluafunc
 
 @anchor{screen}
