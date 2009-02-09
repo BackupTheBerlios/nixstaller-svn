@@ -96,10 +96,9 @@ function Usage()
     --pretend               Don't do anything, just print what would happen.
 
  Valid options for the 'gen', 'gent' and 'auto' actions:
-    --copy, -c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the --libdir option, inside the platform/OS specific files folder. This option only affects a full dependencies.
+    --copy, -c              Copies shared libraries automaticly. The files are copied to the lib/ subdirectory inside the platform/OS specific files folder. This option only affects a full dependencies.
     --prdir, -p <dir>       The project directory of the installer. This argument is required.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
-    --libdir <dir>          Subdirectory (relative to files_<os>_<arch> directories) where libraries from the generated dependencies are found (also affects --copy). Default: 'lib/'.
     --baseurl, -u <url>     Base URL (ie a server directory) where this dependency from can be downloaded.
     --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
     --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
@@ -113,7 +112,7 @@ function Usage()
     --full, -f              Converts a simple dependency to a full version. Either this or the --simple option is required.
     --remove, -r            Removes any existing libraries. Only works when using the '--simple' option.
     --libpath, -l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
-    --copy, -c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the --libdir option, inside the platform/OS specific files folder. This option only works when using '--full'.
+    --copy, -c              Copies shared libraries automaticly. The files are copied to the lib/ subdirectory inside the platform/OS specific files folder. This option only works when using '--full'.
     --destos <os>           Sets the <os> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
     --destarch <arch>       Sets the <arch> portion of the system specific files folder used by the --copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
 
@@ -275,7 +274,7 @@ function CreateDep(name, desc, libs, libdir, full, standalone, baseurl, deps, pr
         url = "\"" .. baseurl .. "\""
     end
     
-    installf = installf or "    self:CopyFiles()"
+    installf = installf or "    self:copyfiles()"
     requiredf = requiredf or "    return false"
     compatf = compatf or "    return false"
     caninstallf = caninstallf or "    return true"
@@ -293,9 +292,6 @@ dep.description = "%s"
 -- Libraries this dependency provides.
 dep.libs = { %s }
 
--- Subdirectory (relative to files_<os>_<arch> directories) where libraries can be found.
-dep.libdir = "%s"
-
 -- If this is a full dependency or not.
 dep.full = %s
 
@@ -311,32 +307,32 @@ dep.baseurl = %s
 dep.deps = { %s }
 
 -- Install function. This is called when the dependency is installed.
-function dep:Install()
+function dep:install()
 %s
 end
 
--- Required function. Called to check if dependency is required. Note that even if this function
+-- required function. Called to check if dependency is required. Note that even if this function
 -- returns false, the dependency may still be installed when autodetection marks it as necessary.
-function dep:Required()
+function dep:required()
 %s
 end
 
 -- Called if dependency itself seems to be incompatible. You can use this for example to recompile
 -- any libraries. The 'lib' argument contains the faulty library. By returning true the dependency
 -- will be installed as usual, otherwise it will be marked as incompatible.
-function dep:HandleCompat(lib)
+function dep:handlecompat(lib)
 %s
 end
 
 -- Called just before this dependency is about to be installed. Return false if this dependency can't be
 -- installed for some reason, otherwise return true.
-function dep:CanInstall()
+function dep:caninstall()
 %s
 end
 
 -- Return dependency (this line is required!)
 return dep
-]], os.date(), desc, libsstr, libdir, (full and "true") or "false", (standalone and "true") or "false", url, depsstr, installf, requiredf, compatf, caninstallf))
+]], os.date(), desc, libsstr, (full and "true") or "false", (standalone and "true") or "false", url, depsstr, installf, requiredf, compatf, caninstallf))
 
     out:close()
     
@@ -813,10 +809,9 @@ Name                    %s
 Description             %s
 Libraries               %s
 Libraries copied        %s
-Library subdirectory    %s
 Type                    %s
 Dependencies            %s
-]], name, desc, tabtostr(libs) or "-", tostring(copy and fulltab.fullall), libdir, typ, tabtostr(deps) or "-"))
+]], name, desc, tabtostr(libs) or "-", tostring(copy and fulltab.fullall), typ, tabtostr(deps) or "-"))
 
 end
 
@@ -919,11 +914,10 @@ Name                    %s
 Description             %s
 Libraries               %s
 Libraries copied        %s
-Library subdirectory    %s
 Type                    %s
 Notes                   %s
 Dependencies            %s
-]], name, desc, tabtostr(libs) or "-", tostring(copy and full), libdir, typ, notes or "-", tabtostr(deps) or "-"))
+]], name, desc, tabtostr(libs) or "-", tostring(copy and full), typ, notes or "-", tabtostr(deps) or "-"))
 
 end
 

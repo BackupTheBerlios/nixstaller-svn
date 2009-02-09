@@ -345,6 +345,7 @@ Installatie van %s gereed!}
 
 Notice the @samp{%s}? The @samp{%s} will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name. What will be replaced is usually given in the form of a comment in the @file{strings} file itself.
 
+@strong{Note}: It's important that the @file{strings} file is saved as UTF-8 (Unicode), as Nixstaller only supports this character codeset at this point. This also means that the translations will only work when the user is using an UTF-8 locale (unless the utf8 flag is not set as later will be discussed, this is however usually not the case). When you are using an UTF-8 locale (the @command{locale} shell command can tell), saving as UTF-8 usually be done automatically.
 
 @subsection Multiline translations
 Some translations need more than one line. If this is the case the text should be put between 2 square brackets.
@@ -1341,6 +1342,10 @@ The script accepts the following commandline arguments:
     @addtablecol{Displays usage}
 @endtablerow
 
+@addtablerownowrap{@minus{}@minus{}appicon <icon>}
+    @addtablecol{Copies the file <icon> to the @file{extra_files/} directory and sets @code{cfg.appicon} accordingly. Default: a default icon (shipped with Nixstaller).}
+@endtablerow
+
 @addtablerownowrap{@minus{}@minus{}appname, -n <name>}
     @addtablecol{Sets @code{cfg.appname}. Default: MyApp}
 @endtablerow
@@ -1574,10 +1579,9 @@ Each action supports various option parameters. Passing the @command{@minus{}@mi
     @minus{}@minus{}pretend               Don't do anything, just print what would happen.
 @*
  Valid options for the 'gen', 'gent' and 'auto' actions:
-    @minus{}@minus{}copy, @minus{}c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the @minus{}@minus{}libdir option, inside the platform/OS specific files folder. This option only affects a full dependencies.
+    @minus{}@minus{}copy, @minus{}c              Copies shared libraries automaticly. The files are copied to the lib/ subdirectory inside the platform/OS specific files folder. This option only affects a full dependencies.
     @minus{}@minus{}prdir, @minus{}p <dir>       The project directory of the installer. This argument is required.
     @minus{}@minus{}libpath, @minus{}l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
-    @minus{}@minus{}libdir <dir>          Subdirectory (relative to files_<os>_<arch> directories) where libraries from the generated dependencies are found (also affects @minus{}@minus{}copy). Default: 'lib/'.
     @minus{}@minus{}baseurl, @minus{}u <url>     Base URL (ie a server directory) where this dependency from can be downloaded.
     @minus{}@minus{}destos <os>           Sets the <os> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
     @minus{}@minus{}destarch <arch>       Sets the <arch> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
@@ -1591,7 +1595,7 @@ Each action supports various option parameters. Passing the @command{@minus{}@mi
     @minus{}@minus{}full, @minus{}f              Converts a simple dependency to a full version. Either this or the @minus{}@minus{}simple option is required.
     @minus{}@minus{}remove, @minus{}r            Removes any existing libraries. Only works when using the '@minus{}@minus{}simple' option.
     @minus{}@minus{}libpath, @minus{}l <dir>     Appends the directory path <dir> to the search path used for finding shared libraries.
-    @minus{}@minus{}copy, @minus{}c              Copies shared libraries automaticly. The files are copied to the subdirectory specified by the @minus{}@minus{}libdir option, inside the platform/OS specific files folder. This option only works when using '@minus{}@minus{}full'.
+    @minus{}@minus{}copy, @minus{}c              Copies shared libraries automaticly. The files are copied to the lib/ subdirectory inside the platform/OS specific files folder. This option only works when using '@minus{}@minus{}full'.
     @minus{}@minus{}destos <os>           Sets the <os> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not OS specific. Default is the current OS.
     @minus{}@minus{}destarch <arch>       Sets the <arch> portion of the system specific files folder used by the @minus{}@minus{}copy option. 'all' can be used so that copied files are not architecture specific. Default is the current architecture.
 @*
@@ -1613,6 +1617,18 @@ If you want an overview from all the dependency packages you can use the @comman
 
 @subsubsection Final notes
 Filling in all the right dependencies can be a tricky process, especially if you're not experienced with packaging. Always look carefully what happens. It's also an idea to check the configuration and supplied files from the generated dependency packages. And as always, be sure to test everything and if possible on different systems (this is easily accomplished with virtualization).
+
+
+@section Final notes on binary compatibility
+This section is only relevant for installers which contain any binary executables or libraries.
+
+One tricky thing to accomplish is to make sure that your binaries and libraries will be compatible across various systems. Incompatibilities may be introduced when dependencies (shared libraries) are different than what is expected. Some common problems that may happen are missing symbols, different symbol versioning and symbols that are simply incompatible with that what was expected (eg. a function accepts another type of argument than what was expected). The first two problems can be detected by the installer (using Package Mode with dependency handling). The last is impossible to detect. Even though the installer can detect the problems, it cannot always fix the problem. In such case the user will be asked to do so, but he or she may also not be able to fix it.
+
+Therefore it is always desirable to @emph{increase} the compatibility of your software. Linking libraries static or including full dependencies whenever possible will improve the compatibility. This isn't always possible, as some dependencies simply cannot be included. For such cases it may help to link to @emph{old} library versions. This will atleast fix any problems with symbol versioning because these are backwards compatible. This may also prevent linking to any symbols that may not exist elsewhere. Examples where linking to old library versions may help are the C and C++ libraries and GTK2. This will obviously only help when the @emph{major} version of the older library is the same (on some systems @samp{compat} libraries for older libraries can be installed however).
+
+Linking to older libraries is easily done by compiling the software on an old OS version. With virtualization or even a chroot you can install and run a second OS that can be purely used for compilation. This is also the way how Nixstaller binaries are build.
+
+Note that these problems vary per operating system. Solaris has a history of being relatively well compatible with older binaries. With Linux on the other hand, because of the fact that there are numerous different distributions, it can be tricky to make sure that your binaries will run on different systems. With the BSD systems, especially OpenBSD and FreeBSD, it's common that the major version of various system libraries will be bumped after a new major release. Therefore it may be handy to supply different binaries for each major OS release. Note that this may also increase the compatibility of your software, as the chance of getting a much older or newer library will be decreased.
 
 
 @anchor{Creating the Installer}

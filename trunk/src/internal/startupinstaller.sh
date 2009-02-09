@@ -21,6 +21,8 @@
 
 . "./utils.sh"
 
+UNATTENDED=
+
 # Uses edelta to reconstruct frontend binaries
 # $1: libc directory to be used(for lzma and edelta)
 # $2: source file
@@ -117,6 +119,7 @@ configure()
                 ;;
             --unattended )
                 ARGS="unattended"
+                UNATTENDED=1
                 shift
                 ;;
             *)
@@ -151,9 +154,11 @@ do
     
     for FR in $FRONTENDS
     do
-        if [ -z "$DISPLAY" -a $FR != "ncurs" ]; then
+        if [ -z "$DISPLAY" -a $FR != "ncurs" -a -z "$UNATTENDED" ]; then
             continue
         fi
+        
+        echo "Frontend: $FR"
     
         [ $ARCH_TYPE != "lzma" ] || haslibs "${LC}/lzma-decode" || continue
         haslibs "${LC}/edelta" || continue

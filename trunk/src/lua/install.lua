@@ -136,10 +136,12 @@ local function initlang()
     for _, l in ipairs(cfg.languages) do
         local conf = string.format("%s/config/lang/%s/config.lua", curdir, l)
         
-        _G.lang = { }
+        local lang
         if os.fileexists(conf) then
-            dofile(conf)
+            lang = dofile(conf)
         end
+        
+        lang = lang or { }
         
         local function default(var, val)
             if lang[var] == nil then
@@ -161,7 +163,7 @@ local function initlang()
         local curlang = os.setlocale()
         for l, v in pairs(install.langinfo) do
             if v.locales then
-                for _, loc in ipairs(lang.locales) do
+                for _, loc in ipairs(v.locales) do
                     if string.find(curlang, loc) then
                         install.setlang(l)
                         install.didautolang = true

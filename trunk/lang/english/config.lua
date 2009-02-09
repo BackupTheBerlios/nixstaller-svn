@@ -1,3 +1,5 @@
-lang.name = "English"
-lang.utf8 = false
-lang.locales = { "en" }
+return {
+    name = "English",
+    utf8 = false,
+    locales = { "en" }
+}

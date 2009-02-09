@@ -6,7 +6,7 @@
 
 
 @macro starttable{row1, row2, row3, row4, row5}
-@htmltext{<table border="1"> <tbody>}
+@htmltext{<table border="1" cellpadding="0"> <tbody>}
 @end macro
 
 

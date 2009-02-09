@@ -21,7 +21,7 @@ local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap.lua",
 depclass = { }
 depclass.__index = depclass
 
-function depclass:CopyFiles()
+function depclass:copyfiles()
     utils.recursivedir(pkg.getdepdir(self), function (f, rf)
         local dest = string.format("%s/%s", install.getpkgdir(), rf)
         if os.isdir(f) then
@@ -32,8 +32,8 @@ function depclass:CopyFiles()
     end)
 end
 
-function depclass:Install()
-    self:CopyFiles()
+function depclass:install()
+    self:copyfiles()
 end
 
 depprocess = {
@@ -617,7 +617,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps)
                 infomap[lib].deps = pkg.deps
             else
                 local dep = deps and getdepfromlib(deps, lib)
-                if (dep and dep.full and dep.Required and dep:Required()) or not path then
+                if (dep and dep.full and dep.required and dep:required()) or not path then
                     markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep)
                 elseif path then -- Lib is already present
                     infomap[lib].native = true
@@ -634,7 +634,7 @@ function collectlibinfo(infomap, bin, mainlibs, deps)
                         if infomap[lib].native then
                             markdepfromlib(infomap[lib], lib, deps, infomap[bin].dep)
                             install.print(string.format("Overrided dependency: %s (%s)\n", infomap[lib].dep.name, lib))
-                        elseif not infomap[lib].dep.HandleCompat or not infomap[lib].dep:HandleCompat(lib) then
+                        elseif not infomap[lib].dep.handlecompat or not infomap[lib].dep:handlecompat(lib) then
                             adddeplibprob(infomap[lib].dep, "incompatdep", lib)
                         end
                     end
@@ -697,7 +697,7 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver)
             end
             
             if not ok then
-                ok = infomap[incompatlib].dep.HandleCompat and infomap[incompatlib].dep:HandleCompat(incompatlib)
+                ok = infomap[incompatlib].dep.handlecompat and infomap[incompatlib].dep:handlecompat(incompatlib)
             end
             
             if not ok then
@@ -708,7 +708,7 @@ function handleinvaliddep(infomap, incompatlib, lib, sym, symver)
                 return true
             end
         end
-    elseif not infomap[incompatlib].dep.HandleCompat or not infomap[incompatlib].dep:HandleCompat(incompatlib) then
+    elseif not infomap[incompatlib].dep.handlecompat or not infomap[incompatlib].dep:handlecompat(incompatlib) then
         adddeplibprob(infomap[incompatlib].dep, "incompatdep", incompatlib)
         install.print(string.format("Incompatible dependency: %s (%s, %s)\n", infomap[incompatlib].dep.name, incompatlib, sym))
     end
@@ -775,8 +775,8 @@ function verifysyms(infomap)
                             else
                                 if not infomap[supposedlib] or infomap[supposedlib].native then
                                     addlibprob(supposedlib, "incompatlib", true)
-                                elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.HandleCompat or
-                                        not infomap[supposedlib].dep:HandleCompat(supposedlib)) then
+                                elseif infomap[supposedlib].dep and (not infomap[supposedlib].dep.handlecompat or
+                                        not infomap[supposedlib].dep:handlecompat(supposedlib)) then
                                     adddeplibprob(infomap[supposedlib].dep, "incompatdep", supposedlib)
                                 end
                             end
@@ -819,7 +819,13 @@ function checkdeps(bins, libs, bdir)
                 incprogress()
             end
             
-            local path = string.format("%s/%s", (dep and pkg.getdepdir(dep, dep.libdir)) or bdir, bin)
+            local path
+            if dep then
+                path = getdeplibpath(dep, bin)
+            else
+                path = string.format("%s/%s", bdir, bin)
+            end
+            
             if os.fileexists(path) then
                 local infomap = { }
                 infomap[bin] = { }
@@ -870,7 +876,7 @@ function checkdeps(bins, libs, bdir)
     setstatus("Gathering mandatory dependencies.")
     for _, dep in pairs(pkg.depmap) do
         incprogress()
-        if not needs[dep] and dep.Required and dep:Required() and dep.full then
+        if not needs[dep] and dep.required and dep:required() and dep.full then
             checkbins(dep.libs, dep, dep.deps)
             needs[dep] = true
         end
@@ -888,10 +894,10 @@ function instdeps(deps)
         if not depprocess.installeddeps[dep] and not depprocess.wrongdeps[dep] and dep.full then
             if initdep(dep) then
                 -- Check if dep is usable
-                if dep.CanInstall and not dep:CanInstall() then
+                if dep.caninstall and not dep:caninstall() then
                     adddepprob(dep, "failed")
                 else
-                    dep:Install()
+                    dep:install()
                     depprocess.installeddeps[dep] = true
                     install.print(string.format("Installed dependency: %s\n", dep.name))
                 end

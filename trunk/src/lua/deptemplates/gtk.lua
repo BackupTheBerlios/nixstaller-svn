@@ -131,7 +131,7 @@ install = [[
     utils.patch(pkg.getdepdir(self, "etc/gtk-2.0/gdk-pixbuf.loaders"), pattern, "\"" .. pkg.getdatadir("gtk-2.0/"))
     utils.patch(pkg.getdepdir(self, "etc/gtk-2.0/gtk.immodules"), pattern, "\"" .. pkg.getdatadir("gtk-2.0/"))
     
-    self:CopyFiles()
+    self:copyfiles()
     
     pkg.addbinenv("GDK_PIXBUF_MODULE_FILE", pkg.getdatadir("etc/gtk-2.0/gdk-pixbuf.loaders"))
     pkg.addbinenv("GTK_IM_MODULE_FILE", pkg.getdatadir("etc/gtk-2.0/gtk.immodules"))]]

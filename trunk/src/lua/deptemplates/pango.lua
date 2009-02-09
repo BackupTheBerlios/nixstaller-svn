@@ -136,6 +136,6 @@ AliasFiles=%s/etc/pango/pangox.aliases
         file:close()
     end
     
-    self:CopyFiles()
+    self:copyfiles()
     pkg.addbinenv("PANGO_RC_FILE", pkg.getdatadir("etc/pango/pangorc"))]]
 }

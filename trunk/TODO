@@ -5,13 +5,6 @@ OVERALL
     - Only use it on some platforms?
 - Test regular C lua libs, update notes
 - print when dep is verified in attended installs?
-- Check return value of pkg.verifydeps() --> call verifydeps() automaticly?
-- Allow unattended installs even if X isn't running
-- check if pkg.enable is set in verifydeps()
-- lowercase dep class functions
-- Do bin scripts handle custom dep lib dirs? Remove this functionality? (if not update docs)
-- appicon support for genprojdir.sh (update docs)
-- More logic config.lua for translations --> Sync with docs.
 
 
 TEST
@@ -25,6 +18,7 @@ TEST
 - genprojdir copying lang configs
 - depscreen
 - pacman present() fix
+- lowercased dep functions, libdir
 
 
 MAIN
@@ -40,9 +34,6 @@ DOCS
 - Unattended installations
     - Reset cfg.unopts[].value? if not document for defaults
     - --destdir option: mention that defaults have to be checked
-- Language:
-    - save files as utf8
-    - only utf8 translations can be used on systems using utf8 locales.
 - Updating chapter?
 - bzflag tutorial:
     - 'bzflag-2.0.10/...' --> make this generic
@@ -56,7 +47,6 @@ DOCS
     - Restructure explenation?
         - probs: explenation of pkg.deps, pkg.libs, pkg.autosymmap, section deps in lua scripts
 - More links instead of "in the next/previous chapter/section"?
-- Compiling for bin compat?
 
 
 TRANSLATIONS

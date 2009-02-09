@@ -35,10 +35,10 @@
 -- post         Function that is called after the dependency is generated. Can be used for example to
 --              copy additional files.
 -- install      String that contains Lua code used in the Install() function inside the generated config.lua.
---              Default is to call self:CopyFiles().
--- required     As the 'install' field, but for the Required() function. Default is to simply return false.
--- compat       As the 'install' field, but for the HandleCompat() function. Default is to simply return false.
--- caninstall   As the 'install' field, but for the CanInstall() function. Default is to simply return true.
+--              Default is to call self:copyfiles().
+-- required     As the 'install' field, but for the required() function. Default is to simply return false.
+-- compat       As the 'install' field, but for the handlecompat() function. Default is to simply return false.
+-- caninstall   As the 'install' field, but for the caninstall() function. Default is to simply return true.
 --
 -- New structures should be created with the newtemplate() function
 
@@ -52,7 +52,7 @@ function newtemplate(t)
     end
     
     default("tags", { })
-    default("install", "    self:CopyFiles()")
+    default("install", "    self:copyfiles()")
     default("required", "    return false")
     default("compat", "    return false")
     default("caninstall", "    return true")

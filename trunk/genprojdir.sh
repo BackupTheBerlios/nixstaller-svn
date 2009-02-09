@@ -49,6 +49,7 @@ DEF_FRONTENDS="gtk fltk ncurses"
 DEF_LANGUAGES="english dutch"
 DEF_INTROPIC=
 DEF_LOGO=
+DEF_APPICON=
 DEF_AUTOLANG="true"
 
 # Valid settings
@@ -69,6 +70,7 @@ LANGUAGES=
 AUTOLANG=
 INTROPIC=
 LOGO=
+APPICON=
 TARGETDIR=
 GENPKG=
 OVERWRITE=
@@ -85,6 +87,7 @@ usage()
     echo "[options] can be one of the following things (all are optional):"
     echo
     echo " --help, -h                       Print this message."
+    echo " --appicon <file>                 Path to appicon file. This should be a XPM file. Default: a default icon."
     echo " --appname, -n <name>             The application name. Default: My App"
     echo " --arch <arch>                    One or more CPU architectures the installer should support. Valid values: x86, x86_64. Default: current arch."
     echo " --archtype, -a lzma/gzip/bzip2   The archive type used for packing the installation files. Default: lzma"
@@ -94,12 +97,12 @@ usage()
     echo " --intropic, -i <picture>         Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
     echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch"
     echo " --logo <file>                    Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
-    echo "--mode, -m <mode>                 Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
-    echo "--no-autolang                     Disables automaticly choosing a language."
+    echo " --mode, -m <mode>                 Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
+    echo " --no-autolang                     Disables automaticly choosing a language."
     echo " --os, -o <OSs>                   Operating systems which the installer should support. Valid values: linux, freebsd, netbsd, openbsd, sunos. Default: current OS"
     echo " --overwrite                      Overwrite any existing files. Default is to ask."
     echo " --pkg                            Generate a template package.lua with defaults, adds specific 'Package Mode' code to install.lua."
-    echo "--rm-existing                     Removes any existing files. Default is to ask."
+    echo " --rm-existing                     Removes any existing files. Default is to ask."
     exit 1
 }
 
@@ -226,6 +229,13 @@ parseargs()
                 LOGO="${1}"
                 shift
                 ;;
+            --appicon)
+                shift
+                [ -z "${1}" ] && usage
+                [ ! -f "${1}" ] && error "Couldn't find appicon file ($1)"
+                APPICON="${1}"
+                shift
+                ;;
             --pkg)
                 shift
                 GENPKG=1
@@ -291,6 +301,7 @@ parseargs()
     LANGUAGES=${LANGUAGES:=$DEF_LANGUAGES}
     INTROPIC=${INTROPIC:=$DEF_INTROPIC}
     LOGO=${LOGO:=$DEF_LOGO}
+    APPICON=${APPICON:=$DEF_APPICON}
 }
 
 createlayout()
@@ -348,6 +359,13 @@ copylogo()
 {
     if [ ! -z "${LOGO}" ]; then
         requiredcp "${LOGO}" "${TARGETDIR}/files_extra"
+    fi
+}
+
+copyappicon()
+{
+    if [ ! -z "${APPICON}" ]; then
+        requiredcp "${APPICON}" "${TARGETDIR}/files_extra"
     fi
 }
 
@@ -503,6 +521,11 @@ genconfig()
         IL=\"`basename "${LOGO}"`\"
     fi
 
+    IA=
+    if [ ! -z "${APPICON}" ]; then
+        IA=\"`basename "${APPICON}"`\"
+    fi
+
     cat > ${TARGETDIR}/config.lua  << EOF
 -- Automaticly generated on `date`.
 -- Global configuration file, used for generating and running installers.
@@ -541,6 +564,9 @@ cfg.intropic = ${IP:=nil}
 
 -- Logo image file
 cfg.logo = ${IL:=nil}
+
+-- Appication icon used by the installer
+cfg.appicon = ${IA:=nil}
 EOF
 
     if [ "$MODE" != "attended" ]; then
@@ -676,6 +702,7 @@ createprojdir()
     copylanguages
     copyintropic
     copylogo
+    copyappicon
     genconfig
     genrun
     

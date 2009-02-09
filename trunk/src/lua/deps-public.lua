@@ -17,6 +17,10 @@
 
 
 function pkg.verifydeps(bins, libs)
+    if not pkg.enable then
+        error("Called verifydeps when pkg.enable is false.")
+    end
+    
     install.setstatus("Verifying dependencies")
     
     if not pkg.deps or utils.emptytable(pkg.deps) then
