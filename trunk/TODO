@@ -5,6 +5,11 @@ OVERALL
     - Only use it on some platforms?
 - Test regular C lua libs, update notes
 - print when dep is verified in attended installs?
+- Update examples:
+    - Final strings files.
+    - More languages?
+    - config.lua: remove targetos and targetarch, remove all other non defaults?
+    - Remove them?
 
 
 TEST
@@ -47,6 +52,9 @@ DOCS
     - Restructure explenation?
         - probs: explenation of pkg.deps, pkg.libs, pkg.autosymmap, section deps in lua scripts
 - More links instead of "in the next/previous chapter/section"?
+- Compilation
+- License/Welcome/Finish screens not shown when files are not there
+- Bin compat and compiling
 
 
 TRANSLATIONS
@@ -94,6 +102,7 @@ OVERALL
 - Installer profiles
 - Configurable background parts (background images)
 - Seperate dep installing and collecting? --> Allows to configure them during installation
+- Dump lib info when no frontend could be found
 
 
 PACKAGING

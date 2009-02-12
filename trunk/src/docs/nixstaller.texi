@@ -518,7 +518,7 @@ To make things more clear, here is an example:
 @codeblock{cfg.unopts["opt"] = @{ desc = "My first option.", short = "o" @}
 cfg.unopts["varopt"] = @{ desc = "Second option, used to set a variable.", optname = "var", opttype = "string"  @} }
 The user could then run the installer (assuming that cfg.mode is set to unattended) like this: @*
-@command{./setup.sh -o --varopt "My user value"}
+@command{./setup.sh -o @minus{}@minus{}varopt "My user value"}
 @end table
 
 Finally there are a few functions inside the @code{cfg} module that can be used to add a few common commandline arguments for unattended installers. These are:
@@ -552,7 +552,7 @@ This file is only relevant when using @ref{pkgmode,,Package Mode}. Like @file{co
 @vindex pkg.autosymmap
 @anchor{pkg.autosymmap}
 @item pkg.autosymmap
-Symbol map files are not discussed yet, they are described @ref{symmap, here}. If set to @code{true} (the default), @code{geninstall.sh} will automaticly create a symbol map file if it's non existant. For this to work it's important that the @code{pkg.bins}, @code{pkg.libs} and @code{pkg.deps} fields are set up correctly. Note that this file is not saved to the project directory but directly inside the installer package itself.
+Symbol map files are not discussed yet, they are described @ref{symmap, here}. If set to @code{true} (default is @code{false}), @code{geninstall.sh} will automaticly create a symbol map file if it's non existant. For this to work it's important that the @code{pkg.bins}, @code{pkg.libs} and @code{pkg.deps} fields are set up correctly. Note that this file is not saved to the project directory but directly inside the installer package itself.
 @vindex pkg.bindir
 @item pkg.bindir
 This variable should contain a @ref{Strings,,string} describing the location of the binary directory. When unspecified, a reasonable default is chosen for the user's system (mostly @file{/usr/local/bin}).
@@ -1661,14 +1661,17 @@ The @ref{fourth tutorial} focuses on Package Mode and inclusion of dependencies.
 
 @anchor{first tutorial}
 @section First Tutorial: A Simple Installer
-This first tutorial describes the steps that need to be done to create a simple installer.@*
+This first tutorial describes the steps that need to be done to create a simple installer. The configuration will be very minimal. @*
 @*
-We want to let the installer be able to do the following things:
+The installer will have the following features:
 @itemize @bullet
-@item Let the user select a language.
+@item Automatically launch the right frontend.
+@item Runs on the OS and CPU arhitecture the installer was build on.
+@item Auto select a language or when this fails let the user select a language.
 @item Show a short introduction message.
 @item Let the user select a destination directory (or in other words, let the user define the @code{install.destdir} variable).
 @item Extract the installation files to the selected directory.
+@item Other default configurations, such as a default logo and appicon and lzma compression.
 @end itemize
 
 @subsection Project Directory
@@ -1695,18 +1698,18 @@ If all went fine the directory structure should look like this:
         @itemize @bullet
             @item @file{dutch/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
             @item @file{english/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
         @end itemize
+        @item @file{files_all/}
         @itemize @bullet
-            @item @file{files_all/}
-            @itemize @bullet
-                @item @file{README}
-            @end itemize
+            @item @file{README}
         @end itemize
         @item @file{files_extra/}
         @item @file{welcome}
@@ -1719,20 +1722,22 @@ Now call @file{geninstall.sh} and supply the project directory as first argument
 
 @anchor{second tutorial}
 @section Second Tutorial: A More Advanced Installer: Cube
-In this tutorial we'll be making a slightly more advanced installer for the game @uref{http://www.cubeengine.com/, Cube}. The installer has the following tasks:
+In this tutorial we'll be making a slightly more advanced installer for the game @uref{http://www.cubeengine.com/, Cube}. The installer will have the following features:
 @itemize @bullet
+@item Automatically launch the right frontend.
 @item Run on Linux and FreeBSD systems.
-@item Let the user select a language.
+@item Auto select a language or when this fails let the user select a language.
 @item Show a short introduction message describing Cube.
 @item Let the user select a destination directory.
 @item Let the user choose to install a script to his or her home directory that will launch Cube.
 @item Install the files and optionally create the launcher script.
+@item Other default configurations, such as a default logo and appicon and lzma compression.
 @end itemize
 
 @subsection Project Directory
 Again we use @file{genprojdir.sh} to create an initial project directory. This time we will call it @samp{cube}. Here is the command: 
-@codeblock{genprojdir.sh -o freebsd linux -n Cube cube/}
-We've limited the supporting operating systems to Linux and FreeBSD, simply because there are only Cube binaries for these 2 systems.@*
+@codeblock{genprojdir.sh -o freebsd linux @minus{}@minus{}arch x86 -n Cube cube/}
+We've limited the supporting operating systems to Linux and FreeBSD (x86), simply because there are only Cube binaries for these systems.@*
 @*
 Next create the @file{welcome} file with the following contents:
 @codeblock{This installer will install Cube to your computer.
@@ -1772,7 +1777,7 @@ cd %s/cube/
     end
 end}
 
-The default comments in the file are omitted, you may keep them if you want. The generated version also sets the @code{install.destdir} variable. As this is set to a default value, we don't really need it and is therefore kept out. @*
+The default comments in the file are omitted, you may keep them if you want. The generated version also sets the @code{install.destdir} variable. As this is set to a default value, we don't really need it and is therefore kept out. Because no @code{Finish()} function is needed this function was left out aswell. @*
 @*
 First we define an @code{Init()} function. This is called when the installer starts. In this function a new installer screen is created via @ref{install.newscreen}. Then a radiobutton widget is added to this screen through the @ref{screen:addradiobutton} function. At last we define the install screens that should be used by putting them in the @code{install.screenlist} variable. Since we don't want a license or finish message shown we left these screens out.@*
 @*
@@ -1788,10 +1793,12 @@ Assuming that the project directory is called @file{cube/} the layout of this di
         @itemize @bullet
             @item @file{dutch/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
             @item @file{english/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
         @end itemize
@@ -1803,6 +1810,11 @@ Assuming that the project directory is called @file{cube/} the layout of this di
             @end itemize
         @end itemize
         @item @file{files_extra/}
+        @item @file{files_all_x86/}
+        @item @file{files_freebsd_all/}
+        @item @file{files_freebsd_x86/}
+        @item @file{files_linux_all/}
+        @item @file{files_linux_x86/}
         @item @file{welcome}
         @item @file{config.lua}
         @item @file{run.lua}
@@ -1815,10 +1827,12 @@ Now call @file{geninstall.sh}, supply it with 2 arguments: the first should be t
 
 @anchor{third tutorial}
 @section Third Tutorial: Installer for Vim
-In this tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim}. The installer should have the following features:
+In this tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim} (version 7.1). The installer will have the following features:
 @itemize @bullet
-    @item Run on every OS that Nixstaller supports (linux, freebsd, netbsd, openbsd and sunos).
-    @item Let the user select a language.
+    @item Automatically launch the right frontend.
+    @item Run on every OS and CPU architecture that Nixstaller supports.
+    @item Auto select a language or when this fails let the user select a language.
+    @item Use a VIM application icon.
     @item Show a welcome screen with the Vim logo and a short message.
     @item Let the user configure several compilation settings:
     @itemize @bullet
@@ -1830,12 +1844,13 @@ In this tutorial we make a fairly advanced installer for the advanced text edito
     @end itemize
     @item Extract the files to a temporary directory and configure, compile and install Vim.
     @item Show the README after installation.
+    @item Other default configurations, such as a default logo and appicon and lzma compression.
 @end itemize
 
 @subsection Project Directory
 Again we start with creating the project directory:
-@codeblock{genprojdir.sh -i <pathtovimlogo>/vim48x48.png -o freebsd linux netbsd openbsd sunos -n "VIM 7.1" vim/}
-The @samp{<pathtovimlogo>} part should be replaced to the path were the vim logo is located. The file can be found in the directory @file{vim70/runtime/} from the Vim 7 distribution.@*
+@codeblock{genprojdir.sh -i <pathtovimlogos>/vim48x48.png @minus{}@minus{}appicon <pathtovimlogos>/vim48x48.xpm -o freebsd linux netbsd openbsd sunos @minus{}@minus{}arch x86 x86_64 -n "VIM 7.1" vim/}
+The @samp{<pathtovimlogos>} part should be replaced to the path were the vim logos are located. These files are located inside the directory @file{vim71/runtime/} from the Vim 7.1 distribution.@*
 @*
 Next copy this text to the @file{welcome} file:
 @codeblock{This installer will guide you through the installation of Vim.
@@ -1905,7 +1920,7 @@ end}
 @subsubsection Function @code{getscriptconf()}
 As the previous function; returns a string that is used by the @code{configure} command. This function will return the arguments related to the configuration of embedded scripting languages:
 @codeblock{function getscriptconf()
-    local ret = "" @minus{}@minus{} Need to initialize variable as a string, otherwise concatting it won't work
+    local ret = "" @minus{}@minus{} Need to initialize variable as a string, otherwise concatenating it won't work
 @*
     if (scriptbox:get("MzScheme")) then
         ret = ret .. "@minus{}@minus{}enable-MzScheme "
@@ -2013,7 +2028,7 @@ The last function will do the actual installation. Here is how it looks like:
     end
 @*
     install.extractfiles()
-    os.chdir("vim70/")
+    os.chdir("vim71/")
 @*
     install.setstatus("Configuring Vim for this system")
     install.execute(string.format("./configure %s", getconfigureopts()))
@@ -2037,7 +2052,7 @@ Then the stepcount is set. Each step is documented by the comments shown above t
 @*
 Then we check if we got write access to the prefix directory. If not we need root access later and we ask the password here.@*
 @*
-After the files are extracted through the @ref{install.extractfiles} function we change directory to the @file{vim70/} directory. The status message is changed so that the user knows whats going on and the @code{configure} command is executed with the right arguments.@*
+After the files are extracted through the @ref{install.extractfiles} function we change directory to the @file{vim71/} directory. The status message is changed so that the user knows whats going on and the @code{configure} command is executed with the right arguments.@*
 @*
 After configuration, @code{make} is called to start the compilation and the status message is changed again.@*
 @*
@@ -2082,7 +2097,7 @@ function getprefixconf()
 end
 @*
 function getscriptconf()
-    local ret = "" @minus{}@minus{} Need to initialize variable as a string, otherwise concatting it won't work
+    local ret = "" @minus{}@minus{} Need to initialize variable as a string, otherwise concatenating it won't work
 @*
     if (scriptbox:get("MzScheme")) then
         ret = ret .. "@minus{}@minus{}enable-MzScheme "
@@ -2175,7 +2190,7 @@ function Install()
     end
 @*
     install.extractfiles()
-    os.chdir("vim70/")
+    os.chdir("vim71/")
 @*
     install.setstatus("Configuring Vim for this system")
     install.execute(string.format("./configure %s", getconfigureopts()))
@@ -2201,16 +2216,18 @@ The project directory should have the following structure:
         @itemize @bullet
             @item @file{dutch/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
             @item @file{english/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
         @end itemize
         @item @file{files_all/}
         @itemize @bullet
-            @item @file{vim70/}
+            @item @file{vim71/}
             @itemize @bullet
                 @item @emph{Vim files}
             @end itemize
@@ -2218,7 +2235,25 @@ The project directory should have the following structure:
         @item @file{files_extra/}
         @itemize @bullet
             @item @file{vim48x48.png}
+            @item @file{vim48x48.xpm}
         @end itemize
+        @item @file{files_all_x86/}
+        @item @file{files_all_x86_64/}
+        @item @file{files_freebsd_all/}
+        @item @file{files_freebsd_x86/}
+        @item @file{files_freebsd_x86_64/}
+        @item @file{files_linux_all/}
+        @item @file{files_linux_x86/}
+        @item @file{files_linux_x86_64/}
+        @item @file{files_netbsd_all/}
+        @item @file{files_netbsd_x86/}
+        @item @file{files_netbsd_x86_64/}
+        @item @file{files_openbsd_all/}
+        @item @file{files_openbsd_x86/}
+        @item @file{files_openbsd_x86_64/}
+        @item @file{files_sunos_all/}
+        @item @file{files_sunos_x86/}
+        @item @file{files_sunos_x86_64/}
         @item @file{welcome}
         @item @file{finish}
         @item @file{config.lua}
@@ -2226,7 +2261,7 @@ The project directory should have the following structure:
     @end itemize
 @end itemize
 
-Calling @file{geninstall.sh} with the path to project directory as first argument and @samp{vim71.sh} as second argument should produce the installer.
+Calling @command{geninstall.sh} with the path to project directory as first argument and @samp{vim71.sh} as second argument should produce the installer.
 
 @anchor{fourth tutorial}
 @section Fourth Tutorial: Installer for BZFlag

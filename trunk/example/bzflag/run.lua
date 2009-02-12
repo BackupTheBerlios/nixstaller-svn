@@ -5,7 +5,7 @@ end
 
 
 function Install()
-    install.setstepcount(2)
+    install.setstepcount(4)
 
     if pkg.needroot() then
         install.askrootpw()
@@ -18,6 +18,7 @@ function Install()
     install.menuentries["bzflag"] = install.newdesktopentry(pkg.getbindir("bin/bzflag"), pkg.getdatadir("bzflag/blue_icon.png"), "Game;ActionGame")
 
     install.extractfiles()
+    pkg.verifydeps()
     install.gendesktopentries(pkg.needroot()) -- Assume global install if root access is necessary.
     install.generatepkg()
 end

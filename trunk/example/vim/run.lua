@@ -37,7 +37,7 @@ end
 
 
 function getscriptconf()
-    local ret = "" -- Need to initialize variable as a string, otherwise concatting it won't work
+    local ret = "" -- Need to initialize variable as a string, otherwise concatenating it won't work
 
     if (scriptbox:get("MzScheme")) then
         ret = ret .. "--enable-MzScheme "
@@ -124,7 +124,7 @@ function Install()
     local prefix = prefixfield:get()
     handleadvmenu()
 
-    -- 1: Extracting Files (Automaticly set by install.extractfiles)
+    -- 1: Extracting Files (Automatically set by install.extractfiles)
     -- 2: ./configure
     -- 3: make
     -- 4: make install

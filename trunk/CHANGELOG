@@ -57,7 +57,8 @@
 - tr() function
 - Improved translation strings
 - More reliable way for checking if package manager is locked.
-- genprojdir.sh now generates os, arch and os/arch specific file dirs
+- genprojdir.sh now generates os, arch and os/arch specific file dirs in case --os or --arch is specified
+- genprojdir.sh now sets cfg.targetos and/or cfg.targetarch to nil if no --os/--arch was specified
 - install.getpkgdir() now accepts optional file argument for convenience.
 - install.update() function
 - install.setaskquit() function

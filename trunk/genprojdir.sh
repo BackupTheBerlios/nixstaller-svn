@@ -1,6 +1,6 @@
 #!/bin/sh
 # 
-#     Copyright (C) 2006, 2007 Rick Helmus (rhelmus_AT_gmail.com)
+#     Copyright (C) 2006 - 2009 Rick Helmus (rhelmus_AT_gmail.com)
 # 
 #     This file is part of Nixstaller.
 #     
@@ -30,21 +30,13 @@ else
     done
 fi
 
-CURRENTOS=`uname`
-CURRENTOS=`echo "$CURRENTOS" | tr [:upper:] [:lower:]` # Convert to lowercase
-
-CURRENT_ARCH=`uname -m`
-echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86" # Convert iX86 --> x86
-echo $CURRENT_ARCH | grep "86pc" >/dev/null && CURRENT_ARCH="x86" # Convert 86pc --> x86
-echo $CURRENT_ARCH | grep "amd64" >/dev/null && CURRENT_ARCH="x86_64"
-
 # Default settings
 DEF_MODE="attended"
 DEF_APPNAME="My App"
 DEF_ARCHIVETYPE="lzma"
 DEF_DEFAULTLANG="english"
-DEF_TARGETOS="$CURRENTOS"
-DEF_TARGETARCH="$CURRENT_ARCH"
+DEF_TARGETOS=
+DEF_TARGETARCH=
 DEF_FRONTENDS="gtk fltk ncurses"
 DEF_LANGUAGES="english dutch"
 DEF_INTROPIC=
@@ -309,24 +301,30 @@ createlayout()
     mkdir -p "${TARGETDIR}" || error "Failed to create target directory"
     mkdir -p "${TARGETDIR}/files_all" || error "Failed to create files_all directory"
     mkdir -p "${TARGETDIR}/files_extra" || error "Failed to create files_extra directory"
-    
-    # OS Specific file dirs
-    for OS in $TARGETOS
-    do
-        mkdir -p "${TARGETDIR}/files_${OS}_all" || error "Failed to create files_$OS_all directory."
-        
-        # OS/Arch specific dirs
+
+    if [ ! -z "$TARGETOS" ]; then
+        # OS Specific file dirs
+        for OS in $TARGETOS
+        do
+            mkdir -p "${TARGETDIR}/files_${OS}_all" || error "Failed to create files_$OS_all directory."
+
+            if [ ! -z "$TARGETARCH" ]; then
+                # OS/Arch specific dirs
+                for ARCH in $TARGETARCH
+                do
+                    mkdir -p "${TARGETDIR}/files_${OS}_${ARCH}" || error "Failed to create files_$OS_$ARCH directory."
+                done
+            fi
+        done
+    fi
+
+    if [ ! -z "$TARGETARCH" ]; then
+        # Arch specific dirs
         for ARCH in $TARGETARCH
         do
-            mkdir -p "${TARGETDIR}/files_${OS}_${ARCH}" || error "Failed to create files_$OS_$ARCH directory."
+            mkdir -p "${TARGETDIR}/files_all_${ARCH}" || error "Failed to create files_all_$ARCH directory."
         done
-    done
-    
-    # Arch specific dirs
-    for ARCH in $TARGETARCH
-    do
-        mkdir -p "${TARGETDIR}/files_all_${ARCH}" || error "Failed to create files_all_$ARCH directory."
-    done    
+    fi
 }
 
 copylanguages()
@@ -521,9 +519,19 @@ genconfig()
         IL=\"`basename "${LOGO}"`\"
     fi
 
-    IA=
+    TOS=
+    if [ ! -z "${TARGETOS}" ]; then
+        TOS="`toluatable $TARGETOS`"
+    fi
+
+    TARCH=
+    if [ ! -z "${TARGETARCH}" ]; then
+        TARCH="`toluatable $TARGETARCH`"
+    fi
+    
+    APP=
     if [ ! -z "${APPICON}" ]; then
-        IA=\"`basename "${APPICON}"`\"
+        APP=\"`basename "${APPICON}"`\"
     fi
 
     cat > ${TARGETDIR}/config.lua  << EOF
@@ -540,10 +548,10 @@ cfg.appname = "$APPNAME"
 cfg.archivetype = "$ARCHIVETYPE"
 
 -- Target Operating Systems
-cfg.targetos = `toluatable $TARGETOS`
+cfg.targetos = ${TOS:=nil}
 
 -- Target CPU Architectures
-cfg.targetarch = `toluatable $TARGETARCH`
+cfg.targetarch = ${TARCH:=nil}
 
 -- Frontends to include
 cfg.frontends = `toluatable $FRONTENDS`
@@ -566,7 +574,7 @@ cfg.intropic = ${IP:=nil}
 cfg.logo = ${IL:=nil}
 
 -- Appication icon used by the installer
-cfg.appicon = ${IA:=nil}
+cfg.appicon = ${APP:=nil}
 EOF
 
     if [ "$MODE" != "attended" ]; then
