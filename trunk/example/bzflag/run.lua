@@ -5,7 +5,7 @@ end
 
 
 function Install()
-    install.setstepcount(4)
+    install.setstepcount(3)
 
     if pkg.needroot() then
         install.askrootpw()

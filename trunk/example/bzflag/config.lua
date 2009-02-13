@@ -1,4 +1,4 @@
--- Automaticly generated on wo feb 11 19:43:32 CET 2009.
+-- Automaticly generated on Thu Feb 12 16:02:39 UTC 2009.
 -- Global configuration file, used for generating and running installers.
 
 -- Installer mode. Valid values: "both", "attended" (default) and "unattended".
@@ -11,10 +11,10 @@ cfg.appname = "BZFlag"
 cfg.archivetype = "lzma"
 
 -- Target Operating Systems
-cfg.targetos = { "linux" }
+cfg.targetos = nil
 
 -- Target CPU Architectures
-cfg.targetarch = { "x86" }
+cfg.targetarch = nil
 
 -- Frontends to include
 cfg.frontends = { "gtk", "fltk", "ncurses" }
