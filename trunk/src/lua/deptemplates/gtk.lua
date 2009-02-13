@@ -58,7 +58,7 @@ post = function (dest, destdir, libmap, full, copy)
         local good = true
         local destmods = string.format("%s/%s/gtk-2.0", dest, destdir)
         if not gtksublibs then
-            print("WARNING: Unable to locate GTK2 modules. Please copy them manually to " .. destmods)
+            print("WARNING: Unable to locate GTK2 modules. Please copy them (immodules, loaders, printbackends) manually to " .. destmods)
             good = false
         else
             for _, d in ipairs{"immodules", "loaders", "printbackends"} do
@@ -100,7 +100,7 @@ post = function (dest, destdir, libmap, full, copy)
             end
             
             if not runquery(string.format("%s %s/loaders/*\\.so", exec, destmods), destetc .. "/gdk-pixbuf.loaders") then
-                print("WARNING: Encountered errors during generation of 'gdk-pixbuf.loaders', please verify this file.")
+                print("WARNING: Encountered errors during generation of 'gdk-pixbuf.loaders', please verify this file. To create one manually use 'gdk-pixbuf-query-loaders' and place the file inside " .. destetc)
                 good = false
             end
             
@@ -113,14 +113,13 @@ post = function (dest, destdir, libmap, full, copy)
             end
             
             if not runquery(string.format("%s %s/immodules/*\\.so", exec, destmods), destetc .. "/gtk.immodules") then
-                print("WARNING: Encountered errors during generation of 'gtk.immodules', please verify this file.")
+                print("WARNING: Encountered errors during generation of 'gtk.immodules', please verify this file. To create one manually use 'gtk-query-immodules-2.0' and place the file inside " .. destetc)
                 good = false
             end
         end
         
         if not good then
-            -- UNDONE: Reference
-            print("WARNING: Some errors occurred. You're strongly advised to fix them, see the manual for more information how to set up this dependency manually.")
+            print("WARNING: Some errors occurred. You're strongly advised to fix them.")
         end
     end
 end,

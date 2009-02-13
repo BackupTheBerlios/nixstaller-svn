@@ -64,29 +64,27 @@ Here is a short description for what you can find in this document:
 Here is a list with the main features. Read further for more info to see what they do and how to use them.
 
 @itemize @bullet
-@item 3 different frontends used for the installer: @uref{http://www.fltk.org,FLTK}, @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses} and @uref{http://www.gtk.org,GTK2}.
+@item Three different frontends used for the installer: @uref{http://www.fltk.org,FLTK}, @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses} and @uref{http://www.gtk.org,GTK2}.
 @item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris 10/Nexenta (all x86, some x86_64).
-@item An installer itself has the following features:
-@itemize @bullet
-@item Can be fully translated (no UTF yet). Translations for English and Dutch are supplied by default.
-@item Different kind of installer screens:
-@itemize @bullet
-@item A screen where the user can select a language.
-@item An introduction screen with an optional image and text.
-@item A screen where the user can read/accept a provided license.
-@item A screen where the user can select a destination directory to put the installation files.
-@item A screen which shows the progress of the installation.
-@item A screen which can show text after the installation.
-@item A generic screen which can be made with a script.
-@end itemize
-Most screens are optional and can be shown in any particular order. New type of installation screens can be created manually.
-@end itemize
+@item The installer can be fully translated. English and Dutch translations are provided. It's possible to let the installer automatically select a language or let the user select it.
+@item The installer is build on several @emph{installation screens}. They are used for user interaction and can be used to select a language, show an intro, accept a license, show the installation progress etc. It's also possible to create new installation screens with a wide range of widgets.
+@item Installers can also be unattended, which is handy for batch installers. Instead of a frontend, commandline parameters are used to configure the installation process.
 @item Frontends are build in a way that they can be used on many different systems by linking less common libraries staticly.
-@item The files can be packed with gzip-, bzip2 and lzma compression.
-@item Installation files can be extracted to various directories; a temporary directory (useful for @samp{./configure && make && make install} like installers), a directory which can be selected by the user and a default directory.
+@item The installer can be compressed with gzip, bzip2 or lzma.
+@item The destination path of the installation files can be configured. For example to a temporary directory (useful for @samp{./configure && make && make install} like installers), a fixed directory (eg. @file{/usr}) or it can be selected by the user.
 @item @uref{http://www.lua.org,Lua} support is provided to configure the installer, create installation screens and program the installation procedure. This allows very flexible configurations.
-@item A certain installation type, called @samp{Package Mode}, which allows software registration in the user's native package manager  (rpm, dpkg, pacman and slackware's tgz are currently supported). When Package Mode fails to register the software it will continue with the installation and supply an uninstallation script. Package Mode also features basic dependency handling.
+@item @samp{Package Mode} allows to integrate the software. The installer can register the software in the user's package manager (rpm, dpkg, pacman and slackware's tgz are currently supported). This allows the user to easily remove, view or update your software. In case the installer could not register the software, an uninstall script will be installed.
+@item @samp{Package Mode} also allows advanced dependency handling. @samp{Dependency Packages} can be used to verify the existance and compatibility of dependencies and if required install dependency files. Dependency packages can be made downloadable to reduce the installer size.
 @item Creation of desktop menu entries following the freedesktop standards.
+@item Extensive amount of configuration variables with sane defaults.
+@end itemize
+
+
+@section Update notes
+@subsection 0.4 @minus{}@minus{}> 0.5
+@itemize @bullet
+@item label:set() function is deprecated, use the widget:setlabel() function instead.
+@item input:setlabelwidth() now uses a frontend specific amount of width, @pxref{input:setlabelwidth}.
 @end itemize
 
 
@@ -246,6 +244,7 @@ The installation of Nixstaller is easy: just extract the files to a directory an
 
 @node Quickstart
 @chapter Quickstart
+Very simple installer:
 @itemize @bullet
 @item @ref{Installation, Install} Nixstaller.
 @item Open up a terminal and create a project directory: @command{genprojdir.sh <projectdirhere>}
@@ -263,7 +262,7 @@ Also read the @ref{Tutorials, tutorials}.
 @chapter Basics
 
 @section Introduction
-This chapter will focus on basic background info on Nixstaller and it's features and is meant to give a idea how everything works. Most of the practical information is given in the next chapters.
+This chapter will focus on basic background info on Nixstaller and it's features and is meant to give a idea how everything works. Most of it will be theoretical, the practical information is given in the next chapters.
 
 @section Installation package
 The final product of Nixstaller is an @emph{install package}. The package itself is simply a self-extracting archive in the form of a shell script. When the package (the shell script) is executed it will extract a few files to a temporary directory and will call another script. This second script will detect a usable frontend and calls it.
@@ -332,7 +331,7 @@ The installation itself is controlled by a few Lua scripts. @uref{http://www.lua
 @section Translations
 The text used by the frontends can be translated via @emph{translation files}. The text strings for each language are each stored in a file called @file{strings} and will contain all (English) strings used by the installer with the translation below. Any line that starts with a @samp{#} will be ignored.
 
-Currently there are already two translations: Dutch and English. You can find these in the @file{lang/} directory inside the main Nixstaller directory. You can 'translate' the English @file{'strings'} file in order to modify the English texts used by the installer.
+Currently there are already two translations: Dutch and English. You can find these in the @file{lang/} directory inside the main Nixstaller directory. You can 'translate' the English @file{strings} file in order to modify the English texts used by the installer.
 
 Here is a example taken from the Dutch @file{strings} file:
 @codeblock{License agreement
@@ -345,7 +344,7 @@ Installatie van %s gereed!}
 
 Notice the @samp{%s}? The @samp{%s} will be replaced by the installer with another string. This can be all kind of things, in this case it is the program name. What will be replaced is usually given in the form of a comment in the @file{strings} file itself.
 
-@strong{Note}: It's important that the @file{strings} file is saved as UTF-8 (Unicode), as Nixstaller only supports this character codeset at this point. This also means that the translations will only work when the user is using an UTF-8 locale (unless the utf8 flag is not set as later will be discussed, this is however usually not the case). When you are using an UTF-8 locale (the @command{locale} shell command can tell), saving as UTF-8 usually be done automatically.
+@strong{Note}: It's important that the @file{strings} file is saved as UTF-8 (Unicode), as Nixstaller only supports this character codeset at this point. This also means that the translations will only work when the user is using an UTF-8 locale (unless the utf8 flag is not set as later will be discussed, this is however usually not the case). When you are using an UTF-8 locale (the @command{locale} shell command can tell), saving as UTF-8 is usually done automatically.
 
 @subsection Multiline translations
 Some translations need more than one line. If this is the case the text should be put between 2 square brackets.
@@ -373,7 +372,7 @@ There are other things to be translated as well:
 @item Text used by Lua scripts
 @end itemize
 
-The first 3 items will be explained in the next section. Lua scripts will be handled in the chapter @ref{Lua Scripts}.
+The first three items will be explained in the next section. Lua scripts will be handled in the chapter @ref{Lua Scripts}.
 
 
 @anchor{welcome license finish}
@@ -420,11 +419,11 @@ A combination of a full and simple dependency also exist: these will supply all 
 @subsection How it works
 During the installation, first all the files that should be installed are being placed inside a special directory, called the @emph{temporary package directory}. This directory will later be used for the actual installation, by either packaging the files and registering them with the local package manager or by simply copying them to the destination path. Whether a package is registered or not depends on user configuration, installer configuration and if there is support for the user's package manager.
 
-After the files are placed inside the temporary package directory, dependencies will be checked. All dependencies that should be installed are placed in the temporary package directory aswell. Any dynamic libraries (coming from dependencies or from the 'main' software) must be placed inside a subdirectory called @file{lib/} inside the temporary package directory. Note that this process for dependencies will be done automatically by default.
+After the files are placed inside the temporary package directory, dependencies will be checked. All dependencies that should be installed are placed in the temporary package directory aswell. Any dynamic libraries (coming from dependencies or from the 'main' software) must be placed inside a subdirectory called @file{lib/} inside the temporary package directory. Note that libraries from dependencies will be automatically placed inside this directory by default.
 
-When the actual installation begins, the files (from the temporary package directory) are not placed directly in the destination directory, but instead are placed in a subdirectory inside the destination directory. This subdirectory is referred as the @emph{data directory}. A common example of a data directory would be @file{/usr/local/share/<appname>}, in this case @file{/usr/local/share} is the destination directory. Some additional scripts will be installed to another directory, the @emph{binary directory}, that will launch an executable from the data directory. The scripts have the same name as the binary that they will run and can set up an environment (usually by setting one or more shell variables) so that the real executable is able run. Besides the @emph{binary scripts}, the binary directory is also used to store any uninstallation scripts (in case the software isn't registered by a package manager). Usually the binary directory is a directory who is defined inside the user's @var{PATH} variable (eg. /usr/local/bin).
+When the actual installation begins, the files (from the temporary package directory) are not placed directly in the destination directory, but instead are placed in a subdirectory inside the destination directory. This subdirectory is referred as the @emph{data directory}. A common example of a data directory would be @file{/usr/local/share/<appname>}, in this case @file{/usr/local/share} is the destination directory. Some additional scripts will be installed to another directory, the @emph{binary directory}, that will launch an executable from the data directory. The scripts have the same name as the binary that they will run and set up an environment (usually by setting one or more shell variables) so that the real executable is able to run. Besides the @emph{binary scripts}, the binary directory is also used to store any uninstallation scripts (in case the software isn't registered by a package manager). Usually the binary directory is a directory who is defined inside the user's @var{PATH} variable (eg. /usr/local/bin).
 
-Because dependencies are installed to a isolated place, most software needs to be aware of this in order to find them. One way to tell where dynamic libraries can be found, is by setting the @var{LD_LIBRARY_PATH} environment variable. This will be automatically done inside each of the binary scripts. As this software itself is not placed in a regular directory too, it's possible that measures have to be taken for that aswell. KDE programs for example need to have the variable @var{KDEDIRS} set (this can be done automatically aswell). Setting other environment variables is possible and will be discussed in the next chapter.
+Because dependencies are installed to a isolated place, most software needs to be aware of this in order to find them. One way to tell where dynamic libraries can be found, is by setting the @var{LD_LIBRARY_PATH} environment variable. This will be automatically done inside each of the binary scripts. As the software itself is not placed in a regular directory too, it's possible that measures have to be taken for that aswell. KDE programs for example need to have the variable @var{KDEDIRS} set (this can be done automatically aswell). Setting other environment variables is possible and will be discussed in the next chapter.
 
 
 To summarize:
@@ -454,7 +453,7 @@ The appendix @ref{Lua Library Reference} is a complete reference for all the Lua
 
 @anchor{config.lua}
 @section General configuration
-Most of the general configuration such as the Software's name, what kind of compressing should be used, which languages to include, are handled in the project's @file{config.lua} file. In most cases this file autogenerated when a project directory is created (@pxref{Creating Installers}). All of the variables are inside the @code{cfg} module:
+Most of the general configuration such as the Software's name, what kind of compressing should be used, which languages to include, are handled in the project's @file{config.lua} file. Usually this file is autogenerated when a project directory is created (@pxref{Creating Installers}). All of the variables are inside the @code{cfg} module and are shown below. The only variable that must be specified is @code{cfg.appname}, the rest is all optional.
 @table @code
 @vindex cfg.appicon
 @item cfg.appicon
@@ -1609,7 +1608,7 @@ The first step is to search which dependencies are required. By using the @comma
 
 The next step is to decide which dependencies should be full or simple and which full dependencies should be standalone. This decision can be based on various things such as the size, if it's common to be available, if a dependency can be trully full, if a dependency is stable or not etc. The tags from dependency templates can also help you with this decision For example, any templates which have the tag @command{small} can easily be full. On the other hand, dependencies with the tag KDE4 are usually to big and thus it's a good idea to make these dependencies simple.
 
-After you decided which dependencies should be full or simple and which full dependencies should be standalone, it's time to create the dependency packages. The easiest way to do this is to use the @command{auto} action. This will automatically create dependency packages from suggested dependency templates. This process can be configured so that files can be automatically copied, mark dependencies as full etc.  It's best to start with the @command{@minus{}@minus{}pretend} option to see what will happen. This way you can also experiment with the @command{@minus{}@minus{}full-tag}, @command{@minus{}@minus{}simple-tag} and @command{@minus{}@minus{}no-standalone} parameters. When using these parameters you can @emph{exclude} any tags by inserting a @samp{!} before the tag name. Other handy parameters are @command{@minus{}@minus{}copy} to copy files automatically and the @command{@minus{}@minus{}unknown-*} options to create basic dependency packages for unknown libraries.  When you're happy with the results you can remove the @command{@minus{}@minus{}pretend} option to automatically populate the @file{deps/} directory of your project with dependency packages. When it's finished you should add all the @emph{main dependencies} (dependencies not coming from other dependencies) to the @code{pkg.deps} @code{table}.
+After you decided which dependencies should be full or simple and which full dependencies should be standalone, it's time to create the dependency packages. The easiest way to do this is to use the @command{auto} action. This will automatically create dependency packages from suggested dependency templates. It will also check for dependencies for the dependency packages and fill in the @code{deps} field from the dependency packages. This process can be configured so that files can be automatically copied, mark dependencies as full etc. It's best to start with the @command{@minus{}@minus{}pretend} option to see what will happen. This way you can also experiment with the @command{@minus{}@minus{}full-tag}, @command{@minus{}@minus{}simple-tag} and @command{@minus{}@minus{}no-standalone} parameters. When using these parameters you can @emph{exclude} any tags by inserting a @samp{!} before the tag name. Other handy parameters are @command{@minus{}@minus{}copy} to copy files automatically and the @command{@minus{}@minus{}unknown-*} options to create basic dependency packages for unknown libraries.  When you're happy with the results you can remove the @command{@minus{}@minus{}pretend} option to automatically populate the @file{deps/} directory of your project with dependency packages. When it's finished you should add all the @emph{main dependencies} (dependencies not coming from other dependencies) to the @code{pkg.deps} @code{table}.
 
 Now it's time to run @command{deputil.sh} again with the @command{scan} option to see if everything is OK. Note that this time all the generated dependency packages @emph{which are full} will also be checked, so it's possible that you may need to create some more dependency packages. This is accomplished with the @command{gen} and @command{gent} actions. Just repeat this process until the @command{scan} action reports that everything is OK.
 
@@ -1629,6 +1628,8 @@ Therefore it is always desirable to @emph{increase} the compatibility of your so
 Linking to older libraries is easily done by compiling the software on an old OS version. With virtualization or even a chroot you can install and run a second OS that can be purely used for compilation. This is also the way how Nixstaller binaries are build.
 
 Note that these problems vary per operating system. Solaris has a history of being relatively well compatible with older binaries. With Linux on the other hand, because of the fact that there are numerous different distributions, it can be tricky to make sure that your binaries will run on different systems. With the BSD systems, especially OpenBSD and FreeBSD, it's common that the major version of various system libraries will be bumped after a new major release. Therefore it may be handy to supply different binaries for each major OS release. Note that this may also increase the compatibility of your software, as the chance of getting a much older or newer library will be decreased.
+
+Another option would be to compile the software and dependency packages. As the software will be linked with the available libraries it's chances are much higher to run correctly. However compiling has several drawbacks: you're software obviously must be open source (which is not always possible), compiling can take much time and the user may need several tools which are not always available by default.
 
 
 @anchor{Creating the Installer}
@@ -1844,7 +1845,7 @@ In this tutorial we make a fairly advanced installer for the advanced text edito
     @end itemize
     @item Extract the files to a temporary directory and configure, compile and install Vim.
     @item Show the README after installation.
-    @item Other default configurations, such as a default logo and appicon and lzma compression.
+    @item Other default configurations, such as a default logo and lzma compression.
 @end itemize
 
 @subsection Project Directory
@@ -2267,18 +2268,22 @@ Calling @command{geninstall.sh} with the path to project directory as first argu
 @section Fourth Tutorial: Installer for BZFlag
 This tutorial introduces @ref{pkgmode,,Package Mode}, desktop menu generation and including dependencies. The installer will support the following things:
 @itemize @bullet
+@item Automatically launch the right frontend.
 @item Run on your current OS and CPU architecture (it's a binary installer and we will only focus on building on your current system).
-@item Let the user select a language.
+@item Auto select a language or when this fails let the user select a language.
 @item Show a welcome screen with BZFlag graphics and short (intro) message.
 @item Let the user configure whether to enable package registration and setting the destination paths for the binary and data directories.
-@item Install BZFlag to the user's system, including a few (less common) dependencies, via the @samp{Package Mode way}.
+@item Verify dependencies.
+@item Install BZFlag to the user's system, via the @samp{Package Mode way}.
 @item Create a desktop menu entry for BZFlag.
+@item Other default configurations, such as a default logo and appicon and lzma compression.
 @end itemize
+This tutorial will assume BZFlag version 2.0.12
 
 @subsection Project Directory
 Again the @file{genprojdir.sh} script is used to generate a project directory:
-@codeblock{genprojdir.sh -i <pathtobzflaglogo>/side.bmp -n "BZFlag" @minus{}@minus{}pkg bzflag/}
-The @samp{<pathtobzflaglogo>} part should be replaced by the path where @file{side.bmp} can be found, in the BZFlag archive it is located inside the @file{bzflag-2.0.10/package/win32/nsis/} directory. Notice that this time the @samp{@minus{}@minus{}pkg} argument is also passed, this will set up a template @file{package.lua} file and adds some handy Package Mode code to @file{run.lua}.@*
+@codeblock{genprojdir.sh -i <pathtobzflaglogo>/side.bmp -n "BZFlag" @minus{}@minus{}pkg @minus{}@minus{}deps bzflag/}
+The @samp{<pathtobzflaglogo>} part should be replaced by the path where @file{side.bmp} can be found, in the BZFlag archive it is located inside the @file{bzflag-2.0.12/package/win32/nsis/} directory. Notice that this time the @command{@minus{}@minus{}pkg} and @command{@minus{}@minus{}deps} parameters are also passed, this will set up a template @file{package.lua} file and adds some handy Package Mode code to @file{run.lua}.@*
 @*
 Next we create a @file{welcome} file with the following content:
 @codeblock{BZFlag is a free online multiplayer cross-platform open source 3D tank
@@ -2289,66 +2294,30 @@ improved to this day. It's one of the most popular open source games ever.
 @*
 (from bzflag.org)}
 
-@subsection Compilation of BZFlag and Dependencies
-Before we continue with the configuration of the installer, we first have to compile BZFlag and a few dependencies.@*
-@*
-To do this it's best to @samp{install} any files to a separate directory structure, this is easily accomplished by setting the @samp{@minus{}@minus{}prefix} flag when @command{configure} is called. This @samp{prefix directory} is furtherly referred as @emph{PREFIX}.@*
-@*
-Using the data in the table below, BZFlag and it's dependencies can now be build.
-@starttable{.33, .33, .33}
-@addtableheaderrow{}
-    @addtableheadercol{Where to get it}
-    @addtableheadercol{How to compile}
-    @addtableheadercol{Comments}
-@endtablerow
-
-@addtablerow{SDL}
-    @addtablecol{@uref{http://www.libsdl.org}}
-    @addtablecol{@command{./configure @minus{}@minus{}prefix=PREFIX && make && make install}}
-    @addtablecol{Make sure that you have X dev packages installed}
-@endtablerow
-
-@addtablerow{libCURL}
-    @addtablecol{@uref{http://curl.haxx.se}}
-    @addtablecol{@command{./configure @minus{}@minus{}prefix=PREFIX && make && make install}}
-    @addtablecol{}
-@endtablerow
-
-@addtablerow{BZFlag}
-    @addtablecol{@uref{http://bzflag.org}}
-    @addtablecol{@command{CPPFLAGS="-IPREFIX/include" LDFLAGS="-LPREFIX/lib" ./configure @minus{}@minus{}prefix=PREFIX @minus{}@minus{}with-sdl-prefix=PREFIX @minus{}@minus{}with-libcurl="PREFIX/lib" && make && make install}}
-    @addtablecol{}
-@endtablerow
-
-@endtable
-
-After everything is build, the PREFIX directory should now contain the files we need (and some more). It's now time to place those files in the @file{files_all/} directory inside the project directory. The directory structure should look like this:
+@subsection Preparing the installation files
+First of all BZFlag must be compiled. This is easily achieved by the popular @command{./configure && make && make install} command. It's best to pass the @minus{}@minus{}prefix parameter to configure, so that the compiled BZFlag will be installed to a seperate known directory. When everything went well, you will need to copy the files from the @samp{prefix} directory to the project's @file{files_all/} directory. The layout should look like this:
 @itemize @bullet
-    @item @file{bin/}
+    @item @file{files_all/}
     @itemize @bullet
-        @item @file{bzadmin}
-        @item @file{bzflag}
-        @item @file{bzfs}
-    @end itemize
-    @item @file{lib/}
-    @itemize @bullet
-        @item @file{libcurl.so.X}
-        @item @file{libSDL-1.2.so.X}
-    @end itemize
-    @item @file{bzflag/}
-    @itemize @bullet
-        @item @emph{BZFlag data files}
+        @item @file{bin/}
+        @itemize @bullet
+            @item @file{bzadmin}
+            @item @file{bzflag}
+            @item @file{bzfs}
+        @end itemize
+        @item @file{bzflag/}
+        @itemize @bullet
+            @item @emph{BZFlag data files}
+        @end itemize
     @end itemize
 @end itemize
-
-The binaries and libraries can be found in @file{PREFIX/bin} and @file{PREFIX/lib} respectively. The binaries are pretty big, you probably want to @samp{strip} them by running @command{strip -s <bins>}. Note that the libraries inside @file{PREFIX/lib} are suffixed with @samp{.so.X.Y.Z} (the other libs are just symlinks to these). The binaries however, expect the libraries to be suffixed with @samp{.so.X}. For this reason you have to rename the libraries after you copied them. Finally the data files can be found inside @file{PREFIX/share/bzflag}.
-
+Note that the @file{bzflag/} directory can be found inside the @file{share/} subdirectory inside the @samp{prefix} directory. Finally a good idea would be to @samp{strip} the binaries as they will contain debug symbols and will be quite big. To do so run the @command{strip} command for each file. On Linux you should use the @command{-s} parameter when stripping the binaries. Other systems may use different parameter flags.
 
 @subsection @file{package.lua}
 Now we need to edit the @file{package.lua} file. The contents (comments and some defaults are stripped) are shown below.
 @codeblock{pkg.enable = true
 pkg.name = "bzflag"
-pkg.version = "2.0.10"
+pkg.version = "2.0.12"
 pkg.release = "1"
 pkg.summary ="Use your tank to shoot others and capture flags in a 3D multiplayer world."
 pkg.description = [[
@@ -2361,6 +2330,97 @@ pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail>" @minus{}@minus{} You probably 
 pkg.url = "bzflag.org"
 pkg.bins = @{ "bin/bzfs" , "bin/bzflag", "bin/bzadmin" @}}
 
+@subsection Dependencies
+Now we have collected the installation files it's time to worry about BZFlag's dependencies. We will use @command{deputil.sh} for this. The first step to @emph{scan} for any dependencies, to do so run the following command:
+@codeblock{deputil.sh -p bzflag/ bzflag/files_all/bin/*}
+This will dump all the (library) dependencies from the BZFlag binaries. The @command{-p} parameter is used to specify the project directory. The last parameters should contain all the binaries from BZFlag. Here is how the output will look like:
+@codeblock{Primary dependency results: 
+* (New) Templates suggested:
+  - "SDL-1.2"
+      Libs:   libSDL-1.2.so.0
+      Tags:   SDL, small
+      Notes:  -
+  - "core-libs-other"
+      Libs:   libm.so.6, libpthread.so.0, libgcc_s.so.1
+      Tags:   common, unknown-full
+      Notes:  -
+  - "libidn"
+      Libs:   libidn.so.11
+      Tags:   unknown-copy
+      Notes:  -
+  - "Mesa"
+      Libs:   libGL.so.1, libGLU.so.1
+      Tags:   common-desktop, X11, small
+      Notes:  -
+  - "libstdc++"
+      Libs:   libstdc++.so.5
+      Tags:   common
+      Notes:  -
+  - "OpenSSL"
+      Libs:   libcrypto.so.0.9.7, libssl.so.0.9.7
+      Tags:   common, unknown-copy
+      Notes:  -
+  - "core-libs"
+      Libs:   librt.so.1, libc.so.6, libdl.so.2
+      Tags:   full-never
+      Notes:  -
+  - "zlib"
+      Libs:   libz.so.1
+      Tags:   common, small
+      Notes:  -
+  - "cURL"
+      Libs:   libcurl.so.4
+      Tags:   common, small
+      Notes:  -
+  - "X11-core"
+      Libs:   libXext.so.6, libXi.so.6, libXrender.so.1, libX11.so.6, libXrandr.so.2, libSM.so.6, libICE.so.6
+      Tags:   common, X11, small
+      Notes:  -
+@*
+------------
+@*
+@*
+NOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this by checking the libs field from the respective dependencies. To regenerate a dependency (with the gen or gent actions) with additional libraries use the @minus{}@minus{}libs option.}
+Note that which dependencies will be required may vary. This depends on the OS and how the dependencies were build.
+
+Now that we know what dependencies will be required, it's time to choose which should be simple or full. Lets say we want to make all dependencies full from which their respective template has the @code{small} tag. To create the dependency packages we can use the @command{auto} action. To see what will happen use the @minus{}@minus{}pretend option:
+@codeblock{deputil.sh auto -p bzflag/ @minus{}@minus{}pretend -F small @minus{}@minus{}copy  bzflag/files_all/bin/*}
+Again the @command{-p} parameter is used to specify the project directory. The @command{-F} parameter will make all dependency packages full if their template contains one of the given tags (all others will be simple). The @command{@minus{}@minus{}copy} parameter will automatically copy all libraries. Like the scan command, the last parameters are BZFlag's binaries. The command will produce the following output (again which dependencies may vary):
+@codeblock{Would generate standalone dependency zlib
+Would generate simple dependency OpenSSL
+Would generate standalone dependency X11-core
+Would generate standalone dependency SDL-1.2
+Would generate standalone dependency cURL
+Would generate simple dependency core-libs
+Would generate simple dependency core-libs-other
+Would generate standalone dependency Mesa
+Would generate simple dependency libstdc++
+Would generate simple dependency libidn}
+From the output we can see that the command without the @minus{}@minus{}pretend parameter would generate full (standalone) dependency packages for X11-core (various core libraries from X11), SDL-1.2, cURL and Mesa. Now lets say that we don't want full dependencies on anything X11 related (these libraries are pretty common and stable). For this we will have to add another tag to the @command{-F} parameter and add a @samp{!} to exclude it. The new command will be:
+@codeblock{deputil.sh auto -p bzflag/ @minus{}@minus{}pretend -F 'small,!X11' @minus{}@minus{}copy bzflag/files_all/bin/*}
+Notice that we have to escape the tags (@samp{''}), as some shells will try to interpret the @samp{!}. The output from this command will be:
+@codeblock{Would generate simple dependency OpenSSL
+Would generate simple dependency libstdc++
+Would generate standalone dependency cURL
+Would generate standalone dependency zlib
+Would generate simple dependency core-libs-other
+Would generate simple dependency core-libs
+Would generate simple dependency X11-core
+Would generate simple dependency libidn
+Would generate standalone dependency SDL-1.2
+Would generate simple dependency Mesa}
+This looks pretty much what we want. To do the actual work rerun the command but remove the @minus{}@minus{}pretend parameter.
+
+Now that we have created the dependency packages it's time to place them in the @code{pkg.deps} variable inside the project's @file{package.lua} file. In our case add the following line to @file{package.lua}:
+@codeblock{pkg.deps = @{ "Mesa", "OpenSSL", "SDL-1.2", "X11-core", "cURL", "core-libs", "core-libs-other", "libidn", "libstdc++", "zlib" @}}
+
+Now rerun the command we used to scan and see if everything is OK. In case any new dependencies or unknowns are shown you can create new dependency packages with the @command{gen} and @command{gent} actions. After doing so add them to the @code{pkg.deps} variable and rerun the scan command again.
+
+@subsection Symbol map file
+To create the symbol map file run the following command:
+@codeblock{gensyms.sh -d bzflag/ bzflag/files_all/bin/*}
+The @command{-d} parameter is used to specify a destination and should be the project directory. The last parameters should be all the BZFlag binaries.
+
 @subsection @file{run.lua}
 Now it's time to focus on the @file{run.lua} file. Compared to the previous tutorial it's fairly simple. The contents (again with any generated comments stripped out) are shown below.
 @codeblock{function Init()
@@ -2369,7 +2429,7 @@ Now it's time to focus on the @file{run.lua} file. Compared to the previous tuto
 end
 @*
 function Install()
-    install.setstepcount(2)
+    install.setstepcount(3)
 @*
     if pkg.needroot() then
         install.askrootpw()
@@ -2382,23 +2442,33 @@ function Install()
     install.menuentries["bzflag"] = install.newdesktopentry(pkg.getbindir("bin/bzflag"), pkg.getdatadir("bzflag/blue_icon.png"), "Game;ActionGame")
 @*
     install.extractfiles()
+    pkg.verifydeps()
     install.gendesktopentries(pkg.needroot()) @minus{}@minus{} Assume global install if root access is necessary.
     install.generatepkg()
 end}
+In the @code{Init()} function we tell that the files should be extracted to the @emph{temporary package directory} and which screens we want. The @code{PackageToggleScreen}, @code{PackageDirScreen} and @code{SummaryScreen} are specific for Package Mode.
+
+In the @code{Install()} function the stepcount is set to three: extracting, verifying dependencies and generating the package. Then we see if the installer needs root access. As the comments show the @command{-directory} parameter needs to be passed to bzflag, we do so by using @code{pkg.addbinopts}. Then a desktop menu entry is created with the @code{install.newdesktopentry()} function. The last functions will extract the installation files, verify any dependencies, create the desktop entries and generate the final package from the temporary package directory.
 
 @subsection Finishing Up
 The project directory layout should now look like this:
 @itemize @bullet
     @item @file{bzflag/}
     @itemize @bullet
+        @item @file{deps/}
+        @itemize @bullet
+            @item @emph{Dependency packages}
+        @end itemize
         @item @file{lang/}
         @itemize @bullet
             @item @file{dutch/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
             @item @file{english/}
             @itemize @bullet
+                @item @file{config.lua}
                 @item @file{strings}
             @end itemize
         @end itemize
@@ -2414,10 +2484,12 @@ The project directory layout should now look like this:
         @item @file{config.lua}
         @item @file{package.lua}
         @item @file{run.lua}
+        @item @file{symmap.lua}
     @end itemize
 @end itemize
 
-The installer can now be generated using @file{geninstall.sh}.
+The installer can now be generated using @file{geninstall.sh}:
+@codeblock{geninstall.sh bzflag/ bzflag.sh}
 
 @node Compilation
 @chapter Compilation
@@ -2430,7 +2502,7 @@ This chapter is important for people who want to compile the frontends used by N
 @subsection Dynamic vs Static
 Dynamic libraries are good because they reduce size from the executable and when they are updated it affects the executable aswell. Drawbacks are mainly conflicting version numbers. If the major library version changes the executable cannot use it anymore.@*
 @*
-For this reason most libraries are linked staticly. This will add size to the resulting binaries, but they can run on many different systems. There are however a few libraries linked dynamicly, because they cannot or it's unreasonable to link them staticly. The C library (@samp{libc}) and the C++ libraries are examples of dynamicly linked libraries.
+For this reason most libraries are linked staticly. This will add size to the resulting binaries, but they can run on many different systems. There are however a few libraries linked dynamicly, because they cannot or it's unreasonable to link them staticly. The C library (@samp{libc}) and the GTK libraries are examples of dynamicly linked libraries.
 
 @subsection Required Libraries
 @starttable{.25, .25, .25, .25}
@@ -2488,6 +2560,24 @@ For this reason most libraries are linked staticly. This will add size to the re
     @addtablecol{Static}
 @endtablerow
 
+@addtablerow{cURL (libcurl)}
+    @addtablecol{@uref{http://curl.haxx.se/}}
+    @addtablecol{Core}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{elf (libelf)}
+    @addtablecol{@uref{http://www.mr511.de/software/}}
+    @addtablecol{Core}
+    @addtablecol{Static}
+@endtablerow
+
+@addtablerow{stdcxx (libstd)}
+    @addtablecol{@uref{http://stdcxx.apache.org/}}
+    @addtablecol{Core}
+    @addtablecol{Static on some platforms, other use native libstdc++}
+@endtablerow
+
 @addtablerow{GCC libs (libc, libstdc++, libm, libgcc, libutil)}
     @addtablecol{@uref{http://gcc.gnu.org/}}
     @addtablecol{Core}
@@ -2498,19 +2588,19 @@ For this reason most libraries are linked staticly. This will add size to the re
 
 All the static libraries with the exception from @file{libutil.a} needs to be copied to the @file{src/lib/[osname]/[archname]} directory. The @samp{[osname]} refers to the lower cased output from the command @command{uname}. @samp{archname} refers to either @samp{x86}, @samp{x86_64} or the output from @command{uname -m}. The main reason for putting the static libraries in a separate directory is that 'clean' versions can be compiled and used. 'clean' in the way that the libraries have no CPU specific optimizations.@*
 @*
-The search path to X11 libraries defaults to @file{/usr/X11R6/lib}. This can be changed by the @samp{xlibsdir} parameter passed to SCons, which is discussed later.@*
+The search path to X11 libraries defaults to @file{/usr/X11R6/lib}. This can be changed by the @samp{xlibsdir} parameter passed to SCons.@*
 @*
-The search path to GTK2 libraries defaults to @file{/usr/lib}. This can be changed by the @samp{gtklibsdir} parameter passed to SCons, which is also discussed later.@*
+The search path to GTK2 libraries defaults to @file{/usr/lib}. This can be changed by the @samp{gtklibsdir} parameter passed to SCons.@*
 
 @subsection Headers
 All the header files from the static libraries can be found in the @file{src/include/} directory. You normally don't have to bother with these. The path to the X11 headers can be specified with the @samp{xincdir} parameter passed to SCons (discussed later). The included GTK2 headers are from the older 2.4 version. This ensures that the frontend runs on systems with GTK+ 2.4 or later.
 
 @subsection Notes
-In the @file{src/libs/[osname]/[archname]/} directories you can find a @file{notes} file that contain several notes about which library versions are used and how they were compiled. It's recommended that the same library versions are used in case you want to compile your own.
+In the @file{src/libs/[osname]/[archname]/} directories you can find a @file{notes} file that contain information on the build host.
 
 @anchor{builddeps.sh}
 @subsection @file{builddeps.sh}
-This script is located inside the @code{src/} directory and is used to easily retrieve and compile most dependencies. Usually it's called inside the @file{src/} directory itself. The script needs either @command{wget} or @command{fetch} to retrieve the dependencies and @command{nano} is used to let you edit lua's Makefile (to use g++ and -Os, see the @file{notes} files). The files are stored inside @file{src/deps/files}, the dependencies are installed (after compilation) to @file{src/deps/usr}.@*
+This script is located inside the @code{src/} directory and is used to easily retrieve and compile most dependencies. Usually it's called inside the @file{src/} directory itself. The script needs either @command{wget}, @command{fetch} or @command{curl} to retrieve the dependencies . The files are stored inside @file{src/deps/files}, the dependencies are installed (after compilation) to @file{src/deps/usr}.@*
 @*
 The script can build one or more targets, by specifying them at the command line. These targets are:
 @itemize @bullet
@@ -2521,6 +2611,9 @@ The script can build one or more targets, by specifying them at the command line
 @item lua
 @item ncurses
 @item lzma
+@item stdcxx
+@item curl
+@item elf
 @end itemize
 If no targets are specified, all of them will be build.
 
@@ -2535,13 +2628,15 @@ To start the compilation simply execute @command{scons} from the @file{src/} dir
 SCons has several options that will affect the compilation, to see these run @command{scons @minus{}@minus{}help} in the @file{src/} directory.@*
 @*
 There are also a few build targets:
-@table @strong
+@table @command
 @item stripbins
 Strips all symbols from the binaries.
 @item tardist
 Creates a tar.gz file containing the full Nixstaller distribution. Note that new files need to be added to the @code{distfiles_user} variable at the beginning of the @file{SConstruct} file.
+@item tardev
+As tardist, but also includes the full source code. The files that are used to create the archive must be defined in the @code{distfiles_dev} variable inside the @file{SConstruct} file.
 @item setupdist
-Creates an installer for Nixstaller.
+Creates an installer for Nixstaller. It will pack all the files from @code{distfiles_user}.
 @end table
 
 After compilation is done the binaries will be put in the @file{bin/} directory. The directory structure looks like this:
@@ -2552,21 +2647,20 @@ After compilation is done the binaries will be put in the @file{bin/} directory.
         @itemize @bullet
             @item @emph{libc.so.X/}
             @itemize @bullet
-                @item @emph{libstdc++.so.X/}
-                @itemize @bullet
-                    @item @file{lzma}
-                    @item @file{fltk}
-                    @item @file{gtk}
-                    @item @file{ncurs}
-                @end itemize
-                @item @file{edelta}
+                @item @file{lzma}
                 @item @file{lzma-decode}
+                @item @file{fltk}
+                @item @file{gtk}
+                @item @file{ncurs}
+                @item @file{edelta}
+                @item @file{surunner}
+                @item @file{lock}
             @end itemize
         @end itemize
     @end itemize
 @end itemize
 
-The binaries are each put on separate @samp{libc} and, in case of C++ binaries, in separate @samp{libstdc++} directories aswell. The reason for this is that they are linked dynamicly. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} and @file{libstdc++.so.4} while FreeBSD 6.X is using @file{libc.so.6} and @file{libstdc++.so.5}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started (and obviously created when the binaries were in place) it will then choose the right binaries for the users system.@*
+The binaries are each put on separate @samp{libc} and. The reason for this is that different OS versions may use libc versions. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} while FreeBSD 6.X is using @file{libc.so.6}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started it will then choose the right binaries for the users system.@*
 @*
 Besides the frontends there are some other binaries. Here is an explanation for each of them:
 @table @file
@@ -2579,11 +2673,16 @@ The GTK frontend.
 @item ncurs
 The ncurses frontend.
 @item edelta
-This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend binaries. The @samp{diffs} are made from binaries for the same OS and CPU architecture but from different @file{libc} and/or @samp{libstdc++} versions. Note that this version differs from the @uref{http://www.diku.dk/~jacobg/edelta/, original version} because it's modified in such way that it doesn't use compression (which makes the binary smaller and allows us to use other compression methods than gzip).
+This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend binaries. @file{geninstall.lua} will create an optimal path from which binaries a diff should be made to get optimal size results. It's a bit complex algorithm, it will use several binaries to build another binary. For example a fltk linux/x86 binary may be @samp{diff'ed} with a gtk linux/x86 binary. The latter binary may be @samp{diff'ed} in turn with an gtk freebsd/86 binary. When the installer launches it will then first build the gtk linux/x86 binary from the gtk freebsd/x86 binary and after that build the fltk linux/86 binary from the gtk linux/86 binary. Using this algorithm the frontends will take up very less space.
+
+Note that the edelta version differs from the @uref{http://www.diku.dk/~jacobg/edelta/, original version} because it's modified in such way that it doesn't use compression (which makes the binary smaller and allows us to use other compression methods than gzip).
 @item lzma-decode
 @emph{Decodes} lzma encoded files. This is a much smaller version of the normal @file{lzma} binary and is included in the installer.
+@item surunner
+This is used by libsu to execute commands as root.
+@item lock
+This small utility is used to see if a file is locked (used by package code).
 @end table
-
 
 
 
@@ -2601,9 +2700,13 @@ This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend
 @item @uref{http://www.berlios.de, BerliOS}: Project hosting.
 @item @uref{http://www.diku.dk/~jacobg/edelta/, edelta}: Used to create @samp{binary diffs} to decrease the size of frontend binaries.
 @item @uref{http://www.7-zip.org/sdk.html, lzma}: Very good compression algorithm.
+@item @uref{http://www.lua.org/, Lua}: Clean, easy and powerfull scripting language used by Nixstaller.
 @item @strong{InternetNightmare}: Suggestions, testing, feedback.
 @item @strong{offer}: Suggestions, bug reporting, feedback.
 @item @strong{Tomasz Sałaciński}: Suggestions, bug reporting, feedback.
+@item @strong{John Tsolox}: Suggestions and bug reporting.
+@item @strong{Edward Rudd}: Suggestions, bug reporting, feedback.
+@item @strong{Markus Fischer}: Suggestions and bug reporting.
 @end itemize
 
 

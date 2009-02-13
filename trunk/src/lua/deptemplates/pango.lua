@@ -101,21 +101,21 @@ post = function (dest, destdir, libmap, full, copy)
             end
             
             if not pipe or (err and #err > 0) then
-                print("WARNING: Encountered errors during generation of 'pango.modules', please verify this file.")
+                print("WARNING: Encountered errors during generation of 'pango.modules', please verify this file. To create one manually use 'pango-querymodules' and place the file inside " .. destetc)
                 good = false
             end
             
             -- Get pangox.aliases
             stat, msg = os.copy(etcpath .. "/pangox.aliases", destetc)
             if not stat then
-                print("WARNING: Failed to copy 'pangox.aliases': " .. msg)
+                print(string.format("WARNING: Failed to copy 'pangox.aliases': %s. Place this file manually inside %s", msg, destetc))
                 good = false
             end
         end
         
         if not good then
             -- UNDONE: Reference
-            print("WARNING: Some errors occurred. You're strongly advised to fix them, see the manual for more information how to set up this dependency manually.")
+            print("WARNING: Some errors occurred. You're strongly advised to fix them.")
         end
     end
 end,

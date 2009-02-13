@@ -349,11 +349,39 @@ Fout tijdens download.
 (Binary) incompatible.
 (Binair) incompatibel.
 
-Missing.
-Afwezig.
+# %s will be replaced by the name of the incompatible library.
+Incompatible library: %s.
+Incompatibele bibliotheek: %s.
+
+# %s will be replaced by the name of the missing library.
+Missing library: %s.
+Missende bibliotheek: %s.
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too old (required: %s).
+Bibliotheek %s is te oud (nodig: %s).
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too new (required: %s).
+Bibliotheek %s is te nieuw (nodig: %s).
+
+# %s will be replaced by the required library.
+Wrong library version (required: %s).
+Verkeerde bibliotheek versie (nodig: %s).
+
+# %s will be replaced by the found library.
+Too new (available: %s)
+Te nieuw (beschikbaar: %s)
+
+# %s will be replaced by the found library.
+Too old (available: %s)
+Te oud (beschikbaar: %s)
 
 File missing.
-Bestand afwezig.
+Bestand missend.
+
+Version mismatch.
+Andere versie.
 
 Multiple package managers were found, please choose which one should be used.
 Er zijn meerdere pakketbeheerders gevonden. Kies welke moet worden gebruikt.
@@ -419,6 +447,17 @@ De software is nu geïnstalleerd op dit systeem.
 Een samenvatting van de installatie is hieronder gegeven.
 ]
 
+dpkg (bijv. Ubuntu, Debian)
+dpkg (bijv. Ubuntu, Debian)
+
+pacman (bijv. Arch Linux)
+pacman (bijv. Arch Linux)
+
+rpm (bijv. Fedora, Mandriva)
+rpm (bijv. Fedora, Mandriva)
+
+Slackware tgz (bijv. Slackware, Zenwalk)
+Slackware tgz (bijv. Slackware, Zenwalk)
 
 
 #-----------------------------------------------

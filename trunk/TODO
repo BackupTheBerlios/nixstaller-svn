@@ -4,12 +4,9 @@ OVERALL
     - Update FreeBSD notes file for for libsupc++ (used from 6.X)
     - Only use it on some platforms?
 - Test regular C lua libs, update notes
-- print when dep is verified in attended installs?
 - Update examples:
     - Final strings files.
-    - More languages?
-    - config.lua: remove targetos and targetarch, remove all other non defaults?
-    - Remove them?
+- Update cURL and FLTK libs
 
 
 TEST
@@ -20,7 +17,6 @@ TEST
     - buttonbar
     - buttons
 - translations
-- genprojdir copying lang configs
 - depscreen
 - pacman present() fix
 - lowercased dep functions, libdir
@@ -34,33 +30,10 @@ MAIN
 
 
 DOCS
-- GTK/Pango templates (update reference in deptemplates!)
-- Apple stuff
-- Unattended installations
-    - Reset cfg.unopts[].value? if not document for defaults
-    - --destdir option: mention that defaults have to be checked
-- Updating chapter?
-- bzflag tutorial:
-    - 'bzflag-2.0.10/...' --> make this generic
-    - use --deps for genprojdir.sh
-    - Additional dep code for package.lua and run.lua
-    - Move binaries to arch/os specific dirs
-    - deputil.sh: scan, auto (with and without pretend)
 - CHANGELOG
-- Features
-- Dep handling:
-    - Restructure explenation?
-        - probs: explenation of pkg.deps, pkg.libs, pkg.autosymmap, section deps in lua scripts
+- Features (done?)
 - More links instead of "in the next/previous chapter/section"?
-- Compilation
-- License/Welcome/Finish screens not shown when files are not there
-- Bin compat and compiling
-
-
-TRANSLATIONS
-- pkg.name's
-- depscreen translations
-- "Tried to delete non existing menu entry" ?
+- Update which langs are provided
 
 
 RELEASE

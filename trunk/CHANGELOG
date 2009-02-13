@@ -62,6 +62,7 @@
 - install.getpkgdir() now accepts optional file argument for convenience.
 - install.update() function
 - install.setaskquit() function
+- Manual: Fixed several spelling mistakes, updated tutorials, improved bzflag tutorial.
 
 
 0.3 --> 0.4
