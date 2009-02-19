@@ -38,7 +38,7 @@ DEF_DEFAULTLANG="english"
 DEF_TARGETOS=
 DEF_TARGETARCH=
 DEF_FRONTENDS="gtk fltk ncurses"
-DEF_LANGUAGES="english dutch"
+DEF_LANGUAGES="english dutch lithuanian"
 DEF_INTROPIC=
 DEF_LOGO=
 DEF_APPICON=
@@ -87,7 +87,7 @@ usage()
     echo " --deps                           Add specific dependency code to generated lua scripts. Needs --pkg option."
     echo " --frontends, -f <frontends>      One or more frontends to include. Valid values: gtk, fltk and ncurses. Default: gtk fltk ncurses."
     echo " --intropic, -i <picture>         Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
-    echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch"
+    echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch lithuanian"
     echo " --logo <file>                    Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
     echo " --mode, -m <mode>                 Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
     echo " --no-autolang                     Disables automaticly choosing a language."

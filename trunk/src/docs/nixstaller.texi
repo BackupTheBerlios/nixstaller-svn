@@ -66,7 +66,7 @@ Here is a list with the main features. Read further for more info to see what th
 @itemize @bullet
 @item Three different frontends used for the installer: @uref{http://www.fltk.org,FLTK}, @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses} and @uref{http://www.gtk.org,GTK2}.
 @item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris 10/Nexenta (all x86, some x86_64).
-@item The installer can be fully translated. English and Dutch translations are provided. It's possible to let the installer automatically select a language or let the user select it.
+@item The installer can be fully translated. English, Lithuanian and Dutch translations are provided. It's possible to let the installer automatically select a language or let the user select it.
 @item The installer is build on several @emph{installation screens}. They are used for user interaction and can be used to select a language, show an intro, accept a license, show the installation progress etc. It's also possible to create new installation screens with a wide range of widgets.
 @item Installers can also be unattended, which is handy for batch installers. Instead of a frontend, commandline parameters are used to configure the installation process.
 @item Frontends are build in a way that they can be used on many different systems by linking less common libraries staticly.
@@ -331,7 +331,7 @@ The installation itself is controlled by a few Lua scripts. @uref{http://www.lua
 @section Translations
 The text used by the frontends can be translated via @emph{translation files}. The text strings for each language are each stored in a file called @file{strings} and will contain all (English) strings used by the installer with the translation below. Any line that starts with a @samp{#} will be ignored.
 
-Currently there are already two translations: Dutch and English. You can find these in the @file{lang/} directory inside the main Nixstaller directory. You can 'translate' the English @file{strings} file in order to modify the English texts used by the installer.
+Currently there are already three translations: Dutch, Lithuanian and English. You can find these in the @file{lang/} directory inside the main Nixstaller directory. You can 'translate' the English @file{strings} file in order to modify the English texts used by the installer.
 
 Here is a example taken from the Dutch @file{strings} file:
 @codeblock{License agreement
@@ -487,7 +487,7 @@ This variable should point to an array (@pxref{Tables}) containing @ref{Strings,
 An optional variable containing a @ref{Strings,,string} with the file name of a picture to use in the welcomescreen. Valid file formats are png, jpeg, bmp and gif. If the size is more than 300x200 px the image will be resized to fit. The file should be placed in the @file{files_extra/} directory or, for backward compatibility, in the main project directory.
 @vindex cfg.languages
 @item cfg.languages
-An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of the languages to include for translations. The language names should be the same as the name of the subdirectories in the @file{lang/} directory from your project directory. The default is @code{@{ "english", "dutch" @}}.
+An array (@pxref{Tables}) with @ref{Strings,,strings} containing the names of the languages to include for translations. The language names should be the same as the name of the subdirectories in the @file{lang/} directory from your project directory. The default is @code{@{ "english", "dutch", "lithuanian" @}}.
 @vindex cfg.logo
 @item cfg.logo
 An optional variable containing a @ref{Strings,,string} with the filename of a picture to use as a logo. Valid file formats are png, jpeg, bmp and gif. The file should be placed in the @file{files_extra/} directory. If unspecified a default logo is used.
@@ -1292,7 +1292,7 @@ All these files and directories except @file{config.lua} are optional.
 
 
 @section The @file{lang} Directory
-This directory should contain a subdirectory for every language that you want to supply for translations used by the installer. Nixstaller comes with Dutch translations and English 'translations'. The English 'translations' are used to modify English strings in Nixstaller. You can find the languages in the @file{lang/} directory from the Nixstaller directory. Simply copy these directories to your @file{lang/} directory in your project directory to include them. @*
+This directory should contain a subdirectory for every language that you want to supply for translations used by the installer. Nixstaller comes with Dutch, Lithuanian and English translations. The English @samp{translations} are used to modify English strings in Nixstaller. You can find the languages in the @file{lang/} directory from the Nixstaller directory. Simply copy these directories to your @file{lang/} directory in your project directory to include them. @*
 @*
 The previous chapter explained what the @file{strings} file is. Translated version of the @file{welcome}, @file{license} and @code{finish} files can be put in each language-subdirectory.
 
@@ -1374,7 +1374,7 @@ The script accepts the following commandline arguments:
 @endtablerow
 
 @addtablerownowrap{@minus{}@minus{}languages, -l <l1>[, <l2>, ...]}
-    @addtablecol{Sets @code{cfg.languages} to one or more following arguments (<l1>, <l2> etc). Default: english dutch.}
+    @addtablecol{Sets @code{cfg.languages} to one or more following arguments (<l1>, <l2> etc). Default: english dutch lithuanian.}
 @endtablerow
 
 @addtablerownowrap{@minus{}@minus{}logo <file>}
@@ -1678,7 +1678,7 @@ The installer will have the following features:
 @subsection Project Directory
 To set up a project directory we use @ref{genprojdir.sh}. This script will create the directory layout for us. Assuming our project directory is called @file{setup/}, call the script like this:
 @codeblock{genprojdir.sh -n "My Software 1.0" setup/}
-This creates the project directory, including dutch translations (default) and basic Lua script files. The generated Lua scripts already tell by default that the @code{SelectDirScreen} (@pxref{instscreens, this}) should be used and that the installation files need to be extracted to the destination directory. The only thing we have to do is create an introduction message and copy the files that should be installed.
+This creates the project directory, including Dutch and Lithuanian translations (default) and basic Lua script files. The generated Lua scripts already tell by default that the @code{SelectDirScreen} (@pxref{instscreens, this}) should be used and that the installation files need to be extracted to the destination directory. The only thing we have to do is create an introduction message and copy the files that should be installed.
 
 @subsection Introduction Message
 Create a text file called @file{welcome} and put a text of choice in it, for example:
@@ -1698,6 +1698,11 @@ If all went fine the directory structure should look like this:
         @item @file{lang/}
         @itemize @bullet
             @item @file{dutch/}
+            @itemize @bullet
+                @item @file{config.lua}
+                @item @file{strings}
+            @end itemize
+            @item @file{lithuanian/}
             @itemize @bullet
                 @item @file{config.lua}
                 @item @file{strings}
@@ -1793,6 +1798,11 @@ Assuming that the project directory is called @file{cube/} the layout of this di
         @item @file{lang/}
         @itemize @bullet
             @item @file{dutch/}
+            @itemize @bullet
+                @item @file{config.lua}
+                @item @file{strings}
+            @end itemize
+            @item @file{lithuanian/}
             @itemize @bullet
                 @item @file{config.lua}
                 @item @file{strings}
@@ -2220,6 +2230,11 @@ The project directory should have the following structure:
                 @item @file{config.lua}
                 @item @file{strings}
             @end itemize
+            @item @file{lithuanian/}
+            @itemize @bullet
+                @item @file{config.lua}
+                @item @file{strings}
+            @end itemize
             @item @file{english/}
             @itemize @bullet
                 @item @file{config.lua}
@@ -2462,6 +2477,11 @@ The project directory layout should now look like this:
         @item @file{lang/}
         @itemize @bullet
             @item @file{dutch/}
+            @itemize @bullet
+                @item @file{config.lua}
+                @item @file{strings}
+            @end itemize
+            @item @file{lithuanian/}
             @itemize @bullet
                 @item @file{config.lua}
                 @item @file{strings}

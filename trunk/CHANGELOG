@@ -63,6 +63,7 @@
 - install.update() function
 - install.setaskquit() function
 - Manual: Fixed several spelling mistakes, updated tutorials, improved bzflag tutorial.
+- Lithuanian language support
 
 
 0.3 --> 0.4

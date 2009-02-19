@@ -621,24 +621,6 @@ TSTLStrSize MBWidth(std::string str)
 {
     if (str.empty())
         return 0;
-
-    // Remove newlines, as wcswidth can't really handle them
-    TSTLStrSize start = 0;
-    while (start < str.length())
-    {
-        start = str.find_first_of("\n", start);
-        
-        if (start != std::string::npos)
-        {
-            str.erase(start, 1);
-            // keep start the same as 1 char was just removed
-            continue;
-        }
-        else
-            break;
-
-        start++;
-    }
     
     TSTLStrSize ret = 0;
     std::wstring utf16;
@@ -650,7 +632,16 @@ TSTLStrSize MBWidth(std::string str)
         ret = std::distance(end, str.end());
     
     utf8::utf8to16(str.begin(), end, std::back_inserter(utf16));
-    ret += wcswidth(utf16.c_str(), utf16.length());
+
+    // As wcswidth returns -1 when it finds a non printable char, we just use
+    // wcwidth and assume a 0 width for those chars.
+    TSTLStrSize n = 0, length = utf16.length();
+    for (; n<length; n++)
+    {
+        int w = wcwidth(utf16[n]);
+        if (w > 0)
+            ret += static_cast<TSTLStrSize>(w);
+    }
     
     return ret;
 }
