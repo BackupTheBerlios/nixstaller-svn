@@ -2,33 +2,4 @@ Notes for solaris libs:
 
 Host system: x86 Solaris 10-4
 
-JPEG:
-version: 6b
-
-PNG:
-version: 1.2.21
-notes: LDFLAGS and CPPFLAGS were changed to point to prefix directory where custom zlib was installed.
-
-FLTK:
-notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support. configure options: --enable-xdbe (--enable-xft seems to cause crashes on solaris)
-version: 1.1.7
-
-ZLIB:
-version: 1.2.3
-
-NCURSES:
-configure command: ./configure --with-terminfo-dirs=/usr/share/lib/terminfo/
-version: 5.6
-notes: Colors don't work on xterms
-
-X (libX11, libXext)
-notes: used from basesystem
-
-GCC (libstdc++, libutil)
-version: 3.4.3
-notes: used from basesystem
-
-LUA:
-version 5.1.2
-make command: make posix
-notes: src/Makefile was edited to use g++ instead of gcc (enables C++ exception support, important) and to use the -Os CFLAG.
+For library versions and build options see builddep.sh. Note that some dependencies will give build errors, however the required files will already be build and can be copied manually.

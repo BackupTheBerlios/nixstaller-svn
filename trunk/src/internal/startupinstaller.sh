@@ -157,9 +157,7 @@ do
         if [ -z "$DISPLAY" -a $FR != "ncurs" -a -z "$UNATTENDED" ]; then
             continue
         fi
-        
-        echo "Frontend: $FR"
-    
+           
         [ $ARCH_TYPE != "lzma" ] || haslibs "${LC}/lzma-decode" || continue
         haslibs "${LC}/edelta" || continue
 

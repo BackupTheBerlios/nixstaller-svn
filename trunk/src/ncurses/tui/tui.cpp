@@ -26,6 +26,10 @@
 #include "windowmanager.h"
 #include "buttonbar.h"
 
+// HACK: _XOPEN_SOURCE_EXTENDED needs to be defined for this, but setting
+// that may cause other compile errors
+extern "C" int get_wch (wint_t *);
+
 namespace NNCurses {
 
 CTUI TUI;

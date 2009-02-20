@@ -368,16 +368,22 @@ function initdep(d)
     local extractedsz = 0
     for _, f in ipairs(archives) do
         local extrcmd
+        
         if cfg.archivetype == "gzip" then
-            extrcmd = string.format("cat %s | gzip -cd | tar -C %s -xvf -", f, dest)
+            extrcmd = string.format("cat %s | gzip -cd | tar -xvf -", f)
         elseif cfg.archivetype == "bzip2" then
-            extrcmd = string.format("cat %s | bzip -d | tar -C %s -xvf -", f, dest)
+            extrcmd = string.format("cat %s | bzip -d | tar -xvf -", f)
         else
-            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -C %s -xvf -)", bindir, f, dest)
+            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -xvf -)", bindir, f)
         end
         
+        local olddir = os.getcwd()
+        os.chdir(dest)
+
+        print("Extracting archive:", f, extrcmd)
         local pipe = check(io.popen(extrcmd))
-        for line in pipe:lines() do
+        local line = pipe:read()
+        while line do
             local file = string.gsub(line, "^x ", "")
             file = string.gsub(file, "\n$", "")
             
@@ -390,7 +396,11 @@ function initdep(d)
                 extractedsz = extractedsz + szmap[f][file]
                 setsecprogress(extractedsz / totalsize * 100)
             end
+            line = pipe:read()
         end
+        
+        pipe:close()
+        os.chdir(olddir)
     end
     
     enablesecbar(false)

@@ -133,8 +133,8 @@ bool CInputField::ValidChar(wchar_t *ch)
         lconv *lc = localeconv();
         if (strchr(lc->decimal_point, ','))
         {
-            if (*ch == '.')
-                *ch = ',';
+            if (*ch == L'.')
+                *ch = L',';
         }
         
         std::string legal = LegalNrTokens((m_eInputType == FLOAT), m_Text, GetStrPosition());

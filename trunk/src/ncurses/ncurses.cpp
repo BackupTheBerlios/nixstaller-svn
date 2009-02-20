@@ -37,7 +37,7 @@ void debugline(const char *t, ...)
     vasprintf(&txt, t, v);
     va_end(v);
     
-    static FILE *f=fopen("log.txt", "w");
+    static FILE *f=fopen("/tmp/nixstlog.txt", "w");
     if (f) { fprintf(f, txt); fflush(f); }
     
     free(txt);

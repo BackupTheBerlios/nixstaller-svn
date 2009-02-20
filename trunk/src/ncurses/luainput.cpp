@@ -74,7 +74,7 @@ void CLuaInputField::CoreSetValue(const char *v)
 
 const char *CLuaInputField::CoreGetValue(void)
 {
-    return m_pInputField->Value().c_str();
+    return MakeCString(m_pInputField->Value());
 }
 
 void CLuaInputField::CoreUpdateLanguage()

@@ -39,7 +39,7 @@ CLuaDirSelector::CLuaDirSelector(const char *desc, const char *val) : CBaseLuaWi
 
 const char *CLuaDirSelector::GetDir(void)
 {
-    return m_pDirInput->Value().c_str();
+    return MakeCString(m_pDirInput->Value());
 }
 
 void CLuaDirSelector::SetDir(const char *dir)

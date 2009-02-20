@@ -57,6 +57,7 @@ function getallsyms(bin, lpath)
             print(string.format("WARNING: Could not process file %s", bin))
         else
             local binname = utils.basename(bin)
+            
             for l, lp in pairs(map) do
                 local lsyms = lp and getsyms(lp)
                 if not lsyms then
@@ -82,7 +83,6 @@ function getallsyms(bin, lpath)
                     for l, info in pairs(libs) do
                         local isyms = info.path and getsyms(info.path)
                         if isyms and isyms[s] and not isyms[s].undefined then
-                            print(string.format("Binary '%s' has symbol dependency on %s which is indirectly provided by '%s'", bin, s, l))
                             symoutmap[binname] = symoutmap[binname] or { }
                             symoutmap[binname][s] = l
                             v.undefined = false

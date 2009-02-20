@@ -121,7 +121,7 @@ function maplibs(bin, extrapath)
         
         local line = pipe:read()
         while line do
-            local path = string.gsub(line, "^.*=> ", "")
+            local path = string.gsub(line, "^.*=>", "")
             path = string.gsub(path, " %(.*%)$", "")
             path = string.gsub(path, "^[%s]*", "")
             local file = (path and utils.basename(path))

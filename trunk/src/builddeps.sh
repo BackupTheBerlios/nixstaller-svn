@@ -93,12 +93,12 @@ buildfltk()
 #     get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
 #     untar "fltk-1.1.9-source.tar.gz"
 #     dodir "fltk-1.1.9"
-    get "http://ftp.easysw.com/pub/fltk/snapshots/fltk-1.3.x-r6643.tar.gz"
-    untar "fltk-1.3.x-r6643.tar.gz"
-    dodir "fltk-1.3.x-r6643"
+    get "http://ftp.easysw.com/pub/fltk/snapshots/fltk-1.3.x-r6656.tar.gz"
+    untar "fltk-1.3.x-r6656.tar.gz"
+    dodir "fltk-1.3.x-r6656"
 
-    if [ $CURRENT_OS = "darwin" ]; then
-        ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    if [ $CURRENT_OS = "darwin" -o $CURRENT_OS = "sunos" ]; then
+        ./configure --prefix=$DESTPREFIX --disable-xft && make && make install && make clean
     else
         ./configure --prefix=$DESTPREFIX --enable-xdbe --enable-xft && make && make install && make clean
     fi
@@ -168,8 +168,8 @@ buildlzma()
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
-	if [ $CURRENT_OS = "darwin" ]; then
-		$MAKE -f makefile.gcc CXX='gcc -Os' LIB='-lstdc++ -lm'
+	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" ]; then
+		$MAKE -f makefile.gcc CXX='g++ -Os'
 	else
 		$MAKE -f makefile.gcc CXX='gcc -Os' LDFLAGS="-L$DESTPREFIX/lib" LIB='-lstd -lsupc++ -lm'
 	fi

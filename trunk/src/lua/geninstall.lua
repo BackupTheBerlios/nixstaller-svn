@@ -326,7 +326,7 @@ function InitDeltaBins()
     end
     
     out:write(string.format([[
--- Automaticly generated on %s by geninstall.lua.
+-- Automatically generated on %s by geninstall.lua.
 deltasizes = { }
 ]], os.date()))
     
@@ -751,6 +751,7 @@ function PrepareArchive()
         if os.fileexists(sympath) then
             os.copy(sympath, destdir)
         elseif pkg.autosymmap then
+            print("Automatically generating symbol map file.")
             local binlist = "" -- All bins/libs for symmap
             local pathlist = ""
             local givenpaths = { }

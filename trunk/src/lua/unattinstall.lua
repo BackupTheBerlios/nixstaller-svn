@@ -213,7 +213,7 @@ Maintainer:     %s
     end
     
     local uninstmsg
-    if pkg.register and not pkg.regfailed then
+    if pkg.register and pkg.canregister and not pkg.regfailed then
         install.print("Registrated    Yes\n")
         uninstmsg = string.format("Software can be uninstalled via system's package manager.")
     else
