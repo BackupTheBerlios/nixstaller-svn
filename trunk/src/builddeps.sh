@@ -93,12 +93,12 @@ buildfltk()
 #     get "http://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/fltk/1.1.9/fltk-1.1.9-source.tar.gz"
 #     untar "fltk-1.1.9-source.tar.gz"
 #     dodir "fltk-1.1.9"
-    get "http://ftp.easysw.com/pub/fltk/snapshots/fltk-1.3.x-r6656.tar.gz"
-    untar "fltk-1.3.x-r6656.tar.gz"
-    dodir "fltk-1.3.x-r6656"
+    get "http://ftp.easysw.com/pub/fltk/snapshots/fltk-1.3.x-r6666.tar.gz"
+    untar "fltk-1.3.x-r6666.tar.gz"
+    dodir "fltk-1.3.x-r6666"
 
-    if [ $CURRENT_OS = "darwin" -o $CURRENT_OS = "sunos" ]; then
-        ./configure --prefix=$DESTPREFIX --disable-xft && make && make install && make clean
+    if [ $CURRENT_OS = "darwin" ]; then
+        ./configure --prefix=$DESTPREFIX && make && make install && make clean
     else
         ./configure --prefix=$DESTPREFIX --enable-xdbe --enable-xft && make && make install && make clean
     fi
