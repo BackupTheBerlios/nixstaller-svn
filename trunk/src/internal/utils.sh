@@ -22,7 +22,7 @@
 FRONTENDS="gtk fltk ncurs"
 
 OS=`uname`
-CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]` # Convert to lowercase
+CURRENT_OS=`echo "$OS" | tr [A-Z] [a-z]` # Convert to lowercase
 
 CURRENT_ARCH=`uname -m`
 echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86" # Convert iX86 --> x86

@@ -1,5 +1,5 @@
 //
-// "$Id: fl_draw.H 6614 2009-01-01 16:11:32Z matt $"
+// "$Id: fl_draw.H 6666 2009-02-20 08:24:32Z AlbrechtS $"
 //
 // Portable drawing function header file for the Fast Light Tool Kit (FLTK).
 //
@@ -93,10 +93,10 @@ enum {
 
 // rectangles tweaked to exactly fill the pixel rectangle:
 FL_EXPORT void fl_rect(int x, int y, int w, int h);
-/** Draw a 1-pixel border \e inside the given bounding box */
+/** Draws a 1-pixel border \e inside the given bounding box */
 inline void fl_rect(int x, int y, int w, int h, Fl_Color c) {fl_color(c); fl_rect(x,y,w,h);}
 FL_EXPORT void fl_rectf(int x, int y, int w, int h);
-/** Color a rectangle that exactly fills the given bounding box */
+/** Colors a rectangle that exactly fills the given bounding box */
 inline void fl_rectf(int x, int y, int w, int h, Fl_Color c) {fl_color(c); fl_rectf(x,y,w,h);}
 
 // line segments:
@@ -158,12 +158,12 @@ FL_EXPORT double fl_transform_dy(double x, double y);
 FL_EXPORT void fl_transformed_vertex(double x, double y);
 /** @} */
 
-/** \addtogroup  fl_attributes 
+/** \addtogroup  fl_attributes
     @{ */
 /* NOTE: doxygen comments here to avoid triplication in os-specific sources */
 /**
-  Set the current font, which is then used in various drawing routines,
-  You may call this outside a draw context if necessary to cal fl_width(),
+  Sets the current font, which is then used in various drawing routines.
+  You may call this outside a draw context if necessary to call fl_width(),
   but on X this will open the display.
 
   The font is identified by a \a face and a \a size.
@@ -177,20 +177,20 @@ extern FL_EXPORT Fl_Font fl_font_; ///< current font index
 
 /**
   Returns the \a face set by the most recent call to fl_font().
-  Tgis can be used to save/restore the font.
+  This can be used to save/restore the font.
 */
 inline Fl_Font fl_font() {return fl_font_;}
 /** current font size */
 extern FL_EXPORT Fl_Fontsize fl_size_;
 /**
-  Returns the \a face set by the most recent call to fl_font().
-  Tgis can be used to save/restore the font.
+  Returns the \a size set by the most recent call to fl_font().
+  This can be used to save/restore the font.
 */
 inline Fl_Fontsize fl_size() {return fl_size_;}
 
 // information you can get about the current font:
 /**
-  Recommended minimum line spacing for the current font.
+  Returns the recommended minimum line spacing for the current font.
   You can also use the value of \a size passed to fl_font()
 */
 FL_EXPORT int   fl_height();	// using "size" should work ok
@@ -203,7 +203,7 @@ FL_EXPORT int   fl_height();	// using "size" should work ok
 */
 inline int fl_height(int, int size) {return size;}
 /**
-  Recommended distance above the bottom of a fl_height() tall box to
+  Returns the recommended distance above the bottom of a fl_height() tall box to
   draw the text at so it looks centered vertically in that box.
 */
 FL_EXPORT int   fl_descent();
@@ -211,13 +211,22 @@ FL_EXPORT int   fl_descent();
 FL_EXPORT double fl_width(const char* txt);
 /** Return the typographical width of a sequence of \a n characters */
 FL_EXPORT double fl_width(const char* txt, int n);
-/** Return the typographical width of a single character : 
-    \note if a valid fl_gc is NOT found then it uses the first window gc, 
+/** Return the typographical width of a single character :
+    \note if a valid fl_gc is NOT found then it uses the first window gc,
     or the screen gc if no fltk window is available when called. */
 FL_EXPORT double fl_width(Fl_Unichar);
-/** Determine the minimum pixel dimensions of a nul-terminated string */
-FL_EXPORT void fl_text_extents(const char*, int& dx, int& dy, int& w, int& h); // NO fltk symbol expansion
-/** Determine the minimum pixel dimensions of a sequence of \a n characters */
+/** Determine the minimum pixel dimensions of a nul-terminated string.
+
+Usage: given a string "txt" drawn using fl_draw(txt, x, y) you would determine
+its pixel extents on the display using fl_text_extents(txt, dx, dy, wo, ho)
+such that a bounding box that exactly fits around the text could be drawn with
+fl_rect(x+dx, y+dy, wo, ho). Note the dx, dy values hold the offset of the first
+"colored in" pixel of the string, from the draw origin.
+*/
+FL_EXPORT void fl_text_extents(const char*, int& dx, int& dy, int& w, int& h); // NO fltk symbol expansion will be performed
+/** Determine the minimum pixel dimensions of a sequence of \a n characters.
+\see fl_text_extents(const char*, int& dx, int& dy, int& w, int& h)
+*/
 FL_EXPORT void fl_text_extents(const char*, int n, int& dx, int& dy, int& w, int& h);
 
 // font encoding:
@@ -230,21 +239,22 @@ FL_EXPORT const char *fl_local_to_mac_roman(const char *, int n=-1);
 /** \addtogroup  fl_drawings
     @{ */
 /**
-  Draw a nul-terminated string starting at the given location.
+  Draws a nul-terminated string starting at the given location.
+
   Text is aligned to the left and to the baseline of the font.
-  To alighn to the bottom, subtract fl_descent() from \a y.
-  To alignn to the top, subtract fl_descent() and add fl_height().
-  This version fo fl_draw provides direct access to the text drawing
+  To align to the bottom, subtract fl_descent() from \a y.
+  To align to the top, subtract fl_descent() and add fl_height().
+  This version of fl_draw provides direct access to the text drawing
   function of the underlying OS. It does not apply any special handling
   to control characters.
 */
 FL_EXPORT void fl_draw(const char* str, int x, int y);
 /**
-  Draw an array of \a n characters starting at the given location.
+  Draws an array of \a n characters starting at the given location.
 */
 FL_EXPORT void fl_draw(const char* str, int n, int x, int y);
 /**
-  Draw and array of \a n characters right to left starting at given location.
+  Draws an array of \a n characters right to left starting at given location.
 */
 FL_EXPORT void fl_rtl_draw(const char*, int n, int x, int y);
 FL_EXPORT void fl_measure(const char* str, int& x, int& y,
@@ -306,5 +316,5 @@ FL_EXPORT int fl_add_symbol(const char* name, void (*drawit)(Fl_Color), int scal
 #endif
 
 //
-// End of "$Id: fl_draw.H 6614 2009-01-01 16:11:32Z matt $".
+// End of "$Id: fl_draw.H 6666 2009-02-20 08:24:32Z AlbrechtS $".
 //

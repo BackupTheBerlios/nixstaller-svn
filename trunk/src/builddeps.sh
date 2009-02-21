@@ -1,7 +1,7 @@
 #!/bin/sh
 
 OS=`uname`
-CURRENT_OS=`echo "$OS" | tr [:upper:] [:lower:]`
+CURRENT_OS=`echo "$OS" | tr [A-Z] [a-z]` # Convert to lowercase
 CURRENT_ARCH=`uname -m`
 echo $CURRENT_ARCH | grep "i.86" >/dev/null && CURRENT_ARCH="x86"
 echo $CURRENT_ARCH | grep "i86pc" >/dev/null && CURRENT_ARCH="x86"   
@@ -100,7 +100,7 @@ buildfltk()
     if [ $CURRENT_OS = "darwin" ]; then
         ./configure --prefix=$DESTPREFIX && make && make install && make clean
     else
-        ./configure --prefix=$DESTPREFIX --enable-xdbe --enable-xft && make && make install && make clean
+        ./configure --prefix=$DESTPREFIX --without-links --disable-gl --enable-xdbe --enable-xft && make && make install && make clean
     fi
     restoredir
 }

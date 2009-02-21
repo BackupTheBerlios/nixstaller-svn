@@ -1,5 +1,5 @@
 //
-// "$Id: Fl_Value_Slider.H 6614 2009-01-01 16:11:32Z matt $"
+// "$Id: Fl_Value_Slider.H 6664 2009-02-18 09:27:54Z AlbrechtS $"
 //
 // Value slider header file for the Fast Light Tool Kit (FLTK).
 //
@@ -43,8 +43,9 @@ class FL_EXPORT Fl_Value_Slider : public Fl_Slider {
     Fl_Font textfont_;
     Fl_Fontsize textsize_;
     unsigned textcolor_;
-public:
+protected:
     void draw();
+public:
     int handle(int);
     Fl_Value_Slider(int x,int y,int w,int h, const char *l = 0);
     /**    Gets the typeface of the text in the value box.  */
@@ -64,5 +65,5 @@ public:
 #endif
 
 //
-// End of "$Id: Fl_Value_Slider.H 6614 2009-01-01 16:11:32Z matt $".
+// End of "$Id: Fl_Value_Slider.H 6664 2009-02-18 09:27:54Z AlbrechtS $".
 //

@@ -1,5 +1,5 @@
 //
-// "$Id: Fl_File_Input.H 6614 2009-01-01 16:11:32Z matt $"
+// "$Id: Fl_File_Input.H 6664 2009-02-18 09:27:54Z AlbrechtS $"
 //
 // File_Input header file for the Fast Light Tool Kit (FLTK).
 //
@@ -68,8 +68,11 @@ public:
   Fl_File_Input(int X, int Y, int W, int H, const char *L=0);
 
   virtual int handle(int event);
+
+protected:
   virtual void draw();
 
+public:
   /** Gets the box type used for the navigation bar. */
   Fl_Boxtype	down_box() const { return (Fl_Boxtype)down_box_; }
   /** Sets the box type to use for the navigation bar.  */
@@ -97,5 +100,5 @@ public:
 
 
 //
-// End of "$Id: Fl_File_Input.H 6614 2009-01-01 16:11:32Z matt $".
+// End of "$Id: Fl_File_Input.H 6664 2009-02-18 09:27:54Z AlbrechtS $".
 //

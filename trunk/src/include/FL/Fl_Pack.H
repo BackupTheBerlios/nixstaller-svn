@@ -1,5 +1,5 @@
 //
-// "$Id: Fl_Pack.H 6614 2009-01-01 16:11:32Z matt $"
+// "$Id: Fl_Pack.H 6664 2009-02-18 09:27:54Z AlbrechtS $"
 //
 // Pack header file for the Fast Light Tool Kit (FLTK).
 //
@@ -51,12 +51,17 @@
 */
 class FL_EXPORT Fl_Pack : public Fl_Group {
   int spacing_;
+
 public:
   enum { // values for type(int)
     VERTICAL = 0,
     HORIZONTAL = 1
   };
+
+protected:
   void draw();
+
+public:
   Fl_Pack(int x,int y,int w ,int h,const char *l = 0);
   /**
     Gets the number of extra pixels of blank space that are added
@@ -75,5 +80,5 @@ public:
 #endif
 
 //
-// End of "$Id: Fl_Pack.H 6614 2009-01-01 16:11:32Z matt $".
+// End of "$Id: Fl_Pack.H 6664 2009-02-18 09:27:54Z AlbrechtS $".
 //

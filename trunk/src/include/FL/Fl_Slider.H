@@ -1,5 +1,5 @@
 //
-// "$Id: Fl_Slider.H 6614 2009-01-01 16:11:32Z matt $"
+// "$Id: Fl_Slider.H 6664 2009-02-18 09:27:54Z AlbrechtS $"
 //
 // Slider header file for the Fast Light Tool Kit (FLTK).
 //
@@ -80,10 +80,10 @@ protected:
   // these allow subclasses to put the slider in a smaller area:
   void draw(int, int, int, int);
   int handle(int, int, int, int, int);
+  void draw();
 
 public:
 
-  void draw();
   int handle(int);
   Fl_Slider(int x,int y,int w,int h, const char *l = 0);
   Fl_Slider(uchar t,int x,int y,int w,int h, const char *l);
@@ -110,5 +110,5 @@ public:
 #endif
 
 //
-// End of "$Id: Fl_Slider.H 6614 2009-01-01 16:11:32Z matt $".
+// End of "$Id: Fl_Slider.H 6664 2009-02-18 09:27:54Z AlbrechtS $".
 //

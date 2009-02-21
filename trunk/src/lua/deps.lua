@@ -380,7 +380,6 @@ function initdep(d)
         local olddir = os.getcwd()
         os.chdir(dest)
 
-        print("Extracting archive:", f, extrcmd)
         local pipe = check(io.popen(extrcmd))
         local line = pipe:read()
         while line do
