@@ -99,6 +99,8 @@ buildfltk()
 
     if [ $CURRENT_OS = "darwin" ]; then
         ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    elif [ $CURRENT_OS = "sunos" ]; then
+        LIBS="-lXrender -lfreetype -lfontconfig" ./configure --prefix=$DESTPREFIX --without-links --disable-gl --enable-xdbe --enable-xft && make && make install && make clean
     else
         ./configure --prefix=$DESTPREFIX --without-links --disable-gl --enable-xdbe --enable-xft && make && make install && make clean
     fi
@@ -203,14 +205,25 @@ buildcurl()
     restoredir
 }
 
+buildxft()
+{
+    get "http://xorg.freedesktop.org/releases/individual/lib/libXft-2.1.11.tar.gz"
+    untar "libXft-2.1.11.tar.gz"
+    dodir "libXft-2.1.11"
+    ./configure --prefix=$DESTPREFIX --x-includes=/usr/include/X11/ && make && make install && make clean
+    restoredir
+}
+
 BUILD="$*"
 
 if [ -z "$BUILD" ]; then
 	if [ $CURRENT_OS = "darwin" ]; then
 		BUILD="png jpeg fltk lua ncurses lzma elf curl"
-	else
-	    BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf curl"
-	fi
+    elif [ $CURRENT_OS = "sunos" ]; then
+        BUILD="zlib png jpeg xft fltk lua ncurses lzma elf curl"
+    else
+        BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf curl"
+    fi
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
 #     fi
@@ -231,6 +244,7 @@ do
         lzma ) buildlzma ;;
         elf ) buildelf ;;
         curl ) buildcurl ;;
+        xft ) buildxft ;;
         * ) echo "Wrong build option" ; exit 1 ;;
     esac
 done
