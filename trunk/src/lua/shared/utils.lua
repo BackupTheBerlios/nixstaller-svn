@@ -159,10 +159,15 @@ function maplibs(bin, extrapath)
 
         -- rpath/runpath
         if rpath and #rpath > 0 then
+            local bdir = utils.dirname(bin)
+            if utils.emptystring(bdir) then
+                bdir = curdir
+            end
+            
             for p in string.gmatch(rpath, "[^\:]+") do
                 -- Do we need this? (OpenBSD doesn't seem to support this at the moment)
-                p = string.gsub(p, "${ORIGIN}", dirname(f))
-                p = string.gsub(p, "$ORIGIN", dirname(f))
+                p = string.gsub(p, "${ORIGIN}", bdir)
+                p = string.gsub(p, "$ORIGIN", bdir)
                 table.insert(lpaths, p)
             end
         end

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import platform
 
@@ -17,7 +18,7 @@ opts.Add('noapcpp', "Don't use apache's STL lib", "no")
 
 env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.'])
 
-if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd"):
+if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
     #env.Append(LIBS=Split('std supc++ m'))
     env['CXX'] = '$CC'
     env.Append(CPPPATH=['../include/stdcxx', '../include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
@@ -72,7 +73,10 @@ else:
 libsu = env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp vasprintf.c'))
 
 # Builds runner program
-surunner = env.Program("surunner", "runner.c")
+if cur_os == "openbsd":
+    surunner = env.Program("surunner", "runner.c", LINKFLAGS="-static")
+else:
+    surunner = env.Program("surunner", "runner.c")
 
 # Builds test program
 #env.Program("libtest", 'libtest.cpp', LIBPATH=[".", LIBS=Split('$LIBS su'))

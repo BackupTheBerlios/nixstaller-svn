@@ -57,7 +57,7 @@ Please restart the installer as a user who does or as the root user]], install.d
             install.askrootpw()
         end
     else
-        output:write("Creating destination directory...")
+        output:add("Creating destination directory...")
         
         if not utils.mkdirperm(install.destdir) then
             install.executecmdasroot("mkdir -p " .. install.destdir, function () end, true)

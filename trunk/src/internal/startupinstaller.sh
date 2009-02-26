@@ -24,7 +24,7 @@
 UNATTENDED=
 
 # Uses edelta to reconstruct frontend binaries
-# $1: libc directory to be used(for lzma and edelta)
+# $1: Binary path
 # $2: source file
 # $3: diff file
 edelta()
@@ -37,7 +37,7 @@ edelta()
 
 # Unpacks $1.lzma to lzma and removes $1.lzma
 # $1: File to handle
-# $2: libc directory to be used for lzma
+# $2: Binary path
 unlzma()
 {
     if [ $ARCH_TYPE = "lzma" -a ! -z "$1" -a -f "$1".lzma ]; then
@@ -46,7 +46,7 @@ unlzma()
 }
 
 # Prepares frontend binary (extracting and patching)
-# $1: libc directory for used binaries
+# $1: Binary path
 # $2: frontend
 prepbin()
 {
@@ -130,6 +130,50 @@ configure()
     done
 }
 
+launchfrontend()
+{
+    DIR="$1"
+    STATIC=$2
+    
+    for FR in $FRONTENDS
+    do
+        if [ -z "$DISPLAY" -a $FR != "ncurs" -a -z "$UNATTENDED" ]; then
+            continue
+        fi
+        
+        if [ -z $STATIC ]; then
+            [ $ARCH_TYPE != "lzma" ] || haslibs "${DIR}/lzma-decode" || continue
+            haslibs "${LC}/edelta" || continue
+        fi
+
+        prepbin "$DIR" "$FR"
+        
+        if [ -f "${DIR}/$FR" ]; then
+            FRBIN="${DIR}/$FR"
+            
+            # deltas and lzma packed bins probably aren't executable yet
+            # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
+            chmod +x $FRBIN
+            
+            if [ -z $STATIC ]; then
+                haslibs $FRBIN || continue
+            fi
+            
+            # Run it
+            if [ $FR = "ncurs" ] && [ $CURRENT_OS = "freebsd" -o $CURRENT_OS = "netbsd" -o $CURRENT_OS = "openbsd" ]; then
+                # Try to launch ncurses frontend with supplied terminfo's
+                export TERMINFO="`pwd`/terminfo"
+            fi
+            
+            `pwd`/$FRBIN $ARGS
+            
+            RET=$?
+            if [ ! -f frontendstarted ]; then
+                exit $RET
+            fi
+        fi
+    done
+}
 
 
 # Check which archive type to use
@@ -152,36 +196,15 @@ do
         continue # No usable lzma-decoder
     fi
     
-    for FR in $FRONTENDS
-    do
-        if [ -z "$DISPLAY" -a $FR != "ncurs" -a -z "$UNATTENDED" ]; then
-            continue
-        fi
-           
-        [ $ARCH_TYPE != "lzma" ] || haslibs "${LC}/lzma-decode" || continue
-        haslibs "${LC}/edelta" || continue
-
-        prepbin "$LC" "$FR"
-        
-        if [ -f "${LC}/$FR" ]; then
-            FRBIN="${LC}/$FR"
-            
-            # deltas and lzma packed bins probably aren't executable yet
-            # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
-            chmod +x $FRBIN
-            
-            haslibs $FRBIN || continue
-            
-            # Run it
-            `pwd`/$FRBIN $ARGS
-            
-            RET=$?
-            if [ ! -f frontendstarted ]; then
-                exit $RET
-            fi
-        fi
-    done
+    launchfrontend "$LC"
 done
+
+# If nothing found, check for any static bins (ie. openbsd ncurses)
+DIR="bin/$CURRENT_OS/$CURRENT_ARCH"
+if [ $ARCH_TYPE != "lzma" -o -f "${DIR}/lzma-decode" ]; then
+    launchfrontend "$DIR" 1
+fi
+
 
 echo "Error: Couldn't find any suitable frontend for your system"
 exit 1

@@ -417,6 +417,7 @@ bool MKDirNeedsRoot(std::string dir)
 {
     MakeAbsolute(dir);
     
+    const TSTLStrSize length = dir.length();
     TSTLStrSize start = 1; // Skip first root path
     TSTLStrSize end = 0;
     bool needroot = false;
@@ -434,7 +435,7 @@ bool MKDirNeedsRoot(std::string dir)
         
         start = end + 1;
     }
-    while (end != std::string::npos);
+    while ((end != std::string::npos) && (end < length));
     
     return needroot;
 }

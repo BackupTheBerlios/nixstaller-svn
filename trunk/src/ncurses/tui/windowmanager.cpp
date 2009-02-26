@@ -76,7 +76,7 @@ bool CWindowManager::CoreHandleEvent(CWidget *emitter, int event)
     }
     else if (event == EVENT_REQUPDATE)
     {
-        if (IsDirectChild(emitter, this))
+        if (IsDirectChild(emitter, this) && !emitter->Deleted())
         {
             m_WidgetQueue.push_back(emitter);
             UpdateLayout();
@@ -164,9 +164,12 @@ void CWindowManager::CoreRemoveWidget(CWidget *w)
     
     std::deque<CWidget *>::iterator qit = std::find(m_WidgetQueue.begin(), m_WidgetQueue.end(), w);
     
-    if (qit != m_WidgetQueue.end())
+    while (qit != m_WidgetQueue.end())
+    {
         m_WidgetQueue.erase(qit);
-
+        qit = std::find(m_WidgetQueue.begin(), m_WidgetQueue.end(), w);
+    }
+    
     RequestUpdate();
     TUI.UpdateButtonBar();
 }

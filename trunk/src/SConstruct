@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 import glob
@@ -363,7 +364,8 @@ def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "
     lastLIBS = context.env['LIBS']
     lastLIBPATH = context.env['LIBPATH']
     lastCPPATH = context.env['CPPPATH']
-    context.env.Append(LIBS = Split(library + ' ' + altlibs))
+    context.env.Prepend(LIBS = Split(library))
+    context.env.Append(LIBS = Split(altlibs))
     context.env.Append(LIBPATH = Split(libdir), CPPPATH = Split(incdir))
     ret = context.sconf.CheckLibWithHeader(library, header, language, call, autoload)
     context.env.Replace(LIBS = lastLIBS)
@@ -470,7 +472,7 @@ libc_ver = ''
 env.Append(LIBPATH=[lib_dir, 'libsu/'])
 env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/libelf/'+cur_os+'/'+cur_arch, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
 
-if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd"):
+if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
     env.Append(LIBS=Split('std supc++ m'))
     env['CXX'] = '$CC'
     env.Append(CPPPATH=['include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
@@ -603,8 +605,8 @@ if not env.GetOption('clean'):
 
     if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
-    if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);'):
-        conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);')
+    if not conf.CheckLibWithHeader('', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);'):
+        conf.CheckLibWithHeader('rt', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);')
     
     if not conf.env['LCVER']:
         if cur_os == 'darwin':
@@ -645,7 +647,7 @@ if not env.GetOption('clean'):
 
     if not BUILD_TARGETS or 'ncurses' in map(str, BUILD_TARGETS):
         if not conf.CheckLibWithHeader('ncursesw', 'curses.h', 'C++', 'beep();', 0):
-            print "Couldn't find libncursesw !"
+            print "Couldn't find libncursesw!"
             Exit(1)
             
     if not BUILD_TARGETS or 'fltk' in map(str, BUILD_TARGETS):
@@ -717,8 +719,11 @@ elif env.GetOption('clean'):
 
 
 # Builds bsdiff binaries
-edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
-        
+if cur_os == "openbsd":
+    edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="", LINKFLAGS="-static")
+else:
+    edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
+
 # Builds libsu
 libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
@@ -734,11 +739,15 @@ env.Prepend(LIBS = Split('main su lua elf curl z'))
 if cur_os == 'netbsd':
     env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib -Wl,--rpath -Wl,$gtklibsdir'))
 elif cur_os == "sunos":
-    env.Prepend(LIBS = ['rt']) # OpenSolaris doesn't need this, but Solaris 10 does.
+    env.Append(LIBS = ['rt']) # OpenSolaris doesn't need this, but Solaris 10 does.
     
-gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscreen.cpp gtk/luacheckbox.cpp gtk/luacfgmenu.cpp gtk/luadepscreen.cpp gtk/luadirselector.cpp gtk/luagroup.cpp gtk/luaimage.cpp gtk/luainput.cpp gtk/luamenu.cpp gtk/luaprogressbar.cpp gtk/luaprogressdialog.cpp gtk/luaradiobutton.cpp gtk/luatextfield.cpp gtk/luawidget.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gobject-2.0 glib-2.0 pango-1.0 gdk-x11-2.0 gdk_pixbuf-2.0 gtk-x11-2.0 rt'+gtklibs), LIBPATH=Split("$LIBPATH $gtklibsdir "+gtklpath), LINKFLAGS=Split("$LINKFLAGS -Wl,-z -Wl,now"))
+gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscreen.cpp gtk/luacheckbox.cpp gtk/luacfgmenu.cpp gtk/luadepscreen.cpp gtk/luadirselector.cpp gtk/luagroup.cpp gtk/luaimage.cpp gtk/luainput.cpp gtk/luamenu.cpp gtk/luaprogressbar.cpp gtk/luaprogressdialog.cpp gtk/luaradiobutton.cpp gtk/luatextfield.cpp gtk/luawidget.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gobject-2.0 glib-2.0 pango-1.0 gdk-x11-2.0 gdk_pixbuf-2.0 gtk-x11-2.0 '+gtklibs), LIBPATH=Split("$LIBPATH $gtklibsdir "+gtklpath), LINKFLAGS=Split("$LINKFLAGS -Wl,-z -Wl,now"))
 
-ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadepscreen.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaprogressdialog.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncursesw'))
+ncurs_lflags = ""
+if cur_os == "openbsd":
+    ncurs_lflags = "-static"
+    
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadepscreen.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaprogressdialog.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncursesw'), LINKFLAGS=Split('$LINKFLAGS '+ncurs_lflags))
 
 if cur_os == 'darwin':
     fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg '+fltklibs), LINKFLAGS=Split("$LINKFLAGS -framework Carbon -framework ApplicationServices"))
@@ -746,11 +755,18 @@ else:
     fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft Xinerama Xpm X11 '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
 
 bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
+stat_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'
 
-if cur_os == 'darwin':
-    Default(edelta, surunner, lock, fltk, main)
-    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(lock)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, fltk))
+if cur_os == 'linux':
+    Default(env.Install(bin_dir, Flatten(lock)))
+    
+if cur_os != 'darwin':
+    Default(env.Install(bin_dir, Flatten(gtk)))
+
+Default(env.Install(bin_dir, Flatten(fltk) + Flatten(gtk)))
+Default(env.Install(lib_dir, Flatten(libsu) + Flatten(main)))
+
+if cur_os == 'openbsd':
+    Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(edelta) + Flatten(surunner)))
 else:
-    Default(edelta, surunner, lock, ncurses, gtk, fltk, main)
-    Default(env.Install(bin_dir, Flatten(edelta)), env.Install(bin_dir, Flatten(lock)), env.Install(bin_dir, Flatten(surunner)), env.Install(lib_dir, libsu), env.Install(lib_dir, main), env.Install(bin_dir, ncurses), env.Install(bin_dir, gtk), env.Install(bin_dir, fltk))
-
+    Default(env.Install(bin_dir, Flatten(ncurses) + Flatten(edelta) + Flatten(surunner)))

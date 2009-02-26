@@ -259,7 +259,7 @@ end
 
 function GetAllBins(path, bins)
     local allbins = { }
-    local function getbins(path) -- Gets bins from all highest sub directories
+    local function getbins(path) -- Gets bins from current and all sub directories
         for f in io.dir(path) do
             local p = path .. "/" .. f
             if os.isdir(p) then
@@ -273,6 +273,11 @@ function GetAllBins(path, bins)
     -- Get all binaries
     getbins(path)
     return allbins
+end
+
+function GetRelBinPath(bin)
+    local relbinpath = string.gsub(bin, "^.*/bin", "bin")
+    return relbinpath
 end
 
 function InitDeltaBins()
@@ -312,8 +317,9 @@ function InitDeltaBins()
         for _, bin in ipairs(allbins) do
             if bin ~= base then
                 os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s\"", EdeltaBin, base, bin, tmpfile))
-                deltasizes[bin] = deltasizes[bin] or { }
-                deltasizes[bin][base] = os.filesize(tmpfile)
+                local rbin = GetRelBinPath(bin)
+                deltasizes[rbin] = deltasizes[rbin] or { }
+                deltasizes[rbin][GetRelBinPath(base)] = os.filesize(tmpfile)
             end
         end
     end
@@ -339,7 +345,7 @@ deltasizes = { }
     
     out:write("binsums = { }\n")
     for _, bin in ipairs(allbins) do
-        out:write(string.format("binsums[\"%s\"] = \"%s\"\n", bin, io.md5(bin)))
+        out:write(string.format("binsums[\"%s\"] = \"%s\"\n", GetRelBinPath(bin), io.md5(bin)))
     end
     
     out:close()
@@ -354,11 +360,22 @@ function GetOptDeltas(binlist)
         local opts = { }
         
         for _, bin in ipairs(bins) do
-            for base, s in pairs(deltasizes[bin]) do
-                if (not opts[bin] or opts[bin].size > s) and utils.tablefind(bins, base) then
-                    opts[bin] = opts[bin] or { }
-                    opts[bin].size = s
-                    opts[bin].base = base
+            local rbin = GetRelBinPath(bin)
+            if not deltasizes[rbin] then
+                ThrowError("No delta entry for %s!", rbin)
+            end
+            
+            for base, s in pairs(deltasizes[rbin]) do
+                local rbase = GetRelBinPath(base)
+                if not opts[rbin] or opts[rbin].size > s then
+                    for _, b in ipairs(bins) do
+                        if GetRelBinPath(b) == rbase then
+                            opts[rbin] = opts[rbin] or { }
+                            opts[rbin].size = s
+                            opts[rbin].base = rbase
+                            break
+                        end
+                    end
                 end
             end
         end
@@ -366,8 +383,8 @@ function GetOptDeltas(binlist)
         local newbins = { }
         for bin, ideal in pairs(opts) do
             if opts[ideal.base] and opts[ideal.base].base == bin then -- Already got sub as base?
-                local cursizediff = os.filesize(bin) - ideal.size
-                local othersizediff = os.filesize(ideal.base) - opts[ideal.base].size
+                local cursizediff = os.filesize(ndir .. "/" .. bin) - ideal.size
+                local othersizediff = os.filesize(ndir .. "/" .. ideal.base) - opts[ideal.base].size
                 if cursizediff <= othersizediff then
                     -- Current is fine, clear other
                     opts[ideal.base] = nil
@@ -455,11 +472,11 @@ function Init()
         local ed = lcdir .. "/" .. "edelta"
 
         -- File exists and 'ldd' doesn't report missing lib deps?
-        if (validbin(lz)) then
+        if validbin(lz) then
             LZMABin = lz
         end
         
-        if (validbin(ed)) then
+        if validbin(ed) then
             EdeltaBin = ed
         end
         
@@ -468,9 +485,20 @@ function Init()
         end
     end
     
-    if (not LZMABin) then
+    -- Check for static bins if not found yet
+    local path = basebindir .. "/lzma"
+    if not LZMABin and os.fileexists(path) then
+        LZMABin = path
+    end
+    
+    path = basebindir .. "/edelta"
+    if not EdeltaBin and os.fileexists(path) then
+        EdeltaBin = path
+    end
+    
+    if not LZMABin then
         ThrowError("Could not find a suitable LZMA encoder")
-    elseif (not EdeltaBin) then
+    elseif not EdeltaBin then
         ThrowError("Could not find a suitable edelta encoder")
     end
     
@@ -510,6 +538,16 @@ function PrepareArchive()
     RequiredCopy(ndir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/internal/utils.sh", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/internal/about", confdir .. "/tmp")
+    
+    -- Terminfo's for BSD's
+    for _, tos in ipairs(cfg.targetos) do
+        if tos == "freebsd" or tos == "netbsd" or tos == "openbsd" then
+            local p = confdir .. "/tmp/terminfo"
+            os.mkdirrec(p)
+            RequiredCopyRec(ndir .. "/src/internal/terminfo", p)
+            break
+        end
+    end
     
     -- Lua scripts
     os.mkdirrec(confdir .. "/tmp/shared")
@@ -597,7 +635,7 @@ function PrepareArchive()
     
     -- Copy all helper bins
     for _, bin in ipairs(binlist) do
-        local relbinpath = string.gsub(bin, "^.*/bin", "bin")
+        local relbinpath = GetRelBinPath(bin)
         local destpath = string.format("%s/tmp/%s", confdir, relbinpath)
         os.mkdirrec(utils.dirname(destpath))
         RequiredCopy(bin, destpath)
@@ -614,18 +652,18 @@ function PrepareArchive()
     
     -- Copy and prepare all frontends
     for _, bin in ipairs(frlist) do
-        local relbinpath = string.gsub(bin, "^.*/bin", "bin")
+        local relbinpath = GetRelBinPath(bin)
         local destpath = string.format("%s/tmp/%s", confdir, relbinpath)
         local binname = utils.basename(bin)
         
         os.mkdirrec(utils.dirname(destpath))
 
-        if optdeltas[bin] then
-            local relbase = string.gsub(optdeltas[bin].base, "^.*/bin", "bin")
+        if optdeltas[relbinpath] then
+            local relbase = GetRelBinPath(optdeltas[relbinpath].base)
             deltafile:write(string.format("%s %s\n", relbinpath, relbase))
         end
 
-        if not optdeltas[bin] then -- Top level bin?
+        if not optdeltas[relbinpath] then -- Top level bin?
             if cfg.archivetype == "lzma" then
                 if os.execute(string.format("\"%s\" e \"%s\" \"%s.lzma\" 2>/dev/null", LZMABin,
                             bin, destpath)) ~= 0 then
@@ -635,9 +673,9 @@ function PrepareArchive()
                 RequiredCopy(bin, destpath)
             end
         else
-            local base = optdeltas[bin].base
+            local base = optdeltas[relbinpath].base
             if os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s.diff\"", EdeltaBin,
-                                        base, bin, destpath)) ~= 0 then
+                                        ndir .. "/" .. base, bin, destpath)) ~= 0 then
                 ThrowError("Failed to diff binary: %s", relbinpath)
             end
             

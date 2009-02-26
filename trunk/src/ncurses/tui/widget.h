@@ -49,6 +49,7 @@ class CWidget
     bool m_bFocused;
     bool m_bEnabled;
     bool m_bSizeChanged;
+    bool m_bDeleted;
 
     TColorPair m_FColors, m_DFColors; // Focused and DeFocused colors
     bool m_bColorsChanged, m_bSetFColors, m_bSetDFColors;
@@ -143,6 +144,8 @@ public:
     
     void Enable(bool e);
     bool Enabled(void) { return m_bEnabled; }
+    
+    bool Deleted(void) const { return m_bDeleted; }
 };
 
 
