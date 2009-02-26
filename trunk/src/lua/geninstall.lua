@@ -684,7 +684,7 @@ function PrepareArchive()
                             destpath, destpath)) ~= 0 then
                     ThrowError("Failed to pack binary %s", relbinpath)
                 end
-                os.remove(destpath)
+                os.remove(destpath .. ".diff")
             end
         end
     end
