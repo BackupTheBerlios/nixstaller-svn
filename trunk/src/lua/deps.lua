@@ -401,7 +401,7 @@ function initdep(d)
         pipe:close()
         os.chdir(olddir)
     end
-    
+       
     enablesecbar(false)
     notifyendextract()
     initdeps[d] = true
@@ -565,12 +565,18 @@ function markdep(bininfo, lib, dep, deps)
     
     if dep and dep.full and (dep.standalone or bininfo.native) then
         if initdep(dep) then
-            bininfo.found = true
-            bininfo.native = false
-            bininfo.path = getdeplibpath(dep, lib)
-            bininfo.dep = dep
-            bininfo.deps = dep.deps
-            return true
+            local lpath = getdeplibpath(dep, lib)
+            if os.fileexists(lpath) then
+                bininfo.found = true
+                bininfo.native = false
+                bininfo.path = lpath
+                bininfo.dep = dep
+                bininfo.deps = dep.deps
+                return true
+            else
+                install.print(string.format("WARNING: Supplied dependency '%s' does not have library '%s'\n", dep.name, lib))
+                adddeplibprob(dep, "missing", lib)
+            end
         end
     else
         if dep then
@@ -835,6 +841,8 @@ function checkdeps(bins, libs, bdir)
                 path = string.format("%s/%s", bdir, bin)
             end
             
+            print("checkbins:", bin, path, os.fileexists(path))
+
             if os.fileexists(path) then
                 local infomap = { }
                 infomap[bin] = { }

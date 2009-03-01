@@ -125,7 +125,7 @@ function maplibs(bin, extrapath)
             path = string.gsub(path, " %(.*%)$", "")
             path = string.gsub(path, "^[%s]*", "")
             local file = (path and utils.basename(path))
-            if path and os.fileexists(path) and map[file] ~= nil then
+            if file and os.fileexists(path) and map[file] ~= nil then
                 map[file] = path
             end
             line = pipe:read()

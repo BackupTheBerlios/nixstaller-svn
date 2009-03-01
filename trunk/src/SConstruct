@@ -631,6 +631,9 @@ if not env.GetOption('clean'):
     if not conf.CheckLibWithHeader('elf', Split("libelf/libelf.h libelf/gelf.h"), 'C', ';', 0):
         print "Couldn't find libelf !"
         Exit(1)
+        
+    if conf.CheckType('Elf32_Verdef', '#include "elf.h"'):
+        conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
 
     if not conf.CheckLibWithHeader('curl', Split("curl/curl.h"), 'C', ';', 0):
         print "Couldn't find libcurl !"

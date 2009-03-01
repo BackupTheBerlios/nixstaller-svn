@@ -193,7 +193,20 @@ buildelf()
     get "http://www.mr511.de/software/libelf-0.8.10.tar.gz"
     untar "libelf-0.8.10.tar.gz"
     dodir "libelf-0.8.10"
-    ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    CONF=
+    if [ $CURRENT_OS = "netbsd" ]; then
+        # Use patch from pkgsrc (adds various missing macros)
+        patch < "$SRCDIR/elfnbsd.diff"
+        # NetBSD's elf.h seems broken...atleast compiling with it results in a not-working
+        # libelf
+        mv configure configure.orig
+        sed 's/libelf_cv_elf_h_works=yes/libelf_cv_elf_h_works=no/g' configure.orig >configure
+        chmod +x configure
+        ./configure --prefix=$DESTPREFIX --enable-compat
+    else
+        ./configure --prefix=$DESTPREFIX
+    fi
+    make && make install && make clean
     restoredir
 }
 

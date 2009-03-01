@@ -24,6 +24,9 @@
 #include "elfutils.h"
 
 namespace {
+
+#ifdef HAVE_ELFVERSIONG
+
 // Functions copied from RPM (lib/rpmds.c, author unknown...)
 
 GElf_Verdef *gelf_getverdef(Elf_Data *data, int offset)
@@ -50,6 +53,8 @@ GElf_Half *gelf_getversym(Elf_Data *data, int offset)
 {
     return (GElf_Half *) ((char *) data->d_buf + offset);
 }
+
+#endif
 
 }
 
@@ -85,6 +90,7 @@ CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
             case SHT_DYNSYM:
                 sym = section;
                 break;
+#ifdef HAVE_ELFVERSIONG                
             case SHT_GNU_verdef:
                 verdef = section;
                 break;
@@ -94,6 +100,7 @@ CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
             case SHT_GNU_versym:
                 versym = section;
                 break;
+#endif
             case SHT_DYNAMIC:
                 ReadDyn(section);
                 break;
@@ -156,6 +163,7 @@ void CElfWrapper::ReadSymbols(Elf_Scn *section)
 
 void CElfWrapper::ReadVerDef(Elf_Scn *section)
 {
+#ifdef HAVE_ELFVERSIONG
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
     gelf_getshdr(section, &shdr);
@@ -186,10 +194,12 @@ void CElfWrapper::ReadVerDef(Elf_Scn *section)
             offset += def->vd_next;
         }
     }
+#endif
 }
 
 void CElfWrapper::ReadVerNeed(Elf_Scn *section)
 {
+#ifdef HAVE_ELFVERSIONG
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
     gelf_getshdr(section, &shdr);
@@ -238,10 +248,12 @@ void CElfWrapper::ReadVerNeed(Elf_Scn *section)
             offset += need->vn_next;
         }
     }
+#endif
 }
 
 void CElfWrapper::MapVersions(Elf_Scn *section)
 {
+#ifdef HAVE_ELFVERSIONG
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
     gelf_getshdr(section, &shdr);
@@ -267,6 +279,7 @@ void CElfWrapper::MapVersions(Elf_Scn *section)
         }
         x++;
     }
+#endif
 }
 
 void CElfWrapper::ReadDyn(Elf_Scn *section)
@@ -295,7 +308,11 @@ void CElfWrapper::ReadDyn(Elf_Scn *section)
                 
                 m_NeededLibs.push_back(s);
             }
-            else if ((dyn->d_tag == DT_RPATH) || (dyn->d_tag == DT_RUNPATH))
+            else if ((dyn->d_tag == DT_RPATH)
+#ifdef DT_RUNPATH            
+                     || (dyn->d_tag == DT_RUNPATH)
+#endif
+                    )
             {
                 char *s = elf_strptr(m_pElf, shdr.sh_link, dyn->d_un.d_val);
                 if (s)
