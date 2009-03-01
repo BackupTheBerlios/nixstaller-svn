@@ -38,7 +38,7 @@ DEF_DEFAULTLANG="english"
 DEF_TARGETOS=
 DEF_TARGETARCH=
 DEF_FRONTENDS="gtk fltk ncurses"
-DEF_LANGUAGES="english dutch lithuanian"
+DEF_LANGUAGES="english dutch lithuanian bulgarian"
 DEF_INTROPIC=
 DEF_LOGO=
 DEF_APPICON=
@@ -67,7 +67,6 @@ TARGETDIR=
 GENPKG=
 OVERWRITE=
 RMEXISTING=
-DEPS=
 
 # List containing languages that couldn't be found in main lang/ directory
 NEWLANGUAGES=
@@ -84,10 +83,9 @@ usage()
     echo " --arch <arch>                    One or more CPU architectures the installer should support. Valid values: x86, x86_64. Default: current arch."
     echo " --archtype, -a lzma/gzip/bzip2   The archive type used for packing the installation files. Default: lzma"
     echo " --deflang, -d <lang>             The default language. Default: english"
-    echo " --deps                           Add specific dependency code to generated lua scripts. Needs --pkg option."
     echo " --frontends, -f <frontends>      One or more frontends to include. Valid values: gtk, fltk and ncurses. Default: gtk fltk ncurses."
     echo " --intropic, -i <picture>         Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
-    echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch lithuanian"
+    echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch lithuanian bulgarian"
     echo " --logo <file>                    Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
     echo " --mode, -m <mode>                 Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
     echo " --no-autolang                     Disables automaticly choosing a language."
@@ -239,10 +237,6 @@ parseargs()
             --rm-existing)
                 shift
                 RMEXISTING=1
-                ;;
-            --deps)
-                shift
-                DEPS=1
                 ;;
             --mode | -m)
                 shift
@@ -672,6 +666,11 @@ pkg.libs = {}
 -- used in this table should be the same as the dependency package directory name.
 pkg.deps = {}
 
+-- Table (array) containing all dependency packages (including dependencies for dependency
+-- packages) that should be downloaded. Note that you also need to set the pkg.baseurl
+-- variable for each dependency package listed here.
+pkg.externdeps = {}
+
 -- (Default) Directory used as 'data directory'. When unspecified (or nil) a
 -- reasonable default is automaticly choosen.
 pkg.destdir = nil
@@ -698,7 +697,7 @@ EOF
         cat >> ${TARGETDIR}/package.lua  << EOF
 
 -- Adds common commandline options for unattended installations. If you don't want any
--- dependency specific options pass false as first argument.
+-- dependency specific options pass false as the first argument.
 pkg.addpkgunopts(true)
 EOF
     fi

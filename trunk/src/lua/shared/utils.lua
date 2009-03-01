@@ -323,7 +323,7 @@ function loadconfig(path)
     end
     
     default("appname", "")
-    default("languages", { "english", "dutch", "lithuanian" })
+    default("languages", { "english", "dutch", "lithuanian", "bulgarian" })
     default("defaultlang", "english")
     default("targetos", { os.osname })
     default("targetarch", { os.arch })

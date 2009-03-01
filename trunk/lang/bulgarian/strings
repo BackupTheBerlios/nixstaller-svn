@@ -1,0 +1,687 @@
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+Next
+Напред
+
+Back
+Назад
+
+OK
+Потвърди
+
+Cancel
+Отказ
+
+Yes
+Да
+
+No
+Не
+
+Finish
+Готово
+
+Select directory
+Избиране на директория
+
+Browse
+Прелистване
+
+Open directory
+Отваряне на директория
+
+Choose another directory
+Избиране на друга директория
+
+Continue as root
+Продължение като root
+
+Close
+Затвори
+
+Continue
+Продължи
+
+Exit program
+Изход от програмата
+
+Create directory as root
+Създай директорията като root
+
+Ignore
+Игнорирай
+
+Abort
+Прекъсни
+
+Don't register
+Без регистрация
+
+Refresh
+Опресни
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+[
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
+Are you sure?
+]
+[
+Инсталацията не е приключила.
+Ако я прекъснете сега, това може да доведе до проблеми.
+Сигурни ли сте, че искате да продължите.
+]
+
+[
+This will abort the installation.
+Are you sure?
+]
+[
+Това ще доведе до прекъсване на инсталацията.
+Сигурни ли сте?
+]
+
+[
+Root access is required to continue.
+Abort installation?
+]
+[
+Изискват се root права за да продължите.
+Прекъсване на инсталацията?
+]
+
+Incorrect password given, please retype.
+Грешна парола, моля опитайте отново.
+
+# %s is replaced by appname
+Installation of %s complete!
+Инсталацията на %s е завършена!
+
+[
+You don't have read permissions for this directory.
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+[
+Нямате права да четете в тази директория.
+Моля изберете друга директория или пуснете програмата с потребител, който има права за четене.
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the administrative password for this later.
+]
+[
+Нямате права да пишете в тази директория.
+Файловете могат да бъдат извлечени с root потребителя,
+но ще трябва да въведете администраторската парола за това по-късно.
+]
+
+[
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
+]
+[
+Тази инсталация изисква root (администраторски) привилегии, за да продължи.
+Моля въведете администраторската парола в полето отдолу.
+]
+
+# %s is replaced by directory name
+Directory %s does not exist, do you want to create it?
+Директорията %s не съществува, желаете ли да я създадете?
+
+# %s is replaced by appname
+[
+This will install %s.
+Continue?
+]
+[
+%s ще бъде инсталиран.
+Продължение?
+]
+
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter the administrative password below.
+]
+[
+Вашият ъкаунт няма необходимите права, да създаде директорията.
+За да я създадете със root (администраторски) ъкаунт, моля въведете административната парола в полето отдолу.
+]
+
+[
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
+]
+[
+Изглежда друга програма използва dpkg базата данни.
+Моля затворете всички програми, които е възможно да използват тази база данни (пр. Synaptic).
+]
+
+Another program seems to be using pacman. Please close this program.
+Изглежда друга програма използва pacman. Моля затворете я.
+
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use this database (eg. Smart or YaST).
+]
+[
+Изглежда друга програма използва RPM базата данни.
+Моля затворете всички програми, които е възможно да използват тази база данни (пр. Smart или YaST).
+]
+
+Package is already installed. Do you want to replace it?
+Пакета вече е инсталиран. Искате ли да запиша върху него?
+
+Package is already installed. Use the --overwrite option to install anyway.
+Пакета вече е инсталиран. Използвайте --overwrite опцията за да инсталирате въпреки това.
+
+# First %s is replaced by current version, second by installer version.
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+[
+Версия %s е вече инсталирана, а вие се опитвате да инсталирате версия %s.
+Искате ли да подмените инсталирания пакет?
+]
+
+# %s is replaced by missing tool (ie rpmbuild)
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+[
+За да може инсталатора да регистрира софтуера, пакета '%s' трябва да бъде наличен.
+Моля инсталирайте пакета и натиснете продължи или игнорирай, за да продължите без регистрация на софтуера.
+]
+
+One or more package dependencies could not be resolved. Details are given below.
+Пакет/и, от които зависи инсталацията, немогат да бъдат намерени. Детайлите са дадени отдолу.
+
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+Като алтернатива рестартирайте инсталацията с опция --ignore-failed-deps като поемате риска инсталираният софтуер да не работи.
+
+Please fix these issues now and rerun the installer.
+Моля, оправете проблемите и стартирайте инсталацията отново.
+
+Continuing installation anyway...
+Както и да е, продължаване на инсталацията...
+
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+Пакет/и, от които зависи инсталацията немогат да бъдат намерени. Детайлите са дадени отдолу. Моля оправете проблемите и натиснете Опресни. Като алтернатива можете да натиснете Игнорирай, като рискувате проблеми със зависимостите, когато използвате софтуера.
+
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
+Трябва да приемете условията на лиценза, за да инсталирате този софтуер. Изпозлвайте опцията --show-license за да видите лиценза и --accept-license за да се съгласите с него.
+
+
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+# %s is replaced by parameter name from configmenu
+Please choose a new value for %s
+Изберете нова стойност за %s
+
+# %s is replaced by parameter name from configmenu
+Please select a directory for %s
+Изберете директория за %s
+
+# %s is replaced by parameter name from configmenu
+Please enter a new value for %s
+Изберете нова стойност за %s
+
+Please select a language
+Изберете език
+
+Welcome
+Добре дошли
+
+License agreement
+Условия на лиценза
+
+Select destination directory
+Изберете директория
+
+Please read the following text
+Моля, прочетете текста, който следва
+
+Warning
+Внимание
+
+Enter name of new directory
+Въведете име на новата директория
+
+About
+Отностно
+
+Select a directory
+Изберете директория
+
+Password dialog
+Диалог за парола
+
+Software is being installed
+Софтуера се инсталира
+
+Software destination
+Инсталационна директория
+
+Software registration
+Регистрация на софтуера
+
+Installation summary
+Инсталационен отчет
+
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Progress
+Прогрес
+
+Language
+Език
+
+I agree to this license agreement
+Съгласявам се с условията на лиценза
+
+Status
+Статус
+
+Extracting files
+Извличане на файловете
+
+Verifying dependencies
+Проверяване на зависимостите
+
+Gathering main binary dependencies.
+Определяне на файлове от които зависи главния изпълним файл.
+
+Extracting dependency %s
+Извличане на зависимост %s
+
+Gathering mandatory dependencies.
+Определяне на задължителните файлове от които зависи софтуера.
+
+Installing dependencies.
+Инсталиране на файловете от които зависи софтуера.
+
+Installing package
+Инсталиране на пакет
+
+Enable
+Включване
+
+Disable
+Изключване
+
+Directory name
+Име на директорията
+
+Root password
+Root парола
+
+Register software
+Регистрация на софтуера
+
+Name
+Име
+
+Problem
+Проблем
+
+Description
+Описание
+
+Failed to install.
+Неуспешна инсталация.
+
+Failed to download.
+Неуспешно сваляне.
+
+(Binary) incompatible.
+(Бинарно) несъвместимо.
+
+# %s will be replaced by the name of the incompatible library.
+Incompatible library: %s.
+Несъвместима библиотека: %s.
+
+# %s will be replaced by the name of the missing library.
+Missing library: %s.
+Липсваща библиотека: %s.
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too old (required: %s).
+Библиотеката %s е твърде стара (изискваната е: %s).
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too new (required: %s).
+Библиотеката %s е твърде нова (изискваната е: %s).
+
+# %s will be replaced by the required library.
+Wrong library version (required: %s).
+Грешна версия на библиотеката (изискваната е: %s).
+
+# %s will be replaced by the found library.
+Too new (available: %s)
+Прекалено нова (налична: %s)
+
+# %s will be replaced by the found library.
+Too old (available: %s)
+Твърде стара (налична: %s)
+
+File missing.
+Липсващ файл.
+
+Version mismatch.
+Омазване на версиите.
+
+Multiple package managers were found, please choose which one should be used.
+Намерени са няколко пакетни мениджъра, моля изберете кой от тях да бъде използван.
+
+# %s is replaced by possible package managers
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
+[
+Намерени са няколко пакетни мениджъра: %s
+Моля използвайте опцията --packager за да изберете кой да бъде използван.
+]
+
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+[
+В това поле можете да изберете директорията, в която ще бъдат поставени данните на софтуера. Файловете са инсталирани в директория под избраната.
+
+Забележка: Ако нямате права за запис в тази директория, ще трябва да се сдобиете root привилегии на по-късен етап.
+
+Ако не сте сигурни, оставете нещатата така както са.
+]
+
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+[
+В това поле може да изберете директорията, в която ще бъдат поставени изпълнимите файлове. Файловете ще бъдат инсталирани дирекно в избраната директория.
+
+Забележка: Ако нямате права за запис в тази директория, ще трябва да се сдобиете root привилегии на по-късен етап.
+
+Ако не сте сигурни, оставете нещатата така както са.
+]
+
+
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+]
+[
+Като слагате отметка на кутийката, инсталатора ще (опита) да регистрира софтуера в системния пакетен мениджър. Това позволява лесно премахване или обновяване.
+
+Забележка: Когато има отметка, ще трябва да се сдобиете root привилегии на по-късен етап.
+]
+
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+[
+Софтуерът беше инсталиран.
+Инсталационният отчет се показан отдолу.
+]
+
+dpkg (eg. Ubuntu, Debian)
+dpkg (т.е. Ubuntu, Debian)
+
+pacman (eg. Arch Linux)
+pacman (т.е. Arch Linux)
+
+rpm (eg. Fedora, Mandriva)
+rpm (т.е. Fedora, Mandriva)
+
+Slackware tgz (eg. Slackware, Zenwalk)
+Slackware tgz (т.е. Slackware, Zenwalk)
+
+
+#-----------------------------------------------
+# Error messages
+#-----------------------------------------------
+
+Error
+Грешка
+
+Could not create directory
+Провалено създаване на директория
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+Инсталаторът ще постави файловете в следната директория:
+%s
+Лошото, е че нямате права за четене в нея.
+Моля, рестартирайте инсталацията с потребител, който има или с root
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Следната директория не може да бъде отворена %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Следната директория не може да бъде прочетена %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Невъзможност за четене в текущата директория: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Lua грешка е намерена: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Следната команда не може да бъде изпълнена: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Неуспех при създаване на директория: %s
+
+Could not use su or sudo to gain root access.
+Невъзможност за използване на su или sudo за получаване на root права.
+
+Not enough space for buttonbar entry
+Недостатъчно място за бара с бутоните
+
+# %s is replaced by error message
+Overflow detected: %s
+Намерено е препълване на буфера: %s
+
+# %s is replaced by error message
+Could not open pipe: %s
+Невъзможност за отваряне на pipe: %s
+
+# %s is replaced by error message
+Could not read pipe: %s
+Не може да бъде прочетен pipe: %s
+
+# %s is replaced by error message
+Could not close pipe: %s
+Не може да бъде затворен pipe: %s
+
+# %s is replaced by error message
+Could not fork child: %s
+Невъзможност за форкване на чилда: %s
+
+# %s is replaced by error message
+Could not close file descriptor: %s
+Невъзможност за затваряне на файловите дескриптори: %s
+
+# %s is replaced by error message
+poll returned an error: %s
+poll върна грешка: %s
+
+# %s is replaced by error message
+select returned an error: %s
+select върна грешка: %s
+
+# %s is replaced by error message
+Encountered an error while waiting on child process: %s
+Възника проблем по време на изчкването за чилд процеса: %s
+
+# %s is replaced by error message
+uname returned an error: %s
+uname върна грешка: %s
+
+# %s is replaced by directory name
+Could not create directory '%s'
+Невъзможност за създаване на директория '%s'
+
+Please enter a valid path.
+Моля въведете валиден път.
+
+# %s is replaced by error message
+Error during file transfer: %s
+Грешка по време на трансфериране на файл: %s
+
+# %s is replaced by error message
+Elf class error detected: %s
+Засечена грешка в Elf клас: %s
+
+# First %s is replaced by file, second by error message
+Could not open file %s: %s
+Невъзможност за отваряне на файл %s: %s
+
+# %s is replaced by filename
+Could not locate file: %s
+Невъзможност за намиране на файл: %s
+
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+Нямате права за четене в избраната директория, рестартирайте инсталатора с потребител, който има (пр. root).
+
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+Нямате права за писане в избраната директория, рестартирайте инсталатора с потребител, който има (пр. root).
+
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+Избраната директория не може да бъде създадена, рестартирайте инсталатора с потребител, който може да я създаде (пр. root).
+
+# %s is replaced by list of possible packagers
+Wrong packager specified, should be one of the following: %s
+Избран е неправилен пакетен мениджър, наличните са както следва: %s
+
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Добавяне в Отметки
+
+All Files (*)
+Всички файлове (*)
+
+Custom Filter
+Потребителски филтър
+
+Favorites
+Отметки
+
+Filename:
+Име на файл:
+
+File Systems
+Файлови системи
+
+Manage Favorites
+Организиране на Отметките
+
+Show:
+Показване:
+
+Create new directory
+Създаване на директория
+
+
+#-----------------------------------------------
+# Button bar from ncurses frontend
+#-----------------------------------------------
+
+Next field
+Следващо поле
+
+TAB
+ТАБ
+
+Exit
+Изход
+
+ESC
+ESC
+
+F2
+F2
+
+F3
+F3
+
+Done
+Готово
+
+ENTER
+ENTER
+
+ARROWS
+Стрелки
+
+ARROWS/PGUP/PGDOWN
+Стрелки/PGUP/PGDOWN
+
+Activate button
+Активиране на бутон
+
+Move to
+Премести в
+
+Navigate
+Навигирай
+
+Character
+Буква
+
+Toggle
+Превключи
+
+Change
+Смени
+
+ARROWS/PGUP/PGDOWN/HOME/END
+Стрелки/PGUP/PGDOWN/HOME/END
+
+SPACE
+Шпация
+
+
+#-----------------------------------------------
+# Put your own translations below
+#-----------------------------------------------

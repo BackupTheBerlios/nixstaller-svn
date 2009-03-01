@@ -841,8 +841,6 @@ function checkdeps(bins, libs, bdir)
                 path = string.format("%s/%s", bdir, bin)
             end
             
-            print("checkbins:", bin, path, os.fileexists(path))
-
             if os.fileexists(path) then
                 local infomap = { }
                 infomap[bin] = { }

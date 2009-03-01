@@ -1,12 +1,12 @@
 OVERALL
 - libstdcxx:
-    - Compile NetBSD x86_64 bins on 3.X instead of 4.X (update notes)
-    - Update FreeBSD notes file for for libsupc++ (used from 6.X)
-    - Only use it on some platforms?
-- Test regular C lua libs, update notes
+    - Remove FreeBSD libsupc++
 - Update examples:
     - Final strings files.
 - Update cURL and FLTK libs
+- Recursive lib scanning for deputil.lua?
+- Check not working translations for unattendeds
+- Final lib notes
 
 
 TEST
@@ -20,6 +20,7 @@ TEST
 - depscreen
 - pacman present() fix
 - lowercased dep functions, libdir
+- Make sure that only files are displayed when extracting (no random tar output)
 
 
 MAIN
@@ -35,6 +36,7 @@ DOCS
 - More links instead of "in the next/previous chapter/section"?
 - Update which langs are provided
 - Cube(?) unattended tutorial
+- Is it actually required to rerun scan? (not with auto)
 
 
 RELEASE

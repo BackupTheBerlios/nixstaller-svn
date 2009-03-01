@@ -28,7 +28,9 @@
 
 // HACK: _XOPEN_SOURCE_EXTENDED needs to be defined for this, but setting
 // that may cause other compile errors
+#ifndef get_wch
 extern "C" int get_wch (wint_t *);
+#endif
 
 namespace NNCurses {
 

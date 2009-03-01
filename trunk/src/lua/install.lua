@@ -85,9 +85,8 @@ function install.extract(luaout)
             
             if szmap[f] and szmap[f][file] and totalsize > 0 then
                 extractedsz = extractedsz + szmap[f][file]
+                luaout("Extracting file: " .. file, extractedsz / totalsize * 100)
             end
-            
-            luaout("Extracting file: " .. file, extractedsz / totalsize * 100)
         end, true)
     end
     

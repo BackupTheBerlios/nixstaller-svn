@@ -14,6 +14,7 @@
 - Fixed: GTK screen titles weren't always centered.
 - Fixed: GTK password dialog didn't finish on enter keypress.
 - Fixed: When checking if the pacman packager is present and a pacman game was present, the installer would launch the game (reported by John Tsolox).
+- Fixed: 'tr' call used to convert uppercase to lowercase in scripts didn't work on all platforms.
 - Better commandline arguments handling.
 - Several new util functions: utils.removerec(), utils.copyrec(), utils.patch(), utils.tableappend(), utils.tablefind(), utils.tablemerge(), utils.mapsize(), utils.emptystring() and utils.mkdirperm()
 - Updated to FLTK 1.3
@@ -63,7 +64,7 @@
 - install.update() function
 - install.setaskquit() function
 - Manual: Fixed several spelling mistakes, updated tutorials, improved bzflag tutorial.
-- Lithuanian language support
+- Lithuanian and Bulgarian language support
 
 
 0.3 --> 0.4
