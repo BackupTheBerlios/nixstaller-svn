@@ -237,6 +237,16 @@
 // #define _RWSTD_NO_STRSTR
 // #define _RWSTD_NO_STRTOK
 // #define _RWSTD_NO_STRXFRM
+// #define _RWSTD_NO_ASCTIME
+// #define _RWSTD_NO_CLOCK
+// #define _RWSTD_NO_CTIME
+// #define _RWSTD_NO_DIFFTIME
+// #define _RWSTD_NO_GMTIME
+// #define _RWSTD_NO_LOCALTIME
+// #define _RWSTD_NO_MKTIME
+// #define _RWSTD_NO_STRFTIME
+// #define _RWSTD_NO_TIME
+// #define _RWSTD_NO_TZSET
 // #define _RWSTD_NO_BTOWC
 // #define _RWSTD_NO_FGETWC
 // #define _RWSTD_NO_FGETWS
@@ -285,7 +295,6 @@
 // #define _RWSTD_NO_WCSRTOMBS
 // #define _RWSTD_NO_WCSSPN
 // #define _RWSTD_NO_WCSSTR
-// #define _RWSTD_NO_WCSTOD
 // #define _RWSTD_NO_WCSTOD
 #define _RWSTD_NO_WCSTOF
 #define _RWSTD_NO_WCSTOF_IN_LIBC
@@ -338,13 +347,12 @@
 #define _RWSTD_NO_ABS_ULONG
 #define _RWSTD_NO_ABS_LLONG
 #define _RWSTD_NO_ABS_ULLONG
-// #define _RWSTD_NO_ATOMIC_OPS
 // #define _RWSTD_NO_HONOR_STD
 // #define _RWSTD_NO_STD_TERMINATE
 // #define _RWSTD_NO_SETRLIMIT
-// #define _RWSTD_NO_NEW_THROWS
 // #define _RWSTD_NO_NEW_OFLOW_SAFE
-// #define _RWSTD_NO_STD_BAD_ALLOC
+#define _RWSTD_NO_NEW_THROWS
+#define _RWSTD_NO_STD_BAD_ALLOC
 // #define _RWSTD_NO_STD_BAD_CAST
 // #define _RWSTD_NO_EXCEPTION_SPECIFICATION
 // #define _RWSTD_NO_STD_SET_UNEXPECTED
@@ -368,11 +376,12 @@
 #define _RWSTD_NO_GLOBAL_UNCAUGHT_EXCEPTION
 #define _RWSTD_NO_GLOBAL_UNEXPECTED
 // #define _RWSTD_NO_RUNTIME_IN_STD
+#undef _RWSTD_NO_STD_BAD_ALLOC
 // number of runtime library symbols examined: 11
-// symbols found only in namespace std:        11
+// symbols found only in namespace std:        10
 // symbols found only in the global namespace:  0
 // symbols found in both namespaces:            0
-// symbols found in neither namespace:          0
+// symbols found in neither namespace:          1
 // #define _RWSTD_NO_RUNTIME_IN_STD
 #define _RWSTD_NO_BAD_ALLOC_ASSIGNMENT
 #define _RWSTD_NO_BAD_ALLOC_COPY_CTOR
@@ -401,18 +410,18 @@
 // #define _RWSTD_NO_COLLAPSE_TEMPLATE_STATICS
 // #define _RWSTD_NO_CONST_CAST
 // #define _RWSTD_NO_CTYPE_BITS
-#define _RWSTD_CTYPE_UPPER = 0x00000001   /* libc value */
-#define _RWSTD_CTYPE_LOWER = 0x00000002   /* libc value */
-#define _RWSTD_CTYPE_SPACE = 0x00000008   /* libc value */
-#define _RWSTD_CTYPE_PUNCT = 0x00000010   /* libc value */
-#define _RWSTD_CTYPE_CNTRL = 0x00000020   /* libc value */
-#define _RWSTD_CTYPE_BLANK = 0x00000080   /* libc value */
-#define _RWSTD_CTYPE_XDIGIT = 0x00000040   /* libc value */
-#define _RWSTD_CTYPE_DIGIT = 0x00000004   /* computed */
-#define _RWSTD_CTYPE_GRAPH = 0x00000100   /* computed */
-#define _RWSTD_CTYPE_ALPHA = 0x00000200   /* computed */
-#define _RWSTD_CTYPE_PRINT = 0x00000400   /* computed */
-#define _RWSTD_CTYPE_ALNUM = 0x00000800   /* computed */
+#define _RWSTD_CTYPE_UPPER 0x00000001   /* libc value */
+#define _RWSTD_CTYPE_LOWER 0x00000002   /* libc value */
+#define _RWSTD_CTYPE_SPACE 0x00000008   /* libc value */
+#define _RWSTD_CTYPE_PUNCT 0x00000010   /* libc value */
+#define _RWSTD_CTYPE_CNTRL 0x00000020   /* libc value */
+#define _RWSTD_CTYPE_BLANK 0x00000080   /* libc value */
+#define _RWSTD_CTYPE_XDIGIT 0x00000040   /* libc value */
+#define _RWSTD_CTYPE_DIGIT 0x00000004   /* computed */
+#define _RWSTD_CTYPE_GRAPH 0x00000100   /* computed */
+#define _RWSTD_CTYPE_ALPHA 0x00000200   /* computed */
+#define _RWSTD_CTYPE_PRINT 0x00000400   /* computed */
+#define _RWSTD_CTYPE_ALNUM 0x00000800   /* computed */
 // #define _RWSTD_NO_NEW_CLASS_TEMPLATE_SYNTAX
 // #define _RWSTD_NO_CV_VOID_SPECIALIZATIONS
 // #define _RWSTD_NO_DAYLIGHT
@@ -427,6 +436,8 @@
 // #define _RWSTD_NO_DUMMY_DEFAULT_ARG
 // #define _RWSTD_NO_DYNAMIC_CAST
 // #define _RWSTD_NO_EMPTY_MEM_INITIALIZER
+// #define _RWSTD_NO_WCTYPE_H
+// #define _RWSTD_NO_EQUAL_CTYPE_MASK
 #define _RWSTD_NO_EXCEPTION_ASSIGNMENT
 #define _RWSTD_NO_EXCEPTION_COPY_CTOR
 #define _RWSTD_NO_EXCEPTION_DEFAULT_CTOR
@@ -441,7 +452,7 @@
 // #define _RWSTD_NO_MEMBER_TEMPLATES
 #define _RWSTD_NO_IMPLICIT_INCLUSION
 // #define _RWSTD_NO_extern_function_template_imp
-#define _RWSTD_NO_EXTERN_FUNCTION_TEMPLATE
+// #define _RWSTD_NO_EXTERN_FUNCTION_TEMPLATE
 // #define _RWSTD_NO_EXPLICIT_INSTANTIATION_BEFORE_DEFINITION
 #define _RWSTD_NO_EXPLICIT_INSTANTIATION_WITH_IMPLICIT_INCLUSION
 // #define _RWSTD_NO_EXPLICIT_MEMBER_INSTANTIATION
@@ -459,7 +470,6 @@
 // #define _RWSTD_NO_EXTERN_TEMPLATE
 // #define _RWSTD_NO_extern_template_before_definition_imp
 // #define _RWSTD_NO_EXTERN_TEMPLATE_BEFORE_DEFINITION
-// #define _RWSTD_NO_FLOAT_H
 #define _RWSTD_NO_LIBC_EXCEPTION_SPEC
 // #define _RWSTD_NO_STRTOD_IN_LIBC
 // #define _RWSTD_NO_LONG_DOUBLE
@@ -521,10 +531,10 @@
 #define _RWSTD_DBL_SNAN_BITS  { '\x1', 0, 0, 0, 0, 0, '\xf0', '\x7f' }
 #define _RWSTD_DBL_DENORM_MIN_BITS  { '\x1', 0, 0, 0, 0, 0, 0, 0 }
 #define _RWSTD_DBL_HAS_DENORM  1
-#define _RWSTD_LDBL_INF_BITS  { 0, 0, 0, 0, 0, 0, 0, '\x80', '\xff', '\x7f', '\x4', '\x8' }
-#define _RWSTD_LDBL_QNAN_BITS  { 0, 0, 0, 0, 0, 0, 0, '\xc0', '\xff', '\xff', '\x4', '\x8' }
+#define _RWSTD_LDBL_INF_BITS  { 0, 0, 0, 0, 0, 0, 0, '\x80', '\xff', '\x7f', 0, 0 }
+#define _RWSTD_LDBL_QNAN_BITS  { 0, 0, 0, 0, 0, 0, 0, '\xc0', '\xff', '\xff', 0, 0 }
 #define _RWSTD_LDBL_SNAN_BITS  { '\x1', 0, 0, 0, 0, 0, 0, '\x80', '\xff', '\x7f', 0, 0 }
-#define _RWSTD_LDBL_DENORM_MIN_BITS  { 0, '\x8', 0, 0, 0, 0, 0, 0, 0, 0, '\xbf', '\xbf' }
+#define _RWSTD_LDBL_DENORM_MIN_BITS  { 0, '\x8', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define _RWSTD_LDBL_HAS_DENORM  1
 // #define _RWSTD_NO_INLINE_MEMBER_TEMPLATES
 // #define _RWSTD_NO_INSTANTIATE_DEFAULT_ARGS
@@ -559,7 +569,6 @@
     char _C_fill [2];   /* fill to size */ \
   }
 // #define _RWSTD_NO_WCHAR_H
-// #define _RWSTD_NO_WCTYPE_H
 #define _RWSTD_NO_NEW_HEADER
 #define _RWSTD_NO_LIBC_IN_STD
 // #define _RWSTD_NO_LIB_EXCEPTIONS
@@ -611,11 +620,11 @@
 #define _RWSTD_MB_LEN_MAX    32   /* libc value */
 #define _RWSTD_INT8_T            signed char
 #define _RWSTD_UINT8_T           unsigned char
-#define _RWSTD_INT16_T           short
+#define _RWSTD_INT16_T           signed short
 #define _RWSTD_UINT16_T          unsigned short
-#define _RWSTD_INT32_T           int
+#define _RWSTD_INT32_T           signed int
 #define _RWSTD_UINT32_T          unsigned int
-#define _RWSTD_INT64_T           long long
+#define _RWSTD_INT64_T           signed long long
 #define _RWSTD_UINT64_T          unsigned long long
 #define _RWSTD_INT_LEAST8_T     _RWSTD_INT8_T
 #define _RWSTD_UINT_LEAST8_T    _RWSTD_UINT8_T

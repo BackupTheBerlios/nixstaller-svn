@@ -740,7 +740,7 @@ env.Prepend(LIBS = Split('main su lua elf curl z'))
 
 # UNDONE?
 if cur_os == 'netbsd':
-    env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib -Wl,--rpath -Wl,$gtklibsdir'))
+    env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib -Wl,--rpath -Wl,/usr/X11R7/lib -Wl,--rpath -Wl,$gtklibsdir'))
 elif cur_os == "sunos":
     env.Append(LIBS = ['rt']) # OpenSolaris doesn't need this, but Solaris 10 does.
     
