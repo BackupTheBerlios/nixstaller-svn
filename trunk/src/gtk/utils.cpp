@@ -32,6 +32,7 @@ void UpdateDirSelCB(GtkFileChooser *widget, gpointer data)
     if (g_bUpdateFileName)
     {
         g_bUpdateFileName = false;
+        debugline("set_filename: %s\n", static_cast<char *>(data));
         gtk_file_chooser_set_filename(widget, static_cast<char *>(data));
     }
     // Only do it once (DISABLED for now, as this crashes on older GTK versions)
@@ -49,6 +50,7 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
     
     gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog)->vbox), 10);
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 120);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
     
     GtkWidget *hbox = gtk_hbox_new(FALSE, 10);
     gtk_widget_show(hbox);
@@ -60,6 +62,7 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
     
     GtkWidget *direntry = gtk_entry_new();
     gtk_entry_set_text(GTK_ENTRY(direntry), (curdir) ? curdir : "/");
+    gtk_entry_set_activates_default(GTK_ENTRY(direntry), TRUE);
     gtk_widget_show(direntry);
     gtk_container_add(GTK_CONTAINER(hbox), direntry);
     
@@ -73,6 +76,7 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
     
     GtkWidget *passentry = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passentry), FALSE);
+    gtk_entry_set_activates_default(GTK_ENTRY(passentry), TRUE);
     gtk_widget_show(passentry);
     gtk_container_add(GTK_CONTAINER(hbox), passentry);
 
@@ -110,13 +114,14 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
             MKDirRecRoot(newdir, suhandler, gtk_entry_get_text(GTK_ENTRY(passentry)));
             
             // This is rather hacky... First the current viewing directory is changed to the new directory,
-            // this will trigger an internal update and emits a signal. After the this signal is launched the
+            // this will trigger an internal update and emits a signal. After this signal is launched the
             // current selected directory is changed to the new directory. We have to force an update, because
             // otherwise the new directory cannot be selected.
             g_bUpdateFileName = true;
             g_signal_connect_after(G_OBJECT(filedialog), "current-folder-changed",
                                    G_CALLBACK(UpdateDirSelCB), CreateText(newdir));
             gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filedialog), newdir);
+            debugline("current_folder: %s\n", newdir);
         }
         catch(Exceptions::CExIO &e)
         {
