@@ -141,7 +141,7 @@ launchfrontend()
             continue
         fi
         
-        if [ -z $STATIC ]; then
+        if [ -z "$STATIC" ]; then
             [ $ARCH_TYPE != "lzma" ] || haslibs "${DIR}/lzma-decode" || continue
             haslibs "${LC}/edelta" || continue
         fi
@@ -155,7 +155,7 @@ launchfrontend()
             # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
             chmod +x $FRBIN
             
-            if [ -z $STATIC ]; then
+            if [ -z "$STATIC" ]; then
                 haslibs $FRBIN || continue
             fi
             

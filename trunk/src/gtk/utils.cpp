@@ -36,8 +36,8 @@ void UpdateDirSelCB(GtkFileChooser *widget, gpointer data)
         gtk_file_chooser_set_filename(widget, static_cast<char *>(data));
     }
     // Only do it once (DISABLED for now, as this crashes on older GTK versions)
-//    g_signal_handlers_disconnect_by_func(G_OBJECT(widget),
-//                                         (gpointer)(UpdateDirSelCB), data);
+    g_signal_handlers_disconnect_by_func(G_OBJECT(widget),
+                                        (gpointer)(UpdateDirSelCB), data);
 }
 
 void CreateRootDirCB(GtkWidget *widget, gpointer data)
