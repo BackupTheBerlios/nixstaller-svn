@@ -15,6 +15,7 @@
 - Fixed: GTK password dialog didn't finish on enter keypress.
 - Fixed: When checking if the pacman packager is present and a pacman game was present, the installer would launch the game (reported by John Tsolox).
 - Fixed: 'tr' call used to convert uppercase to lowercase in scripts didn't work on all platforms.
+- Fixed: After a new directory as root is created through the GTK's file dialog, any directories created after that wouldn't be automatically selected.
 - Better commandline arguments handling.
 - Several new util functions: utils.removerec(), utils.copyrec(), utils.patch(), utils.tableappend(), utils.tablefind(), utils.tablemerge(), utils.mapsize(), utils.emptystring() and utils.mkdirperm()
 - Updated to FLTK 1.3

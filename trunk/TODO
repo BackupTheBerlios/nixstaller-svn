@@ -3,11 +3,7 @@ OVERALL
     - Remove FreeBSD libsupc++
 - Update examples:
     - Final strings files.
-- Update cURL and FLTK libs
-- Recursive lib scanning for deputil.lua?
-- Check not working translations for unattendeds
 - Final lib notes
-- Fix GTK root dir creation (disconnect signal handler again)
 
 
 TEST
