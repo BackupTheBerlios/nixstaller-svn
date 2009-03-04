@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 /* Define to `<elf.h>' or `<sys/elf.h>' if one of them is present */
-//#define __LIBELF_HEADER_ELF_H <elf.h>
+#define __LIBELF_HEADER_ELF_H <elf.h>
 
 /* Define if Elf32_Dyn is declared in <link.h> */
 /* #undef __LIBELF_NEED_LINK_H */
@@ -44,7 +44,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 /* Define if you want symbol versioning (and your system supports it) */
 /* #undef __LIBELF_SYMBOL_VERSIONS */
-#define __LIBELF_SYMBOL_VERSIONS 1
 
 /* Define to a 64-bit signed integer type if one exists */
 #define __libelf_i64_t long
@@ -76,8 +75,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #  include <libelf/elf_repl.h>
 # endif /* __LIBELF_INTERNAL__ */
 #endif /* __LIBELF_HEADER_ELF_H */
-
-#include "libelf/elf_repl.h"
 
 /*
  * On some systems, <elf.h> is severely broken.  Try to fix it.

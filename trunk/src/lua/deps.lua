@@ -370,11 +370,11 @@ function initdep(d)
         local extrcmd
         
         if cfg.archivetype == "gzip" then
-            extrcmd = string.format("cat %s | gzip -cd | tar -xvf -", f)
+            extrcmd = string.format("cat %s | gzip -cd | tar -xvf - 2>&1", f)
         elseif cfg.archivetype == "bzip2" then
-            extrcmd = string.format("cat %s | bzip -d | tar -xvf -", f)
+            extrcmd = string.format("cat %s | bzip -d | tar -xvf - 2>&1", f)
         else
-            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -xvf -)", bindir, f)
+            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -xvf -) 2>&1", bindir, f)
         end
         
         local olddir = os.getcwd()

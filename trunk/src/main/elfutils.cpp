@@ -62,7 +62,7 @@ GElf_Half *gelf_getversym(Elf_Data *data, int offset)
 // Frontend class for symbols using libelf/gelf
 // -------------------------------------
 
-CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
+CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0), m_iMachine(EM_NONE)
 {
     if (elf_version(EV_CURRENT) == EV_NONE)
         throw Exceptions::CExElf("Elf library out of date.");
@@ -76,6 +76,25 @@ CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0)
         m_iFD = 0;
         throw Exceptions::CExElf("Could not open ELF descriptor.");
     }
+    
+    GElf_Ehdr elfhdr;
+    if (gelf_getehdr(m_pElf, &elfhdr) == 0)
+    {
+        elf_end(m_pElf);
+        close(m_iFD);
+        m_pElf = NULL;
+        m_iFD = 0;
+        throw Exceptions::CExElf("Could not open ELF descriptor.");
+    }
+    
+    m_iMachine = elfhdr.e_machine;
+    int c = gelf_getclass(m_pElf);
+    if (c == ELFCLASS32)
+        m_Class = "32";
+    else if (c == ELFCLASS64)
+        m_Class = "64";
+    else
+        m_Class = "unknown";
     
     Elf_Scn *section = NULL;
     Elf_Scn *sym = NULL, *verdef = NULL, *verneed = NULL, *versym = NULL;

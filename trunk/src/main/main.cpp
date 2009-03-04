@@ -204,6 +204,8 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaGetElfSymVerNeed, "getsymneed", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfNeeded, "getneeded", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfRPath, "getrpath", "elfclass");
+    NLua::RegisterClassFunction(LuaGetElfMachine, "getmachine", "elfclass");
+    NLua::RegisterClassFunction(LuaGetElfClass, "getclass", "elfclass");
     NLua::RegisterClassFunction(LuaCloseElf, "close", "elfclass");
 
     NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
@@ -777,6 +779,20 @@ int CMain::LuaGetElfRPath(lua_State *L)
 {
     CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
     lua_pushstring(L, elfw->GetRPath().c_str());
+    return 1;
+}
+
+int CMain::LuaGetElfMachine(lua_State *L)
+{
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
+    lua_pushinteger(L, elfw->GetMachine());
+    return 1;
+}
+
+int CMain::LuaGetElfClass(lua_State *L)
+{
+    CElfWrapper *elfw = NLua::CheckClassData<CElfWrapper>("elfclass", 1);
+    lua_pushstring(L, elfw->GetClass().c_str());
     return 1;
 }
 

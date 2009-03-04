@@ -110,43 +110,28 @@ function maplibs(bin, extrapath)
         need = elf:getneeded(n)
     end
     local rpath = elf:getrpath()
-    elf:close()
     
-    if os.osname ~= "openbsd" then
-        local pipe = io.popen(string.format("ldd %s 2>/dev/null", bin))
-        
-        if not pipe then
-            return
+    local machine = elf:getmachine()
+    local class = elf:getclass()
+
+    elf:close()
+
+    local function validlib(lib)
+        -- Must match machine (CPU arch) and bitness
+        local e = os.openelf(lib)
+        if not e then
+            return false
         end
         
-        local line = pipe:read()
-        while line do
-            local path = string.gsub(line, "^.*=>", "")
-            path = string.gsub(path, " %(.*%)$", "")
-            path = string.gsub(path, "^[%s]*", "")
-            local file = (path and utils.basename(path))
-            if file and os.fileexists(path) and map[file] ~= nil then
-                map[file] = path
-            end
-            line = pipe:read()
-        end
-        pipe:close()
-        
-        if extrapath and not utils.emptytable(extrapath) then
-            for n in pairs(map) do
-                for _, p in ipairs(extrapath) do
-                    local file = string.format("%s/%s", p, n)
-                    if os.fileexists(file) then
-                        map[n] = file
-                        break
-                    end
-                end
-            end
-        end
-    else
-        -- OpenBSD's ldd will throw an error when a lib isn't found.
-        -- For this reason we have to search the lib manually.
-        -- 
+        local m, c = e:getmachine(), e:getclass()
+        e:close()
+        return m == machine and c == class
+    end
+    
+    -- FreeBSD 7's ldd will throw an error when a specified rpath is not existant (bug?)
+    -- OpenBSD will throw an error when one or more libs are not found. Therefore we need
+    -- to manually check for libs in these two cases
+    if os.osname == "openbsd" or (os.osname == "freebsd" and not utils.emptystring(rpath)) then
         -- Search order: extrapath, LD_LIBRARY_PATH, f's own rpath or runpath, ldconfig hints
         local lpaths = extrapath or { }
         
@@ -165,7 +150,6 @@ function maplibs(bin, extrapath)
             end
             
             for p in string.gmatch(rpath, "[^\:]+") do
-                -- Do we need this? (OpenBSD doesn't seem to support this at the moment)
                 p = string.gsub(p, "${ORIGIN}", bdir)
                 p = string.gsub(p, "$ORIGIN", bdir)
                 table.insert(lpaths, p)
@@ -185,8 +169,40 @@ function maplibs(bin, extrapath)
         for nl in pairs(map) do
             for _, p in ipairs(lpaths) do
                 local lpath = string.format("%s/%s", p, nl)
-                if os.fileexists(lpath) then
+                if os.fileexists(lpath) and validlib(lpath) then
                     map[nl] = lpath
+                end
+            end
+        end
+    else
+        -- Search libs using 'ldd'
+        local pipe = io.popen(string.format("ldd %s 2>/dev/null", bin))
+        
+        if not pipe then
+            return
+        end
+        
+        local line = pipe:read()
+        while line do
+            local path = string.gsub(line, "^.*=>", "")
+            path = string.gsub(path, " %(.*%)$", "")
+            path = string.gsub(path, "^[%s]*", "")
+            local file = (path and utils.basename(path))
+            if file and os.fileexists(path) and map[file] ~= nil and validlib(path) then
+                map[file] = path
+            end
+            line = pipe:read()
+        end
+        pipe:close()
+        
+        if extrapath and not utils.emptytable(extrapath) then
+            for n in pairs(map) do
+                for _, p in ipairs(extrapath) do
+                    local file = string.format("%s/%s", p, n)
+                    if os.fileexists(file) then
+                        map[n] = file
+                        break
+                    end
                 end
             end
         end

@@ -55,6 +55,8 @@ private:
     TSymverNeedVec m_SymVerNeed;
     TNeededLibs m_NeededLibs;
     std::string m_RPath;
+    int m_iMachine;
+    std::string m_Class;
     
     void ReadSymbols(Elf_Scn *section);
     void ReadVerDef(Elf_Scn *section);
@@ -80,6 +82,9 @@ public:
     TSTLVecSize GetNeededSize(void) const { return m_NeededLibs.size(); }
     
     const std::string &GetRPath(void) { return m_RPath; }
+    
+    int GetMachine(void) const { return m_iMachine; }
+    const std::string &GetClass(void) { return m_Class; }
 
     void Close(void) { if (m_pElf) elf_end(m_pElf); if (m_iFD) close(m_iFD); }
 };
