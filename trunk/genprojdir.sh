@@ -595,7 +595,7 @@ genrun()
     cat > ${TARGETDIR}/run.lua  << EOF
 -- Automaticly generated on `date`.
 -- This file is called when the installer is run.
--- Don't place any (initialization) code outside the Init(), UnattendedInit() or Install() functions.
+-- Don't place any (initialization) code outside the Init(), UnattendedInit(), Install() or Finish() functions.
 
 EOF
     code="`getruninit`"

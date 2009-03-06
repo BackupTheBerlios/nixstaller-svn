@@ -304,6 +304,9 @@ Afhankelijkheden controleren
 Gathering main binary dependencies.
 Verzamelen van hoofd binaire afhankelijkheden.
 
+Gathering main library dependencies.
+Verzamelen van hoofd bibliotheek afhankelijkheden.
+
 Extracting dependency %s
 Uitpakken van afhankelijkheid %s
 

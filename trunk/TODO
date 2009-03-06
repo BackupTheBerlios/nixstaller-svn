@@ -1,6 +1,4 @@
 OVERALL
-- libstdcxx:
-    - Remove FreeBSD libsupc++
 - Update examples:
     - Final strings files.
 - Final lib notes
@@ -20,13 +18,6 @@ TEST
 - Make sure that only files are displayed when extracting (no random tar output)
 
 
-MAIN
-- Improve/check lua error messages?
-- Make startinstall code more flexible
-    - Check if all lua functions from install package need to be inside Install() (update docs)
-    - Re-enable SU passwd cleaning at end of install?
-
-
 DOCS
 - CHANGELOG
 - Features (done?)
@@ -34,6 +25,10 @@ DOCS
 - Update which langs are provided
 - Cube(?) unattended tutorial
 - Is it actually required to rerun scan? (not with auto)
+- Undefined symbols and gensyms.sh
+- remove bindeltas file on error
+- Recheck deputil: scan output clear? multiple scanning. -l option importance
+- Adding deps afterwards
 
 
 RELEASE
@@ -43,11 +38,6 @@ RELEASE
 - about, nixstaller version etc
 - Enable RELEASE, disable libsu logging
 
-
-FLTK
-- Check update: test for regressions, check current hacks.
-- Progressdialog: Refresh does not always enable both bars (FLTK specific?)
-- Test Xft for every platform
 
 
 -----------------------------------------------------------------------
@@ -89,6 +79,7 @@ PACKAGING
 
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+- Improve/check lua error messages?
 
 
 LIBSU

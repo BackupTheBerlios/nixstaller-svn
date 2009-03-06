@@ -304,6 +304,9 @@ Verifying dependencies
 Gathering main binary dependencies.
 Gathering main binary dependencies.
 
+Gathering main library dependencies.
+Gathering main library dependencies.
+
 Extracting dependency %s
 Extracting dependency %s
 

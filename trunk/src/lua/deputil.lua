@@ -164,34 +164,39 @@ function GetLibPath()
     return lpath
 end
 
-function CollectLibs(map, f, lpath)
+function GetBins()
+    if utils.emptytable(args) then
+        ErrUsage("No files given to examine.")
+    end
+
+    return args -- Final commandline parameters are always the binaries
+end
+
+function CollectLibs(map, f, lpath, rec)
     local m = maplibs(f, lpath)
     
     if not m then
         print(string.format("WARNING: Could not process file %s", f))
     else
-        utils.tablemerge(map, m)
-
         for l, p in pairs(m) do
-            if p and not map[l] then
-                CollectLibs(map, p, lpath)
+            if not map[l] then
+                map[l] = p
+                if rec and p then
+                    CollectLibs(map, p, lpath, rec)
+                end
             end
         end
     end
 end
 
-function GetLibMap()
-    local map, lpath = { }, GetLibPath()
+function GetLibMap(rec)
+    local bins, map, lpath = GetBins(), { }, GetLibPath()
 
-    if utils.emptytable(args) then
-        ErrUsage("No files given to examine.")
-    end
-    
-    for _, b in ipairs(args) do
+    for _, b in ipairs(bins) do
         if not os.fileexists(b) then
             abort(tr("Could not locate file: %s", b))
         end
-        CollectLibs(map, b, lpath)
+        CollectLibs(map, b, lpath, rec)
     end
     
     return map
@@ -607,7 +612,7 @@ function Scan()
         abort("Failed to load package.lua: " .. msg)
     end
     
-    local loadeddeps, depmap = { }, { }
+    local loadeddeps = { }
     local function loaddeps(deps, dep)
         dep = dep or "main"
         for _, d in ipairs(deps) do
@@ -621,131 +626,233 @@ function Scan()
                     loaddeps(loadeddeps[d].deps, loadeddeps[d])
                 end
             end
-            
-            if loadeddeps[d] then
-                for _, l in ipairs(loadeddeps[d].libs) do
-                    depmap[dep] = depmap[dep] or { }
-                    depmap[dep][utils.basename(l)] = d
-                end
-            end
         end
     end
     
     if pkg.deps then
         loaddeps(pkg.deps) -- Load all deps
     end
-    
-    local function dumpinfo(dep, lpath)
-        local map
-        if dep then
-            map = { }
-            for _, l in ipairs(dep.libs) do
-                local lp = GetLibDepPath(prdir, dep, l)
-                if lp then
-                    CollectLibs(map, lp, lpath)
-                end
-            end
-            
-            io.write(string.format("Results for dependency %s: ", dep.name))
-        else
-            map = GetLibMap()
-            io.write("Primary dependency results: ")
-        end
-        
-        -- Get all unknown libs
-        local unknownlibs = { }
-        local depind = dep or "main"
-        for l in pairs(map) do
-            if not unknownlibs[l] and (not depmap[depind] or not depmap[depind][l]) then
-                -- Library is not part of dep itself?
-                if not dep or not dep.libs or not utils.tablefind(dep.libs, l) then
-                    unknownlibs[l] = true
-                end
-            end
-        end
-        
-        local sugtemps, sugdeps = { }, { }
-        for l in pairs(unknownlibs) do
-            -- Check if existing deps provide library
-            for _, d in pairs(loadeddeps) do
-                if d and utils.tablefind(d.libs, l) then
-                    sugdeps[d] = sugdeps[d] or { }
-                    table.insert(sugdeps[d], l)
-                    unknownlibs[l] = nil
-                    break
-                end
-            end
 
-            if unknownlibs[l] then
-                -- Check if we can make a suggestion
-                for _, t in ipairs(pkg.deptemplates) do
-                    if IsInTemplate(t, l, map) then
-                        sugtemps[t] = sugtemps[t] or { }
-                        table.insert(sugtemps[t], l)
-                        unknownlibs[l] = nil
-                        break
+    local libdepmap = { }
+    local alllibmap = { }
+    local lpath = GetLibPath()
+    local mainbins = GetBins()
+
+    local function getmaps(bin, path)
+        if not libdepmap[bin] then
+            libdepmap[bin] = { }
+            CollectLibs(libdepmap[bin], path, lpath, false)
+            utils.tablemerge(alllibmap, libdepmap[bin])
+
+            for l, p in pairs(libdepmap[bin]) do
+                if p then
+                    getmaps(l, p)
+                end
+            end
+        end
+    end
+
+    for _, b in ipairs(mainbins) do
+        getmaps(utils.basename(b), b)
+    end
+    
+    for _, d in pairs(loadeddeps) do
+        if d and d.libs then
+            for _, l in ipairs(d.libs) do
+                local p = GetLibDepPath(prdir, d, l) -- UNDONE: Restrict to valid libs for current os/arch
+                if p then -- UNDONE: Warning Message
+                    getmaps(l, p)
+                end
+            end
+        end
+    end
+
+    local checklist = { }
+    table.insert(checklist, { cat = "main" })
+
+    for _, d in pairs(loadeddeps) do
+        if d then
+            table.insert(checklist, { cat = "dep", data = d })
+        end
+    end
+
+    local function findlib(lib)
+        if pkg.libs and utils.tablefind(pkg.libs, lib) then
+            return true
+        end
+        
+        for _, d in pairs(loadeddeps) do
+            if d and d.libs and utils.tablefind(d.libs, lib) then
+                return true
+            end
+        end
+        return false
+    end
+    
+    for lib in pairs(alllibmap) do
+        if not findlib(lib) then
+            table.insert(checklist, { cat = "unknownlib", data = lib })
+        end
+    end
+
+    local sugtemps, sugdeps, unknownlibs = { }, { }, { }
+    for _, item in ipairs(checklist) do
+        local bins, deps
+        if item.cat == "main" then
+            io.write("Primary dependency results... ")
+            bins = { }
+            for _, b in ipairs(mainbins) do
+                table.insert(bins, utils.basename(b))
+            end
+            deps = pkg.deps
+        elseif item.cat == "dep" then
+            io.write(string.format("Results for dependency '%s'... ", item.data.name))
+            bins = item.data.libs
+            deps = item.data.deps
+        else -- Unknown lib
+            bins = { item.data }
+        end
+
+        local ulibs = { } -- Unknown dependency libs
+        for _, b in ipairs(bins) do
+            if libdepmap[b] then
+                for l, p in pairs(libdepmap[b]) do
+                    if not findlib(l) then
+                        ulibs[l] = true
                     end
                 end
             end
         end
-        
-        local ok = true
-        
-        if not utils.emptytable(sugtemps) then
-            ok = false
-            print("\n* (New) Templates suggested:")
-            for t, l in pairs(sugtemps) do
-                print(string.format([[
-  - "%s"
-      Libs:   %s
-      Tags:   %s
-      Notes:  %s]], t.name, tabtostr(l), tabtostr(t.tags), t.notes or "-"))
+
+        local ok = utils.emptytable(ulibs)
+
+        local function notelib(nmap, name, l)
+            nmap[name] = nmap[name] or { }
+            if l then
+                nmap[name].libs = nmap[name].libs or { }
+                nmap[name].libs[l] = true
             end
-            print("")
+            if item.cat == "main" then
+                nmap[name].main = true
+            elseif item.cat == "dep" then
+                nmap[name].reqdeps = nmap[name].reqdeps or { }
+                nmap[name].reqdeps[item.data.name] = true
+            else
+                nmap[name].requlibs = nmap[name].requlibs or { }
+                nmap[name].requlibs[item.data] = true
+            end
         end
         
-        if not utils.emptytable(sugdeps) then
-            if ok then
-                ok = false
-                print("")
+        for l in pairs(ulibs) do
+            -- Check if non-registrated deps provide library
+            for _, d in pairs(loadeddeps) do
+                if d and utils.tablefind(d.libs, l) then
+                    notelib(sugdeps, d.name, l)
+                    ulibs[l] = nil
+                    break
+                end
             end
-            print("* Existing dependencies who provide missing libraries and are not registrated yet:")
-            for d, l in pairs(sugdeps) do
-                print(string.format("   - %s (LIBS: %s) ", d.name, tabtostr(l)))
+
+            if ulibs[l] and libdepmap[l] then
+                -- Check if we can make a suggestion
+                for _, t in ipairs(pkg.deptemplates) do
+                    if IsInTemplate(t, l, libdepmap[l]) then
+                        notelib(sugtemps, t.name, l)
+                        ulibs[l] = nil
+                        break
+                    end
+                end
             end
-            print("")
+
+            if ulibs[l] then
+                notelib(unknownlibs, l)
+            end
         end
 
-        if not utils.emptytable(unknownlibs) then
-            if ok then
-                ok = false
-                print("")
-            end
-        
-            io.write("* (Remaining) Unknown libraries: ")
-            for l in pairs(unknownlibs) do
-                io.write(l .. " ")
-            end
-            print("")
+        if item.cat ~= "unknownlib" then
+            print((ok and "OK") or "Not OK")
         end
-        
-        if ok then
-            print("OK")
-        else
-            print("------------")
+    end
+
+    print("----------\nRESULTS\n----------")
+
+    local function printnote(notes)
+        for n, info in pairs(notes) do
+            io.write(string.format(" * %s", n))
+
+            if info.libs then
+                io.write(" (")
+                local init = true
+                for l in pairs(info.libs) do
+                    if not init then
+                        io.write(", ")
+                    else
+                        init = false
+                    end
+                    io.write(l)
+                end
+                io.write(")")
+            end
+            
+            print(" required by:")
+
+            local function printentry(e)
+                print("    - " .. e)
+            end
+
+            if info.main then
+                printentry("Main binaries/libraries")
+            end
+
+            if info.reqdeps then
+                for d in pairs(info.reqdeps) do
+                    printentry(string.format("Dependency %s", d))
+                end
+            end
+
+            if info.requlibs then
+                local secsugtemps = { } -- Suggested templates for unknown libs
+                for ul in pairs(info.requlibs) do
+                    if libdepmap[ul] then
+                        for _, t in ipairs(pkg.deptemplates) do
+                            if IsInTemplate(t, ul, libdepmap[ul]) then
+                                secsugtemps[t.name] = true
+                                info.requlibs[ul] = nil
+                                break
+                            end
+                        end
+                    end
+                end
+
+                for st in pairs(secsugtemps) do
+                    printentry("Dependency template " .. st)
+                end
+
+                -- Remaing unknown libs
+                for ul in pairs(info.requlibs) do
+                    printentry("Unknown library " .. ul)
+                end
+            end
         end
     end
     
-    local lpath = GetLibPath()
-    dumpinfo(nil, lpath)
-    
-    for _, d in pairs(loadeddeps) do
-        if d then
-            dumpinfo(d, lpath)
-        end
+    if not utils.emptytable(sugdeps) then
+        print("Existing dependencies who provide missing libraries and are not registrated yet:")
+        printnote(sugdeps)
+        print("")
     end
-    
-    print("\n\nNOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this by checking the libs field from the respective dependencies. To regenerate a dependency (with the gen or gent actions) with additional libraries use the --libs option.\n")
+
+    if not utils.emptytable(sugtemps) then
+        print("Suggested templates:")
+        printnote(sugtemps)
+        print("")
+    end
+
+    if not utils.emptytable(sugtemps) then
+        print("Unknown library dependencies")
+        printnote(unknownlibs)
+        print("")
+    end
 end
 
 function Generate()
@@ -789,7 +896,7 @@ function Generate()
         os.exit(1)
     end
 
-    local map = (copy and fulltab.fullall and GetLibMap())
+    local map = (copy and fulltab.fullall and GetLibMap(true))
     CreateDep(name, desc, libs, libdir, fulltab.fullall, fulltab.standall, baseurl, deps, prdir, copy, map, destos, destarch)
     
     local typ
@@ -849,7 +956,7 @@ function GenerateFromTemp()
     local full, standalone
     local notes
     local found = false
-    local map = GetLibMap()
+    local map = GetLibMap(true)
     local postf, installf, requiredf, compatf, caninstallf
     
     for _, t in ipairs(pkg.deptemplates) do
@@ -966,14 +1073,14 @@ function Autogen()
             map = { }
             for l, p in pairs(depinfo.libs) do
                 if p then
-                    CollectLibs(map, p, lpath)
+                    CollectLibs(map, p, lpath, true)
                 elseif not copy then --HACK: When files are copied, warning is displayed somewhere else.
                     print("WARNING: Missing library: ".. l)
                 end
             end
         else
             init = false
-            map = GetLibMap()
+            map = GetLibMap(true)
         end
         
         for l, p in pairs(map) do
@@ -1153,7 +1260,7 @@ function EditDep()
             end
         end
     elseif full and copy then
-        local map = GetLibMap()
+        local map = GetLibMap(true)
         
         for dir in io.dir(string.format("%s/deps", prdir)) do
             if dir ~= dep.name then
@@ -1164,7 +1271,7 @@ function EditDep()
                         for _, l in ipairs(subdep.libs) do
                             local lp = GetLibDepPath(prdir, subdep, l)
                             if lp then
-                                CollectLibs(map, lp, lpath)
+                                CollectLibs(map, lp, lpath, true)
                             end
                         end
                     end
@@ -1188,7 +1295,7 @@ function EditDep()
         -- Also add own libs to map (this is so we can copy own dependent libs)
         for _, l in ipairs(dep.libs) do
             if map[l] then
-                CollectLibs(map, map[l], lpath)
+                CollectLibs(map, map[l], lpath, true)
             end
         end
 
@@ -1307,7 +1414,7 @@ function MakeTemps()
         end
         
         map = { }
-        CollectLibs(map, p, lpath)
+        CollectLibs(map, p, lpath, true)
         
         for l, p in pairs(map) do
             local exists = false

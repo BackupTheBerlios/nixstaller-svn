@@ -3891,9 +3891,7 @@ end
 @*
 print(f:read("*a"))
 @*
-f:close()
-}
-@*
+f:close()}
 Here is another example showing how to copy a file; it reads one line and writes it to a second file
 @codeblock{@minus{}@minus{} Function that copies the contents of file src to file dest
 function copy(src, dest)
@@ -3956,22 +3954,6 @@ Variable that is used to set the destination directory for the @ref{install.extr
 This variable is used to store all the desktop menu entry tables. The variable itself is a table which is indexed by the filename for the assigned desktop menu entry. More info on usage can be found @ref{deskentrieslua,,here}.
 @end defvr
 
-@defvr Variable install.screenlist
-Variable that should be used to specify the installation screens to be used. Can contain classes created by the @ref{install.newscreen} function and one of these predefined variables:
-@itemize @bullet
-@item WelcomeScreen
-@item LicenseScreen
-@item SelectDirScreen
-@item InstallScreen
-@item FinishScreen
-@item PackageToggleScreen (Package Mode only)
-@item PackageDirScreen (Package Mode only)
-@item SummaryScreen (Package Mode only)
-@end itemize
-By default @code{install.screenlist} is set like this:
-@codeblock{install.screenlist = @{ WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen @}}
-@end defvr
-
 @anchor{install.unattended}
 @defvr Variable install.unattended
 This @code{boolean} variable is set to @code{true} when the installer is running in @emph{unattended mode}. This variable is most used when the installer can run in both modes (@code{cfg.mode} is set to "both") to make sure that specific functions for attended installations won't be run.@*
@@ -4018,6 +4000,22 @@ This function will update the frontend (drawing, handling input etc.). Usually t
 
 @subsubsection Functions used in the @code{Init} function
 Following functions should only be used within the @code{Init} function (so not @code{UnattendedInit}).
+
+@defvr Variable install.screenlist
+Variable that should be used to specify the installation screens to be used. Can contain classes created by the @ref{install.newscreen} function and one of these predefined variables:
+@itemize @bullet
+@item WelcomeScreen
+@item LicenseScreen
+@item SelectDirScreen
+@item InstallScreen
+@item FinishScreen
+@item PackageToggleScreen (Package Mode only)
+@item PackageDirScreen (Package Mode only)
+@item SummaryScreen (Package Mode only)
+@end itemize
+By default @code{install.screenlist} is set like this:
+@codeblock{install.screenlist = @{ WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen @}}
+@end defvr
 
 @anchor{install.newscreen}
 @luafunc install.newscreen ([t])
