@@ -605,7 +605,9 @@ function Scan()
     if not prdir or not os.isdir(prdir) then
         ErrUsage("Wrong or no project directory specified.")
     end
-    
+
+    print("Scanning...")
+
     -- Retrieve all current filed dependencies
     local stat, msg = pcall(loadpackagecfg, prdir)
     if not stat then
@@ -637,6 +639,7 @@ function Scan()
     local alllibmap = { }
     local lpath = GetLibPath()
     local mainbins = GetBins()
+    local warnedlibs = { }
 
     local function getmaps(bin, path)
         if not libdepmap[bin] then
@@ -647,6 +650,9 @@ function Scan()
             for l, p in pairs(libdepmap[bin]) do
                 if p then
                     getmaps(l, p)
+                elseif not warnedlibs[l] then
+                    print("WARNING: Failed to locate " .. l)
+                    warnedlibs[l] = true
                 end
             end
         end
@@ -660,8 +666,11 @@ function Scan()
         if d and d.libs then
             for _, l in ipairs(d.libs) do
                 local p = GetLibDepPath(prdir, d, l) -- UNDONE: Restrict to valid libs for current os/arch
-                if p then -- UNDONE: Warning Message
+                if p then
                     getmaps(l, p)
+                elseif not warnedlibs[l] then
+                    print("WARNING: Failed to locate " .. l)
+                    warnedlibs[l] = true
                 end
             end
         end
@@ -852,6 +861,12 @@ function Scan()
         print("Unknown library dependencies")
         printnote(unknownlibs)
         print("")
+    end
+
+    print("\n\nNOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this by checking the libs field from the respective dependencies. To regenerate a dependency (with the gen or gent actions) with additional libraries use the --libs option.\n")
+
+    if not utils.emptytable(warnedlibs) then
+        print("WARNING: One or more libraries were not found, this will give incomplete results! Use the --libpath option to specifiy additional search directories.")
     end
 end
 
