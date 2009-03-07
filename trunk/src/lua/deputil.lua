@@ -663,7 +663,7 @@ function Scan()
     end
     
     for _, d in pairs(loadeddeps) do
-        if d and d.libs then
+        if d and d.libs and d.full then
             for _, l in ipairs(d.libs) do
                 local p = GetLibDepPath(prdir, d, l) -- UNDONE: Restrict to valid libs for current os/arch
                 if p then
@@ -857,7 +857,7 @@ function Scan()
         print("")
     end
 
-    if not utils.emptytable(sugtemps) then
+    if not utils.emptytable(unknownlibs) then
         print("Unknown library dependencies")
         printnote(unknownlibs)
         print("")
