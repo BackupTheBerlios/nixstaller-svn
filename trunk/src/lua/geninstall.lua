@@ -402,7 +402,7 @@ function GetOptDeltas(binlist)
         if not utils.emptytable(newbins) then
             table.insert(stack, newbins)
         else
-            assert(#bins == 1)
+--             assert(#bins == 1)
             topbin = bins[1]
             break
         end

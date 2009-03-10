@@ -65,16 +65,16 @@ Here is a list with the main features. Read further for more info to see what th
 
 @itemize @bullet
 @item Three different frontends used for the installer: @uref{http://www.fltk.org,FLTK}, @uref{http://www.gnu.org/software/ncurses/ncurses.html,ncurses} and @uref{http://www.gtk.org,GTK2}.
-@item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris 10/Nexenta (all x86, some x86_64).
+@item Support for most common UNIX like systems: NetBSD, Linux, FreeBSD, OpenBSD and Solaris 10/OpenSolaris (all x86, some x86_64).
 @item The installer can be fully translated. English, Lithuanian, Bulgarian and Dutch translations are provided. It's possible to let the installer automatically select a language or let the user select it.
-@item The installer is build on several @emph{installation screens}. They are used for user interaction and can be used to select a language, show an intro, accept a license, show the installation progress etc. It's also possible to create new installation screens with a wide range of widgets.
+@item The installer is build on several @emph{installation screens}. These are used for user interaction and can be used to select a language, show an intro, accept a license, show the installation progress etc. It's also possible to create new installation screens with a wide range of widgets.
 @item Installers can also be unattended, which is handy for batch installers. Instead of a frontend, commandline parameters are used to configure the installation process.
-@item Frontends are build in a way that they can be used on many different systems by linking less common libraries staticly.
+@item Frontends are build in a way that they can run on many different systems. Multiple frontends are @samp{diff'ed} in a way to decrease the size overhead as much as possible.
 @item The installer can be compressed with gzip, bzip2 or lzma.
-@item The destination path of the installation files can be configured. For example to a temporary directory (useful for @samp{./configure && make && make install} like installers), a fixed directory (eg. @file{/usr}) or it can be selected by the user.
-@item @uref{http://www.lua.org,Lua} support is provided to configure the installer, create installation screens and program the installation procedure. This allows very flexible configurations.
+@item The way of software installation is not tied in any way. Installers that simply extract the files to a directory, compile the software (think of @samp{./configure && make && make install}) or advanced installers that will use the native package manager are all possibilities.
+@item @uref{http://www.lua.org,Lua} support is provided to configure the installer, create installation screens and program the installation procedure. Lua is powerfull and easy to learn, allowing both simple and complex configurations.
 @item @samp{Package Mode} allows to integrate the software. The installer can register the software in the user's package manager (rpm, dpkg, pacman and slackware's tgz are currently supported). This allows the user to easily remove, view or update your software. In case the installer could not register the software, an uninstall script will be installed.
-@item @samp{Package Mode} also allows advanced dependency handling. @samp{Dependency Packages} can be used to verify the existance and compatibility of dependencies and if required install dependency files. Dependency packages can be made downloadable to reduce the installer size.
+@item @samp{Package Mode} also allows advanced dependency handling. @samp{Dependency Packages} can be used to verify the existance and compatibility of dependencies and if required install missing files. Dependency packages can be made downloadable to reduce the installer size.
 @item Creation of desktop menu entries following the freedesktop standards.
 @item Extensive amount of configuration variables with sane defaults.
 @end itemize
@@ -521,6 +521,7 @@ The user could then run the installer (assuming that cfg.mode is set to unattend
 @end table
 
 Finally there are a few functions inside the @code{cfg} module that can be used to add a few common commandline arguments for unattended installers. These are:
+@anchor{cfg.adddestunopt}
 @luafunc cfg.adddestunopt ()
 This function will add an option to set the destination directory (@code{install.destdir}, discussed further).
 @endluafunc
@@ -1417,8 +1418,6 @@ After the project directory is created you can start adding dependencies if usin
                 @item @file{files_<os>_all/}
                 @item @file{files_all_<arch>/}
                 @item @file{files_<os>_<arch>/}
-                @item @file{files_extra/}
-                
                 @item @file{config.lua}
             @end itemize
         @end itemize
@@ -1444,7 +1443,7 @@ The second parameter is called @samp{@minus{}@minus{}dest} (shortened: @samp{@mi
 @*
 Below is an example of how to create a symbol map. The project has two binaries, called @file{bin1} and @file{bin2}. Some of the dynamic libraries that these binaries use are found inside the non default directory @file{$HOME/lib}.@*
 @codeblock{gensyms -l $HOME/lib bin1 bin2}
-Assuming that the binaries are inside the current directory, this command creates a symbol map file and is saved to the current directory.
+Assuming that the binaries are inside the current directory, this command creates a symbol map file and is saved to the current directory. Please note that you may see any messages about missing symbols, these are mostly harmless. Especially libc may give several of these messages.
 
 @subsubsection Automatically creating a symbol map file
 It's also possible to automatically create a symbol map file. This is achieved by setting @code{pkg.autosymmap} to @code{true} inside the project's @file{package.lua} file (@pxref{pkg.autosymmap, here}). The binaries and libraries that should be used to examine are read from the @code{pkg.bins} and @code{pkg.libs} variables. The search path is automatically extended with all the @file{lib/} subdirectories from the @file{files_} directory of the current OS and CPU architecture from each dependency package. Note that the resulting file will not be stored inside the project's directory and will not be generated if a @file{symmap.lua} file is present inside the project's directory. For that reason, always be sure to remove any old files when enabling @code{pkg.autosymmap}.
@@ -1606,12 +1605,25 @@ The next step is to decide which dependencies should be full or simple and which
 
 After you decided which dependencies should be full or simple and which full dependencies should be standalone, it's time to create the dependency packages. The easiest way to do this is to use the @command{auto} action. This will automatically create dependency packages from suggested dependency templates. It will also check for dependencies for the dependency packages and fill in the @code{deps} field from the dependency packages. This process can be configured so that files can be automatically copied, mark dependencies as full etc. It's best to start with the @command{@minus{}@minus{}pretend} option to see what will happen. This way you can also experiment with the @command{@minus{}@minus{}full-tag}, @command{@minus{}@minus{}simple-tag} and @command{@minus{}@minus{}no-standalone} parameters. When using these parameters you can @emph{exclude} any tags by inserting a @samp{!} before the tag name. Other handy parameters are @command{@minus{}@minus{}copy} to copy files automatically and the @command{@minus{}@minus{}unknown-*} options to create basic dependency packages for unknown libraries.  When you're happy with the results you can remove the @command{@minus{}@minus{}pretend} option to automatically populate the @file{deps/} directory of your project with dependency packages. When it's finished you should add all the @emph{main dependencies} (dependencies not coming from other dependencies) to the @code{pkg.deps} @code{table}.
 
-Now it's time to run @command{deputil.sh} again with the @command{scan} option to see if everything is OK. Note that this time all the generated dependency packages @emph{which are full} will also be checked, so it's possible that you may need to create some more dependency packages. This is accomplished with the @command{gen} and @command{gent} actions. Just repeat this process until the @command{scan} action reports that everything is OK.
+Now it's time to run @command{deputil.sh} again with the @command{scan} option to see if everything is OK. Note that this time all the generated dependency packages @emph{which are full} will also be checked, so it's possible that you may need to create some more dependency packages. This is accomplished with the @command{gen} and @command{gent} actions (more about this below). Just repeat this process until the @command{scan} action reports that everything is OK.
 
 If you want an overview from all the dependency packages you can use the @command{deps} action. If you want to edit a dependency, especially to make it full or simpe, it's handy to use @command{edit} action.
 
+@subsubsection Creating single dependency packages (@command{gen} and @command{gent} actions)
+Besides automatically creating all the dependency packages (using the @command{auto} action), it's also possible to create single dependency packages with @command{deputil.sh}. You may want to do this when no template exists or want to add some more dependencies later.
+
+To do this you can either use the @command{gen} or @command{gent} actions. With the first action the dependency package is generated through given commandline options only, while with the @command{gent} action the dependency package is based on a dependency template and can also be configured through commandline options. Some usage examples are shown below.
+@*
+@codeblock{deputil.sh gen -p installer/ @minus{}@minus{}copy @minus{}@minus{}full -n MyDep -d "My dependency package." -a libdep.so.1 -l lib/ ./mybin}
+This will generate a full dependency package called @samp{MyDep} inside the project directory @file{installer/} which provides the library @file{libfoo.so.1}. The library will be automatically copied and the @command{-l} option was used to tell that libraries can (also) be found inside @file{lib/}. As with most actions, the last parameter(s) (in this case @samp{./mybin}) should be all the binaries provided by the installer.
+@*
+@codeblock{deputil.sh gent -p installer/ --simple -t X11-core ./mybin}
+This will create a simple dependency package from the @samp{X11-core} package. The name, description etc are taken from the template. The libraries that the dependency package must provide are automatically detected through the listed installer binaries (@samp{./mybin}).
+
 @subsubsection Final notes
 Filling in all the right dependencies can be a tricky process, especially if you're not experienced with packaging. Always look carefully what happens. It's also an idea to check the configuration and supplied files from the generated dependency packages. And as always, be sure to test everything and if possible on different systems (this is easily accomplished with virtualization).
+
+Another thing to pay attention to is that you should make sure that all dynamic libraries are found, especially when using the @command{auto} and @command{scan} actions. If @command{deputil.sh} does not find one or more dynamic libraries the results may be incomplete. Use the @command{-l} option to add directories to the library search path.
 
 
 @section Final notes on binary compatibility
@@ -1625,7 +1637,7 @@ Linking to older libraries is easily done by compiling the software on an old OS
 
 Note that these problems vary per operating system. Solaris has a history of being relatively well compatible with older binaries. With Linux on the other hand, because of the fact that there are numerous different distributions, it can be tricky to make sure that your binaries will run on different systems. With the BSD systems, especially OpenBSD and FreeBSD, it's common that the major version of various system libraries will be bumped after a new major release. Therefore it may be handy to supply different binaries for each major OS release. Note that this may also increase the compatibility of your software, as the chance of getting a much older or newer library will be decreased.
 
-Another option would be to compile the software and dependency packages. As the software will be linked with the available libraries it's chances are much higher to run correctly. However compiling has several drawbacks: you're software obviously must be open source (which is not always possible), compiling can take much time and the user may need several tools which are not always available by default.
+Another option would be to compile the software and dependency packages. As the software will be linked with the available libraries it's chances are much higher to run correctly. However compiling has the drawback that it may take a significant amount of time and that several tools are required that are not always available. Further the software that is installed must obviously must be open source (which is not always possible).
 
 
 @anchor{Creating the Installer}
@@ -1645,15 +1657,17 @@ For examples of project directory layouts see the @samp{example/} directory in t
 
 @node Tutorials
 @chapter Tutorials
-This chapter lists 4 tutorials which show some common installation types in practise.@*
+This chapter lists five tutorials which show some common installation types in practise.@*
 @*
 The @ref{first tutorial} explains how to create a very simple installer. The main focus of this tutorial is as an introduction to Nixstaller and how to perform most of the basics.@*
 @*
 The @ref{second tutorial} is more realistic, but still fairly simple. It expands on the basics and introduces the creation of new installation screens.@*
 @*
-The @ref{third tutorial} is pretty advanced. The main focus lies on how to create new installation screens and use their widgets to control the installation process.@*
+The @ref{third tutorial} is all about unattended installers. It will transform the installer used by the previous tutorial into a installer which requires no user interaction.@*
 @*
-The @ref{fourth tutorial} focuses on Package Mode and inclusion of dependencies.
+The @ref{fourth tutorial} is pretty advanced. It focuses mainly on how to create new installation screens and use their widgets to control the installation process.@*
+@*
+The @ref{fifth tutorial} focuses on Package Mode and inclusion of dependencies.
 
 
 @anchor{first tutorial}
@@ -1843,7 +1857,66 @@ The @file{cube/} subdirectory from the @file{files_all/} directory comes from th
 Now call @file{geninstall.sh}, supply it with 2 arguments: the first should be the path to your project directory, the second @file{cube.sh}. After some waiting (the default lzma compression takes some time) you should now have an installer called @file{cube.sh}.
 
 @anchor{third tutorial}
-@section Third Tutorial: Installer for Vim
+@section Third Tutorial: Unattended Cube Installer
+This tutorial is a follow up for the previous tutorial were a installer for the Cube game was build. It will take this installer and modify it that it can run unattended. Unattended installers are usefull if for example you need to install the same software on multiple systems (batch installations). Even though Cube wouldn't be exactly a good example of this, it does however allow to give a good example for an unattended installer.
+
+This tutorial can be seen as a follow up for the previous tutorial, therefore much of the things discussed there will not be discussed again and for this reason it's recommended to read the previous tutorial first.
+
+@subsection Project Directory
+Like before, start with creating a project directory:
+@codeblock{genprojdir.sh -o freebsd linux @minus{}@minus{}arch x86 -n Cube @minus{}@minus{}mode unattended cube-unattended/}
+Note that this time we also pass the @minus{}@minus{}mode option. This will make sure that @file{config.lua} sets @code{cfg.mode} to @code{"unattended"} and that @ref{cfg.adddestunopt} is called. It will also change the generated @file{run.lua} as we will see later.
+
+As with the previous tutorial, make a @file{welcome} file and copy it to the main project directory.
+
+@subsection @file{config.lua}
+Recall that in the previous tutorial, the installer would let the user to decide if a launch script should be installed. To make the same option available in the unattended version, we will create a new commandline option. To do so add the following text to the generated @file{config.lua}:
+@codeblock{cfg.unopts["script"] = @{ desc = "Installs a startup script to your home directory.", short = "s" @}}
+This will let the user enable the creation of a launcher script by either passing @command{@minus{}@minus{}script} or @command{-s}. It will also add the given description to the output shown when the installer is run with the @minus{}@minus{}help option.
+
+@subsection @file{run.lua}
+As said the generated @file{run.lua} file will be different from the previous tutorial. Modifying it to our needs, it should look like this:
+@codeblock{function UnattendedInit()
+    @minus{}@minus{} Set install.destdir to a default incase the user did not gave then @minus{}@minus{}destdir
+    @minus{}@minus{} option (remove this if cfg.adddestunopt() is not called in config.lua!).
+    if not cfg.unopts["destdir"].value then
+        install.destdir = os.getenv("HOME") @minus{}@minus{} Default directory
+    end
+end
+@*
+function Install()
+    install.extractfiles()
+@*
+    if (cfg.unopts["script"].value) then
+        local filename = string.format("%s/cube.sh", os.getenv("HOME"))
+        script = io.open(filename, "w")
+@*
+        if (not script) then
+            install.print("Failed to create launcher script")
+            return @minus{}@minus{} Exit from function
+        end
+@*
+        script:write(string.format(
+[[#!/bin/sh
+cd %s/cube/
+./cube_unix
+]], install.destdir))
+        script:close()
+@*
+        os.chmod(filename, 700)
+    end
+end}
+Again, most the comments and other less interesting things are removed. If you compare this file with the one from the previous tutorial you may notice that not much has changed. The biggest change is the first function, @code{UnattendedInit()}, which has replaced the previous @code{Init()} function. Remember that unattend installers use this new function instead while attended installers use the @code{Init()} function. Inside this function you can tell whats happening by the (automatically generated) comments.
+
+The next small but important change is the if line inside the @code{Install()} function. Instead of checking a widget's value, it will now see if the @command{@minus{}@minus{}script} (or @command{-s}) option was set by checking the @code{value} field. This field will be @code{true} if the user specified it. The rest of the file is pretty much the same as the version from the previous tutorial.
+
+@subsection Creating the installer
+This is exactly the same as the previous tutorial, you can see the final file layout there. Just run the following command and we have our new installer.
+@codeblock{geninstall.sh cube-unattended/ cube-unattended.sh}
+
+
+@anchor{fourth tutorial}
+@section Fourth Tutorial: Installer for Vim
 In this tutorial we make a fairly advanced installer for the advanced text editor @uref{http://www.vim.org, Vim} (version 7.1). The installer will have the following features:
 @itemize @bullet
     @item Automatically launch the right frontend.
@@ -2290,8 +2363,8 @@ The project directory should have the following structure:
 
 Calling @command{geninstall.sh} with the path to project directory as first argument and @samp{vim71.sh} as second argument should produce the installer.
 
-@anchor{fourth tutorial}
-@section Fourth Tutorial: Installer for BZFlag
+@anchor{fifth tutorial}
+@section Fifth Tutorial: Installer for BZFlag
 This tutorial introduces @ref{pkgmode,,Package Mode}, desktop menu generation and including dependencies. The installer will support the following things:
 @itemize @bullet
 @item Automatically launch the right frontend.
@@ -2360,53 +2433,60 @@ pkg.bins = @{ "bin/bzfs" , "bin/bzflag", "bin/bzadmin" @}}
 Now we have collected the installation files it's time to worry about BZFlag's dependencies. We will use @command{deputil.sh} for this. The first step to @emph{scan} for any dependencies, to do so run the following command:
 @codeblock{deputil.sh -p bzflag/ bzflag/files_all/bin/*}
 This will dump all the (library) dependencies from the BZFlag binaries. The @command{-p} parameter is used to specify the project directory. The last parameters should contain all the binaries from BZFlag. Here is how the output will look like:
-@codeblock{Primary dependency results: 
-* (New) Templates suggested:
-  - "SDL-1.2"
-      Libs:   libSDL-1.2.so.0
-      Tags:   SDL, small
-      Notes:  -
-  - "core-libs-other"
-      Libs:   libm.so.6, libpthread.so.0, libgcc_s.so.1
-      Tags:   common, unknown-full
-      Notes:  -
-  - "libidn"
-      Libs:   libidn.so.11
-      Tags:   unknown-copy
-      Notes:  -
-  - "Mesa"
-      Libs:   libGL.so.1, libGLU.so.1
-      Tags:   common-desktop, X11, small
-      Notes:  -
-  - "libstdc++"
-      Libs:   libstdc++.so.5
-      Tags:   common
-      Notes:  -
-  - "OpenSSL"
-      Libs:   libcrypto.so.0.9.7, libssl.so.0.9.7
-      Tags:   common, unknown-copy
-      Notes:  -
-  - "core-libs"
-      Libs:   librt.so.1, libc.so.6, libdl.so.2
-      Tags:   full-never
-      Notes:  -
-  - "zlib"
-      Libs:   libz.so.1
-      Tags:   common, small
-      Notes:  -
-  - "cURL"
-      Libs:   libcurl.so.4
-      Tags:   common, small
-      Notes:  -
-  - "X11-core"
-      Libs:   libXext.so.6, libXi.so.6, libXrender.so.1, libX11.so.6, libXrandr.so.2, libSM.so.6, libICE.so.6
-      Tags:   common, X11, small
-      Notes:  -
+@codeblock{Loaded 424 libraries filed by 104 templates.
+Scanning...
+Primary dependency results... Not OK
+----------
+RESULTS
+----------
+Suggested templates:
+ * X11-core (libXext.so.6, libICE.so.6, libXrandr.so.2, libSM.so.6, libXi.so.6, libXrender.so.1, libX11.so.6) required by:
+    - Main binaries/libraries
+    - Dependency template X11-core
+    - Dependency template Mesa
+    - Dependency template SDL-1.2
+ * libidn (libidn.so.11) required by:
+    - Main binaries/libraries
+    - Dependency template cURL
+ * core-libs-other (libgcc_s.so.1, libpthread.so.0, libm.so.6) required by:
+    - Main binaries/libraries
+    - Dependency template libstdc++
+    - Dependency template Mesa
+    - Dependency template core-libs
+    - Dependency template SDL-1.2
+ * OpenSSL (libcrypto.so.0.9.7, libssl.so.0.9.7) required by:
+    - Main binaries/libraries
+    - Dependency template cURL
+    - Dependency template OpenSSL
+ * zlib (libz.so.1) required by:
+    - Main binaries/libraries
+    - Dependency template cURL
+ * SDL-1.2 (libSDL-1.2.so.0) required by:
+    - Main binaries/libraries
+ * libstdc++ (libstdc++.so.5) required by:
+    - Main binaries/libraries
+    - Dependency template Mesa
+ * Mesa (libGL.so.1, libGLU.so.1) required by:
+    - Main binaries/libraries
+    - Dependency template Mesa
+ * cURL (libcurl.so.4) required by:
+    - Main binaries/libraries
+ * core-libs (librt.so.1, libc.so.6, libdl.so.2, ld-linux.so.2) required by:
+    - Main binaries/libraries
+    - Dependency template X11-core
+    - Dependency template libidn
+    - Dependency template core-libs-other
+    - Dependency template OpenSSL
+    - Dependency template zlib
+    - Dependency template SDL-1.2
+    - Dependency template libstdc++
+    - Dependency template Mesa
+    - Dependency template cURL
+    - Dependency template core-libs
 @*
-------------
 @*
 @*
-NOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this by checking the libs field from the respective dependencies. To regenerate a dependency (with the gen or gent actions) with additional libraries use the @minus{}@minus{}libs option.}
+NOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this bychecking the libs field from the respective dependencies. To regenerate a dependency (with the genor gent actions) with additional libraries use the --libs option.}
 Note that which dependencies will be required may vary. This depends on the OS and how the dependencies were build.
 
 Now that we know what dependencies will be required, it's time to choose which should be simple or full. Lets say we want to make all dependencies full from which their respective template has the @code{small} tag. To create the dependency packages we can use the @command{auto} action. To see what will happen use the @minus{}@minus{}pretend option:
@@ -2696,7 +2776,7 @@ After compilation is done the binaries will be put in the @file{bin/} directory.
     @end itemize
 @end itemize
 
-The binaries are each put on separate @samp{libc} and. The reason for this is that different OS versions may use libc versions. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} while FreeBSD 6.X is using @file{libc.so.6}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started it will then choose the right binaries for the users system.@*
+The binaries are each put on separate @samp{libc} and. The reason for this is that different OS versions may use libc versions. To make sure that an installer works on many systems, different binaries with different linked library versions need to be included. For this reason it's important to compile on different versions of an Operating System. For example FreeBSD 5.X uses @file{libc.so.5} while FreeBSD 6.X is using @file{libc.so.6}. In order to let an installer run on both FreeBSD 5 and 6 the binaries are compiled on both systems and put in their own subdirectory inside @file{bin/}. When the installer is started it will then choose the right binaries for the users system. Note that most OpenBSD binaries are fully static (OpenBSD frequently bumps their libc which would render the binaries unusable) and are for this reason not stored inside the specific @file{libc} directories. @*
 @*
 Besides the frontends there are some other binaries. Here is an explanation for each of them:
 @table @file
@@ -2710,6 +2790,8 @@ The GTK frontend.
 The ncurses frontend.
 @item edelta
 This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend binaries. @file{geninstall.lua} will create an optimal path from which binaries a diff should be made to get optimal size results. It's a bit complex algorithm, it will use several binaries to build another binary. For example a fltk linux/x86 binary may be @samp{diff'ed} with a gtk linux/x86 binary. The latter binary may be @samp{diff'ed} in turn with an gtk freebsd/86 binary. When the installer launches it will then first build the gtk linux/x86 binary from the gtk freebsd/x86 binary and after that build the fltk linux/86 binary from the gtk linux/86 binary. Using this algorithm the frontends will take up very less space.
+
+The data needed by the algorithm just discussed is stored inside @file{bin/bindeltas.lua}. This file is generated automatically by @file{geninstall.lua} when it doesn't exist, it's corrupted or any binaries are changed. For the latter reason and the fact it will take some time (re)generate this file, you may want to disable this temporary while developing.
 
 Note that the edelta version differs from the @uref{http://www.diku.dk/~jacobg/edelta/, original version} because it's modified in such way that it doesn't use compression (which makes the binary smaller and allows us to use other compression methods than gzip).
 @item lzma-decode

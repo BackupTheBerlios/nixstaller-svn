@@ -202,10 +202,20 @@ function GetLibMap(rec)
     return map
 end
 
-function GetLibDepPath(prdir, dep, lib)
+function GetLibDepPath(prdir, dep, lib, specific)
     local deppath = string.format("%s/deps/%s", prdir, dep.name)
+
     for d in io.dir(deppath) do
-        if string.find(d, "files_.+_.+") then
+        local check = false
+        if specific then
+            check = string.find(d, string.format("files_%s_all", os.osname)) or
+                    string.find(d, string.format("files_all_%s", os.arch)) or
+                    string.find(d, string.format("files_%s_%s", os.osname, os.arch)) or
+                    string.find(d, string.format("files_all", os.osname))
+        else
+            check = string.find(d, "files_.+_.+")
+        end
+        if check then
             local lpath = string.format("%s/%s/%s/%s", deppath, d, dep.libdir, lib)
             if os.fileexists(lpath) then
                 return lpath
@@ -665,7 +675,7 @@ function Scan()
     for _, d in pairs(loadeddeps) do
         if d and d.libs and d.full then
             for _, l in ipairs(d.libs) do
-                local p = GetLibDepPath(prdir, d, l) -- UNDONE: Restrict to valid libs for current os/arch
+                local p = GetLibDepPath(prdir, d, l, true)
                 if p then
                     getmaps(l, p)
                 elseif not warnedlibs[l] then
@@ -1264,7 +1274,7 @@ function EditDep()
     
     if not full and rem then
         for _, l in ipairs(dep.libs) do
-            local lp = GetLibDepPath(prdir, dep, l)
+            local lp = GetLibDepPath(prdir, dep, l, false)
             if lp then
                 local stat, msg = os.remove(lp)
                 if not stat then
@@ -1284,7 +1294,7 @@ function EditDep()
                     -- Dependency depends on given dep?
                     if utils.tablefind(subdep.deps, dep.name) then
                         for _, l in ipairs(subdep.libs) do
-                            local lp = GetLibDepPath(prdir, subdep, l)
+                            local lp = GetLibDepPath(prdir, subdep, l, true)
                             if lp then
                                 CollectLibs(map, lp, lpath, true)
                             end

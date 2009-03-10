@@ -64,8 +64,9 @@
 - install.getpkgdir() now accepts optional file argument for convenience.
 - install.update() function
 - install.setaskquit() function
-- Manual: Fixed several spelling mistakes, updated tutorials, improved bzflag tutorial.
+- Manual: Fixed several spelling mistakes, updated tutorials, added unattended Cube tutorial, improved bzflag tutorial.
 - Lithuanian and Bulgarian language support
+- OpenBSD ncurses and tools binaries are now fully static (this makes sure that binaries keep working despite the frequent OpenBSD libc bumping)
 
 
 0.3 --> 0.4
