@@ -304,6 +304,9 @@ Verifying dependencies
 Gathering main binary dependencies.
 Gathering main binary dependencies.
 
+Gathering main library dependencies.
+Gathering main library dependencies.
+
 Extracting dependency %s
 Extracting dependency %s
 
@@ -349,11 +352,39 @@ Failed to download.
 (Binary) incompatible.
 (Binary) incompatible.
 
-Missing.
-Missing.
+# %s will be replaced by the name of the incompatible library.
+Incompatible library: %s.
+Incompatible library: %s.
+
+# %s will be replaced by the name of the missing library.
+Missing library: %s.
+Missing library: %s.
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too old (required: %s).
+Library %s is too old (required: %s).
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too new (required: %s).
+Library %s is too new (required: %s).
+
+# %s will be replaced by the required library.
+Wrong library version (required: %s).
+Wrong library version (required: %s).
+
+# %s will be replaced by the found library.
+Too new (available: %s)
+Too new (available: %s)
+
+# %s will be replaced by the found library.
+Too old (available: %s)
+Too old (available: %s)
 
 File missing.
 File missing.
+
+Version mismatch.
+Version mismatch.
 
 Multiple package managers were found, please choose which one should be used.
 Multiple package managers were found, please choose which one should be used.
@@ -419,6 +450,17 @@ The software has been installed to this system.
 An installation summary is shown below.
 ]
 
+dpkg (eg. Ubuntu, Debian)
+dpkg (eg. Ubuntu, Debian)
+
+pacman (eg. Arch Linux)
+pacman (eg. Arch Linux)
+
+rpm (eg. Fedora, Mandriva)
+rpm (eg. Fedora, Mandriva)
+
+Slackware tgz (eg. Slackware, Zenwalk)
+Slackware tgz (eg. Slackware, Zenwalk)
 
 
 #-----------------------------------------------

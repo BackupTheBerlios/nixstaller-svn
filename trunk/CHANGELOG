@@ -67,6 +67,8 @@
 - Manual: Fixed several spelling mistakes, updated tutorials, added unattended Cube tutorial, improved bzflag tutorial.
 - Lithuanian and Bulgarian language support
 - OpenBSD ncurses and tools binaries are now fully static (this makes sure that binaries keep working despite the frequent OpenBSD libc bumping)
+- Dropped FreeBSD 5.X bins
+- staticly linked stdcxx from apache for Linux, NetBSD and OpenBSD binaries.
 
 
 0.3 --> 0.4

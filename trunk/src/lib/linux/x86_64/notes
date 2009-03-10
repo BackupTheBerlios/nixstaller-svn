@@ -2,31 +2,4 @@ Notes for linux libs:
 
 Host system: x86_64 Debian 4.0 Stable
 
-JPEG:
-version: 6b
-
-PNG:
-version: 1.2.21
-notes: LDFLAGS and CPPFLAGS were changed to point to prefix directory where custom zlib was installed.
-
-FLTK:
-version: 1.1.7
-notes: LDFLAGS and CPPFLAGS set to point to custom compiled versions of zlib, png and jpeg. CXXFLAGS set to -fexceptions for exception support. --enable-xft and --enable-xdbe flags given for ./configure
-
-ZLIB:
-version: 1.2.3
-
-NCURSES:
-version: 5.6
-configure command: ./configure --without-gpm
-
-X11 (libX11, libXext)
-version: 7.1
-
-GCC (libstdc++, libutil)
-version: 4.1.2
-
-LUA:
-version 5.1.2
-make command: make posix
-notes: src/Makefile was edited to use g++ instead of gcc (enables C++ exception support, important) and to use the -Os CFLAG.
+See builddeps.sh for used compiler flags and package versions.

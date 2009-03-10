@@ -1,5 +1,5 @@
-Notes for openbsd libs:
+Notes for netbsd libs:
 
-Host system: x86 OpenBSD 3.9
+Host system: x86_64 NetBSD 4.0
 
 See builddeps.sh for used compiler flags and package versions.

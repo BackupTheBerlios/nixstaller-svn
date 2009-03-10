@@ -1,18 +1,13 @@
 OVERALL
-- Update examples:
-    - Final strings files.
-- Final lib notes
+- OpenBSD GUI bins? (update notes, changelog)
 
 
 TEST
 - New delta code (mainly when new bins are ready and asserts)
-- Make sure that only files are displayed when extracting (no random tar output)
-- GetLibDepPath() (editdep, scanning) and having libs from different OS/archs
 
 
 DOCS
 - CHANGELOG
-- Features (done?)
 
 
 

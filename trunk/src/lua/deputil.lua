@@ -202,26 +202,36 @@ function GetLibMap(rec)
     return map
 end
 
-function GetLibDepPath(prdir, dep, lib, specific)
+function GetLibDepPath(prdir, dep, lib)
     local deppath = string.format("%s/deps/%s", prdir, dep.name)
 
     for d in io.dir(deppath) do
-        local check = false
-        if specific then
-            check = string.find(d, string.format("files_%s_all", os.osname)) or
-                    string.find(d, string.format("files_all_%s", os.arch)) or
-                    string.find(d, string.format("files_%s_%s", os.osname, os.arch)) or
-                    string.find(d, string.format("files_all", os.osname))
-        else
-            check = string.find(d, "files_.+_.+")
-        end
-        if check then
+        if string.find(d, string.format("files_%s_all", os.osname)) or
+           string.find(d, string.format("files_all_%s", os.arch)) or
+           string.find(d, string.format("files_%s_%s", os.osname, os.arch)) or
+           string.find(d, string.format("files_all", os.osname)) then
             local lpath = string.format("%s/%s/%s/%s", deppath, d, dep.libdir, lib)
             if os.fileexists(lpath) then
                 return lpath
             end
         end
     end
+end
+
+function GetAllLibDepPaths(prdir, dep, lib)
+    local deppath = string.format("%s/deps/%s", prdir, dep.name)
+    local ret = { }
+
+    for d in io.dir(deppath) do
+        if string.find(d, "files_.+_.+") then
+            local lpath = string.format("%s/%s/%s/%s", deppath, d, dep.libdir, lib)
+            if os.fileexists(lpath) then
+                table.insert(ret, lpath)
+            end
+        end
+    end
+
+    return ret
 end
 
 function CheckExisting(prdir, d, exist)
@@ -675,7 +685,7 @@ function Scan()
     for _, d in pairs(loadeddeps) do
         if d and d.libs and d.full then
             for _, l in ipairs(d.libs) do
-                local p = GetLibDepPath(prdir, d, l, true)
+                local p = GetLibDepPath(prdir, d, l)
                 if p then
                     getmaps(l, p)
                 elseif not warnedlibs[l] then
@@ -1274,8 +1284,8 @@ function EditDep()
     
     if not full and rem then
         for _, l in ipairs(dep.libs) do
-            local lp = GetLibDepPath(prdir, dep, l, false)
-            if lp then
+            local paths = GetAllLibDepPaths(prdir, dep, l)
+            for _, lp in ipairs(paths) do
                 local stat, msg = os.remove(lp)
                 if not stat then
                     print(string.format("WARNING: Failed to remove '%s': %s", lp, msg))
@@ -1294,7 +1304,7 @@ function EditDep()
                     -- Dependency depends on given dep?
                     if utils.tablefind(subdep.deps, dep.name) then
                         for _, l in ipairs(subdep.libs) do
-                            local lp = GetLibDepPath(prdir, subdep, l, true)
+                            local lp = GetLibDepPath(prdir, subdep, l)
                             if lp then
                                 CollectLibs(map, lp, lpath, true)
                             end

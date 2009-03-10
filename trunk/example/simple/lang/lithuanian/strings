@@ -304,6 +304,9 @@ Tikrinamos priklausomybės
 Gathering main binary dependencies.
 Renkamos pagrindinės dvejatainės priklausomybės
 
+Gathering main library dependencies.
+Renkamos pagrindinės bibliotekų priklausomybės
+
 Extracting dependency %s
 Išpakuojama priklausomybė %s
 

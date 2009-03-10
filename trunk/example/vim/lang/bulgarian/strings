@@ -304,6 +304,9 @@ Verifying dependencies
 Gathering main binary dependencies.
 Определяне на файлове от които зависи главния изпълним файл.
 
+Gathering main library dependencies.
+Сдобиване със зависимостите за главната библиотека
+
 Extracting dependency %s
 Извличане на зависимост %s
 
