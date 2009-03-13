@@ -1,0 +1,5 @@
+Notes for freebsd libs:
+
+Host system: x86 FreeBSD 6.2-RELEASE
+
+See builddeps.sh for used compiler flags and package versions.

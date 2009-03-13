@@ -1,0 +1,5 @@
+Notes for netbsd libs:
+
+Host system: x86 NetBSD 4.0
+
+See builddeps.sh for used compiler flags and package versions.

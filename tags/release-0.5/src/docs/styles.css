@@ -1,0 +1,14 @@
+.codeblock {
+margin: 1em 0em 1em 0em;
+font-size: smaller;
+background: #ECECF9;
+padding: 0.5em;
+border-top: dotted 1px black;
+border-left: dotted 1px black;
+border-right: solid 2px black;
+border-bottom: solid 2px black;
+width: 95%;
+max-height: 500px;
+overflow: auto;
+/* position: static; */
+}

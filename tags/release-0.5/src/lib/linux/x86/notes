@@ -1,0 +1,5 @@
+Notes for linux libs:
+
+Host system: x86 debian 3.1
+
+See builddeps.sh for used compiler flags and package versions.

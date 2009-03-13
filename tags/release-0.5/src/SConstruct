@@ -1,0 +1,776 @@
+# -*- coding: utf-8 -*-
+import sys
+import os
+import glob
+import commands
+import shutil
+import platform
+import tarfile
+
+# All the files for Nixstaller...If a directory is specified the whole directory(excluding dot files) will be copied.
+# By specifying as many files as possible you can be more sure unwanted files won't be copied.
+# --------------------------------------------------------------------------------------
+
+distfiles_user = [
+'doc/',
+'example/bzflag/config.lua',
+'example/bzflag/files_all/FILES',
+'example/bzflag/files_extra/side.bmp',
+'example/bzflag/lang/dutch/strings',
+'example/bzflag/lang/english/strings',
+'example/bzflag/package.lua',
+'example/bzflag/run.lua',
+'example/bzflag/welcome',
+'example/cube/config.lua',
+'example/cube/run.lua',
+'example/cube/welcome',
+'example/cube/files_all/FILES',
+'example/cube/lang/dutch/strings',
+'example/simple/config.lua',
+'example/simple/welcome',
+'example/simple/files_all/README',
+'example/simple/lang/dutch/strings',
+'example/vim/config.lua',
+'example/vim/run.lua',
+'example/vim/welcome',
+'example/vim/finish',
+'example/vim/files_all/FILES',
+'example/vim/files_extra/vim48x48.png',
+'example/vim/lang/dutch/strings',
+'lang/dutch/strings',
+'lang/english/strings',
+'src/img/COPYING',
+'src/img/installer.png',
+'src/img/system-installer.svg',
+'src/internal/about',
+'src/internal/intro.txt',
+'src/internal/start',
+'src/internal/startupinstaller.sh',
+'src/lua/geninstall.lua',
+'src/lua/install.lua',
+'src/lua/package.lua',
+'src/lua/package-public.lua',
+'src/lua/pkg/deb.lua',
+'src/lua/pkg/generic.lua',
+'src/lua/pkg/groups.lua',
+'src/lua/pkg/pacman.lua',
+'src/lua/pkg/rpm.lua',
+'src/lua/pkg/slack.lua',
+'src/lua/screens/finishscreen.lua',
+'src/lua/screens/installscreen.lua',
+'src/lua/screens/langscreen.lua',
+'src/lua/screens/licensescreen.lua',
+'src/lua/screens/packagedirscreen.lua',
+'src/lua/screens/packagetogglescreen.lua',
+'src/lua/screens/selectdirscreen.lua',
+'src/lua/screens/summaryscreen.lua',
+'src/lua/screens/welcomescreen.lua',
+'src/lua/utils.lua',
+'src/lua/utils-public.lua',
+'src/xdg-utils/xdg-desktop-menu',
+'src/xdg-utils/xdg-open',
+'COPYING',
+'CHANGELOG',
+'geninstall.sh',
+'genprojdir.sh',
+'LICENSE',
+'makeself.sh',
+'makeself-header.sh',
+]
+
+distfiles_src = distfiles_user + [
+'src/docs/fltk.png',
+'src/docs/gtk.png',
+'src/docs/macros-default.texi',
+'src/docs/macros-html.texi',
+'src/docs/mkdoc.sh',
+'src/docs/ncurs.png',
+'src/docs/nixstaller.texi',
+'src/docs/styles.css',
+'src/edelta/Contributors',
+'src/edelta/COPYING',
+'src/edelta/edelta.c',
+'src/edelta/edelta.h',
+'src/edelta/README',
+'src/edelta/sha1.c',
+'src/edelta/version.h',
+'src/fltk/dirdialog.cpp',
+'src/fltk/dirdialog.h',
+'src/fltk/fltk.cpp',
+'src/fltk/fltk.h',
+'src/fltk/hyperlink.cpp',
+'src/fltk/hyperlink.h',
+'src/fltk/installer.cpp',
+'src/fltk/installer.h',
+'src/fltk/installscreen.cpp',
+'src/fltk/installscreen.h',
+'src/fltk/luacfgmenu.cpp',
+'src/fltk/luacfgmenu.h',
+'src/fltk/luacheckbox.cpp',
+'src/fltk/luacheckbox.h',
+'src/fltk/luadirselector.cpp',
+'src/fltk/luadirselector.h',
+'src/fltk/luagroup.cpp',
+'src/fltk/luagroup.h',
+'src/fltk/luaimage.cpp',
+'src/fltk/luaimage.h',
+'src/fltk/luainput.cpp',
+'src/fltk/luainput.h',
+'src/fltk/lualabel.cpp',
+'src/fltk/lualabel.h',
+'src/fltk/luamenu.cpp',
+'src/fltk/luamenu.h',
+'src/fltk/luaprogressbar.cpp',
+'src/fltk/luaprogressbar.h',
+'src/fltk/luaradiobutton.cpp',
+'src/fltk/luaradiobutton.h',
+'src/fltk/luatextfield.cpp',
+'src/fltk/luatextfield.h',
+'src/fltk/luawidget.cpp',
+'src/fltk/luawidget.h',
+'src/fltk/utils.cpp',
+'src/gtk/gtk.cpp',
+'src/gtk/gtk.h',
+'src/gtk/installer.cpp',
+'src/gtk/installer.h',
+'src/gtk/installscreen.cpp',
+'src/gtk/installscreen.h',
+'src/gtk/luacfgmenu.cpp',
+'src/gtk/luacfgmenu.h',
+'src/gtk/luacheckbox.cpp',
+'src/gtk/luacheckbox.h',
+'src/gtk/luadirselector.cpp',
+'src/gtk/luadirselector.h',
+'src/gtk/luagroup.cpp',
+'src/gtk/luagroup.h',
+'src/gtk/luaimage.cpp',
+'src/gtk/luaimage.h',
+'src/gtk/luainput.cpp',
+'src/gtk/luainput.h',
+'src/gtk/lualabel.h',
+'src/gtk/luamenu.cpp',
+'src/gtk/luamenu.h',
+'src/gtk/luaprogressbar.cpp',
+'src/gtk/luaprogressbar.h',
+'src/gtk/luaradiobutton.cpp',
+'src/gtk/luaradiobutton.h',
+'src/gtk/luatextfield.cpp',
+'src/gtk/luatextfield.h',
+'src/gtk/luawidget.cpp',
+'src/gtk/luawidget.h',
+'src/gtk/utils.cpp',
+'src/include/',
+'src/lib/freebsd/x86/',
+'src/lib/freebsd/x86_64/',
+'src/lib/linux/x86/',
+'src/lib/linux/x86_64/',
+'src/lib/netbsd/x86/',
+'src/lib/netbsd/x86_64/',
+'src/lib/openbsd/x86/',
+'src/lib/sunos/x86/',
+'src/libmd5/md5.c',
+'src/libmd5/md5.h',
+'src/libmd5/README',
+'src/libsu/COPYING',
+'src/libsu/CREDITS',
+'src/libsu/TODO',
+'src/libsu/libsu.h',
+'src/libsu/libtest.cpp',
+'src/libsu/LICENSE',
+'src/libsu/main.cpp',
+'src/libsu/main.h',
+'src/libsu/runner.c',
+'src/libsu/SConstruct',
+'src/libsu/terminal.cpp',
+'src/libsu/utils.cpp',
+'src/libsu/vasprintf.c',
+'src/main/exception.h',
+'src/main/main.cpp',
+'src/main/main.h',
+'src/main/utils.cpp',
+'src/main/utils.h',
+'src/main/vasprintf.c',
+'src/main/install/basescreen.cpp',
+'src/main/install/basescreen.h',
+'src/main/install/install.cpp',
+'src/main/install/install.h',
+'src/main/install/luacfgmenu.cpp',
+'src/main/install/luacfgmenu.h',
+'src/main/install/luacheckbox.cpp',
+'src/main/install/luacheckbox.h',
+'src/main/install/luadirselector.cpp',
+'src/main/install/luadirselector.h',
+'src/main/install/luagroup.cpp',
+'src/main/install/luagroup.h',
+'src/main/install/luaimage.h',
+'src/main/install/luainput.cpp',
+'src/main/install/luainput.h',
+'src/main/install/lualabel.cpp',
+'src/main/install/lualabel.h',
+'src/main/install/luamenu.cpp',
+'src/main/install/luamenu.h',
+'src/main/install/luaprogressbar.cpp',
+'src/main/install/luaprogressbar.h',
+'src/main/install/luaradiobutton.cpp',
+'src/main/install/luaradiobutton.h',
+'src/main/install/luatextfield.cpp',
+'src/main/install/luatextfield.h',
+'src/main/install/luawidget.cpp',
+'src/main/install/luawidget.h',
+'src/main/lua/lua.cpp',
+'src/main/lua/lua.h',
+'src/main/lua/luaclass.cpp',
+'src/main/lua/luaclass.h',
+'src/main/lua/luafunc.cpp',
+'src/main/lua/luafunc.h',
+'src/main/lua/luatable.cpp',
+'src/main/lua/luatable.h',
+'src/ncurses/installer.cpp',
+'src/ncurses/installer.h',
+'src/ncurses/installscreen.cpp',
+'src/ncurses/installscreen.h',
+'src/ncurses/luacfgmenu.cpp',
+'src/ncurses/luacfgmenu.h',
+'src/ncurses/luacheckbox.cpp',
+'src/ncurses/luacheckbox.h',
+'src/ncurses/luadirselector.cpp',
+'src/ncurses/luadirselector.h',
+'src/ncurses/luagroup.cpp',
+'src/ncurses/luagroup.h',
+'src/ncurses/luaimage.h',
+'src/ncurses/luainput.cpp',
+'src/ncurses/luainput.h',
+'src/ncurses/lualabel.h',
+'src/ncurses/luamenu.cpp',
+'src/ncurses/luamenu.h',
+'src/ncurses/luaprogressbar.cpp',
+'src/ncurses/luaprogressbar.h',
+'src/ncurses/luaradiobutton.cpp',
+'src/ncurses/luaradiobutton.h',
+'src/ncurses/luatextfield.cpp',
+'src/ncurses/luatextfield.h',
+'src/ncurses/luawidget.cpp',
+'src/ncurses/luawidget.h',
+'src/ncurses/ncurses.cpp',
+'src/ncurses/ncurses.h',
+'src/ncurses/tui/basechoice.cpp',
+'src/ncurses/tui/basechoice.h',
+'src/ncurses/tui/basescroll.cpp',
+'src/ncurses/tui/basescroll.h',
+'src/ncurses/tui/box.cpp',
+'src/ncurses/tui/box.h',
+'src/ncurses/tui/button.cpp',
+'src/ncurses/tui/button.h',
+'src/ncurses/tui/buttonbar.cpp',
+'src/ncurses/tui/buttonbar.h',
+'src/ncurses/tui/checkbox.cpp',
+'src/ncurses/tui/checkbox.h',
+'src/ncurses/tui/dialog.cpp',
+'src/ncurses/tui/dialog.h',
+'src/ncurses/tui/dialogs.cpp',
+'src/ncurses/tui/filedialog.cpp',
+'src/ncurses/tui/filedialog.h',
+'src/ncurses/tui/group.cpp',
+'src/ncurses/tui/group.h',
+'src/ncurses/tui/inputfield.cpp',
+'src/ncurses/tui/inputfield.h',
+'src/ncurses/tui/label.cpp',
+'src/ncurses/tui/label.h',
+'src/ncurses/tui/menu.cpp',
+'src/ncurses/tui/menu.h',
+'src/ncurses/tui/progressbar.cpp',
+'src/ncurses/tui/progressbar.h',
+'src/ncurses/tui/radiobutton.cpp',
+'src/ncurses/tui/radiobutton.h',
+'src/ncurses/tui/scrollbar.cpp',
+'src/ncurses/tui/scrollbar.h',
+'src/ncurses/tui/separator.h',
+'src/ncurses/tui/textbase.cpp',
+'src/ncurses/tui/textbase.h',
+'src/ncurses/tui/textfield.cpp',
+'src/ncurses/tui/textfield.h',
+'src/ncurses/tui/textwidget.cpp',
+'src/ncurses/tui/textwidget.h',
+'src/ncurses/tui/tui.cpp',
+'src/ncurses/tui/tui.h',
+'src/ncurses/tui/utils.cpp',
+'src/ncurses/tui/widget.cpp',
+'src/ncurses/tui/widget.h',
+'src/ncurses/tui/window.cpp',
+'src/ncurses/tui/window.h',
+'src/ncurses/tui/windowmanager.cpp',
+'src/ncurses/tui/windowmanager.h',
+'src/builddeps.sh',
+'src/exceptions.odt',
+'src/SConstruct',
+'printfiles.sh',
+'TODO',
+]
+
+
+# --------------------------------------------------------------------------------------
+
+
+def getallbins(onlyforcuros):
+    # Traverse files, from http://effbot.org/librarybook/os-path.htm
+    if onlyforcuros:
+        stack = ['bin/'+cur_os]
+    else:
+        stack = ['bin']
+    bins = []
+    while stack:
+        directory = stack.pop()
+        for file in os.listdir(directory):
+            fullname = os.path.join(directory, file)
+            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "edelta" or file == "lzma" or file == "surunner" or file == "lock":
+                bins.append(fullname)
+            if os.path.isdir(fullname) and not os.path.islink(fullname):
+                stack.append(fullname)
+    return bins
+
+def stripallbins():
+    bins = getallbins(True)
+    for file in bins:
+        if cur_os == "sunos":
+            Execute("strip %s" % file)
+        else:
+            Execute("strip -s %s" % file)
+
+# Copies whole directory, excluding dotfiles
+def copydir(dir, dest):
+    stack = [ dir ]
+    while stack:
+        directory = stack.pop()
+        if not os.path.exists(dest+directory):
+            os.makedirs(dest+directory)
+        for file in glob.glob(directory + '/*'):
+            if os.path.isdir(file):
+                stack.append(file)
+            else:
+                shutil.copy(file, dest+file)
+
+
+# Check if atleast one file exists from a given list
+def checklibexist(context, fname):
+    context.Message('Checking for %s...' % fname)
+    if (os.path.exists(lib_dir+fname)):
+        context.Result(1)
+        return True
+
+    context.Result(0)
+    return False
+
+def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "main();", autoload = 1, altlibs=''):
+    lastLIBS = context.env['LIBS']
+    lastLIBPATH = context.env['LIBPATH']
+    lastCPPATH = context.env['CPPPATH']
+    context.env.Prepend(LIBS = Split(library))
+    context.env.Append(LIBS = Split(altlibs))
+    context.env.Append(LIBPATH = Split(libdir), CPPPATH = Split(incdir))
+    ret = context.sconf.CheckLibWithHeader(library, header, language, call, autoload)
+    context.env.Replace(LIBS = lastLIBS)
+    context.env.Replace(LIBPATH = lastLIBPATH)
+    context.env.Replace(CPPPATH = lastCPPATH)
+    context.did_show_result = 1 # Hack, says "Error: No result" otherwise
+    return ret
+
+def CheckLinkedLibVersion(context, libname, optlibs=""):
+    libname = "lib" + libname
+    context.Message('Checking which library version is used for %s...' % libname)
+    reallibname = ''
+    lastLIBS = context.env['LIBS']
+    context.env.Append(LIBS = Split("%s %s" % (libname, optlibs)))
+    ret = context.TryLink("""
+int main(int argc, char **argv) {
+    return 0;
+}
+""", '.c')
+    context.env.Replace(LIBS = lastLIBS)
+    
+    if not ret:
+        context.Result('None')
+    else:
+        reallibname = os.popen('ldd %s | grep %s' % (context.lastTarget.path, libname), 'r').read()
+        ind = 0
+        
+        if cur_os == "netbsd":
+            try:
+                ind = reallibname.index("=> ")
+            except:
+                context.Result('None')
+            
+            # Get the part after "=> " and strip leading/trailing whitespace
+            #reallibname = reallibname[ind].strip()
+            # Remove the path from the lib
+            ind = reallibname.rfind("/", ind)
+            if ind == -1:
+                context.Result("None")
+            
+            reallibname = reallibname[ind+1:].strip()
+        elif cur_os == "openbsd":
+            # OpenBSD's ldd puts the library name in the last column
+            
+            try:
+                ind = reallibname.rfind("/")
+            except:
+                ind = 0
+
+            reallibname = reallibname[ind+1:].strip()
+        else:
+            try:
+                ind = reallibname.index(" =>")
+            except:
+                context.Result('None')
+            
+            # Get the part before " =>" and strip leading/trailing whitespace
+            reallibname = reallibname[0:ind].strip()
+        context.Result(reallibname)
+    
+    return reallibname
+    
+EnsureSConsVersion(0,96,91)
+
+opts = Options()
+opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
+opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
+opts.Add('gtklibsdir', 'Specifies where the library files for GTK are', '/usr/lib')
+opts.Add('CC', 'The C compiler', 'gcc')
+opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('noapcpp', "Don't use apache's STL lib", "no")
+opts.Add('LCVER', 'Manually overide used libc version', '')
+opts.Add('OS', 'Manually overide target OS', '')
+opts.Add('CPU', 'Manually overide target arch', '')
+
+# -Wno-sign-compare
+env = Environment(options = opts, CCFLAGS = "-Wall -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', CPPDEFINES=[ 'DEBUG' ], LIBS='')
+
+Export("env")
+
+Help(opts.GenerateHelpText(env))
+
+if not env['OS']:
+    # Get current OS...if this != to uname I should fix it :-)
+    cur_os = sys.platform.rstrip('1234567890')
+else:
+    cur_os = env['OS']
+    
+if not env['CPU']:
+    cur_arch = platform.machine()
+else:
+    cur_arch = env['CPU']
+    
+if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
+    cur_arch = "x86"
+elif cur_arch == 'amd64':
+    cur_arch = "x86_64"
+
+# OS/Arch specific dirs
+lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
+inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
+libc_ver = ''
+
+env.Append(LIBPATH=[lib_dir, 'libsu/'])
+env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/libelf/'+cur_os+'/'+cur_arch, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
+
+if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
+    env.Append(LIBS=Split('std supc++ m'))
+    env['CXX'] = '$CC'
+    env.Append(CPPPATH=['include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    
+# Current version
+curnixstversion = '0.4'
+
+if 'stripbins' in COMMAND_LINE_TARGETS:
+    print 'Stripping all binaries in the bin/%s directory...' % cur_os
+    os.chdir('../')
+    stripallbins()
+    Exit(0)
+
+if 'tardist' in COMMAND_LINE_TARGETS or 'tardev' in COMMAND_LINE_TARGETS:
+    if 'tardev' in COMMAND_LINE_TARGETS:
+        archname = 'nixstaller-dev-' + curnixstversion + '.tar.gz'
+    else:
+        archname = 'nixstaller-' + curnixstversion + '.tar.gz'
+    os.chdir("../")
+    tarredfile = tarfile.open(archname, 'w:gz')
+    stripallbins()
+    if 'tardev' in COMMAND_LINE_TARGETS:
+        flist = distfiles_src+getallbins(False)
+    else:
+        flist = distfiles_user+getallbins(False)
+
+    for dfile in flist:
+        if os.path.isdir(dfile):
+            stack = [ dfile ]
+            while stack:
+                directory = stack.pop()
+                for sfile in glob.glob(directory + '/*'):
+                    if os.path.isdir(sfile):
+                        stack.append(sfile)
+                    else:
+                        tarredfile.add(sfile, 'nixstaller-'+curnixstversion+'/'+sfile)
+        else:
+            tarredfile.add(dfile, 'nixstaller-'+curnixstversion+'/'+dfile)
+    tarredfile.close()
+    print "Generated %s" % archname
+    Exit(0)
+
+if 'setupdist' in COMMAND_LINE_TARGETS:
+    workdir = os.getcwd() + "/tmp-setup-dist/"
+    filesdir = workdir + "files_all/nixstaller-" + curnixstversion + "/"
+
+    outputfile = "nixstaller-" + curnixstversion + ".sh"
+
+    if os.path.exists(workdir):
+        print "Cleaning old workdir..."
+        shutil.rmtree(workdir)
+        
+    os.chdir("../")
+    stripallbins()
+
+    print "Creating temporary project directory..."
+    os.system("./genprojdir.sh -n Nixstaller -o linux netbsd freebsd openbsd sunos --arch x86 x86_64 --pkg "+workdir)
+    print "Copying all files to be installed..."
+    os.makedirs(filesdir)
+    for file in distfiles_user+getallbins(False):
+        dir = filesdir + os.path.dirname(file)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        if os.path.isdir(file):
+            copydir(file, filesdir)
+        else:
+            shutil.copy(file, filesdir + file)
+
+    print "Generate package config file..."
+    pkgfile = open(workdir + "package.lua", "w")
+    pkgfile.write("pkg.version = \"%s\"\n" % curnixstversion)
+    pkgfile.write("pkg.bins = { \"nixstaller-%s/geninstall.sh\", \"nixstaller-%s/genprojdir.sh\" }" % (curnixstversion, curnixstversion))
+    pkgfile.write("""
+pkg.enable = true
+pkg.name = "nixstaller"
+pkg.summary = "Nixstaller is used to create software installation packages on UNIX like systems."
+pkg.description = [[
+Nixstaller is an Open Source project with the goal to create user friendly and flexible installers that work on various UNIX like systems.
+Main features are different graphical frontends, native language support, easy and flexible configuration and (optional) package integration.
+]]
+pkg.group = "Archiving"
+pkg.license = "GPLv2"
+pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail.com>"
+pkg.url = "nixstaller.berlios.de"
+""")
+    pkgfile.close()
+    
+    print "Copying welcome message..."
+    shutil.copy("src/internal/intro.txt", workdir + "welcome")
+    print "%s --> %s" % ("internal/intro.txt", workdir + "welcome")
+
+    print "Generating installer"
+    os.system("./geninstall.sh %s %s" % (workdir, outputfile))
+
+    print "Cleaning workdir..."
+    shutil.rmtree(workdir)
+
+    Exit(0)
+    
+
+fltklibs = ""
+gtklibs = ""
+gtklpath = ""
+
+# configure stuff (only do this when not cleaning)
+if not env.GetOption('clean'):
+    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv, 'CheckLinkedLibVersion' : CheckLinkedLibVersion})
+
+    if not conf.checklibexist('libutil.a'):
+        print 'Searching for libutil.a'
+        lname = commands.getoutput(env['CC']+' -print-file-name=libutil.a')
+        if lname:
+            if lname == 'libutil.a':
+                # Compiler didn't find it, ignore
+                print "None found by compiler"
+            else:
+                try:
+                    shutil.copy(lname, lib_dir)
+                    print "Copied %s to %s" % (lname, lib_dir)
+                    conf.env.Append(LIBS='util')
+                except (IOError, os.error), why:
+                    print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+                    Exit(1)
+        else:
+            print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
+            Exit(1)
+    else:
+        conf.env.Append(LIBS='util')
+
+    if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
+        conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
+    if not conf.CheckLibWithHeader('', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);'):
+        conf.CheckLibWithHeader('rt', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);')
+    
+    if not conf.env['LCVER']:
+        if cur_os == 'darwin':
+            libc_ver = 'libc.dylib'
+        else:
+            libc_ver = conf.CheckLinkedLibVersion('c')
+    else:
+        libc_ver = env['LCVER']
+        
+    if not libc_ver:
+        print "Couldn't detect libc version!"
+        Exit(1)
+
+    if not conf.CheckLibWithHeader('z', 'zlib.h', 'C', 'gzFile f;', 0):
+        print "Couldn't find libz !"
+        Exit(1)
+
+    if not conf.CheckLibWithHeader('lua', Split("lauxlib.h luaconf.h lua.h lualib.h"), 'C', ';', 0):
+        print "Couldn't find liblua !"
+        Exit(1)
+        
+    if not conf.CheckLibWithHeader('elf', Split("libelf/libelf.h libelf/gelf.h"), 'C', ';', 0):
+        print "Couldn't find libelf !"
+        Exit(1)
+        
+    if conf.CheckType('Elf32_Verdef', '#include "elf.h"'):
+        conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
+        conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
+
+    if not conf.CheckLibWithHeader('curl', Split("curl/curl.h"), 'C', ';', 0):
+        print "Couldn't find libcurl !"
+        Exit(1)
+    
+    # Solaris needs socket and nsl libraries for curl
+    if not conf.CheckLibWithHeader('', ['sys/types.h', 'sys/socket.h'], 'C', 'getsockname(0, 0, 0);'):
+        conf.CheckLibWithHeader(['socket'], ['sys/types.h', 'sys/socket.h'], 'C', 'getsockname(0, 0, 0);')
+    if not conf.CheckLibWithHeader('', ['sys/types.h', 'sys/socket.h'], 'C', 'inet_addr(0);'):
+        conf.CheckLibWithHeader(['nsl'], ['sys/types.h', 'sys/socket.h'], 'C', 'inet_addr(0);')
+                
+    if not BUILD_TARGETS and cur_os == 'darwin':
+        BUILD_TARGETS = ['fltk']
+
+    if not BUILD_TARGETS or 'ncurses' in map(str, BUILD_TARGETS):
+        if not conf.CheckLibWithHeader('ncursesw', 'curses.h', 'C++', 'beep();', 0):
+            print "Couldn't find libncursesw!"
+            Exit(1)
+            
+    if not BUILD_TARGETS or 'fltk' in map(str, BUILD_TARGETS):
+        if not cur_os == 'darwin':
+            if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Couldn't find libX11 !"
+                Exit(1)
+            if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Couldn't find libXext !"
+                Exit(1)
+            if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Xft needs additional libs?"
+                if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0, 'freetype Xrender fontconfig'):
+                    print "Couldn't find libXft !"
+                    Exit(1)
+                fltklibs = "freetype Xrender fontconfig"
+        if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libpng !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('jpeg', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libjpeg !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('fltk', ['FL/Fl.H', 'FL/fl_draw.H'], 'C++', '$xlibsdir', '$xincdir', 'fl_font(0, 0);', 0, 'Xft Xinerama X11'):
+            print "FLTK needs some more libs?"
+            if not conf.CheckLibWithEnv('fltk', ['FL/Fl.H', 'FL/fl_draw.H'], 'C++', '$xlibsdir', '$xincdir', 'fl_font(0, 0);', 0, 'Xft Xinerama freetype Xrender Xext fontconfig X11'):
+                print "Couldn't find libfltk !"
+                Exit(1)
+            fltklibs = "fontconfig Xrender freetype"
+        if not conf.CheckLibWithEnv('fltk_images', 'FL/Fl.H', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+            print "Couldn't find libfltk_images !"
+            Exit(1)
+            
+    if not BUILD_TARGETS or 'gtk' in map(str, BUILD_TARGETS):
+        if not conf.CheckLibWithEnv('gobject-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libgobject-2.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('glib-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libglib-2.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('pango-1.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libpango-1.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('gdk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ['$gtklibsdir'], '', ';', 0):
+            print "GDK needs Xft?"
+            if not conf.CheckLibWithEnv('gdk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ['$gtklibsdir', '$xlibsdir'], '', ';', 0, 'Xft'):
+                print "Couldn't find libgdk-x11-2.0 !"
+                Exit(1)
+            gtklibs = "Xft"
+            gtklpath = '$xlibsdir'
+        if not conf.CheckLibWithEnv('gdk_pixbuf-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libgdk_pixbuf-2.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('gtk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "GTK needs Xft?"
+            if not conf.CheckLibWithEnv('gtk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ['$gtklibsdir', '$xlibsdir'], '', ';', 0, 'Xft'):
+                print "Couldn't find libgtk-x11-2.0 !"
+                Exit(1)
+            gtklibs = "Xft"
+            gtklpath = '$xlibsdir'
+            
+    env = conf.Finish()
+elif env.GetOption('clean'):
+    # Make sure that scons properly cleans everything
+    Execute(Delete('main/.sconsign'))
+    Execute(Delete('ncurses/.sconsign'))
+    Execute(Delete('fltk/.sconsign'))
+    Execute(Delete('.sconf_temp'))
+    Execute(Delete('.sconsign.dblite'))
+
+
+# Builds bsdiff binaries
+if cur_os == "openbsd":
+    edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="", LINKFLAGS="-static")
+else:
+    edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
+
+# Builds libsu
+libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
+
+# Builds lock tool
+lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
+
+# Builds main lib
+main = env.Library("main/main", Split('libmd5/md5.c main/install/attinstall.cpp main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/install/unattinstall.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
+
+env.Prepend(LIBS = Split('main su lua elf curl z'))
+
+# UNDONE?
+if cur_os == 'netbsd':
+    env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib -Wl,--rpath -Wl,/usr/X11R7/lib -Wl,--rpath -Wl,$gtklibsdir'))
+elif cur_os == "sunos":
+    env.Append(LIBS = ['rt']) # OpenSolaris doesn't need this, but Solaris 10 does.
+    
+gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscreen.cpp gtk/luacheckbox.cpp gtk/luacfgmenu.cpp gtk/luadepscreen.cpp gtk/luadirselector.cpp gtk/luagroup.cpp gtk/luaimage.cpp gtk/luainput.cpp gtk/luamenu.cpp gtk/luaprogressbar.cpp gtk/luaprogressdialog.cpp gtk/luaradiobutton.cpp gtk/luatextfield.cpp gtk/luawidget.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gobject-2.0 glib-2.0 pango-1.0 gdk-x11-2.0 gdk_pixbuf-2.0 gtk-x11-2.0 '+gtklibs), LIBPATH=Split("$LIBPATH $gtklibsdir "+gtklpath), LINKFLAGS=Split("$LINKFLAGS -Wl,-z -Wl,now"))
+
+ncurs_lflags = ""
+if cur_os == "openbsd":
+    ncurs_lflags = "-static"
+    
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadepscreen.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaprogressdialog.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncursesw'), LINKFLAGS=Split('$LINKFLAGS '+ncurs_lflags))
+
+if cur_os == 'darwin':
+    fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg '+fltklibs), LINKFLAGS=Split("$LINKFLAGS -framework Carbon -framework ApplicationServices"))
+else:
+    fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft Xinerama Xpm X11 '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
+
+bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
+stat_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'
+
+if cur_os == 'linux':
+    Default(env.Install(bin_dir, Flatten(lock)))
+    
+if cur_os != 'darwin':
+    Default(env.Install(bin_dir, Flatten(gtk)))
+
+Default(env.Install(bin_dir, Flatten(fltk) + Flatten(gtk)))
+Default(env.Install(lib_dir, Flatten(libsu) + Flatten(main)))
+
+if cur_os == 'openbsd':
+    Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(edelta) + Flatten(surunner)))
+else:
+    Default(env.Install(bin_dir, Flatten(ncurses) + Flatten(edelta) + Flatten(surunner)))
