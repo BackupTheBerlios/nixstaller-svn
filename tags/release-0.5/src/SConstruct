@@ -442,7 +442,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall -g", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', CPPDEFINES=[ 'DEBUG' ], LIBS='')
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='')
 
 Export("env")
 
@@ -478,7 +478,7 @@ if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os
     env.Append(CPPPATH=['include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
     
 # Current version
-curnixstversion = '0.4'
+curnixstversion = '0.5'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
     print 'Stripping all binaries in the bin/%s directory...' % cur_os

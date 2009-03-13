@@ -12,11 +12,7 @@ DOCS
 
 
 RELEASE
-- Remove/disable asserts in lua code
-- Reenable MD5 checking for InitDeltaBins()
 - Final bindeltas file
-- about, nixstaller version etc
-- Enable RELEASE, disable libsu logging
 
 
 

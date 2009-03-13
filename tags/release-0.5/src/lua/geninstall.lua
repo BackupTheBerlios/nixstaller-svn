@@ -290,7 +290,7 @@ function InitDeltaBins()
         elseif not binsums or not deltasizes then
             print("WARNING: Incorrect bin delta file, regenerating...")
             regen = true
-        elseif false then -- UNDONE: Remove!
+        else
             for bin, sum in pairs(binsums) do
                 if io.md5(bin) ~= sum then
                     print("WARNING: One or more binaries changed since last time, regenerating bin delta file...")
@@ -303,10 +303,10 @@ function InitDeltaBins()
         if not regen then
             return
         end
+    else
+        print("WARNING: No bin delta file, regenerating...")
     end
     -- Generate new one
-    
-    print("WARNING: No bin delta file, regenerating...")
     
     local allbins = GetAllBins(ndir .. "/bin", { "fltk", "ncurs", "gtk" })
     
