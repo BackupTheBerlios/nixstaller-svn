@@ -292,7 +292,7 @@ function InitDeltaBins()
             regen = true
         else
             for bin, sum in pairs(binsums) do
-                if io.md5(bin) ~= sum then
+                if io.md5(ndir .. "/" .. bin) ~= sum then
                     print("WARNING: One or more binaries changed since last time, regenerating bin delta file...")
                     regen = true
                     break

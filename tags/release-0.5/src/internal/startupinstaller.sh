@@ -143,7 +143,7 @@ launchfrontend()
         
         if [ -z "$STATIC" ]; then
             [ $ARCH_TYPE != "lzma" ] || haslibs "${DIR}/lzma-decode" || continue
-            haslibs "${LC}/edelta" || continue
+            haslibs "${DIR}/edelta" || continue
         fi
 
         prepbin "$DIR" "$FR"

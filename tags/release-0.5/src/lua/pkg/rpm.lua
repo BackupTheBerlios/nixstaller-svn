@@ -27,7 +27,7 @@ function getpkgpath()
 end
 
 function present()
-    return (os.execute("(rpm --version) >/dev/null 2>&1") == 0)
+    return os.osname == "linux" and (os.execute("(rpm --version) >/dev/null 2>&1") == 0)
 end
 
 function missingtool()

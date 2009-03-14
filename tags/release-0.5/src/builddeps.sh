@@ -236,7 +236,8 @@ if [ -z "$BUILD" ]; then
     elif [ $CURRENT_OS = "sunos" ]; then
         BUILD="zlib png jpeg xft fltk lua ncurses lzma elf curl"
     else
-        BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf curl"
+        BUILD="zlib png jpeg fltk lua ncurses lzma elf curl"
+        [ $CURRENT_OS != "freebsd" ] && BUILD="stdcxx $BUILD"
     fi
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
