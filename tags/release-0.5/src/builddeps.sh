@@ -47,7 +47,7 @@ restoredir()
 
 buildzlib()
 {
-    get "http://freshmeat.net/redir/zlib/12352/url_tgz/zlib-1.2.3.tar.gz"
+    get "http://www.gzip.org/zlib/zlib-1.2.3.tar.gz"
     untar "zlib-1.2.3.tar.gz"
     dodir "zlib-1.2.3/"
     ./configure --prefix=$DESTPREFIX && make && make install && make clean
