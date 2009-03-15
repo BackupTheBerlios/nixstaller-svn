@@ -290,7 +290,7 @@ function InitDeltaBins()
         elseif not binsums or not deltasizes then
             print("WARNING: Incorrect bin delta file, regenerating...")
             regen = true
-        else
+        elseif false then -- UNDONE: REMOVE!
             for bin, sum in pairs(binsums) do
                 if io.md5(ndir .. "/" .. bin) ~= sum then
                     print("WARNING: One or more binaries changed since last time, regenerating bin delta file...")
