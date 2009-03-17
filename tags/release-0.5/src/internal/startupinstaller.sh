@@ -23,16 +23,16 @@
 
 UNATTENDED=
 
-# Uses edelta to reconstruct frontend binaries
+# Uses xdelta3 to reconstruct frontend binaries
 # $1: Binary path
 # $2: source file
 # $3: diff file
-edelta()
+xdelta3()
 {
     unlzma "$3" "$1"
     
     mv "$3" "$3.tmp"
-    "$1/edelta" -q patch "$2" "$3" "$3.tmp" >/dev/null
+    "$1/xdelta3" -dfs "$2" "$3.tmp" "$3" >/dev/null
 }
 
 # Unpacks $1.lzma to lzma and removes $1.lzma
@@ -76,7 +76,7 @@ prepbin()
                 unlzma "$BIN" "$1"
             else
                 unlzma "$BIN.diff" "$1"
-                edelta "$1" "$PREV" "$BIN.diff"
+                xdelta3 "$1" "$PREV" "$BIN.diff"
                 mv "$BIN.diff" "$BIN"
             fi
         fi
@@ -143,7 +143,7 @@ launchfrontend()
         
         if [ -z "$STATIC" ]; then
             [ $ARCH_TYPE != "lzma" ] || haslibs "${DIR}/lzma-decode" || continue
-            haslibs "${DIR}/edelta" || continue
+            haslibs "${DIR}/xdelta3" || continue
         fi
 
         prepbin "$DIR" "$FR"

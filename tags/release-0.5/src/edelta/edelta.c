@@ -49,7 +49,6 @@ hash_match* matches;
 
 FILE *res;
 
-
 delta_entry* storedelta(int d, int width, int offset)
 {
 	const int min_elems = 64;
@@ -603,7 +602,17 @@ void diff(buffer* base, buffer* version)
 					if(++num_matches >= max_matches)
 					{
 						max_matches *= 2;
+                        // HACK HACK HACK!: if edelta's mem consumption gets too high, do a bit less
+                        // rigerous mem allocating...
+                        const unsigned long maxmem = (1024*1024*32) / sizeof(hash_match); // 32 MB
+                        if (maxmem < max_matches)
+                            max_matches = (num_matches + 5000);
 						matches = (hash_match*) realloc(matches, sizeof(hash_match) * max_matches);
+                        if (!matches)
+                        {
+                            printf("ERROR: Out of memory (approx %u kB wanted)\n", sizeof(hash_match) * max_matches / 1024);
+                            exit(1);
+                        }
 					}
 
 					if(e->run!=run)
@@ -962,7 +971,6 @@ int main(int argc, char** argv)
 	}
 	
 	else usage(appname);
-
 
 	return 0;
 }

@@ -280,6 +280,12 @@ function GetRelBinPath(bin)
     return relbinpath
 end
 
+function DiffBin(base, bin, dest)
+    if os.execute(string.format("\"%s\" -0 -f -s \"%s\" \"%s\" \"%s\"", Xdelta3Bin, base, bin, dest)) ~= 0 then
+        ThrowError("Failed to diff %s with %s!", base, bin)
+    end
+end
+
 function InitDeltaBins()
     local path = string.format("%s/bin/bindeltas.lua", ndir)
     if os.fileexists(path) then
@@ -316,7 +322,7 @@ function InitDeltaBins()
     for _, base in ipairs(allbins) do
         for _, bin in ipairs(allbins) do
             if bin ~= base then
-                os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s\"", EdeltaBin, base, bin, tmpfile))
+                DiffBin(base, bin, tmpfile)
                 local rbin = GetRelBinPath(bin)
                 deltasizes[rbin] = deltasizes[rbin] or { }
                 deltasizes[rbin][GetRelBinPath(base)] = os.filesize(tmpfile)
@@ -324,7 +330,7 @@ function InitDeltaBins()
         end
     end
     os.remove(tmpfile)
-    
+        
     -- Store results
     local out, msg = io.open(path, "w")
     if not out then
@@ -452,7 +458,7 @@ function Init()
     
     LoadPackage()
     
-    -- Find a LZMA and edelta bin which we can use
+    -- Find a LZMA and a xdelta3 bin which we can use
     local basebindir = string.format("%s/bin/%s/%s", ndir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
@@ -469,18 +475,18 @@ function Init()
     for lc in TraverseBinLibDir(basebindir, "^libc") do
         local lcdir = string.format("%s/%s", basebindir, lc)
         local lz = lcdir .. "/" .. "lzma"
-        local ed = lcdir .. "/" .. "edelta"
+        local xd3 = lcdir .. "/" .. "xdelta3"
 
         -- File exists and 'ldd' doesn't report missing lib deps?
         if validbin(lz) then
             LZMABin = lz
         end
         
-        if validbin(ed) then
-            EdeltaBin = ed
+        if validbin(xd3) then
+            Xdelta3Bin = xd3
         end
         
-        if LZMABin and EdeltaBin then
+        if LZMABin and Xdelta3Bin then
             break
         end
     end
@@ -489,17 +495,17 @@ function Init()
     local path = basebindir .. "/lzma"
     if not LZMABin and os.fileexists(path) then
         LZMABin = path
-    end
+    end   
     
-    path = basebindir .. "/edelta"
-    if not EdeltaBin and os.fileexists(path) then
-        EdeltaBin = path
+    path = basebindir .. "/xdelta3"
+    if not Xdelta3Bin and os.fileexists(path) then
+        Xdelta3Bin = path
     end
     
     if not LZMABin then
         ThrowError("Could not find a suitable LZMA encoder")
-    elseif not EdeltaBin then
-        ThrowError("Could not find a suitable edelta encoder")
+    elseif not Xdelta3Bin then
+        ThrowError("Could not find a suitable xdelta3 encoder")        
     end
     
     InitDeltaBins()
@@ -606,7 +612,7 @@ function PrepareArchive()
     print("Preparing/copying frontend binaries")
     
     local binlist, frlist = { }, { }
-    local copybins = { "edelta", "surunner", "lock" }
+    local copybins = { "xdelta3", "surunner", "lock" }
     
     if cfg.archivetype == "lzma" then
         table.insert(copybins, "lzma-decode")
@@ -674,17 +680,15 @@ function PrepareArchive()
             end
         else
             local base = optdeltas[relbinpath].base
-            if os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s.diff\"", EdeltaBin,
-                                        ndir .. "/" .. base, bin, destpath)) ~= 0 then
-                ThrowError("Failed to diff binary: %s", relbinpath)
-            end
+            local destdiff = destpath .. ".diff"
+            DiffBin(ndir .. "/" .. base, bin, destdiff)
             
             if cfg.archivetype == "lzma" then
-                if os.execute(string.format("\"%s\" e \"%s.diff\" \"%s.diff.lzma\" 2>/dev/null", LZMABin,
-                            destpath, destpath)) ~= 0 then
+                if os.execute(string.format("\"%s\" e \"%s\" \"%s.lzma\" 2>/dev/null", LZMABin,
+                            destdiff, destdiff)) ~= 0 then
                     ThrowError("Failed to pack binary %s", relbinpath)
                 end
-                os.remove(destpath .. ".diff")
+                os.remove(destdiff)
             end
         end
     end

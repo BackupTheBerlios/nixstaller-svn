@@ -87,13 +87,6 @@ distfiles_src = distfiles_user + [
 'src/docs/ncurs.png',
 'src/docs/nixstaller.texi',
 'src/docs/styles.css',
-'src/edelta/Contributors',
-'src/edelta/COPYING',
-'src/edelta/edelta.c',
-'src/edelta/edelta.h',
-'src/edelta/README',
-'src/edelta/sha1.c',
-'src/edelta/version.h',
 'src/fltk/dirdialog.cpp',
 'src/fltk/dirdialog.h',
 'src/fltk/fltk.cpp',
@@ -322,7 +315,7 @@ def getallbins(onlyforcuros):
         directory = stack.pop()
         for file in os.listdir(directory):
             fullname = os.path.join(directory, file)
-            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "edelta" or file == "lzma" or file == "surunner" or file == "lock":
+            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "xdelta3" or file == "lzma" or file == "surunner" or file == "lock":
                 bins.append(fullname)
             if os.path.isdir(fullname) and not os.path.islink(fullname):
                 stack.append(fullname)
@@ -442,7 +435,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='')
+env = Environment(options = opts, CCFLAGS = "-Wall", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=["-DNDEBUG"])
 
 Export("env")
 
@@ -727,12 +720,6 @@ elif env.GetOption('clean'):
     Execute(Delete('.sconsign.dblite'))
 
 
-# Builds bsdiff binaries
-if cur_os == "openbsd":
-    edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="", LINKFLAGS="-static")
-else:
-    edelta = env.Program('edelta/edelta', ['edelta/edelta.c', 'edelta/sha1.c'], LIBS="")
-
 # Builds libsu
 libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
@@ -776,6 +763,6 @@ Default(env.Install(bin_dir, Flatten(fltk) + Flatten(gtk)))
 Default(env.Install(lib_dir, Flatten(libsu) + Flatten(main)))
 
 if cur_os == 'openbsd':
-    Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(edelta) + Flatten(surunner)))
+    Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(surunner)))
 else:
-    Default(env.Install(bin_dir, Flatten(ncurses) + Flatten(edelta) + Flatten(surunner)))
+    Default(env.Install(bin_dir, Flatten(ncurses) + Flatten(surunner)))

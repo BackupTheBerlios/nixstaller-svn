@@ -112,7 +112,8 @@ buildlua()
     get "http://www.lua.org/ftp/lua-5.1.4.tar.gz"
     untar "lua-5.1.4.tar.gz"
     dodir "lua-5.1.4"
-    CFLAGS="-Os -Wall -DLUA_USE_POSIX"
+    CFLAGS="-Wall -DLUA_USE_POSIX"
+    [ $CURRENT_OS != "netbsd" ] && CFLAGS="-Os $CFLAGS"
     if [ $CURRENT_OS = "darwin" ]; then
         make macosx CFLAGS="$CFLAGS" && make install INSTALL_TOP=$DESTPREFIX
     else
@@ -164,23 +165,36 @@ buildrpm()
     restoredir
 }
 
+buildxdelta3()
+{
+    get "http://xdelta.googlecode.com/files/xdelta3.0v2.tar.gz"
+    untar "xdelta3.0v2.tar.gz"
+    dodir "xdelta3.0v"
+    # Don't use Makefile, use some custom flags/settings do decrease bin size a lot
+    [ $CURRENT_OS = "openbsd" ] && LFLAGS="-static" || LFLAGS=
+    gcc -Os xdelta3.c -o xdelta3 -DGENERIC_ENCODE_TABLES=0 -DREGRESSION_TEST=0 -DSECONDARY_DJW=0 -DSECONDARY_FGK=0 -DXD3_DEBUG=0 -DXD3_MAIN=1 -DXD3_POSIX=1 -DXD3_USE_LARGEFILE64=1 $LFLAGS
+    strip -s xdelta3
+    mkdir -p "$DESTPREFIX/bin"
+    cp xdelta3 "$DESTPREFIX/bin"
+}
+
 buildlzma()
 {
     get "http://heanet.dl.sourceforge.net/sourceforge/sevenzip/lzma457.tar.bz2"
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
-	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" ]; then
+    [ $CURRENT_OS = "openbsd" ] && LFLAGS="-static" || LFLAGS=
+	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" -a $CURRENT_OS != "openbsd" ]; then
 		$MAKE -f makefile.gcc CXX='g++ -Os'
 	else
-		$MAKE -f makefile.gcc CXX='gcc -Os' LDFLAGS="-L$DESTPREFIX/lib" LIB='-lstd -lsupc++ -lm'
+		$MAKE -f makefile.gcc CXX='gcc -Os' LDFLAGS="-L$DESTPREFIX/lib $LFLAGS" LIB='-lstd -lsupc++ -lm'
 	fi
     mkdir -p "$DESTPREFIX/bin"
     cp lzma "$DESTPREFIX/bin"
     restoredir
     dodir "C/Compress/Lzma"
     patch < "$SRCDIR"/lzmastdout.diff
-    [ $CURRENT_OS = "openbsd" ] && LFLAGS="-static" || LFLAGS=
     gcc -Os LzmaStateDecode.c LzmaStateTest.c -o lzma-decode $LFLAGS
     cp lzma-decode "$DESTPREFIX/bin"
     restoredir
@@ -232,11 +246,11 @@ BUILD="$*"
 
 if [ -z "$BUILD" ]; then
 	if [ $CURRENT_OS = "darwin" ]; then
-		BUILD="png jpeg fltk lua ncurses lzma elf curl"
+		BUILD="png jpeg fltk lua ncurses xdelta3 lzma elf curl"
     elif [ $CURRENT_OS = "sunos" ]; then
-        BUILD="zlib png jpeg xft fltk lua ncurses lzma elf curl"
+        BUILD="zlib png jpeg xft fltk lua ncurses xdelta3 lzma elf curl"
     else
-        BUILD="zlib png jpeg fltk lua ncurses lzma elf curl"
+        BUILD="zlib png jpeg fltk lua ncurses xdelta3 lzma elf curl"
         [ $CURRENT_OS != "freebsd" ] && BUILD="stdcxx $BUILD"
     fi
 #     if [ `uname` = "Linux" ]; then
@@ -256,6 +270,7 @@ do
         ncurses ) buildncurses ;;
         beecrypt ) buildbeecrypt ;;
         rpm ) buildrpm ;;
+        xdelta3 ) buildxdelta3 ;;
         lzma ) buildlzma ;;
         elf ) buildelf ;;
         curl ) buildcurl ;;
