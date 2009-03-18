@@ -16,8 +16,7 @@ Nixstaller is created with the following goals in mind:
 <li>Very few dependencies, especially for the end user.</li>
 <li>Support different frontends, to make sure that the installer will run on as much as possible systems and possibly have a native look.</li>
 <li>Make the creation of installers both easy and flexible.</li>
-<li>Installed software from Nixstaller should ideally be managed by the user's package manager, if not possible scripts will be provided.</li>
-<li>Dependency handling should not mess with existing files or install duplicate files.</li>
+<li>When using 'Package Mode' (see below), the installer's software should ideally be installed by the user's package manager, if not possible scripts will be provided to manage the software. All files, including dependencies, should not conflict with existing files or disturb the package manager.</li>
 </ul>
 
 <h3>Current Features</h3>
@@ -25,7 +24,7 @@ Most of the feature goals are already implemented, though in future releases man
 
 <h4>Supported Systems</h4>
 Nixstaller runs on many different systems, the table below lists those which are currently supported.
-<table border="1" summary="Supported systems">
+<table border="1" style="border-width: 1;" summary="Supported systems">
   <tbody>
     <tr>
       <th>OS</th>
@@ -79,19 +78,17 @@ With attended installations frontends are used to communicate with the end user.
 <li>The FLTK frontend is a graphic frontend using X11. Because it's linked staticly it runs on almost every system which has X11 running.</li>
 <li>The GTK+2 frontend is also a graphic frontend, but will only work with systems which have GTK 2.4 and later. For systems such as those using Gnome it will have a 'native' look.</li>
 </ul>
-When the installer is run, a suitable frontend is automatically choosen (in order: GTK+2, FLTK, ncurses). The install creator can decide which frontends should be included.<br>
+When the installer is run, a suitable frontend is automatically choosen (in order: GTK+2, FLTK, ncurses). The install creator can decide which frontends should be included. As soon as a frontend is launched the user will be presented by several 'installation screens'. These screens are used to communicate with the user and can be used to show an intro, let the user fill in some info, show the installation progress etc. A range of predefined screens exist for most common operations. It's also possible to create new installation screens. The install creator can place a range of different 'widgets' on newly created screens, such as inputfields, checkboxes and images.<br>
 <br>
 Unattended installations don't need any user interaction. The installation process is configured through commandline parameters and any output is directly printed to the console.
 
-<h4>Installation Process</h4>
-As been said, the user can control the installation process. In Nixstaller this is accomplished by the usage of 'installation screens'. There are a few predefined installation screens, that will let the user select destination paths, watch the installation progress, show an intro (optionally with graphics) etc. New installation screens can also be created manually. The install creator can place a range of different 'widgets' on newly created screens, such as inputfields, checkboxes and images.<br>
-<br>
-The creation of new screens, the installation process itself and configuration of the installer is all done via Lua scripts. Lua is a simple and easy to read scripting language. More info can be found on <a href="http://www.lua.org">the Lua homepage</a>. The Nixstaller manual also has an extensive Lua guide.<br>
+<h4>Configuration</h4>
+The creation of new screens, the installation process itself and configuration of the installer is all done via Lua scripts. Lua is a simple and easy to read and write scripting language. More info can be found on <a href="http://www.lua.org">the Lua homepage</a>. The Nixstaller manual also has an extensive Lua guide.<br>
 <br>
 Nixstaller has extended the Lua libraries with a whole range of new functions. These functions are used to communicate with the user's OS (Operating System), interact with the user, install desktop menu entries, extract installation files etc.
 
 <h4>Installation Types</h4>
-Nixstaller is flexible about how the software is installed. Some examples are simply extracting files to a specified location and a installer that will compile software. Nixstaller also has a special method, called 'Package Mode', which can be used to let the user's package manager package and install the software.<br>
+Nixstaller is flexible about how the software is installed. Some examples are installers that simply extract some files to a specified location or an installer that will compile software. Nixstaller also has a special installation type called 'Package Mode' which can be used to let the user's package manager package and install the software.<br>
 <br>
 Package Mode is especially handy for software managing (uninstallation, updating). Currently the following package managers are supported: rpm, dpkg (deb), pacman (arch linux) and installpkg (slackware). If the installer is unable to use a package manager (or told not to), the installer will instead simply install the files and create an uninstallation script. When this script is called, it will verify all installed files with MD5 sums before they are removed.
 
