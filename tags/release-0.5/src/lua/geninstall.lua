@@ -544,6 +544,7 @@ function PrepareArchive()
     RequiredCopy(ndir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/internal/utils.sh", confdir .. "/tmp")
     RequiredCopy(ndir .. "/src/internal/about", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/internal/start", confdir .. "/tmp")
     
     -- Terminfo's for BSD's
     for _, tos in ipairs(cfg.targetos) do

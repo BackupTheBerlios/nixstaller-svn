@@ -202,6 +202,7 @@ done
 # If nothing found, check for any static bins (ie. openbsd ncurses)
 DIR="bin/$CURRENT_OS/$CURRENT_ARCH"
 if [ $ARCH_TYPE != "lzma" -o -f "${DIR}/lzma-decode" ]; then
+    [ $CURRENT_OS = "openbsd" ] && echo $FRONTENDS | grep -e "fltk" -e "gtk" >/dev/null && echo "NOTE: Graphical frontends are only supported for OpenBSD 4.4."
     launchfrontend "$DIR" 1
 fi
 
