@@ -1,5 +1,6 @@
 OVERALL
 - OpenBSD GUI bins? (update notes, changelog)
+- Remove edelta if xdelta3 seems OK
 
 
 TEST
@@ -42,6 +43,7 @@ OVERALL
 - Configurable background parts (background images)
 - Seperate dep installing and collecting? --> Allows to configure them during installation
 - Dump lib info when no frontend could be found (so user can install compat packages)
+- Cleaner way for telling where surunner is (via commandline arg?)
 
 
 PACKAGING

@@ -28,9 +28,7 @@ UNATTENDED=
 # $2: source file
 # $3: diff file
 xdelta3()
-{
-    unlzma "$3" "$1"
-    
+{   
     mv "$3" "$3.tmp"
     "$1/xdelta3" -dfs "$2" "$3.tmp" "$3" >/dev/null
 }
@@ -47,10 +45,12 @@ unlzma()
 
 # Prepares frontend binary (extracting and patching)
 # $1: Binary path
-# $2: frontend
+# $2: lzma bin dir
+# $3: xdelta3 bin dir
+# $4: frontend
 prepbin()
 {
-    BIN="$1/$2"
+    BIN="$1/$4"
     PATCHORDER="$BIN"
     TOPBIN=
     
@@ -73,10 +73,10 @@ prepbin()
     do
         if [ ! -f "$BIN" ]; then # Not prepared yet?
             if [ "$BIN" = "$TOPBIN" ]; then
-                unlzma "$BIN" "$1"
+                unlzma "$BIN" "$2"
             else
-                unlzma "$BIN.diff" "$1"
-                xdelta3 "$1" "$PREV" "$BIN.diff"
+                unlzma "$BIN.diff" "$2"
+                xdelta3 "$3" "$PREV" "$BIN.diff"
                 mv "$BIN.diff" "$BIN"
             fi
         fi
@@ -134,19 +134,39 @@ launchfrontend()
 {
     DIR="$1"
     STATIC=$2
+    LZDIR=
+    XDDIR=
     
+
+    if [ $ARCH_TYPE = "lzma" ]; then
+        if [ -f "${DIR}/lzma-decode" ]; then
+            [ ! -z "$STATIC" ] || haslibs "${DIR}/lzma-decode" && LZDIR="${DIR}"
+        elif [ -f "bin/$CURRENT_OS/$CURRENT_ARCH/lzma-decode" ]; then
+            LZDIR="bin/$CURRENT_OS/$CURRENT_ARCH"
+        fi
+        
+        if [ -z "$LZDIR" ]; then
+            return # No usable lzma-decoder
+        fi
+    fi
+    
+    if [ -f "${DIR}/xdelta3" ]; then
+        [ ! -z "$STATIC" ] || haslibs "${DIR}/xdelta3" && XDDIR="${DIR}"
+    elif [ -f "bin/$CURRENT_OS/$CURRENT_ARCH/xdelta3" ]; then
+        XDDIR="bin/$CURRENT_OS/$CURRENT_ARCH"
+    fi
+    
+    if [ -z "$XDDIR" ]; then
+        return # No usable xdelta3
+    fi
+
     for FR in $FRONTENDS
     do
         if [ -z "$DISPLAY" -a $FR != "ncurs" -a -z "$UNATTENDED" ]; then
             continue
         fi
         
-        if [ -z "$STATIC" ]; then
-            [ $ARCH_TYPE != "lzma" ] || haslibs "${DIR}/lzma-decode" || continue
-            haslibs "${DIR}/xdelta3" || continue
-        fi
-
-        prepbin "$DIR" "$FR"
+        prepbin "$DIR" "$LZDIR" "$XDDIR" "$FR"
         
         if [ -f "${DIR}/$FR" ]; then
             FRBIN="${DIR}/$FR"
@@ -191,20 +211,14 @@ do
     if [ ! -d "${LC}" ]; then
         continue
     fi
-
-    if [ $ARCH_TYPE = "lzma" -a ! -f "${LC}/lzma-decode" ]; then
-        continue # No usable lzma-decoder
-    fi
     
     launchfrontend "$LC"
 done
 
 # If nothing found, check for any static bins (ie. openbsd ncurses)
 DIR="bin/$CURRENT_OS/$CURRENT_ARCH"
-if [ $ARCH_TYPE != "lzma" -o -f "${DIR}/lzma-decode" ]; then
-    [ $CURRENT_OS = "openbsd" ] && echo $FRONTENDS | grep -e "fltk" -e "gtk" >/dev/null && echo "NOTE: Graphical frontends are only supported for OpenBSD 4.4."
-    launchfrontend "$DIR" 1
-fi
+[ $CURRENT_OS = "openbsd" ] && echo $FRONTENDS | grep -e "fltk" -e "gtk" >/dev/null && echo "NOTE: Graphical frontends are only supported for OpenBSD 4.4."
+launchfrontend "$DIR" 1
 
 
 echo "Error: Couldn't find any suitable frontend for your system"
