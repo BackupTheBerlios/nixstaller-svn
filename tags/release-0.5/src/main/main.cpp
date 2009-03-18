@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     PrintIntro();
 
     const char *surunnerpath = dirname(CreateText(argv[0]));
-    if (!FileExists(CreateText("%s/surunner")))
+    if (!FileExists(CreateText("%s/surunner", surunnerpath)))
         surunnerpath = CreateText("%s/..", surunnerpath); // HACK: for static surunner bins
     LIBSU::SetRunnerPath(surunnerpath);
     
