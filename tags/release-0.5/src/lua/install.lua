@@ -25,7 +25,6 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
 
--- UNDONE: Function name?
 function install.extract(luaout)
     local archives = { } -- Files to extract
     
