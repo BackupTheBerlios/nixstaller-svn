@@ -457,12 +457,12 @@ if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc"))
 elif cur_arch == 'amd64':
     cur_arch = "x86_64"
 
-if cur_os != "sunos":
+if cur_os == "linux":
     env.Append(CCFLAGS = Split('$CCFLAGS -ffunction-sections -fdata-sections'))
     env.Append(LINKFLAGS = Split('$LINKFLAGS -Wl,--gc-sections'))
 
-if cur_os == "netbsd":
-    env.Append(CCFLAGS=Split('$CCFLAGS -O2')) # -Os segfaults on NetBSD, so use O2 instead
+if cur_os == "netbsd" or cur_os == "freebsd":
+    env.Append(CCFLAGS=Split('$CCFLAGS -O2')) # -Os segfaults on NetBSD/FreeBSD exceptions, so use O2 instead
 else:
     env.Append(CCFLAGS=Split('$CCFLAGS -Os'))
 

@@ -18,10 +18,11 @@ CPPFLAGS="-I$DESTPREFIX/include"
 export LDFLAGS
 export CPPFLAGS
 
-if [ $CURRENT_OS = "sunos" ]; then
+if [ $CURRENT_OS != "linux" ]; then
     OPTCFLAGS="-Os"
     OPTLFLAGS=
 else
+    # Unfortunaly only Linux seems to support these optimzations ... :(
     OPTCFLAGS="-Os -ffunction-sections -fdata-sections"
     OPTLFLAGS="-Wl,--gc-sections"
 fi
