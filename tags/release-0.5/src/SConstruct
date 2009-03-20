@@ -457,6 +457,10 @@ if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc"))
 elif cur_arch == 'amd64':
     cur_arch = "x86_64"
 
+if cur_os != "sunos":
+    env.Append(CCFLAGS = Split('$CCFLAGS -ffunction-sections -fdata-sections'))
+    env.Append(LINKFLAGS = Split('$LINKFLAGS -Wl,--gc-sections'))
+
 if cur_os == "netbsd":
     env.Append(CCFLAGS=Split('$CCFLAGS -O2')) # -Os segfaults on NetBSD, so use O2 instead
 else:
@@ -725,8 +729,6 @@ elif env.GetOption('clean'):
     Execute(Delete('.sconsign.dblite'))
 
 
-env.Append(CCFLAGS = Split('$CCFLAGS -ffunction-sections -fdata-sections'))
-
 # Builds libsu
 libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 
@@ -737,8 +739,6 @@ lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
 main = env.Library("main/main", Split('libmd5/md5.c main/install/attinstall.cpp main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/install/unattinstall.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
 
 env.Prepend(LIBS = Split('main su lua elf curl z'))
-
-env.Append(LINKFLAGS = Split('$LINKFLAGS -Wl,--gc-sections'))
 
 # UNDONE?
 if cur_os == 'netbsd':
