@@ -4,6 +4,5 @@ Host system: x86 OpenSolaris 2008.11
 
 For library versions and build options see builddeps.sh.
 
-In order to make everything work on Solaris 10 librt has linked to be linked for nanosleep(). Also libXft must be
-linked static with a version not coming from Solaris 10, as that version segfaults with FLTK. The first is done automatically in SConstruct
-and libXft can be build via builddeps.sh.
+In order to make everything work on Solaris 10 librt has to be linked for nanosleep(). Also libXft must be
+linked static with a version not coming from Solaris 10, as that version segfaults with FLTK. The first is done automatically in SConstruct and libXft can be build via builddeps.sh.

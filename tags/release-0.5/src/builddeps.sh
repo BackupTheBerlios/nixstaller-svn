@@ -256,11 +256,11 @@ BUILD="$*"
 
 if [ -z "$BUILD" ]; then
 	if [ $CURRENT_OS = "darwin" ]; then
-		BUILD="png jpeg fltk lua ncurses xdelta3 lzma elf curl"
+		BUILD="png jpeg fltk lua ncurses lzma elf curl"
     elif [ $CURRENT_OS = "sunos" ]; then
-        BUILD="zlib png jpeg xft fltk lua ncurses xdelta3 lzma elf curl"
+        BUILD="zlib png jpeg xft fltk lua ncurses lzma elf curl"
     else
-        BUILD="zlib png jpeg fltk lua ncurses xdelta3 lzma elf curl"
+        BUILD="zlib png jpeg fltk lua ncurses lzma elf curl"
         [ $CURRENT_OS != "freebsd" ] && BUILD="stdcxx $BUILD"
     fi
 #     if [ `uname` = "Linux" ]; then

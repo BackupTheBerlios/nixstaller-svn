@@ -23,67 +23,6 @@
 
 UNATTENDED=
 
-# Uses xdelta3 to reconstruct frontend binaries
-# $1: Binary path
-# $2: source file
-# $3: diff file
-xdelta3()
-{   
-    mv "$3" "$3.tmp"
-    "$1/xdelta3" -dfs "$2" "$3.tmp" "$3" >/dev/null
-}
-
-# Unpacks $1.lzma to lzma and removes $1.lzma
-# $1: File to handle
-# $2: Binary path
-unlzma()
-{
-    if [ $ARCH_TYPE = "lzma" -a ! -z "$1" -a -f "$1".lzma ]; then
-        "${2}/lzma-decode" "${1}.lzma" "$1" 2>&1 >/dev/null && rm "${1}.lzma"
-    fi
-}
-
-# Prepares frontend binary (extracting and patching)
-# $1: Binary path
-# $2: lzma bin dir
-# $3: xdelta3 bin dir
-# $4: frontend
-prepbin()
-{
-    BIN="$1/$4"
-    PATCHORDER="$BIN"
-    TOPBIN=
-    
-    while [ ! -z "$BIN" ]
-    do
-        BASE=`awk '$1=="'"$BIN"'"{print $2}' ./bin/deltas`
-        
-        if [ -z "$BASE" ]; then
-            # Top bin
-            TOPBIN="$BIN"
-            BIN=
-        else
-            BIN="$BASE"
-            PATCHORDER="$BASE $PATCHORDER"
-        fi
-    done
-    
-    PREV=
-    for BIN in $PATCHORDER
-    do
-        if [ ! -f "$BIN" ]; then # Not prepared yet?
-            if [ "$BIN" = "$TOPBIN" ]; then
-                unlzma "$BIN" "$2"
-            else
-                unlzma "$BIN.diff" "$2"
-                xdelta3 "$3" "$PREV" "$BIN.diff"
-                mv "$BIN.diff" "$BIN"
-            fi
-        fi
-        PREV="$BIN"
-    done
-}
-
 # $1: Base directory
 # $2: Base lib name
 createliblist()
@@ -130,48 +69,71 @@ configure()
     done
 }
 
+# Taken from makeself.sh
+progress()
+{
+    while read a; do
+        printf .
+    done
+}
+
+extractsub()
+{
+    printf "Uncompressing sub archive"
+    if [ $ARCH_TYPE = "gzip" ]; then
+        cat subarch | gzip -cd | tar xvf - | progress
+    elif [ $ARCH_TYPE = "bzip2" ]; then
+        cat subarch | bzip2 -d | tar xvf - | progress
+    else # lzma
+        # Find usable lzma-decode binary
+        LZMA_DECODE=
+        for LC in `createliblist bin/$CURRENT_OS/$CURRENT_ARCH libc.so.`
+        do
+            if [ ! -d "${LC}" ]; then
+                continue
+            fi
+            
+            if [ -f "${LC}/lzma-decode" ]; then
+                if haslibs "${LC}/lzma-decode" ; then
+                    LZMA_DECODE="${LC}/lzma-decode"
+                    break
+                fi
+            fi
+        done
+        
+        if [ -z "$LZMA_DECODE" ]; then
+            # Static binary?
+            if [ -f "bin/$CURRENT_OS/$CURRENT_ARCH/lzma-decode" ]; then
+                LZMA_DECODE="bin/$CURRENT_OS/$CURRENT_ARCH/lzma-decode"
+            fi
+        fi
+        
+        if [ -z $LZMA_DECODE ]; then
+            echo "Error: No lzma decoder found for $CURRENT_OS/$CURRENT_ARCH"
+            exit 1
+        fi
+        
+        $LZMA_DECODE subarch - 2>/dev/null | tar xvf - | progress
+    fi
+    
+    echo
+}
+
 launchfrontend()
 {
     DIR="$1"
-    STATIC=$2
-    LZDIR=
-    XDDIR=
+    STATIC=$2  
     
-
-    if [ $ARCH_TYPE = "lzma" ]; then
-        if [ -f "${DIR}/lzma-decode" ]; then
-            [ ! -z "$STATIC" ] || haslibs "${DIR}/lzma-decode" && LZDIR="${DIR}"
-        elif [ -f "bin/$CURRENT_OS/$CURRENT_ARCH/lzma-decode" ]; then
-            LZDIR="bin/$CURRENT_OS/$CURRENT_ARCH"
-        fi
-        
-        if [ -z "$LZDIR" ]; then
-            return # No usable lzma-decoder
-        fi
-    fi
-    
-    if [ -f "${DIR}/xdelta3" ]; then
-        [ ! -z "$STATIC" ] || haslibs "${DIR}/xdelta3" && XDDIR="${DIR}"
-    elif [ -f "bin/$CURRENT_OS/$CURRENT_ARCH/xdelta3" ]; then
-        XDDIR="bin/$CURRENT_OS/$CURRENT_ARCH"
-    fi
-    
-    if [ -z "$XDDIR" ]; then
-        return # No usable xdelta3
-    fi
-
     for FR in $FRONTENDS
     do
         if [ -z "$DISPLAY" -a $FR != "ncurs" -a -z "$UNATTENDED" ]; then
             continue
         fi
         
-        prepbin "$DIR" "$LZDIR" "$XDDIR" "$FR"
-        
         if [ -f "${DIR}/$FR" ]; then
             FRBIN="${DIR}/$FR"
             
-            # deltas and lzma packed bins probably aren't executable yet
+            # Incase it isn't executable yet...
             # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
             chmod +x $FRBIN
             
@@ -199,9 +161,10 @@ launchfrontend()
 # Check which archive type to use
 ARCH_TYPE=`cat info`
 if [ -z "$ARCH_TYPE" ]; then
-    ARCH_TYPE="gzip"
+    ARCH_TYPE="lzma"
 fi
 
+extractsub
 configure $*
 
 touch frontendstarted # Frontend removes this file if it's started

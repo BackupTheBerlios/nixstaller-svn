@@ -1,13 +1,8 @@
 OVERALL
-- OpenBSD GUI bins? (update notes, changelog)
-- Remove edelta if xdelta3 seems OK
-- Rebuild deps/libs
-- Finalize builddeps.sh
-- Update all notes
 
 
 TEST
-- New delta code (mainly when new bins are ready and asserts)
+- New subarch stuff
 
 
 DOCS
@@ -16,7 +11,6 @@ DOCS
 
 
 RELEASE
-- Final bindeltas file
 
 
 

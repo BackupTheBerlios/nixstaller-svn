@@ -1406,7 +1406,7 @@ The script accepts the following commandline arguments:
 
 
 @section Dependencies
-After the project directory is created you can start adding dependencies if using Package Mode (it's handy to use the @minus{}@minus{}pkg and @minus{}@minus{}deps option when invoking genprojdir.sh). For each dependency, a @emph{dependency package} is used to store all the relevant files. These packages can be seen as @samp{mini project directories}. Dependency packages are stored inside the project's @file{deps/} directory. The file layout looks like this:
+After the project directory is created you can start adding dependencies if using Package Mode (it's handy to use the @minus{}@minus{}pkg option when invoking genprojdir.sh). For each dependency, a @emph{dependency package} is used to store all the relevant files. These packages can be seen as @samp{mini project directories}. Dependency packages are stored inside the project's @file{deps/} directory. The file layout looks like this:
 @itemize @bullet
     @item @file{Project Directory/}
     @itemize @bullet
@@ -2381,8 +2381,8 @@ This tutorial will assume BZFlag version 2.0.12
 
 @subsection Project Directory
 Again the @file{genprojdir.sh} script is used to generate a project directory:
-@codeblock{genprojdir.sh -i <pathtobzflaglogo>/side.bmp -n "BZFlag" @minus{}@minus{}pkg @minus{}@minus{}deps bzflag/}
-The @samp{<pathtobzflaglogo>} part should be replaced by the path where @file{side.bmp} can be found, in the BZFlag archive it is located inside the @file{bzflag-2.0.12/package/win32/nsis/} directory. Notice that this time the @command{@minus{}@minus{}pkg} and @command{@minus{}@minus{}deps} parameters are also passed, this will set up a template @file{package.lua} file and adds some handy Package Mode code to @file{run.lua}.@*
+@codeblock{genprojdir.sh -i <pathtobzflaglogo>/side.bmp -n "BZFlag" @minus{}@minus{}pkg bzflag/}
+The @samp{<pathtobzflaglogo>} part should be replaced by the path where @file{side.bmp} can be found, in the BZFlag archive it is located inside the @file{bzflag-2.0.12/package/win32/nsis/} directory. Notice that this time the @command{@minus{}@minus{}pkg} parameter is also passed, this will set up a template @file{package.lua} file and adds some handy Package Mode code to @file{run.lua}.@*
 @*
 Next we create a @file{welcome} file with the following content:
 @codeblock{BZFlag is a free online multiplayer cross-platform open source 3D tank
@@ -2431,7 +2431,7 @@ pkg.bins = @{ "bin/bzfs" , "bin/bzflag", "bin/bzadmin" @}}
 
 @subsection Dependencies
 Now we have collected the installation files it's time to worry about BZFlag's dependencies. We will use @command{deputil.sh} for this. The first step to @emph{scan} for any dependencies, to do so run the following command:
-@codeblock{deputil.sh -p bzflag/ bzflag/files_all/bin/*}
+@codeblock{deputil.sh scan -p bzflag/ bzflag/files_all/bin/*}
 This will dump all the (library) dependencies from the BZFlag binaries. The @command{-p} parameter is used to specify the project directory. The last parameters should contain all the binaries from BZFlag. Here is how the output will look like:
 @codeblock{Loaded 424 libraries filed by 104 templates.
 Scanning...
@@ -2768,7 +2768,6 @@ After compilation is done the binaries will be put in the @file{bin/} directory.
                 @item @file{fltk}
                 @item @file{gtk}
                 @item @file{ncurs}
-                @item @file{edelta}
                 @item @file{surunner}
                 @item @file{lock}
             @end itemize
@@ -2788,12 +2787,6 @@ The FLTK frontend.
 The GTK frontend.
 @item ncurs
 The ncurses frontend.
-@item edelta
-This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend binaries. @file{geninstall.lua} will create an optimal path from which binaries a diff should be made to get optimal size results. It's a bit complex algorithm, it will use several binaries to build another binary. For example a fltk linux/x86 binary may be @samp{diff'ed} with a gtk linux/x86 binary. The latter binary may be @samp{diff'ed} in turn with an gtk freebsd/86 binary. When the installer launches it will then first build the gtk linux/x86 binary from the gtk freebsd/x86 binary and after that build the fltk linux/86 binary from the gtk linux/86 binary. Using this algorithm the frontends will take up very less space.
-
-The data needed by the algorithm just discussed is stored inside @file{bin/bindeltas.lua}. This file is generated automatically by @file{geninstall.lua} when it doesn't exist, it's corrupted or any binaries are changed. For the latter reason and the fact it will take some time (re)generate this file, you may want to disable this temporary while developing.
-
-Note that the edelta version differs from the @uref{http://www.diku.dk/~jacobg/edelta/, original version} because it's modified in such way that it doesn't use compression (which makes the binary smaller and allows us to use other compression methods than gzip).
 @item lzma-decode
 @emph{Decodes} lzma encoded files. This is a much smaller version of the normal @file{lzma} binary and is included in the installer.
 @item surunner
@@ -2816,7 +2809,7 @@ This small utility is used to see if a file is locked (used by package code).
 @item @uref{http://quanta.kdewebdev.org/, Quanta+}: Good HTML editor used for the website.
 @item @uref{http://www.texinfo.org, texinfo} and texi2html: Used to create this documentation.
 @item @uref{http://www.berlios.de, BerliOS}: Project hosting.
-@item @uref{http://www.diku.dk/~jacobg/edelta/, edelta}: Used to create @samp{binary diffs} to decrease the size of frontend binaries.
+@item @uref{http://www.diku.dk/~jacobg/edelta/, edelta} (old): Before 0.5 this was used to create @samp{binary diffs} to decrease the size of frontend binaries.
 @item @uref{http://www.7-zip.org/sdk.html, lzma}: Very good compression algorithm.
 @item @uref{http://www.lua.org/, Lua}: Clean, easy and powerfull scripting language used by Nixstaller.
 @item @strong{InternetNightmare}: Suggestions, testing, feedback.

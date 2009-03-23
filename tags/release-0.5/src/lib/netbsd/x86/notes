@@ -1,5 +1,6 @@
 Notes for netbsd libs:
 
-Host system: x86 NetBSD 4.0
+Host system: x86 NetBSD 3.1
 
 See builddeps.sh for used compiler flags and package versions.
+FLTK examples failed to build, libraries were copied manually from the lib/ directory.

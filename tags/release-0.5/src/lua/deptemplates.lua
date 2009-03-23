@@ -228,6 +228,14 @@ libs = { "GL", "GLU", "GLcore", "IndirectGL", "OSMesa" },
 tags = { "common-desktop", "X11", "small" },
 }
 
+-- DRM
+newtemplate{
+name = "DRM",
+description = "Userspace Interface for Kernel DRM Services.",
+libs = { "drm", "drm_intel" },
+tags = { "X11", "small" },
+}
+
 -------------------------------------------------------------
 -- GTK
 -------------------------------------------------------------
