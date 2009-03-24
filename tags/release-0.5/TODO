@@ -1,26 +1,6 @@
 OVERALL
-
-
-TEST
-- New subarch stuff
-
-
-DOCS
-- CHANGELOG
-
-
-
-RELEASE
-
-
-
------------------------------------------------------------------------
-LATER
------------------------------------------------------------------------
-
-OVERALL
 - Add trap in geninstall.sh which cleans stuff?
-- Qt/KDE frontend
+- Qt/KDE frontend?
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
 - Better util.a configure testing?
@@ -68,6 +48,7 @@ NCURSES
 
 
 GTK
+- OpenBSD: Check why png's (and others?) don't load
 
 
 FLTK

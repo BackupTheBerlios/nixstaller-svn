@@ -29,7 +29,13 @@ distfiles_user = [
 'example/bzflag/run.lua',                                                               
 'example/bzflag/welcome',                                                               
 'example/cube/config.lua',                                                              
-'example/cube/files_all/FILES',                                                         
+'example/cube/files_all/FILES',
+'example/cube/files_all_x86',
+'example/cube/files_extra',
+'example/cube/files_freebsd_all',
+'example/cube/files_freebsd_x86',
+'example/cube/files_linux_all',
+'example/cube/files_linux_x86',
 'example/cube/lang/bulgarian/config.lua',                                               
 'example/cube/lang/bulgarian/strings',                                                  
 'example/cube/lang/dutch/config.lua',                                                   
@@ -40,7 +46,13 @@ distfiles_user = [
 'example/cube/lang/lithuanian/strings',                                                 
 'example/cube/run.lua',                                                                 
 'example/cube-unattended/config.lua',                                                   
-'example/cube-unattended/files_all/FILES',                                              
+'example/cube-unattended/files_all/FILES',
+'example/cube-unattended/files_all_x86',
+'example/cube-unattended/files_extra',
+'example/cube-unattended/files_freebsd_all',
+'example/cube-unattended/files_freebsd_x86',
+'example/cube-unattended/files_linux_all',
+'example/cube-unattended/files_linux_x86',
 'example/cube-unattended/lang/bulgarian/config.lua',                                    
 'example/cube-unattended/lang/bulgarian/strings',                                       
 'example/cube-unattended/lang/dutch/config.lua',                                        
@@ -53,7 +65,8 @@ distfiles_user = [
 'example/cube-unattended/welcome',                                                      
 'example/cube/welcome',                                                                 
 'example/simple/config.lua',                                                            
-'example/simple/files_all/README',                                                      
+'example/simple/files_all/README',
+'example/simple/files_extra',
 'example/simple/lang/bulgarian/config.lua',                                             
 'example/simple/lang/bulgarian/strings',                                                
 'example/simple/lang/dutch/config.lua',                                                 
@@ -68,6 +81,21 @@ distfiles_user = [
 'example/vim/files_all/FILES',
 'example/vim/files_extra/vim48x48.png',
 'example/vim/files_extra/vim48x48.xpm',
+'example/vim/files_all_x86',
+'example/vim/files_all_x86_64',
+'example/vim/files_freebsd_all',
+'example/vim/files_freebsd_x86',
+'example/vim/files_freebsd_x86_64',
+'example/vim/files_linux_all',
+'example/vim/files_linux_x86',
+'example/vim/files_linux_x86_64',
+'example/vim/files_netbsd_all',
+'example/vim/files_netbsd_x86',
+'example/vim/files_netbsd_x86_64',
+'example/vim/files_openbsd_all',
+'example/vim/files_openbsd_x86',
+'example/vim/files_sunos_all',
+'example/vim/files_sunos_x86',
 'example/vim/finish',
 'example/vim/lang/bulgarian/config.lua',
 'example/vim/lang/bulgarian/strings',
@@ -1156,12 +1184,9 @@ distfiles_src = distfiles_user + [
 'src/lib/linux/x86_64/libfltk_images.a',                                                           
 'src/lib/linux/x86_64/libjpeg.a',                                                                  
 'src/lib/linux/x86_64/liblua.a',                                                                   
-'src/lib/linux/x86_64/libmain.a',                                                                  
 'src/lib/linux/x86_64/libncursesw.a',                                                              
 'src/lib/linux/x86_64/libpng.a',                                                                   
 'src/lib/linux/x86_64/libstd.a',                                                                   
-'src/lib/linux/x86_64/libsu.a',                                                                    
-'src/lib/linux/x86_64/libutil.a',                                                                  
 'src/lib/linux/x86_64/libz.a',                                                                     
 'src/lib/linux/x86_64/notes',                                                                      
 'src/lib/linux/x86/libcurl.a',                                                                     
@@ -1170,12 +1195,10 @@ distfiles_src = distfiles_user + [
 'src/lib/linux/x86/libfltk_images.a',                                                              
 'src/lib/linux/x86/libjpeg.a',                                                                     
 'src/lib/linux/x86/liblua.a',                                                                      
-'src/lib/linux/x86/libmain.so',                                                                    
 'src/lib/linux/x86/libncursesw.a',                                                                 
 'src/lib/linux/x86/libpng.a',                                                                      
 'src/lib/linux/x86/libstd.a',                                                                      
 'src/lib/linux/x86/libsupc++.a',                                                                   
-'src/lib/linux/x86/libutil.a',                                                                     
 'src/lib/linux/x86/libz.a',                                                                        
 'src/lib/linux/x86/notes',                                                                         
 'src/libmd5/md5.c',                                                                                
@@ -1234,7 +1257,6 @@ distfiles_src = distfiles_user + [
 'src/lib/sunos/x86/notes',                                                                         
 'src/libsu/runner.c',                                                                              
 'src/libsu/SConstruct',                                                                            
-'src/libsu/su-config.h',                                                                           
 'src/libsu/terminal.cpp',                                                                          
 'src/libsu/TODO',                                                                                  
 'src/libsu/utils.cpp',                                                                             
@@ -1586,11 +1608,15 @@ if 'tardist' in COMMAND_LINE_TARGETS or 'tardev' in COMMAND_LINE_TARGETS:
             stack = [ dfile ]
             while stack:
                 directory = stack.pop()
+                emptydir = True
                 for sfile in glob.glob(directory + '/*'):
+                    emptydir = False
                     if os.path.isdir(sfile):
                         stack.append(sfile)
                     else:
                         tarredfile.add(sfile, 'nixstaller-'+curnixstversion+'/'+sfile)
+                if emptydir:
+                    tarredfile.add(dfile, 'nixstaller-'+curnixstversion+'/'+dfile, False)
         else:
             tarredfile.add(dfile, 'nixstaller-'+curnixstversion+'/'+dfile)
     tarredfile.close()

@@ -21,7 +21,7 @@ keep=$KEEP
 print_cmd_arg=""
 if type printf > /dev/null; then
     print_cmd="printf"
-    if [ `uname` != "OpenBSD" ]; then
+    if [ \`uname\` != "OpenBSD" ]; then
         print_cmd_arg="--"
     fi
 elif test -x /usr/ucb/echo; then

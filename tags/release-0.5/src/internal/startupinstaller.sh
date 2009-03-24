@@ -81,9 +81,9 @@ extractsub()
 {
     printf "Uncompressing sub archive"
     if [ $ARCH_TYPE = "gzip" ]; then
-        cat subarch | gzip -cd | tar xvf - | progress
+        cat subarch | gzip -cd | tar xvf - 2>&1 | progress
     elif [ $ARCH_TYPE = "bzip2" ]; then
-        cat subarch | bzip2 -d | tar xvf - | progress
+        cat subarch | bzip2 -d | tar xvf - 2>&1 | progress
     else # lzma
         # Find usable lzma-decode binary
         LZMA_DECODE=
@@ -113,7 +113,7 @@ extractsub()
             exit 1
         fi
         
-        $LZMA_DECODE subarch - 2>/dev/null | tar xvf - | progress
+        $LZMA_DECODE subarch - 2>/dev/null | tar xvf - 2>&1 | progress
     fi
     
     echo

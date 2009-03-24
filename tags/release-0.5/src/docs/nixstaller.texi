@@ -89,6 +89,81 @@ Here is a list with the main features. Read further for more info to see what th
 
 
 @section Changelog
+@subsection 0.4 @minus{}@minus{}> 0.5
+@itemize @bullet
+@item Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)
+@item Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.
+@item Fixed: os.copy would try to copy file if source and destination file were equal.
+@item Fixed: utils.dirname() would handle relative paths wrong.
+@item Fixed: selectdirscreen would ignore customly set install.destdir values. (reported by WP van Paassen)
+@item Fixed: File extraction progress indication ignored total install progress.
+@item Fixed: ncurses frontend wouldn't update screen fast enough for stuff called from verify() functions.
+@item Fixed: If verify function from lua widget would return nothing, true was assumed (is now false)
+@item Fixed: FLTK frontend wouldn't vertically space out widgets equally
+@item Fixed: install.execute() wouldn't restore $PATH incase caller used custom path. (Reported by Markus Fischer)
+@item Fixed: User could still cancel installation by closing window if cancel button was locked.
+@item Fixed: Lua textfield from FLTK frontend was slow when large amounts of text were added.
+@item Fixed: GTK screen titles weren't always centered.
+@item Fixed: GTK password dialog didn't finish on enter keypress.
+@item Fixed: When checking if the pacman packager is present and a pacman game was present, the installer would launch the game (reported by John Tsolox).
+@item Fixed: 'tr' call used to convert uppercase to lowercase in scripts didn't work on all platforms.
+@item Fixed: After a new directory as root is created through the GTK's file dialog, any directories created after that wouldn't be automatically selected.
+@item Better commandline arguments handling.
+@item Several new util functions: utils.removerec(), utils.copyrec(), utils.patch(), utils.tableappend(), utils.tablefind(), utils.tablemerge(), utils.mapsize(), utils.emptystring() and utils.mkdirperm()
+@item Updated to FLTK 1.3
+@item Decreased FLTK textfield font size
+@item Lua textfield now has max amount of characters (4 MB)
+@item Lua addcheckbox function now accepts additional argument to enable one or more options.
+@item Lua addradiobutton function now accepts additional argument to preselect an option
+@item Lua addmenu function now accepts additional argument to preselect an option
+@item add(), del() and clear() functions for luaradiobutton, luacheckbox and luamenu (partly suggested by John Tsolox)
+@item luamenu, luacheckbox and luaradiobutton can now be empty
+@item del() function for luacfgmenu
+@item enable() function for every widget
+@item screen:update() function (suggested by John Tsolox)
+@item Changed @minus{}@minus{}help output from generated installer
+@item Installer frontend can be specified through commandline argument
+@item Installer can dump configuration info.
+@item Made genprojdir.sh help output more consistent
+@item install.executecmd() and install.executecmdasroot() functions (based on suggestion by John Tsolox)
+@item install.extract() function
+@item Additional precision for progressbars (only allowed integers)
+@item Moved lots of install code to Lua
+@item Summaryscreen now shows if package was registrated and if it failed to do so
+@item Increased default lua textfield size and made it configurable (suggested by Markus Fischer)
+@item @minus{}@minus{}overwrite and @minus{}@minus{}rm-existing options for genprojdir.sh.
+@item Binary delta code was replaced by 'subarchives' causing even less size overhead.
+@item "Uncompressing nixstaller" message changed to "Uncompressing Installer for <cfg.appname>" (based on suggestion by Markus Fischer)
+@item Improved default logo
+@item Added "application icon" supports, which is configurable. (suggested by Markus Fischer)
+@item Moved label:set() function to generic widget:setlabel()
+@item Widget label attributes (bold, italic, size) (based on suggestion by John Tsolox)
+@item install.execute() and install.executeasroot() don't override default $PATH anymore (suggested by Markus Fischer)
+@item Unattended installation mode (suggested by rrussell)
+@item Dependency handling
+@item Finish() function for run.lua
+@item Updated to ncurses 5.7
+@item UTF-8 support
+@item setlabelwidth() from Lua label class now wants real width
+@item gui.textwidth() function
+@item cfg.autolang option to let the installer try to automaticly select a language
+@item config.lua file for translations
+@item tr() function
+@item Improved translation strings
+@item More reliable way for checking if package manager is locked.
+@item genprojdir.sh now generates os, arch and os/arch specific file dirs in case @minus{}@minus{}os or @minus{}@minus{}arch is specified
+@item genprojdir.sh now sets cfg.targetos and/or cfg.targetarch to nil if no @minus{}@minus{}os/@minus{}@minus{}arch was specified
+@item install.getpkgdir() now accepts optional file argument for convenience.
+@item install.update() function
+@item install.setaskquit() function
+@item Manual: Fixed several spelling mistakes, updated tutorials, added unattended Cube tutorial, improved bzflag tutorial.
+@item Lithuanian and Bulgarian language support
+@item OpenBSD ncurses and tools binaries are now fully static (this makes sure that binaries keep working despite the frequent OpenBSD libc bumping)
+@item OpenBSD FLTK and GTK frontends are now only supported for 4.4 (prints a warning when a GUI frontend could not be launched).
+@item Dropped FreeBSD 5.X bins
+@item staticly linked stdcxx from apache for Linux, NetBSD and OpenBSD binaries.
+@end itemize
+
 @subsection 0.3 @minus{}@minus{}> 0.4
 @itemize @bullet
 @item install.execute / install.executeasroot now return exit code from command
@@ -1617,7 +1692,7 @@ To do this you can either use the @command{gen} or @command{gent} actions. With 
 @codeblock{deputil.sh gen -p installer/ @minus{}@minus{}copy @minus{}@minus{}full -n MyDep -d "My dependency package." -a libdep.so.1 -l lib/ ./mybin}
 This will generate a full dependency package called @samp{MyDep} inside the project directory @file{installer/} which provides the library @file{libfoo.so.1}. The library will be automatically copied and the @command{-l} option was used to tell that libraries can (also) be found inside @file{lib/}. As with most actions, the last parameter(s) (in this case @samp{./mybin}) should be all the binaries provided by the installer.
 @*
-@codeblock{deputil.sh gent -p installer/ --simple -t X11-core ./mybin}
+@codeblock{deputil.sh gent -p installer/ @minus{}@minus{}simple -t X11-core ./mybin}
 This will create a simple dependency package from the @samp{X11-core} package. The name, description etc are taken from the template. The libraries that the dependency package must provide are automatically detected through the listed installer binaries (@samp{./mybin}).
 
 @subsubsection Final notes
@@ -2486,7 +2561,7 @@ Suggested templates:
 @*
 @*
 @*
-NOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this bychecking the libs field from the respective dependencies. To regenerate a dependency (with the genor gent actions) with additional libraries use the --libs option.}
+NOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this bychecking the libs field from the respective dependencies. To regenerate a dependency (with the genor gent actions) with additional libraries use the @minus{}@minus{}libs option.}
 Note that which dependencies will be required may vary. This depends on the OS and how the dependencies were build.
 
 Now that we know what dependencies will be required, it's time to choose which should be simple or full. Lets say we want to make all dependencies full from which their respective template has the @code{small} tag. To create the dependency packages we can use the @command{auto} action. To see what will happen use the @minus{}@minus{}pretend option:

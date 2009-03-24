@@ -450,16 +450,16 @@ De software is nu geïnstalleerd op dit systeem.
 Een samenvatting van de installatie is hieronder gegeven.
 ]
 
+dpkg (eg. Ubuntu, Debian)
 dpkg (bijv. Ubuntu, Debian)
-dpkg (bijv. Ubuntu, Debian)
 
+pacman (eg. Arch Linux)
 pacman (bijv. Arch Linux)
-pacman (bijv. Arch Linux)
 
-rpm (bijv. Fedora, Mandriva)
+rpm (eg. Fedora, Mandriva)
 rpm (bijv. Fedora, Mandriva)
 
-Slackware tgz (bijv. Slackware, Zenwalk)
+Slackware tgz (eg. Slackware, Zenwalk)
 Slackware tgz (bijv. Slackware, Zenwalk)
 
 
