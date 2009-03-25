@@ -30,23 +30,27 @@ createliblist()
     echo `find "$1/$2"* 2>/dev/null | sort -nr`
 }
 
+checksys()
+{
+    if [ ! -d "./bin/$CURRENT_OS/" -a "$CURRENT_OS" != "linux" ]; then
+        echo "Warning: No binaries for \"$CURRENT_OS\" found, trying to default to Linux..."
+        CURRENT_OS="linux"
+    fi
+
+    if [ ! -d "./bin/$CURRENT_OS/$CURRENT_ARCH/" -a "$CURRENT_ARCH" != "x86" ]; then
+        echo "Warning: No binaries for \"$CURRENT_ARCH\" found, trying to default to x86..."
+        CURRENT_ARCH="x86"
+    fi
+}
+
 configure()
 {
     echo "Collecting info for this system..."
     
-    echo "Operating system: $CURRENT_OS"
+    checksys
     
-    if [ ! -d "./bin/$CURRENT_OS/" ]; then
-        echo "Warning: No installer for \"$CURRENT_OS\" found, defaulting to Linux..."
-        CURRENT_OS="linux"
-    fi
-
+    echo "Operating system: $CURRENT_OS"   
     echo "CPU Arch: $CURRENT_ARCH"
-
-    if [ ! -d "./bin/$CURRENT_OS/$CURRENT_ARCH/" ]; then
-        echo "Warning: No installer for \"$CURRENT_ARCH\" found, defaulting to x86..."
-        CURRENT_ARCH="x86"
-    fi
     
     while [ "$1" != "" ]
     do
@@ -85,7 +89,10 @@ extractsub()
     elif [ $ARCH_TYPE = "bzip2" ]; then
         cat subarch | bzip2 -d | tar xvf - 2>&1 | progress
     else # lzma
+        checksys
+        
         # Find usable lzma-decode binary
+        
         LZMA_DECODE=
         for LC in `createliblist bin/$CURRENT_OS/$CURRENT_ARCH libc.so.`
         do
