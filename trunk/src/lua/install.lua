@@ -25,7 +25,6 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
 
--- UNDONE: Function name?
 function install.extract(luaout)
     local archives = { } -- Files to extract
     
@@ -68,7 +67,7 @@ function install.extract(luaout)
         if cfg.archivetype == "gzip" then
             extrcmd = string.format("cat %s | gzip -cd | tar xvf -", f)
         elseif cfg.archivetype == "bzip2" then
-            extrcmd = string.format("cat %s | bzip -d | tar xvf -", f)
+            extrcmd = string.format("cat %s | bzip2 -d | tar xvf -", f)
         else
             extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar xvf -)", bindir, f)
         end

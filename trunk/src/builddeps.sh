@@ -18,6 +18,15 @@ CPPFLAGS="-I$DESTPREFIX/include"
 export LDFLAGS
 export CPPFLAGS
 
+if [ $CURRENT_OS != "linux" ]; then
+    OPTCFLAGS="-Os"
+    OPTLFLAGS=
+else
+    # Unfortunaly only Linux seems to support these optimzations ... :(
+    OPTCFLAGS="-Os -ffunction-sections -fdata-sections"
+    OPTLFLAGS="-Wl,--gc-sections"
+fi
+
 get()
 {
     if [ -f "$DESTFILES/`basename $1`" ]; then
@@ -47,10 +56,10 @@ restoredir()
 
 buildzlib()
 {
-    get "http://freshmeat.net/redir/zlib/12352/url_tgz/zlib-1.2.3.tar.gz"
+    get "http://www.gzip.org/zlib/zlib-1.2.3.tar.gz"
     untar "zlib-1.2.3.tar.gz"
     dodir "zlib-1.2.3/"
-    ./configure --prefix=$DESTPREFIX && make && make install && make clean
+    CFLAGS="$OPTCFLAGS" ./configure --prefix=$DESTPREFIX && make && make install && make clean
     restoredir
 }
 
@@ -63,7 +72,7 @@ buildstdcxx()
     dodir "stdcxx-4.2.1"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
     [ $CURRENT_OS = "netbsd" ] && ulimit -d 131072
-    $MAKE BUILDDIR="$DESTFILES/stdcxx-obj" BUILDMODE=static,optimized 
+    CXXOPTS="$OPTCFLAGS" $MAKE BUILDDIR="$DESTFILES/stdcxx-obj" BUILDMODE=static,optimized 
     dodir stdcxx-obj
     $MAKE install LOCALES="" PREFIX=$DESTPREFIX
     $MAKE clean
@@ -75,7 +84,7 @@ buildpng()
     get "http://prdownloads.sourceforge.net/sourceforge/libpng/libpng-1.2.34.tar.gz"
     untar "libpng-1.2.34.tar.gz"
     dodir "libpng-1.2.34/"
-    ./configure --prefix="$DESTPREFIX" --disable-shared && make && make install && make clean
+    CFLAGS="$OPTCFLAGS" ./configure --prefix="$DESTPREFIX" --disable-shared && make && make install && make clean
     restoredir
 }
 
@@ -84,7 +93,7 @@ buildjpeg()
     get "ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v6b.tar.gz"
     untar "jpegsrc.v6b.tar.gz"
     dodir "jpeg-6b"
-    ./configure --prefix=$DESTPREFIX && make && make install-lib && make clean
+    CFLAGS="$OPTCFLAGS" ./configure --prefix=$DESTPREFIX && make && make install-lib && make clean
     restoredir
 }
 
@@ -100,9 +109,9 @@ buildfltk()
     if [ $CURRENT_OS = "darwin" ]; then
         ./configure --prefix=$DESTPREFIX && make && make install && make clean
     elif [ $CURRENT_OS = "sunos" ]; then
-        LIBS="-lXrender -lfreetype -lfontconfig" ./configure --prefix=$DESTPREFIX --without-links --disable-gl --enable-xdbe --enable-xft && make && make install && make clean
+        LIBS="-lXrender -lfreetype -lfontconfig" CFLAGS="$OPTCFLAGS" ./configure --prefix=$DESTPREFIX --without-links --disable-gl --enable-xdbe --enable-xft --disable-xinerama && make && make install && make clean
     else
-        ./configure --prefix=$DESTPREFIX --without-links --disable-gl --enable-xdbe --enable-xft && make && make install && make clean
+        CFLAGS="$OPTCFLAGS" ./configure --prefix=$DESTPREFIX --without-links --disable-gl --enable-xdbe --enable-xft --disable-xinerama && make && make install && make clean
     fi
     restoredir
 }
@@ -112,7 +121,7 @@ buildlua()
     get "http://www.lua.org/ftp/lua-5.1.4.tar.gz"
     untar "lua-5.1.4.tar.gz"
     dodir "lua-5.1.4"
-    CFLAGS="-Os -Wall -DLUA_USE_POSIX"
+    CFLAGS="-Wall -DLUA_USE_POSIX $OPTCFLAGS"
     if [ $CURRENT_OS = "darwin" ]; then
         make macosx CFLAGS="$CFLAGS" && make install INSTALL_TOP=$DESTPREFIX
     else
@@ -137,7 +146,7 @@ buildncurses()
     esac
 
     # Examples may fail to build, just make sure to always call make install (no &&).
-    ./configure --without-gpm --without-dlsym --enable-widec $COPTS && make ; make install DESTDIR="$DESTPREFIX" && make clean
+    CFLAGS="$OPTCFLAGS" ./configure --without-gpm --without-dlsym --enable-widec $COPTS && make ; make install DESTDIR="$DESTPREFIX" && make clean
     restoredir
 }
 
@@ -164,24 +173,39 @@ buildrpm()
     restoredir
 }
 
+buildxdelta3()
+{
+    get "http://xdelta.googlecode.com/files/xdelta3.0v2.tar.gz"
+    untar "xdelta3.0v2.tar.gz"
+    dodir "xdelta3.0v"
+    # Don't use Makefile, use some custom flags/settings do decrease bin size a lot
+    LFLAGS="$OPTLFLAGS"
+    [ $CURRENT_OS = "openbsd" ] && LFLAGS="$LFLAGS -static"
+    gcc $OPTCFLAGS xdelta3.c -o xdelta3 -DGENERIC_ENCODE_TABLES=0 -DREGRESSION_TEST=0 -DSECONDARY_DJW=0 -DSECONDARY_FGK=0 -DXD3_DEBUG=0 -DXD3_MAIN=1 -DXD3_POSIX=1 -DXD3_USE_LARGEFILE64=1 $LFLAGS
+    strip -s xdelta3
+    mkdir -p "$DESTPREFIX/bin"
+    cp xdelta3 "$DESTPREFIX/bin"
+}
+
 buildlzma()
 {
     get "http://heanet.dl.sourceforge.net/sourceforge/sevenzip/lzma457.tar.bz2"
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
-	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" ]; then
-		$MAKE -f makefile.gcc CXX='g++ -Os'
+    LFLAGS="$OPTLFLAGS"
+    [ $CURRENT_OS = "openbsd" ] && LFLAGS="$LFLAGS -static"
+	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" -a $CURRENT_OS != "openbsd" ]; then
+		$MAKE -f makefile.gcc CXX="g++ $OPTCFLAGS" LDFLAGS="$LFLAGS"
 	else
-		$MAKE -f makefile.gcc CXX='gcc -Os' LDFLAGS="-L$DESTPREFIX/lib" LIB='-lstd -lsupc++ -lm'
+		$MAKE -f makefile.gcc CXX="gcc $OPTCFLAGS" LDFLAGS="-L$DESTPREFIX/lib $LFLAGS" LIB='-lstd -lsupc++ -lm'
 	fi
     mkdir -p "$DESTPREFIX/bin"
     cp lzma "$DESTPREFIX/bin"
     restoredir
     dodir "C/Compress/Lzma"
     patch < "$SRCDIR"/lzmastdout.diff
-    [ $CURRENT_OS = "openbsd" ] && LFLAGS="-static" || LFLAGS=
-    gcc -Os LzmaStateDecode.c LzmaStateTest.c -o lzma-decode $LFLAGS
+    gcc $OPTCFLAGS LzmaStateDecode.c LzmaStateTest.c -o lzma-decode $LFLAGS
     cp lzma-decode "$DESTPREFIX/bin"
     restoredir
     [ $CURRENT_OS != "sunos" -a $CURRENT_OS != "darwin" ] && STRIPARGS="-s"
@@ -202,9 +226,9 @@ buildelf()
         mv configure configure.orig
         sed 's/libelf_cv_elf_h_works=yes/libelf_cv_elf_h_works=no/g' configure.orig >configure
         chmod +x configure
-        ./configure --prefix=$DESTPREFIX --enable-compat
+        CFLAGS="$OPTCFLAGS" ./configure --prefix=$DESTPREFIX --enable-compat
     else
-        ./configure --prefix=$DESTPREFIX
+        CFLAGS="$OPTCFLAGS" ./configure --prefix=$DESTPREFIX
     fi
     make && make install && make clean
     restoredir
@@ -215,7 +239,7 @@ buildcurl()
     get "http://curl.haxx.se/download/curl-7.19.3.tar.gz"
     untar "curl-7.19.3.tar.gz"
     dodir "curl-7.19.3"
-    ./configure --prefix=$DESTPREFIX --enable-static --disable-shared --disable-file --disable-ldap --disable-ldaps --disable-dict --disable-telnet --disable-thread --disable-ares --disable-debug --disable-crypto-auth --disable-cookies --without-ssl --without-libssh2 --without-libidn && make && make install && make clean
+    ./configure CFLAGS="$OPTCFLAGS" --prefix=$DESTPREFIX --enable-static --disable-shared --disable-file --disable-ldap --disable-ldaps --disable-dict --disable-telnet --disable-thread --disable-ares --disable-debug --disable-crypto-auth --disable-cookies --without-ssl --without-libssh2 --without-libidn && make && make install && make clean
     restoredir
 }
 
@@ -224,7 +248,7 @@ buildxft()
     get "http://xorg.freedesktop.org/releases/individual/lib/libXft-2.1.11.tar.gz"
     untar "libXft-2.1.11.tar.gz"
     dodir "libXft-2.1.11"
-    ./configure --prefix=$DESTPREFIX --x-includes=/usr/include/X11/ && make && make install && make clean
+    CFLAGS="$OPTCFLAGS" ./configure --prefix=$DESTPREFIX --x-includes=/usr/include/X11/ && make && make install && make clean
     restoredir
 }
 
@@ -236,7 +260,8 @@ if [ -z "$BUILD" ]; then
     elif [ $CURRENT_OS = "sunos" ]; then
         BUILD="zlib png jpeg xft fltk lua ncurses lzma elf curl"
     else
-        BUILD="zlib stdcxx png jpeg fltk lua ncurses lzma elf curl"
+        BUILD="zlib png jpeg fltk lua ncurses lzma elf curl"
+        [ $CURRENT_OS != "freebsd" ] && BUILD="stdcxx $BUILD"
     fi
 #     if [ `uname` = "Linux" ]; then
 #         BUILD="$BUILD beecrypt rpm"
@@ -255,6 +280,7 @@ do
         ncurses ) buildncurses ;;
         beecrypt ) buildbeecrypt ;;
         rpm ) buildrpm ;;
+        xdelta3 ) buildxdelta3 ;;
         lzma ) buildlzma ;;
         elf ) buildelf ;;
         curl ) buildcurl ;;

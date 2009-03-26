@@ -89,6 +89,81 @@ Here is a list with the main features. Read further for more info to see what th
 
 
 @section Changelog
+@subsection 0.4 @minus{}@minus{}> 0.5
+@itemize @bullet
+@item Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)
+@item Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.
+@item Fixed: os.copy would try to copy file if source and destination file were equal.
+@item Fixed: utils.dirname() would handle relative paths wrong.
+@item Fixed: selectdirscreen would ignore customly set install.destdir values. (reported by WP van Paassen)
+@item Fixed: File extraction progress indication ignored total install progress.
+@item Fixed: ncurses frontend wouldn't update screen fast enough for stuff called from verify() functions.
+@item Fixed: If verify function from lua widget would return nothing, true was assumed (is now false)
+@item Fixed: FLTK frontend wouldn't vertically space out widgets equally
+@item Fixed: install.execute() wouldn't restore $PATH incase caller used custom path. (Reported by Markus Fischer)
+@item Fixed: User could still cancel installation by closing window if cancel button was locked.
+@item Fixed: Lua textfield from FLTK frontend was slow when large amounts of text were added.
+@item Fixed: GTK screen titles weren't always centered.
+@item Fixed: GTK password dialog didn't finish on enter keypress.
+@item Fixed: When checking if the pacman packager is present and a pacman game was present, the installer would launch the game (reported by John Tsolox).
+@item Fixed: 'tr' call used to convert uppercase to lowercase in scripts didn't work on all platforms.
+@item Fixed: After a new directory as root is created through the GTK's file dialog, any directories created after that wouldn't be automatically selected.
+@item Better commandline arguments handling.
+@item Several new util functions: utils.removerec(), utils.copyrec(), utils.patch(), utils.tableappend(), utils.tablefind(), utils.tablemerge(), utils.mapsize(), utils.emptystring() and utils.mkdirperm()
+@item Updated to FLTK 1.3
+@item Decreased FLTK textfield font size
+@item Lua textfield now has max amount of characters (4 MB)
+@item Lua addcheckbox function now accepts additional argument to enable one or more options.
+@item Lua addradiobutton function now accepts additional argument to preselect an option
+@item Lua addmenu function now accepts additional argument to preselect an option
+@item add(), del() and clear() functions for luaradiobutton, luacheckbox and luamenu (partly suggested by John Tsolox)
+@item luamenu, luacheckbox and luaradiobutton can now be empty
+@item del() function for luacfgmenu
+@item enable() function for every widget
+@item screen:update() function (suggested by John Tsolox)
+@item Changed @minus{}@minus{}help output from generated installer
+@item Installer frontend can be specified through commandline argument
+@item Installer can dump configuration info.
+@item Made genprojdir.sh help output more consistent
+@item install.executecmd() and install.executecmdasroot() functions (based on suggestion by John Tsolox)
+@item install.extract() function
+@item Additional precision for progressbars (only allowed integers)
+@item Moved lots of install code to Lua
+@item Summaryscreen now shows if package was registrated and if it failed to do so
+@item Increased default lua textfield size and made it configurable (suggested by Markus Fischer)
+@item @minus{}@minus{}overwrite and @minus{}@minus{}rm-existing options for genprojdir.sh.
+@item Binary delta code was replaced by 'subarchives' causing even less size overhead.
+@item "Uncompressing nixstaller" message changed to "Uncompressing Installer for <cfg.appname>" (based on suggestion by Markus Fischer)
+@item Improved default logo
+@item Added "application icon" supports, which is configurable. (suggested by Markus Fischer)
+@item Moved label:set() function to generic widget:setlabel()
+@item Widget label attributes (bold, italic, size) (based on suggestion by John Tsolox)
+@item install.execute() and install.executeasroot() don't override default $PATH anymore (suggested by Markus Fischer)
+@item Unattended installation mode (suggested by rrussell)
+@item Dependency handling
+@item Finish() function for run.lua
+@item Updated to ncurses 5.7
+@item UTF-8 support
+@item setlabelwidth() from Lua label class now wants real width
+@item gui.textwidth() function
+@item cfg.autolang option to let the installer try to automaticly select a language
+@item config.lua file for translations
+@item tr() function
+@item Improved translation strings
+@item More reliable way for checking if package manager is locked.
+@item genprojdir.sh now generates os, arch and os/arch specific file dirs in case @minus{}@minus{}os or @minus{}@minus{}arch is specified
+@item genprojdir.sh now sets cfg.targetos and/or cfg.targetarch to nil if no @minus{}@minus{}os/@minus{}@minus{}arch was specified
+@item install.getpkgdir() now accepts optional file argument for convenience.
+@item install.update() function
+@item install.setaskquit() function
+@item Manual: Fixed several spelling mistakes, updated tutorials, added unattended Cube tutorial, improved bzflag tutorial.
+@item Lithuanian and Bulgarian language support
+@item OpenBSD ncurses and tools binaries are now fully static (this makes sure that binaries keep working despite the frequent OpenBSD libc bumping)
+@item OpenBSD FLTK and GTK frontends are now only supported for 4.4 (prints a warning when a GUI frontend could not be launched).
+@item Dropped FreeBSD 5.X bins
+@item staticly linked stdcxx from apache for Linux, NetBSD and OpenBSD binaries.
+@end itemize
+
 @subsection 0.3 @minus{}@minus{}> 0.4
 @itemize @bullet
 @item install.execute / install.executeasroot now return exit code from command
@@ -1406,7 +1481,7 @@ The script accepts the following commandline arguments:
 
 
 @section Dependencies
-After the project directory is created you can start adding dependencies if using Package Mode (it's handy to use the @minus{}@minus{}pkg and @minus{}@minus{}deps option when invoking genprojdir.sh). For each dependency, a @emph{dependency package} is used to store all the relevant files. These packages can be seen as @samp{mini project directories}. Dependency packages are stored inside the project's @file{deps/} directory. The file layout looks like this:
+After the project directory is created you can start adding dependencies if using Package Mode (it's handy to use the @minus{}@minus{}pkg option when invoking genprojdir.sh). For each dependency, a @emph{dependency package} is used to store all the relevant files. These packages can be seen as @samp{mini project directories}. Dependency packages are stored inside the project's @file{deps/} directory. The file layout looks like this:
 @itemize @bullet
     @item @file{Project Directory/}
     @itemize @bullet
@@ -1617,7 +1692,7 @@ To do this you can either use the @command{gen} or @command{gent} actions. With 
 @codeblock{deputil.sh gen -p installer/ @minus{}@minus{}copy @minus{}@minus{}full -n MyDep -d "My dependency package." -a libdep.so.1 -l lib/ ./mybin}
 This will generate a full dependency package called @samp{MyDep} inside the project directory @file{installer/} which provides the library @file{libfoo.so.1}. The library will be automatically copied and the @command{-l} option was used to tell that libraries can (also) be found inside @file{lib/}. As with most actions, the last parameter(s) (in this case @samp{./mybin}) should be all the binaries provided by the installer.
 @*
-@codeblock{deputil.sh gent -p installer/ --simple -t X11-core ./mybin}
+@codeblock{deputil.sh gent -p installer/ @minus{}@minus{}simple -t X11-core ./mybin}
 This will create a simple dependency package from the @samp{X11-core} package. The name, description etc are taken from the template. The libraries that the dependency package must provide are automatically detected through the listed installer binaries (@samp{./mybin}).
 
 @subsubsection Final notes
@@ -2381,8 +2456,8 @@ This tutorial will assume BZFlag version 2.0.12
 
 @subsection Project Directory
 Again the @file{genprojdir.sh} script is used to generate a project directory:
-@codeblock{genprojdir.sh -i <pathtobzflaglogo>/side.bmp -n "BZFlag" @minus{}@minus{}pkg @minus{}@minus{}deps bzflag/}
-The @samp{<pathtobzflaglogo>} part should be replaced by the path where @file{side.bmp} can be found, in the BZFlag archive it is located inside the @file{bzflag-2.0.12/package/win32/nsis/} directory. Notice that this time the @command{@minus{}@minus{}pkg} and @command{@minus{}@minus{}deps} parameters are also passed, this will set up a template @file{package.lua} file and adds some handy Package Mode code to @file{run.lua}.@*
+@codeblock{genprojdir.sh -i <pathtobzflaglogo>/side.bmp -n "BZFlag" @minus{}@minus{}pkg bzflag/}
+The @samp{<pathtobzflaglogo>} part should be replaced by the path where @file{side.bmp} can be found, in the BZFlag archive it is located inside the @file{bzflag-2.0.12/package/win32/nsis/} directory. Notice that this time the @command{@minus{}@minus{}pkg} parameter is also passed, this will set up a template @file{package.lua} file and adds some handy Package Mode code to @file{run.lua}.@*
 @*
 Next we create a @file{welcome} file with the following content:
 @codeblock{BZFlag is a free online multiplayer cross-platform open source 3D tank
@@ -2431,7 +2506,7 @@ pkg.bins = @{ "bin/bzfs" , "bin/bzflag", "bin/bzadmin" @}}
 
 @subsection Dependencies
 Now we have collected the installation files it's time to worry about BZFlag's dependencies. We will use @command{deputil.sh} for this. The first step to @emph{scan} for any dependencies, to do so run the following command:
-@codeblock{deputil.sh -p bzflag/ bzflag/files_all/bin/*}
+@codeblock{deputil.sh scan -p bzflag/ bzflag/files_all/bin/*}
 This will dump all the (library) dependencies from the BZFlag binaries. The @command{-p} parameter is used to specify the project directory. The last parameters should contain all the binaries from BZFlag. Here is how the output will look like:
 @codeblock{Loaded 424 libraries filed by 104 templates.
 Scanning...
@@ -2486,7 +2561,7 @@ Suggested templates:
 @*
 @*
 @*
-NOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this bychecking the libs field from the respective dependencies. To regenerate a dependency (with the genor gent actions) with additional libraries use the --libs option.}
+NOTE: If one or more templates were used to create a dependency, but are still suggested it's likely that the result dependenc(y)(ies) don't provide the missing libraries yet. Please verify this bychecking the libs field from the respective dependencies. To regenerate a dependency (with the genor gent actions) with additional libraries use the @minus{}@minus{}libs option.}
 Note that which dependencies will be required may vary. This depends on the OS and how the dependencies were build.
 
 Now that we know what dependencies will be required, it's time to choose which should be simple or full. Lets say we want to make all dependencies full from which their respective template has the @code{small} tag. To create the dependency packages we can use the @command{auto} action. To see what will happen use the @minus{}@minus{}pretend option:
@@ -2768,7 +2843,6 @@ After compilation is done the binaries will be put in the @file{bin/} directory.
                 @item @file{fltk}
                 @item @file{gtk}
                 @item @file{ncurs}
-                @item @file{edelta}
                 @item @file{surunner}
                 @item @file{lock}
             @end itemize
@@ -2788,12 +2862,6 @@ The FLTK frontend.
 The GTK frontend.
 @item ncurs
 The ncurses frontend.
-@item edelta
-This binary is used to create @samp{deltas} or @samp{binary diffs} from frontend binaries. @file{geninstall.lua} will create an optimal path from which binaries a diff should be made to get optimal size results. It's a bit complex algorithm, it will use several binaries to build another binary. For example a fltk linux/x86 binary may be @samp{diff'ed} with a gtk linux/x86 binary. The latter binary may be @samp{diff'ed} in turn with an gtk freebsd/86 binary. When the installer launches it will then first build the gtk linux/x86 binary from the gtk freebsd/x86 binary and after that build the fltk linux/86 binary from the gtk linux/86 binary. Using this algorithm the frontends will take up very less space.
-
-The data needed by the algorithm just discussed is stored inside @file{bin/bindeltas.lua}. This file is generated automatically by @file{geninstall.lua} when it doesn't exist, it's corrupted or any binaries are changed. For the latter reason and the fact it will take some time (re)generate this file, you may want to disable this temporary while developing.
-
-Note that the edelta version differs from the @uref{http://www.diku.dk/~jacobg/edelta/, original version} because it's modified in such way that it doesn't use compression (which makes the binary smaller and allows us to use other compression methods than gzip).
 @item lzma-decode
 @emph{Decodes} lzma encoded files. This is a much smaller version of the normal @file{lzma} binary and is included in the installer.
 @item surunner
@@ -2816,7 +2884,7 @@ This small utility is used to see if a file is locked (used by package code).
 @item @uref{http://quanta.kdewebdev.org/, Quanta+}: Good HTML editor used for the website.
 @item @uref{http://www.texinfo.org, texinfo} and texi2html: Used to create this documentation.
 @item @uref{http://www.berlios.de, BerliOS}: Project hosting.
-@item @uref{http://www.diku.dk/~jacobg/edelta/, edelta}: Used to create @samp{binary diffs} to decrease the size of frontend binaries.
+@item @uref{http://www.diku.dk/~jacobg/edelta/, edelta} (old): Before 0.5 this was used to create @samp{binary diffs} to decrease the size of frontend binaries.
 @item @uref{http://www.7-zip.org/sdk.html, lzma}: Very good compression algorithm.
 @item @uref{http://www.lua.org/, Lua}: Clean, easy and powerfull scripting language used by Nixstaller.
 @item @strong{InternetNightmare}: Suggestions, testing, feedback.

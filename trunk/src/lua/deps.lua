@@ -372,7 +372,7 @@ function initdep(d)
         if cfg.archivetype == "gzip" then
             extrcmd = string.format("cat %s | gzip -cd | tar -xvf - 2>&1", f)
         elseif cfg.archivetype == "bzip2" then
-            extrcmd = string.format("cat %s | bzip -d | tar -xvf - 2>&1", f)
+            extrcmd = string.format("cat %s | bzip2 -d | tar -xvf - 2>&1", f)
         else
             extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -xvf -) 2>&1", bindir, f)
         end

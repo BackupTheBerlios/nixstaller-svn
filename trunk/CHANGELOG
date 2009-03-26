@@ -1,4 +1,4 @@
-0.4 -->
+0.4 --> 0.5
 - Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)
 - Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.
 - Fixed: os.copy would try to copy file if source and destination file were equal.
@@ -40,7 +40,7 @@
 - Summaryscreen now shows if package was registrated and if it failed to do so
 - Increased default lua textfield size and made it configurable (suggested by Markus Fischer)
 - --overwrite and --rm-existing options for genprojdir.sh.
-- New and more optimized binary delta code, causing less size overhead from binaries.
+- Binary delta code was replaced by 'subarchives' causing even less size overhead.
 - "Uncompressing nixstaller" message changed to "Uncompressing Installer for <cfg.appname>" (based on suggestion by Markus Fischer)
 - Improved default logo
 - Added "application icon" supports, which is configurable. (suggested by Markus Fischer)
@@ -67,6 +67,7 @@
 - Manual: Fixed several spelling mistakes, updated tutorials, added unattended Cube tutorial, improved bzflag tutorial.
 - Lithuanian and Bulgarian language support
 - OpenBSD ncurses and tools binaries are now fully static (this makes sure that binaries keep working despite the frequent OpenBSD libc bumping)
+- OpenBSD FLTK and GTK frontends are now only supported for 4.4 (prints a warning when a GUI frontend could not be launched).
 - Dropped FreeBSD 5.X bins
 - staticly linked stdcxx from apache for Linux, NetBSD and OpenBSD binaries.
 

@@ -55,6 +55,17 @@ getluabin()
             fi
         done
     done
+    
+    # Check for static bins
+    for F in $FRONTENDS
+    do
+        BIN="$1/bin/${CURRENT_OS}/${CURRENT_ARCH}/$F"
+        if [ -f "$BIN" ]; then
+            echo "$BIN"
+            return 0
+        fi
+    done
+    
     return 1
 }
 

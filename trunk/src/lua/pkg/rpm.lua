@@ -27,7 +27,7 @@ function getpkgpath()
 end
 
 function present()
-    return (os.execute("(rpm --version) >/dev/null 2>&1") == 0)
+    return os.osname == "linux" and (os.execute("(rpm --version) >/dev/null 2>&1") == 0)
 end
 
 function missingtool()
@@ -97,7 +97,6 @@ AutoReqProv: 0
     if script then
         check(spec:write("\n%preun\n"))
         check(spec:write(script))
-        spec:write("echo sleeping!! ; sleep 15\n")
         check(spec:write("exit 0\n")) -- rpm wants clean exit status
     end
     

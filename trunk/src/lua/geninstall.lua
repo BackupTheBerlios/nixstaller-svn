@@ -89,7 +89,11 @@ function RequiredCopyRec(src, dest)
     end
 end
 
-function PackDirectory(dir, file)
+function PackDirectory(dir, file, sizes)
+    if sizes == nil then
+        sizes = true -- Default
+    end
+    
     if io.dir(dir)() == nil then -- Empty directory?
         return
     end
@@ -97,10 +101,13 @@ function PackDirectory(dir, file)
     local olddir = os.getcwd()
     local dirlist = { "." } -- Directories to process
     
-    local sizesfile, msg = io.open(file .. ".sizes", "w")
-    
-    if sizesfile == nil then
-        ThrowError("Could not create sizes file for archive %s: %s", file, msg)
+    local sizesfile, msg
+    if sizes then
+        sizesfile, msg = io.open(file .. ".sizes", "w")
+        
+        if sizesfile == nil then
+            ThrowError("Could not create sizes file for archive %s: %s", file, msg)
+        end
     end
     
     local tarlistfname = file .. ".list"
@@ -140,10 +147,12 @@ function PackDirectory(dir, file)
                 if os.isdir(dpath) then
                     dpath = dpath .. "/" -- Write tailing slash: most tar's will output it like this while extracting
                 end
-    
-                local ret, msg = sizesfile:write(fsize, " ", dpath, "\n")
-                if ret == nil then
-                    ThrowError("Could not write to size file for archive %s: %s", file, msg)
+                
+                if sizes then
+                    local ret, msg = sizesfile:write(fsize, " ", dpath, "\n")
+                    if ret == nil then
+                        ThrowError("Could not write to size file for archive %s: %s", file, msg)
+                    end
                 end
                 
                 ret, msg = tarlistfile:write(dpath, "\n")
@@ -154,7 +163,10 @@ function PackDirectory(dir, file)
         end
     end
     
-    sizesfile:close()
+    if sizes then
+        sizesfile:close()
+    end
+    
     tarlistfile:close()
     
     -- Tar all files from the temp list file. Note that solaris (sunos) tar uses -I instead of -T used by other
@@ -280,136 +292,6 @@ function GetRelBinPath(bin)
     return relbinpath
 end
 
-function InitDeltaBins()
-    local path = string.format("%s/bin/bindeltas.lua", ndir)
-    if os.fileexists(path) then
-        local regen = false
-        if not pcall(dofile, path) then
-            print("WARNING: Failed to load bin delta file, regenerating...")
-            regen = true
-        elseif not binsums or not deltasizes then
-            print("WARNING: Incorrect bin delta file, regenerating...")
-            regen = true
-        elseif false then -- UNDONE: Remove!
-            for bin, sum in pairs(binsums) do
-                if io.md5(bin) ~= sum then
-                    print("WARNING: One or more binaries changed since last time, regenerating bin delta file...")
-                    regen = true
-                    break
-                end
-            end
-        end
-        
-        if not regen then
-            return
-        end
-    end
-    -- Generate new one
-    
-    print("WARNING: No bin delta file, regenerating...")
-    
-    local allbins = GetAllBins(ndir .. "/bin", { "fltk", "ncurs", "gtk" })
-    
-    -- Create big map, containing all possible delta sizes for every bin
-    deltasizes = { }
-    local tmpfile = os.tmpname()
-    for _, base in ipairs(allbins) do
-        for _, bin in ipairs(allbins) do
-            if bin ~= base then
-                os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s\"", EdeltaBin, base, bin, tmpfile))
-                local rbin = GetRelBinPath(bin)
-                deltasizes[rbin] = deltasizes[rbin] or { }
-                deltasizes[rbin][GetRelBinPath(base)] = os.filesize(tmpfile)
-            end
-        end
-    end
-    os.remove(tmpfile)
-    
-    -- Store results
-    local out, msg = io.open(path, "w")
-    if not out then
-        ThrowError("Failed to create bin delta file: %s", msg)
-    end
-    
-    out:write(string.format([[
--- Automatically generated on %s by geninstall.lua.
-deltasizes = { }
-]], os.date()))
-    
-    for bin, bases in pairs(deltasizes) do
-        out:write(string.format("deltasizes[\"%s\"] = { }\n", bin))
-        for b, s in pairs(bases) do
-            out:write(string.format("deltasizes[\"%s\"][\"%s\"] = %d\n", bin, b, s))
-        end
-    end
-    
-    out:write("binsums = { }\n")
-    for _, bin in ipairs(allbins) do
-        out:write(string.format("binsums[\"%s\"] = \"%s\"\n", GetRelBinPath(bin), io.md5(bin)))
-    end
-    
-    out:close()
-end
-
-function GetOptDeltas(binlist)
-    local topbin
-    local optdeltas = { }
-    local stack = { binlist }
-    while true do
-        local bins = table.remove(stack)
-        local opts = { }
-        
-        for _, bin in ipairs(bins) do
-            local rbin = GetRelBinPath(bin)
-            if not deltasizes[rbin] then
-                ThrowError("No delta entry for %s!", rbin)
-            end
-            
-            for base, s in pairs(deltasizes[rbin]) do
-                local rbase = GetRelBinPath(base)
-                if not opts[rbin] or opts[rbin].size > s then
-                    for _, b in ipairs(bins) do
-                        if GetRelBinPath(b) == rbase then
-                            opts[rbin] = opts[rbin] or { }
-                            opts[rbin].size = s
-                            opts[rbin].base = rbase
-                            break
-                        end
-                    end
-                end
-            end
-        end
-        
-        local newbins = { }
-        for bin, ideal in pairs(opts) do
-            if opts[ideal.base] and opts[ideal.base].base == bin then -- Already got sub as base?
-                local cursizediff = os.filesize(ndir .. "/" .. bin) - ideal.size
-                local othersizediff = os.filesize(ndir .. "/" .. ideal.base) - opts[ideal.base].size
-                if cursizediff <= othersizediff then
-                    -- Current is fine, clear other
-                    opts[ideal.base] = nil
-                    table.insert(newbins, ideal.base)
-                else
-                    -- Other one is better, clear current
-                    opts[bin] = nil
-                    table.insert(newbins, bin)
-                end
-            end
-        end
-        
-        utils.tablemerge(optdeltas, opts)
-    
-        if not utils.emptytable(newbins) then
-            table.insert(stack, newbins)
-        else
---             assert(#bins == 1)
-            topbin = bins[1]
-            break
-        end
-    end
-    return optdeltas, topbin
-end
-
 function LoadPackage()
     if not os.fileexists(confdir .. "/package.lua") then
         return
@@ -452,7 +334,7 @@ function Init()
     
     LoadPackage()
     
-    -- Find a LZMA and edelta bin which we can use
+    -- Find a LZMA bin which we can use
     local basebindir = string.format("%s/bin/%s/%s", ndir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
@@ -469,18 +351,10 @@ function Init()
     for lc in TraverseBinLibDir(basebindir, "^libc") do
         local lcdir = string.format("%s/%s", basebindir, lc)
         local lz = lcdir .. "/" .. "lzma"
-        local ed = lcdir .. "/" .. "edelta"
 
         -- File exists and 'ldd' doesn't report missing lib deps?
         if validbin(lz) then
             LZMABin = lz
-        end
-        
-        if validbin(ed) then
-            EdeltaBin = ed
-        end
-        
-        if LZMABin and EdeltaBin then
             break
         end
     end
@@ -489,20 +363,11 @@ function Init()
     local path = basebindir .. "/lzma"
     if not LZMABin and os.fileexists(path) then
         LZMABin = path
-    end
-    
-    path = basebindir .. "/edelta"
-    if not EdeltaBin and os.fileexists(path) then
-        EdeltaBin = path
-    end
+    end   
     
     if not LZMABin then
         ThrowError("Could not find a suitable LZMA encoder")
-    elseif not EdeltaBin then
-        ThrowError("Could not find a suitable edelta encoder")
-    end
-    
-    InitDeltaBins()
+    end   
     
 print(string.format([[
 Configuration:
@@ -523,26 +388,34 @@ end
 
 -- Creates directory layout for installer archive
 function PrepareArchive()
-    local destdir = confdir .. "/tmp/config"
-    os.mkdirrec(destdir)
+    -- Nearly all files required at runtime are placed inside 'archdir'. These files are
+    -- placed inside an additional tar archive for optimal compression. The other files consist
+    -- of those who are required to handle this archive (eg startupinstaller.sh and lzma bins)
+    local archdir = confdir .. "/tmp/arch"
+    local rootdir = confdir .. "/tmp"
+    local instconfdir = archdir .. "/config"
+
+    -- Part 1: Copy files that should be packed to sub archive
+    ----------------------------------------------------------
+    
+    os.mkdirrec(instconfdir)
     
     -- Configuration files
-    RequiredCopy(confdir .. "/config.lua", destdir)
-    os.copy(confdir .. "/package.lua", destdir)
-    os.copy(confdir .. "/run.lua", destdir)
-    os.copy(confdir .. "/welcome", destdir)
-    os.copy(confdir .. "/license", destdir)
-    os.copy(confdir .. "/finish", destdir)
+    RequiredCopy(confdir .. "/config.lua", instconfdir)
+    os.copy(confdir .. "/package.lua", instconfdir)
+    os.copy(confdir .. "/run.lua", instconfdir)
+    os.copy(confdir .. "/welcome", instconfdir)
+    os.copy(confdir .. "/license", instconfdir)
+    os.copy(confdir .. "/finish", instconfdir)
     
     -- Some internal stuff
-    RequiredCopy(ndir .. "/src/internal/startupinstaller.sh", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/internal/utils.sh", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/internal/about", confdir .. "/tmp")
+    RequiredCopy(ndir .. "/src/internal/about", archdir)
+    RequiredCopy(ndir .. "/src/internal/start", archdir)
     
     -- Terminfo's for BSD's
     for _, tos in ipairs(cfg.targetos) do
         if tos == "freebsd" or tos == "netbsd" or tos == "openbsd" then
-            local p = confdir .. "/tmp/terminfo"
+            local p = archdir .. "/terminfo"
             os.mkdirrec(p)
             RequiredCopyRec(ndir .. "/src/internal/terminfo", p)
             break
@@ -550,43 +423,43 @@ function PrepareArchive()
     end
     
     -- Lua scripts
-    os.mkdirrec(confdir .. "/tmp/shared")
-    RequiredCopy(ndir .. "/src/lua/deps.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/deps-public.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/main.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/install.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/attinstall.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/unattinstall.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/package.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/package-public.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/pkg/dpkg.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/pkg/generic.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/pkg/groups.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/pkg/pacman.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/pkg/rpm.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/pkg/slack.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/shared/package-public.lua", confdir .. "/tmp/shared")
-    RequiredCopy(ndir .. "/src/lua/shared/utils.lua", confdir .. "/tmp/shared")
-    RequiredCopy(ndir .. "/src/lua/shared/utils-public.lua", confdir .. "/tmp/shared")
-    RequiredCopy(ndir .. "/src/lua/screens/finishscreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/installscreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/langscreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/licensescreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/packagedirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/packagetogglescreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/selectdirscreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/summaryscreen.lua", confdir .. "/tmp")
-    RequiredCopy(ndir .. "/src/lua/screens/welcomescreen.lua", confdir .. "/tmp")
+    os.mkdirrec(archdir .. "/shared")
+    RequiredCopy(ndir .. "/src/lua/deps.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/deps-public.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/main.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/install.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/attinstall.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/unattinstall.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/package.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/package-public.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/pkg/dpkg.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/pkg/generic.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/pkg/groups.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/pkg/pacman.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/pkg/rpm.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/pkg/slack.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/shared/package-public.lua", archdir .. "/shared")
+    RequiredCopy(ndir .. "/src/lua/shared/utils.lua", archdir .. "/shared")
+    RequiredCopy(ndir .. "/src/lua/shared/utils-public.lua", archdir .. "/shared")
+    RequiredCopy(ndir .. "/src/lua/screens/finishscreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/installscreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/langscreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/licensescreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/packagedirscreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/packagetogglescreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/selectdirscreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/summaryscreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/screens/welcomescreen.lua", archdir)
     
     -- XDG utils
-    os.mkdir(confdir .. "/tmp/xdg-utils")
-    RequiredCopy(ndir .. "/src/xdg-utils/xdg-desktop-menu", confdir .. "/tmp/xdg-utils")
-    RequiredCopy(ndir .. "/src/xdg-utils/xdg-open", confdir .. "/tmp/xdg-utils")
+    os.mkdir(archdir .. "/xdg-utils")
+    RequiredCopy(ndir .. "/src/xdg-utils/xdg-desktop-menu", archdir .. "/xdg-utils")
+    RequiredCopy(ndir .. "/src/xdg-utils/xdg-open", archdir .. "/xdg-utils")
     
     -- Language files
     for _, f in pairs(cfg.languages) do
         local langsrc = confdir .. "/lang/" .. f
-        local langdest = destdir .. "/lang/" .. f
+        local langdest = instconfdir .. "/lang/" .. f
         
         os.mkdirrec(langdest)
         
@@ -599,25 +472,20 @@ function PrepareArchive()
     
     -- 'Extra' files
     if os.isdir(confdir .. "/files_extra/") then
-        os.mkdir(confdir .. "/tmp/files_extra")
-        RequiredCopyRec(confdir .. "/files_extra/", confdir .. "/tmp/files_extra/")
+        os.mkdir(archdir .. "/files_extra")
+        RequiredCopyRec(confdir .. "/files_extra/", archdir .. "/files_extra/")
     end
     
     print("Preparing/copying frontend binaries")
     
-    local binlist, frlist = { }, { }
-    local copybins = { "edelta", "surunner", "lock" }
+    local binlist = { }
+    local copybins = { "surunner", "lock" }
     
-    if cfg.archivetype == "lzma" then
-        table.insert(copybins, "lzma-decode")
-    end
-    
-    local copyfr = { }
     for _, fr in ipairs(cfg.frontends) do
         if fr == "ncurses" then
-            table.insert(copyfr, "ncurs")
+            table.insert(copybins, "ncurs")
         else
-            table.insert(copyfr, fr)
+            table.insert(copybins, fr)
         end
     end
     
@@ -628,73 +496,22 @@ function PrepareArchive()
                 print(string.format("Warning: No frontends for %s/%s", OS, ARCH))
             else
                 utils.tableappend(binlist, GetAllBins(dir, copybins))
-                utils.tableappend(frlist, GetAllBins(dir, copyfr))
             end
         end
     end
     
-    -- Copy all helper bins
+    -- Copy all bins
     for _, bin in ipairs(binlist) do
         local relbinpath = GetRelBinPath(bin)
-        local destpath = string.format("%s/tmp/%s", confdir, relbinpath)
+        local destpath = string.format("%s/%s", archdir, relbinpath)
         os.mkdirrec(utils.dirname(destpath))
         RequiredCopy(bin, destpath)
     end
-    
-    -- Find optimal delta paths
-    local optdeltas, topbin = GetOptDeltas(frlist)
-    os.mkdir(confdir .. "/tmp/bin")
-    local deltafile = io.open(string.format("%s/tmp/bin/deltas", confdir), "w")
-    
-    if not deltafile then
-        ThrowError("Failed to open delta file")
-    end
-    
-    -- Copy and prepare all frontends
-    for _, bin in ipairs(frlist) do
-        local relbinpath = GetRelBinPath(bin)
-        local destpath = string.format("%s/tmp/%s", confdir, relbinpath)
-        local binname = utils.basename(bin)
-        
-        os.mkdirrec(utils.dirname(destpath))
-
-        if optdeltas[relbinpath] then
-            local relbase = GetRelBinPath(optdeltas[relbinpath].base)
-            deltafile:write(string.format("%s %s\n", relbinpath, relbase))
-        end
-
-        if not optdeltas[relbinpath] then -- Top level bin?
-            if cfg.archivetype == "lzma" then
-                if os.execute(string.format("\"%s\" e \"%s\" \"%s.lzma\" 2>/dev/null", LZMABin,
-                            bin, destpath)) ~= 0 then
-                    ThrowError("Failed to pack binary %s", relbinpath)
-                end
-            else
-                RequiredCopy(bin, destpath)
-            end
-        else
-            local base = optdeltas[relbinpath].base
-            if os.execute(string.format("\"%s\" -q delta \"%s\" \"%s\" \"%s.diff\"", EdeltaBin,
-                                        ndir .. "/" .. base, bin, destpath)) ~= 0 then
-                ThrowError("Failed to diff binary: %s", relbinpath)
-            end
-            
-            if cfg.archivetype == "lzma" then
-                if os.execute(string.format("\"%s\" e \"%s.diff\" \"%s.diff.lzma\" 2>/dev/null", LZMABin,
-                            destpath, destpath)) ~= 0 then
-                    ThrowError("Failed to pack binary %s", relbinpath)
-                end
-                os.remove(destpath .. ".diff")
-            end
-        end
-    end
-    
-    deltafile:close()
-    
+       
     -- Intro picture; for backward compatibility we also check the main project dir
     if cfg.intropic ~= nil then
         if not os.fileexists(string.format("%s/files_extra/%s" , confdir, cfg.intropic)) then
-            ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.intropic), string.format("%s/tmp/files_extra/", confdir))
+            ret, msg = os.copy(string.format("%s/%s" , confdir, cfg.intropic), string.format("%s/files_extra/", archdir))
             if ret == nil then
                 print(string.format("Warning could not copy intro picture: %s", msg))
             end
@@ -702,29 +519,19 @@ function PrepareArchive()
     end
 
     if cfg.logo ~= nil then
-        RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.logo), string.format("%s/tmp/", confdir))
+        RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.logo), archdir)
     else
         -- Default logo
-        RequiredCopy(ndir .. "/src/img/installer.png", confdir .. "/tmp")
+        RequiredCopy(ndir .. "/src/img/installer.png", archdir)
     end
     
     if cfg.appicon ~= nil then
-        RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.appicon), string.format("%s/tmp/", confdir))
+        RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.appicon), archdir)
     else
         -- Default icon
-        RequiredCopy(ndir .. "/src/img/appicon.xpm", confdir .. "/tmp")
+        RequiredCopy(ndir .. "/src/img/appicon.xpm", archdir)
     end
 
-    -- Internal config file(only stores archive type for now)
-    local inffile, msg = io.open(string.format("%s/tmp/info", confdir), "w")
-
-    if inffile == nil then
-        ThrowError("Could not create internal info file for archive: %s", msg)
-    end
-                
-    inffile:write(cfg.archivetype)
-    inffile:close()
-    
     if pkg.enable then
         local depmap = { }
 
@@ -747,7 +554,7 @@ function PrepareArchive()
             
             for dep in pairs(depmap) do
                 local src = string.format("%s/deps/%s", confdir, dep)
-                local dest = string.format("%s/tmp/deps/%s", confdir, dep)
+                local dest = string.format("%s/deps/%s", archdir, dep)
                 local dlfile
                 
                 os.mkdirrec(dest)
@@ -756,7 +563,7 @@ function PrepareArchive()
                 RequiredCopy(cfgfile, dest)
                 
                 if pkg.externdeps and utils.tablefind(pkg.externdeps, dep) then
-                    dlfile = io.open(string.format("%s/tmp/deps/%s/dlfiles", confdir, dep), "w")
+                    dlfile = io.open(string.format("%s/deps/%s/dlfiles", archdir, dep), "w")
                     if not dlfile then
                         ThrowError("Failed to create list file for downloadable files.")
                     end
@@ -787,7 +594,7 @@ function PrepareArchive()
         -- Symbol map
         local sympath = confdir .. "/symmap.lua"
         if os.fileexists(sympath) then
-            os.copy(sympath, destdir)
+            os.copy(sympath, instconfdir)
         elseif pkg.autosymmap then
             print("Automatically generating symbol map file.")
             local binlist = "" -- All bins/libs for symmap
@@ -823,24 +630,63 @@ function PrepareArchive()
                 end
             end
             
-            if os.execute(string.format("%s/gensyms.sh %s -d %s %s", ndir, pathlist, destdir, binlist)) ~= 0 then
+            if os.execute(string.format("%s/gensyms.sh %s -d %s %s", ndir, pathlist, instconfdir, binlist)) ~= 0 then
                 print("WARNING: Failed to automaticly generate symbol map file.")
             end
         end
     end
-end
-
-function CreateArchive()
-    local archdir
-    local basename = "instarchive"
-
-    print("Generating archive...")
     
+    -- Installation files. These are archived additionally to reduce startup time.
+    print("Generating file archive(s)...")
+
     local dirs = GetFileDirs(confdir)
     
     for _, d in ipairs(dirs) do
-        PackDirectory(d, string.format("%s/tmp/%s", confdir, string.gsub(utils.basename(d), "files", basename)))
+        PackDirectory(d, string.format("%s/%s", archdir, string.gsub(utils.basename(d), "files", "instarchive")))
     end
+
+    -- Part 2: Copy all files required outside sub archive
+    --------------------------------------------------------
+    
+    -- Startup scripts
+    RequiredCopy(ndir .. "/src/internal/startupinstaller.sh", rootdir)
+    RequiredCopy(ndir .. "/src/internal/utils.sh", rootdir)
+
+    -- lzma bins
+    if cfg.archivetype == "lzma" then
+        local binlist = { }
+        for _, OS in ipairs(cfg.targetos) do
+            for _, ARCH in ipairs(cfg.targetarch) do
+                local dir = string.format("%s/bin/%s/%s", ndir, OS, ARCH)
+                if os.fileexists(dir) then
+                    utils.tableappend(binlist, GetAllBins(dir, { "lzma-decode" }))
+                end
+            end
+        end
+        
+        -- Copy all bins
+        for _, bin in ipairs(binlist) do
+            local relbinpath = GetRelBinPath(bin)
+            local destpath = string.format("%s/%s", rootdir, relbinpath)
+            os.mkdirrec(utils.dirname(destpath))
+            RequiredCopy(bin, destpath)
+        end
+    end
+    
+        -- Internal config file (only stores archive type for now)
+    local inffile, msg = io.open(string.format("%s/info", rootdir), "w")
+
+    if inffile == nil then
+        ThrowError("Could not create internal info file for archive: %s", msg)
+    end
+                
+    inffile:write(cfg.archivetype)
+    inffile:close()
+    
+    -- Part 3: Create sub archive
+    -----------------------------------------------------------
+    PackDirectory(archdir, rootdir .. "/subarch", false)
+    utils.removerec(archdir) -- Don't need those anymore
 end
 
 function CreateInstaller()
@@ -942,6 +788,5 @@ CheckArgs()
 Clean()
 Init()
 PrepareArchive()
-CreateArchive()
 CreateInstaller()
 Clean()

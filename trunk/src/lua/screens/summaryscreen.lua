@@ -56,7 +56,7 @@ Maintainer      %s
     if pkg.bins then
         text:add("\n\nINSTALLED EXECUTABLES\n")
         for _, v in ipairs(pkg.bins) do
-            text:add(string.format("%s/%s\n", pkg.getbindir(), v))
+            text:add(string.format("%s/%s\n", pkg.getbindir(), utils.basename(v)))
         end
     end
     

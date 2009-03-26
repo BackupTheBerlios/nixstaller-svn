@@ -23,67 +23,6 @@
 
 UNATTENDED=
 
-# Uses edelta to reconstruct frontend binaries
-# $1: Binary path
-# $2: source file
-# $3: diff file
-edelta()
-{
-    unlzma "$3" "$1"
-    
-    mv "$3" "$3.tmp"
-    "$1/edelta" -q patch "$2" "$3" "$3.tmp" >/dev/null
-}
-
-# Unpacks $1.lzma to lzma and removes $1.lzma
-# $1: File to handle
-# $2: Binary path
-unlzma()
-{
-    if [ $ARCH_TYPE = "lzma" -a ! -z "$1" -a -f "$1".lzma ]; then
-        "${2}/lzma-decode" "${1}.lzma" "$1" 2>&1 >/dev/null && rm "${1}.lzma"
-    fi
-}
-
-# Prepares frontend binary (extracting and patching)
-# $1: Binary path
-# $2: frontend
-prepbin()
-{
-    BIN="$1/$2"
-    PATCHORDER="$BIN"
-    TOPBIN=
-    
-    while [ ! -z "$BIN" ]
-    do
-        BASE=`awk '$1=="'"$BIN"'"{print $2}' ./bin/deltas`
-        
-        if [ -z "$BASE" ]; then
-            # Top bin
-            TOPBIN="$BIN"
-            BIN=
-        else
-            BIN="$BASE"
-            PATCHORDER="$BASE $PATCHORDER"
-        fi
-    done
-    
-    PREV=
-    for BIN in $PATCHORDER
-    do
-        if [ ! -f "$BIN" ]; then # Not prepared yet?
-            if [ "$BIN" = "$TOPBIN" ]; then
-                unlzma "$BIN" "$1"
-            else
-                unlzma "$BIN.diff" "$1"
-                edelta "$1" "$PREV" "$BIN.diff"
-                mv "$BIN.diff" "$BIN"
-            fi
-        fi
-        PREV="$BIN"
-    done
-}
-
 # $1: Base directory
 # $2: Base lib name
 createliblist()
@@ -91,23 +30,27 @@ createliblist()
     echo `find "$1/$2"* 2>/dev/null | sort -nr`
 }
 
+checksys()
+{
+    if [ ! -d "./bin/$CURRENT_OS/" -a "$CURRENT_OS" != "linux" ]; then
+        echo "Warning: No binaries for \"$CURRENT_OS\" found, trying to default to Linux..."
+        CURRENT_OS="linux"
+    fi
+
+    if [ ! -d "./bin/$CURRENT_OS/$CURRENT_ARCH/" -a "$CURRENT_ARCH" != "x86" ]; then
+        echo "Warning: No binaries for \"$CURRENT_ARCH\" found, trying to default to x86..."
+        CURRENT_ARCH="x86"
+    fi
+}
+
 configure()
 {
     echo "Collecting info for this system..."
     
-    echo "Operating system: $CURRENT_OS"
+    checksys
     
-    if [ ! -d "./bin/$CURRENT_OS/" ]; then
-        echo "Warning: No installer for \"$CURRENT_OS\" found, defaulting to Linux..."
-        CURRENT_OS="linux"
-    fi
-
+    echo "Operating system: $CURRENT_OS"   
     echo "CPU Arch: $CURRENT_ARCH"
-
-    if [ ! -d "./bin/$CURRENT_OS/$CURRENT_ARCH/" ]; then
-        echo "Warning: No installer for \"$CURRENT_ARCH\" found, defaulting to x86..."
-        CURRENT_ARCH="x86"
-    fi
     
     while [ "$1" != "" ]
     do
@@ -130,10 +73,63 @@ configure()
     done
 }
 
+# Taken from makeself.sh
+progress()
+{
+    while read a; do
+        printf .
+    done
+}
+
+extractsub()
+{
+    printf "Uncompressing sub archive"
+    if [ $ARCH_TYPE = "gzip" ]; then
+        cat subarch | gzip -cd | tar xvf - 2>&1 | progress
+    elif [ $ARCH_TYPE = "bzip2" ]; then
+        cat subarch | bzip2 -d | tar xvf - 2>&1 | progress
+    else # lzma
+        checksys
+        
+        # Find usable lzma-decode binary
+        
+        LZMA_DECODE=
+        for LC in `createliblist bin/$CURRENT_OS/$CURRENT_ARCH libc.so.`
+        do
+            if [ ! -d "${LC}" ]; then
+                continue
+            fi
+            
+            if [ -f "${LC}/lzma-decode" ]; then
+                if haslibs "${LC}/lzma-decode" ; then
+                    LZMA_DECODE="${LC}/lzma-decode"
+                    break
+                fi
+            fi
+        done
+        
+        if [ -z "$LZMA_DECODE" ]; then
+            # Static binary?
+            if [ -f "bin/$CURRENT_OS/$CURRENT_ARCH/lzma-decode" ]; then
+                LZMA_DECODE="bin/$CURRENT_OS/$CURRENT_ARCH/lzma-decode"
+            fi
+        fi
+        
+        if [ -z $LZMA_DECODE ]; then
+            echo "Error: No lzma decoder found for $CURRENT_OS/$CURRENT_ARCH"
+            exit 1
+        fi
+        
+        $LZMA_DECODE subarch - 2>/dev/null | tar xvf - 2>&1 | progress
+    fi
+    
+    echo
+}
+
 launchfrontend()
 {
     DIR="$1"
-    STATIC=$2
+    STATIC=$2  
     
     for FR in $FRONTENDS
     do
@@ -141,17 +137,10 @@ launchfrontend()
             continue
         fi
         
-        if [ -z "$STATIC" ]; then
-            [ $ARCH_TYPE != "lzma" ] || haslibs "${DIR}/lzma-decode" || continue
-            haslibs "${LC}/edelta" || continue
-        fi
-
-        prepbin "$DIR" "$FR"
-        
         if [ -f "${DIR}/$FR" ]; then
             FRBIN="${DIR}/$FR"
             
-            # deltas and lzma packed bins probably aren't executable yet
+            # Incase it isn't executable yet...
             # NOTE: This needs to be before the 'haslibs' call, since ldd wants an executable file
             chmod +x $FRBIN
             
@@ -179,9 +168,10 @@ launchfrontend()
 # Check which archive type to use
 ARCH_TYPE=`cat info`
 if [ -z "$ARCH_TYPE" ]; then
-    ARCH_TYPE="gzip"
+    ARCH_TYPE="lzma"
 fi
 
+extractsub
 configure $*
 
 touch frontendstarted # Frontend removes this file if it's started
@@ -191,19 +181,14 @@ do
     if [ ! -d "${LC}" ]; then
         continue
     fi
-
-    if [ $ARCH_TYPE = "lzma" -a ! -f "${LC}/lzma-decode" ]; then
-        continue # No usable lzma-decoder
-    fi
     
     launchfrontend "$LC"
 done
 
 # If nothing found, check for any static bins (ie. openbsd ncurses)
 DIR="bin/$CURRENT_OS/$CURRENT_ARCH"
-if [ $ARCH_TYPE != "lzma" -o -f "${DIR}/lzma-decode" ]; then
-    launchfrontend "$DIR" 1
-fi
+[ $CURRENT_OS = "openbsd" ] && echo $FRONTENDS | grep -e "fltk" -e "gtk" >/dev/null && echo "NOTE: Graphical frontends are only supported for OpenBSD 4.4."
+launchfrontend "$DIR" 1
 
 
 echo "Error: Couldn't find any suitable frontend for your system"

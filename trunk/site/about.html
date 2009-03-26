@@ -1,12 +1,23 @@
 <html>
 
+<style type="text/css">
+h1.about {font-size: 18px; padding-top: 10px; padding-bottom: 8px; }
+h2.about {font-size: 12px; padding-top: 8px; padding-bottom: 8px; }
+table.about { border: 1px solid grey; border-right: 0; }
+td.about { border: 1px solid grey; border-bottom: 0; border-left: 0; }
+tr.about { border: 1px solid grey; border-bottom: 0; }
+th.about { border: 1px solid grey; border-bottom: 0; border-top: 0; border-left: 0; }
+}
+</style>
+
+
 <head>
   <title>About Nixstaller</title>
 </head>
 
-Nixstaller is an Open Source project with the goal to create user friendly and flexible installers that work on various UNIX like systems.<br>
+Nixstaller is an Open Source project with the goal to create user friendly and flexible installers that work on various UNIX like systems.
 <br>
-<h3>Project Goals</h3>
+<h1 class="about">Project Goals</h1>
 Nixstaller is created with the following goals in mind:
 <ul>
 <li>Work on various UNIX like systems. Ideally as much as possible.</li>
@@ -16,61 +27,60 @@ Nixstaller is created with the following goals in mind:
 <li>Very few dependencies, especially for the end user.</li>
 <li>Support different frontends, to make sure that the installer will run on as much as possible systems and possibly have a native look.</li>
 <li>Make the creation of installers both easy and flexible.</li>
-<li>Installed software from Nixstaller should ideally be managed by the user's package manager, if not possible scripts will be provided.</li>
-<li>Dependency handling should not mess with existing files or install duplicate files.</li>
+<li>When using 'Package Mode' (see below), the installer's software should ideally be installed by the user's package manager, if not possible scripts will be provided to manage the software. All files, including dependencies, should not conflict with existing files or disturb the package manager.</li>
 </ul>
 
-<h3>Current Features</h3>
+<h1 class="about">Current Features</h1>
 Most of the feature goals are already implemented, though in future releases many of them will be furtherly extended.
 
-<h4>Supported Systems</h4>
+<h2 class="about">Supported Systems</h2>
 Nixstaller runs on many different systems, the table below lists those which are currently supported.
-<table border="1" summary="Supported systems">
+<table border="0" cellspacing="0" cellpadding="0" class="about" summary="Supported systems">
   <tbody>
-    <tr>
-      <th>OS</th>
-      <th>Arch</th>
-      <th>Tested on</th>
-      <th>Unsupported versions</th>
+    <tr class="about">
+      <th class="about">OS</th>
+      <th class="about">Arch</th>
+      <th class="about">Tested on</th>
+      <th class="about">Unsupported versions</th>
     </tr>
-    <tr>
-      <td>NetBSD</td>
-      <td>x86, x86_64</td>
-      <td>2.1, 3.1, 4.0</td>
-      <td>x86: Anything before 2.X<br>x86_64: Anything before 4.X</td>
+    <tr class="about">
+      <td class="about">NetBSD</td>
+      <td class="about">x86, x86_64</td>
+      <td class="about">3.1, 4.0, 5.0-rc2</td>
+      <td class="about">Anything before 3.X is unknown to work.</td>
     </tr>
-    <tr>
-      <td>FreeBSD</td>
-      <td>x86, x86_64</td>
-      <td>5.5, 6.2, 7.0-rc1, PCBSD 1.4</td>
-      <td>x86: Anything before 5.X<br>x86_64: Anything before 6.X</td>
+    <tr class="about">
+      <td class="about">FreeBSD</td>
+      <td class="about">x86, x86_64</td>
+      <td class="about">6.2, 7.0, 7.1 and PC-BSD 7.02</td>
+      <td class="about">Anything before 6.X</td>
     </tr>
-    <tr>
-      <td>Linux</td>
-      <td>x86, x86_64</td>
-      <td>PCLinuxOS 0.93 and 0.94, OpenSUSE 10.3, Arch Linux, Fedora Core 6 and 8, Knoppix 3.3-2003-11-19, Debian 4.0, Slackware 12, Zenwalk 4.8, Kubuntu 7.10</td>
-      <td>x86: Very old distributions (ie. systems using GCC 2.X)<br>x86_64: Older distributions using libstdc++.so.5 (gcc 3.3)</td>
+    <tr class="about">
+      <td class="about">Linux</td>
+      <td class="about">x86, x86_64</td>
+      <td class="about">PCLinuxOS 0.93 and 2009.1, OpenSUSE 11.1, Arch Linux, Fedora Core 10, Knoppix 3.3-2003-11-19, Debian Sarge, Sid and Lenny, Zenwalk 6.0, Kubuntu 7.10, Ubuntu 8.10, Mandriva 2008 and 2009.</td>
+      <td class="about">x86: Very old distributions (ie. systems using GCC 2.X).</td>
     </tr>
-    <tr>
-      <td>OpenBSD</td>
-      <td>x86</td>
-      <td>3.9, 4.0, 4.1, 4.2</td>
-      <td>Anything before 3.9</td>
+    <tr class="about">
+      <td class="about">OpenBSD</td>
+      <td class="about">x86</td>
+      <td class="about">3.9, 4.4</td>
+      <td class="about">Anything before 3.9 is unknown to work.</td>
     </tr>
-        <tr>
-    <td>Solaris</td>
-      <td>x86</td>
-      <td>Nexenta alpha 7, Solaris 10-4</td>
-      <td>Others (including older Solaris 10 versions) untested</td>
+    <tr class="about">
+    <td class="about">Solaris</td>
+      <td class="about">x86</td>
+      <td class="about">Solaris 10-4, 10-6 and OpenSolaris 2008-11</td>
+      <td class="about">Others (including older Solaris 10 versions) are unknown to work.</td>
     </tr>
   </tbody>
 </table>
 <br>
 
-<h4>Translations</h4>
+<h2 class="about">Translations</h2>
 Nixstaller can be fully translated (including any new text coming from scripts). It's up to the install creator if a suitable translation will be autoselected or should be selected by the user.
 
-<h4>User interaction</h4>
+<h2 class="about">User interaction</h2>
 Nixstaller supports both attended and unattended installations.<br>
 <br>
 With attended installations frontends are used to communicate with the end user. The frontends allow the user to control and view the installation process. Because not every system is the same, Nixstaller comes with three different frontends:
@@ -79,30 +89,28 @@ With attended installations frontends are used to communicate with the end user.
 <li>The FLTK frontend is a graphic frontend using X11. Because it's linked staticly it runs on almost every system which has X11 running.</li>
 <li>The GTK+2 frontend is also a graphic frontend, but will only work with systems which have GTK 2.4 and later. For systems such as those using Gnome it will have a 'native' look.</li>
 </ul>
-When the installer is run, a suitable frontend is automatically choosen (in order: GTK+2, FLTK, ncurses). The install creator can decide which frontends should be included.<br>
+When the installer is run, a suitable frontend is automatically choosen (in order: GTK+2, FLTK, ncurses). The install creator can decide which frontends should be included. As soon as a frontend is launched the user will be presented by several 'installation screens'. These screens are used to communicate with the user and can be used to show an intro, let the user fill in some info, show the installation progress etc. A range of predefined screens exist for most common operations. It's also possible to create new installation screens. The install creator can place a range of different 'widgets' on newly created screens, such as inputfields, checkboxes and images.<br>
 <br>
 Unattended installations don't need any user interaction. The installation process is configured through commandline parameters and any output is directly printed to the console.
 
-<h4>Installation Process</h4>
-As been said, the user can control the installation process. In Nixstaller this is accomplished by the usage of 'installation screens'. There are a few predefined installation screens, that will let the user select destination paths, watch the installation progress, show an intro (optionally with graphics) etc. New installation screens can also be created manually. The install creator can place a range of different 'widgets' on newly created screens, such as inputfields, checkboxes and images.<br>
-<br>
-The creation of new screens, the installation process itself and configuration of the installer is all done via Lua scripts. Lua is a simple and easy to read scripting language. More info can be found on <a href="http://www.lua.org">the Lua homepage</a>. The Nixstaller manual also has an extensive Lua guide.<br>
+<h2 class="about">Configuration</h2>
+The creation of new screens, the installation process itself and configuration of the installer is all done via Lua scripts. Lua is a simple and easy to read and write scripting language. More info can be found on <a href="http://www.lua.org">the Lua homepage</a>. The Nixstaller manual also has an extensive Lua guide.<br>
 <br>
 Nixstaller has extended the Lua libraries with a whole range of new functions. These functions are used to communicate with the user's OS (Operating System), interact with the user, install desktop menu entries, extract installation files etc.
 
-<h4>Installation Types</h4>
-Nixstaller is flexible about how the software is installed. Some examples are simply extracting files to a specified location and a installer that will compile software. Nixstaller also has a special method, called 'Package Mode', which can be used to let the user's package manager package and install the software.<br>
+<h2 class="about">Installation Types</h2>
+Nixstaller is flexible about how the software is installed. Some examples are installers that simply extract some files to a specified location or an installer that will compile software. Nixstaller also has a special installation type called 'Package Mode' which can be used to let the user's package manager package and install the software.<br>
 <br>
 Package Mode is especially handy for software managing (uninstallation, updating). Currently the following package managers are supported: rpm, dpkg (deb), pacman (arch linux) and installpkg (slackware). If the installer is unable to use a package manager (or told not to), the installer will instead simply install the files and create an uninstallation script. When this script is called, it will verify all installed files with MD5 sums before they are removed.
 
-<h4>Dependency handling</h4>
+<h2 class="about">Dependency handling</h2>
 When using 'Package Mode' (see above) Nixstaller can also handle software dependencies. Required dependencies can easily be found by scanning binaries for required shared libraries. It's also possible to specify your own method for gathering required dependencies. In case a dependency is missing or is (binary) incompatible the user will then either be notified or the installer can install it's own supplied version.<br>
 <br>
 Nixstaller knows two dependency types: simple and full. Simple dependencies don't provide any files and are purely used to let the installer know what to find. If a simple dependency is not found (or incompatible) the installer will warn the user about it. Full dependencies are used to ship dependency files with the installer. In case a full dependency was not found (or incompatible) these files will be installed. Any installed dependency files are installed to a seperate place so they cannot disturb or be disturbed by for example package managers. To keep the size of the installer low one or more full dependencies can be made 'external' so the installer can download them when it needs to.<br>
 <br>
 Nixstaller has a tool that helps the install creator for finding and handling necessary software dependencies. Some of the tool's features are dependency scanning and automatically creating 'dependency packages' (= a bundle of files used to define a dependency).
 
-<h4>Other Features</h4>
+<h2 class="about">Other Features</h2>
 <ul>
 <li>Creation of desktop menu entries (following the freedesktop standards).</li>
 <li>Installers can be compressed with gzip, bzip2 and lzma.</li>
@@ -111,7 +119,7 @@ Nixstaller has a tool that helps the install creator for finding and handling ne
 <li>To save space, similar frontend binaries are compared to each other and only the differences are packaged with the installer.</li>
 </ul>
 
-<h3>Future Releases</h3>
+<h1 class="about">Future Releases</h1>
 The following features are planned or will be extended in future releases:
 <ul>
 <li>Language translations: A way to handle different encodings, currently only UTF-8 is supported.</li>

@@ -230,7 +230,7 @@ Maintainer:     %s
     if pkg.bins then
         install.print("\n\nINSTALLED EXECUTABLES\n")
         for _, v in ipairs(pkg.bins) do
-            install.print(string.format("%s/%s\n", pkg.getbindir(), v))
+            install.print(string.format("%s/%s\n", pkg.getbindir(), utils.basename(v)))
         end
     end
     

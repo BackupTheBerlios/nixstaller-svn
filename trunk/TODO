@@ -1,32 +1,6 @@
 OVERALL
-- OpenBSD GUI bins? (update notes, changelog)
-
-
-TEST
-- New delta code (mainly when new bins are ready and asserts)
-
-
-DOCS
-- CHANGELOG
-
-
-
-RELEASE
-- Remove/disable asserts in lua code
-- Reenable MD5 checking for InitDeltaBins()
-- Final bindeltas file
-- about, nixstaller version etc
-- Enable RELEASE, disable libsu logging
-
-
-
------------------------------------------------------------------------
-LATER
------------------------------------------------------------------------
-
-OVERALL
 - Add trap in geninstall.sh which cleans stuff?
-- Qt/KDE frontend
+- Qt/KDE frontend?
 - Fix installation if destdir has no read access?
 - Use locale fix from latest kdesu?
 - Better util.a configure testing?
@@ -46,6 +20,8 @@ OVERALL
 - Configurable background parts (background images)
 - Seperate dep installing and collecting? --> Allows to configure them during installation
 - Dump lib info when no frontend could be found (so user can install compat packages)
+- Cleaner way for telling where surunner is (via commandline arg?)
+- Fully override OS/ARCH when no suitable bin was found
 
 
 PACKAGING
@@ -73,6 +49,7 @@ NCURSES
 
 
 GTK
+- OpenBSD: Check why png's (and others?) don't load
 
 
 FLTK
