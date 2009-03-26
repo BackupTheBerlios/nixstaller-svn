@@ -20,14 +20,17 @@
 
 
 #include <QApplication>
+#include "modechooser.h"
 #include "nixstbuild.h"
 
 int main(int argc, char *argv[])
 {
-      Q_INIT_RESOURCE(application);
-      QApplication app(argc, argv);
-      nixstbuild * mw = new nixstbuild();
-      mw->show();
-      return app.exec();
+    Q_INIT_RESOURCE(application);
+    QApplication app(argc, argv);
+
+    CModeChooser *mchooser = new CModeChooser(0, Qt::SplashScreen);
+    mchooser->show();
+
+    return app.exec();
 }
 

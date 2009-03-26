@@ -37,17 +37,17 @@
       <version>4</version>
       <includestyle>4</includestyle>
       <designerintegration>ExternalDesigner</designerintegration>
-      <qmake>/usr/bin/qmake-qt4</qmake>
-      <designer>/usr/bin/designer-qt4</designer>
+      <qmake>/usr/bin/qmake</qmake>
+      <designer>/usr/bin/designer</designer>
       <root>/usr/lib/qt4</root>
       <designerpluginpaths/>
     </qt>
     <references/>
     <codecompletion>
-      <automaticCodeCompletion>false</automaticCodeCompletion>
+      <automaticCodeCompletion>true</automaticCodeCompletion>
       <automaticArgumentsHint>true</automaticArgumentsHint>
       <automaticHeaderCompletion>true</automaticHeaderCompletion>
-      <codeCompletionDelay>250</codeCompletionDelay>
+      <codeCompletionDelay>350</codeCompletionDelay>
       <argumentsHintDelay>300</argumentsHintDelay>
       <headerCompletionDelay>250</headerCompletionDelay>
       <showOnlyAccessibleItems>false</showOnlyAccessibleItems>
@@ -58,7 +58,7 @@
       <namespaceAliases>std=_GLIBCXX_STD;__gnu_cxx=std</namespaceAliases>
       <processPrimaryTypes>true</processPrimaryTypes>
       <processFunctionArguments>false</processFunctionArguments>
-      <preProcessAllHeaders>false</preProcessAllHeaders>
+      <preProcessAllHeaders>true</preProcessAllHeaders>
       <parseMissingHeaders>false</parseMissingHeaders>
       <resolveIncludePaths>true</resolveIncludePaths>
       <alwaysParseInBackground>true</alwaysParseInBackground>
@@ -143,11 +143,11 @@
   </kdevdebugger>
   <kdevtrollproject>
     <run>
-      <mainprogram>/home/internetnightmare/Projects/nixstbuild</mainprogram>
+      <mainprogram>/home/inightmare/Projects/nixstbuild</mainprogram>
       <programargs/>
       <directoryradio>executable</directoryradio>
       <globaldebugarguments/>
-      <globalcwd>/home/internetnightmare/Projects/nixstbuild</globalcwd>
+      <globalcwd>/home/inightmare/Projects/nixstbuild</globalcwd>
       <useglobalprogram>false</useglobalprogram>
       <terminal>false</terminal>
       <autocompile>false</autocompile>
@@ -155,13 +155,13 @@
       <autokdesu>false</autokdesu>
       <envvars/>
       <runarguments>
-        <nixstbuild/>
+        <nixstbuild></nixstbuild>
       </runarguments>
       <cwd>
         <nixstbuild>/home/internetnightmare/Projects/nixstbuild</nixstbuild>
       </cwd>
       <debugarguments>
-        <nixstbuild/>
+        <nixstbuild></nixstbuild>
       </debugarguments>
     </run>
     <general>
@@ -181,6 +181,8 @@
       <replacePaths>false</replacePaths>
       <disableDefaultOpts>true</disableDefaultOpts>
       <enableFilenamesOnly>false</enableFilenamesOnly>
+      <showVariablesInTree>true</showVariablesInTree>
+      <showParseErrors>true</showParseErrors>
     </qmake>
     <subclassing/>
   </kdevtrollproject>
