@@ -18,6 +18,7 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 #include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
 #include "luadirselector.h"

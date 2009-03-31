@@ -1,0 +1,81 @@
+# -*- coding: utf-8 -*-
+
+import sys, platform
+
+EnsureSConsVersion(0,96,91)
+
+opts = Options()
+opts.Add('CC', 'The C compiler', 'gcc')
+opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('OS', 'Manually overide target OS', '')
+opts.Add('CPU', 'Manually overide target arch', '')
+
+env = Environment(options = opts, CCFLAGS = Split("-Wall -g"), LIBS='', CPPDEFINES=["-DDEBUG"])
+
+Help(opts.GenerateHelpText(env))
+
+if not env['OS']:
+    cur_os = sys.platform.rstrip('1234567890')
+else:
+    cur_os = env['OS']
+    
+if not env['CPU']:
+    cur_arch = platform.machine()
+else:
+    cur_arch = env['CPU']
+    
+if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
+    cur_arch = "x86"
+elif cur_arch == 'amd64':
+    cur_arch = "x86_64"
+
+if cur_os == "linux":
+    env.Append(CCFLAGS = Split('$CCFLAGS -ffunction-sections -fdata-sections'))
+    env.Append(LINKFLAGS = Split('$LINKFLAGS -Wl,--gc-sections'))
+
+if cur_os == "netbsd" or cur_os == "freebsd":
+    env.Append(CCFLAGS=Split('$CCFLAGS -O2')) # -Os segfaults on NetBSD/FreeBSD exceptions, so use O2 instead
+else:
+    env.Append(CCFLAGS=Split('$CCFLAGS -Os'))
+
+# OS/Arch specific dirs
+lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
+inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
+
+env.Append(LIBPATH=[lib_dir])
+env.Append(CPPPATH=['.', inc_dir, 'include/', 'include/libelf/'+cur_os+'/'+cur_arch, 'include/lua'])
+
+if not env.GetOption('clean'):
+    conf = env.Configure()
+
+    if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
+        conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
+            
+    if not conf.CheckType('Elf32_Verdef', '#include "elf.h"'):
+        print "Elf32_Verdef needs link.h?"
+        if conf.CheckType('Elf32_Verdef', '#include "link.h" #include "elf.h"'):
+            conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
+            conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
+    else:
+        conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
+        conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
+
+    env = conf.Finish()
+elif env.GetOption('clean'):
+    # Make sure that scons properly cleans everything
+    Execute(Delete('main/.sconsign'))
+    Execute(Delete('ncurses/.sconsign'))
+    Execute(Delete('fltk/.sconsign'))
+    Execute(Delete('.sconf_temp'))
+    Execute(Delete('.sconsign.dblite'))
+
+
+env.Object('libmd5/md5.c')
+
+env.VariantDir('build/main', 'main', 0)
+main = env.Library("build/main/main", Split('libmd5/md5.o build/main/elfutils.cpp build/main/main.cpp build/main/utils.cpp build/main/vasprintf.c build/main/lua/lua.cpp build/main/lua/luafunc.cpp build/main/lua/luaclass.cpp build/main/lua/luatable.cpp'))
+
+env.VariantDir('build/main_ap', 'main', 0)
+main_ap = env.Library("build/main_ap/main_ap", Split('libmd5/md5.o build/main_ap/elfutils.cpp build/main_ap/main.cpp build/main_ap/utils.cpp build/main_ap/vasprintf.c build/main_ap/lua/lua.cpp build/main_ap/lua/luafunc.cpp build/main_ap/lua/luaclass.cpp build/main_ap/lua/luatable.cpp'), CPPPATH=Split('$CPPPATH include/stdcxx include/stdcxx/cfg/'+cur_os+'/'+cur_arch), CXX='$CC')
+
+Default(env.Install(lib_dir, main), env.Install(lib_dir, main_ap))

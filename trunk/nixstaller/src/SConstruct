@@ -1576,10 +1576,12 @@ libc_ver = ''
 env.Append(LIBPATH=[lib_dir, 'libsu/', '../../shared/'+lib_dir])
 env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/', 'include/ncurses', 'include/gtk', '../../shared', '../../shared/include', '../../shared/include/libelf/'+cur_os+'/'+cur_arch])
 
+mainlib = 'main'
 if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
     env.Append(LIBS=Split('std supc++ m'))
     env['CXX'] = '$CC'
-    env.Append(CPPPATH=['include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    env.Append(CPPPATH=['../../shared/include/stdcxx', '../../shared/include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    mainlib = 'main_ap'
     
 # Current version
 curnixstversion = '0.5'
@@ -1844,7 +1846,7 @@ lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
 # Frontend library (also includes code for Lua runner)
 frontend = env.Library('main/frontend/frontend', Split('main/frontend/attinstall.cpp main/frontend/basescreen.cpp main/frontend/curl.cpp main/frontend/install.cpp main/frontend/luacfgmenu.cpp main/frontend/luacheckbox.cpp main/frontend/luadepscreen.cpp main/frontend/luadirselector.cpp main/frontend/luagroup.cpp main/frontend/luainput.cpp main/frontend/lualabel.cpp main/frontend/luamenu.cpp main/frontend/luaprogressbar.cpp main/frontend/luaprogressdialog.cpp main/frontend/luaradiobutton.cpp main/frontend/run.cpp main/frontend/luatextfield.cpp main/frontend/luawidget.cpp main/frontend/unattinstall.cpp main/frontend/utils.cpp'))
 
-env.Prepend(LIBS = Split('frontend main su lua elf curl z'))
+env.Prepend(LIBS = Split('frontend '+mainlib+' su lua elf curl z'))
 
 # UNDONE?
 if cur_os == 'netbsd':

@@ -21,7 +21,7 @@ env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.'])
 if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
     #env.Append(LIBS=Split('std supc++ m'))
     env['CXX'] = '$CC'
-    env.Append(CPPPATH=['../include/stdcxx', '../include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    env.Append(CPPPATH=['../../../shared/include/stdcxx', '../../../shared//include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
     
 Help(opts.GenerateHelpText(env))
 
