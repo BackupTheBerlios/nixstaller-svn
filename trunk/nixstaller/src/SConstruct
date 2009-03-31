@@ -1573,8 +1573,8 @@ lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
 inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
 libc_ver = ''
 
-env.Append(LIBPATH=[lib_dir, 'libsu/'])
-env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/libelf/'+cur_os+'/'+cur_arch, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
+env.Append(LIBPATH=[lib_dir, 'libsu/', '../../shared/'+lib_dir])
+env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/', 'include/ncurses', 'include/gtk', '../../shared', '../../shared/include', '../../shared/include/libelf/'+cur_os+'/'+cur_arch])
 
 if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
     env.Append(LIBS=Split('std supc++ m'))
@@ -1841,9 +1841,6 @@ libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 # Builds lock tool
 lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
 
-# Builds main lib (shared with all including Nixstbuild)
-main = env.Library("main/main", Split('libmd5/md5.c main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
-
 # Frontend library (also includes code for Lua runner)
 frontend = env.Library('main/frontend/frontend', Split('main/frontend/attinstall.cpp main/frontend/basescreen.cpp main/frontend/curl.cpp main/frontend/install.cpp main/frontend/luacfgmenu.cpp main/frontend/luacheckbox.cpp main/frontend/luadepscreen.cpp main/frontend/luadirselector.cpp main/frontend/luagroup.cpp main/frontend/luainput.cpp main/frontend/lualabel.cpp main/frontend/luamenu.cpp main/frontend/luaprogressbar.cpp main/frontend/luaprogressdialog.cpp main/frontend/luaradiobutton.cpp main/frontend/run.cpp main/frontend/luatextfield.cpp main/frontend/luawidget.cpp main/frontend/unattinstall.cpp main/frontend/utils.cpp'))
 
@@ -1878,7 +1875,7 @@ if cur_os != 'darwin':
     Default(env.Install(bin_dir, Flatten(gtk)))
 
 Default(env.Install(bin_dir, Flatten(fltk) + Flatten(gtk)))
-Default(env.Install(lib_dir, Flatten(libsu) + Flatten(main) + Flatten(frontend)))
+Default(env.Install(lib_dir, Flatten(libsu) + Flatten(frontend)))
 
 if cur_os == 'openbsd':
     Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(surunner)))
