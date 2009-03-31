@@ -19,6 +19,8 @@
 
 #include "ncurses.h"
 #include "installer.h"
+#include "main/frontend/run.h"
+#include "main/frontend/utils.h"
 #include "main/lua/lua.h"
 #include "tui/tui.h"
 #include "tui/dialog.h"

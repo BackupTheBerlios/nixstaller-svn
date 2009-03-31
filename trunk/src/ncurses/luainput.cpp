@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/frontend/utils.h"
 #include "luainput.h"
 #include "tui/box.h"
 #include "tui/inputfield.h"

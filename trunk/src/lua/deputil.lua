@@ -15,10 +15,10 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
-dofile(ndir .. "/src/lua/shared/utils.lua")
-dofile(ndir .. "/src/lua/shared/utils-public.lua")
-dofile(ndir .. "/src/lua/shared/package-public.lua")
-dofile(ndir .. "/src/lua/deptemplates.lua")
+loadlua("shared/utils.lua")
+loadlua("shared/utils-public.lua")
+loadlua("shared/package-public.lua")
+loadlua("deptemplates.lua")
 
 -- UNDONE: Remove(?)
 local templibcount, tempcount = 0, 0

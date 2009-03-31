@@ -38,8 +38,6 @@ function install.newscreen(t) -- Overide function
 end
 
 -- Initialize default screens
-package.path = "?.lua"
-package.cpath = ""
 LangScreen = require "langscreen"
 OLDG.WelcomeScreen = require "welcomescreen"
 OLDG.LicenseScreen = require "licensescreen"
@@ -51,8 +49,8 @@ OLDG.SummaryScreen = require "summaryscreen"
 OLDG.FinishScreen = require "finishscreen"
 OLDG.install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
 
-if os.fileexists("config/run.lua") then
-    loadrun("config")
+if os.fileexists(install.configdir .. "/run.lua") then
+    loadrun(install.configdir)
     if Init then
         Init()
     end
@@ -62,7 +60,7 @@ end
 install.addscreen(LangScreen)
 
 if (install.screenlist ~= nil and #install.screenlist > 0) then
-    for _, s in pairs(install.screenlist) do
+    for _, s in ipairs(install.screenlist) do
         install.addscreen(s)
     end
 else

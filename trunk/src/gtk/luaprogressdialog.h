@@ -20,7 +20,7 @@
 #ifndef GTK_LUAPROGRESSDIALOG_H
 #define GTK_LUAPROGRESSDIALOG_H
 
-#include "main/install/luaprogressdialog.h"
+#include "main/frontend/luaprogressdialog.h"
 
 class CLuaProgressDialog: public CBaseLuaProgressDialog
 {

@@ -20,7 +20,7 @@
 #ifndef GTK_LUARADIOBUTTON_H
 #define GTK_LUARADIOBUTTON_H
 
-#include "main/install/luaradiobutton.h"
+#include "main/frontend/luaradiobutton.h"
 #include "luawidget.h"
 
 class CLuaRadioButton: public CBaseLuaRadioButton, public CLuaWidget

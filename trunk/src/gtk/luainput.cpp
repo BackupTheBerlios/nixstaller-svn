@@ -18,6 +18,8 @@
 */
 
 #include <locale.h>
+
+#include "main/frontend/utils.h"
 #include "gtk.h"
 #include "luainput.h"
 

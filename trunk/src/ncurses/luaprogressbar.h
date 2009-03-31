@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUAPROGRESSBAR_H
 #define NCURSES_LUAPROGRESSBAR_H
 
-#include "main/install/luaprogressbar.h"
+#include "main/frontend/luaprogressbar.h"
 #include "luawidget.h"
 
 namespace NNCurses {

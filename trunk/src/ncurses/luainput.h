@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUAINPUT_H
 #define NCURSES_LUAINPUT_H
 
-#include "main/install/luainput.h"
+#include "main/frontend/luainput.h"
 #include "luawidget.h"
 
 namespace NNCurses {

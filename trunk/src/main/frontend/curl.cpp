@@ -22,6 +22,7 @@
 #include "curl.h"
 #include "main/main.h"
 #include "main/exception.h"
+#include "main/frontend/utils.h"
 
 // -------------------------------------
 // Curl Wrapper Class

@@ -22,6 +22,17 @@ version = "0.5"
 cfg = { unopts = { } }
 pkg = { }
 
+package.path = ""
+for _, p in ipairs{ ".", "screens", "pkg" } do
+    package.path = string.format("%s;%s/%s/?.lua", package.path, luasrcdir, p)
+end
+
+package.cpath = ""
+
+function loadlua(f)
+    return dofile(luasrcdir .. "/" .. f)
+end
+
 -- Functions for easy way to enable common options
 -- The internal variable is used to check if opts were defined here and
 -- should be handled by the user or automaticly

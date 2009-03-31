@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUALABEL_H
 #define NCURSES_LUALABEL_H
 
-#include "main/install/lualabel.h"
+#include "main/frontend/lualabel.h"
 #include "luawidget.h"
 
 class CLuaLabel: public CBaseLuaLabel, public CLuaWidget

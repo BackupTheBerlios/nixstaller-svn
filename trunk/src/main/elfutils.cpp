@@ -17,9 +17,11 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #include "main.h"
 #include "elfutils.h"
 
@@ -355,4 +357,12 @@ void CElfWrapper::CleanSymbols()
         else
             it++;
     }
+}
+
+void CElfWrapper::Close()
+{
+    if (m_pElf)
+        elf_end(m_pElf);
+    if (m_iFD)
+        close(m_iFD);
 }

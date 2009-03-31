@@ -20,8 +20,6 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "libsu/libsu.h"
-
 #include <assert.h>
 #include <syslog.h>
 #include <stdarg.h>
@@ -38,15 +36,6 @@ typedef std::string::size_type TSTLStrSize;
 
 #include "exception.h"
 
-bool HadError(void);
-void Quit(int ret);
-void HandleError(void);
-
-// These functions should be defined for each frontend
-void StartFrontend(int argc, char **argv);
-void StopFrontend(void);
-void ReportError(const char *msg);
-
 #ifndef HAVE_VASPRINTF
 extern "C" int vasprintf (char **result, const char *format, va_list args);
 #endif
@@ -56,14 +45,15 @@ extern "C" int vasprintf (char **result, const char *format, va_list args);
 class CMain
 {
     static int m_iLuaDirIterCount;
-    std::string m_szOS, m_szCPUArch, m_szOwnDir;
+    std::string m_OS, m_CPUArch, m_OwnDir, m_LuaDir;
 
 protected:
-    const std::string &GetOwnDir(void) const { return m_szOwnDir; }
+    const std::string &GetOwnDir(void) const { return m_OwnDir; }
     
     virtual void InitLua(void);
-    virtual const char *LuaSrcPath(void) const { return m_szOwnDir.c_str(); }
 
+    void RunLua(const char *script);
+    
 public:
     CMain(void) { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };
     virtual ~CMain(void) { closelog(); }
@@ -101,30 +91,14 @@ public:
     static int LuaCloseElf(lua_State *L);
     static int LuaElfGC(lua_State *L);
     static int LuaPanic(lua_State *L);
-    static int LuaInitDownload(lua_State *L);
-    static int LuaProcessDownload(lua_State *L);
-    static int LuaCloseDownload(lua_State *L);
     static int LuaAbort(lua_State *L);
     static int LuaGetEUID(lua_State *L);
     static int LuaHasUTF8(lua_State *L);
-    
-    static int UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
-                                         double ultotal, double ulnow);
-};
-
-class CLuaRunner: public CMain
-{
-    std::string m_NixstDir;
-    
-public:
-    virtual void Init(int argc, char **argv);
-    virtual const char *LuaSrcPath(void) const { return CreateText("%s/src/lua", m_NixstDir.c_str()); }
 };
 
 #include "utils.h"
-#include "main/install/install.h"
 
-#define RELEASE /* Enable on a release build */
+// #define RELEASE /* Enable on a release build */
 
 #ifdef RELEASE
 inline void debugline(const char *, ...) { };

@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUACFGMENU_H
 #define NCURSES_LUACFGMENU_H
 
-#include "main/install/luacfgmenu.h"
+#include "main/frontend/luacfgmenu.h"
 #include "luawidget.h"
 
 namespace NNCurses {

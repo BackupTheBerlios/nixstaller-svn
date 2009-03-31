@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUAPROGRESSDIALOG_H
 #define NCURSES_LUAPROGRESSDIALOG_H
 
-#include "main/install/luaprogressdialog.h"
+#include "main/frontend/luaprogressdialog.h"
 #include "tui/window.h"
 
 namespace NNCurses {

@@ -1268,41 +1268,41 @@ distfiles_src = distfiles_user + [
 'src/main/elfutils.cpp',                                                                           
 'src/main/elfutils.h',                                                                             
 'src/main/exception.h',                                                                            
-'src/main/install/attinstall.cpp',                                                                 
-'src/main/install/attinstall.h',                                                                   
-'src/main/install/basescreen.cpp',                                                                 
-'src/main/install/basescreen.h',                                                                   
-'src/main/install/install.cpp',                                                                    
-'src/main/install/install.h',                                                                      
-'src/main/install/luacfgmenu.cpp',                                                                 
-'src/main/install/luacfgmenu.h',                                                                   
-'src/main/install/luacheckbox.cpp',                                                                
-'src/main/install/luacheckbox.h',                                                                  
-'src/main/install/luadepscreen.cpp',                                                               
-'src/main/install/luadepscreen.h',                                                                 
-'src/main/install/luadirselector.cpp',                                                             
-'src/main/install/luadirselector.h',                                                               
-'src/main/install/luagroup.cpp',                                                                   
-'src/main/install/luagroup.h',                                                                     
-'src/main/install/luaimage.h',                                                                     
-'src/main/install/luainput.cpp',                                                                   
-'src/main/install/luainput.h',                                                                     
-'src/main/install/lualabel.cpp',                                                                   
-'src/main/install/lualabel.h',                                                                     
-'src/main/install/luamenu.cpp',                                                                    
-'src/main/install/luamenu.h',                                                                      
-'src/main/install/luaprogressbar.cpp',                                                             
-'src/main/install/luaprogressbar.h',                                                               
-'src/main/install/luaprogressdialog.cpp',                                                          
-'src/main/install/luaprogressdialog.h',                                                            
-'src/main/install/luaradiobutton.cpp',                                                             
-'src/main/install/luaradiobutton.h',                                                               
-'src/main/install/luatextfield.cpp',                                                               
-'src/main/install/luatextfield.h',                                                                 
-'src/main/install/luawidget.cpp',                                                                  
-'src/main/install/luawidget.h',                                                                    
-'src/main/install/unattinstall.cpp',                                                               
-'src/main/install/unattinstall.h',                                                                 
+'src/main/frontend/attinstall.cpp',
+'src/main/frontend/attinstall.h',
+'src/main/frontend/basescreen.cpp',
+'src/main/frontend/basescreen.h',
+'src/main/frontend/install.cpp',
+'src/main/frontend/install.h',
+'src/main/frontend/luacfgmenu.cpp',
+'src/main/frontend/luacfgmenu.h',
+'src/main/frontend/luacheckbox.cpp',
+'src/main/frontend/luacheckbox.h',
+'src/main/frontend/luadepscreen.cpp',
+'src/main/frontend/luadepscreen.h',
+'src/main/frontend/luadirselector.cpp',
+'src/main/frontend/luadirselector.h',
+'src/main/frontend/luagroup.cpp',
+'src/main/frontend/luagroup.h',
+'src/main/frontend/luaimage.h',
+'src/main/frontend/luainput.cpp',
+'src/main/frontend/luainput.h',
+'src/main/frontend/lualabel.cpp',
+'src/main/frontend/lualabel.h',
+'src/main/frontend/luamenu.cpp',
+'src/main/frontend/luamenu.h',
+'src/main/frontend/luaprogressbar.cpp',
+'src/main/frontend/luaprogressbar.h',
+'src/main/frontend/luaprogressdialog.cpp',
+'src/main/frontend/luaprogressdialog.h',
+'src/main/frontend/luaradiobutton.cpp',
+'src/main/frontend/luaradiobutton.h',
+'src/main/frontend/luatextfield.cpp',
+'src/main/frontend/luatextfield.h',
+'src/main/frontend/luawidget.cpp',
+'src/main/frontend/luawidget.h',
+'src/main/frontend/unattinstall.cpp',
+'src/main/frontend/unattinstall.h',
 'src/main/lua/luaclass.cpp',                                                                       
 'src/main/lua/luaclass.h',                                                                         
 'src/main/lua/lua.cpp',                                                                            
@@ -1537,7 +1537,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = "-Wall", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=["-DNDEBUG"])
+env = Environment(options = opts, CCFLAGS = Split("-Wall -g"), LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=["-DDEBUG"])
 
 Export("env")
 
@@ -1841,10 +1841,13 @@ libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 # Builds lock tool
 lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
 
-# Builds main lib
-main = env.Library("main/main", Split('libmd5/md5.c main/install/attinstall.cpp main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/install/unattinstall.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
+# Builds main lib (shared with all including Nixstbuild)
+main = env.Library("main/main", Split('libmd5/md5.c main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
 
-env.Prepend(LIBS = Split('main su lua elf curl z'))
+# Frontend library (also includes code for Lua runner)
+frontend = env.Library('main/frontend/frontend', Split('main/frontend/attinstall.cpp main/frontend/basescreen.cpp main/frontend/curl.cpp main/frontend/install.cpp main/frontend/luacfgmenu.cpp main/frontend/luacheckbox.cpp main/frontend/luadepscreen.cpp main/frontend/luadirselector.cpp main/frontend/luagroup.cpp main/frontend/luainput.cpp main/frontend/lualabel.cpp main/frontend/luamenu.cpp main/frontend/luaprogressbar.cpp main/frontend/luaprogressdialog.cpp main/frontend/luaradiobutton.cpp main/frontend/run.cpp main/frontend/luatextfield.cpp main/frontend/luawidget.cpp main/frontend/unattinstall.cpp main/frontend/utils.cpp'))
+
+env.Prepend(LIBS = Split('frontend main su lua elf curl z'))
 
 # UNDONE?
 if cur_os == 'netbsd':
@@ -1857,7 +1860,7 @@ gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscr
 ncurs_lflags = ""
 if cur_os == "openbsd":
     ncurs_lflags = "-static"
-    
+
 ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadepscreen.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaprogressdialog.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncursesw'), LINKFLAGS=Split('$LINKFLAGS '+ncurs_lflags))
 
 if cur_os == 'darwin':
@@ -1875,7 +1878,7 @@ if cur_os != 'darwin':
     Default(env.Install(bin_dir, Flatten(gtk)))
 
 Default(env.Install(bin_dir, Flatten(fltk) + Flatten(gtk)))
-Default(env.Install(lib_dir, Flatten(libsu) + Flatten(main)))
+Default(env.Install(lib_dir, Flatten(libsu) + Flatten(main) + Flatten(frontend)))
 
 if cur_os == 'openbsd':
     Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(surunner)))

@@ -20,13 +20,14 @@
 #ifndef ATT_INSTALL_H
 #define ATT_INSTALL_H
 
-#include "main/install/install.h"
+#include "libsu/libsu.h"
+#include "main/frontend/install.h"
 
 class CBaseScreen;
 class CBaseLuaProgressDialog;
 class CBaseLuaDepScreen;
 
-class CBaseAttInstall: virtual public CBaseInstall
+class CBaseAttInstall: public CBaseInstall
 {
 protected:
     typedef std::vector<CBaseScreen *> TScreenList;
@@ -37,7 +38,7 @@ private:
     TScreenList m_ScreenList;
     CBaseScreen *m_pCurScreen;
     int m_iAskQuitLuaFunc;
-    bool m_bGotGUI;
+    bool m_bGotGUI, m_bPreview;
      
     bool GetSUPasswd(const char *msg, bool mandatory);
     void AddScreen(CBaseScreen *screen);
@@ -66,10 +67,11 @@ protected:
     void DeleteScreens(void);
     TScreenList &GetScreenList(void) { return m_ScreenList; }
     void ActivateScreen(CBaseScreen *screen);
+    bool Preview(void) const { return m_bPreview; }
     
 public:
     CBaseAttInstall(void);
-    virtual ~CBaseAttInstall(void) { CleanPasswdString(m_szPassword); m_bGotGUI = false; };
+    virtual ~CBaseAttInstall(void);
 
     virtual void Init(int argc, char **argv);
     

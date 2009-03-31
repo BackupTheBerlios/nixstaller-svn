@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUARADIOBUTTON_H
 #define NCURSES_LUARADIOBUTTON_H
 
-#include "main/install/luaradiobutton.h"
+#include "main/frontend/luaradiobutton.h"
 #include "luawidget.h"
 
 namespace NNCurses {

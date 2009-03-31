@@ -61,8 +61,7 @@ configure()
                 shift 2
                 ;;
             --unattended )
-                ARGS="unattended"
-                UNATTENDED=1
+                UNATTENDED="unattended"
                 shift
                 ;;
             *)
@@ -154,7 +153,7 @@ launchfrontend()
                 export TERMINFO="`pwd`/terminfo"
             fi
             
-            `pwd`/$FRBIN $ARGS
+            `pwd`/$FRBIN $UNATTENDED -l "`pwd`" -c "`pwd`/config" -- $ARGS
             
             RET=$?
             if [ ! -f frontendstarted ]; then

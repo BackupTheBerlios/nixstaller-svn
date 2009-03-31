@@ -86,5 +86,5 @@ public:
     int GetMachine(void) const { return m_iMachine; }
     const std::string &GetClass(void) { return m_Class; }
 
-    void Close(void) { if (m_pElf) elf_end(m_pElf); if (m_iFD) close(m_iFD); }
+    void Close(void);
 };

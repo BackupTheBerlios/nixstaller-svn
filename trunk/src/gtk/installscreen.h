@@ -20,7 +20,7 @@
 #ifndef INSTALL_SCREEN_H
 #define INSTALL_SCREEN_H
 
-#include "main/install/basescreen.h"
+#include "main/frontend/basescreen.h"
 
 class CInstaller;
 class CBaseLuaGroup;
@@ -45,7 +45,7 @@ protected:
     virtual void CoreActivate(void);
     
 public:
-    CInstallScreen(const std::string &title, CInstaller *owner);
+    CInstallScreen(const std::string &title, CInstaller *owner, bool preview);
     virtual ~CInstallScreen(void) { DeleteGroups(); }
     
     void Init(void) { ResetWidgetRange(); }

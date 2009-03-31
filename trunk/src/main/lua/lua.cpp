@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <stdlib.h>
+
 #include "lua.h"
 #include "luaclass.h"
 #include "main/main.h"

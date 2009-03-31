@@ -21,7 +21,7 @@
 #define INSTALLER_H
 
 #include <vector>
-#include "main/install/attinstall.h"
+#include "main/frontend/attinstall.h"
 #include "ncurses.h"
 #include "tui/window.h"
 

@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUAIMAGE_H
 #define NCURSES_LUAIMAGE_H
 
-#include "main/install/luaimage.h"
+#include "main/frontend/luaimage.h"
 #include "luawidget.h"
 
 // This is just a dummy class, as ncurses can't draw images

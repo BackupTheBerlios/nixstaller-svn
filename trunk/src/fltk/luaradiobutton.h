@@ -21,7 +21,7 @@
 #define FLTK_LUARADIOBUTTON_H
 
 #include <vector>
-#include "main/install/luaradiobutton.h"
+#include "main/frontend/luaradiobutton.h"
 #include "luawidget.h"
 
 class Fl_Round_Button;

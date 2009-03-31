@@ -20,7 +20,7 @@
 #ifndef NCURS_LUADEPSCREEN_H
 #define NCURS_LUADEPSCREEN_H
 
-#include "main/install/luadepscreen.h"
+#include "main/frontend/luadepscreen.h"
 #include "tui/window.h"
 
 namespace NNCurses {

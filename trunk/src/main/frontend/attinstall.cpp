@@ -17,20 +17,21 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "main/install/attinstall.h"
-#include "main/install/basescreen.h"
-#include "main/install/luacfgmenu.h"
-#include "main/install/luacheckbox.h"
-#include "main/install/luadepscreen.h"
-#include "main/install/luadirselector.h"
-#include "main/install/luagroup.h"
-#include "main/install/luainput.h"
-#include "main/install/lualabel.h"
-#include "main/install/luamenu.h"
-#include "main/install/luaprogressbar.h"
-#include "main/install/luaprogressdialog.h"
-#include "main/install/luaradiobutton.h"
-#include "main/install/luatextfield.h"
+#include "main/frontend/attinstall.h"
+#include "main/frontend/basescreen.h"
+#include "main/frontend/luacfgmenu.h"
+#include "main/frontend/luacheckbox.h"
+#include "main/frontend/luadepscreen.h"
+#include "main/frontend/luadirselector.h"
+#include "main/frontend/luagroup.h"
+#include "main/frontend/luainput.h"
+#include "main/frontend/lualabel.h"
+#include "main/frontend/luamenu.h"
+#include "main/frontend/luaprogressbar.h"
+#include "main/frontend/luaprogressdialog.h"
+#include "main/frontend/luaradiobutton.h"
+#include "main/frontend/luatextfield.h"
+#include "main/frontend/utils.h"
 #include "main/lua/lua.h"
 #include "main/lua/luafunc.h"
 
@@ -39,9 +40,15 @@
 // Base Attended Installer Class
 // -------------------------------------
 
-CBaseAttInstall::CBaseAttInstall(void) : m_szPassword(NULL), m_pCurScreen(NULL), m_iAskQuitLuaFunc(LUA_NOREF),
-                                         m_bGotGUI(true)
+CBaseAttInstall::CBaseAttInstall() : m_szPassword(NULL), m_pCurScreen(NULL),
+                                     m_iAskQuitLuaFunc(LUA_NOREF), m_bGotGUI(true), m_bPreview(false)
 {
+}
+
+CBaseAttInstall::~CBaseAttInstall()
+{
+    CleanPasswdString(m_szPassword);
+    m_bGotGUI = false;
 }
 
 bool CBaseAttInstall::GetSUPasswd(const char *msg, bool mandatory)
@@ -98,7 +105,16 @@ void CBaseAttInstall::AddScreen(CBaseScreen *screen)
 }
 
 void CBaseAttInstall::Init(int argc, char **argv)
-{   
+{
+    for (int a=1; a<argc; a++)
+    {
+        if (!strcmp(argv[a], "preview"))
+        {
+            m_bPreview = true;
+            break;
+        }
+    }
+
     CBaseInstall::Init(argc, argv); // Init main, will also read config files
     
     lua_pushlightuserdata(NLua::LuaState, this);
@@ -204,7 +220,10 @@ void CBaseAttInstall::InitLua()
     NLua::RegisterFunction(LuaTextWidth, "textwidth", "gui", this);
     NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "gui", this);
 
-    NLua::LoadFile("install.lua");
+    if (m_bPreview)
+        RunLua("preview.lua");
+    else
+        RunLua("install.lua");
 }
 
 void CBaseAttInstall::DeleteScreens()

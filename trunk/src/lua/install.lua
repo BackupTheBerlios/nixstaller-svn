@@ -15,9 +15,9 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
-dofile("shared/utils.lua")
-dofile("shared/utils-public.lua")
-dofile("package.lua")
+loadlua("shared/utils.lua")
+loadlua("shared/utils-public.lua")
+loadlua("package.lua")
 
 -- 'secure' our environment by creating a new one. This is mainly for dofile not corrupting our own env.
 OLDG = getfenv(1)
@@ -132,7 +132,7 @@ local function initlang()
     
     -- Read language configs
     for _, l in ipairs(cfg.languages) do
-        local conf = string.format("%s/config/lang/%s/config.lua", curdir, l)
+        local conf = string.format("%s/lang/%s/config.lua", install.configdir, l)
         
         local lang
         if os.fileexists(conf) then
@@ -180,14 +180,14 @@ local function initlang()
     end
 end
 
-loadconfig("config")
+loadconfig(install.configdir)
 initlang()
 
 install.destdir = os.getenv("HOME") or "/"
 install.menuentries = { }
 
 if install.unattended then
-    dofile("unattinstall.lua")
+    loadlua("unattinstall.lua")
 else
-    dofile("attinstall.lua")
+    loadlua("attinstall.lua")
 end

@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <stdlib.h>
+
 #include "main/main.h"
 #include "main/lua/lua.h"
 #include "main/lua/luafunc.h"
@@ -96,7 +98,7 @@ bool CBaseLuaGroup::CheckWidgets()
 
 void CBaseLuaGroup::LuaRegister()
 {
-    // Keep these in sync with install.lua!
+    // Keep these in sync with attinstall.lua!
     NLua::RegisterClassFunction(LuaAddInput, "addinput", "group");
     NLua::RegisterClassFunction(LuaAddCheckbox, "addcheckbox", "group");
     NLua::RegisterClassFunction(LuaAddRadioButton, "addradiobutton", "group");

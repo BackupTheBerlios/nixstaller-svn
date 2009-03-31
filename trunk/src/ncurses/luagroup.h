@@ -21,7 +21,7 @@
 #define NCURSES_LUAGROUP_H
 
 #include "tui/box.h"
-#include "main/install/luagroup.h"
+#include "main/frontend/luagroup.h"
 
 class CLuaWidget;
 

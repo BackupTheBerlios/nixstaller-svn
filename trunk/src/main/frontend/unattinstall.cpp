@@ -19,7 +19,7 @@
 
 #include "main/lua/lua.h"
 #include "main/lua/luatable.h"
-#include "main/install/unattinstall.h"
+#include "main/frontend/unattinstall.h"
 
 // -------------------------------------
 // Base Attended Installer Class
@@ -31,14 +31,24 @@ void CBaseUnattInstall::InitLua()
     
     NLua::LuaSet(true, "unattended", "install");
 
-    NLua::LoadFile("install.lua");
+    RunLua("install.lua");
 }
 
 void CBaseUnattInstall::Init(int argc, char **argv)
 {
     NLua::CLuaTable tab("args");
-    for (int i=1; i<argc; i++) // Skip first arg, as this contains the action to do
-        tab[i-1] << argv[i];
+    bool start = false;
+    int tabind = 1;
+    for (int i=1; i<argc; i++)
+    {
+        if (!start)
+            start = (!strcmp(argv[i], "--"));
+        else
+        {
+            tab[tabind] << argv[i];
+            tabind++;
+        }
+    }
     tab.Close();
     
     CBaseInstall::Init(argc, argv);

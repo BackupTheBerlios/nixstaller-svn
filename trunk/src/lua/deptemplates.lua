@@ -265,8 +265,8 @@ tags = { "common-desktop", "GTK", "small" },
 }
 
 -- Bigger templates, split in other files.
-dofile(ndir .. "/src/lua/deptemplates/gtk.lua")
-dofile(ndir .. "/src/lua/deptemplates/pango.lua")
+loadlua("deptemplates/gtk.lua")
+loadlua("deptemplates/pango.lua")
 
 -- gtksourceview-2.0
 newtemplate{

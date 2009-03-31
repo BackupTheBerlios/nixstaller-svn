@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUADIRSELECTOR_H
 #define NCURSES_LUADIRSELECTOR_H
 
-#include "main/install/luadirselector.h"
+#include "main/frontend/luadirselector.h"
 #include "luawidget.h"
 
 namespace NNCurses {

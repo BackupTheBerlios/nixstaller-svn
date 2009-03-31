@@ -20,7 +20,7 @@
 #ifndef INSTALL_SCREEN_H
 #define INSTALL_SCREEN_H
 
-#include "main/install/basescreen.h"
+#include "main/frontend/basescreen.h"
 
 class CInstaller;
 class CBaseLuaGroup;
@@ -56,7 +56,7 @@ protected:
     virtual void CoreActivate(void);
     
 public:
-    CInstallScreen(const std::string &title);
+    CInstallScreen(const std::string &title, bool preview);
     virtual ~CInstallScreen(void) { DeleteGroups(); }
     
     using CBaseScreen::GetTitle; // So CInstallScreen can use it

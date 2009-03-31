@@ -18,6 +18,7 @@
 */
 
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "tui.h"
 #include "label.h"
 #include "buttonbar.h"

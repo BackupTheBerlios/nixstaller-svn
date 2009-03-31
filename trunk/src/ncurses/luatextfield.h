@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUATEXTFIELD_H
 #define NCURSES_LUATEXTFIELD_H
 
-#include "main/install/luatextfield.h"
+#include "main/frontend/luatextfield.h"
 #include "luawidget.h"
 
 namespace NNCurses {

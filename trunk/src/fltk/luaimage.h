@@ -20,7 +20,7 @@
 #ifndef FLTK_LUAIMAGE_H
 #define FLTK_LUAIMAGE_H
 
-#include "main/install/luaimage.h"
+#include "main/frontend/luaimage.h"
 #include "luawidget.h"
 
 class CLuaImage: public CBaseLuaImage, public CLuaWidget

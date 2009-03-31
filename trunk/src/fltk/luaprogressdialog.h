@@ -20,7 +20,7 @@
 #ifndef FLTK_LUAPROGRESSDIALOG_H
 #define FLTK_LUAPROGRESSDIALOG_H
 
-#include "main/install/luaprogressdialog.h"
+#include "main/frontend/luaprogressdialog.h"
 
 class Fl_Box;
 class Fl_Button;

@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUAMENU_H
 #define NCURSES_LUAMENU_H
 
-#include "main/install/luamenu.h"
+#include "main/frontend/luamenu.h"
 #include "luawidget.h"
 
 class CLuaMenu: public CBaseLuaMenu, public CLuaWidget

@@ -16,7 +16,7 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-local lsymstat, loadedsyms = pcall(dofile, string.format("%s/config/symmap.lua", curdir))
+local lsymstat, loadedsyms = pcall(dofile, install.configdir .. "/symmap.lua")
 
 depclass = { }
 depclass.__index = depclass
@@ -271,7 +271,7 @@ function initdep(d)
                     cfg.unopts["dlretries"].internal) or 3
                 
                 while true do
-                    local download, msg = os.initdownload(string.format("%s/%s", d.baseurl, f), path)
+                    local download, msg = install.initdownload(string.format("%s/%s", d.baseurl, f), path)
                     
                     if download then
                         function download:updateprogress(t, d)
@@ -995,4 +995,4 @@ function verifydeps(bins, libs)
     return ret
 end
 
-dofile("deps-public.lua")
+loadlua("deps-public.lua")

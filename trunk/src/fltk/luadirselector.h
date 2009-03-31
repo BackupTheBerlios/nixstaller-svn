@@ -20,7 +20,7 @@
 #ifndef FLTK_LUADIRSELECTOR_H
 #define FLTK_LUADIRSELECTOR_H
 
-#include "main/install/luadirselector.h"
+#include "main/frontend/luadirselector.h"
 #include "luawidget.h"
 
 class Fl_Button;

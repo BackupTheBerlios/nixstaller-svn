@@ -17,19 +17,24 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef UNATT_INSTALL_H
-#define UNATT_INSTALL_H
+#ifndef RUN_H
+#define RUN_H
 
-#include "main/install/install.h"
+#include "main/main.h"
 
-class CBaseUnattInstall: public CBaseInstall
+bool HadError(void);
+void Quit(int ret);
+void HandleError(void);
+
+// These functions should be defined for each frontend
+void StartFrontend(int argc, char **argv);
+void StopFrontend(void);
+void ReportError(const char *msg);
+
+class CLuaRunner: public CMain
 {
-protected:
-    virtual void CoreUpdateLanguage(void) { }
-    virtual void InitLua(void);
-    
-public:
-    virtual void Init(int argc, char **argv);
+    public:
+        virtual void Init(int argc, char **argv);
 };
 
 #endif

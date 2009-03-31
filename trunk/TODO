@@ -20,8 +20,10 @@ OVERALL
 - Configurable background parts (background images)
 - Seperate dep installing and collecting? --> Allows to configure them during installation
 - Dump lib info when no frontend could be found (so user can install compat packages)
-- Cleaner way for telling where surunner is (via commandline arg?)
+- Cleaner way for telling where surunner is (via commandline arg?)?
 - Fully override OS/ARCH when no suitable bin was found
+- loaddep() needs to be available for previews? if yes change call in package.lua
+- Remove exception translations?
 
 
 PACKAGING

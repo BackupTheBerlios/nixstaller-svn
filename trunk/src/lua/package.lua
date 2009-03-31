@@ -114,10 +114,7 @@ function checkunpkgman()
     end
 end
 
-dofile("groups.lua")
-
-package.path = "?.lua"
-package.cpath = ""
+loadlua("pkg/groups.lua")
 
 pkg.packagers = { } -- Used by package toggle screen
 for _, p in ipairs{"dpkg", "pacman", "slack", "rpm", "generic"} do
@@ -130,14 +127,14 @@ end
 
 pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 
-dofile("package-public.lua")
-dofile("shared/package-public.lua")
+loadlua("package-public.lua")
+loadlua("shared/package-public.lua")
 
-if os.fileexists("config/package.lua") then
-    loadpackagecfg("config")
+if os.fileexists(install.configdir .. "/package.lua") then
+    loadpackagecfg(install.configdir)
 end
 
-dofile("deps.lua")
+loadlua("deps.lua")
 
 pkg.setdestdir = pkg.destdir ~= nil
 pkg.setbindir = pkg.bindir ~= nil

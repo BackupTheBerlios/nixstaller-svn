@@ -18,6 +18,7 @@
 */
 
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "dirdialog.h"
 #include <FL/Fl_File_Chooser.H>
 

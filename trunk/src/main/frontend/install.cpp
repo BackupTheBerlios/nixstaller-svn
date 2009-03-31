@@ -21,9 +21,13 @@
 
 #include <libgen.h>
 
-#include "main/install/install.h"
+#include "main/frontend/install.h"
+#include "main/frontend/utils.h"
 #include "main/lua/lua.h"
+#include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
+#include "main/frontend/curl.h"
+#include "main/frontend/run.h"
 
 #if defined(__APPLE__)
 // Include Location Services header files
@@ -58,11 +62,11 @@ void CBaseInstall::ReadLang()
 {
     FreeTranslations();
     
-    std::ifstream file(CreateText("%s/config/lang/%s/strings", GetOwnDir().c_str(), m_szCurLang.c_str()));
+    std::ifstream file(CreateText("%s/config/lang/%s/strings", GetOwnDir().c_str(), m_CurLang.c_str()));
 
     if (!file)
     {
-        debugline("WARNING: Failed to load language file for %s\n", m_szCurLang.c_str());
+        debugline("WARNING: Failed to load language file for %s\n", m_CurLang.c_str());
         return;
     }
     
@@ -169,6 +173,8 @@ const char *CBaseInstall::GetAboutFName()
 void CBaseInstall::InitLua()
 {
     CMain::InitLua();
+
+    NLua::LuaSet(m_ConfigDir, "configdir", "install");
     
     NLua::RegisterFunction(LuaTr, "tr");
     
@@ -180,6 +186,10 @@ void CBaseInstall::InitLua()
     NLua::RegisterFunction(LuaGetPkgDir, "getpkgdir", "install", this);
     NLua::RegisterFunction(LuaGetMacAppPath, "getmacapppath", "install", this);
     NLua::RegisterFunction(LuaExtraFilesPath, "extrafilespath", "install", this);
+    NLua::RegisterFunction(LuaInitDownload, "initdownload", "install");
+
+    NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
+    NLua::RegisterClassFunction(LuaCloseDownload, "close", "downloadclass");
 }
 
 void CBaseInstall::Update()
@@ -196,6 +206,22 @@ void CBaseInstall::Update()
 void CBaseInstall::Init(int argc, char **argv)
 {
     NLua::LuaSet(dirname(CreateText(argv[0])), "bindir");
+
+    for (int a=1; a<argc; a++)
+    {
+        if (!strcmp(argv[a], "-c"))
+        {
+            a++;
+            if (a < argc)
+                m_ConfigDir = argv[a];
+            else
+                throw Exceptions::CExUsage("Too less args for -c option");
+        }
+    }
+
+    if (m_ConfigDir.empty())
+        throw Exceptions::CExUsage("No -c option given");
+    
     CMain::Init(argc, argv);
     UpdateLanguage();
 }
@@ -227,14 +253,14 @@ int CBaseInstall::LuaUpdate(lua_State *L)
 int CBaseInstall::LuaGetLang(lua_State *L)
 {
     CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
-    lua_pushstring(L, installer->m_szCurLang.c_str());
+    lua_pushstring(L, installer->m_CurLang.c_str());
     return 1;
 }
 
 int CBaseInstall::LuaSetLang(lua_State *L)
 {
     CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
-    installer->m_szCurLang = luaL_checkstring(L, 1);
+    installer->m_CurLang = luaL_checkstring(L, 1);
     installer->UpdateLanguage();
     return 0;
 }
@@ -324,4 +350,90 @@ int CBaseInstall::LuaExtraFilesPath(lua_State *L)
     const char *file = luaL_optstring(L, 1, "");
     lua_pushfstring(L, "%s/files_extra/%s", installer->GetOwnDir().c_str(), file);
     return 1;
+}
+
+int CBaseInstall::LuaInitDownload(lua_State *L)
+{
+    const char *url = luaL_checkstring(L, 1);
+    const char *dest = luaL_checkstring(L, 2);
+
+    CCURLWrapper *curlw = NULL;
+    try
+    {
+        curlw = new CCURLWrapper(url, dest);
+        curlw->SetProgFunc(UpdateLuaDownloadProgress, curlw);
+    }
+    catch (Exceptions::CExCURL &e)
+    {
+        if (curlw)
+            delete curlw;
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not create download class: %s\n", e.what());
+        return 2;
+    }
+    catch (Exceptions::CExIO &e)
+    {
+        if (curlw)
+            delete curlw;
+        lua_pushnil(L);
+        lua_pushfstring(L, "Could not open file: %s\n", e.what());
+        return 2;
+    }
+    
+    NLua::CreateClass(curlw, "downloadclass");
+    
+    return 1;
+}
+
+int CBaseInstall::LuaProcessDownload(lua_State *L)
+{
+    CCURLWrapper *curlw = NLua::CheckClassData<CCURLWrapper>("downloadclass", 1);
+    bool done;
+    
+    try
+    {
+        done = !curlw->Process();
+    }
+    catch (Exceptions::CExCURL &e)
+    {
+        NLua::LuaPushError(e.what());
+        return 2;
+    }
+    
+    if (done)
+    {
+        lua_pushboolean(L, false);
+        if (!curlw->Success())
+        {
+            lua_pushstring(L, curlw->ErrorMessage().c_str());
+            return 2;
+        }
+    }
+    else
+        lua_pushboolean(L, true);
+    
+    return 1;
+}
+
+int CBaseInstall::LuaCloseDownload(lua_State *L)
+{
+    CCURLWrapper *curlw = NLua::CheckClassData<CCURLWrapper>("downloadclass", 1);
+    NLua::DeleteClass(curlw, "downloadclass");
+    delete curlw;
+    return 0;
+}
+
+int CBaseInstall::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
+                                            double ultotal, double ulnow)
+{
+    CCURLWrapper *curlw = static_cast<CCURLWrapper *>(clientp);
+    NLua::CLuaFunc func("updateprogress", "downloadclass", curlw);
+    if (func)
+    {
+        NLua::PushClass("downloadclass", curlw);
+        func.PushData(); // Add 'self' to function argument list
+        func << dltotal << dlnow;
+        func(0);
+    }
+    return 0;
 }

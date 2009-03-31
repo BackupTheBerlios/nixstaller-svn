@@ -21,11 +21,9 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
 
-
-dofile(ndir .. "/src/lua/shared/utils.lua")
-dofile(ndir .. "/src/lua/shared/utils-public.lua")
-dofile(ndir .. "/src/lua/shared/package-public.lua")
-
+loadlua("shared/utils.lua")
+loadlua("shared/utils-public.lua")
+loadlua("shared/package-public.lua")
 
 function Usage()
     print(string.format("Usage: %s <project dir> [ <installer name> ]\n", callscript))
@@ -312,7 +310,7 @@ function LoadPackage()
     checkfield("summary")
     checkfield("group")
     
-    dofile(ndir .. "/src/lua/pkg/groups.lua")
+    loadlua("pkg/groups.lua")
     if not pkg.grouplist[pkg.group] then
         ThrowError("Wrong package group specified.")
     end
@@ -423,7 +421,12 @@ function PrepareArchive()
     end
     
     -- Lua scripts
-    os.mkdirrec(archdir .. "/shared")
+    local adsh = archdir .. "/shared"
+    local adscr = archdir .. "/screens"
+    local adpkg = archdir .. "/pkg"
+    os.mkdirrec(adsh)
+    os.mkdir(adscr)
+    os.mkdir(adpkg)
     RequiredCopy(ndir .. "/src/lua/deps.lua", archdir)
     RequiredCopy(ndir .. "/src/lua/deps-public.lua", archdir)
     RequiredCopy(ndir .. "/src/lua/main.lua", archdir)
@@ -432,24 +435,24 @@ function PrepareArchive()
     RequiredCopy(ndir .. "/src/lua/unattinstall.lua", archdir)
     RequiredCopy(ndir .. "/src/lua/package.lua", archdir)
     RequiredCopy(ndir .. "/src/lua/package-public.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/pkg/dpkg.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/pkg/generic.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/pkg/groups.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/pkg/pacman.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/pkg/rpm.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/pkg/slack.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/shared/package-public.lua", archdir .. "/shared")
-    RequiredCopy(ndir .. "/src/lua/shared/utils.lua", archdir .. "/shared")
-    RequiredCopy(ndir .. "/src/lua/shared/utils-public.lua", archdir .. "/shared")
-    RequiredCopy(ndir .. "/src/lua/screens/finishscreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/installscreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/langscreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/licensescreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/packagedirscreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/packagetogglescreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/selectdirscreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/summaryscreen.lua", archdir)
-    RequiredCopy(ndir .. "/src/lua/screens/welcomescreen.lua", archdir)
+    RequiredCopy(ndir .. "/src/lua/pkg/dpkg.lua", adpkg)
+    RequiredCopy(ndir .. "/src/lua/pkg/generic.lua", adpkg)
+    RequiredCopy(ndir .. "/src/lua/pkg/groups.lua", adpkg)
+    RequiredCopy(ndir .. "/src/lua/pkg/pacman.lua", adpkg)
+    RequiredCopy(ndir .. "/src/lua/pkg/rpm.lua", adpkg)
+    RequiredCopy(ndir .. "/src/lua/pkg/slack.lua", adpkg)
+    RequiredCopy(ndir .. "/src/lua/shared/package-public.lua", adsh)
+    RequiredCopy(ndir .. "/src/lua/shared/utils.lua", adsh)
+    RequiredCopy(ndir .. "/src/lua/shared/utils-public.lua", adsh)
+    RequiredCopy(ndir .. "/src/lua/screens/finishscreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/installscreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/langscreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/licensescreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/packagedirscreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/packagetogglescreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/selectdirscreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/summaryscreen.lua", adscr)
+    RequiredCopy(ndir .. "/src/lua/screens/welcomescreen.lua", adscr)
     
     -- XDG utils
     os.mkdir(archdir .. "/xdg-utils")

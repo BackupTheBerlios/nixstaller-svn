@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/frontend/run.h"
+#include "main/frontend/utils.h"
 #include "gtk.h"
 #include "installscreen.h"
 #include "luawidget.h"

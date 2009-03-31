@@ -17,36 +17,19 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef GTK_LUADEPSCREEN_H
-#define GTK_LUADEPSCREEN_H
+#ifndef UNATT_INSTALL_H
+#define UNATT_INSTALL_H
 
-#include "main/frontend/luadepscreen.h"
+#include "main/frontend/install.h"
 
-class CInstaller;
-
-class CLuaDepScreen: public CBaseLuaDepScreen
+class CBaseUnattInstall: public CBaseInstall
 {
-    enum { COLUMN_NAME, COLUMN_DESC, COLUMN_PROB, COLUMN_N };
-    
-    GtkWidget *m_pDialog, *m_pListView;
-    CInstaller *m_pInstaller;
-    
-    bool m_bClose;
-    
-    virtual void CoreUpdateList(void);
-    virtual void CoreRun(void);
-    
-    GtkWidget *CreateListBox(void);
+protected:
+    virtual void CoreUpdateLanguage(void) { }
+    virtual void InitLua(void);
     
 public:
-    CLuaDepScreen(GtkWidget *parent, CInstaller *inst, int f);
-    virtual ~CLuaDepScreen(void);
-    
-    static gboolean DeleteCB(GtkWidget *widget, GdkEvent *event, gpointer data);
-    static void CancelCB(GtkWidget *widget, gpointer data);
-    static void RefreshCB(GtkWidget *widget, gpointer data);
-    static void IgnoreCB(GtkWidget *widget, gpointer data);
+    virtual void Init(int argc, char **argv);
 };
-
 
 #endif

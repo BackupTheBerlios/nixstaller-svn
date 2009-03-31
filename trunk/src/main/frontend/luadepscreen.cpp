@@ -18,7 +18,8 @@
 */
 
 #include "main/main.h"
-#include "main/install/luadepscreen.h"
+#include "main/frontend/luadepscreen.h"
+#include "main/frontend/utils.h"
 #include "main/lua/luafunc.h"
 #include "main/lua/luatable.h"
 

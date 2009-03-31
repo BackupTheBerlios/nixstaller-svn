@@ -20,7 +20,7 @@
 #ifndef GTK_LUATEXTFIELD_H
 #define GTK_LUATEXTFIELD_H
 
-#include "main/install/luatextfield.h"
+#include "main/frontend/luatextfield.h"
 #include "luawidget.h"
 
 class CLuaTextField: public CBaseLuaTextField, public CLuaWidget

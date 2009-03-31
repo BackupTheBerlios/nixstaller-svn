@@ -31,6 +31,9 @@
 
 bool CBaseScreen::CallLuaBoolFunc(const char *func, bool def)
 {
+    if (m_bPreview)
+        return def;
+    
     NLua::CLuaFunc luafunc(func, "screen", this);
     bool ret = def;
     
@@ -48,6 +51,9 @@ bool CBaseScreen::CallLuaBoolFunc(const char *func, bool def)
 
 void CBaseScreen::CoreActivate()
 {
+    if (m_bPreview)
+        return;
+    
     NLua::CLuaFunc func("activate", "screen", this);
     
     if (func)
@@ -79,6 +85,9 @@ void CBaseScreen::UpdateLanguage()
 
 void CBaseScreen::Update()
 {
+    if (m_bPreview)
+        return;
+    
     NLua::CLuaFunc luafunc("update", "screen", this);
     if (luafunc)
         luafunc(0);

@@ -22,17 +22,11 @@
 
 #include <dirent.h>
 #include <poll.h>
-#include <sys/utsname.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/utsname.h>
+#include <sys/wait.h>
 
-extern std::list<char *> StringList; // List of all strings created by CreateText
-
-void PrintIntro(void);
-char *CreateText(const char *s, ...);
-inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
-char *CreateTmpText(const char *s, ...);
-void FreeStrings(void);
-void FreeTranslations(void);
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
 bool WriteAccess(const char *file);
@@ -40,18 +34,11 @@ inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str
 bool ReadAccess(const char *file);
 inline bool ReadAccess(const std::string &file) { return ReadAccess(file.c_str()); };
 bool IsDir(const char *file);
-void *guaranteed_memset(void *v,int c,size_t n);
-void CleanPasswdString(char *str);
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
 void EscapeControls(std::string &text);
-void GetTextFromBlock(std::ifstream &file, std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
 mode_t StrToMode(const char *str);
-std::string GetTranslation(const std::string &s);
-const char *GetTranslation(const char *s);
-inline char *MakeTranslation(const std::string &s) { return MakeCString(GetTranslation(s)); }
-inline char *MakeTranslation(const char *s) { return CreateText(GetTranslation(s)); }
 void ConvertTabs(std::string &text);
 char *StrDup(const char *str);
 void MakeAbsolute(std::string &dir);
@@ -60,9 +47,7 @@ void CHDir(const char *dir);
 inline void CHDir(const std::string &dir) { CHDir(dir.c_str()); };
 void MKDir(const char *dir, int mode);
 inline void MKDir(const std::string &dir, int mode) { MKDir(dir.c_str(), mode); };
-bool MKDirNeedsRoot(std::string dir);
 void MKDirRec(std::string dir);
-void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd);
 void UName(struct utsname &u);
 int Open(const char *f, int flags);
 void GetScaledImageSize(int curw, int curh, int maxw, int maxh, int &outw, int &outh);
@@ -75,6 +60,7 @@ TSTLStrSize MBWidth(std::string str);
 TSTLStrSize GetMBLenFromW(const std::string &str, size_t width);
 TSTLStrSize GetMBWidthFromC(const std::string &str, std::string::const_iterator cur, int n);
 TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur, TSTLStrSize width, bool roundup);
+char *CreateTmpText(const char *s, ...);
 
 template <typename To, typename From> To SafeConvert(From from)
 {

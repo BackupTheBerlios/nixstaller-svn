@@ -19,6 +19,7 @@
 
 #include <locale.h>
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "luainput.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>

@@ -20,7 +20,7 @@
 #ifndef FLTK_LUAWIDGET_H
 #define FLTK_LUAWIDGET_H
 
-#include "main/install/luawidget.h"
+#include "main/frontend/luawidget.h"
 
 class Fl_Box;
 class Fl_Group;

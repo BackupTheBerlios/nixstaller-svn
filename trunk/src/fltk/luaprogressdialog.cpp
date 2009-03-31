@@ -19,6 +19,7 @@
 
 #include "fltk.h"
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "luaprogressdialog.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>

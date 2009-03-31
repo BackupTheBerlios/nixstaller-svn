@@ -18,6 +18,8 @@
 */
 
 #include <new>
+#include <unistd.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -30,76 +32,6 @@
 #include "utf8.h"
 #include "main.h"
 #include "lua/lua.h"
-
-std::list<char *> StringList;
-extern std::map<std::string, char *> Translations;
-
-void PrintIntro()
-{
-    std::ifstream file("start");
-    char c;
-    
-    while (file && file.get(c))
-        printf("%c", c);
-}
-
-char *CreateText(const char *s, ...)
-{
-    char *txt;
-    va_list v;
-    
-    va_start(v, s);
-    vasprintf(&txt, s, v);
-    va_end(v);
-    
-    // Check if string was already created
-    if (!StringList.empty())
-    {
-        for (std::list<char *>::iterator it = StringList.begin(); it != StringList.end(); it++)
-        {
-            if (!strcmp(*it, txt))
-                return *it;
-        }
-    }
-    
-    StringList.push_front(txt);
-    return txt;
-}
-
-// As CreateText, but caller has to free string manually
-char *CreateTmpText(const char *s, ...)
-{
-    char *txt;
-    va_list v;
-    
-    va_start(v, s);
-    vasprintf(&txt, s, v);
-    va_end(v);
-    
-    return txt;
-}
-
-void FreeStrings()
-{
-    debugline("freeing %d strings....\n", StringList.size());
-    while(!StringList.empty())
-    {
-        debugline("STRING: %s\n", StringList.back());
-        free(StringList.back());
-        StringList.pop_back();
-    }
-}
-
-void FreeTranslations(void)
-{
-    if (!Translations.empty())
-    {
-        std::map<std::string, char *>::iterator p = Translations.begin();
-        for(; p!=Translations.end(); p++)
-            delete [] (*p).second;
-        Translations.clear();
-    }
-}
 
 bool FileExists(const char *file)
 {
@@ -179,28 +111,6 @@ std::string GetFirstValidDir(const std::string &dir)
     return subdir;
 }
 
-// From http://tldp.org/HOWTO/Secure-Programs-HOWTO/protect-secrets.html
-void *guaranteed_memset(void *v, int c, size_t n)
-{
-    volatile char *p = (volatile char *)v;
-    while (n)
-    {
-        n--;
-        *(p++) = c;
-    }
-    return v;
-}
-
-// Used for cleaning password strings
-void CleanPasswdString(char *str)
-{
-    if (str)
-    {
-        guaranteed_memset(str, 0, strlen(str));
-        free(str);
-    }
-}
-
 std::string &EatWhite(std::string &str, bool skipnewlines)
 {
     const char *filter = (skipnewlines) ? " \t" : " \t\r\n";
@@ -234,34 +144,6 @@ void EscapeControls(std::string &text)
             break;
 
         start++;
-    }
-}
-
-// Used by config file parsing, gets string between a text block
-void GetTextFromBlock(std::ifstream &file, std::string &text)
-{
-    std::string tmp;
-    text.erase(0, 1); // Remove [
-    EatWhite(text);
-            
-    while (file)
-    {
-        std::getline(file, tmp);
-        text += '\n' + EatWhite(tmp);
-        if (text[text.length()-1] == ']')
-        {
-            // Don't use "\]" as exit point(this way we can use a ] in a text block)
-            if ((text.length() > 1) && (text[text.length()-2] == '\\'))
-                text.erase(text.length()-2, 1);
-            else
-                break;
-        }
-    }
-    
-    if (text[text.length()-1] == ']')
-    {
-        text.erase(text.length()-1, 1); // Remove ]
-        EatWhite(text);
     }
 }
 
@@ -311,44 +193,6 @@ mode_t StrToMode(const char *str)
     while ('0' <= *str && *str < '8');
 
     return octal_value;
-}
-
-std::string GetTranslation(const std::string &s)
-{
-    std::map<std::string, char *>::iterator p = Translations.find(s);
-    if (p != Translations.end())
-        return (*p).second;
-    
-#ifndef RELEASE
-    if (!Translations.empty())
-    {
-        std::string esc = s;
-        EscapeControls(esc);
-        debugline("WARNING: No translation for %s\n", esc.c_str());
-    }
-#endif
-    
-    return s;
-}
-
-const char *GetTranslation(const char *s)
-{
-    std::map<std::string, char *>::iterator p = Translations.find(s);
-    if (p != Translations.end())
-        return (*p).second;
-    
-    // No translation found
-    
-#ifndef RELEASE
-    if (!Translations.empty())
-    {
-        std::string esc = s;
-        EscapeControls(esc);
-        debugline("WARNING: No translation for %s\n", esc.c_str());
-    }
-#endif
-    
-    return s;
 }
 
 void ConvertTabs(std::string &text)
@@ -413,33 +257,6 @@ void MKDir(const char *dir, int mode)
         throw Exceptions::CExMKDir(errno);
 }
 
-bool MKDirNeedsRoot(std::string dir)
-{
-    MakeAbsolute(dir);
-    
-    const TSTLStrSize length = dir.length();
-    TSTLStrSize start = 1; // Skip first root path
-    TSTLStrSize end = 0;
-    bool needroot = false;
-    
-    // Get first directory to create
-    do
-    {
-        end = dir.find("/", start);
-        std::string subdir = dir.substr(0, end);
-            
-        if (FileExists(subdir))
-            needroot = !WriteAccess(subdir);
-        else
-            break;
-        
-        start = end + 1;
-    }
-    while ((end != std::string::npos) && (end < length));
-    
-    return needroot;
-}
-
 void MKDirRec(std::string dir)
 {
     MakeAbsolute(dir);
@@ -462,16 +279,6 @@ void MKDirRec(std::string dir)
         start = end + 1;
     }
     while (end != std::string::npos);
-}
-
-void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd)
-{
-    MakeAbsolute(dir);
-    
-    suhandler.SetCommand("mkdir -p " + dir);
-    
-    if (!suhandler.ExecuteCommand(passwd))
-        throw Exceptions::CExRootMKDir(dir.c_str());
 }
 
 void UName(struct utsname &u)
@@ -890,4 +697,17 @@ void CPipedCMD::Abort(bool canthrow)
             (canthrow) ? WaitPID(m_ChildPID, NULL, 0) : waitpid(m_ChildPID, NULL, 0);
         Close(canthrow);
     }
+}
+
+// Don't forget to free() the text...
+char *CreateTmpText(const char *s, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, s);
+    vasprintf(&txt, s, v);
+    va_end(v);
+    
+    return txt;
 }

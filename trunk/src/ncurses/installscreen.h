@@ -20,7 +20,7 @@
 #ifndef INSTALL_SCREEN_H
 #define INSTALL_SCREEN_H
 
-#include "main/install/basescreen.h"
+#include "main/frontend/basescreen.h"
 #include "tui/tui.h"
 #include "tui/box.h"
 
@@ -57,7 +57,7 @@ protected:
     virtual bool CoreHandleEvent(CWidget *emitter, int event);
     
 public:
-    CInstallScreen(const std::string &title);
+    CInstallScreen(const std::string &title, bool preview);
     
     bool HasPrevWidgets(void) const;
     bool HasNextWidgets(void) const;

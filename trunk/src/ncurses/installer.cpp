@@ -18,6 +18,8 @@
 */
 
 #include <algorithm>
+
+#include "main/frontend/utils.h"
 #include "installer.h"
 #include "installscreen.h"
 #include "luadepscreen.h"
@@ -404,7 +406,7 @@ void CInstaller::CoreUpdateLanguage()
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
-    CInstallScreen *ret = new CInstallScreen(title);
+    CInstallScreen *ret = new CInstallScreen(title, Preview());
     ret->Enable(false);
     m_pScreenBox->AddWidget(ret);
     return ret;

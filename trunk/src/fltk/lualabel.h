@@ -20,7 +20,7 @@
 #ifndef FLTK_LUALABEL_H
 #define FLTK_LUALABEL_H
 
-#include "main/install/lualabel.h"
+#include "main/frontend/lualabel.h"
 #include "luawidget.h"
 
 class CLuaLabel: public CBaseLuaLabel, public CLuaWidget

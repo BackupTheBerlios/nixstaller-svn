@@ -18,6 +18,7 @@
 */
 
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "gtk.h"
 #include "luaradiobutton.h"
 

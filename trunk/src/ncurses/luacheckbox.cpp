@@ -18,7 +18,9 @@
 */
 
 #include <algorithm>
+
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "luacheckbox.h"
 #include "tui/checkbox.h"
 

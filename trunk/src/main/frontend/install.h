@@ -24,7 +24,7 @@
 
 class CBaseInstall: public CMain
 {
-    std::string m_szCurLang;
+    std::string m_CurLang, m_ConfigDir;
     long m_lUpdateTimer;
 
     void ReadLang(void);
@@ -57,6 +57,12 @@ public:
     static int LuaGetPkgDir(lua_State *L);
     static int LuaGetMacAppPath(lua_State *L);
     static int LuaExtraFilesPath(lua_State *L);
+    static int LuaInitDownload(lua_State *L);
+    static int LuaProcessDownload(lua_State *L);
+    static int LuaCloseDownload(lua_State *L);
+
+    static int UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
+                                         double ultotal, double ulnow);
 };
 
 #endif

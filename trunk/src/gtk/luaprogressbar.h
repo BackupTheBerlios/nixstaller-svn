@@ -20,7 +20,7 @@
 #ifndef GTK_LUAPROGRESSBAR_H
 #define GTK_LUAPROGRESSBAR_H
 
-#include "main/install/luaprogressbar.h"
+#include "main/frontend/luaprogressbar.h"
 #include "luawidget.h"
 
 class CLuaProgressBar: public CBaseLuaProgressBar, public CLuaWidget

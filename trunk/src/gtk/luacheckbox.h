@@ -21,7 +21,7 @@
 #define GTK_LUACHECKBOX_H
 
 #include <vector>
-#include "main/install/luacheckbox.h"
+#include "main/frontend/luacheckbox.h"
 #include "luawidget.h"
 
 

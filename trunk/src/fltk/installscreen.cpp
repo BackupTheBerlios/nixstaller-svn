@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/frontend/utils.h"
 #include "fltk.h"
 #include "installer.h"
 #include "installscreen.h"
@@ -31,8 +32,8 @@
 // FLTK Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title),
-                                                           m_CurSubScreen(0), m_iMaxHeight(0)
+CInstallScreen::CInstallScreen(const std::string &title, bool preview) : CBaseScreen(title, preview),
+                                                                         m_CurSubScreen(0), m_iMaxHeight(0)
 {
     // Size and positions are set by CInstaller when screen is activated
     m_pMainPack = new Fl_Pack(0, 0, 0, 0);

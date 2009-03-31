@@ -20,7 +20,7 @@
 #ifndef GTK_LUACFGMENU_H
 #define GTK_LUACFGMENU_H
 
-#include "main/install/luacfgmenu.h"
+#include "main/frontend/luacfgmenu.h"
 #include "luawidget.h"
 
 class CLuaCFGMenu: public CBaseLuaCFGMenu, public CLuaWidget

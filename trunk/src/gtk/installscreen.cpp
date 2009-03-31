@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/frontend/utils.h"
 #include "gtk.h"
 #include "installer.h"
 #include "installscreen.h"
@@ -26,9 +27,9 @@
 // GTK Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner) : CBaseScreen(title),
-                                                                              m_pOwner(owner),
-                                                                              m_CurSubScreen(0)
+CInstallScreen::CInstallScreen(const std::string &title, CInstaller *owner,
+                               bool preview) : CBaseScreen(title, preview), m_pOwner(owner),
+                                               m_CurSubScreen(0)
 {
     m_pMainBox = gtk_vbox_new(FALSE, 0);
     

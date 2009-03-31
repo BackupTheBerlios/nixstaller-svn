@@ -21,7 +21,7 @@
 #define FLTK_LUAGROUP_H
 
 #include "main/main.h"
-#include "main/install/luagroup.h"
+#include "main/frontend/luagroup.h"
 
 class CLuaWidget;
 class Fl_Group;

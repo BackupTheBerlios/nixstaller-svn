@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <ctype.h>
+#include <stdlib.h>
 #include "tui.h"
 #include "menu.h"
 

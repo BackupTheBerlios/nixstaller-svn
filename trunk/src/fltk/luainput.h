@@ -20,7 +20,7 @@
 #ifndef FLTK_LUAINPUT_H
 #define FLTK_LUAINPUT_H
 
-#include "main/install/luainput.h"
+#include "main/frontend/luainput.h"
 #include "luawidget.h"
 
 class Fl_Box;

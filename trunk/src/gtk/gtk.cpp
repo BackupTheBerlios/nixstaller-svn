@@ -17,7 +17,10 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <stdlib.h>
 #include <fstream>
+
+#include "main/frontend/utils.h"
 #include "gtk.h"
 #include "installer.h"
 
@@ -46,7 +49,7 @@ void StartFrontend(int argc, char **argv)
     if (gtk_init_check(&argc, &argv) == FALSE)
         throw Exceptions::CExFrontend("Failed to initialize GTK");
     
-    pInterface = new CInstaller();
+    pInterface = new CInstaller;
     pInterface->Init(argc, argv);
     pInterface->Run();
 }

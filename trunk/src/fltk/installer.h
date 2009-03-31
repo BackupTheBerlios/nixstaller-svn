@@ -20,7 +20,7 @@
 #ifndef INSTALLER_H
 #define INSTALLER_H
 
-#include "main/install/attinstall.h"
+#include "main/frontend/attinstall.h"
 #include "fltk.h"
 
 class CInstallScreen;

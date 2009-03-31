@@ -20,7 +20,7 @@
 #ifndef NCURSES_LUAWIDGET_H
 #define NCURSES_LUAWIDGET_H
 
-#include "main/install/luawidget.h"
+#include "main/frontend/luawidget.h"
 #include "tui/box.h"
 
 namespace NNCurses {

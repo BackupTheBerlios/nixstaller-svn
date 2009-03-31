@@ -20,7 +20,7 @@
 #ifndef GTK_LUAINPUT_H
 #define GTK_LUAINPUT_H
 
-#include "main/install/luainput.h"
+#include "main/frontend/luainput.h"
 #include "luawidget.h"
 
 class CLuaInputField: public CBaseLuaInputField, public CLuaWidget

@@ -17,6 +17,10 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <stdlib.h>
+
+#include "main/frontend/run.h"
+#include "main/frontend/utils.h"
 #include "main/lua/luaclass.h"
 #include "gtk.h"
 #include "installer.h"
@@ -49,7 +53,7 @@ void SetHandCursor(GtkWidget *widget, bool on)
 // Install Frontend Class
 // -------------------------------------
 
-CInstaller::CInstaller(void) : m_bPrevButtonLocked(false), m_bBusyActivate(false)
+CInstaller::CInstaller() : m_bPrevButtonLocked(false), m_bBusyActivate(false)
 {
     g_set_application_name("Nixstaller");
     m_pMainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -513,7 +517,7 @@ void CInstaller::CoreUpdate()
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
-    return new CInstallScreen(title, this);
+    return new CInstallScreen(title, this, Preview());
 }
 
 void CInstaller::CoreAddScreen(CBaseScreen *screen)

@@ -20,7 +20,7 @@
 #ifndef GTK_LUADIRSELECTOR_H
 #define GTK_LUADIRSELECTOR_H
 
-#include "main/install/luadirselector.h"
+#include "main/frontend/luadirselector.h"
 #include "luawidget.h"
 
 class CLuaDirSelector: public CBaseLuaDirSelector, public CLuaWidget

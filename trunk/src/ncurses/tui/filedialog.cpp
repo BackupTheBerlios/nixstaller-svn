@@ -20,6 +20,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "main/frontend/utils.h"
 #include "tui.h"
 #include "filedialog.h"
 #include "label.h"

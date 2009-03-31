@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/frontend/run.h"
+#include "main/frontend/utils.h"
 #include "fltk.h"
 #include "hyperlink.h"
 #include "installer.h"
@@ -49,8 +51,8 @@
 // Main installer screen
 // -------------------------------------
 
-CInstaller::CInstaller(void) : m_pAboutDisp(NULL), m_pAboutOKButton(NULL), m_pAboutWindow(NULL),
-                               m_pLogoBox(NULL), m_bPrevButtonLocked(false)
+CInstaller::CInstaller() : m_pAboutDisp(NULL), m_pAboutOKButton(NULL), m_pAboutWindow(NULL),
+                           m_pLogoBox(NULL), m_bPrevButtonLocked(false)
 {
     fl_register_images();
     Fl::visual(FL_RGB | FL_DOUBLE | FL_INDEX);
@@ -402,7 +404,7 @@ int CInstaller::TextWidth(const char *str)
 
 CBaseScreen *CInstaller::CreateScreen(const std::string &title)
 {
-    return new CInstallScreen(title);
+    return new CInstallScreen(title, Preview());
 }
 
 void CInstaller::CoreAddScreen(CBaseScreen *screen)
@@ -555,7 +557,7 @@ void CInstaller::Init(int argc, char **argv)
 #endif
 
     m_pMainWindow->end();
-    m_pMainWindow->show(argc, argv);
+    m_pMainWindow->show(1, argv);
     
 #ifndef __APPLE__
     // From: http://www.mail-archive.com/fltk@easysw.com/msg02863.html

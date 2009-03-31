@@ -18,129 +18,20 @@
 */
 
 #include <algorithm>
-#include <fstream>
-#include <sstream>
+#include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <locale.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <dirent.h>
-#include <libgen.h>
 #include <langinfo.h>
 
-#include "curl.h"
 #include "main.h"
-#include "install/unattinstall.h"
 #include "elfutils.h"
 #include "lua/lua.h"
 #include "lua/luaclass.h"
 #include "lua/luafunc.h"
 #include "lua/luatable.h"
-
-namespace {
-bool g_RunScript, g_RunUnattended, g_Error = false;
-}
-
-bool HadError()
-{
-    return g_Error;
-}
-
-// Besides main(), other functions may want to call this incase they cannot throw an exception
-void Quit(int ret)
-{
-    g_Error = (ret != 0);
-    
-    if (!g_RunScript && !g_RunUnattended)
-        StopFrontend();
-    
-#ifndef RELEASE
-    NLua::StackDump("Clean stack?\n");
-#endif
-    
-    FreeStrings();
-    FreeTranslations();
-
-    curl_global_cleanup();
-    exit(ret);
-}
-
-// Besides main(), other functions may want to call this incase they wants to stop an exception flow (ie GTK frontend)
-void HandleError(void)
-{
-    try
-    {
-        throw;
-    }
-    catch(Exceptions::CExUser &e)
-    {
-        debugline("User cancel\n");
-    }
-    catch(Exceptions::CException &e)
-    {
-        fflush(stdout);
-        fflush(stderr);
-        
-        if (g_RunScript || g_RunUnattended)
-            fprintf(stderr, "%s: %s\n", GetTranslation("Error"), GetTranslation(e.what())); // No specific way to complain, just use stderr
-        else
-            ReportError(CreateText("%s: %s", GetTranslation("Error"), GetTranslation(e.what())));
-    }
-    
-    Quit(EXIT_FAILURE);
-}
-
-int main(int argc, char **argv)
-{
-    unlink("frontendstarted");
-    
-    setlocale(LC_ALL, "");
-
-    PrintIntro();
-
-    const char *surunnerpath = dirname(CreateText(argv[0]));
-    if (!FileExists(CreateText("%s/surunner", surunnerpath)))
-        surunnerpath = CreateText("%s/..", surunnerpath); // HACK: for static surunner bins
-    LIBSU::SetRunnerPath(surunnerpath);
-    
-    curl_global_init(CURL_GLOBAL_ALL);
-    
-    if (argc > 1)
-    {
-        if (!strcmp(argv[1], "run"))
-            g_RunScript = true;
-        else if (!strcmp(argv[1], "unattended"))
-            g_RunUnattended = true;
-    }
-    
-    try
-    {
-        if (g_RunScript)
-        {
-            CLuaRunner lr;
-            lr.Init(argc, argv);
-        }
-        else if (g_RunUnattended)
-        {
-            CBaseUnattInstall ui;
-            ui.Init(argc, argv);
-        }
-        else
-            StartFrontend(argc, argv);
-    }
-    catch(Exceptions::CException &e)
-    {
-        HandleError();
-        // Handle error calls exit()
-    }
-    
-    Quit(EXIT_SUCCESS);
-    return 0; // Never reached
-}
 
 // -------------------------------------
 // Main Class
@@ -152,18 +43,33 @@ void CMain::Init(int argc, char **argv)
     struct utsname inf;
     UName(inf);
     
-    m_szOS = inf.sysname;
-    std::transform(m_szOS.begin(), m_szOS.end(), m_szOS.begin(), tolower);
+    m_OS = inf.sysname;
+    std::transform(m_OS.begin(), m_OS.end(), m_OS.begin(), tolower);
 
-    m_szCPUArch = inf.machine;
-    if ((m_szCPUArch[0] == 'i') && (m_szCPUArch.compare(2, 2, "86") == 0))
-        m_szCPUArch = "x86";
-    else if (m_szCPUArch == "i86pc")
-        m_szCPUArch = "x86";
-    else if (m_szCPUArch == "amd64")
-        m_szCPUArch = "x86_64";
+    m_CPUArch = inf.machine;
+    if ((m_CPUArch[0] == 'i') && (m_CPUArch.compare(2, 2, "86") == 0))
+        m_CPUArch = "x86";
+    else if (m_CPUArch == "i86pc")
+        m_CPUArch = "x86";
+    else if (m_CPUArch == "amd64")
+        m_CPUArch = "x86_64";
 
-    m_szOwnDir = GetCWD();
+    m_OwnDir = GetCWD();
+
+    for (int a=1; a<argc; a++)
+    {
+        if (!strcmp(argv[a], "-l"))
+        {
+            a++;
+            if (a < argc)
+                m_LuaDir = argv[a];
+            else
+                throw Exceptions::CExUsage("Too less args for -l option");
+        }
+    }
+
+    if (m_LuaDir.empty())
+        throw Exceptions::CExUsage("No -l option given");
     
     InitLua();
 }
@@ -173,9 +79,10 @@ void CMain::InitLua()
     lua_atpanic(NLua::LuaState, LuaPanic);
     
     // Register some globals for lua
-    NLua::LuaSet(m_szOS, "osname", "os");
-    NLua::LuaSet(m_szCPUArch, "arch", "os");
-    NLua::LuaSet(m_szOwnDir, "curdir");
+    NLua::LuaSet(m_OS, "osname", "os");
+    NLua::LuaSet(m_CPUArch, "arch", "os");
+    NLua::LuaSet(m_OwnDir, "curdir");
+    NLua::LuaSet(m_LuaDir, "luasrcdir");
     
     NLua::RegisterFunction(LuaInitDirIter, "dir", "io");
     NLua::RegisterFunction(LuaMD5, "md5", "io");
@@ -196,7 +103,6 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaExit, "exit", "os"); // Override
     NLua::RegisterFunction(LuaExitStatus, "exitstatus", "os");
     NLua::RegisterFunction(LuaOpenElf, "openelf", "os");
-    NLua::RegisterFunction(LuaInitDownload, "initdownload", "os");
     NLua::RegisterFunction(LuaGetEUID, "geteuid", "os");
     NLua::RegisterFunction(LuaHasUTF8, "hasutf8", "os");
 
@@ -210,11 +116,13 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaGetElfMachine, "getmachine", "elfclass");
     NLua::RegisterClassFunction(LuaGetElfClass, "getclass", "elfclass");
     NLua::RegisterClassFunction(LuaCloseElf, "close", "elfclass");
-
-    NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
-    NLua::RegisterClassFunction(LuaCloseDownload, "close", "downloadclass");
     
-    NLua::LoadFile(CreateText("%s/main.lua", LuaSrcPath()));
+    RunLua("main.lua");
+}
+
+void CMain::RunLua(const char *script)
+{
+    NLua::LoadFile((m_LuaDir + script).c_str());
 }
 
 int CMain::m_iLuaDirIterCount = 0;
@@ -813,77 +721,6 @@ int CMain::LuaPanic(lua_State *L)
     return 0;
 }
 
-int CMain::LuaInitDownload(lua_State *L)
-{
-    const char *url = luaL_checkstring(L, 1);
-    const char *dest = luaL_checkstring(L, 2);
-
-    CCURLWrapper *curlw = NULL;
-    try
-    {
-        curlw = new CCURLWrapper(url, dest);
-        curlw->SetProgFunc(UpdateLuaDownloadProgress, curlw);
-    }
-    catch (Exceptions::CExCURL &e)
-    {
-        if (curlw)
-            delete curlw;
-        lua_pushnil(L);
-        lua_pushfstring(L, "Could not create download class: %s\n", e.what());
-        return 2;
-    }
-    catch (Exceptions::CExIO &e)
-    {
-        if (curlw)
-            delete curlw;
-        lua_pushnil(L);
-        lua_pushfstring(L, "Could not open file: %s\n", e.what());
-        return 2;
-    }
-    
-    NLua::CreateClass(curlw, "downloadclass");
-    
-    return 1;
-}
-
-int CMain::LuaProcessDownload(lua_State *L)
-{
-    CCURLWrapper *curlw = NLua::CheckClassData<CCURLWrapper>("downloadclass", 1);
-    bool done;
-    
-    try
-    {
-        done = !curlw->Process();
-    }
-    catch (Exceptions::CExCURL &e)
-    {
-        NLua::LuaPushError(e.what());
-        return 2;
-    }
-    
-    if (done)
-    {
-        lua_pushboolean(L, false);
-        if (!curlw->Success())
-        {
-            lua_pushstring(L, curlw->ErrorMessage().c_str());
-            return 2;
-        }
-    }
-    else
-        lua_pushboolean(L, true);
-    
-    return 1;
-}
-
-int CMain::LuaCloseDownload(lua_State *L)
-{
-    CCURLWrapper *curlw = NLua::CheckClassData<CCURLWrapper>("downloadclass", 1);
-    NLua::DeleteClass(curlw, "downloadclass");
-    delete curlw;
-    return 0;
-}
-
 int CMain::LuaAbort(lua_State *L)
 {
     throw Exceptions::CExLuaAbort(lua_tostring(L, 1));
@@ -901,41 +738,4 @@ int CMain::LuaHasUTF8(lua_State *L)
     // From: http://www.cl.cam.ac.uk/~mgk25/unicode.html
     lua_pushboolean(L, (strcmp(nl_langinfo(CODESET), "UTF-8") == 0));
     return 1;
-}
-
-int CMain::UpdateLuaDownloadProgress(void *clientp, double dltotal, double dlnow,
-                                     double ultotal, double ulnow)
-{
-    CCURLWrapper *curlw = static_cast<CCURLWrapper *>(clientp);
-    NLua::CLuaFunc func("updateprogress", "downloadclass", curlw);
-    if (func)
-    {
-        NLua::PushClass("downloadclass", curlw);
-        func.PushData(); // Add 'self' to function argument list
-        func << dltotal << dlnow;
-        func(0);
-    }
-    return 0;
-}
-
-// -------------------------------------
-// Lua Runner Class
-// -------------------------------------
-
-void CLuaRunner::Init(int argc, char **argv)
-{
-    const int skip = 6; // bin name, <action>, script name, nixstaller dir, caller name
-    m_NixstDir = argv[3];
-    
-    CMain::Init(argc, argv);
-    
-    NLua::LuaSet(argv[3], "ndir");
-    NLua::LuaSet(argv[4], "callscript");
-    
-    NLua::CLuaTable tab("args");
-    for (int i=(skip-1); i<argc; i++)
-        tab[(i-skip)+2] << argv[i];
-    tab.Close();
-    
-    NLua::LoadFile(argv[2]); // Script to execute
 }

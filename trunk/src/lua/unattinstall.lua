@@ -159,8 +159,8 @@ if pkg.enable then
     checkunpkgman()
 end
 
-if os.fileexists("config/run.lua") then
-    loadrun("config")
+if os.fileexists(install.configdir .. "/run.lua") then
+    loadrun(install.configdir)
     
     -- Need to do this here as loadrun resets install.destdir
     if haveunopt("destdir") then

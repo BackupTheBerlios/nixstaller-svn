@@ -20,7 +20,7 @@
 #ifndef GTK_LUAWIDGET_H
 #define GTK_LUAWIDGET_H
 
-#include "main/install/luawidget.h"
+#include "main/frontend/luawidget.h"
 
 class CInstallScreen;
 

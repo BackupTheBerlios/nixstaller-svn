@@ -18,7 +18,9 @@
 */
 
 #include <algorithm>
+
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "installscreen.h"
 #include "luagroup.h"
 #include "tui/label.h"
@@ -27,9 +29,11 @@
 // NCurses Install Screen Class
 // -------------------------------------
 
-CInstallScreen::CInstallScreen(const std::string &title) : CBaseScreen(title), CBox(NNCurses::CBox::VERTICAL, false, 1),
-                                                           m_pTitle(NULL), m_pGroupBox(NULL), m_CurSubScreen(0),
-                                                           m_bDirty(false), m_bCleaning(false)
+CInstallScreen::CInstallScreen(const std::string &title,
+                               bool preview) : CBaseScreen(title, preview),
+                                               CBox(NNCurses::CBox::VERTICAL, false, 1),
+                                               m_pTitle(NULL), m_pGroupBox(NULL), m_CurSubScreen(0),
+                                               m_bDirty(false), m_bCleaning(false)
 {
     m_pTopBox = new NNCurses::CBox(HORIZONTAL, false);
     

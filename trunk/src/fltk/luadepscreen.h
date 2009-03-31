@@ -20,7 +20,7 @@
 #ifndef FLTK_LUADEPSCREEN_H
 #define FLTK_LUADEPSCREEN_H
 
-#include "main/install/luadepscreen.h"
+#include "main/frontend/luadepscreen.h"
 
 class Fl_Browser;
 class Fl_Widget;

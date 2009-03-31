@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/frontend/utils.h"
 #include "luacfgmenu.h"
 #include "tui/button.h"
 #include "tui/dialog.h"

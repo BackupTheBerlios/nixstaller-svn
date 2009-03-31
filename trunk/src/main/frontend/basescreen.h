@@ -25,6 +25,7 @@ class CBaseLuaGroup;
 class CBaseScreen
 {
     std::string m_Title;
+    bool m_bPreview;
     
     typedef std::vector<CBaseLuaGroup *> TLuaGroupList;
     TLuaGroupList m_LuaGroupList;
@@ -43,7 +44,7 @@ protected:
     void DeleteGroups(void);
 
 public:
-    CBaseScreen(const std::string &title) : m_Title(title) { }
+    CBaseScreen(const std::string &title, bool preview) : m_Title(title), m_bPreview(preview) { }
     virtual ~CBaseScreen(void) { }
     
     void UpdateLanguage(void);

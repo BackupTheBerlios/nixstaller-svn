@@ -20,7 +20,7 @@
 #ifndef FLTK_LUAPROGRESSBAR_H
 #define FLTK_LUAPROGRESSBAR_H
 
-#include "main/install/luaprogressbar.h"
+#include "main/frontend/luaprogressbar.h"
 #include "luawidget.h"
 
 class Fl_Progress;

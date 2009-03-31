@@ -18,6 +18,7 @@
 */
 
 #include "main/main.h"
+#include "main/frontend/utils.h"
 #include "luaprogressdialog.h"
 #include "tui/button.h"
 #include "tui/label.h"
