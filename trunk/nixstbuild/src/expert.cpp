@@ -45,8 +45,9 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
     p.setColor(QPalette::Highlight, c);
     m_pListWidget->setPalette(p);
 
-    AddListItem("../gfx/tux_config.png", "General configuration");
-    AddListItem("../gfx/ark_addfile.png", "Package configuration");
+    // UNDONE: Paths
+    AddListItem("nixstbuild/gfx/tux_config.png", "General configuration");
+    AddListItem("nixstbuild/gfx/ark_addfile.png", "Package configuration");
     connect(m_pListWidget, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
             this, SLOT(ChangePage(QListWidgetItem *, QListWidgetItem*)));
 

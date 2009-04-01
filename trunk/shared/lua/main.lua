@@ -33,6 +33,10 @@ function loadlua(f)
     return dofile(luasrcdir .. "/" .. f)
 end
 
+function loadluash(f)
+    return dofile(luasrcshdir .. "/" .. f)
+end
+
 -- Functions for easy way to enable common options
 -- The internal variable is used to check if opts were defined here and
 -- should be handled by the user or automaticly

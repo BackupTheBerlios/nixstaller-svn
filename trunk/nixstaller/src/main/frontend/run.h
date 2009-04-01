@@ -33,8 +33,8 @@ void ReportError(const char *msg);
 
 class CLuaRunner: public CMain
 {
-    public:
-        virtual void Init(int argc, char **argv);
+public:
+    virtual void Init(int argc, char **argv);
 };
 
 #endif

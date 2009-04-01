@@ -153,7 +153,7 @@ launchfrontend()
                 export TERMINFO="`pwd`/terminfo"
             fi
             
-            `pwd`/$FRBIN $UNATTENDED -l "`pwd`" -c "`pwd`/config" -- $ARGS
+            `pwd`/$FRBIN $UNATTENDED -l "`pwd`" --ls "`pwd`/sharedmain" -c "`pwd`/config" -- $ARGS
             
             RET=$?
             if [ ! -f frontendstarted ]; then

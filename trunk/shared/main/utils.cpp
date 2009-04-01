@@ -519,39 +519,10 @@ TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur,
     return width;
 }
 
-#if 0
-size_t MBWidth(std::string str)
+std::string JoinPath(const std::string &path, const std::string &file)
 {
-    // Remove newlines, as wcswidth can't really handle them
-    TSTLStrSize start = 0;
-    while (start < str.length())
-    {
-        start = str.find_first_of("\n", start);
-        
-        if (start != std::string::npos)
-        {
-            str.erase(start, 1);
-            // keep start the same as 1 char was just removed
-            continue;
-        }
-        else
-            break;
-
-        start++;
-    }
-    
-    wchar_t *wc = ToWC(str.c_str());
-    if (wc)
-    {
-        size_t ret = wcswidth(wc, wcslen(wc));
-        debugline("MBWidth: %s: %u, %u\n", str.c_str(), wcslen(wc), wcswidth(wc, wcslen(wc)));
-        delete [] wc;
-        return ret;
-    }
-    else
-        return str.length();
+    return path + "/" + file;
 }
-#endif
 
 // -------------------------------------
 // Directory iterator

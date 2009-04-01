@@ -45,14 +45,17 @@ extern "C" int vasprintf (char **result, const char *format, va_list args);
 class CMain
 {
     static int m_iLuaDirIterCount;
-    std::string m_OS, m_CPUArch, m_OwnDir, m_LuaDir;
+    std::string m_OS, m_CPUArch, m_OwnDir, m_LuaDir, m_LuaDirShared;
 
 protected:
     const std::string &GetOwnDir(void) const { return m_OwnDir; }
     
     virtual void InitLua(void);
 
+    void SetLuaDir(const char *dir) { m_LuaDir = dir; }
+    void SetLuaDirSh(const char *dir) { m_LuaDirShared = dir; }
     void RunLua(const char *script);
+    void RunLuaShared(const char *script);
     
 public:
     CMain(void) { openlog("Nixstaller", LOG_USER|LOG_INFO, LOG_USER|LOG_INFO); };

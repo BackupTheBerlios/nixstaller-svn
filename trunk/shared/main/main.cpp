@@ -66,10 +66,20 @@ void CMain::Init(int argc, char **argv)
             else
                 throw Exceptions::CExUsage("Too less args for -l option");
         }
+        else if (!strcmp(argv[a], "--ls"))
+        {
+            a++;
+            if (a < argc)
+                m_LuaDirShared = argv[a];
+            else
+                throw Exceptions::CExUsage("Too less args for --ls option");
+        }
     }
 
     if (m_LuaDir.empty())
         throw Exceptions::CExUsage("No -l option given");
+    if (m_LuaDirShared.empty())
+        throw Exceptions::CExUsage("No --ls option given");
     
     InitLua();
 }
@@ -83,6 +93,7 @@ void CMain::InitLua()
     NLua::LuaSet(m_CPUArch, "arch", "os");
     NLua::LuaSet(m_OwnDir, "curdir");
     NLua::LuaSet(m_LuaDir, "luasrcdir");
+    NLua::LuaSet(m_LuaDirShared, "luasrcshdir");
     
     NLua::RegisterFunction(LuaInitDirIter, "dir", "io");
     NLua::RegisterFunction(LuaMD5, "md5", "io");
@@ -117,12 +128,17 @@ void CMain::InitLua()
     NLua::RegisterClassFunction(LuaGetElfClass, "getclass", "elfclass");
     NLua::RegisterClassFunction(LuaCloseElf, "close", "elfclass");
     
-    RunLua("main.lua");
+    RunLuaShared("main.lua");
 }
 
 void CMain::RunLua(const char *script)
 {
-    NLua::LoadFile((m_LuaDir + script).c_str());
+    NLua::LoadFile(JoinPath(m_LuaDir, script).c_str());
+}
+
+void CMain::RunLuaShared(const char *script)
+{
+    NLua::LoadFile(JoinPath(m_LuaDirShared, script).c_str());
 }
 
 int CMain::m_iLuaDirIterCount = 0;

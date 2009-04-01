@@ -61,6 +61,7 @@ TSTLStrSize GetMBLenFromW(const std::string &str, size_t width);
 TSTLStrSize GetMBWidthFromC(const std::string &str, std::string::const_iterator cur, int n);
 TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur, TSTLStrSize width, bool roundup);
 char *CreateTmpText(const char *s, ...);
+std::string JoinPath(const std::string &path, const std::string &file);
 
 template <typename To, typename From> To SafeConvert(From from)
 {

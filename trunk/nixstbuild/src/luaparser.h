@@ -18,34 +18,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "main/main.h"
 
-#include <QApplication>
-#include <QMessageBox>
-
-#include "main/exception.h"
-#include "main/lua/lua.h"
-#include "luaparser.h"
-#include "welcome.h"
-
-int main(int argc, char *argv[])
+class CLuaParser: public CMain
 {
-    QApplication app(argc, argv);
-
-    (new CWelcomeScreen())->show();
-
-    try
-    {
-        CLuaParser luaparser;
-        luaparser.Init(argc, argv);
-
-        NLua::StackDump("Clean stack?\n");
-    }
-    catch(Exceptions::CException &e)
-    {
-        QMessageBox::critical(0, "Error", e.what());
-        return 1;
-    }
+protected:
+    virtual void InitLua(void);
     
-    return app.exec();
-}
-
+public:
+    virtual void Init(int argc, char **argv);
+};

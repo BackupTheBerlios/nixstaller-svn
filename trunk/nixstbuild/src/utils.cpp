@@ -18,34 +18,29 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <stdlib.h>
+#include <QObject>
 
-#include <QApplication>
-#include <QMessageBox>
+#include "utils.h"
 
-#include "main/exception.h"
-#include "main/lua/lua.h"
-#include "luaparser.h"
-#include "welcome.h"
-
-int main(int argc, char *argv[])
+// Required by exceptions.h
+const char *GetExTranslation(const char *s)
 {
-    QApplication app(argc, argv);
-
-    (new CWelcomeScreen())->show();
-
-    try
-    {
-        CLuaParser luaparser;
-        luaparser.Init(argc, argv);
-
-        NLua::StackDump("Clean stack?\n");
-    }
-    catch(Exceptions::CException &e)
-    {
-        QMessageBox::critical(0, "Error", e.what());
-        return 1;
-    }
-    
-    return app.exec();
+    return QObject::tr(s).toLatin1();
 }
 
+#ifndef RELEASE
+void debugline(const char *t, ...)
+{
+    char *txt;
+    va_list v;
+    
+    va_start(v, t);
+    vasprintf(&txt, t, v);
+    va_end(v);
+    
+    printf("DEBUG: %s", txt);
+    
+    free(txt);
+}
+#endif

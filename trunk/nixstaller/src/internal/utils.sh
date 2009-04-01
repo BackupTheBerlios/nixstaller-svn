@@ -77,7 +77,8 @@ runluascript()
     shift 2
 
     if [ ! -z "$BIN" ]; then
-        "$BIN" run -e "$SCRIPT" -n "$NDIR" -c $0 -l "$NDIR/src/lua" -- "$@" || exit 1
+        # UNDONE
+        "$BIN" run -e "$SCRIPT" -n "$NDIR" -c $0 -l "$NDIR/src/lua" --ls "$NDIR/../shared/lua" -- "$@" || exit 1
         exit 0
     fi
     
