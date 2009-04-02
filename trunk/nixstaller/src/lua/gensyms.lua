@@ -16,8 +16,8 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 loadluash("utils.lua")
+loadluash("utils-public.lua")
 loadlua("shared/utils.lua")
-loadlua("shared/utils-public.lua")
 
 -- Get all dependant libraries from bin, recursively
 function getalllibs(startlib, map, lpath)

@@ -1,7 +1,7 @@
 --     Copyright (C) 2006 - 2009 Rick Helmus  / InternetNightmare
 --     rhelmus_AT_gmail.com / internetnightmare_AT_gmail.com
 -- 
---     This file is part of Nixstaller.
+--     This file is part of Nixstbuild.
 -- 
 --     This program is free software; you can redistribute it and/or modify it under
 --     the terms of the GNU General Public License as published by the Free Software
@@ -16,4 +16,7 @@
 --     this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
+loadluash("utils-public.lua")
+
 print("Hello Lua world!")
+print(utils.emptystring(""))

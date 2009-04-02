@@ -16,6 +16,7 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 loadluash("utils.lua")
+loadluash("utils-public.lua")
 loadlua("shared/utils.lua")
 loadlua("shared/utils-public.lua")
 loadlua("shared/package-public.lua")

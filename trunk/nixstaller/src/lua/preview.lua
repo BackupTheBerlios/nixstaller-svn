@@ -18,6 +18,7 @@
 -- Called when frontend is in preview mode (used by Nixstbuild)
 
 loadluash("utils.lua")
+loadluash("utils-public.lua")
 loadlua("shared/utils.lua")
 loadlua("shared/utils-public.lua")
 

@@ -22,6 +22,7 @@
 
 void CLuaParser::InitLua()
 {
+    CMain::InitLua();
     RunLua("nixstbuild.lua");
 }
 

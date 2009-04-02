@@ -14,7 +14,6 @@ HEADERS += welcome.h \
  utils.h \
  luaparser.h
 
-INCLUDEPATH += ../../shared/
 
 LIBS += -L../../shared/lib/linux/x86/ \
   -L../../shared/lib/linux/x86_64/ \
@@ -22,5 +21,10 @@ LIBS += -L../../shared/lib/linux/x86/ \
   -lelf \
   -llua
 
-DISTFILES += lua/nixstbuild.lua
+DISTFILES += lua/nixstbuild.lua \
+ ../TODO \
+ lua/utils-public.lua
+
+INCLUDEPATH += ../../shared/include/ \
+  ../../shared/
 
