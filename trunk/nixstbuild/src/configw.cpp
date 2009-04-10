@@ -1,5 +1,7 @@
 #include <QApplication>
+#include <QRadioButton>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QWidget>
@@ -52,7 +54,11 @@ QConfigWidget::QConfigWidget(QWidget *parent, char *lua_description, char *prope
             
             if (val == "file")
             {
-                
+                string vname;
+                CVariableProvider *current;
+                descr["var"] >> vname;
+                providers.push_back(current = new CFileProvider(vname, ""));
+                grid->addWidget(current, i, 1);                
             } else if (val == "string")
             {
                 string vname;
@@ -66,6 +72,50 @@ QConfigWidget::QConfigWidget(QWidget *parent, char *lua_description, char *prope
                 CVariableProvider *current;
                 descr["var"] >> vname;
                 providers.push_back(current = new CBooleanProvider(vname));
+                grid->addWidget(current, i, 1);
+            } else if (val == "choice")
+            {
+                string vname;
+                CVariableProvider *current;
+                vector<string> choices;
+                descr["var"] >> vname;
+
+                descr["choices"].GetTable();
+                CLuaTable choicet(-1);
+
+                for (int j = 1; j <= choicet.Size(); j++)
+                {
+                    string newval;
+                    choicet[j] >> newval;
+                    choices.push_back(newval);
+                }
+                
+                choicet.Close();
+                lua_pop(LuaState, 1);
+                
+                providers.push_back(current = new CChoiceProvider(vname, choices));
+                grid->addWidget(current, i, 1);
+            } else if (val == "multi-choice")
+            {
+                string vname;
+                CVariableProvider *current;
+                vector<string> choices;
+                descr["var"] >> vname;
+
+                descr["choices"].GetTable();
+                CLuaTable choicet(-1);
+
+                for (int j = 1; j <= choicet.Size(); j++)
+                {
+                    string newval;
+                    choicet[j] >> newval;
+                    choices.push_back(newval);
+                }
+                
+                choicet.Close();
+                lua_pop(LuaState, 1);
+                
+                providers.push_back(current = new CMultiChoiceProvider(vname, choices));
                 grid->addWidget(current, i, 1);
             }
 
@@ -129,7 +179,89 @@ string CBooleanProvider::toString()
     return varname + " = " + (checkBox->isChecked() ? "true" : "false");
 }
 
+CChoiceProvider::CChoiceProvider(string name, vector<string> choices)
+{
+    vector<string>::iterator iter;
 
+    choicevec = choices;
+    varname = name;
+
+    buttonGroup = new QButtonGroup(this);
+    setLayout(new QVBoxLayout());
+
+    for (iter = choices.begin(); iter != choices.end(); iter++)
+    {
+        QRadioButton *newbutton = new QRadioButton((*iter).c_str());
+        buttonGroup->addButton(newbutton);
+        layout()->addWidget(newbutton);
+    }
+}
+
+string CChoiceProvider::toString()
+{
+    if (buttonGroup->checkedButton() != 0)
+    {
+        return varname + " = \"" + buttonGroup->checkedButton()->text().toStdString() + "\"";
+    } else return string("");
+}
+
+CMultiChoiceProvider::CMultiChoiceProvider(string name, vector<string> choices)
+{
+    vector<string>::iterator iter;
+
+    varname = name;
+
+    setLayout(new QVBoxLayout());
+
+    for (iter = choices.begin(); iter != choices.end(); iter++)
+    {
+        QCheckBox *newbutton = new QCheckBox((*iter).c_str());
+        choicevec.push_back(newbutton);
+        layout()->addWidget(newbutton);
+    }
+}
+
+string CMultiChoiceProvider::toString()
+{
+    bool notfirst = false;
+
+    vector<QCheckBox*>::iterator iter;
+    string ret = varname + " = {";
+
+    for (iter = choicevec.begin(); iter != choicevec.end(); iter++)
+    {
+        if ((*iter)->isChecked())
+        {
+            if (!notfirst)
+            {
+                ret.append("\"" + (*iter)->text().toStdString() + "\"");
+                notfirst = true;
+            } else {
+                ret.append(",\"" + (*iter)->text().toStdString() + "\"");
+            }
+        }
+    }
+
+    ret.append("}");
+    return ret;
+}
+
+CFileProvider::CFileProvider(string name, string dest)
+{
+    varname = name;
+
+    lineEdit = new QLineEdit();
+    openButton = new QPushButton("Choose...");
+
+    setLayout(new QHBoxLayout());
+    layout()->addWidget(lineEdit);
+    layout()->addWidget(openButton);
+}
+
+string CFileProvider::toString()
+{
+    return "";
+}
 
 
 

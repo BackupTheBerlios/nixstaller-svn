@@ -94,7 +94,7 @@ public:
 class CMultiChoiceProvider: public CVariableProvider
 {
 protected:
-    vector<string> choicevec;
+    vector<QCheckBox*> choicevec;
     QButtonGroup *buttonGroup;
 public:
     CMultiChoiceProvider(string name, vector<string> choices);
