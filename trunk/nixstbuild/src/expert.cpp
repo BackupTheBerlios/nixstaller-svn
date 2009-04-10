@@ -24,8 +24,12 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QStackedWidget>
+#include <QScrollArea>
 
+#include "configw.h"
 #include "expert.h"
+
+QConfigWidget *qw;
 
 CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
 {
@@ -52,7 +56,10 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
             this, SLOT(ChangePage(QListWidgetItem *, QListWidgetItem*)));
 
     m_pWidgetStack = new QStackedWidget;
-    m_pWidgetStack->addWidget(CreateGeneralConf());
+    //m_pWidgetStack->addWidget(CreateGeneralConf());
+    QScrollArea *configScroll = new QScrollArea();
+    configScroll->setWidget(qw = new QConfigWidget(this, "configprop.lua", "properties_config", "config.lua"));
+    m_pWidgetStack->addWidget(configScroll);
     m_pWidgetStack->addWidget(CreatePackageConf());
     
     QWidget *cw = new QWidget();
@@ -70,6 +77,8 @@ void CExpertScreen::ChangePage(QListWidgetItem *current, QListWidgetItem *previo
         current = previous;
 
     m_pWidgetStack->setCurrentIndex(m_pListWidget->row(current));
+
+    qw->buildConfig();
 }
 
 void CExpertScreen::AddListItem(QString icon, QString name)

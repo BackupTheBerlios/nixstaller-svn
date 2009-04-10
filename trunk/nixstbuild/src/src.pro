@@ -2,7 +2,8 @@ SOURCES += main.cpp \
  welcome.cpp \
  expert.cpp \
  utils.cpp \
- luaparser.cpp
+ luaparser.cpp \
+ configw.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -12,7 +13,8 @@ DESTDIR = ../bin
 HEADERS += welcome.h \
  expert.h \
  utils.h \
- luaparser.h
+ luaparser.h \
+ configw.h
 
 
 LIBS += -L../../shared/lib/linux/x86/ \

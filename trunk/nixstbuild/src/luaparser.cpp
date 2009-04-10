@@ -32,3 +32,8 @@ void CLuaParser::Init(int argc, char **argv)
     SetLuaDirSh("shared/lua"); // UNDONE
     CMain::Init(argc, argv);
 }
+
+void CLuaParser::PRunLua(char *lua)
+{
+    RunLua(lua);
+}

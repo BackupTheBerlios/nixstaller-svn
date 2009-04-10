@@ -26,6 +26,7 @@
 #include "main/lua/lua.h"
 #include "luaparser.h"
 #include "welcome.h"
+#include "configw.h"
 
 int main(int argc, char *argv[])
 {
