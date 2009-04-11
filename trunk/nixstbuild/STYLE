@@ -1,0 +1,11 @@
+* Curley braces are prefixed with a newline:
+if (...)
+{
+    // Stuff
+}
+* Indenting happens with 4 spaces (no tabs) each level
+* Namespaces should stick (ie. no 'using namespace X').
+* Hungarian notation: Not anymore
+* STL is nice; use it :-)
+* If possible/reasonable keep #include's out of headers (use class and such)
+* All source files start with Copyright notice
