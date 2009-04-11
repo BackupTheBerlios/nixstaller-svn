@@ -4,7 +4,7 @@
 
 properties_config = {
     { name = "Application icon", var = "cfg.appicon", ptype = "file", description = "Icon for installer application in XPM format" },
-    { name = "Application name", var = "cfg.appname", ptype = "string", default = "", description = "Application name used bu installer" },
+    { name = "Application name", var = "cfg.appname", ptype = "string", default = "", description = "Application name used by installer" },
     { name = "Archive type", var = "cfg.archivetype", ptype = "choice", description = "Type of compression to use for installer archive", choices = {"gzip", "lzma", "bzip2"} },
     { name = "Autodetect language", var = "cfg.autolang", ptype = "boolean", description = "When selected installer will automaticly try to detect system language" },
     { name = "Default language", var = "cfg.defaultlang", ptype = "string", default = "english", description = "Defines the default language to use for installer" },

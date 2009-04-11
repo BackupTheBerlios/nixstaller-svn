@@ -20,9 +20,8 @@ using namespace std;
 
 using namespace NLua;
 
-QConfigWidget::QConfigWidget(QWidget *parent, char *lua_description, char *property_table, char *output): QWidget(parent)
+QConfigWidget::QConfigWidget(QWidget *parent, const char *lua_description, const char *property_table, const char *output): QWidget(parent)
 {
-
     CLuaParser luaparser;
 
     grid = new QGridLayout();
@@ -138,7 +137,7 @@ void QConfigWidget::buildConfig()
 {
     vector<CVariableProvider*>::iterator iter;
     fstream luaout;
-    luaout.open(outputfile, fstream::out);
+    luaout.open(outputfile.c_str(), fstream::out);
 
     for (iter = providers.begin(); iter != providers.end(); iter++)
     {

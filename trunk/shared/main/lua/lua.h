@@ -21,6 +21,7 @@
 #define LUA_WRAPPER_H
 
 #include <string>
+
 extern "C" {
 #include "lua/lua.h"
 #include "lua/lualib.h"

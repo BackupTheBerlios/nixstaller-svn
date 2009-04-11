@@ -61,29 +61,6 @@ void CBaseLuaDepScreen::Refresh()
         }
         
         lua_pop(NLua::LuaState, 1); // Func ret
-        
-#if 0
-        int tab = lua_gettop(NLua::LuaState);
-        int count = luaL_getn(NLua::LuaState, tab);
-        
-        m_Dependencies.clear();
-        
-        for (int i=1; i<=count; i++)
-        {
-            lua_rawgeti(NLua::LuaState, tab, i);
-            luaL_checktype(NLua::LuaState, -1, LUA_TTABLE);
-            NLua::CLuaTable tab(-1);
-            if (tab)
-            {
-                const char *n, *d, *p;
-                tab["name"] >> n;
-                tab["desc"] >> d;
-                tab["problem"] >> p;
-                m_Dependencies.push_back(SDepInfo(n, d, p));
-            }
-        }
-        lua_pop(NLua::LuaState, 1);
-#endif
     }
     
     CoreUpdateList();

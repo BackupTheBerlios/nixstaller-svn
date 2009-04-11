@@ -31,6 +31,11 @@ class CExpertScreen: public QMainWindow
     QStackedWidget *m_pWidgetStack;
     QListWidget *m_pListWidget;
 
+    void CreateFileMenu(void);
+    void CreateBuildRunMenu(void);
+    void CreateHelpMenu(void);
+    void CreateMenuBar(void);
+    
     void AddListItem(QString icon, QString name);
     QWidget *CreateGeneralConf(void);
     QWidget *CreatePackageConf(void);

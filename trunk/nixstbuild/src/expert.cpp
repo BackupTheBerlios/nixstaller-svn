@@ -18,12 +18,17 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <QAction>
+#include <QApplication>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMenu>
+#include <QMenuBar>
 #include <QStackedWidget>
+#include <QStatusBar>
 #include <QScrollArea>
 
 #include "configw.h"
@@ -34,7 +39,10 @@ QConfigWidget *qw;
 CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
 {
     setWindowTitle("Nixstbuild v0.1 - Expert mode");
+    statusBar()->showMessage(tr("Ready"));
 
+    CreateMenuBar();
+    
     const int listw = 156, iconw = 96, iconh = 84;
     m_pListWidget = new QListWidget;
     m_pListWidget->setViewMode(QListView::IconMode);
@@ -56,10 +64,7 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
             this, SLOT(ChangePage(QListWidgetItem *, QListWidgetItem*)));
 
     m_pWidgetStack = new QStackedWidget;
-    //m_pWidgetStack->addWidget(CreateGeneralConf());
-    QScrollArea *configScroll = new QScrollArea();
-    configScroll->setWidget(qw = new QConfigWidget(this, "configprop.lua", "properties_config", "config.lua"));
-    m_pWidgetStack->addWidget(configScroll);
+    m_pWidgetStack->addWidget(CreateGeneralConf());
     m_pWidgetStack->addWidget(CreatePackageConf());
     
     QWidget *cw = new QWidget();
@@ -81,9 +86,92 @@ void CExpertScreen::ChangePage(QListWidgetItem *current, QListWidgetItem *previo
     qw->buildConfig();
 }
 
+void CExpertScreen::CreateFileMenu()
+{
+    QMenu *menu = menuBar()->addMenu(tr("&File"));
+
+    QAction *action = new QAction(tr("&New project"), this);
+    action->setShortcut(tr("Ctrl+N"));
+    action->setStatusTip(tr("Create a new project"));
+    menu->addAction(action);
+
+    action = new QAction(tr("&Open project"), this);
+    action->setShortcut(tr("Ctrl+O"));
+    action->setStatusTip(tr("Open existing project directory"));
+    menu->addAction(action);
+
+    menu->addSeparator();
+    
+    action = new QAction(tr("&Save project"), this);
+    action->setShortcut(tr("Ctrl+S"));
+    action->setStatusTip(tr("Save project changes"));
+    menu->addAction(action);
+
+    action = new QAction(tr("Save project as..."), this);
+    action->setStatusTip(tr("Save project to a different directory"));
+    menu->addAction(action);
+
+    menu->addSeparator();
+
+    action = new QAction(tr("&Exit"), this);
+    action->setShortcut(tr("Ctrl+Q"));
+    action->setStatusTip(tr("Exit program"));
+    connect(action, SIGNAL(triggered()), this, SLOT(close()));
+    menu->addAction(action);
+}
+
+void CExpertScreen::CreateBuildRunMenu()
+{
+    QMenu *menu = menuBar()->addMenu(tr("&Build && Run"));
+
+    QAction *action = new QAction(tr("&Build"), this);
+    action->setShortcut(tr("F7"));
+    action->setStatusTip(tr("Build the installer"));
+    menu->addAction(action);
+
+    action = new QAction(tr("Build && &Run"), this);
+    action->setShortcut(tr("F8"));
+    action->setStatusTip(tr("Build and launch the installer"));
+    menu->addAction(action);
+
+    action = new QAction(tr("&Preview"), this);
+    action->setShortcut(tr("F9"));
+    action->setStatusTip(tr("Previews the installer"));
+    menu->addAction(action);
+}
+
+void CExpertScreen::CreateHelpMenu()
+{
+    QMenu *menu = menuBar()->addMenu(tr("&Help"));
+
+    QAction *action = new QAction(tr("&Nixstaller manual"), this);
+    action->setShortcut(tr("F1"));
+    action->setStatusTip(tr("Displays the Nixstaller manual"));
+    menu->addAction(action);
+
+    action = new QAction(tr("&About"), this);
+    action->setStatusTip(tr("About Nixstbuild"));
+    menu->addAction(action);
+
+    action = new QAction(tr("About Qt"), this);
+    connect(action, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    menu->addAction(action);
+}
+
+void CExpertScreen::CreateMenuBar()
+{
+    CreateFileMenu();
+    CreateBuildRunMenu();
+    CreateHelpMenu();
+}
+
 void CExpertScreen::AddListItem(QString icon, QString name)
 {
     QListWidgetItem *item = new QListWidgetItem(m_pListWidget);
+
+    if (m_pListWidget->count() == 1)
+        m_pListWidget->setCurrentItem(item);
+        
     QFont font;
     font.setBold(true);
     item->setFont(font);
@@ -95,10 +183,9 @@ void CExpertScreen::AddListItem(QString icon, QString name)
 
 QWidget *CExpertScreen::CreateGeneralConf()
 {
-    QWidget *ret = new QWidget;
-    QFormLayout *layout = new QFormLayout(ret);
-    layout->addRow("Application Name", new QLineEdit);
-    return ret;
+    QScrollArea *configScroll = new QScrollArea();
+    configScroll->setWidget(qw = new QConfigWidget(this, "configprop.lua", "properties_config", "config.lua"));
+    return configScroll;
 }
 
 QWidget *CExpertScreen::CreatePackageConf()

@@ -33,7 +33,7 @@ void CLuaParser::Init(int argc, char **argv)
     CMain::Init(argc, argv);
 }
 
-void CLuaParser::PRunLua(char *lua)
+void CLuaParser::PRunLua(const char *lua)
 {
     RunLua(lua);
 }

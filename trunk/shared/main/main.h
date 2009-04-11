@@ -29,7 +29,6 @@
 #include <map>
 #include <limits>
 #include <fstream>
-
         
 typedef std::vector<std::string>::size_type TSTLVecSize;
 typedef std::string::size_type TSTLStrSize;
