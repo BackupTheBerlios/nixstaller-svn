@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/" >
+        <file alias="closeall.png">../gfx/editor/closeall.png</file>
+        <file alias="comment.png">../gfx/editor/comment.png</file>
+        <file alias="copy.png">../gfx/editor/copy.png</file>
+        <file alias="cut.png">../gfx/editor/cut.png</file>
+        <file alias="down.png">../gfx/editor/down.png</file>
+        <file alias="exit.png">../gfx/editor/exit.png</file>
+        <file alias="find.png">../gfx/editor/find.png</file>
+        <file alias="goto.png">../gfx/editor/goto.png</file>
+        <file alias="indent.png">../gfx/editor/indent.png</file>
+        <file alias="paste.png">../gfx/editor/paste.png</file>
+        <file alias="redo.png">../gfx/editor/redo.png</file>
+        <file alias="reload.png">../gfx/editor/reload.png</file>
+        <file alias="replace.png">../gfx/editor/replace.png</file>
+        <file alias="uncomment.png">../gfx/editor/uncomment.png</file>
+        <file alias="underline.png">../gfx/editor/underline.png</file>
+        <file alias="undo.png">../gfx/editor/undo.png</file>
+        <file alias="unindent.png">../gfx/editor/unindent.png</file>
+        <file alias="up.png">../gfx/editor/up.png</file>
+    </qresource>
+</RCC>

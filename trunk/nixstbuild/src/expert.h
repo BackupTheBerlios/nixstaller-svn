@@ -18,11 +18,20 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef EXPERT_H
+#define EXPERT_H
+
 #include <QMainWindow>
 
 class QListWidgetItem;
 class QListWidget;
 class QStackedWidget;
+class QToolButton;
+
+class QFormatScheme;
+class QLanguageFactory;
+
+class CEditor;
 
 class CExpertScreen: public QMainWindow
 {
@@ -30,19 +39,28 @@ class CExpertScreen: public QMainWindow
 
     QStackedWidget *m_pWidgetStack;
     QListWidget *m_pListWidget;
+    CEditor *editor;
 
-    void CreateFileMenu(void);
-    void CreateBuildRunMenu(void);
-    void CreateHelpMenu(void);
-    void CreateMenuBar(void);
+    void createFileMenu(void);
+    void createBuildRunMenu(void);
+    void createSettingsMenu(void);
+    void createHelpMenu(void);
+    void createMenuBar(void);
     
-    void AddListItem(QString icon, QString name);
-    QWidget *CreateGeneralConf(void);
-    QWidget *CreatePackageConf(void);
+    void addListItem(QString icon, QString name);
+    
+    QWidget *createGeneralConf(void);
+    QWidget *createPackageConf(void);
+    QWidget *createRunConf(void);
+
+    QToolButton *createToolButton(QString icon, QString label);
 
 private slots:
-    void ChangePage(QListWidgetItem *current, QListWidgetItem *previous);
+    void changePage(QListWidgetItem *current, QListWidgetItem *previous);
+    void editSettings(void);
     
 public:
     CExpertScreen(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 };
+
+#endif

@@ -32,6 +32,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    QCoreApplication::setOrganizationName("Nixstaller");
+    QCoreApplication::setOrganizationDomain("nixstaller.berlios.de");
+    QCoreApplication::setApplicationName("Nixstbuild");
+    
     (new CWelcomeScreen())->show();
 
     try

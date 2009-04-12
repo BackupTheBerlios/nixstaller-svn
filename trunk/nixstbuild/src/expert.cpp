@@ -30,8 +30,13 @@
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QScrollArea>
+#include <QTextEdit>
+#include <QToolButton>
+#include <QVBoxLayout>
 
 #include "configw.h"
+#include "editor.h"
+#include "editsettings.h"
 #include "expert.h"
 
 QConfigWidget *qw;
@@ -40,10 +45,11 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
 {
     setWindowTitle("Nixstbuild v0.1 - Expert mode");
     statusBar()->showMessage(tr("Ready"));
+    resize(700, 500);
 
-    CreateMenuBar();
+    createMenuBar();
     
-    const int listw = 156, iconw = 96, iconh = 84;
+    const int listw = 165, iconw = 96, iconh = 84;
     m_pListWidget = new QListWidget;
     m_pListWidget->setViewMode(QListView::IconMode);
     m_pListWidget->setIconSize(QSize(iconw, iconh));
@@ -58,14 +64,16 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
     m_pListWidget->setPalette(p);
 
     // UNDONE: Paths
-    AddListItem("nixstbuild/gfx/tux_config.png", "General configuration");
-    AddListItem("nixstbuild/gfx/ark_addfile.png", "Package configuration");
+    addListItem("nixstbuild/gfx/tux_config.png", "General configuration");
+    addListItem("nixstbuild/gfx/ark_addfile.png", "Package configuration");
+    addListItem("nixstbuild/gfx/ark_addfile.png", "Runtime configuration");
     connect(m_pListWidget, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-            this, SLOT(ChangePage(QListWidgetItem *, QListWidgetItem*)));
+            this, SLOT(changePage(QListWidgetItem *, QListWidgetItem*)));
 
     m_pWidgetStack = new QStackedWidget;
-    m_pWidgetStack->addWidget(CreateGeneralConf());
-    m_pWidgetStack->addWidget(CreatePackageConf());
+    m_pWidgetStack->addWidget(createGeneralConf());
+    m_pWidgetStack->addWidget(createPackageConf());
+    m_pWidgetStack->addWidget(createRunConf());
     
     QWidget *cw = new QWidget();
     setCentralWidget(cw);
@@ -76,7 +84,7 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
     layout->addWidget(m_pWidgetStack);
 }
 
-void CExpertScreen::ChangePage(QListWidgetItem *current, QListWidgetItem *previous)
+void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previous)
 {
     if (!current)
         current = previous;
@@ -86,7 +94,14 @@ void CExpertScreen::ChangePage(QListWidgetItem *current, QListWidgetItem *previo
     qw->buildConfig();
 }
 
-void CExpertScreen::CreateFileMenu()
+void CExpertScreen::editSettings()
+{
+    CEditSettings set;
+    if (set.exec() == QDialog::Accepted)
+        editor->loadSettings();
+}
+
+void CExpertScreen::createFileMenu()
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
 
@@ -120,7 +135,7 @@ void CExpertScreen::CreateFileMenu()
     menu->addAction(action);
 }
 
-void CExpertScreen::CreateBuildRunMenu()
+void CExpertScreen::createBuildRunMenu()
 {
     QMenu *menu = menuBar()->addMenu(tr("&Build && Run"));
 
@@ -140,7 +155,21 @@ void CExpertScreen::CreateBuildRunMenu()
     menu->addAction(action);
 }
 
-void CExpertScreen::CreateHelpMenu()
+void CExpertScreen::createSettingsMenu()
+{
+    QMenu *menu = menuBar()->addMenu(tr("&Settings"));
+
+    QAction *action = new QAction(tr("&Editor settings"), this);
+    action->setStatusTip(tr("Text editor settings"));
+    connect(action, SIGNAL(triggered()), this, SLOT(editSettings()));
+    menu->addAction(action);
+
+    action = new QAction(tr("&Nixstbuild settings"), this);
+    action->setStatusTip(tr("Settings for Nixstbuild"));
+    menu->addAction(action);
+}
+
+void CExpertScreen::createHelpMenu()
 {
     QMenu *menu = menuBar()->addMenu(tr("&Help"));
 
@@ -158,14 +187,15 @@ void CExpertScreen::CreateHelpMenu()
     menu->addAction(action);
 }
 
-void CExpertScreen::CreateMenuBar()
+void CExpertScreen::createMenuBar()
 {
-    CreateFileMenu();
-    CreateBuildRunMenu();
-    CreateHelpMenu();
+    createFileMenu();
+    createBuildRunMenu();
+    createSettingsMenu();
+    createHelpMenu();
 }
 
-void CExpertScreen::AddListItem(QString icon, QString name)
+void CExpertScreen::addListItem(QString icon, QString name)
 {
     QListWidgetItem *item = new QListWidgetItem(m_pListWidget);
 
@@ -181,17 +211,46 @@ void CExpertScreen::AddListItem(QString icon, QString name)
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
 
-QWidget *CExpertScreen::CreateGeneralConf()
+QWidget *CExpertScreen::createGeneralConf()
 {
     QScrollArea *configScroll = new QScrollArea();
     configScroll->setWidget(qw = new QConfigWidget(this, "configprop.lua", "properties_config", "config.lua"));
     return configScroll;
 }
 
-QWidget *CExpertScreen::CreatePackageConf()
+QWidget *CExpertScreen::createPackageConf()
 {
     QWidget *ret = new QWidget;
     QFormLayout *layout = new QFormLayout(ret);
     layout->addRow("Package name", new QLineEdit);
+    return ret;
+}
+
+QWidget *CExpertScreen::createRunConf()
+{
+    QWidget *ret = new QWidget;
+    QVBoxLayout *vlayout = new QVBoxLayout(ret);
+
+    QWidget *buttonw = new QWidget;
+    QHBoxLayout *blayout = new QHBoxLayout(buttonw);
+
+    blayout->addWidget(createToolButton("nixstbuild/gfx/tux_config.png", tr("Generate code")));
+
+    vlayout->addWidget(buttonw);
+
+    editor = new CEditor(this);
+    editor->load("../newdepscan.lua");
+    
+    vlayout->addWidget(editor);
+    return ret;
+}
+
+QToolButton *CExpertScreen::createToolButton(QString icon, QString label)
+{
+    QToolButton *ret = new QToolButton;
+    ret->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    ret->setText(label);
+    ret->setIcon(QIcon(icon));
+    ret->setIconSize(QSize(32, 32));
     return ret;
 }

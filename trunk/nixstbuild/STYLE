@@ -9,3 +9,7 @@ if (...)
 * STL is nice; use it :-)
 * If possible/reasonable keep #include's out of headers (use class and such)
 * All source files start with Copyright notice
+* Case:
+    - Class names start with uppercase and with a C prefix
+    - Methods and member names camelcased
+    - Structs, typedefs lowercase

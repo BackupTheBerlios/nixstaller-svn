@@ -18,6 +18,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef WELCOME_H
+#define WELCOME_H
+
 #include <QMainWindow>
 
 class QPushButton;
@@ -36,3 +39,5 @@ private slots:
     void StandardSlot(void);
     void ExpertSlot(void);
 };
+
+#endif

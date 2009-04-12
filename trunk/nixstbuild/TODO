@@ -1,2 +1,5 @@
 - Way to know where Nixstbuild is located (to find Lua scripts)
-- Resource file?
+- Resource files
+- Editor:
+    - Settings
+    - Check/improve Lua syntax highlighting

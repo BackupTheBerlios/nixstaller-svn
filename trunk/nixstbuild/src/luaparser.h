@@ -18,6 +18,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef LUA_PARSER_H
+#define LUA_PARSER_H
+
 #include "main/main.h"
 
 class CLuaParser: public CMain
@@ -29,3 +32,5 @@ public:
     virtual void Init(int argc, char **argv);
     virtual void PRunLua(const char *lua);
 };
+
+#endif
