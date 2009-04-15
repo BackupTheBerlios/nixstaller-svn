@@ -22,26 +22,34 @@
 #define EDITOR_H
 
 #include <QWidget>
-#include "qcodeedit.h"
-#include "qeditor.h"
 
+#include "qeditor.h"
+#include "qcodeedit.h"
+
+class QAction;
 class QFormatScheme;
 class QLanguageFactory;
+class QSignalMapper;
 class QToolBar;
 
 class CEditor: public QWidget
 {
     Q_OBJECT
-            
+
     static bool init;
     static QFormatScheme *formats;
     static QLanguageFactory *langFactory;
 
     QCodeEdit *editControl;
+    QSignalMapper *panelSignalMapper;
 
     void addPanel(const QString &name, QCodeEdit::Position pos, QString key="", bool add=false);
     QToolBar *createToolbars(void);
-    void applyFlag(int &flags, QEditor::EditFlag flag, bool on);
+
+private slots:
+    void updateWrap(bool e);
+    void updateLineEnding(int le);
+    void updatePanel(const QString &paneln);
     
 public:
     CEditor(QWidget *parent = 0, Qt::WindowFlags f = 0);

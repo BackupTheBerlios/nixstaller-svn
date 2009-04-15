@@ -32,6 +32,7 @@ class QFormatScheme;
 class QLanguageFactory;
 
 class CEditor;
+class CEditSettings;
 
 class CExpertScreen: public QMainWindow
 {
@@ -40,6 +41,7 @@ class CExpertScreen: public QMainWindow
     QStackedWidget *m_pWidgetStack;
     QListWidget *m_pListWidget;
     CEditor *editor;
+    CEditSettings *editSettings;
 
     void createFileMenu(void);
     void createBuildRunMenu(void);
@@ -57,7 +59,10 @@ class CExpertScreen: public QMainWindow
 
 private slots:
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
-    void editSettings(void);
+    void showEditSettings(void);
+
+protected:
+    virtual void closeEvent(QCloseEvent *e);
     
 public:
     CExpertScreen(QWidget *parent = 0, Qt::WindowFlags flags = 0);

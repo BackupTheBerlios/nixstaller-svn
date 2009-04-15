@@ -26,7 +26,7 @@
 // Required by exceptions.h
 const char *GetExTranslation(const char *s)
 {
-    return QObject::tr(s).toLatin1();
+    return QObject::tr(s).toLatin1().data();
 }
 
 #ifndef RELEASE

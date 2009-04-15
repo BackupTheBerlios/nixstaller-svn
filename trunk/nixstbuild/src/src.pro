@@ -36,10 +36,12 @@ LIBS += -L../qcodeedit \
 
 TARGET = nixstbuild
 
+
+RESOURCES += editor.qrc
+
 INCLUDEPATH += ../qcodeedit/lib \
+  ../qcodeedit/lib/widgets/ \
   ../qcodeedit/lib/document/ \
   ../../shared/include/ \
   ../../shared/
-
-RESOURCES += editor.qrc
 

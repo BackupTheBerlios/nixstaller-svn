@@ -744,6 +744,8 @@ void QEditor::init(bool actions)
 		m_lineEndingsActions->addAction(tr("Local"))->setData("local");
 		m_lineEndingsActions->addAction(tr("Unix/Linux"))->setData("unix");
 		m_lineEndingsActions->addAction(tr("Dos/Windows"))->setData("dos");
+        // Rick: Added missing Mac option
+        m_lineEndingsActions->addAction(tr("Old Mac"))->setData("mac");
 		
 		QList<QAction*> lle = m_lineEndingsActions->actions();
 		
@@ -1628,6 +1630,8 @@ void QEditor::lineEndingSelected(QAction *a)
 		m_doc->setLineEnding(QDocument::Unix);
 	else if ( le == "dos" )
 		m_doc->setLineEnding(QDocument::Windows);
+    else if ( le == "mac" ) // Rick: Added missing mac option
+        m_doc->setLineEnding(QDocument::Mac);
 	
 	
 	updateMicroFocus();

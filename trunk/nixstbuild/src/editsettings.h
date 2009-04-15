@@ -23,7 +23,12 @@
 
 #include <QDialog>
 
+#include "qeditor.h"
+
 class QCheckBox;
+class QEditConfig;
+class QEditor;
+class QSettings;
 
 class CEditSettings: public QDialog
 {
@@ -31,16 +36,27 @@ class CEditSettings: public QDialog
 
     QCheckBox *lineNrCheck, *lineChangeCheck, *foldIndCheck, *statusCheck;
     QCheckBox *indentCheck, *wrapCheck, *wrapMovCheck;
-    
+    QEditConfig *editConfig;
+
+    void applySettings(void);
+    void applyFlag(int &flags, QEditor::EditFlag flag, bool on);
+    QMap<QString, QVariant> readSettingsMap(const QSettings &s);
     QWidget *createDisplaySettings(void);
     QWidget *createEditSettings(void);
+    QWidget *createEditConfigs(void);
     
 private slots:
     void slotOK(void);
     void slotCancel(void);
+
+protected:
+    virtual void showEvent(QShowEvent *event);
     
 public:
     CEditSettings(QWidget *parent = 0, Qt::WindowFlags f = 0);
+
+    void loadSettings(void);
+    void saveSettings(void);
 };
 
 #endif

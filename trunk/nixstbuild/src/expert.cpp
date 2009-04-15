@@ -20,6 +20,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCloseEvent>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
@@ -47,8 +48,10 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
     statusBar()->showMessage(tr("Ready"));
     resize(700, 500);
 
+    editSettings = new CEditSettings; // Do this BEFORE createMenuBar()!
+
     createMenuBar();
-    
+
     const int listw = 165, iconw = 96, iconh = 84;
     m_pListWidget = new QListWidget;
     m_pListWidget->setViewMode(QListView::IconMode);
@@ -94,10 +97,9 @@ void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previo
     qw->buildConfig();
 }
 
-void CExpertScreen::editSettings()
+void CExpertScreen::showEditSettings()
 {
-    CEditSettings set;
-    if (set.exec() == QDialog::Accepted)
+    if (editSettings->exec() == QDialog::Accepted)
         editor->loadSettings();
 }
 
@@ -161,7 +163,7 @@ void CExpertScreen::createSettingsMenu()
 
     QAction *action = new QAction(tr("&Editor settings"), this);
     action->setStatusTip(tr("Text editor settings"));
-    connect(action, SIGNAL(triggered()), this, SLOT(editSettings()));
+    connect(action, SIGNAL(triggered()), this, SLOT(showEditSettings()));
     menu->addAction(action);
 
     action = new QAction(tr("&Nixstbuild settings"), this);
@@ -253,4 +255,10 @@ QToolButton *CExpertScreen::createToolButton(QString icon, QString label)
     ret->setIcon(QIcon(icon));
     ret->setIconSize(QSize(32, 32));
     return ret;
+}
+
+void CExpertScreen::closeEvent(QCloseEvent *e)
+{
+    // UNDONE: Check for unsaved stuff
+    e->accept();
 }
