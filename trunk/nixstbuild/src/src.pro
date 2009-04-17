@@ -5,7 +5,9 @@ SOURCES += main.cpp \
  luaparser.cpp \
  configw.cpp \
  editor.cpp \
- editsettings.cpp
+ editsettings.cpp \
+ rungen.cpp \
+ instscreenwidget.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -17,7 +19,9 @@ HEADERS += welcome.h \
  luaparser.h \
  configw.h \
  editor.h \
- editsettings.h
+ editsettings.h \
+ rungen.h \
+ instscreenwidget.h
 
 
 

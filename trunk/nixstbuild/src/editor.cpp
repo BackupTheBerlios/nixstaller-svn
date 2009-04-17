@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include <QAction>
+#include <QKeyEvent>
 #include <QSettings>
 #include <QSignalMapper>
 #include <QToolBar>
@@ -59,7 +60,6 @@ CEditor::CEditor(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f)
 
     // HACK: Bug? Doesn't seem to be done automatically
     editControl->editor()->document()->setLineEnding(QDocument::defaultLineEnding());
-    printf("CEditor: %d, %d\n", QDocument::defaultLineEnding(), editControl->editor()->document()->lineEnding());
 
     panelSignalMapper = new QSignalMapper;
     
@@ -76,7 +76,7 @@ CEditor::CEditor(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f)
             this, SLOT(updateWrap(bool)));
     connect(editControl->editor()->document(), SIGNAL(lineEndingChanged(int)),
             this, SLOT(updateLineEnding(int)));
-    
+
     vbox->addWidget(createToolbars());
     vbox->addWidget(editControl->editor());
 
@@ -96,7 +96,7 @@ void CEditor::addPanel(const QString &name, QCodeEdit::Position pos, QString key
 QToolBar *CEditor::createToolbars()
 {
     // Create toolbars (copied from QCodeEdit example)
-    QToolBar *toolBar = new QToolBar(tr("Edit"), this);
+    toolBar = new QToolBar(tr("Edit"), this);
     toolBar->setIconSize(QSize(24, 24));
     toolBar->addAction(editControl->editor()->action("undo"));
     toolBar->addAction(editControl->editor()->action("redo"));
@@ -155,7 +155,6 @@ void CEditor::updatePanel(const QString &paneln)
     {
         if (type == p->type())
         {
-            qDebug("panel %s --> %d\n", type.toLatin1().data(), p->isVisibleTo(editControl->editor()));
             QSettings settings;
             settings.beginGroup("editor");
             settings.beginGroup("panels");
@@ -166,6 +165,8 @@ void CEditor::updatePanel(const QString &paneln)
             break;
         }
     }
+
+    // UNDONE: update panels for other widgets?
 }
 
 void CEditor::load(const char *file)

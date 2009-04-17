@@ -18,47 +18,40 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef EDITOR_H
-#define EDITOR_H
+#ifndef INSTSCREENWIDGET_H
+#define INSTSCREENWIDGET_H
 
 #include <QWidget>
 
-#include "qeditor.h"
-#include "qcodeedit.h"
-
-class QAction;
-class QFormatScheme;
-class QKeyEvent;
-class QLanguageFactory;
+class QListWidget;
+class QListWidgetItem;
+class QMenu;
+class QPushButton;
 class QSignalMapper;
-class QToolBar;
 
-class CEditor: public QWidget
+class CInstScreenWidget: public QWidget
 {
     Q_OBJECT
 
-    static bool init;
-    static QFormatScheme *formats;
-    static QLanguageFactory *langFactory;
+    QPushButton *addScreenB, *newScreenB, *remScreenB, *upScreenB, *downScreenB;
+    QListWidget *screenList;
+    bool gotDefaultSet;
 
-    QCodeEdit *editControl;
-    QToolBar *toolBar;
-    QSignalMapper *panelSignalMapper;
-
-    void addPanel(const QString &name, QCodeEdit::Position pos, QString key="", bool add=false);
-    QToolBar *createToolbars(void);
+    void enableEditButtons(bool e);
+    void addScreenBMenuItem(const QString &name, QMenu *menu, QSignalMapper *mapper);
+    QListWidgetItem *searchItem(const QString &name);
+    int searchItemRow(const QString &name);
+    void deleteItems(const QString &name);
 
 private slots:
-    void updateWrap(bool e);
-    void updateLineEnding(int le);
-    void updatePanel(const QString &paneln);
-    
-public:
-    CEditor(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    void addScreen(const QString &name);
+    void delScreen(void);
+    void upScreen(void);
+    void downScreen(void);
 
-    void load(const char *file);
-    void loadSettings(void);
-    QToolBar *getToolBar(void) { return toolBar; }
+public:
+    CInstScreenWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    void setDefaults(bool pkg);
 };
 
 #endif

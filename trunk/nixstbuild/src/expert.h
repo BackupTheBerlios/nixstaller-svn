@@ -26,7 +26,6 @@
 class QListWidgetItem;
 class QListWidget;
 class QStackedWidget;
-class QToolButton;
 
 class QFormatScheme;
 class QLanguageFactory;
@@ -55,10 +54,9 @@ class CExpertScreen: public QMainWindow
     QWidget *createPackageConf(void);
     QWidget *createRunConf(void);
 
-    QToolButton *createToolButton(QString icon, QString label);
-
 private slots:
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
+    void launchRunGen(void);
     void showEditSettings(void);
 
 protected:

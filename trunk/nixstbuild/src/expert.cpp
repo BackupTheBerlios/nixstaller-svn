@@ -32,17 +32,18 @@
 #include <QStatusBar>
 #include <QScrollArea>
 #include <QTextEdit>
-#include <QToolButton>
+#include <QToolBar>
 #include <QVBoxLayout>
 
 #include "configw.h"
 #include "editor.h"
 #include "editsettings.h"
 #include "expert.h"
+#include "rungen.h"
 
 QConfigWidget *qw;
 
-CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags)
+CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags)
 {
     setWindowTitle("Nixstbuild v0.1 - Expert mode");
     statusBar()->showMessage(tr("Ready"));
@@ -95,6 +96,11 @@ void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previo
     m_pWidgetStack->setCurrentIndex(m_pListWidget->row(current));
 
     qw->buildConfig();
+}
+
+void CExpertScreen::launchRunGen()
+{
+    (CRunGenerator()).exec();
 }
 
 void CExpertScreen::showEditSettings()
@@ -233,27 +239,15 @@ QWidget *CExpertScreen::createRunConf()
     QWidget *ret = new QWidget;
     QVBoxLayout *vlayout = new QVBoxLayout(ret);
 
-    QWidget *buttonw = new QWidget;
-    QHBoxLayout *blayout = new QHBoxLayout(buttonw);
-
-    blayout->addWidget(createToolButton("nixstbuild/gfx/tux_config.png", tr("Generate code")));
-
-    vlayout->addWidget(buttonw);
-
     editor = new CEditor(this);
+    editor->getToolBar()->addSeparator();
+    QAction *a = editor->getToolBar()->addAction("File wizard");
+    connect(a, SIGNAL(triggered()), this, SLOT(launchRunGen()));
+    
+    editor->getToolBar()->addAction("Generate code");
     editor->load("../newdepscan.lua");
     
     vlayout->addWidget(editor);
-    return ret;
-}
-
-QToolButton *CExpertScreen::createToolButton(QString icon, QString label)
-{
-    QToolButton *ret = new QToolButton;
-    ret->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    ret->setText(label);
-    ret->setIcon(QIcon(icon));
-    ret->setIconSize(QSize(32, 32));
     return ret;
 }
 

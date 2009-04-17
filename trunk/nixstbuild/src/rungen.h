@@ -18,47 +18,42 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef EDITOR_H
-#define EDITOR_H
+#ifndef RUNGEN_H
+#define RUNGEN_H
 
-#include <QWidget>
+#include <QWizard>
+#include <QWizardPage>
 
-#include "qeditor.h"
-#include "qcodeedit.h"
+class QCheckBox;
 
-class QAction;
-class QFormatScheme;
-class QKeyEvent;
-class QLanguageFactory;
-class QSignalMapper;
-class QToolBar;
+class CInstScreenWidget;
 
-class CEditor: public QWidget
+class CRunGenerator: public QWizard
 {
-    Q_OBJECT
-
-    static bool init;
-    static QFormatScheme *formats;
-    static QLanguageFactory *langFactory;
-
-    QCodeEdit *editControl;
-    QToolBar *toolBar;
-    QSignalMapper *panelSignalMapper;
-
-    void addPanel(const QString &name, QCodeEdit::Position pos, QString key="", bool add=false);
-    QToolBar *createToolbars(void);
-
-private slots:
-    void updateWrap(bool e);
-    void updateLineEnding(int le);
-    void updatePanel(const QString &paneln);
+    QWizardPage *createIntro(void);
+    QWizardPage *createPreConfig(void);
+    QWizardPage *createInstScreenPage(void);
     
 public:
-    CEditor(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    CRunGenerator(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+};
 
-    void load(const char *file);
-    void loadSettings(void);
-    QToolBar *getToolBar(void) { return toolBar; }
+class CPreConfigPage: public QWizardPage
+{
+    QCheckBox *attCheckBox, *unattCheckBox, *pkgCheckBox;
+
+public:
+    CPreConfigPage(QWidget *parent = 0);
+    virtual void initializePage(void);
+};
+
+class CInstScreenPage: public QWizardPage
+{
+    CInstScreenWidget *instScreenWidget;
+        
+public:
+    CInstScreenPage(QWidget *parent = 0);
+    virtual void initializePage(void);
 };
 
 #endif
