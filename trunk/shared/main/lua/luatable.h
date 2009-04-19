@@ -59,6 +59,7 @@ public:
         void operator >>(const char *&val);
         void operator >>(int &val);
         void operator >>(bool &val);
+        operator void *(void);
     };
     
     CLuaTable(const char *var, const char *tab=NULL);
@@ -77,7 +78,7 @@ public:
     
     CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabRef); }
-    operator void*(void) { static int ret; return (m_bOK) ? &ret : 0; }
+    operator void *(void) { static int ret; return (m_bOK) ? &ret : 0; }
 };
 
 }

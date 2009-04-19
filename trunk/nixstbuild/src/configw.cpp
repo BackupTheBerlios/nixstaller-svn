@@ -22,8 +22,6 @@ using namespace NLua;
 
 QConfigWidget::QConfigWidget(QWidget *parent, const char *lua_description, const char *property_table, const char *output): QWidget(parent)
 {
-    CLuaParser luaparser;
-
     grid = new QGridLayout();
     setLayout(grid);
 
@@ -31,9 +29,6 @@ QConfigWidget::QConfigWidget(QWidget *parent, const char *lua_description, const
 
     try
     {
-        luaparser.Init(0, 0);
-        luaparser.PRunLua(lua_description);
-
         CLuaTable props(property_table);
 
         string newkey;

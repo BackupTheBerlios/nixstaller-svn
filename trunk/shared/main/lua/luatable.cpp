@@ -293,5 +293,13 @@ void CLuaTable::CReturn::operator >>(bool &val)
     lua_pop(LuaState, 1);
 }
 
+CLuaTable::CReturn::operator void *(void)
+{
+    static int ret;
+    GetTable();
+    bool isnil = lua_isnil(LuaState, -1);
+    lua_pop(LuaState, 1);
+    return (isnil) ? 0 : &ret;
+}
 
 }

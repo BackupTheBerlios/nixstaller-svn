@@ -7,7 +7,8 @@ SOURCES += main.cpp \
  editor.cpp \
  editsettings.cpp \
  rungen.cpp \
- instscreenwidget.cpp
+ instscreenwidget.cpp \
+ newinstscreen.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -21,13 +22,16 @@ HEADERS += welcome.h \
  editor.h \
  editsettings.h \
  rungen.h \
- instscreenwidget.h
+ instscreenwidget.h \
+ newinstscreen.h \
+ main.h
 
 
 
 DISTFILES += lua/nixstbuild.lua \
  ../TODO \
- lua/utils-public.lua
+ lua/utils-public.lua \
+ lua/addwidget.lua
 
 TARGETDEPS += ../qcodeedit/libqcodeedit.so
 LIBS += -L../qcodeedit \

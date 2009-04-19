@@ -45,6 +45,7 @@ class CInstScreenWidget: public QWidget
 
 private slots:
     void addScreen(const QString &name);
+    void newScreen(void);
     void delScreen(void);
     void upScreen(void);
     void downScreen(void);

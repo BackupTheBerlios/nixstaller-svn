@@ -18,55 +18,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef NB_MAIN_H
+#define NB_MAIN_H
 
 #include <QApplication>
-#include <QMessageBox>
 
-#include "main/exception.h"
-#include "main/lua/lua.h"
-#include "luaparser.h"
-#include "main.h"
-#include "welcome.h"
-#include "configw.h"
-
-int main(int argc, char *argv[])
+class CNixstbApp: public QApplication
 {
-    CNixstbApp app(argc, argv);
+public:
+    CNixstbApp(int &argc, char **argv) : QApplication(argc, argv) {}
+    virtual bool notify(QObject *receiver, QEvent *event);
+};
 
-    QCoreApplication::setOrganizationName("Nixstaller");
-    QCoreApplication::setOrganizationDomain("nixstaller.berlios.de");
-    QCoreApplication::setApplicationName("Nixstbuild");
-    
-    (new CWelcomeScreen())->show();
-
-    try
-    {
-        CLuaParser luaParser;
-        luaParser.Init(argc, argv);
-
-        app.exec();
-
-        NLua::StackDump("Clean stack?\n");
-    }
-    catch(Exceptions::CException &e)
-    {
-        QMessageBox::critical(0, "Error", e.what());
-        return 1;
-    }
-    
-     return 0;
-}
-
-bool CNixstbApp::notify(QObject *receiver, QEvent *event)
-{
-    try
-    {
-        return QApplication::notify(receiver, event);
-    }
-    catch(Exceptions::CException &e)
-    {
-        QMessageBox::critical(0, "Error", e.what());
-        QApplication::exit(1);
-        return false;
-    }
-}
+#endif

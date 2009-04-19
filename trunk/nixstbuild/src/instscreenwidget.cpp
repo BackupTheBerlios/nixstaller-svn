@@ -26,6 +26,7 @@
 #include <QSignalMapper>
 
 #include "instscreenwidget.h"
+#include "newinstscreen.h"
 
 CInstScreenWidget::CInstScreenWidget(QWidget *parent,
                                      Qt::WindowFlags flags) : QWidget(parent, flags),
@@ -59,6 +60,7 @@ CInstScreenWidget::CInstScreenWidget(QWidget *parent,
             this, SLOT(addScreen(const QString &)));
     addScreenB->setMenu(menu);
 
+    connect(newScreenB, SIGNAL(clicked()), this, SLOT(newScreen()));
     connect(remScreenB, SIGNAL(clicked()), this, SLOT(delScreen()));
     connect(upScreenB, SIGNAL(clicked()), this, SLOT(upScreen()));
     connect(downScreenB, SIGNAL(clicked()), this, SLOT(downScreen()));
@@ -119,6 +121,11 @@ void CInstScreenWidget::addScreen(const QString &name)
         enableEditButtons(true);
         screenList->setCurrentRow(0);
     }
+}
+
+void CInstScreenWidget::newScreen()
+{
+    (CNewScreenDialog()).exec();
 }
 
 void CInstScreenWidget::delScreen()

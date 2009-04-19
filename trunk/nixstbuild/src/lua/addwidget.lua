@@ -18,5 +18,16 @@
 --  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
 --  ***************************************************************************
 
-loadlua("addwidget.lua")
-loadlua("configprop.lua")
+widget_properties = {
+["Checkbox"] = { func = "addcheckbox", fields = {
+    { name = "Title", type = "string" },
+    { name = "Options", type = "list" }}
+},
+["Input field"] = { func = "addinput", fields = {
+    { name = "Label", type = "string" },
+    { name = "Title", type = "string" },
+    { name = "Value", type = "string" },
+    { name = "Max characters", type = "int", default = 1024 },
+    { name = "Value", type = "choice", options = { "String", "Number", "Float" }, default = 1 }}
+},
+}

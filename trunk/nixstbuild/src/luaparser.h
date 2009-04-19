@@ -30,7 +30,6 @@ protected:
     
 public:
     virtual void Init(int argc, char **argv);
-    virtual void PRunLua(const char *lua);
 };
 
 #endif
