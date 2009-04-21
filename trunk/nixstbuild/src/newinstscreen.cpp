@@ -27,12 +27,10 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLineEdit>
-#include <QListWidget>
 #include <QMenu>
 #include <QPushButton>
 #include <QSignalMapper>
 #include <QSpinBox>
-#include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QVBoxLayout>
 
@@ -83,14 +81,11 @@ QWidget *CNewScreenDialog::createWidgetGroup()
     QGroupBox *box = new QGroupBox(tr("Widgets"), this);
     QHBoxLayout *hbox = new QHBoxLayout(box);
 
-    hbox->addWidget(widgetList = new QListWidget);
+    hbox->addWidget(widgetList = new CTreeEdit);
+    widgetList->setHeader(QStringList() << "Name" << "Type");
 
     // UNDONE: Icons
-    QVBoxLayout *bbox = new QVBoxLayout;
-    bbox->addWidget(addWidgetB = new QPushButton("Add"));
-    bbox->addWidget(remWidgetB = new QPushButton("Remove"));
-    bbox->addWidget(upWidgetB = new QPushButton("Move up"));
-    bbox->addWidget(downWidgetB = new QPushButton("Move down"));
+    widgetList->insertButton(0, addWidgetB = new QPushButton("Add"));
 
     loadWidgetTab();
     QMenu *menu = new QMenu;
@@ -104,18 +99,7 @@ QWidget *CNewScreenDialog::createWidgetGroup()
     
     addWidgetB->setMenu(menu);
     
-    hbox->addLayout(bbox);
-
-    enableEditButtons(false);
-    
     return box;
-}
-
-void CNewScreenDialog::enableEditButtons(bool e)
-{
-    remWidgetB->setEnabled(e);
-    upWidgetB->setEnabled(e);
-    downWidgetB->setEnabled(e);
 }
 
 void CNewScreenDialog::loadWidgetTab()
@@ -157,6 +141,10 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
     QDialog dialog;
     dialog.setModal(true);
     QFormLayout *form = new QFormLayout(&dialog);
+
+    QLineEdit *nameField = new QLineEdit;
+    form->addRow("Variable name (no spaces)", nameField);
+    
     std::vector<CBaseWidgetField *> fieldVec;
 
     lua_rawgeti(NLua::LuaState, LUA_REGISTRYINDEX, widgetMap[name.toLatin1().data()]);
@@ -212,7 +200,7 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
     
     if (dialog.exec() == QDialog::Accepted)
     {
-        new QListWidgetItem(name, widgetList);
+        widgetList->addItem(QStringList() << nameField->text() << name);
 
         QString code;
         while (!fieldVec.empty())
@@ -221,40 +209,7 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
             fieldVec.pop_back();
             delete fw;
         }
-        
-        if (widgetList->count() == 1)
-        {
-            enableEditButtons(true);
-            widgetList->setCurrentRow(0);
-        }
     }
-}
-
-void CNewScreenDialog::remWidgetItem()
-{
-    if (widgetList->count() == 1)
-        enableEditButtons(false);
-    
-    // currentItem() returns NULL when list is empty, so delete should always be save
-    delete widgetList->currentItem();
-}
-
-void CNewScreenDialog::upWidgetItem()
-{
-    int row = widgetList->currentRow();
-    if (!widgetList->count() || !row)
-        return;
-    widgetList->insertItem(row-1, widgetList->takeItem(row));
-    widgetList->setCurrentRow(row-1);
-}
-
-void CNewScreenDialog::downWidgetItem()
-{
-    int row = widgetList->currentRow();
-    if (!widgetList->count() || (row == widgetList->count()-1))
-        return;
-    widgetList->insertItem(row+1, widgetList->takeItem(row));
-    widgetList->setCurrentRow(row+1);
 }
 
 CStringWidgetField::CStringWidgetField(NLua::CLuaTable &field)
@@ -324,35 +279,14 @@ QWidget *CChoiceWidgetField::getFieldWidget()
 }
 
 CListWidgetField::CListWidgetField(NLua::CLuaTable &field, QWidget *parent,
-                                   Qt::WindowFlags f) : QWidget(parent, f)
+                                   Qt::WindowFlags f) : CTreeEdit(parent, f)
 {
-    QHBoxLayout *hbox = new QHBoxLayout(this);
-    
-    optTree = new QTreeWidget;
-    optTree->setRootIsDecorated(false);
-    optTree->setHeaderLabels(QStringList() << "Option" << "Default enabled");
-    hbox->addWidget(optTree);
+    setHeader(QStringList() << "Option" << "Default enabled");
 
     // UNDONE: Icons
-    QVBoxLayout *bbox = new QVBoxLayout;
-    bbox->addWidget(addOptB = new QPushButton("Add"));
-    bbox->addWidget(remOptB = new QPushButton("Remove"));
-    bbox->addWidget(upOptB = new QPushButton("Move up"));
-    bbox->addWidget(downOptB = new QPushButton("Move down"));
+    insertButton(0, addOptB = new QPushButton("Add"));
 
     connect(addOptB, SIGNAL(clicked()), this, SLOT(addOptItem()));
-    connect(remOptB, SIGNAL(clicked()), this, SLOT(remOptItem()));
-    connect(upOptB, SIGNAL(clicked()), this, SLOT(upOptItem()));
-    connect(downOptB, SIGNAL(clicked()), this, SLOT(downOptItem()));
-    
-    hbox->addLayout(bbox);
-}
-
-void CListWidgetField::enableEditButtons(bool e)
-{
-    remOptB->setEnabled(e);
-    upOptB->setEnabled(e);
-    downOptB->setEnabled(e);
 }
 
 void CListWidgetField::addOptItem()
@@ -360,39 +294,7 @@ void CListWidgetField::addOptItem()
     QTreeWidgetItem *item = new QTreeWidgetItem;
     item->setText(0, "Name");
     item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable);
-    optTree->addTopLevelItem(item);
-    optTree->setItemWidget(item, 1, new QCheckBox);
-    optTree->editItem(item);
-    
-    enableEditButtons(true);
-}
-
-void CListWidgetField::remOptItem()
-{
-    if (optTree->topLevelItemCount() == 1)
-        enableEditButtons(false);
-    
-    QTreeWidgetItem *cur = optTree->currentItem();
-    optTree->removeItemWidget(cur, 1);
-    delete cur;
-}
-
-void CListWidgetField::upOptItem()
-{
-    QTreeWidgetItem *cur = optTree->currentItem();
-    int index = optTree->indexOfTopLevelItem(cur);
-    if (!optTree->topLevelItemCount() || !index)
-        return;
-    optTree->insertTopLevelItem(index-1, optTree->takeTopLevelItem(index));
-    optTree->setCurrentItem(cur);
-}
-
-void CListWidgetField::downOptItem()
-{
-    QTreeWidgetItem *cur = optTree->currentItem();
-    int index = optTree->indexOfTopLevelItem(cur);
-    if (!optTree->topLevelItemCount() || (index == optTree->topLevelItemCount()-1))
-        return;
-    optTree->insertTopLevelItem(index+1, optTree->takeTopLevelItem(index));
-    optTree->setCurrentItem(cur);
+    addItem(item);
+    getTree()->setItemWidget(item, 1, new QCheckBox);
+    getTree()->editItem(item);
 }

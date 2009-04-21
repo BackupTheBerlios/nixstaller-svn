@@ -8,7 +8,8 @@ SOURCES += main.cpp \
  editsettings.cpp \
  rungen.cpp \
  instscreenwidget.cpp \
- newinstscreen.cpp
+ newinstscreen.cpp \
+ treeedit.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -24,7 +25,8 @@ HEADERS += welcome.h \
  rungen.h \
  instscreenwidget.h \
  newinstscreen.h \
- main.h
+ main.h \
+ treeedit.h
 
 
 

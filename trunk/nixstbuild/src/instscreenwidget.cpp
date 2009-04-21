@@ -19,30 +19,21 @@
  ***************************************************************************/
 
 #include <QHBoxLayout>
-#include <QListWidget>
-#include <QListWidgetItem>
 #include <QMenu>
 #include <QPushButton>
 #include <QSignalMapper>
+#include <QTreeWidgetItem>
 
 #include "instscreenwidget.h"
 #include "newinstscreen.h"
 
 CInstScreenWidget::CInstScreenWidget(QWidget *parent,
-                                     Qt::WindowFlags flags) : QWidget(parent, flags),
+                                     Qt::WindowFlags flags) : CTreeEdit(parent, flags),
                                                               gotDefaultSet(false)
 {
-    QHBoxLayout *hbox = new QHBoxLayout(this);
-
-    hbox->addWidget(screenList = new QListWidget);
-
     // UNDONE: Icons
-    QVBoxLayout *bbox = new QVBoxLayout;
-    bbox->addWidget(addScreenB = new QPushButton("Add screen"));
-    bbox->addWidget(newScreenB = new QPushButton("New screen"));
-    bbox->addWidget(remScreenB = new QPushButton("Remove screen"));
-    bbox->addWidget(upScreenB = new QPushButton("Move up"));
-    bbox->addWidget(downScreenB = new QPushButton("Move down"));
+    insertButton(0, addScreenB = new QPushButton("Add screen"));
+    insertButton(1, newScreenB = new QPushButton("New screen"));
 
     QMenu *menu = new QMenu();
     QSignalMapper *sigMapper = new QSignalMapper;
@@ -61,18 +52,6 @@ CInstScreenWidget::CInstScreenWidget(QWidget *parent,
     addScreenB->setMenu(menu);
 
     connect(newScreenB, SIGNAL(clicked()), this, SLOT(newScreen()));
-    connect(remScreenB, SIGNAL(clicked()), this, SLOT(delScreen()));
-    connect(upScreenB, SIGNAL(clicked()), this, SLOT(upScreen()));
-    connect(downScreenB, SIGNAL(clicked()), this, SLOT(downScreen()));
-    
-    hbox->addLayout(bbox);
-}
-
-void CInstScreenWidget::enableEditButtons(bool e)
-{
-    remScreenB->setEnabled(e);
-    upScreenB->setEnabled(e);
-    downScreenB->setEnabled(e);
 }
 
 void CInstScreenWidget::addScreenBMenuItem(const QString &name, QMenu *menu, QSignalMapper *mapper)
@@ -82,44 +61,21 @@ void CInstScreenWidget::addScreenBMenuItem(const QString &name, QMenu *menu, QSi
     mapper->setMapping(a, name);
 }
 
-QListWidgetItem *CInstScreenWidget::searchItem(const QString &name)
-{
-    const int size = screenList->count();
-    for (int i=0; i<size; i++)
-    {
-        if (screenList->item(i)->text() == name)
-            return screenList->item(i);
-    }
-    
-    return NULL;
-}
-
-int CInstScreenWidget::searchItemRow(const QString &name)
-{
-    const int size = screenList->count();
-    for (int i=0; i<size; i++)
-    {
-        if (screenList->item(i)->text() == name)
-            return i;
-    }
-    
-    return -1;
-}
-
 void CInstScreenWidget::deleteItems(const QString &name)
 {
-    QListWidgetItem *it;
+    QTreeWidgetItem *it;
     while((it = searchItem(name)))
         delete it;
 }
 
 void CInstScreenWidget::addScreen(const QString &name)
 {
-    new QListWidgetItem(name, screenList);
-    if (screenList->count() == 1)
+    if (!count())
+        addItem(QStringList() << name);
+    else
     {
-        enableEditButtons(true);
-        screenList->setCurrentRow(0);
+        insertItem(currentItemIndex()+1, QStringList() << name);
+        selectItem(currentItemIndex()+1);
     }
 }
 
@@ -128,41 +84,15 @@ void CInstScreenWidget::newScreen()
     (CNewScreenDialog()).exec();
 }
 
-void CInstScreenWidget::delScreen()
-{
-    if (screenList->count() == 1)
-        enableEditButtons(false);
-    
-    // currentItem() returns NULL when list is empty, so delete should always be save
-    delete screenList->currentItem();
-}
-
-void CInstScreenWidget::upScreen()
-{
-    int row = screenList->currentRow();
-    if (!screenList->count() || !row)
-        return;
-    screenList->insertItem(row-1, screenList->takeItem(row));
-    screenList->setCurrentRow(row-1);
-}
-
-void CInstScreenWidget::downScreen()
-{
-    int row = screenList->currentRow();
-    if (!screenList->count() || (row == screenList->count()-1))
-        return;
-    screenList->insertItem(row+1, screenList->takeItem(row));
-    screenList->setCurrentRow(row+1);
-}
-
 void CInstScreenWidget::setDefaults(bool pkg)
 {
+
     if (!gotDefaultSet)
     {
-        new QListWidgetItem("Welcome screen", screenList);
-        new QListWidgetItem("License screen", screenList);
-        new QListWidgetItem("Install screen", screenList);
-        new QListWidgetItem("Finish screen", screenList);
+        addItem(QStringList() << "Welcome screen");
+        addItem(QStringList() << "License screen");
+        addItem(QStringList() << "Install screen");
+        addItem(QStringList() << "Finish screen");
         gotDefaultSet = true;
     }
 
@@ -170,40 +100,40 @@ void CInstScreenWidget::setDefaults(bool pkg)
     {
         deleteItems("Select destination screen");
 
-        QListWidgetItem *pds = searchItem("Package destination screen");
-        QListWidgetItem *pts = searchItem("Package toggle screen");
+        QTreeWidgetItem *pds = searchItem("Package destination screen");
+        QTreeWidgetItem *pts = searchItem("Package toggle screen");
 
         if (!pds)
         {
-            int start = searchItemRow("License screen");
+            int start = searchItemIndex("License screen");
             if (start == -1)
-                start = searchItemRow("Welcome screen");
+                start = searchItemIndex("Welcome screen");
 
-            // searchItemRow returns -1 if not found, so widget will be
+            // searchItemIndex returns -1 if not found, so widget will be
             // inserted at start in that case
             start++;
 
-            screenList->insertItem(start, "Package destination screen");
+            insertItem(start, QStringList() << "Package destination screen");
             if (!pts)
-                screenList->insertItem(start+1, "Package toggle screen");
+                insertItem(start+1, QStringList() << "Package toggle screen");
         }
         else if (!pts)
         {
-            int start = searchItemRow("Package destination screen");
+            int start = searchItemIndex("Package destination screen");
             // start _should_ be valid
 
-            screenList->insertItem(start+1, "Package toggle screen");
+            insertItem(start+1, QStringList() << "Package toggle screen");
         }
 
         if (!searchItem("Summary screen"))
         {
             // Try to stuff summary screen between Install and Finish screens...
-            int start = searchItemRow("Install screen") + 1;
+            int start = searchItemIndex("Install screen") + 1;
             if (start == 0) // Not found?
-                start = searchItemRow("Finish screen");
+                start = searchItemIndex("Finish screen");
             if (start == -1) // Still not found?
-                start = screenList->count(); // Add to end
-            screenList->insertItem(start, "Summary screen");
+                start = count(); // Add to end
+            insertItem(start, QStringList() << "Summary screen");
         }
     }
     else
@@ -214,15 +144,13 @@ void CInstScreenWidget::setDefaults(bool pkg)
 
         if (!searchItem("Select destination screen"))
         {
-            int start = searchItemRow("License screen");
+            int start = searchItemIndex("License screen");
             if (start == -1)
-                start = searchItemRow("Welcome screen");
+                start = searchItemIndex("Welcome screen");
 
-            // searchItemRow returns -1 if not found, so widget will be
+            // searchItemIndex returns -1 if not found, so widget will be
             // inserted at start in that case
-            screenList->insertItem(start+1, "Select destination screen");
+            insertItem(start+1, QStringList() << "Select destination screen");
         }
     }
-    
-    enableEditButtons(true);
 }

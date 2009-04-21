@@ -18,32 +18,54 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef INSTSCREENWIDGET_H
-#define INSTSCREENWIDGET_H
+#ifndef TREEEDIT_H
+#define TREEEDIT_H
 
-#include <treeedit.h>
+#include <QWidget>
 
-class QMenu;
 class QPushButton;
-class QSignalMapper;
+class QTreeWidget;
+class QTreeWidgetItem;
+class QVBoxLayout;
 
-class CInstScreenWidget: public CTreeEdit
+class CTreeEdit: public QWidget
 {
     Q_OBJECT
 
-    QPushButton *addScreenB, *newScreenB;
-    bool gotDefaultSet;
+    QVBoxLayout *buttonLayout;
+    QPushButton *remB, *upB, *downB;
+    QTreeWidget *tree;
 
-    void addScreenBMenuItem(const QString &name, QMenu *menu, QSignalMapper *mapper);
-    void deleteItems(const QString &name);
+    void enableEditButtons(bool e);
 
 private slots:
-    void addScreen(const QString &name);
-    void newScreen(void);
+    void del(void);
+    void up(void);
+    void down(void);
+
+protected:
+    QTreeWidgetItem *searchItem(const QString &name, int column=0);
+    int searchItemIndex(const QString &name, int column=0);
+    int count(void) const;
+    QTreeWidget *getTree(void) { return tree; }
 
 public:
-    CInstScreenWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    void setDefaults(bool pkg);
+    CTreeEdit(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    void setHeader(const QStringList &labels);
+    void addItem(QTreeWidgetItem *item);
+    void addItem(const QStringList &items);
+    
+    void insertItem(int index, QTreeWidgetItem *item);
+    void insertItem(int index, const QStringList &items);
+
+    QTreeWidgetItem *currentItem(void) const;
+    int currentItemIndex(void) const;
+
+    void selectItem(QTreeWidgetItem *item);
+    void selectItem(int index);
+    
+    void insertButton(int index, QPushButton *button);
 };
 
 #endif

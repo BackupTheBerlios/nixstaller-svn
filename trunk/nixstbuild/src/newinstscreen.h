@@ -26,14 +26,14 @@
 
 #include <QDialog>
 
+#include "treeedit.h"
+
 class QComboBox;
 class QLineEdit;
-class QListWidget;
 class QMenu;
 class QPushButton;
 class QSignalMapper;
 class QSpinBox;
-class QTreeWidget;
 
 namespace NLua {
 class CLuaTable;
@@ -43,15 +43,14 @@ class CNewScreenDialog: public QDialog
 {
     Q_OBJECT
 
-    QListWidget *widgetList;
-    QPushButton *addWidgetB, *remWidgetB, *upWidgetB, *downWidgetB;
+    CTreeEdit *widgetList;
+    QPushButton *addWidgetB;
 
     typedef std::map<std::string, int> widgetmap;
     widgetmap widgetMap;
     
     QWidget *createMainGroup(void);
     QWidget *createWidgetGroup(void);
-    void enableEditButtons(bool e);
     void loadWidgetTab(void);
     void addWidgetBMenuItem(const QString &name, QMenu *menu, QSignalMapper *mapper);
     
@@ -60,9 +59,6 @@ private slots:
     void cancel(void);
     
     void addWidgetItem(const QString &name);
-    void remWidgetItem(void);
-    void upWidgetItem(void);
-    void downWidgetItem(void);
     
 public:
     CNewScreenDialog(QWidget *parent = 0, Qt::WindowFlags f = 0);
@@ -108,20 +104,14 @@ public:
     virtual std::string getArg(void) {}
 };
 
-class CListWidgetField: public QWidget, public CBaseWidgetField
+class CListWidgetField: public CTreeEdit, public CBaseWidgetField
 {
     Q_OBJECT
 
-    QTreeWidget *optTree;
-    QPushButton *addOptB, *remOptB, *upOptB, *downOptB;
-
-    void enableEditButtons(bool e);
+    QPushButton *addOptB;
 
 private slots:
     void addOptItem(void);
-    void remOptItem(void);
-    void upOptItem(void);
-    void downOptItem(void);
 
 public:
     CListWidgetField(NLua::CLuaTable &field, QWidget *parent = 0, Qt::WindowFlags f = 0);
