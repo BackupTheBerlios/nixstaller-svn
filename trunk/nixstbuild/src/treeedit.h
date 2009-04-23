@@ -64,6 +64,8 @@ public:
 
     void selectItem(QTreeWidgetItem *item);
     void selectItem(int index);
+
+    QTreeWidgetItem *itemAt(int index);
     
     void insertButton(int index, QPushButton *button);
 };

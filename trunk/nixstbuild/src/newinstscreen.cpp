@@ -38,6 +38,7 @@
 #include "main/lua/lua.h"
 #include "main/lua/luatable.h"
 #include "newinstscreen.h"
+#include "utils.h"
 
 CNewScreenDialog::CNewScreenDialog(QWidget *parent,
                                    Qt::WindowFlags flags) : QDialog(parent, flags)
@@ -67,11 +68,11 @@ QWidget *CNewScreenDialog::createMainGroup()
     QGroupBox *box = new QGroupBox(tr("Main settings"), this);
     QFormLayout *form = new QFormLayout(box);
 
-    form->addRow("Variable name (no spaces)", new QLineEdit);
-    form->addRow("Screen title", new QLineEdit);
-    form->addRow("Generate canactivate() function", new QCheckBox);
-    form->addRow("Generate activate() function", new QCheckBox);
-    form->addRow("Generate update() function", new QCheckBox);
+    form->addRow("Variable name", varEdit = createLuaEdit());
+    form->addRow("Screen title", titleEdit = new QLineEdit);
+    form->addRow("Generate canactivate() function", canActBox = new QCheckBox);
+    form->addRow("Generate activate() function", actBox = new QCheckBox);
+    form->addRow("Generate update() function", updateBox = new QCheckBox);
     
     return box;
 }
@@ -128,6 +129,7 @@ void CNewScreenDialog::addWidgetBMenuItem(const QString &name, QMenu *menu, QSig
 
 void CNewScreenDialog::OK()
 {
+    // UNDONE: Check fields
     accept();
 }
 
@@ -142,55 +144,49 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
     dialog.setModal(true);
     QFormLayout *form = new QFormLayout(&dialog);
 
-    QLineEdit *nameField = new QLineEdit;
-    form->addRow("Variable name (no spaces)", nameField);
+    QLineEdit *nameField = createLuaEdit();
+    form->addRow("Variable name", nameField);
     
     std::vector<CBaseWidgetField *> fieldVec;
 
     lua_rawgeti(NLua::LuaState, LUA_REGISTRYINDEX, widgetMap[name.toLatin1().data()]);
     NLua::CLuaTable tab(-1);
-    if (tab)
+    
+    tab["fields"].GetTable();
+    luaL_checktype(NLua::LuaState, -1, LUA_TTABLE);
+    NLua::CLuaTable fields(-1);
+    const int size = fields.Size();
+
+    for (int n=1; n<=size; n++)
     {
-        std::string k;
-        
-        tab["fields"].GetTable();
+        fields[n].GetTable();
         luaL_checktype(NLua::LuaState, -1, LUA_TTABLE);
-        NLua::CLuaTable fields(-1);
-        const int size = fields.Size();
+        NLua::CLuaTable field(-1);
 
-        for (int n=1; n<=size; n++)
-        {
-            fields[n].GetTable();
-            luaL_checktype(NLua::LuaState, -1, LUA_TTABLE);
-            NLua::CLuaTable field(-1);
-            
-            std::string n, type;
-            field["name"] >> n;
-            field["type"] >> type;
+        std::string n, type;
+        field["name"] >> n;
+        field["type"] >> type;
 
-            CBaseWidgetField *fw = NULL;
+        CBaseWidgetField *fw = NULL;
 
-            if (type == "string")
-                fw = new CStringWidgetField(field);
-            else if (type == "int")
-                fw = new CIntWidgetField(field);
-            else if (type == "choice")
-                fw = new CChoiceWidgetField(field);
-            else if (type == "list")
-                fw = new CListWidgetField(field);
+        if (type == "string")
+            fw = new CStringWidgetField(field);
+        else if (type == "int")
+            fw = new CIntWidgetField(field);
+        else if (type == "choice")
+            fw = new CChoiceWidgetField(field);
+        else if (type == "list")
+            fw = new CListWidgetField(field);
 
-            assert(fw);
+        assert(fw);
 
-            form->addRow(n.c_str(), fw->getFieldWidget());
-            fieldVec.push_back(fw);
+        form->addRow(n.c_str(), fw->getFieldWidget());
+        fieldVec.push_back(fw);
 
-            lua_pop(NLua::LuaState, 1); // fields[n]
-        }
-        
-        lua_pop(NLua::LuaState, 1); // tab["fields"]
+        lua_pop(NLua::LuaState, 1); // fields[n]
     }
 
-    lua_pop(NLua::LuaState, 1); // tab
+    lua_pop(NLua::LuaState, 2); // tab["fields"] and tab
 
     QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
             QDialogButtonBox::Cancel);
@@ -200,16 +196,50 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
     
     if (dialog.exec() == QDialog::Accepted)
     {
-        widgetList->addItem(QStringList() << nameField->text() << name);
+        QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << nameField->text() << name);
+        widgetList->addItem(item);
 
-        QString code;
+        QStringList args;
         while (!fieldVec.empty())
         {
-            CBaseWidgetField *fw = fieldVec.back();
-            fieldVec.pop_back();
+            CBaseWidgetField *fw = fieldVec.front();
+            args << fw->getArg();
+            fieldVec.erase(fieldVec.begin());
             delete fw;
         }
+
+        const char *func;
+        tab["func"] >> func;
+        
+        QVariant v;
+        v.setValue(widgetitem(func, nameField->text(), args));
+        item->setData(0, Qt::UserRole, v);
     }
+}
+
+QString CNewScreenDialog::variableName() const
+{
+    return varEdit->text();
+}
+
+QString CNewScreenDialog::screenTitle() const
+{
+    return titleEdit->text();
+}
+
+bool CNewScreenDialog::genCanActivate() const
+{
+    return canActBox->isChecked();
+}
+
+bool CNewScreenDialog::genActivate() const
+{
+    return actBox->isChecked();
+}
+
+bool CNewScreenDialog::genUpdate() const
+{
+    return updateBox->isChecked();
 }
 
 CStringWidgetField::CStringWidgetField(NLua::CLuaTable &field)
@@ -229,6 +259,11 @@ QWidget *CStringWidgetField::getFieldWidget()
     return lineEdit;
 }
 
+QString CStringWidgetField::getArg()
+{
+    return "\"" + lineEdit->text() + "\"";
+}
+
 CIntWidgetField::CIntWidgetField(NLua::CLuaTable &field)
 {
     spinBox = new QSpinBox;
@@ -245,6 +280,11 @@ CIntWidgetField::CIntWidgetField(NLua::CLuaTable &field)
 QWidget *CIntWidgetField::getFieldWidget()
 {
     return spinBox;
+}
+
+QString CIntWidgetField::getArg()
+{
+    return QString::number(spinBox->value());
 }
 
 CChoiceWidgetField::CChoiceWidgetField(NLua::CLuaTable &field)
@@ -278,6 +318,11 @@ QWidget *CChoiceWidgetField::getFieldWidget()
     return comboBox;
 }
 
+QString CChoiceWidgetField::getArg()
+{
+    return "\"" + comboBox->currentText() + "\"";
+}
+
 CListWidgetField::CListWidgetField(NLua::CLuaTable &field, QWidget *parent,
                                    Qt::WindowFlags f) : CTreeEdit(parent, f)
 {
@@ -297,4 +342,21 @@ void CListWidgetField::addOptItem()
     addItem(item);
     getTree()->setItemWidget(item, 1, new QCheckBox);
     getTree()->editItem(item);
+}
+
+QString CListWidgetField::getArg()
+{
+    const int size = count();
+    QString ret;
+    for (int i=0; i<size; i++)
+    {
+        QTreeWidgetItem *it = itemAt(i);
+
+        if (!ret.isEmpty())
+            ret += ", ";
+
+        ret += "\"" + it->text(0) + "\"";
+    }
+    
+    return "{ " + ret + " }";
 }

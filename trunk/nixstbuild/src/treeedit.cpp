@@ -172,6 +172,11 @@ void CTreeEdit::selectItem(int index)
     tree->setCurrentItem(tree->topLevelItem(index));
 }
 
+QTreeWidgetItem *CTreeEdit::itemAt(int index)
+{
+    return tree->topLevelItem(index);
+}
+
 void CTreeEdit::insertButton(int index, QPushButton *button)
 {
     buttonLayout->insertWidget(index, button);

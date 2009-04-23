@@ -19,7 +19,10 @@
  ***************************************************************************/
 
 #include <stdlib.h>
+
+#include <QLineEdit>
 #include <QObject>
+#include <QRegExpValidator>
 
 #include "utils.h"
 
@@ -44,3 +47,10 @@ void debugline(const char *t, ...)
     free(txt);
 }
 #endif
+
+QLineEdit *createLuaEdit()
+{
+    QLineEdit *ret = new QLineEdit;
+    ret->setValidator(new QRegExpValidator(QRegExp("[\\w]+"), 0));
+    return ret;
+}

@@ -21,5 +21,9 @@
 #ifndef NB_UTILS_H
 #define NB_UTILS_H
 
+class QLineEdit;
+
+QLineEdit *createLuaEdit(void);
+
 #endif
 

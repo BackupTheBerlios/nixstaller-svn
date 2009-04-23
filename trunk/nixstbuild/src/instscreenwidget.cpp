@@ -81,7 +81,13 @@ void CInstScreenWidget::addScreen(const QString &name)
 
 void CInstScreenWidget::newScreen()
 {
-    (CNewScreenDialog()).exec();
+    CNewScreenDialog dialog;
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << dialog.variableName());
+        addItem(item);
+        selectItem(item);
+    }
 }
 
 void CInstScreenWidget::setDefaults(bool pkg)
