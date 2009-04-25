@@ -155,13 +155,14 @@ function getsyms(bin)
     return ret
 end
 
-function tabtostr(t)
+function tabtostr(t, q)
     local ret
     for _, v in ipairs(t) do
+        local s = (q and "\"" .. v .. "\"") or v
         if not ret then
-            ret = v
+            ret = s
         else
-            ret = ret .. ", " .. v
+            ret = ret .. ", " .. s
         end
     end
     return ret

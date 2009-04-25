@@ -87,35 +87,6 @@ void CTreeEdit::down()
     tree->setCurrentItem(cur);
 }
 
-QTreeWidgetItem *CTreeEdit::searchItem(const QString &name, int column)
-{
-    const int size = tree->topLevelItemCount();
-    for (int i=0; i<size; i++)
-    {
-        if (tree->topLevelItem(i)->text(column) == name)
-            return tree->topLevelItem(i);
-    }
-    
-    return NULL;
-}
-
-int CTreeEdit::searchItemIndex(const QString &name, int column)
-{
-    const int size = tree->topLevelItemCount();
-    for (int i=0; i<size; i++)
-    {
-        if (tree->topLevelItem(i)->text(column) == name)
-            return i;
-    }
-    
-    return -1;
-}
-
-int CTreeEdit::count() const
-{
-    return tree->topLevelItemCount();
-}
-
 void CTreeEdit::setHeader(const QStringList &labels)
 {
     tree->setHeaderHidden(false);
@@ -172,9 +143,38 @@ void CTreeEdit::selectItem(int index)
     tree->setCurrentItem(tree->topLevelItem(index));
 }
 
+QTreeWidgetItem *CTreeEdit::searchItem(const QString &name, int column)
+{
+    const int size = tree->topLevelItemCount();
+    for (int i=0; i<size; i++)
+    {
+        if (tree->topLevelItem(i)->text(column) == name)
+            return tree->topLevelItem(i);
+    }
+    
+    return NULL;
+}
+
+int CTreeEdit::searchItemIndex(const QString &name, int column)
+{
+    const int size = tree->topLevelItemCount();
+    for (int i=0; i<size; i++)
+    {
+        if (tree->topLevelItem(i)->text(column) == name)
+            return i;
+    }
+    
+    return -1;
+}
+
 QTreeWidgetItem *CTreeEdit::itemAt(int index)
 {
     return tree->topLevelItem(index);
+}
+
+int CTreeEdit::itemCount() const
+{
+    return tree->topLevelItemCount();
 }
 
 void CTreeEdit::insertButton(int index, QPushButton *button)

@@ -169,6 +169,11 @@ void CEditor::updatePanel(const QString &paneln)
     // UNDONE: update panels for other widgets?
 }
 
+void CEditor::setText(const QString &text)
+{
+    editControl->editor()->setText(text);
+}
+
 void CEditor::load(const char *file)
 {
     editControl->editor()->load(file);

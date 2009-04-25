@@ -24,18 +24,24 @@
 #include <QWizard>
 #include <QWizardPage>
 
+#include "instscreenwidget.h"
+
 class QCheckBox;
 
-class CInstScreenWidget;
+class CInstScreenPage;
 
 class CRunGenerator: public QWizard
 {
     QWizardPage *createIntro(void);
     QWizardPage *createPreConfig(void);
     QWizardPage *createInstScreenPage(void);
+
+    CInstScreenPage *instScreenPage;
     
 public:
     CRunGenerator(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    QString getRun(void);
 };
 
 class CPreConfigPage: public QWizardPage
@@ -53,7 +59,10 @@ class CInstScreenPage: public QWizardPage
         
 public:
     CInstScreenPage(QWidget *parent = 0);
+    
     virtual void initializePage(void);
+    
+    void getScreens(TStringVec &screenlist, CInstScreenWidget::screenvec &customs);
 };
 
 #endif

@@ -44,9 +44,6 @@ private slots:
     void down(void);
 
 protected:
-    QTreeWidgetItem *searchItem(const QString &name, int column=0);
-    int searchItemIndex(const QString &name, int column=0);
-    int count(void) const;
     QTreeWidget *getTree(void) { return tree; }
 
 public:
@@ -65,8 +62,13 @@ public:
     void selectItem(QTreeWidgetItem *item);
     void selectItem(int index);
 
+    QTreeWidgetItem *searchItem(const QString &name, int column=0);
+    int searchItemIndex(const QString &name, int column=0);
+
     QTreeWidgetItem *itemAt(int index);
-    
+
+    int itemCount(void) const;
+
     void insertButton(int index, QPushButton *button);
 };
 

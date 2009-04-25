@@ -21,7 +21,11 @@
 #ifndef INSTSCREENWIDGET_H
 #define INSTSCREENWIDGET_H
 
-#include <treeedit.h>
+#include <QMetaType>
+
+#include "main/main.h"
+#include "newinstscreen.h"
+#include "treeedit.h"
 
 class QMenu;
 class QPushButton;
@@ -34,7 +38,8 @@ class CInstScreenWidget: public CTreeEdit
     QPushButton *addScreenB, *newScreenB;
     bool gotDefaultSet;
 
-    void addScreenBMenuItem(const QString &name, QMenu *menu, QSignalMapper *mapper);
+    void addScreenBMenuItem(const QString &name, const QString &varname,
+                            QMenu *menu, QSignalMapper *mapper);
     void deleteItems(const QString &name);
 
 private slots:
@@ -42,8 +47,26 @@ private slots:
     void newScreen(void);
 
 public:
+
+    struct screenitem
+    {
+        std::string variable, title;
+        bool canActivate, activate, update;
+        CNewScreenDialog::widgetvec widgets;
+        screenitem(void) {}
+        screenitem(const std::string &v, const std::string &t, bool ca,
+                   bool a, bool u) : variable(v), title(t), canActivate(ca),
+                                     activate(a), update(u) {}
+    };
+
+    typedef std::vector<screenitem> screenvec;
+    
     CInstScreenWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    
     void setDefaults(bool pkg);
+    void getScreens(TStringVec &screenlist, screenvec &customs);
 };
+
+Q_DECLARE_METATYPE(CInstScreenWidget::screenitem)
 
 #endif

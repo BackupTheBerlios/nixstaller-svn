@@ -56,6 +56,7 @@ private slots:
 public:
     CEditor(QWidget *parent = 0, Qt::WindowFlags f = 0);
 
+    void setText(const QString &text);
     void load(const char *file);
     void loadSettings(void);
     QToolBar *getToolBar(void) { return toolBar; }

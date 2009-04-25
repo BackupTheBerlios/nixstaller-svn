@@ -32,6 +32,7 @@
 #include <QSignalMapper>
 #include <QSpinBox>
 #include <QTreeWidgetItem>
+#include <QVariant>
 #include <QVBoxLayout>
 
 #include "main/main.h"
@@ -199,11 +200,11 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
         QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << nameField->text() << name);
         widgetList->addItem(item);
 
-        QStringList args;
+        TStringVec args;
         while (!fieldVec.empty())
         {
             CBaseWidgetField *fw = fieldVec.front();
-            args << fw->getArg();
+            fw->addArgs(args);
             fieldVec.erase(fieldVec.begin());
             delete fw;
         }
@@ -212,19 +213,19 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
         tab["func"] >> func;
         
         QVariant v;
-        v.setValue(widgetitem(func, nameField->text(), args));
+        v.setValue(widgetitem(func, nameField->text().toStdString(), args));
         item->setData(0, Qt::UserRole, v);
     }
 }
 
-QString CNewScreenDialog::variableName() const
+std::string CNewScreenDialog::variableName() const
 {
-    return varEdit->text();
+    return varEdit->text().toStdString();
 }
 
-QString CNewScreenDialog::screenTitle() const
+std::string CNewScreenDialog::screenTitle() const
 {
-    return titleEdit->text();
+    return titleEdit->text().toStdString();
 }
 
 bool CNewScreenDialog::genCanActivate() const
@@ -240,6 +241,13 @@ bool CNewScreenDialog::genActivate() const
 bool CNewScreenDialog::genUpdate() const
 {
     return updateBox->isChecked();
+}
+
+void CNewScreenDialog::getWidgets(std::vector<widgetitem> &out) const
+{
+    const int size = widgetList->itemCount();
+    for (int i=0; i<size; i++)
+        out.push_back(widgetList->itemAt(i)->data(0, Qt::UserRole).value<widgetitem>());
 }
 
 CStringWidgetField::CStringWidgetField(NLua::CLuaTable &field)
@@ -259,9 +267,9 @@ QWidget *CStringWidgetField::getFieldWidget()
     return lineEdit;
 }
 
-QString CStringWidgetField::getArg()
+void CStringWidgetField::addArgs(TStringVec &vec)
 {
-    return "\"" + lineEdit->text() + "\"";
+    vec.push_back("\"" + lineEdit->text().toStdString() + "\"");
 }
 
 CIntWidgetField::CIntWidgetField(NLua::CLuaTable &field)
@@ -282,9 +290,11 @@ QWidget *CIntWidgetField::getFieldWidget()
     return spinBox;
 }
 
-QString CIntWidgetField::getArg()
+void CIntWidgetField::addArgs(TStringVec &vec)
 {
-    return QString::number(spinBox->value());
+    std::string arg;
+    arg += spinBox->value();
+    vec.push_back(arg);
 }
 
 CChoiceWidgetField::CChoiceWidgetField(NLua::CLuaTable &field)
@@ -318,9 +328,9 @@ QWidget *CChoiceWidgetField::getFieldWidget()
     return comboBox;
 }
 
-QString CChoiceWidgetField::getArg()
+void CChoiceWidgetField::addArgs(TStringVec &vec)
 {
-    return "\"" + comboBox->currentText() + "\"";
+    vec.push_back("\"" + comboBox->currentText().toStdString() + "\"");
 }
 
 CListWidgetField::CListWidgetField(NLua::CLuaTable &field, QWidget *parent,
@@ -339,24 +349,34 @@ void CListWidgetField::addOptItem()
     QTreeWidgetItem *item = new QTreeWidgetItem;
     item->setText(0, "Name");
     item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable);
+
     addItem(item);
     getTree()->setItemWidget(item, 1, new QCheckBox);
     getTree()->editItem(item);
 }
 
-QString CListWidgetField::getArg()
+void CListWidgetField::addArgs(TStringVec &vec)
 {
-    const int size = count();
-    QString ret;
+    const int size = itemCount();
+    std::string opts, defs;
     for (int i=0; i<size; i++)
     {
         QTreeWidgetItem *it = itemAt(i);
 
-        if (!ret.isEmpty())
-            ret += ", ";
+        if (!opts.empty())
+            opts += ", ";
 
-        ret += "\"" + it->text(0) + "\"";
+        opts += "\"" + it->text(0).toStdString() + "\"";
+
+        QCheckBox *box = dynamic_cast<QCheckBox*>(getTree()->itemWidget(it, 1));
+        if (box && box->isChecked())
+        {
+            if (!defs.empty())
+                defs += ", ";
+            defs += "\"" + it->text(0).toStdString() + "\"";
+        }
     }
     
-    return "{ " + ret + " }";
+    vec.push_back("{ " + opts + " }");
+    vec.push_back("{ " + defs + " }");
 }

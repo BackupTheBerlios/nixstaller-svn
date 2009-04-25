@@ -100,7 +100,11 @@ void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previo
 
 void CExpertScreen::launchRunGen()
 {
-    (CRunGenerator()).exec();
+    CRunGenerator rg;
+    if (rg.exec() == QDialog::Accepted)
+    {
+        editor->setText(rg.getRun());
+    }
 }
 
 void CExpertScreen::showEditSettings()

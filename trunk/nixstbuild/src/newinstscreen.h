@@ -27,6 +27,7 @@
 #include <QDialog>
 #include <QMetaType>
 
+#include "main/main.h"
 #include "treeedit.h"
 
 class QCheckBox;
@@ -67,20 +68,24 @@ private slots:
 public:
     struct widgetitem
     {
-        QString func, variable;
-        QStringList args;
+        std::string func, variable;
+        TStringVec args;
         widgetitem(void) {}
-        widgetitem(const QString &f, const QString &v, const QStringList &a) : func(f), variable(v), args(a) {}
+        widgetitem(const std::string &f, const std::string &v,
+                   const TStringVec &a) : func(f), variable(v), args(a) {}
     };
 
+    typedef std::vector<widgetitem> widgetvec;
+    
     CNewScreenDialog(QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~CNewScreenDialog(void);
 
-    QString variableName(void) const;
-    QString screenTitle(void) const;
+    std::string variableName(void) const;
+    std::string screenTitle(void) const;
     bool genCanActivate(void) const;
     bool genActivate(void) const;
     bool genUpdate(void) const;
+    void getWidgets(widgetvec &out) const;
 };
 
 class CBaseWidgetField
@@ -89,7 +94,7 @@ public:
     virtual ~CBaseWidgetField(void) {}
     
     virtual QWidget *getFieldWidget(void) = 0;
-    virtual QString getArg(void) = 0;
+    virtual void addArgs(TStringVec &vec) = 0;
 };
 
 class CStringWidgetField: public CBaseWidgetField
@@ -99,7 +104,7 @@ class CStringWidgetField: public CBaseWidgetField
 public:
     CStringWidgetField(NLua::CLuaTable &field);
     virtual QWidget *getFieldWidget(void);
-    virtual QString getArg(void);
+    virtual void addArgs(TStringVec &vec);
 };
 
 class CIntWidgetField: public CBaseWidgetField
@@ -109,7 +114,7 @@ class CIntWidgetField: public CBaseWidgetField
 public:
     CIntWidgetField(NLua::CLuaTable &field);
     virtual QWidget *getFieldWidget(void);
-    virtual QString getArg(void);
+    virtual void addArgs(TStringVec &vec);
 };
 
 class CChoiceWidgetField: public CBaseWidgetField
@@ -119,7 +124,7 @@ class CChoiceWidgetField: public CBaseWidgetField
 public:
     CChoiceWidgetField(NLua::CLuaTable &field);
     virtual QWidget *getFieldWidget(void);
-    virtual QString getArg(void);
+    virtual void addArgs(TStringVec &vec);
 };
 
 class CListWidgetField: public CTreeEdit, public CBaseWidgetField
@@ -135,7 +140,7 @@ public:
     CListWidgetField(NLua::CLuaTable &field, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
     virtual QWidget *getFieldWidget(void) { return this; }
-    virtual QString getArg(void);
+    virtual void addArgs(TStringVec &vec);
 };
 
 Q_DECLARE_METATYPE(CNewScreenDialog::widgetitem)

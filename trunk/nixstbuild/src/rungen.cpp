@@ -18,6 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <assert.h>
+
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QLabel>
@@ -25,7 +27,9 @@
 #include <QVBoxLayout>
 #include <QWizardPage>
 
-#include "instscreenwidget.h"
+#include "main/lua/lua.h"
+#include "main/lua/luafunc.h"
+#include "main/lua/luatable.h"
 #include "rungen.h"
 
 CRunGenerator::CRunGenerator(QWidget *parent,
@@ -54,9 +58,54 @@ QWizardPage *CRunGenerator::createPreConfig()
 
 QWizardPage *CRunGenerator::createInstScreenPage()
 {
-    return new CInstScreenPage(this);
+    return (instScreenPage = new CInstScreenPage(this));
 }
 
+QString CRunGenerator::getRun()
+{
+    const char *ret = NULL;
+    NLua::CLuaFunc func("genRun");
+    assert(func);
+    if (func)
+    {
+        TStringVec screenlist;
+        CInstScreenWidget::screenvec custscreens;
+        instScreenPage->getScreens(screenlist, custscreens);
+        
+        NLua::CLuaTable custtab;
+        int n = 1;
+        for (CInstScreenWidget::screenvec::iterator it=custscreens.begin();
+             it!=custscreens.end(); it++, n++)
+        {
+            NLua::CLuaTable tabItem;
+            tabItem["variable"] << it->variable;
+            tabItem["title"] << it->title;
+            tabItem["genCanAct"] << it->canActivate;
+            tabItem["genAct"] << it->activate;
+            tabItem["genUpdate"] << it->update;
+
+            NLua::CLuaTable wtab;
+            int n2 = 1;
+            for (CNewScreenDialog::widgetvec::iterator it2=it->widgets.begin();
+                 it2!=it->widgets.end(); it2++, n2++)
+            {
+                NLua::CLuaTable wtabItem;
+                wtabItem["func"] << it2->func;
+                wtabItem["variable"] << it2->variable;
+                wtabItem["args"] << NLua::CLuaTable(it2->args.begin(), it2->args.end());
+                wtab[n2] << wtabItem;
+            }
+
+            tabItem["widgets"] << wtab;
+            
+            custtab[n] << tabItem;
+        }
+        func << "both" << true << NLua::CLuaTable(screenlist.begin(), screenlist.end()) << custtab;
+        func(1);
+        func >> ret;
+    }
+    return ret;
+}
 
 CPreConfigPage::CPreConfigPage(QWidget *parent) : QWizardPage(parent)
 {
@@ -92,4 +141,10 @@ CInstScreenPage::CInstScreenPage(QWidget *parent) : QWizardPage(parent)
 void CInstScreenPage::initializePage()
 {
     instScreenWidget->setDefaults(field("pkgCheckBox").toBool());
+}
+
+void CInstScreenPage::getScreens(TStringVec &screenlist,
+                                 CInstScreenWidget::screenvec &customs)
+{
+    instScreenWidget->getScreens(screenlist, customs);
 }

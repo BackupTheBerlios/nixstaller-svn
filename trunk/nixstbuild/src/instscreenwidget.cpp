@@ -25,7 +25,6 @@
 #include <QTreeWidgetItem>
 
 #include "instscreenwidget.h"
-#include "newinstscreen.h"
 
 CInstScreenWidget::CInstScreenWidget(QWidget *parent,
                                      Qt::WindowFlags flags) : CTreeEdit(parent, flags),
@@ -38,14 +37,14 @@ CInstScreenWidget::CInstScreenWidget(QWidget *parent,
     QMenu *menu = new QMenu();
     QSignalMapper *sigMapper = new QSignalMapper;
     
-    addScreenBMenuItem("Welcome screen", menu, sigMapper);
-    addScreenBMenuItem("License screen", menu, sigMapper);
-    addScreenBMenuItem("Select destination screen", menu, sigMapper);
-    addScreenBMenuItem("Package destination screen", menu, sigMapper);
-    addScreenBMenuItem("Package toggle screen", menu, sigMapper);
-    addScreenBMenuItem("Install screen", menu, sigMapper);
-    addScreenBMenuItem("Summary screen", menu, sigMapper);
-    addScreenBMenuItem("Finish screen", menu, sigMapper);
+    addScreenBMenuItem("Welcome screen", "WelcomeScreen", menu, sigMapper);
+    addScreenBMenuItem("License screen", "LicenseScreen", menu, sigMapper);
+    addScreenBMenuItem("Select destination screen", "SelectDirScreen", menu, sigMapper);
+    addScreenBMenuItem("Package toggle screen", "PackageToggleScreen", menu, sigMapper);
+    addScreenBMenuItem("Package destination screen", "PackageDirScreen", menu, sigMapper);
+    addScreenBMenuItem("Install screen", "InstallScreen", menu, sigMapper);
+    addScreenBMenuItem("Summary screen", "SummaryScreen", menu, sigMapper);
+    addScreenBMenuItem("Finish screen", "FinishScreen", menu, sigMapper);
     
     connect(sigMapper, SIGNAL(mapped(const QString &)),
             this, SLOT(addScreen(const QString &)));
@@ -54,11 +53,13 @@ CInstScreenWidget::CInstScreenWidget(QWidget *parent,
     connect(newScreenB, SIGNAL(clicked()), this, SLOT(newScreen()));
 }
 
-void CInstScreenWidget::addScreenBMenuItem(const QString &name, QMenu *menu, QSignalMapper *mapper)
+void CInstScreenWidget::addScreenBMenuItem(const QString &name,
+                                           const QString &varname,
+                                           QMenu *menu, QSignalMapper *mapper)
 {
     QAction *a = menu->addAction(name);
     connect(a, SIGNAL(triggered()), mapper, SLOT(map()));
-    mapper->setMapping(a, name);
+    mapper->setMapping(a, varname);
 }
 
 void CInstScreenWidget::deleteItems(const QString &name)
@@ -70,7 +71,7 @@ void CInstScreenWidget::deleteItems(const QString &name)
 
 void CInstScreenWidget::addScreen(const QString &name)
 {
-    if (!count())
+    if (!itemCount())
         addItem(QStringList() << name);
     else
     {
@@ -84,7 +85,13 @@ void CInstScreenWidget::newScreen()
     CNewScreenDialog dialog;
     if (dialog.exec() == QDialog::Accepted)
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << dialog.variableName());
+        QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << dialog.variableName().c_str());
+        QVariant v;
+        screenitem si(dialog.variableName(), dialog.screenTitle(), dialog.genCanActivate(),
+                      dialog.genActivate(), dialog.genUpdate());
+        dialog.getWidgets(si.widgets);
+        v.setValue(si);
+        item->setData(0, Qt::UserRole, v);
         addItem(item);
         selectItem(item);
     }
@@ -95,10 +102,10 @@ void CInstScreenWidget::setDefaults(bool pkg)
 
     if (!gotDefaultSet)
     {
-        addItem(QStringList() << "Welcome screen");
-        addItem(QStringList() << "License screen");
-        addItem(QStringList() << "Install screen");
-        addItem(QStringList() << "Finish screen");
+        addItem(QStringList() << "WelcomeScreen");
+        addItem(QStringList() << "LicenseScreen");
+        addItem(QStringList() << "InstallScreen");
+        addItem(QStringList() << "FinishScreen");
         gotDefaultSet = true;
     }
 
@@ -106,57 +113,70 @@ void CInstScreenWidget::setDefaults(bool pkg)
     {
         deleteItems("Select destination screen");
 
-        QTreeWidgetItem *pds = searchItem("Package destination screen");
-        QTreeWidgetItem *pts = searchItem("Package toggle screen");
+        QTreeWidgetItem *pts = searchItem("PackageToggleScreen");
+        QTreeWidgetItem *pds = searchItem("PackageDirScreen");
 
-        if (!pds)
+        if (!pts)
         {
-            int start = searchItemIndex("License screen");
+            int start = searchItemIndex("LicenseScreen");
             if (start == -1)
-                start = searchItemIndex("Welcome screen");
+                start = searchItemIndex("WelcomeScreen");
 
             // searchItemIndex returns -1 if not found, so widget will be
             // inserted at start in that case
             start++;
 
-            insertItem(start, QStringList() << "Package destination screen");
-            if (!pts)
-                insertItem(start+1, QStringList() << "Package toggle screen");
+            insertItem(start, QStringList() << "PackageToggleScreen");
+            if (!pds)
+                insertItem(start+1, QStringList() << "PackageDirScreen");
         }
-        else if (!pts)
+        else if (!pds)
         {
-            int start = searchItemIndex("Package destination screen");
+            int start = searchItemIndex("PackageToggleScreen");
             // start _should_ be valid
 
-            insertItem(start+1, QStringList() << "Package toggle screen");
+            insertItem(start+1, QStringList() << "PackageDirScreen");
         }
 
-        if (!searchItem("Summary screen"))
+        if (!searchItem("SummaryScreen"))
         {
             // Try to stuff summary screen between Install and Finish screens...
-            int start = searchItemIndex("Install screen") + 1;
+            int start = searchItemIndex("InstallScreen") + 1;
             if (start == 0) // Not found?
-                start = searchItemIndex("Finish screen");
+                start = searchItemIndex("FinishScreen");
             if (start == -1) // Still not found?
-                start = count(); // Add to end
-            insertItem(start, QStringList() << "Summary screen");
+                start = itemCount(); // Add to end
+            insertItem(start, QStringList() << "SummaryScreen");
         }
     }
     else
     {
-        deleteItems("Package destination screen");
-        deleteItems("Package toggle screen");
-        deleteItems("Summary screen");
+        deleteItems("PackageToggleScreen");
+        deleteItems("PackageDirScreen");
+        deleteItems("SummaryScreen");
 
-        if (!searchItem("Select destination screen"))
+        if (!searchItem("SelectDirScreen"))
         {
-            int start = searchItemIndex("License screen");
+            int start = searchItemIndex("LicenseScreen");
             if (start == -1)
-                start = searchItemIndex("Welcome screen");
+                start = searchItemIndex("WelcomeScreen");
 
             // searchItemIndex returns -1 if not found, so widget will be
             // inserted at start in that case
-            insertItem(start+1, QStringList() << "Select destination screen");
+            insertItem(start+1, QStringList() << "SelectDirScreen");
         }
+    }
+}
+
+void CInstScreenWidget::getScreens(TStringVec &screenlist, screenvec &customs)
+{
+    const int size = itemCount();
+    for (int i=0; i<size; i++)
+    {
+        QTreeWidgetItem *item = itemAt(i);
+        screenlist.push_back(item->text(0).toStdString());
+        QVariant v = item->data(0, Qt::UserRole);
+        if (!v.isNull())
+            customs.push_back(v.value<screenitem>());
     }
 }

@@ -190,6 +190,11 @@ bool CLuaTable::Next(std::string &key)
     return ret;
 }
 
+void CLuaTable::GetTable() const
+{
+    lua_rawgeti(LuaState, LUA_REGISTRYINDEX, m_iTabRef);
+}
+
 // -------------------------------------
 // Lua Table Return Wrapper Class
 // -------------------------------------
@@ -264,6 +269,12 @@ void CLuaTable::CReturn::operator <<(bool val)
     SetTable();
 }
 
+void CLuaTable::CReturn::operator <<(const CLuaTable &tab)
+{
+    tab.GetTable();
+    SetTable();
+}
+
 void CLuaTable::CReturn::operator >>(std::string &val)
 {
     GetTable();
@@ -290,6 +301,14 @@ void CLuaTable::CReturn::operator >>(bool &val)
     GetTable();
     luaL_checktype(LuaState, -1, LUA_TBOOLEAN);
     val = lua_toboolean(LuaState, -1);
+    lua_pop(LuaState, 1);
+}
+
+void CLuaTable::CReturn::operator >>(CLuaTable &tab)
+{
+    GetTable();
+    luaL_checktype(LuaState, -1, LUA_TTABLE);
+    tab.Open(-1);
     lua_pop(LuaState, 1);
 }
 

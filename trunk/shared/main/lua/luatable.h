@@ -20,7 +20,11 @@
 #ifndef LUA_TABLE_H
 #define LUA_TABLE_H
 
+#include "main/main.h"
 #include "lua.h"
+
+#include <string>
+#include <vector>
 
 namespace NLua {
 
@@ -55,17 +59,33 @@ public:
         void operator <<(double val);
         void operator <<(int val);
         void operator <<(bool val);
+        void operator <<(const CLuaTable &tab);
         void operator >>(std::string &val);
         void operator >>(const char *&val);
         void operator >>(int &val);
         void operator >>(bool &val);
+        void operator >>(CLuaTable &tab);
         operator void *(void);
     };
     
     CLuaTable(const char *var, const char *tab=NULL);
     CLuaTable(const char *var, const char *type, void *prvdata);
     CLuaTable(int index);
-    CLuaTable(); // Creates new table
+    CLuaTable(void); // Creates new table
+    template<typename IT> CLuaTable(IT start, IT end)
+    {
+        New();
+        int n = 1;
+        while (start != end)
+        {
+            // Although setting it via CReturn may be less efficient,
+            // this way we can set all types of data without duplicating
+            // stuff.
+            CReturn(n, m_iTabRef) << *start;
+            start++;
+            n++;
+        }
+    }
     ~CLuaTable(void) { Close(); }
     
     void New(void);
@@ -75,6 +95,7 @@ public:
     void Close(void);
     int Size(void);
     bool Next(std::string &key);
+    void GetTable(void) const;
     
     CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabRef); }

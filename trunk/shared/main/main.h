@@ -32,6 +32,7 @@
         
 typedef std::vector<std::string>::size_type TSTLVecSize;
 typedef std::string::size_type TSTLStrSize;
+typedef std::vector<std::string> TStringVec;
 
 #include "exception.h"
 

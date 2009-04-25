@@ -436,7 +436,7 @@ EOF
 function UnattendedInit()
     -- This function is called as soon as an unattended installation is started.
     
-    -- Set install.destdir to a default incase the user did not gave then --destdir
+    -- Set install.destdir to a default in case the user did not gave then --destdir
     -- option (remove this if cfg.adddestunopt() is not called in config.lua!).
     if not cfg.unopts["destdir"].value then
         install.destdir = os.getenv("HOME") -- Default directory
@@ -593,7 +593,7 @@ EOF
 genrun()
 {
     cat > ${TARGETDIR}/run.lua  << EOF
--- Automaticly generated on `date`.
+-- Automatically generated on `date`.
 -- This file is called when the installer is run.
 -- Don't place any (initialization) code outside the Init(), UnattendedInit(), Install() or Finish() functions.
 

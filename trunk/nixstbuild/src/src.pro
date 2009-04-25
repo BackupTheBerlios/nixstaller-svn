@@ -33,7 +33,8 @@ HEADERS += welcome.h \
 DISTFILES += lua/nixstbuild.lua \
  ../TODO \
  lua/utils-public.lua \
- lua/addwidget.lua
+ lua/addwidget.lua \
+ lua/genrun.lua
 
 TARGETDEPS += ../qcodeedit/libqcodeedit.so
 LIBS += -L../qcodeedit \
