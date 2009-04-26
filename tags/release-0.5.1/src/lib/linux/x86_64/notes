@@ -1,0 +1,7 @@
+Notes for linux libs:
+
+Host system: x86_64 Debian 4.0 Stable
+
+See builddeps.sh for used compiler flags and package versions.
+
+stdcxx was build on x86_64 OpenSUSE 11.1 (didn't build on Debian system)

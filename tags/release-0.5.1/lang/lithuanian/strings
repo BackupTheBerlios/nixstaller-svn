@@ -1,0 +1,690 @@
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+Next
+Pirmyn
+
+Back
+Atgal
+
+OK
+Gerai
+
+Cancel
+Atšaukti
+
+Yes
+Taip
+
+No
+Ne
+
+Finish
+Baigti
+
+Select directory
+Pasirinkite aplanką
+
+Browse
+Ieškoti
+
+Open directory
+Atverti aplanką
+
+Choose another directory
+Pasirinkti kitą aplanką
+
+Continue as root
+Testi kaip root vartotojas
+
+Close
+Uždaryti
+
+Continue
+Tęsti
+
+Exit program
+Uždaryti programą
+
+Create directory as root
+Sukurti aplanką kaip root vartotojas
+
+Ignore
+Ignoruoti
+
+Abort
+Atšaukti
+
+Don't register
+Neregistruoti
+
+Refresh
+Atnaujinti
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+[
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
+Are you sure?
+]
+[
+Instaliacija vykdoma.
+Jei atšauksite tai gali pakenkti instaliacijai.
+Ar jūs įsitikinęs?
+]
+
+[
+This will abort the installation.
+Are you sure?
+]
+[
+Jūs atšauksite instaliaciją.
+Tęsti?
+]
+
+[
+Root access is required to continue.
+Abort installation?
+]
+[
+Root teisės reikalingos tęsti.
+Atšaukti instaliaciją?
+]
+
+Incorrect password given, please retype.
+Pateiktas neteisingas slaptažodis, prašome perrašyti.
+
+# %s is replaced by appname
+Installation of %s complete!
+%s instaliacija sėkminga!
+
+[
+You don't have read permissions for this directory.
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+[
+Jūs neturitę teisių į šį aplanką.
+Prašome pasirinkti kitą aplanką arba paleisti programą vartotojo, kuris turi priėjimą, teisėmis.
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the administrative password for this later.
+]
+[
+Jūs neturite rašymo reisių šiai direktorijai.
+Failai gali būti išskleisti root vartotojo,
+bet jūs turėsite įvesti root vartotojo slaptažodį.
+]
+
+[
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
+]
+[
+Ši instaliacija reikalauja root vartotojo teisių.
+Prašome įvesti root vartotojo slaptažodį.
+]
+
+# %s is replaced by directory name
+Directory %s does not exist, do you want to create it?
+Aplankas %s neegzistuoja, ar norite jį sukurti?
+
+# %s is replaced by appname
+[
+This will install %s.
+Continue?
+]
+[
+%s įrašymas.
+Tęsti?
+]
+
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter the administrative password below.
+]
+[
+Jūsų vartotojas neturi teisių sukurti šio aplanko.
+Kad sukurti aplanką root vartotojo teisėmis įveskite root slaptažodį.
+]
+
+[
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
+]
+[
+Kita prigrama naudoja dpkg duomenų bazę.
+Prašome uždaryti visas programas, kurios gali ją naudoti (pvz. Synaptic).
+]
+
+Another program seems to be using pacman. Please close this program.
+Kita programa naudoja pacman. Prašome uždaryti šią programą.
+
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use this database (eg. Smart or YaST).
+]
+[
+Kita programa naudoja RPM duomenų bazę.
+Prašome uždaryti visas programas, kurios gali naudoti RPM duomenų bazę. (pvz. Smart or YaST).
+]
+
+Package is already installed. Do you want to replace it?
+Paketas jau instaliuotas. Ar norite jį pakeisti?
+
+Package is already installed. Use the --overwrite option to install anyway.
+Paketas jau instaliuotas. Naudokite --overwrite parametrą jį perrašyti.
+
+# First %s is replaced by current version, second by installer version.
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+[
+Versija %s jau įrašyta, jūs bandote įrašyti versiją %s.
+Ar norite pakeisti jau įrašytą paketą?
+]
+
+# %s is replaced by missing tool (ie rpmbuild)
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+[
+Paketo registracijai, reikia %s paketo.
+Prašome sudiegti šį paketą dabar arba pasirinkite Tęsti ar Ignoruoti, kad tęstumėte be paketo registracijos.
+]
+
+One or more package dependencies could not be resolved. Details are given below.
+Viena ar daugiau paketo priklausomybių negalėjo būti išspręstos. Pateikiame detales.
+
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+Kaip alternatyvą paleiskite su --ignore-failed-deps parametru, rizikuodami priklausomybių klaidomis naudojantis programine įranga.
+
+Please fix these issues now and rerun the installer.
+Prašome pataisyti klaidas dabar ir paleisti instaliacijos programą iš naujo.
+
+Continuing installation anyway...
+Besąligiškai tęsti diegimą...
+
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+Viena ar daugiau paketo priklausomybių nebuvo išspręstos. Išsamios detalės pateiktos apačioje. Prašome sutvarkyti šias problemas ir spausti Atnaujinti arba spausti Ignoruoti, kad tęsti rizikuojant priklausomybių klaidomis naudojantis programine įranga.
+
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
+Jūms reikia sutikti su licensija, kad tęstumėte programins įrangos diegimą. Naudokite --show-license parametrą peržiūrėti ir --accept-license sutikti su licensija.
+
+
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+# %s is replaced by parameter name from configmenu
+Please choose a new value for %s
+Prašome pasirinkti naują %s reikšmę
+
+# %s is replaced by parameter name from configmenu
+Please select a directory for %s
+Prašome pasirinkti aplanką parametrui %s
+
+# %s is replaced by parameter name from configmenu
+Please enter a new value for %s
+Prašome įvesti naują %s reikšmę
+
+Please select a language
+Prašome pasirinkti kalbą
+
+Welcome
+Sveiki
+
+License agreement
+Licensija
+
+Select destination directory
+Prašome pasirinkti galutinį aplanką
+
+Please read the following text
+Prašome perskaityti pateiktą tekstą
+
+Warning
+Įspėjimas
+
+Enter name of new directory
+Įveskite naujo aplanko pavadinimą
+
+About
+Apie
+
+Select a directory
+Pasirinkite aplanką
+
+Password dialog
+Slaptažodžio dialogas
+
+Software is being installed
+Programinė įranga diegiama
+
+Software destination
+Programinės įrangos galutinė vieta
+
+Software registration
+Programinės įrangos registracija
+
+Installation summary
+Diegimo santrauka
+
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Progress
+Progresas
+
+Language
+Kalba
+
+I agree to this license agreement
+Aš sutinku su licensija
+
+Status
+Statusas
+
+Extracting files
+Išpakuojamos bylos
+
+Verifying dependencies
+Tikrinamos priklausomybės
+
+Gathering main binary dependencies.
+Renkamos pagrindinės dvejatainės priklausomybės
+
+Gathering main library dependencies.
+Renkamos pagrindinės bibliotekų priklausomybės
+
+Extracting dependency %s
+Išpakuojama priklausomybė %s
+
+Gathering mandatory dependencies.
+Renkamos papildomos priklausomybės
+
+Installing dependencies.
+Diegiamos priklausomybės.
+
+Installing package
+Diegiamas paketas
+
+Enable
+Įjungti
+
+Disable
+Išjungti
+
+Directory name
+Aplanko pavadinimas
+
+Root password
+Root slaptažodis
+
+Register software
+Užregistruoti programinę įrangą
+
+Name
+Vardas
+
+Problem
+Problema
+
+Description
+Aprašymas
+
+Failed to install.
+Nepavyko įdiegti.
+
+Failed to download.
+Nepavyko atsiųsti.
+
+(Binary) incompatible.
+(Binary) nesuderinamas.
+
+# %s will be replaced by the name of the incompatible library.
+Incompatible library: %s.
+Nesuderinama biblioteka: %s.
+
+# %s will be replaced by the name of the missing library.
+Missing library: %s.
+Trūkstama biblioteka: %s.
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too old (required: %s).
+Biblioteka %s pasenusi (reikalinga: %s).
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too new (required: %s).
+Biblioteka %s per nauja (reikalinga: %s).
+
+# %s will be replaced by the required library.
+Wrong library version (required: %s).
+Netinkama bibliotekos versija (reikalinga: %s).
+
+# %s will be replaced by the found library.
+Too new (available: %s)
+Per nauja (turima: %s)
+
+# %s will be replaced by the found library.
+Too old (available: %s)
+Per sena (turima: %s)
+
+File missing.
+Byla nerasta.
+
+Version mismatch.
+Versijų nesuderinamumas.
+
+Multiple package managers were found, please choose which one should be used.
+Keli paketų valdytojai rasti, prašome pasirinkti vieną naudojimui.
+
+# %s is replaced by possible package managers
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
+[
+Keli paketų valdytojai rasti: %s
+Prašome naudoti --packager parametrą pasirinkimui.
+]
+
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+[
+Šiame laukelyje galite pasirinkti galutinį aplanka programinės įrangos duomenims. Bylos bus sudiegtos į nurodyto aplanko poaplankį.
+
+Pastaba: jei Jūs neturite rašymo teisės šiame aplanka, Jūsų bus paprašyta įvesti root slaptažodį.
+
+Jei nesate įsitikinęs, palikite reikšmes pagal nutylėjimą.
+]
+
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+[
+Šiame laukelyje Jūs galite pasirinkti galutinį aplanką vykdomosioms byloms. Bylos įrašomos tiesiogiai šioje direktorijoje.
+
+Pastaba: jei Jūs neturite rašymo teisės šiame aplanke, Jūsų bus paprašyta įvesti root slaptažodį.
+
+Jei nesate įsitikinęs, palikite reikšmes pagal nutylėjimą.
+]
+
+
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+]
+[
+Pažymėjus šį laukelį diegyklė bandys užregistruoti programinę įrangą sistemos paketų tvarkyklėje. Tai leidžia paprastą šalinimą ir atnaujinimą.
+
+Pastaba: Pasirinkus šią galimybę, Jūsų bus paprašyta įvesti root slaptažodį.
+]
+
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+[
+Programinė įranga sudiegta šioje sistemoje.
+Diegimo santrauka pateikta apačioje.
+]
+
+dpkg (eg. Ubuntu, Debian)
+dpkg (pvz. Ubuntu, Debian)
+
+pacman (eg. Arch Linux)
+pacman (pvz. Arch Linux)
+
+rpm (eg. Fedora, Mandriva)
+rpm (pvz. Fedora, Mandriva)
+
+Slackware tgz (eg. Slackware, Zenwalk)
+Slackware tgz (pvz. Slackware, Zenwalk)
+
+
+#-----------------------------------------------
+# Error messages
+#-----------------------------------------------
+
+Error
+Klaida
+
+Could not create directory
+Nepavyko sukurti aplanko
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+Ši diegyklė sudiegs failus į šį aplanką:
+%s
+Tačiau Jūs neturite prieigos teisių šiame kataloge
+Prašome perkrauti diegyklę, kaip vartotojas turintis teises šiame aplanke arba root vartotojas
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Nepavyko atverti aplanko %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Nepavyko nuskaityti iš aplanko %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Nepavyko nuskaityti esamo aplanko: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Aptikta Lua klaida: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Nepavyko įvykdyti komandos: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Nepavyko sukurti aplanko: %s
+
+Could not use su or sudo to gain root access.
+Nepavyko panaudoti su ar sudo root teisėms gauti.
+
+Not enough space for buttonbar entry
+Nepakanka vietos buttonbar įrašui
+
+# %s is replaced by error message
+Overflow detected: %s
+Aptiktas perpildymas: %s
+
+# %s is replaced by error message
+Could not open pipe: %s
+Nepavyko atverti kanalo: %s
+
+# %s is replaced by error message
+Could not read pipe: %s
+Nepavyko nuskaityti iš kanalo: %s
+
+# %s is replaced by error message
+Could not close pipe: %s
+Nepavyko uždaryti kanalo: %s
+
+# %s is replaced by error message
+Could not fork child: %s
+Nepavyko atšakoti vaiko: %s
+
+# %s is replaced by error message
+Could not close file descriptor: %s
+Nepavyko uždaryti bylos: %s
+
+# %s is replaced by error message
+poll returned an error: %s
+poll gražino klaidą: %s
+
+# %s is replaced by error message
+select returned an error: %s
+select gražino klaidą: %s
+
+# %s is replaced by error message
+Encountered an error while waiting on child process: %s
+Aptikta klaida laukiant atsakymo iš vaikinio proceso: %s
+
+# %s is replaced by error message
+uname returned an error: %s
+uname gražino klaidą: %s
+
+# %s is replaced by directory name
+Could not create directory '%s'
+Nepavyko sukurti aplanko '%s'
+
+Please enter a valid path.
+Prašome įvesti egzistuojantį kelią į aplanką.
+
+# %s is replaced by error message
+Error during file transfer: %s
+Klaida siunčiant bylą: %s
+
+# %s is replaced by error message
+Elf class error detected: %s
+Aptikta elf klasės klaida: %s
+
+# First %s is replaced by file, second by error message
+Could not open file %s: %s
+Nepavyko atverti bylos %s: %s
+
+# %s is replaced by filename
+Could not locate file: %s
+Nepavyko rasti bylos: %s
+
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+Nepavyko nuskaityti galutinio aplanko, perkraukite diegyklę su vartotojo turinčio atitinkamas privilegijas teisėmis (pvz. root)
+
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+Nepavyko įrašyti į galutinį aplanką, perkraukite diegyklę kaip vartotojas su atitinkamomis teisėmis (pvz. root)
+
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+Nepavyko sukurti galutinio aplanko, perkraukite diegyklę kaip vartotojas su atitinkamomis teisėmis (pvz. root)
+
+# %s is replaced by list of possible packagers
+Wrong packager specified, should be one of the following: %s
+Netinkamas pakuotojas nurodytas, turi būti vienas iš: %s
+
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Pridėti prie mėgstamų
+
+All Files (*)
+Visos bylos (*)
+
+Custom Filter
+Filtras
+
+Favorites
+Mėgstami
+
+Filename:
+Bylos vardas:
+
+File Systems
+Failų Sistemos
+
+Manage Favorites
+Tvarkyti mėgstamus
+
+Show:
+Rodyti:
+
+Create new directory
+Sukurti naują aplanką
+
+
+#-----------------------------------------------
+# Button bar from ncurses frontend
+#-----------------------------------------------
+
+Next field
+Sekantis laukas
+
+TAB
+TAB
+
+Exit
+Išeiti
+
+ESC
+ESC
+
+F2
+F2
+
+F3
+F3
+
+Done
+Atlikta
+
+ENTER
+ENTER
+
+ARROWS
+Rodyklės
+
+ARROWS/PGUP/PGDOWN
+Rodyklės/PGUP/PGDOWN
+
+Activate button
+Aktyvuoti mygtuką
+
+Move to
+Perkelti į
+
+Navigate
+Naršyti
+
+Character
+Simbolis
+
+Toggle
+Keisti
+
+Change
+Keisti
+
+ARROWS/PGUP/PGDOWN/HOME/END
+Rodyklės/PGUP/PGDOWN/HOME/END
+
+SPACE
+Tarpas
+
+
+#-----------------------------------------------
+# Put your own translations below
+#-----------------------------------------------

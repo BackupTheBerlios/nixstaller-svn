@@ -1,0 +1,1883 @@
+# -*- coding: utf-8 -*-
+import sys
+import os
+import glob
+import commands
+import shutil
+import platform
+import tarfile
+
+# All the files for Nixstaller...If a directory is specified the whole directory(excluding dot files) will be copied.
+# By specifying as many files as possible you can be more sure unwanted files won't be copied.
+# --------------------------------------------------------------------------------------
+
+distfiles_user = [
+'doc/',
+'example/bzflag/config.lua',                                                            
+'example/bzflag/files_all/FILES',                                                       
+'example/bzflag/files_extra/side.bmp',                                                  
+'example/bzflag/lang/bulgarian/config.lua',                                             
+'example/bzflag/lang/bulgarian/strings',                                                
+'example/bzflag/lang/dutch/config.lua',                                                 
+'example/bzflag/lang/dutch/strings',                                                    
+'example/bzflag/lang/english/config.lua',                                               
+'example/bzflag/lang/english/strings',                                                  
+'example/bzflag/lang/lithuanian/config.lua',                                            
+'example/bzflag/lang/lithuanian/strings',                                               
+'example/bzflag/package.lua',                                                           
+'example/bzflag/README',                                                                
+'example/bzflag/run.lua',                                                               
+'example/bzflag/welcome',                                                               
+'example/cube/config.lua',                                                              
+'example/cube/files_all/FILES',
+'example/cube/files_all_x86',
+'example/cube/files_extra',
+'example/cube/files_freebsd_all',
+'example/cube/files_freebsd_x86',
+'example/cube/files_linux_all',
+'example/cube/files_linux_x86',
+'example/cube/lang/bulgarian/config.lua',                                               
+'example/cube/lang/bulgarian/strings',                                                  
+'example/cube/lang/dutch/config.lua',                                                   
+'example/cube/lang/dutch/strings',                                                      
+'example/cube/lang/english/config.lua',                                                 
+'example/cube/lang/english/strings',                                                    
+'example/cube/lang/lithuanian/config.lua',                                              
+'example/cube/lang/lithuanian/strings',                                                 
+'example/cube/run.lua',                                                                 
+'example/cube-unattended/config.lua',                                                   
+'example/cube-unattended/files_all/FILES',
+'example/cube-unattended/files_all_x86',
+'example/cube-unattended/files_extra',
+'example/cube-unattended/files_freebsd_all',
+'example/cube-unattended/files_freebsd_x86',
+'example/cube-unattended/files_linux_all',
+'example/cube-unattended/files_linux_x86',
+'example/cube-unattended/lang/bulgarian/config.lua',                                    
+'example/cube-unattended/lang/bulgarian/strings',                                       
+'example/cube-unattended/lang/dutch/config.lua',                                        
+'example/cube-unattended/lang/dutch/strings',                                           
+'example/cube-unattended/lang/english/config.lua',                                      
+'example/cube-unattended/lang/english/strings',                                         
+'example/cube-unattended/lang/lithuanian/config.lua',                                   
+'example/cube-unattended/lang/lithuanian/strings',                                      
+'example/cube-unattended/run.lua',                                                      
+'example/cube-unattended/welcome',                                                      
+'example/cube/welcome',                                                                 
+'example/simple/config.lua',                                                            
+'example/simple/files_all/README',
+'example/simple/files_extra',
+'example/simple/lang/bulgarian/config.lua',                                             
+'example/simple/lang/bulgarian/strings',                                                
+'example/simple/lang/dutch/config.lua',                                                 
+'example/simple/lang/dutch/strings',
+'example/simple/lang/english/config.lua',
+'example/simple/lang/english/strings',
+'example/simple/lang/lithuanian/config.lua',
+'example/simple/lang/lithuanian/strings',
+'example/simple/run.lua',
+'example/simple/welcome',
+'example/vim/config.lua',
+'example/vim/files_all/FILES',
+'example/vim/files_extra/vim48x48.png',
+'example/vim/files_extra/vim48x48.xpm',
+'example/vim/files_all_x86',
+'example/vim/files_all_x86_64',
+'example/vim/files_freebsd_all',
+'example/vim/files_freebsd_x86',
+'example/vim/files_freebsd_x86_64',
+'example/vim/files_linux_all',
+'example/vim/files_linux_x86',
+'example/vim/files_linux_x86_64',
+'example/vim/files_netbsd_all',
+'example/vim/files_netbsd_x86',
+'example/vim/files_netbsd_x86_64',
+'example/vim/files_openbsd_all',
+'example/vim/files_openbsd_x86',
+'example/vim/files_sunos_all',
+'example/vim/files_sunos_x86',
+'example/vim/finish',
+'example/vim/lang/bulgarian/config.lua',
+'example/vim/lang/bulgarian/strings',
+'example/vim/lang/dutch/config.lua',
+'example/vim/lang/dutch/strings',
+'example/vim/lang/english/config.lua',
+'example/vim/lang/english/strings',
+'example/vim/lang/lithuanian/config.lua',
+'example/vim/lang/lithuanian/strings',
+'example/vim/run.lua',
+'example/vim/welcome',
+'lang/bulgarian/config.lua',
+'lang/bulgarian/strings',
+'lang/dutch/config.lua',
+'lang/dutch/strings',
+'lang/english/config.lua',
+'lang/english/strings',
+'lang/lithuanian/config.lua',
+'lang/lithuanian/strings',
+'src/img/appicon.xpm',                                                                             
+'src/img/COPYING',                                                                                 
+'src/img/installer.png',                                                                           
+'src/img/system-installer.svg',                                                                    
+'src/internal/about',                                                                              
+'src/internal/instheader.sh',                                                                      
+'src/internal/intro.txt',                                                                          
+'src/internal/start',                                                                              
+'src/internal/startupinstaller.sh',                                                                
+'src/internal/terminfo/a/ansi',                                                                    
+'src/internal/terminfo/d/dumb',                                                                    
+'src/internal/terminfo/g/gnome',                                                                   
+'src/internal/terminfo/g/gnome-2007',                                                              
+'src/internal/terminfo/g/gnome-2008',                                                              
+'src/internal/terminfo/g/gnome-256color',                                                          
+'src/internal/terminfo/g/gnome-fc5',                                                               
+'src/internal/terminfo/g/gnome+pcfkeys',                                                           
+'src/internal/terminfo/g/gnome-rh62',                                                              
+'src/internal/terminfo/g/gnome-rh72',                                                              
+'src/internal/terminfo/g/gnome-rh80',                                                              
+'src/internal/terminfo/g/gnome-rh90',                                                              
+'src/internal/terminfo/k/klone+acs',                                                               
+'src/internal/terminfo/k/klone+color',                                                             
+'src/internal/terminfo/k/klone+koi8acs',                                                           
+'src/internal/terminfo/k/klone+sgr',                                                               
+'src/internal/terminfo/k/klone+sgr8',                                                              
+'src/internal/terminfo/k/klone+sgr-dumb',                                                          
+'src/internal/terminfo/k/konsole',                                                                 
+'src/internal/terminfo/k/konsole-16color',                                                         
+'src/internal/terminfo/k/konsole-256color',                                                        
+'src/internal/terminfo/k/konsole-base',                                                            
+'src/internal/terminfo/k/konsole-linux',                                                           
+'src/internal/terminfo/k/konsole+pcfkeys',                                                         
+'src/internal/terminfo/k/konsole-solaris',                                                         
+'src/internal/terminfo/k/konsole-vt100',                                                           
+'src/internal/terminfo/k/konsole-vt420pc',                                                         
+'src/internal/terminfo/k/konsole-xf3x',                                                            
+'src/internal/terminfo/k/kterm',                                                                   
+'src/internal/terminfo/k/kterm-co',                                                                
+'src/internal/terminfo/k/kterm-color',                                                             
+'src/internal/terminfo/k/kvt',                                                                     
+'src/internal/terminfo/l/linux',                                                                   
+'src/internal/terminfo/l/linux2.6.26',                                                             
+'src/internal/terminfo/l/linux-basic',                                                             
+'src/internal/terminfo/l/linux-c',                                                                 
+'src/internal/terminfo/l/linux-c-nc',                                                              
+'src/internal/terminfo/l/linux-koi8',                                                              
+'src/internal/terminfo/l/linux-koi8r',                                                             
+'src/internal/terminfo/l/linux-lat',                                                               
+'src/internal/terminfo/l/linux-m',                                                                 
+'src/internal/terminfo/l/linux-nic',                                                               
+'src/internal/terminfo/l/linux-vt',                                                                
+'src/internal/terminfo/m/mlterm',                                                                  
+'src/internal/terminfo/m/mlterm+pcfkeys',                                                          
+'src/internal/terminfo/n/nxterm',                                                                  
+'src/internal/terminfo/p/pcvt25',                                                                  
+'src/internal/terminfo/p/pcvt25-color',                                                            
+'src/internal/terminfo/p/pcvt25w',                                                                 
+'src/internal/terminfo/p/pcvt28',                                                                  
+'src/internal/terminfo/p/pcvt28w',                                                                 
+'src/internal/terminfo/p/pcvt35',                                                                  
+'src/internal/terminfo/p/pcvt35w',                                                                 
+'src/internal/terminfo/p/pcvt40',                                                                  
+'src/internal/terminfo/p/pcvt40w',                                                                 
+'src/internal/terminfo/p/pcvt43',                                                                  
+'src/internal/terminfo/p/pcvt43w',                                                                 
+'src/internal/terminfo/p/pcvt50',                                                                  
+'src/internal/terminfo/p/pcvt50w',                                                                 
+'src/internal/terminfo/p/pcvtXX',                                                                  
+'src/internal/terminfo/p/putty',                                                                   
+'src/internal/terminfo/p/putty-256color',                                                          
+'src/internal/terminfo/p/putty-vt100',                                                             
+'src/internal/terminfo/r/rxvt',                                                                    
+'src/internal/terminfo/r/rxvt-16color',                                                            
+'src/internal/terminfo/r/rxvt-256color',                                                           
+'src/internal/terminfo/r/rxvt-88color',                                                            
+'src/internal/terminfo/r/rxvt-basic',                                                              
+'src/internal/terminfo/r/rxvt-color',                                                              
+'src/internal/terminfo/r/rxvt-cygwin',                                                             
+'src/internal/terminfo/r/rxvt-cygwin-native',                                                      
+'src/internal/terminfo/r/rxvt+pcfkeys',                                                            
+'src/internal/terminfo/r/rxvt-xpm',                                                                
+'src/internal/terminfo/s/screen',                                                                  
+'src/internal/terminfo/s/screen-16color',                                                          
+'src/internal/terminfo/s/screen-16color-bce',                                                      
+'src/internal/terminfo/s/screen-16color-bce-s',                                                    
+'src/internal/terminfo/s/screen-16color-s',                                                        
+'src/internal/terminfo/s/screen2',                                                                 
+'src/internal/terminfo/s/screen-256color',                                                         
+'src/internal/terminfo/s/screen-256color-bce',                                                     
+'src/internal/terminfo/s/screen-256color-bce-s',                                                   
+'src/internal/terminfo/s/screen-256color-s',                                                       
+'src/internal/terminfo/s/screen3',                                                                 
+'src/internal/terminfo/s/screen-bce',                                                              
+'src/internal/terminfo/s/screen+fkeys',                                                            
+'src/internal/terminfo/s/screen.linux',                                                            
+'src/internal/terminfo/s/screen.mlterm',                                                           
+'src/internal/terminfo/s/screen.rxvt',                                                             
+'src/internal/terminfo/s/screen-s',                                                                
+'src/internal/terminfo/s/screen.teraterm',                                                         
+'src/internal/terminfo/s/screen-w',                                                                
+'src/internal/terminfo/s/screen.xterm-new',                                                        
+'src/internal/terminfo/s/screen.xterm-r6',                                                         
+'src/internal/terminfo/s/screen.xterm-xfree86',                                                    
+'src/internal/terminfo/s/sun',                                                                     
+'src/internal/terminfo/u/unknown',                                                                 
+'src/internal/terminfo/v/vt100',                                                                   
+'src/internal/terminfo/v/vt100-putty',                                                             
+'src/internal/terminfo/v/vt102',                                                                   
+'src/internal/terminfo/v/vt220',                                                                   
+'src/internal/terminfo/v/vt220-8',                                                                 
+'src/internal/terminfo/v/vt220-8bit',                                                              
+'src/internal/terminfo/v/vt320',                                                                   
+'src/internal/terminfo/v/vt52',                                                                    
+'src/internal/terminfo/w/wsvt25',                                                                  
+'src/internal/terminfo/x/xterm',                                                                   
+'src/internal/terminfo/x/xterm-256color',                                                          
+'src/internal/terminfo/x/xterm-basic',                                                             
+'src/internal/terminfo/x/xterm-color',                                                             
+'src/internal/terminfo/x/xterm-nic',                                                               
+'src/internal/terminfo/x/xterm-r6',                                                                
+'src/internal/utils.sh',                                                                           
+'src/lua/attinstall.lua',                                                                          
+'src/lua/deps.lua',                                                                                
+'src/lua/deps-public.lua',                                                                         
+'src/lua/deptemplates/gtk.lua',                                                                    
+'src/lua/deptemplates.lua',                                                                        
+'src/lua/deptemplates/pango.lua',                                                                  
+'src/lua/deputil.lua',                                                                             
+'src/lua/dumplang.lua',                                                                            
+'src/lua/geninstall.lua',                                                                          
+'src/lua/gensyms.lua',                                                                             
+'src/lua/install.lua',                                                                             
+'src/lua/main.lua',                                                                                
+'src/lua/package.lua',                                                                             
+'src/lua/package-public.lua',                                                                      
+'src/lua/pkg/dpkg.lua',                                                                            
+'src/lua/pkg/generic.lua',                                                                         
+'src/lua/pkg/groups.lua',                                                                          
+'src/lua/pkg/pacman.lua',                                                                          
+'src/lua/pkg/rpm.lua',                                                                             
+'src/lua/pkg/slack.lua',                                                                           
+'src/lua/screens/finishscreen.lua',                                                                
+'src/lua/screens/installscreen.lua',                                                               
+'src/lua/screens/langscreen.lua',                                                                  
+'src/lua/screens/licensescreen.lua',                                                               
+'src/lua/screens/packagedirscreen.lua',                                                            
+'src/lua/screens/packagetogglescreen.lua',                                                         
+'src/lua/screens/selectdirscreen.lua',                                                             
+'src/lua/screens/summaryscreen.lua',                                                               
+'src/lua/screens/welcomescreen.lua',                                                               
+'src/lua/shared/package-public.lua',                                                               
+'src/lua/shared/utils.lua',                                                                        
+'src/lua/shared/utils-public.lua',                                                                 
+'src/lua/unattinstall.lua',                                                                        
+'src/xdg-utils/xdg-desktop-menu',
+'src/xdg-utils/xdg-open',
+'COPYING',
+'CHANGELOG',
+'geninstall.sh',
+'genprojdir.sh',
+'deputil.sh',
+'gensyms.sh',
+'LICENSE',
+'makeself.sh',
+]
+
+distfiles_src = distfiles_user + [
+'src/builddeps.sh',                                                                                
+'src/docs/fltk.png',                                                                               
+'src/docs/gtk.png',                                                                                
+'src/docs/macros-default.texi',                                                                    
+'src/docs/macros-html.texi',                                                                       
+'src/docs/mkdoc.sh',                                                                               
+'src/docs/ncurs.png',                                                                              
+'src/docs/nixstaller.texi',                                                                        
+'src/docs/styles.css',                                                                             
+'src/elfnbsd.diff',                                                                                
+'src/exceptions.odt',                                                                              
+'src/fltk/dirdialog.cpp',                                                                          
+'src/fltk/dirdialog.h',                                                                            
+'src/fltk/fltk.cpp',                                                                               
+'src/fltk/fltk.h',                                                                                 
+'src/fltk/hyperlink.cpp',                                                                          
+'src/fltk/hyperlink.h',                                                                            
+'src/fltk/installer.cpp',                                                                          
+'src/fltk/installer.h',                                                                            
+'src/fltk/installscreen.cpp',                                                                      
+'src/fltk/installscreen.h',                                                                        
+'src/fltk/luacfgmenu.cpp',                                                                         
+'src/fltk/luacfgmenu.h',                                                                           
+'src/fltk/luacheckbox.cpp',                                                                        
+'src/fltk/luacheckbox.h',                                                                          
+'src/fltk/luadepscreen.cpp',                                                                       
+'src/fltk/luadepscreen.h',                                                                         
+'src/fltk/luadirselector.cpp',                                                                     
+'src/fltk/luadirselector.h',                                                                       
+'src/fltk/luagroup.cpp',                                                                           
+'src/fltk/luagroup.h',                                                                             
+'src/fltk/luaimage.cpp',                                                                           
+'src/fltk/luaimage.h',                                                                             
+'src/fltk/luainput.cpp',                                                                           
+'src/fltk/luainput.h',                                                                             
+'src/fltk/lualabel.cpp',                                                                           
+'src/fltk/lualabel.h',                                                                             
+'src/fltk/luamenu.cpp',                                                                            
+'src/fltk/luamenu.h',                                                                              
+'src/fltk/luaprogressbar.cpp',                                                                     
+'src/fltk/luaprogressbar.h',                                                                       
+'src/fltk/luaprogressdialog.cpp',                                                                  
+'src/fltk/luaprogressdialog.h',                                                                    
+'src/fltk/luaradiobutton.cpp',                                                                     
+'src/fltk/luaradiobutton.h',                                                                       
+'src/fltk/luatextfield.cpp',                                                                       
+'src/fltk/luatextfield.h',                                                                         
+'src/fltk/luawidget.cpp',                                                                          
+'src/fltk/luawidget.h',                                                                            
+'src/fltk/utils.cpp',                                                                              
+'src/gtk/gtk.cpp',                                                                                 
+'src/gtk/gtk.h',                                                                                   
+'src/gtk/installer.cpp',                                                                           
+'src/gtk/installer.h',                                                                             
+'src/gtk/installscreen.cpp',                                                                       
+'src/gtk/installscreen.h',                                                                         
+'src/gtk/luacfgmenu.cpp',                                                                          
+'src/gtk/luacfgmenu.h',                                                                            
+'src/gtk/luacheckbox.cpp',                                                                         
+'src/gtk/luacheckbox.h',                                                                           
+'src/gtk/luadepscreen.cpp',                                                                        
+'src/gtk/luadepscreen.h',                                                                          
+'src/gtk/luadirselector.cpp',                                                                      
+'src/gtk/luadirselector.h',                                                                        
+'src/gtk/luagroup.cpp',                                                                            
+'src/gtk/luagroup.h',                                                                              
+'src/gtk/luaimage.cpp',                                                                            
+'src/gtk/luaimage.h',                                                                              
+'src/gtk/luainput.cpp',                                                                            
+'src/gtk/luainput.h',                                                                              
+'src/gtk/lualabel.h',                                                                              
+'src/gtk/luamenu.cpp',                                                                             
+'src/gtk/luamenu.h',                                                                               
+'src/gtk/luaprogressbar.cpp',                                                                      
+'src/gtk/luaprogressbar.h',                                                                        
+'src/gtk/luaprogressdialog.cpp',                                                                   
+'src/gtk/luaprogressdialog.h',                                                                     
+'src/gtk/luaradiobutton.cpp',                                                                      
+'src/gtk/luaradiobutton.h',                                                                        
+'src/gtk/luatextfield.cpp',                                                                        
+'src/gtk/luatextfield.h',                                                                          
+'src/gtk/luawidget.cpp',                                                                           
+'src/gtk/luawidget.h',                                                                             
+'src/gtk/utils.cpp',                                                                               
+'src/include/FL/dirent.h',                                                                         
+'src/include/FL/Enumerations.H',                                                                   
+'src/include/FL/filename.H',                                                                       
+'src/include/FL/Fl_Adjuster.H',                                                                    
+'src/include/FL/fl_ask.H',                                                                         
+'src/include/FL/Fl_Bitmap.H',                                                                      
+'src/include/FL/Fl_BMP_Image.H',                                                                   
+'src/include/FL/Fl_Box.H',                                                                         
+'src/include/FL/Fl_Browser_.H',                                                                    
+'src/include/FL/Fl_Browser.H',                                                                     
+'src/include/FL/Fl_Button.H',                                                                      
+'src/include/FL/Fl_Cairo.H',                                                                       
+'src/include/FL/Fl_Cairo_Window.H',                                                                
+'src/include/FL/Fl_Chart.H',                                                                       
+'src/include/FL/Fl_Check_Browser.H',                                                               
+'src/include/FL/Fl_Check_Button.H',                                                                
+'src/include/FL/Fl_Choice.H',                                                                      
+'src/include/FL/Fl_Clock.H',                                                                       
+'src/include/FL/Fl_Color_Chooser.H',                                                               
+'src/include/FL/Fl_Counter.H',                                                                     
+'src/include/FL/Fl_Dial.H',                                                                        
+'src/include/FL/Fl_Double_Window.H',                                                               
+'src/include/FL/fl_draw.H',                                                                        
+'src/include/FL/Fl_Export.H',                                                                      
+'src/include/FL/Fl_File_Browser.H',                                                                
+'src/include/FL/Fl_File_Chooser.H',                                                                
+'src/include/FL/Fl_File_Icon.H',                                                                   
+'src/include/FL/Fl_File_Input.H',                                                                  
+'src/include/FL/Fl_Fill_Dial.H',                                                                   
+'src/include/FL/Fl_Fill_Slider.H',                                                                 
+'src/include/FL/Fl_Float_Input.H',                                                                 
+'src/include/FL/Fl_FormsBitmap.H',                                                                 
+'src/include/FL/Fl_FormsPixmap.H',                                                                 
+'src/include/FL/Fl_Free.H',                                                                        
+'src/include/FL/Fl_GIF_Image.H',                                                                   
+'src/include/FL/Fl_Gl_Window.H',                                                                   
+'src/include/FL/Fl_Group.H',                                                                       
+'src/include/FL/Fl.H',                                                                             
+'src/include/FL/Fl_Help_Dialog.H',                                                                 
+'src/include/FL/Fl_Help_View.H',                                                                   
+'src/include/FL/Fl_Hold_Browser.H',                                                                
+'src/include/FL/Fl_Hor_Fill_Slider.H',                                                             
+'src/include/FL/Fl_Hor_Nice_Slider.H',                                                             
+'src/include/FL/Fl_Hor_Slider.H',                                                                  
+'src/include/FL/Fl_Hor_Value_Slider.H',                                                            
+'src/include/FL/Fl_Image.H',                                                                       
+'src/include/FL/Fl_Input_Choice.H',                                                                
+'src/include/FL/Fl_Input_.H',                                                                      
+'src/include/FL/Fl_Input.H',                                                                       
+'src/include/FL/Fl_Int_Input.H',                                                                   
+'src/include/FL/Fl_JPEG_Image.H',                                                                  
+'src/include/FL/Fl_Light_Button.H',                                                                
+'src/include/FL/Fl_Line_Dial.H',                                                                   
+'src/include/FL/Fl_Menu_Bar.H',                                                                    
+'src/include/FL/Fl_Menu_Button.H',                                                                 
+'src/include/FL/Fl_Menu_.H',                                                                       
+'src/include/FL/Fl_Menu.H',                                                                        
+'src/include/FL/Fl_Menu_Item.H',                                                                   
+'src/include/FL/Fl_Menu_Window.H',                                                                 
+'src/include/FL/fl_message.H',                                                                     
+'src/include/FL/Fl_Multi_Browser.H',                                                               
+'src/include/FL/Fl_Multi_Label.H',                                                                 
+'src/include/FL/Fl_Multiline_Input.H',                                                             
+'src/include/FL/Fl_Multiline_Output.H',                                                            
+'src/include/FL/Fl_Nice_Slider.H',                                                                 
+'src/include/FL/Fl_Object.H',                                                                      
+'src/include/FL/Fl_Output.H',                                                                      
+'src/include/FL/Fl_Overlay_Window.H',                                                              
+'src/include/FL/Fl_Pack.H',                                                                        
+'src/include/FL/Fl_Pixmap.H',                                                                      
+'src/include/FL/Fl_PNG_Image.H',                                                                   
+'src/include/FL/Fl_PNM_Image.H',                                                                   
+'src/include/FL/Fl_Positioner.H',                                                                  
+'src/include/FL/Fl_Preferences.H',                                                                 
+'src/include/FL/Fl_Progress.H',                                                                    
+'src/include/FL/Fl_Radio_Button.H',                                                                
+'src/include/FL/Fl_Radio_Light_Button.H',                                                          
+'src/include/FL/Fl_Radio_Round_Button.H',                                                          
+'src/include/FL/Fl_Repeat_Button.H',                                                               
+'src/include/FL/Fl_Return_Button.H',                                                               
+'src/include/FL/Fl_RGB_Image.H',                                                                   
+'src/include/FL/Fl_Roller.H',                                                                      
+'src/include/FL/Fl_Round_Button.H',                                                                
+'src/include/FL/Fl_Round_Clock.H',                                                                 
+'src/include/FL/Fl_Scrollbar.H',                                                                   
+'src/include/FL/Fl_Scroll.H',                                                                      
+'src/include/FL/Fl_Secret_Input.H',                                                                
+'src/include/FL/Fl_Select_Browser.H',                                                              
+'src/include/FL/Fl_Shared_Image.H',                                                                
+'src/include/FL/fl_show_colormap.H',                                                               
+'src/include/FL/fl_show_input.H',                                                                  
+'src/include/FL/Fl_Simple_Counter.H',                                                              
+'src/include/FL/Fl_Single_Window.H',                                                               
+'src/include/FL/Fl_Slider.H',                                                                      
+'src/include/FL/Fl_Spinner.H',                                                                     
+'src/include/FL/Fl_Sys_Menu_Bar.H',                                                                
+'src/include/FL/Fl_Tabs.H',                                                                        
+'src/include/FL/Fl_Text_Buffer.H',                                                                 
+'src/include/FL/Fl_Text_Display.H',                                                                
+'src/include/FL/Fl_Text_Editor.H',                                                                 
+'src/include/FL/Fl_Tiled_Image.H',                                                                 
+'src/include/FL/Fl_Tile.H',                                                                        
+'src/include/FL/Fl_Timer.H',                                                                       
+'src/include/FL/Fl_Toggle_Button.H',                                                               
+'src/include/FL/Fl_Toggle_Light_Button.H',                                                         
+'src/include/FL/Fl_Toggle_Round_Button.H',                                                         
+'src/include/FL/Fl_Tooltip.H',                                                                     
+'src/include/FL/fl_types.h',                                                                       
+'src/include/FL/fl_utf8.h',                                                                        
+'src/include/FL/Fl_Valuator.H',                                                                    
+'src/include/FL/Fl_Value_Input.H',                                                                 
+'src/include/FL/Fl_Value_Output.H',                                                                
+'src/include/FL/Fl_Value_Slider.H',                                                                
+'src/include/FL/Fl_Widget.H',                                                                      
+'src/include/FL/Fl_Window.H',                                                                      
+'src/include/FL/Fl_Wizard.H',                                                                      
+'src/include/FL/Fl_XBM_Image.H',                                                                   
+'src/include/FL/Fl_XPM_Image.H',                                                                   
+'src/include/FL/forms.H',                                                                          
+'src/include/FL/gl2opengl.h',                                                                      
+'src/include/FL/gl_draw.H',                                                                        
+'src/include/FL/gl.h',                                                                             
+'src/include/FL/glu.h',                                                                            
+'src/include/FL/glut.H',                                                                           
+'src/include/FL/mac.H',                                                                            
+'src/include/FL/mac.r',                                                                            
+'src/include/FL/math.h',                                                                           
+'src/include/FL/names.h',                                                                          
+'src/include/FL/.sconsign',                                                                        
+'src/include/FL/win32.H',                                                                          
+'src/include/FL/x.H',                                                                              
+'src/include/FL/Xutf8.h',                                                                          
+'src/include/freebsd/x86_64/curl/curlbuild.h',                                                     
+'src/include/freebsd/x86_64/curl/curl.h',                                                          
+'src/include/freebsd/x86_64/curl/curlrules.h',                                                     
+'src/include/freebsd/x86_64/curl/curlver.h',                                                       
+'src/include/freebsd/x86_64/curl/easy.h',                                                          
+'src/include/freebsd/x86_64/curl/mprintf.h',                                                       
+'src/include/freebsd/x86_64/curl/multi.h',                                                         
+'src/include/freebsd/x86_64/curl/stdcheaders.h',                                                   
+'src/include/freebsd/x86_64/curl/types.h',                                                         
+'src/include/freebsd/x86/curl/curlbuild.h',                                                        
+'src/include/freebsd/x86/curl/curl.h',                                                             
+'src/include/freebsd/x86/curl/curlrules.h',                                                        
+'src/include/freebsd/x86/curl/curlver.h',                                                          
+'src/include/freebsd/x86/curl/easy.h',                                                             
+'src/include/freebsd/x86/curl/mprintf.h',                                                          
+'src/include/freebsd/x86/curl/multi.h',                                                            
+'src/include/freebsd/x86/curl/stdcheaders.h',                                                      
+'src/include/freebsd/x86/curl/typecheck-gcc.h',                                                    
+'src/include/freebsd/x86/curl/types.h',                                                            
+'src/include/gtk/atk/atkaction.h',                                                                 
+'src/include/gtk/atk/atkcomponent.h',                                                              
+'src/include/gtk/atk/atkdocument.h',                                                               
+'src/include/gtk/atk/atkeditabletext.h',                                                           
+'src/include/gtk/atk/atk-enum-types.h',                                                            
+'src/include/gtk/atk/atkgobjectaccessible.h',                                                      
+'src/include/gtk/atk/atk.h',                                                                       
+'src/include/gtk/atk/atkhyperlink.h',                                                              
+'src/include/gtk/atk/atkhypertext.h',                                                              
+'src/include/gtk/atk/atkimage.h',                                                                  
+'src/include/gtk/atk/atknoopobjectfactory.h',                                                      
+'src/include/gtk/atk/atknoopobject.h',                                                             
+'src/include/gtk/atk/atkobjectfactory.h',                                                          
+'src/include/gtk/atk/atkobject.h',                                                                 
+'src/include/gtk/atk/atkregistry.h',                                                               
+'src/include/gtk/atk/atkrelation.h',                                                               
+'src/include/gtk/atk/atkrelationset.h',                                                            
+'src/include/gtk/atk/atkrelationtype.h',                                                           
+'src/include/gtk/atk/atkselection.h',                                                              
+'src/include/gtk/atk/atkstate.h',                                                                  
+'src/include/gtk/atk/atkstateset.h',                                                               
+'src/include/gtk/atk/atkstreamablecontent.h',                                                      
+'src/include/gtk/atk/atktable.h',                                                                  
+'src/include/gtk/atk/atktext.h',                                                                   
+'src/include/gtk/atk/atkutil.h',                                                                   
+'src/include/gtk/atk/atkvalue.h',                                                                  
+'src/include/gtk/gdkconfig.h',                                                                     
+'src/include/gtk/gdk/gdkcolor.h',                                                                  
+'src/include/gtk/gdk/gdkcursor.h',                                                                 
+'src/include/gtk/gdk/gdkdisplay.h',                                                                
+'src/include/gtk/gdk/gdkdisplaymanager.h',                                                         
+'src/include/gtk/gdk/gdkdnd.h',                                                                    
+'src/include/gtk/gdk/gdkdrawable.h',                                                               
+'src/include/gtk/gdk/gdkenumtypes.h',                                                              
+'src/include/gtk/gdk/gdkevents.h',                                                                 
+'src/include/gtk/gdk/gdkfont.h',                                                                   
+'src/include/gtk/gdk/gdkgc.h',                                                                     
+'src/include/gtk/gdk/gdk.h',                                                                       
+'src/include/gtk/gdk/gdki18n.h',                                                                   
+'src/include/gtk/gdk/gdkimage.h',                                                                  
+'src/include/gtk/gdk/gdkinput.h',                                                                  
+'src/include/gtk/gdk/gdkkeys.h',                                                                   
+'src/include/gtk/gdk/gdkkeysyms.h',                                                                
+'src/include/gtk/gdk/gdkpango.h',                                                                  
+'src/include/gtk/gdk/gdkpixbuf.h',                                                                 
+'src/include/gtk/gdk/gdkpixmap.h',                                                                 
+'src/include/gtk/gdk/gdkprivate.h',                                                                
+'src/include/gtk/gdk/gdkproperty.h',                                                               
+'src/include/gtk/gdk/gdkregion.h',                                                                 
+'src/include/gtk/gdk/gdkrgb.h',                                                                    
+'src/include/gtk/gdk/gdkscreen.h',                                                                 
+'src/include/gtk/gdk/gdkselection.h',                                                              
+'src/include/gtk/gdk/gdkspawn.h',                                                                  
+'src/include/gtk/gdk/gdktypes.h',                                                                  
+'src/include/gtk/gdk/gdkvisual.h',                                                                 
+'src/include/gtk/gdk/gdkwindow.h',                                                                 
+'src/include/gtk/gdk/gdkx.h',                                                                      
+'src/include/gtk/gdk-pixbuf/gdk-pixbuf-animation.h',                                               
+'src/include/gtk/gdk-pixbuf/gdk-pixbuf-enum-types.h',                                              
+'src/include/gtk/gdk-pixbuf/gdk-pixbuf-features.h',                                                
+'src/include/gtk/gdk-pixbuf/gdk-pixbuf.h',                                                         
+'src/include/gtk/gdk-pixbuf/gdk-pixbuf-io.h',                                                      
+'src/include/gtk/gdk-pixbuf/gdk-pixbuf-loader.h',                                                  
+'src/include/gtk/gdk-pixbuf/gdk-pixbuf-marshal.h',                                                 
+'src/include/gtk/gdk-pixbuf/gdk-pixdata.h',                                                        
+'src/include/gtk/gdk-pixbuf-xlib/gdk-pixbuf-xlib.h',                                               
+'src/include/gtk/gdk-pixbuf-xlib/gdk-pixbuf-xlibrgb.h',                                            
+'src/include/gtk/glibconfig.h',                                                                    
+'src/include/gtk/glib/galloca.h',                                                                  
+'src/include/gtk/glib/garray.h',                                                                   
+'src/include/gtk/glib/gasyncqueue.h',                                                              
+'src/include/gtk/glib/gatomic.h',                                                                  
+'src/include/gtk/glib/gbacktrace.h',                                                               
+'src/include/gtk/glib/gcache.h',                                                                   
+'src/include/gtk/glib/gcompletion.h',                                                              
+'src/include/gtk/glib/gconvert.h',                                                                 
+'src/include/gtk/glib/gdataset.h',                                                                 
+'src/include/gtk/glib/gdate.h',                                                                    
+'src/include/gtk/glib/gdir.h',                                                                     
+'src/include/gtk/glib/gerror.h',                                                                   
+'src/include/gtk/glib/gfileutils.h',                                                               
+'src/include/gtk/glib/ghash.h',                                                                    
+'src/include/gtk/glib/ghook.h',                                                                    
+'src/include/gtk/glib/gi18n.h',                                                                    
+'src/include/gtk/glib/gi18n-lib.h',                                                                
+'src/include/gtk/glib/giochannel.h',                                                               
+'src/include/gtk/glib/glist.h',                                                                    
+'src/include/gtk/glib/gmacros.h',                                                                  
+'src/include/gtk/glib/gmain.h',                                                                    
+'src/include/gtk/glib/gmarkup.h',                                                                  
+'src/include/gtk/glib/gmem.h',                                                                     
+'src/include/gtk/glib/gmessages.h',                                                                
+'src/include/gtk/glib/gnode.h',                                                                    
+'src/include/gtk/glib/gpattern.h',                                                                 
+'src/include/gtk/glib/gprimes.h',                                                                  
+'src/include/gtk/glib/gprintf.h',                                                                  
+'src/include/gtk/glib/gqsort.h',                                                                   
+'src/include/gtk/glib/gquark.h',                                                                   
+'src/include/gtk/glib/gqueue.h',                                                                   
+'src/include/gtk/glib/grand.h',                                                                    
+'src/include/gtk/glib/grel.h',                                                                     
+'src/include/gtk/glib/gscanner.h',                                                                 
+'src/include/gtk/glib/gshell.h',                                                                   
+'src/include/gtk/glib/gslist.h',                                                                   
+'src/include/gtk/glib/gspawn.h',                                                                   
+'src/include/gtk/glib/gstrfuncs.h',                                                                
+'src/include/gtk/glib/gstring.h',                                                                  
+'src/include/gtk/glib/gthread.h',                                                                  
+'src/include/gtk/glib/gthreadpool.h',                                                              
+'src/include/gtk/glib/gtimer.h',                                                                   
+'src/include/gtk/glib/gtree.h',                                                                    
+'src/include/gtk/glib/gtypes.h',                                                                   
+'src/include/gtk/glib/gunicode.h',                                                                 
+'src/include/gtk/glib/gutils.h',                                                                   
+'src/include/gtk/glib/gwin32.h',                                                                   
+'src/include/gtk/glib.h',                                                                          
+'src/include/gtk/glib-object.h',                                                                   
+'src/include/gtk/gmodule.h',                                                                       
+'src/include/gtk/gobject/gboxed.h',                                                                
+'src/include/gtk/gobject/gclosure.h',                                                              
+'src/include/gtk/gobject/genums.h',                                                                
+'src/include/gtk/gobject/gmarshal.h',                                                              
+'src/include/gtk/gobject/gobject.h',                                                               
+'src/include/gtk/gobject/gobjectnotifyqueue.c',                                                    
+'src/include/gtk/gobject/gparam.h',                                                                
+'src/include/gtk/gobject/gparamspecs.h',                                                           
+'src/include/gtk/gobject/gsignal.h',                                                               
+'src/include/gtk/gobject/gsourceclosure.h',                                                        
+'src/include/gtk/gobject/gtype.h',                                                                 
+'src/include/gtk/gobject/gtypemodule.h',                                                           
+'src/include/gtk/gobject/gtypeplugin.h',                                                           
+'src/include/gtk/gobject/gvaluearray.h',                                                           
+'src/include/gtk/gobject/gvaluecollector.h',                                                       
+'src/include/gtk/gobject/gvalue.h',                                                                
+'src/include/gtk/gobject/gvaluetypes.h',                                                           
+'src/include/gtk/gtk/gtkaccelgroup.h',                                                             
+'src/include/gtk/gtk/gtkaccellabel.h',                                                             
+'src/include/gtk/gtk/gtkaccelmap.h',                                                               
+'src/include/gtk/gtk/gtkaccessible.h',                                                             
+'src/include/gtk/gtk/gtkactiongroup.h',                                                            
+'src/include/gtk/gtk/gtkaction.h',                                                                 
+'src/include/gtk/gtk/gtkadjustment.h',                                                             
+'src/include/gtk/gtk/gtkalignment.h',                                                              
+'src/include/gtk/gtk/gtkarrow.h',                                                                  
+'src/include/gtk/gtk/gtkaspectframe.h',                                                            
+'src/include/gtk/gtk/gtkbbox.h',                                                                   
+'src/include/gtk/gtk/gtkbindings.h',                                                               
+'src/include/gtk/gtk/gtkbin.h',                                                                    
+'src/include/gtk/gtk/gtkbox.h',                                                                    
+'src/include/gtk/gtk/gtkbutton.h',                                                                 
+'src/include/gtk/gtk/gtkcalendar.h',                                                               
+'src/include/gtk/gtk/gtkcelleditable.h',                                                           
+'src/include/gtk/gtk/gtkcelllayout.h',                                                             
+'src/include/gtk/gtk/gtkcellrenderer.h',                                                           
+'src/include/gtk/gtk/gtkcellrendererpixbuf.h',                                                     
+'src/include/gtk/gtk/gtkcellrenderertext.h',                                                       
+'src/include/gtk/gtk/gtkcellrenderertoggle.h',                                                     
+'src/include/gtk/gtk/gtkcheckbutton.h',                                                            
+'src/include/gtk/gtk/gtkcheckmenuitem.h',                                                          
+'src/include/gtk/gtk/gtkclipboard.h',                                                              
+'src/include/gtk/gtk/gtkclist.h',                                                                  
+'src/include/gtk/gtk/gtkcolorbutton.h',                                                            
+'src/include/gtk/gtk/gtkcolorseldialog.h',                                                         
+'src/include/gtk/gtk/gtkcolorsel.h',                                                               
+'src/include/gtk/gtk/gtkcomboboxentry.h',                                                          
+'src/include/gtk/gtk/gtkcombobox.h',                                                               
+'src/include/gtk/gtk/gtkcombo.h',                                                                  
+'src/include/gtk/gtk/gtkcontainer.h',                                                              
+'src/include/gtk/gtk/gtkctree.h',                                                                  
+'src/include/gtk/gtk/gtkcurve.h',                                                                  
+'src/include/gtk/gtk/gtkdebug.h',                                                                  
+'src/include/gtk/gtk/gtkdialog.h',                                                                 
+'src/include/gtk/gtk/gtkdnd.h',                                                                    
+'src/include/gtk/gtk/gtkdrawingarea.h',                                                            
+'src/include/gtk/gtk/gtkeditable.h',                                                               
+'src/include/gtk/gtk/gtkentrycompletion.h',                                                        
+'src/include/gtk/gtk/gtkentry.h',                                                                  
+'src/include/gtk/gtk/gtkenums.h',                                                                  
+'src/include/gtk/gtk/gtkeventbox.h',                                                               
+'src/include/gtk/gtk/gtkexpander.h',                                                               
+'src/include/gtk/gtk/gtkfilechooserdialog.h',                                                      
+'src/include/gtk/gtk/gtkfilechooser.h',                                                            
+'src/include/gtk/gtk/gtkfilechooserwidget.h',                                                      
+'src/include/gtk/gtk/gtkfilefilter.h',                                                             
+'src/include/gtk/gtk/gtkfilesel.h',                                                                
+'src/include/gtk/gtk/gtkfilesystem.h',                                                             
+'src/include/gtk/gtk/gtkfixed.h',                                                                  
+'src/include/gtk/gtk/gtkfontbutton.h',                                                             
+'src/include/gtk/gtk/gtkfontsel.h',                                                                
+'src/include/gtk/gtk/gtkframe.h',                                                                  
+'src/include/gtk/gtk/gtkgamma.h',                                                                  
+'src/include/gtk/gtk/gtkgc.h',                                                                     
+'src/include/gtk/gtk/gtk.h',                                                                       
+'src/include/gtk/gtk/gtkhandlebox.h',                                                              
+'src/include/gtk/gtk/gtkhbbox.h',                                                                  
+'src/include/gtk/gtk/gtkhbox.h',                                                                   
+'src/include/gtk/gtk/gtkhpaned.h',                                                                 
+'src/include/gtk/gtk/gtkhruler.h',                                                                 
+'src/include/gtk/gtk/gtkhscale.h',                                                                 
+'src/include/gtk/gtk/gtkhscrollbar.h',                                                             
+'src/include/gtk/gtk/gtkhseparator.h',                                                             
+'src/include/gtk/gtk/gtkiconfactory.h',                                                            
+'src/include/gtk/gtk/gtkicontheme.h',                                                              
+'src/include/gtk/gtk/gtkimage.h',                                                                  
+'src/include/gtk/gtk/gtkimagemenuitem.h',                                                          
+'src/include/gtk/gtk/gtkimcontext.h',                                                              
+'src/include/gtk/gtk/gtkimcontextsimple.h',                                                        
+'src/include/gtk/gtk/gtkimmodule.h',                                                               
+'src/include/gtk/gtk/gtkimmulticontext.h',                                                         
+'src/include/gtk/gtk/gtkinputdialog.h',                                                            
+'src/include/gtk/gtk/gtkinvisible.h',                                                              
+'src/include/gtk/gtk/gtkitemfactory.h',                                                            
+'src/include/gtk/gtk/gtkitem.h',                                                                   
+'src/include/gtk/gtk/gtklabel.h',                                                                  
+'src/include/gtk/gtk/gtklayout.h',                                                                 
+'src/include/gtk/gtk/gtklist.h',                                                                   
+'src/include/gtk/gtk/gtklistitem.h',                                                               
+'src/include/gtk/gtk/gtkliststore.h',                                                              
+'src/include/gtk/gtk/gtkmain.h',                                                                   
+'src/include/gtk/gtk/gtkmarshal.h',                                                                
+'src/include/gtk/gtk/gtkmenubar.h',                                                                
+'src/include/gtk/gtk/gtkmenu.h',                                                                   
+'src/include/gtk/gtk/gtkmenuitem.h',                                                               
+'src/include/gtk/gtk/gtkmenushell.h',                                                              
+'src/include/gtk/gtk/gtkmessagedialog.h',                                                          
+'src/include/gtk/gtk/gtkmisc.h',                                                                   
+'src/include/gtk/gtk/gtknotebook.h',                                                               
+'src/include/gtk/gtk/gtkobject.h',                                                                 
+'src/include/gtk/gtk/gtkoldeditable.h',                                                            
+'src/include/gtk/gtk/gtkoptionmenu.h',                                                             
+'src/include/gtk/gtk/gtkpaned.h',                                                                  
+'src/include/gtk/gtk/gtkpixmap.h',                                                                 
+'src/include/gtk/gtk/gtkplug.h',                                                                   
+'src/include/gtk/gtk/gtkpreview.h',                                                                
+'src/include/gtk/gtk/gtkprivate.h',                                                                
+'src/include/gtk/gtk/gtkprogressbar.h',                                                            
+'src/include/gtk/gtk/gtkprogress.h',                                                               
+'src/include/gtk/gtk/gtkradioaction.h',                                                            
+'src/include/gtk/gtk/gtkradiobutton.h',                                                            
+'src/include/gtk/gtk/gtkradiomenuitem.h',                                                          
+'src/include/gtk/gtk/gtkradiotoolbutton.h',                                                        
+'src/include/gtk/gtk/gtkrange.h',                                                                  
+'src/include/gtk/gtk/gtkrc.h',                                                                     
+'src/include/gtk/gtk/gtkruler.h',                                                                  
+'src/include/gtk/gtk/gtkscale.h',                                                                  
+'src/include/gtk/gtk/gtkscrollbar.h',                                                              
+'src/include/gtk/gtk/gtkscrolledwindow.h',                                                         
+'src/include/gtk/gtk/gtkselection.h',                                                              
+'src/include/gtk/gtk/gtkseparator.h',                                                              
+'src/include/gtk/gtk/gtkseparatormenuitem.h',                                                      
+'src/include/gtk/gtk/gtkseparatortoolitem.h',                                                      
+'src/include/gtk/gtk/gtksettings.h',                                                               
+'src/include/gtk/gtk/gtksignal.h',                                                                 
+'src/include/gtk/gtk/gtksizegroup.h',                                                              
+'src/include/gtk/gtk/gtksocket.h',                                                                 
+'src/include/gtk/gtk/gtkspinbutton.h',                                                             
+'src/include/gtk/gtk/gtkstatusbar.h',                                                              
+'src/include/gtk/gtk/gtkstock.h',                                                                  
+'src/include/gtk/gtk/gtkstyle.h',                                                                  
+'src/include/gtk/gtk/gtktable.h',                                                                  
+'src/include/gtk/gtk/gtktearoffmenuitem.h',                                                        
+'src/include/gtk/gtk/gtktextbuffer.h',                                                             
+'src/include/gtk/gtk/gtktextchild.h',                                                              
+'src/include/gtk/gtk/gtktextdisplay.h',                                                            
+'src/include/gtk/gtk/gtktext.h',                                                                   
+'src/include/gtk/gtk/gtktextiter.h',                                                               
+'src/include/gtk/gtk/gtktextlayout.h',                                                             
+'src/include/gtk/gtk/gtktextmark.h',                                                               
+'src/include/gtk/gtk/gtktexttag.h',                                                                
+'src/include/gtk/gtk/gtktexttagtable.h',                                                           
+'src/include/gtk/gtk/gtktextview.h',                                                               
+'src/include/gtk/gtk/gtktipsquery.h',                                                              
+'src/include/gtk/gtk/gtktoggleaction.h',                                                           
+'src/include/gtk/gtk/gtktogglebutton.h',                                                           
+'src/include/gtk/gtk/gtktoggletoolbutton.h',                                                       
+'src/include/gtk/gtk/gtktoolbar.h',                                                                
+'src/include/gtk/gtk/gtktoolbutton.h',                                                             
+'src/include/gtk/gtk/gtktoolitem.h',                                                               
+'src/include/gtk/gtk/gtktooltips.h',                                                               
+'src/include/gtk/gtk/gtktreednd.h',                                                                
+'src/include/gtk/gtk/gtktree.h',                                                                   
+'src/include/gtk/gtk/gtktreeitem.h',                                                               
+'src/include/gtk/gtk/gtktreemodelfilter.h',                                                        
+'src/include/gtk/gtk/gtktreemodel.h',                                                              
+'src/include/gtk/gtk/gtktreemodelsort.h',                                                          
+'src/include/gtk/gtk/gtktreeselection.h',                                                          
+'src/include/gtk/gtk/gtktreesortable.h',                                                           
+'src/include/gtk/gtk/gtktreestore.h',                                                              
+'src/include/gtk/gtk/gtktreeviewcolumn.h',                                                         
+'src/include/gtk/gtk/gtktreeview.h',                                                               
+'src/include/gtk/gtk/gtktypebuiltins.h',                                                           
+'src/include/gtk/gtk/gtktypeutils.h',                                                              
+'src/include/gtk/gtk/gtkuimanager.h',                                                              
+'src/include/gtk/gtk/gtkvbbox.h',                                                                  
+'src/include/gtk/gtk/gtkvbox.h',                                                                   
+'src/include/gtk/gtk/gtkversion.h',                                                                
+'src/include/gtk/gtk/gtkviewport.h',                                                               
+'src/include/gtk/gtk/gtkvpaned.h',                                                                 
+'src/include/gtk/gtk/gtkvruler.h',                                                                 
+'src/include/gtk/gtk/gtkvscale.h',                                                                 
+'src/include/gtk/gtk/gtkvscrollbar.h',                                                             
+'src/include/gtk/gtk/gtkvseparator.h',                                                             
+'src/include/gtk/gtk/gtkwidget.h',                                                                 
+'src/include/gtk/gtk/gtkwindow.h',                                                                 
+'src/include/gtk/pango/pango-attributes.h',                                                        
+'src/include/gtk/pango/pango-break.h',                                                             
+'src/include/gtk/pango/pango-context.h',                                                           
+'src/include/gtk/pango/pango-coverage.h',                                                          
+'src/include/gtk/pango/pango-engine.h',                                                            
+'src/include/gtk/pango/pango-engine-private.h',                                                    
+'src/include/gtk/pango/pango-enum-types.h',                                                        
+'src/include/gtk/pango/pango-font.h',                                                              
+'src/include/gtk/pango/pango-fontmap.h',                                                           
+'src/include/gtk/pango/pango-fontset.h',                                                           
+'src/include/gtk/pango/pangoft2.h',                                                                
+'src/include/gtk/pango/pango-glyph.h',                                                             
+'src/include/gtk/pango/pango-glyph-item.h',                                                        
+'src/include/gtk/pango/pango.h',                                                                   
+'src/include/gtk/pango/pango-item.h',                                                              
+'src/include/gtk/pango/pango-layout.h',                                                            
+'src/include/gtk/pango/pango-modules.h',                                                           
+'src/include/gtk/pango/pango-ot.h',                                                                
+'src/include/gtk/pango/pango-script.h',                                                            
+'src/include/gtk/pango/pango-tabs.h',                                                              
+'src/include/gtk/pango/pango-types.h',                                                             
+'src/include/gtk/pango/pango-utils.h',                                                             
+'src/include/gtk/pango/pangoxft.h',                                                                
+'src/include/gtk/pango/pangox.h',                                                                  
+'src/include/libelf/darwin/x86/sys_elf.h',                                                         
+'src/include/libelf/elf_repl.h',                                                                   
+'src/include/libelf/freebsd/x86_64/sys_elf.h',                                                     
+'src/include/libelf/freebsd/x86/sys_elf.h',                                                        
+'src/include/libelf/gelf.h',                                                                       
+'src/include/libelf/libelf.h',                                                                     
+'src/include/libelf/linux/x86_64/sys_elf.h',                                                       
+'src/include/libelf/linux/x86/sys_elf.h',                                                          
+'src/include/libelf/netbsd/x86_64/sys_elf.h',                                                      
+'src/include/libelf/netbsd/x86/sys_elf.h',                                                         
+'src/include/libelf/nlist.h',                                                                      
+'src/include/libelf/openbsd/x86/sys_elf.h',                                                        
+'src/include/libelf/sunos/x86/sys_elf.h',                                                          
+'src/include/linux/x86_64/curl/curlbuild.h',                                                       
+'src/include/linux/x86_64/curl/curl.h',                                                            
+'src/include/linux/x86_64/curl/curlrules.h',                                                       
+'src/include/linux/x86_64/curl/curlver.h',                                                         
+'src/include/linux/x86_64/curl/easy.h',                                                            
+'src/include/linux/x86_64/curl/mprintf.h',                                                         
+'src/include/linux/x86_64/curl/multi.h',                                                           
+'src/include/linux/x86_64/curl/stdcheaders.h',                                                     
+'src/include/linux/x86_64/curl/typecheck-gcc.h',                                                   
+'src/include/linux/x86_64/curl/types.h',                                                           
+'src/include/linux/x86/curl/curlbuild.h',                                                          
+'src/include/linux/x86/curl/curl.h',                                                               
+'src/include/linux/x86/curl/curlrules.h',                                                          
+'src/include/linux/x86/curl/curlver.h',                                                            
+'src/include/linux/x86/curl/easy.h',                                                               
+'src/include/linux/x86/curl/mprintf.h',                                                            
+'src/include/linux/x86/curl/multi.h',                                                              
+'src/include/linux/x86/curl/stdcheaders.h',                                                        
+'src/include/linux/x86/curl/types.h',                                                              
+'src/include/lua/lauxlib.h',                                                                       
+'src/include/lua/luaconf.h',                                                                       
+'src/include/lua/lua.h',                                                                           
+'src/include/lua/lualib.h',                                                                        
+'src/include/ncurses/curses.h',                                                                    
+'src/include/ncurses/ncurses_dll.h',                                                               
+'src/include/ncurses/termcap.h',                                                                   
+'src/include/ncurses/term.h',                                                                      
+'src/include/ncurses/unctrl.h',                                                                    
+'src/include/netbsd/x86_64/curl/curlbuild.h',                                                      
+'src/include/netbsd/x86_64/curl/curl.h',                                                           
+'src/include/netbsd/x86_64/curl/curlrules.h',                                                      
+'src/include/netbsd/x86_64/curl/curlver.h',                                                        
+'src/include/netbsd/x86_64/curl/easy.h',                                                           
+'src/include/netbsd/x86_64/curl/mprintf.h',                                                        
+'src/include/netbsd/x86_64/curl/multi.h',                                                          
+'src/include/netbsd/x86_64/curl/stdcheaders.h',                                                    
+'src/include/netbsd/x86_64/curl/typecheck-gcc.h',                                                  
+'src/include/netbsd/x86_64/curl/types.h',                                                          
+'src/include/netbsd/x86/curl/curlbuild.h',                                                         
+'src/include/netbsd/x86/curl/curl.h',                                                              
+'src/include/netbsd/x86/curl/curlrules.h',                                                         
+'src/include/netbsd/x86/curl/curlver.h',                                                           
+'src/include/netbsd/x86/curl/easy.h',                                                              
+'src/include/netbsd/x86/curl/mprintf.h',                                                           
+'src/include/netbsd/x86/curl/multi.h',                                                             
+'src/include/netbsd/x86/curl/stdcheaders.h',                                                       
+'src/include/netbsd/x86/curl/typecheck-gcc.h',                                                     
+'src/include/netbsd/x86/curl/types.h',                                                             
+'src/include/openbsd/curl/curlbuild.h',                                                            
+'src/include/openbsd/curl/curl.h',                                                                 
+'src/include/openbsd/curl/curlrules.h',                                                            
+'src/include/openbsd/curl/curlver.h',                                                              
+'src/include/openbsd/curl/easy.h',                                                                 
+'src/include/openbsd/curl/mprintf.h',                                                              
+'src/include/openbsd/curl/multi.h',                                                                
+'src/include/openbsd/curl/stdcheaders.h',                                                          
+'src/include/openbsd/curl/typecheck-gcc.h',                                                        
+'src/include/openbsd/curl/types.h',                                                                
+'src/include/stdcxx/algorithm',                                                                    
+'src/include/stdcxx/algorithm.c',                                                                  
+'src/include/stdcxx/algorithm.cc',                                                                 
+'src/include/stdcxx/ansi/assert.h',                                                                
+'src/include/stdcxx/ansi/cassert',                                                                 
+'src/include/stdcxx/ansi/_cassert.h',                                                              
+'src/include/stdcxx/ansi/cctype',                                                                  
+'src/include/stdcxx/ansi/_cctype.h',                                                               
+'src/include/stdcxx/ansi/cerrno',                                                                  
+'src/include/stdcxx/ansi/_cerrno.h',                                                               
+'src/include/stdcxx/ansi/cfloat',                                                                  
+'src/include/stdcxx/ansi/_cfloat.h',                                                               
+'src/include/stdcxx/ansi/ciso646',                                                                 
+'src/include/stdcxx/ansi/climits',                                                                 
+'src/include/stdcxx/ansi/clocale',                                                                 
+'src/include/stdcxx/ansi/_clocale.h',                                                              
+'src/include/stdcxx/ansi/cmath',                                                                   
+'src/include/stdcxx/ansi/_cmath.h',                                                                
+'src/include/stdcxx/ansi/csetjmp',                                                                 
+'src/include/stdcxx/ansi/_csetjmp.h',                                                              
+'src/include/stdcxx/ansi/csignal',                                                                 
+'src/include/stdcxx/ansi/_csignal.h',                                                              
+'src/include/stdcxx/ansi/cstdarg',                                                                 
+'src/include/stdcxx/ansi/_cstdarg.h',                                                              
+'src/include/stdcxx/ansi/cstddef',                                                                 
+'src/include/stdcxx/ansi/_cstddef.h',                                                              
+'src/include/stdcxx/ansi/cstdio',                                                                  
+'src/include/stdcxx/ansi/_cstdio.h',                                                               
+'src/include/stdcxx/ansi/cstdlib',                                                                 
+'src/include/stdcxx/ansi/_cstdlib.h',                                                              
+'src/include/stdcxx/ansi/cstring',                                                                 
+'src/include/stdcxx/ansi/_cstring.h',                                                              
+'src/include/stdcxx/ansi/ctime',                                                                   
+'src/include/stdcxx/ansi/_ctime.h',                                                                
+'src/include/stdcxx/ansi/ctype.h',                                                                 
+'src/include/stdcxx/ansi/cwchar',                                                                  
+'src/include/stdcxx/ansi/_cwchar.h',                                                               
+'src/include/stdcxx/ansi/cwctype',                                                                 
+'src/include/stdcxx/ansi/_cwctype.h',                                                              
+'src/include/stdcxx/ansi/errno.h',                                                                 
+'src/include/stdcxx/ansi/float.h',                                                                 
+'src/include/stdcxx/ansi/limits.h',                                                                
+'src/include/stdcxx/ansi/locale.h',                                                                
+'src/include/stdcxx/ansi/math.h',                                                                  
+'src/include/stdcxx/ansi/setjmp.h',                                                                
+'src/include/stdcxx/ansi/signal.h',                                                                
+'src/include/stdcxx/ansi/stdarg.h',                                                                
+'src/include/stdcxx/ansi/stddef.h',                                                                
+'src/include/stdcxx/ansi/stdio.h',                                                                 
+'src/include/stdcxx/ansi/stdlib.h',                                                                
+'src/include/stdcxx/ansi/string.h',                                                                
+'src/include/stdcxx/ansi/time.h',                                                                  
+'src/include/stdcxx/ansi/wchar.h',                                                                 
+'src/include/stdcxx/ansi/wctype.h',                                                                
+'src/include/stdcxx/bitset',                                                                       
+'src/include/stdcxx/bitset.c',                                                                     
+'src/include/stdcxx/bitset.cc',                                                                    
+'src/include/stdcxx/cfg/linux/x86_64/config.h',                                                    
+'src/include/stdcxx/cfg/linux/x86/config.h',                                                       
+'src/include/stdcxx/cfg/netbsd/x86_64/config.h',                                                   
+'src/include/stdcxx/cfg/netbsd/x86/config.h',                                                      
+'src/include/stdcxx/cfg/openbsd/x86/config.h',                                                     
+'src/include/stdcxx/complex',                                                                      
+'src/include/stdcxx/complex.c',                                                                    
+'src/include/stdcxx/complex.cc',                                                                   
+'src/include/stdcxx/deque',                                                                        
+'src/include/stdcxx/deque.c',                                                                      
+'src/include/stdcxx/deque.cc',                                                                     
+'src/include/stdcxx/deque_spec.h',                                                                 
+'src/include/stdcxx/exception',                                                                    
+'src/include/stdcxx/fstream',                                                                      
+'src/include/stdcxx/fstream.c',                                                                    
+'src/include/stdcxx/fstream.cc',                                                                   
+'src/include/stdcxx/functional',                                                                   
+'src/include/stdcxx/iomanip',                                                                      
+'src/include/stdcxx/ios',                                                                          
+'src/include/stdcxx/iosfwd',                                                                       
+'src/include/stdcxx/iostream',                                                                     
+'src/include/stdcxx/istream',                                                                      
+'src/include/stdcxx/istream.c',                                                                    
+'src/include/stdcxx/istream.cc',                                                                   
+'src/include/stdcxx/iterator',                                                                     
+'src/include/stdcxx/jconfig.h',                                                                    
+'src/include/stdcxx/jerror.h',                                                                     
+'src/include/stdcxx/jmorecfg.h',                                                                   
+'src/include/stdcxx/jpeglib.h',                                                                    
+'src/include/stdcxx/lauxlib.h',                                                                    
+'src/include/stdcxx/limits',                                                                       
+'src/include/stdcxx/limits.c',                                                                     
+'src/include/stdcxx/limits.cc',                                                                    
+'src/include/stdcxx/list',                                                                         
+'src/include/stdcxx/list.c',                                                                       
+'src/include/stdcxx/list.cc',                                                                      
+'src/include/stdcxx/list_spec.h',                                                                  
+'src/include/stdcxx/locale',                                                                       
+'src/include/stdcxx/loc/_codecvt.c',                                                               
+'src/include/stdcxx/loc/_codecvt.cc',                                                              
+'src/include/stdcxx/loc/_codecvt.h',                                                               
+'src/include/stdcxx/loc/_collate.c',                                                               
+'src/include/stdcxx/loc/_collate.cc',                                                              
+'src/include/stdcxx/loc/_collate.h',                                                               
+'src/include/stdcxx/loc/_convenience.h',                                                           
+'src/include/stdcxx/loc/_ctype.c',                                                                 
+'src/include/stdcxx/loc/_ctype.cc',                                                                
+'src/include/stdcxx/loc/_ctype.h',                                                                 
+'src/include/stdcxx/loc/_facet.h',                                                                 
+'src/include/stdcxx/loc/_localedef.h',                                                             
+'src/include/stdcxx/loc/_locale.h',                                                                
+'src/include/stdcxx/loc/_messages.c',                                                              
+'src/include/stdcxx/loc/_messages.cc',                                                             
+'src/include/stdcxx/loc/_messages.h',                                                              
+'src/include/stdcxx/loc/_money_get.c',                                                             
+'src/include/stdcxx/loc/_money_get.cc',                                                            
+'src/include/stdcxx/loc/_money_get.h',                                                             
+'src/include/stdcxx/loc/_moneypunct.c',                                                            
+'src/include/stdcxx/loc/_moneypunct.cc',                                                           
+'src/include/stdcxx/loc/_moneypunct.h',                                                            
+'src/include/stdcxx/loc/_money_put.c',                                                             
+'src/include/stdcxx/loc/_money_put.cc',                                                            
+'src/include/stdcxx/loc/_money_put.h',                                                             
+'src/include/stdcxx/loc/_num_get.c',                                                               
+'src/include/stdcxx/loc/_num_get.cc',                                                              
+'src/include/stdcxx/loc/_num_get.h',                                                               
+'src/include/stdcxx/loc/_numpunct.c',                                                              
+'src/include/stdcxx/loc/_numpunct.cc',                                                             
+'src/include/stdcxx/loc/_numpunct.h',                                                              
+'src/include/stdcxx/loc/_num_put.c',                                                               
+'src/include/stdcxx/loc/_num_put.cc',                                                              
+'src/include/stdcxx/loc/_num_put.h',                                                               
+'src/include/stdcxx/loc/_punct.c',                                                                 
+'src/include/stdcxx/loc/_punct.cc',                                                                
+'src/include/stdcxx/loc/_punct.h',                                                                 
+'src/include/stdcxx/loc/_time_get.c',                                                              
+'src/include/stdcxx/loc/_time_get.cc',                                                             
+'src/include/stdcxx/loc/_time_get.h',                                                              
+'src/include/stdcxx/loc/_time_put.c',                                                              
+'src/include/stdcxx/loc/_time_put.cc',                                                             
+'src/include/stdcxx/loc/_time_put.h',                                                              
+'src/include/stdcxx/map',                                                                          
+'src/include/stdcxx/memory',                                                                       
+'src/include/stdcxx/new',                                                                          
+'src/include/stdcxx/numeric',                                                                      
+'src/include/stdcxx/ostream',                                                                      
+'src/include/stdcxx/ostream.c',                                                                    
+'src/include/stdcxx/ostream.cc',                                                                   
+'src/include/stdcxx/queue',                                                                        
+'src/include/stdcxx/rw/_algobase.c',                                                               
+'src/include/stdcxx/rw/_algobase.cc',                                                              
+'src/include/stdcxx/rw/_algobase.h',                                                               
+'src/include/stdcxx/rw/_allocator.h',                                                              
+'src/include/stdcxx/rw/_array.h',                                                                  
+'src/include/stdcxx/rw/_autoptr.h',                                                                
+'src/include/stdcxx/rw/_basic_ios.c',                                                              
+'src/include/stdcxx/rw/_basic_ios.cc',                                                             
+'src/include/stdcxx/rw/_basic_ios.h',                                                              
+'src/include/stdcxx/rw/_bitmask.h',                                                                
+'src/include/stdcxx/rw/_config-acc.h',                                                             
+'src/include/stdcxx/rw/_config-deccxx.h',                                                          
+'src/include/stdcxx/rw/_config-eccp.h',                                                            
+'src/include/stdcxx/rw/_config-gcc.h',                                                             
+'src/include/stdcxx/rw/_config.h',                                                                 
+'src/include/stdcxx/rw/_config-icc.h',                                                             
+'src/include/stdcxx/rw/_config-mipspro.h',                                                         
+'src/include/stdcxx/rw/_config-msvc.h',                                                            
+'src/include/stdcxx/rw/_config-msvcrt.h',                                                          
+'src/include/stdcxx/rw/_config-sunpro.h',                                                          
+'src/include/stdcxx/rw/_config-xlc.h',                                                             
+'src/include/stdcxx/rw/_defs.h',                                                                   
+'src/include/stdcxx/rw/_error.h',                                                                  
+'src/include/stdcxx/rw/_exception.h',                                                              
+'src/include/stdcxx/rw/_file.h',                                                                   
+'src/include/stdcxx/rw/_funcbase.h',                                                               
+'src/include/stdcxx/rw/_heap.c',                                                                   
+'src/include/stdcxx/rw/_heap.cc',                                                                  
+'src/include/stdcxx/rw/_heap.h',                                                                   
+'src/include/stdcxx/rw/_ioinsert.c',                                                               
+'src/include/stdcxx/rw/_ioinsert.cc',                                                              
+'src/include/stdcxx/rw/_ioinsert.h',                                                               
+'src/include/stdcxx/rw/_ioiter.h',                                                                 
+'src/include/stdcxx/rw/_iosbase.h',                                                                
+'src/include/stdcxx/rw/_iosfailure.h',                                                             
+'src/include/stdcxx/rw/_iosfwd.h',                                                                 
+'src/include/stdcxx/rw/_iterator.h',                                                               
+'src/include/stdcxx/rw/_iterbase.h',                                                               
+'src/include/stdcxx/rw/_math.h',                                                                   
+'src/include/stdcxx/rw/_mbstate.h',                                                                
+'src/include/stdcxx/rw/_mutex.h',                                                                  
+'src/include/stdcxx/rw/_new.h',                                                                    
+'src/include/stdcxx/rw/_pair.h',                                                                   
+'src/include/stdcxx/rw/_rawiter.h',                                                                
+'src/include/stdcxx/rw/_relops.h',                                                                 
+'src/include/stdcxx/rw/_select.h',                                                                 
+'src/include/stdcxx/rw/_specialized.h',                                                            
+'src/include/stdcxx/rw/_streamiter.h',                                                             
+'src/include/stdcxx/rw/_strref.h',                                                                 
+'src/include/stdcxx/rw/_traits.h',                                                                 
+'src/include/stdcxx/rw/_tree.c',                                                                   
+'src/include/stdcxx/rw/_tree.cc',                                                                  
+'src/include/stdcxx/rw/_tree.h',                                                                   
+'src/include/stdcxx/rw/_typetraits.h',                                                             
+'src/include/stdcxx/set',                                                                          
+'src/include/stdcxx/sstream',                                                                      
+'src/include/stdcxx/sstream.c',                                                                    
+'src/include/stdcxx/sstream.cc',                                                                   
+'src/include/stdcxx/stack',                                                                        
+'src/include/stdcxx/stdexcept',                                                                    
+'src/include/stdcxx/streambuf',                                                                    
+'src/include/stdcxx/streambuf.c',                                                                  
+'src/include/stdcxx/streambuf.cc',                                                                 
+'src/include/stdcxx/string',                                                                       
+'src/include/stdcxx/string.c',                                                                     
+'src/include/stdcxx/string.cc',                                                                    
+'src/include/stdcxx/strstream',                                                                    
+'src/include/stdcxx/tr1/array',                                                                    
+'src/include/stdcxx/tr1/cstdint',                                                                  
+'src/include/stdcxx/tr1/_smartptr.h',                                                              
+'src/include/stdcxx/tr1/stdint.h',                                                                 
+'src/include/stdcxx/typeinfo',                                                                     
+'src/include/stdcxx/utility',                                                                      
+'src/include/stdcxx/valarray',                                                                     
+'src/include/stdcxx/valarray.c',                                                                   
+'src/include/stdcxx/valarray.cc',                                                                  
+'src/include/stdcxx/vector',                                                                       
+'src/include/stdcxx/vector.c',                                                                     
+'src/include/stdcxx/vector.cc',                                                                    
+'src/include/stdcxx/vector_spec.h',                                                                
+'src/include/sunos/curl/curlbuild.h',                                                              
+'src/include/sunos/curl/curl.h',                                                                   
+'src/include/sunos/curl/curlrules.h',                                                              
+'src/include/sunos/curl/curlver.h',                                                                
+'src/include/sunos/curl/easy.h',                                                                   
+'src/include/sunos/curl/mprintf.h',                                                                
+'src/include/sunos/curl/multi.h',                                                                  
+'src/include/sunos/curl/stdcheaders.h',                                                            
+'src/include/sunos/curl/typecheck-gcc.h',                                                          
+'src/include/sunos/curl/types.h',                                                                  
+'src/include/utf8/checked.h',                                                                      
+'src/include/utf8/core.h',                                                                         
+'src/include/utf8.h',                                                                              
+'src/include/utf8/unchecked.h',                                                                    
+'src/include/zconf.h',                                                                             
+'src/include/zlib.h',                                                                              
+'src/lib/freebsd/x86_64/libcurl.a',                                                                
+'src/lib/freebsd/x86_64/libelf.a',                                                                 
+'src/lib/freebsd/x86_64/libfltk.a',                                                                
+'src/lib/freebsd/x86_64/libfltk_images.a',                                                         
+'src/lib/freebsd/x86_64/libjpeg.a',                                                                
+'src/lib/freebsd/x86_64/liblua.a',                                                                 
+'src/lib/freebsd/x86_64/libncursesw.a',                                                            
+'src/lib/freebsd/x86_64/libpng.a',                                                                 
+'src/lib/freebsd/x86_64/libz.a',                                                                   
+'src/lib/freebsd/x86_64/notes',                                                                    
+'src/lib/freebsd/x86/libcurl.a',                                                                   
+'src/lib/freebsd/x86/libelf.a',                                                                    
+'src/lib/freebsd/x86/libfltk.a',                                                                   
+'src/lib/freebsd/x86/libfltk_images.a',                                                            
+'src/lib/freebsd/x86/libjpeg.a',                                                                   
+'src/lib/freebsd/x86/liblua.a',                                                                    
+'src/lib/freebsd/x86/libpng.a',                                                                    
+'src/lib/freebsd/x86/libz.a',                                                                      
+'src/lib/freebsd/x86/notes',                                                                       
+'src/lib/linux/x86_64/libcurl.a',                                                                  
+'src/lib/linux/x86_64/libelf.a',                                                                   
+'src/lib/linux/x86_64/libfltk.a',                                                                  
+'src/lib/linux/x86_64/libfltk_images.a',                                                           
+'src/lib/linux/x86_64/libjpeg.a',                                                                  
+'src/lib/linux/x86_64/liblua.a',                                                                   
+'src/lib/linux/x86_64/libncursesw.a',                                                              
+'src/lib/linux/x86_64/libpng.a',                                                                   
+'src/lib/linux/x86_64/libstd.a',                                                                   
+'src/lib/linux/x86_64/libz.a',                                                                     
+'src/lib/linux/x86_64/notes',                                                                      
+'src/lib/linux/x86/libcurl.a',                                                                     
+'src/lib/linux/x86/libelf.a',                                                                      
+'src/lib/linux/x86/libfltk.a',                                                                     
+'src/lib/linux/x86/libfltk_images.a',                                                              
+'src/lib/linux/x86/libjpeg.a',                                                                     
+'src/lib/linux/x86/liblua.a',                                                                      
+'src/lib/linux/x86/libncursesw.a',                                                                 
+'src/lib/linux/x86/libpng.a',                                                                      
+'src/lib/linux/x86/libstd.a',                                                                      
+'src/lib/linux/x86/libsupc++.a',                                                                   
+'src/lib/linux/x86/libz.a',                                                                        
+'src/lib/linux/x86/notes',                                                                         
+'src/libmd5/md5.c',                                                                                
+'src/libmd5/md5.h',                                                                                
+'src/libmd5/README',                                                                               
+'src/lib/netbsd/x86_64/libcurl.a',                                                                 
+'src/lib/netbsd/x86_64/libelf.a',                                                                  
+'src/lib/netbsd/x86_64/libfltk.a',                                                                 
+'src/lib/netbsd/x86_64/libfltk_images.a',                                                          
+'src/lib/netbsd/x86_64/libjpeg.a',                                                                 
+'src/lib/netbsd/x86_64/liblua.a',                                                                  
+'src/lib/netbsd/x86_64/libncursesw.a',                                                             
+'src/lib/netbsd/x86_64/libpng.a',                                                                  
+'src/lib/netbsd/x86_64/libstd.a',                                                                  
+'src/lib/netbsd/x86_64/libz.a',                                                                    
+'src/lib/netbsd/x86_64/notes',                                                                     
+'src/lib/netbsd/x86/libcurl.a',                                                                    
+'src/lib/netbsd/x86/libelf.a',                                                                     
+'src/lib/netbsd/x86/libfltk.a',                                                                    
+'src/lib/netbsd/x86/libfltk_images.a',                                                             
+'src/lib/netbsd/x86/libjpeg.a',                                                                    
+'src/lib/netbsd/x86/liblua.a',                                                                     
+'src/lib/netbsd/x86/libncursesw.a',                                                                
+'src/lib/netbsd/x86/libpng.a',                                                                     
+'src/lib/netbsd/x86/libstd.a',                                                                     
+'src/lib/netbsd/x86/libz.a',                                                                       
+'src/lib/netbsd/x86/notes',                                                                        
+'src/lib/openbsd/x86/libcurl.a',                                                                   
+'src/lib/openbsd/x86/libelf.a',                                                                    
+'src/lib/openbsd/x86/libfltk.a',                                                                   
+'src/lib/openbsd/x86/libfltk_images.a',                                                            
+'src/lib/openbsd/x86/libjpeg.a',                                                                   
+'src/lib/openbsd/x86/liblua.a',                                                                    
+'src/lib/openbsd/x86/libncursesw.a',                                                               
+'src/lib/openbsd/x86/libpng.a',                                                                    
+'src/lib/openbsd/x86/libstd.a',                                                                    
+'src/lib/openbsd/x86/libz.a',                                                                      
+'src/lib/openbsd/x86/notes',                                                                       
+'src/libsu/COPYING',                                                                               
+'src/libsu/CREDITS',                                                                               
+'src/libsu/libsu.h',                                                                               
+'src/libsu/libtest.cpp',                                                                           
+'src/libsu/LICENSE',                                                                               
+'src/libsu/main.cpp',                                                                              
+'src/libsu/main.h',                                                                                
+'src/lib/sunos/x86/libcurl.a',                                                                     
+'src/lib/sunos/x86/libelf.a',                                                                      
+'src/lib/sunos/x86/libfltk.a',                                                                     
+'src/lib/sunos/x86/libfltk_images.a',                                                              
+'src/lib/sunos/x86/libjpeg.a',                                                                     
+'src/lib/sunos/x86/liblua.a',                                                                      
+'src/lib/sunos/x86/libncursesw.a',                                                                 
+'src/lib/sunos/x86/libpng.a',                                                                      
+'src/lib/sunos/x86/libXft.a',                                                                      
+'src/lib/sunos/x86/libz.a',                                                                        
+'src/lib/sunos/x86/notes',                                                                         
+'src/libsu/runner.c',                                                                              
+'src/libsu/SConstruct',                                                                            
+'src/libsu/terminal.cpp',                                                                          
+'src/libsu/TODO',                                                                                  
+'src/libsu/utils.cpp',                                                                             
+'src/libsu/vasprintf.c',                                                                           
+'src/lock/lock.c',                                                                                 
+'src/lzmastdout.diff',                                                                             
+'src/main/curl.cpp',                                                                               
+'src/main/curl.h',                                                                                 
+'src/main/elfutils.cpp',                                                                           
+'src/main/elfutils.h',                                                                             
+'src/main/exception.h',                                                                            
+'src/main/install/attinstall.cpp',                                                                 
+'src/main/install/attinstall.h',                                                                   
+'src/main/install/basescreen.cpp',                                                                 
+'src/main/install/basescreen.h',                                                                   
+'src/main/install/install.cpp',                                                                    
+'src/main/install/install.h',                                                                      
+'src/main/install/luacfgmenu.cpp',                                                                 
+'src/main/install/luacfgmenu.h',                                                                   
+'src/main/install/luacheckbox.cpp',                                                                
+'src/main/install/luacheckbox.h',                                                                  
+'src/main/install/luadepscreen.cpp',                                                               
+'src/main/install/luadepscreen.h',                                                                 
+'src/main/install/luadirselector.cpp',                                                             
+'src/main/install/luadirselector.h',                                                               
+'src/main/install/luagroup.cpp',                                                                   
+'src/main/install/luagroup.h',                                                                     
+'src/main/install/luaimage.h',                                                                     
+'src/main/install/luainput.cpp',                                                                   
+'src/main/install/luainput.h',                                                                     
+'src/main/install/lualabel.cpp',                                                                   
+'src/main/install/lualabel.h',                                                                     
+'src/main/install/luamenu.cpp',                                                                    
+'src/main/install/luamenu.h',                                                                      
+'src/main/install/luaprogressbar.cpp',                                                             
+'src/main/install/luaprogressbar.h',                                                               
+'src/main/install/luaprogressdialog.cpp',                                                          
+'src/main/install/luaprogressdialog.h',                                                            
+'src/main/install/luaradiobutton.cpp',                                                             
+'src/main/install/luaradiobutton.h',                                                               
+'src/main/install/luatextfield.cpp',                                                               
+'src/main/install/luatextfield.h',                                                                 
+'src/main/install/luawidget.cpp',                                                                  
+'src/main/install/luawidget.h',                                                                    
+'src/main/install/unattinstall.cpp',                                                               
+'src/main/install/unattinstall.h',                                                                 
+'src/main/lua/luaclass.cpp',                                                                       
+'src/main/lua/luaclass.h',                                                                         
+'src/main/lua/lua.cpp',                                                                            
+'src/main/lua/luafunc.cpp',                                                                        
+'src/main/lua/luafunc.h',                                                                          
+'src/main/lua/lua.h',                                                                              
+'src/main/lua/luatable.cpp',                                                                       
+'src/main/lua/luatable.h',                                                                         
+'src/main/main.cpp',                                                                               
+'src/main/main.h',                                                                                 
+'src/main/utils.cpp',                                                                              
+'src/main/utils.h',                                                                                
+'src/main/vasprintf.c',                                                                            
+'src/ncurses/installer.cpp',                                                                       
+'src/ncurses/installer.h',                                                                         
+'src/ncurses/installscreen.cpp',                                                                   
+'src/ncurses/installscreen.h',                                                                     
+'src/ncurses/luacfgmenu.cpp',                                                                      
+'src/ncurses/luacfgmenu.h',                                                                        
+'src/ncurses/luacheckbox.cpp',                                                                     
+'src/ncurses/luacheckbox.h',                                                                       
+'src/ncurses/luadepscreen.cpp',                                                                    
+'src/ncurses/luadepscreen.h',                                                                      
+'src/ncurses/luadirselector.cpp',                                                                  
+'src/ncurses/luadirselector.h',                                                                    
+'src/ncurses/luagroup.cpp',                                                                        
+'src/ncurses/luagroup.h',                                                                          
+'src/ncurses/luaimage.h',                                                                          
+'src/ncurses/luainput.cpp',                                                                        
+'src/ncurses/luainput.h',                                                                          
+'src/ncurses/lualabel.h',                                                                          
+'src/ncurses/luamenu.cpp',                                                                         
+'src/ncurses/luamenu.h',                                                                           
+'src/ncurses/luaprogressbar.cpp',                                                                  
+'src/ncurses/luaprogressbar.h',                                                                    
+'src/ncurses/luaprogressdialog.cpp',                                                               
+'src/ncurses/luaprogressdialog.h',                                                                 
+'src/ncurses/luaradiobutton.cpp',                                                                  
+'src/ncurses/luaradiobutton.h',                                                                    
+'src/ncurses/luatextfield.cpp',                                                                    
+'src/ncurses/luatextfield.h',                                                                      
+'src/ncurses/luawidget.cpp',                                                                       
+'src/ncurses/luawidget.h',                                                                         
+'src/ncurses/ncurses.cpp',                                                                         
+'src/ncurses/ncurses.h',                                                                           
+'src/ncurses/tui/basechoice.cpp',                                                                  
+'src/ncurses/tui/basechoice.h',                                                                    
+'src/ncurses/tui/basescroll.cpp',                                                                  
+'src/ncurses/tui/basescroll.h',                                                                    
+'src/ncurses/tui/box.cpp',                                                                         
+'src/ncurses/tui/box.h',                                                                           
+'src/ncurses/tui/buttonbar.cpp',                                                                   
+'src/ncurses/tui/buttonbar.h',                                                                     
+'src/ncurses/tui/button.cpp',                                                                      
+'src/ncurses/tui/button.h',                                                                        
+'src/ncurses/tui/checkbox.cpp',                                                                    
+'src/ncurses/tui/checkbox.h',                                                                      
+'src/ncurses/tui/dialog.cpp',                                                                      
+'src/ncurses/tui/dialog.h',                                                                        
+'src/ncurses/tui/dialogs.cpp',                                                                     
+'src/ncurses/tui/filedialog.cpp',                                                                  
+'src/ncurses/tui/filedialog.h',                                                                    
+'src/ncurses/tui/group.cpp',                                                                       
+'src/ncurses/tui/group.h',                                                                         
+'src/ncurses/tui/inputfield.cpp',                                                                  
+'src/ncurses/tui/inputfield.h',                                                                    
+'src/ncurses/tui/label.cpp',                                                                       
+'src/ncurses/tui/label.h',                                                                         
+'src/ncurses/tui/menu.cpp',                                                                        
+'src/ncurses/tui/menu.h',                                                                          
+'src/ncurses/tui/progressbar.cpp',                                                                 
+'src/ncurses/tui/progressbar.h',                                                                   
+'src/ncurses/tui/radiobutton.cpp',                                                                 
+'src/ncurses/tui/radiobutton.h',                                                                   
+'src/ncurses/tui/scrollbar.cpp',
+'src/ncurses/tui/scrollbar.h',
+'src/ncurses/tui/separator.h',
+'src/ncurses/tui/textbase.cpp',
+'src/ncurses/tui/textbase.h',
+'src/ncurses/tui/textfield.cpp',
+'src/ncurses/tui/textfield.h',
+'src/ncurses/tui/textwidget.cpp',
+'src/ncurses/tui/textwidget.h',
+'src/ncurses/tui/tui.cpp',
+'src/ncurses/tui/tui.h',
+'src/ncurses/tui/utils.cpp',
+'src/ncurses/tui/widget.cpp',
+'src/ncurses/tui/widget.h',
+'src/ncurses/tui/window.cpp',
+'src/ncurses/tui/window.h',
+'src/ncurses/tui/windowmanager.cpp',
+'src/ncurses/tui/windowmanager.h',
+'src/SConstruct',
+'src/stdcxx-gcc43.diff',
+'printfiles.sh',
+'dumplang.sh',
+'TODO',
+]
+
+
+# --------------------------------------------------------------------------------------
+
+
+def getallbins(onlyforcuros):
+    # Traverse files, from http://effbot.org/librarybook/os-path.htm
+    if onlyforcuros:
+        stack = ['bin/'+cur_os]
+    else:
+        stack = ['bin']
+    bins = []
+    while stack:
+        directory = stack.pop()
+        for file in os.listdir(directory):
+            fullname = os.path.join(directory, file)
+            if file == "ncurs" or file == "fltk" or file == "gtk" or file == "lzma-decode" or file == "lzma" or file == "surunner" or file == "lock":
+                bins.append(fullname)
+            if os.path.isdir(fullname) and not os.path.islink(fullname):
+                stack.append(fullname)
+    return bins
+
+def stripallbins():
+    bins = getallbins(True)
+    for file in bins:
+#        if cur_os == "sunos":
+#            Execute("strip %s" % file)
+#        else:
+            Execute("strip -s %s" % file)
+
+# Copies whole directory, excluding dotfiles
+def copydir(dir, dest):
+    stack = [ dir ]
+    while stack:
+        directory = stack.pop()
+        if not os.path.exists(dest+directory):
+            os.makedirs(dest+directory)
+        for file in glob.glob(directory + '/*'):
+            if os.path.isdir(file):
+                stack.append(file)
+            else:
+                shutil.copy(file, dest+file)
+
+
+# Check if atleast one file exists from a given list
+def checklibexist(context, fname):
+    context.Message('Checking for %s...' % fname)
+    if (os.path.exists(lib_dir+fname)):
+        context.Result(1)
+        return True
+
+    context.Result(0)
+    return False
+
+def CheckLibWithEnv(context, library, header, language, libdir, incdir, call = "main();", autoload = 1, altlibs=''):
+    lastLIBS = context.env['LIBS']
+    lastLIBPATH = context.env['LIBPATH']
+    lastCPPATH = context.env['CPPPATH']
+    context.env.Prepend(LIBS = Split(library))
+    context.env.Append(LIBS = Split(altlibs))
+    context.env.Append(LIBPATH = Split(libdir), CPPPATH = Split(incdir))
+    ret = context.sconf.CheckLibWithHeader(library, header, language, call, autoload)
+    context.env.Replace(LIBS = lastLIBS)
+    context.env.Replace(LIBPATH = lastLIBPATH)
+    context.env.Replace(CPPPATH = lastCPPATH)
+    context.did_show_result = 1 # Hack, says "Error: No result" otherwise
+    return ret
+
+def CheckLinkedLibVersion(context, libname, optlibs=""):
+    libname = "lib" + libname
+    context.Message('Checking which library version is used for %s...' % libname)
+    reallibname = ''
+    lastLIBS = context.env['LIBS']
+    context.env.Append(LIBS = Split("%s %s" % (libname, optlibs)))
+    ret = context.TryLink("""
+int main(int argc, char **argv) {
+    return 0;
+}
+""", '.c')
+    context.env.Replace(LIBS = lastLIBS)
+    
+    if not ret:
+        context.Result('None')
+    else:
+        reallibname = os.popen('ldd %s | grep %s' % (context.lastTarget.path, libname), 'r').read()
+        ind = 0
+        
+        if cur_os == "netbsd":
+            try:
+                ind = reallibname.index("=> ")
+            except:
+                context.Result('None')
+            
+            # Get the part after "=> " and strip leading/trailing whitespace
+            #reallibname = reallibname[ind].strip()
+            # Remove the path from the lib
+            ind = reallibname.rfind("/", ind)
+            if ind == -1:
+                context.Result("None")
+            
+            reallibname = reallibname[ind+1:].strip()
+        elif cur_os == "openbsd":
+            # OpenBSD's ldd puts the library name in the last column
+            
+            try:
+                ind = reallibname.rfind("/")
+            except:
+                ind = 0
+
+            reallibname = reallibname[ind+1:].strip()
+        else:
+            try:
+                ind = reallibname.index(" =>")
+            except:
+                context.Result('None')
+            
+            # Get the part before " =>" and strip leading/trailing whitespace
+            reallibname = reallibname[0:ind].strip()
+        context.Result(reallibname)
+    
+    return reallibname
+    
+EnsureSConsVersion(0,96,91)
+
+opts = Options()
+opts.Add('xlibsdir', 'Specifies where the library files for X are', '/usr/X11R6/lib')
+opts.Add('xincdir', 'Specifies where the include files for X are', '/usr/X11R6/include')
+opts.Add('gtklibsdir', 'Specifies where the library files for GTK are', '/usr/lib')
+opts.Add('CC', 'The C compiler', 'gcc')
+opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('noapcpp', "Don't use apache's STL lib", "no")
+opts.Add('LCVER', 'Manually overide used libc version', '')
+opts.Add('OS', 'Manually overide target OS', '')
+opts.Add('CPU', 'Manually overide target arch', '')
+
+# -Wno-sign-compare
+env = Environment(options = opts, CCFLAGS = "-Wall", LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=["-DNDEBUG"])
+
+Export("env")
+
+Help(opts.GenerateHelpText(env))
+
+if not env['OS']:
+    # Get current OS...if this != to uname I should fix it :-)
+    cur_os = sys.platform.rstrip('1234567890')
+else:
+    cur_os = env['OS']
+    
+if not env['CPU']:
+    cur_arch = platform.machine()
+else:
+    cur_arch = env['CPU']
+    
+if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
+    cur_arch = "x86"
+elif cur_arch == 'amd64':
+    cur_arch = "x86_64"
+
+if cur_os == "linux":
+    env.Append(CCFLAGS = Split('$CCFLAGS -ffunction-sections -fdata-sections'))
+    env.Append(LINKFLAGS = Split('$LINKFLAGS -Wl,--gc-sections'))
+
+if cur_os == "netbsd" or cur_os == "freebsd":
+    env.Append(CCFLAGS=Split('$CCFLAGS -O2')) # -Os segfaults on NetBSD/FreeBSD exceptions, so use O2 instead
+else:
+    env.Append(CCFLAGS=Split('$CCFLAGS -Os'))
+
+# OS/Arch specific dirs
+lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'
+inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
+libc_ver = ''
+
+env.Append(LIBPATH=[lib_dir, 'libsu/'])
+env.Append(CPPPATH=['.', inc_dir, 'include/'+cur_os, 'include/libelf/'+cur_os+'/'+cur_arch, 'include/', 'include/ncurses', 'include/lua', 'include/gtk'])
+
+if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
+    env.Append(LIBS=Split('std supc++ m'))
+    env['CXX'] = '$CC'
+    env.Append(CPPPATH=['include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    
+# Current version
+curnixstversion = '0.5'
+
+if 'stripbins' in COMMAND_LINE_TARGETS:
+    print 'Stripping all binaries in the bin/%s directory...' % cur_os
+    os.chdir('../')
+    stripallbins()
+    Exit(0)
+
+if 'tardist' in COMMAND_LINE_TARGETS or 'tardev' in COMMAND_LINE_TARGETS:
+    if 'tardev' in COMMAND_LINE_TARGETS:
+        archname = 'nixstaller-dev-' + curnixstversion + '.tar.gz'
+    else:
+        archname = 'nixstaller-' + curnixstversion + '.tar.gz'
+    os.chdir("../")
+    tarredfile = tarfile.open(archname, 'w:gz')
+    stripallbins()
+    if 'tardev' in COMMAND_LINE_TARGETS:
+        flist = distfiles_src+getallbins(False)
+    else:
+        flist = distfiles_user+getallbins(False)
+
+    for dfile in flist:
+        if os.path.isdir(dfile):
+            stack = [ dfile ]
+            while stack:
+                directory = stack.pop()
+                emptydir = True
+                for sfile in glob.glob(directory + '/*'):
+                    emptydir = False
+                    if os.path.isdir(sfile):
+                        stack.append(sfile)
+                    else:
+                        tarredfile.add(sfile, 'nixstaller-'+curnixstversion+'/'+sfile)
+                if emptydir:
+                    tarredfile.add(dfile, 'nixstaller-'+curnixstversion+'/'+dfile, False)
+        else:
+            tarredfile.add(dfile, 'nixstaller-'+curnixstversion+'/'+dfile)
+    tarredfile.close()
+    print "Generated %s" % archname
+    Exit(0)
+
+if 'setupdist' in COMMAND_LINE_TARGETS:
+    workdir = os.getcwd() + "/tmp-setup-dist/"
+    filesdir = workdir + "files_all/nixstaller-" + curnixstversion + "/"
+
+    outputfile = "nixstaller-" + curnixstversion + ".sh"
+
+    if os.path.exists(workdir):
+        print "Cleaning old workdir..."
+        shutil.rmtree(workdir)
+        
+    os.chdir("../")
+    stripallbins()
+
+    print "Creating temporary project directory..."
+    os.system("./genprojdir.sh -n Nixstaller -o linux netbsd freebsd openbsd sunos --arch x86 x86_64 --pkg "+workdir)
+    print "Copying all files to be installed..."
+    os.makedirs(filesdir)
+    for file in distfiles_user+getallbins(False):
+        dir = filesdir + os.path.dirname(file)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        if os.path.isdir(file):
+            copydir(file, filesdir)
+        else:
+            shutil.copy(file, filesdir + file)
+
+    print "Generate package config file..."
+    pkgfile = open(workdir + "package.lua", "w")
+    pkgfile.write("pkg.version = \"%s\"\n" % curnixstversion)
+    pkgfile.write("pkg.bins = { \"nixstaller-%s/geninstall.sh\", \"nixstaller-%s/genprojdir.sh\", \"nixstaller-%s/deputil.sh\", \"nixstaller-%s/gensyms.sh\" }" % (curnixstversion, curnixstversion, curnixstversion, curnixstversion))
+    pkgfile.write("""
+pkg.enable = true
+pkg.name = "nixstaller"
+pkg.summary = "Nixstaller is used to create software installation packages on UNIX like systems."
+pkg.description = [[
+Nixstaller is an Open Source project with the goal to create user friendly and flexible installers that work on various UNIX like systems.
+Main features are different graphical frontends, native language support, easy and flexible configuration and (optional) package integration.
+]]
+pkg.group = "Archiving"
+pkg.license = "GPLv2"
+pkg.maintainer = "Rick Helmus <rhelmus_AT_gmail.com>"
+pkg.url = "nixstaller.berlios.de"
+""")
+    pkgfile.close()
+    
+    print "Copying welcome message..."
+    shutil.copy("src/internal/intro.txt", workdir + "welcome")
+    print "%s --> %s" % ("internal/intro.txt", workdir + "welcome")
+
+    print "Generating installer"
+    os.system("./geninstall.sh %s %s" % (workdir, outputfile))
+
+    print "Cleaning workdir..."
+    shutil.rmtree(workdir)
+
+    Exit(0)
+    
+
+fltklibs = ""
+gtklibs = ""
+gtklpath = ""
+
+# configure stuff (only do this when not cleaning)
+if not env.GetOption('clean'):
+    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv, 'CheckLinkedLibVersion' : CheckLinkedLibVersion})
+
+    if not conf.checklibexist('libutil.a'):
+        print 'Searching for libutil.a'
+        lname = commands.getoutput(env['CC']+' -print-file-name=libutil.a')
+        if lname:
+            if lname == 'libutil.a':
+                # Compiler didn't find it, ignore
+                print "None found by compiler"
+            else:
+                try:
+                    shutil.copy(lname, lib_dir)
+                    print "Copied %s to %s" % (lname, lib_dir)
+                    conf.env.Append(LIBS='util')
+                except (IOError, os.error), why:
+                    print "Can't copy %s to %s: %s" % (lname, lib_dir, str(why))
+                    Exit(1)
+        else:
+            print 'Error: Could not find any libutil.a! Please copy it manually to ', lib_dir
+            Exit(1)
+    else:
+        conf.env.Append(LIBS='util')
+
+    if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
+        conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
+    if not conf.CheckLibWithHeader('', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);'):
+        conf.CheckLibWithHeader('rt', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);')
+    
+    if not conf.env['LCVER']:
+        if cur_os == 'darwin':
+            libc_ver = 'libc.dylib'
+        else:
+            libc_ver = conf.CheckLinkedLibVersion('c')
+    else:
+        libc_ver = env['LCVER']
+        
+    if not libc_ver:
+        print "Couldn't detect libc version!"
+        Exit(1)
+
+    if not conf.CheckLibWithHeader('z', 'zlib.h', 'C', 'gzFile f;', 0):
+        print "Couldn't find libz !"
+        Exit(1)
+
+    if not conf.CheckLibWithHeader('lua', Split("lauxlib.h luaconf.h lua.h lualib.h"), 'C', ';', 0):
+        print "Couldn't find liblua !"
+        Exit(1)
+        
+    if not conf.CheckLibWithHeader('elf', Split("libelf/libelf.h libelf/gelf.h"), 'C', ';', 0):
+        print "Couldn't find libelf !"
+        Exit(1)
+        
+    if not conf.CheckType('Elf32_Verdef', '#include "elf.h"'):
+        print "Elf32_Verdef needs link.h?"
+        if conf.CheckType('Elf32_Verdef', '#include "link.h" #include "elf.h"'):
+            conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
+            conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
+    else:
+        conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
+        conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
+
+    if not conf.CheckLibWithHeader('curl', Split("curl/curl.h"), 'C', ';', 0):
+        print "Couldn't find libcurl !"
+        Exit(1)
+    
+    # Solaris needs socket and nsl libraries for curl
+    if not conf.CheckLibWithHeader('', ['sys/types.h', 'sys/socket.h'], 'C', 'getsockname(0, 0, 0);'):
+        conf.CheckLibWithHeader(['socket'], ['sys/types.h', 'sys/socket.h'], 'C', 'getsockname(0, 0, 0);')
+    if not conf.CheckLibWithHeader('', ['sys/types.h', 'sys/socket.h'], 'C', 'inet_addr(0);'):
+        conf.CheckLibWithHeader(['nsl'], ['sys/types.h', 'sys/socket.h'], 'C', 'inet_addr(0);')
+                
+    if not BUILD_TARGETS and cur_os == 'darwin':
+        BUILD_TARGETS = ['fltk']
+
+    if not BUILD_TARGETS or 'ncurses' in map(str, BUILD_TARGETS):
+        if not conf.CheckLibWithHeader('ncursesw', 'curses.h', 'C++', 'beep();', 0):
+            print "Couldn't find libncursesw!"
+            Exit(1)
+            
+    if not BUILD_TARGETS or 'fltk' in map(str, BUILD_TARGETS):
+        if not cur_os == 'darwin':
+            if not conf.CheckLibWithEnv('X11', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Couldn't find libX11 !"
+                Exit(1)
+            if not conf.CheckLibWithEnv('Xext', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Couldn't find libXext !"
+                Exit(1)
+            if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+                print "Xft needs additional libs?"
+                if not conf.CheckLibWithEnv('Xft', 'X11/X.h', 'C++', '$xlibsdir', '$xincdir', ';', 0, 'freetype Xrender fontconfig'):
+                    print "Couldn't find libXft !"
+                    Exit(1)
+                fltklibs = "freetype Xrender fontconfig"
+        if not conf.CheckLibWithHeader('png', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libpng !"
+            Exit(1)
+        if not conf.CheckLibWithHeader('jpeg', 'stdio.h', 'C++', ';', 0):
+            print "Couldn't find libjpeg !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('fltk', ['FL/Fl.H', 'FL/fl_draw.H'], 'C++', '$xlibsdir', '$xincdir', 'fl_font(0, 0);', 0, 'Xft X11'):
+            print "FLTK needs some more libs?"
+            if not conf.CheckLibWithEnv('fltk', ['FL/Fl.H', 'FL/fl_draw.H'], 'C++', '$xlibsdir', '$xincdir', 'fl_font(0, 0);', 0, 'Xft freetype Xrender Xext fontconfig X11'):
+                print "Couldn't find libfltk !"
+                Exit(1)
+            fltklibs = "fontconfig Xrender freetype"
+        if not conf.CheckLibWithEnv('fltk_images', 'FL/Fl.H', 'C++', '$xlibsdir', '$xincdir', ';', 0):
+            print "Couldn't find libfltk_images !"
+            Exit(1)
+            
+    if not BUILD_TARGETS or 'gtk' in map(str, BUILD_TARGETS):
+        if not conf.CheckLibWithEnv('gobject-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libgobject-2.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('glib-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libglib-2.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('pango-1.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libpango-1.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('gdk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ['$gtklibsdir'], '', ';', 0):
+            print "GDK needs Xft?"
+            if not conf.CheckLibWithEnv('gdk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ['$gtklibsdir', '$xlibsdir'], '', ';', 0, 'Xft'):
+                print "Couldn't find libgdk-x11-2.0 !"
+                Exit(1)
+            gtklibs = "Xft"
+            gtklpath = '$xlibsdir'
+        if not conf.CheckLibWithEnv('gdk_pixbuf-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "Couldn't find libgdk_pixbuf-2.0 !"
+            Exit(1)
+        if not conf.CheckLibWithEnv('gtk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', '$gtklibsdir', '', ';', 0):
+            print "GTK needs Xft?"
+            if not conf.CheckLibWithEnv('gtk-x11-2.0', 'include/gtk/gtk/gtk.h', 'C', ['$gtklibsdir', '$xlibsdir'], '', ';', 0, 'Xft'):
+                print "Couldn't find libgtk-x11-2.0 !"
+                Exit(1)
+            gtklibs = "Xft"
+            gtklpath = '$xlibsdir'
+            
+    env = conf.Finish()
+elif env.GetOption('clean'):
+    # Make sure that scons properly cleans everything
+    Execute(Delete('main/.sconsign'))
+    Execute(Delete('ncurses/.sconsign'))
+    Execute(Delete('fltk/.sconsign'))
+    Execute(Delete('.sconf_temp'))
+    Execute(Delete('.sconsign.dblite'))
+
+
+# Builds libsu
+libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
+
+# Builds lock tool
+lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
+
+# Builds main lib
+main = env.Library("main/main", Split('libmd5/md5.c main/install/attinstall.cpp main/install/basescreen.cpp main/install/install.cpp main/install/luacfgmenu.cpp main/install/luacheckbox.cpp main/install/luadepscreen.cpp main/install/luadirselector.cpp main/install/luagroup.cpp main/install/luainput.cpp main/install/lualabel.cpp main/install/luamenu.cpp main/install/luaprogressbar.cpp main/install/luaprogressdialog.cpp main/install/luaradiobutton.cpp main/install/luatextfield.cpp main/install/luawidget.cpp main/install/unattinstall.cpp main/curl.cpp main/elfutils.cpp main/main.cpp main/utils.cpp main/vasprintf.c main/lua/lua.cpp main/lua/luafunc.cpp main/lua/luaclass.cpp main/lua/luatable.cpp'))
+
+env.Prepend(LIBS = Split('main su lua elf curl z'))
+
+# UNDONE?
+if cur_os == 'netbsd':
+    env.Append(LINKFLAGS = Split(' -Wl,--rpath -Wl,$xlibsdir -Wl,--rpath -Wl,/usr/X11R6/lib -Wl,--rpath -Wl,/usr/pkg/xorg/lib -Wl,--rpath -Wl,/usr/X11R7/lib -Wl,--rpath -Wl,$gtklibsdir'))
+elif cur_os == "sunos":
+    env.Append(LIBS = ['rt']) # OpenSolaris doesn't need this, but Solaris 10 does.
+    
+gtk = env.Program('gtk/gtk', Split('gtk/gtk.cpp gtk/installer.cpp gtk/installscreen.cpp gtk/luacheckbox.cpp gtk/luacfgmenu.cpp gtk/luadepscreen.cpp gtk/luadirselector.cpp gtk/luagroup.cpp gtk/luaimage.cpp gtk/luainput.cpp gtk/luamenu.cpp gtk/luaprogressbar.cpp gtk/luaprogressdialog.cpp gtk/luaradiobutton.cpp gtk/luatextfield.cpp gtk/luawidget.cpp gtk/utils.cpp'), LIBS=Split('$LIBS gobject-2.0 glib-2.0 pango-1.0 gdk-x11-2.0 gdk_pixbuf-2.0 gtk-x11-2.0 '+gtklibs), LIBPATH=Split("$LIBPATH $gtklibsdir "+gtklpath), LINKFLAGS=Split("$LINKFLAGS -Wl,-z -Wl,now"))
+
+ncurs_lflags = ""
+if cur_os == "openbsd":
+    ncurs_lflags = "-static"
+    
+ncurses = env.Program('ncurses/ncurs', Split('ncurses/tui/basechoice.cpp ncurses/tui/basescroll.cpp ncurses/tui/box.cpp ncurses/tui/button.cpp ncurses/tui/buttonbar.cpp ncurses/tui/checkbox.cpp ncurses/tui/dialog.cpp ncurses/tui/dialogs.cpp ncurses/tui/filedialog.cpp ncurses/tui/group.cpp ncurses/tui/inputfield.cpp ncurses/tui/label.cpp ncurses/tui/menu.cpp ncurses/ncurses.cpp ncurses/tui/progressbar.cpp ncurses/tui/radiobutton.cpp ncurses/tui/scrollbar.cpp ncurses/tui/textbase.cpp ncurses/tui/textwidget.cpp ncurses/tui/textfield.cpp ncurses/tui/tui.cpp ncurses/tui/utils.cpp ncurses/tui/widget.cpp ncurses/tui/window.cpp ncurses/tui/windowmanager.cpp ncurses/installer.cpp ncurses/installscreen.cpp ncurses/luacfgmenu.cpp ncurses/luacheckbox.cpp ncurses/luadepscreen.cpp ncurses/luadirselector.cpp ncurses/luainput.cpp ncurses/luagroup.cpp ncurses/luamenu.cpp ncurses/luaprogressbar.cpp ncurses/luaprogressdialog.cpp ncurses/luaradiobutton.cpp ncurses/luatextfield.cpp ncurses/luawidget.cpp'), LIBS=Split('$LIBS ncursesw'), LINKFLAGS=Split('$LINKFLAGS '+ncurs_lflags))
+
+if cur_os == 'darwin':
+    fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg '+fltklibs), LINKFLAGS=Split("$LINKFLAGS -framework Carbon -framework ApplicationServices"))
+else:
+    fltk = env.Program('fltk/fltk', Split('fltk/fltk.cpp fltk/dirdialog.cpp fltk/hyperlink.cpp fltk/installer.cpp fltk/installscreen.cpp fltk/luacfgmenu.cpp fltk/luacheckbox.cpp fltk/luadepscreen.cpp fltk/luadirselector.cpp fltk/luagroup.cpp fltk/luaimage.cpp fltk/luainput.cpp fltk/lualabel.cpp fltk/luamenu.cpp fltk/luaprogressbar.cpp fltk/luaprogressdialog.cpp fltk/luaradiobutton.cpp fltk/luatextfield.cpp fltk/luawidget.cpp fltk/utils.cpp'), LIBS=Split('$LIBS fltk fltk_images png jpeg Xext Xft Xpm X11 '+fltklibs), LIBPATH=Split('$LIBPATH $xlibsdir'), CPPPATH=Split('$CPPPATH $xincdir'))
+
+bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'+libc_ver+'/'
+stat_bin_dir = '../bin/'+cur_os+'/'+cur_arch+'/'
+
+if cur_os == 'linux':
+    Default(env.Install(bin_dir, Flatten(lock)))
+    
+if cur_os != 'darwin':
+    Default(env.Install(bin_dir, Flatten(gtk)))
+
+Default(env.Install(bin_dir, Flatten(fltk) + Flatten(gtk)))
+Default(env.Install(lib_dir, Flatten(libsu) + Flatten(main)))
+
+if cur_os == 'openbsd':
+    Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(surunner)))
+else:
+    Default(env.Install(bin_dir, Flatten(ncurses) + Flatten(surunner)))

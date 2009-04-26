@@ -1,0 +1,690 @@
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+Next
+Next
+
+Back
+Back
+
+OK
+OK
+
+Cancel
+Cancel
+
+Yes
+Yes
+
+No
+No
+
+Finish
+Finish
+
+Select directory
+Select directory
+
+Browse
+Browse
+
+Open directory
+Open directory
+
+Choose another directory
+Choose another directory
+
+Continue as root
+Continue as root
+
+Close
+Close
+
+Continue
+Continue
+
+Exit program
+Exit program
+
+Create directory as root
+Create directory as root
+
+Ignore
+Ignore
+
+Abort
+Abort
+
+Don't register
+Don't register
+
+Refresh
+Refresh
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+[
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
+Are you sure?
+]
+[
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
+Are you sure?
+]
+
+[
+This will abort the installation.
+Are you sure?
+]
+[
+This will abort the installation.
+Are you sure?
+]
+
+[
+Root access is required to continue.
+Abort installation?
+]
+[
+Root access is required to continue.
+Abort installation?
+]
+
+Incorrect password given, please retype.
+Incorrect password given, please retype.
+
+# %s is replaced by appname
+Installation of %s complete!
+Installation of %s complete!
+
+[
+You don't have read permissions for this directory.
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+[
+You don't have read permissions for this directory.
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the administrative password for this later.
+]
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the administrative password for this later.
+]
+
+[
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
+]
+[
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
+]
+
+# %s is replaced by directory name
+Directory %s does not exist, do you want to create it?
+Directory %s does not exist, do you want to create it?
+
+# %s is replaced by appname
+[
+This will install %s.
+Continue?
+]
+[
+This will install %s.
+Continue?
+]
+
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter the administrative password below.
+]
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter the administrative password below.
+]
+
+[
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
+]
+[
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
+]
+
+Another program seems to be using pacman. Please close this program.
+Another program seems to be using pacman. Please close this program.
+
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use this database (eg. Smart or YaST).
+]
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use this database (eg. Smart or YaST).
+]
+
+Package is already installed. Do you want to replace it?
+Package is already installed. Do you want to replace it?
+
+Package is already installed. Use the --overwrite option to install anyway.
+Package is already installed. Use the --overwrite option to install anyway.
+
+# First %s is replaced by current version, second by installer version.
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+
+# %s is replaced by missing tool (ie rpmbuild)
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+
+One or more package dependencies could not be resolved. Details are given below.
+One or more package dependencies could not be resolved. Details are given below.
+
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+
+Please fix these issues now and rerun the installer.
+Please fix these issues now and rerun the installer.
+
+Continuing installation anyway...
+Continuing installation anyway...
+
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
+
+
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+# %s is replaced by parameter name from configmenu
+Please choose a new value for %s
+Please choose a new value for %s
+
+# %s is replaced by parameter name from configmenu
+Please select a directory for %s
+Please select a directory for %s
+
+# %s is replaced by parameter name from configmenu
+Please enter a new value for %s
+Please enter a new value for %s
+
+Please select a language
+Please select a language
+
+Welcome
+Welcome
+
+License agreement
+License agreement
+
+Select destination directory
+Select destination directory
+
+Please read the following text
+Please read the following text
+
+Warning
+Warning
+
+Enter name of new directory
+Enter name of new directory
+
+About
+About
+
+Select a directory
+Select a directory
+
+Password dialog
+Password dialog
+
+Software is being installed
+Software is being installed
+
+Software destination
+Software destination
+
+Software registration
+Software registration
+
+Installation summary
+Installation summary
+
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Progress
+Progress
+
+Language
+Language
+
+I agree to this license agreement
+I agree to this license agreement
+
+Status
+Status
+
+Extracting files
+Extracting files
+
+Verifying dependencies
+Verifying dependencies
+
+Gathering main binary dependencies.
+Gathering main binary dependencies.
+
+Gathering main library dependencies.
+Gathering main library dependencies.
+
+Extracting dependency %s
+Extracting dependency %s
+
+Gathering mandatory dependencies.
+Gathering mandatory dependencies.
+
+Installing dependencies.
+Installing dependencies.
+
+Installing package
+Installing package
+
+Enable
+Enable
+
+Disable
+Disable
+
+Directory name
+Directory name
+
+Root password
+Root password
+
+Register software
+Register software
+
+Name
+Name
+
+Problem
+Problem
+
+Description
+Description
+
+Failed to install.
+Failed to install.
+
+Failed to download.
+Failed to download.
+
+(Binary) incompatible.
+(Binary) incompatible.
+
+# %s will be replaced by the name of the incompatible library.
+Incompatible library: %s.
+Incompatible library: %s.
+
+# %s will be replaced by the name of the missing library.
+Missing library: %s.
+Missing library: %s.
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too old (required: %s).
+Library %s is too old (required: %s).
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too new (required: %s).
+Library %s is too new (required: %s).
+
+# %s will be replaced by the required library.
+Wrong library version (required: %s).
+Wrong library version (required: %s).
+
+# %s will be replaced by the found library.
+Too new (available: %s)
+Too new (available: %s)
+
+# %s will be replaced by the found library.
+Too old (available: %s)
+Too old (available: %s)
+
+File missing.
+File missing.
+
+Version mismatch.
+Version mismatch.
+
+Multiple package managers were found, please choose which one should be used.
+Multiple package managers were found, please choose which one should be used.
+
+# %s is replaced by possible package managers
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
+
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+
+
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+]
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+]
+
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+
+dpkg (eg. Ubuntu, Debian)
+dpkg (eg. Ubuntu, Debian)
+
+pacman (eg. Arch Linux)
+pacman (eg. Arch Linux)
+
+rpm (eg. Fedora, Mandriva)
+rpm (eg. Fedora, Mandriva)
+
+Slackware tgz (eg. Slackware, Zenwalk)
+Slackware tgz (eg. Slackware, Zenwalk)
+
+
+#-----------------------------------------------
+# Error messages
+#-----------------------------------------------
+
+Error
+Error
+
+Could not create directory
+Could not create directory
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Could not open directory %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Could not read directory %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Could not read current directory: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Lua error detected: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Could not execute command: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Could not create directory: %s
+
+Could not use su or sudo to gain root access.
+Could not use su or sudo to gain root access.
+
+Not enough space for buttonbar entry
+Not enough space for buttonbar entry
+
+# %s is replaced by error message
+Overflow detected: %s
+Overflow detected: %s
+
+# %s is replaced by error message
+Could not open pipe: %s
+Could not open pipe: %s
+
+# %s is replaced by error message
+Could not read pipe: %s
+Could not read pipe: %s
+
+# %s is replaced by error message
+Could not close pipe: %s
+Could not close pipe: %s
+
+# %s is replaced by error message
+Could not fork child: %s
+Could not fork child: %s
+
+# %s is replaced by error message
+Could not close file descriptor: %s
+Could not close file descriptor: %s
+
+# %s is replaced by error message
+poll returned an error: %s
+poll returned an error: %s
+
+# %s is replaced by error message
+select returned an error: %s
+select returned an error: %s
+
+# %s is replaced by error message
+Encountered an error while waiting on child process: %s
+Encountered an error while waiting on child process: %s
+
+# %s is replaced by error message
+uname returned an error: %s
+uname returned an error: %s
+
+# %s is replaced by directory name
+Could not create directory '%s'
+Could not create directory '%s'
+
+Please enter a valid path.
+Please enter a valid path.
+
+# %s is replaced by error message
+Error during file transfer: %s
+Error during file transfer: %s
+
+# %s is replaced by error message
+Elf class error detected: %s
+Elf class error detected: %s
+
+# First %s is replaced by file, second by error message
+Could not open file %s: %s
+Could not open file %s: %s
+
+# %s is replaced by filename
+Could not locate file: %s
+Could not locate file: %s
+
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+
+# %s is replaced by list of possible packagers
+Wrong packager specified, should be one of the following: %s
+Wrong packager specified, should be one of the following: %s
+
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Add to Favorites
+
+All Files (*)
+All Files (*)
+
+Custom Filter
+Custom Filter
+
+Favorites
+Favorites
+
+Filename:
+Filename:
+
+File Systems
+File Systems
+
+Manage Favorites
+Manage Favorites
+
+Show:
+Show:
+
+Create new directory
+Create new directory
+
+
+#-----------------------------------------------
+# Button bar from ncurses frontend
+#-----------------------------------------------
+
+Next field
+Next field
+
+TAB
+TAB
+
+Exit
+Exit
+
+ESC
+ESC
+
+F2
+F2
+
+F3
+F3
+
+Done
+Done
+
+ENTER
+ENTER
+
+ARROWS
+ARROWS
+
+ARROWS/PGUP/PGDOWN
+ARROWS/PGUP/PGDOWN
+
+Activate button
+Activate button
+
+Move to
+Move to
+
+Navigate
+Navigate
+
+Character
+Character
+
+Toggle
+Toggle
+
+Change
+Change
+
+ARROWS/PGUP/PGDOWN/HOME/END
+ARROWS/PGUP/PGDOWN/HOME/END
+
+SPACE
+SPACE
+
+
+#-----------------------------------------------
+# Put your own translations below
+#-----------------------------------------------
