@@ -27,6 +27,8 @@ else
     OPTLFLAGS="-Wl,--gc-sections"
 fi
 
+LFS_CFLAGS=`getconf LFS_CFLAGS 2>/dev/null`
+
 get()
 {
     if [ -f "$DESTFILES/`basename $1`" ]; then
@@ -196,9 +198,9 @@ buildlzma()
     LFLAGS="$OPTLFLAGS"
     [ $CURRENT_OS = "openbsd" ] && LFLAGS="$LFLAGS -static"
 	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" -a $CURRENT_OS != "openbsd" ]; then
-		$MAKE -f makefile.gcc CXX="g++ $OPTCFLAGS" LDFLAGS="$LFLAGS"
+		$MAKE -f makefile.gcc CXX="g++ $OPTCFLAGS $LFS_CFLAGS" LDFLAGS="$LFLAGS"
 	else
-		$MAKE -f makefile.gcc CXX="gcc $OPTCFLAGS" LDFLAGS="-L$DESTPREFIX/lib $LFLAGS" LIB='-lstd -lsupc++ -lm'
+		$MAKE -f makefile.gcc CXX="gcc $OPTCFLAGS $LFS_CFLAGS" LDFLAGS="-L$DESTPREFIX/lib $LFLAGS" LIB='-lstd -lsupc++ -lm'
 	fi
     mkdir -p "$DESTPREFIX/bin"
     cp lzma "$DESTPREFIX/bin"

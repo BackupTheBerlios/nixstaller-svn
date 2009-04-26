@@ -1522,7 +1522,20 @@ int main(int argc, char **argv) {
         context.Result(reallibname)
     
     return reallibname
+
+def GetLFSFlags(context):
+    context.Message('Checking for LFS flags...')
     
+    handle = os.popen("getconf LFS_CFLAGS")
+    if handle:
+        flags = handle.read()
+        context.Result(flags)
+        context.env.Append(CCFLAGS=Split(flags))
+        handle.close()
+    else:
+        context.Result('None')
+
+
 EnsureSConsVersion(0,96,91)
 
 opts = Options()
@@ -1582,7 +1595,7 @@ if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os
     env.Append(CPPPATH=['include/stdcxx', 'include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
     
 # Current version
-curnixstversion = '0.5'
+curnixstversion = '0.5.1'
 
 if 'stripbins' in COMMAND_LINE_TARGETS:
     print 'Stripping all binaries in the bin/%s directory...' % cur_os
@@ -1688,8 +1701,10 @@ gtklpath = ""
 
 # configure stuff (only do this when not cleaning)
 if not env.GetOption('clean'):
-    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv, 'CheckLinkedLibVersion' : CheckLinkedLibVersion})
+    conf = env.Configure(custom_tests = {'checklibexist' : checklibexist, 'CheckLibWithEnv' : CheckLibWithEnv, 'CheckLinkedLibVersion' : CheckLinkedLibVersion, 'GetLFSFlags' : GetLFSFlags})
 
+    conf.GetLFSFlags()
+    
     if not conf.checklibexist('libutil.a'):
         print 'Searching for libutil.a'
         lname = commands.getoutput(env['CC']+' -print-file-name=libutil.a')
