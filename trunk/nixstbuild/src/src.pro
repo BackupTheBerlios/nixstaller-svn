@@ -9,7 +9,8 @@ SOURCES += main.cpp \
  rungen.cpp \
  instscreenwidget.cpp \
  newinstscreen.cpp \
- treeedit.cpp
+ treeedit.cpp \
+ newinstwidget.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -26,7 +27,8 @@ HEADERS += welcome.h \
  instscreenwidget.h \
  newinstscreen.h \
  main.h \
- treeedit.h
+ treeedit.h \
+ newinstwidget.h
 
 
 

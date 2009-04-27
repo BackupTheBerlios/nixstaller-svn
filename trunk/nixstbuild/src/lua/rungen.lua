@@ -79,7 +79,7 @@ function Init()
                 ret = ret .. string.format([[
 
     %s = %s:%s(%s)
-]], widget.variable, screen.variable, widget.func, tabtostr(widget.args))
+]], widget.variable, screen.variable, widget.func, tabtostr(widget.args) or "")
             end
         end
     end
