@@ -61,7 +61,7 @@ CEditor::CEditor(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f)
     // HACK: Bug? Doesn't seem to be done automatically
     editControl->editor()->document()->setLineEnding(QDocument::defaultLineEnding());
 
-    panelSignalMapper = new QSignalMapper;
+    panelSignalMapper = new QSignalMapper(this);
     
     addPanel("Line Number Panel", QCodeEdit::West, "F11", true);
     addPanel("Fold Panel", QCodeEdit::West, "F12", true);

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QObject>
 #include <QRegExpValidator>
 
@@ -48,9 +49,34 @@ void debugline(const char *t, ...)
 }
 #endif
 
-QLineEdit *createLuaEdit()
+QLineEdit *createLuaEdit(QWidget *parent)
 {
-    QLineEdit *ret = new QLineEdit;
+    QLineEdit *ret = new QLineEdit(parent);
     ret->setValidator(new QRegExpValidator(QRegExp("[\\w]+"), 0));
+    return ret;
+}
+
+bool verifyLuaEdit(QLineEdit *edit)
+{
+    bool ret = false;
+    const QStringList reserverd = QStringList() << "and" << "end" << "in" <<
+            "repeat" << "break" << "false" << "local" << "return" << "do" <<
+            "for" << "nil" << "then" << "else" << "function" << "not" << "true" <<
+            "elseif" << "if" << "or" << "until" << "while";
+    
+    if (edit->text().isEmpty())
+        QMessageBox::information(NULL, "Missing information", "Please specify a variable name.");
+    else if (reserverd.contains(edit->text()))
+        QMessageBox::information(NULL, "Wrong input",
+                                 "The specified variable name is a reserverd keyword. Please specify another name.");
+    else
+        ret = true;
+
+    if (!ret)
+    {
+        edit->setFocus(Qt::OtherFocusReason);
+        edit->selectAll();
+    }
+    
     return ret;
 }

@@ -35,7 +35,7 @@ CInstScreenWidget::CInstScreenWidget(QWidget *parent,
     insertButton(1, newScreenB = new QPushButton("New screen"));
 
     QMenu *menu = new QMenu();
-    QSignalMapper *sigMapper = new QSignalMapper;
+    QSignalMapper *sigMapper = new QSignalMapper(this);
     
     addScreenBMenuItem("Welcome screen", "WelcomeScreen", menu, sigMapper);
     addScreenBMenuItem("License screen", "LicenseScreen", menu, sigMapper);
@@ -71,13 +71,7 @@ void CInstScreenWidget::deleteItems(const QString &name)
 
 void CInstScreenWidget::addScreen(const QString &name)
 {
-    if (!itemCount())
-        addItem(QStringList() << name);
-    else
-    {
-        insertItem(currentItemIndex()+1, QStringList() << name);
-        selectItem(currentItemIndex()+1);
-    }
+    insertAtCurrent(QStringList() << name);
 }
 
 void CInstScreenWidget::newScreen()
@@ -92,8 +86,7 @@ void CInstScreenWidget::newScreen()
         dialog.getWidgets(si.widgets);
         v.setValue(si);
         item->setData(0, Qt::UserRole, v);
-        addItem(item);
-        selectItem(item);
+        insertAtCurrent(item);
     }
 }
 

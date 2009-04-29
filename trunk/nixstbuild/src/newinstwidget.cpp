@@ -18,6 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
@@ -129,7 +130,8 @@ CNewWidgetDialog::~CNewWidgetDialog()
 
 void CNewWidgetDialog::OK()
 {
-    accept();
+    if (verifyLuaEdit(nameField))
+        accept();
 }
 
 std::string CNewWidgetDialog::getVarName(void) const
@@ -147,7 +149,7 @@ void CNewWidgetDialog::getArgs(TStringVec &vec) const
 CStringWidgetField::CStringWidgetField(NLua::CLuaTable &field) : emptyNil(false)
 {
     lineEdit = new QLineEdit;
-    
+
     if (field["default"])
     {
         const char *def;
@@ -234,19 +236,21 @@ void CChoiceWidgetField::addArgs(TStringVec &vec)
     vec.push_back("\"" + comboBox->currentText().toStdString() + "\"");
 }
 
-CListWidgetField::CListWidgetField(NLua::CLuaTable &field, QWidget *parent,
-                                   Qt::WindowFlags f) : CTreeEdit(parent, f)
+CListWidgetField::CListWidgetField(NLua::CLuaTable &field)
 {
-    setHeader(QStringList() << "Option" << "Default enabled");
+    optList = new CTreeEdit;
+    
+    optList->setHeader(QStringList() << "Option" << "Default enabled");
 
     // UNDONE: Icons
-    insertButton(0, addOptB = new QPushButton("Add"));
+    optList->insertButton(0, addOptB = new QPushButton("Add"));
 
     std::string type;
     field["listtype"] >> type;
     multiChoice = (type == "multi");
 
-    boxGroup.setExclusive(!multiChoice);
+    boxGroup = new QButtonGroup(this);
+    boxGroup->setExclusive(!multiChoice);
     
     connect(addOptB, SIGNAL(clicked()), this, SLOT(addOptItem()));
 }
@@ -257,7 +261,7 @@ void CListWidgetField::addOptItem()
     item->setText(0, "Name");
     item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable);
 
-    addItem(item);
+    optList->insertAtCurrent(item);
 
     QAbstractButton *but;
     if (multiChoice)
@@ -265,26 +269,31 @@ void CListWidgetField::addOptItem()
     else
         but = new QRadioButton;
     
-    boxGroup.addButton(but);
-    getTree()->setItemWidget(item, 1, but);
-    getTree()->editItem(item);
+    boxGroup->addButton(but);
+    optList->getTree()->setItemWidget(item, 1, but);
+    optList->getTree()->editItem(item);
+}
+
+QWidget *CListWidgetField::getFieldWidget()
+{
+    return optList;
 }
 
 void CListWidgetField::addArgs(TStringVec &vec)
 {
-    const int size = itemCount();
+    const int size = optList->itemCount();
     std::string opts, defs;
     
     for (int i=0; i<size; i++)
     {
-        QTreeWidgetItem *it = itemAt(i);
+        QTreeWidgetItem *it = optList->itemAt(i);
 
         if (!opts.empty())
             opts += ", ";
 
         opts += "\"" + it->text(0).toStdString() + "\"";
 
-        QAbstractButton *but = dynamic_cast<QAbstractButton*>(getTree()->itemWidget(it, 1));
+        QAbstractButton *but = dynamic_cast<QAbstractButton*>(optList->getTree()->itemWidget(it, 1));
         if (but && but->isChecked())
         {
             if (multiChoice && !defs.empty())

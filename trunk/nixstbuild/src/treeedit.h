@@ -43,11 +43,10 @@ private slots:
     void up(void);
     void down(void);
 
-protected:
-    QTreeWidget *getTree(void) { return tree; }
-
 public:
     CTreeEdit(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    QTreeWidget *getTree(void) { return tree; }
 
     void setHeader(const QStringList &labels);
     void addItem(QTreeWidgetItem *item);
@@ -55,6 +54,9 @@ public:
     
     void insertItem(int index, QTreeWidgetItem *item);
     void insertItem(int index, const QStringList &items);
+    
+    void insertAtCurrent(QTreeWidgetItem *item);
+    void insertAtCurrent(const QStringList &items);
 
     QTreeWidgetItem *currentItem(void) const;
     int currentItemIndex(void) const;

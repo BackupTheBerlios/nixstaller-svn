@@ -22,8 +22,10 @@
 #define NB_UTILS_H
 
 class QLineEdit;
+class QWidget;
 
-QLineEdit *createLuaEdit(void);
+QLineEdit *createLuaEdit(QWidget *parent = 0);
+bool verifyLuaEdit(QLineEdit *edit);
 
 #endif
 

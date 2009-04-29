@@ -85,7 +85,7 @@ QWidget *CNewScreenDialog::createWidgetGroup()
     widgetList->insertButton(0, addWidgetB = new QPushButton("Add"));
 
     QMenu *menu = new QMenu;
-    QSignalMapper *sigMapper = new QSignalMapper;
+    QSignalMapper *sigMapper = new QSignalMapper(box);
 
     TStringVec types;
     getWidgetTypes(types);
@@ -109,8 +109,8 @@ void CNewScreenDialog::addWidgetBMenuItem(const QString &name, QMenu *menu, QSig
 
 void CNewScreenDialog::OK()
 {
-    // UNDONE: Check fields
-    accept();
+    if (verifyLuaEdit(varEdit))
+        accept();
 }
 
 void CNewScreenDialog::cancel()
@@ -124,7 +124,7 @@ void CNewScreenDialog::addWidgetItem(const QString &name)
     if (newInstWidget(name.toStdString(), wit))
     {
         QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << wit.variable.c_str() << name);
-        widgetList->addItem(item);
+        widgetList->insertAtCurrent(item);
         QVariant v;
         v.setValue(wit);
         item->setData(0, Qt::UserRole, v);

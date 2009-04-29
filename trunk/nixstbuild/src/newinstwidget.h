@@ -21,13 +21,13 @@
 #ifndef NEWINSTWIDGET_H
 #define NEWINSTWIDGET_H
 
-#include <QButtonGroup>
 #include <QDialog>
 #include <QMetaType>
 
 #include "main/main.h"
 #include "treeedit.h"
 
+class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
@@ -73,8 +73,6 @@ public:
 class CBaseWidgetField
 {
 public:
-    virtual ~CBaseWidgetField(void) {}
-    
     virtual QWidget *getFieldWidget(void) = 0;
     virtual void addArgs(TStringVec &vec) = 0;
 };
@@ -110,21 +108,22 @@ public:
     virtual void addArgs(TStringVec &vec);
 };
 
-class CListWidgetField: public CTreeEdit, public CBaseWidgetField
+class CListWidgetField: public QObject, public CBaseWidgetField
 {
     Q_OBJECT
 
     bool multiChoice;
+    CTreeEdit *optList;
     QPushButton *addOptB;
-    QButtonGroup boxGroup;
+    QButtonGroup *boxGroup;
 
 private slots:
     void addOptItem(void);
 
 public:
-    CListWidgetField(NLua::CLuaTable &field, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    CListWidgetField(NLua::CLuaTable &field);
 
-    virtual QWidget *getFieldWidget(void) { return this; }
+    virtual QWidget *getFieldWidget(void);
     virtual void addArgs(TStringVec &vec);
 };
 

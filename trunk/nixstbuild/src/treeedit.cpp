@@ -123,6 +123,28 @@ void CTreeEdit::insertItem(int index, const QStringList &items)
     insertItem(index, new QTreeWidgetItem(items));
 }
 
+void CTreeEdit::insertAtCurrent(QTreeWidgetItem *item)
+{
+    if (itemCount())
+    {
+        insertItem(currentItemIndex()+1, item);
+        selectItem(item);
+    }
+    else
+        addItem(item);
+}
+
+void CTreeEdit::insertAtCurrent(const QStringList &items)
+{
+    if (itemCount())
+    {
+        insertItem(currentItemIndex()+1, items);
+        selectItem(currentItemIndex()+1);
+    }
+    else
+        addItem(items);
+}
+
 QTreeWidgetItem *CTreeEdit::currentItem(void) const
 {
     return tree->currentItem();

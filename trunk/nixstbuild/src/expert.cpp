@@ -49,7 +49,7 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     statusBar()->showMessage(tr("Ready"));
     resize(700, 500);
 
-    editSettings = new CEditSettings; // Do this BEFORE createMenuBar()!
+    editSettings = new CEditSettings(this); // Do this BEFORE createMenuBar()!
 
     createMenuBar();
 
@@ -243,7 +243,7 @@ QWidget *CExpertScreen::createRunConf()
     QWidget *ret = new QWidget;
     QVBoxLayout *vlayout = new QVBoxLayout(ret);
 
-    editor = new CEditor(this);
+    editor = new CEditor(ret);
     editor->getToolBar()->addSeparator();
     QAction *a = editor->getToolBar()->addAction("File wizard");
     connect(a, SIGNAL(triggered()), this, SLOT(launchRunGen()));
