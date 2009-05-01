@@ -436,7 +436,7 @@ EOF
 function UnattendedInit()
     -- This function is called as soon as an unattended installation is started.
     
-    -- Set install.destdir to a default in case the user did not gave then --destdir
+    -- Set install.destdir to a default in case the user did not gave the --destdir
     -- option (remove this if cfg.adddestunopt() is not called in config.lua!).
     if not cfg.unopts["destdir"].value then
         install.destdir = os.getenv("HOME") -- Default directory

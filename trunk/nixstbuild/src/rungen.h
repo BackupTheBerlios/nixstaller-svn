@@ -24,19 +24,32 @@
 #include <QWizard>
 #include <QWizardPage>
 
+#include "main/main.h"
+#include "deskentrywidget.h"
 #include "instscreenwidget.h"
 
 class QCheckBox;
+class QRadioButton;
 
+class CDestDirPage;
+class CDeskEntryPage;
+class CDesktopEntryWidget;
 class CInstScreenPage;
+class CInstScreenWidget;
+class CPreConfigPage;
 
 class CRunGenerator: public QWizard
 {
     QWizardPage *createIntro(void);
     QWizardPage *createPreConfig(void);
     QWizardPage *createInstScreenPage(void);
+    QWizardPage *createDestDirPage(void);
+    QWizardPage *createDeskEntryPage(void);
 
+    CPreConfigPage *preConfigPage;
     CInstScreenPage *instScreenPage;
+    CDestDirPage *destDirPage;
+    CDeskEntryPage *deskEntryPage;
     
 public:
     CRunGenerator(QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -50,7 +63,11 @@ class CPreConfigPage: public QWizardPage
 
 public:
     CPreConfigPage(QWidget *parent = 0);
+
     virtual void initializePage(void);
+
+    const char *getMode(void) const;
+    bool pkgMode(void) const;
 };
 
 class CInstScreenPage: public QWizardPage
@@ -63,6 +80,35 @@ public:
     virtual void initializePage(void);
     
     void getScreens(TStringVec &screenlist, CInstScreenWidget::screenvec &customs);
+};
+
+class CDestDirPage: public QWizardPage
+{
+    Q_OBJECT
+    
+    QRadioButton *homeRadio, *manualRadio, *tempRadio, *pkgRadio;
+    QLineEdit *manualEdit;
+    bool firstTime;
+
+private slots:
+    void toggledManual(bool checked);
+    
+public:
+    CDestDirPage(QWidget *parent = 0);
+
+    virtual void initializePage(void);
+
+    std::string getDestDir(void) const;
+};
+
+class CDeskEntryPage: public QWizardPage
+{
+    CDesktopEntryWidget *deskEntryWidget;
+    
+public:
+    CDeskEntryPage(QWidget *parent = 0);
+    
+    void getEntries(CDesktopEntryWidget::entryvec &entries);
 };
 
 #endif

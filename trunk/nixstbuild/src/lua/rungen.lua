@@ -20,15 +20,11 @@
 
 -- UNDONE: Move this to shared and let it use by genprojdir.sh?
 
-local function genInit(pkgmode, screenlist, custscreens)
-    local ret = [[
-function Init()
-    -- This function is called as soon as an attended (default)
-    -- installation is started.
-]]
-
-    if pkgmode then
-        ret = ret .. [[
+local function getDestLuaCode(destdir, unattended)
+    local ret
+    
+    if destdir == "package" then
+        ret = [[
 
     -- The files that need to be packaged should be placed inside the
     -- directory returned from 'install.getpkgdir()'. By setting
@@ -41,13 +37,46 @@ function Init()
     install.destdir = install.getpkgdir()
 ]]
     else
-        ret = ret .. [[
+        local d
+        if destdir == "home" then
+            d = "os.getenv(\"HOME\")"
+        elseif destdir == "temporary" then
+            d = "install.gettempdir()"
+        else -- destdir is an absolute path
+            d = "\"" .. destdir .. "\""
+        end
+
+        if unattended then
+            ret = string.format([[
+    -- Set install.destdir to a default in case the user did not gave
+    -- the --destdir option (remove this if cfg.adddestunopt() is not
+    -- called in config.lua!).
+    if not cfg.unopts["destdir"].value then
+        install.destdir = %s
+    end
+]], d)
+        else
+            ret = string.format([[
+
     -- The destination directory for the installation files. The
     -- 'SelectDirScreen' lets the user change this variable.
-    install.destdir = os.getenv("HOME")
-]]
+    install.destdir = %s
+]], d)
+        end
     end
 
+    return ret
+end
+
+local function genInit(screenlist, custscreens, destdir)
+    local ret = [[
+function Init()
+    -- This function is called as soon as an attended (default)
+    -- installation is started.
+]]
+
+    ret = ret .. getDestLuaCode(destdir, false)
+    
     -- Generate custom screens
     if custscreens then
         for _, screen in ipairs(custscreens) do
@@ -93,47 +122,38 @@ function Init()
     return ret
 end
 
-local function genUnattInit(pkgmode)
-    local ret = [[
+local function genUnattInit(destdir)
+    return string.format([[
 function UnattendedInit()
     -- This function is called as soon as an unattended
     -- installation is started.
-]]
 
-    if pkgmode then
-        ret = ret .. [[
-
-    -- The files that need to be packaged should be placed inside the
-    -- directory returned from 'install.getpkgdir()'. By setting
-    -- install.destdir to this path, the packed installation files
-    -- are directly extracted, (re)packaged and installed to the
-    -- user's system. If you need to compile the software on the
-    -- user's system, you probably need to extract the files somewhere
-    -- else and place any compiled files inside the 'temporary package
-    -- directory' later.
-    install.destdir = install.getpkgdir()
-]]
-    else
-        ret = ret .. [[
-    -- Set install.destdir to a default in case the user did not gave
-    -- then --destdir option (remove this if cfg.adddestunopt() is not
-    -- called in config.lua!).
-    if not cfg.unopts["destdir"].value then
-        install.destdir = os.getenv("HOME") -- Default directory
-    end
-]]
-    end
-
-    ret = ret .. "\nend\n\n"
-    
-    return ret
+%s
 end
 
-local function genInstall(pkgmode)
-    local content
+]], getDestLuaCode(destdir, true))
+end
+
+local function genInstall(pkgmode, deskentries)
+    local content, deskcontent = nil, ""
+
+    if not utils.emptytable(deskentries) then
+        for _, v in ipairs(deskentries) do
+            deskcontent = deskcontent .. string.format([[
+    install.menuentries["%s"] = install.newdesktopentry("%s", %s, "%s")
+
+]], v.name, v.exec, v.icon, v.categories)
+        end
+
+        deskcontent = deskcontent .. string.format([[
+    -- This function will install all desktop entries from
+    -- install.menuentries. The first argument should be true when
+    -- the entries need to be installed globally.
+    install.gendesktopentries(%s)]], (pkgmode and "pkg.needroot()") or "not os.writeperm(install.destdir)")
+    end
 
     if pkgmode then
-        content = [[
+        content = string.format([[
     -- How many 'steps' the installation has (used to divide the
     -- progressbar). Since install.extractfiles, pkg.verifydeps and
     -- install.generatepkg all 'use' one step, we start with 3.
@@ -152,15 +172,19 @@ local function genInstall(pkgmode)
     -- Verifies, downloads and merges any dependencies to the
     -- temporary package directory.
     pkg.verifydeps()
-    
+
+%s
+
     -- This function generates and installs the package.
     -- If you need to call 'install.gendesktopentries', do this
     -- before this function.
-    install.generatepkg()]]
+    install.generatepkg()]], deskcontent)
     else
-        content = [[
+        content = string.format([[
     -- This function extracts the files to 'install.destdir'.
-    install.extractfiles()]]
+    install.extractfiles()
+
+%s]], deskcontent)
     end
 
     return string.format([[
@@ -186,7 +210,7 @@ end
 ]]
 end
 
-function genRun(mode, pkgmode, screenlist, custscreens)
+function genRun(mode, pkgmode, screenlist, custscreens, destdir, deskentries)
     local ret = [[
 -- This file is called when the installer is run.
 -- Don't place any (initialization) code outside the Init(),
@@ -194,14 +218,14 @@ function genRun(mode, pkgmode, screenlist, custscreens)
 
 ]]
     if mode == "attended" or mode == "both" then
-        ret = ret .. genInit(pkgmode, screenlist, custscreens)
+        ret = ret .. genInit(screenlist, custscreens, destdir)
     end
 
     if mode == "unattended" or mode == "both" then
-        ret = ret .. genUnattInit(pkgmode)
+        ret = ret .. genUnattInit(destdir)
     end
 
-    ret = ret .. genInstall(pkgmode)
+    ret = ret .. genInstall(pkgmode, deskentries)
 
     ret = ret .. genFinish()
     

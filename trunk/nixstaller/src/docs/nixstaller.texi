@@ -1092,7 +1092,7 @@ Sets how many @emph{steps} the installation has. Follow the link for more inform
 
 If you've created any desktop menu entries, the @ref{install.gendesktopentries} function needs to be called to install them. This function is usually called after @code{install.extractfiles} and before @code{install.generatepkg} (the latter function is only used for Package Mode and is discussed later). The @code{install.gendesktopentries} function needs one boolean argument. If this argument is @code{true} the desktop entries are installed globally (accessible to any user), when it is @code{false} the entries are only installed for the current user. One way to decide if the entries should be installed globally or not, is to check if the destination directory is writeable for the user. If this directory is writeable it can be assumed that the install went locally (and thus the function argument should be @code{false}).
 In the @file{run.lua} file you could use something like the code below to achieve this.
-@codeblock{install.gendesktopentries(not os.writeperm(install.destdir)}
+@codeblock{install.gendesktopentries(not os.writeperm(install.destdir))}
 
 To finish this section here is an example of an @code{Install()} function.
 @codeblock{@minus{}@minus{} Example Install() function

@@ -10,7 +10,8 @@ SOURCES += main.cpp \
  instscreenwidget.cpp \
  newinstscreen.cpp \
  treeedit.cpp \
- newinstwidget.cpp
+ newinstwidget.cpp \
+ deskentrywidget.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -28,7 +29,8 @@ HEADERS += welcome.h \
  newinstscreen.h \
  main.h \
  treeedit.h \
- newinstwidget.h
+ newinstwidget.h \
+ deskentrywidget.h
 
 
 
