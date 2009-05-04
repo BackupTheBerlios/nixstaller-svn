@@ -1,11 +1,11 @@
 - Way to know where Nixstbuild is located (to find Lua scripts)
 - Resource files
-- Editor:
-    - Settings
+- run.lua generator:
+    - Settings (finished?)
     - Check/improve Lua syntax highlighting
-    - Add copyrights
-    - Other icons?
-    - run.lua wizard: desktop entries, destdir, setup steps
+    - Add copyright stuff for qcodeedit
+    - Other icons for qcodeedit?
+    - Generate install.setsteps() always?
     - image widget creator
     - validate all fields --> double options?
     - way to check which page should be activated

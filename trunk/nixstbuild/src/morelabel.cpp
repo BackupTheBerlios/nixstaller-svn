@@ -18,58 +18,32 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef DESKENTRY_H
-#define DESKENTRY_H
+#include <QWhatsThis>
 
-#include <QDialog>
-#include <QMetaType>
+#include "morelabel.h"
 
-#include "treeedit.h"
-
-class QLineEdit;
-
-class CDesktopEntryWidget: public CTreeEdit
+CMoreLabel::CMoreLabel(const QString &text, const QString &help, QWidget *parent,
+                       Qt::WindowFlags flags) : QLabel(parent, flags)
 {
-    Q_OBJECT
-    
-private slots:
-    void addEntry(void);
-    
-public:
+    setLabel(text, help);
+    setWordWrap(true);
+    setTextFormat(Qt::RichText);
+    connect(this, SIGNAL(linkActivated(const QString &)), this,
+            SLOT(showHelp(const QString &)));
+}
 
-    struct entryitem
-    {
-        std::string name, exec, categories, icon;
-        entryitem(void) {}
-        entryitem(const std::string &n, const std::string &e, const std::string &c,
-                  const std::string &i) : name(n), exec(e), categories(c), icon(i) { }
-    };
-
-    typedef std::vector<entryitem> entryvec;
-    
-    CDesktopEntryWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-
-    void getEntries(entryvec &entries);
-};
-
-class CNewDeskEntryDialog: public QDialog
+void CMoreLabel::showHelp(const QString &link)
 {
-    Q_OBJECT
-    
-    QLineEdit *fileNameEdit, *execEdit, *mainCatEdit, *addCatEdit, *iconEdit;
+    QWhatsThis::showText(QCursor::pos() + QPoint(0, 10), helpText);
+}
 
-private slots:
-    void OK(void);
-    
-public:
-    CNewDeskEntryDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+void CMoreLabel::contextMenuEvent(QContextMenuEvent *event)
+{
+    // HACK: Disable right click copy menu
+}
 
-    std::string getName(void) const;
-    std::string getExec(void) const;
-    std::string getCategories(void) const;
-    std::string getIcon(void) const;
-};
-
-Q_DECLARE_METATYPE(CDesktopEntryWidget::entryitem)
-
-#endif
+void CMoreLabel::setLabel(const QString &t, const QString &m)
+{
+    setText(t + (!m.isEmpty() ? " <a href=\"link\">More...</a>" : ""));
+    helpText = m;
+}

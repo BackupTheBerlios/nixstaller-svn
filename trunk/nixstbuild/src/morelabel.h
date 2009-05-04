@@ -18,58 +18,30 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef DESKENTRY_H
-#define DESKENTRY_H
+#ifndef MORELABEL_H
+#define MORELABEL_H
 
-#include <QDialog>
-#include <QMetaType>
+#include <QLabel>
 
-#include "treeedit.h"
-
-class QLineEdit;
-
-class CDesktopEntryWidget: public CTreeEdit
+class CMoreLabel: public QLabel
 {
     Q_OBJECT
     
+    QString helpText;
+    
+    using QLabel::setText;
+    
 private slots:
-    void addEntry(void);
+    void showHelp(const QString &link);
+
+protected:
+    virtual void contextMenuEvent(QContextMenuEvent *event);
     
 public:
+    CMoreLabel(const QString &text = QString(), const QString &help = QString(),
+               QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-    struct entryitem
-    {
-        std::string name, exec, categories, icon;
-        entryitem(void) {}
-        entryitem(const std::string &n, const std::string &e, const std::string &c,
-                  const std::string &i) : name(n), exec(e), categories(c), icon(i) { }
-    };
-
-    typedef std::vector<entryitem> entryvec;
-    
-    CDesktopEntryWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-
-    void getEntries(entryvec &entries);
+    void setLabel(const QString &t, const QString &m = QString());
 };
-
-class CNewDeskEntryDialog: public QDialog
-{
-    Q_OBJECT
-    
-    QLineEdit *fileNameEdit, *execEdit, *mainCatEdit, *addCatEdit, *iconEdit;
-
-private slots:
-    void OK(void);
-    
-public:
-    CNewDeskEntryDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-
-    std::string getName(void) const;
-    std::string getExec(void) const;
-    std::string getCategories(void) const;
-    std::string getIcon(void) const;
-};
-
-Q_DECLARE_METATYPE(CDesktopEntryWidget::entryitem)
 
 #endif

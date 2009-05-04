@@ -19,12 +19,12 @@
  ***************************************************************************/
 
 #include <QComboBox>
-#include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QTreeWidgetItem>
 #include <QVBoxLayout>
@@ -41,66 +41,20 @@ CDesktopEntryWidget::CDesktopEntryWidget(QWidget *parent,
 
 void CDesktopEntryWidget::addEntry()
 {
-    QDialog dialog;
-    QVBoxLayout *vbox = new QVBoxLayout(&dialog);
-
-    QGroupBox *groupBox = new QGroupBox("Main", &dialog);
-    QFormLayout *form = new QFormLayout(groupBox);
-    QLineEdit *fileNameEdit = new QLineEdit;
-    form->addRow("filename (without .desktop suffix,\nempty for auto)", fileNameEdit);
-    QLineEdit *execEdit = new QLineEdit;
-    form->addRow("Executable (full path)", execEdit); // UNDONE: Neat way to specify pkg bins
-    vbox->addWidget(groupBox);
-
-    // UNDONE: Nicer way to handling for all those categories?
-    groupBox = new QGroupBox("Category", &dialog);
-    form = new QFormLayout(groupBox);
-    QLabel *l = new QLabel("<qt>Valid categories can be found <a href=\"http://standards.freedesktop.org/menu-spec/latest/apa.html\">here</a>.");
-    l->setOpenExternalLinks(true);
-    form->addRow(l);
-    QLineEdit *mainCatEdit = new QLineEdit;
-    form->addRow("Main category", mainCatEdit);
-    QLineEdit *addCatEdit = new QLineEdit;
-    form->addRow("Additional category", addCatEdit);
-    vbox->addWidget(groupBox);
-    
-    groupBox = new QGroupBox("Other", &dialog);
-    form = new QFormLayout(groupBox);
-    QLineEdit *iconEdit = new QLineEdit;
-    form->addRow("Icon (empty for none)", iconEdit); // UNDONE: extra_files/ option
-    vbox->addWidget(groupBox);
-    
-    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
-            QDialogButtonBox::Cancel);
-    connect(bbox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    connect(bbox, SIGNAL(rejected()), &dialog, SLOT(reject()));
-    vbox->addWidget(bbox);
+    CNewDeskEntryDialog dialog;
     
     if (dialog.exec() == QDialog::Accepted)
     {
-        entryitem item;
-        item.name = fileNameEdit->text().toStdString();
-        item.exec = execEdit->text().toStdString();
-        item.categories = mainCatEdit->text().toStdString();
-        if (!addCatEdit->text().isEmpty())
-        {
-            if (!item.categories.empty())
-                item.categories += ";";
-            item.categories += addCatEdit->text().toStdString();
-        }
-        item.icon = iconEdit->text().toStdString();
-        if (item.icon.empty())
-            item.icon = "nil";
-        else
-            item.icon = "\"" + item.icon + "\"";
-        
+        entryitem item(dialog.getName(), dialog.getExec(), dialog.getCategories(),
+                       dialog.getIcon());
         QVariant v;
         v.setValue(item);
-        QTreeWidgetItem *ti = new QTreeWidgetItem(QStringList() << fileNameEdit->text());
+        QTreeWidgetItem *ti = new QTreeWidgetItem(QStringList() << item.name.c_str());
         ti->setData(0, Qt::UserRole, v);
         insertAtCurrent(ti);
     }
 }
+
 
 void CDesktopEntryWidget::getEntries(entryvec &entries)
 {
@@ -113,3 +67,87 @@ void CDesktopEntryWidget::getEntries(entryvec &entries)
             entries.push_back(v.value<entryitem>());
     }
 }
+
+
+CNewDeskEntryDialog::CNewDeskEntryDialog(QWidget *parent,
+                                         Qt::WindowFlags flags) : QDialog(parent, flags)
+{
+    QVBoxLayout *vbox = new QVBoxLayout(this);
+
+    QGroupBox *groupBox = new QGroupBox("Main", this);
+    QFormLayout *form = new QFormLayout(groupBox);
+    form->addRow("filename (without .desktop suffix)", fileNameEdit = new QLineEdit);
+    // UNDONE: Neat way to specify pkg bins
+    form->addRow("Executable (full path)", execEdit = new QLineEdit);
+    vbox->addWidget(groupBox);
+
+    // UNDONE: Nicer way to handling for all those categories?
+    groupBox = new QGroupBox("Category", this);
+    form = new QFormLayout(groupBox);
+    QLabel *l = new QLabel("<qt>Valid categories can be found <a href=\"http://standards.freedesktop.org/menu-spec/latest/apa.html\">here</a>.");
+    l->setOpenExternalLinks(true);
+    form->addRow(l);
+    form->addRow("Main category", mainCatEdit = new QLineEdit);
+    form->addRow("Additional category", addCatEdit = new QLineEdit);
+    vbox->addWidget(groupBox);
+    
+    groupBox = new QGroupBox("Other", this);
+    form = new QFormLayout(groupBox);
+    // UNDONE: extra_files/ option
+    form->addRow("Icon (empty for none)", iconEdit = new QLineEdit);
+    // UNDONE: Way to specify more fields?
+    vbox->addWidget(groupBox);
+    
+    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
+            QDialogButtonBox::Cancel);
+    connect(bbox, SIGNAL(accepted()), this, SLOT(OK()));
+    connect(bbox, SIGNAL(rejected()), this, SLOT(reject()));
+    vbox->addWidget(bbox);
+}
+
+void CNewDeskEntryDialog::OK()
+{
+    if (fileNameEdit->text().isEmpty())
+    {
+        QMessageBox::information(NULL, "Missing information",
+                                 "Please specify a file name.");
+        fileNameEdit->setFocus(Qt::OtherFocusReason);
+    }
+    else
+        accept();
+}
+
+std::string CNewDeskEntryDialog::getName(void) const
+{
+    return fileNameEdit->text().toStdString();
+}
+
+std::string CNewDeskEntryDialog::getExec(void) const
+{
+    return execEdit->text().toStdString();
+}
+
+std::string CNewDeskEntryDialog::getCategories(void) const
+{
+    std::string ret = mainCatEdit->text().toStdString();
+    if (!addCatEdit->text().isEmpty())
+    {
+        if (!ret.empty())
+            ret += ";";
+        ret += addCatEdit->text().toStdString();
+    }
+    
+    return ret;
+}
+
+std::string CNewDeskEntryDialog::getIcon(void) const
+{
+    std::string ret = iconEdit->text().toStdString();
+    if (ret.empty())
+        ret = "nil";
+    else
+        ret = "\"" + ret + "\"";
+    
+    return ret;
+}
+

@@ -36,6 +36,7 @@ class CDeskEntryPage;
 class CDesktopEntryWidget;
 class CInstScreenPage;
 class CInstScreenWidget;
+class CMoreLabel;
 class CPreConfigPage;
 
 class CRunGenerator: public QWizard
@@ -57,7 +58,20 @@ public:
     QString getRun(void);
 };
 
-class CPreConfigPage: public QWizardPage
+class CBaseRunScreen: public QWizardPage
+{
+    CMoreLabel *desc;
+    QWidget *centerWidget;
+    
+protected:
+    void setDesc(const QString &t, const QString &m = QString());
+    QWidget *getCenterWidget(void) { return centerWidget; }
+    
+public:
+    CBaseRunScreen(QWidget *parent = 0);
+};
+
+class CPreConfigPage: public CBaseRunScreen
 {
     QCheckBox *attCheckBox, *unattCheckBox, *pkgCheckBox;
 
@@ -70,7 +84,7 @@ public:
     bool pkgMode(void) const;
 };
 
-class CInstScreenPage: public QWizardPage
+class CInstScreenPage: public CBaseRunScreen
 {
     CInstScreenWidget *instScreenWidget;
         
@@ -82,7 +96,7 @@ public:
     void getScreens(TStringVec &screenlist, CInstScreenWidget::screenvec &customs);
 };
 
-class CDestDirPage: public QWizardPage
+class CDestDirPage: public CBaseRunScreen
 {
     Q_OBJECT
     
@@ -101,7 +115,7 @@ public:
     std::string getDestDir(void) const;
 };
 
-class CDeskEntryPage: public QWizardPage
+class CDeskEntryPage: public CBaseRunScreen
 {
     CDesktopEntryWidget *deskEntryWidget;
     

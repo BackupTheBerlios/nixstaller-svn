@@ -24,6 +24,7 @@
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QRadioButton>
@@ -34,11 +35,14 @@
 #include "main/lua/lua.h"
 #include "main/lua/luafunc.h"
 #include "main/lua/luatable.h"
+#include "morelabel.h"
 #include "rungen.h"
 
 CRunGenerator::CRunGenerator(QWidget *parent,
                              Qt::WindowFlags flags) : QWizard(parent, flags)
 {
+    setFixedHeight(350);
+    
     addPage(createIntro());
     addPage(createPreConfig());
     addPage(createInstScreenPage());
@@ -149,13 +153,40 @@ QString CRunGenerator::getRun()
     return ret;
 }
 
-CPreConfigPage::CPreConfigPage(QWidget *parent) : QWizardPage(parent)
+
+CBaseRunScreen::CBaseRunScreen(QWidget *parent) : QWizardPage(parent)
+{
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+    QVBoxLayout *vbox = new QVBoxLayout(this);
+
+    vbox->addWidget(desc = new CMoreLabel, 0, Qt::AlignTop);
+
+    vbox->addSpacing(10);
+
+    QGroupBox *group = new QGroupBox;
+    group->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    vbox->addWidget(group);
+
+    QVBoxLayout *centerVBox = new QVBoxLayout(group);
+
+    centerVBox->addWidget(centerWidget = new QWidget);
+    centerWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+}
+
+void CBaseRunScreen::setDesc(const QString &t, const QString &m)
+{
+    desc->setLabel(t, m);
+}
+
+
+CPreConfigPage::CPreConfigPage(QWidget *parent) : CBaseRunScreen(parent)
 {
     setTitle("Basic settings");
-    setSubTitle("In this screen you can set a few basic settings which influence the overal file layout and further wizard screens.");
-    
-    QFormLayout *form = new QFormLayout(this);
+    setDesc("In this screen you can set a few basic settings which influence the overal file layout and further wizard screens.");
 
+    QFormLayout *form = new QFormLayout(getCenterWidget());
+    
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(attCheckBox = new QCheckBox("Attended"));
     vbox->addWidget(unattCheckBox = new QCheckBox("Unattended"));
@@ -189,12 +220,12 @@ bool CPreConfigPage::pkgMode(void) const
 }
 
 
-CInstScreenPage::CInstScreenPage(QWidget *parent) : QWizardPage(parent)
+CInstScreenPage::CInstScreenPage(QWidget *parent) : CBaseRunScreen(parent)
 {
     setTitle("Installation screen setup");
-    setSubTitle("In this screen you can specify which installation screens should be shown and in which order. It's also possible to generate new installation screens.");
+    setDesc("In this screen you can specify which installation screens should be shown and in which order. It's also possible to generate new installation screens.");
 
-    QVBoxLayout *vbox = new QVBoxLayout(this);
+    QVBoxLayout *vbox = new QVBoxLayout(getCenterWidget());
     vbox->addWidget(instScreenWidget = new CInstScreenWidget);
 }
 
@@ -210,20 +241,12 @@ void CInstScreenPage::getScreens(TStringVec &screenlist,
 }
 
 
-CDestDirPage::CDestDirPage(QWidget *parent) : QWizardPage(parent), firstTime(true)
+CDestDirPage::CDestDirPage(QWidget *parent) : CBaseRunScreen(parent), firstTime(true)
 {
     setTitle("Install destination");
-//     setSubTitle("<qt>In this screen you can specify the destination that will be used when the installation files are extracted. Selecting the temporary direction is usefull if the installer needs to prepare (eg. compile) the installation files. The temporary package directory is used only by Package Mode. When Package Mode is enabled it's most common to select this option.<br><b>Note:</b> When the <i>SelectDirScreen</i> is used the user is able to customize the destination directory.</qt>");
-
-    QVBoxLayout *vbox = new QVBoxLayout(this);
-
-    QLabel *label = new QLabel("<qt>In this screen you can specify the destination path for the installation files.<br><br>If the files need to be prepared in some way (eg. compiling) you should select the temporary directory option.<br><br>The temporary package directory option is used only by Package Mode. When your files need to be directly installed (no preperation) and Package Mode is enabled you should select this option.<br><br><b>Note:</b> When the <i>SelectDirScreen</i> is used the user is able to change the destination directory specified here.</qt>");
-    label->setWordWrap(true);
-    label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
-    vbox->addWidget(label);
-
-    QGridLayout *grid = new QGridLayout;
-    vbox->addLayout(grid);
+    setDesc("In this screen you can set the destination for the installation files.", "<qt>If the files need to be prepared in some way (eg. compiling) you should select the temporary directory option.<br><br>The temporary package directory option is used only by Package Mode. When your files need to be directly installed (no preperation) and Package Mode is enabled you should select this option.<br><br><b>Note:</b> When the <i>SelectDirScreen</i> is used the user is able to change the destination directory specified here.</qt>");
+    
+    QGridLayout *grid = new QGridLayout(getCenterWidget());
 
     QButtonGroup *buttonGroup = new QButtonGroup(this);
     
@@ -277,12 +300,12 @@ std::string CDestDirPage::getDestDir(void) const
         return "package";
 }
 
-CDeskEntryPage::CDeskEntryPage(QWidget *parent) : QWizardPage(parent)
+CDeskEntryPage::CDeskEntryPage(QWidget *parent) : CBaseRunScreen(parent)
 {
     setTitle("Desktop menu entries");
-    setSubTitle("In this screen you can define any desktop menu entries (.desktop files) that allow the user to easily launch any executables.");
+    setDesc("In this screen you can define any desktop menu entries (.desktop files) that allow the user to easily launch any executables.");
     
-    QVBoxLayout *vbox = new QVBoxLayout(this);
+    QVBoxLayout *vbox = new QVBoxLayout(getCenterWidget());
     vbox->addWidget(deskEntryWidget = new CDesktopEntryWidget);
 }
 
