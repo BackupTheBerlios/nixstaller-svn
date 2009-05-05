@@ -195,7 +195,7 @@ buildlzma()
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
-    LFLAGS="$OPTLFLAGS"
+    LFLAGS="$OPTLFLAGS -static-libgcc"
     [ $CURRENT_OS = "openbsd" ] && LFLAGS="$LFLAGS -static"
 	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" -a $CURRENT_OS != "openbsd" ]; then
 		$MAKE -f makefile.gcc CXX="g++ $OPTCFLAGS $LFS_CFLAGS" LDFLAGS="$LFLAGS"

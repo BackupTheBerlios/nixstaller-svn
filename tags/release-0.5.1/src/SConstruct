@@ -1526,7 +1526,7 @@ int main(int argc, char **argv) {
 def GetLFSFlags(context):
     context.Message('Checking for LFS flags...')
     
-    handle = os.popen("getconf LFS_CFLAGS")
+    handle = os.popen("getconf LFS_CFLAGS 2>/dev/null")
     if handle:
         flags = handle.read()
         context.Result(flags)
