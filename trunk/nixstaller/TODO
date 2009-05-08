@@ -27,7 +27,7 @@ OVERALL
 - Share code from Nixstbuild's run generator with genprojdir.sh?
 - Test new Lua copy file code
 - Let lua copy function call install.update()?
-
+- Test new Lua file size code
 
 PACKAGING
 - More config options:

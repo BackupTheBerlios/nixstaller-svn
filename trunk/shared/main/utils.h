@@ -38,6 +38,8 @@ bool ReadAccess(const char *file);
 inline bool ReadAccess(const std::string &file) { return ReadAccess(file.c_str()); };
 bool IsDir(const char *file);
 inline bool IsDir(const std::string &file) { return IsDir(file.c_str()); }
+off_t FileSize(const char *file);
+inline off_t FileSize(const std::string &file) { return FileSize(file.c_str()); };
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
 void EscapeControls(std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
@@ -69,6 +71,7 @@ std::string JoinPath(const std::string &path, const std::string &file);
 void CopyFile(const std::string &src, std::string dest, TCopyCB cb = NULL, void *prvdata = NULL);
 std::string DirName(const std::string &s);
 std::string BaseName(std::string s);
+void LStat(const char *file, struct stat *buf);
 
 template <typename To, typename From> To SafeConvert(From from)
 {

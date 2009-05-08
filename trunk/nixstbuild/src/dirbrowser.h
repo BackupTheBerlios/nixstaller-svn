@@ -22,6 +22,7 @@
 #define DIRBROWSER_H
 
 #include <QFileSystemModel>
+#include <QSortFilterProxyModel>
 #include <QWidget>
 
 #include "main/main.h"
@@ -46,18 +47,29 @@ public:
     CDirBrowser(const QString &d = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
 };
 
+class CDirSortProxy: public QSortFilterProxyModel
+{
+protected:
+    virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
+
+public:
+    CDirSortProxy(QObject *parent = 0) : QSortFilterProxyModel(parent) {}
+};
+
 class CDirModel: public QFileSystemModel
 {
+    enum asktype { DO_ALL, DO_NONE, DO_ASK };
+
     QProgressDialog *progressDialog;
     long statUpdateTime;
     int statWritten, statSizeFact;
-
-    enum asktype { DO_ALL, DO_NONE, DO_ASK };
     asktype handleOverWrite;
+    bool multipleFiles;
     
     int sizeUnitFact(qint64 size);
     void SafeCopy(const std::string &src, const std::string &dest);
     bool getAllSubPaths(const std::string &dir, TStringVec &paths);
+    bool askOverWrite(const QString &t, const QString &l);
     bool verifyExistance(const std::string &src, std::string dest);
 
 public:

@@ -302,10 +302,10 @@ public:
     virtual const char *what(void) throw() { return FormatText(GetExTranslation("Elf class error detected: %s"), Message()); };
 };
 
-class CExFStat: public CExErrno, public CExIO
+class CExStat: public CExErrno, public CExIO
 {
 public:
-    CExFStat(int err) : CExErrno(err) { }
+    CExStat(int err) : CExErrno(err) { }
     virtual const char *what(void) throw()
     { return FormatText(GetExTranslation("Could not stat file: %s"), Error()); };
 

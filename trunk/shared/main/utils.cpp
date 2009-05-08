@@ -66,6 +66,13 @@ bool IsDir(const char *file)
     return (S_ISDIR(st.st_mode));
 }
 
+off_t FileSize(const char *file)
+{
+    struct stat st;
+    LStat(file, &st);
+    return st.st_size;
+}
+
 // In case dir does not exist, it will search for the first valid top directory
 std::string GetFirstValidDir(const std::string &dir)
 {
@@ -542,7 +549,13 @@ std::string JoinPath(const std::string &path, const std::string &file)
 void FStat(int fd, struct stat *buf)
 {
     if (fstat(fd, buf) != 0)
-        throw Exceptions::CExFStat(errno);
+        throw Exceptions::CExStat(errno);
+}
+
+void LStat(const char *file, struct stat *buf)
+{
+    if (lstat(file, buf) != 0)
+        throw Exceptions::CExStat(errno);
 }
 
 void FChMod(int fd, mode_t mode)
@@ -601,7 +614,7 @@ std::string DirName(const std::string &s)
     TSTLStrSize ind = ret.rfind("/");
     
     if (ind != std::string::npos)
-        ret.erase(ind+1);
+        ret.erase(ind);
     else
         ret = ".";
     

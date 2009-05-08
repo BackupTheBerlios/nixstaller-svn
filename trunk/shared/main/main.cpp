@@ -424,17 +424,18 @@ int CMain::LuaCHDir(lua_State *L)
 int CMain::LuaGetFileSize(lua_State *L)
 {
     const char *file = luaL_checkstring(L, 1);
-    struct stat st;
     
-    if (lstat(file, &st) != 0)
+    try
     {
-        lua_pushnil(L);
-        lua_pushfstring(L, "Could not stat file %s: %s", file, strerror(errno));
+        lua_Number n = SafeConvert<lua_Number>(FileSize(file));
+        lua_pushnumber(L, n);
+        return 1;
+    }
+    catch(Exceptions::CExStat &e)
+    {
+        NLua::LuaPushError("Could not get size from %s: %s", file, e.what());
         return 2;
     }
-    
-    lua_pushnumber(L, st.st_size);
-    return 1;
 }
 
 int CMain::LuaLog(lua_State *L)

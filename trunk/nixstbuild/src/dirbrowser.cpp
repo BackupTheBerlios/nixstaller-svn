@@ -21,7 +21,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
-#include <QFileInfo>
+#include <QHeaderView>
 #include <QItemSelection>
 #include <QMessageBox>
 #include <QMimeData>
@@ -40,14 +40,16 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
 
     browserModel = new CDirModel;
     browserModel->setReadOnly(false);
-    
+
     browserView = new QTreeView;
-    browserView->setModel(browserModel);
     browserView->setDragEnabled(true);
     browserView->setAcceptDrops(true);
     browserView->setDropIndicatorShown(true);
     browserView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     browserView->setContextMenuPolicy(Qt::ActionsContextMenu);
+    browserView->setSortingEnabled(true);
+    browserView->sortByColumn(0, Qt::AscendingOrder);
+    browserView->setColumnWidth(0, 200);
 
     QAction *a = new QAction("Copy", this);
     a->setShortcut(tr("Ctrl+C"));
@@ -59,12 +61,16 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     connect(a, SIGNAL(triggered()), this, SLOT(pasteAction()));
     browserView->addAction(a);
 
+    CDirSortProxy *proxyModel = new CDirSortProxy(browserModel);
+    proxyModel->setSourceModel(browserModel);
+    browserView->setModel(proxyModel);
+
     vbox->addWidget(browserView);
 
     if (!d.isEmpty())
     {
         browserModel->setRootPath(d);
-        browserView->setRootIndex(browserModel->index(d));
+        browserView->setRootIndex(proxyModel->mapFromSource(browserModel->index(d)));
     }
     else
         browserModel->setRootPath("/");
@@ -93,9 +99,29 @@ void CDirBrowser::pasteAction()
 }
 
 
+bool CDirSortProxy::lessThan(const QModelIndex &left, const QModelIndex &right) const
+{
+    QFileSystemModel *model = qobject_cast<QFileSystemModel *>(sourceModel());
+    QString lpath = model->filePath(left);
+    QString rpath = model->filePath(right);
+    bool ldir = (IsDir(lpath.toStdString()));
+    bool rdir = (IsDir(rpath.toStdString()));
+    
+    // Directories are < files
+    if (ldir && !rdir)
+        return true;
+    else if (!ldir && rdir)
+        return false;
+    
+    // Both dirs or files
+    return QSortFilterProxyModel::lessThan(left, right);
+}
+
+
 CDirModel::CDirModel(QObject *parent) : QFileSystemModel(parent),
                                         statUpdateTime(0), statWritten(0),
-                                        statSizeFact(0), handleOverWrite(DO_ASK)
+                                        statSizeFact(0), handleOverWrite(DO_ASK),
+                                        multipleFiles(false)
 {
     progressDialog = new QProgressDialog;
     progressDialog->setWindowModality(Qt::WindowModal);
@@ -162,6 +188,36 @@ bool CDirModel::getAllSubPaths(const std::string &dir, TStringVec &paths)
     return true;
 }
 
+bool CDirModel::askOverWrite(const QString &t, const QString &l)
+{
+    QMessageBox::StandardButtons buttons = (QMessageBox::Yes | QMessageBox::No);
+
+    if (multipleFiles)
+        buttons |= (QMessageBox::YesAll | QMessageBox::NoAll | QMessageBox::Cancel);
+    
+    QMessageBox::StandardButton ret = QMessageBox::question(0, t, l, buttons,
+            QMessageBox::No);
+            
+    if (ret == QMessageBox::Yes)
+        return true;
+    else if (ret == QMessageBox::YesAll)
+    {
+        handleOverWrite = DO_ALL;
+        return true;
+    }
+    else if (ret == QMessageBox::No)
+        return false;
+    else if (ret == QMessageBox::NoAll)
+    {
+        handleOverWrite = DO_NONE;
+        return false;
+    }
+    
+    // Cancel
+    progressDialog->cancel();
+    return false;
+}
+
 bool CDirModel::verifyExistance(const std::string &src, std::string dest)
 {
     dest += "/" + BaseName(src);
@@ -175,26 +231,9 @@ bool CDirModel::verifyExistance(const std::string &src, std::string dest)
         {
             if (handleOverWrite != DO_ASK)
                 return (handleOverWrite == DO_ALL);
-            
-            QMessageBox::StandardButton ret = QMessageBox::question(0, "Destination exists",
-                "Destination directory exists.\nDo you want to overwrite it?",
-                QMessageBox::Yes | QMessageBox::YesAll | QMessageBox::No | QMessageBox::NoAll,
-                QMessageBox::No);
-            
-            if (ret == QMessageBox::Yes)
-                return true;
-            else if (ret == QMessageBox::YesAll)
-            {
-                handleOverWrite = DO_ALL;
-                return true;
-            }
-            else if (ret == QMessageBox::No)
-                return false;
-            else if (ret == QMessageBox::NoAll)
-            {
-                handleOverWrite = DO_NONE;
-                return false;
-            }
+
+            return askOverWrite("Destination exists",
+                                "Destination directory exists.\nDo you want to overwrite it?");
         }
         else
         {
@@ -212,11 +251,9 @@ bool CDirModel::verifyExistance(const std::string &src, std::string dest)
 
     if (handleOverWrite != DO_ASK)
         return (handleOverWrite == DO_ALL);
-    
-    return QMessageBox::question(0, "File exists",
-                                 QString("File '%1' already exists.\nOverwrite?").arg(dest.c_str()),
-                                 QMessageBox::Yes | QMessageBox::No,
-                                 QMessageBox::No) == QMessageBox::Yes;
+
+    return askOverWrite("File exists",
+                        QString("File '%1' already exists.\nOverwrite?").arg(dest.c_str()));
 }
 
 bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
@@ -236,29 +273,41 @@ bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int r
 
 void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent)
 {
+    progressDialog->reset();
     progressDialog->setLabelText("Copying files...");
     progressDialog->setMinimumDuration(500);
 
     qint64 total = 0;
-    QHash<QString, TStringVec> pathsMap; // Use QTL as STL has no standard hash map
-    
+    std::map<std::string, TStringVec> pathsMap;
+    TStringVec sources;
+
+    multipleFiles = (data->urls().size() > 1);
+
+    std::string dest = filePath(parent).toStdString();
+
     foreach(QUrl url, data->urls())
     {
-        QString f(url.toLocalFile());
-        QFileInfo fi(f);
-        if (fi.isDir())
+        std::string f = url.toLocalFile().toStdString();
+
+        if (DirName(f) == dest)
+            continue;
+        
+        sources.push_back(f);
+        
+        if (IsDir(f))
         {
-            getAllSubPaths(f.toStdString(), pathsMap[f]);
+            multipleFiles = true;
+            
+            getAllSubPaths(f, pathsMap[f]);
             for (TStringVec::iterator it=pathsMap[f].begin(); it!=pathsMap[f].end(); it++)
             {
-                QString path = f + "/" + it->c_str();
-                QFileInfo subfi(path);
-                if (!subfi.isDir())
-                    total += subfi.size();
+                std::string path = f + "/" + *it;
+                if (!IsDir(path))
+                    total += FileSize(path);
             }
         }
         else
-            total += fi.size();
+            total += FileSize(f);
     }
     
     statSizeFact = sizeUnitFact(total);
@@ -268,31 +317,28 @@ void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent)
     int max = total / statSizeFact;
     progressDialog->setRange(0, max);
 
-    std::string dest = filePath(parent).toStdString();
-    foreach(QUrl url, data->urls())
+    for(TStringVec::iterator it=sources.begin(); it!=sources.end(); it++)
     {
         if (progressDialog->wasCanceled())
             break;
 
-        std::string src = url.toLocalFile().toStdString();
-
-        if (!verifyExistance(src, dest))
+        if (!verifyExistance(*it, dest))
             continue;
 
-        if (IsDir(src))
+        if (IsDir(*it))
         {
-            std::string basedest = dest + "/" + BaseName(src);
+            std::string basedest = dest + "/" + BaseName(*it);
 
-            for (TStringVec::iterator it=pathsMap[src.c_str()].begin();
-                 it!=pathsMap[src.c_str()].end(); it++)
+            for (TStringVec::iterator subit=pathsMap[*it].begin();
+                 subit!=pathsMap[*it].end(); subit++)
             {
                 if (progressDialog->wasCanceled())
                     break;
 
-                std::string path = src + "/" + *it;
+                std::string path = *it + "/" + *subit;
                 if (!IsDir(path))
                 {
-                    std::string dirpath = basedest + "/" + DirName(*it);
+                    std::string dirpath = basedest + "/" + DirName(*subit);
                     if (!verifyExistance(path, dirpath))
                         continue;
                     SafeCopy(path, dirpath);
@@ -300,7 +346,7 @@ void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent)
             }
         }
         else
-            SafeCopy(src, dest);
+            SafeCopy(*it, dest);
     }
 
     progressDialog->setValue(max);
