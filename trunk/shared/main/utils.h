@@ -20,12 +20,15 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <unistd.h>
 #include <dirent.h>
 #include <poll.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
+
+typedef void (*TCopyCB)(int, void *);
 
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
@@ -34,6 +37,7 @@ inline bool WriteAccess(const std::string &file) { return WriteAccess(file.c_str
 bool ReadAccess(const char *file);
 inline bool ReadAccess(const std::string &file) { return ReadAccess(file.c_str()); };
 bool IsDir(const char *file);
+inline bool IsDir(const std::string &file) { return IsDir(file.c_str()); }
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
 void EscapeControls(std::string &text);
 std::string GetFirstValidDir(const std::string &dir);
@@ -62,6 +66,9 @@ TSTLStrSize GetMBWidthFromC(const std::string &str, std::string::const_iterator 
 TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur, TSTLStrSize width, bool roundup);
 char *CreateTmpText(const char *s, ...);
 std::string JoinPath(const std::string &path, const std::string &file);
+void CopyFile(const std::string &src, std::string dest, TCopyCB cb = NULL, void *prvdata = NULL);
+std::string DirName(const std::string &s);
+std::string BaseName(std::string s);
 
 template <typename To, typename From> To SafeConvert(From from)
 {
@@ -156,6 +163,17 @@ public:
     
     C* operator ->(void) { return m_pData; }
     operator C*(void) { return m_pData; }
+};
+
+class CFDWrapper
+{
+    int m_iFD;
+
+public:
+    CFDWrapper(int fd) : m_iFD(fd) {}
+    ~CFDWrapper(void) { close(m_iFD); }
+
+    operator int(void) { return m_iFD; }
 };
 
 #endif

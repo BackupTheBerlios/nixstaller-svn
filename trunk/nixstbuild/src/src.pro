@@ -12,7 +12,8 @@ SOURCES += main.cpp \
  treeedit.cpp \
  newinstwidget.cpp \
  deskentrywidget.cpp \
- morelabel.cpp
+ morelabel.cpp \
+ dirbrowser.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -32,7 +33,8 @@ HEADERS += welcome.h \
  treeedit.h \
  newinstwidget.h \
  deskentrywidget.h \
- morelabel.h
+ morelabel.h \
+ dirbrowser.h
 
 
 

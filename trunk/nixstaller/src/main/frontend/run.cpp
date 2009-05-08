@@ -89,9 +89,9 @@ int main(int argc, char **argv)
 
     PrintIntro();
 
-    const char *surunnerpath = dirname(CreateText(argv[0]));
-    if (!FileExists(CreateText("%s/surunner", surunnerpath)))
-        surunnerpath = CreateText("%s/..", surunnerpath); // HACK: for static surunner bins
+    std::string surunnerpath = DirName(argv[0]);
+    if (!FileExists(JoinPath(surunnerpath, "surunner")))
+        surunnerpath += "/.."; // HACK: for static surunner bins
     LIBSU::SetRunnerPath(surunnerpath);
     
     curl_global_init(CURL_GLOBAL_ALL);

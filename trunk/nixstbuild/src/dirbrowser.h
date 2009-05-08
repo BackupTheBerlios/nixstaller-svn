@@ -18,50 +18,57 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <QApplication>
-#include <QDesktopWidget>
-#include <QPushButton>
-#include <QVBoxLayout>
+#ifndef DIRBROWSER_H
+#define DIRBROWSER_H
 
-#include "welcome.h"
-#include "expert.h"
+#include <QFileSystemModel>
+#include <QWidget>
 
-CWelcomeScreen::CWelcomeScreen(QWidget *parent,
-                               Qt::WindowFlags flags) : QMainWindow(parent, flags)
+#include "main/main.h"
+
+class QProgressDialog;
+class QTreeView;
+
+class CDirModel;
+
+class CDirBrowser: public QWidget
 {
-    setWindowTitle("Nixstbuild v0.1");
-
-    QDesktopWidget *d = QApplication::desktop();
-    int w = d->width();     // returns desktop width
-    int h = d->height();    // returns desktop height
-
-    move((w - width())/2, (h - height())/2);
-
-    m_pStandardButton = new QPushButton("Standard Mode");
-    m_pExpertButton = new QPushButton("Expert Mode");
-
-    connect(m_pStandardButton, SIGNAL(clicked()), this, SLOT(StandardSlot()));
-    connect(m_pExpertButton, SIGNAL(clicked()), this, SLOT(ExpertSlot()));
-
-    QWidget *cw = new QWidget();
-    setCentralWidget(cw);
+    Q_OBJECT
     
-    QVBoxLayout *layout = new QVBoxLayout(cw);
+    CDirModel *browserModel;
+    QTreeView *browserView;
 
-    layout->addWidget(m_pStandardButton);
-    layout->addWidget(m_pExpertButton);
-}
+private slots:
+    void copyAction(void);
+    void pasteAction(void);
+    
+public:
+    CDirBrowser(const QString &d = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
+};
 
-void CWelcomeScreen::StandardSlot()
+class CDirModel: public QFileSystemModel
 {
-//     CNixstbuildStandard *nbstandard = new CNixstbuildStandard();
-//     nbstandard->show();
+    QProgressDialog *progressDialog;
+    long statUpdateTime;
+    int statWritten, statSizeFact;
 
-//     hide();
-}
+    enum asktype { DO_ALL, DO_NONE, DO_ASK };
+    asktype handleOverWrite;
+    
+    int sizeUnitFact(qint64 size);
+    void SafeCopy(const std::string &src, const std::string &dest);
+    bool getAllSubPaths(const std::string &dir, TStringVec &paths);
+    bool verifyExistance(const std::string &src, std::string dest);
 
-void CWelcomeScreen::ExpertSlot()
-{
-    (new CExpertScreen)->show();
-    hide();
-}
+public:
+    CDirModel(QObject *parent = 0);
+
+    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
+                                int column, const QModelIndex &parent);
+
+    void copyFiles(const QMimeData *data, const QModelIndex &parent);
+
+    static void copyWritten(int bytes, void *data);
+};
+
+#endif

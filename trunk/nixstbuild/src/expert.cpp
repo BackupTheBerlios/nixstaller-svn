@@ -28,14 +28,17 @@
 #include <QListWidgetItem>
 #include <QMenu>
 #include <QMenuBar>
+#include <QScrollArea>
 #include <QStackedWidget>
 #include <QStatusBar>
-#include <QScrollArea>
+#include <QSplitter>
 #include <QTextEdit>
 #include <QToolBar>
+#include <QTreeView>
 #include <QVBoxLayout>
 
 #include "configw.h"
+#include "dirbrowser.h"
 #include "editor.h"
 #include "editsettings.h"
 #include "expert.h"
@@ -53,39 +56,46 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
 
     createMenuBar();
 
-    const int listw = 165, iconw = 96, iconh = 84;
-    m_pListWidget = new QListWidget;
-    m_pListWidget->setViewMode(QListView::IconMode);
-    m_pListWidget->setIconSize(QSize(iconw, iconh));
-    m_pListWidget->setMovement(QListView::Static);
-    m_pListWidget->setMaximumWidth(listw);
-    m_pListWidget->setSpacing(6);
+    // UNDONE: Layout handling is a bit messing (not auto)
+    const int gridw = 150, gridh = 70, listw = gridw+6;
+    listWidget = new QListWidget;
+//     listWidget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
+    listWidget->setViewMode(QListView::IconMode);
+//     listWidget->setIconSize(QSize(iconw, iconh));
+    listWidget->setMovement(QListView::Static);
+    listWidget->setFixedWidth(listw);
+//     listWidget->setWordWrap(true);
+    listWidget->setWrapping(true);
+    listWidget->setGridSize(QSize(gridw, gridh));
+//     listWidget->setSpacing(6);
 
-    QPalette p = m_pListWidget->palette();
+    QPalette p = listWidget->palette();
     QColor c = p.color(QPalette::Highlight);
     c.setAlpha(96);
     p.setColor(QPalette::Highlight, c);
-    m_pListWidget->setPalette(p);
+    listWidget->setPalette(p);
 
     // UNDONE: Paths
     addListItem("nixstbuild/gfx/tux_config.png", "General configuration");
     addListItem("nixstbuild/gfx/ark_addfile.png", "Package configuration");
     addListItem("nixstbuild/gfx/ark_addfile.png", "Runtime configuration");
-    connect(m_pListWidget, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
+    addListItem("nixstbuild/gfx/ark_addfile.png", "File manager");
+    connect(listWidget, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
             this, SLOT(changePage(QListWidgetItem *, QListWidgetItem*)));
 
-    m_pWidgetStack = new QStackedWidget;
-    m_pWidgetStack->addWidget(createGeneralConf());
-    m_pWidgetStack->addWidget(createPackageConf());
-    m_pWidgetStack->addWidget(createRunConf());
+    widgetStack = new QStackedWidget;
+    widgetStack->addWidget(createGeneralConf());
+    widgetStack->addWidget(createPackageConf());
+    widgetStack->addWidget(createRunConf());
+    widgetStack->addWidget(createFileManager());
     
-    QWidget *cw = new QWidget();
+    QWidget *cw = new QWidget;
     setCentralWidget(cw);
     
     QHBoxLayout *layout = new QHBoxLayout(cw);
 
-    layout->addWidget(m_pListWidget);
-    layout->addWidget(m_pWidgetStack);
+    layout->addWidget(listWidget);
+    layout->addWidget(widgetStack);
 }
 
 void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previous)
@@ -93,7 +103,7 @@ void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previo
     if (!current)
         current = previous;
 
-    m_pWidgetStack->setCurrentIndex(m_pListWidget->row(current));
+    widgetStack->setCurrentIndex(listWidget->row(current));
 
     qw->buildConfig();
 }
@@ -207,12 +217,12 @@ void CExpertScreen::createMenuBar()
     createHelpMenu();
 }
 
-void CExpertScreen::addListItem(QString icon, QString name)
+void CExpertScreen::addListItem(const QString &icon, const QString &name)
 {
-    QListWidgetItem *item = new QListWidgetItem(m_pListWidget);
+    QListWidgetItem *item = new QListWidgetItem(listWidget);
 
-    if (m_pListWidget->count() == 1)
-        m_pListWidget->setCurrentItem(item);
+    if (listWidget->count() == 1)
+        listWidget->setCurrentItem(item);
         
     QFont font;
     font.setBold(true);
@@ -252,6 +262,32 @@ QWidget *CExpertScreen::createRunConf()
     editor->load("../newdepscan.lua");
     
     vlayout->addWidget(editor);
+    return ret;
+}
+
+QWidget *CExpertScreen::createFileManager()
+{
+    QWidget *ret = new QWidget;
+    QVBoxLayout *vbox = new QVBoxLayout(ret);
+    
+    ret->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    QSplitter *mainSplit = new QSplitter(Qt::Vertical);
+    vbox->addWidget(mainSplit);
+
+    mainSplit->addWidget(new CDirBrowser("/home/rick/insttest")); // UNDONE
+    
+    QSplitter *split = new QSplitter;
+    mainSplit->addWidget(split);
+
+    QListWidget *destList = new QListWidget;
+    new QListWidgetItem("Generic Files", destList);
+    split->addWidget(destList);
+
+    split->addWidget(new CDirBrowser("/tmp/nixstb")); // UNDONE
+    
+    split->setSizes(QList<int>() << 100 << 300);
+    
     return ret;
 }
 

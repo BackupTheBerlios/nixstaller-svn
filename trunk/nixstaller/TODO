@@ -25,6 +25,8 @@ OVERALL
 - loaddep() needs to be available for previews? if yes change call in package.lua and move function to shared utils.lua
 - Fix runluascript() shared lua dir path
 - Share code from Nixstbuild's run generator with genprojdir.sh?
+- Test new Lua copy file code
+- Let lua copy function call install.update()?
 
 
 PACKAGING

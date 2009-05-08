@@ -337,33 +337,13 @@ int CMain::LuaMKDirRec(lua_State *L)
 
 int CMain::LuaCPFile(lua_State *L)
 {
-    std::list<const char *> srcfiles;
-    const char *infile;
-    int in, out;
-    int args = lua_gettop(L);
-     
-    for (int u=1;u<args;u++)
-    {
-        infile = luaL_checkstring(L, u);
-        if (infile)
-            srcfiles.push_back(infile);
-    }
-    
-    CPointerWrapper<char, void> dest(StrDup(luaL_checkstring(L, args)), free);
-    
-    // Strip trailing /'s
-    size_t len = strlen(dest);
-    while(dest && *dest && (dest[len-1] == '/'))
-    {
-        dest[len-1] = 0;
-        len--;
-    }
+    const int args = lua_gettop(L);
+    const char *dest = luaL_checkstring(L, args);
 
-    if (srcfiles.empty() || !dest)
-        luaL_error(L, "Bad source/destination files");
-    
-    bool isdir = IsDir(dest);
-    if ((args >= 3) && !isdir)
+    if (args < 2)
+        luaL_error(L, "No source file(s) given");
+
+    if ((args >= 3) && !IsDir(dest))
     {
         if (!FileExists(dest))
             luaL_error(L, "Destination directory does not exist!");
@@ -371,84 +351,15 @@ int CMain::LuaCPFile(lua_State *L)
             luaL_error(L, "Destination has to be a directory when copying multiple files!");
     }
 
-    for (std::list<const char *>::iterator it=srcfiles.begin(); it!=srcfiles.end(); it++)
+    try
     {
-        CPointerWrapper<char, void> fname(StrDup(*it), free);
-        CPointerWrapper<char, void> destfile((!isdir) ? StrDup(dest) : CreateTmpText("%s/%s", (char *)dest, basename(fname)), free);
-
-        if (!strcmp(*it, destfile))
-            continue;
-        
-        in = open(*it, O_RDONLY);
-        if (in < 0)
-        {
-            lua_pushnil(L);
-            lua_pushfstring(L, "Could not open source file %s: %s\n", *it, strerror(errno));
-            return 2;
-        }
-       
-        mode_t flags = O_WRONLY | (FileExists(destfile) ? O_TRUNC : O_CREAT);
-        out = open(destfile, flags);
-
-        if (out < 0)
-        {
-            lua_pushnil(L);
-            lua_pushfstring(L, "Could not open destination file %s: %s\n", (char *)destfile, strerror(errno));
-            close(in);
-            return 2;
-        }
-        
-        bool goterr = false;
-        char buffer[1024];
-        size_t size;
-        while((size = read(in, buffer, sizeof(buffer))))
-        {
-            if (size < 0)
-            {
-                lua_pushnil(L);
-                lua_pushfstring(L, "Error reading file %s: %s", srcfiles.front(), strerror(errno));
-                goterr = true;
-                break;
-            }
-            
-            if (write(out, buffer, size) < 0)
-            {
-                lua_pushnil(L);
-                lua_pushfstring(L, "Error writing to file %s: %s", (char *)destfile, strerror(errno));
-                goterr = true;
-                break;
-            }
-        }
-        
-        if (!goterr)
-        {
-            // Copy file permissions
-            struct stat st; 
-            if (fstat(in, &st) != 0)
-            {
-                lua_pushnil(L);
-                lua_pushfstring(L, "Could not stat file %s", srcfiles.front());
-                goterr = true;
-            }
-            else
-            {
-                // Disable umask temporary so we can normally copy permissions
-                mode_t mask = umask(0);
-                if (fchmod(out, st.st_mode) != 0)
-                {
-                    lua_pushnil(L);
-                    lua_pushfstring(L, "Could not chmod destination file %s", (char *)destfile);
-                    goterr = true;
-                }
-                umask(mask);
-            }
-        }
-        
-        close(in);
-        close(out);
-
-        if (goterr)
-            return 2;
+        for (int n=1; n<args; n++)
+            CopyFile(luaL_checkstring(L, n), dest);
+    }
+    catch(Exceptions::CExIO &e)
+    {
+        NLua::LuaPushError("Could not copy file: %s", e.what());
+        return 2;
     }
 
     lua_pushboolean(L, true);

@@ -37,8 +37,8 @@ class CExpertScreen: public QMainWindow
 {
     Q_OBJECT
 
-    QStackedWidget *m_pWidgetStack;
-    QListWidget *m_pListWidget;
+    QStackedWidget *widgetStack;
+    QListWidget *listWidget;
     CEditor *editor;
     CEditSettings *editSettings;
 
@@ -48,11 +48,12 @@ class CExpertScreen: public QMainWindow
     void createHelpMenu(void);
     void createMenuBar(void);
     
-    void addListItem(QString icon, QString name);
+    void addListItem(const QString &icon, const QString &name);
     
     QWidget *createGeneralConf(void);
     QWidget *createPackageConf(void);
     QWidget *createRunConf(void);
+    QWidget *createFileManager(void);
 
 private slots:
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);

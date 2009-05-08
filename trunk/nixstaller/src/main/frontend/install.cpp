@@ -205,7 +205,7 @@ void CBaseInstall::Update()
 
 void CBaseInstall::Init(int argc, char **argv)
 {
-    NLua::LuaSet(dirname(CreateText(argv[0])), "bindir");
+    NLua::LuaSet(DirName(argv[0]), "bindir");
 
     for (int a=1; a<argc; a++)
     {

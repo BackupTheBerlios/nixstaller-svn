@@ -34,9 +34,6 @@ class CMoreLabel: public QLabel
 private slots:
     void showHelp(const QString &link);
 
-protected:
-    virtual void contextMenuEvent(QContextMenuEvent *event);
-    
 public:
     CMoreLabel(const QString &text = QString(), const QString &help = QString(),
                QWidget *parent = 0, Qt::WindowFlags flags = 0);

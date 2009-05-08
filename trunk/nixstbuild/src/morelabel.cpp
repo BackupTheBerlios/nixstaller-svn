@@ -28,6 +28,7 @@ CMoreLabel::CMoreLabel(const QString &text, const QString &help, QWidget *parent
     setLabel(text, help);
     setWordWrap(true);
     setTextFormat(Qt::RichText);
+    setContextMenuPolicy(Qt::NoContextMenu);
     connect(this, SIGNAL(linkActivated(const QString &)), this,
             SLOT(showHelp(const QString &)));
 }
@@ -35,11 +36,6 @@ CMoreLabel::CMoreLabel(const QString &text, const QString &help, QWidget *parent
 void CMoreLabel::showHelp(const QString &link)
 {
     QWhatsThis::showText(QCursor::pos() + QPoint(0, 10), helpText);
-}
-
-void CMoreLabel::contextMenuEvent(QContextMenuEvent *event)
-{
-    // HACK: Disable right click copy menu
 }
 
 void CMoreLabel::setLabel(const QString &t, const QString &m)

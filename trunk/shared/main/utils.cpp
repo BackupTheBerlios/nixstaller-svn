@@ -66,7 +66,7 @@ bool IsDir(const char *file)
     return (S_ISDIR(st.st_mode));
 }
 
-// Incase dir does not exist, it will search for the first valid top directory
+// In case dir does not exist, it will search for the first valid top directory
 std::string GetFirstValidDir(const std::string &dir)
 {
     if ((dir[0] == '/') && (dir.length() == 1))
@@ -178,7 +178,7 @@ std::string GetMD5(const std::string &file)
     fclose(fp);
     return hex_output;
 }
-                                           
+
 mode_t StrToMode(const char *str)
 {
     // Code from GNU's coreutils
@@ -263,17 +263,16 @@ void MKDirRec(std::string dir)
 
     TSTLStrSize start = 1; // Skip first root path
     TSTLStrSize end = 0;
-    bool create = false; // Start creating directories?
     
     do
     {
         end = dir.find("/", start);
-        std::string subdir = dir.substr(0, end);
-            
-        if (!create)
-            create = !FileExists(subdir);
+        std::string subdir = dir.substr(0, end+1);
         
-        if (create)
+        if (subdir.empty())
+            break;
+        
+        if (!FileExists(subdir))
             MKDir(subdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
         
         start = end + 1;
@@ -315,6 +314,22 @@ void Close(int fd)
 {
     if (close(fd) == -1)
         throw Exceptions::CExCloseFD(errno);
+}
+
+int Read(int fd, void *buf, size_t count)
+{
+    int ret = read(fd, buf, count);
+    if (ret == -1)
+        throw Exceptions::CExRead(errno);
+    return ret;
+}
+
+int Write(int fd, const void *buf, size_t count)
+{
+    int ret = write(fd, buf, count);
+    if (ret == -1)
+        throw Exceptions::CExWrite(errno);
+    return ret;
 }
 
 pid_t WaitPID(pid_t pid, int *status, int options)
@@ -522,6 +537,85 @@ TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur,
 std::string JoinPath(const std::string &path, const std::string &file)
 {
     return path + "/" + file;
+}
+
+void FStat(int fd, struct stat *buf)
+{
+    if (fstat(fd, buf) != 0)
+        throw Exceptions::CExFStat(errno);
+}
+
+void FChMod(int fd, mode_t mode)
+{
+    if (fchmod(fd, mode) != 0)
+        throw Exceptions::CExChMod(errno);
+}
+
+void CopyFile(const std::string &src, std::string dest, TCopyCB cb, void *prvdata)
+{
+    TSTLStrSize len = dest.length();
+
+    // Strip trailing /'s
+    while (len && (dest[len-1] == '/'))
+    {
+        dest.erase(len-1, 1);
+        len--;
+    }
+
+    std::string destpath;
+    if (IsDir(dest))
+        destpath = JoinPath(dest, BaseName(src));
+    else
+        destpath = dest;
+
+    if (src == destpath)
+        return;
+
+    CFDWrapper in(Open(src.c_str(), O_RDONLY));
+
+    mode_t flags = O_WRONLY | (FileExists(destpath) ? O_TRUNC : O_CREAT);
+    CFDWrapper out(Open(destpath.c_str(), flags));
+
+    char buffer[1024];
+    size_t size;
+    while((size = Read(in, buffer, sizeof(buffer))))
+    {
+        int b = Write(out, buffer, size);
+        if (cb)
+            cb(b, prvdata);
+    }
+
+    // Copy file permissions
+    struct stat st;
+    FStat(in, &st);
+
+    // Disable umask temporary so we can normally copy permissions
+    mode_t mask = umask(0);
+    FChMod(out, st.st_mode);
+    umask(mask);
+}
+
+std::string DirName(const std::string &s)
+{
+    std::string ret = s;
+    TSTLStrSize ind = ret.rfind("/");
+    
+    if (ind != std::string::npos)
+        ret.erase(ind+1);
+    else
+        ret = ".";
+    
+    return ret;
+}
+
+std::string BaseName(std::string s)
+{
+    TSTLStrSize ind = s.rfind("/");
+    
+    if (ind != std::string::npos)
+        return s.substr(ind+1);
+    
+    return s;
 }
 
 // -------------------------------------
