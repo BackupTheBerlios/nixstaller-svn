@@ -21,6 +21,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QFileInfo>
 #include <QHeaderView>
 #include <QItemSelection>
 #include <QMessageBox>
@@ -49,9 +50,13 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     browserView->setContextMenuPolicy(Qt::ActionsContextMenu);
     browserView->setSortingEnabled(true);
     browserView->sortByColumn(0, Qt::AscendingOrder);
-    browserView->setColumnWidth(0, 200);
 
-    QAction *a = new QAction("Copy", this);
+    QAction *a = new QAction("Cut", this);
+    a->setShortcut(tr("Ctrl+X"));
+    connect(a, SIGNAL(triggered()), this, SLOT(cutAction()));
+    browserView->addAction(a);
+
+    a = new QAction("Copy", this);
     a->setShortcut(tr("Ctrl+C"));
     connect(a, SIGNAL(triggered()), this, SLOT(copyAction()));
     browserView->addAction(a);
@@ -61,7 +66,7 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     connect(a, SIGNAL(triggered()), this, SLOT(pasteAction()));
     browserView->addAction(a);
 
-    CDirSortProxy *proxyModel = new CDirSortProxy(browserModel);
+    proxyModel = new CDirSortProxy(browserModel);
     proxyModel->setSourceModel(browserModel);
     browserView->setModel(proxyModel);
 
@@ -74,28 +79,48 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     }
     else
         browserModel->setRootPath("/");
+
+    browserView->setColumnWidth(0, 200); // This has to be as last (why?)
 }
 
 void CDirBrowser::copyAction()
 {
-    QMimeData *mime = browserModel->mimeData(browserView->selectionModel()->selection().indexes());
+    QMimeData *mime = proxyModel->mimeData(browserView->selectionModel()->selection().indexes());
+    mime->setData("application/cut", "0");
+    QApplication::clipboard()->setMimeData(mime);
+}
+
+void CDirBrowser::cutAction()
+{
+    QMimeData *mime = proxyModel->mimeData(browserView->selectionModel()->selection().indexes());
+    mime->setData("nixstbuild/cut", "1");
     QApplication::clipboard()->setMimeData(mime);
 }
 
 void CDirBrowser::pasteAction()
 {
     const QMimeData *mime = QApplication::clipboard()->mimeData();
+
     if (!mime || !mime->hasUrls())
         return;
 
+    CDirModel::optype ot = CDirModel::COPY;
+
+    if (mime->hasFormat("nixstbuild/cut"))
+    {
+        QByteArray d = mime->data("nixstbuild/cut");
+        if (d.at(0) == '1')
+            ot = CDirModel::MOVE;
+    }
+    
     if (browserView->currentIndex().isValid())
     {
-        const QModelIndex &par = browserView->currentIndex().parent();
+        QModelIndex par = proxyModel->mapToSource(browserView->currentIndex()).parent();
         if (par.isValid())
-            browserModel->copyFiles(mime, par);
+            browserModel->operateOnFiles(mime, par, ot);
     }
     else
-        browserModel->copyFiles(mime, browserView->rootIndex());
+        browserModel->operateOnFiles(mime, proxyModel->mapToSource(browserView->rootIndex()), ot);
 }
 
 
@@ -104,8 +129,9 @@ bool CDirSortProxy::lessThan(const QModelIndex &left, const QModelIndex &right) 
     QFileSystemModel *model = qobject_cast<QFileSystemModel *>(sourceModel());
     QString lpath = model->filePath(left);
     QString rpath = model->filePath(right);
-    bool ldir = (IsDir(lpath.toStdString()));
-    bool rdir = (IsDir(rpath.toStdString()));
+    QFileInfo li(lpath), ri(rpath);
+    bool ldir = li.isDir();
+    bool rdir = ri.isDir();
     
     // Directories are < files
     if (ldir && !rdir)
@@ -138,16 +164,37 @@ int CDirModel::sizeUnitFact(qint64 size)
     return ret;
 }
 
-void CDirModel::SafeCopy(const std::string &src, const std::string &dest)
+void CDirModel::safeFileOp(const std::string &src, const std::string &dest, optype opType)
 {
     try
     {
-        MKDirRec(DirName(dest));
-        CopyFile(src, dest, &copyWritten, this);
+        MKDirRec(dest);
+
+        if (opType == COPY)
+            CopyFile(src, dest, &opWritten, this);
+        else // Move
+            MoveFile(src, dest, &opWritten, this);
+    }
+    catch(Exceptions::CExChMod &)
+    {
+        // Silently ignore those annoying permission changing errors ;-)
     }
     catch(Exceptions::CExIO &e)
     {
-        QMessageBox::critical(0, "Error", QString("Failed to copy file: ") + e.what());
+        QMessageBox::critical(0, "Error", QString("Failed to operate on file: ") + e.what());
+    }
+}
+
+void CDirModel::safeMKDirRec(const std::string &dir)
+{
+    try
+    {
+        MKDirRec(dir);
+    }
+    catch(Exceptions::CExIO &e)
+    {
+        QMessageBox::critical(0, "Error",
+                              QString("Failed to create directory %1: %2").arg(dir.c_str()).arg(e.what()));
     }
 }
 
@@ -264,14 +311,15 @@ bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int r
 
     if (action == Qt::CopyAction)
     {
-        copyFiles(data, parent);
+        operateOnFiles(data, parent, COPY);
         return true;
     }
     
     return false;
 }
 
-void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent)
+void CDirModel::operateOnFiles(const QMimeData *data, const QModelIndex &parent,
+                               optype opType)
 {
     progressDialog->reset();
     progressDialog->setLabelText("Copying files...");
@@ -335,24 +383,51 @@ void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent)
                 if (progressDialog->wasCanceled())
                     break;
 
-                std::string path = *it + "/" + *subit;
+                std::string path = JoinPath(*it, *subit);
                 if (!IsDir(path))
                 {
-                    std::string dirpath = basedest + "/" + DirName(*subit);
+                    std::string dirpath = JoinPath(basedest, DirName(*subit));
                     if (!verifyExistance(path, dirpath))
                         continue;
-                    SafeCopy(path, dirpath);
+
+                    safeFileOp(path, dirpath, opType);
                 }
+            }
+
+            if ((opType == COPY) || (opType == MOVE))
+            {
+                // Remove all directories (silently ignore any errors) and
+                // add missing (empty dirs aren't created yet)
+                for (TStringVec::iterator subit=pathsMap[*it].begin();
+                     subit!=pathsMap[*it].end(); subit++)
+                {
+                    if (opType == MOVE)
+                    {
+                        std::string path = JoinPath(*it, *subit);
+                        if (IsDir(path))
+                            ::rmdir(path.c_str());
+                    }
+
+                    std::string dirpath = JoinPath(basedest, DirName(*subit));
+                    qDebug("dirpath: %s(%d)", dirpath.c_str(), FileExists(dirpath));
+                    if (!FileExists(dirpath))
+                        safeMKDirRec(dirpath);
+                }
+
+                if (opType == MOVE)
+                    ::rmdir(it->c_str());
+
+                safeMKDirRec(basedest);
             }
         }
         else
-            SafeCopy(*it, dest);
+            safeFileOp(*it, dest, opType);
     }
 
     progressDialog->setValue(max);
 }
 
-void CDirModel::copyWritten(int bytes, void *data)
+void CDirModel::opWritten(int bytes, void *data)
 {
     CDirModel *me = static_cast<CDirModel *>(data);
     me->statWritten += bytes;

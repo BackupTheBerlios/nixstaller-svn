@@ -17,7 +17,8 @@ SOURCES += main.cpp \
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
-          qt
+          qt \
+ debug
 DESTDIR = ../bin
 HEADERS += welcome.h \
  expert.h \
@@ -63,4 +64,6 @@ INCLUDEPATH += ../qcodeedit/lib \
   ../qcodeedit/lib/document/ \
   ../../shared/include/ \
   ../../shared/
+
+CONFIG -= release
 

@@ -316,8 +316,36 @@ class CExChMod: public CExErrno, public CExIO
 public:
     CExChMod(int err) : CExErrno(err) { }
     virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("Could chmod file: %s"), Error()); };
+    { return FormatText(GetExTranslation("Could not chmod file: %s"), Error()); };
 
+};
+
+class CExSymLink: public CExErrno, public CExIO
+{
+    char m_szFile[1024];
+    
+public:
+    CExSymLink(int err, const char *file) : CExErrno(err) { StoreString(file, m_szFile, sizeof(m_szFile)); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Could not create symlink %s: %s"), m_szFile, Error()); };
+};
+
+class CExUnlink: public CExErrno, public CExIO
+{
+    char m_szFile[1024];
+    
+public:
+    CExUnlink(int err, const char *dir) : CExErrno(err) { StoreString(dir, m_szFile, sizeof(m_szFile)); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Could not remove file %s: %s"), m_szFile, Error()); };
+};
+
+class CExMove: public CExErrno, public CExIO
+{
+public:
+    CExMove(int err) : CExErrno(err) { };
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Could not move file: %s"), Error()); };
 };
 
 }

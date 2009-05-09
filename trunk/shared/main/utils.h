@@ -28,7 +28,7 @@
 #include <sys/utsname.h>
 #include <sys/wait.h>
 
-typedef void (*TCopyCB)(int, void *);
+typedef void (*TFileOpCB)(int, void *);
 
 bool FileExists(const char *file);
 inline bool FileExists(const std::string &file) { return FileExists(file.c_str()); };
@@ -38,6 +38,8 @@ bool ReadAccess(const char *file);
 inline bool ReadAccess(const std::string &file) { return ReadAccess(file.c_str()); };
 bool IsDir(const char *file);
 inline bool IsDir(const std::string &file) { return IsDir(file.c_str()); }
+bool IsLink(const char *file);
+inline bool IsLink(const std::string &file) { return IsLink(file.c_str()); }
 off_t FileSize(const char *file);
 inline off_t FileSize(const std::string &file) { return FileSize(file.c_str()); };
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
@@ -68,7 +70,15 @@ TSTLStrSize GetMBWidthFromC(const std::string &str, std::string::const_iterator 
 TSTLStrSize GetFitfromW(const std::string &str, std::string::const_iterator cur, TSTLStrSize width, bool roundup);
 char *CreateTmpText(const char *s, ...);
 std::string JoinPath(const std::string &path, const std::string &file);
-void CopyFile(const std::string &src, std::string dest, TCopyCB cb = NULL, void *prvdata = NULL);
+void SymLink(const char *src, const char *dest);
+inline void SymLink(const std::string &src,
+                    const std::string &dest) { SymLink(src.c_str(), dest.c_str()); }
+void Unlink(const char *file);
+inline void Unlink(const std::string &file) { Unlink(file.c_str()); }
+void CopyFile(const std::string &src, std::string dest,
+              TFileOpCB cb = NULL, void *prvdata = NULL);
+void MoveFile(const std::string &src, std::string dest,
+              TFileOpCB cb = NULL, void *prvdata = NULL);
 std::string DirName(const std::string &s);
 std::string BaseName(std::string s);
 void LStat(const char *file, struct stat *buf);

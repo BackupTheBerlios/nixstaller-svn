@@ -66,6 +66,16 @@ bool IsDir(const char *file)
     return (S_ISDIR(st.st_mode));
 }
 
+bool IsLink(const char *file)
+{
+    struct stat st;
+    
+    if (lstat(file, &st) != 0)
+        return false;
+    
+    return (S_ISLNK(st.st_mode));
+}
+
 off_t FileSize(const char *file)
 {
     struct stat st;
@@ -274,10 +284,10 @@ void MKDirRec(std::string dir)
     do
     {
         end = dir.find("/", start);
-        std::string subdir = dir.substr(0, end+1);
-        
+        std::string subdir = dir.substr(0, end);
+
         if (subdir.empty())
-            break;
+            break;       
         
         if (!FileExists(subdir))
             MKDir(subdir, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
@@ -439,7 +449,8 @@ void ConvertLuaErrorToEx()
     throw Exceptions::CExLua(errmsg);
 }
 
-int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
+int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
+           struct timeval *timeout)
 {
     int ret = select(nfds, readfds, writefds, exceptfds, timeout);
     if (ret == -1)
@@ -564,30 +575,47 @@ void FChMod(int fd, mode_t mode)
         throw Exceptions::CExChMod(errno);
 }
 
-void CopyFile(const std::string &src, std::string dest, TCopyCB cb, void *prvdata)
+void MakeOptDest(const std::string &src, std::string &dest)
 {
     TSTLStrSize len = dest.length();
-
+    
     // Strip trailing /'s
     while (len && (dest[len-1] == '/'))
     {
         dest.erase(len-1, 1);
         len--;
     }
-
-    std::string destpath;
+    
     if (IsDir(dest))
-        destpath = JoinPath(dest, BaseName(src));
-    else
-        destpath = dest;
+        dest = JoinPath(dest, BaseName(src));
+}
 
-    if (src == destpath)
+void SymLink(const char *src, const char *dest)
+{
+    if (symlink(src, dest) == -1)
+        throw Exceptions::CExSymLink(errno, dest);
+}
+
+void CopyFile(const std::string &src, std::string dest,
+              TFileOpCB cb, void *prvdata)
+{
+    MakeOptDest(src, dest);
+    
+    if (src == dest)
         return;
 
+    if (IsLink(src))
+    {
+        if (FileExists(dest))
+            Unlink(dest.c_str());
+        SymLink(src, dest);
+        return;
+    }
+    
     CFDWrapper in(Open(src.c_str(), O_RDONLY));
 
-    mode_t flags = O_WRONLY | (FileExists(destpath) ? O_TRUNC : O_CREAT);
-    CFDWrapper out(Open(destpath.c_str(), flags));
+    mode_t flags = O_WRONLY | (FileExists(dest) ? O_TRUNC : O_CREAT);
+    CFDWrapper out(Open(dest.c_str(), flags));
 
     char buffer[1024];
     size_t size;
@@ -606,6 +634,43 @@ void CopyFile(const std::string &src, std::string dest, TCopyCB cb, void *prvdat
     mode_t mask = umask(0);
     FChMod(out, st.st_mode);
     umask(mask);
+}
+
+void Unlink(const char *file)
+{
+    if (unlink(file) != 0)
+        throw Exceptions::CExUnlink(errno, file);
+}
+
+void MoveFile(const std::string &src, std::string dest,
+              TFileOpCB cb, void *prvdata)
+{
+    
+    MakeOptDest(src, dest);
+    
+    if (src == dest)
+        return;
+    
+    int ret = rename(src.c_str(), dest.c_str());
+    if (ret != -1)
+        return; // Hooray, quick and fast move :)
+    else if (errno != EXDEV)
+        throw Exceptions::CExMove(errno);
+    
+    // Couldn't rename file because it's on another disk; copy & delete
+    
+    try
+    {
+        CopyFile(src, dest, cb, prvdata);
+    }
+    catch(Exceptions::CExChMod &)
+    {
+        // Always unlink
+        Unlink(src);
+        throw;
+    }
+
+    Unlink(src);
 }
 
 std::string DirName(const std::string &s)

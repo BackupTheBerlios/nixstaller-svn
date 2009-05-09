@@ -65,9 +65,9 @@ bool verifyLuaEdit(QLineEdit *edit)
             "elseif" << "if" << "or" << "until" << "while";
     
     if (edit->text().isEmpty())
-        QMessageBox::information(NULL, "Missing information", "Please specify a variable name.");
+        QMessageBox::critical(NULL, "Missing information", "Please specify a variable name.");
     else if (reserverd.contains(edit->text()))
-        QMessageBox::information(NULL, "Wrong input",
+        QMessageBox::critical(NULL, "Wrong input",
                                  "The specified variable name is a reserverd keyword. Please specify another name.");
     else
         ret = true;

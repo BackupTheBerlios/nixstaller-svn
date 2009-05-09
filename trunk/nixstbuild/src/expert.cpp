@@ -275,7 +275,7 @@ QWidget *CExpertScreen::createFileManager()
     QSplitter *mainSplit = new QSplitter(Qt::Vertical);
     vbox->addWidget(mainSplit);
 
-    mainSplit->addWidget(new CDirBrowser("/home/rick/insttest")); // UNDONE
+    mainSplit->addWidget(new CDirBrowser("/")); // UNDONE
     
     QSplitter *split = new QSplitter;
     mainSplit->addWidget(split);

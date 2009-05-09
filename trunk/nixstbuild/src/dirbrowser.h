@@ -31,16 +31,19 @@ class QProgressDialog;
 class QTreeView;
 
 class CDirModel;
+class CDirSortProxy;
 
 class CDirBrowser: public QWidget
 {
     Q_OBJECT
     
     CDirModel *browserModel;
+    CDirSortProxy *proxyModel;
     QTreeView *browserView;
 
 private slots:
     void copyAction(void);
+    void cutAction(void);
     void pasteAction(void);
     
 public:
@@ -58,6 +61,10 @@ public:
 
 class CDirModel: public QFileSystemModel
 {
+public:
+    enum optype { COPY, MOVE, DELETE };
+
+private:
     enum asktype { DO_ALL, DO_NONE, DO_ASK };
 
     QProgressDialog *progressDialog;
@@ -65,9 +72,10 @@ class CDirModel: public QFileSystemModel
     int statWritten, statSizeFact;
     asktype handleOverWrite;
     bool multipleFiles;
-    
+
     int sizeUnitFact(qint64 size);
-    void SafeCopy(const std::string &src, const std::string &dest);
+    void safeFileOp(const std::string &src, const std::string &dest, optype opType);
+    void safeMKDirRec(const std::string &dir);
     bool getAllSubPaths(const std::string &dir, TStringVec &paths);
     bool askOverWrite(const QString &t, const QString &l);
     bool verifyExistance(const std::string &src, std::string dest);
@@ -78,9 +86,9 @@ public:
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
                                 int column, const QModelIndex &parent);
 
-    void copyFiles(const QMimeData *data, const QModelIndex &parent);
+    void operateOnFiles(const QMimeData *data, const QModelIndex &parent, optype opType);
 
-    static void copyWritten(int bytes, void *data);
+    static void opWritten(int bytes, void *data);
 };
 
 #endif
