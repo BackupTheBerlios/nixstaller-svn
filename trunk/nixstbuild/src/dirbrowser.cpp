@@ -50,21 +50,28 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     browserView->setContextMenuPolicy(Qt::ActionsContextMenu);
     browserView->setSortingEnabled(true);
     browserView->sortByColumn(0, Qt::AscendingOrder);
+    connect(browserView, SIGNAL(pressed(const QModelIndex &)),
+            this, SLOT(clickedCB(const QModelIndex &)));
 
-    QAction *a = new QAction("Cut", this);
-    a->setShortcut(tr("Ctrl+X"));
-    connect(a, SIGNAL(triggered()), this, SLOT(cutAction()));
-    browserView->addAction(a);
+    cutAction = new QAction("Cut", this);
+    cutAction->setShortcut(tr("Ctrl+X"));
+    connect(cutAction, SIGNAL(triggered()), this, SLOT(cutActionCB()));
+    browserView->addAction(cutAction);
 
-    a = new QAction("Copy", this);
-    a->setShortcut(tr("Ctrl+C"));
-    connect(a, SIGNAL(triggered()), this, SLOT(copyAction()));
-    browserView->addAction(a);
+    copyAction = new QAction("Copy", this);
+    copyAction->setShortcut(tr("Ctrl+C"));
+    connect(copyAction, SIGNAL(triggered()), this, SLOT(copyActionCB()));
+    browserView->addAction(copyAction);
 
-    a = new QAction("Paste", this);
-    a->setShortcut(tr("Ctrl+V"));
-    connect(a, SIGNAL(triggered()), this, SLOT(pasteAction()));
-    browserView->addAction(a);
+    pasteAction = new QAction("Paste", this);
+    pasteAction->setShortcut(tr("Ctrl+V"));
+    connect(pasteAction, SIGNAL(triggered()), this, SLOT(pasteActionCB()));
+    browserView->addAction(pasteAction);
+
+    deleteAction = new QAction("Delete", this);
+    deleteAction->setShortcut(tr("Delete"));
+    connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteActionCB()));
+    browserView->addAction(deleteAction);
 
     proxyModel = new CDirSortProxy(browserModel);
     proxyModel->setSourceModel(browserModel);
@@ -83,44 +90,96 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     browserView->setColumnWidth(0, 200); // This has to be as last (why?)
 }
 
-void CDirBrowser::copyAction()
+QModelIndex CDirBrowser::getCurParentIndex()
+{
+    if (browserView->currentIndex().isValid())
+        return proxyModel->mapToSource(browserView->currentIndex()).parent();
+    else
+        return proxyModel->mapToSource(browserView->rootIndex());
+}
+
+bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
+{
+    QFileInfo fi(path);
+    return (fi.isWritable() || onlyread) && fi.isReadable() && (!fi.isDir() || fi.isExecutable());
+}
+
+void CDirBrowser::copyActionCB()
 {
     QMimeData *mime = proxyModel->mimeData(browserView->selectionModel()->selection().indexes());
     mime->setData("application/cut", "0");
     QApplication::clipboard()->setMimeData(mime);
 }
 
-void CDirBrowser::cutAction()
+void CDirBrowser::cutActionCB()
 {
     QMimeData *mime = proxyModel->mimeData(browserView->selectionModel()->selection().indexes());
     mime->setData("nixstbuild/cut", "1");
     QApplication::clipboard()->setMimeData(mime);
 }
 
-void CDirBrowser::pasteAction()
+void CDirBrowser::pasteActionCB()
 {
     const QMimeData *mime = QApplication::clipboard()->mimeData();
 
     if (!mime || !mime->hasUrls())
         return;
 
-    CDirModel::optype ot = CDirModel::COPY;
-
+    bool move = false;
+    
     if (mime->hasFormat("nixstbuild/cut"))
     {
         QByteArray d = mime->data("nixstbuild/cut");
         if (d.at(0) == '1')
-            ot = CDirModel::MOVE;
+            move = true;
+    }
+
+    browserModel->copyFiles(mime, getCurParentIndex(), move);
+}
+
+void CDirBrowser::deleteActionCB()
+{
+    QMessageBox box(QMessageBox::Question, "Delete file(s)",
+                    "Are you sure you want to remove the selected file(s)?",
+                    QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+    QMimeData *mime = proxyModel->mimeData(browserView->selectionModel()->selection().indexes());
+
+    QString ext = "The following will files or directories will be PERMANENTLY removed:\n\n";
+
+    foreach(QUrl url, mime->urls())
+    {
+        QString f = url.toLocalFile();
+        QFileInfo fi(f);
+        ext += QString("%1 (%2)\n").arg(url.toLocalFile()).arg((fi.isDir() ? "directory" : "file"));
     }
     
-    if (browserView->currentIndex().isValid())
+    box.setDetailedText(ext);
+
+    if (box.exec() == QMessageBox::Yes)
+        browserModel->removeFiles(mime);
+}
+
+void CDirBrowser::clickedCB(const QModelIndex &index)
+{
+    QModelIndex selection = proxyModel->mapToSource(index);
+
+    if (!selection.isValid())
+        return;
+
+    if (selection.parent().isValid())
     {
-        QModelIndex par = proxyModel->mapToSource(browserView->currentIndex()).parent();
-        if (par.isValid())
-            browserModel->operateOnFiles(mime, par, ot);
+        QString p = browserModel->filePath(selection.parent());
+        pasteAction->setEnabled(permissionsOK(p, false));
     }
-    else
-        browserModel->operateOnFiles(mime, proxyModel->mapToSource(browserView->rootIndex()), ot);
+    
+    QString path = browserModel->filePath(selection);
+    bool permOK = permissionsOK(path, false);
+    
+    cutAction->setEnabled(permOK);
+    deleteAction->setEnabled(permOK);
+
+    copyAction->setEnabled(permissionsOK(path, true));
 }
 
 
@@ -164,16 +223,16 @@ int CDirModel::sizeUnitFact(qint64 size)
     return ret;
 }
 
-void CDirModel::safeFileOp(const std::string &src, const std::string &dest, optype opType)
+void CDirModel::safeCopy(const std::string &src, const std::string &dest, bool move)
 {
     try
     {
         MKDirRec(dest);
 
-        if (opType == COPY)
-            CopyFile(src, dest, &opWritten, this);
-        else // Move
-            MoveFile(src, dest, &opWritten, this);
+        if (!move)
+            CopyFile(src, dest, &copyWritten, this);
+        else
+            MoveFile(src, dest, &copyWritten, this);
     }
     catch(Exceptions::CExChMod &)
     {
@@ -303,6 +362,28 @@ bool CDirModel::verifyExistance(const std::string &src, std::string dest)
                         QString("File '%1' already exists.\nOverwrite?").arg(dest.c_str()));
 }
 
+void CDirModel::RmDir(const std::string &dir)
+{
+    if (::rmdir(dir.c_str()) != 0)
+    {
+        QMessageBox::critical(0, "Error",
+                              QString("Failed to remove directory %1").arg(dir.c_str()));
+    }
+}
+
+void CDirModel::safeUnlink(const std::string &file)
+{
+    try
+    {
+        Unlink(file);
+    }
+    catch(Exceptions::CExUnlink &e)
+    {
+        QMessageBox::critical(0, "Error",
+                              QString("Failed to remove file: %1").arg(e.what()));
+    }
+}
+
 bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
                              int column, const QModelIndex &parent)
 {
@@ -311,27 +392,30 @@ bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int r
 
     if (action == Qt::CopyAction)
     {
-        operateOnFiles(data, parent, COPY);
+        copyFiles(data, parent, false);
         return true;
     }
     
     return false;
 }
 
-void CDirModel::operateOnFiles(const QMimeData *data, const QModelIndex &parent,
-                               optype opType)
+void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent,
+                               bool move)
 {
     progressDialog->reset();
-    progressDialog->setLabelText("Copying files...");
     progressDialog->setMinimumDuration(500);
 
+    if (!move)
+        progressDialog->setLabelText("Copying files...");
+    else
+        progressDialog->setLabelText("Moving files...");
+    
     qint64 total = 0;
     std::map<std::string, TStringVec> pathsMap;
     TStringVec sources;
+    std::string dest = filePath(parent).toStdString();
 
     multipleFiles = (data->urls().size() > 1);
-
-    std::string dest = filePath(parent).toStdString();
 
     foreach(QUrl url, data->urls())
     {
@@ -376,6 +460,7 @@ void CDirModel::operateOnFiles(const QMimeData *data, const QModelIndex &parent,
         if (IsDir(*it))
         {
             std::string basedest = dest + "/" + BaseName(*it);
+            TStringVec subDirs;
 
             for (TStringVec::iterator subit=pathsMap[*it].begin();
                  subit!=pathsMap[*it].end(); subit++)
@@ -390,44 +475,85 @@ void CDirModel::operateOnFiles(const QMimeData *data, const QModelIndex &parent,
                     if (!verifyExistance(path, dirpath))
                         continue;
 
-                    safeFileOp(path, dirpath, opType);
+                    safeCopy(path, dirpath, move);
                 }
+                else
+                    subDirs.insert(subDirs.begin(), *subit);
             }
 
-            if ((opType == COPY) || (opType == MOVE))
+            // Remove all directories (silently ignore any errors) and
+            // add missing (empty dirs aren't created yet)
+            for (TStringVec::iterator subit=subDirs.begin(); subit!=subDirs.end(); subit++)
             {
-                // Remove all directories (silently ignore any errors) and
-                // add missing (empty dirs aren't created yet)
-                for (TStringVec::iterator subit=pathsMap[*it].begin();
-                     subit!=pathsMap[*it].end(); subit++)
+                if (move)
                 {
-                    if (opType == MOVE)
-                    {
-                        std::string path = JoinPath(*it, *subit);
-                        if (IsDir(path))
-                            ::rmdir(path.c_str());
-                    }
-
-                    std::string dirpath = JoinPath(basedest, DirName(*subit));
-                    qDebug("dirpath: %s(%d)", dirpath.c_str(), FileExists(dirpath));
-                    if (!FileExists(dirpath))
-                        safeMKDirRec(dirpath);
+                    std::string path = JoinPath(*it, *subit);
+                    if (IsDir(path))
+                        ::rmdir(path.c_str());
                 }
 
-                if (opType == MOVE)
-                    ::rmdir(it->c_str());
-
-                safeMKDirRec(basedest);
+                std::string dirpath = JoinPath(basedest, DirName(*subit));
+                if (!FileExists(dirpath))
+                    safeMKDirRec(dirpath);
             }
+
+            if (move)
+                ::rmdir(it->c_str());
+
+            safeMKDirRec(basedest);
         }
         else
-            safeFileOp(*it, dest, opType);
+            safeCopy(*it, dest, move);
     }
 
     progressDialog->setValue(max);
 }
 
-void CDirModel::opWritten(int bytes, void *data)
+void CDirModel::removeFiles(const QMimeData *data)
+{
+    progressDialog->reset();
+    progressDialog->setMinimumDuration(500);
+    progressDialog->setLabelText("Deleting files...");
+    progressDialog->setRange(0, data->urls().size());
+
+    int n = 0;
+
+    foreach(QUrl url, data->urls())
+    {
+        if (progressDialog->wasCanceled())
+            break;
+
+        std::string file = url.toLocalFile().toStdString();
+        if (IsDir(file))
+        {
+            TStringVec subFiles;
+            TStringVec remDirs;
+            getAllSubPaths(file, subFiles);
+
+            for (TStringVec::iterator it=subFiles.begin(); it!=subFiles.end(); it++)
+            {
+                std::string subpath = JoinPath(file, *it);
+                if (IsDir(subpath))
+                    remDirs.insert(remDirs.begin(), subpath);
+                else
+                    safeUnlink(subpath); // UNDONE: Handle exception
+            }
+
+            // Remove all dirs after they are cleared
+            for (TStringVec::iterator it=remDirs.begin(); it!=remDirs.end(); it++)
+                RmDir(*it);
+
+            RmDir(file);
+        }
+        else
+            safeUnlink(file);
+
+        n++;
+        progressDialog->setValue(n);
+    }
+}
+
+void CDirModel::copyWritten(int bytes, void *data)
 {
     CDirModel *me = static_cast<CDirModel *>(data);
     me->statWritten += bytes;

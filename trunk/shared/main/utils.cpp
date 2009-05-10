@@ -606,7 +606,7 @@ void CopyFile(const std::string &src, std::string dest,
 
     if (IsLink(src))
     {
-        if (FileExists(dest))
+        if (FileExists(dest) && !IsDir(dest))
             Unlink(dest.c_str());
         SymLink(src, dest);
         return;

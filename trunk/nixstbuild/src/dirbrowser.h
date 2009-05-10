@@ -40,12 +40,18 @@ class CDirBrowser: public QWidget
     CDirModel *browserModel;
     CDirSortProxy *proxyModel;
     QTreeView *browserView;
+    QAction *copyAction, *cutAction, *pasteAction, *deleteAction;
+
+    QModelIndex getCurParentIndex(void);
+    bool permissionsOK(const QString &path, bool onlyread);
 
 private slots:
-    void copyAction(void);
-    void cutAction(void);
-    void pasteAction(void);
-    
+    void copyActionCB(void);
+    void cutActionCB(void);
+    void pasteActionCB(void);
+    void deleteActionCB(void);
+    void clickedCB(const QModelIndex &index);
+
 public:
     CDirBrowser(const QString &d = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
 };
@@ -61,10 +67,6 @@ public:
 
 class CDirModel: public QFileSystemModel
 {
-public:
-    enum optype { COPY, MOVE, DELETE };
-
-private:
     enum asktype { DO_ALL, DO_NONE, DO_ASK };
 
     QProgressDialog *progressDialog;
@@ -74,11 +76,13 @@ private:
     bool multipleFiles;
 
     int sizeUnitFact(qint64 size);
-    void safeFileOp(const std::string &src, const std::string &dest, optype opType);
+    void safeCopy(const std::string &src, const std::string &dest, bool move);
     void safeMKDirRec(const std::string &dir);
     bool getAllSubPaths(const std::string &dir, TStringVec &paths);
     bool askOverWrite(const QString &t, const QString &l);
     bool verifyExistance(const std::string &src, std::string dest);
+    void RmDir(const std::string &dir);
+    void safeUnlink(const std::string &file);
 
 public:
     CDirModel(QObject *parent = 0);
@@ -86,9 +90,10 @@ public:
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
                                 int column, const QModelIndex &parent);
 
-    void operateOnFiles(const QMimeData *data, const QModelIndex &parent, optype opType);
+    void copyFiles(const QMimeData *data, const QModelIndex &parent, bool move);
+    void removeFiles(const QMimeData *data);
 
-    static void opWritten(int bytes, void *data);
+    static void copyWritten(int bytes, void *data);
 };
 
 #endif
