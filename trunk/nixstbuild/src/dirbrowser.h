@@ -21,45 +21,74 @@
 #ifndef DIRBROWSER_H
 #define DIRBROWSER_H
 
+#include <QCompleter>
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
+#include <QStack>
 #include <QTreeView>
 #include <QWidget>
 
 #include "main/main.h"
 
+class QLineEdit;
 class QProgressDialog;
 
+class CDirCompleter;
 class CDirModel;
 class CDirSortProxy;
 class CDirView;
 
+// Directory browser. Some parts are based on example
+// from http://wiki.qtcentre.org/index.php?title=Extended_Dir_View_example
 class CDirBrowser: public QWidget
 {
     Q_OBJECT
-    
-    QAction *homeTool, *favTool, *addDirTool;
+
+    QString rootDir;
+    QStack<QString> backStack, forwardStack;
+    QAction *topTool, *backTool, *forwardTool, *homeTool, *favTool, *addDirTool;
+    QLineEdit *browserInput;
+    CDirCompleter *browserCompleter;
     CDirModel *browserModel;
     CDirSortProxy *proxyModel;
     CDirView *browserView;
     QAction *copyAction, *cutAction, *pasteAction, *deleteAction, *renameAction;
     QAction *viewHidden;
 
+    QWidget *createToolBar(void);
+    void createContextMenu(void);
     bool permissionsOK(const QString &path, bool onlyread);
 
 private slots:
+    void topToolCB(void);
+    void backToolCB(void);
+    void forwardToolCB(void);
+    void homeToolCB(void);
+
+    void setRootIndex(const QModelIndex &index, bool remember = true);
+
     void copyActionCB(void);
     void cutActionCB(void);
     void pasteActionCB(void);
     void deleteActionCB(void);
     void renameActionCB(void);
     void viewHiddenCB(bool e);
+    
     void updateActions(void);
 
 public:
     CDirBrowser(const QString &d = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-    void setRootDir(QString dir);
+    void setRootDir(const QString &dir);
+};
+
+class CDirCompleter: public QCompleter
+{
+public:
+    CDirCompleter(QObject *parent = 0) : QCompleter(parent) {}
+
+    virtual QString pathFromIndex(const QModelIndex &index) const;
+    virtual QStringList splitPath(const QString &path) const;
 };
 
 class CDirView: public QTreeView

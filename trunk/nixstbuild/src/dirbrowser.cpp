@@ -24,6 +24,7 @@
 #include <QFileInfo>
 #include <QHeaderView>
 #include <QItemSelection>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -40,21 +41,7 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
 
-    QToolBar *toolBar = new QToolBar;
-    QAction *a = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogToParent)),
-                                    "Top");
-
-    homeTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_DirHomeIcon)),
-                           "Home");
-
-    // UNDONE: Better icon?
-    favTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_DirLinkIcon)),
-                           "Favorites");
-
-    addDirTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogNewFolder)),
-                           "New directory");
-
-    vbox->addWidget(toolBar);
+    vbox->addWidget(createToolBar());
 
     browserModel = new CDirModel;
     browserModel->setReadOnly(false);
@@ -63,7 +50,73 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     browserView = new CDirView;
     connect(browserView, SIGNAL(mouseClicked()),
             this, SLOT(updateActions()));
+    connect(browserView, SIGNAL(clicked(const QModelIndex &)),
+            this, SLOT(setRootIndex(const QModelIndex &)));
+    connect(browserView, SIGNAL(doubleClicked(const QModelIndex &)),
+            this, SLOT(setRootIndex(const QModelIndex &)));
 
+    createContextMenu();
+
+    proxyModel = new CDirSortProxy(browserModel);
+    proxyModel->setSourceModel(browserModel);
+    proxyModel->setHide(true);
+    browserView->setModel(proxyModel);
+    browserCompleter->setModel(browserModel);
+
+    vbox->addWidget(browserView);
+
+    setRootDir(d);
+    updateActions();
+
+    browserView->setColumnWidth(0, 200); // This has to be as last (why?)
+}
+
+QWidget *CDirBrowser::createToolBar()
+{
+    QToolBar *toolBar = new QToolBar;
+
+    // Top
+    topTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogToParent)),
+                                 "Top");
+    connect(topTool, SIGNAL(triggered()), this, SLOT(topToolCB()));
+
+    // Back
+    backTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_ArrowLeft)),
+                                  "Back");
+    backTool->setShortcut(tr("Alt+Left"));
+    
+    connect(backTool, SIGNAL(triggered()), this, SLOT(backToolCB()));
+
+    // Forward
+    forwardTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_ArrowRight)),
+                                     "Forward");
+    forwardTool->setShortcut(tr("Alt+Right"));
+    connect(forwardTool, SIGNAL(triggered()), this, SLOT(forwardToolCB()));
+
+    // Home
+    homeTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_DirHomeIcon)),
+                                  "Home");
+    connect(homeTool, SIGNAL(triggered()), this, SLOT(homeToolCB()));
+
+    // Favorites
+    // UNDONE: Better icon?
+    favTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_DirLinkIcon)),
+                                 "Favorites");
+
+    // New directory
+    addDirTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogNewFolder)),
+                                    "New directory");
+
+    toolBar->addSeparator();
+
+    toolBar->addWidget(browserInput = new QLineEdit);
+    browserInput->setCompleter(browserCompleter = new CDirCompleter(browserInput));
+    
+    return toolBar;
+}
+
+void CDirBrowser::createContextMenu(void)
+{
     // UNDONE: Icons
     
     cutAction = new QAction("Cut", this);
@@ -99,18 +152,6 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     viewHidden->setCheckable(true);
     connect(viewHidden, SIGNAL(toggled(bool)), this, SLOT(viewHiddenCB(bool)));
     browserView->addAction(viewHidden);
-
-    proxyModel = new CDirSortProxy(browserModel);
-    proxyModel->setSourceModel(browserModel);
-    proxyModel->setHide(true);
-    browserView->setModel(proxyModel);
-
-    vbox->addWidget(browserView);
-
-    setRootDir(d);
-    updateActions();
-
-    browserView->setColumnWidth(0, 200); // This has to be as last (why?)
 }
 
 bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
@@ -120,6 +161,7 @@ bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
     {
         if (!fi.isExecutable())
             return false;
+        
         if (!onlyread)
         {
             QFileInfo dfi(fi.dir().path());
@@ -129,6 +171,52 @@ bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
     }
     
     return (onlyread || fi.isWritable()) && fi.isReadable() && (!fi.isDir() || fi.isExecutable());
+}
+
+void CDirBrowser::topToolCB()
+{
+    if ((browserModel->rootPath() != rootDir) && (browserView->rootIndex().parent().isValid()))
+        setRootIndex(browserView->rootIndex().parent());
+}
+
+void CDirBrowser::backToolCB()
+{
+    forwardStack.push(browserModel->rootPath());
+    setRootIndex(proxyModel->mapFromSource(browserModel->index(backStack.pop())), false);
+}
+
+void CDirBrowser::forwardToolCB()
+{
+    backStack.push(browserModel->rootPath());
+    setRootIndex(proxyModel->mapFromSource(browserModel->index(forwardStack.pop())), false);
+}
+
+void CDirBrowser::homeToolCB()
+{
+    if (browserModel->rootPath() != "/")
+        browserView->setRootIndex(proxyModel->mapFromSource(browserModel->index("/")));
+    browserView->setCurrentIndex(proxyModel->mapFromSource(browserModel->index(QDir::homePath())));
+}
+
+void CDirBrowser::setRootIndex(const QModelIndex &index, bool remember)
+{
+    if (!browserModel->isDir(proxyModel->mapToSource(index)))
+        return;
+    
+    if (remember)
+    {
+        forwardStack.clear();
+        backStack.push(browserModel->rootPath());
+    }
+
+    QString path = browserModel->filePath(proxyModel->mapToSource(index));
+    browserModel->setRootPath(path);
+    browserView->setRootIndex(index);
+    browserInput->setText(path);
+
+    topTool->setEnabled(browserModel->rootPath() != rootDir);
+    backTool->setEnabled(!backStack.empty());
+    forwardTool->setEnabled(!forwardStack.empty());
 }
 
 void CDirBrowser::copyActionCB()
@@ -279,15 +367,18 @@ void CDirBrowser::updateActions()
     }
 }
 
-void CDirBrowser::setRootDir(QString dir)
+void CDirBrowser::setRootDir(const QString &dir)
 {
-    if (dir.isEmpty())
-        dir = "/";
+    rootDir = dir;
     
-    browserModel->setRootPath(dir);
-    browserView->setRootIndex(proxyModel->mapFromSource(browserModel->index(dir)));
+    if (rootDir.isEmpty())
+        rootDir = "/";
 
-    if (dir == "/")
+    backStack.clear();
+    forwardStack.clear();
+    setRootIndex(proxyModel->mapFromSource(browserModel->index(rootDir)), false);
+
+    if (rootDir == "/")
     {
         homeTool->setVisible(true);
         favTool->setVisible(true);
@@ -299,6 +390,54 @@ void CDirBrowser::setRootDir(QString dir)
     }
 }
 
+
+QString CDirCompleter::pathFromIndex(const QModelIndex &index) const
+{
+    // While QCompleter happily supports QDirModel, it doesn't do QFileSystemModel yet (4.5.1)
+    // So here we do it similar like it does for QDirModel. Note that it's assumed that the model
+    // consists of file paths
+
+    if (!index.isValid() || !model())
+        return QString();
+
+    QModelIndex idx = index;
+    QStringList list;
+    do
+    {
+        QString t = model()->data(idx, Qt::EditRole).toString();
+        list.prepend(t);
+        QModelIndex parent = idx.parent();
+        idx = parent.sibling(parent.row(), index.column());
+    }
+    while (idx.isValid());
+
+    if (list.count() == 1)
+        return list[0];
+    
+    list[0].clear();
+
+    return list.join(QDir::separator());
+}
+
+QStringList CDirCompleter::splitPath(const QString &path) const
+{
+    // Like pathFromIndex, we use a similar way to split paths as the regular
+    // completer does for QDirModel
+
+    if (path.isEmpty())
+        return QStringList(completionPrefix());
+
+    QString pathCopy = QDir::toNativeSeparators(path);
+    QString sep = QDir::separator();
+
+    QRegExp re(QLatin1String("[") + QRegExp::escape(sep) + QLatin1String("]"));
+    QStringList parts = pathCopy.split(re);
+
+    if (pathCopy[0] == sep[0]) // readd the "/" at the beginning as the split removed it
+        parts[0] = QDir::fromNativeSeparators(QString(sep[0]));
+
+    return parts;
+}
 
 CDirView::CDirView(QWidget *parent) : QTreeView(parent)
 {
