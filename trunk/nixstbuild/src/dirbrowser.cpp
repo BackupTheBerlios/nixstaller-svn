@@ -29,6 +29,7 @@
 #include <QMouseEvent>
 #include <QProgressDialog>
 #include <QTreeView>
+#include <QToolBar>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -39,20 +40,32 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
 
+    QToolBar *toolBar = new QToolBar;
+    QAction *a = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogToParent)),
+                                    "Top");
+
+    homeTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_DirHomeIcon)),
+                           "Home");
+
+    // UNDONE: Better icon?
+    favTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_DirLinkIcon)),
+                           "Favorites");
+
+    addDirTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogNewFolder)),
+                           "New directory");
+
+    vbox->addWidget(toolBar);
+
     browserModel = new CDirModel;
     browserModel->setReadOnly(false);
+    browserModel->setFilter(browserModel->filter() | QDir::Hidden);
 
-    browserView = new QTreeView;
-    browserView->setDragEnabled(true);
-    browserView->setAcceptDrops(true);
-    browserView->setDropIndicatorShown(true);
-    browserView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    browserView->setContextMenuPolicy(Qt::ActionsContextMenu);
-    browserView->setSortingEnabled(true);
-    browserView->sortByColumn(0, Qt::AscendingOrder);
-    connect(browserView, SIGNAL(pressed(const QModelIndex &)),
-            this, SLOT(clickedCB(const QModelIndex &)));
+    browserView = new CDirView;
+    connect(browserView, SIGNAL(mouseClicked()),
+            this, SLOT(updateActions()));
 
+    // UNDONE: Icons
+    
     cutAction = new QAction("Cut", this);
     cutAction->setShortcut(tr("Ctrl+X"));
     connect(cutAction, SIGNAL(triggered()), this, SLOT(cutActionCB()));
@@ -73,35 +86,49 @@ CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
     connect(deleteAction, SIGNAL(triggered()), this, SLOT(deleteActionCB()));
     browserView->addAction(deleteAction);
 
+    renameAction = new QAction("Rename", this);
+    renameAction->setShortcut(tr("Rename"));
+    connect(renameAction, SIGNAL(triggered()), this, SLOT(renameActionCB()));
+    browserView->addAction(renameAction);
+
+    QAction *sep = new QAction(this);
+    sep->setSeparator(true);
+    browserView->addAction(sep);
+
+    viewHidden = new QAction("Show hidden files", this);
+    viewHidden->setCheckable(true);
+    connect(viewHidden, SIGNAL(toggled(bool)), this, SLOT(viewHiddenCB(bool)));
+    browserView->addAction(viewHidden);
+
     proxyModel = new CDirSortProxy(browserModel);
     proxyModel->setSourceModel(browserModel);
+    proxyModel->setHide(true);
     browserView->setModel(proxyModel);
 
     vbox->addWidget(browserView);
 
-    if (!d.isEmpty())
-    {
-        browserModel->setRootPath(d);
-        browserView->setRootIndex(proxyModel->mapFromSource(browserModel->index(d)));
-    }
-    else
-        browserModel->setRootPath("/");
+    setRootDir(d);
+    updateActions();
 
     browserView->setColumnWidth(0, 200); // This has to be as last (why?)
-}
-
-QModelIndex CDirBrowser::getCurParentIndex()
-{
-    if (browserView->currentIndex().isValid())
-        return proxyModel->mapToSource(browserView->currentIndex()).parent();
-    else
-        return proxyModel->mapToSource(browserView->rootIndex());
 }
 
 bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
 {
     QFileInfo fi(path);
-    return (fi.isWritable() || onlyread) && fi.isReadable() && (!fi.isDir() || fi.isExecutable());
+    if (fi.isDir())
+    {
+        if (!fi.isExecutable())
+            return false;
+        if (!onlyread)
+        {
+            QFileInfo dfi(fi.dir().path());
+            if (!dfi.isWritable() || !dfi.isReadable())
+                return false;
+        }
+    }
+    
+    return (onlyread || fi.isWritable()) && fi.isReadable() && (!fi.isDir() || fi.isExecutable());
 }
 
 void CDirBrowser::copyActionCB()
@@ -125,8 +152,26 @@ void CDirBrowser::pasteActionCB()
     if (!mime || !mime->hasUrls())
         return;
 
-    bool move = false;
+    QModelIndexList sel = browserView->selectionModel()->selectedRows();
+    QModelIndex dest;
     
+    if (sel.size() > 1)
+        return;
+    else if (sel.empty())
+        dest = proxyModel->mapToSource(browserView->rootIndex());
+    else
+    {
+        QModelIndex index = proxyModel->mapToSource(sel.front());
+        if (browserModel->isDir(index))
+            dest = index;
+        else
+            dest = index.parent();
+    }
+
+    if (!dest.isValid())
+        return;
+    
+    bool move = false;
     if (mime->hasFormat("nixstbuild/cut"))
     {
         QByteArray d = mime->data("nixstbuild/cut");
@@ -134,7 +179,7 @@ void CDirBrowser::pasteActionCB()
             move = true;
     }
 
-    browserModel->copyFiles(mime, getCurParentIndex(), move);
+    browserModel->copyFiles(mime, dest, move);
 }
 
 void CDirBrowser::deleteActionCB()
@@ -160,28 +205,125 @@ void CDirBrowser::deleteActionCB()
         browserModel->removeFiles(mime);
 }
 
-void CDirBrowser::clickedCB(const QModelIndex &index)
+void CDirBrowser::renameActionCB()
 {
-    QModelIndex selection = proxyModel->mapToSource(index);
-
-    if (!selection.isValid())
+    QModelIndexList sel = browserView->selectionModel()->selectedRows();
+    
+    if (sel.size() != 1)
         return;
-
-    if (selection.parent().isValid())
-    {
-        QString p = browserModel->filePath(selection.parent());
-        pasteAction->setEnabled(permissionsOK(p, false));
-    }
     
-    QString path = browserModel->filePath(selection);
-    bool permOK = permissionsOK(path, false);
-    
-    cutAction->setEnabled(permOK);
-    deleteAction->setEnabled(permOK);
-
-    copyAction->setEnabled(permissionsOK(path, true));
+    browserView->edit(sel.front());
 }
 
+void CDirBrowser::viewHiddenCB(bool e)
+{
+    proxyModel->setHide(!e);
+}
+
+void CDirBrowser::updateActions()
+{
+    QModelIndexList sel = browserView->selectionModel()->selectedRows();
+    const int selSize = sel.size();
+
+    if (!selSize)
+    {
+        QString path = browserModel->rootPath();
+        bool permOK = permissionsOK(path, false);
+        addDirTool->setEnabled(permOK);
+        cutAction->setEnabled(false);
+        copyAction->setEnabled(false);
+        pasteAction->setEnabled(permOK);
+        deleteAction->setEnabled(false);
+        renameAction->setEnabled(false);
+    }
+    else if (selSize == 1)
+    {
+        QString path = browserModel->filePath(proxyModel->mapToSource(sel.front()));
+        bool permOK = permissionsOK(path, false);
+
+        addDirTool->setEnabled(permOK);
+        cutAction->setEnabled(permOK);
+        copyAction->setEnabled(permissionsOK(path, true));
+
+        if (QFileInfo(path).isDir())
+            pasteAction->setEnabled(permOK);
+        else if (sel.front().parent().isValid())
+        {
+            QString p = browserModel->filePath(proxyModel->mapToSource(sel.front().parent()));
+            pasteAction->setEnabled(permissionsOK(p, true));
+        }
+        else // Is this possible??
+            pasteAction->setEnabled(false);
+        
+        deleteAction->setEnabled(permOK);
+        renameAction->setEnabled(permOK);
+    }
+    else // Multiple items selected
+    {
+        bool permWOK = true, permROK = true;
+        foreach(QModelIndex index, sel)
+        {
+            QString path = browserModel->filePath(proxyModel->mapToSource(index));
+            permWOK = permWOK && permissionsOK(path, false);
+            permROK = permROK && permissionsOK(path, false);
+            if (!permWOK && !permROK)
+                break;
+        }
+
+        addDirTool->setEnabled(false);
+        cutAction->setEnabled(permWOK);
+        copyAction->setEnabled(permROK);
+        pasteAction->setEnabled(false);
+        deleteAction->setEnabled(permWOK);
+        renameAction->setEnabled(false);
+    }
+}
+
+void CDirBrowser::setRootDir(QString dir)
+{
+    if (dir.isEmpty())
+        dir = "/";
+    
+    browserModel->setRootPath(dir);
+    browserView->setRootIndex(proxyModel->mapFromSource(browserModel->index(dir)));
+
+    if (dir == "/")
+    {
+        homeTool->setVisible(true);
+        favTool->setVisible(true);
+    }
+    else
+    {
+        homeTool->setVisible(false);
+        favTool->setVisible(false);
+    }
+}
+
+
+CDirView::CDirView(QWidget *parent) : QTreeView(parent)
+{
+    setDragEnabled(true);
+    setAcceptDrops(true);
+    setDropIndicatorShown(true);
+    setSelectionMode(QAbstractItemView::ExtendedSelection);
+    setContextMenuPolicy(Qt::ActionsContextMenu);
+    setSortingEnabled(true);
+    sortByColumn(0, Qt::AscendingOrder);
+}
+
+void CDirView::mousePressEvent(QMouseEvent *event)
+{
+    QTreeView::mousePressEvent(event);
+    emit mouseClicked();
+}
+
+
+bool CDirSortProxy::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+{
+    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+
+    return !hide || (sourceModel()->data(index).toString()[0] != '.');
+}
 
 bool CDirSortProxy::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
@@ -384,8 +526,8 @@ void CDirModel::safeUnlink(const std::string &file)
     }
 }
 
-bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
-                             int column, const QModelIndex &parent)
+bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int,
+                             int, const QModelIndex &parent)
 {
     if (!parent.isValid() || isReadOnly())
         return false;
@@ -400,7 +542,7 @@ bool CDirModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int r
 }
 
 void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent,
-                               bool move)
+                          bool move)
 {
     progressDialog->reset();
     progressDialog->setMinimumDuration(500);
@@ -536,7 +678,7 @@ void CDirModel::removeFiles(const QMimeData *data)
                 if (IsDir(subpath))
                     remDirs.insert(remDirs.begin(), subpath);
                 else
-                    safeUnlink(subpath); // UNDONE: Handle exception
+                    safeUnlink(subpath);
             }
 
             // Remove all dirs after they are cleared

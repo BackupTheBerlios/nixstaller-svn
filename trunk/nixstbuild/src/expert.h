@@ -30,6 +30,7 @@ class QStackedWidget;
 class QFormatScheme;
 class QLanguageFactory;
 
+class CDirBrowser;
 class CEditor;
 class CEditSettings;
 
@@ -38,9 +39,10 @@ class CExpertScreen: public QMainWindow
     Q_OBJECT
 
     QStackedWidget *widgetStack;
-    QListWidget *listWidget;
+    QListWidget *listWidget, *fileDestList;
     CEditor *editor;
     CEditSettings *editSettings;
+    CDirBrowser *fileDestBrowser;
 
     void createFileMenu(void);
     void createBuildRunMenu(void);
@@ -49,16 +51,19 @@ class CExpertScreen: public QMainWindow
     void createMenuBar(void);
     
     void addListItem(const QString &icon, const QString &name);
-    
+
     QWidget *createGeneralConf(void);
     QWidget *createPackageConf(void);
     QWidget *createRunConf(void);
     QWidget *createFileManager(void);
 
+    void createDestFilesItem(const QString &title, const QString &dir);
+    
 private slots:
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
     void launchRunGen(void);
     void showEditSettings(void);
+    void changeDestBrowser(QListWidgetItem *current, QListWidgetItem *previous);
 
 protected:
     virtual void closeEvent(QCloseEvent *e);

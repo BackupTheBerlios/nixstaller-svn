@@ -123,6 +123,15 @@ void CExpertScreen::showEditSettings()
         editor->loadSettings();
 }
 
+void CExpertScreen::changeDestBrowser(QListWidgetItem *current,
+                                      QListWidgetItem *previous)
+{
+    if (!current)
+        current = previous;
+
+    fileDestBrowser->setRootDir(current->data(Qt::UserRole).toString());
+}
+
 void CExpertScreen::createFileMenu()
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
@@ -280,15 +289,25 @@ QWidget *CExpertScreen::createFileManager()
     QSplitter *split = new QSplitter;
     mainSplit->addWidget(split);
 
-    QListWidget *destList = new QListWidget;
-    new QListWidgetItem("Generic Files", destList);
-    split->addWidget(destList);
+    fileDestList = new QListWidget;
+    createDestFilesItem("Generic Files", "/tmp/nixstb"); // UNDONE
+    fileDestList->setCurrentRow(0);
+    split->addWidget(fileDestList);
+    connect(fileDestList, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
+            this, SLOT(changeDestBrowser(QListWidgetItem *, QListWidgetItem*)));
 
-    split->addWidget(new CDirBrowser("/tmp/nixstb")); // UNDONE
+    split->addWidget(fileDestBrowser = new CDirBrowser("/tmp/nixstb")); // UNDONE
     
     split->setSizes(QList<int>() << 100 << 300);
     
     return ret;
+}
+
+void CExpertScreen::createDestFilesItem(const QString &title,
+                                        const QString &dir)
+{
+    QListWidgetItem *i = new QListWidgetItem(title, fileDestList);
+    i->setData(Qt::UserRole, dir);
 }
 
 void CExpertScreen::closeEvent(QCloseEvent *e)

@@ -23,26 +23,28 @@
 
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
+#include <QTreeView>
 #include <QWidget>
 
 #include "main/main.h"
 
 class QProgressDialog;
-class QTreeView;
 
 class CDirModel;
 class CDirSortProxy;
+class CDirView;
 
 class CDirBrowser: public QWidget
 {
     Q_OBJECT
     
+    QAction *homeTool, *favTool, *addDirTool;
     CDirModel *browserModel;
     CDirSortProxy *proxyModel;
-    QTreeView *browserView;
-    QAction *copyAction, *cutAction, *pasteAction, *deleteAction;
+    CDirView *browserView;
+    QAction *copyAction, *cutAction, *pasteAction, *deleteAction, *renameAction;
+    QAction *viewHidden;
 
-    QModelIndex getCurParentIndex(void);
     bool permissionsOK(const QString &path, bool onlyread);
 
 private slots:
@@ -50,19 +52,42 @@ private slots:
     void cutActionCB(void);
     void pasteActionCB(void);
     void deleteActionCB(void);
-    void clickedCB(const QModelIndex &index);
+    void renameActionCB(void);
+    void viewHiddenCB(bool e);
+    void updateActions(void);
 
 public:
     CDirBrowser(const QString &d = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    void setRootDir(QString dir);
+};
+
+class CDirView: public QTreeView
+{
+    Q_OBJECT
+    
+protected:
+    virtual void mousePressEvent(QMouseEvent *event);
+
+public:
+    CDirView(QWidget *parent = 0);
+
+signals:
+    void mouseClicked(void);
 };
 
 class CDirSortProxy: public QSortFilterProxyModel
 {
+    bool hide;
+    
 protected:
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
     virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
 
 public:
-    CDirSortProxy(QObject *parent = 0) : QSortFilterProxyModel(parent) {}
+    CDirSortProxy(QObject *parent = 0) : QSortFilterProxyModel(parent), hide(false) {}
+
+    void setHide(bool h) { hide = h; invalidateFilter(); }
 };
 
 class CDirModel: public QFileSystemModel
@@ -87,11 +112,12 @@ class CDirModel: public QFileSystemModel
 public:
     CDirModel(QObject *parent = 0);
 
-    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
-                                int column, const QModelIndex &parent);
+    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int,
+                              int, const QModelIndex &parent);
 
     void copyFiles(const QMimeData *data, const QModelIndex &parent, bool move);
     void removeFiles(const QMimeData *data);
+    void updateLayout(void) { emit rootPathChanged("/"); }
 
     static void copyWritten(int bytes, void *data);
 };

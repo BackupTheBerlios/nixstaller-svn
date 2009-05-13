@@ -10,4 +10,7 @@
     - validate all fields --> double options?
     - way to check which page should be activated
 - extra_files manager widget
-- BaseName/DirName instead of basename/dirname
+- Dir browser:
+    - File filter?
+    - Actions for top level dir, move through history?, favourites?
+    - Other drop actions?
