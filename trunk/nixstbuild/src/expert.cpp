@@ -22,7 +22,9 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QFormLayout>
+#include <QFrame>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
@@ -284,19 +286,46 @@ QWidget *CExpertScreen::createFileManager()
     QSplitter *mainSplit = new QSplitter(Qt::Vertical);
     vbox->addWidget(mainSplit);
 
-    mainSplit->addWidget(new CDirBrowser("/")); // UNDONE
-    
-    QSplitter *split = new QSplitter;
-    mainSplit->addWidget(split);
+    QFrame *frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box | QFrame::Sunken);
+    mainSplit->addWidget(frame);
+    QVBoxLayout *fvbox = new QVBoxLayout(frame);
 
-    fileDestList = new QListWidget;
+    QLabel *label = new QLabel("<qt><b>File Browser</b></qt>");
+    label->setAlignment(Qt::AlignHCenter);
+    fvbox->addWidget(label);
+    
+    fvbox->addWidget(new CDirBrowser("/"));
+
+    frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box | QFrame::Sunken);
+    mainSplit->addWidget(frame);
+    fvbox = new QVBoxLayout(frame);
+
+    QSplitter *split = new QSplitter;
+    fvbox->addWidget(split);
+
+    QWidget *sw = new QWidget(split);
+    QVBoxLayout *svbox = new QVBoxLayout(sw);
+
+    label = new QLabel("<qt><b>Category</b></qt>");
+    label->setAlignment(Qt::AlignHCenter);
+    svbox->addWidget(label);
+    
+    svbox->addWidget(fileDestList = new QListWidget);
     createDestFilesItem("Generic Files", "/tmp/nixstb"); // UNDONE
     fileDestList->setCurrentRow(0);
-    split->addWidget(fileDestList);
     connect(fileDestList, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
             this, SLOT(changeDestBrowser(QListWidgetItem *, QListWidgetItem*)));
 
-    split->addWidget(fileDestBrowser = new CDirBrowser("/tmp/nixstb")); // UNDONE
+    sw = new QWidget(split);
+    svbox = new QVBoxLayout(sw);
+    
+    label = new QLabel("<qt><b>Installation Files</b></qt>");
+    label->setAlignment(Qt::AlignHCenter);
+    svbox->addWidget(label);
+    
+    svbox->addWidget(fileDestBrowser = new CDirBrowser("/tmp/nixstb")); // UNDONE
     
     split->setSizes(QList<int>() << 100 << 300);
     

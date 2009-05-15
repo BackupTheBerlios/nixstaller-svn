@@ -9,8 +9,8 @@
     - image widget creator
     - validate all fields --> double options?
     - way to check which page should be activated
+    - Finish code insert action
 - extra_files manager widget
 - Dir browser:
-    - File filter?
-    - Actions for top level dir, move through history?, favourites?
     - Other drop actions?
+    - Save splitter states?

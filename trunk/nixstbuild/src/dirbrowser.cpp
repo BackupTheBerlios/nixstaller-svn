@@ -26,15 +26,42 @@
 #include <QItemSelection>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QMenu>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QProgressDialog>
+#include <QSettings>
 #include <QTreeView>
 #include <QToolBar>
 #include <QUrl>
 #include <QVBoxLayout>
 
 #include "dirbrowser.h"
+
+namespace {
+
+QString fromRelRoot(QString path, QString root)
+{
+    if (path[0] != '/')
+        path = "/" + path;
+    
+    if (root[root.length()-1] != '/')
+        root += "/";
+
+    path.replace(0, 1, root);
+    return path;
+}
+
+QString toRelRoot(QString path, QString root)
+{
+    if (root[root.length()-1] != '/')
+        root += "/";
+    
+    path.replace(0, root.length(), "/");
+    return path;
+}
+
+}
 
 CDirBrowser::CDirBrowser(const QString &d, QWidget *parent,
                          Qt::WindowFlags flags) : QWidget(parent, flags)
@@ -75,6 +102,9 @@ QWidget *CDirBrowser::createToolBar()
 {
     QToolBar *toolBar = new QToolBar;
 
+    // NOTE: Actions need to be added to main widget so that shortcuts
+    // can be made widget-specific.
+    
     // Top
     topTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogToParent)),
                                  "Top");
@@ -84,13 +114,16 @@ QWidget *CDirBrowser::createToolBar()
     backTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_ArrowLeft)),
                                   "Back");
     backTool->setShortcut(tr("Alt+Left"));
-    
+    addAction(backTool);
+    backTool->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(backTool, SIGNAL(triggered()), this, SLOT(backToolCB()));
 
     // Forward
     forwardTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_ArrowRight)),
                                      "Forward");
     forwardTool->setShortcut(tr("Alt+Right"));
+    forwardTool->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    addAction(forwardTool);
     connect(forwardTool, SIGNAL(triggered()), this, SLOT(forwardToolCB()));
 
     // Home
@@ -98,14 +131,10 @@ QWidget *CDirBrowser::createToolBar()
                                   "Home");
     connect(homeTool, SIGNAL(triggered()), this, SLOT(homeToolCB()));
 
-    // Favorites
-    // UNDONE: Better icon?
-    favTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_DirLinkIcon)),
-                                 "Favorites");
-
     // New directory
     addDirTool = toolBar->addAction(QIcon(style()->standardIcon(QStyle::SP_FileDialogNewFolder)),
                                     "New directory");
+    connect(addDirTool, SIGNAL(triggered()), this, SLOT(addDirToolCB()));
 
     toolBar->addSeparator();
 
@@ -154,7 +183,7 @@ void CDirBrowser::createContextMenu(void)
     browserView->addAction(viewHidden);
 }
 
-bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
+bool CDirBrowser::permissionsOK(const QString &path, bool onlyRead, bool checkParent)
 {
     QFileInfo fi(path);
     if (fi.isDir())
@@ -162,7 +191,7 @@ bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
         if (!fi.isExecutable())
             return false;
         
-        if (!onlyread)
+        if (!onlyRead && checkParent)
         {
             QFileInfo dfi(fi.dir().path());
             if (!dfi.isWritable() || !dfi.isReadable())
@@ -170,7 +199,7 @@ bool CDirBrowser::permissionsOK(const QString &path, bool onlyread)
         }
     }
     
-    return (onlyread || fi.isWritable()) && fi.isReadable() && (!fi.isDir() || fi.isExecutable());
+    return (onlyRead || fi.isWritable()) && fi.isReadable() && (!fi.isDir() || fi.isExecutable());
 }
 
 void CDirBrowser::topToolCB()
@@ -198,6 +227,14 @@ void CDirBrowser::homeToolCB()
     browserView->setCurrentIndex(proxyModel->mapFromSource(browserModel->index(QDir::homePath())));
 }
 
+void CDirBrowser::addDirToolCB()
+{
+    QModelIndex par = browserModel->index(browserModel->rootPath());
+    QModelIndex newDir = browserModel->mkdir(par, "New directory");
+    if (newDir.isValid())
+        browserView->edit(proxyModel->mapFromSource(newDir));
+}
+
 void CDirBrowser::setRootIndex(const QModelIndex &index, bool remember)
 {
     if (!browserModel->isDir(proxyModel->mapToSource(index)))
@@ -212,11 +249,12 @@ void CDirBrowser::setRootIndex(const QModelIndex &index, bool remember)
     QString path = browserModel->filePath(proxyModel->mapToSource(index));
     browserModel->setRootPath(path);
     browserView->setRootIndex(index);
-    browserInput->setText(path);
+    browserInput->setText(toRelRoot(path, rootDir));
 
     topTool->setEnabled(browserModel->rootPath() != rootDir);
     backTool->setEnabled(!backStack.empty());
     forwardTool->setEnabled(!forwardStack.empty());
+    addDirTool->setEnabled(permissionsOK(browserModel->rootPath(), false, false));
 }
 
 void CDirBrowser::copyActionCB()
@@ -312,39 +350,43 @@ void CDirBrowser::updateActions()
 {
     QModelIndexList sel = browserView->selectionModel()->selectedRows();
     const int selSize = sel.size();
-
+    const QMimeData *mime = QApplication::clipboard()->mimeData();
+    bool hasClip = (mime && mime->hasUrls());
+    
+    // permissionsOK is used to check for what action to enable/disable.
+    // Second bool arg should be true when path only has to be readable.
+    // Third bool arg should be true when parent should be writable too
+    // (required when modifying/removing a directory).
+    
     if (!selSize)
     {
         QString path = browserModel->rootPath();
-        bool permOK = permissionsOK(path, false);
-        addDirTool->setEnabled(permOK);
         cutAction->setEnabled(false);
         copyAction->setEnabled(false);
-        pasteAction->setEnabled(permOK);
+        pasteAction->setEnabled(hasClip && permissionsOK(path, false, false));
         deleteAction->setEnabled(false);
         renameAction->setEnabled(false);
     }
     else if (selSize == 1)
     {
         QString path = browserModel->filePath(proxyModel->mapToSource(sel.front()));
-        bool permOK = permissionsOK(path, false);
+        bool permPOK = permissionsOK(path, false, true);
 
-        addDirTool->setEnabled(permOK);
-        cutAction->setEnabled(permOK);
-        copyAction->setEnabled(permissionsOK(path, true));
+        cutAction->setEnabled(permPOK);
+        copyAction->setEnabled(permissionsOK(path, true, false));
 
         if (QFileInfo(path).isDir())
-            pasteAction->setEnabled(permOK);
+            pasteAction->setEnabled(hasClip && permissionsOK(path, false, false));
         else if (sel.front().parent().isValid())
         {
             QString p = browserModel->filePath(proxyModel->mapToSource(sel.front().parent()));
-            pasteAction->setEnabled(permissionsOK(p, true));
+            pasteAction->setEnabled(hasClip && permissionsOK(p, false, false));
         }
         else // Is this possible??
             pasteAction->setEnabled(false);
         
-        deleteAction->setEnabled(permOK);
-        renameAction->setEnabled(permOK);
+        deleteAction->setEnabled(permPOK);
+        renameAction->setEnabled(permPOK);
     }
     else // Multiple items selected
     {
@@ -352,13 +394,12 @@ void CDirBrowser::updateActions()
         foreach(QModelIndex index, sel)
         {
             QString path = browserModel->filePath(proxyModel->mapToSource(index));
-            permWOK = permWOK && permissionsOK(path, false);
-            permROK = permROK && permissionsOK(path, false);
+            permWOK = permWOK && permissionsOK(path, false, true);
+            permROK = permROK && permissionsOK(path, false, false);
             if (!permWOK && !permROK)
                 break;
         }
 
-        addDirTool->setEnabled(false);
         cutAction->setEnabled(permWOK);
         copyAction->setEnabled(permROK);
         pasteAction->setEnabled(false);
@@ -377,16 +418,16 @@ void CDirBrowser::setRootDir(const QString &dir)
     backStack.clear();
     forwardStack.clear();
     setRootIndex(proxyModel->mapFromSource(browserModel->index(rootDir)), false);
+    browserCompleter->setRootDir(dir);
 
     if (rootDir == "/")
     {
         homeTool->setVisible(true);
-        favTool->setVisible(true);
+        homeToolCB(); // Select home directory
     }
     else
     {
         homeTool->setVisible(false);
-        favTool->setVisible(false);
     }
 }
 
@@ -416,7 +457,7 @@ QString CDirCompleter::pathFromIndex(const QModelIndex &index) const
     
     list[0].clear();
 
-    return list.join(QDir::separator());
+    return toRelRoot(list.join(QDir::separator()), rootDir);
 }
 
 QStringList CDirCompleter::splitPath(const QString &path) const
@@ -427,7 +468,7 @@ QStringList CDirCompleter::splitPath(const QString &path) const
     if (path.isEmpty())
         return QStringList(completionPrefix());
 
-    QString pathCopy = QDir::toNativeSeparators(path);
+    QString pathCopy = fromRelRoot(QDir::toNativeSeparators(path), rootDir);
     QString sep = QDir::separator();
 
     QRegExp re(QLatin1String("[") + QRegExp::escape(sep) + QLatin1String("]"));
@@ -438,6 +479,7 @@ QStringList CDirCompleter::splitPath(const QString &path) const
 
     return parts;
 }
+
 
 CDirView::CDirView(QWidget *parent) : QTreeView(parent)
 {

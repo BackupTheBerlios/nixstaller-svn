@@ -46,7 +46,7 @@ class CDirBrowser: public QWidget
 
     QString rootDir;
     QStack<QString> backStack, forwardStack;
-    QAction *topTool, *backTool, *forwardTool, *homeTool, *favTool, *addDirTool;
+    QAction *topTool, *backTool, *forwardTool, *homeTool, *addDirTool;
     QLineEdit *browserInput;
     CDirCompleter *browserCompleter;
     CDirModel *browserModel;
@@ -57,13 +57,14 @@ class CDirBrowser: public QWidget
 
     QWidget *createToolBar(void);
     void createContextMenu(void);
-    bool permissionsOK(const QString &path, bool onlyread);
+    bool permissionsOK(const QString &path, bool onlyRead, bool checkParent);
 
 private slots:
     void topToolCB(void);
     void backToolCB(void);
     void forwardToolCB(void);
     void homeToolCB(void);
+    void addDirToolCB(void);
 
     void setRootIndex(const QModelIndex &index, bool remember = true);
 
@@ -84,8 +85,12 @@ public:
 
 class CDirCompleter: public QCompleter
 {
+    QString rootDir;
+    
 public:
-    CDirCompleter(QObject *parent = 0) : QCompleter(parent) {}
+    CDirCompleter(QObject *parent = 0) : QCompleter(parent), rootDir("/") {}
+
+    void setRootDir(const QString &dir) { rootDir = dir; }
 
     virtual QString pathFromIndex(const QModelIndex &index) const;
     virtual QStringList splitPath(const QString &path) const;
@@ -121,6 +126,8 @@ public:
 
 class CDirModel: public QFileSystemModel
 {
+    Q_OBJECT
+    
     enum asktype { DO_ALL, DO_NONE, DO_ASK };
 
     QProgressDialog *progressDialog;
@@ -146,7 +153,6 @@ public:
 
     void copyFiles(const QMimeData *data, const QModelIndex &parent, bool move);
     void removeFiles(const QMimeData *data);
-    void updateLayout(void) { emit rootPathChanged("/"); }
 
     static void copyWritten(int bytes, void *data);
 };
