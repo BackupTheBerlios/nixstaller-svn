@@ -567,6 +567,18 @@ void CDirModel::safeCopy(const std::string &src, const std::string &dest, bool m
     }
 }
 
+off_t CDirModel::safeFileSize(const std::string &file)
+{
+    try
+    {
+        return FileSize(file);
+    }
+    catch (Exceptions::CExIO &)
+    {
+    }
+    return 0;
+}
+
 void CDirModel::safeMKDirRec(const std::string &dir)
 {
     try
@@ -744,7 +756,7 @@ void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent,
     {
         std::string f = url.toLocalFile().toStdString();
 
-        if (DirName(f) == dest)
+        if (!FileExists(f) || (DirName(f) == dest))
             continue;
         
         sources.push_back(f);
@@ -758,11 +770,11 @@ void CDirModel::copyFiles(const QMimeData *data, const QModelIndex &parent,
             {
                 std::string path = f + "/" + *it;
                 if (!IsDir(path))
-                    total += FileSize(path);
+                    total += safeFileSize(path);
             }
         }
         else
-            total += FileSize(f);
+            total += safeFileSize(f);
     }
     
     statSizeFact = sizeUnitFact(total);

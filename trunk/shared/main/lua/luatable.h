@@ -102,6 +102,25 @@ public:
     operator void *(void) { static int ret; return (m_bOK) ? &ret : 0; }
 };
 
+template <typename C> bool LuaGet(C &out, const char *var, const char *tab=NULL)
+{
+    CLuaTable table(var, tab);
+    
+    if (!table)
+        return false;
+    
+    const int size = table.Size();
+    for (int n=1; n<=size; n++)
+    {
+        std::string s;
+        table[n] >> s;
+        out.push_back(s);
+    }
+    
+    return true;
+}
+
+
 }
 
 #endif

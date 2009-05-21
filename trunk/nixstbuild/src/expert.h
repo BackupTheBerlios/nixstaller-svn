@@ -23,6 +23,8 @@
 
 #include <QMainWindow>
 
+#include "main/main.h"
+
 class QListWidgetItem;
 class QListWidget;
 class QStackedWidget;
@@ -30,19 +32,22 @@ class QStackedWidget;
 class QFormatScheme;
 class QLanguageFactory;
 
+class CBaseExpertTab;
 class CDirBrowser;
 class CEditor;
 class CEditSettings;
+
+class QConfigWidget; // UNDONE
 
 class CExpertScreen: public QMainWindow
 {
     Q_OBJECT
 
+    QString projectDir;
     QStackedWidget *widgetStack;
-    QListWidget *listWidget, *fileDestList;
-    CEditor *editor;
+    QListWidget *listWidget;
     CEditSettings *editSettings;
-    CDirBrowser *fileDestBrowser;
+    std::vector<CBaseExpertTab *> tabs;
 
     void createFileMenu(void);
     void createBuildRunMenu(void);
@@ -51,25 +56,96 @@ class CExpertScreen: public QMainWindow
     void createMenuBar(void);
     
     void addListItem(const QString &icon, const QString &name);
+    void addTab(CBaseExpertTab *tab);
 
-    QWidget *createGeneralConf(void);
-    QWidget *createPackageConf(void);
-    QWidget *createRunConf(void);
-    QWidget *createFileManager(void);
-
-    void createDestFilesItem(const QString &title, const QString &dir);
-    
 private slots:
+    void newProject(void);
+    void openProject(void);
+    void saveProject(void);
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
-    void launchRunGen(void);
     void showEditSettings(void);
-    void changeDestBrowser(QListWidgetItem *current, QListWidgetItem *previous);
 
 protected:
     virtual void closeEvent(QCloseEvent *e);
     
 public:
     CExpertScreen(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+};
+
+class CBaseExpertTab: public QWidget
+{
+protected:
+    CBaseExpertTab(QWidget *parent = 0, Qt::WindowFlags flags = 0) : QWidget(parent, flags) {}
+
+public:
+    virtual void loadProject(const QString &dir) = 0;
+    virtual void saveProject(const QString &dir) = 0;
+    virtual void newProject(const QString &dir) = 0;
+};
+
+class CGeneralConfTab: public CBaseExpertTab
+{
+    QConfigWidget *qw;
+    
+public:
+    CGeneralConfTab(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    virtual void loadProject(const QString &dir) {}
+    virtual void saveProject(const QString &dir) {}
+    virtual void newProject(const QString &dir) {}
+};
+
+class CPackageConfTab: public CBaseExpertTab
+{
+public:
+    CPackageConfTab(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    virtual void loadProject(const QString &dir) {}
+    virtual void saveProject(const QString &dir) {}
+    virtual void newProject(const QString &dir) {}
+};
+
+class CRunConfTab: public CBaseExpertTab
+{
+    Q_OBJECT
+    
+    CEditor *editor;
+
+    void insertRunText(const QString &text);
+
+private slots:
+    void launchRunGen(void);
+    void genRunWidgetCB(QAction *action);
+    void genRunScreenCB(void);
+    void genRunDeskEntryCB(void);
+    void genRunFunctionCB(void);
+
+public:
+    CRunConfTab(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    virtual void loadProject(const QString &dir);
+    virtual void saveProject(const QString &dir);
+    virtual void newProject(const QString &dir);
+};
+
+class CFileManagerTab: public CBaseExpertTab
+{
+    Q_OBJECT
+    
+    QListWidget *fileDestList;
+    CDirBrowser *fileDestBrowser;
+
+    void createDestFilesItem(const QString &title, const QString &dir);
+
+private slots:
+    void changeDestBrowser(QListWidgetItem *current, QListWidgetItem *previous);
+
+public:
+    CFileManagerTab(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+
+    virtual void loadProject(const QString &dir);
+    virtual void saveProject(const QString &dir) {}
+    virtual void newProject(const QString &dir);
 };
 
 #endif

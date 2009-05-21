@@ -147,7 +147,7 @@ std::string CNewDeskEntryDialog::getIcon(void) const
         ret = "nil";
     else
         ret = "\"" + ret + "\"";
-    
+
     return ret;
 }
 

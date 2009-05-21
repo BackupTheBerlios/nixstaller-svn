@@ -9,8 +9,9 @@
     - image widget creator
     - validate all fields --> double options?
     - way to check which page should be activated
-    - Finish code insert action
+    - verify() func for widgets
 - extra_files manager widget
 - Dir browser:
     - Other drop actions?
     - Save splitter states?
+    - Permissions editor?

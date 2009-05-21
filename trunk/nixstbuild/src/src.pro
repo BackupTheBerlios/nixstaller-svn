@@ -43,7 +43,8 @@ DISTFILES += lua/nixstbuild.lua \
  ../TODO \
  lua/utils-public.lua \
  lua/addwidget.lua \
- lua/genrun.lua
+ lua/genrun.lua \
+ lua/filemanager.lua
 
 TARGETDEPS += ../qcodeedit/libqcodeedit.so
 LIBS += -L../qcodeedit \

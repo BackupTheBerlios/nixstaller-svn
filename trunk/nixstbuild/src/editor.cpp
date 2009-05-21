@@ -25,9 +25,11 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
+#include "qdocumentline.h"
 #include "qcodeedit.h"
 #include "qeditor.h"
 #include "qformatscheme.h"
+#include "qlanguagedefinition.h"
 #include "qlanguagefactory.h"
 #include "qlinemarksinfocenter.h"
 #include "qpanel.h"
@@ -80,7 +82,7 @@ CEditor::CEditor(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f)
     vbox->addWidget(createToolbars());
     vbox->addWidget(editControl->editor());
 
-    loadSettings();
+    loadSettings(QList<QEditor *>() << editor());
 }
 
 void CEditor::addPanel(const QString &name, QCodeEdit::Position pos, QString key, bool add)
@@ -174,12 +176,63 @@ void CEditor::setText(const QString &text)
     editControl->editor()->setText(text);
 }
 
-void CEditor::load(const char *file)
+void CEditor::insertTextAtCurrent(const QString &text)
+{
+    editControl->editor()->write(text);
+}
+
+void CEditor::indentNewLine()
+{
+    // Code based on code from QCodeEdit's QEditor::processCursor
+    
+    QDocumentCursor cur = editControl->editor()->cursor();
+    cur.beginEditBlock();
+    
+    QString indent;
+
+    if (editControl->editor()->languageDefinition())
+    {
+        indent = editControl->editor()->languageDefinition()->indent(cur);
+    }
+    else
+    {
+        // default : keep leading ws from previous line...
+        QDocumentLine l = cur.line();
+        const int idx = qMin(l.firstChar(), cur.columnNumber());
+
+        indent = l.text();
+
+        if (idx != -1)
+            indent.resize(idx);
+    }
+
+    if (indent.count())
+    {
+        // Manually check here for tab replacing, as this doesn't seem to work
+        // in QCodeEdit
+        if (editControl->editor()->flag(QEditor::ReplaceTabs))
+            indent.replace("\t", QString(editControl->editor()->document()->tabStop(), ' '));
+        indent.prepend("\n");
+        cur.insertText(indent);
+    }
+    else
+        cur.insertLine();
+
+    cur.endEditBlock();
+    editControl->editor()->setCursor(cur);
+}
+
+void CEditor::load(const QString &file)
 {
     editControl->editor()->load(file);
 }
 
-void CEditor::loadSettings()
+void CEditor::save(const QString &file)
+{
+    editControl->editor()->save(file);
+}
+
+void CEditor::loadSettings(const QList<QEditor *> &editList)
 {
     QSettings settings;
     settings.beginGroup("editor");
@@ -192,15 +245,23 @@ void CEditor::loadSettings()
             << "Status";
     
     settings.beginGroup("panels");
-    
-    foreach(QString p, panels)
+
+    foreach(QEditor *ed, editList)
     {
-        bool show = settings.value(p.toLower().replace(' ', '_'), p != "Line numbers").toBool();
+        QCodeEdit *ce = QCodeEdit::manager(ed);
+
+        if (!ce)
+            continue;
         
-        if (!show)
-            editControl->sendPanelCommand(p, "hide");
-        else
-            editControl->sendPanelCommand(p, "show");
+        foreach(QString p, panels)
+        {
+            bool show = settings.value(p.toLower().replace(' ', '_'), p != "Line numbers").toBool();
+            
+            if (!show)
+                ce->sendPanelCommand(p, "hide");
+            else
+                ce->sendPanelCommand(p, "show");
+        }
     }
     
     settings.endGroup();

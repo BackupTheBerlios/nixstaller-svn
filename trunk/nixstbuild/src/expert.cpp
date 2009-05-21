@@ -21,6 +21,9 @@
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QFrame>
 #include <QHBoxLayout>
@@ -36,17 +39,18 @@
 #include <QSplitter>
 #include <QTextEdit>
 #include <QToolBar>
+#include <QToolButton>
 #include <QTreeView>
 #include <QVBoxLayout>
 
+#include "main/lua/luafunc.h"
+#include "main/lua/luatable.h"
 #include "configw.h"
 #include "dirbrowser.h"
 #include "editor.h"
 #include "editsettings.h"
 #include "expert.h"
 #include "rungen.h"
-
-QConfigWidget *qw;
 
 CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags)
 {
@@ -58,7 +62,7 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
 
     createMenuBar();
 
-    // UNDONE: Layout handling is a bit messing (not auto)
+    // UNDONE: Layout handling is a bit messy (not auto)
     const int gridw = 150, gridh = 70, listw = gridw+6;
     listWidget = new QListWidget;
 //     listWidget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
@@ -86,10 +90,10 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
             this, SLOT(changePage(QListWidgetItem *, QListWidgetItem*)));
 
     widgetStack = new QStackedWidget;
-    widgetStack->addWidget(createGeneralConf());
-    widgetStack->addWidget(createPackageConf());
-    widgetStack->addWidget(createRunConf());
-    widgetStack->addWidget(createFileManager());
+    addTab(new CGeneralConfTab);
+    addTab(new CPackageConfTab);
+    addTab(new CRunConfTab);
+    addTab(new CFileManagerTab);
     
     QWidget *cw = new QWidget;
     setCentralWidget(cw);
@@ -100,40 +104,6 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     layout->addWidget(widgetStack);
 }
 
-void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previous)
-{
-    if (!current)
-        current = previous;
-
-    widgetStack->setCurrentIndex(listWidget->row(current));
-
-    qw->buildConfig();
-}
-
-void CExpertScreen::launchRunGen()
-{
-    CRunGenerator rg;
-    if (rg.exec() == QDialog::Accepted)
-    {
-        editor->setText(rg.getRun());
-    }
-}
-
-void CExpertScreen::showEditSettings()
-{
-    if (editSettings->exec() == QDialog::Accepted)
-        editor->loadSettings();
-}
-
-void CExpertScreen::changeDestBrowser(QListWidgetItem *current,
-                                      QListWidgetItem *previous)
-{
-    if (!current)
-        current = previous;
-
-    fileDestBrowser->setRootDir(current->data(Qt::UserRole).toString());
-}
-
 void CExpertScreen::createFileMenu()
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
@@ -141,11 +111,13 @@ void CExpertScreen::createFileMenu()
     QAction *action = new QAction(tr("&New project"), this);
     action->setShortcut(tr("Ctrl+N"));
     action->setStatusTip(tr("Create a new project"));
+    connect(action, SIGNAL(triggered()), this, SLOT(newProject()));
     menu->addAction(action);
 
     action = new QAction(tr("&Open project"), this);
     action->setShortcut(tr("Ctrl+O"));
     action->setStatusTip(tr("Open existing project directory"));
+    connect(action, SIGNAL(triggered()), this, SLOT(openProject()));
     menu->addAction(action);
 
     menu->addSeparator();
@@ -153,10 +125,7 @@ void CExpertScreen::createFileMenu()
     action = new QAction(tr("&Save project"), this);
     action->setShortcut(tr("Ctrl+S"));
     action->setStatusTip(tr("Save project changes"));
-    menu->addAction(action);
-
-    action = new QAction(tr("Save project as..."), this);
-    action->setStatusTip(tr("Save project to a different directory"));
+    connect(action, SIGNAL(triggered()), this, SLOT(saveProject()));
     menu->addAction(action);
 
     menu->addSeparator();
@@ -244,44 +213,267 @@ void CExpertScreen::addListItem(const QString &icon, const QString &name)
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
 
-QWidget *CExpertScreen::createGeneralConf()
+void CExpertScreen::addTab(CBaseExpertTab *tab)
 {
+    tabs.push_back(tab);
+    widgetStack->addWidget(tab);
+}
+
+void CExpertScreen::newProject()
+{
+    QFileDialog dialog(NULL, "New Project Directory");
+    dialog.setModal(true);
+    dialog.setFileMode(QFileDialog::DirectoryOnly);
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        projectDir = dialog.selectedFiles()[0];
+        for (std::vector<CBaseExpertTab *>::iterator it=tabs.begin();
+            it!=tabs.end(); it++)
+        {
+            (*it)->newProject(projectDir);
+        }
+    }
+}
+
+void CExpertScreen::openProject()
+{
+    QString dir = QFileDialog::getExistingDirectory(NULL, "Open Project Directory");
+
+    if (!dir.isEmpty())
+    {
+        projectDir = dir;
+        for (std::vector<CBaseExpertTab *>::iterator it=tabs.begin();
+             it!=tabs.end(); it++)
+        {
+            (*it)->loadProject(dir);
+        }
+    }
+}
+
+void CExpertScreen::saveProject()
+{
+    if (!projectDir.isEmpty())
+    {
+        for (std::vector<CBaseExpertTab *>::iterator it=tabs.begin();
+             it!=tabs.end(); it++)
+        {
+            (*it)->saveProject(projectDir);
+        }
+    }
+}
+
+void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    if (!current)
+        current = previous;
+
+    widgetStack->setCurrentIndex(listWidget->row(current));
+}
+
+void CExpertScreen::showEditSettings()
+{
+    if (editSettings->exec() == QDialog::Accepted)
+        CEditor::loadSettings(QEditor::editors());
+}
+
+void CExpertScreen::closeEvent(QCloseEvent *e)
+{
+    // UNDONE: Check for unsaved stuff
+    e->accept();
+}
+
+
+CGeneralConfTab::CGeneralConfTab(QWidget *parent,
+                                 Qt::WindowFlags flags) : CBaseExpertTab(parent, flags)
+{
+    // UNDONE
     QScrollArea *configScroll = new QScrollArea();
     configScroll->setWidget(qw = new QConfigWidget(this, "configprop.lua", "properties_config", "config.lua"));
-    return configScroll;
 }
 
-QWidget *CExpertScreen::createPackageConf()
+
+CPackageConfTab::CPackageConfTab(QWidget *parent,
+                                 Qt::WindowFlags flags) : CBaseExpertTab(parent, flags)
 {
-    QWidget *ret = new QWidget;
-    QFormLayout *layout = new QFormLayout(ret);
-    layout->addRow("Package name", new QLineEdit);
-    return ret;
+    // UNDONE
 }
 
-QWidget *CExpertScreen::createRunConf()
-{
-    QWidget *ret = new QWidget;
-    QVBoxLayout *vlayout = new QVBoxLayout(ret);
 
-    editor = new CEditor(ret);
+CRunConfTab::CRunConfTab(QWidget *parent,
+                         Qt::WindowFlags flags) : CBaseExpertTab(parent, flags)
+{
+    QVBoxLayout *vbox = new QVBoxLayout(this);
+
+    // UNDONE: Icons
+    editor = new CEditor(this);
+    vbox->addWidget(editor);
+
     editor->getToolBar()->addSeparator();
     QAction *a = editor->getToolBar()->addAction("File wizard");
     connect(a, SIGNAL(triggered()), this, SLOT(launchRunGen()));
+
     
-    editor->getToolBar()->addAction("Generate code");
-    editor->load("../newdepscan.lua");
-    
-    vlayout->addWidget(editor);
-    return ret;
+    a = editor->getToolBar()->addAction("Insert code");
+    QMenu *menu = new QMenu(this);
+    a->setMenu(menu);
+    QToolButton *tb = qobject_cast<QToolButton *>(editor->getToolBar()->widgetForAction(a));
+    tb->setPopupMode(QToolButton::InstantPopup);
+
+    a = menu->addAction("Installation screen");
+    connect(a, SIGNAL(triggered()), this, SLOT(genRunScreenCB()));
+
+    a = menu->addAction("Installation screen widget");
+    QMenu *subMenu = new QMenu;
+    a->setMenu(subMenu);
+    TStringVec types;
+    getWidgetTypes(types);
+    for (TStringVec::iterator it=types.begin(); it!=types.end(); it++)
+        subMenu->addAction(it->c_str());
+    connect(subMenu, SIGNAL(triggered(QAction *)), this, SLOT(genRunWidgetCB(QAction *)));
+
+    a = menu->addAction("Desktop entry");
+    connect(a, SIGNAL(triggered()), this, SLOT(genRunDeskEntryCB()));
+
+    a = menu->addAction("Generic function");
+    connect(a, SIGNAL(triggered()), this, SLOT(genRunFunctionCB()));
 }
 
-QWidget *CExpertScreen::createFileManager()
+void CRunConfTab::insertRunText(const QString &text)
 {
-    QWidget *ret = new QWidget;
-    QVBoxLayout *vbox = new QVBoxLayout(ret);
+    QDocumentCursor oldcur = editor->editor()->cursor();
+    QStringList lines = text.split('\n');
+    const int size = lines.size();
+    const bool endNL = (text[text.size()-1] == '\n');
+
+    int n = 0;
+    foreach(QString line, lines)
+    {
+        editor->insertTextAtCurrent(line);
+
+        if (endNL || (n != (size-1)))
+            editor->indentNewLine();
+        n++;
+    }
+
+    // Select new text
+    QDocumentCursor cur = editor->editor()->cursor();
+    cur.setSelectionBoundary(oldcur);
+    editor->editor()->setCursor(cur);
+}
+
+void CRunConfTab::launchRunGen()
+{
+    CRunGenerator rg;
+    if (rg.exec() == QDialog::Accepted)
+    {
+        editor->setText("");
+        insertRunText(rg.getRun());
+    }
+}
+
+void CRunConfTab::genRunWidgetCB(QAction *action)
+{
+    widgetitem wit;
+    if (newInstWidget(action->text().toStdString(), wit))
+    {
+        NLua::CLuaFunc func("genInstWidget");
+        // UNDONE: Let "screen" be configurable?
+        func << wit.variable << "screen" << wit.func <<
+                NLua::CLuaTable(wit.args.begin(), wit.args.end());
+        func(1);
+        std::string code;
+        func >> code;
+        insertRunText(code.c_str());
+    }
+}
+
+void CRunConfTab::genRunScreenCB()
+{
+    CNewScreenDialog dialog;
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        NLua::CLuaFunc func("genInstScreen");
+        func << dialog.variableName() << dialog.screenTitle() <<
+                dialog.genCanActivate() << dialog.genActivate() <<
+                dialog.genUpdate();
+
+        CNewScreenDialog::widgetvec widgets;
+        dialog.getWidgets(widgets);
+
+        NLua::CLuaTable wtab;
+        int n = 1;
+        for (CNewScreenDialog::widgetvec::iterator it=widgets.begin();
+             it!=widgets.end(); it++, n++)
+        {
+            NLua::CLuaTable wtabItem;
+            wtabItem["func"] << it->func;
+            wtabItem["variable"] << it->variable;
+            wtabItem["args"] << NLua::CLuaTable(it->args.begin(), it->args.end());
+            wtab[n] << wtabItem;
+        }
+
+        func << wtab;
+        func(1);
+        std::string code;
+        func >> code;
+        insertRunText(code.c_str());
+    }
+}
+
+void CRunConfTab::genRunDeskEntryCB()
+{
+    CNewDeskEntryDialog dialog;
     
-    ret->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        NLua::CLuaFunc func("genDeskEntry");
+        func << dialog.getName() << dialog.getExec() <<
+                dialog.getIcon() << dialog.getCategories();
+        func(1);
+        std::string code;
+        func >> code;
+        insertRunText(code.c_str());
+    }
+}
+
+void CRunConfTab::genRunFunctionCB()
+{
+    QDocumentCursor cur = editor->editor()->cursor();
+    insertRunText("function newfunc()\n\nend");
+
+    // Move cursor behind "function "
+    const int start = strlen("function "), end = strlen("newfunc");
+    cur.movePosition(start);
+    cur.movePosition(end, QDocumentCursor::NextCharacter, QDocumentCursor::KeepAnchor);
+    editor->editor()->setCursor(cur);
+}
+
+void CRunConfTab::loadProject(const QString &dir)
+{
+    // UNDONE: Run wizard if file doesn't exist?
+    editor->load(dir + "/run.lua");
+}
+
+void CRunConfTab::saveProject(const QString &dir)
+{
+    editor->save(dir + "/run.lua");
+}
+
+void CRunConfTab::newProject(const QString &dir)
+{
+    // UNDONE: Run wizard?
+}
+
+
+CFileManagerTab::CFileManagerTab(QWidget *parent,
+                                 Qt::WindowFlags flags) : CBaseExpertTab(parent, flags)
+{
+    QVBoxLayout *vbox = new QVBoxLayout(this);
+    
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QSplitter *mainSplit = new QSplitter(Qt::Vertical);
     vbox->addWidget(mainSplit);
@@ -313,8 +505,7 @@ QWidget *CExpertScreen::createFileManager()
     svbox->addWidget(label);
     
     svbox->addWidget(fileDestList = new QListWidget);
-    createDestFilesItem("Generic Files", "/tmp/nixstb"); // UNDONE
-    fileDestList->setCurrentRow(0);
+    fileDestList->setSortingEnabled(true);
     connect(fileDestList, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
             this, SLOT(changeDestBrowser(QListWidgetItem *, QListWidgetItem*)));
 
@@ -325,22 +516,57 @@ QWidget *CExpertScreen::createFileManager()
     label->setAlignment(Qt::AlignHCenter);
     svbox->addWidget(label);
     
-    svbox->addWidget(fileDestBrowser = new CDirBrowser("/tmp/nixstb")); // UNDONE
+    svbox->addWidget(fileDestBrowser = new CDirBrowser); // UNDONE? (needs proper root)
     
-    split->setSizes(QList<int>() << 100 << 300);
-    
-    return ret;
+    split->setSizes(QList<int>() << 150 << 300);
 }
 
-void CExpertScreen::createDestFilesItem(const QString &title,
+void CFileManagerTab::createDestFilesItem(const QString &title,
                                         const QString &dir)
 {
     QListWidgetItem *i = new QListWidgetItem(title, fileDestList);
     i->setData(Qt::UserRole, dir);
 }
 
-void CExpertScreen::closeEvent(QCloseEvent *e)
+void CFileManagerTab::changeDestBrowser(QListWidgetItem *current,
+                                      QListWidgetItem *previous)
 {
-    // UNDONE: Check for unsaved stuff
-    e->accept();
+    if (!current)
+        current = previous;
+
+    fileDestBrowser->setRootDir(current->data(Qt::UserRole).toString());
+}
+
+void CFileManagerTab::loadProject(const QString &dir)
+{
+    fileDestList->clear();
+
+    CDirIter dirIter(dir.toStdString());
+    while (dirIter)
+    {
+        std::string path = JoinPath(dir.toStdString(), dirIter->d_name);
+        if (IsDir(path))
+        {
+            NLua::CLuaFunc func("getFriendlyFilesName");
+            func << dirIter->d_name;
+            if (func(1))
+            {
+                std::string title;
+                func >> title;
+                createDestFilesItem(title.c_str(), path.c_str());
+            }
+        }
+        dirIter++;
+    }
+
+    if (fileDestList->count())
+        fileDestList->setCurrentRow(0);
+}
+
+void CFileManagerTab::newProject(const QString &dir)
+{
+    QDir d(dir);
+    d.mkdir("files_all");
+    d.mkdir("files_extra");
+    loadProject(dir);
 }

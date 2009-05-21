@@ -137,6 +137,7 @@ class CDirModel: public QFileSystemModel
     bool multipleFiles;
 
     int sizeUnitFact(qint64 size);
+    off_t safeFileSize(const std::string &file);
     void safeCopy(const std::string &src, const std::string &dest, bool move);
     void safeMKDirRec(const std::string &dir);
     bool getAllSubPaths(const std::string &dir, TStringVec &paths);

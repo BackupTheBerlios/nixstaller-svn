@@ -57,9 +57,14 @@ public:
     CEditor(QWidget *parent = 0, Qt::WindowFlags f = 0);
 
     void setText(const QString &text);
-    void load(const char *file);
-    void loadSettings(void);
+    void insertTextAtCurrent(const QString &text);
+    void indentNewLine(void);
+    void load(const QString &file);
+    void save(const QString &file);
     QToolBar *getToolBar(void) { return toolBar; }
+    QEditor *editor(void) { return editControl->editor(); }
+
+    static void loadSettings(const QList<QEditor *> &editList);
 };
 
 #endif

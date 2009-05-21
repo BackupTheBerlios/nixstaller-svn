@@ -73,6 +73,8 @@ public:
 class CBaseWidgetField
 {
 public:
+    virtual ~CBaseWidgetField(void) {}
+    
     virtual QWidget *getFieldWidget(void) = 0;
     virtual void addArgs(TStringVec &vec) = 0;
 };

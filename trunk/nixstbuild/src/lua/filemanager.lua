@@ -18,12 +18,48 @@
 --  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
 --  ***************************************************************************
 
-loadluash("utils.lua")
-loadluash("utils-public.lua")
-loadlua("addwidget.lua")
-loadlua("configprop.lua")
-loadlua("rungen.lua")
-loadlua("filemanager.lua")
+local validOSs = { "linux", "freebsd", "netbsd", "openbsd", "sunos" }
+local validCPUArchs = { "x86", "x86_64" }
 
-setRunIndenting(false)
+local function getFriendlyOS(os)
+    local osmap = {
+        linux = "Linux",
+        freebsd = "FreeBSD",
+        netbsd = "NetBSD",
+        openbsd = "OpenBSD",
+        sunos = "Solaris"
+    }
 
+    return osmap[os] or os
+end
+
+local function getFriendlyArch(arch)
+    return arch
+end
+
+function getFriendlyFilesName(dir)
+    if dir == "files_all" then
+        return "Generic Files"
+    elseif dir == "files_extra" then
+        return "Extra (runtime) Files"
+    end
+    
+    for _, os in ipairs(validOSs) do
+        if dir == string.format("files_%s_all", os) then
+            return string.format("Files for %s", getFriendlyOS(os))
+        end
+        
+        for _, arch in ipairs(validCPUArchs) do
+            if dir == string.format("files_%s_%s", os, arch) then
+                return string.format("Files for %s (%s only)",
+                                     getFriendlyOS(os), getFriendlyArch(arch))
+            end
+        end
+    end
+
+    for _, arch in ipairs(validCPUArchs) do
+        if dir == string.format("files_all_%s", arch) then
+            return string.format("Generic Files (%s only)", getFriendlyArch(arch))
+        end
+    end
+end
