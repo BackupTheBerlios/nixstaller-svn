@@ -84,7 +84,7 @@ QWidget *CNewScreenDialog::createWidgetGroup()
     // UNDONE: Icons
     widgetList->insertButton(0, addWidgetB = new QPushButton("Add"));
 
-    QMenu *menu = new QMenu;
+    QMenu *menu = new QMenu(addWidgetB);
     QSignalMapper *sigMapper = new QSignalMapper(box);
 
     TStringVec types;

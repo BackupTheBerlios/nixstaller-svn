@@ -81,6 +81,7 @@ public:
     CDirBrowser(const QString &d = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
     void setRootDir(const QString &dir);
+    void removeDir(const QString &dir);
 };
 
 class CDirCompleter: public QCompleter

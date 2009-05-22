@@ -21,7 +21,7 @@
 local validOSs = { "linux", "freebsd", "netbsd", "openbsd", "sunos" }
 local validCPUArchs = { "x86", "x86_64" }
 
-local function getFriendlyOS(os)
+function getFriendlyOS(os)
     local osmap = {
         linux = "Linux",
         freebsd = "FreeBSD",
@@ -33,7 +33,7 @@ local function getFriendlyOS(os)
     return osmap[os] or os
 end
 
-local function getFriendlyArch(arch)
+function getFriendlyArch(arch)
     return arch
 end
 
@@ -63,3 +63,12 @@ function getFriendlyFilesName(dir)
         end
     end
 end
+
+function getFilesOSs()
+    return validOSs
+end
+
+function getFilesCPUArchs()
+    return validCPUArchs
+end
+

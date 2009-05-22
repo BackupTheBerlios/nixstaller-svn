@@ -97,28 +97,21 @@ public:
     bool Next(std::string &key);
     void GetTable(void) const;
     
+    template <typename C> void ToVec(std::vector<C> &out)
+    {
+        const int size = Size();
+        for (int n=1; n<=size; n++)
+        {
+            C v;
+            CReturn(n, m_iTabRef) >> v;
+            out.push_back(v);
+        }
+    }
+    
     CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     operator void *(void) { static int ret; return (m_bOK) ? &ret : 0; }
 };
-
-template <typename C> bool LuaGet(C &out, const char *var, const char *tab=NULL)
-{
-    CLuaTable table(var, tab);
-    
-    if (!table)
-        return false;
-    
-    const int size = table.Size();
-    for (int n=1; n<=size; n++)
-    {
-        std::string s;
-        table[n] >> s;
-        out.push_back(s);
-    }
-    
-    return true;
-}
 
 
 }

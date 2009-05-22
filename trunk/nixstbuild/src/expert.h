@@ -27,6 +27,7 @@
 
 class QListWidgetItem;
 class QListWidget;
+class QMenu;
 class QStackedWidget;
 
 class QFormatScheme;
@@ -44,7 +45,8 @@ class CExpertScreen: public QMainWindow
     Q_OBJECT
 
     QString projectDir;
-    QStackedWidget *widgetStack;
+    QMenu *recentFilesMenu;
+    QStackedWidget *mainStack, *widgetStack;
     QListWidget *listWidget;
     CEditSettings *editSettings;
     std::vector<CBaseExpertTab *> tabs;
@@ -54,14 +56,21 @@ class CExpertScreen: public QMainWindow
     void createSettingsMenu(void);
     void createHelpMenu(void);
     void createMenuBar(void);
-    
+
+    void updateTitle(void);
     void addListItem(const QString &icon, const QString &name);
     void addTab(CBaseExpertTab *tab);
+    void cleanRecent(void);
+    void addRecent(const QString &path);
+    void setProjectDir(const QString &dir);
+    void loadProject(const QString &dir);
 
 private slots:
     void newProject(void);
     void openProject(void);
     void saveProject(void);
+    void updateRecentMenu(void);
+    void openRecentCB(QAction *action);
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
     void showEditSettings(void);
 
@@ -132,12 +141,23 @@ class CFileManagerTab: public CBaseExpertTab
 {
     Q_OBJECT
     
+    QString projectDir;
     QListWidget *fileDestList;
+    QMenu *addInstDirMenu;
     CDirBrowser *fileDestBrowser;
+    QStackedWidget *browserStack;
 
-    void createDestFilesItem(const QString &title, const QString &dir);
+    QListWidgetItem *createDestFilesItem(const QString &title, const QString &dir);
+    bool hasDir(const QString &dir);
+    void getOSs(TStringVec &out);
+    void getArchs(TStringVec &out);
+    void getRemainingInstDirs(TStringVec &out);
+    void addMenuAction(QMenu *menu, const QString &title, const QString &dir);
 
 private slots:
+    void updateAddDirMenu(void);
+    void instDirMenuCB(QAction *action);
+    void removeInstDir(void);
     void changeDestBrowser(QListWidgetItem *current, QListWidgetItem *previous);
 
 public:

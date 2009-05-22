@@ -227,8 +227,12 @@ function genRun(mode, pkgmode, screenlist, custscreens, destdir, deskentries)
 end
 
 function genInstWidget(variable, screenVar, func, args)
-    return string.format('%s = %s:%s(%s)', variable, screenVar, func,
-                         tabtostr(args) or "")
+    if func == "addscreenend" then
+        return string.format('%s:%s()', screenVar, func)
+    else
+        return string.format('%s = %s:%s(%s)', variable, screenVar, func,
+                             tabtostr(args) or "")
+    end
 end
 
 function genInstScreen(variable, title, genCanAct, genAct, genUpdate, widgets)

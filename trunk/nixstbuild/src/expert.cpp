@@ -21,6 +21,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFileDialog>
@@ -33,14 +34,16 @@
 #include <QListWidgetItem>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
+#include <QRadioButton>
 #include <QScrollArea>
+#include <QSettings>
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QSplitter>
 #include <QTextEdit>
 #include <QToolBar>
 #include <QToolButton>
-#include <QTreeView>
 #include <QVBoxLayout>
 
 #include "main/lua/luafunc.h"
@@ -54,13 +57,20 @@
 
 CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags)
 {
-    setWindowTitle("Nixstbuild v0.1 - Expert mode");
+    updateTitle();
     statusBar()->showMessage(tr("Ready"));
     resize(700, 500);
 
     editSettings = new CEditSettings(this); // Do this BEFORE createMenuBar()!
 
     createMenuBar();
+
+    mainStack = new QStackedWidget;
+    setCentralWidget(mainStack);
+
+    QWidget *stackW = new QWidget;
+    mainStack->addWidget(stackW);
+    QHBoxLayout *hbox = new QHBoxLayout(stackW);
 
     // UNDONE: Layout handling is a bit messy (not auto)
     const int gridw = 150, gridh = 70, listw = gridw+6;
@@ -74,6 +84,7 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     listWidget->setWrapping(true);
     listWidget->setGridSize(QSize(gridw, gridh));
 //     listWidget->setSpacing(6);
+    hbox->addWidget(listWidget);
 
     QPalette p = listWidget->palette();
     QColor c = p.color(QPalette::Highlight);
@@ -94,14 +105,18 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     addTab(new CPackageConfTab);
     addTab(new CRunConfTab);
     addTab(new CFileManagerTab);
-    
-    QWidget *cw = new QWidget;
-    setCentralWidget(cw);
-    
-    QHBoxLayout *layout = new QHBoxLayout(cw);
+    hbox->addWidget(widgetStack);
 
-    layout->addWidget(listWidget);
-    layout->addWidget(widgetStack);
+    mainStack->addWidget(stackW = new QWidget);
+    hbox = new QHBoxLayout(stackW);
+    QLabel *label = new QLabel("<qt>Welcome to Nixstbuild!<br>You can load or create projects from the <b>File</b> menu.</qt>");
+    label->setFrameStyle(QFrame::Box | QFrame::Sunken);
+    label->setAlignment(Qt::AlignCenter);
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->setMargin(25);
+    hbox->addWidget(label);
+
+    mainStack->setCurrentIndex(1);
 }
 
 void CExpertScreen::createFileMenu()
@@ -119,6 +134,13 @@ void CExpertScreen::createFileMenu()
     action->setStatusTip(tr("Open existing project directory"));
     connect(action, SIGNAL(triggered()), this, SLOT(openProject()));
     menu->addAction(action);
+
+    recentFilesMenu = menu->addMenu(tr("&Recent projects"));
+    // NOTE: updateRecentMenu() is connected to parent menu. This is so
+    // we can correctly enable/disable the recent files menu
+    connect(menu, SIGNAL(aboutToShow()), this, SLOT(updateRecentMenu()));
+    connect(recentFilesMenu, SIGNAL(triggered(QAction *)),
+            this, SLOT(openRecentCB(QAction *)));
 
     menu->addSeparator();
     
@@ -197,6 +219,17 @@ void CExpertScreen::createMenuBar()
     createHelpMenu();
 }
 
+void CExpertScreen::updateTitle()
+{
+    QString tag;
+    if (projectDir.isEmpty())
+        tag = "(No project loaded)";
+    else
+        tag = QString("%1 - [%2]").arg(QDir(projectDir).dirName()).arg(projectDir);
+
+    setWindowTitle(QString("Nixstbuild v0.1 - Expert mode - %1").arg(tag));
+}
+
 void CExpertScreen::addListItem(const QString &icon, const QString &name)
 {
     QListWidgetItem *item = new QListWidgetItem(listWidget);
@@ -219,6 +252,56 @@ void CExpertScreen::addTab(CBaseExpertTab *tab)
     widgetStack->addWidget(tab);
 }
 
+void CExpertScreen::cleanRecent()
+{
+    QSettings settings;
+    QStringList list = settings.value("recent").toStringList();
+    QStringList cleanList;
+    bool update = false;
+    
+    foreach(QString p, list)
+    {
+        if (!QFile::exists(p))
+            update = true;
+        else
+            cleanList << p;
+    }
+
+    if (update)
+        settings.setValue("recent", cleanList);
+}
+
+void CExpertScreen::addRecent(const QString &path)
+{
+    cleanRecent();
+    QSettings settings;
+    QStringList recent = settings.value("recent").toStringList();
+    recent.removeAll(path);
+    recent.push_front(path);
+
+    if (recent.size() > 10) // UNDONE: Setting?
+        recent.pop_back();
+    settings.setValue("recent", recent);
+}
+
+void CExpertScreen::setProjectDir(const QString &dir)
+{
+    projectDir = dir;
+    updateTitle();
+    addRecent(projectDir);
+    mainStack->setCurrentIndex(0);
+}
+
+void CExpertScreen::loadProject(const QString &dir)
+{
+    setProjectDir(dir);
+    for (std::vector<CBaseExpertTab *>::iterator it=tabs.begin();
+         it!=tabs.end(); it++)
+    {
+        (*it)->loadProject(dir);
+    }
+}
+
 void CExpertScreen::newProject()
 {
     QFileDialog dialog(NULL, "New Project Directory");
@@ -229,7 +312,7 @@ void CExpertScreen::newProject()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        projectDir = dialog.selectedFiles()[0];
+        setProjectDir(dialog.selectedFiles()[0]);
         for (std::vector<CBaseExpertTab *>::iterator it=tabs.begin();
             it!=tabs.end(); it++)
         {
@@ -243,14 +326,7 @@ void CExpertScreen::openProject()
     QString dir = QFileDialog::getExistingDirectory(NULL, "Open Project Directory");
 
     if (!dir.isEmpty())
-    {
-        projectDir = dir;
-        for (std::vector<CBaseExpertTab *>::iterator it=tabs.begin();
-             it!=tabs.end(); it++)
-        {
-            (*it)->loadProject(dir);
-        }
-    }
+        loadProject(dir);
 }
 
 void CExpertScreen::saveProject()
@@ -263,6 +339,28 @@ void CExpertScreen::saveProject()
             (*it)->saveProject(projectDir);
         }
     }
+}
+
+void CExpertScreen::updateRecentMenu()
+{
+    cleanRecent();
+    QSettings settings;
+    QStringList list = settings.value("recent").toStringList();
+    recentFilesMenu->clear();
+
+    if (list.empty())
+        recentFilesMenu->setEnabled(false);
+    else
+    {
+        recentFilesMenu->setEnabled(true);
+        foreach(QString p, list)
+            recentFilesMenu->addAction(p);
+    }
+}
+
+void CExpertScreen::openRecentCB(QAction *action)
+{
+    loadProject(action->text());
 }
 
 void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previous)
@@ -312,33 +410,27 @@ CRunConfTab::CRunConfTab(QWidget *parent,
     vbox->addWidget(editor);
 
     editor->getToolBar()->addSeparator();
-    QAction *a = editor->getToolBar()->addAction("File wizard");
-    connect(a, SIGNAL(triggered()), this, SLOT(launchRunGen()));
+    editor->getToolBar()->addAction("File wizard", this, SLOT(launchRunGen()));
 
     
-    a = editor->getToolBar()->addAction("Insert code");
+    QAction *a = editor->getToolBar()->addAction("Insert code");
     QMenu *menu = new QMenu(this);
     a->setMenu(menu);
     QToolButton *tb = qobject_cast<QToolButton *>(editor->getToolBar()->widgetForAction(a));
     tb->setPopupMode(QToolButton::InstantPopup);
 
-    a = menu->addAction("Installation screen");
-    connect(a, SIGNAL(triggered()), this, SLOT(genRunScreenCB()));
+    menu->addAction("Installation screen", this, SLOT(genRunScreenCB()));
 
-    a = menu->addAction("Installation screen widget");
-    QMenu *subMenu = new QMenu;
-    a->setMenu(subMenu);
+    QMenu *subMenu = menu->addMenu("Installation screen widget");
     TStringVec types;
     getWidgetTypes(types);
     for (TStringVec::iterator it=types.begin(); it!=types.end(); it++)
         subMenu->addAction(it->c_str());
     connect(subMenu, SIGNAL(triggered(QAction *)), this, SLOT(genRunWidgetCB(QAction *)));
 
-    a = menu->addAction("Desktop entry");
-    connect(a, SIGNAL(triggered()), this, SLOT(genRunDeskEntryCB()));
+    menu->addAction("Desktop entry", this, SLOT(genRunDeskEntryCB()));
 
-    a = menu->addAction("Generic function");
-    connect(a, SIGNAL(triggered()), this, SLOT(genRunFunctionCB()));
+    menu->addAction("Generic function", this, SLOT(genRunFunctionCB()));
 }
 
 void CRunConfTab::insertRunText(const QString &text)
@@ -503,7 +595,20 @@ CFileManagerTab::CFileManagerTab(QWidget *parent,
     label = new QLabel("<qt><b>Category</b></qt>");
     label->setAlignment(Qt::AlignHCenter);
     svbox->addWidget(label);
+
+    QHBoxLayout *hbox = new QHBoxLayout;
+    svbox->addLayout(hbox);
     
+    QPushButton *but = new QPushButton(QIcon(":/edit_add.png"), "Add");
+    but->setMenu(addInstDirMenu = new QMenu(but));
+    connect(addInstDirMenu, SIGNAL(aboutToShow()), this, SLOT(updateAddDirMenu()));
+    connect(addInstDirMenu, SIGNAL(triggered(QAction *)), this, SLOT(instDirMenuCB(QAction *)));
+    hbox->addWidget(but);
+
+    but = new QPushButton(QIcon(":/edit_remove.png"), "Remove");
+    connect(but, SIGNAL(pressed()), this, SLOT(removeInstDir()));
+    hbox->addWidget(but);
+
     svbox->addWidget(fileDestList = new QListWidget);
     fileDestList->setSortingEnabled(true);
     connect(fileDestList, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
@@ -515,17 +620,181 @@ CFileManagerTab::CFileManagerTab(QWidget *parent,
     label = new QLabel("<qt><b>Installation Files</b></qt>");
     label->setAlignment(Qt::AlignHCenter);
     svbox->addWidget(label);
+
+    browserStack = new QStackedWidget;
+    svbox->addWidget(browserStack);
     
-    svbox->addWidget(fileDestBrowser = new CDirBrowser); // UNDONE? (needs proper root)
+    browserStack->addWidget(fileDestBrowser = new CDirBrowser); // UNDONE? (needs proper root)
+    browserStack->addWidget(new QLabel("<qt>Use the <b>Add</b> button to add installation directories.</qt>"));
+    browserStack->setCurrentIndex(1);
     
     split->setSizes(QList<int>() << 150 << 300);
 }
 
-void CFileManagerTab::createDestFilesItem(const QString &title,
+QListWidgetItem * CFileManagerTab::createDestFilesItem(const QString &title,
                                         const QString &dir)
 {
     QListWidgetItem *i = new QListWidgetItem(title, fileDestList);
     i->setData(Qt::UserRole, dir);
+    return i;
+}
+
+bool CFileManagerTab::hasDir(const QString &dir)
+{
+    const int count = fileDestList->count();
+
+    for (int i=0; i<count; i++)
+    {
+        QString p = fileDestList->item(i)->data(Qt::UserRole).toString();
+        if (QDir(p).dirName() == dir)
+            return true;
+    }
+
+    return false;
+}
+
+void CFileManagerTab::getOSs(TStringVec &out)
+{
+    NLua::CLuaTable tab;
+    NLua::CLuaFunc func("getFilesOSs");
+    
+    func(1);
+    func >> tab;
+    tab.ToVec<std::string>(out);
+}
+
+void CFileManagerTab::getArchs(TStringVec &out)
+{
+    NLua::CLuaTable tab;
+    NLua::CLuaFunc func("getFilesCPUArchs");
+    
+    func(1);
+    func >> tab;
+    tab.ToVec<std::string>(out);
+}
+
+void CFileManagerTab::addMenuAction(QMenu *menu, const QString &title, const QString &dir)
+{
+    QAction *a = menu->addAction(title);
+    a->setData(dir);
+}
+
+void CFileManagerTab::updateAddDirMenu()
+{
+    addInstDirMenu->clear();
+
+    TStringVec OSs, Archs;
+    getOSs(OSs);
+    getArchs(Archs);
+
+    QMenu *genericMenu = NULL;
+
+    if (!hasDir("files_all"))
+    {
+        genericMenu = addInstDirMenu->addMenu("Generic OS");
+        addMenuAction(genericMenu, "Generic", "files_all");
+    }
+
+    for (TStringVec::iterator os=OSs.begin(); os!=OSs.end(); os++)
+    {
+        QMenu *osMenu = NULL;
+
+        std::string friendlyOS;
+        NLua::CLuaFunc func("getFriendlyOS");
+        func << *os;
+        func(1);
+        func >> friendlyOS;
+        
+        QString dir = QString("files_%1_all").arg(os->c_str());
+        if (!hasDir(dir))
+        {
+            osMenu = addInstDirMenu->addMenu(friendlyOS.c_str());
+            addMenuAction(osMenu, "Generic CPU Arch", dir);
+        }
+
+        for (TStringVec::iterator arch=Archs.begin(); arch!=Archs.end(); arch++)
+        {
+            dir = QString("files_%1_%2").arg(os->c_str()).arg(arch->c_str());
+            if (!hasDir(dir))
+            {
+                if (!osMenu)
+                    osMenu = addInstDirMenu->addMenu(friendlyOS.c_str());
+                
+                std::string friendlyArch;
+                NLua::CLuaFunc func("getFriendlyArch");
+                func << *arch;
+                func(1);
+                func >> friendlyArch;
+
+                addMenuAction(osMenu, friendlyArch.c_str(), dir);
+            }
+        }
+    }
+
+    for (TStringVec::iterator arch=Archs.begin(); arch!=Archs.end(); arch++)
+    {
+        QString dir = QString("files_all_%1").arg(arch->c_str());
+        if (!hasDir(dir))
+        {
+            if (!genericMenu)
+                genericMenu = addInstDirMenu->addMenu("Generic OS");
+            addMenuAction(genericMenu, arch->c_str(), dir);
+        }
+    }
+
+    if (!hasDir("files_extra"))
+    {
+        addInstDirMenu->addSeparator();
+        addMenuAction(addInstDirMenu, "Extra (runtime)", "files_extra");
+    }
+}
+
+void CFileManagerTab::instDirMenuCB(QAction *action)
+{
+    if (projectDir.isEmpty())
+        return;
+
+    std::string subDir = action->data().toString().toStdString();
+    std::string path = JoinPath(projectDir.toStdString(), subDir);
+
+    try
+    {
+        MKDirRec(path);
+        NLua::CLuaFunc func("getFriendlyFilesName");
+        func << subDir;
+        func(1);
+        
+        std::string title;
+        func >> title;
+        fileDestList->setCurrentItem(createDestFilesItem(title.c_str(), path.c_str()));
+        
+        if (fileDestList->count() == 1)
+            browserStack->setCurrentIndex(0);
+    }
+    catch(Exceptions::CExIO &e)
+    {
+        QMessageBox::critical(0, "Error", QString("Failed to create directory: %1").arg(e.what()));
+    }
+}
+
+void CFileManagerTab::removeInstDir()
+{
+    QListWidgetItem *current = fileDestList->currentItem();
+
+    if (current)
+    {
+        if (QMessageBox::question(0, "Remove directory",
+                                  QString("Are you sure you want to remove the selected directory?"),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::No) == QMessageBox::Yes)
+        {
+            fileDestBrowser->removeDir(current->data(Qt::UserRole).toString());
+            delete current;
+        }
+
+        if (!fileDestList->count())
+            browserStack->setCurrentIndex(1);
+    }
 }
 
 void CFileManagerTab::changeDestBrowser(QListWidgetItem *current,
@@ -539,6 +808,7 @@ void CFileManagerTab::changeDestBrowser(QListWidgetItem *current,
 
 void CFileManagerTab::loadProject(const QString &dir)
 {
+    projectDir = dir;
     fileDestList->clear();
 
     CDirIter dirIter(dir.toStdString());
@@ -560,7 +830,12 @@ void CFileManagerTab::loadProject(const QString &dir)
     }
 
     if (fileDestList->count())
+    {
         fileDestList->setCurrentRow(0);
+        browserStack->setCurrentIndex(0);
+    }
+    else
+        browserStack->setCurrentIndex(1);
 }
 
 void CFileManagerTab::newProject(const QString &dir)

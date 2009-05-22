@@ -58,7 +58,8 @@ LIBS += -L../qcodeedit \
 TARGET = nixstbuild
 
 
-RESOURCES += editor.qrc
+RESOURCES += editor.qrc \
+ nixstbuild.qrc
 
 INCLUDEPATH += ../qcodeedit/lib \
   ../qcodeedit/lib/widgets/ \

@@ -34,7 +34,7 @@ CInstScreenWidget::CInstScreenWidget(QWidget *parent,
     insertButton(0, addScreenB = new QPushButton("Add screen"));
     insertButton(1, newScreenB = new QPushButton("New screen"));
 
-    QMenu *menu = new QMenu();
+    QMenu *menu = new QMenu(addScreenB);
     QSignalMapper *sigMapper = new QSignalMapper(this);
     
     addScreenBMenuItem("Welcome screen", "WelcomeScreen", menu, sigMapper);

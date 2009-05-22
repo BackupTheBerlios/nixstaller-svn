@@ -431,6 +431,13 @@ void CDirBrowser::setRootDir(const QString &dir)
     }
 }
 
+void CDirBrowser::removeDir(const QString &dir)
+{
+    QMimeData mime;
+    mime.setUrls(QList<QUrl>() << dir);
+    browserModel->removeFiles(&mime);
+}
+
 
 QString CDirCompleter::pathFromIndex(const QModelIndex &index) const
 {
