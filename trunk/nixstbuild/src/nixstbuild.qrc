@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/" >
+        <file alias="edit_add.png">../gfx/edit_add.png</file>
+        <file alias="edit_remove.png">../gfx/edit_remove.png</file>
+    </qresource>
+</RCC>
