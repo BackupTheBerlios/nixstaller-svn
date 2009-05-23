@@ -26,6 +26,7 @@ class QWidget;
 
 QLineEdit *createLuaEdit(QWidget *parent = 0);
 bool verifyLuaEdit(QLineEdit *edit);
+bool verifyNixstPath(const QString &path);
 
 #endif
 

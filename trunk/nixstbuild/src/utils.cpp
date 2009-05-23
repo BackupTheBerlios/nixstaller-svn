@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 
+#include <QDir>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QObject>
@@ -79,4 +80,10 @@ bool verifyLuaEdit(QLineEdit *edit)
     }
     
     return ret;
+}
+
+bool verifyNixstPath(const QString &path)
+{
+    QDir d(path);
+    return (d.isReadable() && d.exists("geninstall.sh"));
 }

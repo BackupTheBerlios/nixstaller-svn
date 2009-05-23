@@ -20,6 +20,7 @@
 
 
 #include <QApplication>
+#include <QSettings>
 #include <QMessageBox>
 
 #include "main/exception.h"
@@ -27,16 +28,16 @@
 #include "luaparser.h"
 #include "main.h"
 #include "welcome.h"
-#include "configw.h"
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
-    CNixstbApp app(argc, argv);
-
     QCoreApplication::setOrganizationName("Nixstaller");
     QCoreApplication::setOrganizationDomain("nixstaller.berlios.de");
     QCoreApplication::setApplicationName("Nixstbuild");
     
+    CNixstbApp app(argc, argv);
+
     (new CWelcomeScreen())->show();
 
     try
@@ -55,6 +56,29 @@ int main(int argc, char *argv[])
     }
     
      return 0;
+}
+
+
+CNixstbApp::CNixstbApp(int &argc, char **argv) : QApplication(argc, argv)
+{
+    QSettings settings;
+    QString npath = settings.value("nixstaller_path").toString();
+    if (!verifyNixstPath(npath))
+    {
+        // Try to find path automagicly
+        const char *binPath = getenv("PATH");
+        if (binPath)
+        {
+            foreach(QString p, QString(binPath).split(':'))
+            {
+                if (verifyNixstPath(p))
+                {
+                    settings.setValue("nixstaller_path", p);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 bool CNixstbApp::notify(QObject *receiver, QEvent *event)

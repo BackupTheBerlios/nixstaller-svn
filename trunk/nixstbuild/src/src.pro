@@ -13,7 +13,8 @@ SOURCES += main.cpp \
  newinstwidget.cpp \
  deskentrywidget.cpp \
  morelabel.cpp \
- dirbrowser.cpp
+ dirbrowser.cpp \
+ dirinput.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -35,7 +36,8 @@ HEADERS += welcome.h \
  newinstwidget.h \
  deskentrywidget.h \
  morelabel.h \
- dirbrowser.h
+ dirbrowser.h \
+ dirinput.h
 
 
 

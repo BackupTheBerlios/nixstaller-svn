@@ -37,22 +37,21 @@ CWelcomeScreen::CWelcomeScreen(QWidget *parent,
 
     move((w - width())/2, (h - height())/2);
 
-    m_pStandardButton = new QPushButton("Standard Mode");
-    m_pExpertButton = new QPushButton("Expert Mode");
-
-    connect(m_pStandardButton, SIGNAL(clicked()), this, SLOT(StandardSlot()));
-    connect(m_pExpertButton, SIGNAL(clicked()), this, SLOT(ExpertSlot()));
-
-    QWidget *cw = new QWidget();
+    QWidget *cw = new QWidget;
     setCentralWidget(cw);
     
-    QVBoxLayout *layout = new QVBoxLayout(cw);
+    QVBoxLayout *vbox = new QVBoxLayout(cw);
 
-    layout->addWidget(m_pStandardButton);
-    layout->addWidget(m_pExpertButton);
+    standardButton = new QPushButton("Standard Mode");
+    connect(standardButton, SIGNAL(clicked()), this, SLOT(standardSlot()));
+    vbox->addWidget(standardButton);
+    
+    expertButton = new QPushButton("Expert Mode");
+    connect(expertButton, SIGNAL(clicked()), this, SLOT(expertSlot()));
+    vbox->addWidget(expertButton);
 }
 
-void CWelcomeScreen::StandardSlot()
+void CWelcomeScreen::standardSlot()
 {
 //     CNixstbuildStandard *nbstandard = new CNixstbuildStandard();
 //     nbstandard->show();
@@ -60,7 +59,7 @@ void CWelcomeScreen::StandardSlot()
 //     hide();
 }
 
-void CWelcomeScreen::ExpertSlot()
+void CWelcomeScreen::expertSlot()
 {
     (new CExpertScreen)->show();
     hide();

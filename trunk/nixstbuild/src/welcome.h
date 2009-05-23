@@ -29,15 +29,15 @@ class CWelcomeScreen: public QMainWindow
 {
     Q_OBJECT
 
-    QPushButton *m_pStandardButton;
-    QPushButton *m_pExpertButton;
+    QPushButton *standardButton;
+    QPushButton *expertButton;
+    
+private slots:
+    void standardSlot(void);
+    void expertSlot(void);
 
 public:
     CWelcomeScreen(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-
-private slots:
-    void StandardSlot(void);
-    void ExpertSlot(void);
 };
 
 #endif

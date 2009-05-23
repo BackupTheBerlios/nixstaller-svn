@@ -18,16 +18,54 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef NB_MAIN_H
-#define NB_MAIN_H
+#include <QCompleter>
+#include <QDirModel>
+#include <QFileDialog>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QStyle>
+#include <QToolButton>
 
-#include <QApplication>
+#include "dirinput.h"
 
-class CNixstbApp: public QApplication
+CDirInput::CDirInput(const QString &dir, QWidget *parent,
+                     Qt::WindowFlags flags) : QWidget(parent, flags)
 {
-public:
-    CNixstbApp(int &argc, char **argv);
-    virtual bool notify(QObject *receiver, QEvent *event);
-};
+    QHBoxLayout *hbox = new QHBoxLayout(this);
+    
+    hbox->addWidget(dirEdit = new QLineEdit);
+    if (dir.isEmpty())
+        dirEdit->setText("/");
+    else
+        dirEdit->setText(dir);
+    
+    QCompleter *comp = new QCompleter(dirEdit);
+    comp->setModel(new QDirModel);
+    dirEdit->setCompleter(comp);
+    
+    QToolButton *openButton = new QToolButton;
+    openButton->setIcon(QIcon(style()->standardIcon(QStyle::SP_DirOpenIcon)));
+    connect(openButton, SIGNAL(clicked()), this, SLOT(openBrowser()));
+    hbox->addWidget(openButton);
+}
 
-#endif
+void CDirInput::openBrowser()
+{
+    QString dir = QFileDialog::getExistingDirectory(NULL, "Open Project Directory",
+            dirEdit->text());
+    if (!dir.isEmpty())
+        dirEdit->setText(dir);
+}
+
+QString CDirInput::getDir() const
+{
+    if (dirEdit->text().isEmpty())
+        return "/";
+    
+    return dirEdit->text();
+}
+
+void CDirInput::setDir(const QString &dir)
+{
+    dirEdit->setText(dir);
+}

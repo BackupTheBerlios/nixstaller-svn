@@ -18,16 +18,23 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef NB_MAIN_H
-#define NB_MAIN_H
+#include <QWidget>
 
-#include <QApplication>
+class QLineEdit;
 
-class CNixstbApp: public QApplication
+class CDirInput: public QWidget
 {
+    Q_OBJECT
+    
+    QLineEdit *dirEdit;
+    
+private slots:
+    void openBrowser(void);
+    
 public:
-    CNixstbApp(int &argc, char **argv);
-    virtual bool notify(QObject *receiver, QEvent *event);
+    CDirInput(const QString &dir = QString(), QWidget *parent = 0,
+              Qt::WindowFlags flags = 0);
+    
+    QString getDir(void) const;
+    void setDir(const QString &dir);
 };
-
-#endif

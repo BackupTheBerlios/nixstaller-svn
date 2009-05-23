@@ -27,6 +27,7 @@
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QFrame>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -50,10 +51,12 @@
 #include "main/lua/luatable.h"
 #include "configw.h"
 #include "dirbrowser.h"
+#include "dirinput.h"
 #include "editor.h"
 #include "editsettings.h"
 #include "expert.h"
 #include "rungen.h"
+#include "utils.h"
 
 CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags)
 {
@@ -190,6 +193,7 @@ void CExpertScreen::createSettingsMenu()
 
     action = new QAction(tr("&Nixstbuild settings"), this);
     action->setStatusTip(tr("Settings for Nixstbuild"));
+    connect(action, SIGNAL(triggered()), this, SLOT(showNixstbSettings()));
     menu->addAction(action);
 }
 
@@ -307,7 +311,7 @@ void CExpertScreen::newProject()
     QFileDialog dialog(NULL, "New Project Directory");
     dialog.setModal(true);
     dialog.setFileMode(QFileDialog::DirectoryOnly);
-    dialog.setOption(QFileDialog::ShowDirsOnly, true);
+//     dialog.setOptions(QFileDialog::ShowDirsOnly, true);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
 
     if (dialog.exec() == QDialog::Accepted)
@@ -363,18 +367,50 @@ void CExpertScreen::openRecentCB(QAction *action)
     loadProject(action->text());
 }
 
+void CExpertScreen::showEditSettings()
+{
+    if (editSettings->exec() == QDialog::Accepted)
+        CEditor::loadSettings(QEditor::editors());
+}
+
+void CExpertScreen::showNixstbSettings()
+{
+    QSettings settings;
+    QDialog dialog;
+    dialog.setModal(true);
+    QVBoxLayout *vbox = new QVBoxLayout(&dialog);
+    
+    QGroupBox *box = new QGroupBox;
+    vbox->addWidget(box);
+    QFormLayout *form = new QFormLayout(box);
+    
+    CDirInput *dirInput = new CDirInput(settings.value("nixstaller_path").toString());
+    form->addRow("Nixstaller path", dirInput);
+    
+    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
+            QDialogButtonBox::Cancel);
+    connect(bbox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    connect(bbox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    vbox->addWidget(bbox);
+    
+    while (dialog.exec() == QDialog::Accepted)
+    {
+        if (verifyNixstPath(dirInput->getDir()))
+        {
+            settings.setValue("nixstaller_path", dirInput->getDir());
+            break;
+        }
+        else
+            QMessageBox::critical(0, "Error", "Invalid Nixstaller path specified.");
+    }
+}
+
 void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previous)
 {
     if (!current)
         current = previous;
 
     widgetStack->setCurrentIndex(listWidget->row(current));
-}
-
-void CExpertScreen::showEditSettings()
-{
-    if (editSettings->exec() == QDialog::Accepted)
-        CEditor::loadSettings(QEditor::editors());
 }
 
 void CExpertScreen::closeEvent(QCloseEvent *e)
@@ -536,7 +572,7 @@ void CRunConfTab::genRunFunctionCB()
     QDocumentCursor cur = editor->editor()->cursor();
     insertRunText("function newfunc()\n\nend");
 
-    // Move cursor behind "function "
+    // Move cursor behind "function " and select function name
     const int start = strlen("function "), end = strlen("newfunc");
     cur.movePosition(start);
     cur.movePosition(end, QDocumentCursor::NextCharacter, QDocumentCursor::KeepAnchor);
@@ -606,7 +642,7 @@ CFileManagerTab::CFileManagerTab(QWidget *parent,
     hbox->addWidget(but);
 
     but = new QPushButton(QIcon(":/edit_remove.png"), "Remove");
-    connect(but, SIGNAL(pressed()), this, SLOT(removeInstDir()));
+    connect(but, SIGNAL(clicked()), this, SLOT(removeInstDir()));
     hbox->addWidget(but);
 
     svbox->addWidget(fileDestList = new QListWidget);
@@ -624,7 +660,7 @@ CFileManagerTab::CFileManagerTab(QWidget *parent,
     browserStack = new QStackedWidget;
     svbox->addWidget(browserStack);
     
-    browserStack->addWidget(fileDestBrowser = new CDirBrowser); // UNDONE? (needs proper root)
+    browserStack->addWidget(fileDestBrowser = new CDirBrowser);
     browserStack->addWidget(new QLabel("<qt>Use the <b>Add</b> button to add installation directories.</qt>"));
     browserStack->setCurrentIndex(1);
     

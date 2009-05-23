@@ -71,8 +71,9 @@ private slots:
     void saveProject(void);
     void updateRecentMenu(void);
     void openRecentCB(QAction *action);
-    void changePage(QListWidgetItem *current, QListWidgetItem *previous);
     void showEditSettings(void);
+    void showNixstbSettings(void);
+    void changePage(QListWidgetItem *current, QListWidgetItem *previous);
 
 protected:
     virtual void closeEvent(QCloseEvent *e);
