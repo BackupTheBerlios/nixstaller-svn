@@ -169,6 +169,7 @@ void CExpertScreen::createBuildRunMenu()
     QAction *action = new QAction(tr("&Build"), this);
     action->setShortcut(tr("F7"));
     action->setStatusTip(tr("Build the installer"));
+    connect(action, SIGNAL(triggered()), this, SLOT(build()));
     menu->addAction(action);
 
     action = new QAction(tr("Build && &Run"), this);
@@ -365,6 +366,36 @@ void CExpertScreen::updateRecentMenu()
 void CExpertScreen::openRecentCB(QAction *action)
 {
     loadProject(action->text());
+}
+
+void CExpertScreen::build()
+{
+    QSettings settings;
+    QString path = settings.value("nixstaller_path").toString();
+    
+    if (!verifyNixstPath(path))
+        QMessageBox::critical(0, "Error", "Wrong Nixstaller path"); // UNDONE
+    
+    QString command = QString("cd %1 && %2/geninstall.sh %1").arg(projectDir).arg(path);
+    CPipedCMD pipe(command.toLatin1().data());
+    while (pipe)
+    {
+        QCoreApplication::processEvents();
+        
+        if (pipe.HasData())
+        {
+            int ch = pipe.GetCh();
+                    
+            if (ch != EOF)
+            {
+                putc(ch, stdout);
+//                 printf("%c", ch);
+                fflush(stdout);
+            }
+        }
+    }
+    
+    pipe.Close();
 }
 
 void CExpertScreen::showEditSettings()
