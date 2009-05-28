@@ -29,6 +29,8 @@
 #include <map>
 #include <limits>
 #include <fstream>
+
+#include "shared-config.h"
         
 typedef std::vector<std::string>::size_type TSTLVecSize;
 typedef std::string::size_type TSTLStrSize;

@@ -1742,15 +1742,6 @@ if not env.GetOption('clean'):
         print "Couldn't find libelf !"
         Exit(1)
         
-    if not conf.CheckType('Elf32_Verdef', '#include "elf.h"'):
-        print "Elf32_Verdef needs link.h?"
-        if conf.CheckType('Elf32_Verdef', '#include "link.h" #include "elf.h"'):
-            conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
-            conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
-    else:
-        conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
-        conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
-
     if not conf.CheckLibWithHeader('curl', Split("curl/curl.h"), 'C', ';', 0):
         print "Couldn't find libcurl !"
         Exit(1)

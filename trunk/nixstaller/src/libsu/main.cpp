@@ -132,7 +132,7 @@ void CLibSU::ConstructCommand(std::string &command, std::vector<std::string> &ar
 {
     if (GetSuType() == TYPE_UNKNOWN)
     {
-        if (GetSuBin(TYPE_SUDO)) // Always try sudo first (when unconfigured it may work the pw of target user)
+        if (GetSuBin(TYPE_SUDO)) // Always try sudo first (when unconfigured it may work with the pw of target user)
             SetSuType(TYPE_MAYBESUDO);
         else
             SetSuType(TYPE_MAYBESU);

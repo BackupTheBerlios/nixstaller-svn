@@ -45,27 +45,32 @@ inc_dir = 'include/'+cur_os+'/'+cur_arch+'/'
 env.Append(LIBPATH=[lib_dir])
 env.Append(CPPPATH=['.', inc_dir, 'include/', 'include/libelf/'+cur_os+'/'+cur_arch, 'include/lua'])
 
-if not env.GetOption('clean'):
-    conf = env.Configure()
+config_header = 'shared-config.h'
 
-    if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
-        conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
+if not env.GetOption('clean'):
+    conf = env.Configure(config_h = config_header)
+
+    conf.CheckFunc('vasprintf', '#include <stdarg.h>')
             
     if not conf.CheckType('Elf32_Verdef', '#include "elf.h"'):
         print "Elf32_Verdef needs link.h?"
         if conf.CheckType('Elf32_Verdef', '#include "link.h" #include "elf.h"'):
-            conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
             conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
     else:
-        conf.env.Append(CPPDEFINES = 'HAVE_ELFVERSIONG')
         conf.env.Append(CPPDEFINES = '__LIBELF_SYMBOL_VERSIONS')
 
+    # Stuff required for pseudo terminal handling
+    if conf.CheckLib('util', 'openpty'):
+        conf.Define('HAVE_OPENPTY')
+    conf.CheckFunc('grantpt')
+    conf.CheckFunc('getpt')
+    conf.CheckFunc('unlockpt')
+    conf.CheckFunc('ptsname')
+    
     env = conf.Finish()
 elif env.GetOption('clean'):
     # Make sure that scons properly cleans everything
     Execute(Delete('main/.sconsign'))
-    Execute(Delete('ncurses/.sconsign'))
-    Execute(Delete('fltk/.sconsign'))
     Execute(Delete('.sconf_temp'))
     Execute(Delete('.sconsign.dblite'))
 
@@ -73,9 +78,9 @@ elif env.GetOption('clean'):
 env.Object('libmd5/md5.c')
 
 env.VariantDir('build/main', 'main', 0)
-main = env.Library("build/main/main", Split('libmd5/md5.o build/main/elfutils.cpp build/main/main.cpp build/main/utils.cpp build/main/vasprintf.c build/main/lua/lua.cpp build/main/lua/luafunc.cpp build/main/lua/luaclass.cpp build/main/lua/luatable.cpp'))
+main = env.Library("build/main/main", Split('libmd5/md5.o build/main/elfutils.cpp build/main/main.cpp build/main/pseudoterminal.cpp build/main/utils.cpp build/main/vasprintf.c build/main/lua/lua.cpp build/main/lua/luafunc.cpp build/main/lua/luaclass.cpp build/main/lua/luatable.cpp'))
 
 env.VariantDir('build/main_ap', 'main', 0)
-main_ap = env.Library("build/main_ap/main_ap", Split('libmd5/md5.o build/main_ap/elfutils.cpp build/main_ap/main.cpp build/main_ap/utils.cpp build/main_ap/vasprintf.c build/main_ap/lua/lua.cpp build/main_ap/lua/luafunc.cpp build/main_ap/lua/luaclass.cpp build/main_ap/lua/luatable.cpp'), CPPPATH=Split('$CPPPATH include/stdcxx include/stdcxx/cfg/'+cur_os+'/'+cur_arch), CXX='$CC')
+main_ap = env.Library("build/main_ap/main_ap", Split('libmd5/md5.o build/main_ap/elfutils.cpp build/main_ap/main.cpp build/main_ap/pseudoterminal.cpp build/main_ap/utils.cpp build/main_ap/vasprintf.c build/main_ap/lua/lua.cpp build/main_ap/lua/luafunc.cpp build/main_ap/lua/luaclass.cpp build/main_ap/lua/luatable.cpp'), CPPPATH=Split('$CPPPATH include/stdcxx include/stdcxx/cfg/'+cur_os+'/'+cur_arch), CXX='$CC')
 
 Default(env.Install(lib_dir, main), env.Install(lib_dir, main_ap))

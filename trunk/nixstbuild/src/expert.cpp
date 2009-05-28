@@ -49,6 +49,7 @@
 
 #include "main/lua/luafunc.h"
 #include "main/lua/luatable.h"
+#include "main/pseudoterminal.h"
 #include "configw.h"
 #include "dirbrowser.h"
 #include "dirinput.h"
@@ -376,26 +377,30 @@ void CExpertScreen::build()
     if (!verifyNixstPath(path))
         QMessageBox::critical(0, "Error", "Wrong Nixstaller path"); // UNDONE
     
-    QString command = QString("cd %1 && %2/geninstall.sh %1").arg(projectDir).arg(path);
-    CPipedCMD pipe(command.toLatin1().data());
-    while (pipe)
+    QString command = QString("cd %1 && %2/geninstall.sh %1 2>&1").arg(projectDir).arg(path);
+    CPseudoTerminal ps;
+    ps.Exec(command.toStdString());
+    while (ps)
     {
         QCoreApplication::processEvents();
         
-        if (pipe.HasData())
+        if (ps.HasData())
         {
-            int ch = pipe.GetCh();
-                    
-            if (ch != EOF)
+            std::string line;
+            CPseudoTerminal::EReadStatus stat = ps.ReadLine(line);
+
+            if (stat != CPseudoTerminal::READ_AGAIN)
             {
-                putc(ch, stdout);
-//                 printf("%c", ch);
+                printf("%s", line.c_str());
+                if (stat == CPseudoTerminal::READ_LINE)
+                    printf("\n");
                 fflush(stdout);
             }
         }
     }
-    
-    pipe.Close();
+
+    printf("Exit: %d\n", ps.GetRetStatus());
+    fflush(stdout);
 }
 
 void CExpertScreen::showEditSettings()

@@ -27,7 +27,7 @@
 
 namespace {
 
-#ifdef HAVE_ELFVERSIONG
+#ifdef HAVE_ELF32_VERDEF
 
 // Functions copied from RPM (lib/rpmds.c, author unknown...)
 
@@ -111,7 +111,7 @@ CElfWrapper::CElfWrapper(const std::string &file) : m_pElf(NULL), m_iFD(0), m_iM
             case SHT_DYNSYM:
                 sym = section;
                 break;
-#ifdef HAVE_ELFVERSIONG                
+#ifdef HAVE_ELF32_VERDEF                
             case SHT_GNU_verdef:
                 verdef = section;
                 break;
@@ -184,7 +184,7 @@ void CElfWrapper::ReadSymbols(Elf_Scn *section)
 
 void CElfWrapper::ReadVerDef(Elf_Scn *section)
 {
-#ifdef HAVE_ELFVERSIONG
+#ifdef HAVE_ELF32_VERDEF
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
     gelf_getshdr(section, &shdr);
@@ -220,7 +220,7 @@ void CElfWrapper::ReadVerDef(Elf_Scn *section)
 
 void CElfWrapper::ReadVerNeed(Elf_Scn *section)
 {
-#ifdef HAVE_ELFVERSIONG
+#ifdef HAVE_ELF32_VERDEF
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
     gelf_getshdr(section, &shdr);
@@ -274,7 +274,7 @@ void CElfWrapper::ReadVerNeed(Elf_Scn *section)
 
 void CElfWrapper::MapVersions(Elf_Scn *section)
 {
-#ifdef HAVE_ELFVERSIONG
+#ifdef HAVE_ELF32_VERDEF
     Elf_Data *data = NULL;
     GElf_Shdr shdr;
     gelf_getshdr(section, &shdr);

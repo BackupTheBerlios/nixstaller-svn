@@ -353,7 +353,7 @@ pid_t WaitPID(pid_t pid, int *status, int options)
 {
     pid_t ret = waitpid(pid, status, options);
     
-    if (ret == -1)
+    if ((ret == -1) && (errno != EINTR))
         throw Exceptions::CExWaitPID(errno);
     
     return ret;

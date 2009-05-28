@@ -1,1 +1,12 @@
 - Let Lua code use MoveFile()
+- Clean exception code?:
+    - Don't group all classes in same header?
+    - Use something else as char buffers (std::string?, msg table?, force valid char*?)
+    - Translate somewhere else? Translate at all?
+    - Store source/line for debugging? Backtraces?
+- Pseudo terminals:
+    - Test on all OSs
+    - Port libsu to it
+    - CHANGELOG
+    - Test process killing
+    

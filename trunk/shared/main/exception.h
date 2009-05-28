@@ -69,7 +69,7 @@ public:
     virtual const char *what(void) throw() = 0;
 };
 
-// Exception base class for errno based handling(C functions)
+// Exception base class for errno based handling (C functions)
 class CExErrno: virtual public CException
 {
     int m_iError; // errno code
@@ -77,6 +77,7 @@ class CExErrno: virtual public CException
 protected:
     CExErrno(int err) : m_iError(err) { };
     const char *Error(void) { return strerror(m_iError); };
+    int Errno(void) { return m_iError; }
 };
 
 // Exception base class which just returns a given message
@@ -90,7 +91,7 @@ protected:
     virtual const char *what(void) throw() { return Message(); };
 };
 
-// Generic exception, incase specific exception info was lost (eg lua error)
+// Generic exception, in case specific exception info was lost (eg lua error)
 class CExGeneric: public CExMessage
 {
 public:
@@ -217,7 +218,7 @@ public:
     { return FormatText(GetExTranslation("Could not open pipe: %s"), Error()); };
 };
 
-class CExReadPipe: public CExErrno
+class CExReadPipe: public CExErrno, public CExIO
 {
 public:
     CExReadPipe(int err) : CExErrno(err) { };
@@ -241,7 +242,7 @@ public:
     { return FormatText(GetExTranslation("Could not fork child: %s"), Error()); };
 };
 
-class CExCloseFD: public CExErrno
+class CExCloseFD: public CExErrno, public CExIO
 {
 public:
     CExCloseFD(int err) : CExErrno(err) { };
@@ -249,7 +250,7 @@ public:
     { return FormatText(GetExTranslation("Could not close file descriptor: %s"), Error()); };
 };
 
-class CExPoll: public CExErrno
+class CExPoll: public CExErrno, public CExIO
 {
 public:
     CExPoll(int err) : CExErrno(err) { };
@@ -257,7 +258,7 @@ public:
     { return FormatText(GetExTranslation("poll returned an error: %s"), Error()); };
 };
 
-class CExSelect: public CExErrno
+class CExSelect: public CExErrno, public CExIO
 {
 public:
     CExSelect(int err) : CExErrno(err) { };
@@ -335,17 +336,63 @@ class CExUnlink: public CExErrno, public CExIO
     char m_szFile[1024];
     
 public:
-    CExUnlink(int err, const char *dir) : CExErrno(err) { StoreString(dir, m_szFile, sizeof(m_szFile)); };
+    CExUnlink(int err, const char *dir) : CExErrno(err) { StoreString(dir, m_szFile, sizeof(m_szFile)); }
     virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("Could not remove file %s: %s"), m_szFile, Error()); };
+    { return FormatText(GetExTranslation("Could not remove file %s: %s"), m_szFile, Error()); }
 };
 
 class CExMove: public CExErrno, public CExIO
 {
 public:
-    CExMove(int err) : CExErrno(err) { };
+    CExMove(int err) : CExErrno(err) { }
     virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("Could not move file: %s"), Error()); };
+    { return FormatText(GetExTranslation("Could not move file: %s"), Error()); }
+};
+
+class CExOpenTerm: public CExErrno, public CExIO
+{
+public:
+    CExOpenTerm(int err=-1) : CExErrno(err) {}
+    
+    virtual const char *what(void) throw()
+    {
+        const char *msg = GetExTranslation("Could not open pseudo terminal");
+        if (Errno() == -1)
+            return msg;
+        return FormatText("%s: %s", msg, Error());
+    }
+};
+
+class CExGrantTerm: public CExErrno, public CExIO
+{
+public:
+    CExGrantTerm(int err) : CExErrno(err) {}
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Failed to grant access for pseudo terminal: %s"), Error()); }
+};
+
+class CExUnlockTerm: public CExErrno, public CExIO
+{
+public:
+    CExUnlockTerm(int err) : CExErrno(err) {}
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Failed to unlock pseudo terminal: %s"), Error()); }
+};
+
+class CExFCntl: public CExErrno, public CExIO
+{
+public:
+    CExFCntl(int err) : CExErrno(err) {}
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Failed manipulate file descriptor: %s"), Error()); }
+};
+
+class CExReadTerm: public CExErrno, public CExIO
+{
+public:
+    CExReadTerm(int err) : CExErrno(err) {}
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Could not read from pseudo terminal: %s"), Error()); }
 };
 
 }
