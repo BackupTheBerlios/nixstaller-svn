@@ -64,7 +64,7 @@ public:
     bool HasData(void);
     int GetRetStatus(void);
     void Abort(bool canthrow=true);
-    EReadStatus ReadLine(std::string &out);
+    EReadStatus ReadLine(std::string &out, bool onlyline=true);
     bool IsValid(void);
     
     operator void *(void);

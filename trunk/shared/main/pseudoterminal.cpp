@@ -400,7 +400,8 @@ void CPseudoTerminal::Abort(bool canthrow)
     }
 }
 
-CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out)
+CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out,
+                                                       bool onlyline)
 {
     TSTLStrSize nl = m_ReadBuffer.find("\n");
     if (nl != std::string::npos)
@@ -414,6 +415,8 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out)
     char buffer[bufsize+1];
     
     int readret = read(m_iPTYFD, &buffer, bufsize);
+    
+    if (readret > -1) debugline("readret: %d\n", readret);
     
     if (readret <= 0)
     {
@@ -443,6 +446,12 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out)
         out = m_ReadBuffer.substr(0, nl);
         m_ReadBuffer.erase(0, nl+1);
         return READ_LINE;
+    }
+    else if (!onlyline)
+    {
+        out = m_ReadBuffer;
+        m_ReadBuffer.clear();
+        // Fall through
     }
     
     // No newline found yet

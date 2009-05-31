@@ -36,10 +36,11 @@ class CSuTerm: public CPseudoTerminal
     const char *GetSuBin(ESuType sutype) const;
     bool UsingSudo(void)
     { return ((m_eSuType == TYPE_SUDO) || (m_eSuType == TYPE_MAYBESUDO)); }
+    void PrepareExec(void);
     std::string ConstructCommand(const std::string &origcmd);
     bool CheckPid(void) { return (UsingSudo() || (kill(GetChildPid(), 0) == 0)); };
     bool WaitSlave(void);
-    ESuTalkStat TalkWithSU(const char *password);
+    ESuTalkStat TalkWithSu(const char *password);
     
     using CPseudoTerminal::Exec;
 
@@ -47,7 +48,7 @@ public:
     CSuTerm(const std::string &user = "root") : m_User(user) { }
     
     bool NeedPassword(void);
-    bool TestSU(const char *password);
+    bool TestSu(const char *password);
     void Exec(const std::string &command, const char *password);
 };
 

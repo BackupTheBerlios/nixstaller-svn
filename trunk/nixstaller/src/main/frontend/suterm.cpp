@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -66,6 +67,12 @@ const char *CSuTerm::GetSuBin(ESuType sutype) const
     return NULL;
 }
 
+void CSuTerm::PrepareExec()
+{
+    if (UsingSudo())
+        system("sudo -k"); // Forget about any previous sessions (this is needed for TestSU() and NeedPassword())
+}
+
 std::string CSuTerm::ConstructCommand(const std::string &origcmd)
 {
     if (m_eSuType == TYPE_UNKNOWN)
@@ -90,8 +97,8 @@ std::string CSuTerm::ConstructCommand(const std::string &origcmd)
     else
         ret += " -c";
 
-    // Insert our magic terminate indicator to command
-    ret += std::string(" printf \"") + TermStr + "\\n\" ;" + origcmd;
+    // Insert our magic terminate indicator and command
+    ret += std::string(" 'printf \"") + TermStr + "\\n\" ;" + origcmd + "'";
     
     if (!UsingSudo())
         ret += " -";
@@ -126,7 +133,7 @@ bool CSuTerm::WaitSlave()
     return true;
 }
 
-CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
+CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
 {
     enum { WaitForPrompt, CheckStar, WaitTillDone } state = WaitForPrompt;
     std::string line;
@@ -136,12 +143,12 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
         if (!HasData())
             continue;
         
-        EReadStatus readstat = ReadLine(line);
+        EReadStatus readstat = ReadLine(line, false);
 
-        if (readstat == READ_AGAIN)
-            continue;
+/*        if (readstat == READ_AGAIN)
+            continue;*/ // UNDONE?
         
-        debugline("TalkWithSU: %s\n", line.c_str());
+        debugline("TalkWithSU: %s(%d)\n", line.c_str(), state);
 
         switch (state)
         {
@@ -241,13 +248,14 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
         }
     }
     
-    return SU_OK;
+    return SU_ERROR;
 }
 
 bool CSuTerm::NeedPassword()
 {
+    PrepareExec();
     Exec(ConstructCommand(""));
-    ESuTalkStat ret = TalkWithSU(NULL);
+    ESuTalkStat ret = TalkWithSu(NULL);
     
     if (ret == SU_NULLPASS)
     {
@@ -271,4 +279,42 @@ bool CSuTerm::NeedPassword()
     CheckPidExited(true);
     
     return false;
+}
+
+bool CSuTerm::TestSu(const char *password)
+{
+    PrepareExec();
+    Exec(ConstructCommand(""));
+    ESuTalkStat ret = TalkWithSu(password);
+    
+    if ((ret == SU_ERROR) || (ret == SU_NULLPASS))
+    {
+        Abort();
+        return false;
+    }
+    else if (ret == SU_AUTHERROR)
+    {
+        Abort();
+        
+        if (m_eSuType == TYPE_MAYBESUDO)
+        {
+            m_eSuType = TYPE_MAYBESU; // Try again with su
+
+            if (TestSu(password))
+            {
+                m_eSuType = TYPE_SU;
+                return true;
+            }
+            else
+                m_eSuType = TYPE_UNKNOWN;
+        }
+        
+        return false;
+    }
+
+    SetDefSuType();
+    
+    CheckPidExited(true);
+    
+    return true;
 }
