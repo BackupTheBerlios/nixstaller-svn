@@ -17,6 +17,13 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+
 #include "suterm.h"
 
 namespace {
@@ -83,86 +90,105 @@ void CSuTerm::ConstructCommand(std::string &cmd, TStringVec &args,
     args.insert(args.end(), runargs.begin(), runargs.end());
 }
 
-int CSuTerm::TalkWithSU(const char *password)
+bool CSuTerm::WaitSlave()
 {
-#if 0
-    enum { WaitForPrompt, CheckStar, WaitTillDone } state = WaitForPrompt;
-    int colon;
-    std::string::size_type i, j;
+    CFDWrapper slave = open(GetTTYName().c_str(), O_RDWR);
+    if (slave < 0)
+        return false;
 
-    std::string line;
-    while (true)
+    struct termios tio;
+    while (IsValid())
     {
+        if (!CheckPid())
+            return false;
+        
+        if (tcgetattr(slave, &tio) < 0)
+            return false;
+        
+        if (tio.c_lflag & ECHO) 
+        {
+            HasData(); // UNDONE? (Cleaner way to wait for data)
+            continue;
+        }
+        break;
+    }
+    
+    return true;
+}
+
+CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
+{
+    enum { WaitForPrompt, CheckStar, WaitTillDone } state = WaitForPrompt;
+    std::string line;
+    
+    while (IsValid())
+    {
+        if (!HasData())
+            continue;
+        
         EReadStatus readstat = ReadLine(line);
 
         if (readstat == READ_AGAIN)
             continue;
-
+        
         switch (state)
         {
             case WaitForPrompt:
+            {
                 if (line.empty())
-                {
-                    SetError(SU_ERROR_INCORRECTUSER, "Incorrect user");
-                    return SUCOM_NOTAUTHORIZED;
-                }
+                    return SU_AUTHERROR;
                 
                 // In case no password is needed.
                 if (!line.compare(0, strlen(TermStr), TermStr))
-                {
-                    //UnReadLine(line);
-                    return SUCOM_OK;
-                }
+                    return SU_OK;
 
-                while(WaitMS(m_iPTYFD, 100)>0)
+                while (true)
                 {
                     // There is more output available, so the previous line
                     // couldn't have been a password prompt (the definition
                     // of prompt being that  there's a line of output followed 
                     // by a colon, and then the process waits).
-                    std::string more = ReadLine();
-                    if (more.empty()) break;
+                    std::string more;
+                    ReadLine(more);
+                    if (!IsValid() || more.empty())
+                        break;
                     line = more;
-                    log("Read Line more: %s\n", more.c_str());
                 }
            
                 // Match "Password: " with the regex ^[^:]+:[\w]*$.
-                for (i=0,j=0,colon=0; i<line.length(); i++)
+                TSTLStrSize i, j, colon, length = line.length();
+                for (i=0, j=0, colon=0; i<length; i++)
                 {
                     if (line[i] == ':')
                     {
                         j = i; colon++;
                         continue;
                     }
+                    
                     if (!isspace(line[i]))
                         j++;
                 }
+                
                 if ((colon == 1) && (line[j] == ':'))
                 {
-                    if (password == 0L)
+                    if (!password)
+                        return SU_NULLPASS;
+                    
+                    if (!CheckPid())
+                        return SU_ERROR;
+                    
+                    if (WaitSlave())
                     {
-                        SetError(SU_ERROR_INCORRECTPASS, "Incorrect password");
-                        return SUCOM_NULLPASS;
-                    }
-                    if (!CheckPid(m_iPid))
-                    {
-                        SetError(SU_ERROR_INTERNAL, "su has exited while waiting for password");
-                        return SUCOM_ERROR;
-                    }
-                    if (WaitSlave() == 0)
-                    {
-                        log("Writing passwd...\n");
-                        write(m_iPTYFD, password, strlen(password));
-                        write(m_iPTYFD, "\n", 1);
-                        state=CheckStar;
+                        write(GetPTYFD(), password, strlen(password));
+                        write(GetPTYFD(), "\n", 1);
+                        state = CheckStar;
                     }
                     else
-                    {
-                        return SUCOM_ERROR;
-                    }
+                        return SU_ERROR;
                 }
                 break;
-
+            }
+            
             case CheckStar:
             {
                 std::string::size_type pos1 = line.find_first_not_of(" \r\t\n");
@@ -175,39 +201,33 @@ int CSuTerm::TalkWithSU(const char *password)
                 
                 if (s.empty())
                 {
-                    state=WaitTillDone;
+                    state = WaitTillDone;
                     break;
                 }
-                for (i=0; i<s.length(); i++)
+                
+                TSTLStrSize n, length = s.length();
+                for (n=0; n<length; n++)
                 {
-                    if (s[i] != '*')
-                        return SUCOM_ERROR;
+                    if (s[n] != '*')
+                        return SU_ERROR;
                 }
-                state=WaitTillDone;
+                
+                state = WaitTillDone;
                 break;
             }
-
+            
             case WaitTillDone:
                 if (line.empty())
-                {
-                    SetError(SU_ERROR_INCORRECTPASS, "Incorrect password");
-                    return SUCOM_NOTAUTHORIZED;
-                }
+                    return SU_AUTHERROR;
 
                 // Read till we get our personal terminate string...
                 if (!line.compare(0, strlen(TermStr), TermStr))
-                {
-                    //UnReadLine(line);
-                    return SUCOM_OK;
-                }
+                    return SU_OK;
                 else if (UsingSudo())
-                {
-                    SetError(SU_ERROR_INCORRECTPASS, "Incorrect password");
-                    return SUCOM_NOTAUTHORIZED;
-                }
+                    return SU_AUTHERROR;
                 break;
         }
     }
-    return SUCOM_OK;
-#endif
+    
+    return SU_OK;
 }

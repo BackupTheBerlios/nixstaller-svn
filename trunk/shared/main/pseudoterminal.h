@@ -47,6 +47,11 @@ class CPseudoTerminal
     void UnlockPT(void);
     bool SetupChildSlave(int fd);
     bool CheckPidExited(bool block, bool canthrow=true);
+
+protected:
+    int GetPTYFD(void) const { return m_iPTYFD; }
+    std::string GetTTYName(void) const { return m_TTYName; }
+    pid_t GetChildPid(void) const { return m_ChildPid; }
     
 public:
     enum EReadStatus { READ_AGAIN, READ_LINE, READ_EOF, READ_LAST };
@@ -60,6 +65,7 @@ public:
     int GetRetStatus(void);
     void Abort(bool canthrow=true);
     EReadStatus ReadLine(std::string &out);
+    bool IsValid(void);
     
     operator void *(void);
 };

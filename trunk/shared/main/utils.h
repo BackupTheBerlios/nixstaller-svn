@@ -187,7 +187,7 @@ class CFDWrapper
 
 public:
     CFDWrapper(int fd) : m_iFD(fd) {}
-    ~CFDWrapper(void) { close(m_iFD); }
+    ~CFDWrapper(void) { if (m_iFD >= 0) close(m_iFD); }
 
     operator int(void) { return m_iFD; }
 };

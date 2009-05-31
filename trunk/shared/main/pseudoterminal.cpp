@@ -443,11 +443,16 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out)
     return READ_AGAIN;
 }
 
+bool CPseudoTerminal::IsValid()
+{
+    bool check = CheckPidExited(false); // Need to do this here
+    return (!m_bEOF && m_iPTYFD && m_ChildPid && (HasData() || check));
+}
+
 CPseudoTerminal::operator void *()
 {
     static int ret;
-    bool check = CheckPidExited(false); // Need to do this here
-    if (m_bEOF || !m_iPTYFD || !m_ChildPid || (!HasData() && check))
+    if (!IsValid())
         return NULL;
     return &ret;
 }
