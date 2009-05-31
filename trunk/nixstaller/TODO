@@ -42,6 +42,9 @@ PACKAGING
 MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Improve/check lua error messages?
+- CSuTerm:
+    - Test on other OSs
+    - Disable coredumps
 
 
 LIBSU

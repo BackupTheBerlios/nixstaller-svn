@@ -26,6 +26,8 @@
 #ifndef PSEUDO_TERMINAL_H
 #define PSEUDO_TERMINAL_H
 
+#include <unistd.h>
+#include <poll.h>
 #include <string>
 
 class CPseudoTerminal
@@ -43,14 +45,14 @@ class CPseudoTerminal
     void CreatePTY(void);
     void GrantPT(void);
     void UnlockPT(void);
-    bool SetupTTY(int fd);
+    bool SetupChildSlave(int fd);
     bool CheckPidExited(bool block, bool canthrow=true);
     
 public:
     enum EReadStatus { READ_AGAIN, READ_LINE, READ_EOF, READ_LAST };
     
     CPseudoTerminal(void);
-    ~CPseudoTerminal(void);
+    virtual ~CPseudoTerminal(void);
     
     void SetPath(const std::string &p) { m_Path = p; }
     void Exec(const std::string &command);

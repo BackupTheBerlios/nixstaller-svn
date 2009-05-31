@@ -30,12 +30,10 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <poll.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
-#include <unistd.h>
 
 #include "main/main.h"
 #include "main/utils.h"
@@ -220,7 +218,7 @@ void CPseudoTerminal::UnlockPT()
 #endif
 }
 
-bool CPseudoTerminal::SetupTTY(int fd)
+bool CPseudoTerminal::SetupChildSlave(int fd)
 {
     // Reset signal handlers
     for (int sig = 1; sig < NSIG; sig++)
@@ -348,7 +346,7 @@ void CPseudoTerminal::Exec(const std::string &command)
     }
     
     // Child
-    if (!SetupTTY(slave))
+    if (!SetupChildSlave(slave))
         _exit(1);
 
     if (!m_Path.empty())

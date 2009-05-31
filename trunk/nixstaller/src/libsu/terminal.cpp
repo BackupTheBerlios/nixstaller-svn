@@ -284,7 +284,7 @@ int CLibSU::WaitSlave()
     }
 
     struct termios tio;
-    while (1) 
+    while (1)
     {
         if (!CheckPid(m_iPid))
         {

@@ -1835,7 +1835,7 @@ libsu, surunner = env.SConscript('libsu/SConstruct', duplicate=0)
 lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
 
 # Frontend library (also includes code for Lua runner)
-frontend = env.Library('main/frontend/frontend', Split('main/frontend/attinstall.cpp main/frontend/basescreen.cpp main/frontend/curl.cpp main/frontend/install.cpp main/frontend/luacfgmenu.cpp main/frontend/luacheckbox.cpp main/frontend/luadepscreen.cpp main/frontend/luadirselector.cpp main/frontend/luagroup.cpp main/frontend/luainput.cpp main/frontend/lualabel.cpp main/frontend/luamenu.cpp main/frontend/luaprogressbar.cpp main/frontend/luaprogressdialog.cpp main/frontend/luaradiobutton.cpp main/frontend/run.cpp main/frontend/luatextfield.cpp main/frontend/luawidget.cpp main/frontend/unattinstall.cpp main/frontend/utils.cpp'))
+frontend = env.Library('main/frontend/frontend', Split('main/frontend/attinstall.cpp main/frontend/basescreen.cpp main/frontend/curl.cpp main/frontend/install.cpp main/frontend/luacfgmenu.cpp main/frontend/luacheckbox.cpp main/frontend/luadepscreen.cpp main/frontend/luadirselector.cpp main/frontend/luagroup.cpp main/frontend/luainput.cpp main/frontend/lualabel.cpp main/frontend/luamenu.cpp main/frontend/luaprogressbar.cpp main/frontend/luaprogressdialog.cpp main/frontend/luaradiobutton.cpp main/frontend/run.cpp main/frontend/suterm.cpp main/frontend/luatextfield.cpp main/frontend/luawidget.cpp main/frontend/unattinstall.cpp main/frontend/utils.cpp'))
 
 env.Prepend(LIBS = Split('frontend '+mainlib+' su lua elf curl z'))
 
