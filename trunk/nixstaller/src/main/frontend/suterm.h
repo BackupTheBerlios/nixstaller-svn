@@ -28,14 +28,15 @@ class CSuTerm: public CPseudoTerminal
     enum ESuType { TYPE_SU, TYPE_SUDO, TYPE_MAYBESU, TYPE_MAYBESUDO, TYPE_UNKNOWN };
     enum ESuTalkStat { SU_OK, SU_ERROR, SU_NULLPASS, SU_AUTHERROR };
 
-    static ESuType m_SuType;
+    static ESuType m_eSuType;
 
     std::string m_User;
 
+    void SetDefSuType(void);
     const char *GetSuBin(ESuType sutype) const;
-    bool UsingSudo(void) { return ((m_SuType == TYPE_SUDO) || (m_SuType == TYPE_MAYBESUDO)); }
-    void ConstructCommand(std::string &cmd, TStringVec &args, const std::string &runcmd,
-                          const TStringVec &runargs);
+    bool UsingSudo(void)
+    { return ((m_eSuType == TYPE_SUDO) || (m_eSuType == TYPE_MAYBESUDO)); }
+    std::string ConstructCommand(const std::string &origcmd);
     bool CheckPid(void) { return (UsingSudo() || (kill(GetChildPid(), 0) == 0)); };
     bool WaitSlave(void);
     ESuTalkStat TalkWithSU(const char *password);

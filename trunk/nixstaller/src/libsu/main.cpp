@@ -297,7 +297,7 @@ std::string CLibSU::ReadLine(bool block)
     
     int nbytes;
     char buf[256];
-    while (1) 
+    while (1)
     {
         nbytes = read(m_iPTYFD, buf, 255);
 

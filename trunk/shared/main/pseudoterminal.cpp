@@ -417,6 +417,12 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out)
     
     if (readret <= 0)
     {
+        if (readret == -1)
+        {
+            if ((errno == EINTR) || (errno == EAGAIN))
+                return READ_AGAIN;
+        }
+        
         m_bEOF = true;
         out = m_ReadBuffer;
         m_ReadBuffer.clear();
@@ -446,7 +452,7 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out)
 bool CPseudoTerminal::IsValid()
 {
     bool check = CheckPidExited(false); // Need to do this here
-    return (!m_bEOF && m_iPTYFD && m_ChildPid && (HasData() || check));
+    return (!m_bEOF && m_iPTYFD && m_ChildPid && (HasData() || !check));
 }
 
 CPseudoTerminal::operator void *()

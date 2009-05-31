@@ -46,9 +46,9 @@ class CPseudoTerminal
     void GrantPT(void);
     void UnlockPT(void);
     bool SetupChildSlave(int fd);
-    bool CheckPidExited(bool block, bool canthrow=true);
 
 protected:
+    bool CheckPidExited(bool block, bool canthrow=true);
     int GetPTYFD(void) const { return m_iPTYFD; }
     std::string GetTTYName(void) const { return m_TTYName; }
     pid_t GetChildPid(void) const { return m_ChildPid; }

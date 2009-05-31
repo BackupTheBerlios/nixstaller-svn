@@ -32,6 +32,20 @@ const char *TermStr = "Im Done Now :)";
 
 }
 
+// -------------------------------------
+// Su terminal Class
+// -------------------------------------
+
+CSuTerm::ESuType CSuTerm::m_eSuType = TYPE_UNKNOWN;
+
+void CSuTerm::SetDefSuType()
+{
+    if (m_eSuType == TYPE_MAYBESUDO)
+        m_eSuType = TYPE_SUDO;
+    else if (m_eSuType == TYPE_MAYBESU)
+        m_eSuType = TYPE_SU;
+}
+
 const char *CSuTerm::GetSuBin(ESuType sutype) const
 {
     if ((sutype == TYPE_MAYBESUDO) || (sutype == TYPE_SUDO))
@@ -52,42 +66,38 @@ const char *CSuTerm::GetSuBin(ESuType sutype) const
     return NULL;
 }
 
-void CSuTerm::ConstructCommand(std::string &cmd, TStringVec &args,
-                               const std::string &runcmd, const TStringVec &runargs)
+std::string CSuTerm::ConstructCommand(const std::string &origcmd)
 {
-    if (m_SuType == TYPE_UNKNOWN)
+    if (m_eSuType == TYPE_UNKNOWN)
     {
         // Always try sudo first (when unconfigured it may work
         // with the pw of target user)
         if (GetSuBin(TYPE_SUDO))
-            m_SuType = TYPE_MAYBESUDO;
+            m_eSuType = TYPE_MAYBESUDO;
         else
-            m_SuType = TYPE_MAYBESU;
+            m_eSuType = TYPE_MAYBESU;
     }
     
-    cmd = GetSuBin(m_SuType);
+    std::string ret = GetSuBin(m_eSuType);
     
     if (UsingSudo())
-        args.push_back("-u");
+        ret += " -u";
     
-    args.push_back(m_User);
+    ret += " " + m_User;
     
     if (UsingSudo())
-    {
-        args.push_back("-i");
-        args.push_back("--");
-        args.push_back("-c");
-    }
+        ret += " -i -- -c";
     else
-        args.push_back("-c");
+        ret += " -c";
 
     // Insert our magic terminate indicator to command
-    args.push_back(std::string("printf \"") + TermStr + "\\n\" ;" + runcmd);
+    ret += std::string(" printf \"") + TermStr + "\\n\" ;" + origcmd;
     
     if (!UsingSudo())
-        args.push_back("-");
+        ret += " -";
     
-    args.insert(args.end(), runargs.begin(), runargs.end());
+    debugline("ConstructCommand: %s\n", ret.c_str());
+    return ret;
 }
 
 bool CSuTerm::WaitSlave()
@@ -131,6 +141,8 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
         if (readstat == READ_AGAIN)
             continue;
         
+        debugline("TalkWithSU: %s\n", line.c_str());
+
         switch (state)
         {
             case WaitForPrompt:
@@ -142,7 +154,7 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
                 if (!line.compare(0, strlen(TermStr), TermStr))
                     return SU_OK;
 
-                while (true)
+                while (IsValid())
                 {
                     // There is more output available, so the previous line
                     // couldn't have been a password prompt (the definition
@@ -150,7 +162,7 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
                     // by a colon, and then the process waits).
                     std::string more;
                     ReadLine(more);
-                    if (!IsValid() || more.empty())
+                    if (more.empty())
                         break;
                     line = more;
                 }
@@ -230,4 +242,33 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSU(const char *password)
     }
     
     return SU_OK;
+}
+
+bool CSuTerm::NeedPassword()
+{
+    Exec(ConstructCommand(""));
+    ESuTalkStat ret = TalkWithSU(NULL);
+    
+    if (ret == SU_NULLPASS)
+    {
+        Abort();
+        return true;
+    }
+    else if (ret == SU_AUTHERROR)
+    {
+        Abort();
+
+        if (m_eSuType == TYPE_MAYBESUDO)
+            m_eSuType = TYPE_MAYBESU; // Try again with su
+        else
+            m_eSuType = TYPE_UNKNOWN;
+        
+        return false;
+    }
+
+    SetDefSuType();
+    
+    CheckPidExited(true);
+    
+    return false;
 }

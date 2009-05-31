@@ -80,7 +80,7 @@ void HandleError(void)
     
     Quit(EXIT_FAILURE);
 }
-
+#include "suterm.h" // UNDONE
 int main(int argc, char **argv)
 {
     unlink("frontendstarted");
@@ -106,6 +106,9 @@ int main(int argc, char **argv)
 
     try
     {
+        CSuTerm st;
+        debugline("NeedPass: %d\n", st.NeedPassword());
+    
         if (g_RunScript)
         {
             CLuaRunner lr;
