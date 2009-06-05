@@ -47,7 +47,8 @@ void SetDefSuType()
 CLibSU::CLibSU(bool Disable0Core) : m_iPTYFD(0), m_iPid(0), m_bTerminal(false),
                                     m_iLastRET(0), m_szUser("root"),
                                     m_eError(SU_ERROR_NONE), m_pThinkFunc(NULL),
-                                    m_pOutputFunc(NULL), m_pCustomThinkData(NULL), m_pCustomOutputData(NULL)
+                                    m_pOutputFunc(NULL), m_pCustomThinkData(NULL),
+                                    m_pCustomOutputData(NULL)
 {
     if (!Disable0Core)
     {

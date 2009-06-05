@@ -42,10 +42,13 @@ class CPseudoTerminal
     std::string m_ReadBuffer;
     std::string m_Path;
     
+    void InitTerm(void);
     void CreatePTY(void);
     void GrantPT(void);
     void UnlockPT(void);
     bool SetupChildSlave(int fd);
+    int Kill(bool canthrow);
+    void Close(void);
 
 protected:
     bool CheckPidExited(bool block, bool canthrow=true);
@@ -61,11 +64,12 @@ public:
     
     void SetPath(const std::string &p) { m_Path = p; }
     void Exec(const std::string &command);
-    bool HasData(void);
+    bool CheckForData(void);
     int GetRetStatus(void);
     void Abort(bool canthrow=true);
     EReadStatus ReadLine(std::string &out, bool onlyline=true);
     bool IsValid(void);
+    bool CommandFinished(void);
     
     operator void *(void);
 };

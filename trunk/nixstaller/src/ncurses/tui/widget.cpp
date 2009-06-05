@@ -20,6 +20,7 @@
 #include <assert.h>
 
 #include "main/main.h"
+#include "main/frontend/install.h"
 #include "main/frontend/utils.h"
 #include "tui.h"
 #include "group.h"

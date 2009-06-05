@@ -17,7 +17,10 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <stdlib.h>
+
 #include "main/main.h"
+#include "suterm.h"
 #include "utils.h"
 
 std::list<char *> StringList;
@@ -198,13 +201,20 @@ bool MKDirNeedsRoot(std::string dir)
     return needroot;
 }
 
-void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd)
+void MKDirRecRoot(std::string dir, CSuTerm *suterm, const char *passwd)
 {
     MakeAbsolute(dir);
     
-    suhandler.SetCommand("mkdir -p " + dir);
-    
-    if (!suhandler.ExecuteCommand(passwd))
+    try
+    {
+        suterm->Exec("mkdir -p " + dir, passwd);
+        while (*suterm && !suterm->CommandFinished())
+            ; // Wait till command is finished
+    }
+    catch (Exceptions::CExIO &)
+    {
+        // Usually we don't care about the detials, so just translate exception.
         throw Exceptions::CExRootMKDir(dir.c_str());
+    }
 }
 

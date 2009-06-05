@@ -17,6 +17,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <stdlib.h>
+
 #include "ncurses.h"
 #include "installer.h"
 #include "main/frontend/run.h"

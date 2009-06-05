@@ -18,8 +18,8 @@
 */
 
 #include <sys/stat.h>
-
 #include <libgen.h>
+#include <stdlib.h>
 
 #include "main/frontend/install.h"
 #include "main/frontend/utils.h"

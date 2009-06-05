@@ -17,10 +17,12 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <stdlib.h>
 #include <unistd.h>
 
+#include "main/frontend/suterm.h"
 #include "main/frontend/utils.h"
 #include "tui.h"
 #include "filedialog.h"
@@ -106,7 +108,7 @@ void CFileDialog::OpenDir(std::string newdir)
     CHDir(curdir);
 }
 
-std::string CFileDialog::AskPassword(LIBSU::CLibSU &suhandler)
+std::string CFileDialog::AskPassword(CSuTerm *suterm)
 {
     std::string ret;
     
@@ -119,18 +121,18 @@ std::string CFileDialog::AskPassword(LIBSU::CLibSU &suhandler)
         if (ret.empty())
             break;
 
-        if (!suhandler.TestSU(ret.c_str()))
+        try
         {
-            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+            if (!suterm->TestPassword(ret.c_str()))
                 WarningBox(GetTranslation("Incorrect password given, please retype."));
             else
-            {
-                WarningBox(GetTranslation("Could not use su or sudo to gain root access."));
                 break;
-            }
         }
-        else
+        catch (Exceptions::CExIO &e)
+        {
+            WarningBox(e.what());
             break;
+        }
     }
     
     return ret;
@@ -155,9 +157,9 @@ bool CFileDialog::CoreHandleKey(wchar_t key)
         {
             if (MKDirNeedsRoot(newdir))
             {
-                LIBSU::CLibSU suhandler;
-                std::string passwd = AskPassword(suhandler);
-                MKDirRecRoot(newdir, suhandler, passwd.c_str());
+                CSuTerm suterm;
+                std::string passwd = AskPassword(&suterm);
+                MKDirRecRoot(newdir, &suterm, passwd.c_str());
                 passwd.assign(passwd.length(), 0);
             }
             else
@@ -169,7 +171,7 @@ bool CFileDialog::CoreHandleKey(wchar_t key)
         {
             WarningBox(e.what());
         }
-            
+
         return true;
     }
     

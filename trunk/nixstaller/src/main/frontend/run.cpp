@@ -19,12 +19,14 @@
 
 #include <locale.h>
 #include <libgen.h>
+#include <stdlib.h>
 
 #include "main/main.h"
 #include "main/lua/lua.h"
 #include "main/lua/luatable.h"
 #include "curl.h"
 #include "run.h"
+#include "suterm.h"
 #include "unattinstall.h"
 #include "utils.h"
 
@@ -80,7 +82,7 @@ void HandleError(void)
     
     Quit(EXIT_FAILURE);
 }
-#include "suterm.h" // UNDONE
+
 int main(int argc, char **argv)
 {
     unlink("frontendstarted");
@@ -92,7 +94,7 @@ int main(int argc, char **argv)
     std::string surunnerpath = DirName(argv[0]);
     if (!FileExists(JoinPath(surunnerpath, "surunner")))
         surunnerpath += "/.."; // HACK: for static surunner bins
-    LIBSU::SetRunnerPath(surunnerpath);
+    CSuTerm::SetRunnerPath(surunnerpath);
     
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -106,9 +108,6 @@ int main(int argc, char **argv)
 
     try
     {
-        CSuTerm st;
-        debugline("NeedPass: %d\n", st.NeedPassword());
-    
         if (g_RunScript)
         {
             CLuaRunner lr;

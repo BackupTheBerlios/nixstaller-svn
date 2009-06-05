@@ -22,6 +22,7 @@
 
 #include "main/main.h"
 #include "main/pseudoterminal.h"
+#include "utils.h"
 
 class CSuTerm: public CPseudoTerminal
 {
@@ -29,6 +30,7 @@ class CSuTerm: public CPseudoTerminal
     enum ESuTalkStat { SU_OK, SU_ERROR, SU_NULLPASS, SU_AUTHERROR };
 
     static ESuType m_eSuType;
+    static std::string m_RunnerPath;
 
     std::string m_User;
 
@@ -37,7 +39,7 @@ class CSuTerm: public CPseudoTerminal
     bool UsingSudo(void)
     { return ((m_eSuType == TYPE_SUDO) || (m_eSuType == TYPE_MAYBESUDO)); }
     void PrepareExec(void);
-    std::string ConstructCommand(const std::string &origcmd);
+    std::string ConstructCommand(std::string command);
     bool CheckPid(void) { return (UsingSudo() || (kill(GetChildPid(), 0) == 0)); };
     bool WaitSlave(void);
     ESuTalkStat TalkWithSu(const char *password);
@@ -45,11 +47,27 @@ class CSuTerm: public CPseudoTerminal
     using CPseudoTerminal::Exec;
 
 public:
-    CSuTerm(const std::string &user = "root") : m_User(user) { }
+    CSuTerm(const std::string &user = "root");
     
     bool NeedPassword(void);
-    bool TestSu(const char *password);
+    bool TestPassword(const char *password);
     void Exec(const std::string &command, const char *password);
+
+    static void SetRunnerPath(const std::string &path) { m_RunnerPath = path; }
 };
+
+
+namespace Exceptions {
+
+class CExSuError: public CExMessage, public CExIO
+{
+public:
+    CExSuError(const char *msg) : CExMessage(msg) { }
+    virtual const char *what(void) throw()
+    { return FormatText(GetTranslation("Encountered error with su/sudo: %s"), Message()); }
+};
+
+}
+
 
 #endif

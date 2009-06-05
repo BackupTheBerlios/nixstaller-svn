@@ -28,6 +28,7 @@ class CLibSU;
 }
 
 class CDirIter;
+class CSuTerm;
 
 namespace NNCurses {
 
@@ -47,7 +48,7 @@ class CFileDialog: public CDialog
     
     bool ValidDir(CDirIter &dir);
     void OpenDir(std::string newdir);
-    std::string AskPassword(LIBSU::CLibSU &suhandler);
+    std::string AskPassword(CSuTerm *suterm);
     
 protected:
     virtual bool CoreHandleKey(wchar_t key);

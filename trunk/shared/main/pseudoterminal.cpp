@@ -48,9 +48,22 @@
 CPseudoTerminal::CPseudoTerminal() : m_iPTYFD(0), m_ChildPid(0), m_bEOF(false),
                                      m_bPidExited(false), m_iRetStatus(0)
 {  
+    InitTerm();
+}
+
+CPseudoTerminal::~CPseudoTerminal()
+{
+    Kill(false);
+    Close();  
+}
+
+void CPseudoTerminal::InitTerm()
+{
     CreatePTY();
     GrantPT();
     UnlockPT();
+    
+    debugline("TTY: %s\n", m_TTYName.c_str());
     
     int flags = fcntl(m_iPTYFD, F_GETFL);
     if (flags < 0)
@@ -62,20 +75,6 @@ CPseudoTerminal::CPseudoTerminal() : m_iPTYFD(0), m_ChildPid(0), m_bEOF(false),
     
     m_PollData.fd = m_iPTYFD;
     m_PollData.events = POLLIN | POLLHUP;
-}
-
-CPseudoTerminal::~CPseudoTerminal()
-{
-    Abort(false);
-      
-    if (m_iPTYFD > 0)
-    {
-        // The process that closes the pty last will recieve a SIGHUP
-        // (why?). Ignore the signal temporary...
-        sighandler_t prevsig = signal(SIGHUP, SIG_IGN);
-        close(m_iPTYFD);
-        signal(SIGHUP, prevsig);
-    }
 }
 
 void CPseudoTerminal::CreatePTY()
@@ -289,6 +288,30 @@ bool CPseudoTerminal::SetupChildSlave(int fd)
     return true;
 }
 
+int CPseudoTerminal::Kill(bool canthrow)
+{
+    int ret = kill(-m_ChildPid, SIGTERM);
+    if (ret >= 0)
+        CheckPidExited(true, canthrow);
+    
+    return ret;
+}
+
+void CPseudoTerminal::Close()
+{
+    if (m_iPTYFD > 0)
+    {
+        // The process that closes the pty last will recieve a SIGHUP
+        // (why?). Ignore the signal temporary...
+        sighandler_t prevsig = signal(SIGHUP, SIG_IGN);
+        close(m_iPTYFD);
+        signal(SIGHUP, prevsig);
+        m_iPTYFD = 0;
+    }
+    
+    m_TTYName.clear();
+}
+
 bool CPseudoTerminal::CheckPidExited(bool block, bool canthrow)
 {
     if (m_bPidExited || !m_ChildPid)
@@ -356,7 +379,7 @@ void CPseudoTerminal::Exec(const std::string &command)
     _exit(127);
 }
 
-bool CPseudoTerminal::HasData()
+bool CPseudoTerminal::CheckForData()
 {
     if (!m_ReadBuffer.empty())
         return true;
@@ -364,7 +387,7 @@ bool CPseudoTerminal::HasData()
     if (m_bEOF)
         return false;
     
-    int ret = poll(&m_PollData, 1, 10);
+    int ret = poll(&m_PollData, 1, 50);
     
     if (ret == -1) // Error occured
     {
@@ -392,8 +415,14 @@ void CPseudoTerminal::Abort(bool canthrow)
 {
     if (m_ChildPid)
     {
-        if (kill(-m_ChildPid, SIGTERM) >= 0)
-            CheckPidExited(true, canthrow);
+        if ((Kill(canthrow) == -1) && (errno == EPERM))
+        {
+            // No permission to kill (ie. setuid progs)
+            // 'kill' it by just closing and reopening terminal
+            Close();
+            InitTerm();
+        }
+        
         m_ChildPid = 0;
         // Not really required (done in Exec()), but may free some memory
         m_ReadBuffer.clear();
@@ -415,9 +444,7 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out,
     char buffer[bufsize+1];
     
     int readret = read(m_iPTYFD, &buffer, bufsize);
-    
-    if (readret > -1) debugline("readret: %d\n", readret);
-    
+       
     if (readret <= 0)
     {
         if (readret == -1)
@@ -460,8 +487,14 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out,
 
 bool CPseudoTerminal::IsValid()
 {
-    bool check = CheckPidExited(false); // Need to do this here
-    return (!m_bEOF && m_iPTYFD && m_ChildPid && (HasData() || !check));
+    bool check = CheckPidExited(false); // Always check
+    return (!m_bEOF && m_iPTYFD && m_ChildPid && (CheckForData() || !check));
+}
+
+bool CPseudoTerminal::CommandFinished()
+{
+    bool check = CheckPidExited(false); // Always check
+    return (m_bEOF || !m_iPTYFD || !m_ChildPid || check);
 }
 
 CPseudoTerminal::operator void *()

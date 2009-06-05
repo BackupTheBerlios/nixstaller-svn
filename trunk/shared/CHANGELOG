@@ -1,3 +1,4 @@
 0.5 -->
 - Fixed: MKDirRec failed on "."'s
 - Fixed: File copying didn't work on symlinks
+- Command execution (normal, not root) is now done via pseudo terminals instead of pipes (makes things more repsonsive)

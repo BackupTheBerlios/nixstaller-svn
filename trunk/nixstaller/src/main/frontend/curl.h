@@ -17,8 +17,13 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#ifndef CURLWRAPPER_H
+#define CURLWRAPPER_H
+
 #include <string>
 #include "curl/curl.h"
+
+#include "utils.h"
 
 class CCURLWrapper
 {
@@ -43,3 +48,17 @@ public:
     bool Success(void) { return m_Result.empty(); }
     const std::string &ErrorMessage(void) { return m_Result; }
 };
+
+
+namespace Exceptions {
+
+class CExCURL: public CExMessage
+{
+public:
+    CExCURL(const char *msg) : CExMessage(msg) { }
+    virtual const char *what(void) throw() { return FormatText(GetTranslation("Error during file transfer: %s"), Message()); }
+};
+
+}
+
+#endif

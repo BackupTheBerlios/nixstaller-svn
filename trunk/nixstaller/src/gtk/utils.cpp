@@ -17,6 +17,7 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include "main/frontend/suterm.h"
 #include "main/frontend/utils.h"
 #include "gtk.h"
 
@@ -81,25 +82,26 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
     gtk_widget_show(passentry);
     gtk_container_add(GTK_CONTAINER(hbox), passentry);
 
-    LIBSU::CLibSU suhandler;
+    CSuTerm suterm;
     bool cancelled = true;
     while (true)
     {
         if (gtk_dialog_run(GTK_DIALOG(dialog)) != GTK_RESPONSE_OK)
             break;
-        
-        if (!suhandler.TestSU(gtk_entry_get_text(GTK_ENTRY(passentry))))
+
+        try
         {
-            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+            if (!suterm.TestPassword(gtk_entry_get_text(GTK_ENTRY(passentry))))
             {
-                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Incorrect password given, please retype."));
+                MessageBox(GTK_MESSAGE_WARNING,
+                           GetTranslation("Incorrect password given, please retype."));
                 continue;
             }
-            else
-            {
-                MessageBox(GTK_MESSAGE_WARNING, GetTranslation("Could not use su or sudo to gain root access."));
-                break;
-            }
+        }
+        catch (Exceptions::CExIO &e)
+        {
+            MessageBox(GTK_MESSAGE_WARNING, e.what());
+            break;
         }
         
         cancelled = false;
@@ -112,11 +114,13 @@ void CreateRootDirCB(GtkWidget *widget, gpointer data)
         
         try
         {
-            MKDirRecRoot(newdir, suhandler, gtk_entry_get_text(GTK_ENTRY(passentry)));
+            MKDirRecRoot(newdir, &suterm, gtk_entry_get_text(GTK_ENTRY(passentry)));
             
-            // This is rather hacky... First the current viewing directory is changed to the new directory,
-            // this will trigger an internal update and emits a signal. After this signal is launched the
-            // current selected directory is changed to the new directory. We have to force an update, because
+            // This is rather hacky... First the current viewing directory
+            // is changed to the new directory, this will trigger an
+            // internal update and emits a signal. After this signal
+            // is launched the current selected directory is changed to the
+            // new directory. We have to force an update, because
             // otherwise the new directory cannot be selected.
             g_bUpdateFileName = true;
             g_signal_connect_after(G_OBJECT(filedialog), "current-folder-changed",

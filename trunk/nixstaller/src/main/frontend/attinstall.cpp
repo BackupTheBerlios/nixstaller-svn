@@ -53,7 +53,7 @@ CBaseAttInstall::~CBaseAttInstall()
 
 bool CBaseAttInstall::GetSUPasswd(const char *msg, bool mandatory)
 {
-    if ((!m_szPassword || !m_szPassword[0]) && m_SUHandler.NeedPassword())
+    if ((!m_szPassword || !m_szPassword[0]) && m_SuTerm.NeedPassword())
     {
         while(true)
         {
@@ -73,23 +73,18 @@ bool CBaseAttInstall::GetSUPasswd(const char *msg, bool mandatory)
             }
             else
             {
-                if (m_SUHandler.TestSU(m_szPassword))
-                    break;
-
-                // Some error appeared
-                if (m_SUHandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
-                    WarnBox(GetTranslation("Incorrect password given, please retype."));
-                else
+                try
                 {
-                    const char *msg = "Could not use su or sudo to gain root access.";
-                    
+                    if (m_SuTerm.TestPassword(m_szPassword))
+                        break;
+                    WarnBox(GetTranslation("Incorrect password given, please retype."));
+                }
+                catch (Exceptions::CExIO &e)
+                {
                     if (mandatory)
-                        throw Exceptions::CExSU(msg);
-                    else
-                    {
-                        WarnBox(GetTranslation(msg));
-                        return false;
-                    }
+                        throw; //Throw again, we really need root
+                    WarnBox(GetTranslation(msg)); // UNDONE: Translate here?
+                    return false;
                 }
             }
         }
@@ -120,10 +115,6 @@ void CBaseAttInstall::Init(int argc, char **argv)
     lua_pushlightuserdata(NLua::LuaState, this);
     lua_setfield(NLua::LuaState, LUA_REGISTRYINDEX, "installer");
     NLua::LuaSetHook(LuaHook);
-    
-    m_SUHandler.SetUser("root");
-    m_SUHandler.SetTerminalOutput(false);
-    m_SUHandler.SetThinkFunc(SUThinkFunc, this);
 }
 
 void CBaseAttInstall::CoreUpdateLanguage()
@@ -138,7 +129,8 @@ void CBaseAttInstall::CoreUpdate()
         m_pCurScreen->Update();
 }
 
-int CBaseAttInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const char *path, int luaout)
+int CBaseAttInstall::ExecuteCommandAsRoot(const char *cmd, bool required,
+                                          const char *path, int luaout)
 {
     GetSUPasswd("This installation requires root (administrator) privileges in order to continue.\n"
             "Please enter the administrative password below.", true);
@@ -147,28 +139,45 @@ int CBaseAttInstall::ExecuteCommandAsRoot(const char *cmd, bool required, const 
     if (!func)
         luaL_error(NLua::LuaState, "Error: could not use output function\n");
 
-    m_SUHandler.SetOutputFunc(CMDSUOutFunc, &func);
-
     if (!path || !path[0])
-        m_SUHandler.SetPath("");
+        m_SuTerm.SetPath("");
     else
-        m_SUHandler.SetPath(path);
-    
-    m_SUHandler.SetCommand(cmd);
-    
-    if (!m_SUHandler.ExecuteCommand(m_szPassword))
+        m_SuTerm.SetPath(path);
+
+    try
+    {
+        m_SuTerm.Exec(cmd, m_szPassword);
+        while (m_SuTerm)
+        {
+            Update();
+            if (m_SuTerm.CheckForData())
+            {
+                std::string line;
+                CSuTerm::EReadStatus ret = m_SuTerm.ReadLine(line);
+
+                if (ret != CSuTerm::READ_AGAIN)
+                {
+                    if (ret == CSuTerm::READ_LINE)
+                        line += "\n";
+                    func << line;
+                    func(0);
+                }
+            }
+        }
+    }
+    catch (Exceptions::CExIO &e)
     {
         if (required)
         {
             CleanPasswdString(m_szPassword);
             m_szPassword = NULL;
-            throw Exceptions::CExCommand(cmd);
+            throw;
         }
+        
+        return 1;
     }
     
-    m_SUHandler.SetOutputFunc(NULL);
-    
-    return m_SUHandler.Ret();
+    return m_SuTerm.GetRetStatus();
 }
 
 void CBaseAttInstall::VerifyGUI()
@@ -275,7 +284,7 @@ bool CBaseAttInstall::VerifyDestDir(void)
                     GetSUPasswd("Your account doesn't have permissions to "
                             "create the directory.\nTo create it with the root "
                             "(administrator) account, please enter the administrative password below.", false);
-                    MKDirRecRoot(dir, m_SUHandler, m_szPassword);
+                    MKDirRecRoot(dir, &m_SuTerm, m_szPassword);
                 }
                 else
                     MKDirRec(dir);
@@ -308,13 +317,6 @@ bool CBaseAttInstall::AskQuit()
         luaL_error(NLua::LuaState, "Could not use askquit function");
     
     return ret;
-}
-
-void CBaseAttInstall::CMDSUOutFunc(const char *s, void *p)
-{
-    NLua::CLuaFunc *func = static_cast<NLua::CLuaFunc *>(p);
-    (*func) << s;
-    (*func)(0);
 }
 
 void CBaseAttInstall::LuaHook(lua_State *L, lua_Debug *ar)

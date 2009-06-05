@@ -18,6 +18,7 @@
 */
 
 #include <algorithm>
+#include <stdlib.h>
 
 #include "main/frontend/utils.h"
 #include "installer.h"

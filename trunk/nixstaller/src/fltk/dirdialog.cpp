@@ -17,10 +17,12 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <FL/Fl_File_Chooser.H>
+
 #include "main/main.h"
+#include "main/frontend/suterm.h"
 #include "main/frontend/utils.h"
 #include "dirdialog.h"
-#include <FL/Fl_File_Chooser.H>
 
 // -------------------------------------
 // FLTK Directory Dialog Util Class
@@ -40,7 +42,7 @@ CFLTKDirDialog::~CFLTKDirDialog()
     delete m_pDirChooser;
 }
 
-const char *CFLTKDirDialog::AskPassword(LIBSU::CLibSU &suhandler)
+const char *CFLTKDirDialog::AskPassword(CSuTerm *suterm)
 {
     const char *ret = NULL;
     
@@ -53,18 +55,18 @@ const char *CFLTKDirDialog::AskPassword(LIBSU::CLibSU &suhandler)
         if (!ret || !ret[0])
             break;
 
-        if (!suhandler.TestSU(ret))
+        try
         {
-            if (suhandler.GetError() == LIBSU::CLibSU::SU_ERROR_INCORRECTPASS)
+            if (!suterm->TestPassword(ret))
                 fl_alert(GetTranslation("Incorrect password given, please retype."));
             else
-            {
-                fl_alert(GetTranslation("Could not use su or sudo to gain root access."));
                 break;
-            }
         }
-        else
+        catch (Exceptions::CExIO &e)
+        {
+            fl_alert(e.what());
             break;
+        }
     }
     
     return ret;
@@ -101,9 +103,9 @@ void CFLTKDirDialog::MKDirCB(Fl_Widget *w, void *p)
     {
         if (MKDirNeedsRoot(newdir))
         {
-            LIBSU::CLibSU suhandler;
-            const char *passwd = dialog->AskPassword(suhandler);
-            MKDirRecRoot(newdir, suhandler, passwd);
+            CSuTerm suterm;
+            const char *passwd = dialog->AskPassword(&suterm);
+            MKDirRecRoot(newdir, &suterm, passwd);
         }
         else
             MKDirRec(newdir);

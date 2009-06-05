@@ -45,6 +45,7 @@ MAIN
 - CSuTerm:
     - Test on other OSs
     - Disable coredumps
+    - Better error message when ExecuteCommandAsRoot() fails?
 
 
 LIBSU
@@ -59,10 +60,12 @@ NCURSES
 
 GTK
 - OpenBSD: Check why png's (and others?) don't load
+- Let root dir maker check if pw is actually needed
 
 
 FLTK
 - Create a pack widget that works?
+- Let root dir maker check if pw is actually needed
 
 
 TRANSLATIONS

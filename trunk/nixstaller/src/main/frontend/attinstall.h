@@ -20,8 +20,8 @@
 #ifndef ATT_INSTALL_H
 #define ATT_INSTALL_H
 
-#include "libsu/libsu.h"
 #include "main/frontend/install.h"
+#include "main/frontend/suterm.h"
 
 class CBaseScreen;
 class CBaseLuaProgressDialog;
@@ -33,7 +33,7 @@ protected:
     typedef std::vector<CBaseScreen *> TScreenList;
     
 private:
-    LIBSU::CLibSU m_SUHandler;
+    CSuTerm m_SuTerm;
     char *m_szPassword;
     TScreenList m_ScreenList;
     CBaseScreen *m_pCurScreen;
@@ -78,9 +78,6 @@ public:
     std::string GetDestDir(void);
     bool VerifyDestDir(void);
     bool AskQuit(void);
-
-    static void CMDSUOutFunc(const char *s, void *p);
-    static void SUThinkFunc(void *p) { ((CBaseAttInstall *)p)->Update(); };
     
     static void LuaHook(lua_State *L, lua_Debug *ar);
     

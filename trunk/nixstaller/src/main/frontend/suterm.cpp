@@ -38,6 +38,13 @@ const char *TermStr = "Im Done Now :)";
 // -------------------------------------
 
 CSuTerm::ESuType CSuTerm::m_eSuType = TYPE_UNKNOWN;
+std::string CSuTerm::m_RunnerPath;
+
+CSuTerm::CSuTerm(const std::string &user) : m_User(user)
+{
+    if (m_RunnerPath.empty())
+        throw Exceptions::CExSuError("No su runner path defined");
+}
 
 void CSuTerm::SetDefSuType()
 {
@@ -70,10 +77,16 @@ const char *CSuTerm::GetSuBin(ESuType sutype) const
 void CSuTerm::PrepareExec()
 {
     if (UsingSudo())
-        system("sudo -k"); // Forget about any previous sessions (this is needed for TestSU() and NeedPassword())
+    {
+         // Forget about any previous sessions. This is so that
+         // NeedPassword() TestPassword() cannot wrongly report that no pw is
+         // needed when Exec() is called outside sudo's timeout.
+        Exec("sudo -k");
+        CheckPidExited(true);
+    }
 }
 
-std::string CSuTerm::ConstructCommand(const std::string &origcmd)
+std::string CSuTerm::ConstructCommand(std::string command)
 {
     if (m_eSuType == TYPE_UNKNOWN)
     {
@@ -97,12 +110,34 @@ std::string CSuTerm::ConstructCommand(const std::string &origcmd)
     else
         ret += " -c";
 
+    command = CreateText("%s/surunner %d \'%s\'", m_RunnerPath.c_str(), getpid(), command.c_str());
+
+    // 'Escape' single quotes by surrounding them with double quotes
+    // UNDONE: Move replace code to generic function?
+    const char *quotehack = "\'\"\'\"\'"; // String to replace single quotes
+    const TSTLStrSize qlen = strlen(quotehack);
+    TSTLStrSize start = 0;
+    while (start < command.length()) // NOTE: length chances so it's checked each time
+    {
+        start = command.find("\'", start);
+        if (start != std::string::npos)
+        {
+            command.replace(start, 1, quotehack);
+            start += qlen;
+            continue;
+        }
+        else
+            break;
+        
+        start++;
+    }
+    
     // Insert our magic terminate indicator and command
-    ret += std::string(" 'printf \"") + TermStr + "\\n\" ;" + origcmd + "'";
+    ret += std::string(" 'printf \"") + TermStr + "\\n\" ; " + command + "'";
     
     if (!UsingSudo())
         ret += " -";
-    
+
     debugline("ConstructCommand: %s\n", ret.c_str());
     return ret;
 }
@@ -124,7 +159,7 @@ bool CSuTerm::WaitSlave()
         
         if (tio.c_lflag & ECHO) 
         {
-            HasData(); // UNDONE? (Cleaner way to wait for data)
+            CheckForData();
             continue;
         }
         break;
@@ -140,15 +175,11 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
     
     while (IsValid())
     {
-        if (!HasData())
+        if (!CheckForData())
             continue;
         
-        EReadStatus readstat = ReadLine(line, false);
-
-/*        if (readstat == READ_AGAIN)
-            continue;*/ // UNDONE?
-        
-        debugline("TalkWithSU: %s(%d)\n", line.c_str(), state);
+        ReadLine(line, false);
+//         debugline("ReadLine: %s\n", line.c_str());
 
         switch (state)
         {
@@ -159,7 +190,10 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
                 
                 // In case no password is needed.
                 if (!line.compare(0, strlen(TermStr), TermStr))
+                {
+                    debugline("we can skip pw :)\n");
                     return SU_OK;
+                }
 
                 while (IsValid())
                 {
@@ -180,7 +214,8 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
                 {
                     if (line[i] == ':')
                     {
-                        j = i; colon++;
+                        j = i;
+                        colon++;
                         continue;
                     }
                     
@@ -200,6 +235,7 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
                     {
                         write(GetPTYFD(), password, strlen(password));
                         write(GetPTYFD(), "\n", 1);
+                        debugline("Wrote pw\n");
                         state = CheckStar;
                     }
                     else
@@ -210,9 +246,8 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
             
             case CheckStar:
             {
-                std::string::size_type pos1 = line.find_first_not_of(" \r\t\n");
-                std::string::size_type pos2 = line.find_last_not_of(" \r\t\n");
-                
+                TSTLStrSize pos1 = line.find_first_not_of(" \r\t\n");
+                TSTLStrSize pos2 = line.find_last_not_of(" \r\t\n");
                 std::string s;
                  
                 if (pos1 != std::string::npos)
@@ -256,8 +291,13 @@ bool CSuTerm::NeedPassword()
     PrepareExec();
     Exec(ConstructCommand(""));
     ESuTalkStat ret = TalkWithSu(NULL);
-    
-    if (ret == SU_NULLPASS)
+
+    if (ret != SU_OK)
+        Abort();
+
+    if (ret == SU_ERROR)
+        throw Exceptions::CExSuError("su/sudo IO error");
+    else if (ret == SU_NULLPASS)
     {
         Abort();
         return true;
@@ -267,7 +307,10 @@ bool CSuTerm::NeedPassword()
         Abort();
 
         if (m_eSuType == TYPE_MAYBESUDO)
+        {
             m_eSuType = TYPE_MAYBESU; // Try again with su
+            return NeedPassword();
+        }
         else
             m_eSuType = TYPE_UNKNOWN;
         
@@ -281,17 +324,19 @@ bool CSuTerm::NeedPassword()
     return false;
 }
 
-bool CSuTerm::TestSu(const char *password)
+bool CSuTerm::TestPassword(const char *password)
 {
     PrepareExec();
     Exec(ConstructCommand(""));
     ESuTalkStat ret = TalkWithSu(password);
-    
-    if ((ret == SU_ERROR) || (ret == SU_NULLPASS))
-    {
+
+    if (ret != SU_OK)
         Abort();
+    
+    if (ret == SU_ERROR)
+        throw Exceptions::CExSuError("su/sudo IO error");
+    else if (ret == SU_NULLPASS)
         return false;
-    }
     else if (ret == SU_AUTHERROR)
     {
         Abort();
@@ -300,7 +345,7 @@ bool CSuTerm::TestSu(const char *password)
         {
             m_eSuType = TYPE_MAYBESU; // Try again with su
 
-            if (TestSu(password))
+            if (TestPassword(password))
             {
                 m_eSuType = TYPE_SU;
                 return true;
@@ -317,4 +362,37 @@ bool CSuTerm::TestSu(const char *password)
     CheckPidExited(true);
     
     return true;
+}
+
+void CSuTerm::Exec(const std::string &command, const char *password)
+{
+    Exec(ConstructCommand(command));
+    ESuTalkStat ret = TalkWithSu(password);
+
+    debugline("Exec: %d\n", ret);
+
+    if (ret != SU_OK)
+        Abort();
+    
+    if (ret == SU_ERROR)
+        throw Exceptions::CExSuError("su/sudo IO error");
+    else if (ret == SU_NULLPASS)
+        // Exception because NeedPassword() should be used
+        throw Exceptions::CExSuError("No password given");
+    else if (ret == SU_AUTHERROR)
+    {
+        if (m_eSuType == TYPE_MAYBESUDO)
+        {
+            m_eSuType = TYPE_MAYBESU; // Try again with su
+            Exec(command, password);
+            m_eSuType = TYPE_SU; // If we are here no exception was thrown and it worked...
+        }
+        else
+        {
+            m_eSuType = TYPE_UNKNOWN;
+            throw Exceptions::CExSuError("Failed to authenticate with su and/or sudo");
+        }
+    }
+
+    SetDefSuType();
 }

@@ -65,4 +65,16 @@ public:
                                          double ultotal, double ulnow);
 };
 
+
+namespace Exceptions {
+
+class CExFrontend: public CExMessage
+{
+public:
+    CExFrontend(const char *msg) : CExMessage(msg) { };
+};
+
+}
+
+
 #endif

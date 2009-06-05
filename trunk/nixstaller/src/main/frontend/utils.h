@@ -22,8 +22,9 @@
 
 #include <fstream>
 #include <list>
-#include "libsu/libsu.h"
 #include "main/exception.h"
+
+class CSuTerm;
 
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
@@ -40,31 +41,18 @@ const char *GetTranslation(const char *s);
 inline char *MakeTranslation(const std::string &s) { return MakeCString(GetTranslation(s)); }
 inline char *MakeTranslation(const char *s) { return CreateText(GetTranslation(s)); }
 bool MKDirNeedsRoot(std::string dir);
-void MKDirRecRoot(std::string dir, LIBSU::CLibSU &suhandler, const char *passwd);
+void MKDirRecRoot(std::string dir, CSuTerm *suterm, const char *passwd);
 
 namespace Exceptions {
-
-class CExCURL: public CExMessage
-{
-public:
-    CExCURL(const char *msg) : CExMessage(msg) { }
-    virtual const char *what(void) throw() { return FormatText(GetTranslation("Error during file transfer: %s"), Message()); };
-};
 
 class CExRootMKDir: public CExIO
 {
     char m_szDir[1024];
     
 public:
-    CExRootMKDir(const char *dir) { StoreString(dir, m_szDir, sizeof(m_szDir)); };
+    CExRootMKDir(const char *dir) { StoreString(dir, m_szDir, sizeof(m_szDir)); }
     virtual const char *what(void) throw()
-    { return FormatText(GetTranslation("Could not create directory \'%s\'"), m_szDir); };
-};
-
-class CExFrontend: public CExMessage
-{
-public:
-    CExFrontend(const char *msg) : CExMessage(msg) { };
+    { return FormatText(GetTranslation("Could not create directory \'%s\'"), m_szDir); }
 };
 
 }

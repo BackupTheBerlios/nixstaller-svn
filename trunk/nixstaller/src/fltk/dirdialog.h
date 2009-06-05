@@ -31,7 +31,7 @@ class CFLTKDirDialog
 {
     Fl_File_Chooser *m_pDirChooser;
     
-    const char *AskPassword(LIBSU::CLibSU &suhandler);
+    const char *AskPassword(CSuTerm *suterm);
     
 public:
     CFLTKDirDialog(const char *d, const char *p, int t, const char *title);
