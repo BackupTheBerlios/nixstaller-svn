@@ -28,12 +28,18 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
+
+#if defined(__SVR4) && defined(sun)
+#include <stropts.h>
+#include <sys/stream.h>
+#endif
 
 #include "main/main.h"
 #include "main/utils.h"
@@ -171,7 +177,7 @@ linux_out:
     
     // Other systems ??
     
-    throw Exceptions::CExOpenTerm;
+    throw Exceptions::CExOpenTerm();
 #endif
 }
 
@@ -309,7 +315,7 @@ void CPseudoTerminal::Close()
     {
         // The process that closes the pty last will recieve a SIGHUP
         // (why?). Ignore the signal temporary...
-        sighandler_t prevsig = signal(SIGHUP, SIG_IGN);
+        void (*prevsig)(int) = signal(SIGHUP, SIG_IGN);
         close(m_iPTYFD);
         signal(SIGHUP, prevsig);
         m_iPTYFD = 0;

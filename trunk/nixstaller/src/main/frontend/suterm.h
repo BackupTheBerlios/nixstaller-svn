@@ -20,6 +20,9 @@
 #ifndef SUTERM_H
 #define SUTERM_H
 
+#include <sys/types.h>
+#include <signal.h>
+
 #include "main/main.h"
 #include "main/pseudoterminal.h"
 #include "utils.h"

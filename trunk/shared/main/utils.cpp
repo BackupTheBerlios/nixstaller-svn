@@ -23,11 +23,14 @@
 #include <locale.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <fstream>
 #include <assert.h>
 #include <errno.h>
-        
+#include <ctype.h>
+#include <signal.h>
+
 #include "libmd5/md5.h"
 #include "utf8.h"
 #include "main.h"
