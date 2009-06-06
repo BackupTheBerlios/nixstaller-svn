@@ -37,7 +37,6 @@ class CPseudoTerminal
     pid_t m_ChildPid;
     bool m_bEOF;
     pollfd m_PollData;
-    bool m_bPidExited;
     int m_iRetStatus;
     std::string m_ReadBuffer;
     std::string m_Path;

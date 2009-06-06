@@ -9,4 +9,6 @@
     - Port libsu to it
     - CHANGELOG
     - Test process killing
+    - Check if everything is exception safe
+    - Test custom path's
     

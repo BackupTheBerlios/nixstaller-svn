@@ -21,13 +21,14 @@
 #include <libgen.h>
 #include <stdlib.h>
 
-#include "main/frontend/install.h"
-#include "main/frontend/utils.h"
+#include "main/pseudoterminal.h"
 #include "main/lua/lua.h"
 #include "main/lua/luaclass.h"
 #include "main/lua/luafunc.h"
 #include "main/frontend/curl.h"
+#include "main/frontend/install.h"
 #include "main/frontend/run.h"
+#include "main/frontend/utils.h"
 
 #if defined(__APPLE__)
 // Include Location Services header files
@@ -96,6 +97,7 @@ void CBaseInstall::ReadLang()
     }
 }
 
+#if 0
 int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path, int luaout)
 {
     // Redirect stderr to stdout, so that errors will be displayed too
@@ -149,6 +151,47 @@ int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *pat
         setenv("PATH", oldpath, 1);
     
     return pipe.Close(required); // By calling Close() explicity its able to throw exceptions
+}
+#endif
+
+int CBaseInstall::ExecuteCommand(const char *cmd, bool required,
+                                 const char *path, int luaout)
+{
+    NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
+    if (!func)
+        luaL_error(NLua::LuaState, "Error: could not use output function\n");
+
+    CPseudoTerminal term;
+    try
+    {
+        term.Exec(cmd);
+        while (term)
+        {
+            Update();
+            if (term.CheckForData())
+            {
+                std::string line;
+                CPseudoTerminal::EReadStatus ret = term.ReadLine(line);
+
+                if (ret != CPseudoTerminal::READ_AGAIN)
+                {
+                    if (ret == CPseudoTerminal::READ_LINE)
+                        line += "\n";
+                    func << line;
+                    func(0);
+                }
+            }
+        }
+    }
+    catch (Exceptions::CExIO &e)
+    {
+        if (required)
+            throw;
+        
+        return 1;
+    }
+    
+    return term.GetRetStatus();
 }
 
 const char *CBaseInstall::GetLogoFName()

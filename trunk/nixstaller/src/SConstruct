@@ -1829,7 +1829,7 @@ elif env.GetOption('clean'):
 
 
 # Builds libsu
-libsu = env.SConscript('libsu/SConstruct', duplicate=0)
+#libsu = env.SConscript('libsu/SConstruct', duplicate=0)
 
 # Builds lock tool
 lock = env.Program('lock/lock', 'lock/lock.c', LIBS="")
@@ -1871,7 +1871,7 @@ if cur_os != 'darwin':
     Default(env.Install(bin_dir, Flatten(gtk)))
 
 Default(env.Install(bin_dir, Flatten(fltk) + Flatten(gtk)))
-Default(env.Install(lib_dir, Flatten(libsu) + Flatten(frontend)))
+Default(env.Install(lib_dir, Flatten(frontend)))
 
 if cur_os == 'openbsd':
     Default(env.Install(stat_bin_dir, Flatten(ncurses) + Flatten(surunner)))

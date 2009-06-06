@@ -110,7 +110,8 @@ std::string CSuTerm::ConstructCommand(std::string command)
     else
         ret += " -c";
 
-    command = CreateText("%s/surunner %d \'%s\'", m_RunnerPath.c_str(), getpid(), command.c_str());
+//     command = CreateText("%s/surunner %d \'%s\'", m_RunnerPath.c_str(), getpid(), command.c_str());
+    command = "/bin/sh -c \'" + command + "\'";
 
     // 'Escape' single quotes by surrounding them with double quotes
     // UNDONE: Move replace code to generic function?

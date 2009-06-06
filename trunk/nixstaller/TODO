@@ -46,6 +46,12 @@ MAIN
     - Test on other OSs
     - Disable coredumps
     - Better error message when ExecuteCommandAsRoot() fails?
+    - Check if everything is exception safe
+    - Remove surunner:
+        - Test if it's really not needed anymore (other OSs)
+        - SConstruct
+        - Setting paths
+        - CHANGELOG
 
 
 LIBSU

@@ -46,14 +46,18 @@
 // Parts of this class are heavily based on code from KDE's 'kdesu'
 
 CPseudoTerminal::CPseudoTerminal() : m_iPTYFD(0), m_ChildPid(0), m_bEOF(false),
-                                     m_bPidExited(false), m_iRetStatus(0)
-{  
+                                     m_iRetStatus(0)
+{
     InitTerm();
 }
 
 CPseudoTerminal::~CPseudoTerminal()
-{
-    Kill(false);
+{    
+    debugline("Destructing: %d, %d, %s\n", m_iPTYFD, m_ChildPid, m_TTYName.c_str());
+    
+    if (m_ChildPid)
+        Kill(false);
+
     Close();  
 }
 
@@ -222,8 +226,8 @@ bool CPseudoTerminal::SetupChildSlave(int fd)
     // Reset signal handlers
     for (int sig = 1; sig < NSIG; sig++)
         signal(sig, SIG_DFL);
-    signal(SIGHUP, SIG_IGN);
-    
+//     signal(SIGHUP, SIG_IGN);
+
     // Close all file handles
     struct rlimit rlp;
     getrlimit(RLIMIT_NOFILE, &rlp);
@@ -238,6 +242,7 @@ bool CPseudoTerminal::SetupChildSlave(int fd)
       
     // Open slave. This will make it our controlling terminal
     int slave = open(m_TTYName.c_str(), O_RDWR);
+    
     close(fd);
     
     if (slave < 0) 
@@ -292,8 +297,9 @@ int CPseudoTerminal::Kill(bool canthrow)
 {
     int ret = kill(-m_ChildPid, SIGTERM);
     if (ret >= 0)
-        CheckPidExited(true, canthrow);
-    
+        CheckPidExited(true, canthrow), debugline("Succesfully killed\n");
+    else
+        debugline("Failed to kill: %s\n", strerror(errno));
     return ret;
 }
 
@@ -314,7 +320,7 @@ void CPseudoTerminal::Close()
 
 bool CPseudoTerminal::CheckPidExited(bool block, bool canthrow)
 {
-    if (m_bPidExited || !m_ChildPid)
+    if (!m_ChildPid)
         return true;
     
     int state, ret;
@@ -330,14 +336,14 @@ bool CPseudoTerminal::CheckPidExited(bool block, bool canthrow)
     if (ret < 0)
     {
         // If we are here canthrow is false
-        m_bPidExited = true;
         m_iRetStatus = 1;
+        m_ChildPid = 0;
         return true;
     }
     
     if (ret == m_ChildPid) 
     {
-        m_bPidExited = true;
+        m_ChildPid = 0;
         
         if (WIFEXITED(state))
             m_iRetStatus = WEXITSTATUS(state);
@@ -351,7 +357,6 @@ bool CPseudoTerminal::CheckPidExited(bool block, bool canthrow)
 void CPseudoTerminal::Exec(const std::string &command)
 {   
     m_bEOF = false;
-    m_bPidExited = false;
     m_iRetStatus = 0;
     m_ReadBuffer.clear();   
     
@@ -419,6 +424,7 @@ void CPseudoTerminal::Abort(bool canthrow)
         {
             // No permission to kill (ie. setuid progs)
             // 'kill' it by just closing and reopening terminal
+            // (this will cause a SIGHUP)
             Close();
             InitTerm();
         }
