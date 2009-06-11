@@ -54,7 +54,6 @@
 CPseudoTerminal::CPseudoTerminal() : m_iPTYFD(0), m_ChildPid(0), m_bEOF(false),
                                      m_iRetStatus(0)
 {
-    InitTerm();
 }
 
 CPseudoTerminal::~CPseudoTerminal()
@@ -242,7 +241,7 @@ bool CPseudoTerminal::SetupChildSlave(int fd)
         if (i != fd)
             close(i);
     }
-        
+   
     // Create a new session.
     setsid();
       
@@ -278,7 +277,7 @@ bool CPseudoTerminal::SetupChildSlave(int fd)
     
     if (slave > 2) 
         close(slave);
-    
+        
     // Disable OPOST processing. Otherwise, '\n' are (on Linux at least)
     // translated to '\r\n'.
     struct termios tio;
@@ -361,10 +360,13 @@ bool CPseudoTerminal::CheckPidExited(bool block, bool canthrow)
 }
 
 void CPseudoTerminal::Exec(const std::string &command)
-{   
+{       
     m_bEOF = false;
     m_iRetStatus = 0;
     m_ReadBuffer.clear();   
+    
+    Close();
+    InitTerm();
     
     int slave = open(m_TTYName.c_str(), O_RDWR);
     if (slave < 0) 
@@ -386,7 +388,9 @@ void CPseudoTerminal::Exec(const std::string &command)
     if (!m_Path.empty())
         setenv("PATH", m_Path.c_str(), 1);
     
-    execl("/bin/sh", "/bin/sh", "-c", command.c_str(), NULL);
+    InitChild();
+    
+    execl("/bin/sh", "/bin/sh", "-c", strdup(command.c_str()), NULL);
     _exit(127);
 }
 
@@ -397,7 +401,7 @@ bool CPseudoTerminal::CheckForData()
     
     if (m_bEOF)
         return false;
-    
+
     int ret = poll(&m_PollData, 1, 50);
     
     if (ret == -1) // Error occured
@@ -426,19 +430,13 @@ void CPseudoTerminal::Abort(bool canthrow)
 {
     if (m_ChildPid)
     {
-        if ((Kill(canthrow) == -1) && (errno == EPERM))
-        {
-            // No permission to kill (ie. setuid progs)
-            // 'kill' it by just closing and reopening terminal
-            // (this will cause a SIGHUP)
-            Close();
-            InitTerm();
-        }
-        
+        Kill(canthrow);
         m_ChildPid = 0;
         // Not really required (done in Exec()), but may free some memory
         m_ReadBuffer.clear();
     }
+    
+    Close();
 }
 
 CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out,
@@ -461,10 +459,12 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out,
     {
         if (readret == -1)
         {
+            debugline("read err: %s\n", strerror(errno));
             if ((errno == EINTR) || (errno == EAGAIN))
                 return READ_AGAIN;
         }
         
+        debugline("EOF: %d\n", CheckPidExited(false));
         m_bEOF = true;
         out = m_ReadBuffer;
         m_ReadBuffer.clear();
@@ -500,13 +500,13 @@ CPseudoTerminal::EReadStatus CPseudoTerminal::ReadLine(std::string &out,
 bool CPseudoTerminal::IsValid()
 {
     bool check = CheckPidExited(false); // Always check
-    return (!m_bEOF && m_iPTYFD && m_ChildPid && (CheckForData() || !check));
+    return (!m_bEOF && m_iPTYFD && (CheckForData() || !check));
 }
 
 bool CPseudoTerminal::CommandFinished()
 {
     bool check = CheckPidExited(false); // Always check
-    return (m_bEOF || !m_iPTYFD || !m_ChildPid || check);
+    return (m_bEOF || !m_iPTYFD || check);
 }
 
 CPseudoTerminal::operator void *()

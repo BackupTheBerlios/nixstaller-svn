@@ -1537,7 +1537,7 @@ opts.Add('OS', 'Manually overide target OS', '')
 opts.Add('CPU', 'Manually overide target arch', '')
 
 # -Wno-sign-compare
-env = Environment(options = opts, CCFLAGS = Split("-Wall -g"), LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=["-DDEBUG"])
+env = Environment(options = opts, CCFLAGS = Split("-Wall -g3"), LINKFLAGS='-static-libgcc', TARFLAGS='-c -z', TARSUFFIX='.tar.gz', LIBS='', CPPDEFINES=["-DDEBUG"])
 
 Export("env")
 
@@ -1566,7 +1566,7 @@ if cur_os == "linux":
 if cur_os == "netbsd" or cur_os == "freebsd":
     env.Append(CCFLAGS=Split('$CCFLAGS -O2')) # -Os segfaults on NetBSD/FreeBSD exceptions, so use O2 instead
 else:
-    env.Append(CCFLAGS=Split('$CCFLAGS -Os'))
+    env.Append(CCFLAGS=Split('$CCFLAGS')) # UNDONE: Readd -Os
 
 # OS/Arch specific dirs
 lib_dir = 'lib/'+cur_os+'/'+cur_arch+'/'

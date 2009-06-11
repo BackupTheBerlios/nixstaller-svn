@@ -73,18 +73,6 @@ const char *CSuTerm::GetSuBin(ESuType sutype) const
     return NULL;
 }
 
-void CSuTerm::PrepareExec()
-{
-    if (UsingSudo())
-    {
-         // Forget about any previous sessions. This is so that
-         // NeedPassword() TestPassword() cannot wrongly report that no pw is
-         // needed when Exec() is called outside sudo's timeout.
-        Exec("sudo -k");
-        CheckPidExited(true);
-    }
-}
-
 std::string CSuTerm::ConstructCommand(std::string command)
 {
     if (m_eSuType == TYPE_UNKNOWN)
@@ -109,7 +97,6 @@ std::string CSuTerm::ConstructCommand(std::string command)
     else
         ret += " -c";
 
-//     command = CreateText("%s/surunner %d \'%s\'", m_RunnerPath.c_str(), getpid(), command.c_str());
     command = "/bin/sh -c \'" + command + "\'";
 
     // 'Escape' single quotes by surrounding them with double quotes
@@ -117,7 +104,7 @@ std::string CSuTerm::ConstructCommand(std::string command)
     const char *quotehack = "\'\"\'\"\'"; // String to replace single quotes
     const TSTLStrSize qlen = strlen(quotehack);
     TSTLStrSize start = 0;
-    while (start < command.length()) // NOTE: length chances so it's checked each time
+    while (start < command.length()) // NOTE: length changes so it's checked each time
     {
         start = command.find("\'", start);
         if (start != std::string::npos)
@@ -148,12 +135,12 @@ bool CSuTerm::WaitSlave()
     if (slave < 0)
         return false;
 
-    struct termios tio;
     while (IsValid())
     {
         if (!CheckPid())
             return false;
         
+        struct termios tio;
         if (tcgetattr(slave, &tio) < 0)
             return false;
         
@@ -179,7 +166,8 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
             continue;
         
         ReadLine(line, false);
-//         debugline("ReadLine: %s\n", line.c_str());
+
+        debugline("ReadLine: %s\n", line.c_str());
 
         switch (state)
         {
@@ -283,14 +271,27 @@ CSuTerm::ESuTalkStat CSuTerm::TalkWithSu(const char *password)
         }
     }
     
+    debugline("TalkWithSu: loop ended\n");
     return SU_ERROR;
+}
+
+void CSuTerm::InitChild()
+{
+    if (UsingSudo())
+    {
+         // Forget about any previous sessions. This is so that
+         // NeedPassword() TestPassword() cannot wrongly report that no pw is
+         // needed when Exec() is called outside sudo's timeout.
+        system("sudo -k");
+    }
 }
 
 bool CSuTerm::NeedPassword()
 {
-    PrepareExec();
     Exec(ConstructCommand(""));
     ESuTalkStat ret = TalkWithSu(NULL);
+    
+    debugline("NeedPassword: %d\n", ret);
 
     if (ret != SU_OK)
         Abort();
@@ -326,9 +327,10 @@ bool CSuTerm::NeedPassword()
 
 bool CSuTerm::TestPassword(const char *password)
 {
-    PrepareExec();
     Exec(ConstructCommand(""));
     ESuTalkStat ret = TalkWithSu(password);
+    
+    debugline("TestPassword: %d\n", ret);
 
     if (ret != SU_OK)
         Abort();

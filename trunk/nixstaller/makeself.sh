@@ -401,7 +401,7 @@ else
 fi
 
 # Try to locate a MD5 binary
-OLD_PATH=$PATH
+OLD_PATH="$PATH"
 PATH=${GUESS_MD5_PATH:-"$OLD_PATH:/bin:/usr/bin:/sbin:/usr/local/ssl/bin:/usr/local/bin:/opt/openssl/bin"}
 
 # Added: Better way to get MD5 sum
@@ -414,7 +414,7 @@ if [ ! -f "$MD5CMD" ]; then
     fi
 fi
 
-PATH=$OLD_PATH
+PATH="$OLD_PATH"
 
 if test "$NOMD5" = y; then
 	echo "skipping md5sum at user request"

@@ -41,11 +41,12 @@ class CSuTerm: public CPseudoTerminal
     const char *GetSuBin(ESuType sutype) const;
     bool UsingSudo(void)
     { return ((m_eSuType == TYPE_SUDO) || (m_eSuType == TYPE_MAYBESUDO)); }
-    void PrepareExec(void);
     std::string ConstructCommand(std::string command);
     bool CheckPid(void) { return (UsingSudo() || (kill(GetChildPid(), 0) == 0)); };
     bool WaitSlave(void);
     ESuTalkStat TalkWithSu(const char *password);
+    
+    virtual void InitChild(void);
     
     using CPseudoTerminal::Exec;
 

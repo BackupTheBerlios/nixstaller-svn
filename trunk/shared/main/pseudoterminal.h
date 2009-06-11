@@ -48,6 +48,8 @@ class CPseudoTerminal
     bool SetupChildSlave(int fd);
     int Kill(bool canthrow);
     void Close(void);
+    
+    virtual void InitChild(void) { }
 
 protected:
     bool CheckPidExited(bool block, bool canthrow=true);
@@ -56,7 +58,7 @@ protected:
     pid_t GetChildPid(void) const { return m_ChildPid; }
     
 public:
-    enum EReadStatus { READ_AGAIN, READ_LINE, READ_EOF, READ_LAST };
+    enum EReadStatus { READ_AGAIN, READ_LINE, READ_EOF };
     
     CPseudoTerminal(void);
     virtual ~CPseudoTerminal(void);
@@ -69,6 +71,7 @@ public:
     EReadStatus ReadLine(std::string &out, bool onlyline=true);
     bool IsValid(void);
     bool CommandFinished(void);
+    void CloseTerm(void) { Abort(); }
     
     operator void *(void);
 };
