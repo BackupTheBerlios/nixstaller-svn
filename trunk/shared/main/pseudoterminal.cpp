@@ -23,6 +23,8 @@
     St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#include <unistd.h>
+#include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -44,6 +46,10 @@
 #include "main/main.h"
 #include "main/utils.h"
 #include "pseudoterminal.h"
+
+#if defined(HAVE_UTIL_H)
+#include <util.h>
+#endif
 
 // -------------------------------------
 // Pseudo terminal class
@@ -302,7 +308,7 @@ int CPseudoTerminal::Kill(bool canthrow)
 {
     int ret = kill(-m_ChildPid, SIGTERM);
     if (ret >= 0)
-        CheckPidExited(true, canthrow), debugline("Succesfully killed\n");
+        CheckPidExited(false, canthrow);
     else
         debugline("Failed to kill: %s\n", strerror(errno));
     return ret;
