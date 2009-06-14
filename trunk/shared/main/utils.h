@@ -43,7 +43,9 @@ inline bool IsLink(const std::string &file) { return IsLink(file.c_str()); }
 off_t FileSize(const char *file);
 inline off_t FileSize(const std::string &file) { return FileSize(file.c_str()); };
 std::string &EatWhite(std::string &str, bool skipnewlines=false);
-void EscapeControls(std::string &text);
+void StringReplace(std::string &text, const std::string &oldsub,
+                   const std::string &newsub);
+inline void EscapeControls(std::string &text) { StringReplace(text, "%", "%%"); }
 std::string GetFirstValidDir(const std::string &dir);
 std::string GetMD5(const std::string &file);
 mode_t StrToMode(const char *str);
@@ -66,7 +68,6 @@ std::string LegalNrTokens(bool real, const std::string &curstr, TSTLStrSize pos)
 long GetTime(void);
 void ConvertExToLuaError(void);
 void ConvertLuaErrorToEx(void);
-int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 TSTLStrSize MBWidth(std::string str);
 TSTLStrSize GetMBLenFromW(const std::string &str, size_t width);
 TSTLStrSize GetMBWidthFromC(const std::string &str, std::string::const_iterator cur, int n);
@@ -131,28 +132,6 @@ public:
     dirent *operator ->(void);
 
     bool End(void) { return (m_pEntry == NULL); };
-};
-
-class CPipedCMD
-{
-    std::string m_szCommand;
-
-    int m_iPipeFD[2];
-    pid_t m_ChildPID;
-    pollfd m_PollData;
-    bool m_bChEOF;
-    
-public:
-    CPipedCMD(const char *cmd);
-    ~CPipedCMD(void) { Abort(false); };
-    
-    bool HasData(void);
-    bool EndOfFile(void) { return ((m_ChildPID == 0) || m_bChEOF); };
-    int GetCh(void);
-    int Close(bool canthrow=true); // As pclose: waits for child to exit
-    void Abort(bool canthrow=true);
-    
-    operator bool(void) { return !EndOfFile(); };
 };
 
 template <typename C, typename D = C> class CPointerWrapper

@@ -43,6 +43,13 @@ CSuTerm::CSuTerm(const std::string &user) : m_User(user)
 {
     if (m_RunnerPath.empty())
         throw Exceptions::CExSuError("No su runner path defined");
+
+    // Set core dump size to 0 because we will have
+    // root's password in memory.
+    struct rlimit rlim;
+    rlim.rlim_cur = rlim.rlim_max = 0;
+    if (setrlimit(RLIMIT_CORE, &rlim))
+        throw Exceptions::CExSuError("Failed to disable core dumps");
 }
 
 void CSuTerm::SetDefSuType()
@@ -100,24 +107,8 @@ std::string CSuTerm::ConstructCommand(std::string command)
     command = "/bin/sh -c \'" + command + "\'";
 
     // 'Escape' single quotes by surrounding them with double quotes
-    // UNDONE: Move replace code to generic function?
     const char *quotehack = "\'\"\'\"\'"; // String to replace single quotes
-    const TSTLStrSize qlen = strlen(quotehack);
-    TSTLStrSize start = 0;
-    while (start < command.length()) // NOTE: length changes so it's checked each time
-    {
-        start = command.find("\'", start);
-        if (start != std::string::npos)
-        {
-            command.replace(start, 1, quotehack);
-            start += qlen;
-            continue;
-        }
-        else
-            break;
-        
-        start++;
-    }
+    StringReplace(command, "\'", quotehack);
     
     // Insert our magic terminate indicator and command
     ret += std::string(" 'printf \"") + TermStr + "\\n\" ; " + command + "'";

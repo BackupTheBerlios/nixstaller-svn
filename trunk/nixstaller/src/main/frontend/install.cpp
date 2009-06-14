@@ -97,101 +97,29 @@ void CBaseInstall::ReadLang()
     }
 }
 
-#if 0
-int CBaseInstall::ExecuteCommand(const char *cmd, bool required, const char *path, int luaout)
+void CBaseInstall::ParseTerminal(CPseudoTerminal &term, int luaout)
 {
-    // Redirect stderr to stdout, so that errors will be displayed too
-    const char *append = " 2>&1";
-    char command[strlen(cmd) + strlen(append)];
-    strcpy(command, cmd);
-    strcat(command, append);
-    
-    const char *oldpath = NULL;
-    if (path && *path)
-    {
-        oldpath = getenv("PATH");
-        setenv("PATH", path, 1);
-    }
-    
     NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
     if (!func)
         luaL_error(NLua::LuaState, "Error: could not use output function\n");
     
-    CPipedCMD pipe(command);
-    std::string line;
-            
-    while (pipe)
+    while (term)
     {
         Update();
-                
-        if (pipe.HasData())
+        if (term.CheckForData())
         {
-            int ch = pipe.GetCh();
-                    
-            if (ch != EOF)
+            std::string line;
+            CPseudoTerminal::EReadStatus ret = term.ReadLine(line);
+
+            if (ret != CPseudoTerminal::READ_AGAIN)
             {
-                line += (char)ch;
-                if ((char)ch == '\n')
-                {
-                    func << line;
-                    func(0);
-                    line.clear();
-                }
+                if (ret == CPseudoTerminal::READ_LINE)
+                    line += "\n";
+                func << line;
+                func(0);
             }
         }
     }
-            
-    if (!line.empty())
-    {
-        func << line.c_str();
-        func(0);
-    }
-    
-    if (oldpath)
-        setenv("PATH", oldpath, 1);
-    
-    return pipe.Close(required); // By calling Close() explicity its able to throw exceptions
-}
-#endif
-
-int CBaseInstall::ExecuteCommand(const char *cmd, bool required,
-                                 const char *path, int luaout)
-{
-    NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
-    if (!func)
-        luaL_error(NLua::LuaState, "Error: could not use output function\n");
-
-    CPseudoTerminal term;
-    try
-    {
-        term.Exec(cmd);
-        while (term)
-        {
-            Update();
-            if (term.CheckForData())
-            {
-                std::string line;
-                CPseudoTerminal::EReadStatus ret = term.ReadLine(line);
-
-                if (ret != CPseudoTerminal::READ_AGAIN)
-                {
-                    if (ret == CPseudoTerminal::READ_LINE)
-                        line += "\n";
-                    func << line;
-                    func(0);
-                }
-            }
-        }
-    }
-    catch (Exceptions::CExIO &e)
-    {
-        if (required)
-            throw;
-        
-        return 1;
-    }
-    
-    return term.GetRetStatus();
 }
 
 const char *CBaseInstall::GetLogoFName()
@@ -322,9 +250,31 @@ int CBaseInstall::LuaExecuteCMD(lua_State *L)
         required = lua_toboolean(L, 3);
     
     const char *path = lua_tostring(L, 4);
+
+    int ret = 1;
+    try
+    {
+        CPseudoTerminal term;
+
+        if (path)
+            term.SetPath(path);
+        
+        term.Exec(cmd);
+        installer->ParseTerminal(term, luaout);
+        ret = term.GetRetStatus();
+        NLua::Unreference(luaout);
+
+        if (required && (ret == 127))
+            throw Exceptions::CExCommand(cmd);
+    }
+    catch (Exceptions::CExIO &)
+    {
+        NLua::Unreference(luaout);
+        if (required)
+            throw;
+    }
     
-    lua_pushinteger(L, installer->ExecuteCommand(cmd, required, path, luaout));
-    NLua::Unreference(luaout);
+    lua_pushinteger(L, ret);
     return 1;
 }
 

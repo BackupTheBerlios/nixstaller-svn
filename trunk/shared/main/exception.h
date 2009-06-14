@@ -188,50 +188,10 @@ public:
     CExLuaAbort(const char *msg) : CExMessage(GetExTranslation(msg)) { };
 };
 
-class CExSU: public CExMessage
-{
-public:
-    CExSU(const char *msg) : CExMessage(msg) { };
-};
-
-class CExCommand: public CException
-{
-    char m_szCommand[512];
-    
-public:
-    CExCommand(const char *cmd) { StoreString(cmd, m_szCommand, sizeof(m_szCommand)); };
-    virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("Could not execute command: %s"), m_szCommand); };
-};
-
 class CExNullEntry: public CExMessage
 {
 public:
     CExNullEntry(void) : CExMessage("Tried to access NULL entry") { };
-};
-
-class CExOpenPipe: public CExErrno, public CExIO
-{
-public:
-    CExOpenPipe(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("Could not open pipe: %s"), Error()); };
-};
-
-class CExReadPipe: public CExErrno, public CExIO
-{
-public:
-    CExReadPipe(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("Could not read pipe: %s"), Error()); };
-};
-
-class CExClosePipe: public CExErrno, public CExIO
-{
-public:
-    CExClosePipe(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("Could not close pipe: %s"), Error()); };
 };
 
 class CExFork: public CExErrno
@@ -256,14 +216,6 @@ public:
     CExPoll(int err) : CExErrno(err) { };
     virtual const char *what(void) throw()
     { return FormatText(GetExTranslation("poll returned an error: %s"), Error()); };
-};
-
-class CExSelect: public CExErrno, public CExIO
-{
-public:
-    CExSelect(int err) : CExErrno(err) { };
-    virtual const char *what(void) throw()
-    { return FormatText(GetExTranslation("select returned an error: %s"), Error()); };
 };
 
 class CExWaitPID: public CExErrno

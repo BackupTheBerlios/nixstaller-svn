@@ -28,6 +28,8 @@ OVERALL
 - Test new Lua copy file code
 - Let lua copy function call install.update()?
 - Test new Lua file size code
+- Update lzma
+- Update/merge makeself.sh and makeself-header.sh
 
 
 PACKAGING
@@ -43,8 +45,6 @@ MAIN
 - More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
 - Improve/check lua error messages?
 - CSuTerm:
-    - Test on other OSs
-    - Disable coredumps
     - Better error message when ExecuteCommandAsRoot() fails?
     - Check if everything is exception safe
     - Remove surunner:
@@ -53,9 +53,12 @@ MAIN
         - Setting paths
         - CHANGELOG
 
+TEST
+- New CPipedCommand/libsu replacements: multiple executions, OSs, commandline output, hanging etc
+
 
 LIBSU
-- Clean up/redesign
+- Remove :-)
 
 
 NCURSES

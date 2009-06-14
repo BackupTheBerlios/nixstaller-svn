@@ -129,57 +129,6 @@ void CBaseAttInstall::CoreUpdate()
         m_pCurScreen->Update();
 }
 
-int CBaseAttInstall::ExecuteCommandAsRoot(const char *cmd, bool required,
-                                          const char *path, int luaout)
-{
-    GetSUPasswd("This installation requires root (administrator) privileges in order to continue.\n"
-            "Please enter the administrative password below.", true);
-    
-    NLua::CLuaFunc func(luaout, LUA_REGISTRYINDEX);
-    if (!func)
-        luaL_error(NLua::LuaState, "Error: could not use output function\n");
-
-    if (!path || !path[0])
-        m_SuTerm.SetPath("");
-    else
-        m_SuTerm.SetPath(path);
-
-    try
-    {
-        m_SuTerm.Exec(cmd, m_szPassword);
-        while (m_SuTerm)
-        {
-            Update();
-            if (m_SuTerm.CheckForData())
-            {
-                std::string line;
-                CSuTerm::EReadStatus ret = m_SuTerm.ReadLine(line);
-
-                if (ret != CSuTerm::READ_AGAIN)
-                {
-                    if (ret == CSuTerm::READ_LINE)
-                        line += "\n";
-                    func << line;
-                    func(0);
-                }
-            }
-        }
-    }
-    catch (Exceptions::CExIO &e)
-    {
-        if (required)
-        {
-            CleanPasswdString(m_szPassword);
-            m_szPassword = NULL;
-            throw;
-        }
-        
-        return 1;
-    }
-    
-    return m_SuTerm.GetRetStatus();
-}
-
 void CBaseAttInstall::VerifyGUI()
 {
     // m_bGotGUI can only be false when the destructor was called. In that case,
@@ -471,7 +420,7 @@ int CBaseAttInstall::LuaShowDepScreen(lua_State *L)
 
 int CBaseAttInstall::LuaExecuteCMDAsRoot(lua_State *L)
 {
-    CBaseAttInstall *pInstaller = NLua::GetFromClosure<CBaseAttInstall *>();
+    CBaseAttInstall *installer = NLua::GetFromClosure<CBaseAttInstall *>();
     const char *cmd = luaL_checkstring(L, 1);
     
     luaL_checktype(NLua::LuaState, 2, LUA_TFUNCTION);
@@ -483,9 +432,38 @@ int CBaseAttInstall::LuaExecuteCMDAsRoot(lua_State *L)
         required = lua_toboolean(L, 3);
     
     const char *path = lua_tostring(L, 4);
+
+    installer->GetSUPasswd("This installation requires root (administrator) privileges in order to continue.\n"
+            "Please enter the administrative password below.", true);
     
-    lua_pushinteger(L, pInstaller->ExecuteCommandAsRoot(cmd, required, path, luaout));
-    NLua::Unreference(luaout);
+    int ret = 1;
+    try
+    {
+        if (path)
+            installer->m_SuTerm.SetPath(path);
+        
+        installer->m_SuTerm.Exec(cmd, installer->m_szPassword);
+        installer->ParseTerminal(installer->m_SuTerm, luaout);
+        ret = installer->m_SuTerm.GetRetStatus();
+        installer->m_SuTerm.SetPath(""); // Reset
+        NLua::Unreference(luaout);
+
+        if (required && (ret == 127))
+            throw Exceptions::CExCommand(cmd);
+    }
+    catch (Exceptions::CExIO &)
+    {
+        NLua::Unreference(luaout);
+
+        if (required)
+        {
+            CleanPasswdString(installer->m_szPassword);
+            installer->m_szPassword = NULL;
+            throw;
+        }
+    }
+
+    lua_pushinteger(L, ret);
     return 1;
 }
 

@@ -22,15 +22,17 @@
 
 #include "main/main.h"
 
+class CPseudoTerminal;
+
 class CBaseInstall: public CMain
 {
     std::string m_CurLang, m_ConfigDir;
     long m_lUpdateTimer;
 
     void ReadLang(void);
-    int ExecuteCommand(const char *cmd, bool required, const char *path, int luaout);
 
 protected:
+    void ParseTerminal(CPseudoTerminal &term, int luaout);
     const char *GetLogoFName(void);
     const char *GetAppIconFName(void);
     const char *GetAboutFName(void);
@@ -73,6 +75,17 @@ class CExFrontend: public CExMessage
 public:
     CExFrontend(const char *msg) : CExMessage(msg) { };
 };
+
+class CExCommand: public CException
+{
+    char m_szCommand[512];
+    
+public:
+    CExCommand(const char *cmd) { StoreString(cmd, m_szCommand, sizeof(m_szCommand)); };
+    virtual const char *what(void) throw()
+    { return FormatText(GetExTranslation("Could not execute command: %s"), m_szCommand); };
+};
+
 
 }
 

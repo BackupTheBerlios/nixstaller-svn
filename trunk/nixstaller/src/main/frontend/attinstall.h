@@ -42,7 +42,6 @@ private:
      
     bool GetSUPasswd(const char *msg, bool mandatory);
     void AddScreen(CBaseScreen *screen);
-    int ExecuteCommandAsRoot(const char *cmd, bool required, const char *path, int luaout);
     void VerifyGUI(void);
     
     virtual char *GetPassword(const char *title) = 0;

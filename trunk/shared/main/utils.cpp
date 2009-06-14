@@ -147,22 +147,25 @@ std::string &EatWhite(std::string &str, bool skipnewlines)
     return str;
 }
 
-void EscapeControls(std::string &text)
+void StringReplace(std::string &text, const std::string &oldsub,
+                   const std::string &newsub)
 {
-    TSTLStrSize start = 0;
-    while (start < text.length())
+    const TSTLStrSize oldslen = oldsub.length();
+    const TSTLStrSize newslen = newsub.length();
+    TSTLStrSize start = 0, length = text.length();
+    while (start < length)
     {
-        start = text.find_first_of("%", start);
-        
+        start = text.find(oldsub, start);
         if (start != std::string::npos)
         {
-            text.replace(start, 1, "%%");
-            start += 2;
+            text.replace(start, oldslen, newsub);
+            start += newslen;
+            length = text.length();
             continue;
         }
         else
             break;
-
+        
         start++;
     }
 }
@@ -306,12 +309,6 @@ void UName(struct utsname &u)
         throw Exceptions::CExUName(errno);
 }
 
-void Pipe(int fd[2])
-{
-    if (pipe(fd) == -1)
-        throw Exceptions::CExOpenPipe(errno);
-}
-
 pid_t Fork()
 {
     pid_t ret = fork();
@@ -450,15 +447,6 @@ void ConvertLuaErrorToEx()
         throw Exceptions::CExGeneric(&errmsg[exlen]);
         
     throw Exceptions::CExLua(errmsg);
-}
-
-int Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-           struct timeval *timeout)
-{
-    int ret = select(nfds, readfds, writefds, exceptfds, timeout);
-    if (ret == -1)
-        throw Exceptions::CExSelect(errno);
-    return ret;
 }
 
 TSTLStrSize MBWidth(std::string str)
@@ -739,110 +727,6 @@ dirent *CDirIter::operator ->()
         throw Exceptions::CExNullEntry();
     
     return m_pEntry;
-}
-
-// -------------------------------------
-// Frontend class for popen
-// -------------------------------------
-
-CPipedCMD::CPipedCMD(const char *cmd) : m_szCommand(cmd), m_ChildPID(0), m_bChEOF(false)
-{
-    Pipe(m_iPipeFD);
-    
-    m_ChildPID = Fork();
-    
-    if (m_ChildPID == 0) // Child
-    {
-        if (setsid() == -1)
-            _exit(127);
-        
-        // Redirect to stdout
-        dup2(m_iPipeFD[1], STDOUT_FILENO);
-        close(m_iPipeFD[0]);
-        close(m_iPipeFD[1]);
-        
-        execlp("/bin/sh", "sh", "-c", cmd, NULL);
-        _exit(127);
-    }
-    else if (m_ChildPID > 0) // Parent
-    {
-        ::Close(m_iPipeFD[1]);
-        m_PollData.fd = m_iPipeFD[0];
-        m_PollData.events = POLLIN | POLLHUP;
-    }
-}
-
-int CPipedCMD::GetCh()
-{
-    int ret;
-    if (read(m_iPipeFD[0], &ret, 1) == 0)
-    {
-        ret = EOF;
-        m_bChEOF = true;
-    }
-    
-    return ret;
-}
-
-bool CPipedCMD::HasData()
-{
-    if (EndOfFile())
-        return false;
-                    
-    int ret = poll(&m_PollData, 1, 10);
-    
-    if (ret == -1) // Error occured
-    {
-        if (errno != EINTR) // ignore SIGCHLD
-            throw Exceptions::CExPoll(errno);
-        else
-            return false;
-    }
-    else if (ret == 0)
-        return false;
-    else if (((m_PollData.revents & POLLIN) == POLLIN) || ((m_PollData.revents & POLLHUP) == POLLHUP))
-        return true;
-    
-    return false;
-}
-
-int CPipedCMD::Close(bool canthrow)
-{
-    if (!m_ChildPID)
-        return -1;
-    
-    if (canthrow) 
-        ::Close(m_iPipeFD[0]);
-    else
-        close(m_iPipeFD[0]);
-    
-    pid_t ret;
-    int stat;
-    do
-    {
-        ret = (canthrow) ? WaitPID(m_ChildPID, &stat, 0) : waitpid(m_ChildPID, &stat, 0);
-    }
-    while ((ret == -1) && (errno == EINTR));
-    
-    m_ChildPID = 0;
-    
-    if (canthrow)
-    {
-        if (!WIFEXITED(stat) || (WEXITSTATUS(stat) == 127))
-            throw Exceptions::CExCommand(m_szCommand.c_str());
-    }
-    
-    return WEXITSTATUS(stat);
-}
-
-void CPipedCMD::Abort(bool canthrow)
-{
-    if (m_ChildPID)
-    {
-        if (kill(-m_ChildPID, SIGTERM) >= 0)
-            (canthrow) ? WaitPID(m_ChildPID, NULL, 0) : waitpid(m_ChildPID, NULL, 0);
-        Close(canthrow);
-    }
 }
 
 // Don't forget to free() the text...
