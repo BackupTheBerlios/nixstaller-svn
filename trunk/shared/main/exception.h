@@ -20,6 +20,7 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>

@@ -388,15 +388,24 @@ void CPseudoTerminal::Exec(const std::string &command)
     }
     
     // Child
-    if (!SetupChildSlave(slave))
-        _exit(1);
+    
+    try // No exceptions from child or things get messed up :)
+    {
+        if (!SetupChildSlave(slave))
+            _exit(1);
 
-    if (!m_Path.empty())
-        setenv("PATH", m_Path.c_str(), 1);
+        if (!m_Path.empty())
+            setenv("PATH", m_Path.c_str(), 1);
+        
+        InitChild();
+        
+        execl("/bin/sh", "/bin/sh", "-c", strdup(command.c_str()), NULL);
+    }
+    catch (Exceptions::CException &)
+    {
+        _exit(1);
+    }
     
-    InitChild();
-    
-    execl("/bin/sh", "/bin/sh", "-c", strdup(command.c_str()), NULL);
     _exit(127);
 }
 

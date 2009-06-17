@@ -310,8 +310,8 @@ bool CSuTerm::NeedPassword()
     }
 
     SetDefSuType();
-    
     CheckPidExited(true);
+    CloseTerm();
     
     return false;
 }
@@ -351,8 +351,8 @@ bool CSuTerm::TestPassword(const char *password)
     }
 
     SetDefSuType();
-    
     CheckPidExited(true);
+    CloseTerm();
     
     return true;
 }

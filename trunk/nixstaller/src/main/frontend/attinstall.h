@@ -61,8 +61,8 @@ protected:
     virtual void CoreUpdateLanguage(void);
     virtual void CoreUpdate(void);
 
-    // This function is not called by the destructor, because in some frontends a lua screen is part of the gui and will
-    // be automaticly deleted
+    // This function is not called by the destructor, because in some frontends
+    // a lua screen is part of the gui and will be automaticly deleted
     void DeleteScreens(void);
     TScreenList &GetScreenList(void) { return m_ScreenList; }
     void ActivateScreen(CBaseScreen *screen);

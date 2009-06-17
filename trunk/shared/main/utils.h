@@ -91,24 +91,30 @@ template <typename To, typename From> To SafeConvert(From from)
 {
     bool fromsigned = std::numeric_limits<From>::is_signed;
     bool tosigned = std::numeric_limits<To>::is_signed;
+    To min, max = std::numeric_limits<To>::max();
+       
+    if (std::numeric_limits<To>::is_integer)
+        min = std::numeric_limits<To>::min();
+    else // Floats, doubles etc don't return most negative number from min() :(
+        min = -std::numeric_limits<To>::max();
     
     if (fromsigned && tosigned)
     {
-        if (from > std::numeric_limits<To>::max())
+        if (from > max)
             throw Exceptions::CExOverflow("Detected a overflow with type conversion");
-        else if (from < std::numeric_limits<To>::min())
+        else if (from < min)
             throw Exceptions::CExOverflow("Detected a underflow with type conversion");
     }
     else if (fromsigned && !tosigned)
     {
         if (from < 0)
             throw Exceptions::CExOverflow("Detected a underflow with type conversion");
-        else if (from > std::numeric_limits<To>::max())
+        else if (from > max)
             throw Exceptions::CExOverflow("Detected a overflow with type conversion");
     }
     else if (!fromsigned)
     {
-        if (from > std::numeric_limits<To>::max())
+        if (from > max)
             throw Exceptions::CExOverflow("Detected a overflow with type conversion");
     }
     

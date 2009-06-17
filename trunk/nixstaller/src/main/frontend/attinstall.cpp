@@ -234,6 +234,7 @@ bool CBaseAttInstall::VerifyDestDir(void)
                             "create the directory.\nTo create it with the root "
                             "(administrator) account, please enter the administrative password below.", false);
                     MKDirRecRoot(dir, &m_SuTerm, m_szPassword);
+                    m_SuTerm.CloseTerm();
                 }
                 else
                     MKDirRec(dir);
@@ -444,8 +445,11 @@ int CBaseAttInstall::LuaExecuteCMDAsRoot(lua_State *L)
         
         installer->m_SuTerm.Exec(cmd, installer->m_szPassword);
         installer->ParseTerminal(installer->m_SuTerm, luaout);
+        
         ret = installer->m_SuTerm.GetRetStatus();
         installer->m_SuTerm.SetPath(""); // Reset
+        installer->m_SuTerm.CloseTerm();
+        
         NLua::Unreference(luaout);
 
         if (required && (ret == 127))

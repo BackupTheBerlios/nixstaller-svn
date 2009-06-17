@@ -46,7 +46,6 @@ MAIN
 - Improve/check lua error messages?
 - CSuTerm:
     - Better error message when ExecuteCommandAsRoot() fails?
-    - Check if everything is exception safe
     - Remove surunner:
         - Test if it's really not needed anymore (other OSs)
         - SConstruct

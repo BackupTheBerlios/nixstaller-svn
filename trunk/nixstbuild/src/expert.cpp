@@ -378,29 +378,37 @@ void CExpertScreen::build()
         QMessageBox::critical(0, "Error", "Wrong Nixstaller path"); // UNDONE
     
     QString command = QString("cd %1 && %2/geninstall.sh %1 2>&1").arg(projectDir).arg(path);
-    CPseudoTerminal ps;
-    ps.Exec(command.toStdString());
-    while (ps)
-    {
-        QCoreApplication::processEvents();
-        
-        if (ps.HasData())
-        {
-            std::string line;
-            CPseudoTerminal::EReadStatus stat = ps.ReadLine(line);
 
-            if (stat != CPseudoTerminal::READ_AGAIN)
+    try
+    {
+        CPseudoTerminal ps;
+        ps.Exec(command.toStdString());
+        while (ps)
+        {
+            QCoreApplication::processEvents();
+            
+            if (ps.CheckForData())
             {
-                printf("%s", line.c_str());
-                if (stat == CPseudoTerminal::READ_LINE)
-                    printf("\n");
-                fflush(stdout);
+                std::string line;
+                CPseudoTerminal::EReadStatus stat = ps.ReadLine(line);
+
+                if (stat != CPseudoTerminal::READ_AGAIN)
+                {
+                    printf("%s", line.c_str());
+                    if (stat == CPseudoTerminal::READ_LINE)
+                        printf("\n");
+                    fflush(stdout);
+                }
             }
         }
-    }
 
-    printf("Exit: %d\n", ps.GetRetStatus());
-    fflush(stdout);
+        printf("Exit: %d\n", ps.GetRetStatus());
+        fflush(stdout);
+    }
+    catch (Exceptions::CExIO &e)
+    {
+        QMessageBox::critical(NULL, "Error", QString("Failed to run command: %1").arg(e.what()));
+    }
 }
 
 void CExpertScreen::showEditSettings()
