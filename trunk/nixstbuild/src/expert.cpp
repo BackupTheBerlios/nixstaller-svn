@@ -72,9 +72,12 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     mainStack = new QStackedWidget;
     setCentralWidget(mainStack);
 
-    QWidget *stackW = new QWidget;
-    mainStack->addWidget(stackW);
-    QHBoxLayout *hbox = new QHBoxLayout(stackW);
+    QSplitter *stackS = new QSplitter(Qt::Vertical);
+    mainStack->addWidget(stackS);
+
+    QWidget *sw = new QWidget;
+    stackS->addWidget(sw);
+    QHBoxLayout *hbox = new QHBoxLayout(sw);
 
     // UNDONE: Layout handling is a bit messy (not auto)
     const int gridw = 150, gridh = 70, listw = gridw+6;
@@ -111,7 +114,10 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     addTab(new CFileManagerTab);
     hbox->addWidget(widgetStack);
 
-    mainStack->addWidget(stackW = new QWidget);
+    stackS->addWidget(consoleWidget = new QTextEdit);
+
+    QWidget *stackW = new QWidget;
+    mainStack->addWidget(stackW);
     hbox = new QHBoxLayout(stackW);
     QLabel *label = new QLabel("<qt>Welcome to Nixstbuild!<br>You can load or create projects from the <b>File</b> menu.</qt>");
     label->setFrameStyle(QFrame::Box | QFrame::Sunken);

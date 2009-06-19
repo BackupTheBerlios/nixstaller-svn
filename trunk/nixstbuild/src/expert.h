@@ -29,6 +29,7 @@ class QListWidgetItem;
 class QListWidget;
 class QMenu;
 class QStackedWidget;
+class QTextEdit;
 
 class QFormatScheme;
 class QLanguageFactory;
@@ -48,6 +49,7 @@ class CExpertScreen: public QMainWindow
     QMenu *recentFilesMenu;
     QStackedWidget *mainStack, *widgetStack;
     QListWidget *listWidget;
+    QTextEdit *consoleWidget;
     CEditSettings *editSettings;
     std::vector<CBaseExpertTab *> tabs;
 
