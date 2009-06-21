@@ -29,7 +29,7 @@ class QListWidgetItem;
 class QListWidget;
 class QMenu;
 class QStackedWidget;
-class QTextEdit;
+class QPlainTextEdit;
 
 class QFormatScheme;
 class QLanguageFactory;
@@ -49,7 +49,7 @@ class CExpertScreen: public QMainWindow
     QMenu *recentFilesMenu;
     QStackedWidget *mainStack, *widgetStack;
     QListWidget *listWidget;
-    QTextEdit *consoleWidget;
+    QPlainTextEdit *consoleWidget;
     CEditSettings *editSettings;
     std::vector<CBaseExpertTab *> tabs;
 
@@ -67,6 +67,8 @@ class CExpertScreen: public QMainWindow
     void setProjectDir(const QString &dir);
     void loadProject(const QString &dir);
 
+    void appendConsoleText(const QString &text);
+
 private slots:
     void newProject(void);
     void openProject(void);
@@ -77,6 +79,7 @@ private slots:
     void showEditSettings(void);
     void showNixstbSettings(void);
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
+    void toggleConsole(bool checked);
 
 protected:
     virtual void closeEvent(QCloseEvent *e);

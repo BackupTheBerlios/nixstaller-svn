@@ -36,13 +36,13 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QRadioButton>
 #include <QScrollArea>
 #include <QSettings>
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QSplitter>
-#include <QTextEdit>
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -72,11 +72,15 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     mainStack = new QStackedWidget;
     setCentralWidget(mainStack);
 
-    QSplitter *stackS = new QSplitter(Qt::Vertical);
-    mainStack->addWidget(stackS);
-
     QWidget *sw = new QWidget;
-    stackS->addWidget(sw);
+    QVBoxLayout *vbox = new QVBoxLayout(sw);
+    mainStack->addWidget(sw);
+
+    QSplitter *stackS = new QSplitter(Qt::Vertical);
+    stackS->setChildrenCollapsible(false);
+    vbox->addWidget(stackS);
+
+    stackS->addWidget(sw = new QWidget);
     QHBoxLayout *hbox = new QHBoxLayout(sw);
 
     // UNDONE: Layout handling is a bit messy (not auto)
@@ -114,7 +118,16 @@ CExpertScreen::CExpertScreen(QWidget *parent, Qt::WindowFlags flags) : QMainWind
     addTab(new CFileManagerTab);
     hbox->addWidget(widgetStack);
 
-    stackS->addWidget(consoleWidget = new QTextEdit);
+    stackS->addWidget(consoleWidget = new QPlainTextEdit);
+    consoleWidget->setReadOnly(true);
+    consoleWidget->setCenterOnScroll(true);
+
+    QToolBar *tbar = new QToolBar;
+    QAction *a = tbar->addAction("Console");
+    connect(a, SIGNAL(toggled(bool)), this, SLOT(toggleConsole(bool)));
+    a->setCheckable(true);
+    a->setChecked(true); // UNDONE: Setting
+    vbox->addWidget(tbar);
 
     QWidget *stackW = new QWidget;
     mainStack->addWidget(stackW);
@@ -314,6 +327,15 @@ void CExpertScreen::loadProject(const QString &dir)
     }
 }
 
+// Appends text (without adding new paragraph)
+void CExpertScreen::appendConsoleText(const QString &text)
+{
+    QTextCursor cur = consoleWidget->textCursor();
+    cur.movePosition(QTextCursor::End);
+    consoleWidget->setTextCursor(cur);
+    consoleWidget->insertPlainText(text);
+}
+
 void CExpertScreen::newProject()
 {
     QFileDialog dialog(NULL, "New Project Directory");
@@ -385,6 +407,8 @@ void CExpertScreen::build()
     
     QString command = QString("cd %1 && %2/geninstall.sh %1 2>&1").arg(projectDir).arg(path);
 
+    consoleWidget->setPlainText(command + "\n\n");
+
     try
     {
         CPseudoTerminal ps;
@@ -400,16 +424,19 @@ void CExpertScreen::build()
 
                 if (stat != CPseudoTerminal::READ_AGAIN)
                 {
-                    printf("%s", line.c_str());
                     if (stat == CPseudoTerminal::READ_LINE)
-                        printf("\n");
-                    fflush(stdout);
+                        line += "\n";
+
+                    appendConsoleText(line.c_str());
                 }
             }
         }
 
-        printf("Exit: %d\n", ps.GetRetStatus());
-        fflush(stdout);
+        int ret = ps.GetRetStatus();
+        consoleWidget->appendPlainText(QString("Command exited with code %1").arg(ret));
+
+        if (ret != 0)
+            QMessageBox::critical(NULL, "Error", "Failed to build installer!");
     }
     catch (Exceptions::CExIO &e)
     {
@@ -461,6 +488,11 @@ void CExpertScreen::changePage(QListWidgetItem *current, QListWidgetItem *previo
         current = previous;
 
     widgetStack->setCurrentIndex(listWidget->row(current));
+}
+
+void CExpertScreen::toggleConsole(bool checked)
+{
+    consoleWidget->setVisible(checked);
 }
 
 void CExpertScreen::closeEvent(QCloseEvent *e)
@@ -654,6 +686,7 @@ CFileManagerTab::CFileManagerTab(QWidget *parent,
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QSplitter *mainSplit = new QSplitter(Qt::Vertical);
+    mainSplit->setChildrenCollapsible(false);
     vbox->addWidget(mainSplit);
 
     QFrame *frame = new QFrame;
@@ -673,6 +706,7 @@ CFileManagerTab::CFileManagerTab(QWidget *parent,
     fvbox = new QVBoxLayout(frame);
 
     QSplitter *split = new QSplitter;
+    split->setChildrenCollapsible(false);
     fvbox->addWidget(split);
 
     QWidget *sw = new QWidget(split);
