@@ -66,8 +66,13 @@ class CExpertScreen: public QMainWindow
     void addRecent(const QString &path);
     void setProjectDir(const QString &dir);
     void loadProject(const QString &dir);
+    bool buildProject(void);
 
+    QString getNixstPath(void);
+    
+    void clearConsole(void);
     void appendConsoleText(const QString &text);
+    bool runInConsole(const QString &command, bool silent = false);
 
 private slots:
     void newProject(void);
@@ -75,7 +80,8 @@ private slots:
     void saveProject(void);
     void updateRecentMenu(void);
     void openRecentCB(QAction *action);
-    void build(void);
+    bool build(void);
+    void buildAndRun(void);
     void showEditSettings(void);
     void showNixstbSettings(void);
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);

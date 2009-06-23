@@ -195,6 +195,7 @@ void CExpertScreen::createBuildRunMenu()
     action = new QAction(tr("Build && &Run"), this);
     action->setShortcut(tr("F8"));
     action->setStatusTip(tr("Build and launch the installer"));
+    connect(action, SIGNAL(triggered()), this, SLOT(buildAndRun()));
     menu->addAction(action);
 
     action = new QAction(tr("&Preview"), this);
@@ -327,6 +328,25 @@ void CExpertScreen::loadProject(const QString &dir)
     }
 }
 
+QString CExpertScreen::getNixstPath()
+{
+    QSettings settings;
+    QString path = settings.value("nixstaller_path").toString();
+    
+    if (!verifyNixstPath(path))
+    {
+        QMessageBox::critical(0, "Error", "Wrong Nixstaller path"); // UNDONE
+        return QString();
+    }
+
+    return path;
+}
+
+void CExpertScreen::clearConsole()
+{
+    consoleWidget->setPlainText("");
+}
+
 // Appends text (without adding new paragraph)
 void CExpertScreen::appendConsoleText(const QString &text)
 {
@@ -334,6 +354,53 @@ void CExpertScreen::appendConsoleText(const QString &text)
     cur.movePosition(QTextCursor::End);
     consoleWidget->setTextCursor(cur);
     consoleWidget->insertPlainText(text);
+}
+
+bool CExpertScreen::runInConsole(const QString &command, bool silent)
+{
+    consoleWidget->appendPlainText(QString("Executing %1\n\n").arg(command));
+
+    try
+    {
+        CPseudoTerminal ps;
+        ps.Exec(command.toStdString());
+        while (ps)
+        {
+            QCoreApplication::processEvents();
+            
+            if (ps.CheckForData())
+            {
+                std::string line;
+                CPseudoTerminal::EReadStatus stat = ps.ReadLine(line);
+
+                if (stat != CPseudoTerminal::READ_AGAIN)
+                {
+                    if (stat == CPseudoTerminal::READ_LINE)
+                        line += "\n";
+
+                    appendConsoleText(line.c_str());
+                }
+            }
+        }
+
+        int ret = ps.GetRetStatus();
+        consoleWidget->appendPlainText(QString("Command exited with code %1").arg(ret));
+
+        if (ret != 0)
+        {
+            if (!silent)
+                QMessageBox::critical(NULL, "Error", "Failed to build installer!");
+            return false;
+        }
+    }
+    catch (Exceptions::CExIO &e)
+    {
+        if (!silent)
+            QMessageBox::critical(NULL, "Error", QString("Failed to run command: %1").arg(e.what()));
+        return false;
+    }
+
+    return true;
 }
 
 void CExpertScreen::newProject()
@@ -397,50 +464,28 @@ void CExpertScreen::openRecentCB(QAction *action)
     loadProject(action->text());
 }
 
-void CExpertScreen::build()
+bool CExpertScreen::build()
 {
-    QSettings settings;
-    QString path = settings.value("nixstaller_path").toString();
-    
-    if (!verifyNixstPath(path))
-        QMessageBox::critical(0, "Error", "Wrong Nixstaller path"); // UNDONE
-    
-    QString command = QString("cd %1 && %2/geninstall.sh %1 2>&1").arg(projectDir).arg(path);
-
-    consoleWidget->setPlainText(command + "\n\n");
-
-    try
+    QString npath = getNixstPath();
+    if (!npath.isEmpty())
     {
-        CPseudoTerminal ps;
-        ps.Exec(command.toStdString());
-        while (ps)
-        {
-            QCoreApplication::processEvents();
-            
-            if (ps.CheckForData())
-            {
-                std::string line;
-                CPseudoTerminal::EReadStatus stat = ps.ReadLine(line);
-
-                if (stat != CPseudoTerminal::READ_AGAIN)
-                {
-                    if (stat == CPseudoTerminal::READ_LINE)
-                        line += "\n";
-
-                    appendConsoleText(line.c_str());
-                }
-            }
-        }
-
-        int ret = ps.GetRetStatus();
-        consoleWidget->appendPlainText(QString("Command exited with code %1").arg(ret));
-
-        if (ret != 0)
-            QMessageBox::critical(NULL, "Error", "Failed to build installer!");
+        QString command = QString("cd %1 && %2/geninstall.sh %1 2>&1").arg(projectDir).arg(npath);
+        clearConsole();
+        return runInConsole(command);
     }
-    catch (Exceptions::CExIO &e)
+
+    return false;
+}
+
+void CExpertScreen::buildAndRun()
+{
+    if (build())
     {
-        QMessageBox::critical(NULL, "Error", QString("Failed to run command: %1").arg(e.what()));
+        // NOTE: We don't clean the console here so user is able
+        // to view from both building & running
+
+        // UNDONE: Change if outname can be specified
+        runInConsole(QString("%1/setup.sh").arg(projectDir), true);
     }
 }
 
