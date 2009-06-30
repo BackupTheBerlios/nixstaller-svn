@@ -27,11 +27,37 @@ local P = {}
 setmetatable(P, {__index = _G})
 setfenv(1, P)
 
+function install.gettempdir()
+    local path = gettmpinterndir("tmp")
+    if not os.fileexists(path) then
+        local stat, msg = os.mkdirrec(path)
+        if not stat then
+            error("Failed to create temporary file directory: " .. msg)
+        end
+    end
+    return path
+end
+
+function install.extrafilespath(file)
+    local path
+    if internal.fastrun then
+        path = internal.configdir .. "/files_extra"
+    else
+        path = gettmpinterndir("files_extra")
+    end
+    return (file and (path .. "/" .. file)) or path
+end
+
 function install.extract(luaout)
+    if internal.fastrun then
+        copyinstfiles(luaout)
+        return
+    end
+    
     local archives = { } -- Files to extract
     
     local function checkarch(a)
-        local path = string.format("%s/%s", curdir, a)
+        local path = string.format("%s/%s", internal.rundir, a)
         if os.fileexists(path) then
             table.insert(archives, path)
         end
@@ -71,7 +97,7 @@ function install.extract(luaout)
         elseif cfg.archivetype == "bzip2" then
             extrcmd = string.format("cat %s | bzip2 -d | tar xvf -", f)
         else
-            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar xvf -)", bindir, f)
+            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar xvf -)", internal.bindir, f)
         end
         
         local exec = (doasroot and install.executecmdasroot) or install.executecmd
@@ -90,7 +116,6 @@ function install.extract(luaout)
             end
         end, true)
     end
-    
 end
 
 function install.newdesktopentry(b, i, c)
@@ -130,11 +155,11 @@ end
 
 local function initlang()
     install.langinfo = { }
-    local hasutf8 = os.hasutf8()
+    local hasutf8 = internal.hasutf8()
     
     -- Read language configs
     for _, l in ipairs(cfg.languages) do
-        local conf = string.format("%s/lang/%s/config.lua", install.configdir, l)
+        local conf = string.format("%s/lang/%s/config.lua", internal.configdir, l)
         
         local lang
         if os.fileexists(conf) then
@@ -165,7 +190,7 @@ local function initlang()
             if v.locales then
                 for _, loc in ipairs(v.locales) do
                     if string.find(curlang, loc) then
-                        install.setlang(l)
+                        internal.setlang(l)
                         install.didautolang = true
                         break
                     end
@@ -178,11 +203,65 @@ local function initlang()
     end
     
     if not install.didautolang and cfg.defaultlang then
-        install.setlang(cfg.defaultlang)
+        internal.setlang(cfg.defaultlang)
     end
 end
 
-loadconfig(install.configdir)
+-- Used by fastrun mode as alternative to file extraction
+function copyinstfiles(luaout)
+    local filemap = { }
+    local totalsize = 0
+
+    local function getinstfiles(dir)
+        if not os.fileexists(dir) then
+            return
+        end
+        utils.recursivedir(dir, function (path, relpath)
+            filemap[relpath] = { }
+            filemap[relpath].size = os.filesize(path)
+            filemap[relpath].path = path
+            totalsize = totalsize + filemap[relpath].size
+        end)
+    end
+
+    getinstfiles(string.format("%s/files_all", internal.configdir))
+    getinstfiles(string.format("%s/files_%s_all", internal.configdir, os.osname))
+    getinstfiles(string.format("%s/files_all_%s", internal.configdir, os.arch))
+    getinstfiles(string.format("%s/files_%s_%s", internal.configdir,
+                 os.osname, os.arch))
+
+    local extractedsz = 0
+    for rp in pairs(filemap) do
+        local destdir
+        local isdir = os.isdir(filemap[rp].path)
+        if not isdir then
+            destdir = utils.dirname(rp)
+        else
+            destdir = rp
+        end
+
+        if destdir then
+            os.mkdirrec(rp)
+        end
+
+        extractedsz = extractedsz + filemap[rp].size
+
+        local stat, msg
+        if not isdir then -- only copy files as dir should already be created
+            stat, msg = os.copy(filemap[rp].path, rp)
+            if not stat then
+                install.print(string.format("WARNING: Failed to copy file '%s': %s\n", rp, msg))
+            end
+        end
+        
+        if stat and totalsize > 0 then
+            luaout("Extracting file (fast mode): " .. rp,
+                    extractedsz / totalsize * 100)
+        end
+    end
+end
+
+loadconfig(internal.configdir)
 initlang()
 
 install.destdir = os.getenv("HOME") or "/"

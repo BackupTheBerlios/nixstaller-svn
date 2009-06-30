@@ -50,10 +50,10 @@ function setproxy(tab, allowed)
     end})
 end
 
-setproxy(install, { "addscreen" })
+setproxy(internal, { "addscreen" })
 setproxy(_G, { "install", "gui", "OLDG" })
 
-loadconfig(install.configdir) -- UNDONE
+loadconfig(internal.configdir) -- UNDONE
 
 install.destdir = os.getenv("HOME") or "/"
 install.menuentries = { }

@@ -19,10 +19,10 @@ module (..., package.seeall)
 
 -- Check which file to use
 function checkfile()
-    filename = string.format("%s/config/lang/%s/license", curdir, install.getlang())
+    filename = string.format("%s/lang/%s/license", internal.configdir, install.getlang())
     
     if not os.fileexists(filename) then
-        filename = string.format("%s/config/license", curdir)
+        filename = string.format("%s/license", internal.configdir)
     end
     
     if not os.fileexists(filename) then

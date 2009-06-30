@@ -78,7 +78,7 @@ function install.executecmdasroot(cmd, out, req, path)
 end
         
 function install.askrootpw()
-    if os.geteuid() ~= 0 then
+    if internal.geteuid() ~= 0 then
         abort([[
 This installation requires root (administrator) privileges in order to continue.
 Please restart the installer with admin privileges.
@@ -118,9 +118,9 @@ if not utils.emptytable(cfg.unopts) and not utils.emptytable(args) then
 end
 
 -- License options
-local licensefname = string.format("%s/config/lang/%s/license", curdir, install.getlang())
+local licensefname = string.format("%s/lang/%s/license", internal.configdir, install.getlang())
 if not os.fileexists(licensefname) then
-    licensefname = string.format("%s/config/license", curdir)
+    licensefname = string.format("%s/license", internal.configdir)
 end
     
 local licensef = io.open(licensefname, "r")
@@ -159,8 +159,8 @@ if pkg.enable then
     checkunpkgman()
 end
 
-if os.fileexists(install.configdir .. "/run.lua") then
-    loadrun(install.configdir)
+if os.fileexists(internal.configdir .. "/run.lua") then
+    loadrun(internal.configdir)
     
     -- Need to do this here as loadrun resets install.destdir
     if haveunopt("destdir") then

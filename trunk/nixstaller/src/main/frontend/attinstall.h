@@ -39,7 +39,7 @@ private:
     CBaseScreen *m_pCurScreen;
     int m_iAskQuitLuaFunc;
     bool m_bGotGUI, m_bPreview;
-     
+
     bool GetSUPasswd(const char *msg, bool mandatory);
     void AddScreen(CBaseScreen *screen);
     void VerifyGUI(void);
@@ -57,6 +57,10 @@ private:
     virtual void LockScreen(bool cancel, bool prev, bool next) = 0;
     
 protected:
+    const char *GetLogoFName(void);
+    const char *GetAppIconFName(void);
+    const char *GetAboutFName(void);
+
     virtual void InitLua(void);
     virtual void CoreUpdateLanguage(void);
     virtual void CoreUpdate(void);

@@ -29,7 +29,7 @@ function pkg.needroot()
 end
 
 function pkg.setpermissions()
-    local prefix = curdir .. "/pkg/files"
+    local prefix = gettmpinterndir("pkg/files")
     local dirlist = { "." }
     while #dirlist > 0 do
         local dir = table.remove(dirlist) -- Pop
@@ -69,6 +69,17 @@ function pkg.updatepackager()
     end
 end
 
+function install.getpkgdir(file)
+    local path = gettmpinterndir("pkg/files")
+    if not os.fileexists(path) then
+        local stat, msg = os.mkdirrec(path)
+        if not stat then
+            error("Failed to create temporary package directory: " .. msg)
+        end
+    end
+    return (file and (path .. "/" .. file)) or path
+end
+
 function install.generatepkg()
     if not pkg.enable then
         error("Called generatepkg when pkg.enable is false.")
@@ -103,7 +114,7 @@ function install.generatepkg()
     end
     
     local success, msg = pcall(function ()
-        local dir = curdir .. "/pkg"
+        local dir = gettmpinterndir("pkg")
         
         check(os.mkdirrec(dir .. "/bins"))
         if pkg.bins then

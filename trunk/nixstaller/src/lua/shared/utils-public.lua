@@ -35,7 +35,7 @@ function utils.opendoc(f)
     if os.execute("xdg-open --version >/dev/null 2>&1") == 0 then
         bin = "xdg-open"
     else
-        bin = string.format("%s/xdg-utils/xdg-open", curdir)
+        bin = getxdgutilsdir("xdg-open")
     end
     
     os.execute(string.format("%s %s >/dev/null 2>&1", bin, f))

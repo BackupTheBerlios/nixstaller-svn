@@ -24,17 +24,17 @@ pkg = { }
 
 package.path = ""
 for _, p in ipairs{ ".", "screens", "pkg" } do
-    package.path = string.format("%s;%s/%s/?.lua", package.path, luasrcdir, p)
+    package.path = string.format("%s;%s/%s/?.lua", package.path, internal.luasrcdir, p)
 end
 
 package.cpath = ""
 
 function loadlua(f)
-    return dofile(luasrcdir .. "/" .. f)
+    return dofile(internal.luasrcdir .. "/" .. f)
 end
 
 function loadluash(f)
-    return dofile(luasrcshdir .. "/" .. f)
+    return dofile(internal.luasrcshdir .. "/" .. f)
 end
 
 -- Functions for easy way to enable common options

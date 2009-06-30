@@ -85,3 +85,21 @@ runluascript()
     echo "Could not find a suitable binary for this platform ($CURRENT_ARCH, $CURRENT_OS)"
     exit 1
 }
+
+startfastinst()
+{
+    # UNDONE: Make frontend optional
+    NDIR="$1"
+    BIN=`getluabin "$1"`
+    PRDIR="$2"
+    shift 2
+
+    if [ ! -z "$BIN" ]; then
+        # UNDONE
+        "$BIN" -c "$PRDIR" -l "$NDIR/src/lua" --ls "$NDIR/../shared/lua" --fastrun -n "$NDIR" || exit 1
+        exit 0
+    fi
+    
+    echo "Could not find a suitable binary for this platform ($CURRENT_ARCH, $CURRENT_OS)"
+    exit 1
+}

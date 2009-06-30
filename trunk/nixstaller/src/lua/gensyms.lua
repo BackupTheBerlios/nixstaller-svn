@@ -154,7 +154,7 @@ for i, f in ipairs(binaries) do
         abort(string.format("Could not locate file: %s", f))
     end
     
-    local elf, msg = os.openelf(f)
+    local elf, msg = internal.openelf(f)
     if not elf then
         abort(string.format("Could not open file: %s (%s)", f, msg))
     end

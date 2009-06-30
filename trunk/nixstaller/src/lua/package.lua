@@ -76,7 +76,7 @@ end
 function copyxdgutils(dir)
     dir = dir .. "/xdg-utils"
     os.mkdirrec(dir)
-    os.copy(curdir .. "/xdg-utils/xdg-desktop-menu", dir)
+    os.copy(getxdgutilsdir("xdg-desktop-menu"), dir)
 end
 
 function copydeskfiles(deskdir)
@@ -130,8 +130,8 @@ pkg.canregister = pkg.packager ~= generic -- Used by package toggle screen
 loadlua("package-public.lua")
 loadlua("shared/package-public.lua")
 
-if os.fileexists(install.configdir .. "/package.lua") then
-    loadpackagecfg(install.configdir)
+if os.fileexists(internal.configdir .. "/package.lua") then
+    loadpackagecfg(internal.configdir)
 end
 
 loadlua("deps.lua")

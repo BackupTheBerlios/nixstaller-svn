@@ -27,22 +27,24 @@ class CPseudoTerminal;
 class CBaseInstall: public CMain
 {
     std::string m_CurLang, m_ConfigDir;
+    std::string m_NixstDir; // For fastrun
+    bool m_bFastRun;
     long m_lUpdateTimer;
 
     void ReadLang(void);
 
 protected:
     void ParseTerminal(CPseudoTerminal &term, int luaout);
-    const char *GetLogoFName(void);
-    const char *GetAppIconFName(void);
-    const char *GetAboutFName(void);
+    const std::string &GetConfigDir(void) const { return m_ConfigDir; }
+    const std::string &GetNixstDir(void) const { return m_NixstDir; }
+    bool FastRun(void) const { return m_bFastRun; }
 
     virtual void CoreUpdateLanguage(void) = 0;
     virtual void InitLua(void);
     virtual void CoreUpdate(void) { } // Called during installation, lua execution etc
     
 public:
-    CBaseInstall(void) : m_lUpdateTimer(0) { }
+    CBaseInstall(void) : m_bFastRun(false), m_lUpdateTimer(0) { }
     virtual ~CBaseInstall(void);
     
     void UpdateLanguage(void) { ReadLang(); CoreUpdateLanguage(); };
@@ -55,10 +57,7 @@ public:
     static int LuaGetLang(lua_State *L);
     static int LuaSetLang(lua_State *L);
     static int LuaExecuteCMD(lua_State *L);
-    static int LuaGetTempDir(lua_State *L);
-    static int LuaGetPkgDir(lua_State *L);
     static int LuaGetMacAppPath(lua_State *L);
-    static int LuaExtraFilesPath(lua_State *L);
     static int LuaInitDownload(lua_State *L);
     static int LuaProcessDownload(lua_State *L);
     static int LuaCloseDownload(lua_State *L);

@@ -82,7 +82,7 @@ function genxdgscript(dest)
 end
 
 function verifylock()
-    local locked = (OLDG.install.executeasroot(string.format("%s/lock /var/lib/dpkg/lock", bindir)) == 0)
+    local locked = (OLDG.install.executeasroot(string.format("%s/lock /var/lib/dpkg/lock", internal.bindir)) == 0)
     
     if locked then
         return false, [[
@@ -94,7 +94,7 @@ Please close all applications that may use this database (eg. Synaptic).]]
 end
 
 function create(src)
-    local debdir = curdir .. "/deb"
+    local debdir = gettmpinterndir("deb")
     debbin = string.format("%s/%s", debdir, pkg.bindir)
     instfiles = string.format("%s/%s", debdir, pkg.getdatadir())
 
@@ -130,7 +130,7 @@ Description: %s
     checkcmd(OLDG.install.executeasroot, string.format("chown -R root %s/ %s", debbin, instfiles))
 
     -- Create the package (use low compression level for extra speed)
-    checkcmd(OLDG.install.executeasroot, string.format("dpkg-deb -z1 -b %s/ %s/pkg.deb", debdir, curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("dpkg-deb -z1 -b %s/ %s", debdir, gettmpinterndir("pkg.deb")))
     
     -- Move install files back
     checkcmd(OLDG.install.executeasroot, string.format("chown -R %s %s/ %s", os.getenv("USER"), debbin, instfiles))
@@ -139,7 +139,7 @@ Description: %s
 end
 
 function install(src)
-    checkcmd(OLDG.install.executeasroot, string.format("dpkg -i %s/pkg.deb", curdir))
+    checkcmd(OLDG.install.executeasroot, string.format("dpkg -i %s", gettmpinterndir("pkg.deb")))
 end
 
 function rollback(src)

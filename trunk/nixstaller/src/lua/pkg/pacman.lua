@@ -79,7 +79,7 @@ function verifylock()
 end
 
 function create(src)
-    local pkgdir = curdir .. "/pac"
+    local pkgdir = gettmpinterndir("pac")
     pkgbindir = string.format("%s/%s", pkgdir, pkg.bindir)
     instfiles = string.format("%s/%s", pkgdir, pkg.getdatadir())
 
@@ -113,7 +113,7 @@ arch = %s
     pkginfo:close() -- important, otherwise data may still be buffered and not in the file
     
     -- Create the package
-    checkcmd(OLDG.install.execute, string.format("cd %s && tar czf %s/%s --owner=root --group=root * .FILELIST .PKGINFO", pkgdir, curdir, pkgname()))
+    checkcmd(OLDG.install.execute, string.format("cd %s && tar czf %s --owner=root --group=root * .FILELIST .PKGINFO", pkgdir, gettmpinterndir(pkgname())))
     
     -- Move install files back
     checkmvrec(instfiles, src .. "/files")
@@ -121,7 +121,7 @@ arch = %s
 end
 
 function install(src)
-    checkcmd(OLDG.install.executeasroot, string.format("pacman --force --upgrade %s/%s", curdir, pkgname()))
+    checkcmd(OLDG.install.executeasroot, string.format("pacman --force --upgrade %s", gettmpinterndir(pkgname())))
 end
 
 function rollback(src)

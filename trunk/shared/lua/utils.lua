@@ -16,7 +16,7 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 function maplibs(bin, extrapath)
-    local elf = os.openelf(bin)
+    local elf = internal.openelf(bin)
     
     if not elf then
         return
@@ -40,7 +40,7 @@ function maplibs(bin, extrapath)
 
     local function validlib(lib)
         -- Must match machine (CPU arch) and bitness
-        local e = os.openelf(lib)
+        local e = internal.openelf(lib)
         if not e then
             return false
         end
@@ -68,7 +68,7 @@ function maplibs(bin, extrapath)
         if rpath and #rpath > 0 then
             local bdir = utils.dirname(bin)
             if utils.emptystring(bdir) then
-                bdir = curdir
+                bdir = internal.rundir
             end
             
             for p in string.gmatch(rpath, "[^\:]+") do
@@ -134,7 +134,7 @@ function maplibs(bin, extrapath)
 end
 
 function getsyms(bin)
-    local elf = os.openelf(bin)
+    local elf = internal.openelf(bin)
     
     if not elf then
         return

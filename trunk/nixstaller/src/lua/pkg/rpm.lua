@@ -51,7 +51,7 @@ function canxdg()
 end
 
 function verifylock()
-    local locked = (OLDG.install.executeasroot(string.format("%s/lock /var/lib/rpm/Packages", bindir)) == 0)
+    local locked = (OLDG.install.executeasroot(string.format("%s/lock /var/lib/rpm/Packages", internal.bindir)) == 0)
     
     if locked then
         return false, [[

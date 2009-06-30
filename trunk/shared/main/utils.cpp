@@ -254,8 +254,15 @@ char *StrDup(const char *str)
 
 void MakeAbsolute(std::string &dir)
 {
+    std::string current = GetCWD();
+    
     if (dir[0] != '/')
-        dir = GetCWD() + "/" + dir;
+        dir = current + "/" + dir;
+    
+    // HACK: 'Normalize' path (eg. no dots)
+    CHDir(dir);
+    dir = GetCWD();
+    CHDir(current);
 }
 
 std::string GetCWD()

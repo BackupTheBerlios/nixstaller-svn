@@ -33,7 +33,7 @@ function dir:verify()
     -- Following function will check the destination directory:
     -- 1) If the directory exists, make sure it can be read and warn the user if it's not writable and needs root access.
     -- 2) If the directory does not exist, ask the user if it should be created.
-    return install.verifydestdir()
+    return internal.verifydestdir()
 end
 
 return screen

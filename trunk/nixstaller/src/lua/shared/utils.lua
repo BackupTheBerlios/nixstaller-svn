@@ -17,6 +17,44 @@
 
 -- Util functions used by various scripts
 
+function gettmpinterndir(file)
+    -- Note that this directory should be removed manually.
+    -- From normal installation mode this is done automatically
+    -- by makeself. For 'fastrun' install mode this is done via
+    -- the caller script.
+    local path
+    if internal.fastrun then
+        path = internal.configdir .. "/tmp"
+    else
+        path = internal.rundir
+    end
+
+    if not os.fileexists(path) then
+        os.mkdir(path)
+    end
+
+    if file then
+        return path .. "/" .. file
+    else
+        return path
+    end
+end
+
+function getxdgutilsdir(file)
+    local path
+    if internal.fastrun then
+        path = internal.nixstdir .. "/src/xdg-utils"
+    else
+        path = internal.rundir .. "/xdg-utils"
+    end
+
+    if file then
+        return path .. "/" .. file
+    else
+        return path
+    end
+end
+
 function pkgsize(src)
     local ret = 0
     utils.recursivedir(src, function (f)
@@ -56,7 +94,7 @@ function xdgmenudirs(global)
 end
 
 function xdgentryfname(f)
-    return string.format("%s/%s.desktop", curdir, f)
+    return gettmpinterndir(f .. ".desktop")
 end
 
 function instxdgentries(global, fname)
@@ -64,7 +102,7 @@ function instxdgentries(global, fname)
     if os.execute("(xdg-desktop-menu --version) >/dev/null 2>&1") == 0 then
         xdgbin = "xdg-desktop-menu"
     else
-        xdgbin = string.format("%s/xdg-utils/xdg-desktop-menu", curdir)
+        xdgbin = getxdgutilsdir("xdg-desktop-menu")
     end
     
     local cmd = (global and install.executeasroot) or install.execute

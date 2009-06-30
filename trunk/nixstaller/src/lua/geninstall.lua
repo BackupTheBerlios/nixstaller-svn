@@ -327,7 +327,7 @@ function Init()
     end
     
     if (not string.find(confdir, "^/")) then
-        confdir = curdir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
+        confdir = internal.rundir .. "/" .. confdir -- Append current dir if confdir isn't an absolute path
     end
     
     loadconfig(confdir)
@@ -431,34 +431,34 @@ function PrepareArchive()
     os.mkdir(adsh)
     os.mkdir(adscr)
     os.mkdir(adpkg)
-    RequiredCopy(luasrcshdir .. "/main.lua", adshm)
-    RequiredCopy(luasrcshdir .. "/utils.lua", adshm)
-    RequiredCopy(luasrcshdir .. "/utils-public.lua", adshm)
-    RequiredCopy(luasrcdir .. "/deps.lua", archdir)
-    RequiredCopy(luasrcdir .. "/deps-public.lua", archdir)
-    RequiredCopy(luasrcdir .. "/install.lua", archdir)
-    RequiredCopy(luasrcdir .. "/attinstall.lua", archdir)
-    RequiredCopy(luasrcdir .. "/unattinstall.lua", archdir)
-    RequiredCopy(luasrcdir .. "/package.lua", archdir)
-    RequiredCopy(luasrcdir .. "/package-public.lua", archdir)
-    RequiredCopy(luasrcdir .. "/pkg/dpkg.lua", adpkg)
-    RequiredCopy(luasrcdir .. "/pkg/generic.lua", adpkg)
-    RequiredCopy(luasrcdir .. "/pkg/groups.lua", adpkg)
-    RequiredCopy(luasrcdir .. "/pkg/pacman.lua", adpkg)
-    RequiredCopy(luasrcdir .. "/pkg/rpm.lua", adpkg)
-    RequiredCopy(luasrcdir .. "/pkg/slack.lua", adpkg)
-    RequiredCopy(luasrcdir .. "/shared/package-public.lua", adsh)
-    RequiredCopy(luasrcdir .. "/shared/utils.lua", adsh)
-    RequiredCopy(luasrcdir .. "/shared/utils-public.lua", adsh)
-    RequiredCopy(luasrcdir .. "/screens/finishscreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/installscreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/langscreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/licensescreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/packagedirscreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/packagetogglescreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/selectdirscreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/summaryscreen.lua", adscr)
-    RequiredCopy(luasrcdir .. "/screens/welcomescreen.lua", adscr)
+    RequiredCopy(internal.luasrcshdir .. "/main.lua", adshm)
+    RequiredCopy(internal.luasrcshdir .. "/utils.lua", adshm)
+    RequiredCopy(internal.luasrcshdir .. "/utils-public.lua", adshm)
+    RequiredCopy(internal.luasrcdir .. "/deps.lua", archdir)
+    RequiredCopy(internal.luasrcdir .. "/deps-public.lua", archdir)
+    RequiredCopy(internal.luasrcdir .. "/install.lua", archdir)
+    RequiredCopy(internal.luasrcdir .. "/attinstall.lua", archdir)
+    RequiredCopy(internal.luasrcdir .. "/unattinstall.lua", archdir)
+    RequiredCopy(internal.luasrcdir .. "/package.lua", archdir)
+    RequiredCopy(internal.luasrcdir .. "/package-public.lua", archdir)
+    RequiredCopy(internal.luasrcdir .. "/pkg/dpkg.lua", adpkg)
+    RequiredCopy(internal.luasrcdir .. "/pkg/generic.lua", adpkg)
+    RequiredCopy(internal.luasrcdir .. "/pkg/groups.lua", adpkg)
+    RequiredCopy(internal.luasrcdir .. "/pkg/pacman.lua", adpkg)
+    RequiredCopy(internal.luasrcdir .. "/pkg/rpm.lua", adpkg)
+    RequiredCopy(internal.luasrcdir .. "/pkg/slack.lua", adpkg)
+    RequiredCopy(internal.luasrcdir .. "/shared/package-public.lua", adsh)
+    RequiredCopy(internal.luasrcdir .. "/shared/utils.lua", adsh)
+    RequiredCopy(internal.luasrcdir .. "/shared/utils-public.lua", adsh)
+    RequiredCopy(internal.luasrcdir .. "/screens/finishscreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/installscreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/langscreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/licensescreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/packagedirscreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/packagetogglescreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/selectdirscreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/summaryscreen.lua", adscr)
+    RequiredCopy(internal.luasrcdir .. "/screens/welcomescreen.lua", adscr)
     
     -- XDG utils
     os.mkdir(archdir .. "/xdg-utils")
@@ -701,7 +701,7 @@ end
 function CreateInstaller()
     print("Generating installer...")
     if (not string.find(outname, "^/")) then
-        outname = curdir .. "/" .. outname
+        outname = internal.rundir .. "/" .. outname
     end
     
     -- Add nixstaller specific options

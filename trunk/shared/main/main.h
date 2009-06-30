@@ -47,10 +47,10 @@ extern "C" int vasprintf (char **result, const char *format, va_list args);
 class CMain
 {
     static int m_iLuaDirIterCount;
-    std::string m_OS, m_CPUArch, m_OwnDir, m_LuaDir, m_LuaDirShared;
+    std::string m_OS, m_CPUArch, m_RunDir, m_LuaDir, m_LuaDirShared;
 
 protected:
-    const std::string &GetOwnDir(void) const { return m_OwnDir; }
+    const std::string &GetRunDir(void) const { return m_RunDir; }
     
     virtual void InitLua(void);
 

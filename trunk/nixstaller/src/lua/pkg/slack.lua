@@ -100,7 +100,7 @@ function verifylock()
 end
 
 function create(src)
-    local pkgdir = curdir .. "/slack"
+    local pkgdir = gettmpinterndir("slack")
     pkgbindir = string.format("%s/%s", pkgdir, pkg.bindir)
     instfiles = string.format("%s/%s", pkgdir, pkg.getdatadir())
 
@@ -119,7 +119,7 @@ function create(src)
     copydeskfiles(pkgdir)
 
     -- Create the package
-    checkcmd(OLDG.install.execute, string.format("cd %s && /sbin/makepkg -l y -c n %s/%s", pkgdir, curdir, pkgname()))
+    checkcmd(OLDG.install.execute, string.format("cd %s && /sbin/makepkg -l y -c n %s", pkgdir, gettmpinterndir(pkgname())))
     
     -- Move install files back
     checkmvrec(instfiles, src .. "/files")
@@ -127,7 +127,7 @@ function create(src)
 end
 
 function install(src)
-    checkcmd(OLDG.install.executeasroot, string.format("/sbin/upgradepkg --reinstall --install-new %s/%s", curdir, pkgname()))
+    checkcmd(OLDG.install.executeasroot, string.format("/sbin/upgradepkg --reinstall --install-new %s", gettmpinterndir(pkgname())))
 end
 
 function rollback(src)

@@ -49,24 +49,24 @@ OLDG.SummaryScreen = require "summaryscreen"
 OLDG.FinishScreen = require "finishscreen"
 OLDG.install.screenlist = { WelcomeScreen, LicenseScreen, SelectDirScreen, InstallScreen, FinishScreen }
 
-if os.fileexists(install.configdir .. "/run.lua") then
-    loadrun(install.configdir)
+if os.fileexists(internal.configdir .. "/run.lua") then
+    loadrun(internal.configdir)
     if Init then
         Init()
     end
 end
 
 -- Add any screens
-install.addscreen(LangScreen)
+internal.addscreen(LangScreen)
 
 if (install.screenlist ~= nil and #install.screenlist > 0) then
     for _, s in ipairs(install.screenlist) do
-        install.addscreen(s)
+        internal.addscreen(s)
     end
 else
-    install.addscreen(WelcomeScreen)
-    install.addscreen(LicenseScreen)
-    install.addscreen(SelectDirScreen)
-    install.addscreen(InstallScreen)
-    install.addscreen(FinishScreen)
+    internal.addscreen(WelcomeScreen)
+    internal.addscreen(LicenseScreen)
+    internal.addscreen(SelectDirScreen)
+    internal.addscreen(InstallScreen)
+    internal.addscreen(FinishScreen)
 end

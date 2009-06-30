@@ -103,6 +103,7 @@ void CBaseAttInstall::Init(int argc, char **argv)
 {
     for (int a=1; a<argc; a++)
     {
+        // UNDONE: Remove?
         if (!strcmp(argv[a], "preview"))
         {
             m_bPreview = true;
@@ -144,6 +145,61 @@ std::string CBaseAttInstall::GetDestDir(void)
     return ret;
 }
 
+const char *CBaseAttInstall::GetLogoFName()
+{
+    std::string ret = "installer.png"; // Default
+    bool custom = NLua::LuaGet(ret, "logo", "cfg");
+
+    if (FastRun())
+    {
+        if (custom)
+        {
+            // Backwards compatible: might be in main project directory too
+            const char *path = CreateText("%s/%s", GetConfigDir().c_str(), ret.c_str());
+            if (FileExists(path))
+                return path;
+
+            path = CreateText("%s/files_extra/%s", GetConfigDir().c_str(), ret.c_str());
+            if (FileExists(path))
+                return path;
+        }
+
+        // Default location
+        return CreateText("%s/src/img/%s", GetNixstDir().c_str(), ret.c_str());
+    }
+    else
+        return CreateText("%s/%s", GetRunDir().c_str(), ret.c_str());
+}
+
+const char *CBaseAttInstall::GetAppIconFName()
+{
+    std::string ret = "appicon.xpm"; // Default
+    bool custom = NLua::LuaGet(ret, "appicon", "cfg");
+
+    if (FastRun())
+    {
+        if (custom)
+        {
+            const char *path = CreateText("%s/files_extra/%s", GetConfigDir().c_str(), ret.c_str());
+            if (FileExists(path))
+                return path;
+        }
+
+        // Default location
+        return CreateText("%s/src/img/%s", GetNixstDir().c_str(), ret.c_str());
+    }
+    else
+        return CreateText("%s/%s", GetRunDir().c_str(), ret.c_str());
+}
+
+const char *CBaseAttInstall::GetAboutFName()
+{
+    if (FastRun())
+        return CreateText("%s/src/internal/about", GetNixstDir().c_str());
+    else
+        return CreateText("%s/about", GetRunDir().c_str());
+}
+
 void CBaseAttInstall::InitLua()
 {
     CBaseInstall::InitLua();
@@ -163,20 +219,21 @@ void CBaseAttInstall::InitLua()
     CBaseLuaLabel::LuaRegister();
 
     NLua::RegisterFunction(LuaNewScreen, "newscreen", "install", this);
-    NLua::RegisterFunction(LuaAddScreen, "addscreen", "install", this);
     NLua::RegisterFunction(LuaExecuteCMDAsRoot, "executecmdasroot", "install", this);
     NLua::RegisterFunction(LuaAskRootPW, "askrootpw", "install", this);
     NLua::RegisterFunction(LuaLockScreen, "lockscreen", "install", this);
-    NLua::RegisterFunction(LuaVerifyDestDir, "verifydestdir", "install", this);
     NLua::RegisterFunction(LuaSetAskQuit, "setaskquit", "install", this);
-    NLua::RegisterFunction(LuaShowDepScreen, "showdepscreen", "install", this);
     
     NLua::RegisterFunction(LuaMSGBox, "msgbox", "gui", this);
     NLua::RegisterFunction(LuaYesNoBox, "yesnobox", "gui", this);
     NLua::RegisterFunction(LuaChoiceBox, "choicebox", "gui", this);
     NLua::RegisterFunction(LuaWarnBox, "warnbox", "gui", this);
     NLua::RegisterFunction(LuaTextWidth, "textwidth", "gui", this);
-    NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "gui", this);
+
+    NLua::RegisterFunction(LuaAddScreen, "addscreen", "internal", this);
+    NLua::RegisterFunction(LuaVerifyDestDir, "verifydestdir", "internal", this);
+    NLua::RegisterFunction(LuaShowDepScreen, "showdepscreen", "internal", this);
+    NLua::RegisterFunction(LuaNewProgressDialog, "newprogressdialog", "internal", this);
 
     if (m_bPreview)
         RunLua("preview.lua");

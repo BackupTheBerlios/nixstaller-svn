@@ -16,7 +16,7 @@
 --     St, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-local lsymstat, loadedsyms = pcall(dofile, install.configdir .. "/symmap.lua")
+local lsymstat, loadedsyms = pcall(dofile, internal.configdir .. "/symmap.lua")
 
 depclass = { }
 depclass.__index = depclass
@@ -104,7 +104,7 @@ function setstatus(s)
 end
 
 function getsymverneeds(bin)
-    local elf = os.openelf(bin)
+    local elf = internal.openelf(bin)
     
     if not elf then
         return
@@ -128,7 +128,7 @@ function getsymverneeds(bin)
 end
 
 function getsymverdefs(bin)
-    local elf = os.openelf(bin)
+    local elf = internal.openelf(bin)
     
     if not elf then
         return
@@ -247,7 +247,7 @@ function initdep(d)
     
     enablesecbar(true)
     
-    local src = string.format("%s/deps/%s", curdir, d.name)
+    local src = string.format("%s/deps/%s", internal.rundir, d.name)
     local dest = string.format("%s/files", src)
     os.mkdirrec(dest)
     
@@ -271,7 +271,7 @@ function initdep(d)
                     cfg.unopts["dlretries"].internal) or 3
                 
                 while true do
-                    local download, msg = install.initdownload(string.format("%s/%s", d.baseurl, f), path)
+                    local download, msg = internal.initdownload(string.format("%s/%s", d.baseurl, f), path)
                     
                     if download then
                         function download:updateprogress(t, d)
@@ -374,7 +374,7 @@ function initdep(d)
         elseif cfg.archivetype == "bzip2" then
             extrcmd = string.format("cat %s | bzip2 -d | tar -xvf - 2>&1", f)
         else
-            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -xvf -) 2>&1", bindir, f)
+            extrcmd = string.format("(%s/lzma-decode %s - 2>/dev/null | tar -xvf -) 2>&1", internal.bindir, f)
         end
         
         local olddir = os.getcwd()
@@ -928,7 +928,7 @@ function verifydeps(bins, libs)
         local deps = checkdeps(bins, libs, install.getpkgdir())
         instdeps(deps, self)
     else
-        gui.newprogressdialog(function(self)
+        internal.newprogressdialog(function(self)
             depprocess.notifier = self
             local deps = checkdeps(bins, libs, install.getpkgdir())
             instdeps(deps, self)

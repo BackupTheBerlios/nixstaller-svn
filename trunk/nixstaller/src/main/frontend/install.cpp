@@ -63,7 +63,7 @@ void CBaseInstall::ReadLang()
 {
     FreeTranslations();
     
-    std::ifstream file(CreateText("%s/config/lang/%s/strings", GetOwnDir().c_str(), m_CurLang.c_str()));
+    std::ifstream file(CreateText("%s/lang/%s/strings", GetConfigDir().c_str(), m_CurLang.c_str()));
 
     if (!file)
     {
@@ -122,42 +122,23 @@ void CBaseInstall::ParseTerminal(CPseudoTerminal &term, int luaout)
     }
 }
 
-const char *CBaseInstall::GetLogoFName()
-{
-    std::string ret = "installer.png"; // Default
-    NLua::LuaGet(ret, "logo", "cfg");
-    return CreateText("%s/%s", GetOwnDir().c_str(), ret.c_str());
-}
-
-const char *CBaseInstall::GetAppIconFName()
-{
-    std::string ret = "appicon.xpm"; // Default
-    NLua::LuaGet(ret, "appicon", "cfg");
-    return CreateText("%s/%s", GetOwnDir().c_str(), ret.c_str());
-}
-
-const char *CBaseInstall::GetAboutFName()
-{
-    return CreateText("%s/about", GetOwnDir().c_str());
-}
-
 void CBaseInstall::InitLua()
 {
     CMain::InitLua();
 
-    NLua::LuaSet(m_ConfigDir, "configdir", "install");
+    NLua::LuaSet(m_ConfigDir, "configdir", "internal");
+    NLua::LuaSet(m_NixstDir, "nixstdir", "internal");
+    NLua::LuaSet(m_bFastRun, "fastrun", "internal");
     
     NLua::RegisterFunction(LuaTr, "tr");
     
     NLua::RegisterFunction(LuaUpdate, "update", "install", this);
     NLua::RegisterFunction(LuaGetLang, "getlang", "install", this);
-    NLua::RegisterFunction(LuaSetLang, "setlang", "install", this);
     NLua::RegisterFunction(LuaExecuteCMD, "executecmd", "install", this);
-    NLua::RegisterFunction(LuaGetTempDir, "gettempdir", "install", this);
-    NLua::RegisterFunction(LuaGetPkgDir, "getpkgdir", "install", this);
     NLua::RegisterFunction(LuaGetMacAppPath, "getmacapppath", "install", this);
-    NLua::RegisterFunction(LuaExtraFilesPath, "extrafilespath", "install", this);
-    NLua::RegisterFunction(LuaInitDownload, "initdownload", "install");
+
+    NLua::RegisterFunction(LuaSetLang, "setlang", "internal", this);
+    NLua::RegisterFunction(LuaInitDownload, "initdownload", "internal");
 
     NLua::RegisterClassFunction(LuaProcessDownload, "process", "downloadclass");
     NLua::RegisterClassFunction(LuaCloseDownload, "close", "downloadclass");
@@ -176,7 +157,7 @@ void CBaseInstall::Update()
 
 void CBaseInstall::Init(int argc, char **argv)
 {
-    NLua::LuaSet(DirName(argv[0]), "bindir");
+    NLua::LuaSet(DirName(argv[0]), "bindir", "internal");
 
     for (int a=1; a<argc; a++)
     {
@@ -184,15 +165,34 @@ void CBaseInstall::Init(int argc, char **argv)
         {
             a++;
             if (a < argc)
+            {
                 m_ConfigDir = argv[a];
+                MakeAbsolute(m_ConfigDir);
+            }
             else
                 throw Exceptions::CExUsage("Too less args for -c option");
         }
+        else if (!strcmp(argv[a], "--fastrun"))
+            m_bFastRun = true;
+        else if (!strcmp(argv[a], "-n"))
+        {
+            a++;
+            if (a < argc)
+            {
+                m_NixstDir = argv[a];
+                MakeAbsolute(m_NixstDir);
+            }
+            else
+                throw Exceptions::CExUsage("Too less args for -n option");
+        }
+
     }
 
     if (m_ConfigDir.empty())
         throw Exceptions::CExUsage("No -c option given");
-    
+    else if (m_bFastRun && m_NixstDir.empty())
+        throw Exceptions::CExUsage("No -n option given");
+
     CMain::Init(argc, argv);
     UpdateLanguage();
 }
@@ -278,31 +278,6 @@ int CBaseInstall::LuaExecuteCMD(lua_State *L)
     return 1;
 }
 
-int CBaseInstall::LuaGetTempDir(lua_State *L)
-{
-    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
-    const char *ret = CreateText("%s/tmp", installer->GetOwnDir().c_str());
-    
-    if (!FileExists(ret))
-        MKDir(ret, (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH));
-    
-    lua_pushstring(L, ret);
-    return 1;
-}
-
-int CBaseInstall::LuaGetPkgDir(lua_State *L)
-{
-    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
-    const char *ret = CreateText("%s/pkg/files", installer->GetOwnDir().c_str());
-    
-    if (!FileExists(ret))
-        MKDirRec(ret);
-    
-    const char *file = luaL_optstring(L, 1, "");
-    lua_pushfstring(L, "%s/%s", ret, file);
-    return 1;
-}
-
 int CBaseInstall::LuaGetMacAppPath(lua_State *L)
 {
 #if defined(__APPLE__)
@@ -335,14 +310,6 @@ int CBaseInstall::LuaGetMacAppPath(lua_State *L)
     lua_pushstring(L,"GetMacAppPath can only be run on Mac OS X");
 #endif
     return 2;
-}
-
-int CBaseInstall::LuaExtraFilesPath(lua_State *L)
-{
-    CBaseInstall *installer = NLua::GetFromClosure<CBaseInstall *>();
-    const char *file = luaL_optstring(L, 1, "");
-    lua_pushfstring(L, "%s/files_extra/%s", installer->GetOwnDir().c_str(), file);
-    return 1;
 }
 
 int CBaseInstall::LuaInitDownload(lua_State *L)

@@ -30,6 +30,14 @@ OVERALL
 - Test new Lua file size code
 - Update lzma
 - Update/merge makeself.sh and makeself-header.sh
+- fastrun:
+    - terminfo
+    - start file
+    - deps
+    - remove temp dir
+    - relative paths, paths with dots, etc
+- Check for XDG updates
+- See if more code needs to be moved to internal (atleast pkg.updatepackager())
 
 
 PACKAGING

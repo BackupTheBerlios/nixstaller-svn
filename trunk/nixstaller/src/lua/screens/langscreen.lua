@@ -29,7 +29,7 @@ function menu:verify()
     local choice = menu:get()
     for l, v in pairs(install.langinfo) do
         if v.name == choice then
-            install.setlang(l)
+            internal.setlang(l)
             break
         end
     end

@@ -54,7 +54,7 @@ void CMain::Init(int argc, char **argv)
     else if (m_CPUArch == "amd64")
         m_CPUArch = "x86_64";
 
-    m_OwnDir = GetCWD();
+    m_RunDir = GetCWD();
 
     for (int a=1; a<argc; a++)
     {
@@ -91,9 +91,10 @@ void CMain::InitLua()
     // Register some globals for lua
     NLua::LuaSet(m_OS, "osname", "os");
     NLua::LuaSet(m_CPUArch, "arch", "os");
-    NLua::LuaSet(m_OwnDir, "curdir");
-    NLua::LuaSet(m_LuaDir, "luasrcdir");
-    NLua::LuaSet(m_LuaDirShared, "luasrcshdir");
+    
+    NLua::LuaSet(m_RunDir, "rundir", "internal");
+    NLua::LuaSet(m_LuaDir, "luasrcdir", "internal");
+    NLua::LuaSet(m_LuaDirShared, "luasrcshdir", "internal");
     
     NLua::RegisterFunction(LuaInitDirIter, "dir", "io");
     NLua::RegisterFunction(LuaMD5, "md5", "io");
@@ -113,9 +114,10 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaSetEnv, "setenv", "os", this);
     NLua::RegisterFunction(LuaExit, "exit", "os"); // Override
     NLua::RegisterFunction(LuaExitStatus, "exitstatus", "os");
-    NLua::RegisterFunction(LuaOpenElf, "openelf", "os");
-    NLua::RegisterFunction(LuaGetEUID, "geteuid", "os");
-    NLua::RegisterFunction(LuaHasUTF8, "hasutf8", "os");
+    
+    NLua::RegisterFunction(LuaOpenElf, "openelf", "internal");
+    NLua::RegisterFunction(LuaGetEUID, "geteuid", "internal");
+    NLua::RegisterFunction(LuaHasUTF8, "hasutf8", "internal");
 
     NLua::RegisterFunction(LuaAbort, "abort");
     

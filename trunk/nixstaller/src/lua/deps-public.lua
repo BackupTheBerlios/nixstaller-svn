@@ -61,7 +61,7 @@ function pkg.verifydeps(bins, libs)
                 end
             end
         else
-            install.showdepscreen(function () return verifydeps(bins, libs) end)
+            internal.showdepscreen(function () return verifydeps(bins, libs) end)
         end
     end)
     
@@ -82,7 +82,7 @@ end
 function pkg.getdepdir(dep, file)
     for n, d in pairs(pkg.depmap) do
         if d == dep then
-            return string.format("%s/deps/%s/files/%s", curdir, n, (file or ""))
+            return gettmpinterndir(string.format("deps/%s/files/%s", n, (file or "")))
         end
     end
 end
