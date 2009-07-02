@@ -154,13 +154,17 @@ void CLuaRunner::Init(int argc, char **argv)
             {
                 a++;
                 if (a < argc)
-                    NLua::LuaSet(argv[a], "ndir");
+                {
+                    std::string d = argv[a];
+                    MakeAbsolute(d);
+                    NLua::LuaSet(d, "nixstdir", "internal");
+                }
             }
             else if (!strcmp(argv[a], "-c"))
             {
                 a++;
                 if (a < argc)
-                    NLua::LuaSet(argv[a], "callscript");
+                    NLua::LuaSet(argv[a], "callscript", "internal");
             }
             else if (!strcmp(argv[a], "-e"))
             {

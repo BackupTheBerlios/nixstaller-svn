@@ -56,9 +56,12 @@ void CMain::Init(int argc, char **argv)
 
     m_RunDir = GetCWD();
 
+    // UNDONE: Move this elsewhere?
     for (int a=1; a<argc; a++)
     {
-        if (!strcmp(argv[a], "-l"))
+        if (!strcmp(argv[a], "--"))
+            break;
+        else if (!strcmp(argv[a], "-l"))
         {
             a++;
             if (a < argc)

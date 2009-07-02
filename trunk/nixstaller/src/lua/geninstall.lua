@@ -28,7 +28,7 @@ loadlua("shared/utils-public.lua")
 loadlua("shared/package-public.lua")
 
 function Usage()
-    print(string.format("Usage: %s <project dir> [ <installer name> ]\n", callscript))
+    print(string.format("Usage: %s <project dir> [ <installer name> ]\n", internal.callscript))
     print([[
  <project dir>      The project directory which should be used to generate the installer.
  <installer name>   The file name of the created installer. Default: setup.sh.
@@ -335,7 +335,7 @@ function Init()
     LoadPackage()
     
     -- Find a LZMA bin which we can use
-    local basebindir = string.format("%s/bin/%s/%s", ndir, os.osname, os.arch)
+    local basebindir = string.format("%s/bin/%s/%s", internal.nixstdir, os.osname, os.arch)
     local validbin = function(bin)
                         -- Does the bin exists and 'ldd' can find all dependend libs?
                         if os.fileexists(bin) then
@@ -409,15 +409,15 @@ function PrepareArchive()
     os.copy(confdir .. "/finish", instconfdir)
     
     -- Some internal stuff
-    RequiredCopy(ndir .. "/src/internal/about", archdir)
-    RequiredCopy(ndir .. "/src/internal/start", archdir)
+    RequiredCopy(internal.nixstdir .. "/src/internal/about", archdir)
+    RequiredCopy(internal.nixstdir .. "/src/internal/start", archdir)
     
     -- Terminfo's for BSD's
     for _, tos in ipairs(cfg.targetos) do
         if tos == "freebsd" or tos == "netbsd" or tos == "openbsd" then
             local p = archdir .. "/terminfo"
             os.mkdirrec(p)
-            RequiredCopyRec(ndir .. "/src/internal/terminfo", p)
+            RequiredCopyRec(internal.nixstdir .. "/src/internal/terminfo", p)
             break
         end
     end
@@ -462,8 +462,8 @@ function PrepareArchive()
     
     -- XDG utils
     os.mkdir(archdir .. "/xdg-utils")
-    RequiredCopy(ndir .. "/src/xdg-utils/xdg-desktop-menu", archdir .. "/xdg-utils")
-    RequiredCopy(ndir .. "/src/xdg-utils/xdg-open", archdir .. "/xdg-utils")
+    RequiredCopy(internal.nixstdir .. "/src/xdg-utils/xdg-desktop-menu", archdir .. "/xdg-utils")
+    RequiredCopy(internal.nixstdir .. "/src/xdg-utils/xdg-open", archdir .. "/xdg-utils")
     
     -- Language files
     for _, f in pairs(cfg.languages) do
@@ -500,7 +500,7 @@ function PrepareArchive()
     
     for _, OS in ipairs(cfg.targetos) do
         for _, ARCH in ipairs(cfg.targetarch) do
-            local dir = string.format("%s/bin/%s/%s", ndir, OS, ARCH)
+            local dir = string.format("%s/bin/%s/%s", internal.nixstdir, OS, ARCH)
             if not os.fileexists(dir) then
                 print(string.format("Warning: No frontends for %s/%s", OS, ARCH))
             else
@@ -531,14 +531,14 @@ function PrepareArchive()
         RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.logo), archdir)
     else
         -- Default logo
-        RequiredCopy(ndir .. "/src/img/installer.png", archdir)
+        RequiredCopy(internal.nixstdir .. "/src/img/installer.png", archdir)
     end
     
     if cfg.appicon ~= nil then
         RequiredCopy(string.format("%s/files_extra/%s" , confdir, cfg.appicon), archdir)
     else
         -- Default icon
-        RequiredCopy(ndir .. "/src/img/appicon.xpm", archdir)
+        RequiredCopy(internal.nixstdir .. "/src/img/appicon.xpm", archdir)
     end
 
     if pkg.enable then
@@ -639,7 +639,7 @@ function PrepareArchive()
                 end
             end
             
-            if os.execute(string.format("%s/gensyms.sh %s -d %s %s", ndir, pathlist, instconfdir, binlist)) ~= 0 then
+            if os.execute(string.format("%s/gensyms.sh %s -d %s %s", internal.nixstdir, pathlist, instconfdir, binlist)) ~= 0 then
                 print("WARNING: Failed to automaticly generate symbol map file.")
             end
         end
@@ -658,15 +658,15 @@ function PrepareArchive()
     --------------------------------------------------------
     
     -- Startup scripts
-    RequiredCopy(ndir .. "/src/internal/startupinstaller.sh", rootdir)
-    RequiredCopy(ndir .. "/src/internal/utils.sh", rootdir)
+    RequiredCopy(internal.nixstdir .. "/src/internal/startupinstaller.sh", rootdir)
+    RequiredCopy(internal.nixstdir .. "/src/internal/utils.sh", rootdir)
 
     -- lzma bins
     if cfg.archivetype == "lzma" then
         local binlist = { }
         for _, OS in ipairs(cfg.targetos) do
             for _, ARCH in ipairs(cfg.targetarch) do
-                local dir = string.format("%s/bin/%s/%s", ndir, OS, ARCH)
+                local dir = string.format("%s/bin/%s/%s", internal.nixstdir, OS, ARCH)
                 if os.fileexists(dir) then
                     utils.tableappend(binlist, GetAllBins(dir, { "lzma-decode" }))
                 end
@@ -790,7 +790,7 @@ fi]], optchk, n)
     end
 
     local label = string.format("Installer for %s", cfg.appname)
-    os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"%s\" sh ./startupinstaller.sh > /dev/null 2>&1", ndir, ndir, nixstopts, confdir, outname, label))
+    os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"%s\" sh ./startupinstaller.sh > /dev/null 2>&1", internal.nixstdir, internal.nixstdir, nixstopts, confdir, outname, label))
 end
 
 CheckArgs()

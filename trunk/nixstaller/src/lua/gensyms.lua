@@ -102,7 +102,7 @@ function getallsyms(bin, lpath)
 end
 
 function Usage()
-    print(string.format("Usage: %s [<options>] <files>\n", callscript))
+    print(string.format("Usage: %s [<options>] <files>\n", internal.callscript))
     print([[
  <options> can be one of the following things (all are optional):
   --libpath, -l <dir>      Appends the directory path <dir> to the search path used for finding shared libraries.

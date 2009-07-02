@@ -47,6 +47,7 @@ PACKAGING
 - RPM: Description formatting?
 - pacman: Check for locks for future releases
 - deb: way to remove temporary root owned files incase of an error
+- generic should check for existing files to avoid copy errors (eg map by file replacement)
 
 
 MAIN

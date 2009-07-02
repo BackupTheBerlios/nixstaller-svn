@@ -34,7 +34,7 @@ print(string.format("Loaded %d libraries filed by %d templates.", templibcount, 
 action = nil
 
 function Usage()
-    print(string.format("Usage: %s <action> <options> <files>\n", callscript))
+    print(string.format("Usage: %s <action> <options> <files>\n", internal.callscript))
     print([[
 <action>        Should be one of the following:
 

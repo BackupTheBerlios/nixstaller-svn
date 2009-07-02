@@ -170,184 +170,116 @@ function getnativedeps(deps, lib)
     end
 end
 
-local initdeps = { }
-local ignorefaileddl = false
-function initdep(d)
-    if initdeps[d] ~= nil then
-        return initdeps[d]
-    end
-    
-    if not d.full then
-        initdeps[d] = true
-        return true
-    end
-    
-    local function enablesecbar(e)
-        if not install.unattended then
-            depprocess.notifier:enablesecbar(e)
+function downloaddep(dep, archfiles, dlfile, setprogress)
+    local function enddownload()
+        if install.unattended then
+            install.print("\n")
+        else
+            depprocess.notifier:setcancelbutton(false)
         end
     end
 
-    local printedprog = 0
-    local function setsecprogress(p)
-        if install.unattended then
-            if printedprog >= 100 then
-                return
-            end
+    if install.unattended then
+        install.print("Downloading dependency " .. d.name .. ": ")
+    else
+        depprocess.notifier:setsectitle("Downloading dependency " .. d.name)
+        depprocess.notifier:setcancelbutton(true)
+    end
+
+    
+    local fmap = dofile(dlfile)
+    for f, sum in pairs(fmap) do
+        if archfiles[f] then
+            local path = string.format("%s/deps/%s/%s", internal.rundir, dep.name, f)
             
-            while (p - printedprog) >= 10 do
-                printedprog = printedprog + 10
-                install.print(string.format("%d%% ", printedprog))
-            end
-        else
-            depprocess.notifier:setsecprogress(p)
-        end
-    end
-
-    local function notifydownload()
-        if install.unattended then
-            install.print("Downloading dependency " .. d.name .. ": ")
-        else
-            depprocess.notifier:setsectitle("Downloading dependency " .. d.name)
-            depprocess.notifier:setcancelbutton(true)
-        end
-    end
-    
-    local function notifyenddownload()
-        if install.unattended then
-            install.print("\n")
-            printedprog = 0
-        else
-            depprocess.notifier:setcancelbutton(true)
-        end
-    end
-    
-    local function notifyextract()
-        if install.unattended then
-            install.print(tr("Extracting dependency %s", d.name) .. ": ")
-        else
-            depprocess.notifier:setsectitle(tr("Extracting dependency %s", d.name))
-        end
-    end
-    
-    local function notifyendextract()
-        if install.unattended then
-            install.print("\n")
-            printedprog = 0
-        end
-    end
-    
-    local function cancelled()
-        if install.unattended then
-            return false
-        else
-            return depprocess.notifier:cancelled()
-        end
-    end
-    
-    enablesecbar(true)
-    
-    local src = string.format("%s/deps/%s", internal.rundir, d.name)
-    local dest = string.format("%s/files", src)
-    os.mkdirrec(dest)
-    
-    local archfiles = { }
-    archfiles[string.format("%s_files_all", d.name)] = true
-    archfiles[string.format("%s_files_%s_all", d.name, os.osname)] = true
-    archfiles[string.format("%s_files_all_%s", d.name, os.arch)] = true
-    archfiles[string.format("%s_files_%s_%s", d.name, os.osname, os.arch)] = true
-    
-    local dlfile = src .. "/dlfiles"
-    if os.fileexists(dlfile) and d.baseurl then
-        notifydownload()
-        local fmap = dofile(dlfile)
-        for f, sum in pairs(fmap) do
-            if archfiles[f] then
-                local path = string.format("%s/%s", src, f)
+            -- For unattended installs
+            local retries, maxretries = 0, (cfg.unopts["dlretries"] and
+                cfg.unopts["dlretries"].value and
+                cfg.unopts["dlretries"].internal) or 3
+            
+            while true do
+                local download, msg = internal.initdownload(string.format("%s/%s", dep.baseurl, f), path)
                 
-                -- For unattended installs
-                local retries, maxretries = 0, (cfg.unopts["dlretries"] and
-                    cfg.unopts["dlretries"].value and
-                    cfg.unopts["dlretries"].internal) or 3
-                
-                while true do
-                    local download, msg = internal.initdownload(string.format("%s/%s", d.baseurl, f), path)
-                    
-                    if download then
-                        function download:updateprogress(t, d)
-                            if d > 0 then
-                                setsecprogress(d/t*100)
-                            end
+                if download then
+                    function download:updateprogress(t, d)
+                        if d > 0 then
+                            setprogress(d/t*100)
                         end
-        
-                        local stat
+                    end
+    
+                    local stat
+                    stat, msg = download:process()
+                    while stat and not cancelled() do
                         stat, msg = download:process()
-                        while stat and not cancelled() do
-                            stat, msg = download:process()
-                        end
-                        download:close()
+                    end
+                    download:close()
+                end
+                
+                local dlsum = io.md5(path)
+                if not download or msg or cancelled() or dlsum ~= sum then -- Error
+                    if dlsum ~= sum then
+                        msg = msg or "file differs from server"
                     end
                     
-                    local dlsum = io.md5(path)
-                    if not download or msg or cancelled() or dlsum ~= sum then -- Error
-                        if dlsum ~= sum then
-                            msg = msg or "file differs from server"
-                        end
+                    local retry = false
+                    local cancelled = (install.unattended and depprocess.notifier:cancelled()) or false
+                    if not ignorefaileddl and not cancelled then
+                        local usermsg = "Failed to download dependency"
                         
-                        local retry = false
-                        if not ignorefaileddl and not cancelled() then
-                            local usermsg = "Failed to download dependency"
+                        if install.unattended then
+                            retries = retries + 1
+                            retry = (retries <= maxretries)
+                            
                             if msg then
-                                if install.unattended then
-                                    usermsg = usermsg .. ":" .. msg
-                                else
-                                    usermsg = usermsg .. ":\n" .. msg
-                                end
+                                install.print(string.format("%s: %s\n", usermsg, msg))
+                            else
+                                install.print(usermsg .. "\n")
                             end
                             
-                            if install.unattended then
-                                retries = retries + 1
-                                retry = (retries <= maxretries)
-                                install.print(usermsg .. "\n")
-                                if retry then
-                                    install.print(string.format("Retrying ... (%d/%d)\n", retries, maxretries))
-                                end
-                            else
-                                local choice = gui.choicebox(usermsg, "Retry", "Ignore", "Ignore all")
-                                retry = (choice == 1)
-                                ignorefaileddl = (choice == 3)
+                            if retry then
+                                install.print(string.format("Retrying ... (%d/%d)\n", retries, maxretries))
                             end
+                        else
+                            if msg then
+                                usermsg = usermsg .. ":\n" .. msg
+                            end
+                            local choice = gui.choicebox(usermsg, "Retry", "Ignore", "Ignore all")
+                            retry = (choice == 1)
+                            ignorefaileddl = (choice == 3)
                         end
-                        
-                        if not retry then
-                            enablesecbar(false)
-                            notifyenddownload()
-                            initdeps[d] = false
-                            os.remove(path)
-                            adddepprob(d, "faileddl")
-                            return false
-                        end
-                    else
-                        break
                     end
+                    
+                    if not retry then
+                        --enablesecbar(false)
+                        enddownload()
+                        os.remove(path)
+                        adddepprob(d, "faileddl")
+                        return false
+                    end
+                else
+                    break
                 end
             end
         end
-        setsecprogress(100)
-        notifyenddownload()
     end
     
-    notifyextract()
+    setprogress(100)
+    enddownload()
+end
+
+function extractdep(dep, dest, archfiles, setprogress)
+    if install.unattended then
+        install.print(tr("Extracting dependency %s", dep.name) .. ": ")
+    else
+        depprocess.notifier:setsectitle(tr("Extracting dependency %s", dep.name))
+    end
     
     local archives = { }
-    local function checkarch(a)
-        if os.fileexists(a) then
-            table.insert(archives, a)
-        end
-    end
-    
     for a in pairs(archfiles) do
-        checkarch(src .. "/" .. a)
+        local apath = string.format("%s/deps/%s/%s", internal.rundir, dep.name, a)
+        if os.fileexists(apath) then
+            table.insert(archives, apath)
+        end
     end
 
     local szmap = { }
@@ -393,7 +325,7 @@ function initdep(d)
             
             if szmap[f] and szmap[f][file] and totalsize > 0 then
                 extractedsz = extractedsz + szmap[f][file]
-                setsecprogress(extractedsz / totalsize * 100)
+                setprogress(extractedsz / totalsize * 100)
             end
             line = pipe:read()
         end
@@ -402,8 +334,72 @@ function initdep(d)
         os.chdir(olddir)
     end
        
+    if install.unattended then
+        install.print("\n")
+    end
+end
+
+local initdeps = { }
+local ignorefaileddl = false
+function initdep(d)
+    if initdeps[d] ~= nil then
+        return initdeps[d]
+    end
+    
+    if not d.full then
+        initdeps[d] = true
+        return true
+    end
+    
+    local function enablesecbar(e)
+        if not install.unattended then
+            depprocess.notifier:enablesecbar(e)
+        end
+    end
+
+    local printedprog = 0
+    local function setprogress(p)
+        if install.unattended then
+            if printedprog >= 100 then
+                return
+            end
+            
+            while (p - printedprog) >= 10 do
+                printedprog = printedprog + 10
+                install.print(string.format("%d%% ", printedprog))
+            end
+        else
+            depprocess.notifier:setsecprogress(p)
+        end
+    end
+
+    enablesecbar(true)
+    
+    local src = string.format("%s/deps/%s", internal.rundir, d.name)
+    local dest = string.format("%s/files", src)
+    os.mkdirrec(dest)
+    
+    local archfiles = { }
+    archfiles[string.format("%s_files_all", d.name)] = true
+    archfiles[string.format("%s_files_%s_all", d.name, os.osname)] = true
+    archfiles[string.format("%s_files_all_%s", d.name, os.arch)] = true
+    archfiles[string.format("%s_files_%s_%s", d.name, os.osname, os.arch)] = true
+    
+    local dlfile = src .. "/dlfiles"
+    if os.fileexists(dlfile) and d.baseurl then
+        if not downloaddep(d, archfiles, dlfile, setprogress) then
+            initdeps[d] = false
+            enablesecbar(false)
+            return false
+        end
+    end
+    
+    -- Used by unattended installs
+    printedprog = 0
+    
+    extractdep(d, dest, archfiles, setprogress)
+    
     enablesecbar(false)
-    notifyendextract()
     initdeps[d] = true
     return true
 end

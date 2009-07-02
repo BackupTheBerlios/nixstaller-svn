@@ -76,7 +76,7 @@ function dumpcfile(path)
     file:close()
 end
 
-utils.recursivedir(ndir .. "/src", function (path, relpath)
+utils.recursivedir(internal.nixstdir .. "/src", function (path, relpath)
     if string.match(path, "%.lua$") then -- Lua file?
         dumpluafile(path)
     elseif string.match(path, "%.cpp$") then -- C++ file?
@@ -86,7 +86,7 @@ utils.recursivedir(ndir .. "/src", function (path, relpath)
     end
 end)
 
-local english = io.open(string.format("%s/lang/english/strings", ndir), "r")
+local english = io.open(string.format("%s/lang/english/strings", internal.nixstdir), "r")
 if not english then
     error("Failed to load English strings")
 end
