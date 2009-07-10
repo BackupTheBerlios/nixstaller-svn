@@ -33,11 +33,13 @@ namespace NLua {
 class CLuaStateKeeper
 {
     lua_State *m_pLuaState;
+    int m_iExitFunc;
     
 public:
     CLuaStateKeeper(void);
-    ~CLuaStateKeeper(void) { if (m_pLuaState) lua_close(m_pLuaState); }
+    ~CLuaStateKeeper(void);
     
+    void SetExitFunc(int func) { m_iExitFunc = func; }
     operator lua_State*(void) { return m_pLuaState; }
 };
 

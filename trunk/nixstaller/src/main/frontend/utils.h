@@ -28,7 +28,7 @@ class CSuTerm;
 
 extern std::list<char *> StringList; // List of all strings created by CreateText
 
-void PrintIntro(void);
+void PrintIntro(const std::string &path);
 char *CreateText(const char *s, ...);
 inline char *MakeCString(const std::string &s) { return CreateText(s.c_str()); };
 void FreeStrings(void);

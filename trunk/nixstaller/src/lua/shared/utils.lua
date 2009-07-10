@@ -17,11 +17,11 @@
 
 -- Util functions used by various scripts
 
-function gettmpinterndir(file)
+function gettmpinterndir(file, dontcreate)
     -- Note that this directory should be removed manually.
     -- From normal installation mode this is done automatically
     -- by makeself. For 'fastrun' install mode this is done via
-    -- the caller script.
+    -- the lua exit func.
     local path
     if internal.fastrun then
         path = internal.configdir .. "/tmp"
@@ -29,7 +29,7 @@ function gettmpinterndir(file)
         path = internal.rundir
     end
 
-    if not os.fileexists(path) then
+    if not dontcreate and not os.fileexists(path) then
         os.mkdir(path)
     end
 
@@ -229,4 +229,44 @@ function loaddep(prdir, name)
     ret.name = name
     
     return ret
+end
+
+function autosymmap(confdir, dest, depmap)
+    local binlist = "" -- All bins/libs for symmap
+    local pathlist = ""
+    local givenpaths = { }
+    
+    local function addbins(startpath, bins, subpath)
+        for _, b in ipairs(bins) do
+            if subpath then
+                b = subpath .. "/" .. b
+            end
+            local path = string.format("%s/files_%s_%s/%s", startpath, os.osname, os.arch, b)
+            binlist = binlist .. " " .. path
+
+            local dirp = utils.dirname(path)
+            if not givenpaths[p] then
+                pathlist = string.format("%s -l %s", pathlist, dirp)
+                givenpaths[dirp] = true
+            end
+        end
+    end
+
+    if pkg.bins then
+        addbins(confdir, pkg.bins)
+    end
+
+    if pkg.libs then
+        addbins(confdir, pkg.libs)
+    end
+
+    for n, d in pairs(depmap) do
+        if d.libs and d.full then
+            addbins(string.format("%s/deps/%s", confdir, n), d.libs, d.libdir)
+        end
+    end
+
+    if os.execute(string.format("%s/gensyms.sh %s -d %s %s", internal.nixstdir, pathlist, dest, binlist)) ~= 0 then
+        print("WARNING: Failed to automatically generate symbol map file.")
+    end
 end

@@ -49,6 +49,7 @@ CBaseAttInstall::~CBaseAttInstall()
 {
     CleanPasswdString(m_szPassword);
     m_bGotGUI = false;
+    NLua::LuaUnSetHook(LuaHook);
 }
 
 bool CBaseAttInstall::GetSUPasswd(const char *msg, bool mandatory)

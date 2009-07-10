@@ -32,9 +32,9 @@ const char *GetExTranslation(const char *s)
     return GetTranslation(s);
 }
 
-void PrintIntro()
+void PrintIntro(const std::string &path)
 {
-    std::ifstream file("start");
+    std::ifstream file(JoinPath(path, "start").c_str());
     char c;
     
     while (file && file.get(c))

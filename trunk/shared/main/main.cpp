@@ -121,6 +121,7 @@ void CMain::InitLua()
     NLua::RegisterFunction(LuaOpenElf, "openelf", "internal");
     NLua::RegisterFunction(LuaGetEUID, "geteuid", "internal");
     NLua::RegisterFunction(LuaHasUTF8, "hasutf8", "internal");
+    NLua::RegisterFunction(LuaSetExitFunc, "setexitfunc", "internal");
 
     NLua::RegisterFunction(LuaAbort, "abort");
     
@@ -671,4 +672,11 @@ int CMain::LuaHasUTF8(lua_State *L)
     // From: http://www.cl.cam.ac.uk/~mgk25/unicode.html
     lua_pushboolean(L, (strcmp(nl_langinfo(CODESET), "UTF-8") == 0));
     return 1;
+}
+
+int CMain::LuaSetExitFunc(lua_State *L)
+{
+    luaL_checktype(NLua::LuaState, 1, LUA_TFUNCTION);
+    NLua::LuaState.SetExitFunc(NLua::MakeReference(1));
+    return 0;
 }

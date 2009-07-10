@@ -89,8 +89,6 @@ int main(int argc, char **argv)
     
     setlocale(LC_ALL, "");
 
-    PrintIntro();
-
     std::string surunnerpath = DirName(argv[0]);
     if (!FileExists(JoinPath(surunnerpath, "surunner")))
         surunnerpath += "/.."; // HACK: for static surunner bins
@@ -158,6 +156,7 @@ void CLuaRunner::Init(int argc, char **argv)
                     std::string d = argv[a];
                     MakeAbsolute(d);
                     NLua::LuaSet(d, "nixstdir", "internal");
+                    PrintIntro(JoinPath(d, "src/internal"));
                 }
             }
             else if (!strcmp(argv[a], "-c"))

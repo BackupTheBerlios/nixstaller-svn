@@ -399,7 +399,7 @@ function PrepareArchive()
     ----------------------------------------------------------
     
     os.mkdirrec(instconfdir)
-    
+
     -- Configuration files
     RequiredCopy(confdir .. "/config.lua", instconfdir)
     os.copy(confdir .. "/package.lua", instconfdir)
@@ -606,42 +606,7 @@ function PrepareArchive()
             os.copy(sympath, instconfdir)
         elseif pkg.autosymmap then
             print("Automatically generating symbol map file.")
-            local binlist = "" -- All bins/libs for symmap
-            local pathlist = ""
-            local givenpaths = { }
-            local function addbins(startpath, bins, subpath)
-                for _, b in ipairs(bins) do
-                    if subpath then
-                        b = subpath .. "/" .. b
-                    end
-                    local path = string.format("%s/files_%s_%s/%s", startpath, os.osname, os.arch, b)
-                    binlist = binlist .. " " .. path
-                    
-                    local dirp = utils.dirname(path)
-                    if not givenpaths[p] then
-                        pathlist = string.format("%s -l %s", pathlist, dirp)
-                        givenpaths[dirp] = true
-                    end
-                end
-            end
-            
-            if pkg.bins then
-                addbins(confdir, pkg.bins)
-            end
-            
-            if pkg.libs then
-                addbins(confdir, pkg.libs)
-            end
-            
-            for n, d in pairs(depmap) do
-                if d.libs and d.full then
-                    addbins(string.format("%s/deps/%s", confdir, n), d.libs, d.libdir)
-                end
-            end
-            
-            if os.execute(string.format("%s/gensyms.sh %s -d %s %s", internal.nixstdir, pathlist, instconfdir, binlist)) ~= 0 then
-                print("WARNING: Failed to automaticly generate symbol map file.")
-            end
+            autosymmap(confdir, instconfdir, depmap)
         end
     end
     
@@ -792,6 +757,8 @@ fi]], optchk, n)
     local label = string.format("Installer for %s", cfg.appname)
     os.execute(string.format("\"%s/makeself.sh\" --gzip --header %s/src/internal/instheader.sh %s \"%s/tmp\" \"%s\" \"%s\" sh ./startupinstaller.sh > /dev/null 2>&1", internal.nixstdir, internal.nixstdir, nixstopts, confdir, outname, label))
 end
+
+internal.setexitfunc(Clean)
 
 CheckArgs()
 Clean()

@@ -21,6 +21,7 @@
 
 #include "lua.h"
 #include "luaclass.h"
+#include "luafunc.h"
 #include "main/main.h"
 
 namespace {
@@ -113,7 +114,7 @@ CLuaStateKeeper LuaState;
 // Lua State Swrapper Class
 // -------------------------------------
 
-CLuaStateKeeper::CLuaStateKeeper()
+CLuaStateKeeper::CLuaStateKeeper() : m_iExitFunc(LUA_NOREF)
 {
     // Initialize lua
     m_pLuaState = lua_open();
@@ -129,6 +130,19 @@ CLuaStateKeeper::CLuaStateKeeper()
         lua_call(m_pLuaState, 1, 0);
         lua_settop(m_pLuaState, 0);  // Clear stack
     }
+}
+
+CLuaStateKeeper::~CLuaStateKeeper()
+{
+    if (m_iExitFunc != LUA_NOREF)
+    {
+        CLuaFunc f(m_iExitFunc, LUA_REGISTRYINDEX);
+        if (f)
+            f(0);
+    }
+    
+    if (m_pLuaState)
+        lua_close(m_pLuaState);
 }
 
 // -------------------------------------

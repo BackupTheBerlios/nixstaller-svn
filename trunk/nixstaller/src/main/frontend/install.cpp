@@ -195,6 +195,13 @@ void CBaseInstall::Init(int argc, char **argv)
 
     CMain::Init(argc, argv);
     UpdateLanguage();
+
+    // NOTE: Need to be after CMain::Init(), as this sets the run dir
+    // UNDONE: Doesn't work for ncurses
+    if (m_bFastRun)
+        PrintIntro(JoinPath(m_NixstDir, "src/internal"));
+    else
+        PrintIntro(GetRunDir());
 }
 
 int CBaseInstall::LuaTr(lua_State *L)

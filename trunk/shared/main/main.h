@@ -99,6 +99,7 @@ public:
     static int LuaAbort(lua_State *L);
     static int LuaGetEUID(lua_State *L);
     static int LuaHasUTF8(lua_State *L);
+    static int LuaSetExitFunc(lua_State *L);
 };
 
 #include "utils.h"

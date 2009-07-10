@@ -261,6 +261,14 @@ function copyinstfiles(luaout)
     end
 end
 
+if internal.fastrun then -- Usually done automatically by makeself
+    local function cleantmp()
+        utils.removerec(gettmpinterndir(nil, true))
+    end
+    internal.setexitfunc(cleantmp)
+    cleantmp()
+end
+
 loadconfig(internal.configdir)
 initlang()
 

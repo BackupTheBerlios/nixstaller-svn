@@ -211,7 +211,6 @@ function copydep(dep, setprogress)
 
         destdir = pkg.getdepdir(dep, destdir)
 
-        print("destdir:", destdir)
         os.mkdirrec(destdir)
 
         copiedsz = copiedsz + filemap[rp].size
@@ -874,6 +873,13 @@ function verifysyms(infomap)
 end
 
 function checkdeps(bins, libs, bdir)
+    if internal.fastrun and lsymstat == false and pkg.autosymmap then
+        install.print("Automatically generating symbol map file.")
+        autosymmap(internal.configdir, gettmpinterndir(), pkg.depmap)
+
+        lsymstat, loadedsyms = pcall(dofile, gettmpinterndir("symmap.lua"))
+    end
+    
     if lsymstat == false then
         install.print("WARNING: no symbol mapfile found, binary compatibility checking will be partly disabled.\n")
         lsymstat = nil -- Set to something else than true or false, so that the warning is only displayed once

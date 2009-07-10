@@ -32,9 +32,8 @@ OVERALL
 - fastrun:
     - terminfo
     - start file
-    - deps
-    - remove temp dir
     - test relative paths, paths with dots, etc
+    - Frontend selection
 - Check for XDG updates
 - See if more code needs to be moved to internal (atleast pkg.updatepackager())
 
@@ -73,6 +72,7 @@ NCURSES
 - Check chtype?
 - Better monochrome support?
 - Check for 'dynamic' CanFocus for CTextField?
+- Fix start message
 
 
 GTK
