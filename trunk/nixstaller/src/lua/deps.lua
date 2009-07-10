@@ -170,6 +170,71 @@ function getnativedeps(deps, lib)
     end
 end
 
+-- Used by fastrun mode
+function copydep(dep, setprogress)
+    if install.unattended then
+        install.print(tr("Extracting dependency (fast mode) %s", dep.name) .. ": ")
+    else
+        depprocess.notifier:setsectitle(tr("Extracting dependency %s", dep.name))
+    end
+    
+    local filemap = { }
+    local totalsize = 0
+
+    local function getinstfiles(dir)
+        if not os.fileexists(dir) then
+            return
+        end
+        utils.recursivedir(dir, function(path, relpath)
+            filemap[relpath] = { }
+            filemap[relpath].size = os.filesize(path)
+            filemap[relpath].path = path
+            totalsize = totalsize + filemap[relpath].size
+        end)
+    end
+
+    local basesrc = string.format("%s/deps/%s", internal.configdir, dep.name)
+    getinstfiles(string.format("%s/files_all", basesrc))
+    getinstfiles(string.format("%s/files_%s_all", basesrc, os.osname))
+    getinstfiles(string.format("%s/files_all_%s", basesrc, os.arch))
+    getinstfiles(string.format("%s/files_%s_%s", basesrc, os.osname, os.arch))
+
+    local copiedsz = 0
+    for rp in pairs(filemap) do
+        local destdir
+        local isdir = os.isdir(filemap[rp].path)
+        if not isdir then
+            destdir = utils.dirname(rp)
+        else
+            destdir = rp
+        end
+
+        destdir = pkg.getdepdir(dep, destdir)
+
+        print("destdir:", destdir)
+        os.mkdirrec(destdir)
+
+        copiedsz = copiedsz + filemap[rp].size
+
+        local stat, msg
+        if not isdir then -- only copy files as dir should already be created
+            stat, msg = os.copy(filemap[rp].path, destdir)
+            if not stat then
+                install.print(string.format("WARNING: Failed to copy file '%s': %s\n", rp, msg))
+            end
+        end
+        
+        if stat and totalsize > 0 then
+            setprogress(copiedsz / totalsize * 100)
+        end
+    end
+
+    setprogress(100)
+    if install.unattended then
+        install.print("\n")
+    end
+end
+
 function downloaddep(dep, archfiles, dlfile, setprogress)
     local function enddownload()
         if install.unattended then
@@ -333,7 +398,8 @@ function extractdep(dep, dest, archfiles, setprogress)
         pipe:close()
         os.chdir(olddir)
     end
-       
+
+    setprogress(100)
     if install.unattended then
         install.print("\n")
     end
@@ -374,30 +440,34 @@ function initdep(d)
     end
 
     enablesecbar(true)
-    
-    local src = string.format("%s/deps/%s", internal.rundir, d.name)
-    local dest = string.format("%s/files", src)
-    os.mkdirrec(dest)
-    
-    local archfiles = { }
-    archfiles[string.format("%s_files_all", d.name)] = true
-    archfiles[string.format("%s_files_%s_all", d.name, os.osname)] = true
-    archfiles[string.format("%s_files_all_%s", d.name, os.arch)] = true
-    archfiles[string.format("%s_files_%s_%s", d.name, os.osname, os.arch)] = true
-    
-    local dlfile = src .. "/dlfiles"
-    if os.fileexists(dlfile) and d.baseurl then
-        if not downloaddep(d, archfiles, dlfile, setprogress) then
-            initdeps[d] = false
-            enablesecbar(false)
-            return false
+
+    if internal.fastrun then
+        copydep(d, setprogress)
+    else
+        local src = string.format("%s/deps/%s", internal.rundir, d.name)
+        local dest = string.format("%s/files", src)
+        os.mkdirrec(dest)
+        
+        local archfiles = { }
+        archfiles[string.format("%s_files_all", d.name)] = true
+        archfiles[string.format("%s_files_%s_all", d.name, os.osname)] = true
+        archfiles[string.format("%s_files_all_%s", d.name, os.arch)] = true
+        archfiles[string.format("%s_files_%s_%s", d.name, os.osname, os.arch)] = true
+        
+        local dlfile = src .. "/dlfiles"
+        if os.fileexists(dlfile) and d.baseurl then
+            if not downloaddep(d, archfiles, dlfile, setprogress) then
+                initdeps[d] = false
+                enablesecbar(false)
+                return false
+            end
         end
+        
+        -- Used by unattended installs
+        printedprog = 0
+        
+        extractdep(d, dest, archfiles, setprogress)
     end
-    
-    -- Used by unattended installs
-    printedprog = 0
-    
-    extractdep(d, dest, archfiles, setprogress)
     
     enablesecbar(false)
     initdeps[d] = true

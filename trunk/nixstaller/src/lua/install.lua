@@ -216,7 +216,7 @@ function copyinstfiles(luaout)
         if not os.fileexists(dir) then
             return
         end
-        utils.recursivedir(dir, function (path, relpath)
+        utils.recursivedir(dir, function(path, relpath)
             filemap[relpath] = { }
             filemap[relpath].size = os.filesize(path)
             filemap[relpath].path = path
@@ -230,7 +230,7 @@ function copyinstfiles(luaout)
     getinstfiles(string.format("%s/files_%s_%s", internal.configdir,
                  os.osname, os.arch))
 
-    local extractedsz = 0
+    local copiedsz = 0
     for rp in pairs(filemap) do
         local destdir
         local isdir = os.isdir(filemap[rp].path)
@@ -241,10 +241,10 @@ function copyinstfiles(luaout)
         end
 
         if destdir then
-            os.mkdirrec(rp)
+            os.mkdirrec(destdir)
         end
 
-        extractedsz = extractedsz + filemap[rp].size
+        copiedsz = copiedsz + filemap[rp].size
 
         local stat, msg
         if not isdir then -- only copy files as dir should already be created
@@ -256,7 +256,7 @@ function copyinstfiles(luaout)
         
         if stat and totalsize > 0 then
             luaout("Extracting file (fast mode): " .. rp,
-                    extractedsz / totalsize * 100)
+                    copiedsz / totalsize * 100)
         end
     end
 end

@@ -20,7 +20,6 @@ OVERALL
 - Configurable background parts (background images)
 - Seperate dep installing and collecting? --> Allows to configure them during installation
 - Dump lib info when no frontend could be found (so user can install compat packages)
-- Cleaner way for telling where surunner is (via commandline arg?)?
 - Fully override OS/ARCH when no suitable bin was found
 - loaddep() needs to be available for previews? if yes change call in package.lua and move function to shared utils.lua
 - Fix runluascript() shared lua dir path
@@ -35,7 +34,7 @@ OVERALL
     - start file
     - deps
     - remove temp dir
-    - relative paths, paths with dots, etc
+    - test relative paths, paths with dots, etc
 - Check for XDG updates
 - See if more code needs to be moved to internal (atleast pkg.updatepackager())
 
@@ -47,7 +46,8 @@ PACKAGING
 - RPM: Description formatting?
 - pacman: Check for locks for future releases
 - deb: way to remove temporary root owned files incase of an error
-- generic should check for existing files to avoid copy errors (eg map by file replacement)
+- generic should check for existing files to avoid copy errors (eg folder by file replacement)
+- deputil.sh shouldn't copy libs as symlinks
 
 
 MAIN
@@ -78,6 +78,7 @@ NCURSES
 GTK
 - OpenBSD: Check why png's (and others?) don't load
 - Let root dir maker check if pw is actually needed
+- Update screen counter on widget enable/disable (other frontends?)
 
 
 FLTK

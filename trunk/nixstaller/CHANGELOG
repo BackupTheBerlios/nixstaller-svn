@@ -1,3 +1,7 @@
+0.5 -->
+- Fixed: PackageToggleScreen didn't disable package selector when it was disabled.
+
+
 0.4 --> 0.5
 - Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)
 - Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.

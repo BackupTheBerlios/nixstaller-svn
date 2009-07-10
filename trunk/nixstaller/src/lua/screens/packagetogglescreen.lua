@@ -68,6 +68,8 @@ function genpkg:verify()
         else
             checktool()
         end
+    else
+        pkgchoice:enable(false)
     end
     
     return true
