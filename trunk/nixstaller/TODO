@@ -36,6 +36,8 @@ OVERALL
     - Frontend selection
 - Check for XDG updates
 - See if more code needs to be moved to internal (atleast pkg.updatepackager())
+- Check if makeself's destination path is executable and if not search for alternatives/notify user (Francois Marier)
+- Fix 'site size' (ie mobile browsers)
 
 
 PACKAGING

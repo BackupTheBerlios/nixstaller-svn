@@ -46,7 +46,7 @@ class CExpertScreen: public QMainWindow
     Q_OBJECT
 
     QString projectDir;
-    QMenu *recentFilesMenu;
+    QMenu *recentFilesMenu, *buildMenu;
     QStackedWidget *mainStack, *widgetStack;
     QListWidget *listWidget;
     QPlainTextEdit *consoleWidget;
@@ -82,6 +82,7 @@ private slots:
     void openRecentCB(QAction *action);
     bool build(void);
     void buildAndRun(void);
+    void preview(void);
     void showEditSettings(void);
     void showNixstbSettings(void);
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);

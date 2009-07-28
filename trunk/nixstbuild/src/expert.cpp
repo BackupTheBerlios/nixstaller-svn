@@ -184,24 +184,27 @@ void CExpertScreen::createFileMenu()
 
 void CExpertScreen::createBuildRunMenu()
 {
-    QMenu *menu = menuBar()->addMenu(tr("&Build && Run"));
+    buildMenu = menuBar()->addMenu(tr("&Build && Run"));
 
     QAction *action = new QAction(tr("&Build"), this);
     action->setShortcut(tr("F7"));
     action->setStatusTip(tr("Build the installer"));
     connect(action, SIGNAL(triggered()), this, SLOT(build()));
-    menu->addAction(action);
+    buildMenu->addAction(action);
 
     action = new QAction(tr("Build && &Run"), this);
     action->setShortcut(tr("F8"));
     action->setStatusTip(tr("Build and launch the installer"));
     connect(action, SIGNAL(triggered()), this, SLOT(buildAndRun()));
-    menu->addAction(action);
+    buildMenu->addAction(action);
 
     action = new QAction(tr("&Preview"), this);
     action->setShortcut(tr("F9"));
     action->setStatusTip(tr("Previews the installer"));
-    menu->addAction(action);
+    connect(action, SIGNAL(triggered()), this, SLOT(preview()));
+    buildMenu->addAction(action);
+
+    buildMenu->setEnabled(false); // Disabled by default (no project loaded yet)
 }
 
 void CExpertScreen::createSettingsMenu()
@@ -316,6 +319,7 @@ void CExpertScreen::setProjectDir(const QString &dir)
     updateTitle();
     addRecent(projectDir);
     mainStack->setCurrentIndex(0);
+    buildMenu->setEnabled(true);
 }
 
 void CExpertScreen::loadProject(const QString &dir)
@@ -389,7 +393,7 @@ bool CExpertScreen::runInConsole(const QString &command, bool silent)
         if (ret != 0)
         {
             if (!silent)
-                QMessageBox::critical(NULL, "Error", "Failed to build installer!");
+                QMessageBox::critical(NULL, "Error", "Failed to run command!");
             return false;
         }
     }
@@ -486,6 +490,18 @@ void CExpertScreen::buildAndRun()
 
         // UNDONE: Change if outname can be specified
         runInConsole(QString("%1/setup.sh").arg(projectDir), true);
+    }
+}
+
+void CExpertScreen::preview()
+{
+    // UNDONE: Check if needs to be build.
+
+    QString npath = getNixstPath();
+    if (!npath.isEmpty())
+    {
+        clearConsole();
+        runInConsole(QString("%1/fastrun.sh %2").arg(npath).arg(projectDir), true);
     }
 }
 
