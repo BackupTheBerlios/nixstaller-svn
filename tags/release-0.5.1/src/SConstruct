@@ -1710,7 +1710,7 @@ if not env.GetOption('clean'):
     else:
         conf.env.Append(LIBS='util')
 
-    if conf.CheckFunc('vasprintf', '#include <stdarg.h>'):
+    if conf.CheckFunc('vasprintf', '#include <stdarg.h>') and cur_os != "sunos":
         conf.env.Append(CPPDEFINES = 'HAVE_VASPRINTF')
     if not conf.CheckLibWithHeader('', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);'):
         conf.CheckLibWithHeader('rt', ['time.h', 'sys/time.h'], 'C', 'nanosleep(0, 5); clock_gettime(CLOCK_REALTIME, 0);')
