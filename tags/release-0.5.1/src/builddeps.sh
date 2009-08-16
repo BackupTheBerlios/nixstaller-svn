@@ -207,7 +207,7 @@ buildlzma()
     restoredir
     dodir "C/Compress/Lzma"
     patch < "$SRCDIR"/lzmastdout.diff
-    gcc $OPTCFLAGS LzmaStateDecode.c LzmaStateTest.c -o lzma-decode $LFLAGS
+    gcc $OPTCFLAGS $LFS_CFLAGS  LzmaStateDecode.c LzmaStateTest.c -o lzma-decode $LFLAGS
     cp lzma-decode "$DESTPREFIX/bin"
     restoredir
     [ $CURRENT_OS != "sunos" -a $CURRENT_OS != "darwin" ] && STRIPARGS="-s"
