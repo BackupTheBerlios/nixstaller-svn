@@ -1,3 +1,10 @@
+0.5 --> 0.5.1
+- Fixed: LZMA encoder had unresolved symbols on older Linux systems (reported by John Tsolox)
+- Fixed: Missing large file support (LFS) for Linux 32 bit and Solaris (reported by Edward Rudd)
+- Fixed: Linux 64 bit LZMA encoder was actually a Linux 32 bit binary.
+- Polish translations (thanks to Jusko)
+
+
 0.4 --> 0.5
 - Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)
 - Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.

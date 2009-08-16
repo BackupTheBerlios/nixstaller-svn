@@ -1,0 +1,690 @@
+#-----------------------------------------------
+# Button names
+#-----------------------------------------------
+
+Next
+Dalej
+
+Back
+Wstecz
+
+OK
+OK
+
+Cancel
+Anuluj
+
+Yes
+Tak
+
+No
+Nie
+
+Finish
+Zakończ
+
+Select directory
+Wybierz katalog
+
+Browse
+Przeglądaj
+
+Open directory
+Otwórz folder
+
+Choose another directory
+Wybierz inną ścieżkę
+
+Continue as root
+Kontynuuj jako root
+
+Close
+Zamknij
+
+Continue
+Kontynuuj
+
+Exit program
+Wyjście
+
+Create directory as root
+Utwórz folder jako root
+
+Ignore
+Zignoruj
+
+Abort
+Przerwij
+
+Don't register
+Nie rejestruj
+
+Refresh
+Odśwież
+
+#-----------------------------------------------
+# Messages
+#-----------------------------------------------
+
+[
+Installation is currently in progress.
+If you abort now this may lead to a broken installation.
+Are you sure?
+]
+[
+Instalacja w toku.
+Jeśli przerwiesz, może doprowadzić to do wadliwego działania aplikacji.
+Czy jesteś pewien ?
+]
+
+[
+This will abort the installation.
+Are you sure?
+]
+[
+Zostanie przerwana instalacja.
+Czy jesteś pewien ?
+]
+
+[
+Root access is required to continue.
+Abort installation?
+]
+[
+By kontynuować wymagane są uprawnienia administratora.
+Przerwać instalację ?
+]
+
+Incorrect password given, please retype.
+Podano nieprawidłowe hasło, proszę wpisać ponownie.
+
+# %s is replaced by appname
+Installation of %s complete!
+Instalacja %s zakończona !
+
+[
+You don't have read permissions for this directory.
+Please choose another directory or rerun this program as a user who has read permissions.
+]
+[
+Nie masz uprawnień do tej lokacji.
+Wybierz inną lokację lub uruchom ponownie instalator jako administrator.
+]
+
+[
+You don't have write permissions for this directory.
+The files can be extracted as the root user,
+but you'll need to enter the administrative password for this later.
+]
+[
+Nie masz uprawnień do tej lokacji.
+Pliki mogą być zainstalowane jedynie z uprawnieniami administratora.
+Hasło będzie można wprowadzić później.
+]
+
+[
+This installation requires root (administrator) privileges in order to continue.
+Please enter the administrative password below.
+]
+[
+Instalacja wymaga uprawnień administratora, by kontynuować.
+Proszę wpisać hasło.
+]
+
+# %s is replaced by directory name
+Directory %s does not exist, do you want to create it?
+Katalog %s nie istnieje - czy chcesz go utworzyć ?
+
+# %s is replaced by appname
+[
+This will install %s.
+Continue?
+]
+[
+Zostanie zainstalowana aplikacja %s.
+Kontynuować ?
+]
+
+[
+Your account doesn't have permissions to create the directory.
+To create it with the root (administrator) account, please enter the administrative password below.
+]
+[
+Twoje konto nie posiada uprawnień do utworzenia katalogu w podanym miejscu.
+By utworzyć go jako administrator (root), wprowadź hasło w polu poniżej.
+]
+
+[
+Another program seems to be using the dpkg database.
+Please close all applications that may use this database (eg. Synaptic).
+]
+[
+Prawdopodobnie inna aplikacja korzysta teraz z dpkg.
+Proszę zamknąć wszystkie aplikacje, mogące z niego korzystać (np. Synaptic).
+]
+
+Another program seems to be using pacman. Please close this program.
+Prawdopodobnie inny program korzysta z systemu Pacman. Proszę zamknąć aplikacje mogącą z niego korzystać.
+
+[
+Another program seems to be using the RPM database.
+Please close all applications that may use this database (eg. Smart or YaST).
+]
+[
+Prawdopodobnie inny program korzysta z systemu RPM.
+Proszę zamknąć wszystkie aplikacje, mogące z niego korzystać (np. Smart lub YaST).
+]
+
+Package is already installed. Do you want to replace it?
+Pakiet jest już zainstalowany. Czy chcesz go zastąpić ?
+
+Package is already installed. Use the --overwrite option to install anyway.
+Pakiet jest już zainstalowany. Użyj --nadpisania by zainstalować.
+
+# First %s is replaced by current version, second by installer version.
+[
+Version %s is already installed, you're trying to install version %s.
+Do you want to replace the installed package?
+]
+[
+Wersja %s już obecnie zainstalowana. Próbujesz zainstalować wersję %s.
+Czy chcesz zastąpić pakiety ?
+]
+
+# %s is replaced by missing tool (ie rpmbuild)
+[
+In order to let the installer register the software, the '%s' package needs to be available.
+Please install this package now and hit continue or press ignore to continue without software registration.
+]
+[
+Pozwól instalatorowi zarejetrować oprogramowanie. Aplikacja '%s' wymaga tego do działania.
+Zainstaluj program klikając 'Dalej' lub kliknij 'Ignoruj', by kontynuwać bez rejestracji.
+]
+
+One or more package dependencies could not be resolved. Details are given below.
+Wystąpił problem z jedną lub więcej zależności, który nie mógł zostać rozwiązany.
+
+Alternatively rerun with the --ignore-failed-deps option, risking any dependency errors when using the installed software.
+Alternatywnie, uruchom ponownie z  --ignorując-nierozwiązane-zależności, ryzykując błędy związane w zależnościami podczas używania zainstalowanej aplikacji.
+
+Please fix these issues now and rerun the installer.
+Proszę naprawić problem i uruchomić ponownie instalator.
+
+Continuing installation anyway...
+Kontynuuj instalację...
+
+One or more package dependencies could not be resolved. Details are given below. Please fix these issues now and hit Refresh. Alternatively press Ignore to continue, risking any dependency errors when using the installed software.
+Jedna lub więcej zależności nie mogły zostać rozwiązane. Szczególy widoczne poniżej. Proszę naprawić problem i kliknąć 'Odśwież'. Alternatywnie proszę wciśnąć przycisk 'Ignoruj' by kontynuować, ryzykując problemami w działaniu zainstalowanej aplikacji.
+
+You need to accept to license agreement in order to install this software. Use the --show-license option to view it and --accept-license to accept the license.
+By kontynuować, należy zaakceptować warunki umowy licencyjnej. Użyj --pokaż-licencję --zaakceptuj-licencję
+
+
+#-----------------------------------------------
+# Window titles
+#-----------------------------------------------
+
+# %s is replaced by parameter name from configmenu
+Please choose a new value for %s
+Proszę wybrać nową wartość dla %s
+
+# %s is replaced by parameter name from configmenu
+Please select a directory for %s
+Wybierz katalog dla %s
+
+# %s is replaced by parameter name from configmenu
+Please enter a new value for %s
+Wprowadź nową wartość dla %s
+
+Please select a language
+Proszę wybrać język
+
+Welcome
+Witamy
+
+License agreement
+Umowa licencyjna
+
+Select destination directory
+Wybierz folder docelowy
+
+Please read the following text
+Proszę przeczytać poniższy tekst
+
+Warning
+Uwaga
+
+Enter name of new directory
+Wprowadź nazwę nowego katalogu
+
+About
+Info
+
+Select a directory
+Wybierz katalog
+
+Password dialog
+Hasło
+
+Software is being installed
+Instalacja w toku...
+
+Software destination
+Ścieżka aplikacji
+
+Software registration
+Rejestracja oprogramowania
+
+Installation summary
+Podsumowanie
+
+
+#-----------------------------------------------
+# Other
+#-----------------------------------------------
+
+Progress
+Status : 
+
+Language
+Język
+
+I agree to this license agreement
+Zgadzam się z warunkami licencji.
+
+Status
+Status
+
+Extracting files
+Instalacja pliku
+
+Verifying dependencies
+Weryfikacja zależności
+
+Gathering main binary dependencies.
+Ustalanie zależności...
+
+Gathering main library dependencies.
+Ustalanie zależności....
+
+Extracting dependency %s
+Instalacja zależności %s
+
+Gathering mandatory dependencies.
+ustalanie zależności...
+
+Installing dependencies.
+Instalacja zależności.
+
+Installing package
+Instalacja pakietu
+
+Enable
+Włącz
+
+Disable
+Wyłącz
+
+Directory name
+Nazwa katalogu
+
+Root password
+Hasło administratora
+
+Register software
+Rejestracja oprogramowania
+
+Name
+Nazwa
+
+Problem
+Problem
+
+Description
+Opis
+
+Failed to install.
+Instalacja zakończona niepowodzeniem.
+
+Failed to download.
+Nieudana próba pobrania.
+
+(Binary) incompatible.
+(Binaria) niekompatybilne.
+
+# %s will be replaced by the name of the incompatible library.
+Incompatible library: %s.
+Niekompatybilna biblioteka: %s.
+
+# %s will be replaced by the name of the missing library.
+Missing library: %s.
+Brakująca biblioteka: %s.
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too old (required: %s).
+Biblioteka %s jest zbyt stara (wymagana: %s).
+
+# First %s will be replaced by the found library, second by the required library.
+Library %s is too new (required: %s).
+Biblioteka %s jest zbyt nowa (wymagana: %s).
+
+# %s will be replaced by the required library.
+Wrong library version (required: %s).
+Zła wersja biblioteki (wymagana: %s).
+
+# %s will be replaced by the found library.
+Too new (available: %s)
+Nowsza wersja (dostępne: %s)
+
+# %s will be replaced by the found library.
+Too old (available: %s)
+Zbyt stara (dostępna: %s)
+
+File missing.
+Brakuje pliku.
+
+Version mismatch.
+Różne wersje.
+
+Multiple package managers were found, please choose which one should be used.
+Znaleziono wiele menadżerów pakietów - proszę wybrać jeden, który zostanie użyty.
+
+# %s is replaced by possible package managers
+[
+Multiple package managers were found: %s
+Please use the --packager option to specify which one should be used.
+]
+[
+Znalazione managery pakietów: %s
+Użyty zostanie --proszę zaznaczyć, którego użyć.
+]
+
+[
+In this field you can select the destination directory for the software's data. The files are installed in a subdirectory below the specified directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+If unsure, just leave it as it is.
+]
+[
+W tym polu możesz ustalić ścieżkę lub katalog, gdzie zainstalowane zostanie oprogramowanie. Pliki zostaną zainstalowane w podkatalogu ustalonego folderu.
+
+Note: jeśli nie masz uprawnień do zapisu w podanym katalogu, musisz uzyskać uprawnienia administratora (root).
+
+Info: Jeśli nie jesteś pewien uprawnień, pozostaw to pole takim, jakie jest.
+]
+
+[
+In this field you can select the destination directory for the executables. The files are directly installed to this directory.
+
+Note: if you don't have write access to this directory you need to grant the installer root access later on.
+
+When unsure, just leave it as it is.
+]
+[
+W tym polu można wybrać docelowy folder dla plików wykonywalnych. Pliki zostaną w tym katalogu zainstalowane.
+
+Info: jeśli nie posiadasz uprawnień do zapisu w tym katalogu, musisz uzyskać uprawnienia administratora (root) .
+
+Info: Jeśli nie jesteś pewien uprawnień, pozostaw to pole takim, jakie jest.
+]
+
+
+[
+By enabling this box, the installer will (try to) register the software in the system's package manager. This allows easy removal or upgrading.
+
+Note: When enabled, you need to grant the installer root access later on.
+]
+[
+Zaznaczając to pole, instalator (spróbuje) zarejestruje oprogramowanie w systemowym managerze pakietów. Umożliwi to łatwe usuwanie lub uaktualnianie.
+
+Info: Jeśli opcja została uaktywniona, proszę uzyskać uprawnienia administratora (root).
+]
+
+[
+The software has been installed to this system.
+An installation summary is shown below.
+]
+[
+Oprogramowanie zostało zainstalowane.
+Podsumowanie instalacji widoczne jest poniżej.
+]
+
+dpkg (eg. Ubuntu, Debian)
+dpkg (np. Ubuntu, Debian)
+
+pacman (eg. Arch Linux)
+pacman (np. Arch Linux)
+
+rpm (eg. Fedora, Mandriva)
+rpm (np. Fedora, Mandriva)
+
+Slackware tgz (eg. Slackware, Zenwalk)
+Slackware tgz (np. Slackware, Zenwalk)
+
+
+#-----------------------------------------------
+# Error messages
+#-----------------------------------------------
+
+Error
+Błąd
+
+Could not create directory
+Nie można utworzyć folderu 
+
+# %s is replaced by directory name
+[
+This installer will install files to the following directory:
+%s
+However you don't have read permissions to this directory
+Please restart the installer as a user who does or as the root user
+]
+[
+Instalator zainstaluje pliki w następującej lokacji :
+%s
+Nie posiadasz uprawnień do podanej lokacji.
+Proszę uruchomić instalator ponownie jako administrator (root).
+]
+
+# First %s is replaced by directory name, second by error message
+Could not open directory %s: %s
+Nie można otworzyć lokacji %s: %s
+
+# First %s is replaced by directory name, second by error message
+Could not read directory %s: %s
+Błąd w odczycie z lokacji %s: %s
+
+# %s is replaced by error message
+Could not read current directory: %s
+Błąd w odczycie z bieżącej lokacji: %s
+
+# %s is replaced by Lua error message
+Lua error detected: %s
+Wykryto błąd Lua: %s
+
+# %s is replaced by error message
+Could not execute command: %s
+Nie można wykonać zadania: %s
+
+# %s is replaced by error message
+Could not create directory: %s
+Nie można utworzyć folderu: %s
+
+Could not use su or sudo to gain root access.
+Błąd w użyciu su lub sudo przy uzyskiwaniu uprawnień.
+
+Not enough space for buttonbar entry
+Brak wystarczającej przestrzeni dla wpisu.
+
+# %s is replaced by error message
+Overflow detected: %s
+Wykryto błąd: %s
+
+# %s is replaced by error message
+Could not open pipe: %s
+Błąd w otwieraniu: %s
+
+# %s is replaced by error message
+Could not read pipe: %s
+Błąd w odczycie: %s
+
+# %s is replaced by error message
+Could not close pipe: %s
+Błąd w zamykaniu: %s
+
+# %s is replaced by error message
+Could not fork child: %s
+Błąd: %s
+
+# %s is replaced by error message
+Could not close file descriptor: %s
+Błąd przy zamykaniu pliku: %s
+
+# %s is replaced by error message
+poll returned an error: %s
+Zwrócono błąd: %s
+
+# %s is replaced by error message
+select returned an error: %s
+Zwrócono błąd: %s
+
+# %s is replaced by error message
+Encountered an error while waiting on child process: %s
+Napotkano błąd w trakcie oczekiwania na proces potomny: %s
+
+# %s is replaced by error message
+uname returned an error: %s
+uname zwrócił błąd: %s
+
+# %s is replaced by directory name
+Could not create directory '%s'
+Nie można utworzyć katalogu '%s'
+
+Please enter a valid path.
+Proszę podać poprawną lokację.
+
+# %s is replaced by error message
+Error during file transfer: %s
+Błąd podczas transeru pliku: %s
+
+# %s is replaced by error message
+Elf class error detected: %s
+Wykryto błąd w klasie Elf: %s
+
+# First %s is replaced by file, second by error message
+Could not open file %s: %s
+Nie można otworzyć pliku %s: %s
+
+# %s is replaced by filename
+Could not locate file: %s
+Nie można zlokalizowac pliku: %s
+
+Cannot read destination directory, restart installer with as a user who can (eg. root).
+Błąd w odczycie podanej lokacji. Uruchom ponownie instalator jako administrator.
+
+Cannot write to destination directory, restart installer with as a user who can (eg. root).
+Błąd w zapisie do podanej lokacji. Uruchom ponownie instalator jako administrator.
+
+Cannot create destination directory, restart installer with as a user who can (eg. root).
+Błąd w utworzeniu podanej lokacji. Uruchom ponownie instalator jako administrator.
+
+# %s is replaced by list of possible packagers
+Wrong packager specified, should be one of the following: %s
+Wybrano zły manager -  wybierz jednego z podanych: %s
+
+
+#-----------------------------------------------
+# FLTK's File Chooser
+#-----------------------------------------------
+
+Add to Favorites
+Dodaj do ulubionych
+
+All Files (*)
+Wszystkie pliki (*)
+
+Custom Filter
+Filtr niestandardowy
+
+Favorites
+Ulubione
+
+Filename:
+Nazwa pliku:
+
+File Systems
+System plików
+
+Manage Favorites
+Zarządzaj ulubionymi
+
+Show:
+Pokaż:
+
+Create new directory
+Utwórz nowy folder
+
+
+#-----------------------------------------------
+# Button bar from ncurses frontend
+#-----------------------------------------------
+
+Next field
+Następne pole
+
+TAB
+TAB
+
+Exit
+Wyjście
+
+ESC
+ESC
+
+F2
+F2
+
+F3
+F3
+
+Done
+Zakończono
+
+ENTER
+ENTER
+
+ARROWS
+STRZAŁKI
+
+ARROWS/PGUP/PGDOWN
+STRZAŁKI/PGUP/PGDOWN
+
+Activate button
+Aktywuj
+
+Move to
+Przenieś (Idź) do
+
+Navigate
+Nawiguj
+
+Character
+Czcionka
+
+Toggle
+Toggle
+
+Change
+Zmień
+
+ARROWS/PGUP/PGDOWN/HOME/END
+STRZAŁKI/PGUP/PGDOWN/HOME/END
+
+SPACE
+SPACE
+
+
+#-----------------------------------------------
+# Put your own translations below
+#-----------------------------------------------
