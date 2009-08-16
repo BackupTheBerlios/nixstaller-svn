@@ -89,6 +89,17 @@ Here is a list with the main features. Read further for more info to see what th
 
 
 @section Changelog
+@subsection 0.5 @minus{}@minus{}> 0.5.1
+@itemize @bullet
+@item Fixed: LZMA encoder had unresolved symbols on older Linux systems (reported by John Tsolox)
+@item Fixed: Missing large file support (LFS) for Linux 32 bit and Solaris (reported by Edward Rudd)
+@item Fixed: Linux 64 bit LZMA encoder was actually a Linux 32 bit binary.
+@item Fixed: OpenSolaris might produce invalid embedded archive.
+@item Fixed: PackageToggleScreen didn't disable package selector when it was disabled.
+@item Fixed: Solaris su helper had unresolved symbol to nanosleep on Solaris 10. (Reported by Marc Rios)
+@item Polish translations (thanks to Jusko)
+@end itemize
+
 @subsection 0.4 @minus{}@minus{}> 0.5
 @itemize @bullet
 @item Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)

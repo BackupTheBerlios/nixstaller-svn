@@ -4,6 +4,7 @@
 - Fixed: Linux 64 bit LZMA encoder was actually a Linux 32 bit binary.
 - Fixed: OpenSolaris might produce invalid embedded archive.
 - Fixed: PackageToggleScreen didn't disable package selector when it was disabled.
+- Fixed: Solaris su helper had unresolved symbol to nanosleep on Solaris 10. (Reported by Marc Rios)
 - Polish translations (thanks to Jusko)
 
 
