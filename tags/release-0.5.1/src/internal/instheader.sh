@@ -94,7 +94,7 @@ EOH
 # UNDONE: Throw message incase no md5 checker was found.
 MS_Check()
 {
-    OLD_PATH=\$PATH
+    OLD_PATH="\$PATH"
     PATH=\${GUESS_MD5_PATH:-"\$OLD_PATH:/bin:/usr/bin:/sbin:/usr/local/ssl/bin:/usr/local/bin:/opt/openssl/bin"}
     
     # Added: Better way to get MD5 sum
@@ -107,7 +107,7 @@ MS_Check()
         fi
     fi
     
-    PATH=\$OLD_PATH
+    PATH="\$OLD_PATH"
     MS_Printf "Verifying archive integrity..."
     offset=\`head -n $SKIP "\$1" | wc -c | tr -d " "\`
     verb=\$2
@@ -438,4 +438,6 @@ if test "\$keep" = n; then
     /bin/rm -rf \$tmpdir
 fi
 eval \$finish; exit \$res
+# Extra newline, because in very rare cases (OpenSolaris) stub is directly added after script
+
 EOF
