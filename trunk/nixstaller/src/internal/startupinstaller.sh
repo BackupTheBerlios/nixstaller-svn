@@ -128,7 +128,7 @@ extractsub()
 launchfrontend()
 {
     DIR="$1"
-    STATIC=$2  
+    STATIC=$2
     
     for FR in $FRONTENDS
     do
