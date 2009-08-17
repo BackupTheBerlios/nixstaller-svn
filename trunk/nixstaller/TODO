@@ -102,3 +102,7 @@ LIBSU
 
 DESIGN
 - Reorganize SConstruct
+
+
+RELEASE
+- Update SConstruct file lists (not merged from 0.5.1!)

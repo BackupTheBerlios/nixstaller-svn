@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys, platform
+import sys, platform, os
 
 EnsureSConsVersion(0,96,91)
 
@@ -47,10 +47,25 @@ env.Append(CPPPATH=['.', inc_dir, 'include/', 'include/libelf/'+cur_os+'/'+cur_a
 
 config_header = 'shared-config.h'
 
-if not env.GetOption('clean'):
-    conf = env.Configure(config_h = config_header)
+def GetLFSFlags(context):
+    context.Message('Checking for LFS flags...')
 
-    conf.CheckFunc('vasprintf', '#include <stdarg.h>')
+    handle = os.popen("getconf LFS_CFLAGS 2>/dev/null")
+    if handle:
+        flags = handle.read()
+        context.Result(flags)
+        context.env.Append(CCFLAGS=Split(flags))
+        handle.close()
+    else:
+        context.Result('None')
+
+if not env.GetOption('clean'):
+    conf = env.Configure(config_h = config_header, custom_tests = {'GetLFSFlags' : GetLFSFlags})
+
+    conf.GetLFSFlags()
+    
+    if cur_os != "sunos":
+        conf.CheckFunc('vasprintf', '#include <stdarg.h>')
             
     if not conf.CheckType('Elf32_Verdef', '#include "elf.h"'):
         print "Elf32_Verdef needs link.h?"

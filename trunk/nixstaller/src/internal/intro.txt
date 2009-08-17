@@ -1,4 +1,4 @@
-Thanks for downloading Nixstaller!
+Thank you for downloading Nixstaller!
 
 With Nixstaller you can easily create installers for your project.
 

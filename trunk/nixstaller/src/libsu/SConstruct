@@ -56,7 +56,8 @@ if not env.GetOption('clean'):
     
     conf.CheckFunc('getpeereid')
     
-    conf.CheckFunc('vasprintf')
+    if cur_os != "sunos":
+    	conf.CheckFunc('vasprintf')
 
     conf.CheckLib('util')
 
@@ -75,6 +76,8 @@ libsu = env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp vaspri
 # Builds runner program
 if cur_os == "openbsd":
     surunner = env.Program("surunner", "runner.c", LINKFLAGS="-static")
+elif cur_os == "sunos":
+    surunner = env.Program("surunner", "runner.c", LIBS="rt")
 else:
     surunner = env.Program("surunner", "runner.c")
 

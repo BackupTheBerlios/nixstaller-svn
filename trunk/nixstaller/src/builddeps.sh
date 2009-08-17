@@ -27,6 +27,8 @@ else
     OPTLFLAGS="-Wl,--gc-sections"
 fi
 
+LFS_CFLAGS=`getconf LFS_CFLAGS 2>/dev/null`
+
 get()
 {
     if [ -f "$DESTFILES/`basename $1`" ]; then
@@ -193,19 +195,19 @@ buildlzma()
     untar "lzma457.tar.bz2" "bzip2"
     dodir "CPP/7zip/Compress/LZMA_Alone"
     gmake --version >/dev/null 2>&1 && MAKE=gmake || MAKE=make
-    LFLAGS="$OPTLFLAGS"
+    LFLAGS="$OPTLFLAGS -static-libgcc"
     [ $CURRENT_OS = "openbsd" ] && LFLAGS="$LFLAGS -static"
 	if [ $CURRENT_OS != "linux" -a $CURRENT_OS != "netbsd" -a $CURRENT_OS != "openbsd" ]; then
-		$MAKE -f makefile.gcc CXX="g++ $OPTCFLAGS" LDFLAGS="$LFLAGS"
+		$MAKE -f makefile.gcc CXX="g++ $OPTCFLAGS $LFS_CFLAGS" LDFLAGS="$LFLAGS"
 	else
-		$MAKE -f makefile.gcc CXX="gcc $OPTCFLAGS" LDFLAGS="-L$DESTPREFIX/lib $LFLAGS" LIB='-lstd -lsupc++ -lm'
+		$MAKE -f makefile.gcc CXX="gcc $OPTCFLAGS $LFS_CFLAGS" LDFLAGS="-L$DESTPREFIX/lib $LFLAGS" LIB='-lstd -lsupc++ -lm'
 	fi
     mkdir -p "$DESTPREFIX/bin"
     cp lzma "$DESTPREFIX/bin"
     restoredir
     dodir "C/Compress/Lzma"
     patch < "$SRCDIR"/lzmastdout.diff
-    gcc $OPTCFLAGS LzmaStateDecode.c LzmaStateTest.c -o lzma-decode $LFLAGS
+    gcc $OPTCFLAGS $LFS_CFLAGS  LzmaStateDecode.c LzmaStateTest.c -o lzma-decode $LFLAGS
     cp lzma-decode "$DESTPREFIX/bin"
     restoredir
     [ $CURRENT_OS != "sunos" -a $CURRENT_OS != "darwin" ] && STRIPARGS="-s"

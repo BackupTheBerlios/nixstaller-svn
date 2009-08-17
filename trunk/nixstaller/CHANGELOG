@@ -1,7 +1,16 @@
-0.5 -->
-- Fixed: PackageToggleScreen didn't disable package selector when it was disabled.
+0.5.1 -->
 - Fixed: Potential segfault at frontend exit.
 - Fixed: Intro wasn't build for lua scripts.
+
+
+0.5 --> 0.5.1
+- Fixed: LZMA encoder had unresolved symbols on older Linux systems (reported by John Tsolox)
+- Fixed: Missing large file support (LFS) for Linux 32 bit and Solaris (reported by Edward Rudd)
+- Fixed: Linux 64 bit LZMA encoder was actually a Linux 32 bit binary.
+- Fixed: OpenSolaris might produce invalid embedded archive.
+- Fixed: PackageToggleScreen didn't disable package selector when it was disabled.
+- Fixed: Solaris su helper had unresolved symbol to nanosleep on Solaris 10. (Reported by Marc Rios)
+- Polish translations (thanks to Jusko)
 
 
 0.4 --> 0.5

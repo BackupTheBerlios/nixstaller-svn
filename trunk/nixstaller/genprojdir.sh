@@ -38,7 +38,7 @@ DEF_DEFAULTLANG="english"
 DEF_TARGETOS=
 DEF_TARGETARCH=
 DEF_FRONTENDS="gtk fltk ncurses"
-DEF_LANGUAGES="english dutch lithuanian bulgarian"
+DEF_LANGUAGES="english dutch lithuanian bulgarian polish"
 DEF_INTROPIC=
 DEF_LOGO=
 DEF_APPICON=
@@ -85,7 +85,7 @@ usage()
     echo " --deflang, -d <lang>             The default language. Default: english"
     echo " --frontends, -f <frontends>      One or more frontends to include. Valid values: gtk, fltk and ncurses. Default: gtk fltk ncurses."
     echo " --intropic, -i <picture>         Path to picture file, which is displayed in the welcomescreen. Valid types are png, jpeg, gif and bmp. Default: none"
-    echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch lithuanian bulgarian"
+    echo " --languages, -l <langs>          Languages to include (copied from main lang/ directory). Default: english dutch lithuanian bulgarian polish"
     echo " --logo <file>                    Path to logo picture file. Valid types: png, jpeg, gif and bmp. Default: a default logo."
     echo " --mode, -m <mode>                 Sets the installer mode. Valid values: both, attended, unattended. Default: attended"
     echo " --no-autolang                     Disables automaticly choosing a language."

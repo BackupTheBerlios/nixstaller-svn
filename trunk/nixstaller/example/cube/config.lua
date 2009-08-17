@@ -24,7 +24,7 @@ cfg.frontends = { "gtk", "fltk", "ncurses" }
 cfg.defaultlang = "english"
 
 -- Translations to include
-cfg.languages = { "english", "dutch", "lithuanian", "bulgarian" }
+cfg.languages = { "english", "dutch", "lithuanian", "bulgarian", "polish" }
 
 -- When enabled the installer will automaticly guess the right language. If this fails
 -- or when this option is disabled, the user has to choose a language.
