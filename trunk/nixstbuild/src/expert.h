@@ -82,7 +82,7 @@ private slots:
     void openRecentCB(QAction *action);
     bool build(void);
     void buildAndRun(void);
-    void preview(void);
+    void fastrun(void);
     void showEditSettings(void);
     void showNixstbSettings(void);
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);

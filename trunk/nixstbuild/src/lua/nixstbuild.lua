@@ -27,3 +27,14 @@ loadlua("filemanager.lua")
 
 setRunIndenting(false)
 
+function frontends()
+    return { "GTK2", "FLTK", "ncurses" }
+end
+
+function internFrontendName(fr)
+    local frmap = { }
+    frmap["GTK2"] = "gtk"
+    frmap["FLTK"] = "fltk"
+    frmap["ncurses"] = "ncurses"
+    return frmap[fr]
+end

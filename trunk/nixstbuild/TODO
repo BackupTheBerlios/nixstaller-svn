@@ -15,5 +15,5 @@
     - Other drop actions?
     - Save splitter states?
     - Permissions editor?
-- Disable build when no project is active
 - Some way to specify target file. (update build&run!)
+- fastrun and unattended installs

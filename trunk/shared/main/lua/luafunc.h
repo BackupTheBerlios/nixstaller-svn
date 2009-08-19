@@ -49,6 +49,15 @@ public:
         m_ArgLuaTable[m_ArgLuaTable.Size()+1] << arg;
         return *this;
     }
+    template <typename C> CLuaFunc &operator >>(std::vector<C> &out)
+    {
+        CheckSelf();
+        CLuaTable tab;
+        m_ArgLuaTable[m_iRetStartIndex] >> tab;
+        tab.ToVec(out);
+        m_iRetStartIndex++;
+        return *this;
+    }
     template <typename C> CLuaFunc &operator >>(C &out)
     {
         CheckSelf();

@@ -198,10 +198,10 @@ void CExpertScreen::createBuildRunMenu()
     connect(action, SIGNAL(triggered()), this, SLOT(buildAndRun()));
     buildMenu->addAction(action);
 
-    action = new QAction(tr("&Preview"), this);
+    action = new QAction(tr("&Fast run"), this);
     action->setShortcut(tr("F9"));
-    action->setStatusTip(tr("Previews the installer"));
-    connect(action, SIGNAL(triggered()), this, SLOT(preview()));
+    action->setStatusTip(tr("Quickly runs the installer without building it"));
+    connect(action, SIGNAL(triggered()), this, SLOT(fastrun()));
     buildMenu->addAction(action);
 
     buildMenu->setEnabled(false); // Disabled by default (no project loaded yet)
@@ -493,15 +493,59 @@ void CExpertScreen::buildAndRun()
     }
 }
 
-void CExpertScreen::preview()
+void CExpertScreen::fastrun()
 {
-    // UNDONE: Check if needs to be build.
-
-    QString npath = getNixstPath();
-    if (!npath.isEmpty())
+    QSettings settings;
+    QDialog dialog;
+    dialog.setModal(true);
+    QFormLayout *form = new QFormLayout(&dialog);
+    
+    QComboBox *combo = new QComboBox;
+    
+    combo->addItem("Default");
+    
+    NLua::CLuaFunc frFunc("frontends");
+    TStringVec frlist;
+    frFunc(1);
+    frFunc >> frlist;
+    
+    for (TStringVec::iterator it=frlist.begin(); it!=frlist.end(); it++)
+        combo->addItem(it->c_str());
+    int prev = settings.value("fastrun/frontend", 0).toInt();
+    if ((prev > 0) && (prev < frlist.size()))
+        combo->setCurrentIndex(prev);
+    form->addRow("Frontend", combo);
+    
+    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
+            QDialogButtonBox::Cancel);
+    connect(bbox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    connect(bbox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    form->addWidget(bbox);
+    
+    if (dialog.exec() == QDialog::Accepted)
     {
-        clearConsole();
-        runInConsole(QString("%1/fastrun.sh %2").arg(npath).arg(projectDir), true);
+        QString npath = getNixstPath();
+        if (!npath.isEmpty())
+        {
+            clearConsole();
+            
+            QString frarg;
+            
+            if (combo->currentIndex()) // Default == 0 --> don't specify
+            {
+                NLua::CLuaFunc f("internFrontendName");
+                f << combo->currentText().toStdString();
+                f(1);
+                std::string frontend;
+                f >> frontend;
+                frarg = QString("-f %1").arg(frontend.c_str());
+            }
+            
+            // UNDONE: handle ncurses
+            settings.setValue("fastrun/frontend", combo->currentIndex());
+            
+            runInConsole(QString("%1/fastrun.sh %2 %3").arg(npath).arg(frarg).arg(projectDir), true);
+        }
     }
 }
 

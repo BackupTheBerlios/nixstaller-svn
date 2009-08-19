@@ -35,6 +35,7 @@ OVERALL
 - Check if makeself's destination path is executable and if not search for alternatives/notify user (Francois Marier)
 - Fix 'site size' (ie mobile browsers)
 - Make sure that ncurses frontend has enough display space
+- fastrun and unattended installs
 
 
 PACKAGING

@@ -40,7 +40,7 @@ usage()
     echo "[options] can be one of the following things (all are optional):"
     echo
     echo " --help, -h                       Print this message."
-    echo " --frontend, -f                   Limit to given frontend(s). Multiple frontends must be seperated by whitespace."
+    echo " --frontend, -f <frontend>        Use specified frontend. Default a suitable frontend is automatically detected."
     exit 1
 }
 
@@ -55,9 +55,9 @@ startfastinst()
         case "${1}" in
             --frontend | -f )
                 if [ "$2" = "ncurses" ]; then
-                    FRS="$FRS ncurs" # Convert from user string
+                    FRS="ncurs" # Convert from user string
                 else
-                    FRS="$FRS $2"
+                    FRS="$2"
                 fi
                 shift 2
                 ;;
