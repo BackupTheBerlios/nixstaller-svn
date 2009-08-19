@@ -40,6 +40,13 @@ CLuaTextField::CLuaTextField(const char *desc, bool wrap, const char *size) : CB
     m_pDisplay->textfont(FL_COURIER);
     
     GetGroup()->add(m_pDisplay);
+    
+    Fl::add_timeout(0.2, BufferDumper, this);
+}
+
+CLuaTextField::~CLuaTextField()
+{
+    Fl::remove_timeout(BufferDumper, this);
 }
 
 void CLuaTextField::Load(const char *file)
@@ -51,17 +58,7 @@ void CLuaTextField::Load(const char *file)
 
 void CLuaTextField::AddText(const char *text)
 {
-    m_pBuffer->append(text);
-    
-    const int size = m_pBuffer->length();
-    if (size > MaxSize())
-    {
-        const int end = ClearSize() + (size - MaxSize());
-        m_pBuffer->remove(0, end);
-    }
-    
-    if (Follow())
-        DoFollow();
+    m_Buffer += text;
 }
 
 void CLuaTextField::ClearText()
@@ -101,4 +98,28 @@ int CLuaTextField::FieldHeight(void) const
         return 170;
     else // big
         return 220;
+}
+
+void CLuaTextField::BufferDumper(void *data)
+{
+    CLuaTextField *me = static_cast<CLuaTextField *>(data);
+    
+    if (!me->m_Buffer.empty())
+    {
+        me->m_pBuffer->append(me->m_Buffer.c_str());
+    
+        const int size = me->m_pBuffer->length();
+        if (size > me->MaxSize())
+        {
+            const int end = me->ClearSize() + (size - me->MaxSize());
+            me->m_pBuffer->remove(0, end);
+        }
+    
+        if (me->Follow())
+            me->DoFollow();
+
+        me->m_Buffer.clear();
+    }
+    
+    Fl::repeat_timeout(0.04, BufferDumper, data);
 }

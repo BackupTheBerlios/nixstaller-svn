@@ -31,7 +31,7 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     Fl_Text_Buffer *m_pBuffer;
     Fl_Text_Display *m_pDisplay;
     bool m_bWrap;
-    std::string m_Size;
+    std::string m_Size, m_Buffer;
     
     virtual void Load(const char *file);
     virtual void AddText(const char *text);
@@ -46,6 +46,9 @@ class CLuaTextField: public CBaseLuaTextField, public CLuaWidget
     
 public:
     CLuaTextField(const char *desc, bool wrap, const char *size);
+    virtual ~CLuaTextField(void);
+    
+    static void BufferDumper(void *data);
 };
 
 #endif

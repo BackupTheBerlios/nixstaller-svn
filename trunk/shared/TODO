@@ -9,4 +9,5 @@
     - CHANGELOG
     - Test process killing
     - Test custom path's
+- Fix O_CREAT mode flags for file copy
     
