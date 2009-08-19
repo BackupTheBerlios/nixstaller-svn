@@ -33,4 +33,66 @@ fi
 
 . "$NDIR/src/internal/utils.sh"
 
+usage()
+{
+    echo "Usage: $0 [options] <project dir>"
+    echo
+    echo "[options] can be one of the following things (all are optional):"
+    echo
+    echo " --help, -h                       Print this message."
+    echo " --frontend, -f                   Limit to given frontend(s). Multiple frontends must be seperated by whitespace."
+    exit 1
+}
+
+startfastinst()
+{
+    NDIR="$1"
+    shift
+    
+    FRS=
+    while true
+    do
+        case "${1}" in
+            --frontend | -f )
+                if [ "$2" = "ncurses" ]; then
+                    FRS="$FRS ncurs" # Convert from user string
+                else
+                    FRS="$FRS $2"
+                fi
+                shift 2
+                ;;
+            -* )
+                usage
+                ;;
+            * )
+                break
+                ;;
+        esac
+    done
+    
+    [ -z "$FRS" ] && FRS="$FRONTENDS"
+    
+    for F in $FRS; do
+        FOUND=
+        for AF in $FRONTENDS; do
+            if [ $AF = $F ]; then
+                FOUND=1
+            fi
+        done
+        if [ -z $FOUND ]; then
+            echo "Error: invalid frontend specified. Valid frontends: gtk fltk ncurses"
+            exit 1
+        fi
+    done
+
+    PRDIR="$1"
+    
+    if [ -z "$PRDIR" ]; then
+        usage
+    fi
+    
+    # UNDONE
+    launchfrontend "$NDIR" "$FRS" -c "$PRDIR" -l "$NDIR/src/lua" --ls "$NDIR/../shared/lua" --fastrun -n "$NDIR"
+}
+
 startfastinst "$NDIR" $@

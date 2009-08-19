@@ -15,7 +15,6 @@ OVERALL
     - Way to tell that dep shouldn't be standalone
 - Unattended installations
     - Control verbosity?
-- Move curdir lua variable to install package?
 - Installer profiles
 - Configurable background parts (background images)
 - Seperate dep installing and collecting? --> Allows to configure them during installation
@@ -30,10 +29,7 @@ OVERALL
 - Update lzma
 - Update/merge makeself.sh and makeself-header.sh
 - fastrun:
-    - terminfo
-    - start file
     - test relative paths, paths with dots, etc
-    - Frontend selection
 - Check for XDG updates
 - See if more code needs to be moved to internal (atleast pkg.updatepackager())
 - Check if makeself's destination path is executable and if not search for alternatives/notify user (Francois Marier)
@@ -94,10 +90,6 @@ TRANSLATIONS
     - Convert language files to utf?
     - Convert utf to native for ncurses frontend?
     - way to specify encoding?
-
-
-LIBSU
-- Check tmp files leaving around (caused by sh errors?)
 
 
 DESIGN
