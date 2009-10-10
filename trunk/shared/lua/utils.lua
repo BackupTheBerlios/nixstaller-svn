@@ -181,12 +181,10 @@ function escapepat(s)
     return ret
 end
 
-function loadconfig(path)
-    dofile(path .. "/config.lua")
-    
+function initconfig()
     local function default(var, val)
-        if cfg[var] == nil then
-            cfg[var] = val
+    if cfg[var] == nil then
+        cfg[var] = val
         end
     end
     
@@ -199,7 +197,14 @@ function loadconfig(path)
     default("archivetype", "lzma")
     default("mode", "attended")
     default("autolang", true)
+    
+end
 
+function loadconfig(path)
+    dofile(path .. "/config.lua")
+    
+    initconfig()
+    
     if not utils.tablefind(cfg.languages, cfg.defaultlang) then
         cfg.defaultlang = cfg.languages[1]
     end

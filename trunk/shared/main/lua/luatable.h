@@ -60,11 +60,23 @@ public:
         void operator <<(int val);
         void operator <<(bool val);
         void operator <<(const CLuaTable &tab);
+        template <typename C> void operator <<(const std::vector<C> &vec)
+        {
+            CLuaTable t(vec.begin(), vec.end());
+            operator <<(t);
+        }
+        
         void operator >>(std::string &val);
         void operator >>(const char *&val);
         void operator >>(int &val);
         void operator >>(bool &val);
         void operator >>(CLuaTable &tab);
+        template <typename C> void operator >>(std::vector<C> &out)
+        {
+            CLuaTable t;
+            operator >>(t);
+            t.ToVec(out);
+        }
         operator void *(void);
     };
     
@@ -72,7 +84,8 @@ public:
     CLuaTable(const char *var, const char *type, void *prvdata);
     CLuaTable(int index);
     CLuaTable(void); // Creates new table
-    template<typename IT> CLuaTable(IT start, IT end)
+    CLuaTable(const CLuaTable &lt);
+    template <typename IT> CLuaTable(IT start, IT end)
     {
         New();
         int n = 1;
@@ -111,6 +124,7 @@ public:
     CReturn operator [](const std::string &index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     CReturn operator [](int index) { CheckSelf(); return CReturn(index, m_iTabRef); }
     operator void *(void) { static int ret; return (m_bOK) ? &ret : 0; }
+    bool OK(void) const { return m_bOK; }
 };
 
 

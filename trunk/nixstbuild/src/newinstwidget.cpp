@@ -45,7 +45,7 @@ widgetmap &getWidgetMap(void)
     if (!loaded)
     {
         loaded = true;
-        NLua::CLuaTable wtab("widget_properties");
+        NLua::CLuaTable wtab("widgetProperties");
 
         if (wtab)
         {

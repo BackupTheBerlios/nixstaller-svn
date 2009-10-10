@@ -51,6 +51,7 @@
 #include "main/lua/luatable.h"
 #include "main/pseudoterminal.h"
 #include "configw.h"
+#include "configwidget.h"
 #include "dirbrowser.h"
 #include "dirinput.h"
 #include "editor.h"
@@ -610,11 +611,29 @@ void CExpertScreen::closeEvent(QCloseEvent *e)
 CGeneralConfTab::CGeneralConfTab(QWidget *parent,
                                  Qt::WindowFlags flags) : CBaseExpertTab(parent, flags)
 {
-    // UNDONE
-    QScrollArea *configScroll = new QScrollArea();
-    configScroll->setWidget(qw = new QConfigWidget(this, "configprop.lua", "properties_config", "config.lua"));
+    QVBoxLayout *vbox = new QVBoxLayout(this);
+    
+    QScrollArea *configScroll = new QScrollArea;
+    configScroll->setFrameStyle(QFrame::Plain | QFrame::NoFrame);
+    configScroll->setWidget(configWidget = new CConfigWidget);
+    
+    vbox->addWidget(configScroll);
 }
 
+void CGeneralConfTab::loadProject(const QString &dir)
+{
+    configWidget->loadConfig(dir.toStdString());
+}
+
+void CGeneralConfTab::saveProject(const QString &dir)
+{
+    configWidget->saveConfig(dir.toStdString());
+}
+
+void CGeneralConfTab::newProject(const QString &dir)
+{
+    configWidget->newConfig(dir.toStdString());
+}
 
 CPackageConfTab::CPackageConfTab(QWidget *parent,
                                  Qt::WindowFlags flags) : CBaseExpertTab(parent, flags)

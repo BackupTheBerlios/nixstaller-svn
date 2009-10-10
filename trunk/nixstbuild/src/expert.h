@@ -35,6 +35,7 @@ class QFormatScheme;
 class QLanguageFactory;
 
 class CBaseExpertTab;
+class CConfigWidget;
 class CDirBrowser;
 class CEditor;
 class CEditSettings;
@@ -109,13 +110,14 @@ public:
 class CGeneralConfTab: public CBaseExpertTab
 {
     QConfigWidget *qw;
+    CConfigWidget *configWidget;
     
 public:
     CGeneralConfTab(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-    virtual void loadProject(const QString &dir) {}
-    virtual void saveProject(const QString &dir) {}
-    virtual void newProject(const QString &dir) {}
+    virtual void loadProject(const QString &dir);
+    virtual void saveProject(const QString &dir);
+    virtual void newProject(const QString &dir);
 };
 
 class CPackageConfTab: public CBaseExpertTab

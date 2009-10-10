@@ -47,6 +47,18 @@ CLuaTable::CLuaTable() : m_bOK(true), m_iTabRef(LUA_NOREF)
     New();
 }
 
+CLuaTable::CLuaTable(const CLuaTable &lt) : m_iTabRef(LUA_NOREF)
+{
+    if (lt.OK())
+    {
+        m_bOK = true;
+        lt.GetTable();
+        m_iTabRef = luaL_ref(LuaState, LUA_REGISTRYINDEX);
+    }
+    else
+        m_bOK = false;
+}
+
 void CLuaTable::GetTable(const std::string &tab, int index)
 {
     lua_getfield(LuaState, index, tab.c_str());

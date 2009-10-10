@@ -22,6 +22,7 @@ loadluash("utils.lua")
 loadluash("utils-public.lua")
 loadlua("addwidget.lua")
 loadlua("configprop.lua")
+loadlua("configgen.lua")
 loadlua("rungen.lua")
 loadlua("filemanager.lua")
 

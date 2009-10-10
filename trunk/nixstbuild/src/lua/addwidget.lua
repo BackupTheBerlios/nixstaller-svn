@@ -20,7 +20,7 @@
 
 -- UNDONE: Image widget
 -- Note: fields need to be in function argument order!
-widget_properties = {
+widgetProperties = {
 ["Checkbox"] = { func = "addcheckbox", fields = {
     { name = "Title", type = "string" },
     { name = "Options", type = "list", listtype = "multi" }}

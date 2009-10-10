@@ -14,7 +14,8 @@ SOURCES += main.cpp \
  deskentrywidget.cpp \
  morelabel.cpp \
  dirbrowser.cpp \
- dirinput.cpp
+ dirinput.cpp \
+ configwidget.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -37,7 +38,8 @@ HEADERS += welcome.h \
  deskentrywidget.h \
  morelabel.h \
  dirbrowser.h \
- dirinput.h
+ dirinput.h \
+ configwidget.h
 
 
 
@@ -46,7 +48,8 @@ DISTFILES += lua/nixstbuild.lua \
  lua/utils-public.lua \
  lua/addwidget.lua \
  lua/genrun.lua \
- lua/filemanager.lua
+ lua/filemanager.lua \
+ lua/configgen.lua
 
 TARGETDEPS += ../qcodeedit/libqcodeedit.so
 LIBS += -L../qcodeedit \
