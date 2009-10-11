@@ -31,8 +31,13 @@ class CBaseConfValue;
 
 class CConfigWidget: public QWidget
 {
-    typedef std::map<std::string, CBaseConfValue *> TValueWidgetMap;
-    TValueWidgetMap valueWidgetMap;
+    Q_OBJECT
+    
+    typedef std::vector<CBaseConfValue *> TValueWidgetList;
+    TValueWidgetList valueWidgetList;
+    
+private slots:
+    void valueChangedCB(const NLua::CLuaTable &t);
     
 public:
     CConfigWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -40,19 +45,27 @@ public:
     void loadConfig(const std::string &dir);
     void saveConfig(const std::string &dir);
     void newConfig(const std::string &dir);
+
+signals:
+    void confValueChanged(const NLua::CLuaTable &t);
 };
 
 class CBaseConfValue: public QWidget
 {
+    Q_OBJECT
+    
     NLua::CLuaTable luaValueTable;
 
     virtual void coreLoadValue(void) = 0;
     virtual void corePushValue(void) = 0;
     virtual void coreClearWidget(void) = 0;
-    virtual void coreSetProjectDir(const std::string &dir) { }
+    virtual void coreSetProjectDir(const std::string &) { }
 
 protected:
     NLua::CLuaTable &getLuaValueTable(void) { return luaValueTable; }
+
+protected slots:
+    void valueChangedCB(void);
     
 public:
     CBaseConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
@@ -63,6 +76,9 @@ public:
     void pushValue(void) { corePushValue(); }
     void clearWidget(void) { coreClearWidget(); }
     void setProjectDir(const std::string &dir) { coreSetProjectDir(dir); }
+
+signals:
+    void confValueChanged(const NLua::CLuaTable &t);
 };
 
 class CStringConfValue: public CBaseConfValue
@@ -118,7 +134,7 @@ public:
                    Qt::WindowFlags flags = 0);
 };
 
-class CDirConfValue: public CBaseConfValue
+class CFileConfValue: public CBaseConfValue
 {
     Q_OBJECT
 
@@ -134,6 +150,6 @@ private slots:
     void modifyCB(void);
     
 public:
-    CDirConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
-                  Qt::WindowFlags flags = 0);
+    CFileConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
+                   Qt::WindowFlags flags = 0);
 };

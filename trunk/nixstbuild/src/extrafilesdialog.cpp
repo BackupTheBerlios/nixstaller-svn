@@ -75,7 +75,7 @@ void CExtraFilesDialog::updateSelCB()
 
 void CExtraFilesDialog::addCB()
 {
-    QString file = QFileDialog::getOpenFileName(NULL, "Add a extra (runtime) file");
+    QString file = QFileDialog::getOpenFileName(NULL, "Add an extra (runtime) file");
 
     if (!file.isEmpty())
         extraBrowser->copyFile(file);

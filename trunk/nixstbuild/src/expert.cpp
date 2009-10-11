@@ -43,6 +43,7 @@
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QSplitter>
+#include <QTabWidget>
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -612,12 +613,17 @@ CGeneralConfTab::CGeneralConfTab(QWidget *parent,
                                  Qt::WindowFlags flags) : CBaseExpertTab(parent, flags)
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
+
+    QTabWidget *tabWidget = new QTabWidget;
+    vbox->addWidget(tabWidget);
     
     QScrollArea *configScroll = new QScrollArea;
     configScroll->setFrameStyle(QFrame::Plain | QFrame::NoFrame);
     configScroll->setWidget(configWidget = new CConfigWidget);
-    
-    vbox->addWidget(configScroll);
+    configScroll->setWidgetResizable(true);
+    tabWidget->addTab(configScroll, "General config");
+
+    tabWidget->addTab(new QWidget, "Unattend config");
 }
 
 void CGeneralConfTab::loadProject(const QString &dir)

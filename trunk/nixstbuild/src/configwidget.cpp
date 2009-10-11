@@ -40,10 +40,11 @@ CConfigWidget::CConfigWidget(QWidget *parent,
     if (tab)
     {
         std::string var;
-        while (tab.Next(var))
+        const int size = tab.Size();
+        for (int i=1; i<=size; i++)
         {
             NLua::CLuaTable vtab;
-            tab[var] >> vtab;
+            tab[i] >> vtab;
 
             std::string type;
             vtab["type"] >> type;
@@ -57,18 +58,25 @@ CConfigWidget::CConfigWidget(QWidget *parent,
                 confValue = new CMultiChoiceConfValue(vtab);
             else if (type == "boolean")
                 confValue = new CBoolConfValue(vtab);
-            else if (type == "dir")
-                confValue = new CDirConfValue(vtab);
+            else if (type == "file")
+                confValue = new CFileConfValue(vtab);
 
             if (confValue)
             {
+                connect(confValue, SIGNAL(confValueChanged(const NLua::CLuaTable &)),
+                        this, SLOT(valueChangedCB(const NLua::CLuaTable &)));
                 std::string name;
                 vtab["name"] >> name;
                 form->addRow(name.c_str(), confValue);
-                valueWidgetMap[var] = confValue;
+                valueWidgetList.push_back(confValue);
             }
         }
     }
+}
+
+void CConfigWidget::valueChangedCB(const NLua::CLuaTable &t)
+{
+    emit confValueChanged(t);
 }
 
 void CConfigWidget::loadConfig(const std::string &dir)
@@ -81,21 +89,21 @@ void CConfigWidget::loadConfig(const std::string &dir)
         func(0);
     }
 
-    for (TValueWidgetMap::iterator it=valueWidgetMap.begin();
-         it!=valueWidgetMap.end(); it++)
+    for (TValueWidgetList::iterator it=valueWidgetList.begin();
+         it!=valueWidgetList.end(); it++)
     {
-        it->second->setProjectDir(dir);
-        it->second->loadValue();
+        (*it)->setProjectDir(dir);
+        (*it)->loadValue();
     }
 }
 
 void CConfigWidget::saveConfig(const std::string &dir)
 {
-    for (TValueWidgetMap::iterator it=valueWidgetMap.begin();
-         it!=valueWidgetMap.end(); it++)
+    for (TValueWidgetList::iterator it=valueWidgetList.begin();
+         it!=valueWidgetList.end(); it++)
     {
-        it->second->setProjectDir(dir);
-        it->second->pushValue();
+        (*it)->setProjectDir(dir);
+        (*it)->pushValue();
     }
 
     NLua::CLuaFunc func("saveGenConf");
@@ -118,15 +126,22 @@ void CConfigWidget::newConfig(const std::string &dir)
     }
 
     // Clear widgets
-    for (TValueWidgetMap::iterator it=valueWidgetMap.begin();
-         it!=valueWidgetMap.end(); it++)
+    for (TValueWidgetList::iterator it=valueWidgetList.begin();
+         it!=valueWidgetList.end(); it++)
     {
-        it->second->setProjectDir(dir);
-        it->second->clearWidget();
+        (*it)->setProjectDir(dir);
+        (*it)->clearWidget();
     }
 
     // Load new (default) file
     loadConfig(dir);
+}
+
+
+void CBaseConfValue::valueChangedCB()
+{
+    corePushValue();
+    emit confValueChanged(luaValueTable);
 }
 
 
@@ -135,6 +150,8 @@ CStringConfValue::CStringConfValue(const NLua::CLuaTable &luat, QWidget *parent,
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->addWidget(lineEdit = new QLineEdit);
+    connect(lineEdit, SIGNAL(textEdited(const QString &)), this,
+            SLOT(valueChangedCB()));
 }
 
 void CStringConfValue::coreLoadValue()
@@ -165,6 +182,9 @@ CChoiceConfValue::CChoiceConfValue(const NLua::CLuaTable &luat, QWidget *parent,
     getLuaValueTable()["choices"] >> l;
     for (TStringVec::const_iterator it=l.begin(); it!=l.end(); it++)
         comboBox->addItem(it->c_str());
+
+    connect(comboBox, SIGNAL(currentIndexChanged(const QString &)), this,
+            SLOT(valueChangedCB()));
 }
 
 void CChoiceConfValue::coreLoadValue()
@@ -192,14 +212,25 @@ CMultiChoiceConfValue::CMultiChoiceConfValue(const NLua::CLuaTable &luat,
                                              QWidget *parent,
                                              Qt::WindowFlags flags) : CBaseConfValue(luat, parent, flags)
 {
-    QVBoxLayout *vbox = new QVBoxLayout(this);
-
     TStringVec l;
     getLuaValueTable()["choices"] >> l;
+
+    QGridLayout *grid = new QGridLayout(this);
+    int row = 0, col = 0;
     for (TStringVec::const_iterator it=l.begin(); it!=l.end(); it++)
     {
         QCheckBox *box = new QCheckBox(it->c_str());
-        vbox->addWidget(box);
+        connect(box, SIGNAL(stateChanged(int)), this, SLOT(valueChangedCB()));
+        grid->addWidget(box, row, col);
+
+        if (col == 0)
+            col++;
+        else
+        {
+            row++;
+            col = 0;
+        }
+        
         choiceList.push_back(box);
     }
 }
@@ -241,6 +272,7 @@ CBoolConfValue::CBoolConfValue(const NLua::CLuaTable &luat, QWidget *parent,
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->addWidget(checkBox = new QCheckBox);
+    connect(checkBox, SIGNAL(stateChanged(int)), this, SLOT(valueChangedCB()));
 }
 
 void CBoolConfValue::coreLoadValue()
@@ -261,8 +293,8 @@ void CBoolConfValue::coreClearWidget()
 }
 
 
-CDirConfValue::CDirConfValue(const NLua::CLuaTable &luat, QWidget *parent,
-                             Qt::WindowFlags flags) : CBaseConfValue(luat, parent, flags)
+CFileConfValue::CFileConfValue(const NLua::CLuaTable &luat, QWidget *parent,
+                               Qt::WindowFlags flags) : CBaseConfValue(luat, parent, flags)
 {
     QHBoxLayout *hbox = new QHBoxLayout(this);
 
@@ -274,7 +306,7 @@ CDirConfValue::CDirConfValue(const NLua::CLuaTable &luat, QWidget *parent,
     hbox->addWidget(button);
 }
 
-void CDirConfValue::coreLoadValue()
+void CFileConfValue::coreLoadValue()
 {
     if (getLuaValueTable()["value"])
     {
@@ -284,23 +316,23 @@ void CDirConfValue::coreLoadValue()
     }
 }
 
-void CDirConfValue::corePushValue()
+void CFileConfValue::corePushValue()
 {
     if (!fileView->text().isEmpty())
         getLuaValueTable()["value"] << fileView->text().toStdString();
 }
 
-void CDirConfValue::coreClearWidget()
+void CFileConfValue::coreClearWidget()
 {
     fileView->setText("");
 }
 
-void CDirConfValue::coreSetProjectDir(const std::string &dir)
+void CFileConfValue::coreSetProjectDir(const std::string &dir)
 {
     projectDir = dir;
 }
 
-void CDirConfValue::modifyCB()
+void CFileConfValue::modifyCB()
 {
     CExtraFilesDialog dialog(projectDir.c_str());
     if (dialog.exec() == QDialog::Accepted)
@@ -308,3 +340,4 @@ void CDirConfValue::modifyCB()
         fileView->setText(dialog.file());
     }
 }
+
