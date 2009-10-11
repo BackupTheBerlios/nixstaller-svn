@@ -202,6 +202,25 @@ bool CDirBrowser::permissionsOK(const QString &path, bool onlyRead, bool checkPa
     return (onlyRead || fi.isWritable()) && fi.isReadable() && (!fi.isDir() || fi.isExecutable());
 }
 
+QModelIndex CDirBrowser::getCopyDest(void) const
+{
+    QModelIndexList sel = browserView->selectionModel()->selectedRows();
+    QModelIndex dest;
+    
+    if (sel.empty())
+        dest = proxyModel->mapToSource(browserView->rootIndex());
+    else if (sel.size() == 1)
+    {
+        QModelIndex index = proxyModel->mapToSource(sel.front());
+        if (browserModel->isDir(index))
+            dest = index;
+        else
+            dest = index.parent();
+    }
+
+    return dest;
+}
+
 void CDirBrowser::topToolCB()
 {
     if ((browserModel->rootPath() != rootDir) && (browserView->rootIndex().parent().isValid()))
@@ -278,21 +297,7 @@ void CDirBrowser::pasteActionCB()
     if (!mime || !mime->hasUrls())
         return;
 
-    QModelIndexList sel = browserView->selectionModel()->selectedRows();
-    QModelIndex dest;
-    
-    if (sel.size() > 1)
-        return;
-    else if (sel.empty())
-        dest = proxyModel->mapToSource(browserView->rootIndex());
-    else
-    {
-        QModelIndex index = proxyModel->mapToSource(sel.front());
-        if (browserModel->isDir(index))
-            dest = index;
-        else
-            dest = index.parent();
-    }
+    QModelIndex dest = getCopyDest();
 
     if (!dest.isValid())
         return;
@@ -406,6 +411,8 @@ void CDirBrowser::updateActions()
         deleteAction->setEnabled(permWOK);
         renameAction->setEnabled(false);
     }
+
+    emit mouseClicked();
 }
 
 void CDirBrowser::setRootDir(const QString &dir)
@@ -436,6 +443,32 @@ void CDirBrowser::removeDir(const QString &dir)
     QMimeData mime;
     mime.setUrls(QList<QUrl>() << dir);
     browserModel->removeFiles(&mime);
+}
+
+void CDirBrowser::copyFile(const QString &file)
+{
+    QMimeData mime;
+    mime.setUrls(QList<QUrl>() << file);
+
+    QModelIndex dest = getCopyDest();
+    if (!dest.isValid())
+        return;
+    
+    browserModel->copyFiles(&mime, dest, false);
+}
+
+void CDirBrowser::setSingleSelection(bool s)
+{
+    if (s)
+        browserView->setSelectionMode(QAbstractItemView::SingleSelection);
+    else
+        browserView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+}
+
+QString CDirBrowser::getSelection() const
+{
+    QModelIndexList sel = browserView->selectionModel()->selectedRows();
+    return browserModel->filePath(proxyModel->mapToSource(sel.front()));
 }
 
 

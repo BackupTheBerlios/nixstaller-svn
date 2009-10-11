@@ -15,7 +15,8 @@ SOURCES += main.cpp \
  morelabel.cpp \
  dirbrowser.cpp \
  dirinput.cpp \
- configwidget.cpp
+ configwidget.cpp \
+ extrafilesdialog.cpp
 TEMPLATE = app
 CONFIG += warn_on \
 	  thread \
@@ -39,7 +40,8 @@ HEADERS += welcome.h \
  morelabel.h \
  dirbrowser.h \
  dirinput.h \
- configwidget.h
+ configwidget.h \
+ extrafilesdialog.h
 
 
 

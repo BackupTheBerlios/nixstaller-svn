@@ -24,11 +24,12 @@
 #include <QComboBox>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QVBoxLayout>
 
 #include "main/lua/luafunc.h"
-#include "main/lua/luatable.h"
 #include "configwidget.h"
+#include "extrafilesdialog.h"
 
 CConfigWidget::CConfigWidget(QWidget *parent,
                              Qt::WindowFlags flags) : QWidget(parent, flags)
@@ -56,6 +57,8 @@ CConfigWidget::CConfigWidget(QWidget *parent,
                 confValue = new CMultiChoiceConfValue(vtab);
             else if (type == "boolean")
                 confValue = new CBoolConfValue(vtab);
+            else if (type == "dir")
+                confValue = new CDirConfValue(vtab);
 
             if (confValue)
             {
@@ -68,53 +71,62 @@ CConfigWidget::CConfigWidget(QWidget *parent,
     }
 }
 
-void CConfigWidget::loadConfig(const std::string &file)
+void CConfigWidget::loadConfig(const std::string &dir)
 {
     NLua::CLuaFunc func("loadGenConf");
     assert(func);
     if (func)
     {
-        func << file;
+        func << dir;
         func(0);
     }
 
     for (TValueWidgetMap::iterator it=valueWidgetMap.begin();
          it!=valueWidgetMap.end(); it++)
+    {
+        it->second->setProjectDir(dir);
         it->second->loadValue();
+    }
 }
 
-void CConfigWidget::saveConfig(const std::string &file)
+void CConfigWidget::saveConfig(const std::string &dir)
 {
     for (TValueWidgetMap::iterator it=valueWidgetMap.begin();
          it!=valueWidgetMap.end(); it++)
+    {
+        it->second->setProjectDir(dir);
         it->second->pushValue();
+    }
 
     NLua::CLuaFunc func("saveGenConf");
     assert(func);
     if (func)
     {
-        func << file;
+        func << dir;
         func(0);
     }
 }
 
-void CConfigWidget::newConfig(const std::string &file)
+void CConfigWidget::newConfig(const std::string &dir)
 {
     NLua::CLuaFunc func("newGenConf");
     assert(func);
     if (func)
     {
-        func << file;
+        func << dir;
         func(0);
     }
 
     // Clear widgets
     for (TValueWidgetMap::iterator it=valueWidgetMap.begin();
          it!=valueWidgetMap.end(); it++)
+    {
+        it->second->setProjectDir(dir);
         it->second->clearWidget();
+    }
 
     // Load new (default) file
-    loadConfig(file);
+    loadConfig(dir);
 }
 
 
@@ -246,4 +258,53 @@ void CBoolConfValue::corePushValue()
 void CBoolConfValue::coreClearWidget()
 {
     checkBox->setChecked(false);
+}
+
+
+CDirConfValue::CDirConfValue(const NLua::CLuaTable &luat, QWidget *parent,
+                             Qt::WindowFlags flags) : CBaseConfValue(luat, parent, flags)
+{
+    QHBoxLayout *hbox = new QHBoxLayout(this);
+
+    hbox->addWidget(fileView = new QLineEdit);
+    fileView->setReadOnly(true);
+    
+    QPushButton *button = new QPushButton("Modify");
+    connect(button, SIGNAL(clicked()), this, SLOT(modifyCB()));
+    hbox->addWidget(button);
+}
+
+void CDirConfValue::coreLoadValue()
+{
+    if (getLuaValueTable()["value"])
+    {
+        std::string v;
+        getLuaValueTable()["value"] >> v;
+        fileView->setText(v.c_str());
+    }
+}
+
+void CDirConfValue::corePushValue()
+{
+    if (!fileView->text().isEmpty())
+        getLuaValueTable()["value"] << fileView->text().toStdString();
+}
+
+void CDirConfValue::coreClearWidget()
+{
+    fileView->setText("");
+}
+
+void CDirConfValue::coreSetProjectDir(const std::string &dir)
+{
+    projectDir = dir;
+}
+
+void CDirConfValue::modifyCB()
+{
+    CExtraFilesDialog dialog(projectDir.c_str());
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        fileView->setText(dialog.file());
+    }
 }

@@ -21,13 +21,11 @@
 #include <map>
 #include <QWidget>
 
+#include "main/lua/luatable.h"
+
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
-
-namespace NLua {
-class CLuaTable;
-}
 
 class CBaseConfValue;
 
@@ -39,9 +37,9 @@ class CConfigWidget: public QWidget
 public:
     CConfigWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-    void loadConfig(const std::string &file);
-    void saveConfig(const std::string &file);
-    void newConfig(const std::string &file);
+    void loadConfig(const std::string &dir);
+    void saveConfig(const std::string &dir);
+    void newConfig(const std::string &dir);
 };
 
 class CBaseConfValue: public QWidget
@@ -51,6 +49,7 @@ class CBaseConfValue: public QWidget
     virtual void coreLoadValue(void) = 0;
     virtual void corePushValue(void) = 0;
     virtual void coreClearWidget(void) = 0;
+    virtual void coreSetProjectDir(const std::string &dir) { }
 
 protected:
     NLua::CLuaTable &getLuaValueTable(void) { return luaValueTable; }
@@ -63,6 +62,7 @@ public:
     void loadValue(void) { coreLoadValue(); }
     void pushValue(void) { corePushValue(); }
     void clearWidget(void) { coreClearWidget(); }
+    void setProjectDir(const std::string &dir) { coreSetProjectDir(dir); }
 };
 
 class CStringConfValue: public CBaseConfValue
@@ -116,4 +116,24 @@ class CBoolConfValue: public CBaseConfValue
 public:
     CBoolConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
                    Qt::WindowFlags flags = 0);
+};
+
+class CDirConfValue: public CBaseConfValue
+{
+    Q_OBJECT
+
+    std::string projectDir;
+    QLineEdit *fileView;
+    
+    virtual void coreLoadValue(void);
+    virtual void corePushValue(void);
+    virtual void coreClearWidget(void);
+    virtual void coreSetProjectDir(const std::string &dir);
+
+private slots:
+    void modifyCB(void);
+    
+public:
+    CDirConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
+                  Qt::WindowFlags flags = 0);
 };

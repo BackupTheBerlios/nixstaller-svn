@@ -36,6 +36,7 @@ configGenProperties = {
     comment = "Archive type used to pack the installer" },
 ["autolang"] = { name = "Auto select language", type = "boolean",
     comment = "When enabled the installer will automaticly guess the right language. If this fails or when this option is disabled, the user has to choose a language." },
+["logo"] = { name = "Logo", type = "dir", comment = "Logo image file" },
 ["targetos"] = { name = "Target OSs", type = "multichoice",
     choices = { "linux", "freebsd", "netbsd", "openbsd", "solaris" },
     comment = "Target Operating Systems" },

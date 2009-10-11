@@ -1042,7 +1042,7 @@ void CFileManagerTab::removeInstDir()
 }
 
 void CFileManagerTab::changeDestBrowser(QListWidgetItem *current,
-                                      QListWidgetItem *previous)
+                                        QListWidgetItem *previous)
 {
     if (!current)
         current = previous;
