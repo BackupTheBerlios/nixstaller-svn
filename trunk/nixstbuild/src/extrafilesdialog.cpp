@@ -34,7 +34,7 @@ CExtraFilesDialog::CExtraFilesDialog(const QString &prdir, QWidget *parent,
     setModal(true);
 
     QDir dir(prdir);
-    QString dest = prdir + "/extra_files";
+    QString dest = prdir + "/files_extra";
     dir.mkdir(dest);
     // UNDONE: Check if everything went OK?
 
