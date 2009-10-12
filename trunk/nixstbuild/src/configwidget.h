@@ -37,7 +37,7 @@ class CConfigWidget: public QWidget
     TValueWidgetList valueWidgetList;
     
 private slots:
-    void valueChangedCB(const NLua::CLuaTable &t);
+    void valueChangedCB(NLua::CLuaTable &t);
     
 public:
     CConfigWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -47,7 +47,7 @@ public:
     void newConfig(const std::string &dir);
 
 signals:
-    void confValueChanged(const NLua::CLuaTable &t);
+    void confValueChanged(NLua::CLuaTable &t);
 };
 
 class CBaseConfValue: public QWidget
@@ -78,7 +78,7 @@ public:
     void setProjectDir(const std::string &dir) { coreSetProjectDir(dir); }
 
 signals:
-    void confValueChanged(const NLua::CLuaTable &t);
+    void confValueChanged(NLua::CLuaTable &t);
 };
 
 class CStringConfValue: public CBaseConfValue

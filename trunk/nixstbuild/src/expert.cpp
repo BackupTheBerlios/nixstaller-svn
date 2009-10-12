@@ -614,16 +614,36 @@ CGeneralConfTab::CGeneralConfTab(QWidget *parent,
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
 
-    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget = new QTabWidget;
     vbox->addWidget(tabWidget);
     
     QScrollArea *configScroll = new QScrollArea;
     configScroll->setFrameStyle(QFrame::Plain | QFrame::NoFrame);
-    configScroll->setWidget(configWidget = new CConfigWidget);
     configScroll->setWidgetResizable(true);
     tabWidget->addTab(configScroll, "General config");
 
+    configScroll->setWidget(configWidget = new CConfigWidget);
+    connect(configWidget, SIGNAL(confValueChanged(NLua::CLuaTable &)), this,
+            SLOT(valueChangedCB(NLua::CLuaTable &)));
+
     tabWidget->addTab(new QWidget, "Unattend config");
+}
+
+void CGeneralConfTab::valueChangedCB(NLua::CLuaTable &t)
+{
+    if (t["flag"])
+    {
+        std::string flag;
+        t["flag"] >> flag;
+
+        // UNDONE: Do this (or config) from Lua?
+        if (flag == "setmode")
+        {
+            std::string value;
+            t["value"] >> value;
+            tabWidget->setTabEnabled(1, (value != "attended"));
+        }
+    }
 }
 
 void CGeneralConfTab::loadProject(const QString &dir)

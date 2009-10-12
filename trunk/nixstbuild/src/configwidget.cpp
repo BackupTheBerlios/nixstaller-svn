@@ -63,8 +63,8 @@ CConfigWidget::CConfigWidget(QWidget *parent,
 
             if (confValue)
             {
-                connect(confValue, SIGNAL(confValueChanged(const NLua::CLuaTable &)),
-                        this, SLOT(valueChangedCB(const NLua::CLuaTable &)));
+                connect(confValue, SIGNAL(confValueChanged(NLua::CLuaTable &)),
+                        this, SLOT(valueChangedCB(NLua::CLuaTable &)));
                 std::string name;
                 vtab["name"] >> name;
                 form->addRow(name.c_str(), confValue);
@@ -74,7 +74,7 @@ CConfigWidget::CConfigWidget(QWidget *parent,
     }
 }
 
-void CConfigWidget::valueChangedCB(const NLua::CLuaTable &t)
+void CConfigWidget::valueChangedCB(NLua::CLuaTable &t)
 {
     emit confValueChanged(t);
 }

@@ -30,6 +30,7 @@ class QListWidget;
 class QMenu;
 class QStackedWidget;
 class QPlainTextEdit;
+class QTabWidget;
 
 class QFormatScheme;
 class QLanguageFactory;
@@ -39,6 +40,10 @@ class CConfigWidget;
 class CDirBrowser;
 class CEditor;
 class CEditSettings;
+
+namespace NLua {
+class CLuaTable;
+}
 
 class QConfigWidget; // UNDONE
 
@@ -109,8 +114,13 @@ public:
 
 class CGeneralConfTab: public CBaseExpertTab
 {
-    QConfigWidget *qw;
+    Q_OBJECT
+    
+    QTabWidget *tabWidget;
     CConfigWidget *configWidget;
+
+private slots:
+    void valueChangedCB(NLua::CLuaTable &t);
     
 public:
     CGeneralConfTab(QWidget *parent = 0, Qt::WindowFlags flags = 0);

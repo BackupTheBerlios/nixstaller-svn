@@ -29,6 +29,9 @@ Format:
 -- ]]
 
 configGenProperties = {
+{ var = "mode", name = "Installation mode", type = "choice",
+    choices = { "both", "attended", "unattended" }, flag = "setmode",
+    comment = "Installer mode" },
 { var = "appname", name = "Application name", type = "string",
     comment = "The application name" },
 { var = "archivetype", name = "Archive type", type = "choice",
