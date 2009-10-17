@@ -622,11 +622,12 @@ CGeneralConfTab::CGeneralConfTab(QWidget *parent,
     configScroll->setWidgetResizable(true);
     tabWidget->addTab(configScroll, "General config");
 
-    configScroll->setWidget(configWidget = new CConfigWidget);
-    connect(configWidget, SIGNAL(confValueChanged(NLua::CLuaTable &)), this,
+    configScroll->setWidget(genConfigWidget = new CConfigWidget("configGenProperties"));
+    connect(genConfigWidget, SIGNAL(confValueChanged(NLua::CLuaTable &)), this,
             SLOT(valueChangedCB(NLua::CLuaTable &)));
 
-    tabWidget->addTab(new QWidget, "Unattend config");
+    tabWidget->addTab(unAttConfigWidget = new CConfigWidget("configUnAttProperties"),
+                      "Unattend config");
 }
 
 void CGeneralConfTab::valueChangedCB(NLua::CLuaTable &t)
@@ -648,17 +649,17 @@ void CGeneralConfTab::valueChangedCB(NLua::CLuaTable &t)
 
 void CGeneralConfTab::loadProject(const QString &dir)
 {
-    configWidget->loadConfig(dir.toStdString());
+    genConfigWidget->loadConfig(dir.toStdString());
 }
 
 void CGeneralConfTab::saveProject(const QString &dir)
 {
-    configWidget->saveConfig(dir.toStdString());
+    genConfigWidget->saveConfig(dir.toStdString());
 }
 
 void CGeneralConfTab::newProject(const QString &dir)
 {
-    configWidget->newConfig(dir.toStdString());
+    genConfigWidget->newConfig(dir.toStdString());
 }
 
 CPackageConfTab::CPackageConfTab(QWidget *parent,

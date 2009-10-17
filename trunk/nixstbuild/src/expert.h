@@ -117,7 +117,7 @@ class CGeneralConfTab: public CBaseExpertTab
     Q_OBJECT
     
     QTabWidget *tabWidget;
-    CConfigWidget *configWidget;
+    CConfigWidget *genConfigWidget, *unAttConfigWidget;
 
 private slots:
     void valueChangedCB(NLua::CLuaTable &t);

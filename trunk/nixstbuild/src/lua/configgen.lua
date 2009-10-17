@@ -48,6 +48,13 @@ configGenProperties = {
     comment = "Target CPU Architectures" },
 }
 
+configUnAttProperties = {
+{ var = "unopts", name = "Unattended options", type = "unopts",
+    comment = "Commandline options for the unattended installation mode" },
+}
+
+
+
 local function clearConf()
     for k in pairs(cfg) do
         if k ~= "unopts" then
@@ -87,9 +94,12 @@ function saveGenConf(dir)
             elseif v.type == "boolean" then
                 val = (v.value and "true") or "false"
             elseif v.type == "multichoice" then
+                val = "{ "
+                local first = true
                 for _, v2 in ipairs(v.value) do
-                    if not val then
-                        val = string.format("{ \"%s\"", v2)
+                    if first then
+                        val = string.format("%s \"%s\"", val, v2)
+                        first = false
                     else
                         val = string.format("%s, \"%s\"", val, v2)
                     end

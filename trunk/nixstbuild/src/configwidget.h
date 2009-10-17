@@ -27,6 +27,8 @@ class QCheckBox;
 class QComboBox;
 class QLineEdit;
 
+class CTreeEdit;
+
 class CBaseConfValue;
 
 class CConfigWidget: public QWidget
@@ -40,7 +42,7 @@ private slots:
     void valueChangedCB(NLua::CLuaTable &t);
     
 public:
-    CConfigWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    CConfigWidget(const char *proptab, QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
     void loadConfig(const std::string &dir);
     void saveConfig(const std::string &dir);
@@ -152,4 +154,17 @@ private slots:
 public:
     CFileConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
                    Qt::WindowFlags flags = 0);
+};
+
+class CUnOptsConfValue: public CBaseConfValue
+{
+    CTreeEdit *treeEdit;
+    
+    virtual void coreLoadValue(void);
+    virtual void corePushValue(void);
+    virtual void coreClearWidget(void);
+
+public:
+    CUnOptsConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
+                     Qt::WindowFlags flags = 0);
 };

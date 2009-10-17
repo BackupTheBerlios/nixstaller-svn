@@ -30,13 +30,14 @@
 #include "main/lua/luafunc.h"
 #include "configwidget.h"
 #include "extrafilesdialog.h"
+#include "treeedit.h"
 
-CConfigWidget::CConfigWidget(QWidget *parent,
+CConfigWidget::CConfigWidget(const char *proptab, QWidget *parent,
                              Qt::WindowFlags flags) : QWidget(parent, flags)
 {
     QFormLayout *form = new QFormLayout(this);
     
-    NLua::CLuaTable tab("configGenProperties"); // UNDONE: Specify
+    NLua::CLuaTable tab(proptab);
     if (tab)
     {
         std::string var;
@@ -60,6 +61,8 @@ CConfigWidget::CConfigWidget(QWidget *parent,
                 confValue = new CBoolConfValue(vtab);
             else if (type == "file")
                 confValue = new CFileConfValue(vtab);
+            else if (type == "unopts")
+                confValue = new CUnOptsConfValue(vtab);
 
             if (confValue)
             {
@@ -341,3 +344,29 @@ void CFileConfValue::modifyCB()
     }
 }
 
+
+CUnOptsConfValue::CUnOptsConfValue(const NLua::CLuaTable &luat, QWidget *parent,
+                                   Qt::WindowFlags flags) : CBaseConfValue(luat, parent, flags)
+{
+    QVBoxLayout *vbox = new QVBoxLayout(this);
+    vbox->addWidget(treeEdit = new CTreeEdit);
+    treeEdit->setHeader(QStringList() << "Name" << "Short" << "Type" << "Variable name");
+//     connect(checkBox, SIGNAL(stateChanged(int)), this, SLOT(valueChangedCB()));
+}
+
+void CUnOptsConfValue::coreLoadValue()
+{
+/*    bool v;
+    getLuaValueTable()["value"] >> v;
+    checkBox->setChecked(v);*/
+}
+
+void CUnOptsConfValue::corePushValue()
+{
+//     getLuaValueTable()["value"] << checkBox->isChecked();
+}
+
+void CUnOptsConfValue::coreClearWidget()
+{
+//     checkBox->setChecked(false);
+}
