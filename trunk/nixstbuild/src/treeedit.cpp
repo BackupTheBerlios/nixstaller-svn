@@ -25,7 +25,7 @@
 
 #include "treeedit.h"
 
-CTreeEdit::CTreeEdit(QWidget *parent,
+CTreeEdit::CTreeEdit(bool moveb, QWidget *parent,
                      Qt::WindowFlags flags) : QWidget(parent, flags)
 {
     QHBoxLayout *hbox = new QHBoxLayout(this);
@@ -37,12 +37,17 @@ CTreeEdit::CTreeEdit(QWidget *parent,
     // UNDONE: Icons
     buttonLayout = new QVBoxLayout;
     buttonLayout->addWidget(remB = new QPushButton("Remove"));
-    buttonLayout->addWidget(upB = new QPushButton("Move up"));
-    buttonLayout->addWidget(downB = new QPushButton("Move down"));
-
     connect(remB, SIGNAL(clicked()), this, SLOT(del()));
-    connect(upB, SIGNAL(clicked()), this, SLOT(up()));
-    connect(downB, SIGNAL(clicked()), this, SLOT(down()));
+
+    if (moveb)
+    {
+        buttonLayout->addWidget(upB = new QPushButton("Move up"));
+        buttonLayout->addWidget(downB = new QPushButton("Move down"));
+        connect(upB, SIGNAL(clicked()), this, SLOT(up()));
+        connect(downB, SIGNAL(clicked()), this, SLOT(down()));
+    }
+    else
+        upB = downB = NULL;
     
     hbox->addLayout(buttonLayout);
 }
@@ -50,8 +55,12 @@ CTreeEdit::CTreeEdit(QWidget *parent,
 void CTreeEdit::enableEditButtons(bool e)
 {
     remB->setEnabled(e);
-    upB->setEnabled(e);
-    downB->setEnabled(e);
+
+    if (upB && downB)
+    {
+        upB->setEnabled(e);
+        downB->setEnabled(e);
+    }
 }
 
 void CTreeEdit::del()

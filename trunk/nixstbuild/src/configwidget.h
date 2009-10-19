@@ -26,6 +26,7 @@
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
+class QPushButton;
 
 class CTreeEdit;
 
@@ -158,12 +159,18 @@ public:
 
 class CUnOptsConfValue: public CBaseConfValue
 {
+    Q_OBJECT
+    
     CTreeEdit *treeEdit;
+    QPushButton *addButton;
     
     virtual void coreLoadValue(void);
     virtual void corePushValue(void);
     virtual void coreClearWidget(void);
 
+private slots:
+    void addCB(void);
+    
 public:
     CUnOptsConfValue(const NLua::CLuaTable &luat, QWidget *parent = 0,
                      Qt::WindowFlags flags = 0);

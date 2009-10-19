@@ -27,8 +27,7 @@
 #include "instscreenwidget.h"
 
 CInstScreenWidget::CInstScreenWidget(QWidget *parent,
-                                     Qt::WindowFlags flags) : CTreeEdit(parent, flags),
-                                                              gotDefaultSet(false)
+                                     Qt::WindowFlags flags) : CTreeEdit(true, parent, flags), gotDefaultSet(false)
 {
     // UNDONE: Icons
     insertButton(0, addScreenB = new QPushButton("Add screen"));

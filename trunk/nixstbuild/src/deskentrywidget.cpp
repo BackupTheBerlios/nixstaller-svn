@@ -32,7 +32,7 @@
 #include "deskentrywidget.h"
 
 CDesktopEntryWidget::CDesktopEntryWidget(QWidget *parent,
-                                         Qt::WindowFlags flags) : CTreeEdit(parent, flags)
+                                         Qt::WindowFlags flags) : CTreeEdit(true, parent, flags)
 {
     QPushButton *button = new QPushButton("Add");
     connect(button, SIGNAL(clicked()), this, SLOT(addEntry()));

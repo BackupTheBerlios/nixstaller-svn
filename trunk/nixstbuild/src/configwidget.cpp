@@ -22,7 +22,9 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -70,7 +72,17 @@ CConfigWidget::CConfigWidget(const char *proptab, QWidget *parent,
                         this, SLOT(valueChangedCB(NLua::CLuaTable &)));
                 std::string name;
                 vtab["name"] >> name;
-                form->addRow(name.c_str(), confValue);
+
+                // Big widgets
+                if (type == "unopts")
+                {
+                    // Put label above
+                    form->addWidget(new QLabel(name.c_str()));
+                    form->addWidget(confValue);
+                }
+                else
+                    form->addRow(name.c_str(), confValue);
+                
                 valueWidgetList.push_back(confValue);
             }
         }
@@ -349,9 +361,11 @@ CUnOptsConfValue::CUnOptsConfValue(const NLua::CLuaTable &luat, QWidget *parent,
                                    Qt::WindowFlags flags) : CBaseConfValue(luat, parent, flags)
 {
     QVBoxLayout *vbox = new QVBoxLayout(this);
-    vbox->addWidget(treeEdit = new CTreeEdit);
+    
+    vbox->addWidget(treeEdit = new CTreeEdit(false));
     treeEdit->setHeader(QStringList() << "Name" << "Short" << "Type" << "Variable name");
-//     connect(checkBox, SIGNAL(stateChanged(int)), this, SLOT(valueChangedCB()));
+    treeEdit->insertButton(0, addButton = new QPushButton("Add"));
+    connect(addButton, SIGNAL(clicked()), this, SLOT(addCB()));
 }
 
 void CUnOptsConfValue::coreLoadValue()
@@ -369,4 +383,41 @@ void CUnOptsConfValue::corePushValue()
 void CUnOptsConfValue::coreClearWidget()
 {
 //     checkBox->setChecked(false);
+}
+
+void CUnOptsConfValue::addCB()
+{
+    QDialog dialog;
+    dialog.setModal(true);
+    QFormLayout *form = new QFormLayout(&dialog);
+
+    QLineEdit *nameField = new QLineEdit;
+    form->addRow("Name", nameField);
+
+    QLineEdit *shortField = new QLineEdit;
+    shortField->setMaxLength(1);
+    form->addRow("Short", shortField);
+
+    QComboBox *typeField = new QComboBox;
+    typeField->addItems(QStringList() << "None" << "String" << "List");
+    form->addRow("Variable type", typeField);
+
+    QLineEdit *varField = new QLineEdit;
+    form->addRow("Variable name", varField);
+
+    // UNDONE: Input verification
+    
+    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
+            QDialogButtonBox::Cancel);
+    
+    connect(bbox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    connect(bbox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    form->addWidget(bbox);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        treeEdit->addItem(QStringList() << nameField->text() << shortField->text() <<
+                typeField->currentText() << varField->text());
+        valueChangedCB();
+    }
 }

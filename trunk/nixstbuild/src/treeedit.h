@@ -44,7 +44,7 @@ private slots:
     void down(void);
 
 public:
-    CTreeEdit(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    CTreeEdit(bool moveb=true, QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
     QTreeWidget *getTree(void) { return tree; }
 
