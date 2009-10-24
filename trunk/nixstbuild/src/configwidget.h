@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include <map>
+
+#include <QDialog>
 #include <QWidget>
 
 #include "main/lua/luatable.h"
@@ -31,6 +33,30 @@ class QPushButton;
 class CTreeEdit;
 
 class CBaseConfValue;
+
+class CNewUnOptdialog: public QDialog
+{
+    Q_OBJECT
+    
+    QLineEdit *nameField, *shortField, *varField;
+    QComboBox *typeField;
+    
+public:
+    CNewUnOptdialog(QWidget *parent=0, Qt::WindowFlags flags=0);
+    
+    void setName(const QString &n);
+    QString getName(void) const;
+    
+    void setShort(const QString &s);
+    QString getShort(void) const;
+    
+    void setType(const QString &t);
+    QString getType(void) const;
+    
+    void setVar(const QString &v);
+    QString getVar(void) const;
+};
+
 
 class CConfigWidget: public QWidget
 {

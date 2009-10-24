@@ -26,6 +26,7 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -34,6 +35,71 @@
 #include "extrafilesdialog.h"
 #include "treeedit.h"
 
+CNewUnOptdialog::CNewUnOptdialog(QWidget *parent, Qt::WindowFlags flags) : QDialog(parent, flags)
+{
+    setModal(true);
+    QFormLayout *form = new QFormLayout(this);
+
+    form->addRow("Option name", nameField = new QLineEdit);
+
+    form->addRow("Short option name", shortField = new QLineEdit);
+    shortField->setMaxLength(1);
+
+    form->addRow("Variable type", typeField = new QComboBox);
+    typeField->addItems(QStringList() << "None" << "String" << "List");
+    
+    form->addRow("Variable name", varField = new QLineEdit);
+
+    // UNDONE: Input verification
+
+    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
+            QDialogButtonBox::Cancel);
+    connect(bbox, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(bbox, SIGNAL(rejected()), this, SLOT(reject()));
+    form->addWidget(bbox);
+}
+
+void CNewUnOptdialog::setName(const QString &n)
+{
+    nameField->setText(n);
+}
+
+QString CNewUnOptdialog::getName(void) const
+{
+    return nameField->text();
+}
+
+void CNewUnOptdialog::setShort(const QString &s)
+{
+    shortField->setText(s);
+}
+
+QString CNewUnOptdialog::getShort(void) const
+{
+    return shortField->text();
+}
+
+void CNewUnOptdialog::setType(const QString &t)
+{
+    typeField->setCurrentIndex(typeField->findText(t));
+}
+
+QString CNewUnOptdialog::getType(void) const
+{
+    return typeField->currentText();
+}
+
+void CNewUnOptdialog::setVar(const QString &v)
+{
+    varField->setText(v);
+}
+
+QString CNewUnOptdialog::getVar(void) const
+{
+    return varField->text();
+}
+
+    
 CConfigWidget::CConfigWidget(const char *proptab, QWidget *parent,
                              Qt::WindowFlags flags) : QWidget(parent, flags)
 {
@@ -387,37 +453,42 @@ void CUnOptsConfValue::coreClearWidget()
 
 void CUnOptsConfValue::addCB()
 {
-    QDialog dialog;
-    dialog.setModal(true);
-    QFormLayout *form = new QFormLayout(&dialog);
-
-    QLineEdit *nameField = new QLineEdit;
-    form->addRow("Name", nameField);
-
-    QLineEdit *shortField = new QLineEdit;
-    shortField->setMaxLength(1);
-    form->addRow("Short", shortField);
-
-    QComboBox *typeField = new QComboBox;
-    typeField->addItems(QStringList() << "None" << "String" << "List");
-    form->addRow("Variable type", typeField);
-
-    QLineEdit *varField = new QLineEdit;
-    form->addRow("Variable name", varField);
-
-    // UNDONE: Input verification
-    
-    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
-            QDialogButtonBox::Cancel);
-    
-    connect(bbox, SIGNAL(accepted()), &dialog, SLOT(accept()));
-    connect(bbox, SIGNAL(rejected()), &dialog, SLOT(reject()));
-    form->addWidget(bbox);
+    CNewUnOptdialog dialog;
+//     dialog.setModal(true);
+//     QFormLayout *form = new QFormLayout(&dialog);
+// 
+//     QLineEdit *nameField = new QLineEdit;
+//     form->addRow("Option name", nameField);
+// 
+//     QLineEdit *shortField = new QLineEdit;
+//     shortField->setMaxLength(1);
+//     form->addRow("Short option name", shortField);
+// 
+//     QComboBox *typeField = new QComboBox;
+//     typeField->addItems(QStringList() << "None" << "String" << "List");
+//     form->addRow("Variable type", typeField);
+// 
+//     QLineEdit *varField = new QLineEdit;
+//     form->addRow("Variable name", varField);
+// 
+//     // UNDONE: Input verification
+//     
+//     QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok |
+//             QDialogButtonBox::Cancel);
+//     
+//     connect(bbox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+//     connect(bbox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+//     form->addWidget(bbox);
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        treeEdit->addItem(QStringList() << nameField->text() << shortField->text() <<
-                typeField->currentText() << varField->text());
-        valueChangedCB();
+/*        if (nameField->text().isEmpty())
+            QMessageBox::critical(NULL, "Missing data", "Please specify an option name.");
+        else
+        {
+            treeEdit->addItem(QStringList() << nameField->text() << shortField->text() <<
+                    typeField->currentText() << varField->text());
+            valueChangedCB();
+        }*/
     }
 }
