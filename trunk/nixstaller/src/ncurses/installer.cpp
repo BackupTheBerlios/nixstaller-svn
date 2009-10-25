@@ -21,12 +21,12 @@
 #include <stdlib.h>
 
 #include "main/frontend/utils.h"
+#include "main/lua/luaclass.h"
+#include "main/lua/luafunc.h"
 #include "installer.h"
 #include "installscreen.h"
 #include "luadepscreen.h"
 #include "luaprogressdialog.h"
-#include "main/lua/luaclass.h"
-#include "main/lua/luafunc.h"
 #include "tui/button.h"
 #include "tui/box.h"
 #include "tui/dialog.h"
