@@ -650,16 +650,19 @@ void CGeneralConfTab::valueChangedCB(NLua::CLuaTable &t)
 void CGeneralConfTab::loadProject(const QString &dir)
 {
     genConfigWidget->loadConfig(dir.toStdString());
+    unAttConfigWidget->loadConfig(dir.toStdString());
 }
 
 void CGeneralConfTab::saveProject(const QString &dir)
 {
     genConfigWidget->saveConfig(dir.toStdString());
+    unAttConfigWidget->saveConfig(dir.toStdString());
 }
 
 void CGeneralConfTab::newProject(const QString &dir)
 {
     genConfigWidget->newConfig(dir.toStdString());
+    unAttConfigWidget->newConfig(dir.toStdString());
 }
 
 CPackageConfTab::CPackageConfTab(QWidget *parent,

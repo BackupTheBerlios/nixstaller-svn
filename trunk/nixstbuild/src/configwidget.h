@@ -27,6 +27,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QFormLayout;
 class QLineEdit;
 class QPushButton;
 
@@ -38,15 +39,25 @@ class CNewUnOptdialog: public QDialog
 {
     Q_OBJECT
     
-    QLineEdit *nameField, *shortField, *varField;
+    QFormLayout *form;
+    QLineEdit *nameField, *descField, *shortField, *varField;
     QComboBox *typeField;
+
+    void enableVarField(bool e);
+    
+private slots:
+    void typeChanged(const QString &t);
+    void OK(void);
     
 public:
     CNewUnOptdialog(QWidget *parent=0, Qt::WindowFlags flags=0);
     
     void setName(const QString &n);
     QString getName(void) const;
-    
+
+    void setDesc(const QString &d);
+    QString getDesc(void) const;
+
     void setShort(const QString &s);
     QString getShort(void) const;
     

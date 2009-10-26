@@ -208,6 +208,15 @@ int CTreeEdit::itemCount() const
     return tree->topLevelItemCount();
 }
 
+void CTreeEdit::clear()
+{
+    while (itemCount() > 0)
+    {
+        tree->removeItemWidget(tree->topLevelItem(0), 1);
+        delete tree->topLevelItem(0);
+    }
+}
+
 void CTreeEdit::insertButton(int index, QPushButton *button)
 {
     buttonLayout->insertWidget(index, button);

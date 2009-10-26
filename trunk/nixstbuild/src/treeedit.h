@@ -66,10 +66,10 @@ public:
 
     QTreeWidgetItem *searchItem(const QString &name, int column=0);
     int searchItemIndex(const QString &name, int column=0);
-
     QTreeWidgetItem *itemAt(int index);
-
     int itemCount(void) const;
+
+    void clear(void);
 
     void insertButton(int index, QPushButton *button);
 };
