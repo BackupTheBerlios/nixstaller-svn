@@ -1,0 +1,6 @@
+Thank you for downloading Nixstaller!
+
+With Nixstaller you can easily create installers for your project.
+
+Please click on the next button and select a destination directory.
+You can find more info in the file nixstaller.html in the docs/ directory.

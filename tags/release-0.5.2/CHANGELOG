@@ -1,0 +1,211 @@
+0.5 --> 0.5.1
+- Fixed: LZMA encoder had unresolved symbols on older Linux systems (reported by John Tsolox)
+- Fixed: Missing large file support (LFS) for Linux 32 bit and Solaris (reported by Edward Rudd)
+- Fixed: Linux 64 bit LZMA encoder was actually a Linux 32 bit binary.
+- Fixed: OpenSolaris might produce invalid embedded archive.
+- Fixed: PackageToggleScreen didn't disable package selector when it was disabled.
+- Fixed: Solaris su helper had unresolved symbol to nanosleep on Solaris 10. (Reported by Marc Rios)
+- Polish translations (thanks to Jusko)
+
+
+0.4 --> 0.5
+- Fixed: GTK frontend input box would crash if initial value was set during construction (reported by dbert)
+- Fixed: GTK frontend crashed when a new screen was activated while current screen was still loading.
+- Fixed: os.copy would try to copy file if source and destination file were equal.
+- Fixed: utils.dirname() would handle relative paths wrong.
+- Fixed: selectdirscreen would ignore customly set install.destdir values. (reported by WP van Paassen)
+- Fixed: File extraction progress indication ignored total install progress.
+- Fixed: ncurses frontend wouldn't update screen fast enough for stuff called from verify() functions.
+- Fixed: If verify function from lua widget would return nothing, true was assumed (is now false)
+- Fixed: FLTK frontend wouldn't vertically space out widgets equally
+- Fixed: install.execute() wouldn't restore $PATH incase caller used custom path. (Reported by Markus Fischer)
+- Fixed: User could still cancel installation by closing window if cancel button was locked.
+- Fixed: Lua textfield from FLTK frontend was slow when large amounts of text were added.
+- Fixed: GTK screen titles weren't always centered.
+- Fixed: GTK password dialog didn't finish on enter keypress.
+- Fixed: When checking if the pacman packager is present and a pacman game was present, the installer would launch the game (reported by John Tsolox).
+- Fixed: 'tr' call used to convert uppercase to lowercase in scripts didn't work on all platforms.
+- Fixed: After a new directory as root is created through the GTK's file dialog, any directories created after that wouldn't be automatically selected.
+- Better commandline arguments handling.
+- Several new util functions: utils.removerec(), utils.copyrec(), utils.patch(), utils.tableappend(), utils.tablefind(), utils.tablemerge(), utils.mapsize(), utils.emptystring() and utils.mkdirperm()
+- Updated to FLTK 1.3
+- Decreased FLTK textfield font size
+- Lua textfield now has max amount of characters (4 MB)
+- Lua addcheckbox function now accepts additional argument to enable one or more options.
+- Lua addradiobutton function now accepts additional argument to preselect an option
+- Lua addmenu function now accepts additional argument to preselect an option
+- add(), del() and clear() functions for luaradiobutton, luacheckbox and luamenu (partly suggested by John Tsolox)
+- luamenu, luacheckbox and luaradiobutton can now be empty
+- del() function for luacfgmenu
+- enable() function for every widget
+- screen:update() function (suggested by John Tsolox)
+- Changed --help output from generated installer
+- Installer frontend can be specified through commandline argument
+- Installer can dump configuration info.
+- Made genprojdir.sh help output more consistent
+- install.executecmd() and install.executecmdasroot() functions (based on suggestion by John Tsolox)
+- install.extract() function
+- Additional precision for progressbars (only allowed integers)
+- Moved lots of install code to Lua
+- Summaryscreen now shows if package was registrated and if it failed to do so
+- Increased default lua textfield size and made it configurable (suggested by Markus Fischer)
+- --overwrite and --rm-existing options for genprojdir.sh.
+- Binary delta code was replaced by 'subarchives' causing even less size overhead.
+- "Uncompressing nixstaller" message changed to "Uncompressing Installer for <cfg.appname>" (based on suggestion by Markus Fischer)
+- Improved default logo
+- Added "application icon" supports, which is configurable. (suggested by Markus Fischer)
+- Moved label:set() function to generic widget:setlabel()
+- Widget label attributes (bold, italic, size) (based on suggestion by John Tsolox)
+- install.execute() and install.executeasroot() don't override default $PATH anymore (suggested by Markus Fischer)
+- Unattended installation mode (suggested by rrussell)
+- Dependency handling
+- Finish() function for run.lua
+- Updated to ncurses 5.7
+- UTF-8 support
+- setlabelwidth() from Lua label class now wants real width
+- gui.textwidth() function
+- cfg.autolang option to let the installer try to automaticly select a language
+- config.lua file for translations
+- tr() function
+- Improved translation strings
+- More reliable way for checking if package manager is locked.
+- genprojdir.sh now generates os, arch and os/arch specific file dirs in case --os or --arch is specified
+- genprojdir.sh now sets cfg.targetos and/or cfg.targetarch to nil if no --os/--arch was specified
+- install.getpkgdir() now accepts optional file argument for convenience.
+- install.update() function
+- install.setaskquit() function
+- Manual: Fixed several spelling mistakes, updated tutorials, added unattended Cube tutorial, improved bzflag tutorial.
+- Lithuanian and Bulgarian language support
+- OpenBSD ncurses and tools binaries are now fully static (this makes sure that binaries keep working despite the frequent OpenBSD libc bumping)
+- OpenBSD FLTK and GTK frontends are now only supported for 4.4 (prints a warning when a GUI frontend could not be launched).
+- Dropped FreeBSD 5.X bins
+- staticly linked stdcxx from apache for Linux, NetBSD and OpenBSD binaries.
+
+
+0.3 --> 0.4
+- install.execute / install.executeasroot now return exit code from command
+- Fixed: accessing freed memory in Lua copy file function
+- Fixed: libsu not returning valid exit code
+- Fixed: GTK's textfield was editable
+- Fixed: GTK labels were using less width then possible
+- Added /sbin and /usr/sbin to default PATH for install.execute/install.executeasroot
+- screen:addscreenend() function
+- os.exitstatus() function
+- Fixed: os.chmod crashed when file doesn't exist
+- Fixed: geninstall.sh couldn't place installer in an absolute path
+- x86_64 support.
+- genprojdir.sh now defaults to current arch.
+- geninstall.sh/genprojdir.sh can now be used from any directory.
+- io.md5 lua function
+- Fixed: Overflow crash with lua textfield
+- Install summary screen
+- xdg-open functionality through lua function
+- utils package
+- Fixed: Usage of '%' in messageboxes, yesnoboxes etc might crash.
+- Dirselectors now translate '~/' as $HOME/ (suggested by Tomasz Sałaciński)
+- Increased size of aboutdialogs (suggested by Tomasz Sałaciński)
+- cfgmenu:set() function
+- Functionality to create xdg menu entries
+- sudo support
+- Fixed: geninstall incorrectly assumed logo to be in main project directory (should be in files_extra/)
+- Package Mode
+- Fixed: Lua messageboxes, warningboxes, choiceboxes and yesnoboxes were not using translations.
+- Fixed: Calling io.dir() frequently in a short time might result in too many open file descriptors.
+- OpenBSD 4.2 and FreeBSD 7 support
+  
+
+0.2.2 --> 0.3
+- Added missing ncurses buttonbar entries.
+- Fixed about not loading in file installation screen.
+- Users can now create directories as root from directory selectors
+- SelectDirScreen can now create directories with root access
+- input:setspacing is changed to input:setlabelwidth
+- input:set function
+- checkbox:get and checkbox:set now accept strings besides numbers as arguments.
+- radiobutton:set now accepts strings as arguments aswell
+- SConstruct now works with latest SCons (0.97)
+- Preparing/copying frontend binaries message in geninstall.lua
+- --h/-h option in geninstall.sh
+- Fixed: Lua execution would stop UI updates
+- startupinstaller.sh now checks if a frontend is really launched
+- genprojdir.sh
+- startupinstaller.sh doesn't check for lzma binaries anymore when archivetype is not "lzma"
+- Fixed max intropicsize
+- files_extra/ support
+- Lua widget groups
+- FLTK layout: Logo support, screen header, white backgrounds, Xft font rendering
+- Fixed: Empty folders weren't included in installation files package
+- Fixed: Manual example code was using exit() instead of os.exit()
+- Fixed: Overide os.exit() instead of exit()
+- Track widget behaviour with customly defined widget:datachanged() and widget:verify() lua functions.
+- Control screen activation with customly defined screen:canactivate() and screen:activate() lua functions.
+- Updated to Lua 5.1.2
+- Compiled FLTK with Xdbe and Xft support
+- install.newcfgscreen() changed to install.newscreen(). Docs now mentions 'screen class' instead of 'cfgscreen class'.
+- checkbox:get() and checkbox:set() now support both string and array number as argument
+- radiobutton:set() now accepts both a string and array number as argument
+- cfgmenu:addlist() now accepts argument with initial value
+- Widgets now check arguments on bounds
+- New lua widgets: menu, image, label, progressbar and textfield
+- GTK2 frontend
+- install.getlang() function
+- Temporary lzma archives are now unpacked to temporary directory instead of destdir.
+- install.lockscreen function
+- Fixed: Several su (used for root access) bugs on OpenBSD and FreeBSD.
+- OpenBSD 4.1 support
+- NetBSD 4.X support
+- Updated vim example for vim 7.1.
+
+
+0.2.1 --> 0.2.2
+- Fixed: startupinstaller.sh would not sort files (reported by Tero Pelander).
+- Fixed: geninstall.sh didn't check given commandline arguments anymore.
+- Fixed: Missing quotes in startupinstaller.sh (reported by Tero Pelander).
+- Startup message is now read from file.
+- New way of choosing frontends: instead of trying to find available C/C++ system libraries each frontend is checked with ldd for missing libraries (suggested by Tero Pelander).
+
+0.2 --> 0.2.1
+
+FLTK:
+- Fixed: Welcome and License screen would not show up if only one language was available.
+
+OVERALL:
+- Fixed: Tried to default to english incase only one language was available even if this wasn't English.
+- Fixed: Startup script wouldn't detect libstdc++ on Gentoo (reported by Edward Rudd)
+- Startup script now defaults to Linux incase no frontends are found for the current OS and defaults to x86 incase no frontends are found for the current CPU arch.
+
+
+0.1.1 --> 0.2
+
+FLTK:
+- Fl_File_Input instead of Fl_input for directory selectors
+
+ncurses:
+- Completely new frontend code, uses ncurses++ instead of CDK.
+- Upgraded to ncurses 5.6
+
+OVERALL:
+- License change: Removed CDK exception
+- Completely new configuration via Lua 5.1.1;
+    - Configuration is split to 2 files (config.lua and run.lua instead of install.cfg).
+    - New installation screens can be created.
+    - The order of and which installation screens can be configured.
+    - Installers can now be programmed instead of just configured.
+- Support for OpenBSD and Solaris Express/Nexenta
+- lzma compression support and the default is changed from gzip to lzma.
+- edelta support for 'binary diffs' (reduces size)
+- New manual, made with texinfo and texi2html
+- Directory structure: source files are moved to src/ subdirectory, Nixstaller archives have all the files in a nixstaller subdirectory.
+- Removed SCons example, added Cube and Vim examples
+- C++ library (libstdc++) is now linked dynamicly (reduces size)
+- Shell commands executed during installation are now terminated when the frontend closes.
+- C++ exception support
+- Moved many duplicate frontend code to a single library
+- Removed NetBSD 1.6.2 support
+- Removed norwegian translations (outdated)
+
+
+0.1 --> 0.1.1
+- Fixed: Ncurses frontend crashes if only 1 language is available. 
+- Fixed: geninstall.sh couldn't detect current directory with older versions of ksh. 
+- Added norwegian language support.

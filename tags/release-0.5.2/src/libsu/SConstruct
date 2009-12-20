@@ -1,0 +1,87 @@
+# -*- coding: utf-8 -*-
+import sys
+import platform
+
+cur_os = sys.platform.rstrip('1234567890')
+cur_arch = platform.machine()
+    
+if cur_arch[0] == 'i' and (cur_arch.endswith("86") or cur_arch.endswith("86pc")):
+    cur_arch = "x86"
+elif cur_arch == 'amd64':
+    cur_arch = "x86_64"
+
+
+opts = Options()
+opts.Add('CC', 'The C compiler', 'gcc')
+opts.Add('CXX', 'The C++ compiler', 'g++')
+opts.Add('noapcpp', "Don't use apache's STL lib", "no")
+
+env = Environment(options = opts, CCFLAGS = "-Wall -Os", CPPPATH=['.'])
+
+if env['noapcpp'] == "no" and (cur_os == "linux" or cur_os == "netbsd" or cur_os == "openbsd"):
+    #env.Append(LIBS=Split('std supc++ m'))
+    env['CXX'] = '$CC'
+    env.Append(CPPPATH=['../include/stdcxx', '../include/stdcxx/cfg/'+cur_os+'/'+cur_arch])
+    
+Help(opts.GenerateHelpText(env))
+
+config_header = 'su-config.h'
+
+# configure stuff (only do this when not cleaning)
+if not env.GetOption('clean'):
+    conf = env.Configure(config_h = config_header)
+    
+    conf.CheckFunc('initgroups')
+    
+    conf.CheckCXXHeader(['stdlib.h', 'sys/types.h', 'libutil.h'], "<>")
+    conf.CheckCXXHeader('util.h', "<>")
+    conf.CheckCXXHeader('pty.h', "<>")
+    
+    if conf.CheckLib('util', 'openpty'):
+        conf.env.Append(CPPDEFINES = 'HAVE_OPENPTY')
+        
+    conf.CheckFunc('setgroups')
+    conf.CheckFunc('getgroups')
+    conf.CheckFunc('grantpt')
+    conf.CheckFunc('setpriority')
+    conf.CheckFunc('getpt')
+    conf.CheckFunc('unlockpt')
+    conf.CheckFunc('ptsname')
+    
+    # irix pty stuff
+    conf.CheckFunc('_getpty')
+    
+    if conf.CheckType('ucred', '#include <sys/socket.h>'):
+        conf.env.Append(CPPDEFINES = 'HAVE_STRUCT_UCRED')
+    
+    conf.CheckFunc('getpeereid')
+    
+    if cur_os != "sunos":
+        conf.CheckFunc('vasprintf')
+
+    conf.CheckLib('util')
+
+    if not conf.CheckLibWithHeader('', 'time.h', 'C', 'nanosleep(0, 5);'):
+        conf.CheckLibWithHeader('rt', 'time.h', 'C', 'nanosleep(0, 5);')
+ 
+    env = conf.Finish()
+else:
+    # Atleast for me, scons won't clean properly...removing all '.sconsign' files manually seems to help
+    Execute(Delete('.sconf_temp'))
+    Execute(Delete('.sconsign.dblite'))
+
+# Builds the lib
+libsu = env.StaticLibrary("libsu", Split('main.cpp utils.cpp terminal.cpp vasprintf.c'))
+
+# Builds runner program
+if cur_os == "openbsd":
+    surunner = env.Program("surunner", "runner.c", LINKFLAGS="-static")
+elif cur_os == "sunos":
+    surunner = env.Program("surunner", "runner.c", LIBS="rt")
+else:
+    surunner = env.Program("surunner", "runner.c")
+
+# Builds test program
+#env.Program("libtest", 'libtest.cpp', LIBPATH=[".", LIBS=Split('$LIBS su'))
+
+Return('libsu', 'surunner')

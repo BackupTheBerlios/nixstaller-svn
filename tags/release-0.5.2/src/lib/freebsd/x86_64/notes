@@ -1,0 +1,5 @@
+Notes for freebsd libs:
+
+Host system: x86_64 FreeBSD 6.2 and FreeBSD 7.1 (only for bins)
+
+See builddeps.sh for used compiler flags and package versions.

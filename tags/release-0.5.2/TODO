@@ -1,0 +1,71 @@
+OVERALL
+- Add trap in geninstall.sh which cleans stuff?
+- Qt/KDE frontend?
+- Fix installation if destdir has no read access?
+- Use locale fix from latest kdesu?
+- Better util.a configure testing?
+- Root usage: change to use privileged user? (default root)
+- deps:
+    - bins field, which checks for bin compat? If yes change deputil.lua HandleCompat function generation and geninstall autosyms.
+    - Better progress indication?
+- Dep templates:
+    - For list: LSB Compliance, others? --> LSB tag?
+    - More templates?
+    - Fix more templates so they can be full.
+    - Way to tell that dep shouldn't be standalone
+- Unattended installations
+    - Control verbosity?
+- Move curdir lua variable to install package?
+- Installer profiles
+- Configurable background parts (background images)
+- Seperate dep installing and collecting? --> Allows to configure them during installation
+- Dump lib info when no frontend could be found (so user can install compat packages)
+- Cleaner way for telling where surunner is (via commandline arg?)
+- Fully override OS/ARCH when no suitable bin was found
+
+
+PACKAGING
+- More config options:
+    * Package Changelog?
+    * RPM: Vendor?, Icon?
+- RPM: Description formatting?
+- pacman: Check for locks for future releases
+- deb: way to remove temporary root owned files incase of an error
+
+
+MAIN
+- More advanced ExtractFiles() (Work as a Lua iterator? Define which package to extract)
+- Improve/check lua error messages?
+
+
+LIBSU
+- Clean up/redesign
+
+
+NCURSES
+- Check chtype?
+- Better monochrome support?
+- Check for 'dynamic' CanFocus for CTextField?
+
+
+GTK
+- OpenBSD: Check why png's (and others?) don't load
+
+
+FLTK
+- Create a pack widget that works?
+
+
+TRANSLATIONS
+- utf8:
+    - Convert language files to utf?
+    - Convert utf to native for ncurses frontend?
+    - way to specify encoding?
+
+
+LIBSU
+- Check tmp files leaving around (caused by sh errors?)
+
+
+DESIGN
+- Reorganize SConstruct

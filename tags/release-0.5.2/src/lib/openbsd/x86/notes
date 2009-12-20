@@ -1,0 +1,7 @@
+Notes for openbsd libs:
+
+Host system: x86 OpenBSD 3.9 and 4.4 (FLTK and GTK binaries)
+
+See builddeps.sh for used compiler flags and package versions.
+
+Note that all binaries except the GTK and FLTK frontends are fully static.

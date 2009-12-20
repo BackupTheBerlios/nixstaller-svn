@@ -1,0 +1,7 @@
+Notes for linux libs:
+
+Host system: x86 debian 4.0
+
+See builddeps.sh for used compiler flags and package versions.
+
+stdcxx was build on Debian sarge with gcc 3.3
