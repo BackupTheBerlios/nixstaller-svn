@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         if (setsid() == -1)
             _exit(127);
         
-        execlp("/bin/sh", "sh", "-c", argv[1], NULL);
+        execlp("/bin/sh", "-sh", "-c", argv[1], NULL);
         _exit(127);
     }
     

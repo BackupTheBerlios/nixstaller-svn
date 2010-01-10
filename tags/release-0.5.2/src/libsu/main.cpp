@@ -143,22 +143,25 @@ void CLibSU::ConstructCommand(std::string &command, std::vector<std::string> &ar
     if (UsingSudo())
         args.push_back("-u");
     
-    args.push_back(m_szUser);
+    // The place of this dash (to initiate a login shell) is very important...
+    if (!UsingSudo())
+        args.push_back("-");
     
+    args.push_back(m_szUser);
+        
     if (UsingSudo())
     {
-        args.push_back("-i");
+/*        args.push_back("-i");
         args.push_back("--");
+        args.push_back("-c");*/
+        args.push_back("/bin/sh");
         args.push_back("-c");
     }
     else
         args.push_back("-c");
 
     args.push_back(std::string("printf \"") + TermStr + "\\n\" ;" + runcmd); // Insert our magic terminate indicator to command
-    
-    if (!UsingSudo())
-        args.push_back("-");
-    
+        
     args.insert(args.end(), runargs.begin(), runargs.end());
 }
 
