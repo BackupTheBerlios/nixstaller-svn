@@ -4241,7 +4241,7 @@ The function returns the exit status code from the command that was executed.
 
 @anchor{install.executeasroot}
 @luafunc install.executeasroot (c[, r=true[, p=os.getenv("PATH")]])
-This function does essentially the same as @code{install.execute}, but using the @code{su} command to execute it as root. When the root password is not given yet it will ask the user to do so. The function returns the exit status code from the command that was executed.
+This function does essentially the same as @code{install.execute}, but using the @code{su} (or @code{sudo}) command to execute it as root. When the root password is not given yet it will ask the user to do so. The function returns the exit status code from the command that was executed.
 @endluafunc
 
 @luafunc install.executecmdasroot (c, f[, r=true[, p=os.getenv("PATH")]])
